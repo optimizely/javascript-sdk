@@ -1,6 +1,6 @@
 {
   "name": "optimizely-client-sdk",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Javascript SDK for client testing",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
   "dependencies": {
     "bluebird": "^3.4.0",
     "lodash": "^4.13.1",
-    "optimizely-server-sdk": "^0.1.1"
+    "optimizely-server-sdk": "^0.1.2"
   },
   "devDependencies": {
     "chai": "^3.5.0",
