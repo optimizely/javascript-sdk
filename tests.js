@@ -6,7 +6,7 @@ var chai = require('chai');
 var assert = chai.assert;
 var sinon = require('sinon');
 
-describe('optimizely-testing-sdk-javascript', function() {
+describe('javascript-sdk', function() {
   describe('APIs', function() {
     describe('createInstance', function() {
       var fakeErrorHandler = { handleError: function() {}};
