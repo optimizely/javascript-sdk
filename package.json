@@ -1,7 +1,7 @@
 {
   "name": "optimizely-client-sdk",
-  "version": "0.1.4",
-  "description": "Javascript SDK for client testing",
+  "version": "1.0.0",
+  "description": "JavaScript SDK for client testing",
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha ./tests.js",
@@ -19,9 +19,9 @@
   },
   "homepage": "https://github.com/optimizely/javascript-sdk#readme",
   "dependencies": {
-    "bluebird": "^3.4.0",
+    "es6-promise": "^3.3.1",
     "lodash": "^4.13.1",
-    "optimizely-server-sdk": "^0.1.4"
+    "optimizely-server-sdk":  "^1.0.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
