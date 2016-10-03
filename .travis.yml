@@ -6,6 +6,7 @@ node_js:
 branches:
   only:
     - master
+    - devel
 install: "npm install"
 script:
   - "npm test"

@@ -1,6 +1,7 @@
 var configValidator = require('optimizely-server-sdk/lib/utils/config_validator');
 var Optimizely = require('optimizely-server-sdk/lib/optimizely');
 var optimizelyFactory = require('./');
+var packageJSON = require('./package.json');
 
 var chai = require('chai');
 var assert = chai.assert;
@@ -41,6 +42,18 @@ describe('javascript-sdk', function() {
         });
 
         assert.instanceOf(optlyInstance, Optimizely);
+      });
+
+      it('should set the Javascript client engine and version', function() {
+        var optlyInstance = optimizelyFactory.createInstance({
+          datafile: {},
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          logger: fakeLogger,
+        });
+
+        assert.equal('javascript-sdk', optlyInstance.clientEngine);
+        assert.equal(packageJSON.version, optlyInstance.clientVersion);
       });
     });
   });

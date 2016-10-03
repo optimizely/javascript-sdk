@@ -1,4 +1,13 @@
 -------------------------------------------------------------------------------
+1.0.0
+-------------------------------------------------------------------------------
+* Introduce support for Full Stack projects in Optimizely X with no breaking changes from previous version.
+* Introduce more graceful exception handling in instantiation and core methods.
+* Update whitelisting to take precedence over audience condition evaluation.
+* Fix bug activating/tracking with attributes not in the datafile.
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
 0.1.4
 -------------------------------------------------------------------------------
 * Add functionality for New Optimizely endpoint.
