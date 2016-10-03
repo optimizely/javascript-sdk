@@ -7,6 +7,9 @@ var logger = require('optimizely-server-sdk/lib/plugins/logger');
 
 var Optimizely = require('optimizely-server-sdk/lib/optimizely');
 
+var JAVASCRIPT_CLIENT_VERSION = '1.0.0';
+var MODULE_NAME = 'INDEX';
+
 /**
  * Entry point into the Optimizely Node testing SDK
  */
@@ -26,12 +29,21 @@ module.exports = {
     if (config) {
       try {
         configValidator.validate(config);
+        config.isValidInstance = true;
       } catch (ex) {
-        defaultLogger.log(enums.LOG_LEVEL.ERROR, ex.message);
+        var errorMessage = MODULE_NAME + ':' + ex.message;
+        if (config.logger) {
+          config.logger.log(enums.LOG_LEVEL.ERROR, errorMessage);
+        } else {
+          defaultLogger.log(enums.LOG_LEVEL.ERROR, errorMessage);
+        }
+        config.isValidInstance = false;
       }
     }
 
     config = _.assignIn({
+      clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
+      clientVersion: JAVASCRIPT_CLIENT_VERSION,
       errorHandler: defaultErrorHandler,
       eventDispatcher: defaultEventDispatcher,
       logger: logger.createLogger({ logLevel: enums.LOG_LEVEL.INFO }),
