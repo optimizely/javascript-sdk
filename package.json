@@ -1,7 +1,7 @@
 {
   "name": "optimizely-client-sdk",
   "version": "1.0.0",
-  "description": "JavaScript SDK for client testing",
+  "description": "JavaScript SDK for Optimizely X Full Stack",
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha ./tests.js",
