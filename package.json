@@ -1,10 +1,11 @@
 {
   "name": "optimizely-client-sdk",
-  "version": "1.0.0",
-  "description": "JavaScript SDK for client testing",
+  "version": "1.1.0",
+  "description": "JavaScript SDK for Optimizely X Full Stack",
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha ./tests.js",
+    "build": "webpack index.js dist/optimizely.min.js",
     "lint": "eslint lib/**"
   },
   "repository": {

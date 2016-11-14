@@ -1,4 +1,4 @@
-var _ = require('lodash/core');
+var _ = require('optimizely-server-sdk/node_modules/lodash/core');
 var configValidator = require('optimizely-server-sdk/lib/utils/config_validator');
 var defaultErrorHandler = require('optimizely-server-sdk/lib/plugins/error_handler');
 var defaultEventDispatcher = require('./lib/plugins/event_dispatcher');
@@ -7,7 +7,7 @@ var logger = require('optimizely-server-sdk/lib/plugins/logger');
 
 var Optimizely = require('optimizely-server-sdk/lib/optimizely');
 
-var JAVASCRIPT_CLIENT_VERSION = '1.0.0';
+var JAVASCRIPT_CLIENT_VERSION = '1.1.0';
 var MODULE_NAME = 'INDEX';
 
 /**

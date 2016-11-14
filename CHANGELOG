@@ -1,4 +1,11 @@
 -------------------------------------------------------------------------------
+1.1.0
+-------------------------------------------------------------------------------
+* Add global variable name export for use in non-CommonJS environments
+* Remove redundant lodash core dependency to reduce bundle bloat
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
 1.0.0
 -------------------------------------------------------------------------------
 * Introduce support for Full Stack projects in Optimizely X with no breaking changes from previous version.

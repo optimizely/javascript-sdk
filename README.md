@@ -12,6 +12,11 @@ The SDK is available through [npm](https://npmjs.com/package/optimizely-client-s
 npm install optimizely-client-sdk --save
 ```
 
+Or to use in a non CommonJS fashion:
+
+1. Pull in `dist/optimizely.min.js` as a `<script>`
+2. Use as global variable `window.optimizelyClient`
+
 ###Using the SDK
 See the Optimizely X Full Stack testing [developer documentation](http://developers.optimizely.com/server/reference/index.html) to learn how to set up your first JavaScript project and use the SDK.
 
