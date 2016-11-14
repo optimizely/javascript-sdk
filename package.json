@@ -4,7 +4,7 @@
   "description": "JavaScript SDK for client testing",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha ./tests.js",
+    "test": "mocha ./tests.js",
     "lint": "eslint lib/**"
   },
   "repository": {
