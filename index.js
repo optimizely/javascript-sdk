@@ -1,4 +1,4 @@
-var _ = require('lodash/core');
+var _ = require('optimizely-server-sdk/node_modules/lodash/core');
 var configValidator = require('optimizely-server-sdk/lib/utils/config_validator');
 var defaultErrorHandler = require('optimizely-server-sdk/lib/plugins/error_handler');
 var defaultEventDispatcher = require('./lib/plugins/event_dispatcher');
