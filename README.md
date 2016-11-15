@@ -1,4 +1,6 @@
 #Optimizely JavaScript SDK
+[![Build Status](https://travis-ci.org/optimizely/javascript-sdk.svg?branch=master)](https://travis-ci.org/optimizely/javascript-sdk)
+[![Known Vulnerabilities](https://snyk.io/test/npm/optimizely-client-sdk/badge.svg)](https://snyk.io/test/npm/optimizely-client-sdk)
 
 This repository houses the JavaScript SDK for Optimizely X Full Stack.
 

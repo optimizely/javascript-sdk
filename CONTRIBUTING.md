@@ -7,7 +7,7 @@ We welcome contributions and feedback! All contributors must sign our [Contribut
 1. Create a branch off of `devel`: `git checkout -b YOUR_NAME/branch_name`.
 2. Commit your changes. Make sure to add tests!
 3. Run `npm run lint` to ensure there are no lint errors.
-4. Run `webpack` to generate the built and minified file for those not installing via `npm`
+4. Run `npm run build` to generate the built and minified file for those not installing via `npm`
 5. `git push` your changes to GitHub.
 6. Make sure that all unit tests are passing and that there are no merge conflicts between your branch and `devel`.
 7. Open a pull request from `YOUR_NAME/branch_name` to `devel`.
