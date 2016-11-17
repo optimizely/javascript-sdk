@@ -2,6 +2,8 @@
 # cannot use `set -e` because it is incompatible with nvm
 
 # download nvm and load it
+export NVM_DIR="`pwd`/.nvm" # truly local nvm install not needing sudo
+mkdir -p $NVM_DIR
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.31.0/install.sh | bash
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" 
 
