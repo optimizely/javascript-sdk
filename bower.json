@@ -1,0 +1,32 @@
+{
+  "name": "optimizely-client-sdk",
+  "description": "JavaScript SDK for Optimizely X Full Stack",
+  "main": "dist/optimizely.min.js",
+  "authors": [
+    "Mike Ng <mike.ng@optimizely.com>"
+  ],
+  "license": "Apache 2.0",
+  "keywords": [
+    "fullstack",
+    "ab",
+    "testing",
+    "experimentation",
+    "experimentation platform"
+  ],
+  "moduleType": [
+    "node",
+    "globals"
+  ],
+  "dependencies": {},
+  "devDependencies": {},
+  "homepage": "https://github.com/optimizely/javascript-sdk",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    ".travis.yml",
+    "Scripts"
+  ]
+}
