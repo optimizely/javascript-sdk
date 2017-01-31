@@ -1,4 +1,13 @@
 -------------------------------------------------------------------------------
+1.2.0
+-------------------------------------------------------------------------------
+* Bump optimizely-server-sdk to version 1.1.0, which includes:
+  - Add optional sessionId argument to activate and track method signatures.
+  - Add sessionId and revision to event ticket.
+  - Add 'Launched' status where user gets bucketed but event is not sent to Optimizely.
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
 1.1.1
 -------------------------------------------------------------------------------
 * Bump to optimizely-server-sdk to version 1.0.1, which includes:
