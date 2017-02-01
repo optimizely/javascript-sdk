@@ -1,6 +1,4 @@
 .DS_STORE
-.coveralls.yml
-.travis.yml
 npm-debug.log
 node_modules
 dist
