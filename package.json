@@ -3,6 +3,10 @@
   "version": "1.2.1",
   "description": "JavaScript SDK for Optimizely X Full Stack",
   "main": "index.js",
+  "files": [
+    "lib",
+    "dist"
+  ],
   "scripts": {
     "test": "mocha ./tests.js",
     "build": "webpack index.js dist/optimizely.min.js",
