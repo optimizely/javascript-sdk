@@ -6,7 +6,8 @@
   "scripts": {
     "test": "mocha ./tests.js",
     "build": "webpack index.js dist/optimizely.min.js",
-    "lint": "eslint lib/**"
+    "lint": "eslint lib/**",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
