@@ -1,6 +1,6 @@
 {
   "name": "optimizely-client-sdk",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "JavaScript SDK for Optimizely X Full Stack",
   "main": "index.js",
   "scripts": {
@@ -31,5 +31,9 @@
     "mocha": "^2.5.3",
     "sinon": "^1.17.4",
     "webpack": "^1.13.1"
-  }
+  },
+  "files": [
+    "dist",
+    "lib"
+  ]
 }
