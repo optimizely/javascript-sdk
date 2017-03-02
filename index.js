@@ -21,12 +21,12 @@ module.exports = {
    * @param  {Object} config.errorHandler
    * @param  {Object} config.eventDispatcher
    * @param  {Object} config.logger
-   * @param  {Object} config.loggerLevel
+   * @param  {Object} config.logLevel
    * @return {Object} the Optimizely object
    * @throws If any of the config options that were passed in are invalid
    */
   createInstance: function(config) {
-    var logLevel = config.loggerLevel || enums.LOG_LEVEL.INFO;
+    var logLevel = config.logLevel || enums.LOG_LEVEL.INFO;
     var defaultLogger = logger.createLogger({ logLevel: logLevel });
     if (config) {
       try {
