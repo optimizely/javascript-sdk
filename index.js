@@ -26,7 +26,7 @@ module.exports = {
    * @throws If any of the config options that were passed in are invalid
    */
   createInstance: function(config) {
-    var logLevel = config.logLevel || enums.LOG_LEVEL.INFO;
+    var logLevel = 'logLevel' in config ? config.logLevel : enums.LOG_LEVEL.INFO;
     var defaultLogger = logger.createLogger({ logLevel: logLevel });
     if (config) {
       try {
