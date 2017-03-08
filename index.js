@@ -48,7 +48,7 @@ module.exports = {
       clientVersion: JAVASCRIPT_CLIENT_VERSION,
       errorHandler: defaultErrorHandler,
       eventDispatcher: defaultEventDispatcher,
-      logger: logger.createLogger({ logLevel: enums.LOG_LEVEL.INFO }),
+      logger: logger.createLogger({ logLevel: logLevel }),
     }, config);
 
     return new Optimizely(config);
