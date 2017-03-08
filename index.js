@@ -27,7 +27,7 @@ module.exports = {
    */
   createInstance: function(config) {
     var logLevel = 'logLevel' in config ? config.logLevel : enums.LOG_LEVEL.INFO;
-    var defaultLogger = logger.createLogger({ logLevel: logLevel });
+    var defaultLogger = logger.createLogger({ logLevel: enums.LOG_LEVEL.INFO });
     if (config) {
       try {
         configValidator.validate(config);
