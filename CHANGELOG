@@ -1,4 +1,15 @@
 -------------------------------------------------------------------------------
+1.2.3
+-------------------------------------------------------------------------------
+* Bump optimizely-server-sdk to version 1.2.0, which includes:
+  - Introduce support for event tags.
+  - Add optional eventTags argument to track method signature.
+  - Removed optional eventValue argument from track method signature.
+  - Removed optional sessionId argument from activate and track method signatures.
+  - Allow log level config on createInstance method
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
 1.2.2
 -------------------------------------------------------------------------------
 * Remove .npmignore to consolidate with .gitignore.
