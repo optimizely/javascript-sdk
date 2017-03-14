@@ -6,7 +6,7 @@
   - Add optional eventTags argument to track method signature.
   - Removed optional eventValue argument from track method signature.
   - Removed optional sessionId argument from activate and track method signatures.
-  - Allow log level config on createInstance method
+  - Allow log level config on createInstance method.
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
