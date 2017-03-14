@@ -7,7 +7,7 @@ var logger = require('optimizely-server-sdk/lib/plugins/logger');
 
 var Optimizely = require('optimizely-server-sdk/lib/optimizely');
 
-var JAVASCRIPT_CLIENT_VERSION = '1.2.2';
+var JAVASCRIPT_CLIENT_VERSION = '1.3.0';
 var MODULE_NAME = 'INDEX';
 
 /**
@@ -21,10 +21,12 @@ module.exports = {
    * @param  {Object} config.errorHandler
    * @param  {Object} config.eventDispatcher
    * @param  {Object} config.logger
+   * @param  {Object} config.logLevel
    * @return {Object} the Optimizely object
    * @throws If any of the config options that were passed in are invalid
    */
   createInstance: function(config) {
+    var logLevel = 'logLevel' in config ? config.logLevel : enums.LOG_LEVEL.INFO;
     var defaultLogger = logger.createLogger({ logLevel: enums.LOG_LEVEL.INFO });
     if (config) {
       try {
@@ -46,7 +48,7 @@ module.exports = {
       clientVersion: JAVASCRIPT_CLIENT_VERSION,
       errorHandler: defaultErrorHandler,
       eventDispatcher: defaultEventDispatcher,
-      logger: logger.createLogger({ logLevel: enums.LOG_LEVEL.INFO }),
+      logger: logger.createLogger({ logLevel: logLevel }),
     }, config);
 
     return new Optimizely(config);
