@@ -1,4 +1,5 @@
 var configValidator = require('optimizely-server-sdk/lib/utils/config_validator');
+var enums = require('optimizely-server-sdk/lib/utils/enums');
 var Optimizely = require('optimizely-server-sdk/lib/optimizely');
 var optimizelyFactory = require('./');
 var packageJSON = require('./package.json');
@@ -44,7 +45,7 @@ describe('javascript-sdk', function() {
         assert.instanceOf(optlyInstance, Optimizely);
       });
 
-      it('should set the Javascript client engine and version', function() {
+      it('should set the JavaScript client engine and version', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
@@ -54,6 +55,23 @@ describe('javascript-sdk', function() {
 
         assert.equal('javascript-sdk', optlyInstance.clientEngine);
         assert.equal(packageJSON.version, optlyInstance.clientVersion);
+      });
+
+      it('should instantiate the logger with a custom logLevel when provided', function() {
+        var optlyInstance = optimizelyFactory.createInstance({
+          datafile: {},
+          logLevel: enums.LOG_LEVEL.ERROR,
+        });
+
+        assert.equal(optlyInstance.logger.logLevel, enums.LOG_LEVEL.ERROR);
+      });
+
+      it('should default to INFO when no logLevel is provided', function() {
+        var optlyInstance = optimizelyFactory.createInstance({
+          datafile: {},
+        });
+
+        assert.equal(optlyInstance.logger.logLevel, enums.LOG_LEVEL.INFO);
       });
     });
   });
