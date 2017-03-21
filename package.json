@@ -33,6 +33,7 @@
     "webpack": "^1.13.1"
   },
   "files": [
+    "index.js",
     "dist",
     "lib"
   ]
