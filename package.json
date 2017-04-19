@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha ./tests.js",
-    "build": "webpack index.js dist/optimizely.min.js",
+    "build": "webpack $npm_package_main dist/optimizely.min.js",
     "lint": "eslint lib/**"
   },
   "repository": {
@@ -27,7 +27,6 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "eslint": "^2.9.0",
-    "json-loader": "^0.5.4",
     "mocha": "^2.5.3",
     "sinon": "^1.17.4",
     "webpack": "^1.13.1"
