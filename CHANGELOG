@@ -1,4 +1,16 @@
 -------------------------------------------------------------------------------
+1.3.5
+-------------------------------------------------------------------------------
+* This version greatly reduces the size of the library.
+* Reduce lodash footprint.
+* Bump optimizely-server-sdk to version 1.2.3, which includes:
+  - Switched to json-schema library which has a smaller footprint.
+  - Refactored order of bucketing logic.
+  - Refactor lodash dependencies.
+  - Fixed error on validation for objects with undefined values for attributes.
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
 1.3.4
 -------------------------------------------------------------------------------
 * Bump optimizely-server-sdk to version 1.2.2, which includes:
