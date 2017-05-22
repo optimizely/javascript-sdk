@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var _ = require('optimizely-server-sdk/node_modules/lodash/core');
+var fns = require('optimizely-server-sdk/lib/utils/fns');
 var configValidator = require('optimizely-server-sdk/lib/utils/config_validator');
 var defaultErrorHandler = require('optimizely-server-sdk/lib/plugins/error_handler');
 var defaultEventDispatcher = require('./lib/plugins/event_dispatcher');
@@ -22,7 +22,7 @@ var logger = require('optimizely-server-sdk/lib/plugins/logger');
 
 var Optimizely = require('optimizely-server-sdk/lib/optimizely');
 
-var JAVASCRIPT_CLIENT_VERSION = '1.3.5';
+var JAVASCRIPT_CLIENT_VERSION = '1.4.0';
 var MODULE_NAME = 'INDEX';
 
 /**
@@ -37,8 +37,8 @@ module.exports = {
    * @param  {Object} config.eventDispatcher
    * @param  {Object} config.logger
    * @param  {Object} config.logLevel
+   * @param  {Object} config.userProfileService
    * @return {Object} the Optimizely object
-   * @throws If any of the config options that were passed in are invalid
    */
   createInstance: function(config) {
     var logLevel = 'logLevel' in config ? config.logLevel : enums.LOG_LEVEL.INFO;
@@ -58,7 +58,7 @@ module.exports = {
       }
     }
 
-    config = _.assignIn({
+    config = fns.assignIn({
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       clientVersion: JAVASCRIPT_CLIENT_VERSION,
       errorHandler: defaultErrorHandler,
