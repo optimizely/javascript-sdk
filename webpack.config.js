@@ -1,4 +1,5 @@
 var webpack = require('webpack');
+var path = require('path');
 
 module.exports = {
   plugins: [
@@ -16,4 +17,12 @@ module.exports = {
     library: 'optimizelyClient',
     libraryTarget: 'umd'
   },
+  module: {
+    rules: [
+      {
+        test: /\.json$/,
+        use: 'json-loader'
+      }
+    ]
+  }
 };
