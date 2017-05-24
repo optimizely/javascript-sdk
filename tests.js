@@ -31,8 +31,17 @@ describe('javascript-sdk', function() {
       var fakeErrorHandler = { handleError: function() {}};
       var fakeEventDispatcher = { dispatchEvent: function() {}};
       var fakeLogger = { log: function() {}};
+      var xhr;
+      var requests;
 
       beforeEach(function() {
+        xhr = sinon.useFakeXMLHttpRequest();
+        global.XMLHttpRequest = xhr;
+        requests = [];
+
+        xhr.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
         sinon.spy(console, 'error');
         sinon.stub(configValidator, 'validate');
       });
@@ -40,6 +49,7 @@ describe('javascript-sdk', function() {
       afterEach(function() {
         console.error.restore();
         configValidator.validate.restore();
+        xhr.restore();
       });
 
       it('should not throw if the provided config is not valid', function() {
