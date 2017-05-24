@@ -9,3 +9,8 @@ branches:
 install: "npm install"
 script:
   - "npm test"
+addons:
+  sauce_connect:
+    username: "caitlinrubin-optimizely"
+  jwt:
+    secure: "BCN36DRuOilpadvO42v887iklv1E2daoQWpLbYlb/vhPknGf6o4r0qsTvGr5Z5/VNy9ekDNJ2nGyZ04L+tEPl8FwQQ9Yel/8w7R/+onDEK4fOXNT7Y3KvrUQKlnCeICLvwwrXc1WmGbSZRqlqDKPSD2j4y5YZQRVuj6+l6KUG/8lpmsgsjBr03zajJkrVLxwDV5yzU7ajCqUdaOe4cU9Rb2YK5lj1lVh+bOar2RoMlTST5yzLHuQd/vC0saJdOIZmExwQuFRINRWeSk39AbQzVBPg9f9MMikG4cqVIw50xKqIv7n6DR6//vKb6yVmHtjMl9fxUTcQfVzo20zSAKPjpjEccR3iPso4NKYXHo4BDmCmnJ3fdFhyuRMeBwt2UhseS8jv2joooYO1kRkgcW8Fo4BCm+w0GDu0f1Qr5fab08T+YuH1sfMGU9OeEYS1EHh8h2Gac3G/l8p5fd+o19Chi3CK7ew5KBhbI+N/f7XtK9USc3xm3gmfNNA+Ys7H5bmYAB0gybsaYV84kZ40LjZ12fRsBQEsBxwlNqjkDsR5zyjs5Mqu1c6u/Eb0lHPCnmxz/s8yHwOvGNDfBawM93rR4xln8OZhOwY0zM4IEc7/iu0oFnryknsyxx3VTx6hrjXE35MfiB4VUksTg0obJl/SLsDHP9nXt8Z6qxIcye+wWg="
