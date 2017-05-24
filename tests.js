@@ -91,7 +91,7 @@ describe('javascript-sdk', function() {
         assert.equal(optlyInstance.logger.logLevel, enums.LOG_LEVEL.INFO);
       });
 
-      it.only('should activate with provided event dispatcher', function(done) {
+      it('should activate with provided event dispatcher', function(done) {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,

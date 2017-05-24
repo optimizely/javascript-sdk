@@ -31,8 +31,7 @@
     "mocha": "^2.5.3",
     "sinon": "^1.17.4",
     "webpack": "^1.13.1",
-    "lodash": "4.13.1",
-    "nock": "^7.7.2"
+    "lodash": "4.13.1"
   },
   "files": [
     "index.js",
