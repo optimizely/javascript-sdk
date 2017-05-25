@@ -7,3 +7,4 @@ node_modules
 coverage/
 
 .idea/*
+karma.conf.js
