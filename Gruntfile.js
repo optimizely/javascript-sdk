@@ -1,8 +1,5 @@
 module.exports = function (grunt) {
     grunt.initConfig({
-        eslint: {
-            target: []
-        },
         karma: {
             unit: {
                 configFile: 'karma.conf.js',
@@ -15,5 +12,5 @@ module.exports = function (grunt) {
 
     require('load-grunt-tasks')(grunt);
 
-    grunt.registerTask('default', ['eslint', 'karma']);
+    grunt.registerTask('default', ['karma']);
 };
