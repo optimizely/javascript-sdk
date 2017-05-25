@@ -69,7 +69,6 @@ describe('javascript-sdk', function() {
           eventDispatcher: fakeEventDispatcher,
           logger: fakeLogger,
         });
-
         assert.equal('javascript-sdk', optlyInstance.clientEngine);
         assert.equal(packageJSON.version, optlyInstance.clientVersion);
       });
