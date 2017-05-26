@@ -7,9 +7,7 @@ module.exports = function(config) {
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
 
-
     //plugins
-
     plugins: ['karma-mocha', 'karma-webpack', 'karma-browserstack-launcher'],
 
     //browserStack setup
@@ -17,6 +15,12 @@ module.exports = function(config) {
       username: 'caitlinrubin1',
       accessKey: 'echo $BROWSER_STACK_ACCESS_KEY'
     },
+
+    // to avoid DISCONNECTED messages when connecting to BrowserStack
+    browserDisconnectTimeout : 10000, // default 2000
+    browserDisconnectTolerance : 1, // default 0
+    browserNoActivityTimeout : 4*60*1000, //default 10000
+    captureTimeout : 4*60*1000, //default 60000
 
     // define browsers
     customLaunchers: {
@@ -74,6 +78,7 @@ module.exports = function(config) {
     },
 
     browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox_mac', 'bs_ie', 'bs_iphone6', 'bs_opera_mac', 'bs_safari'],
+
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
     frameworks: ['mocha'],
@@ -120,12 +125,6 @@ module.exports = function(config) {
 
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: true,
-
-
-    // start these browsers
-    // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    // browsers: ['Chrome'],
-
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
