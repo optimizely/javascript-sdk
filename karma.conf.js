@@ -12,7 +12,7 @@ module.exports = function(config) {
 
     //browserStack setup
     browserStack: {
-      username: 'caitlinrubin1',
+      username: 'echo $BROWSER_STACK_USERNAME',
       accessKey: 'echo $BROWSER_STACK_ACCESS_KEY'
     },
 

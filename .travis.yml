@@ -9,10 +9,5 @@ branches:
 install: "npm install"
 script:
   - "npm test"
-addons:
-  browserstack:
-    username: "caitlinrubin1"
-    access_key:
-      secure: "dtT/jOj8cRgHsYfhhbnT6I+ZMGFOkoDxDEGiTaAZR/31J1OFKtqmE8LWqP5NROUYRfnOYWIECJAK8VGmkegW1MYUMhrB+/PXDTLCwjVbDbfGk0fzfhZQcegsVazuyKcuK1QBSYlgUk5PZIzAFbVm7AslhxCXvKTPWGvamIyn0odyg1eKqxc8AMUz9CY3QQAz0o3xF5hBVq903n7N5LpejMZoV6Ivybr9PmuB5/weuYSjsYW998E4k1pKIFaFg+BMYVDMqRdu6mKngGL1UUbaf0P790g3igyQ16uE81wXC4peCgcWO6S9o5oBJdsPeDk+9aBKxb7lg+tNLa4c4RkeLS29DIDOAdOx1WR8ZTAGG06d4U9OFdtgVKc5IQHaUe5duDZ7IeZ3jBCUF/UOrZYJDvVGKthYOS3yNac/VFmBJFafYZ7adXBX/tZ+xIbCSaMGJ4wyl2HWziuBxMvCcVaSn5XKh2IRz9Q5LaENgxifCCdgdtxtI3M9Kt+YJgD2y/RFNayaEKZl7j2iODRgqNZeHJGOT0rAf5T2vUJrj/V8x6mKJn+BouZo4sPZEHLjS8Eyu2Q0uA/+Wc789Djoy97hXTFDKYfg/uQUq2E/nfyD7l5MIJo5fRi8aukZo0v8Lg8Xohl+p8LiPqVVCHHz9BSFIA8mXsIRxaoa1rzMu+kA/wk="
 after_success:
 - npm run coveralls
