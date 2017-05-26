@@ -9,8 +9,47 @@ module.exports = function(config) {
 
 
     //plugins
-    plugins: ['karma-chrome-launcher', 'karma-mocha', 'karma-webpack'],
 
+    plugins: ['karma-mocha', 'karma-webpack', 'karma-browserstack-launcher'],
+
+    //browserStack setup
+    browserStack: {
+      username: 'caitlinrubin1',
+      accessKey: 'echo $BROWSER_STACK_ACCESS_KEY'
+    },
+
+    // define browsers
+    customLaunchers: {
+      bs_firefox_mac: {
+        base: 'BrowserStack',
+        browser: 'firefox',
+        browser_version: '21.0',
+        os: 'OS X',
+        os_version: 'Mountain Lion'
+      },
+      bs_chrome_mac: {
+        base: 'BrowserStack',
+        browser: 'chrome',
+        browser_version: '21.0',
+        os: 'OS X',
+        os_version: 'Mountain Lion'
+      },
+      bs_opera_mac: {
+        base: 'BrowserStack',
+        browser: 'opera',
+        browser_version: '37',
+        os: 'OS X',
+        os_version: 'Mountain Lion'
+      },
+      bs_iphone5: {
+        base: 'BrowserStack',
+        device: 'iPhone 5',
+        os: 'ios',
+        os_version: '6.0'
+      }
+    },
+
+    browsers: ['bs_firefox_mac', 'bs_iphone5', 'bs_chrome_mac', 'bs_opera_mac'],
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
@@ -20,8 +59,7 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       {pattern: './tests.js', watched: false},
-      {pattern: './lib/**/*tests.js', watched: false},
-      {pattern: './lib/**/**/*tests.js', watched: false}
+      {pattern: './lib/**/*tests.js', watched: false}
     ],
 
 
@@ -34,8 +72,7 @@ module.exports = function(config) {
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
       './tests.js': ['webpack'],
-      './lib/**/*tests.js': ['webpack'],
-      './lib/**/**/*tests.js': ['webpack']
+      './lib/**/*tests.js': ['webpack']
     },
 
 
@@ -64,7 +101,7 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Chrome'],
+    // browsers: ['Chrome'],
 
 
     // Continuous Integration mode
