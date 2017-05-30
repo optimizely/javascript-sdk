@@ -6,6 +6,8 @@ node_js:
 branches:
   only:
     - master
+before_script:
+  - npm install grunt-cli -g
 install: "npm install"
 script:
   - "npm test"
