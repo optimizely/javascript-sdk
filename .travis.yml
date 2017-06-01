@@ -10,6 +10,6 @@ before_script:
   - npm install grunt-cli -g
 install: "npm install"
 script:
-  - "npm test-travis"
+  - "npm run test-travis"
 after_success:
 - npm run coveralls
