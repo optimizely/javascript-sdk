@@ -15,5 +15,5 @@ module.exports = {
   output: {
     library: 'optimizelyClient',
     libraryTarget: 'umd'
-  },
+  }
 };

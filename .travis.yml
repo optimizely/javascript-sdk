@@ -1,11 +1,15 @@
 language: node_js
 node_js:
   - "5"
-  - "0.10"
+  - "6"
   - "node"
 branches:
   only:
     - master
+before_script:
+  - npm install grunt-cli -g
 install: "npm install"
 script:
-  - "npm test"
+  - "npm run test-travis"
+after_success:
+- npm run coveralls

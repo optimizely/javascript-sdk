@@ -18,6 +18,8 @@ var enums = require('optimizely-server-sdk/lib/utils/enums');
 var Optimizely = require('optimizely-server-sdk/lib/optimizely');
 var optimizelyFactory = require('./');
 var packageJSON = require('./package.json');
+var eventDispatcher = require('./lib/plugins/event_dispatcher');
+var testData = require('./tests/test_data');
 
 var chai = require('chai');
 var assert = chai.assert;
@@ -25,6 +27,8 @@ var sinon = require('sinon');
 
 describe('javascript-sdk', function() {
   describe('APIs', function() {
+    var xhr;
+    var requests;
     describe('createInstance', function() {
       var fakeErrorHandler = { handleError: function() {}};
       var fakeEventDispatcher = { dispatchEvent: function() {}};
@@ -33,11 +37,19 @@ describe('javascript-sdk', function() {
       beforeEach(function() {
         sinon.spy(console, 'error');
         sinon.stub(configValidator, 'validate');
+
+        xhr = sinon.useFakeXMLHttpRequest();
+        global.XMLHttpRequest = xhr;
+        requests = [];
+        xhr.onCreate = function (xhr) {
+            requests.push(xhr);
+        };
       });
 
       afterEach(function() {
         console.error.restore();
         configValidator.validate.restore();
+        xhr.restore();
       });
 
       it('should not throw if the provided config is not valid', function() {
@@ -67,7 +79,6 @@ describe('javascript-sdk', function() {
           eventDispatcher: fakeEventDispatcher,
           logger: fakeLogger,
         });
-
         assert.equal('javascript-sdk', optlyInstance.clientEngine);
         assert.equal(packageJSON.version, optlyInstance.clientVersion);
       });
@@ -88,6 +99,19 @@ describe('javascript-sdk', function() {
 
         assert.equal(optlyInstance.logger.logLevel, enums.LOG_LEVEL.INFO);
       });
+
+      it('should activate with provided event dispatcher', function(done) {
+        var optlyInstance = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfig(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: eventDispatcher,
+          logger: fakeLogger,
+        });
+        var activate = optlyInstance.activate('testExperiment', 'testUser');
+        assert.strictEqual(activate, 'control');
+        done();
+      });
+
     });
   });
 });
