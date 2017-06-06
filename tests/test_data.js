@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var cloneDeep = require('lodash/cloneDeep');
+var fns = require('optimizely-server-sdk/lib/utils/fns');
 
 var config = {
   revision: '42',
@@ -256,7 +256,7 @@ var getParsedAudiences = [{
 }];
 
 var getTestProjectConfig = function() {
-  return cloneDeep(config);
+  return fns.cloneDeep(config);
 };
 
 
