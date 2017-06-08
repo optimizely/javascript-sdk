@@ -22,7 +22,7 @@ var logger = require('optimizely-server-sdk/lib/plugins/logger');
 
 var Optimizely = require('optimizely-server-sdk/lib/optimizely');
 
-var JAVASCRIPT_CLIENT_VERSION = '1.4.1';
+var JAVASCRIPT_CLIENT_VERSION = '1.4.2';
 var MODULE_NAME = 'INDEX';
 
 /**
