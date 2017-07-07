@@ -19,7 +19,6 @@ var defaultErrorHandler = require('optimizely-server-sdk/lib/plugins/error_handl
 var defaultEventDispatcher = require('./lib/plugins/event_dispatcher');
 var enums = require('optimizely-server-sdk/lib/utils/enums');
 var logger = require('optimizely-server-sdk/lib/plugins/logger');
-// var jsonSchemaValidator = require('optimizely-server-sdk/lib/utils/json_schema_validator');
 var Optimizely = require('optimizely-server-sdk/lib/optimizely');
 
 var JAVASCRIPT_CLIENT_VERSION = '1.4.3';
