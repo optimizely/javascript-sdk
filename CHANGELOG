@@ -1,4 +1,14 @@
 -------------------------------------------------------------------------------
+1.4.3
+-------------------------------------------------------------------------------
+* Default skipJSONValidation to true
+* Bump optimizely-server-sdk to version 1.3.3, which includes:
+  - Removed JSON Schema Validator from Optimizely constructor
+  - Updated SDK to use new event endpoint
+  - Minor bug fixes
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
 1.4.2
 -------------------------------------------------------------------------------
 * Minor performance improvements.
