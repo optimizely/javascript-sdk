@@ -16,7 +16,7 @@
 var fns = require('optimizely-server-sdk/lib/utils/fns');
 var configValidator = require('optimizely-server-sdk/lib/utils/config_validator');
 var defaultErrorHandler = require('optimizely-server-sdk/lib/plugins/error_handler');
-var defaultEventDispatcher = require('./lib/plugins/event_dispatcher');
+var defaultEventDispatcher = require('./lib/plugins/event_dispatcher_bulk');
 var enums = require('optimizely-server-sdk/lib/utils/enums');
 var logger = require('optimizely-server-sdk/lib/plugins/logger');
 
@@ -62,7 +62,7 @@ module.exports = {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       clientVersion: JAVASCRIPT_CLIENT_VERSION,
       errorHandler: defaultErrorHandler,
-      eventDispatcher: defaultEventDispatcher,
+      eventDispatcher: new defaultEventDispatcher,
       logger: logger.createLogger({ logLevel: logLevel }),
     }, config);
 
