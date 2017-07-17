@@ -20,6 +20,7 @@ var defaultEventDispatcher = require('./lib/plugins/event_dispatcher');
 var enums = require('optimizely-server-sdk/lib/utils/enums');
 var logger = require('optimizely-server-sdk/lib/plugins/logger');
 var Optimizely = require('optimizely-server-sdk/lib/optimizely');
+var jsonSchemaValidator = require('optimizely-server-sdk/lib/utils/json_schema_validator');
 
 var JAVASCRIPT_CLIENT_VERSION = '1.4.3';
 var MODULE_NAME = 'INDEX';
@@ -66,6 +67,7 @@ module.exports = {
       clientVersion: JAVASCRIPT_CLIENT_VERSION,
       errorHandler: defaultErrorHandler,
       eventDispatcher: defaultEventDispatcher,
+      jsonSchemaValidator: jsonSchemaValidator,
       logger: logger.createLogger({ logLevel: logLevel })
     }, config);
 

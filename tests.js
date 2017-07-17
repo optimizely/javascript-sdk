@@ -57,6 +57,7 @@ describe('javascript-sdk', function() {
         assert.doesNotThrow(function() {
           optimizelyFactory.createInstance({
             datafile: {},
+            skipJSONValidation: false,
           });
         });
       });
@@ -105,6 +106,7 @@ describe('javascript-sdk', function() {
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: eventDispatcher,
+          skipJSONValidation: false,
           logger: fakeLogger,
         });
         var activate = optlyInstance.activate('testExperiment', 'testUser');
