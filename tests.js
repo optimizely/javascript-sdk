@@ -18,7 +18,7 @@ var enums = require('optimizely-server-sdk/lib/utils/enums');
 var Optimizely = require('optimizely-server-sdk/lib/optimizely');
 var optimizelyFactory = require('./');
 var packageJSON = require('./package.json');
-var eventDispatcher = require('./lib/plugins/event_dispatcher');
+var eventDispatcher = require('./lib/plugins/event_dispatcher_bulk');
 var testData = require('./tests/test_data');
 
 var chai = require('chai');
@@ -104,8 +104,9 @@ describe('javascript-sdk', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
-          eventDispatcher: eventDispatcher,
+          eventDispatcher: new eventDispatcher,
           logger: fakeLogger,
+          skipJSONValidation: true,
         });
         var activate = optlyInstance.activate('testExperiment', 'testUser');
         assert.strictEqual(activate, 'control');
