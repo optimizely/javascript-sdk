@@ -2,6 +2,7 @@
 npm-debug.log
 node_modules
 dist
+lib
 node_modules
 
 coverage/

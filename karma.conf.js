@@ -15,20 +15,13 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      './tests.js',
-      './lib/**/*tests.js'
+      './tests/test_index.js',
     ],
 
 
     // list of files to exclude
     exclude: [
     ],
-
-
-    // preprocess matching files before serving them to the browser
-    // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
-    preprocessors: {
-    },
 
 
     // test results reporter to use
@@ -67,17 +60,27 @@ module.exports = function(config) {
     // how many browser should be started simultaneous
     concurrency: Infinity,
 
+
     preprocessors: {
-            // add webpack as preprocessor
-            './tests.js': ['webpack'],
-            './lib/**/*tests.js': ['webpack']
-        },
+      // add webpack as preprocessor
+      './tests/test_index.js': ['webpack', 'babel'],
+    },
+
+
+    babelPreprocessor: {
+      options: {
+        compact: false
+      }
+    },
+
+    webpack: {},
 
     plugins: [
-            require("karma-webpack"),
-            'karma-mocha',
-            'karma-chai',
-            'karma-chrome-launcher'
-        ]
+        'karma-webpack',
+        'karma-mocha',
+        'karma-chai',
+        'karma-chrome-launcher',
+        'karma-babel-preprocessor',
+    ],
   })
 }
