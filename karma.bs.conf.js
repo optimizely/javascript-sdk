@@ -1,15 +1,16 @@
-var baseKarmaConfig = require('./karma.conf')
-
-// Karma configuration
-// Generated on Wed May 24 2017 14:10:20 GMT-0700 (PDT)
+var baseKarmaConfig = require('./karma.base.conf')
 
 module.exports = function(config) {
-  config.set(
-    Object.assign(baseKarmaConfig, {
+  var karmaConfig = Object.assign(baseKarmaConfig,
+    {
+      // level of logging
+      // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
+      logLevel: config.LOG_INFO,
+
       //browserStack setup
       browserStack: {
-        username: 'echo $BROWSER_STACK_USERNAME',
-        accessKey: 'echo $BROWSER_STACK_ACCESS_KEY'
+        username: 'mikeng2',
+        accessKey: 'c5sQHRPJsA7ySk6Ljn72'
       },
 
       // to avoid DISCONNECTED messages when connecting to BrowserStack
@@ -74,6 +75,14 @@ module.exports = function(config) {
       },
 
       browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox_mac', 'bs_ie', 'bs_iphone6', 'bs_opera_mac', 'bs_safari'],
-    })
+
+      plugins: [
+          'karma-webpack',
+          'karma-mocha',
+          'karma-browserstack-launcher',
+          'karma-babel-preprocessor',
+      ],
+    }
   )
+  config.set(karmaConfig)
 }
