@@ -16,10 +16,10 @@
 var configValidator = require('optimizely-server-sdk/lib/utils/config_validator');
 var enums = require('optimizely-server-sdk/lib/utils/enums');
 var Optimizely = require('optimizely-server-sdk/lib/optimizely');
-var optimizelyFactory = require('./');
-var packageJSON = require('./package.json');
-var eventDispatcher = require('./lib/plugins/event_dispatcher');
-var testData = require('./tests/test_data');
+var optimizelyFactory = require('./index');
+var packageJSON = require('../package.json');
+var eventDispatcher = require('./plugins/event_dispatcher');
+var testData = require('../tests/test_data');
 
 var chai = require('chai');
 var assert = chai.assert;
@@ -111,7 +111,6 @@ describe('javascript-sdk', function() {
         assert.strictEqual(activate, 'control');
         done();
       });
-
     });
   });
 });

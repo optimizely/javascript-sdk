@@ -1,7 +1,7 @@
 var webpack = require('webpack');
 
-module.exports = {
-  plugins: [
+var plugins = process.env.NODE_ENV === 'production' ?
+  [
     new webpack.optimize.UglifyJsPlugin({
       compress: {
         warnings: false,
@@ -9,11 +9,23 @@ module.exports = {
       output: {
         comments: false,
       },
-    }),
-    new webpack.optimize.DedupePlugin(),
-  ],
+    })
+  ] : []
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /(node_modules)/,
+        use: {
+          loader: 'babel-loader',
+        }
+      }
+    ]
+  },
+  plugins: plugins,
   output: {
     library: 'optimizelyClient',
     libraryTarget: 'umd'
-  }
+  },
 };

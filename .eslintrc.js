@@ -34,7 +34,7 @@ module.exports = {
     "no-extra-bind": 1,
     "eol-last": 1,
     "eqeqeq": 1,
-    "semi": 1,
+    "semi": 0,
     "no-multi-str": 0,
     "no-extra-semi": 1,
     "new-cap": 0,
