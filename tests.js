@@ -244,6 +244,23 @@ describe('javascript-sdk', function() {
         assert.strictEqual(variation, 'variation')
         done();
       });
+
+      it('should override bucketing when setForcedVariation is called for a not running experiment', function(done) {
+        var optlyInstance = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfig(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: eventDispatcher,
+          logger: fakeLogger,
+        });
+
+        var didSetVariation = optlyInstance.setForcedVariation('testExperimentNotRunning', 'testUser', 'controlNotRunning');
+        assert.strictEqual(didSetVariation, true);
+
+        var variation = optlyInstance.getVariation('testExperimentNotRunning', 'testUser');
+        assert.strictEqual(variation, null)
+
+        done();
+      });
     });
   });
 });
