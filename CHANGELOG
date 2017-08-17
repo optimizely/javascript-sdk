@@ -1,4 +1,13 @@
 -------------------------------------------------------------------------------
+1.5.0
+-------------------------------------------------------------------------------
+* Bump optimizely-server-sdk to version 1.4.0, which includes:
+  - Add support for numeric metrics.
+  - Add getForcedVariation and setForcedVariation methods for client-side variation setting
+  - Bug fix for filtering out null attribute and event tag values
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
 1.4.3
 -------------------------------------------------------------------------------
 * Default skipJSONValidation to true
