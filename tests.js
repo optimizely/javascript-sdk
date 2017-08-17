@@ -112,6 +112,155 @@ describe('javascript-sdk', function() {
         done();
       });
 
+      it('should be able to set and get a forced variation', function(done) {
+        var optlyInstance = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfig(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: eventDispatcher,
+          logger: fakeLogger,
+        });
+
+        var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
+        assert.strictEqual(didSetVariation, true);
+
+        var variation = optlyInstance.getForcedVariation('testExperiment', 'testUser');
+        assert.strictEqual(variation, 'control')
+        done();
+      });
+
+      it('should be able to set and unset a forced variation', function(done) {
+        var optlyInstance = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfig(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: eventDispatcher,
+          logger: fakeLogger,
+        });
+
+        var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
+        assert.strictEqual(didSetVariation, true);
+
+        var variation = optlyInstance.getForcedVariation('testExperiment', 'testUser');
+        assert.strictEqual(variation, 'control')
+
+        var didSetVariation2 = optlyInstance.setForcedVariation('testExperiment', 'testUser', null);
+        assert.strictEqual(didSetVariation2, true);
+
+        var variation2 = optlyInstance.getForcedVariation('testExperiment', 'testUser');
+        assert.strictEqual(variation2, null)
+        done();
+      });
+
+      it('should be able to set multiple experiments for one user', function(done) {
+        var optlyInstance = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfig(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: eventDispatcher,
+          logger: fakeLogger,
+        });
+
+        var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
+        assert.strictEqual(didSetVariation, true);
+
+        var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', 'controlLaunched');
+        assert.strictEqual(didSetVariation2, true);
+
+
+        var variation = optlyInstance.getForcedVariation('testExperiment', 'testUser');
+        assert.strictEqual(variation, 'control')
+
+        var variation2 = optlyInstance.getForcedVariation('testExperimentLaunched', 'testUser');
+        assert.strictEqual(variation2, 'controlLaunched')
+        done();
+      });
+
+      it('should be able to set multiple experiments for one user, and unset one', function(done) {
+        var optlyInstance = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfig(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: eventDispatcher,
+          logger: fakeLogger,
+        });
+
+        var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
+        assert.strictEqual(didSetVariation, true);
+
+        var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', 'controlLaunched');
+        assert.strictEqual(didSetVariation2, true);
+
+        var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', null);
+        assert.strictEqual(didSetVariation2, true);
+
+        var variation = optlyInstance.getForcedVariation('testExperiment', 'testUser');
+        assert.strictEqual(variation, 'control')
+
+        var variation2 = optlyInstance.getForcedVariation('testExperimentLaunched', 'testUser');
+        assert.strictEqual(variation2, null)
+        done();
+      });
+
+      it('should be able to set multiple experiments for one user, and reset one', function(done) {
+        var optlyInstance = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfig(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: eventDispatcher,
+          logger: fakeLogger,
+        });
+
+        var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
+        assert.strictEqual(didSetVariation, true);
+
+        var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', 'controlLaunched');
+        assert.strictEqual(didSetVariation2, true);
+
+        var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', 'variationLaunched');
+        assert.strictEqual(didSetVariation2, true);
+
+        var variation = optlyInstance.getForcedVariation('testExperiment', 'testUser');
+        assert.strictEqual(variation, 'control')
+
+        var variation2 = optlyInstance.getForcedVariation('testExperimentLaunched', 'testUser');
+        assert.strictEqual(variation2, 'variationLaunched')
+        done();
+      });
+
+      it('should override bucketing when setForcedVariation is called', function(done) {
+        var optlyInstance = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfig(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: eventDispatcher,
+          logger: fakeLogger,
+        });
+
+        var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
+        assert.strictEqual(didSetVariation, true);
+
+        var variation = optlyInstance.getVariation('testExperiment', 'testUser');
+        assert.strictEqual(variation, 'control')
+
+        var didSetVariation2 = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'variation');
+        assert.strictEqual(didSetVariation2, true);
+
+        var variation = optlyInstance.getVariation('testExperiment', 'testUser');
+        assert.strictEqual(variation, 'variation')
+        done();
+      });
+
+      it('should override bucketing when setForcedVariation is called for a not running experiment', function(done) {
+        var optlyInstance = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfig(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: eventDispatcher,
+          logger: fakeLogger,
+        });
+
+        var didSetVariation = optlyInstance.setForcedVariation('testExperimentNotRunning', 'testUser', 'controlNotRunning');
+        assert.strictEqual(didSetVariation, true);
+
+        var variation = optlyInstance.getVariation('testExperimentNotRunning', 'testUser');
+        assert.strictEqual(variation, null)
+
+        done();
+      });
     });
   });
 });
