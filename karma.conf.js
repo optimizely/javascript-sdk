@@ -15,8 +15,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      './tests.js',
-      './lib/**/*tests.js'
+      './lib/index.browser.tests.js'
     ],
 
 
@@ -68,15 +67,14 @@ module.exports = function(config) {
     concurrency: Infinity,
 
     preprocessors: {
-            // add webpack as preprocessor
-            './tests.js': ['webpack'],
-            './lib/**/*tests.js': ['webpack']
-        },
+        // add webpack as preprocessor
+        './lib/**/*tests.js': ['webpack']
+    },
 
     plugins: [
             require("karma-webpack"),
             'karma-mocha',
-            'karma-chai',
+            require('karma-chai'),
             'karma-chrome-launcher'
         ]
   })

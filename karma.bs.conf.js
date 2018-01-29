@@ -8,7 +8,7 @@ module.exports = function(config) {
     basePath: '',
 
     //plugins
-    plugins: ['karma-mocha', 'karma-webpack', 'karma-browserstack-launcher'],
+    plugins: ['karma-mocha', 'karma-webpack', require('karma-browserstack-launcher')],
 
     //browserStack setup
     browserStack: {
@@ -86,8 +86,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      {pattern: './tests.js', watched: false},
-      {pattern: './lib/**/*tests.js', watched: false}
+      './lib/index.browser.tests.js'
     ],
 
 
@@ -99,7 +98,6 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      './tests.js': ['webpack'],
       './lib/**/*tests.js': ['webpack']
     },
 
