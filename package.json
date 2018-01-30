@@ -12,8 +12,8 @@
     "build": "npm run build-node && npm run build-browser",
     "build-node": "npm run build-node-dev && npm run build-node-prod",
     "build-browser": "npm run build-dev-cjs && npm run build-dev-umd && npm run build-prod-cjs && npm run build-prod-umd",
-    "build-node-dev": "webpack lib/index.node.js dist/optimizely.node.js --target=node",
-    "build-node-prod": "webpack -p lib/index.node.js dist/optimizely.node.min.js --target=node",
+    "build-node-dev": "webpack lib/index.node.js dist/optimizely.node.js --target=node --output-library-target=commonjs2",
+    "build-node-prod": "webpack -p lib/index.node.js dist/optimizely.node.min.js --target=node --output-library-target=commonjs2",
     "build-dev-cjs": "webpack lib/index.browser.js dist/optimizely.browser.cjs.js --output-library-target=commonjs",
     "build-dev-umd": "webpack lib/index.browser.js dist/optimizely.browser.umd.js --output-library=optimizelyClient --output-library-target=umd",
     "build-prod-cjs": "webpack -p lib/index.browser.js dist/optimizely.browser.cjs.min.js --output-library-target=commonjs",
@@ -67,6 +67,7 @@
   },
   "files": [
     "dist/",
+    "lib/",
     "LICENSE",
     "CHANGELOG",
     "README.md"
