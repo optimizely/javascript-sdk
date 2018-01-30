@@ -66,7 +66,7 @@
     "webpack": "^2.6.0"
   },
   "files": [
-    "dist",
+    "dist/",
     "LICENSE",
     "CHANGELOG",
     "README.md"
