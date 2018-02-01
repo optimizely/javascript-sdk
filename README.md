@@ -9,7 +9,7 @@ This repository houses the JavaScript SDK for Optimizely X Full Stack.
 The SDK is available through [npm](https://npmjs.com/package/optimizely-sdk). To install:
 
 ```
-npm install optimizely-sdk --save
+npm install @optimizely/optimizely-sdk --save
 ```
 
 Or to use in a non CommonJS fashion:
@@ -32,6 +32,12 @@ See the Optimizely X Full Stack testing [developer documentation](http://develop
 You can run all unit tests with:
 ```
 npm test
+```
+
+### Build distribution packages
+
+```
+npm run build
 ```
 
 ### Contributing
