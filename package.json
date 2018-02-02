@@ -3,9 +3,7 @@
   "version": "2.0.0-beta",
   "description": "JavaScript SDK for Optimizely X Full Stack",
   "main": "dist/optimizely.node.js",
-  "browser": {
-    "dist/optimizely.node.js": "dist/optimizely.browser.cjs.js"
-  },
+  "browser": "dist/optimizely.browser.cjs.js",
   "scripts": {
     "test": "mocha ./lib/**/*tests.js",
     "test-travis": "grunt",
