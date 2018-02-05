@@ -15,7 +15,7 @@ npm install @optimizely/optimizely-sdk --save
 Or to use in a non CommonJS fashion:
 
 1. Run `npm run build`
-2. Pull in `dist/optimizely.umd.min.js` as a `<script>`
+2. Pull in `dist/optimizely.browser.umd.min.js` as a `<script>`
 3. Use as global variable `window.optimizelyClient`
 
 ### Using the SDK
