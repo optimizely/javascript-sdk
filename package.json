@@ -1,7 +1,7 @@
 {
-  "name": "@optimizely/optimizely-sdk",
+  "name": "@optimizely/optimizely-sdk-core",
   "version": "2.0.0-beta",
-  "description": "JavaScript SDK for Optimizely X Full Stack",
+  "description": "JavaScript SDK core for Optimizely X Full Stack",
   "main": "dist/optimizely.node.js",
   "browser": "dist/optimizely.browser.cjs.js",
   "scripts": {

@@ -6,10 +6,10 @@ This repository houses the JavaScript SDK for Optimizely X Full Stack.
 
 ### Installing the SDK
 
-The SDK is available through [npm](https://npmjs.com/package/optimizely-sdk). To install:
+The SDK is available through [npm](https://npmjs.com/package/optimizely-sdk-core). To install:
 
 ```
-npm install @optimizely/optimizely-sdk --save
+npm install @optimizely/optimizely-sdk-core --save
 ```
 
 Or to use in a non CommonJS fashion:
