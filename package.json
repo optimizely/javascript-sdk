@@ -35,7 +35,7 @@
     "json-schema": "^0.2.3",
     "lodash": "^4.13.1",
     "murmurhash": "0.0.2",
-    "request": "~2.81.0",
+    "request": "~2.83.0",
     "sprintf": "^0.1.5",
     "uuid": "~3.0.1"
   },

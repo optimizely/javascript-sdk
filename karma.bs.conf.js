@@ -12,8 +12,8 @@ module.exports = function(config) {
 
     //browserStack setup
     browserStack: {
-      username: 'echo $BROWSER_STACK_USERNAME',
-      accessKey: 'echo $BROWSER_STACK_ACCESS_KEY'
+      username: process.env.BROWSER_STACK_USERNAME,
+      accessKey: process.env.BROWSER_STACK_ACCESS_KEY
     },
 
     // to avoid DISCONNECTED messages when connecting to BrowserStack
