@@ -5,7 +5,7 @@
   "main": "dist/optimizely.node.js",
   "browser": "dist/optimizely.browser.cjs.js",
   "scripts": {
-    "test": "mocha ./lib/**/*tests.js",
+    "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive",
     "test-travis": "npm run test && grunt",
     "build": "npm run build-node && npm run build-browser",
     "build-node": "npm run build-node-dev && npm run build-node-prod",
@@ -17,7 +17,7 @@
     "build-prod-cjs": "webpack -p lib/index.browser.js dist/optimizely.browser.cjs.min.js --output-library-target=commonjs",
     "build-prod-umd": "webpack -p lib/index.browser.js dist/optimizely.browser.umd.min.js --output-library=optimizelyClient --output-library-target=umd",
     "lint": "eslint lib/**",
-    "cover": "istanbul cover _mocha ./lib/**/*tests.js",
+    "cover": "istanbul cover _mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js",
     "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls"
   },
   "repository": {
