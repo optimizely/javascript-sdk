@@ -1,12 +1,12 @@
 {
   "name": "@optimizely/optimizely-sdk-core",
   "version": "2.0.0-beta",
-  "description": "JavaScript SDK core for Optimizely X Full Stack",
+  "description": "JavaScript core SDK package for Optimizely X Full Stack",
   "main": "dist/optimizely.node.js",
   "browser": "dist/optimizely.browser.cjs.js",
   "scripts": {
     "test": "mocha ./lib/**/*tests.js",
-    "test-travis": "grunt",
+    "test-travis": "npm run test && grunt",
     "build": "npm run build-node && npm run build-browser",
     "build-node": "npm run build-node-dev && npm run build-node-prod",
     "build-browser": "npm run build-dev-cjs && npm run build-dev-umd && npm run build-prod-cjs && npm run build-prod-umd",
