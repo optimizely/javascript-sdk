@@ -8,7 +8,7 @@
     "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive",
     "test-travis": "npm run test && grunt",
     "build": "npm run build-node && npm run build-browser",
-    "build-node": "npm run build-node-dev && npm run build-node-prod",
+    "build-node": "npm run build-node-dev",
     "build-browser": "npm run build-dev-cjs && npm run build-dev-umd && npm run build-prod-cjs && npm run build-prod-umd",
     "build-node-dev": "webpack lib/index.node.js dist/optimizely.node.js --target=node --output-library-target=commonjs2",
     "build-node-prod": "webpack -p lib/index.node.js dist/optimizely.node.min.js --target=node --output-library-target=commonjs2",

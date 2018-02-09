@@ -55,7 +55,7 @@ This command will build several distribution bundles under the `dist` directory:
 2. optimizely.browser.umd.js - This is used when not packaging the optimizely-sdk with your own JS bundles. Instead you would load this script as a `<script>` tag and reference it via the global var `optimizelyClient`
 3. optimizely.node.js - This is the main entry point for Node apps
 
-Each of these bundles also come with a minified / production-ready version.
+The browser bundles also come with a minified / production-ready version.
 
 ### Environment Variables
 
