@@ -8,12 +8,12 @@ module.exports = function(config) {
     basePath: '',
 
     //plugins
-    plugins: ['karma-mocha', 'karma-webpack', 'karma-browserstack-launcher'],
+    plugins: ['karma-mocha', 'karma-webpack', require('karma-browserstack-launcher')],
 
     //browserStack setup
     browserStack: {
-      username: 'echo $BROWSER_STACK_USERNAME',
-      accessKey: 'echo $BROWSER_STACK_ACCESS_KEY'
+      username: process.env.BROWSER_STACK_USERNAME,
+      accessKey: process.env.BROWSER_STACK_ACCESS_KEY
     },
 
     // to avoid DISCONNECTED messages when connecting to BrowserStack
@@ -86,8 +86,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      {pattern: './tests.js', watched: false},
-      {pattern: './lib/**/*tests.js', watched: false}
+      './lib/index.browser.tests.js'
     ],
 
 
@@ -99,7 +98,6 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      './tests.js': ['webpack'],
       './lib/**/*tests.js': ['webpack']
     },
 
