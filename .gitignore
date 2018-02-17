@@ -2,6 +2,7 @@
 npm-debug.log
 dist
 node_modules
+lerna-debug.log
 
 coverage/
 
