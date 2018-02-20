@@ -1,8 +1,9 @@
 {
   "private": true,
+  "version": "1.0.0",
   "name": "optimizely-sdk-packages",
   "scripts": {
-    "postinstall": "lerna bootstrap",
+    "postinstall": "lerna bootstrap && lerna run build",
     "build": "lerna run build",
     "clean": "lerna run clean",
     "publish": "npm run build && lerna publish",
