@@ -1,73 +1,16 @@
 {
-  "name": "@optimizely/optimizely-sdk-core",
-  "version": "2.0.0-beta",
-  "description": "JavaScript core SDK package for Optimizely X Full Stack",
-  "main": "dist/optimizely.node.js",
-  "browser": "dist/optimizely.browser.cjs.js",
+  "private": true,
+  "version": "1.0.0",
+  "name": "optimizely-sdk-packages",
   "scripts": {
-    "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive",
-    "test-travis": "npm run test && grunt",
-    "build": "npm run build-node && npm run build-browser",
-    "build-node": "npm run build-node-dev",
-    "build-browser": "npm run build-dev-cjs && npm run build-dev-umd && npm run build-prod-cjs && npm run build-prod-umd",
-    "build-node-dev": "webpack lib/index.node.js dist/optimizely.node.js --target=node --output-library-target=commonjs2",
-    "build-node-prod": "webpack -p lib/index.node.js dist/optimizely.node.min.js --target=node --output-library-target=commonjs2",
-    "build-dev-cjs": "webpack lib/index.browser.js dist/optimizely.browser.cjs.js --output-library-target=commonjs",
-    "build-dev-umd": "webpack lib/index.browser.js dist/optimizely.browser.umd.js --output-library=optimizelyClient --output-library-target=umd",
-    "build-prod-cjs": "webpack -p lib/index.browser.js dist/optimizely.browser.cjs.min.js --output-library-target=commonjs",
-    "build-prod-umd": "webpack -p lib/index.browser.js dist/optimizely.browser.umd.min.js --output-library=optimizelyClient --output-library-target=umd",
-    "lint": "eslint lib/**",
-    "cover": "istanbul cover _mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js",
-    "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/optimizely/javascript-sdk.git"
-  },
-  "keywords": [
-    "optimizely"
-  ],
-  "bugs": {
-    "url": "https://github.com/optimizely/javascript-sdk/issues"
-  },
-  "homepage": "https://github.com/optimizely/javascript-sdk#readme",
-  "dependencies": {
-    "json-schema": "^0.2.3",
-    "lodash": "^4.13.1",
-    "murmurhash": "0.0.2",
-    "request": "~2.83.0",
-    "sprintf": "^0.1.5",
-    "uuid": "~3.0.1"
+    "postinstall": "lerna bootstrap && lerna run build",
+    "build": "lerna run build",
+    "clean": "lerna run clean",
+    "publish": "npm run build && lerna publish",
+    "test": "lerna run test --stream",
+    "test-travis": "lerna run test-travis --stream"
   },
   "devDependencies": {
-    "bluebird": "^3.4.6",
-    "chai": "^3.5.0",
-    "coveralls": "^2.13.1",
-    "eslint": "^2.9.0",
-    "grunt": "^1.0.1",
-    "grunt-karma": "^2.0.0",
-    "istanbul": "^0.4.5",
-    "json-loader": "^0.5.4",
-    "karma": "^2.0.0",
-    "karma-browserstack-launcher": "^1.2.0",
-    "karma-chai": "^0.1.0",
-    "karma-chrome-launcher": "^2.1.1",
-    "karma-mocha": "^1.3.0",
-    "karma-sinon": "^1.0.5",
-    "karma-webpack": "^2.0.3",
-    "load-grunt-tasks": "^0.6.0",
-    "mathjs": "^3.3.0",
-    "mocha": "^2.5.3",
-    "mocha-lcov-reporter": "^1.3.0",
-    "nock": "^7.7.2",
-    "sinon": "^2.3.1",
-    "webpack": "^2.6.0"
-  },
-  "files": [
-    "dist/",
-    "lib/",
-    "LICENSE",
-    "CHANGELOG",
-    "README.md"
-  ]
+    "lerna": "^2.9.0"
+  }
 }
