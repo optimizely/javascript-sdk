@@ -7,6 +7,7 @@ This major release of the Optimizely SDK introduces APIs for Feature Management.
 * Introduces the `isFeatureEnabled` API to determine whether to show a feature to a user or not.
 ```
 var enabled = optimizelyClient.isFeatureEnabled('my_feature_key', 'user_1', userAttributes);
+```
 
 * You can also get all the enabled features for the user by calling:
 ```
