@@ -1,5 +1,5 @@
 ## 2.0.0-beta1
-April 15th, 2018
+March 29th, 2018
 
 This major release of the Optimizely SDK introduces APIs for Feature Management. It also introduces some breaking changes listed below.
 
@@ -9,7 +9,7 @@ This major release of the Optimizely SDK introduces APIs for Feature Management.
 var enabled = optimizelyClient.isFeatureEnabled('my_feature_key', 'user_1', userAttributes);
 ```
 
-* You can also get all the enabled features for the user by calling:
+* You can also get all the enabled features for the user by calling the following method which returns a list of strings representing the feature keys:
 ```
 var enabledFeatures = optimizelyClient.getEnabledFeatures('user_1', userAttributes);
 ```
