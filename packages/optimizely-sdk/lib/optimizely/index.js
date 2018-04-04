@@ -516,7 +516,7 @@ Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
     }
   }.bind(this));
 
-  return enabledFeatures.sort();
+  return enabledFeatures;
 };
 
 /**

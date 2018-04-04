@@ -2837,35 +2837,6 @@ describe('lib/optimizely', function() {
           attributes
         );
       });
-
-      it('returns sorted feature-key list', function() {
-        var sortedFeatures = [
-          'feature_with_group',
-          'shared_feature',
-          'test_feature',
-          'test_feature_2',
-          'test_feature_for_experiment',
-          'unused_flag'
-        ];
-
-        sandbox.restore();
-        sandbox.stub(optlyInstance, 'isFeatureEnabled', function(featureKey) {
-          return sortedFeatures.indexOf(featureKey) !== -1;
-        });
-        var attributes = { test_attribute: 'test_value' };
-        var result = optlyInstance.getEnabledFeatures('user1', attributes);
-        assert.deepEqual(sortedFeatures, result);
-        sinon.assert.callCount(optlyInstance.isFeatureEnabled, 6);
-
-        sinon.assert.callOrder(
-          optlyInstance.isFeatureEnabled.withArgs('test_feature', 'user1', attributes),
-          optlyInstance.isFeatureEnabled.withArgs('test_feature_2', 'user1', attributes),
-          optlyInstance.isFeatureEnabled.withArgs('test_feature_for_experiment', 'user1', attributes),
-          optlyInstance.isFeatureEnabled.withArgs('feature_with_group', 'user1', attributes),
-          optlyInstance.isFeatureEnabled.withArgs('shared_feature', 'user1', attributes),
-          optlyInstance.isFeatureEnabled.withArgs('unused_flag', 'user1', attributes)
-        );
-      });
     });
 
     describe('feature variable APIs', function() {
