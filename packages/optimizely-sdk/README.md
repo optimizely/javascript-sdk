@@ -12,7 +12,7 @@ The SDK is available through [npm](https://npmjs.com/package/optimizely-sdk). To
 npm install @optimizely/optimizely-sdk --save
 ```
 
-Or to use in a non CommonJS fashion:
+Or to use in a non CommonJS fashion in the Browser:
 
 1. Run `npm run build`
 2. Pull in `dist/optimizely.browser.umd.min.js` as a `<script>`
@@ -27,6 +27,10 @@ This version represents a major version change and, as such, introduces some bre
 - We no longer support legacy Node versions (under 4.0).
 
 - You will no longer be able to pass in `revenue` value as a stand-alone argument to the `track` call. Instead you will need to pass it as an entry in the [`eventTags`](https://developers.optimizely.com/x/solutions/sdks/reference/index.html?language=javascript#event-tags).
+
+### Feature Management Access
+
+To access the Feature Management configuration in the Optimizely dashboard, please contact your Optimizely account executive.
 
 ### Using the SDK
 See the Optimizely X Full Stack testing [developer documentation](http://developers.optimizely.com/server/reference/index.html) to learn how to set up your first JavaScript project and use the SDK.

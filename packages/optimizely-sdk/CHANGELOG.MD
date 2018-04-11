@@ -1,3 +1,38 @@
+## 2.0.0
+April 11th, 2018
+
+This major release of the Optimizely SDK introduces APIs for Feature Management. It also introduces some breaking changes listed below.
+
+### New Features
+* Introduces the `isFeatureEnabled` API to determine whether to show a feature to a user or not.
+```
+var enabled = optimizelyClient.isFeatureEnabled('my_feature_key', 'user_1', userAttributes);
+```
+
+* You can also get all the enabled features for the user by calling the following method which returns a list of strings representing the feature keys:
+```
+var enabledFeatures = optimizelyClient.getEnabledFeatures('user_1', userAttributes);
+```
+
+* Introduces Feature Variables to configure or parameterize your feature. There are four variable types: `Integer`, `String`, `Double`, `Boolean`.
+```
+var stringVariable = optimizelyClient.getFeatureVariableString('my_feature_key', 'string_variable_key', 'user_1');
+var integerVariable = optimizelyClient.getFeatureVariableInteger('my_feature_key', 'integer_variable_key', 'user_1');
+var doubleVariable = optimizelyClient.getFeatureVariableDouble('my_feature_key', 'double_variable_key', 'user_1');
+var booleanVariable = optimizelyClient.getFeatureVariableBoolean('my_feature_key', 'boolean_variable_key', 'user_1');
+```
+
+### Breaking changes
+* The `track` API with revenue value as a stand-alone parameter has been removed. The revenue value should be passed in as an entry of the event tags map. The key for the revenue tag is `revenue` and will be treated by Optimizely as the key for analyzing revenue data in results.
+```
+var eventTags = {
+  'revenue': 1200
+};
+
+optimizelyClient.track('event_key', 'user_id', userAttributes, eventTags);
+```
+* The package name has changed from `optimizely-client-sdk` to `optimizely-sdk` as we have consolidated both Node and JavaScript SDKs into one.
+
 ## 2.0.0-beta1
 March 29th, 2018
 
