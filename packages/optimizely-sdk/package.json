@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "description": "JavaScript SDK package for Optimizely X Full Stack",
   "main": "dist/optimizely.node.js",
-  "browser": "dist/optimizely.browser.cjs.js",
+  "browser": "lib/index.browser.js",
   "scripts": {
     "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive",
     "test-travis": "npm run test && grunt",
@@ -33,11 +33,11 @@
   "homepage": "https://github.com/optimizely/javascript-sdk#readme",
   "dependencies": {
     "json-schema": "^0.2.3",
-    "lodash": "^4.13.1",
+    "lodash": "^4.0.0",
     "murmurhash": "0.0.2",
     "request": "~2.83.0",
     "sprintf": "^0.1.5",
-    "uuid": "~3.0.1"
+    "uuid": "^3.0.1"
   },
   "devDependencies": {
     "bluebird": "^3.4.6",
