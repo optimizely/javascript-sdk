@@ -1,3 +1,8 @@
+## 2.0.1
+April 16th, 2018
+
+* Improve browser entry point by pointing to the browser index file instead of the webpack-compiled bundle. ([@DullReferenceException](https://github.com/DullReferenceException) in [#88](https://github.com/optimizely/javascript-sdk/pull/88))
+
 ## 2.0.0
 April 11th, 2018
 
