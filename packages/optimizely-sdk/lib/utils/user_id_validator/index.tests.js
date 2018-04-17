@@ -45,6 +45,24 @@ describe('lib/utils/user_id_validator', function() {
           userIdValidator.validate('');
         }, sprintf(ERROR_MESSAGES.INVALID_USER_ID, 'USER_ID_VALIDATOR'));
       });
+
+      it('should throw an error if userId is int', function() {
+        assert.throws(function() {
+          userIdValidator.validate(3);
+        }, sprintf(ERROR_MESSAGES.INVALID_USER_ID, 'USER_ID_VALIDATOR'));
+      });
+
+      it('should throw an error if userId is boolean', function() {
+        assert.throws(function() {
+          userIdValidator.validate(true);
+        }, sprintf(ERROR_MESSAGES.INVALID_USER_ID, 'USER_ID_VALIDATOR'));
+      });
+
+      it('should throw an error if userId is array', function() {
+        assert.throws(function() {
+          userIdValidator.validate([]);
+        }, sprintf(ERROR_MESSAGES.INVALID_USER_ID, 'USER_ID_VALIDATOR'));
+      });
     });
   });
 });
