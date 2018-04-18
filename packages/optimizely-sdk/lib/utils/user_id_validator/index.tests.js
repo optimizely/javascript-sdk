@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, Optimizely
+ * Copyright 2016, 2018, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,19 +46,15 @@ describe('lib/utils/user_id_validator', function() {
         }, sprintf(ERROR_MESSAGES.INVALID_USER_ID, 'USER_ID_VALIDATOR'));
       });
 
-      it('should throw an error if userId is int', function() {
+      it('should throw an error if userId is not a string', function() {
         assert.throws(function() {
           userIdValidator.validate(3);
         }, sprintf(ERROR_MESSAGES.INVALID_USER_ID, 'USER_ID_VALIDATOR'));
-      });
 
-      it('should throw an error if userId is boolean', function() {
         assert.throws(function() {
           userIdValidator.validate(true);
         }, sprintf(ERROR_MESSAGES.INVALID_USER_ID, 'USER_ID_VALIDATOR'));
-      });
 
-      it('should throw an error if userId is array', function() {
         assert.throws(function() {
           userIdValidator.validate([]);
         }, sprintf(ERROR_MESSAGES.INVALID_USER_ID, 'USER_ID_VALIDATOR'));
