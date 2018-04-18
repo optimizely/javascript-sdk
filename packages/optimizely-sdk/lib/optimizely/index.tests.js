@@ -845,6 +845,23 @@ describe('lib/optimizely', function() {
 
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
       });
+
+      it('should call __validateNullValues with experiment key', function() {
+        sinon.spy(Optimizely.prototype, '__validateNullValues');
+
+        variation = optlyInstance.activate(null, 'user1');
+        assert.isNull(variation);
+        sinon.assert.calledWithExactly(Optimizely.prototype.__validateNullValues, {experiment_key: null});
+
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'Experiment key'));
+
+        var variation = optlyInstance.activate('testExperiment', 'user1');
+        assert.strictEqual(variation, 'control');
+        sinon.assert.calledWithExactly(Optimizely.prototype.__validateNullValues, {experiment_key: 'testExperiment'});
+        
+        Optimizely.prototype.__validateNullValues.restore();
+      });
     });
 
     describe('#track', function() {
@@ -1488,6 +1505,21 @@ describe('lib/optimizely', function() {
 
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
       });
+
+      it('should call __validateNullValues with event key', function() {
+        sinon.spy(Optimizely.prototype, '__validateNullValues');
+
+        optlyInstance.track(null, 'user1');
+        sinon.assert.calledWithExactly(Optimizely.prototype.__validateNullValues, {event_key: null});
+
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'Event key'));
+
+        optlyInstance.track('testEvent', 'user1');
+        sinon.assert.calledWithExactly(Optimizely.prototype.__validateNullValues, {event_key: 'testEvent'});
+        
+        Optimizely.prototype.__validateNullValues.restore();
+      });
     });
 
     describe('#getVariation', function() {
@@ -1614,6 +1646,23 @@ describe('lib/optimizely', function() {
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getVariation'));
 
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+      });
+
+      it('should call __validateNullValues with experiment key', function() {
+        sinon.spy(Optimizely.prototype, '__validateNullValues');
+
+        variation = optlyInstance.getVariation(null, 'user1');
+        assert.isNull(variation);
+        sinon.assert.calledWithExactly(Optimizely.prototype.__validateNullValues, {experiment_key: null});
+
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'Experiment key'));
+
+        var variation = optlyInstance.getVariation('testExperiment', 'user1');
+        assert.strictEqual(variation, 'control');
+        sinon.assert.calledWithExactly(Optimizely.prototype.__validateNullValues, {experiment_key: 'testExperiment'});
+        
+        Optimizely.prototype.__validateNullValues.restore();
       });
 
       describe('order of bucketing operations', function() {

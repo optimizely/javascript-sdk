@@ -26,6 +26,7 @@ var projectConfigSchema = require('./project_config_schema');
 var sprintf = require('sprintf');
 var userIdValidator = require('../utils/user_id_validator');
 var userProfileServiceValidator = require('../utils/user_profile_service_validator');
+var stringValidator = require('../utils/string_value_validator');
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
@@ -33,6 +34,7 @@ var LOG_MESSAGES = enums.LOG_MESSAGES;
 var MODULE_NAME = 'OPTIMIZELY';
 var DECISION_SOURCES = enums.DECISION_SOURCES;
 var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
+var INPUT_VARIABLES = enums.INPUT_VARIABLES;
 
 /**
  * The Optimizely class
@@ -129,6 +131,10 @@ Optimizely.prototype.activate = function(experimentKey, userId, attributes) {
     return null;
   }
 
+  if (!this.__validateNullValues({experiment_key: experimentKey})) {
+    return null;
+  }
+
   try {
     var variationKey = this.getVariation(experimentKey, userId, attributes);
     if (variationKey === null) {
@@ -220,6 +226,10 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
     return;
   }
 
+  if (!this.__validateNullValues({event_key: eventKey})) {
+    return null;
+  }
+
   try {
     if (!this.__validateInputs(userId, attributes, eventTags)) {
       return;
@@ -293,6 +303,10 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
 Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) {
   if (!this.isValidInstance) {
     this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getVariation'));
+    return null;
+  }
+
+  if (!this.__validateNullValues({experiment_key: experimentKey})) {
     return null;
   }
 
@@ -648,6 +662,26 @@ Optimizely.prototype.getFeatureVariableInteger = function(featureKey, variableKe
  */
 Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey, userId, attributes) {
   return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.STRING, userId, attributes);
+};
+
+/**
+ * Validates string values are not null or empty
+ * @param  {Object}  values   values to validate
+ * @return {boolean}          True if values are valid
+ *
+ */
+Optimizely.prototype.__validateNullValues = function(values) {
+  var isValid = true;
+  for (var input in values) {
+    if (!stringValidator.validate(values[input])) {
+      var error = sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, INPUT_VARIABLES[input]);
+      this.logger.log(LOG_LEVEL.ERROR, error);
+      this.errorHandler.handleError(new Error(error));
+      isValid = false;
+    }
+  }
+
+  return isValid;
 };
 
 module.exports = Optimizely;
