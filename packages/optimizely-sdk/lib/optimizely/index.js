@@ -226,7 +226,7 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
   }
 
   if (!this.__validateNullValues({event_key: eventKey})) {
-    return null;
+    return;
   }
 
   try {
