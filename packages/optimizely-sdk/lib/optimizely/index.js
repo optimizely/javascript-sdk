@@ -34,7 +34,6 @@ var LOG_MESSAGES = enums.LOG_MESSAGES;
 var MODULE_NAME = 'OPTIMIZELY';
 var DECISION_SOURCES = enums.DECISION_SOURCES;
 var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
-var INPUT_VARIABLES = enums.INPUT_VARIABLES;
 
 /**
  * The Optimizely class
@@ -672,9 +671,12 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
  */
 Optimizely.prototype.__validateNullValues = function(values) {
   var isValid = true;
-  for (var input in values) {
-    if (!stringValidator.validate(values[input])) {
-      var error = sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, INPUT_VARIABLES[input]);
+  var keys = Object.keys(values);
+
+  for (var index=0; index < keys.length; index++) {
+    var key = keys[index];
+    if (!stringValidator.validate(values[key])) {
+      var error = sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, key);
       this.logger.log(LOG_LEVEL.ERROR, error);
       this.errorHandler.handleError(new Error(error));
       isValid = false;

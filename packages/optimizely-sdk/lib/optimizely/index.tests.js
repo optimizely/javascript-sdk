@@ -854,7 +854,7 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(Optimizely.prototype.__validateNullValues, {experiment_key: null});
 
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'Experiment key'));
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key'));
 
         var variation = optlyInstance.activate('testExperiment', 'user1');
         assert.strictEqual(variation, 'control');
@@ -1513,7 +1513,7 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(Optimizely.prototype.__validateNullValues, {event_key: null});
 
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'Event key'));
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'event_key'));
 
         optlyInstance.track('testEvent', 'user1');
         sinon.assert.calledWithExactly(Optimizely.prototype.__validateNullValues, {event_key: 'testEvent'});
@@ -1656,7 +1656,7 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(Optimizely.prototype.__validateNullValues, {experiment_key: null});
 
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'Experiment key'));
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key'));
 
         var variation = optlyInstance.getVariation('testExperiment', 'user1');
         assert.strictEqual(variation, 'control');
@@ -1922,6 +1922,26 @@ describe('lib/optimizely', function() {
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
+      });
+    });
+
+    describe('__validateNullValues', function() {
+      it('should return true if values are valid', function() {
+        assert.isTrue(optlyInstance.__validateNullValues({experiment_key: 'experiment'}));
+        assert.isTrue(optlyInstance.__validateNullValues({experiment_key: 'experiment', event_key: 'event'}));
+        sinon.assert.notCalled(createdLogger.log);
+      });
+
+      it('should return false if any of the values are invalid', function() {
+        assert.isFalse(optlyInstance.__validateNullValues({experiment_key: 'experiment', event_key: null}));
+
+        sinon.assert.calledOnce(errorHandler.handleError);
+        var errorMessage = errorHandler.handleError.lastCall.args[0].message;
+        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'event_key'));
+
+        sinon.assert.calledOnce(createdLogger.log);
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'event_key'));
       });
     });
 

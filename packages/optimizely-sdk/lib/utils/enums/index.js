@@ -57,6 +57,7 @@ exports.ERROR_MESSAGES = {
   VARIABLE_KEY_NOT_IN_DATAFILE: '%s: Variable with key "%s" associated with feature with key "%s" is not in datafile.',
   VARIATION_ID_NOT_IN_DATAFILE: '%s: No variation ID %s defined in datafile for experiment %s.',
   VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT: '%s: Variation ID %s is not in the datafile.',
+  INVALID_INPUT_FORMAT: '%s: Provided %s is in an invalid format.',
 };
 
 exports.LOG_MESSAGES = {
@@ -120,7 +121,6 @@ exports.LOG_MESSAGES = {
   VALID_USER_PROFILE_SERVICE: '%s: Valid user profile service provided.',
   VARIATION_REMOVED_FOR_USER: '%s: Variation mapped to experiment %s has been removed for user %s.',
   VARIABLE_REQUESTED_WITH_WRONG_TYPE: '%s: Requested variable type "%s", but variable is of type "%s". Use correct API to retrieve value. Returning None.',
-  INVALID_INPUT_FORMAT: '%s: Provided %s is in an invalid format.',
 };
 
 exports.RESERVED_EVENT_KEYWORDS = {
@@ -178,13 +178,4 @@ exports.FEATURE_VARIABLE_TYPES = {
   DOUBLE: 'double',
   INTEGER: 'integer',
   STRING: 'string',
-};
-
-/*
- * Possible types of input variables
- */
-exports.INPUT_VARIABLES = {
-  experiment_key: 'Experiment key',
-  variation_key: 'Variation key',
-  event_key: 'Event key',
 };
