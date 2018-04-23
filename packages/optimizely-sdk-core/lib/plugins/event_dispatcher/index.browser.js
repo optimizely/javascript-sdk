@@ -25,7 +25,7 @@ module.exports = {
   queueEvent: function(eventObj) {
     // Check browser support
     if (typeof(Storage) !== "undefined") {
-      var events = queue = localStorage.getItem('optimizely_event_queue');
+      var events = queue = localStorage.getItem(LOCAL_STORAGE_QUEUE_NAME);
       if (events !== null && events !== undefined) {
         events = JSON.parse(events);
       } else {
@@ -35,13 +35,13 @@ module.exports = {
       events.push(event);
 
       // Store
-      localStorage.setItem("optimizely_event_queue", JSON.stringify(events));
+      localStorage.setItem(LOCAL_STORAGE_QUEUE_NAME, JSON.stringify(events));
     }
   },
 
   getQueuedEvent: function(index) {
     if (typeof(Storage) !== "undefined") {
-      var events = queue = localStorage.getItem('optimizely_event_queue');
+      var events = queue = localStorage.getItem(LOCAL_STORAGE_QUEUE_NAME);
       if (events !== null && events !== undefined) {
         events = JSON.parse(events);
       } else {
@@ -62,7 +62,7 @@ module.exports = {
 
   removeEvent: function(eventToRemove) {
     if (typeof(Storage) !== "undefined") {
-      var events = queue = localStorage.getItem('optimizely_event_queue');
+      var events = queue = localStorage.getItem(LOCAL_STORAGE_QUEUE_NAME);
       if (events !== null && events !== undefined) {
         events = JSON.parse(events);
       } else {
@@ -84,7 +84,7 @@ module.exports = {
           }
         }
         // Store
-        localStorage.setItem("optimizely_event_queue", JSON.stringify(events));
+        localStorage.setItem(LOCAL_STORAGE_QUEUE_NAME, JSON.stringify(events));
       }
       return event;
     } else {
@@ -94,7 +94,7 @@ module.exports = {
 
   dequeuEvent: function() {
     if (typeof(Storage) !== "undefined") {
-      var events = queue = localStorage.getItem('optimizely_event_queue');
+      var events = queue = localStorage.getItem(LOCAL_STORAGE_QUEUE_NAME);
       if (events !== null && events !== undefined) {
         events = JSON.parse(events);
       } else {
@@ -108,7 +108,7 @@ module.exports = {
       }
 
       // Store
-      localStorage.setItem("optimizely_event_queue", JSON.stringify(events));
+      localStorage.setItem(LOCAL_STORAGE_QUEUE_NAME, JSON.stringify(events));
       return event;
     } else {
       return null;
