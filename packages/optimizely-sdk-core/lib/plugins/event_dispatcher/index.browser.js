@@ -164,6 +164,9 @@ module.exports = {
         event = getQueuedEvent();
       }
     }
+    else {
+      sendEvent(event, callback);
+    }
   },
 };
 
