@@ -18,15 +18,104 @@ var fns = require('../../utils/fns');
 var POST_METHOD = 'POST';
 var GET_METHOD = 'GET';
 var READYSTATE_COMPLETE = 4;
-
+var LOCAL_STORAGE_QUEUE_NAME = 'OptimizelyLocalStorageEventQueue';
 module.exports = {
-  /**
-   * Sample event dispatcher implementation for tracking impression and conversions
-   * Users of the SDK can provide their own implementation
-   * @param  {Object} eventObj
-   * @param  {Function} callback
-   */
-  dispatchEvent: function(eventObj, callback) {
+
+
+  queueEvent: function(eventObj) {
+    // Check browser support
+    if (typeof(Storage) !== "undefined") {
+      var events = queue = localStorage.getItem('optimizely_event_queue');
+      if (events !== null && events !== undefined) {
+        events = JSON.parse(events);
+      } else {
+        events = [];
+      }
+
+      events.push(event);
+
+      // Store
+      localStorage.setItem("optimizely_event_queue", JSON.stringify(events));
+    }
+  },
+
+  getQueuedEvent: function(index) {
+    if (typeof(Storage) !== "undefined") {
+      var events = queue = localStorage.getItem('optimizely_event_queue');
+      if (events !== null && events !== undefined) {
+        events = JSON.parse(events);
+      } else {
+        events = [];
+      }
+
+      var event = null;
+
+      if (index < events.length) {
+        event = events[index];
+      }
+      return event;
+
+    } else {
+      return null;
+    }
+  },
+
+  removeEvent: function(eventToRemove) {
+    if (typeof(Storage) !== "undefined") {
+      var events = queue = localStorage.getItem('optimizely_event_queue');
+      if (events !== null && events !== undefined) {
+        events = JSON.parse(events);
+      } else {
+        events = [];
+      }
+
+      var event = null;
+
+      if (events.length > 0) {
+        // perfect, it is the first one in the queue.  just remove it.
+        if (events[0] == eventToRemove) {
+          event = events.shift();
+        }
+        else {
+          var index = events.indexOf(eventToRemove);
+          if (index > -1) {
+            event = events[index];
+            events.splice(index, 1);
+          }
+        }
+        // Store
+        localStorage.setItem("optimizely_event_queue", JSON.stringify(events));
+      }
+      return event;
+    } else {
+      return null;
+    }
+  },
+
+  dequeuEvent: function() {
+    if (typeof(Storage) !== "undefined") {
+      var events = queue = localStorage.getItem('optimizely_event_queue');
+      if (events !== null && events !== undefined) {
+        events = JSON.parse(events);
+      } else {
+        events = [];
+      }
+
+      var event = null;
+
+      if (events.length > 0) {
+        event = events.shift();
+      }
+
+      // Store
+      localStorage.setItem("optimizely_event_queue", JSON.stringify(events));
+      return event;
+    } else {
+      return null;
+    }
+  },
+
+  sendEvent: function(event, callback) {
     var url = eventObj.url;
     var params = eventObj.params;
     if (eventObj.httpVerb === POST_METHOD) {
@@ -54,6 +143,26 @@ module.exports = {
         }
       };
       req.send();
+    }
+  },
+
+  /**
+   * Sample event dispatcher implementation for tracking impression and conversions
+   * Users of the SDK can provide their own implementation
+   * @param  {Object} eventObj
+   * @param  {Function} callback
+   */
+  dispatchEvent: function(eventObj, callback) {
+    if (typeof(Storage) !== "undefined") {
+      queueEvent(eventObj);
+      var event = getQueuedEvent();
+      while (event != null) {
+        sendEvent(event, function () {
+          removeEvent(event);
+          callback();
+        });
+        event = getQueuedEvent();
+      }
     }
   },
 };
