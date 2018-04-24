@@ -18,6 +18,7 @@ var fns = require('../../utils/fns');
 var POST_METHOD = 'POST';
 var GET_METHOD = 'GET';
 var READYSTATE_COMPLETE = 4;
+
 var LOCAL_STORAGE_QUEUE_NAME = 'OptimizelyLocalStorageEventQueue';
 module.exports = {
 
@@ -25,21 +26,23 @@ module.exports = {
   queueEvent: function(eventObj) {
     // Check browser support
     if (typeof(Storage) !== "undefined") {
-      var events = queue = localStorage.getItem(LOCAL_STORAGE_QUEUE_NAME);
+      var events = localStorage.getItem(LOCAL_STORAGE_QUEUE_NAME);
       if (events !== null && events !== undefined) {
         events = JSON.parse(events);
       } else {
         events = [];
       }
 
-      events.push(event);
+      var stringEvent = JSON.stringify(eventObj);
+      events.push(stringEvent);
 
       // Store
       localStorage.setItem(LOCAL_STORAGE_QUEUE_NAME, JSON.stringify(events));
+      return stringEvent;
     }
   },
 
-  getQueuedEvent: function(index) {
+  getQueuedEvent: function(index = 0) {
     if (typeof(Storage) !== "undefined") {
       var events = queue = localStorage.getItem(LOCAL_STORAGE_QUEUE_NAME);
       if (events !== null && events !== undefined) {
@@ -155,19 +158,25 @@ module.exports = {
   dispatchEvent: function(eventObj, callback) {
     if (typeof(Storage) !== "undefined") {
       queueEvent(eventObj);
-      var event = getQueuedEvent();
-      while (event != null) {
-        sendEvent(event, function () {
-          removeEvent(event);
-          callback();
-        });
-        event = getQueuedEvent();
+      var eventString = getQueuedEvent();
+      while (eventString != null) {
+        try {
+          var event = JSON.parse(eventString);
+          sendEvent(event, function () {
+            removeEvent(eventString);
+            callback();
+          });
+        }
+        catch (e) {
+          // how do we log this?
+        }
+        eventString = getQueuedEvent();
       }
     }
     else {
       sendEvent(event, callback);
     }
-  },
+  }
 };
 
 var toQueryString = function(obj) {
