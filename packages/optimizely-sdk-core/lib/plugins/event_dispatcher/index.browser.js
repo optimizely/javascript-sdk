@@ -22,34 +22,65 @@ var READYSTATE_COMPLETE = 4;
 var LOCAL_STORAGE_QUEUE_NAME = 'OptimizelyLocalStorageEventQueue';
 module.exports = {
 
+  stringify: function(jsonObject) {
+    try {
+      return JSON.stringify(eventObj);
+    }
+    catch(e) {
+      return null;
+    }
+   },
 
-  queueEvent: function(eventObj) {
-    // Check browser support
-    if (typeof(Storage) !== "undefined") {
+  parseJSON: function(jsonString) {
+    try {
+      return JSON.parse(jsonString);
+    }
+    catch(e) {
+      return null;
+    }
+  },
+
+  getStoreage: function() {
+    if (typeof(localStorage) !== "undefined") {
       var events = localStorage.getItem(LOCAL_STORAGE_QUEUE_NAME);
-      if (events !== null && events !== undefined) {
-        events = JSON.parse(events);
-      } else {
+      if (events) {
+        events = parseJSON(events);
+      }
+      if (!events) {
         events = [];
       }
 
-      var stringEvent = JSON.stringify(eventObj);
-      events.push(stringEvent);
+      return events;
+    }
+    return null;
+  },
+
+  setStoreage: function(eventsList) {
+    if (typeof(localStorage) !== "undefined") {
+      // Store
+      localStorage.setItem(LOCAL_STORAGE_QUEUE_NAME, stringify(events));
+    }
+  },
+
+  queueEvent: function(eventObj) {
+    // Check browser support
+    if (typeof(localStorage) !== "undefined") {
+      var events = getStoreage();
+
+      var stringEvent = stringify(eventObj);
+      if (stringEvent) {
+        events.push(stringEvent);
+      }
 
       // Store
-      localStorage.setItem(LOCAL_STORAGE_QUEUE_NAME, JSON.stringify(events));
+      setStoreage(events);
       return stringEvent;
     }
   },
 
   getQueuedEvent: function(index = 0) {
-    if (typeof(Storage) !== "undefined") {
-      var events = queue = localStorage.getItem(LOCAL_STORAGE_QUEUE_NAME);
-      if (events !== null && events !== undefined) {
-        events = JSON.parse(events);
-      } else {
-        events = [];
-      }
+    if (typeof(localStorage) !== "undefined") {
+      var events = getStoreage();
 
       var event = null;
 
@@ -64,18 +95,14 @@ module.exports = {
   },
 
   removeEvent: function(eventToRemove) {
-    if (typeof(Storage) !== "undefined") {
-      var events = queue = localStorage.getItem(LOCAL_STORAGE_QUEUE_NAME);
-      if (events !== null && events !== undefined) {
-        events = JSON.parse(events);
-      } else {
-        events = [];
-      }
+    if (typeof(localStorage) !== "undefined") {
+      var events = getStoreage();
 
       var event = null;
 
       if (events.length > 0) {
         // perfect, it is the first one in the queue.  just remove it.
+        // both are known to be strings so this compare is fine.
         if (events[0] == eventToRemove) {
           event = events.shift();
         }
@@ -87,7 +114,7 @@ module.exports = {
           }
         }
         // Store
-        localStorage.setItem(LOCAL_STORAGE_QUEUE_NAME, JSON.stringify(events));
+        setStoreage(events);
       }
       return event;
     } else {
@@ -96,13 +123,8 @@ module.exports = {
   },
 
   dequeuEvent: function() {
-    if (typeof(Storage) !== "undefined") {
-      var events = queue = localStorage.getItem(LOCAL_STORAGE_QUEUE_NAME);
-      if (events !== null && events !== undefined) {
-        events = JSON.parse(events);
-      } else {
-        events = [];
-      }
+    if (typeof(localStorage) !== "undefined") {
+      var events = getStoreage();
 
       var event = null;
 
@@ -111,7 +133,7 @@ module.exports = {
       }
 
       // Store
-      localStorage.setItem(LOCAL_STORAGE_QUEUE_NAME, JSON.stringify(events));
+      setStoreage(events);
       return event;
     } else {
       return null;
@@ -156,7 +178,7 @@ module.exports = {
    * @param  {Function} callback
    */
   dispatchEvent: function(eventObj, callback) {
-    if (typeof(Storage) !== "undefined") {
+    if (typeof(localStorage) !== "undefined") {
       queueEvent(eventObj);
       var eventString = getQueuedEvent();
       while (eventString != null) {
