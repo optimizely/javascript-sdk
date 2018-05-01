@@ -6,7 +6,7 @@
   This repository houses the JavaScript SDK for use with Optimizely X Full Stack
 </p>
 
-## Packages
+## Packages CI test
 
 This repository is a monorepo that we manage using [Lerna](https://github.com/lerna/lerna). That means that we actually publish [several packages](/packages) to npm from the same codebase, including:
 
