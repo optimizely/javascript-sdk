@@ -80,10 +80,7 @@ Entry point for browser environment
 
 * [browser](#index.module_browser)
     * [.module.exports](#exp_index.module_browser--module.exports) ⏏
-        * _static_
-            * [.createInstance(config)](#index.module_browser--module.exports.createInstance) ⇒ <code>Object</code>
-        * _inner_
-            * [~fns](#index.module_browser--module.exports..fns)
+        * [.createInstance(config)](#index.module_browser--module.exports.createInstance) ⇒ [<code>Optimizely</code>](#module_optimizely/index..Optimizely)
 
 <a name="exp_index.module_browser--module.exports"></a>
 
@@ -93,39 +90,22 @@ Entry point into the Optimizely Node testing SDK
 **Kind**: static property of [<code>browser</code>](#index.module_browser)  
 <a name="index.module_browser--module.exports.createInstance"></a>
 
-#### module.exports.createInstance(config) ⇒ <code>Object</code>
+#### module.exports.createInstance(config) ⇒ [<code>Optimizely</code>](#module_optimizely/index..Optimizely)
 Creates an instance of the Optimizely class
 
 **Kind**: static method of [<code>module.exports</code>](#exp_index.module_browser--module.exports)  
-**Returns**: <code>Object</code> - the Optimizely object  
+**Returns**: [<code>Optimizely</code>](#module_optimizely/index..Optimizely) - the Optimizely object  
 
 | Param | Type |
 | --- | --- |
 | config | <code>Object</code> | 
-| config.datafile | <code>Object</code> | 
-| config.errorHandler | <code>Object</code> | 
-| config.eventDispatcher | <code>Object</code> | 
-| config.logger | <code>Object</code> | 
-| config.logLevel | <code>Object</code> | 
-| config.userProfileService | <code>Object</code> | 
+| config.datafile | <code>String</code> | 
+| config.errorHandler | [<code>ErrorHandler</code>](#ErrorHandler) \| <code>undefined</code> | 
+| config.eventDispatcher | [<code>EventDispatcher</code>](#EventDispatcher) \| <code>undefined</code> | 
+| config.logger | [<code>Logger</code>](#Logger) \| <code>undefined</code> | 
+| config.logLevel | <code>LogLevel</code> | 
+| config.userProfileService | [<code>UserProfileService</code>](#UserProfileService) \| <code>undefined</code> | 
 
-<a name="index.module_browser--module.exports..fns"></a>
-
-#### module.exports~fns
-**Kind**: inner property of [<code>module.exports</code>](#exp_index.module_browser--module.exports)  
-**License**: Copyright 2016-2017, Optimizely
-
-Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.  
 <a name="module_optimizely/index"></a>
 
 ## optimizely/index

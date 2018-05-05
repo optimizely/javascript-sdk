@@ -1,9 +1,4 @@
 /**
- * Entry point for browser environment
- * @module
- */
-
-/**
  * @license
  * Copyright 2016-2017, Optimizely
  *
@@ -19,6 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/**
+ * Entry point for browser environment
+ * @module
+ */
+
 var fns = require('./utils/fns');
 var configValidator = require('./utils/config_validator');
 var defaultErrorHandler = require('./plugins/error_handler');
@@ -36,13 +37,13 @@ module.exports = {
   /**
    * Creates an instance of the Optimizely class
    * @param  {Object} config
-   * @param  {Object} config.datafile
-   * @param  {Object} config.errorHandler
-   * @param  {Object} config.eventDispatcher
-   * @param  {Object} config.logger
-   * @param  {Object} config.logLevel
-   * @param  {Object} config.userProfileService
-   * @return {Object} the Optimizely object
+   * @param  {String} config.datafile
+   * @param  {ErrorHandler|undefined} config.errorHandler
+   * @param  {EventDispatcher|undefined} config.eventDispatcher
+   * @param  {Logger|undefined} config.logger
+   * @param  {LogLevel} config.logLevel
+   * @param  {UserProfileService|undefined} config.userProfileService
+   * @return {module:optimizely/index~Optimizely} the Optimizely object
    */
   createInstance: function (config) {
     var logLevel = 'logLevel' in config ? config.logLevel : enums.LOG_LEVEL.INFO;
