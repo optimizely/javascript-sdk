@@ -1,5 +1,11 @@
 module.exports = function (grunt) {
     grunt.initConfig({
+        jsdoc2md: {
+            api: {
+                src: ['lib/index.node.js', 'lib/index.browser.js', 'lib/optimizely/*.js', 'lib/types.js'],
+                dest: 'api.md',
+            },
+        },
         karma: {
             unit: {
                 configFile: 'karma.bs.conf.js',

@@ -1,4 +1,10 @@
 /**
+ * Entry point for browser environment
+ * @module
+ */
+
+/**
+ * @license
  * Copyright 2016-2017, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,9 +44,11 @@ module.exports = {
    * @param  {Object} config.userProfileService
    * @return {Object} the Optimizely object
    */
-  createInstance: function(config) {
+  createInstance: function (config) {
     var logLevel = 'logLevel' in config ? config.logLevel : enums.LOG_LEVEL.INFO;
-    var defaultLogger = logger.createLogger({ logLevel: enums.LOG_LEVEL.INFO });
+    var defaultLogger = logger.createLogger({
+      logLevel: enums.LOG_LEVEL.INFO
+    });
     if (config) {
       try {
         configValidator.validate(config);
@@ -65,7 +73,9 @@ module.exports = {
       clientVersion: enums.CLIENT_VERSION,
       errorHandler: defaultErrorHandler,
       eventDispatcher: defaultEventDispatcher,
-      logger: logger.createLogger({ logLevel: logLevel })
+      logger: logger.createLogger({
+        logLevel: logLevel
+      })
     }, config);
 
     return new Optimizely(config);

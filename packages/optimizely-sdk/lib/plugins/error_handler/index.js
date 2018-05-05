@@ -1,4 +1,10 @@
 /**
+ * Error Handler
+ * @module
+ */
+
+/**
+ * @license
  * Copyright 2016, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +28,7 @@ module.exports = {
    * Handle given exception
    * @param  {Object} exception An exception object
    */
-  handleError: function(exception) {
+  handleError: function (exception) {
     // no-op
   }
 };

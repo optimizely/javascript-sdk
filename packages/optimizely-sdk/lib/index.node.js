@@ -14,6 +14,11 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
+/**
+ * Entry point for nodejs environment
+ * @module
+ */
+
 var configValidator = require('./utils/config_validator');
 var defaultErrorHandler = require('./plugins/error_handler');
 var defaultEventDispatcher = require('./plugins/event_dispatcher/index.node');
@@ -27,22 +32,19 @@ var Optimizely = require('./optimizely');
 
 var MODULE_NAME = 'INDEX';
 
-/**
- * Entry point into the Optimizely Node testing SDK
- */
 module.exports = {
   /**
    * Creates an instance of the Optimizely class
    * @param  {Object} config
-   * @param  {Object} config.datafile
-   * @param  {Object} config.errorHandler
-   * @param  {Object} config.eventDispatcher
-   * @param  {Object} config.jsonSchemaValidator
-   * @param  {Object} config.logger
-   * @param  {Object} config.userProfileService
-   * @return {Object} the Optimizely object
+   * @param  {String} config.datafile Datafile string. Should conform to schema
+   * @param  {ErrorHandler|undefined} config.errorHandler Error Handler
+   * @param  {EventDispatcher|undefined} config.eventDispatcher Custom Event Dispatcher, if any
+   * @param  {JSONSchemaValidator|undefined} config.jsonSchemaValidator
+   * @param  {Logger|undefined} config.logger Custom logger (if not specified, will use default logger)
+   * @param  {UserProfileService|undefined} config.userProfileService User Profile service to configure, if any
+   * @return {module:optimizely/index~Optimizely} the Optimizely object
    */
-  createInstance: function(config) {
+  createInstance: function (config) {
     var defaultLogger = logger.createNoOpLogger();
     if (config) {
       try {
@@ -52,7 +54,9 @@ module.exports = {
         if (config.logger) {
           config.logger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
         } else {
-          var simpleLogger = logger.createLogger({logLevel: 4});
+          var simpleLogger = logger.createLogger({
+            logLevel: 4
+          });
           simpleLogger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
         }
         config.isValidInstance = false;
