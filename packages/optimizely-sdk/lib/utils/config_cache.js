@@ -27,7 +27,7 @@ exports.ConfigCache = class ConfigCache {
 
     // The following two params are only used if mode === POLL.
     onGetAsync = () => enums.refreshDirectives.YES_DONT_AWAIT,
-    intervalPeriod = 5000,
+    pollPeriod = 5000,
   }) {
     if (mode === enums.modes.PUSH) {
       throw new Error('enums.modes.PUSH is not implemented yet; use POLL instead');
@@ -36,7 +36,7 @@ exports.ConfigCache = class ConfigCache {
     // Map key -> { value, lastModified, pendingPromise: Promise= }
     this.cache = {};
 
-    this.intervalPeriod = intervalPeriod;
+    this.pollPeriod = pollPeriod;
   }
 
   /**
@@ -67,7 +67,7 @@ exports.ConfigCache = class ConfigCache {
       return;
     }
 
-    // Never-before-seen configKey => make a new entry
+    // Never-before-seen configKey => make a new entry.
     this.cache[configKey] = {
       value: initialValue,
       lastModified: Date.now(),
