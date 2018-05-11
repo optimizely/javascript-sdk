@@ -40,9 +40,13 @@ exports.ConfigCache = class ConfigCache {
   }
 
   /**
-   * Add an entry to the cache, which will be maintained fresh per the cache's
-   * synchronization mechanism. If called with an inital value, that value can be read
-   * back via `get` synchronously after this method returns.
+   * Seed a cache entry with an initial value.
+   * The entry will then be maintained fresh via the cache's synchronization mechanism.
+   * The given inital value can be read back via `get` synchronously after this method returns.
+   *
+   * If you want to seed the cache but don't have access to a value (say, from localStorage
+   * or the filesystem), then you must want to fetch from the network instead.
+   * `await cache.getAsync(key)` is what you want to do then.
    *
    * No effect if a cached value already exists for the given key.
    *
