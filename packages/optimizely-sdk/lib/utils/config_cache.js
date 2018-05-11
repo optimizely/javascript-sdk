@@ -86,7 +86,7 @@ exports.ConfigCache = class ConfigCache {
 
   /**
    * Synchronous cache access. 
-   * Main use case: After the cache is warm, to quickly get configs.
+   * Use this after the cache is warm to quickly get configs.
    *
    * @param {string} configKey
    * @returns {Config=}
@@ -104,7 +104,6 @@ exports.ConfigCache = class ConfigCache {
   /**
    * The thing to use if you're willing to risk added latency from network I/O for
    * (generally) surely getting _some_ revision of the requested config.
-   * Main use case: 
    *
    * @param {string} configKey
    * @param {refreshDirective=} override
