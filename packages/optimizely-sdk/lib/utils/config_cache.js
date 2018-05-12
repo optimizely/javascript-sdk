@@ -1,10 +1,5 @@
 const enums = {
-  modes: {
-    POLL: 'poll',
-    PUSH: 'push',
-  },
-
-  // Possible directives for `getAsync`; only meaningful when mode === POLL.
+  // Possible directives for `getAsync`.
   // In all variants, a cache miss => await and fulfill with the refreshed entry.
   refreshDirectives: {
     // On hit, fulfill with the cached entry.
@@ -21,22 +16,22 @@ const enums = {
 
 exports.enums = enums;
 
-exports.ConfigCache = class ConfigCache {
+/**
+ * A ConfigCache that syncs by polling the CDN.
+ */
+exports.PollingConfigCache = class PollingConfigCache {
   constructor({
-    mode = enums.modes.PUSH,
-
-    // The following two params are only used if mode === POLL.
+    // An async function to make HTTP requests.
+    requester,
+    // A function that decides how to handle `getAsync` calls.
     onGetAsync = () => enums.refreshDirectives.YES_DONT_AWAIT,
+    // The period of the polling, in ms.
     pollPeriod = 5000,
-  }) {
-    if (mode === enums.modes.PUSH) {
-      throw new Error('enums.modes.PUSH is not implemented yet; use POLL instead');
-    }
+  } = {}) {
+    Object.assign(this, { requester, onGetAsync, pollPeriod });
 
     // Map key -> { value, lastModified, pendingPromise: Promise= }
     this.cache = {};
-
-    this.pollPeriod = pollPeriod;
   }
 
   /**
@@ -45,8 +40,8 @@ exports.ConfigCache = class ConfigCache {
    * The given inital value can be read back via `get` synchronously after this method returns.
    *
    * If you want to seed the cache but don't have access to a value (say, from localStorage
-   * or the filesystem), then you must want to fetch from the network instead.
-   * `await cache.getAsync(key)` is what you want to do then.
+   * or the filesystem), then you're probably looking to fetch it from the network.
+   * `cache.getAsync(key)` is what you want to do then.
    *
    * No effect if a cached value already exists for the given key.
    *
@@ -63,7 +58,7 @@ exports.ConfigCache = class ConfigCache {
 
     // Pending entries => just set the initial value, if one was given.
     if (this.__isPending(configKey)) {
-      this.cache[configKey] = initialValue;
+      this.cache[configKey].value = initialValue;
       return;
     }
 
@@ -111,17 +106,15 @@ exports.ConfigCache = class ConfigCache {
    * @param {number=} timeout
    *        How long to wait for a response, if refreshing.
    * @returns {Promise<Client, Error>}
-   *        If mode === POLL, fulfills ASAP in accord with the result of `onGetAsync` or
-   *          the given override.
-   *        If mode === PUSH, fulfills ASAP after at least one whole config has been received.
-   *        In both modes, rejects on network or timeout error.
+   *        Fulfills ASAP in accord with the result of `onGetAsync` or the given override.
+   *        Rejects on network error or timeout.
    */
   async getAsync(configKey, override, timeout = 5000) {
     const currentEntry = this.cache[configKey];
 
     // In all cases, a cache miss means awaiting until a value is obtained.
     if (!currentEntry) {
-      await this.refreshWithPull(configKey);
+      await this.__refresh(configKey, timeout);
       return this.cache[configKey];
     }
 
@@ -134,11 +127,11 @@ exports.ConfigCache = class ConfigCache {
         return Promise.resolve(this.get(configKey));
 
       case enums.refreshDirectives.YES_DONT_AWAIT:
-        this.refreshWithPull(configKey);
+        this.__refresh(configKey, timeout);
         return this.get(configKey);
 
       case enums.refreshDirectives.YES_AWAIT:
-        await this.refreshWithPull(configKey);
+        await this.__refresh(configKey, timeout);
         return this.get(configKey);
     }
   }
@@ -149,23 +142,52 @@ exports.ConfigCache = class ConfigCache {
     throw new Error('Not yet implemented');
   }
 
-  async __refreshWithPull(configKey) {
-    // request from CDN and store in cache
+  /**
+   * @param {string} configKey
+   * @param {number} timeout
+   8        How long to wait for a response from the CDN before resolving in rejection, in ms.
+   * @returns {Promise}
+   *        Rejects with fetch or timeout errors.
+   *        Fulfills otherwise, with a boolean indicating whether the config was updated.
+   */
+  async __refresh(configKey, timeout) {
+    // TODO: Do something with timeout.
+
+    // For now, let configKeys be URLs to configs.
+    const request = this.requester(configKey);
+
+    this.cache[configKey].pendingPromise = request;
+
+    const start = Date.now();
+    const response = await request;
+    const end = Date.now();
+
+    // TODO: On 304 Not Modified, return false.
+
+    const oldEntry = this.cache[configKey];
+    const newEntry = {
+      value: response,
+      lastModified: Date.now(),
+      pendingPromise: null,
+    }
+
+    this.cache[configKey] = newEntry;
+    // TODO: Emit event `${configKey}` with oldEntry, newEntry, fetchStats: { start, end }
+    return true;
   }
+
+  // TODO: Add interval on first entry, and #clear (which also kills interval)
 }
 
-const LazyConfigCache = () => new ConfigCache({
-  mode: enums.modes.POLL,
+const LazyConfigCache = () => new PollingConfigCache({
   onGetAsync: () => enums.refreshDirectives.ONLY_IF_CACHE_MISS,
 });
 
-const StaleWhileRevalidateConfigCache = () => new ConfigCache({
-  mode: enums.modes.POLL,
+const StaleWhileRevalidateConfigCache = () => new PollingConfigCache({
   onGetAsync: () => enums.refreshDirectives.YES_DONT_AWAIT,
 });
 
-const StronglyConsistentConfigCache = () => new ConfigCache({
-  mode: enums.modes.POLL,
+const StronglyConsistentConfigCache = () => new PollingConfigCache({
   onGetAsync: () => enums.refreshDirectives.YES_AWAIT,
 });
 

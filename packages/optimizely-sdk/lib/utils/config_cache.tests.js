@@ -2,32 +2,65 @@
 
 const { assert }  = require('chai');
 
-const { ConfigCache, enums } = require('./config_cache');
+const { PollingConfigCache, enums } = require('./config_cache');
 
 describe('lib/utils/config_cache', () => {
   describe('ConfigCache', () => {
     let cache;
 
-    it('throws if constructed in PUSH mode', () => {
-      assert.throws(() => new ConfigCache({ mode: enums.modes.PUSH }));
+    describe('#seed', () => {
+      context('on a new cache', () => {
+        beforeEach(() => {
+          cache = new PollingConfigCache();
+        });
+
+        it('sets the value and can be synchronously accessed later', () => {
+          cache.seed('key', 'seed');
+          assert(cache.get('key'), 'seed');
+        });
+      });
+
+      // value is pending but unset, this sets it and then pending overwrites
+      context('entry is pending', () => {
+        beforeEach(() => {
+          cache.cache = { 'key': { pendingPromise: true }};
+        });
+
+        context('and does not have a value yet', () => {
+          it('sets the seed value', () => {
+            assert.strictEqual(cache.get('key'), null);
+            cache.seed('key', 'seed');
+            assert.strictEqual(cache.get('key'), 'seed');
+          });
+        });
+
+        context('and already has a value', () => {
+          beforeEach(() => {
+            cache.seed('key', 'seed');
+          });
+
+          it('seeding has no effect', () => {
+            assert.strictEqual(cache.get('key'), 'seed');
+            cache.seed('key', 'newseed');
+            assert.strictEqual(cache.get('key'), 'seed');
+          });
+        });
+      });
     });
 
     describe('#get', () => {
       beforeEach(() => {
-        cache = new ConfigCache({ mode: enums.modes.POLL });
+        cache = new PollingConfigCache();
       });
 
       context('entry is absent', () => {
-        context('no override is given', () => {
-          it('returns null', () => {
-            assert.strictEqual(cache.get('missingKey'), null);
-          });
+        it('returns null', () => {
+          assert.strictEqual(cache.get('missingKey'), null);
         });
       });
 
       context('entry is present', () => {
         beforeEach(() => {
-          // Set entry
           cache.seed('key', 'value');
         });
 
@@ -38,17 +71,15 @@ describe('lib/utils/config_cache', () => {
     });
 
     describe('#getAsync', () => {
-      context('mode is PUSH', () => {
-        context('onGetAsync is ONLY_IF_CACHE_MISS', () => {
-          context('cache hit', () => {
-            it('fulfills ASAP');
-          });
-          context('cache miss', () => {
-            it('fetches');
-          });
-
-          // ...
+      context('onGetAsync is ONLY_IF_CACHE_MISS', () => {
+        context('cache hit', () => {
+          it('fulfills ASAP');
         });
+        context('cache miss', () => {
+          it('fetches');
+        });
+
+        // ...
       });
     });
   });
