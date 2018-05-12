@@ -21,16 +21,16 @@ exports.enums = enums;
  */
 exports.PollingConfigCache = class PollingConfigCache {
   constructor({
-    // An async function to make HTTP requests.
+    // An async function (url: string, headers: Object) => Promise<{headers, body}, Error> to make HTTP requests.
     requester,
     // A function that decides how to handle `getAsync` calls.
-    onGetAsync = () => enums.refreshDirectives.YES_DONT_AWAIT,
+    onGetAsync = () => enums.refreshDirectives.YES_AWAIT,
     // The period of the polling, in ms.
     pollPeriod = 5000,
   } = {}) {
     Object.assign(this, { requester, onGetAsync, pollPeriod });
 
-    // Map key -> { value, lastModified, pendingPromise: Promise= }
+    // Map key -> { value, lastModified, pendingPromise, headers }
     this.cache = {};
   }
 
@@ -112,10 +112,10 @@ exports.PollingConfigCache = class PollingConfigCache {
   async getAsync(configKey, override, timeout = 5000) {
     const currentEntry = this.cache[configKey];
 
-    // In all cases, a cache miss means awaiting until a value is obtained.
-    if (!currentEntry) {
+    if (!this.get('configKey')) {
+      // In all cases, a cache miss means awaiting until a value is obtained.
       await this.__refresh(configKey, timeout);
-      return this.cache[configKey];
+      return this.cache[configKey].value;
     }
 
     // Cache hit! But depending on the onGetAsync-computed directive (or a provided
@@ -143,36 +143,75 @@ exports.PollingConfigCache = class PollingConfigCache {
   }
 
   /**
+   * Form the headers to send with a subsequent request, based on those from a
+   * previous response.
+   */
+  __getNextReqHeaders(resHeaders) {
+    // Normalize the casing of headers.
+    const lowercaseResHeaders = {};
+    for (let header in resHeaders) {
+      lowercaseResHeaders[header.toLowerCase()] = resHeaders[header];
+    }
+
+    return {
+      'If-None-Match': lowercaseResHeaders['etag'],
+      'If-Modified-Since': lowercaseResHeaders['last-modified'],
+    };
+  }
+
+  /**
+   * Kick off a request, marking an entry as pending along the way. Idempotent.
+   *
    * @param {string} configKey
    * @param {number} timeout
-   8        How long to wait for a response from the CDN before resolving in rejection, in ms.
+   *        How long to wait for a response from the CDN before resolving in rejection, in ms.
    * @returns {Promise}
    *        Rejects with fetch or timeout errors.
    *        Fulfills otherwise, with a boolean indicating whether the config was updated.
    */
   async __refresh(configKey, timeout) {
-    // TODO: Do something with timeout.
+    // Idempotency: An entry has at most one pending request at any moment.
+    if (this.__isPending(configKey)) {
+      return this.cache[configKey].pendingPromise;
+    }
+
+    // TODO: Do something with timeout, maybe.
+
+    // Ensure there's an entry to mark pending at all.
+    if (!this.cache[configKey]) {
+      this.cache[configKey] = {};
+    }
 
     // For now, let configKeys be URLs to configs.
-    const request = this.requester(configKey);
+    console.log('Requesting with headers', this.cache[configKey].headers || {})
+    const start = Date.now();
+    const request = this.requester(configKey, this.cache[configKey].headers || {});
 
     this.cache[configKey].pendingPromise = request;
 
-    const start = Date.now();
     const response = await request;
     const end = Date.now();
 
-    // TODO: On 304 Not Modified, return false.
+    if (response.statusCode === 304) {
+      console.log('Not modified');
+      this.cache[configKey].pendingPromise = null;
+      return false;
+    }
+
+    // TODO: Status codes other than 200 and 304?
 
     const oldEntry = this.cache[configKey];
     const newEntry = {
-      value: response,
+      value: response.body,
       lastModified: Date.now(),
       pendingPromise: null,
-    }
+      headers: this.__getNextReqHeaders(response.headers),
+    };
 
     this.cache[configKey] = newEntry;
+
     // TODO: Emit event `${configKey}` with oldEntry, newEntry, fetchStats: { start, end }
+    console.log('Refreshed');
     return true;
   }
 
