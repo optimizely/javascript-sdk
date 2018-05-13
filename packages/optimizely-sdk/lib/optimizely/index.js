@@ -510,10 +510,10 @@ Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes)
  * Returns an Array containing the keys of all features in the project that are
  * enabled for the given user.
  * @param {string} userId
- * @param {Object} attributes
+ * @param {Object} [attributesMap] Object map of attribute sets grouped by feature key
  * @return {Array} Array of feature keys (strings)
  */
-Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
+Optimizely.prototype.getEnabledFeatures = function(userId, attributesMap) {
   var enabledFeatures = [];
   if (!this.isValidInstance) {
     this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getEnabledFeatures'));
@@ -521,7 +521,8 @@ Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
   }
 
   fns.forOwn(this.configObj.featureKeyMap, function(feature) {
-    if (this.isFeatureEnabled(feature.key, userId, attributes)) {
+
+    if (this.isFeatureEnabled(feature.key, userId, attributesMap && attributesMap[feature.key])) {
       enabledFeatures.push(feature.key);
     }
   }.bind(this));

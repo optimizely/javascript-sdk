@@ -2794,7 +2794,14 @@ describe('lib/optimizely', function() {
       });
 
       it('returns only enabled features for the specified user and attributes', function() {
-        var attributes = { test_attribute: 'test_value', };
+        var attributes = {
+          test_feature: { test_attribute: 'test_value', },
+          test_feature_2: { test_attribute: 'test_value', },
+          test_feature_for_experiment: { test_attribute: 'test_value', },
+          feature_with_group: { test_attribute: 'test_value', },
+          shared_feature: { test_attribute: 'test_value', },
+          unused_flag: { test_attribute: 'test_value', },
+        };
         var result = optlyInstance.getEnabledFeatures('user1', attributes);
         assert.strictEqual(result.length, 2);
         assert.isAbove(result.indexOf('test_feature'), -1);
@@ -2804,37 +2811,37 @@ describe('lib/optimizely', function() {
           optlyInstance.isFeatureEnabled,
           'test_feature',
           'user1',
-          attributes
+          attributes['test_feature']
         );
         sinon.assert.calledWithExactly(
           optlyInstance.isFeatureEnabled,
           'test_feature_2',
           'user1',
-          attributes
+          attributes['test_feature_2']
         );
         sinon.assert.calledWithExactly(
           optlyInstance.isFeatureEnabled,
           'test_feature_for_experiment',
           'user1',
-          attributes
+          attributes['test_feature_for_experiment']
         );
         sinon.assert.calledWithExactly(
           optlyInstance.isFeatureEnabled,
           'feature_with_group',
           'user1',
-          attributes
+          attributes['feature_with_group']
         );
         sinon.assert.calledWithExactly(
           optlyInstance.isFeatureEnabled,
           'shared_feature',
           'user1',
-          attributes
+          attributes['shared_feature']
         );
         sinon.assert.calledWithExactly(
           optlyInstance.isFeatureEnabled,
           'unused_flag',
           'user1',
-          attributes
+          attributes['unused_flag']
         );
       });
     });
