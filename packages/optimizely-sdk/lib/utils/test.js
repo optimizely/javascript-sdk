@@ -12,10 +12,13 @@ const configCache = new PollingConfigCache({
   //requester: (url, headers) => window.fetch(url, { headers });
 });
 
+const TEST_KEY = 'https://cdn.optimizely.com/json/8351122416.json';
+
 async function main() {
-  await configCache.getAsync('https://cdn.optimizely.com/json/8351122416.json');
-  await configCache.getAsync('https://cdn.optimizely.com/json/8351122416.json');
-  await configCache.getAsync('https://cdn.optimizely.com/json/8351122416.json');
+  configCache.getAsync(TEST_KEY);
+  configCache.on(TEST_KEY, () => {
+    console.log('TEST_KEY listener invoked');
+  });
 }
 
 main();

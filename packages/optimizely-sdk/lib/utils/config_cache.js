@@ -32,6 +32,8 @@ exports.PollingConfigCache = class PollingConfigCache {
 
     // Map key -> { value, lastModified, pendingPromise, headers }
     this.cache = {};
+    // Map key -> Array<function>
+    this.listeners = {};
   }
 
   /**
@@ -139,7 +141,11 @@ exports.PollingConfigCache = class PollingConfigCache {
   // Register subscribers to events named after config keys, to be invoked on entry update
   // with the old, new, and metadata values of the entry.
   on(configKey, fn) {
-    throw new Error('Not yet implemented');
+    if (!this.listeners[configKey]) {
+      this.listeners[configKey] = [];
+    }
+
+    this.listeners[configKey].push(fn);
   }
 
   /**
@@ -210,9 +216,16 @@ exports.PollingConfigCache = class PollingConfigCache {
 
     this.cache[configKey] = newEntry;
 
-    // TODO: Emit event `${configKey}` with oldEntry, newEntry, fetchStats: { start, end }
+    this.__emit(configKey, newEntry, { start, end });
+
     console.log('Refreshed');
     return true;
+  }
+
+  __emit(eventName, ...args) {
+    for (let fn of this.listeners[eventName] || []) {
+      fn(...args);
+    }
   }
 
   // TODO: Add interval on first entry, and #clear (which also kills interval)
