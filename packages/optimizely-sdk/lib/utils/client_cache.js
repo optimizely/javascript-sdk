@@ -1,5 +1,3 @@
-const rp = require('request-promise-native');
-
 const { PollingConfigCache } = require('./config_cache');
 const { AsyncCache, enums } = require('./async_cache');
 const Optimizely = require('../index.node');
@@ -7,21 +5,15 @@ const Optimizely = require('../index.node');
 exports.ClientCache = class ClientCache extends AsyncCache {
   constructor({
     clientArgsThunk = () => ({}),
-    // An __onGetAsync passed down to the inner ConfigCache.
-    configOnGetAsync = () => enums.refreshDirectives.YES_AWAIT,
+    configCache = null,
   } = {}) {
     super();
 
-    this.configCache = new PollingConfigCache({
-      requester: (url, headers) => rp({
-        uri: url,
-        headers,
-        simple: false, // Allow non-2xx responses (such as 304 Not Modified) to fulfill
-        resolveWithFullResponse: true,
-      }),
+    if (!configCache) {
+      throw new Error('Need to supply a ConfigCache for now');
+    }
 
-      onGetAsync: configOnGetAsync,
-    });
+    this.configCache = configCache;
 
     this.__clientArgsThunk = clientArgsThunk;
     this.__tracked = {};
