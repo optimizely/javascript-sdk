@@ -1,6 +1,7 @@
 const rp = require('request-promise-native');
 
 const { PollingConfigCache } = require('./config_cache');
+const { ClientCache } = require('./client_cache');
 
 const configCache = new PollingConfigCache({
   requester: (url, headers) => rp({
@@ -12,13 +13,13 @@ const configCache = new PollingConfigCache({
   //requester: (url, headers) => window.fetch(url, { headers });
 });
 
+const clientCache = new ClientCache();
+
 const TEST_KEY = 'https://cdn.optimizely.com/json/8351122416.json';
 
 async function main() {
-  configCache.getAsync(TEST_KEY);
-  configCache.on(TEST_KEY, () => {
-    console.log('TEST_KEY listener invoked');
-  });
+  console.log(await clientCache.getAsync(TEST_KEY));
+  console.log(await clientCache.getAsync(TEST_KEY));
 }
 
 main();

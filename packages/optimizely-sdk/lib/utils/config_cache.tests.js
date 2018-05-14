@@ -2,16 +2,16 @@
 
 const { assert }  = require('chai');
 
-const { PollingConfigCache, enums } = require('./config_cache');
+const { LiveCache, enums } = require('./live_cache');
 
 describe('lib/utils/config_cache', () => {
-  describe('ConfigCache', () => {
+  describe('LiveCache', () => {
     let cache;
 
     describe('#seed', () => {
       context('on a new cache', () => {
         beforeEach(() => {
-          cache = new PollingConfigCache();
+          cache = new LiveCache();
         });
 
         it('sets the value and can be synchronously accessed later', () => {
@@ -50,7 +50,7 @@ describe('lib/utils/config_cache', () => {
 
     describe('#get', () => {
       beforeEach(() => {
-        cache = new PollingConfigCache();
+        cache = new LiveCache();
       });
 
       context('entry is absent', () => {
