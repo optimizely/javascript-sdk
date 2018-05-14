@@ -1,9 +1,9 @@
-const { LiveCache, enums } = require('./live_cache');
+const { AsyncCache, enums } = require('./async_cache');
 
 /**
  * A ConfigCache that syncs by polling the CDN.
  */
-exports.PollingConfigCache = class PollingConfigCache extends LiveCache {
+exports.PollingConfigCache = class PollingConfigCache extends AsyncCache {
   constructor({
     // An async function (url: string, headers: Object) => Promise<{headers, body}, Error> to make HTTP requests.
     requester,

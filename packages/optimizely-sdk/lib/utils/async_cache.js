@@ -13,6 +13,8 @@ const enums = {
     YES_AWAIT: 'await',
   },
 
+  // Use a plain object as a unique value, against which to compare strict equality.
+  // Symbols were invented for this purpose, but those are non-transpilable ES2015.
   UNCHANGED: {},
 };
 
@@ -20,7 +22,7 @@ exports.enums = enums;
 
 /**
  * A read-through cache for any kinds of values which require async work to refresh.
- * LiveCache...
+ * AsyncCache...
  *   - lets you synchronously seed a cache entry with a given value,
  *   - offers configurable semantics for async entry access, and
  *   - ensures at most one pending refresh per entry at a time.
@@ -29,15 +31,18 @@ exports.enums = enums;
  * lest things blow up:
  *   1) __refresh, a function (key, currentValue) => Promise<value>
  *   2) __onGetAsync, which decides how to handle `getAsync` calls.
+ *
+ * Additionally, concrete subclasses may invoke __execRefresh(key) to trigger the
+ * refresh of an entry.
  */
-exports.LiveCache = class LiveCache {
+exports.AsyncCache = class AsyncCache {
   constructor() {
     // Map key -> { value, lastModified, pendingPromise }
     this.cache = {};
     // Map key -> Array<function>
     this.listeners = {};
 
-    // TODO: Blow up if extra methods aren't defined.
+    // TODO: Fail fast if extra methods aren't defined.
   }
 
   /**

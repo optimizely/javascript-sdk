@@ -1,10 +1,10 @@
 const rp = require('request-promise-native');
 
 const { PollingConfigCache } = require('./config_cache');
-const { LiveCache, enums } = require('./live_cache');
+const { AsyncCache, enums } = require('./async_cache');
 const Optimizely = require('../index.node');
 
-exports.ClientCache = class ClientCache extends LiveCache {
+exports.ClientCache = class ClientCache extends AsyncCache {
   constructor({
     clientArgsThunk = () => ({}),
     // An __onGetAsync passed down to the inner ConfigCache.
