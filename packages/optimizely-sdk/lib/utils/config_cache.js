@@ -8,13 +8,15 @@ exports.PollingConfigCache = class PollingConfigCache extends LiveCache {
     // An async function (url: string, headers: Object) => Promise<{headers, body}, Error> to make HTTP requests.
     requester,
     // A function that decides how to handle `getAsync` calls.
-    __onGetAsync = () => enums.refreshDirectives.YES_AWAIT,
+    onGetAsync = () => enums.refreshDirectives.YES_AWAIT,
     // The period of the polling, in ms.
     pollPeriod = 5000,
   } = {}) {
 
     super();
-    Object.assign(this, { requester, __onGetAsync, pollPeriod });
+    this.__onGetAsync = onGetAsync;
+
+    Object.assign(this, { requester, pollPeriod });
   }
 
   /**
