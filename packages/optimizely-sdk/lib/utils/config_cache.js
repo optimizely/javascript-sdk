@@ -17,10 +17,11 @@ exports.PollingConfigCache = class PollingConfigCache extends LiveCache {
     this.__onGetAsync = onGetAsync;
 
     Object.assign(this, { requester, pollPeriod });
+    this.__intervalFn = null;
   }
 
   /**
-   * Kick off a request, marking an entry as pending along the way. Idempotent.
+   * Kick off a request, marking an entry as pending along the way.
    *
    * @param {string} configKey
    * @returns {Promise}

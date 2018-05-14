@@ -177,14 +177,13 @@ exports.LiveCache = class LiveCache {
     if (value === enums.UNCHANGED) {
       console.log('Not modified');
       this.cache[key].pendingPromise = null;
-      return false;
+      return enums.UNCHANGED;
     }
-    // TODO: Fulfill with a Symbol-like obj representing 'UNCHANGED'
 
     this.__set(key, value);
     this.__emit(key, value);
 
-    return true;
+    return value;
   }
 
   __emit(eventName, ...args) {
