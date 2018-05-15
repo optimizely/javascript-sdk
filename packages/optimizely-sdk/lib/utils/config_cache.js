@@ -8,7 +8,8 @@ const { AsyncCache, enums } = require('./async_cache');
  */
 exports.PollingConfigCache = (defaultRequester) => class PollingConfigCache extends AsyncCache {
   constructor({
-    // An async function (url: string, headers: Object) => Promise<{headers, body}, Error> to make HTTP requests.
+    // An async function (url: string, headers: Object) => Promise<{headers, body, statusCode}, Error>
+    // to make HTTP requests.
     requester = defaultRequester,
     // A function that decides how to handle `getAsync` calls.
     onGetAsync = () => enums.refreshDirectives.YES_AWAIT,

@@ -40,6 +40,7 @@ async function browserRequester(url, headers) {
       acc[k] = v;
       return acc;
     }, {}),
+    statusCode: response.status,
   };
 }
 
