@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2016-2018, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,11 @@ var eventTagUtils = require('../../utils/event_tag_utils');
 var projectConfig = require('../project_config');
 
 var ACTIVATE_EVENT_KEY = 'campaign_activated';
+var BOT_FILTERING_FEATURE_KEY = '$opt_bot_filtering';
 var CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom';
 var ENDPOINT = 'https://logx.optimizely.com/v1/events';
 var HTTP_VERB = 'POST';
+
 
 /**
  * Get params which are used same in both conversion and impression events
@@ -36,7 +38,7 @@ function getCommonEventParams(options) {
   var attributes = options.attributes;
   var configObj = options.configObj;
   var anonymize_ip = configObj.anonymizeIP;
-
+  var botFiltering = configObj.botFiltering;
   if (anonymize_ip === null || anonymize_ip === undefined) {
     anonymize_ip = false;
   }
@@ -60,15 +62,30 @@ function getCommonEventParams(options) {
   fns.forOwn(attributes, function(attributeValue, attributeKey){
     var attributeId = projectConfig.getAttributeId(options.configObj, attributeKey);
     if (attributeId) {
-      var feature = {
+      commonParams.visitors[0].attributes.push({
         entity_id: attributeId,
         key: attributeKey,
         type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
         value: attributes[attributeKey],
-      };
-      commonParams.visitors[0].attributes.push(feature);
+      });      
+    } else if (enums.RESERVED_ATTRIBUTES.hasOwnProperty(attributeKey)) {
+      commonParams.visitors[0].attributes.push({
+        entity_id: attributeKey,
+        key: attributeKey,
+        type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
+        value: attributes[attributeKey],
+      });
     }
   });
+
+  if (typeof botFiltering === 'boolean') {
+    commonParams.visitors[0].attributes.push({
+      entity_id: BOT_FILTERING_FEATURE_KEY,
+      key: BOT_FILTERING_FEATURE_KEY,
+      type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
+      value: botFiltering,
+    });
+  };
   return commonParams;
 }
 

@@ -128,6 +128,10 @@ exports.RESERVED_EVENT_KEYWORDS = {
   VALUE: 'value',
 };
 
+exports.RESERVED_ATTRIBUTES = {
+  USER_AGENT: '$opt_user_agent',
+};
+
 exports.JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 exports.NODE_CLIENT_ENGINE = 'node-sdk';
 exports.NODE_CLIENT_VERSION = '2.0.1';

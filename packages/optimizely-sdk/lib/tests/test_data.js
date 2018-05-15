@@ -531,6 +531,7 @@ var configWithFeatures = {
     }
   ],
   'anonymizeIP': true,
+  'botFiltering': true,
   'audiences': [
     {
       'id': '594017',
