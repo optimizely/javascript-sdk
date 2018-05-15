@@ -13,61 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var fns = require('./utils/fns');
-var configValidator = require('./utils/config_validator');
-var defaultErrorHandler = require('./plugins/error_handler');
-var defaultEventDispatcher = require('./plugins/event_dispatcher/index.browser');
-var enums = require('./utils/enums');
-var logger = require('./plugins/logger');
 var Optimizely = require('./optimizely');
-
-var MODULE_NAME = 'INDEX';
+var { PollingConfigCache } = require('./utils/config_cache');
+var { ClientCache } = require('./utils/client_cache');
 
 /**
  * Entry point into the Optimizely Node testing SDK
  */
 module.exports = {
-  /**
-   * Creates an instance of the Optimizely class
-   * @param  {Object} config
-   * @param  {Object} config.datafile
-   * @param  {Object} config.errorHandler
-   * @param  {Object} config.eventDispatcher
-   * @param  {Object} config.logger
-   * @param  {Object} config.logLevel
-   * @param  {Object} config.userProfileService
-   * @return {Object} the Optimizely object
-   */
-  createInstance: function(config) {
-    var logLevel = 'logLevel' in config ? config.logLevel : enums.LOG_LEVEL.INFO;
-    var defaultLogger = logger.createLogger({ logLevel: enums.LOG_LEVEL.INFO });
-    if (config) {
-      try {
-        configValidator.validate(config);
-        config.isValidInstance = true;
-      } catch (ex) {
-        var errorMessage = MODULE_NAME + ':' + ex.message;
-        if (config.logger) {
-          config.logger.log(enums.LOG_LEVEL.ERROR, errorMessage);
-        } else {
-          defaultLogger.log(enums.LOG_LEVEL.ERROR, errorMessage);
-        }
-        config.isValidInstance = false;
-      }
-    }
+  createInstance: Optimizely.createInstance,
 
-    if (config.skipJSONValidation == null) {
-      config.skipJSONValidation = true;
-    }
-
-    config = fns.assignIn({
-      clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
-      clientVersion: enums.CLIENT_VERSION,
-      errorHandler: defaultErrorHandler,
-      eventDispatcher: defaultEventDispatcher,
-      logger: logger.createLogger({ logLevel: logLevel })
-    }, config);
-
-    return new Optimizely(config);
-  }
+  PollingConfigCache: PollingConfigCache(browserRequester),
+  ClientCache,
 };
+
+/**
+ * The function that PollingConfigCache should use by default to update a config.
+ */
+async function browserRequester(url, headers) {
+  // Currently broken, see https://optimizely.atlassian.net/browse/E2-3008
+  const response = await window.fetch(url, { headers, mode: 'cors' });
+
+  return {
+    body: await response.text(),
+    headers: Array.from(response.headers.entries()).reduce((acc, [k, v]) => {
+      acc[k] = v;
+      return acc;
+    }, {}),
+  };
+}
+

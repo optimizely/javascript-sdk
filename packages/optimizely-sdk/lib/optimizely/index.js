@@ -20,6 +20,7 @@ var decisionService = require('../core/decision_service');
 var enums = require('../utils/enums');
 var eventBuilder = require('../core/event_builder/index.js');
 var eventTagsValidator = require('../utils/event_tags_validator');
+var logger = require('../plugins/logger');
 var notificationCenter = require('../core/notification_center');
 var projectConfig = require('../core/project_config');
 var projectConfigSchema = require('./project_config_schema');
@@ -33,6 +34,12 @@ var LOG_MESSAGES = enums.LOG_MESSAGES;
 var MODULE_NAME = 'OPTIMIZELY';
 var DECISION_SOURCES = enums.DECISION_SOURCES;
 var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
+
+var configValidator = require('../utils/config_validator');
+var defaultErrorHandler = require('../plugins/error_handler');
+var defaultEventDispatcher = require('../plugins/event_dispatcher/index.browser');
+var MODULE_NAME = 'INDEX';
+
 
 /**
  * The Optimizely class
@@ -660,4 +667,52 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
   return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.STRING, userId, attributes);
 };
 
-module.exports = Optimizely;
+  /**
+   * Creates an instance of the Optimizely class
+   * @param  {Object} config
+   * @param  {Object} config.datafile
+   * @param  {Object} config.errorHandler
+   * @param  {Object} config.eventDispatcher
+   * @param  {Object} config.logger
+   * @param  {Object} config.logLevel
+   * @param  {Object} config.userProfileService
+   * @return {Object} the Optimizely object
+   */
+function createInstance(config) {
+  var logLevel = 'logLevel' in config ? config.logLevel : enums.LOG_LEVEL.INFO;
+  var defaultLogger = logger.createLogger({ logLevel: enums.LOG_LEVEL.INFO });
+  if (config) {
+    try {
+      configValidator.validate(config);
+      config.isValidInstance = true;
+    } catch (ex) {
+      var errorMessage = MODULE_NAME + ':' + ex.message;
+      if (config.logger) {
+        config.logger.log(enums.LOG_LEVEL.ERROR, errorMessage);
+      } else {
+        defaultLogger.log(enums.LOG_LEVEL.ERROR, errorMessage);
+      }
+      config.isValidInstance = false;
+    }
+  }
+
+  if (config.skipJSONValidation == null) {
+    config.skipJSONValidation = true;
+  }
+
+  config = fns.assignIn({
+    clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
+    clientVersion: enums.CLIENT_VERSION,
+    errorHandler: defaultErrorHandler,
+    eventDispatcher: defaultEventDispatcher,
+    logger: logger.createLogger({ logLevel: logLevel })
+  }, config);
+
+  return new Optimizely(config);
+}
+
+module.exports = {
+  Optimizely,
+  createInstance,
+};
+

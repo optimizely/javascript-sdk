@@ -2,7 +2,7 @@
   "name": "@optimizely/optimizely-sdk",
   "version": "2.0.1",
   "description": "JavaScript SDK package for Optimizely X Full Stack",
-  "main": "dist/optimizely.node.js",
+  "main": "lib/index.node.js",
   "browser": "lib/index.browser.js",
   "scripts": {
     "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive",
@@ -35,7 +35,6 @@
     "json-schema": "^0.2.3",
     "lodash": "^4.0.0",
     "murmurhash": "0.0.2",
-    "request": "~2.83.0",
     "sprintf": "^0.1.5",
     "uuid": "^3.0.1"
   },
@@ -72,5 +71,9 @@
     "LICENSE",
     "CHANGELOG",
     "README.md"
-  ]
+  ],
+  "optionalDependencies": {
+    "request": "^2.86.0",
+    "request-promise-native": "^1.0.5"
+  }
 }

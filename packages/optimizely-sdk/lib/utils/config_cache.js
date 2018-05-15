@@ -2,11 +2,14 @@ const { AsyncCache, enums } = require('./async_cache');
 
 /**
  * A ConfigCache that syncs by polling the CDN.
+ *
+ * Parametrized by which requester to use as a default, since Node.js and browser
+ * environments have different defaults.
  */
-exports.PollingConfigCache = class PollingConfigCache extends AsyncCache {
+exports.PollingConfigCache = (defaultRequester) => class PollingConfigCache extends AsyncCache {
   constructor({
     // An async function (url: string, headers: Object) => Promise<{headers, body}, Error> to make HTTP requests.
-    requester,
+    requester = defaultRequester,
     // A function that decides how to handle `getAsync` calls.
     onGetAsync = () => enums.refreshDirectives.YES_AWAIT,
     // The period of the polling, in ms.
@@ -17,7 +20,26 @@ exports.PollingConfigCache = class PollingConfigCache extends AsyncCache {
     this.__onGetAsync = onGetAsync;
 
     Object.assign(this, { requester, pollPeriod });
-    this.__intervalFn = null;
+    this.__tracked = {};
+  }
+
+  __intervalFn() {
+    for (let configId in this.__tracked) {
+      this.__execRefresh(configId);
+    }
+  }
+
+  __ensureIsTracked(configKey) {
+    this.__tracked[configKey] = true;
+    this.__ensureIntervalIsRunning();
+  }
+
+  __ensureIntervalIsRunning() {
+    if (!this.__intervalId) {
+      // Methods aren't bound to the class in which they're defined, surprisingly.
+      // Without this .bind, the context is the global object!
+      this.__intervalId = setInterval(this.__intervalFn.bind(this), this.pollPeriod);
+    }
   }
 
   /**
@@ -34,6 +56,8 @@ exports.PollingConfigCache = class PollingConfigCache extends AsyncCache {
     console.log('Requesting with headers', headers);
 
     const response = await this.requester(configKey, headers);
+
+    this.__ensureIsTracked(configKey);
 
     if (response.statusCode === 304) {
       return enums.UNCHANGED;

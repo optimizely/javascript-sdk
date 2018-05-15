@@ -105,6 +105,11 @@ exports.AsyncCache = class AsyncCache {
   }
 
   __set(key, value, clearPending = true) {
+    // Ensure there's an entry to set at all.
+    if (!this.cache[key]) {
+      this.cache[key] = {};
+    }
+
     const entry = this.cache[key];
 
     entry.value = value;

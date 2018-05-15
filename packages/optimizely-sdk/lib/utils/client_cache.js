@@ -1,6 +1,6 @@
 const { PollingConfigCache } = require('./config_cache');
 const { AsyncCache, enums } = require('./async_cache');
-const Optimizely = require('../index.node');
+const Optimizely = require('../optimizely');
 
 exports.ClientCache = class ClientCache extends AsyncCache {
   constructor({
@@ -25,8 +25,6 @@ exports.ClientCache = class ClientCache extends AsyncCache {
     return enums.refreshDirectives.YES_AWAIT;
   }
 
-
-  // TODO: Override seed
 
   /**
    * Ensure the cached Client for the given key is making decisions based on the config
@@ -63,6 +61,34 @@ exports.ClientCache = class ClientCache extends AsyncCache {
     }
   }
 
+  seed(key, initialValue) {
+    // Entry already exists and has a value => no-op.
+    if (this.get(key)) {
+      return;
+    }
+
+    const newClient = Optimizely.createInstance({
+      datafile: initialValue,
+      ...this.__clientArgsThunk(),
+    });
+
+    const valueToSet = {
+      client: newClient,
+      config: initialValue,
+    };
+
+    // Pending entries => just set the initial value, if one was given.
+    if (this.__isPending(key)) {
+      this.__set(key, valueToSet, false);
+      return;
+    }
+
+    // Never-before-seen key => make a new entry.
+    this.__set(key, valueToSet);
+
+    return;
+  }
+
   /**
    * @param {string} configKey
    *        Identifies the entry which this ClientCache should ensure that
@@ -75,7 +101,7 @@ exports.ClientCache = class ClientCache extends AsyncCache {
     }
 
     this.configCache.on(configKey, (newConfig) => {
-      this.__refresh(configKey, this.get(configKey));
+      this.__execRefresh(configKey);
     });
 
     this.__tracked[configKey] = true;

@@ -14,14 +14,11 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
-var configValidator = require('./utils/config_validator');
-var defaultErrorHandler = require('./plugins/error_handler');
-var defaultEventDispatcher = require('./plugins/event_dispatcher/index.node');
-var enums = require('./utils/enums');
-var fns = require('./utils/fns');
-var jsonSchemaValidator = require('./utils/json_schema_validator');
-var logger = require('./plugins/logger');
-var sprintf = require('sprintf');
+var rp = require('request-promise-native');
+
+var Optimizely = require('./optimizely');
+var { ConfigCache } = require('./utils/config_cache');
+var { ClientCache } = require('./utils/client_cache');
 
 var Optimizely = require('./optimizely');
 
@@ -31,44 +28,18 @@ var MODULE_NAME = 'INDEX';
  * Entry point into the Optimizely Node testing SDK
  */
 module.exports = {
-  /**
-   * Creates an instance of the Optimizely class
-   * @param  {Object} config
-   * @param  {Object} config.datafile
-   * @param  {Object} config.errorHandler
-   * @param  {Object} config.eventDispatcher
-   * @param  {Object} config.jsonSchemaValidator
-   * @param  {Object} config.logger
-   * @param  {Object} config.userProfileService
-   * @return {Object} the Optimizely object
-   */
-  createInstance: function(config) {
-    var defaultLogger = logger.createNoOpLogger();
-    if (config) {
-      try {
-        configValidator.validate(config);
-        config.isValidInstance = true;
-      } catch (ex) {
-        if (config.logger) {
-          config.logger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
-        } else {
-          var simpleLogger = logger.createLogger({logLevel: 4});
-          simpleLogger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
-        }
-        config.isValidInstance = false;
-      }
-    }
+  createInstance: Optimizely.createInstance,
 
-    config = fns.assign({
-      clientEngine: enums.NODE_CLIENT_ENGINE,
-      clientVersion: enums.CLIENT_VERSION,
-      errorHandler: defaultErrorHandler,
-      eventDispatcher: defaultEventDispatcher,
-      jsonSchemaValidator: jsonSchemaValidator,
-      logger: defaultLogger,
-      skipJSONValidation: false
-    }, config);
-
-    return new Optimizely(config);
-  }
+  PollingConfigCache: PollingConfigCache(nodejsRequester),
+  ClientCache,
 };
+
+async function nodejsRequester(url, headers) {
+  return rp({
+    uri: url,
+    headers,
+    resolveWithFullResponse: true,
+    simple: false, // Allow non-2xx responses (such as 304 Not Modified) to fulfill
+  });
+}
+
