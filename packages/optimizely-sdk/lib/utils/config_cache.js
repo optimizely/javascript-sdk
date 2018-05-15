@@ -88,7 +88,7 @@ exports.PollingConfigCache = (defaultRequester) => class PollingConfigCache exte
     };
   }
 
-  // TODO: Add interval on first entry, and #clear (which also kills interval)
+  // TODO: Add #clear to AsyncCache and override it here to also clearInterval.
 }
 
 //const LazyConfigCache = () => new PollingConfigCache({
