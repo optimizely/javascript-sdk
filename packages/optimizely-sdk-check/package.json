@@ -1,5 +1,5 @@
 {
-  "name": "@optimizely/optimizely-sdk-check",
+  "name": "@optimizely/sdk-check",
   "version": "0.1.0",
   "description": "Install optimizely-sdk from production, to check dependencies",
   "main": "index.js",
@@ -14,6 +14,6 @@
   "author": "tyler@optimizely.com",
   "license": "MIT",
   "dependencies": {
-    "@optimizely/optimizely-sdk": "file:../optimizely-sdk"
+    "@optimizely/optimizely-sdk": "^2.0.1"
   }
 }
