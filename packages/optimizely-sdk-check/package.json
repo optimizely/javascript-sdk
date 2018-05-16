@@ -1,0 +1,18 @@
+{
+  "name": "javascript-sdk-check",
+  "version": "0.1.0",
+  "description": "Install optimizely-sdk from production, to check dependencies",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/optimizely/javascript-sdk-check.git"
+  },
+  "scripts": {
+    "test": "npm audit"
+  },
+  "author": "tyler@optimizely.com",
+  "license": "MIT",
+  "dependencies": {
+    "@optimizely/optimizely-sdk": "^2.0.1"
+  }
+}
