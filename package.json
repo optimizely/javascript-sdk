@@ -3,8 +3,12 @@
   "version": "0.1.0",
   "description": "Install optimizely-sdk from production, to check dependencies",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/optimizely/javascript-sdk-check.git"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm audit"
   },
   "author": "tyler@optimizely.com",
   "license": "MIT",
