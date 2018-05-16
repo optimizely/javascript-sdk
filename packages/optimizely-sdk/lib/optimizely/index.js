@@ -126,7 +126,7 @@ function Optimizely(config) {
  * Buckets visitor and sends impression event to Optimizely.
  * @param  {string}      experimentKey
  * @param  {string}      userId
- * @param  {Object}      attributes
+ * @param  {Attributes=}      attributes User Attributes to use for targeting and segmentation.
  * @return {string|null} variation key
  */
 Optimizely.prototype.activate = function (experimentKey, userId, attributes) {
@@ -174,7 +174,7 @@ Optimizely.prototype.activate = function (experimentKey, userId, attributes) {
  * @param {string} experimentKey  Key of experiment that was activated
  * @param {string} variationKey   Key of variation shown in experiment that was activated
  * @param {string} userId         ID of user to whom the variation was shown
- * @param {Object} attributes     Optional user attributes
+ * @param {Attributes=} attributes      User Attributes to use for targeting and segmentation.
  * @private
  */
 Optimizely.prototype._sendImpressionEvent = function (experimentKey, variationKey, userId, attributes) {
@@ -221,7 +221,7 @@ Optimizely.prototype._sendImpressionEvent = function (experimentKey, variationKe
  * Sends conversion event to Optimizely.
  * @param  {string} eventKey
  * @param  {string} userId
- * @param  {string} attributes
+ * @param  {Attributes=} attributes User Attributes to use for targeting and segmentation.
  * @param  {Object} eventTags Values associated with the event.
  */
 Optimizely.prototype.track = function (eventKey, userId, attributes, eventTags) {
@@ -296,7 +296,7 @@ Optimizely.prototype.track = function (eventKey, userId, attributes, eventTags) 
  * Gets variation where visitor will be bucketed.
  * @param  {string}      experimentKey
  * @param  {string}      userId
- * @param  {Object}      attributes
+ * @param  {Attributes}      attributes User Attributes to use for targeting and segmentation.
  * @return {string|null} variation key
  */
 Optimizely.prototype.getVariation = function (experimentKey, userId, attributes) {
@@ -359,7 +359,7 @@ Optimizely.prototype.getForcedVariation = function (experimentKey, userId) {
 /**
  * Validates user ID and attributes parameters
  * @param  {string}  stringInputs   Map of string keys and associated values
- * @param  {Object}  userAttributes Optional parameter for user's attributes
+ * @param  {Attributes}  userAttributes Optional parameter for user's attributes
  * @param  {Object}  eventTags      Optional parameter for event tags
  * @return {boolean} True if inputs are valid
  * @private
@@ -393,7 +393,7 @@ Optimizely.prototype.__validateInputs = function(stringInputs, userAttributes, e
  * the user has been bucketed into.
  * @param  {string} eventKey
  * @param  {string} userId
- * @param  {Object} attributes
+ * @param  {Attributes} attributes
  * @return {Object} Map of experiment ids that we want to track to variations ids in which the user has been bucketed
  * @private
  */
@@ -483,7 +483,7 @@ Optimizely.prototype.__filterEmptyValues = function (map) {
  * Returns true if the feature is enabled for the given user.
  * @param {string} featureKey   Key of feature which will be checked
  * @param {string} userId       ID of user which will be checked
- * @param {Object} attributes   Optional user attributes
+ * @param {Attributes} attributes   Optional user attributes
  * @return {boolean}            True if the feature is enabled for the user, false otherwise
  */
 Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes) {
@@ -519,7 +519,7 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
  * Returns an Array containing the keys of all features in the project that are
  * enabled for the given user.
  * @param {string} userId
- * @param {Object} attributes
+ * @param {Attributes} attributes
  * @return {Array} Array of feature keys (strings)
  */
 Optimizely.prototype.getEnabledFeatures = function (userId, attributes) {
@@ -552,7 +552,7 @@ Optimizely.prototype.getEnabledFeatures = function (userId, attributes) {
  *                              accessed (must be one of FEATURE_VARIABLE_TYPES
  *                              in lib/utils/enums/index.js)
  * @param {string} userId       ID for the user
- * @param {Object} attributes   Optional user attributes
+ * @param {Attributes} attributes   Optional user attributes
  * @return {*}                  Value of the variable cast to the appropriate
  *                              type, or null if the feature key is invalid, the
  *                              variable key is invalid, or there is a mismatch
@@ -606,7 +606,7 @@ Optimizely.prototype._getFeatureVariableForType = function (featureKey, variable
  * @param {string} variableKey  Key of the variable whose value is being
  *                              accessed
  * @param {string} userId       ID for the user
- * @param {Object} attributes   Optional user attributes
+ * @param {Attributes} attributes   Optional user attributes
  * @return {boolean|null}       Boolean value of the variable, or null if the
  *                              feature key is invalid, the variable key is
  *                              invalid, or there is a mismatch with the type
@@ -624,7 +624,7 @@ Optimizely.prototype.getFeatureVariableBoolean = function (featureKey, variableK
  * @param {string} variableKey  Key of the variable whose value is being
  *                              accessed
  * @param {string} userId       ID for the user
- * @param {Object} attributes   Optional user attributes
+ * @param {Attributes} attributes   Optional user attributes
  * @return {number|null}        Number value of the variable, or null if the
  *                              feature key is invalid, the variable key is
  *                              invalid, or there is a mismatch with the type
@@ -642,7 +642,7 @@ Optimizely.prototype.getFeatureVariableDouble = function (featureKey, variableKe
  * @param {string} variableKey  Key of the variable whose value is being
  *                              accessed
  * @param {string} userId       ID for the user
- * @param {Object} attributes   Optional user attributes
+ * @param {Attributes} attributes   Optional user attributes
  * @return {number|null}        Number value of the variable, or null if the
  *                              feature key is invalid, the variable key is
  *                              invalid, or there is a mismatch with the type
@@ -660,7 +660,7 @@ Optimizely.prototype.getFeatureVariableInteger = function (featureKey, variableK
  * @param {string} variableKey  Key of the variable whose value is being
  *                              accessed
  * @param {string} userId       ID for the user
- * @param {Object} attributes   Optional user attributes
+ * @param {Attributes} attributes   Optional user attributes
  * @return {string|null}        String value of the variable, or null if the
  *                              feature key is invalid, the variable key is
  *                              invalid, or there is a mismatch with the type

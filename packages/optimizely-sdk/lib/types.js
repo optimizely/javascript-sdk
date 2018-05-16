@@ -72,3 +72,8 @@
  * @param {String} userId
  * @param {UserProfile} userProfile
  */
+
+/**
+ * Map of attribute name to attribute value. Null or empty values will be discarded.
+ * @typedef {Object.<(String|null)>} Attributes
+ */

@@ -47,6 +47,9 @@
 <dd></dd>
 <dt><a href="#UserProfileSaveFn">UserProfileSaveFn</a> : <code>function</code></dt>
 <dd></dd>
+<dt><a href="#Attributes">Attributes</a> : <code>Object.&lt;(String|null)&gt;</code></dt>
+<dd><p>Map of attribute name to attribute value. Null or empty values will be discarded.</p>
+</dd>
 </dl>
 
 <a name="index.module_node"></a>
@@ -114,8 +117,8 @@ Optimizely instance
 
 * [optimizely/index](#module_optimizely/index)
     * [~Optimizely(config)](#module_optimizely/index..Optimizely)
-        * [.activate(experimentKey, userId, attributes)](#module_optimizely/index..Optimizely+activate) ⇒ <code>string</code> \| <code>null</code>
-        * [.track(eventKey, userId, attributes, eventTags)](#module_optimizely/index..Optimizely+track)
+        * [.activate(experimentKey, userId, [attributes])](#module_optimizely/index..Optimizely+activate) ⇒ <code>string</code> \| <code>null</code>
+        * [.track(eventKey, userId, [attributes], eventTags)](#module_optimizely/index..Optimizely+track)
         * [.getVariation(experimentKey, userId, attributes)](#module_optimizely/index..Optimizely+getVariation) ⇒ <code>string</code> \| <code>null</code>
         * [.setForcedVariation(experimentKey, userId, variationKey)](#module_optimizely/index..Optimizely+setForcedVariation) ⇒
         * [.getForcedVariation(experimentKey, userId)](#module_optimizely/index..Optimizely+getForcedVariation) ⇒ <code>string</code> \| <code>null</code>
@@ -147,8 +150,8 @@ The Optimizely class
 
 
 * [~Optimizely(config)](#module_optimizely/index..Optimizely)
-    * [.activate(experimentKey, userId, attributes)](#module_optimizely/index..Optimizely+activate) ⇒ <code>string</code> \| <code>null</code>
-    * [.track(eventKey, userId, attributes, eventTags)](#module_optimizely/index..Optimizely+track)
+    * [.activate(experimentKey, userId, [attributes])](#module_optimizely/index..Optimizely+activate) ⇒ <code>string</code> \| <code>null</code>
+    * [.track(eventKey, userId, [attributes], eventTags)](#module_optimizely/index..Optimizely+track)
     * [.getVariation(experimentKey, userId, attributes)](#module_optimizely/index..Optimizely+getVariation) ⇒ <code>string</code> \| <code>null</code>
     * [.setForcedVariation(experimentKey, userId, variationKey)](#module_optimizely/index..Optimizely+setForcedVariation) ⇒
     * [.getForcedVariation(experimentKey, userId)](#module_optimizely/index..Optimizely+getForcedVariation) ⇒ <code>string</code> \| <code>null</code>
@@ -161,21 +164,21 @@ The Optimizely class
 
 <a name="module_optimizely/index..Optimizely+activate"></a>
 
-#### optimizely.activate(experimentKey, userId, attributes) ⇒ <code>string</code> \| <code>null</code>
+#### optimizely.activate(experimentKey, userId, [attributes]) ⇒ <code>string</code> \| <code>null</code>
 Buckets visitor and sends impression event to Optimizely.
 
 **Kind**: instance method of [<code>Optimizely</code>](#module_optimizely/index..Optimizely)  
 **Returns**: <code>string</code> \| <code>null</code> - variation key  
 
-| Param | Type |
-| --- | --- |
-| experimentKey | <code>string</code> | 
-| userId | <code>string</code> | 
-| attributes | <code>Object</code> | 
+| Param | Type | Description |
+| --- | --- | --- |
+| experimentKey | <code>string</code> |  |
+| userId | <code>string</code> |  |
+| [attributes] | [<code>Attributes</code>](#Attributes) | User Attributes to use for targeting and segmentation. |
 
 <a name="module_optimizely/index..Optimizely+track"></a>
 
-#### optimizely.track(eventKey, userId, attributes, eventTags)
+#### optimizely.track(eventKey, userId, [attributes], eventTags)
 Sends conversion event to Optimizely.
 
 **Kind**: instance method of [<code>Optimizely</code>](#module_optimizely/index..Optimizely)  
@@ -184,7 +187,7 @@ Sends conversion event to Optimizely.
 | --- | --- | --- |
 | eventKey | <code>string</code> |  |
 | userId | <code>string</code> |  |
-| attributes | <code>string</code> |  |
+| [attributes] | [<code>Attributes</code>](#Attributes) | User Attributes to use for targeting and segmentation. |
 | eventTags | <code>Object</code> | Values associated with the event. |
 
 <a name="module_optimizely/index..Optimizely+getVariation"></a>
@@ -195,11 +198,11 @@ Gets variation where visitor will be bucketed.
 **Kind**: instance method of [<code>Optimizely</code>](#module_optimizely/index..Optimizely)  
 **Returns**: <code>string</code> \| <code>null</code> - variation key  
 
-| Param | Type |
-| --- | --- |
-| experimentKey | <code>string</code> | 
-| userId | <code>string</code> | 
-| attributes | <code>Object</code> | 
+| Param | Type | Description |
+| --- | --- | --- |
+| experimentKey | <code>string</code> |  |
+| userId | <code>string</code> |  |
+| attributes | [<code>Attributes</code>](#Attributes) | User Attributes to use for targeting and segmentation. |
 
 <a name="module_optimizely/index..Optimizely+setForcedVariation"></a>
 
@@ -240,7 +243,7 @@ Returns true if the feature is enabled for the given user.
 | --- | --- | --- |
 | featureKey | <code>string</code> | Key of feature which will be checked |
 | userId | <code>string</code> | ID of user which will be checked |
-| attributes | <code>Object</code> | Optional user attributes |
+| attributes | [<code>Attributes</code>](#Attributes) | Optional user attributes |
 
 <a name="module_optimizely/index..Optimizely+getEnabledFeatures"></a>
 
@@ -254,7 +257,7 @@ enabled for the given user.
 | Param | Type |
 | --- | --- |
 | userId | <code>string</code> | 
-| attributes | <code>Object</code> | 
+| attributes | [<code>Attributes</code>](#Attributes) | 
 
 <a name="module_optimizely/index..Optimizely+getFeatureVariableBoolean"></a>
 
@@ -273,7 +276,7 @@ flag.
 | featureKey | <code>string</code> | Key of the feature whose variable's value is                              being accessed |
 | variableKey | <code>string</code> | Key of the variable whose value is being                              accessed |
 | userId | <code>string</code> | ID for the user |
-| attributes | <code>Object</code> | Optional user attributes |
+| attributes | [<code>Attributes</code>](#Attributes) | Optional user attributes |
 
 <a name="module_optimizely/index..Optimizely+getFeatureVariableDouble"></a>
 
@@ -292,7 +295,7 @@ flag.
 | featureKey | <code>string</code> | Key of the feature whose variable's value is                              being accessed |
 | variableKey | <code>string</code> | Key of the variable whose value is being                              accessed |
 | userId | <code>string</code> | ID for the user |
-| attributes | <code>Object</code> | Optional user attributes |
+| attributes | [<code>Attributes</code>](#Attributes) | Optional user attributes |
 
 <a name="module_optimizely/index..Optimizely+getFeatureVariableInteger"></a>
 
@@ -311,7 +314,7 @@ flag.
 | featureKey | <code>string</code> | Key of the feature whose variable's value is                              being accessed |
 | variableKey | <code>string</code> | Key of the variable whose value is being                              accessed |
 | userId | <code>string</code> | ID for the user |
-| attributes | <code>Object</code> | Optional user attributes |
+| attributes | [<code>Attributes</code>](#Attributes) | Optional user attributes |
 
 <a name="module_optimizely/index..Optimizely+getFeatureVariableString"></a>
 
@@ -330,7 +333,7 @@ flag.
 | featureKey | <code>string</code> | Key of the feature whose variable's value is                              being accessed |
 | variableKey | <code>string</code> | Key of the variable whose value is being                              accessed |
 | userId | <code>string</code> | ID for the user |
-| attributes | <code>Object</code> | Optional user attributes |
+| attributes | [<code>Attributes</code>](#Attributes) | Optional user attributes |
 
 <a name="module_optimizely/project_config_schema"></a>
 
@@ -480,3 +483,9 @@ Bucket for a single experiment
 | userId | <code>String</code> | 
 | userProfile | [<code>UserProfile</code>](#UserProfile) | 
 
+<a name="Attributes"></a>
+
+## Attributes : <code>Object.&lt;(String\|null)&gt;</code>
+Map of attribute name to attribute value. Null or empty values will be discarded.
+
+**Kind**: global typedef  
