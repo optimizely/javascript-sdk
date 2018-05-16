@@ -702,12 +702,12 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledOnce(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_USER_ID, 'USER_ID_VALIDATOR'));
+        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
 
         sinon.assert.calledTwice(createdLogger.log);
 
         var logMessage1 = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage1, sprintf(ERROR_MESSAGES.INVALID_USER_ID, 'USER_ID_VALIDATOR'));
+        assert.strictEqual(logMessage1, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
         var logMessage2 = createdLogger.log.args[1][1];
         assert.strictEqual(logMessage2, sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'null', 'testExperiment'));
       });
@@ -772,7 +772,7 @@ describe('lib/optimizely', function() {
           var activate = optlyInstance.activate('testExperiment', 'user1');
           assert.strictEqual(activate, 'control');
 
-          sinon.assert.calledOnce(Optimizely.prototype.__validateInputs);
+          sinon.assert.calledTwice(Optimizely.prototype.__validateInputs);
           sinon.assert.calledThrice(createdLogger.log);
 
           var logMessage0 = createdLogger.log.args[0][1];
@@ -1341,11 +1341,11 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledOnce(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_USER_ID, 'USER_ID_VALIDATOR'));
+        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_USER_ID, 'USER_ID_VALIDATOR'));
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
 
       it('should throw an error for invalid event key', function() {
@@ -1538,11 +1538,11 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledOnce(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_USER_ID, 'USER_ID_VALIDATOR'));
+        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_USER_ID, 'USER_ID_VALIDATOR'));
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
 
       it('should throw an error for invalid experiment key', function() {
@@ -1844,26 +1844,26 @@ describe('lib/optimizely', function() {
 
     describe('__validateInputs', function() {
       it('should return true if user ID and attributes are valid', function() {
-        assert.isTrue(optlyInstance.__validateInputs('testUser'));
-        assert.isTrue(optlyInstance.__validateInputs('testUser', {browser_type: 'firefox'}));
+        assert.isTrue(optlyInstance.__validateInputs({user_id: 'testUser'}));
+        assert.isTrue(optlyInstance.__validateInputs({user_id: 'testUser'}, {browser_type: 'firefox'}));
         sinon.assert.notCalled(createdLogger.log);
       });
 
       it('should return false and throw an error if user ID is invalid', function() {
-        var falseUserIdInput = optlyInstance.__validateInputs([]);
+        var falseUserIdInput = optlyInstance.__validateInputs({user_id: []});
         assert.isFalse(falseUserIdInput);
 
         sinon.assert.calledOnce(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_USER_ID, 'USER_ID_VALIDATOR'));
+        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_USER_ID, 'USER_ID_VALIDATOR'));
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
 
       it('should return false and throw an error if attributes are invalid', function() {
-        var falseUserIdInput = optlyInstance.__validateInputs('testUser', []);
+        var falseUserIdInput = optlyInstance.__validateInputs({user_id: 'testUser'}, []);
         assert.isFalse(falseUserIdInput);
 
         sinon.assert.calledOnce(errorHandler.handleError);
@@ -2569,35 +2569,35 @@ describe('lib/optimizely', function() {
             var result = optlyInstance.isFeatureEnabled(null, 'user1', attributes);
             assert.strictEqual(result, false);
             sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key null is not in datafile.');
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided feature_key is in an invalid format.');
           });
 
           it('returns false when user id is null', function() {
             var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', null, attributes);
             assert.strictEqual(result, false);
             sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'USER_ID_VALIDATOR: Provided user ID is in an invalid format.');
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
           });
 
           it('returns false when feature key and user id are null', function() {
             var result = optlyInstance.isFeatureEnabled(null, null, attributes);
             assert.strictEqual(result, false);
             sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key null is not in datafile.');
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided feature_key is in an invalid format.');
           });
 
           it('returns false when feature key is undefined', function() {
             var result = optlyInstance.isFeatureEnabled(undefined, 'user1', attributes);
             assert.strictEqual(result, false);
             sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key undefined is not in datafile.');
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided feature_key is in an invalid format.');
           });
 
           it('returns false when user id is undefined', function() {
             var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', undefined, attributes);
             assert.strictEqual(result, false);
             sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'USER_ID_VALIDATOR: Provided user ID is in an invalid format.');
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
           });
 
           it('returns false when feature key and user id are undefined', function() {
@@ -2610,28 +2610,28 @@ describe('lib/optimizely', function() {
             var result = optlyInstance.isFeatureEnabled();
             assert.strictEqual(result, false);
             sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key undefined is not in datafile.');
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided feature_key is in an invalid format.');
           });
 
           it('returns false when user id is an object', function() {
             var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', {}, attributes);
             assert.strictEqual(result, false);
             sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'USER_ID_VALIDATOR: Provided user ID is in an invalid format.');
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
           });
 
           it('returns false when user id is a number', function() {
             var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', 72, attributes);
             assert.strictEqual(result, false);
             sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'USER_ID_VALIDATOR: Provided user ID is in an invalid format.');
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
           });
 
           it('returns false when feature key is an array', function() {
             var result = optlyInstance.isFeatureEnabled(['a', 'feature'], 'user1', attributes);
             assert.strictEqual(result, false);
             sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key a,feature is not in datafile.');
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided feature_key is in an invalid format.');
           });
 
           it('returns false when user id is an empty string', function() {
@@ -2902,73 +2902,73 @@ describe('lib/optimizely', function() {
         it('returns null from getFeatureVariableBoolean if user id is null', function() {
           var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', null, { test_attribute: 'test_value' });
           assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'USER_ID_VALIDATOR: Provided user ID is in an invalid format.');
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
         });
 
         it('returns null from getFeatureVariableBoolean if user id is undefined', function() {
           var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', undefined, { test_attribute: 'test_value' });
           assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'USER_ID_VALIDATOR: Provided user ID is in an invalid format.');
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
         });
 
         it('returns null from getFeatureVariableBoolean if user id is not provided', function() {
           var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated');
           assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'USER_ID_VALIDATOR: Provided user ID is in an invalid format.');
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
         });
 
         it('returns null from getFeatureVariableDouble if user id is null', function() {
           var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', null, { test_attribute: 'test_value' });
           assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'USER_ID_VALIDATOR: Provided user ID is in an invalid format.');
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
         });
 
         it('returns null from getFeatureVariableDouble if user id is undefined', function() {
           var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', undefined, { test_attribute: 'test_value' });
           assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'USER_ID_VALIDATOR: Provided user ID is in an invalid format.');
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
         });
 
         it('returns null from getFeatureVariableDouble if user id is not provided', function() {
           var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width');
           assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'USER_ID_VALIDATOR: Provided user ID is in an invalid format.');
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
         });
 
         it('returns null from getFeatureVariableInteger if user id is null', function() {
           var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', null, { test_attribute: 'test_value' });
           assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'USER_ID_VALIDATOR: Provided user ID is in an invalid format.');
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
         });
 
         it('returns null from getFeatureVariableInteger if user id is undefined', function() {
           var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', undefined, { test_attribute: 'test_value' });
           assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'USER_ID_VALIDATOR: Provided user ID is in an invalid format.');
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
         });
 
         it('returns null from getFeatureVariableInteger if user id is not provided', function() {
           var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons');
           assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'USER_ID_VALIDATOR: Provided user ID is in an invalid format.');
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
         });
 
         it('returns null from getFeatureVariableString if user id is null', function() {
           var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', null, { test_attribute: 'test_value' });
           assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'USER_ID_VALIDATOR: Provided user ID is in an invalid format.');
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
         });
 
         it('returns null from getFeatureVariableString if user id is undefined', function() {
           var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', undefined, { test_attribute: 'test_value' });
           assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'USER_ID_VALIDATOR: Provided user ID is in an invalid format.');
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
         });
 
         it('returns null from getFeatureVariableString if user id is not provided', function() {
           var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt');
           assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'USER_ID_VALIDATOR: Provided user ID is in an invalid format.');
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
         });
 
         describe('type casting failures', function() {

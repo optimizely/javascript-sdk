@@ -30,8 +30,8 @@ var notificationCenter = require('../core/notification_center');
 var projectConfig = require('../core/project_config');
 var projectConfigSchema = require('./project_config_schema');
 var sprintf = require('sprintf');
-var userIdValidator = require('../utils/user_id_validator');
 var userProfileServiceValidator = require('../utils/user_profile_service_validator');
+var stringValidator = require('../utils/string_value_validator');
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
@@ -135,6 +135,10 @@ Optimizely.prototype.activate = function (experimentKey, userId, attributes) {
     return null;
   }
 
+  if (!this.__validateInputs({experiment_key: experimentKey, user_id: userId}, attributes)) {
+    return this.__notActivatingExperiment(experimentKey, userId);
+  }
+
   try {
     var variationKey = this.getVariation(experimentKey, userId, attributes);
     if (variationKey === null) {
@@ -227,7 +231,7 @@ Optimizely.prototype.track = function (eventKey, userId, attributes, eventTags) 
   }
 
   try {
-    if (!this.__validateInputs(userId, attributes, eventTags)) {
+    if (!this.__validateInputs({user_id: userId, event_key: eventKey}, attributes, eventTags)) {
       return;
     }
 
@@ -302,7 +306,7 @@ Optimizely.prototype.getVariation = function (experimentKey, userId, attributes)
   }
 
   try {
-    if (!this.__validateInputs(userId, attributes)) {
+    if (!this.__validateInputs({experiment_key: experimentKey, user_id: userId}, attributes)) {
       return null;
     }
 
@@ -354,15 +358,21 @@ Optimizely.prototype.getForcedVariation = function (experimentKey, userId) {
 
 /**
  * Validates user ID and attributes parameters
- * @param  {string}  userId         ID of user
+ * @param  {string}  stringInputs   Map of string keys and associated values
  * @param  {Object}  userAttributes Optional parameter for user's attributes
  * @param  {Object}  eventTags      Optional parameter for event tags
  * @return {boolean} True if inputs are valid
  * @private
  */
-Optimizely.prototype.__validateInputs = function (userId, userAttributes, eventTags) {
+Optimizely.prototype.__validateInputs = function(stringInputs, userAttributes, eventTags) {
   try {
-    userIdValidator.validate(userId);
+    var inputKeys = Object.keys(stringInputs);
+    for (var index = 0; index < inputKeys.length; index++) {
+      var key = inputKeys[index];
+      if (!stringValidator.validate(stringInputs[key])) {
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, key));
+      }
+    }
     if (userAttributes) {
       attributesValidator.validate(userAttributes);
     }
@@ -482,12 +492,12 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
     return false;
   }
 
-  var feature = projectConfig.getFeatureFromKey(this.configObj, featureKey, this.logger);
-  if (!feature) {
+  if (!this.__validateInputs({feature_key: featureKey, user_id: userId}, attributes)) {
     return false;
   }
 
-  if (!this.__validateInputs(userId, attributes)) {
+  var feature = projectConfig.getFeatureFromKey(this.configObj, featureKey, this.logger);
+  if (!feature) {
     return false;
   }
 
@@ -556,6 +566,10 @@ Optimizely.prototype._getFeatureVariableForType = function (featureKey, variable
     return null;
   }
 
+  if (!this.__validateInputs({feature_key: featureKey, variable_key: variableKey, user_id: userId}, attributes)) {
+    return null;
+  }
+
   var featureFlag = projectConfig.getFeatureFromKey(this.configObj, featureKey, this.logger);
   if (!featureFlag) {
     return null;
@@ -568,10 +582,6 @@ Optimizely.prototype._getFeatureVariableForType = function (featureKey, variable
 
   if (variable.type !== variableType) {
     this.logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE, MODULE_NAME, variableType, variable.type));
-    return null;
-  }
-
-  if (!this.__validateInputs(userId, attributes)) {
     return null;
   }
 
