@@ -222,7 +222,7 @@ Optimizely.prototype._sendImpressionEvent = function (experimentKey, variationKe
  * @param  {string} eventKey
  * @param  {string} userId
  * @param  {Attributes=} attributes User Attributes to use for targeting and segmentation.
- * @param  {Object} eventTags Values associated with the event.
+ * @param  {EventTags=} eventTags Values associated with the event.
  */
 Optimizely.prototype.track = function (eventKey, userId, attributes, eventTags) {
   if (!this.isValidInstance) {
@@ -296,7 +296,7 @@ Optimizely.prototype.track = function (eventKey, userId, attributes, eventTags) 
  * Gets variation where visitor will be bucketed.
  * @param  {string}      experimentKey
  * @param  {string}      userId
- * @param  {Attributes}      attributes User Attributes to use for targeting and segmentation.
+ * @param  {Attributes=}      attributes User Attributes to use for targeting
  * @return {string|null} variation key
  */
 Optimizely.prototype.getVariation = function (experimentKey, userId, attributes) {
@@ -341,10 +341,10 @@ Optimizely.prototype.setForcedVariation = function (experimentKey, userId, varia
 };
 
 /**
- * Gets the forced variation for a given user and experiment.
+ * Gets the forced (or whitelisted) variation for a given user and experiment.
  * @param  {string} experimentKey
  * @param  {string} userId
- * @return {string|null} The forced variation key.
+ * @return {string|null} The forced variation key, or `null` if no forced variation is set.
  */
 Optimizely.prototype.getForcedVariation = function (experimentKey, userId) {
   try {
@@ -480,10 +480,11 @@ Optimizely.prototype.__filterEmptyValues = function (map) {
 };
 
 /**
- * Returns true if the feature is enabled for the given user.
+ * Returns true if the feature is enabled for the given user. If the Feature is part of a Feature Test,
+ * also dispatches an impression event.
  * @param {string} featureKey   Key of feature which will be checked
  * @param {string} userId       ID of user which will be checked
- * @param {Attributes} attributes   Optional user attributes
+ * @param {Attributes=} attributes   Optional user attributes to use for targeting/segmentation
  * @return {boolean}            True if the feature is enabled for the user, false otherwise
  */
 Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes) {
@@ -517,9 +518,10 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
 
 /**
  * Returns an Array containing the keys of all features in the project that are
- * enabled for the given user.
+ * enabled for the given user. Triggers side effects of [`isFeatureEnabled`]{@link module:optimizely/index~Optimizely#isFeatureEnabled} for each Feature
+ * defined in the datafile.
  * @param {string} userId
- * @param {Attributes} attributes
+ * @param {Attributes=} attributes
  * @return {Array} Array of feature keys (strings)
  */
 Optimizely.prototype.getEnabledFeatures = function (userId, attributes) {
@@ -552,7 +554,7 @@ Optimizely.prototype.getEnabledFeatures = function (userId, attributes) {
  *                              accessed (must be one of FEATURE_VARIABLE_TYPES
  *                              in lib/utils/enums/index.js)
  * @param {string} userId       ID for the user
- * @param {Attributes} attributes   Optional user attributes
+ * @param {Attributes=} attributes   Optional user attributes to use for targetin
  * @return {*}                  Value of the variable cast to the appropriate
  *                              type, or null if the feature key is invalid, the
  *                              variable key is invalid, or there is a mismatch
@@ -606,7 +608,7 @@ Optimizely.prototype._getFeatureVariableForType = function (featureKey, variable
  * @param {string} variableKey  Key of the variable whose value is being
  *                              accessed
  * @param {string} userId       ID for the user
- * @param {Attributes} attributes   Optional user attributes
+ * @param {Attributes=} attributes   Optional user attributes to use for targeting
  * @return {boolean|null}       Boolean value of the variable, or null if the
  *                              feature key is invalid, the variable key is
  *                              invalid, or there is a mismatch with the type
@@ -624,7 +626,7 @@ Optimizely.prototype.getFeatureVariableBoolean = function (featureKey, variableK
  * @param {string} variableKey  Key of the variable whose value is being
  *                              accessed
  * @param {string} userId       ID for the user
- * @param {Attributes} attributes   Optional user attributes
+ * @param {Attributes=} attributes   Optional user attributes to use for targeting
  * @return {number|null}        Number value of the variable, or null if the
  *                              feature key is invalid, the variable key is
  *                              invalid, or there is a mismatch with the type
@@ -642,7 +644,7 @@ Optimizely.prototype.getFeatureVariableDouble = function (featureKey, variableKe
  * @param {string} variableKey  Key of the variable whose value is being
  *                              accessed
  * @param {string} userId       ID for the user
- * @param {Attributes} attributes   Optional user attributes
+ * @param {Attributes=} attributes   Optional user attributes to use for targeting
  * @return {number|null}        Number value of the variable, or null if the
  *                              feature key is invalid, the variable key is
  *                              invalid, or there is a mismatch with the type
@@ -660,7 +662,7 @@ Optimizely.prototype.getFeatureVariableInteger = function (featureKey, variableK
  * @param {string} variableKey  Key of the variable whose value is being
  *                              accessed
  * @param {string} userId       ID for the user
- * @param {Attributes} attributes   Optional user attributes
+ * @param {Attributes=} attributes   Optional user attributes to use for targeting
  * @return {string|null}        String value of the variable, or null if the
  *                              feature key is invalid, the variable key is
  *                              invalid, or there is a mismatch with the type

@@ -77,3 +77,11 @@
  * Map of attribute name to attribute value. Null or empty values will be discarded.
  * @typedef {Object.<(String|null)>} Attributes
  */
+
+/**
+ * Map of event tag name to value. The optional properties defined below have special significance
+ * to Optimizely, any other string can also be used as an attribute name.
+ * @typedef {Object.<(String|Number)>} EventTags
+ * @property {Number|undefined} value Value to associate with the event, if any
+ * @property {Number|undefined} revenue Revenue value (in cents) to associate with the event, if any
+ */

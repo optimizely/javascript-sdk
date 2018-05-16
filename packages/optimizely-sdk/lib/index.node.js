@@ -36,7 +36,7 @@ module.exports = {
   /**
    * Creates an instance of the Optimizely class
    * @param  {Object} config
-   * @param  {String} config.datafile Datafile string. Should conform to schema
+   * @param  {String} config.datafile Datafile string. Should conform to [schema]{@link module:optimizely/project_config_schema}
    * @param  {ErrorHandler|undefined} config.errorHandler Error Handler
    * @param  {EventDispatcher|undefined} config.eventDispatcher Custom Event Dispatcher, if any
    * @param  {JSONSchemaValidator|undefined} config.jsonSchemaValidator

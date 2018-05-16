@@ -50,6 +50,10 @@
 <dt><a href="#Attributes">Attributes</a> : <code>Object.&lt;(String|null)&gt;</code></dt>
 <dd><p>Map of attribute name to attribute value. Null or empty values will be discarded.</p>
 </dd>
+<dt><a href="#EventTags">EventTags</a> : <code>Object.&lt;(String|Number)&gt;</code></dt>
+<dd><p>Map of event tag name to value. The optional properties defined below have special significance
+to Optimizely, any other string can also be used as an attribute name.</p>
+</dd>
 </dl>
 
 <a name="index.module_node"></a>
@@ -68,7 +72,7 @@ Creates an instance of the Optimizely class
 | Param | Type | Description |
 | --- | --- | --- |
 | config | <code>Object</code> |  |
-| config.datafile | <code>String</code> | Datafile string. Should conform to schema |
+| config.datafile | <code>String</code> | Datafile string. Should conform to [schema](#module_optimizely/project_config_schema) |
 | config.errorHandler | [<code>ErrorHandler</code>](#ErrorHandler) \| <code>undefined</code> | Error Handler |
 | config.eventDispatcher | [<code>EventDispatcher</code>](#EventDispatcher) \| <code>undefined</code> | Custom Event Dispatcher, if any |
 | config.jsonSchemaValidator | [<code>JSONSchemaValidator</code>](#JSONSchemaValidator) \| <code>undefined</code> |  |
@@ -118,16 +122,16 @@ Optimizely instance
 * [optimizely/index](#module_optimizely/index)
     * [~Optimizely(config)](#module_optimizely/index..Optimizely)
         * [.activate(experimentKey, userId, [attributes])](#module_optimizely/index..Optimizely+activate) ⇒ <code>string</code> \| <code>null</code>
-        * [.track(eventKey, userId, [attributes], eventTags)](#module_optimizely/index..Optimizely+track)
-        * [.getVariation(experimentKey, userId, attributes)](#module_optimizely/index..Optimizely+getVariation) ⇒ <code>string</code> \| <code>null</code>
+        * [.track(eventKey, userId, [attributes], [eventTags])](#module_optimizely/index..Optimizely+track)
+        * [.getVariation(experimentKey, userId, [attributes])](#module_optimizely/index..Optimizely+getVariation) ⇒ <code>string</code> \| <code>null</code>
         * [.setForcedVariation(experimentKey, userId, variationKey)](#module_optimizely/index..Optimizely+setForcedVariation) ⇒
         * [.getForcedVariation(experimentKey, userId)](#module_optimizely/index..Optimizely+getForcedVariation) ⇒ <code>string</code> \| <code>null</code>
-        * [.isFeatureEnabled(featureKey, userId, attributes)](#module_optimizely/index..Optimizely+isFeatureEnabled) ⇒ <code>boolean</code>
-        * [.getEnabledFeatures(userId, attributes)](#module_optimizely/index..Optimizely+getEnabledFeatures) ⇒ <code>Array</code>
-        * [.getFeatureVariableBoolean(featureKey, variableKey, userId, attributes)](#module_optimizely/index..Optimizely+getFeatureVariableBoolean) ⇒ <code>boolean</code> \| <code>null</code>
-        * [.getFeatureVariableDouble(featureKey, variableKey, userId, attributes)](#module_optimizely/index..Optimizely+getFeatureVariableDouble) ⇒ <code>number</code> \| <code>null</code>
-        * [.getFeatureVariableInteger(featureKey, variableKey, userId, attributes)](#module_optimizely/index..Optimizely+getFeatureVariableInteger) ⇒ <code>number</code> \| <code>null</code>
-        * [.getFeatureVariableString(featureKey, variableKey, userId, attributes)](#module_optimizely/index..Optimizely+getFeatureVariableString) ⇒ <code>string</code> \| <code>null</code>
+        * [.isFeatureEnabled(featureKey, userId, [attributes])](#module_optimizely/index..Optimizely+isFeatureEnabled) ⇒ <code>boolean</code>
+        * [.getEnabledFeatures(userId, [attributes])](#module_optimizely/index..Optimizely+getEnabledFeatures) ⇒ <code>Array</code>
+        * [.getFeatureVariableBoolean(featureKey, variableKey, userId, [attributes])](#module_optimizely/index..Optimizely+getFeatureVariableBoolean) ⇒ <code>boolean</code> \| <code>null</code>
+        * [.getFeatureVariableDouble(featureKey, variableKey, userId, [attributes])](#module_optimizely/index..Optimizely+getFeatureVariableDouble) ⇒ <code>number</code> \| <code>null</code>
+        * [.getFeatureVariableInteger(featureKey, variableKey, userId, [attributes])](#module_optimizely/index..Optimizely+getFeatureVariableInteger) ⇒ <code>number</code> \| <code>null</code>
+        * [.getFeatureVariableString(featureKey, variableKey, userId, [attributes])](#module_optimizely/index..Optimizely+getFeatureVariableString) ⇒ <code>string</code> \| <code>null</code>
 
 <a name="module_optimizely/index..Optimizely"></a>
 
@@ -151,16 +155,16 @@ The Optimizely class
 
 * [~Optimizely(config)](#module_optimizely/index..Optimizely)
     * [.activate(experimentKey, userId, [attributes])](#module_optimizely/index..Optimizely+activate) ⇒ <code>string</code> \| <code>null</code>
-    * [.track(eventKey, userId, [attributes], eventTags)](#module_optimizely/index..Optimizely+track)
-    * [.getVariation(experimentKey, userId, attributes)](#module_optimizely/index..Optimizely+getVariation) ⇒ <code>string</code> \| <code>null</code>
+    * [.track(eventKey, userId, [attributes], [eventTags])](#module_optimizely/index..Optimizely+track)
+    * [.getVariation(experimentKey, userId, [attributes])](#module_optimizely/index..Optimizely+getVariation) ⇒ <code>string</code> \| <code>null</code>
     * [.setForcedVariation(experimentKey, userId, variationKey)](#module_optimizely/index..Optimizely+setForcedVariation) ⇒
     * [.getForcedVariation(experimentKey, userId)](#module_optimizely/index..Optimizely+getForcedVariation) ⇒ <code>string</code> \| <code>null</code>
-    * [.isFeatureEnabled(featureKey, userId, attributes)](#module_optimizely/index..Optimizely+isFeatureEnabled) ⇒ <code>boolean</code>
-    * [.getEnabledFeatures(userId, attributes)](#module_optimizely/index..Optimizely+getEnabledFeatures) ⇒ <code>Array</code>
-    * [.getFeatureVariableBoolean(featureKey, variableKey, userId, attributes)](#module_optimizely/index..Optimizely+getFeatureVariableBoolean) ⇒ <code>boolean</code> \| <code>null</code>
-    * [.getFeatureVariableDouble(featureKey, variableKey, userId, attributes)](#module_optimizely/index..Optimizely+getFeatureVariableDouble) ⇒ <code>number</code> \| <code>null</code>
-    * [.getFeatureVariableInteger(featureKey, variableKey, userId, attributes)](#module_optimizely/index..Optimizely+getFeatureVariableInteger) ⇒ <code>number</code> \| <code>null</code>
-    * [.getFeatureVariableString(featureKey, variableKey, userId, attributes)](#module_optimizely/index..Optimizely+getFeatureVariableString) ⇒ <code>string</code> \| <code>null</code>
+    * [.isFeatureEnabled(featureKey, userId, [attributes])](#module_optimizely/index..Optimizely+isFeatureEnabled) ⇒ <code>boolean</code>
+    * [.getEnabledFeatures(userId, [attributes])](#module_optimizely/index..Optimizely+getEnabledFeatures) ⇒ <code>Array</code>
+    * [.getFeatureVariableBoolean(featureKey, variableKey, userId, [attributes])](#module_optimizely/index..Optimizely+getFeatureVariableBoolean) ⇒ <code>boolean</code> \| <code>null</code>
+    * [.getFeatureVariableDouble(featureKey, variableKey, userId, [attributes])](#module_optimizely/index..Optimizely+getFeatureVariableDouble) ⇒ <code>number</code> \| <code>null</code>
+    * [.getFeatureVariableInteger(featureKey, variableKey, userId, [attributes])](#module_optimizely/index..Optimizely+getFeatureVariableInteger) ⇒ <code>number</code> \| <code>null</code>
+    * [.getFeatureVariableString(featureKey, variableKey, userId, [attributes])](#module_optimizely/index..Optimizely+getFeatureVariableString) ⇒ <code>string</code> \| <code>null</code>
 
 <a name="module_optimizely/index..Optimizely+activate"></a>
 
@@ -178,7 +182,7 @@ Buckets visitor and sends impression event to Optimizely.
 
 <a name="module_optimizely/index..Optimizely+track"></a>
 
-#### optimizely.track(eventKey, userId, [attributes], eventTags)
+#### optimizely.track(eventKey, userId, [attributes], [eventTags])
 Sends conversion event to Optimizely.
 
 **Kind**: instance method of [<code>Optimizely</code>](#module_optimizely/index..Optimizely)  
@@ -188,11 +192,11 @@ Sends conversion event to Optimizely.
 | eventKey | <code>string</code> |  |
 | userId | <code>string</code> |  |
 | [attributes] | [<code>Attributes</code>](#Attributes) | User Attributes to use for targeting and segmentation. |
-| eventTags | <code>Object</code> | Values associated with the event. |
+| [eventTags] | [<code>EventTags</code>](#EventTags) | Values associated with the event. |
 
 <a name="module_optimizely/index..Optimizely+getVariation"></a>
 
-#### optimizely.getVariation(experimentKey, userId, attributes) ⇒ <code>string</code> \| <code>null</code>
+#### optimizely.getVariation(experimentKey, userId, [attributes]) ⇒ <code>string</code> \| <code>null</code>
 Gets variation where visitor will be bucketed.
 
 **Kind**: instance method of [<code>Optimizely</code>](#module_optimizely/index..Optimizely)  
@@ -202,7 +206,7 @@ Gets variation where visitor will be bucketed.
 | --- | --- | --- |
 | experimentKey | <code>string</code> |  |
 | userId | <code>string</code> |  |
-| attributes | [<code>Attributes</code>](#Attributes) | User Attributes to use for targeting and segmentation. |
+| [attributes] | [<code>Attributes</code>](#Attributes) | User Attributes to use for targeting |
 
 <a name="module_optimizely/index..Optimizely+setForcedVariation"></a>
 
@@ -221,10 +225,10 @@ Force a user into a variation for a given experiment.
 <a name="module_optimizely/index..Optimizely+getForcedVariation"></a>
 
 #### optimizely.getForcedVariation(experimentKey, userId) ⇒ <code>string</code> \| <code>null</code>
-Gets the forced variation for a given user and experiment.
+Gets the forced (or whitelisted) variation for a given user and experiment.
 
 **Kind**: instance method of [<code>Optimizely</code>](#module_optimizely/index..Optimizely)  
-**Returns**: <code>string</code> \| <code>null</code> - The forced variation key.  
+**Returns**: <code>string</code> \| <code>null</code> - The forced variation key, or `null` if no forced variation is set.  
 
 | Param | Type |
 | --- | --- |
@@ -233,8 +237,9 @@ Gets the forced variation for a given user and experiment.
 
 <a name="module_optimizely/index..Optimizely+isFeatureEnabled"></a>
 
-#### optimizely.isFeatureEnabled(featureKey, userId, attributes) ⇒ <code>boolean</code>
-Returns true if the feature is enabled for the given user.
+#### optimizely.isFeatureEnabled(featureKey, userId, [attributes]) ⇒ <code>boolean</code>
+Returns true if the feature is enabled for the given user. If the Feature is part of a Feature Test,
+also dispatches an impression event.
 
 **Kind**: instance method of [<code>Optimizely</code>](#module_optimizely/index..Optimizely)  
 **Returns**: <code>boolean</code> - True if the feature is enabled for the user, false otherwise  
@@ -243,13 +248,14 @@ Returns true if the feature is enabled for the given user.
 | --- | --- | --- |
 | featureKey | <code>string</code> | Key of feature which will be checked |
 | userId | <code>string</code> | ID of user which will be checked |
-| attributes | [<code>Attributes</code>](#Attributes) | Optional user attributes |
+| [attributes] | [<code>Attributes</code>](#Attributes) | Optional user attributes to use for targeting/segmentation |
 
 <a name="module_optimizely/index..Optimizely+getEnabledFeatures"></a>
 
-#### optimizely.getEnabledFeatures(userId, attributes) ⇒ <code>Array</code>
+#### optimizely.getEnabledFeatures(userId, [attributes]) ⇒ <code>Array</code>
 Returns an Array containing the keys of all features in the project that are
-enabled for the given user.
+enabled for the given user. Triggers side effects of [`isFeatureEnabled`](#module_optimizely/index..Optimizely+isFeatureEnabled) for each Feature
+defined in the datafile.
 
 **Kind**: instance method of [<code>Optimizely</code>](#module_optimizely/index..Optimizely)  
 **Returns**: <code>Array</code> - Array of feature keys (strings)  
@@ -257,11 +263,11 @@ enabled for the given user.
 | Param | Type |
 | --- | --- |
 | userId | <code>string</code> | 
-| attributes | [<code>Attributes</code>](#Attributes) | 
+| [attributes] | [<code>Attributes</code>](#Attributes) | 
 
 <a name="module_optimizely/index..Optimizely+getFeatureVariableBoolean"></a>
 
-#### optimizely.getFeatureVariableBoolean(featureKey, variableKey, userId, attributes) ⇒ <code>boolean</code> \| <code>null</code>
+#### optimizely.getFeatureVariableBoolean(featureKey, variableKey, userId, [attributes]) ⇒ <code>boolean</code> \| <code>null</code>
 Returns value for the given boolean variable attached to the given feature
 flag.
 
@@ -276,11 +282,11 @@ flag.
 | featureKey | <code>string</code> | Key of the feature whose variable's value is                              being accessed |
 | variableKey | <code>string</code> | Key of the variable whose value is being                              accessed |
 | userId | <code>string</code> | ID for the user |
-| attributes | [<code>Attributes</code>](#Attributes) | Optional user attributes |
+| [attributes] | [<code>Attributes</code>](#Attributes) | Optional user attributes to use for targeting |
 
 <a name="module_optimizely/index..Optimizely+getFeatureVariableDouble"></a>
 
-#### optimizely.getFeatureVariableDouble(featureKey, variableKey, userId, attributes) ⇒ <code>number</code> \| <code>null</code>
+#### optimizely.getFeatureVariableDouble(featureKey, variableKey, userId, [attributes]) ⇒ <code>number</code> \| <code>null</code>
 Returns value for the given double variable attached to the given feature
 flag.
 
@@ -295,11 +301,11 @@ flag.
 | featureKey | <code>string</code> | Key of the feature whose variable's value is                              being accessed |
 | variableKey | <code>string</code> | Key of the variable whose value is being                              accessed |
 | userId | <code>string</code> | ID for the user |
-| attributes | [<code>Attributes</code>](#Attributes) | Optional user attributes |
+| [attributes] | [<code>Attributes</code>](#Attributes) | Optional user attributes to use for targeting |
 
 <a name="module_optimizely/index..Optimizely+getFeatureVariableInteger"></a>
 
-#### optimizely.getFeatureVariableInteger(featureKey, variableKey, userId, attributes) ⇒ <code>number</code> \| <code>null</code>
+#### optimizely.getFeatureVariableInteger(featureKey, variableKey, userId, [attributes]) ⇒ <code>number</code> \| <code>null</code>
 Returns value for the given integer variable attached to the given feature
 flag.
 
@@ -314,11 +320,11 @@ flag.
 | featureKey | <code>string</code> | Key of the feature whose variable's value is                              being accessed |
 | variableKey | <code>string</code> | Key of the variable whose value is being                              accessed |
 | userId | <code>string</code> | ID for the user |
-| attributes | [<code>Attributes</code>](#Attributes) | Optional user attributes |
+| [attributes] | [<code>Attributes</code>](#Attributes) | Optional user attributes to use for targeting |
 
 <a name="module_optimizely/index..Optimizely+getFeatureVariableString"></a>
 
-#### optimizely.getFeatureVariableString(featureKey, variableKey, userId, attributes) ⇒ <code>string</code> \| <code>null</code>
+#### optimizely.getFeatureVariableString(featureKey, variableKey, userId, [attributes]) ⇒ <code>string</code> \| <code>null</code>
 Returns value for the given string variable attached to the given feature
 flag.
 
@@ -333,7 +339,7 @@ flag.
 | featureKey | <code>string</code> | Key of the feature whose variable's value is                              being accessed |
 | variableKey | <code>string</code> | Key of the variable whose value is being                              accessed |
 | userId | <code>string</code> | ID for the user |
-| attributes | [<code>Attributes</code>](#Attributes) | Optional user attributes |
+| [attributes] | [<code>Attributes</code>](#Attributes) | Optional user attributes to use for targeting |
 
 <a name="module_optimizely/project_config_schema"></a>
 
@@ -489,3 +495,17 @@ Bucket for a single experiment
 Map of attribute name to attribute value. Null or empty values will be discarded.
 
 **Kind**: global typedef  
+<a name="EventTags"></a>
+
+## EventTags : <code>Object.&lt;(String\|Number)&gt;</code>
+Map of event tag name to value. The optional properties defined below have special significance
+to Optimizely, any other string can also be used as an attribute name.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| value | <code>Number</code> \| <code>undefined</code> | Value to associate with the event, if any |
+| revenue | <code>Number</code> \| <code>undefined</code> | Revenue value (in cents) to associate with the event, if any |
+
