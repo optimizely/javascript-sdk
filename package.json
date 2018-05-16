@@ -1,0 +1,14 @@
+{
+  "name": "javascript-sdk-check",
+  "version": "0.1.0",
+  "description": "Install optimizely-sdk from production, to check dependencies",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "tyler@optimizely.com",
+  "license": "MIT",
+  "dependencies": {
+    "@optimizely/optimizely-sdk": "^2.0.1"
+  }
+}
