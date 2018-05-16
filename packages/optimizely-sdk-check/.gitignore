@@ -1,1 +1,3 @@
 node_modules
+# Ignore this so we always pull latest
+package-lock.json
