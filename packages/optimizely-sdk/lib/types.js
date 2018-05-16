@@ -50,8 +50,9 @@
  */
 
 /**
+ * A profile for a single user, referencing that user's saved preferences
  * @typedef {Object} UserProfile
- * @property {String} userId
+ * @property {String} user_id ID of user this profile is for
  * @property {Object.<BucketMap>} experiment_bucket_map Map of experimentId to bucket map
  */
 
@@ -62,12 +63,14 @@
  */
 
 /**
+ * Retrieve a profile for a given user
  * @callback UserProfileLookupFn
  * @param {String} userId
  * @return {UserProfile}
  */
 
 /**
+ * Store a profile for a given user
  * @callback UserProfileSaveFn
  * @param {String} userId
  * @param {UserProfile} userProfile

@@ -39,14 +39,17 @@
 <dd><p>User Profile module that can store and retrieve proiles by User ID. See <a href="https://developers.optimizely.com/x/solutions/sdks/reference/index.html?language=javascript#profiles">https://developers.optimizely.com/x/solutions/sdks/reference/index.html?language=javascript#profiles</a></p>
 </dd>
 <dt><a href="#UserProfile">UserProfile</a> : <code>Object</code></dt>
-<dd></dd>
+<dd><p>A profile for a single user, referencing that user&#39;s saved preferences</p>
+</dd>
 <dt><a href="#BucketMap">BucketMap</a> : <code>Object</code></dt>
 <dd><p>Bucket for a single experiment</p>
 </dd>
 <dt><a href="#UserProfileLookupFn">UserProfileLookupFn</a> ⇒ <code><a href="#UserProfile">UserProfile</a></code></dt>
-<dd></dd>
+<dd><p>Retrieve a profile for a given user</p>
+</dd>
 <dt><a href="#UserProfileSaveFn">UserProfileSaveFn</a> : <code>function</code></dt>
-<dd></dd>
+<dd><p>Store a profile for a given user</p>
+</dd>
 <dt><a href="#Attributes">Attributes</a> : <code>Object.&lt;(String|null)&gt;</code></dt>
 <dd><p>Map of attribute name to attribute value. Null or empty values will be discarded.</p>
 </dd>
@@ -450,12 +453,14 @@ User Profile module that can store and retrieve proiles by User ID. See https://
 <a name="UserProfile"></a>
 
 ## UserProfile : <code>Object</code>
+A profile for a single user, referencing that user's saved preferences
+
 **Kind**: global typedef  
 **Properties**
 
 | Name | Type | Description |
 | --- | --- | --- |
-| userId | <code>String</code> |  |
+| user_id | <code>String</code> | ID of user this profile is for |
 | experiment_bucket_map | [<code>Object.&lt;BucketMap&gt;</code>](#BucketMap) | Map of experimentId to bucket map |
 
 <a name="BucketMap"></a>
@@ -473,6 +478,8 @@ Bucket for a single experiment
 <a name="UserProfileLookupFn"></a>
 
 ## UserProfileLookupFn ⇒ [<code>UserProfile</code>](#UserProfile)
+Retrieve a profile for a given user
+
 **Kind**: global typedef  
 
 | Param | Type |
@@ -482,6 +489,8 @@ Bucket for a single experiment
 <a name="UserProfileSaveFn"></a>
 
 ## UserProfileSaveFn : <code>function</code>
+Store a profile for a given user
+
 **Kind**: global typedef  
 
 | Param | Type |
