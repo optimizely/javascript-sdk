@@ -19,11 +19,9 @@ var eventTagUtils = require('../../utils/event_tag_utils');
 var projectConfig = require('../project_config');
 
 var ACTIVATE_EVENT_KEY = 'campaign_activated';
-var BOT_FILTERING_FEATURE_KEY = '$opt_bot_filtering';
 var CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom';
 var ENDPOINT = 'https://logx.optimizely.com/v1/events';
 var HTTP_VERB = 'POST';
-
 
 /**
  * Get params which are used same in both conversion and impression events
@@ -68,20 +66,13 @@ function getCommonEventParams(options) {
         type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
         value: attributes[attributeKey],
       });      
-    } else if (enums.RESERVED_ATTRIBUTES.hasOwnProperty(attributeKey)) {
-      commonParams.visitors[0].attributes.push({
-        entity_id: attributeKey,
-        key: attributeKey,
-        type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
-        value: attributes[attributeKey],
-      });
     }
   });
 
   if (typeof botFiltering === 'boolean') {
     commonParams.visitors[0].attributes.push({
-      entity_id: BOT_FILTERING_FEATURE_KEY,
-      key: BOT_FILTERING_FEATURE_KEY,
+      entity_id: enums.RESERVED_ATTRIBUTES.BOT_FILTERING,
+      key: enums.RESERVED_ATTRIBUTES.BOT_FILTERING,
       type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
       value: botFiltering,
     });

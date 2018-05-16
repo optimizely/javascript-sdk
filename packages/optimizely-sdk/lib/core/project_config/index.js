@@ -138,6 +138,8 @@ module.exports = {
     var attribute = projectConfig.attributeKeyMap[attributeKey];
     if (attribute) {
       return attribute.id;
+    } else if (enums.RESERVED_USER_ATTRIBUTES.indexOf(attributeKey) !== -1) {
+      return attributeKey;
     }
     return null;
   },

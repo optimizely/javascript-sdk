@@ -129,8 +129,15 @@ exports.RESERVED_EVENT_KEYWORDS = {
 };
 
 exports.RESERVED_ATTRIBUTES = {
+  BOT_FILTERING: '$opt_bot_filtering',
+  BUCKETING_ID: '$opt_bucketing_id',
   USER_AGENT: '$opt_user_agent',
 };
+
+exports.RESERVED_USER_ATTRIBUTES = [
+  exports.RESERVED_ATTRIBUTES.BUCKETING_ID,
+  exports.RESERVED_ATTRIBUTES.USER_AGENT
+];
 
 exports.JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 exports.NODE_CLIENT_ENGINE = 'node-sdk';
