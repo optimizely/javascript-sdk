@@ -1,6 +1,6 @@
 # javascript-sdk-check
 
-Install @optimizely/optimizely-sdk and check its dependencies
+Install [@optimizely/optimizely-sdk](https://www.npmjs.com/package/@optimizely/optimizely-sdk) and check its dependencies
 
 ## Usage
 Use `npm@6`, which runs [`npm audit`](https://docs.npmjs.com/getting-started/running-a-security-audit) automatically on install.
