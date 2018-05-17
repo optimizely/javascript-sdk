@@ -27,6 +27,7 @@ var uuid = require('uuid');
 describe('lib/core/event_builder', function() {
   describe('APIs', function() {
 
+    var mockLogger;
     var configObj;
     var clock;
 
@@ -34,6 +35,9 @@ describe('lib/core/event_builder', function() {
       configObj = projectConfig.createProjectConfig(testData.getTestProjectConfig());
       clock = sinon.useFakeTimers(new Date().getTime());
       sinon.stub(uuid, 'v4').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
+      mockLogger = {
+        log: sinon.stub(),
+      };
     });
 
     afterEach(function() {
@@ -279,6 +283,7 @@ describe('lib/core/event_builder', function() {
           experimentId: '111127',
           variationId: '111128',
           userId: 'testUser',
+          logger: mockLogger,
         };
 
         var actualParams = eventBuilder.getImpressionEvent(eventOptions);
@@ -345,14 +350,6 @@ describe('lib/core/event_builder', function() {
     });
 
     describe('getConversionEvent', function() {
-      var mockLogger;
-
-      beforeEach(function() {
-        mockLogger = {
-          log: sinon.stub(),
-        };
-      });
-
       it('should create proper params for getConversionEvent without attributes or event value', function() {
         var expectedParams = {
           url: 'https://logx.optimizely.com/v1/events',
@@ -606,7 +603,7 @@ describe('lib/core/event_builder', function() {
         };
 
         var actualParams = eventBuilder.getConversionEvent(eventOptions);
-
+        sinon.assert.calledOnce(mockLogger.log);
         assert.deepEqual(actualParams, expectedParams);
       });
 
@@ -949,14 +946,6 @@ describe('lib/core/event_builder', function() {
       });
 
       describe('createEventWithBucketingId', function () {
-        var mockLogger;
-
-        beforeEach(function () {
-          mockLogger = {
-            log: sinon.stub(),
-          };
-        });
-
         it('should send proper bucketingID with user attributes', function () {
           var expectedParams = {
             url: 'https://logx.optimizely.com/v1/events',

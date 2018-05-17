@@ -216,9 +216,15 @@ describe('lib/core/project_config', function() {
   describe('projectConfig helper methods', function() {
     var testData = testDatafile.getTestProjectConfig();
     var configObj;
-
+    var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+      
     beforeEach(function() {
       configObj = projectConfig.createProjectConfig(testData);
+      sinon.stub(createdLogger, 'log');
+    });
+
+    afterEach(function() {
+      createdLogger.log.restore();
     });
 
     it('should retrieve experiment ID for valid experiment key in getExperimentId', function() {
@@ -246,8 +252,15 @@ describe('lib/core/project_config', function() {
       assert.strictEqual(projectConfig.getAttributeId(configObj, 'browser_type'), '111094');
     });
 
+    it('should retrieve attribute ID for reserved attribute key in getAttributeId', function() {
+      assert.strictEqual(projectConfig.getAttributeId(configObj, '$opt_user_agent'), '$opt_user_agent');
+    });
+
     it('should return null for invalid attribute key in getAttributeId', function() {
-      assert.isNull(projectConfig.getAttributeId(configObj, 'invalidAttributeKey'));
+      assert.isNull(projectConfig.getAttributeId(configObj, 'invalidAttributeKey', createdLogger));
+      sinon.assert.calledWithExactly(createdLogger.log, 
+                                     LOG_LEVEL.DEBUG, 
+                                     'PROJECT_CONFIG: Unrecognized attribute invalidAttributeKey provided. Pruning before sending event to Optimizely.')
     });
 
     it('should retrieve event ID for valid event key in getEventId', function() {

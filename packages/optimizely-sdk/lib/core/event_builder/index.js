@@ -58,7 +58,7 @@ function getCommonEventParams(options) {
   };
 
   fns.forOwn(attributes, function(attributeValue, attributeKey){
-    var attributeId = projectConfig.getAttributeId(options.configObj, attributeKey);
+    var attributeId = projectConfig.getAttributeId(options.configObj, attributeKey, options.logger);
     if (attributeId) {
       commonParams.visitors[0].attributes.push({
         entity_id: attributeId,

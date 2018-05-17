@@ -19,6 +19,7 @@ var sprintf = require('sprintf');
 
 var EXPERIMENT_LAUNCHED_STATUS = 'Launched';
 var EXPERIMENT_RUNNING_STATUS = 'Running';
+var RESERVED_ATTRIBUTE_PREFIX = '$opt_';
 var MODULE_NAME = 'PROJECT_CONFIG';
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
@@ -132,15 +133,18 @@ module.exports = {
    * Get attribute ID for the provided attribute key
    * @param  {Object}      projectConfig Object representing project configuration
    * @param  {string}      attributeKey  Attribute key for which ID is to be determined
-   * @return {string|null} Attribute ID corresponding to the provided attribute key
+   * @param  {Object}      logger
+   * @return {string|null} Attribute ID corresponding to the provided attribute key. Attribute key if it is a reserved attribute.
    */
-  getAttributeId: function(projectConfig, attributeKey) {
+  getAttributeId: function(projectConfig, attributeKey, logger) {
     var attribute = projectConfig.attributeKeyMap[attributeKey];
     if (attribute) {
       return attribute.id;
-    } else if (enums.RESERVED_USER_ATTRIBUTES.indexOf(attributeKey) !== -1) {
+    } else if (attributeKey.startsWith(RESERVED_ATTRIBUTE_PREFIX)) {
       return attributeKey;
     }
+
+    logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.UNRECOGNIZED_ATTRIBUTE, MODULE_NAME, attributeKey));
     return null;
   },
 
