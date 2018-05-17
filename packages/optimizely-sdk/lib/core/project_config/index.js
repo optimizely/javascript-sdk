@@ -140,7 +140,7 @@ module.exports = {
     var attribute = projectConfig.attributeKeyMap[attributeKey];
     if (attribute) {
       return attribute.id;
-    } else if (attributeKey.startsWith(RESERVED_ATTRIBUTE_PREFIX)) {
+    } else if (attributeKey.indexOf(RESERVED_ATTRIBUTE_PREFIX) === 0) {
       return attributeKey;
     }
 
