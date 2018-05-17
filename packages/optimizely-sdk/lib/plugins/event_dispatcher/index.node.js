@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2016-2018, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var request = require('request');
-
-var POST_HEADERS = {'content-type': 'application/json'};
+var http = require('http');
+var https = require('https');
+var url = require('url');
 
 module.exports = {
   /**
@@ -25,23 +25,42 @@ module.exports = {
    * @param {Object}  eventObj.params   parameters to pass to the request
    * @param {string}  eventObj.httpVerb the HTTP request method type
    * @param {function} callback         callback to execute
-   * @return {Promise<Object>}          the payload from the request
+   * @return {ClientRequest}          ClientRequest object which made the request
    */
   dispatchEvent: function(eventObj, callback) {
+    // Non-POST requests not supported
+    if (eventObj.httpVerb !== 'POST') {
+      callback(new Error('httpVerb not supported: ' + eventObj.httpVerb));
+      return;
+    }
+
+    var parsedUrl = url.parse(eventObj.url);
+    var path = parsedUrl.path;
+    if (parsedUrl.query) {
+      path += '?' + parsedUrl.query;
+    }
+
+    var dataString = JSON.stringify(eventObj.params);
+
     var requestOptions = {
-      uri: eventObj.url,
-      body: eventObj.params,
-      headers: POST_HEADERS,
-      method: eventObj.httpVerb,
-      json: true,
+      host: parsedUrl.host,
+      path: parsedUrl.path,
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'content-length': dataString.length.toString(),
+      }
     };
 
     var requestCallback = function(error, response, body) {
       if (response && response.statusCode && response.statusCode >= 200 && response.statusCode < 400 && callback && typeof callback == 'function') {
         callback();
       }
-    }
+    };
 
-    return request(requestOptions, requestCallback);
+    var req = (parsedUrl.protocol === 'http:' ? http : https).request(requestOptions, requestCallback);
+    req.write(dataString);
+    req.end();
+    return req;
   }
 };
