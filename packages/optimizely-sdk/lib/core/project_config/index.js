@@ -144,7 +144,7 @@ module.exports = {
       return attributeKey;
     }
 
-    logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.UNRECOGNIZED_ATTRIBUTE, MODULE_NAME, attributeKey));
+    logger.log(LOG_LEVEL.DEBUG, sprintf(ERROR_MESSAGES.UNRECOGNIZED_ATTRIBUTE, MODULE_NAME, attributeKey));
     return null;
   },
 
