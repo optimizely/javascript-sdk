@@ -22,10 +22,10 @@ module.exports = {
    * Dispatch an HTTP request to the given url and the specified options
    * @param {Object}  eventObj          Event object containing
    * @param {string}  eventObj.url      the url to make the request to
-   * @param {Object}  eventObj.params   parameters to pass to the request
-   * @param {string}  eventObj.httpVerb the HTTP request method type
+   * @param {Object}  eventObj.params   parameters to pass to the request (i.e. in the POST body)
+   * @param {string}  eventObj.httpVerb the HTTP request method type. only POST is supported.
    * @param {function} callback         callback to execute
-   * @return {ClientRequest}          ClientRequest object which made the request
+   * @return {ClientRequest|undefined}          ClientRequest object which made the request, or undefined if no request was made (error)
    */
   dispatchEvent: function(eventObj, callback) {
     // Non-POST requests not supported
