@@ -4,6 +4,8 @@ node_js:
 - '6'
 - '8'
 - '9'
+# TODO(#102): restore node/10 config
+- '10.0'
 branches:
   only:
   - master
