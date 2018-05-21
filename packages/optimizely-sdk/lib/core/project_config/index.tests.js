@@ -263,6 +263,18 @@ describe('lib/core/project_config', function() {
                                      'PROJECT_CONFIG: Unrecognized attribute invalidAttributeKey provided. Pruning before sending event to Optimizely.')
     });
 
+    it('should return null for invalid attribute key in getAttributeId', function() {
+      // Adding attribute in key map with reserved prefix
+      configObj.attributeKeyMap['$opt_some_reserved_attribute'] = {
+        id: '42', 
+        key: '$opt_some_reserved_attribute'
+      };
+      assert.strictEqual(projectConfig.getAttributeId(configObj, '$opt_some_reserved_attribute', createdLogger), '42');
+      sinon.assert.calledWithExactly(createdLogger.log, 
+                                     LOG_LEVEL.WARN, 
+                                     'Attribute $opt_some_reserved_attribute unexpectedly has reserved prefix $opt_; using attribute ID instead of reserved attribute name.')
+    });    
+
     it('should retrieve event ID for valid event key in getEventId', function() {
       assert.strictEqual(projectConfig.getEventId(configObj, 'testEvent'), '111095');
     });

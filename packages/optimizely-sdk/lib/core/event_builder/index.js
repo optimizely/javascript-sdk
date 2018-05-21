@@ -71,8 +71,8 @@ function getCommonEventParams(options) {
 
   if (typeof botFiltering === 'boolean') {
     commonParams.visitors[0].attributes.push({
-      entity_id: enums.RESERVED_ATTRIBUTES.BOT_FILTERING,
-      key: enums.RESERVED_ATTRIBUTES.BOT_FILTERING,
+      entity_id: enums.CONTROL_ATTRIBUTES.BOT_FILTERING,
+      key: enums.CONTROL_ATTRIBUTES.BOT_FILTERING,
       type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
       value: botFiltering,
     });

@@ -129,7 +129,7 @@ exports.RESERVED_EVENT_KEYWORDS = {
   VALUE: 'value',
 };
 
-exports.RESERVED_ATTRIBUTES = {
+exports.CONTROL_ATTRIBUTES = {
   BOT_FILTERING: '$opt_bot_filtering',
   BUCKETING_ID: '$opt_bucketing_id',
   USER_AGENT: '$opt_user_agent',

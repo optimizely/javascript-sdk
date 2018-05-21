@@ -66,8 +66,8 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
 
   // If the bucketing ID key is defined in attributes, than use that in place of the userID for the murmur hash key
   if (!fns.isEmpty(attributes)) {
-    if (attributes.hasOwnProperty(enums.RESERVED_ATTRIBUTES.BUCKETING_ID)) {
-      bucketingId = attributes[enums.RESERVED_ATTRIBUTES.BUCKETING_ID];
+    if (attributes.hasOwnProperty(enums.CONTROL_ATTRIBUTES.BUCKETING_ID)) {
+      bucketingId = attributes[enums.CONTROL_ATTRIBUTES.BUCKETING_ID];
       this.logger.log(LOG_LEVEL.DEBUG, sprintf('Setting the bucketing ID to %s.', bucketingId))
     }
   }

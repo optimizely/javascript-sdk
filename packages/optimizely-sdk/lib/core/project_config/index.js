@@ -138,9 +138,14 @@ module.exports = {
    */
   getAttributeId: function(projectConfig, attributeKey, logger) {
     var attribute = projectConfig.attributeKeyMap[attributeKey];
+    var hasReservedPrefix = attributeKey.indexOf(RESERVED_ATTRIBUTE_PREFIX) === 0;
     if (attribute) {
+      if (hasReservedPrefix) {
+        logger.log(LOG_LEVEL.WARN, 
+                   sprintf('Attribute %s unexpectedly has reserved prefix %s; using attribute ID instead of reserved attribute name.', attributeKey, RESERVED_ATTRIBUTE_PREFIX));
+      }
       return attribute.id;
-    } else if (attributeKey.indexOf(RESERVED_ATTRIBUTE_PREFIX) === 0) {
+    } else if (hasReservedPrefix) {
       return attributeKey;
     }
 
