@@ -35,6 +35,10 @@ To access the Feature Management configuration in the Optimizely dashboard, plea
 ### Using the SDK
 See the Optimizely X Full Stack testing [developer documentation](http://developers.optimizely.com/server/reference/index.html) to learn how to set up your first JavaScript project and use the SDK.
 
+### API Reference
+
+See [api.md](./api.md) for detailed documentation of the types, classes, and methods in this package.
+
 ## Development
 
 ### Installing dependencies
