@@ -1,3 +1,10 @@
+## 2.0.2-beta
+May 21, 2018
+
+* Remove [`request`](https://www.npmjs.com/package/request) dependency (#98)
+* Add package-lock.json (#100)
+* Input validation in Activate, Track, and GetVariation methods (#91)
+
 ## 2.0.1
 April 16th, 2018
 
