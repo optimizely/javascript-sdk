@@ -362,7 +362,7 @@ Optimizely.prototype.getForcedVariation = function(experimentKey, userId) {
 Optimizely.prototype.__validateInputs = function(stringInputs, userAttributes, eventTags) {
   try {
     var inputKeys = Object.keys(stringInputs);
-    for (var index=0; index < inputKeys.length; index++) {
+    for (var index = 0; index < inputKeys.length; index++) {
       var key = inputKeys[index];
       if (!stringValidator.validate(stringInputs[key])) {
         throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, key));
@@ -449,12 +449,12 @@ Optimizely.prototype.__notActivatingExperiment = function(experimentKey, userId)
 Optimizely.prototype.__dispatchEvent = function (eventToDispatch, callback) {
     var eventDispatcherResponse = this.eventDispatcher.dispatchEvent(eventToDispatch, callback);
     //checking that response value is a promise, not a request object
-    if (typeof eventDispatcherResponse == "object" && !eventDispatcherResponse.hasOwnProperty('uri')) {
+    if (!fns.isEmpty(eventDispatcherResponse) && typeof eventDispatcherResponse.then === 'function') {
       eventDispatcherResponse.then(function() {
         callback();
       });
     }
-}
+};
 
 /**
  * Filters out attributes/eventTags with null or undefined values
@@ -464,11 +464,11 @@ Optimizely.prototype.__dispatchEvent = function (eventToDispatch, callback) {
 Optimizely.prototype.__filterEmptyValues = function (map) {
     for (var key in map) {
       if (map.hasOwnProperty(key) && (map[key] === null || map[key] === undefined)) {
-        delete map[key]
+        delete map[key];
       }
     }
     return map;
-}
+};
 
 /**
  * Returns true if the feature is enabled for the given user.
