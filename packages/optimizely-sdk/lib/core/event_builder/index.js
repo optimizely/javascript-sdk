@@ -30,6 +30,7 @@ var HTTP_VERB = 'POST';
  * @param  {string} options.clientVersion The version of the client
  * @param  {Object} options.configObj     Object representing project configuration, including datafile information and mappings for quick lookup
  * @param  {string} options.userId        ID for user
+ * @param  {Object} options.Logger        logger
  * @return {Object}                       Common params with properties that are used in both conversion and impression events
  */
 function getCommonEventParams(options) {
