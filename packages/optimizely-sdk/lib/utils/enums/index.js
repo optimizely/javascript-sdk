@@ -130,7 +130,7 @@ exports.RESERVED_EVENT_KEYWORDS = {
 
 exports.JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 exports.NODE_CLIENT_ENGINE = 'node-sdk';
-exports.NODE_CLIENT_VERSION = '2.0.1';
+exports.NODE_CLIENT_VERSION = '2.0.2-beta';
 
 /*
  * Notification types for use with NotificationCenter
