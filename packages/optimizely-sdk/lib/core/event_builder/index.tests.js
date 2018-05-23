@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2016-2018, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ var uuid = require('uuid');
 describe('lib/core/event_builder', function() {
   describe('APIs', function() {
 
+    var mockLogger;
     var configObj;
     var clock;
 
@@ -34,6 +35,9 @@ describe('lib/core/event_builder', function() {
       configObj = projectConfig.createProjectConfig(testData.getTestProjectConfig());
       clock = sinon.useFakeTimers(new Date().getTime());
       sinon.stub(uuid, 'v4').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
+      mockLogger = {
+        log: sinon.stub(),
+      };
     });
 
     afterEach(function() {
@@ -279,6 +283,122 @@ describe('lib/core/event_builder', function() {
           experimentId: '111127',
           variationId: '111128',
           userId: 'testUser',
+          logger: mockLogger,
+        };
+
+        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+
+        assert.deepEqual(actualParams, expectedParams);
+      });
+     
+      it('should fill in userFeatures for user agent and bot filtering (bot filtering enabled)', function() {
+        var v4ConfigObj = projectConfig.createProjectConfig(testData.getTestProjectConfigWithFeatures());
+        var expectedParams = {
+          url: 'https://logx.optimizely.com/v1/events',
+          httpVerb: 'POST',
+          params: {
+            'account_id': '572018',
+            'project_id': '594001',
+            'visitors': [{
+              'attributes': [{
+                'entity_id': '$opt_user_agent',
+                'key': '$opt_user_agent',
+                'type': 'custom',
+                'value': 'Chrome'
+              }, {
+                'entity_id': '$opt_bot_filtering',
+                'key': '$opt_bot_filtering',
+                'type': 'custom',
+                'value': true
+              }],
+              'visitor_id': 'testUser',
+              'snapshots': [{
+                'decisions': [{
+                  'variation_id': '595008',
+                  'experiment_id': '595010',
+                  'campaign_id': '595005'
+                }],
+                'events': [{
+                  'timestamp': Math.round(new Date().getTime()),
+                  'entity_id': '595005',
+                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                  'key': 'campaign_activated'
+                }]
+              }]
+            }],
+            'revision': '35',
+            'client_name': 'node-sdk',
+            'client_version': packageJSON.version,
+            'anonymize_ip': true,
+          }
+        };
+
+        var eventOptions = {
+          attributes: {'$opt_user_agent': 'Chrome'},
+          clientEngine: 'node-sdk',
+          clientVersion: packageJSON.version,
+          configObj: v4ConfigObj,
+          experimentId: '595010',
+          variationId: '595008',
+          userId: 'testUser',
+        };
+
+        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+
+        assert.deepEqual(actualParams, expectedParams);
+      });
+
+      it('should fill in userFeatures for user agent and bot filtering (bot filtering disabled)', function() {
+        var v4ConfigObj = projectConfig.createProjectConfig(testData.getTestProjectConfigWithFeatures());
+        v4ConfigObj.botFiltering = false;
+        var expectedParams = {
+          url: 'https://logx.optimizely.com/v1/events',
+          httpVerb: 'POST',
+          params: {
+            'account_id': '572018',
+            'project_id': '594001',
+            'visitors': [{
+              'attributes': [{
+                'entity_id': '$opt_user_agent',
+                'key': '$opt_user_agent',
+                'type': 'custom',
+                'value': 'Chrome'
+              }, {
+                'entity_id': '$opt_bot_filtering',
+                'key': '$opt_bot_filtering',
+                'type': 'custom',
+                'value': false
+              }],
+              'visitor_id': 'testUser',
+              'snapshots': [{
+                'decisions': [{
+                  'variation_id': '595008',
+                  'experiment_id': '595010',
+                  'campaign_id': '595005'
+                }],
+                'events': [{
+                  'timestamp': Math.round(new Date().getTime()),
+                  'entity_id': '595005',
+                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                  'key': 'campaign_activated'
+                }]
+              }]
+            }],
+            'revision': '35',
+            'client_name': 'node-sdk',
+            'client_version': packageJSON.version,
+            'anonymize_ip': true,
+          }
+        };
+
+        var eventOptions = {
+          attributes: {'$opt_user_agent': 'Chrome'},
+          clientEngine: 'node-sdk',
+          clientVersion: packageJSON.version,
+          configObj: v4ConfigObj,
+          experimentId: '595010',
+          variationId: '595008',
+          userId: 'testUser',
         };
 
         var actualParams = eventBuilder.getImpressionEvent(eventOptions);
@@ -288,14 +408,6 @@ describe('lib/core/event_builder', function() {
     });
 
     describe('getConversionEvent', function() {
-      var mockLogger;
-
-      beforeEach(function() {
-        mockLogger = {
-          log: sinon.stub(),
-        };
-      });
-
       it('should create proper params for getConversionEvent without attributes or event value', function() {
         var expectedParams = {
           url: 'https://logx.optimizely.com/v1/events',
@@ -545,6 +657,123 @@ describe('lib/core/event_builder', function() {
           eventKey: 'testEvent',
           experimentsToVariationMap: { '111127': '111128' },
           logger: mockLogger,
+          userId: 'testUser',
+        };
+
+        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        sinon.assert.calledOnce(mockLogger.log);
+        assert.deepEqual(actualParams, expectedParams);
+      });
+
+      it('should fill in userFeatures for user agent and bot filtering (bot filtering enabled)', function() {
+        var v4ConfigObj = projectConfig.createProjectConfig(testData.getTestProjectConfigWithFeatures());
+        var expectedParams = {
+          url: 'https://logx.optimizely.com/v1/events',
+          httpVerb: 'POST',
+          params: {
+            'account_id': '572018',
+            'project_id': '594001',
+            'visitors': [{
+              'attributes': [{
+                'entity_id': '$opt_user_agent',
+                'key': '$opt_user_agent',
+                'type': 'custom',
+                'value': 'Chrome'
+              }, {
+                'entity_id': '$opt_bot_filtering',
+                'key': '$opt_bot_filtering',
+                'type': 'custom',
+                'value': true
+              }],
+              'visitor_id': 'testUser',
+              'snapshots': [{
+                'decisions': [{
+                  'variation_id': '595008',
+                  'experiment_id': '595010',
+                  'campaign_id': '595005'
+                }],
+                'events': [{
+                  'timestamp': Math.round(new Date().getTime()),
+                  'entity_id': '594089',
+                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                  'key': 'item_bought'
+                }]
+              }]
+            }],
+            'revision': '35',
+            'client_name': 'node-sdk',
+            'client_version': packageJSON.version,
+            'anonymize_ip': true,
+          }
+        };
+
+        var eventOptions = {
+          attributes: {'$opt_user_agent': 'Chrome'},
+          clientEngine: 'node-sdk',
+          clientVersion: packageJSON.version,
+          configObj: v4ConfigObj,
+          eventKey: 'item_bought',
+          logger: mockLogger,
+          experimentsToVariationMap: { '595010': '595008' },
+          userId: 'testUser',
+        };
+
+        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+
+        assert.deepEqual(actualParams, expectedParams);
+      });
+
+      it('should fill in userFeatures for user agent and bot filtering (bot filtering disabled)', function() {
+        var v4ConfigObj = projectConfig.createProjectConfig(testData.getTestProjectConfigWithFeatures());
+        v4ConfigObj.botFiltering = false;
+        var expectedParams = {
+          url: 'https://logx.optimizely.com/v1/events',
+          httpVerb: 'POST',
+          params: {
+            'account_id': '572018',
+            'project_id': '594001',
+            'visitors': [{
+              'attributes': [{
+                'entity_id': '$opt_user_agent',
+                'key': '$opt_user_agent',
+                'type': 'custom',
+                'value': 'Chrome'
+              }, {
+                'entity_id': '$opt_bot_filtering',
+                'key': '$opt_bot_filtering',
+                'type': 'custom',
+                'value': false
+              }],
+              'visitor_id': 'testUser',
+              'snapshots': [{
+                'decisions': [{
+                  'variation_id': '595008',
+                  'experiment_id': '595010',
+                  'campaign_id': '595005'
+                }],
+                'events': [{
+                  'timestamp': Math.round(new Date().getTime()),
+                  'entity_id': '594089',
+                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                  'key': 'item_bought'
+                }]
+              }]
+            }],
+            'revision': '35',
+            'client_name': 'node-sdk',
+            'client_version': packageJSON.version,
+            'anonymize_ip': true,
+          }
+        };
+
+        var eventOptions = {
+          attributes: {'$opt_user_agent': 'Chrome'},
+          clientEngine: 'node-sdk',
+          clientVersion: packageJSON.version,
+          configObj: v4ConfigObj,
+          eventKey: 'item_bought',
+          logger: mockLogger,
+          experimentsToVariationMap: { '595010': '595008' },
           userId: 'testUser',
         };
 
@@ -834,14 +1063,6 @@ describe('lib/core/event_builder', function() {
       });
 
       describe('createEventWithBucketingId', function () {
-        var mockLogger;
-
-        beforeEach(function () {
-          mockLogger = {
-            log: sinon.stub(),
-          };
-        });
-
         it('should send proper bucketingID with user attributes', function () {
           var expectedParams = {
             url: 'https://logx.optimizely.com/v1/events',
@@ -851,7 +1072,12 @@ describe('lib/core/event_builder', function() {
               'project_id': '111001',
               'visitors': [{
                 'visitor_id': 'testUser',
-                'attributes': [],
+                'attributes': [{
+                  'entity_id': '$opt_bucketing_id',
+                  'key': '$opt_bucketing_id',
+                  'type': 'custom',
+                  'value': 'variation',
+                }],
                 'snapshots': [{
                   'decisions': [{
                     'variation_id': '111128',
@@ -881,7 +1107,7 @@ describe('lib/core/event_builder', function() {
             experimentsToVariationMap: {'111127': '111128'},
             logger: mockLogger,
             userId: 'testUser',
-            attributes: {'Optimizely Bucketing ID': 'variation'},
+            attributes: {'$opt_bucketing_id': 'variation'},
           };
 
           var actualParams = eventBuilder.getConversionEvent(eventOptions);

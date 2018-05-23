@@ -181,6 +181,7 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
     experimentId: experimentId,
     userId: userId,
     variationId: variationId,
+    logger: this.logger,
   };
   var impressionEvent = eventBuilder.getImpressionEvent(impressionEventOptions);
   var dispatchedImpressionEventLogMessage = sprintf(LOG_MESSAGES.DISPATCH_IMPRESSION_EVENT,

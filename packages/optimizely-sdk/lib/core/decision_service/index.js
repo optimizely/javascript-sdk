@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2017, Optimizely, Inc. and contributors                        *
+ * Copyright 2017-2018, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -26,7 +26,6 @@ var MODULE_NAME = 'DECISION_SERVICE';
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
-var RESERVED_ATTRIBUTE_KEY_BUCKETING_ID = '$opt_bucketing_id';
 var DECISION_SOURCES = enums.DECISION_SOURCES;
 
 
@@ -67,8 +66,8 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
 
   // If the bucketing ID key is defined in attributes, than use that in place of the userID for the murmur hash key
   if (!fns.isEmpty(attributes)) {
-    if (attributes.hasOwnProperty(RESERVED_ATTRIBUTE_KEY_BUCKETING_ID)) {
-      bucketingId = attributes[RESERVED_ATTRIBUTE_KEY_BUCKETING_ID];
+    if (attributes.hasOwnProperty(enums.CONTROL_ATTRIBUTES.BUCKETING_ID)) {
+      bucketingId = attributes[enums.CONTROL_ATTRIBUTES.BUCKETING_ID];
       this.logger.log(LOG_LEVEL.DEBUG, sprintf('Setting the bucketing ID to %s.', bucketingId))
     }
   }
