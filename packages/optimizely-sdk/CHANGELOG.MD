@@ -1,4 +1,4 @@
-## 2.0.2
+## 2.0.3
 May 24, 2018
 
 * Remove [`request`](https://www.npmjs.com/package/request) dependency ([#98](https://github.com/optimizely/javascript-sdk/pull/98))
