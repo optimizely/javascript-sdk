@@ -1,5 +1,5 @@
-## 2.0.2-beta
-May 21, 2018
+## 2.0.2
+May 24, 2018
 
 * Remove [`request`](https://www.npmjs.com/package/request) dependency ([#98](https://github.com/optimizely/javascript-sdk/pull/98))
 * Add package-lock.json ([#100](https://github.com/optimizely/javascript-sdk/pull/100))
