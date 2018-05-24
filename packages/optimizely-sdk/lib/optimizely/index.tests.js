@@ -2549,6 +2549,11 @@ describe('lib/optimizely', function() {
                         'key': 'test_attribute',
                         'type': 'custom',
                         'value': 'test_value',
+                      }, {
+                        'entity_id': '$opt_bot_filtering',
+                        'key': '$opt_bot_filtering',
+                        'type': 'custom',
+                        'value': true,
                       },
                     ],
                   }

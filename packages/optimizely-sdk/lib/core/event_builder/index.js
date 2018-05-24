@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2016-2018, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,13 +30,14 @@ var HTTP_VERB = 'POST';
  * @param  {string} options.clientVersion The version of the client
  * @param  {Object} options.configObj     Object representing project configuration, including datafile information and mappings for quick lookup
  * @param  {string} options.userId        ID for user
+ * @param  {Object} options.Logger        logger
  * @return {Object}                       Common params with properties that are used in both conversion and impression events
  */
 function getCommonEventParams(options) {
   var attributes = options.attributes;
   var configObj = options.configObj;
   var anonymize_ip = configObj.anonymizeIP;
-
+  var botFiltering = configObj.botFiltering;
   if (anonymize_ip === null || anonymize_ip === undefined) {
     anonymize_ip = false;
   }
@@ -58,17 +59,25 @@ function getCommonEventParams(options) {
   };
 
   fns.forOwn(attributes, function(attributeValue, attributeKey){
-    var attributeId = projectConfig.getAttributeId(options.configObj, attributeKey);
+    var attributeId = projectConfig.getAttributeId(options.configObj, attributeKey, options.logger);
     if (attributeId) {
-      var feature = {
+      commonParams.visitors[0].attributes.push({
         entity_id: attributeId,
         key: attributeKey,
         type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
         value: attributes[attributeKey],
-      };
-      commonParams.visitors[0].attributes.push(feature);
+      });      
     }
   });
+
+  if (typeof botFiltering === 'boolean') {
+    commonParams.visitors[0].attributes.push({
+      entity_id: enums.CONTROL_ATTRIBUTES.BOT_FILTERING,
+      key: enums.CONTROL_ATTRIBUTES.BOT_FILTERING,
+      type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
+      value: botFiltering,
+    });
+  };
   return commonParams;
 }
 
