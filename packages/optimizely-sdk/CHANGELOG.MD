@@ -1,3 +1,10 @@
+## 2.0.2
+May 24, 2018
+
+* Remove [`request`](https://www.npmjs.com/package/request) dependency ([#98](https://github.com/optimizely/javascript-sdk/pull/98))
+* Add package-lock.json ([#100](https://github.com/optimizely/javascript-sdk/pull/100))
+* Input validation in Activate, Track, and GetVariation methods ([#91](https://github.com/optimizely/javascript-sdk/pull/91) by [@mfahadahmed](https://github.com/mfahadahmed))
+
 ## 2.0.1
 April 16th, 2018
 

@@ -57,6 +57,7 @@ exports.ERROR_MESSAGES = {
   VARIABLE_KEY_NOT_IN_DATAFILE: '%s: Variable with key "%s" associated with feature with key "%s" is not in datafile.',
   VARIATION_ID_NOT_IN_DATAFILE: '%s: No variation ID %s defined in datafile for experiment %s.',
   VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT: '%s: Variation ID %s is not in the datafile.',
+  INVALID_INPUT_FORMAT: '%s: Provided %s is in an invalid format.',
 };
 
 exports.LOG_MESSAGES = {
@@ -129,7 +130,7 @@ exports.RESERVED_EVENT_KEYWORDS = {
 
 exports.JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 exports.NODE_CLIENT_ENGINE = 'node-sdk';
-exports.NODE_CLIENT_VERSION = '2.0.1';
+exports.NODE_CLIENT_VERSION = '2.0.2';
 
 /*
  * Notification types for use with NotificationCenter
