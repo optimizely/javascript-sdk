@@ -18,8 +18,7 @@
     "build-prod-umd": "webpack -p lib/index.browser.js dist/optimizely.browser.umd.min.js --output-library=optimizelyClient --output-library-target=umd",
     "lint": "eslint lib/**",
     "cover": "istanbul cover _mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js",
-    "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls",
-    "prepare": "npm test && npm run build"
+    "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls"
   },
   "repository": {
     "type": "git",
