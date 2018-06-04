@@ -18,6 +18,9 @@ var fns = require('../../utils/fns');
 var eventTagUtils = require('../../utils/event_tag_utils');
 var projectConfig = require('../project_config');
 
+var faultInjector = require("../../fault_injection/faultinjection_manager");
+var ExceptionSpot = require("../../fault_injection/exception_spot");
+
 var ACTIVATE_EVENT_KEY = 'campaign_activated';
 var CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom';
 var ENDPOINT = 'https://logx.optimizely.com/v1/events';
@@ -34,6 +37,7 @@ var HTTP_VERB = 'POST';
  * @return {Object}                       Common params with properties that are used in both conversion and impression events
  */
 function getCommonEventParams(options) {
+  faultInjector.injectFault(ExceptionSpot.event_builder_getCommonEventParams_spot1);
   var attributes = options.attributes;
   var configObj = options.configObj;
   var anonymize_ip = configObj.anonymizeIP;
@@ -57,6 +61,7 @@ function getCommonEventParams(options) {
     client_version: options.clientVersion,
     anonymize_ip: anonymize_ip,
   };
+  faultInjector.injectFault(ExceptionSpot.event_builder_getCommonEventParams_spot2);
 
   fns.forOwn(attributes, function(attributeValue, attributeKey){
     var attributeId = projectConfig.getAttributeId(options.configObj, attributeKey, options.logger);
@@ -78,6 +83,8 @@ function getCommonEventParams(options) {
       value: botFiltering,
     });
   };
+
+  faultInjector.injectFault(ExceptionSpot.event_builder_getCommonEventParams_spot3);
   return commonParams;
 }
 
@@ -89,6 +96,7 @@ function getCommonEventParams(options) {
  * @return {Object}              Impression event params
  */
 function getImpressionEventParams(configObj, experimentId, variationId) {
+  faultInjector.injectFault(ExceptionSpot.event_builder_getImpressionEventParams);
   var impressionEventParams = {
       decisions: [{
         campaign_id: projectConfig.getLayerId(configObj, experimentId),
@@ -116,6 +124,7 @@ function getImpressionEventParams(configObj, experimentId, variationId) {
  * @return {Object}                           Conversion event params
  */
 function getConversionEventParams(configObj, eventKey, eventTags, experimentsToVariationMap, logger) {
+  faultInjector.injectFault(ExceptionSpot.event_builder_getConversionEventParams_spot1);
 
   var conversionEventParams = [];
 
@@ -137,6 +146,8 @@ function getConversionEventParams(configObj, eventKey, eventTags, experimentsToV
       key: eventKey,
     };
 
+    faultInjector.injectFault(ExceptionSpot.event_builder_getConversionEventParams_spot2);
+
     if (eventTags) {
       var revenue = eventTagUtils.getRevenueValue(eventTags, logger);
       if (revenue) {
@@ -155,6 +166,8 @@ function getConversionEventParams(configObj, eventKey, eventTags, experimentsToV
     conversionEventParams.push(decision);
   });
 
+  faultInjector.injectFault(ExceptionSpot.event_builder_getConversionEventParams_spot3);
+
   return conversionEventParams;
 }
 
@@ -172,6 +185,8 @@ module.exports = {
    * @return {Object}                       Params to be used in impression event logging endpoint call
    */
   getImpressionEvent: function(options) {
+    faultInjector.injectFault(ExceptionSpot.event_builder_getImpressionEvent);
+
     var impressionEvent = {
       httpVerb: HTTP_VERB
     };
@@ -203,6 +218,9 @@ module.exports = {
    * @return {Object}                                   Params to be used in conversion event logging endpoint call
    */
   getConversionEvent: function(options) {
+
+    faultInjector.injectFault(ExceptionSpot.event_builder_getConversionEvent);
+
     var conversionEvent = {
       httpVerb: HTTP_VERB,
     };
