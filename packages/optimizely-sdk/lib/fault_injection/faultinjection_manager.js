@@ -7,13 +7,13 @@ function FaultInjectionManager() {
 
     this.injectFault = function (spot) {
         if(isFaultInjectionEnabled && spot === activeInspectionSpot) {
-            throw error("injectedFault");
+            throw new Error("injectedFault");
         }
     };
     
     this.throwExceptionIfTreatmentDisabled = function () {
         if(!isTreatmentEnabled) {
-            throw error("injectedFault");
+            throw new Error("injectedFault");
         }
     };
     
