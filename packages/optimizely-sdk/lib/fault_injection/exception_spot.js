@@ -76,6 +76,126 @@ var ExceptionSpot = {
     event_builder_getImpressionEvent: "event_builder_getImpressionEvent",
     event_builder_getConversionEvent: "event_builder_getConversionEvent",
 
+    // lib/core/notification_center
+    notification_center_NotificationCenter: "notification_center_NotificationCenter",
+
+    notification_center_addNotificationListener_spot1: "notification_center_addNotificationListener_spot1",
+    notification_center_addNotificationListener_spot2: "notification_center_addNotificationListener_spot2",
+    notification_center_addNotificationListener_spot3: "notification_center_addNotificationListener_spot3",
+
+    notification_center_removeNotificationListener_spot1: "notification_center_removeNotificationListener_spot1",
+    notification_center_removeNotificationListener_spot2: "notification_center_removeNotificationListener_spot2",
+
+    notification_center_clearAllNotificationListeners: "notification_center_clearAllNotificationListeners",
+    notification_center_clearNotificationListeners: "notification_center_clearNotificationListeners",
+    notification_center_sendNotifications: "notification_center_sendNotifications",
+    notification_center_createNotificationCenter: "notification_center_createNotificationCenter",
+
+    // lib/core/project_config
+    project_config_createProjectConfig_spot1: "project_config_createProjectConfig_spot1",
+    project_config_createProjectConfig_spot2: "project_config_createProjectConfig_spot2",
+    project_config_createProjectConfig_spot3: "project_config_createProjectConfig_spot3",
+    project_config_createProjectConfig_spot4: "project_config_createProjectConfig_spot4",
+
+    project_config_getExperimentId: "project_config_getExperimentId",
+    project_config_getLayerId: "project_config_getLayerId",
+    project_config_getAttributeId: "project_config_getAttributeId",
+    project_config_getEventId: "project_config_getEventId",
+    project_config_getExperimentStatus: "project_config_getExperimentStatus",
+    project_config_isActive: "project_config_isActive",
+    project_config_isRunning: "project_config_isRunning",
+    project_config_getAudiencesForExperiment: "project_config_getAudiencesForExperiment",
+    project_config_getVariationKeyFromId: "project_config_getVariationKeyFromId",
+    project_config_getVariationIdFromExperimentAndVariationKey: "project_config_getVariationIdFromExperimentAndVariationKey",
+    project_config_getExperimentFromKey: "project_config_getExperimentFromKey",
+    project_config_getExperimentIdsForEvent: "project_config_getExperimentIdsForEvent",
+    project_config_getTrafficAllocation: "project_config_getTrafficAllocation",
+    project_config_removeForcedVariation: "project_config_removeForcedVariation",
+    project_config_setInForcedVariationMap: "project_config_setInForcedVariationMap",
+
+    project_config_getForcedVariation_spot1: "project_config_getForcedVariation_spot1",
+    project_config_getForcedVariation_spot2: "project_config_getForcedVariation_spot2",
+    project_config_getForcedVariation_spot3: "project_config_getForcedVariation_spot3",
+
+    project_config_setForcedVariation_spot1: "project_config_setForcedVariation_spot1",
+    project_config_setForcedVariation_spot2: "project_config_setForcedVariation_spot2",
+    project_config_setForcedVariation_spot3: "project_config_setForcedVariation_spot3",
+
+    project_config_getExperimentFromId: "project_config_getExperimentFromId",
+    project_config_getFeatureFromKey: "project_config_getFeatureFromKey",
+    project_config_getVariableForFeature: "project_config_getVariableForFeature",
+    project_config_getVariableValueForVariation: "project_config_getVariableValueForVariation",
+    project_config_getTypeCastValue: "project_config_getTypeCastValue",
+
+    // lib/optimizely
+    optimizely_Optimizely_spot1: "optimizely_Optimizely_spot1",
+    optimizely_Optimizely_spot2: "optimizely_Optimizely_spot2",
+    optimizely_Optimizely_spot3: "optimizely_Optimizely_spot3",
+    optimizely_Optimizely_spot4: "optimizely_Optimizely_spot4",
+    optimizely_Optimizely_spot5: "optimizely_Optimizely_spot5",
+
+    optimizely_activate_spot1: "optimizely_activate_spot1",
+    optimizely_activate_spot2: "optimizely_activate_spot2",
+    optimizely_activate_spot3: "optimizely_activate_spot3",
+
+    optimizely_sendImpressionEvent_spot1: "optimizely_sendImpressionEvent_spot1",
+    optimizely_sendImpressionEvent_spot2: "optimizely_sendImpressionEvent_spot2",
+    optimizely_sendImpressionEvent_spot3: "optimizely_sendImpressionEvent_spot3",
+
+    optimizely_track_spot1: "optimizely_track_spot1",
+    optimizely_track_spot2: "optimizely_track_spot2",
+    optimizely_track_spot3: "optimizely_track_spot3",
+    optimizely_track_spot4: "optimizely_track_spot4",
+    optimizely_track_spot5: "optimizely_track_spot5",
+
+    optimizely_getVariation_spot1: "optimizely_getVariation_spot1",
+    optimizely_getVariation_spot2: "optimizely_getVariation_spot2",
+
+    optimizely_setForcedVariation: "optimizely_setForcedVariation",
+    optimizely_getForcedVariation: "optimizely_getForcedVariation",
+
+    optimizely_validateInputs: "optimizely_validateInputs",
+
+    optimizely_getValidExperimentsForEvent_spot1: "optimizely_getValidExperimentsForEvent_spot1",
+    optimizely_getValidExperimentsForEvent_spot2: "optimizely_getValidExperimentsForEvent_spot2",
+
+    optimizely_notActivatingExperiment: "optimizely_notActivatingExperiment",
+    optimizely_dispatchEvent: "optimizely_dispatchEvent",
+    optimizely_filterEmptyValues: "optimizely_filterEmptyValues",
+
+    optimizely_isFeatureEnabled_spot1: "optimizely_isFeatureEnabled_spot1",
+    optimizely_isFeatureEnabled_spot2: "optimizely_isFeatureEnabled_spot2",
+
+    optimizely_getEnabledFeatures: "optimizely_getEnabledFeatures",
+
+    optimizely_getFeatureVariableForType_spot1: "optimizely_getFeatureVariableForType_spot1",
+    optimizely_getFeatureVariableForType_spot2: "optimizely_getFeatureVariableForType_spot2",
+    optimizely_getFeatureVariableForType_spot3: "optimizely_getFeatureVariableForType_spot3",
+
+    optimizely_getFeatureVariableBoolean: "optimizely_getFeatureVariableBoolean",
+    optimizely_getFeatureVariableDouble: "optimizely_getFeatureVariableDouble",
+    optimizely_getFeatureVariableInteger: "optimizely_getFeatureVariableInteger",
+    optimizely_getFeatureVariableString: "optimizely_getFeatureVariableString",
+
+    // lib/utils/attributes_validator
+    attributes_validator_validate: "attributes_validator_validate",
+
+    // lib/utils/config_validator
+    config_validator_validate: "config_validator_validate",
+
+    // lib/utils/event_tag_utils
+    event_tag_utils_getRevenueValue: "event_tag_utils_getRevenueValue",
+    event_tag_utils_getEventValue: "event_tag_utils_getEventValue",
+
+    // lib/utils/event_tags_validator
+    event_tags_validator_validate: "event_tags_validator_validate",
+
+    // lib/utils/json_schema_validator
+    json_schema_validator_validate_spot1: "json_schema_validator_validate_spot1",
+    json_schema_validator_validate_spot2: "json_schema_validator_validate_spot2",
+
+    // lib/utils/user_profile_service_validator
+    user_profile_service_validator: "user_profile_service_validator"
 };
 
 module.exports = ExceptionSpot;

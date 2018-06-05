@@ -17,6 +17,9 @@ var fns = require('../../utils/fns');
 var enums = require('../../utils/enums');
 var sprintf = require('sprintf');
 
+var faultInjector = require("../../fault_injection/faultinjection_manager");
+var ExceptionSpot = require("../../fault_injection/exception_spot");
+
 var EXPERIMENT_LAUNCHED_STATUS = 'Launched';
 var EXPERIMENT_RUNNING_STATUS = 'Running';
 var RESERVED_ATTRIBUTE_PREFIX = '$opt_';
@@ -36,6 +39,8 @@ module.exports = {
   createProjectConfig: function(datafile) {
     var projectConfig = fns.cloneDeep(datafile);
 
+    faultInjector.injectFault(ExceptionSpot.project_config_createProjectConfig_spot1);
+
     // Manually parsed for audience targeting
     fns.forEach(projectConfig.audiences, function(audience) {
       audience.conditions = JSON.parse(audience.conditions);
@@ -53,6 +58,8 @@ module.exports = {
       });
     });
 
+    faultInjector.injectFault(ExceptionSpot.project_config_createProjectConfig_spot2);
+
     projectConfig.rolloutIdMap = fns.keyBy(projectConfig.rollouts || [], 'id');
     fns.forOwn(projectConfig.rolloutIdMap, function(rollout) {
       fns.forEach(rollout.experiments || [], function(experiment) {
@@ -61,6 +68,8 @@ module.exports = {
         experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
       });
     });
+
+    faultInjector.injectFault(ExceptionSpot.project_config_createProjectConfig_spot3);
 
     projectConfig.experimentKeyMap = fns.keyBy(projectConfig.experiments, 'key');
     projectConfig.experimentIdMap = fns.keyBy(projectConfig.experiments, 'id');
@@ -80,6 +89,8 @@ module.exports = {
         }
       });
     });
+
+    faultInjector.injectFault(ExceptionSpot.project_config_createProjectConfig_spot4);
 
     projectConfig.forcedVariationMap = {};
 
@@ -107,6 +118,7 @@ module.exports = {
    * @throws If experiment key is not in datafile
    */
   getExperimentId: function(projectConfig, experimentKey) {
+    faultInjector.injectFault(ExceptionSpot.project_config_getExperimentId);
     var experiment = projectConfig.experimentKeyMap[experimentKey];
     if (fns.isEmpty(experiment)) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
@@ -122,6 +134,7 @@ module.exports = {
    * @throws If experiment key is not in datafile
    */
   getLayerId: function(projectConfig, experimentId) {
+    faultInjector.injectFault(ExceptionSpot.project_config_getLayerId);
     var experiment = projectConfig.experimentIdMap[experimentId];
     if (fns.isEmpty(experiment)) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
@@ -137,6 +150,7 @@ module.exports = {
    * @return {string|null} Attribute ID corresponding to the provided attribute key. Attribute key if it is a reserved attribute.
    */
   getAttributeId: function(projectConfig, attributeKey, logger) {
+    faultInjector.injectFault(ExceptionSpot.project_config_getAttributeId);
     var attribute = projectConfig.attributeKeyMap[attributeKey];
     var hasReservedPrefix = attributeKey.indexOf(RESERVED_ATTRIBUTE_PREFIX) === 0;
     if (attribute) {
@@ -160,6 +174,7 @@ module.exports = {
    * @return {string|null} Event ID corresponding to the provided event key
    */
   getEventId: function(projectConfig, eventKey) {
+    faultInjector.injectFault(ExceptionSpot.project_config_getEventId);
     var event = projectConfig.eventKeyMap[eventKey];
     if (event) {
       return event.id;
@@ -175,6 +190,7 @@ module.exports = {
    * @throws If experiment key is not in datafile
    */
   getExperimentStatus: function(projectConfig, experimentKey) {
+    faultInjector.injectFault(ExceptionSpot.project_config_getExperimentStatus);
     var experiment = projectConfig.experimentKeyMap[experimentKey];
     if (fns.isEmpty(experiment)) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
@@ -189,6 +205,7 @@ module.exports = {
    * @return {Boolean}               true if experiment status is set to 'Running', false otherwise
    */
   isActive: function(projectConfig, experimentKey) {
+    faultInjector.injectFault(ExceptionSpot.project_config_isActive);
     return module.exports.getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_RUNNING_STATUS ||
       module.exports.getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_LAUNCHED_STATUS;
   },
@@ -197,6 +214,7 @@ module.exports = {
    * Determine for given experiment if event is running, which determines whether should be dispatched or not
    */
   isRunning: function(projectConfig, experimentKey) {
+    faultInjector.injectFault(ExceptionSpot.project_config_isRunning);
     return module.exports.getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_RUNNING_STATUS;
   },
 
@@ -208,6 +226,7 @@ module.exports = {
    * @throws If experiment key is not in datafile
    */
   getAudiencesForExperiment: function(projectConfig, experimentKey) {
+    faultInjector.injectFault(ExceptionSpot.project_config_getAudiencesForExperiment);
     var experiment = projectConfig.experimentKeyMap[experimentKey];
     if (fns.isEmpty(experiment)) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
@@ -228,6 +247,7 @@ module.exports = {
    * @return {string} Variation key or null if the variation ID is not found
    */
   getVariationKeyFromId: function(projectConfig, variationId) {
+    faultInjector.injectFault(ExceptionSpot.project_config_getVariationKeyFromId);
     if (projectConfig.variationIdMap.hasOwnProperty(variationId)) {
       return projectConfig.variationIdMap[variationId].key;
     }
@@ -242,6 +262,7 @@ module.exports = {
    * @return {string} the variation ID
    */
   getVariationIdFromExperimentAndVariationKey: function(projectConfig, experimentKey, variationKey) {
+    faultInjector.injectFault(ExceptionSpot.project_config_getVariationIdFromExperimentAndVariationKey);
     var experiment = projectConfig.experimentKeyMap[experimentKey];
     if (experiment.variationKeyMap.hasOwnProperty(variationKey)) {
       return experiment.variationKeyMap[variationKey].id;
@@ -257,6 +278,7 @@ module.exports = {
    * @throws If experiment key is not in datafile
    */
   getExperimentFromKey: function(projectConfig, experimentKey) {
+    faultInjector.injectFault(ExceptionSpot.project_config_getExperimentFromKey);
     if (projectConfig.experimentKeyMap.hasOwnProperty(experimentKey)) {
       var experiment = projectConfig.experimentKeyMap[experimentKey];
       if (!!experiment) {
@@ -276,6 +298,7 @@ module.exports = {
    * @throws If event key is not in datafile
    */
   getExperimentIdsForEvent: function(projectConfig, eventKey) {
+    faultInjector.injectFault(ExceptionSpot.project_config_getExperimentIdsForEvent);
     var event = projectConfig.eventKeyMap[eventKey];
     if (event) {
       if (event.experimentIds.length > 0) {
@@ -296,6 +319,7 @@ module.exports = {
    * @throws If experiment key is not in datafile
    */
   getTrafficAllocation: function(projectConfig, experimentKey) {
+    faultInjector.injectFault(ExceptionSpot.project_config_getTrafficAllocation);
     var experiment = projectConfig.experimentKeyMap[experimentKey];
     if (fns.isEmpty(experiment)) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
@@ -313,6 +337,7 @@ module.exports = {
    * @throws If the user id is not valid or not in the forced variation map
    */
   removeForcedVariation: function(projectConfig, userId, experimentId, experimentKey, logger) {
+    faultInjector.injectFault(ExceptionSpot.project_config_removeForcedVariation);
     if (!userId) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_ID, MODULE_NAME));
     }
@@ -335,6 +360,7 @@ module.exports = {
    * @throws If the user id is not valid
    */
   setInForcedVariationMap: function(projectConfig, userId, experimentId, variationId, logger) {
+    faultInjector.injectFault(ExceptionSpot.project_config_setInForcedVariationMap);
     if (!userId) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_ID, MODULE_NAME));
     }
@@ -358,12 +384,14 @@ module.exports = {
    * @return {string|null} Variation   The variation which the given user and experiment should be forced into.
    */
   getForcedVariation: function(projectConfig, experimentKey, userId, logger) {
+    faultInjector.injectFault(ExceptionSpot.project_config_getForcedVariation_spot1);
     var experimentToVariationMap = projectConfig.forcedVariationMap[userId];
     if (!experimentToVariationMap) {
       logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, MODULE_NAME, userId));
       return null;
     }
 
+    faultInjector.injectFault(ExceptionSpot.project_config_getForcedVariation_spot2);
     var experimentId;
     try {
       var experiment = this.getExperimentFromKey(projectConfig, experimentKey);
@@ -380,6 +408,7 @@ module.exports = {
       return null;
     }
 
+    faultInjector.injectFault(ExceptionSpot.project_config_getForcedVariation_spot3);
     var variationId = experimentToVariationMap[experimentId];
     if (!variationId) {
       logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT, MODULE_NAME, experimentKey, userId));
@@ -402,6 +431,7 @@ module.exports = {
    * @return {boolean} A boolean value that indicates if the set completed successfully.
    */
   setForcedVariation: function(projectConfig, experimentKey, userId, variationKey, logger) {
+    faultInjector.injectFault(ExceptionSpot.project_config_setForcedVariation_spot1);
     var experimentId;
     try {
       var experiment = this.getExperimentFromKey(projectConfig, experimentKey);
@@ -418,6 +448,7 @@ module.exports = {
       return false;
     }
 
+    faultInjector.injectFault(ExceptionSpot.project_config_setForcedVariation_spot2);
     if (!variationKey) {
       try {
         this.removeForcedVariation(projectConfig, userId, experimentId, experimentKey, logger);
@@ -434,6 +465,8 @@ module.exports = {
       logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.NO_VARIATION_FOR_EXPERIMENT_KEY, MODULE_NAME, variationKey, experimentKey));
       return false;
     }
+
+    faultInjector.injectFault(ExceptionSpot.project_config_setForcedVariation_spot3);
 
     try {
       this.setInForcedVariationMap(projectConfig, userId, experimentId, variationId, logger);
@@ -452,6 +485,7 @@ module.exports = {
    * @return {Object} Experiment object
    */
   getExperimentFromId: function(projectConfig, experimentId, logger) {
+    faultInjector.injectFault(ExceptionSpot.project_config_getExperimentFromId);
     if (projectConfig.experimentIdMap.hasOwnProperty(experimentId)) {
       var experiment = projectConfig.experimentIdMap[experimentId];
       if (!!experiment) {
@@ -473,6 +507,7 @@ module.exports = {
    * key exists
    */
   getFeatureFromKey: function(projectConfig, featureKey, logger) {
+    faultInjector.injectFault(ExceptionSpot.project_config_getFeatureFromKey);
     if (projectConfig.featureKeyMap.hasOwnProperty(featureKey)) {
       var feature = projectConfig.featureKeyMap[featureKey];
       if (!!feature) {
@@ -496,6 +531,7 @@ module.exports = {
    * feature and variable keys are invalid
    */
   getVariableForFeature: function(projectConfig, featureKey, variableKey, logger) {
+    faultInjector.injectFault(ExceptionSpot.project_config_getVariableForFeature);
     var feature = projectConfig.featureKeyMap[featureKey];
     if (!feature) {
       logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, featureKey));
@@ -525,6 +561,7 @@ module.exports = {
    * for the given variation, or null if the variation or variable are invalid
    */
   getVariableValueForVariation: function(projectConfig, variable, variation, logger) {
+    faultInjector.injectFault(ExceptionSpot.project_config_getVariableValueForVariation);
     if (!variable || !variation) {
       return null;
     }
@@ -556,6 +593,7 @@ module.exports = {
    *                                null if the type cast failed
    */
   getTypeCastValue: function(variableValue, variableType, logger) {
+    faultInjector.injectFault(ExceptionSpot.project_config_getTypeCastValue);
     var castValue;
 
     switch (variableType) {
