@@ -387,7 +387,7 @@ Event Dispatcher module
 | Param | Type | Description |
 | --- | --- | --- |
 | event | <code>Event</code> | Event to dispatch |
-| callback | <code>function</code> | Function to call when... |
+| callback | <code>function</code> | Function to call (with no arguments) after the event is dispatched |
 
 <a name="JSONSchemaValidator"></a>
 

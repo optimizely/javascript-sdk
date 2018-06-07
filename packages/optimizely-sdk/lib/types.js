@@ -13,7 +13,7 @@
 /**
  * @callback EventDispatcherFn
  * @param {Event} event Event to dispatch
- * @param {Function} callback Function to call when...
+ * @param {Function} callback Function to call (with no arguments) after the event is dispatched
  */
 
 /**
