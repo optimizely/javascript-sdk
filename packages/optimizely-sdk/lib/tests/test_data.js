@@ -251,7 +251,7 @@ var config = {
 
 var getParsedAudiences = [{
   name: 'Firefox users',
-  conditions: ["and", ["or", ["or", {"name": "browser_type", "type": "custom_attribute", "value": "firefox"}]]],
+  conditions: ['and', ['or', ['or', {'name': 'browser_type', 'type': 'custom_attribute', 'value': 'firefox'}]]],
   id: '11154'
 }];
 
