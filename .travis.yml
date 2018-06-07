@@ -20,7 +20,7 @@ before_script:
 install: npm install
 addons:
   # Disabled temporarily while we work out integration issues
-  srcclr: false
+  # srcclr: true
 script:
 - npm run test-travis
 after_success:
