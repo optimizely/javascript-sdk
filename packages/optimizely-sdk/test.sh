@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 npm run lint
-grunt jsdoc2md
+grunt doc
 
 if ! git diff --exit-code; then
   echo "Some files need to be checked in"
@@ -9,4 +9,5 @@ if ! git diff --exit-code; then
 fi
 
 npm run test
-grunt karma
+
+npm run build

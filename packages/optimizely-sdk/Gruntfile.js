@@ -18,5 +18,6 @@ module.exports = function (grunt) {
 
     require('load-grunt-tasks')(grunt);
 
+    grunt.registerTask('doc', ['jsdoc2md']);
     grunt.registerTask('default', ['karma']);
 };

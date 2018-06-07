@@ -6,7 +6,7 @@
   "browser": "lib/index.browser.js",
   "scripts": {
     "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive",
-    "test-travis": "./pre-commit.sh",
+    "test-travis": "./test.sh && grunt",
     "build": "npm run build-node && npm run build-browser",
     "build-node": "npm run build-node-dev",
     "build-browser": "npm run build-dev-cjs && npm run build-dev-umd && npm run build-prod-cjs && npm run build-prod-umd",
@@ -18,7 +18,8 @@
     "build-prod-umd": "webpack -p lib/index.browser.js dist/optimizely.browser.umd.min.js --output-library=optimizelyClient --output-library-target=umd",
     "lint": "eslint lib/**",
     "cover": "istanbul cover _mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js",
-    "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls"
+    "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls",
+    "prepare": "npm test && npm run build"
   },
   "repository": {
     "type": "git",
