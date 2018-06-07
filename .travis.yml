@@ -18,6 +18,8 @@ env:
 before_script:
 - npm install grunt-cli -g
 install: npm install
+addons:
+  srcclr: true
 script:
 - npm run test-travis
 after_success:

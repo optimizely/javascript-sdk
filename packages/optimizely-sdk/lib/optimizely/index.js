@@ -188,6 +188,7 @@ Optimizely.prototype._sendImpressionEvent = function (experimentKey, variationKe
     experimentId: experimentId,
     userId: userId,
     variationId: variationId,
+    logger: this.logger,
   };
   var impressionEvent = eventBuilder.getImpressionEvent(impressionEventOptions);
   var dispatchedImpressionEventLogMessage = sprintf(LOG_MESSAGES.DISPATCH_IMPRESSION_EVENT,
@@ -455,13 +456,13 @@ Optimizely.prototype.__notActivatingExperiment = function (experimentKey, userId
  * @private
  */
 Optimizely.prototype.__dispatchEvent = function (eventToDispatch, callback) {
-  var eventDispatcherResponse = this.eventDispatcher.dispatchEvent(eventToDispatch, callback);
-  //checking that response value is a promise, not a request object
-  if (typeof eventDispatcherResponse == 'object' && !eventDispatcherResponse.hasOwnProperty('uri')) {
-    eventDispatcherResponse.then(function () {
-      callback();
-    });
-  }
+    var eventDispatcherResponse = this.eventDispatcher.dispatchEvent(eventToDispatch, callback);
+    //checking that response value is a promise, not a request object
+    if (!fns.isEmpty(eventDispatcherResponse) && typeof eventDispatcherResponse.then === 'function') {
+      eventDispatcherResponse.then(function() {
+        callback();
+      });
+    }
 };
 
 /**
@@ -471,12 +472,12 @@ Optimizely.prototype.__dispatchEvent = function (eventToDispatch, callback) {
  * @private
  */
 Optimizely.prototype.__filterEmptyValues = function (map) {
-  for (var key in map) {
-    if (map.hasOwnProperty(key) && (map[key] === null || map[key] === undefined)) {
-      delete map[key];
+    for (var key in map) {
+      if (map.hasOwnProperty(key) && (map[key] === null || map[key] === undefined)) {
+        delete map[key];
+      }
     }
-  }
-  return map;
+    return map;
 };
 
 /**

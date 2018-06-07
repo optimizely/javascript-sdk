@@ -50,6 +50,7 @@ exports.ERROR_MESSAGES = {
   NO_JSON_PROVIDED: '%s: No JSON object to validate against schema.',
   NO_VARIATION_FOR_EXPERIMENT_KEY: '%s: No variation key %s defined in datafile for experiment %s.',
   UNDEFINED_ATTRIBUTE: '%s: Provided attribute: %s has an undefined value.',
+  UNRECOGNIZED_ATTRIBUTE: '%s: Unrecognized attribute %s provided. Pruning before sending event to Optimizely.',
   UNABLE_TO_CAST_VALUE: '%s: Unable to cast value %s to type %s, returning null.',
   USER_NOT_IN_FORCED_VARIATION: '%s: User %s is not in the forced variation map. Cannot remove their forced variation.',
   USER_PROFILE_LOOKUP_ERROR: '%s: Error while looking up user profile for user ID "%s": %s.',
@@ -128,9 +129,15 @@ exports.RESERVED_EVENT_KEYWORDS = {
   VALUE: 'value',
 };
 
+exports.CONTROL_ATTRIBUTES = {
+  BOT_FILTERING: '$opt_bot_filtering',
+  BUCKETING_ID: '$opt_bucketing_id',
+  USER_AGENT: '$opt_user_agent',
+};
+
 exports.JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 exports.NODE_CLIENT_ENGINE = 'node-sdk';
-exports.NODE_CLIENT_VERSION = '2.0.1';
+exports.NODE_CLIENT_VERSION = '2.1.0';
 
 /*
  * Notification types for use with NotificationCenter
