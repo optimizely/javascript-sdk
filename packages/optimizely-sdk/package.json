@@ -6,7 +6,7 @@
   "browser": "lib/index.browser.js",
   "scripts": {
     "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive",
-    "test-travis": "npm run test && grunt",
+    "test-travis": "./pre-commit.sh",
     "build": "npm run build-node && npm run build-browser",
     "build-node": "npm run build-node-dev",
     "build-browser": "npm run build-dev-cjs && npm run build-dev-umd && npm run build-prod-cjs && npm run build-prod-umd",
