@@ -51,7 +51,7 @@ describe('lib/plugins/event_dispatcher/node', function() {
 
         eventDispatcher.dispatchEvent(eventObj)
         .on('response', function(response) {
-          assert.isTrue(response.statusCode == 200);
+          assert.isTrue(response.statusCode === 200);
           done();
         })
         .on('error', function(error) {

@@ -53,7 +53,7 @@ module.exports = {
     };
 
     var requestCallback = function(error, response, body) {
-      if (response && response.statusCode && response.statusCode >= 200 && response.statusCode < 400 && callback && typeof callback == 'function') {
+      if (response && response.statusCode && response.statusCode >= 200 && response.statusCode < 400 && callback && typeof callback === 'function') {
         callback();
       }
     };
