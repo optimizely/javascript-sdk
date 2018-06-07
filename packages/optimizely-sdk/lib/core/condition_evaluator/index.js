@@ -33,33 +33,38 @@ var DEFAULT_OPERATOR_TYPES = [AND_CONDITION, OR_CONDITION, NOT_CONDITION];
  */
 function evaluate(conditions, userAttributes) {
 
-  faultInjector.injectFault(ExceptionSpot.condition_evaluator_evaluate_spot1);
+  try {
+    faultInjector.injectFault(ExceptionSpot.condition_evaluator_evaluate_spot1);
 
-  if (Array.isArray(conditions)) {
-    var firstOperator = conditions[0];
+    if (Array.isArray(conditions)) {
+      var firstOperator = conditions[0];
 
-    // return false for invalid operators
-    if (DEFAULT_OPERATOR_TYPES.indexOf(firstOperator) === -1) {
-      return false;
+      // return false for invalid operators
+      if (DEFAULT_OPERATOR_TYPES.indexOf(firstOperator) === -1) {
+        return false;
+      }
+
+      faultInjector.injectFault(ExceptionSpot.condition_evaluator_evaluate_spot2);
+
+      var restOfConditions = conditions.slice(1);
+      switch (firstOperator) {
+        case AND_CONDITION:
+          return andEvaluator(restOfConditions, userAttributes);
+        case NOT_CONDITION:
+          return notEvaluator(restOfConditions, userAttributes);
+        case OR_CONDITION:
+          return orEvaluator(restOfConditions, userAttributes);
+      }
     }
 
-    faultInjector.injectFault(ExceptionSpot.condition_evaluator_evaluate_spot2);
+    faultInjector.injectFault(ExceptionSpot.condition_evaluator_evaluate_spot3);
 
-    var restOfConditions = conditions.slice(1);
-    switch (firstOperator) {
-      case AND_CONDITION:
-        return andEvaluator(restOfConditions, userAttributes);
-      case NOT_CONDITION:
-        return notEvaluator(restOfConditions, userAttributes);
-      case OR_CONDITION:
-        return orEvaluator(restOfConditions, userAttributes);
-    }
+    var deserializedConditions = [conditions.name, conditions.value];
+    return evaluator(deserializedConditions, userAttributes);
+  } catch (e) {
+    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    return false;
   }
-
-  faultInjector.injectFault(ExceptionSpot.condition_evaluator_evaluate_spot3);
-
-  var deserializedConditions = [conditions.name, conditions.value];
-  return evaluator(deserializedConditions, userAttributes);
 }
 
 /**
@@ -70,16 +75,23 @@ function evaluate(conditions, userAttributes) {
  * @return {Boolean}                 true if the user attributes match the given conditions
  */
 function andEvaluator(conditions, userAttributes) {
-  faultInjector.injectFault(ExceptionSpot.condition_evaluator_andEvaluator);
-  var condition;
-  for (var i = 0; i < conditions.length; i++) {
-    condition = conditions[i];
-    if (!evaluate(condition, userAttributes)) {
-      return false;
-    }
-  }
 
-  return true;
+  try {
+
+    faultInjector.injectFault(ExceptionSpot.condition_evaluator_andEvaluator);
+    var condition;
+    for (var i = 0; i < conditions.length; i++) {
+      condition = conditions[i];
+      if (!evaluate(condition, userAttributes)) {
+        return false;
+      }
+    }
+
+    return true;
+  } catch (e) {
+    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    return false;
+  }
 }
 
 /**
@@ -90,12 +102,17 @@ function andEvaluator(conditions, userAttributes) {
  * @return {Boolean}                 true if the user attributes match the given conditions
  */
 function notEvaluator(conditions, userAttributes) {
-  faultInjector.injectFault(ExceptionSpot.condition_evaluator_notEvaluator);
-  if (conditions.length !== 1) {
+  try {
+    faultInjector.injectFault(ExceptionSpot.condition_evaluator_notEvaluator);
+    if (conditions.length !== 1) {
+      return false;
+    }
+
+    return !evaluate(conditions[0], userAttributes);
+  } catch (e) {
+    faultInjector.throwExceptionIfTreatmentDisabled(e);
     return false;
   }
-
-  return !evaluate(conditions[0], userAttributes);
 }
 
 /**
@@ -106,14 +123,17 @@ function notEvaluator(conditions, userAttributes) {
  * @return {Boolean}                 true if the user attributes match the given conditions
  */
 function orEvaluator(conditions, userAttributes) {
-  faultInjector.injectFault(ExceptionSpot.condition_evaluator_orEvaluator);
-  for (var i = 0; i < conditions.length; i++) {
-    var condition = conditions[i];
-    if (evaluate(condition, userAttributes)) {
-      return true;
+  try {
+    faultInjector.injectFault(ExceptionSpot.condition_evaluator_orEvaluator);
+    for (var i = 0; i < conditions.length; i++) {
+      var condition = conditions[i];
+      if (evaluate(condition, userAttributes)) {
+        return true;
+      }
     }
+  } catch (e) {
+    faultInjector.throwExceptionIfTreatmentDisabled(e);
   }
-
   return false;
 }
 
@@ -125,11 +145,14 @@ function orEvaluator(conditions, userAttributes) {
  * @return {Boolean}                 true if the user attributes match the given conditions
  */
 function evaluator(conditions, userAttributes) {
-  faultInjector.injectFault(ExceptionSpot.condition_evaluator_evaluator);
-  if (userAttributes.hasOwnProperty(conditions[0])) {
-    return userAttributes[conditions[0]] === conditions[1];
+  try {
+    faultInjector.injectFault(ExceptionSpot.condition_evaluator_evaluator);
+    if (userAttributes.hasOwnProperty(conditions[0])) {
+      return userAttributes[conditions[0]] === conditions[1];
+    }
+  } catch (e) {
+    faultInjector.throwExceptionIfTreatmentDisabled(e);
   }
-
   return false;
 }
 

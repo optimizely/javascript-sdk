@@ -46,25 +46,27 @@ module.exports = {
    */
   createInstance: function(config) {
 
-    faultInjector.injectFault(ExceptionSpot.createInstance);
+    try {
 
-    var defaultLogger = logger.createNoOpLogger();
-    if (config) {
+      faultInjector.injectFault(ExceptionSpot.createInstance);
+
+      var defaultLogger = logger.createNoOpLogger();
+      if (config) {
         try {
-            configValidator.validate(config);
-            config.isValidInstance = true;
+          configValidator.validate(config);
+          config.isValidInstance = true;
         } catch (ex) {
-            if (config.logger) {
-                config.logger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
-            } else {
-                var simpleLogger = logger.createLogger({logLevel: 4});
-                simpleLogger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
-            }
-            config.isValidInstance = false;
+          if (config.logger) {
+            config.logger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
+          } else {
+            var simpleLogger = logger.createLogger({logLevel: 4});
+            simpleLogger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
+          }
+          config.isValidInstance = false;
         }
-    }
+      }
 
-    config = fns.assign({
+      config = fns.assign({
         clientEngine: enums.NODE_CLIENT_ENGINE,
         clientVersion: enums.CLIENT_VERSION,
         errorHandler: defaultErrorHandler,
@@ -72,8 +74,12 @@ module.exports = {
         jsonSchemaValidator: jsonSchemaValidator,
         logger: defaultLogger,
         skipJSONValidation: false
-    }, config);
+      }, config);
 
-    return new Optimizely(config);
+      return new Optimizely(config);
+    } catch (e) {
+      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      return null;
+    }
   }
 };

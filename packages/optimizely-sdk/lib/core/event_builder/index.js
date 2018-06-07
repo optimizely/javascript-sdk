@@ -37,55 +37,63 @@ var HTTP_VERB = 'POST';
  * @return {Object}                       Common params with properties that are used in both conversion and impression events
  */
 function getCommonEventParams(options) {
-  faultInjector.injectFault(ExceptionSpot.event_builder_getCommonEventParams_spot1);
-  var attributes = options.attributes;
-  var configObj = options.configObj;
-  var anonymize_ip = configObj.anonymizeIP;
-  var botFiltering = configObj.botFiltering;
-  if (anonymize_ip === null || anonymize_ip === undefined) {
-    anonymize_ip = false;
-  }
 
-  var visitor = {
-    snapshots: [],
-    visitor_id: options.userId,
-    attributes: []
-  };
+  try {
 
-  var commonParams = {
-    account_id: configObj.accountId,
-    project_id: configObj.projectId,
-    visitors: [visitor],
-    revision: configObj.revision,
-    client_name: options.clientEngine,
-    client_version: options.clientVersion,
-    anonymize_ip: anonymize_ip,
-  };
-  faultInjector.injectFault(ExceptionSpot.event_builder_getCommonEventParams_spot2);
-
-  fns.forOwn(attributes, function(attributeValue, attributeKey){
-    var attributeId = projectConfig.getAttributeId(options.configObj, attributeKey, options.logger);
-    if (attributeId) {
-      commonParams.visitors[0].attributes.push({
-        entity_id: attributeId,
-        key: attributeKey,
-        type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
-        value: attributes[attributeKey],
-      });      
+    faultInjector.injectFault(ExceptionSpot.event_builder_getCommonEventParams_spot1);
+    var attributes = options.attributes;
+    var configObj = options.configObj;
+    var anonymize_ip = configObj.anonymizeIP;
+    var botFiltering = configObj.botFiltering;
+    if (anonymize_ip === null || anonymize_ip === undefined) {
+      anonymize_ip = false;
     }
-  });
 
-  if (typeof botFiltering === 'boolean') {
-    commonParams.visitors[0].attributes.push({
-      entity_id: enums.CONTROL_ATTRIBUTES.BOT_FILTERING,
-      key: enums.CONTROL_ATTRIBUTES.BOT_FILTERING,
-      type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
-      value: botFiltering,
+    var visitor = {
+      snapshots: [],
+      visitor_id: options.userId,
+      attributes: []
+    };
+
+    var commonParams = {
+      account_id: configObj.accountId,
+      project_id: configObj.projectId,
+      visitors: [visitor],
+      revision: configObj.revision,
+      client_name: options.clientEngine,
+      client_version: options.clientVersion,
+      anonymize_ip: anonymize_ip,
+    };
+    faultInjector.injectFault(ExceptionSpot.event_builder_getCommonEventParams_spot2);
+
+    fns.forOwn(attributes, function (attributeValue, attributeKey) {
+      var attributeId = projectConfig.getAttributeId(options.configObj, attributeKey, options.logger);
+      if (attributeId) {
+        commonParams.visitors[0].attributes.push({
+          entity_id: attributeId,
+          key: attributeKey,
+          type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
+          value: attributes[attributeKey],
+        });
+      }
     });
-  };
 
-  faultInjector.injectFault(ExceptionSpot.event_builder_getCommonEventParams_spot3);
-  return commonParams;
+    if (typeof botFiltering === 'boolean') {
+      commonParams.visitors[0].attributes.push({
+        entity_id: enums.CONTROL_ATTRIBUTES.BOT_FILTERING,
+        key: enums.CONTROL_ATTRIBUTES.BOT_FILTERING,
+        type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
+        value: botFiltering,
+      });
+    }
+    ;
+
+    faultInjector.injectFault(ExceptionSpot.event_builder_getCommonEventParams_spot3);
+    return commonParams;
+  } catch (e) {
+    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    return null;
+  }
 }
 
 /**
@@ -96,8 +104,9 @@ function getCommonEventParams(options) {
  * @return {Object}              Impression event params
  */
 function getImpressionEventParams(configObj, experimentId, variationId) {
-  faultInjector.injectFault(ExceptionSpot.event_builder_getImpressionEventParams);
-  var impressionEventParams = {
+  try {
+    faultInjector.injectFault(ExceptionSpot.event_builder_getImpressionEventParams);
+    var impressionEventParams = {
       decisions: [{
         campaign_id: projectConfig.getLayerId(configObj, experimentId),
         experiment_id: experimentId,
@@ -111,7 +120,11 @@ function getImpressionEventParams(configObj, experimentId, variationId) {
       }]
 
     };
-  return impressionEventParams;
+    return impressionEventParams;
+  } catch (e) {
+    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    return null;
+  }
 }
 
 /**
@@ -124,51 +137,56 @@ function getImpressionEventParams(configObj, experimentId, variationId) {
  * @return {Object}                           Conversion event params
  */
 function getConversionEventParams(configObj, eventKey, eventTags, experimentsToVariationMap, logger) {
-  faultInjector.injectFault(ExceptionSpot.event_builder_getConversionEventParams_spot1);
+  try {
+    faultInjector.injectFault(ExceptionSpot.event_builder_getConversionEventParams_spot1);
 
-  var conversionEventParams = [];
+    var conversionEventParams = [];
 
-  fns.forOwn(experimentsToVariationMap, function(variationId, experimentId) {
+    fns.forOwn(experimentsToVariationMap, function (variationId, experimentId) {
 
-    var decision = {
-      decisions: [{
-        campaign_id: projectConfig.getLayerId(configObj, experimentId),
-        experiment_id: experimentId,
-        variation_id: variationId,
-      }],
-      events: [],
-    };
+      var decision = {
+        decisions: [{
+          campaign_id: projectConfig.getLayerId(configObj, experimentId),
+          experiment_id: experimentId,
+          variation_id: variationId,
+        }],
+        events: [],
+      };
 
-    var eventDict = {
-      entity_id: projectConfig.getEventId(configObj, eventKey),
-      timestamp: fns.currentTimestamp(),
-      uuid: fns.uuid(),
-      key: eventKey,
-    };
+      var eventDict = {
+        entity_id: projectConfig.getEventId(configObj, eventKey),
+        timestamp: fns.currentTimestamp(),
+        uuid: fns.uuid(),
+        key: eventKey,
+      };
 
-    faultInjector.injectFault(ExceptionSpot.event_builder_getConversionEventParams_spot2);
+      faultInjector.injectFault(ExceptionSpot.event_builder_getConversionEventParams_spot2);
 
-    if (eventTags) {
-      var revenue = eventTagUtils.getRevenueValue(eventTags, logger);
-      if (revenue) {
-        eventDict[enums.RESERVED_EVENT_KEYWORDS.REVENUE] = revenue;
+      if (eventTags) {
+        var revenue = eventTagUtils.getRevenueValue(eventTags, logger);
+        if (revenue) {
+          eventDict[enums.RESERVED_EVENT_KEYWORDS.REVENUE] = revenue;
+        }
+
+        var eventValue = eventTagUtils.getEventValue(eventTags, logger);
+        if (eventValue) {
+          eventDict[enums.RESERVED_EVENT_KEYWORDS.VALUE] = eventValue;
+        }
+
+        eventDict['tags'] = eventTags;
       }
+      decision.events = [eventDict];
 
-      var eventValue = eventTagUtils.getEventValue(eventTags, logger);
-      if (eventValue) {
-        eventDict[enums.RESERVED_EVENT_KEYWORDS.VALUE] = eventValue;
-      }
+      conversionEventParams.push(decision);
+    });
 
-      eventDict['tags'] = eventTags;
-    }
-    decision.events = [eventDict];
+    faultInjector.injectFault(ExceptionSpot.event_builder_getConversionEventParams_spot3);
 
-    conversionEventParams.push(decision);
-  });
-
-  faultInjector.injectFault(ExceptionSpot.event_builder_getConversionEventParams_spot3);
-
-  return conversionEventParams;
+    return conversionEventParams;
+  } catch (e) {
+    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    return null;
+  }
 }
 
 module.exports = {
@@ -185,22 +203,27 @@ module.exports = {
    * @return {Object}                       Params to be used in impression event logging endpoint call
    */
   getImpressionEvent: function(options) {
-    faultInjector.injectFault(ExceptionSpot.event_builder_getImpressionEvent);
+    try {
+      faultInjector.injectFault(ExceptionSpot.event_builder_getImpressionEvent);
 
-    var impressionEvent = {
-      httpVerb: HTTP_VERB
-    };
+      var impressionEvent = {
+        httpVerb: HTTP_VERB
+      };
 
-    var commonParams = getCommonEventParams(options);
-    impressionEvent.url = ENDPOINT;
+      var commonParams = getCommonEventParams(options);
+      impressionEvent.url = ENDPOINT;
 
-    var impressionEventParams = getImpressionEventParams(options.configObj, options.experimentId, options.variationId);
-    // combine Event params into visitor obj
-    commonParams.visitors[0].snapshots.push(impressionEventParams);
+      var impressionEventParams = getImpressionEventParams(options.configObj, options.experimentId, options.variationId);
+      // combine Event params into visitor obj
+      commonParams.visitors[0].snapshots.push(impressionEventParams);
 
-    impressionEvent.params = commonParams;
+      impressionEvent.params = commonParams;
 
-    return impressionEvent;
+      return impressionEvent;
+    } catch (e) {
+      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      return null;
+    }
   },
 
   /**
@@ -219,24 +242,30 @@ module.exports = {
    */
   getConversionEvent: function(options) {
 
-    faultInjector.injectFault(ExceptionSpot.event_builder_getConversionEvent);
+    try {
+      faultInjector.injectFault(ExceptionSpot.event_builder_getConversionEvent);
 
-    var conversionEvent = {
-      httpVerb: HTTP_VERB,
-    };
+      var conversionEvent = {
+        httpVerb: HTTP_VERB,
+      };
 
-    var commonParams = getCommonEventParams(options);
-    conversionEvent.url = ENDPOINT;
+      var commonParams = getCommonEventParams(options);
+      conversionEvent.url = ENDPOINT;
 
-    var conversionEventParams = getConversionEventParams(options.configObj,
-                                                         options.eventKey,
-                                                         options.eventTags,
-                                                         options.experimentsToVariationMap,
-                                                         options.logger);
+      var conversionEventParams = getConversionEventParams(options.configObj,
+        options.eventKey,
+        options.eventTags,
+        options.experimentsToVariationMap,
+        options.logger);
 
-    commonParams.visitors[0].snapshots = conversionEventParams;
-    conversionEvent.params = commonParams;
+      commonParams.visitors[0].snapshots = conversionEventParams;
+      conversionEvent.params = commonParams;
 
-    return conversionEvent;
+      return conversionEvent;
+    } catch (e) {
+      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      return null;
+    }
+
   },
 };

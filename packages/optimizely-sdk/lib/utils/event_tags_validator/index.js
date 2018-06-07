@@ -34,11 +34,19 @@ module.exports = {
    * @throws If event tags are not valid
    */
   validate: function(eventTags) {
-    faultInjector.injectFault(ExceptionSpot.event_tags_validator_validate);
-    if (typeof eventTags === 'object' && !Array.isArray(eventTags) && eventTags !== null) {
-      return true;
-    } else {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_TAGS, MODULE_NAME));
+    try {
+      faultInjector.injectFault(ExceptionSpot.event_tags_validator_validate);
+      if (typeof eventTags === 'object' && !Array.isArray(eventTags) && eventTags !== null) {
+        return true;
+      } else {
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_TAGS, MODULE_NAME));
+      }
+    } catch (e) {
+      if(e.message.startsWith(MODULE_NAME)){
+        throw e;
+      }
+      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      return false;
     }
   },
 };

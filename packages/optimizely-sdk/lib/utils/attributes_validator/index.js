@@ -35,16 +35,24 @@ module.exports = {
    * @throws If the attributes are not valid
    */
   validate: function(attributes) {
-    faultInjector.injectFault(ExceptionSpot.attributes_validator_validate);
-    if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
-      lodashForOwn(attributes, function(value, key) {
-        if (typeof value === 'undefined') {
-          throw new Error(sprintf(ERROR_MESSAGES.UNDEFINED_ATTRIBUTE, MODULE_NAME, key));
-        }
-      });
-      return true;
-    } else {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, MODULE_NAME));
+    try {
+      faultInjector.injectFault(ExceptionSpot.attributes_validator_validate);
+      if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
+        lodashForOwn(attributes, function (value, key) {
+          if (typeof value === 'undefined') {
+            throw new Error(sprintf(ERROR_MESSAGES.UNDEFINED_ATTRIBUTE, MODULE_NAME, key));
+          }
+        });
+        return true;
+      } else {
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, MODULE_NAME));
+      }
+    } catch (e) {
+      if(e.message.startsWith(MODULE_NAME)){
+        throw e;
+      }
+      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      return false;
     }
   },
 };

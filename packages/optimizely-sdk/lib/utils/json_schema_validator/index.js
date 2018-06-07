@@ -32,24 +32,32 @@ module.exports = {
    */
   validate: function(jsonSchema, jsonObject) {
 
-    faultInjector.injectFault(ExceptionSpot.json_schema_validator_validate_spot1);
-    if (!jsonSchema) {
-      throw new Error(sprintf(ERROR_MESSAGES.JSON_SCHEMA_EXPECTED, MODULE_NAME));
-    }
-
-    if (!jsonObject) {
-      throw new Error(sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, MODULE_NAME));
-    }
-
-    faultInjector.injectFault(ExceptionSpot.json_schema_validator_validate_spot2);
-    var result = validate(jsonObject, jsonSchema);
-    if (result.valid) {
-      return true;
-    } else {
-      if (fns.isArray(result.errors)) {
-        throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE, MODULE_NAME, result.errors[0].property, result.errors[0].message));
+    try {
+      faultInjector.injectFault(ExceptionSpot.json_schema_validator_validate_spot1);
+      if (!jsonSchema) {
+        throw new Error(sprintf(ERROR_MESSAGES.JSON_SCHEMA_EXPECTED, MODULE_NAME));
       }
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_JSON, MODULE_NAME));
+
+      if (!jsonObject) {
+        throw new Error(sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, MODULE_NAME));
+      }
+
+      faultInjector.injectFault(ExceptionSpot.json_schema_validator_validate_spot2);
+      var result = validate(jsonObject, jsonSchema);
+      if (result.valid) {
+        return true;
+      } else {
+        if (fns.isArray(result.errors)) {
+          throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE, MODULE_NAME, result.errors[0].property, result.errors[0].message));
+        }
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_JSON, MODULE_NAME));
+      }
+    } catch (e) {
+      if(e.message.startsWith(MODULE_NAME)){
+        throw e;
+      }
+      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      return false;
     }
   }
 };

@@ -28,26 +28,32 @@ module.exports = {
    */
   evaluate: function(audiences, userAttributes) {
 
-    faultInjector.injectFault(ExceptionSpot.audience_evaluator_evaluate);
+    try {
 
-    // if there are no audiences, return true because that means ALL users are included in the experiment
-    if (!audiences || audiences.length === 0) {
-      return true;
-    }
+      faultInjector.injectFault(ExceptionSpot.audience_evaluator_evaluate);
 
-    // if no user attributes specified, return false
-    if (!userAttributes) {
-      return false;
-    }
-
-    for (var i = 0; i < audiences.length; i++) {
-      var audience = audiences[i];
-      var conditions = audience.conditions;
-      if (conditionEvaluator.evaluate(conditions, userAttributes)) {
+      // if there are no audiences, return true because that means ALL users are included in the experiment
+      if (!audiences || audiences.length === 0) {
         return true;
       }
-    }
 
-    return false;
+      // if no user attributes specified, return false
+      if (!userAttributes) {
+        return false;
+      }
+
+      for (var i = 0; i < audiences.length; i++) {
+        var audience = audiences[i];
+        var conditions = audience.conditions;
+        if (conditionEvaluator.evaluate(conditions, userAttributes)) {
+          return true;
+        }
+      }
+
+      return false;
+    } catch (e) {
+      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      return false;
+    }
   },
 };

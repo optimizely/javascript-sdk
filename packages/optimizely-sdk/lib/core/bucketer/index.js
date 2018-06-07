@@ -50,70 +50,79 @@ module.exports = {
    */
   bucket: function(bucketerParams) {
 
-    faultInjector.injectFault(ExceptionSpot.bucketer_bucket_spot1);
+    try {
 
-    // Check if user is in a random group; if so, check if user is bucketed into a specific experiment
-    var experiment = bucketerParams.experimentKeyMap[bucketerParams.experimentKey];
-    var groupId = experiment['groupId'];
-    if (groupId) {
-      var group = bucketerParams.groupIdMap[groupId];
-      if (!group) {
-        throw new Error(sprintf(ERROR_MESSAGES.INVALID_GROUP_ID, MODULE_NAME, groupId));
-      }
+      faultInjector.injectFault(ExceptionSpot.bucketer_bucket_spot1);
 
-      faultInjector.injectFault(ExceptionSpot.bucketer_bucket_spot2);
-      if (group.policy === RANDOM_POLICY) {
-        var bucketedExperimentId = module.exports.bucketUserIntoExperiment(group,
-                                                                          bucketerParams.bucketingId,
-                                                                          bucketerParams.userId,
-                                                                          bucketerParams.logger);
-
-        // Return if user is not bucketed into any experiment
-        if (bucketedExperimentId === null) {
-          var notbucketedInAnyExperimentLogMessage = sprintf(LOG_MESSAGES.USER_NOT_IN_ANY_EXPERIMENT, MODULE_NAME, bucketerParams.userId, groupId);
-          bucketerParams.logger.log(LOG_LEVEL.INFO, notbucketedInAnyExperimentLogMessage);
-          return null;
+      // Check if user is in a random group; if so, check if user is bucketed into a specific experiment
+      var experiment = bucketerParams.experimentKeyMap[bucketerParams.experimentKey];
+      var groupId = experiment['groupId'];
+      if (groupId) {
+        var group = bucketerParams.groupIdMap[groupId];
+        if (!group) {
+          throw new Error(sprintf(ERROR_MESSAGES.INVALID_GROUP_ID, MODULE_NAME, groupId));
         }
 
-        faultInjector.injectFault(ExceptionSpot.bucketer_bucket_spot3);
+        faultInjector.injectFault(ExceptionSpot.bucketer_bucket_spot2);
+        if (group.policy === RANDOM_POLICY) {
+          var bucketedExperimentId = module.exports.bucketUserIntoExperiment(group,
+            bucketerParams.bucketingId,
+            bucketerParams.userId,
+            bucketerParams.logger);
 
-        // Return if user is bucketed into a different experiment than the one specified
-        if (bucketedExperimentId !== bucketerParams.experimentId) {
-          var notBucketedIntoExperimentOfGroupLogMessage = sprintf(LOG_MESSAGES.USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP, MODULE_NAME, bucketerParams.userId, bucketerParams.experimentKey, groupId);
-          bucketerParams.logger.log(LOG_LEVEL.INFO, notBucketedIntoExperimentOfGroupLogMessage);
-          return null;
+          // Return if user is not bucketed into any experiment
+          if (bucketedExperimentId === null) {
+            var notbucketedInAnyExperimentLogMessage = sprintf(LOG_MESSAGES.USER_NOT_IN_ANY_EXPERIMENT, MODULE_NAME, bucketerParams.userId, groupId);
+            bucketerParams.logger.log(LOG_LEVEL.INFO, notbucketedInAnyExperimentLogMessage);
+            return null;
+          }
+
+          faultInjector.injectFault(ExceptionSpot.bucketer_bucket_spot3);
+
+          // Return if user is bucketed into a different experiment than the one specified
+          if (bucketedExperimentId !== bucketerParams.experimentId) {
+            var notBucketedIntoExperimentOfGroupLogMessage = sprintf(LOG_MESSAGES.USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP, MODULE_NAME, bucketerParams.userId, bucketerParams.experimentKey, groupId);
+            bucketerParams.logger.log(LOG_LEVEL.INFO, notBucketedIntoExperimentOfGroupLogMessage);
+            return null;
+          }
+
+          // Continue bucketing if user is bucketed into specified experiment
+          var bucketedIntoExperimentOfGroupLogMessage = sprintf(LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP, MODULE_NAME, bucketerParams.userId, bucketerParams.experimentKey, groupId);
+          bucketerParams.logger.log(LOG_LEVEL.INFO, bucketedIntoExperimentOfGroupLogMessage);
         }
-
-        // Continue bucketing if user is bucketed into specified experiment
-        var bucketedIntoExperimentOfGroupLogMessage = sprintf(LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP, MODULE_NAME, bucketerParams.userId, bucketerParams.experimentKey, groupId);
-        bucketerParams.logger.log(LOG_LEVEL.INFO, bucketedIntoExperimentOfGroupLogMessage);
       }
-    }
-    var bucketingId = sprintf('%s%s', bucketerParams.bucketingId, bucketerParams.experimentId);
-    var bucketValue = module.exports._generateBucketValue(bucketingId);
+      var bucketingId = sprintf('%s%s', bucketerParams.bucketingId, bucketerParams.experimentId);
+      var bucketValue = module.exports._generateBucketValue(bucketingId);
 
-    var bucketedUserLogMessage = sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, MODULE_NAME, bucketValue, bucketerParams.userId);
-    bucketerParams.logger.log(LOG_LEVEL.DEBUG, bucketedUserLogMessage);
+      var bucketedUserLogMessage = sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, MODULE_NAME, bucketValue, bucketerParams.userId);
+      bucketerParams.logger.log(LOG_LEVEL.DEBUG, bucketedUserLogMessage);
 
-    faultInjector.injectFault(ExceptionSpot.bucketer_bucket_spot4);
+      faultInjector.injectFault(ExceptionSpot.bucketer_bucket_spot4);
 
-    var entityId = module.exports._findBucket(bucketValue, bucketerParams.trafficAllocationConfig);
-    if (entityId === null) {
-      var userHasNoVariationLogMessage = sprintf(LOG_MESSAGES.USER_HAS_NO_VARIATION, MODULE_NAME, bucketerParams.userId, bucketerParams.experimentKey);
-      bucketerParams.logger.log(LOG_LEVEL.DEBUG, userHasNoVariationLogMessage);
-    } else if (entityId === '' || !bucketerParams.variationIdMap.hasOwnProperty(entityId)) {
-      var invalidVariationIdLogMessage = sprintf(LOG_MESSAGES.INVALID_VARIATION_ID, MODULE_NAME);
-      bucketerParams.logger.log(LOG_LEVEL.WARNING, invalidVariationIdLogMessage);
+      var entityId = module.exports._findBucket(bucketValue, bucketerParams.trafficAllocationConfig);
+      if (entityId === null) {
+        var userHasNoVariationLogMessage = sprintf(LOG_MESSAGES.USER_HAS_NO_VARIATION, MODULE_NAME, bucketerParams.userId, bucketerParams.experimentKey);
+        bucketerParams.logger.log(LOG_LEVEL.DEBUG, userHasNoVariationLogMessage);
+      } else if (entityId === '' || !bucketerParams.variationIdMap.hasOwnProperty(entityId)) {
+        var invalidVariationIdLogMessage = sprintf(LOG_MESSAGES.INVALID_VARIATION_ID, MODULE_NAME);
+        bucketerParams.logger.log(LOG_LEVEL.WARNING, invalidVariationIdLogMessage);
+        return null;
+      } else {
+        var variationKey = bucketerParams.variationIdMap[entityId].key;
+        var userInVariationLogMessage = sprintf(LOG_MESSAGES.USER_HAS_VARIATION, MODULE_NAME, bucketerParams.userId, variationKey, bucketerParams.experimentKey);
+        bucketerParams.logger.log(LOG_LEVEL.INFO, userInVariationLogMessage);
+      }
+
+      faultInjector.injectFault(ExceptionSpot.bucketer_bucket_spot5);
+
+      return entityId;
+    } catch (e) {
+      if(e.message.startsWith(MODULE_NAME)){
+        throw e;
+      }
+      faultInjector.throwExceptionIfTreatmentDisabled(e);
       return null;
-    } else {
-      var variationKey = bucketerParams.variationIdMap[entityId].key;
-      var userInVariationLogMessage = sprintf(LOG_MESSAGES.USER_HAS_VARIATION, MODULE_NAME, bucketerParams.userId, variationKey, bucketerParams.experimentKey);
-      bucketerParams.logger.log(LOG_LEVEL.INFO, userInVariationLogMessage);
     }
-
-    faultInjector.injectFault(ExceptionSpot.bucketer_bucket_spot5);
-
-    return entityId;
   },
 
   /**
@@ -126,14 +135,20 @@ module.exports = {
    */
   bucketUserIntoExperiment: function(group, bucketingId, userId, logger) {
 
-    faultInjector.injectFault(ExceptionSpot.bucketer_bucketUserIntoExperiment);
+    try {
 
-    var bucketingKey = sprintf('%s%s', bucketingId, group.id);
-    var bucketValue = module.exports._generateBucketValue(bucketingKey);
-    logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, MODULE_NAME, bucketValue, userId));
-    var trafficAllocationConfig = group.trafficAllocation;
-    var bucketedExperimentId = module.exports._findBucket(bucketValue, trafficAllocationConfig);
-    return bucketedExperimentId;
+      faultInjector.injectFault(ExceptionSpot.bucketer_bucketUserIntoExperiment);
+
+      var bucketingKey = sprintf('%s%s', bucketingId, group.id);
+      var bucketValue = module.exports._generateBucketValue(bucketingKey);
+      logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, MODULE_NAME, bucketValue, userId));
+      var trafficAllocationConfig = group.trafficAllocation;
+      var bucketedExperimentId = module.exports._findBucket(bucketValue, trafficAllocationConfig);
+      return bucketedExperimentId;
+    } catch (e) {
+      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      return "";
+    }
   },
 
   /**
@@ -145,13 +160,17 @@ module.exports = {
    * @return {string}   Entity ID for bucketing if bucket value is within traffic allocation boundaries, null otherwise
    */
   _findBucket: function(bucketValue, trafficAllocationConfig) {
+    try {
 
-    faultInjector.injectFault(ExceptionSpot.bucketer_findBucket);
+      faultInjector.injectFault(ExceptionSpot.bucketer_findBucket);
 
-    for (var i = 0; i < trafficAllocationConfig.length; i++) {
-      if (bucketValue < trafficAllocationConfig[i].endOfRange) {
-        return trafficAllocationConfig[i].entityId;
+      for (var i = 0; i < trafficAllocationConfig.length; i++) {
+        if (bucketValue < trafficAllocationConfig[i].endOfRange) {
+          return trafficAllocationConfig[i].entityId;
+        }
       }
+    } catch (e) {
+      faultInjector.throwExceptionIfTreatmentDisabled(e);
     }
     return null;
   },
@@ -171,6 +190,7 @@ module.exports = {
       var ratio = hashValue / MAX_HASH_VALUE;
       return parseInt(ratio * MAX_TRAFFIC_VALUE, 10);
     } catch (ex) {
+      faultInjector.throwExceptionIfTreatmentDisabled(ex);
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, MODULE_NAME, bucketingKey, ex.message));
     }
   },

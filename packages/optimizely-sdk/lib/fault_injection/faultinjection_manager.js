@@ -11,8 +11,8 @@ function FaultInjectionManager() {
         }
     };
     
-    this.throwExceptionIfTreatmentDisabled = function () {
-        if(!isTreatmentEnabled) {
+    this.throwExceptionIfTreatmentDisabled = function (e) {
+        if(e.message === "injectedFault" && !isTreatmentEnabled) {
             throw new Error("injectedFault");
         }
     };
