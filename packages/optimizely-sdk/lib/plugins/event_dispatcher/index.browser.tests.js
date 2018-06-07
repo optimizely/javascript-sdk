@@ -27,8 +27,8 @@ describe('lib/plugins/event_dispatcher/browser', function() {
         xhr = sinon.useFakeXMLHttpRequest();
         global.XMLHttpRequest = xhr;
         requests = [];
-        xhr.onCreate = function (xhr) {
-            requests.push(xhr);
+        xhr.onCreate = function (req) {
+            requests.push(req);
         };
       });
 
