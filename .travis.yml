@@ -19,7 +19,8 @@ before_script:
 - npm install grunt-cli -g
 install: npm install
 addons:
-  srcclr: true
+  # Disabled temporarily while we work out integration issues
+  # srcclr: true
 script:
 - npm run test-travis
 after_success:
