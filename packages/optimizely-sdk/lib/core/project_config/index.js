@@ -17,8 +17,8 @@ var fns = require('../../utils/fns');
 var enums = require('../../utils/enums');
 var sprintf = require('sprintf');
 
-var faultInjector = require("../../fault_injection/faultinjection_manager");
-var ExceptionSpot = require("../../fault_injection/exception_spot");
+
+
 
 var EXPERIMENT_LAUNCHED_STATUS = 'Launched';
 var EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -40,7 +40,7 @@ module.exports = {
     try {
       var projectConfig = fns.cloneDeep(datafile);
 
-      faultInjector.injectFault(ExceptionSpot.project_config_createProjectConfig_spot1);
+      
 
       // Manually parsed for audience targeting
       fns.forEach(projectConfig.audiences, function (audience) {
@@ -59,7 +59,7 @@ module.exports = {
         });
       });
 
-      faultInjector.injectFault(ExceptionSpot.project_config_createProjectConfig_spot2);
+      
 
       projectConfig.rolloutIdMap = fns.keyBy(projectConfig.rollouts || [], 'id');
       fns.forOwn(projectConfig.rolloutIdMap, function (rollout) {
@@ -70,7 +70,7 @@ module.exports = {
         });
       });
 
-      faultInjector.injectFault(ExceptionSpot.project_config_createProjectConfig_spot3);
+      
 
       projectConfig.experimentKeyMap = fns.keyBy(projectConfig.experiments, 'key');
       projectConfig.experimentIdMap = fns.keyBy(projectConfig.experiments, 'id');
@@ -91,7 +91,7 @@ module.exports = {
         });
       });
 
-      faultInjector.injectFault(ExceptionSpot.project_config_createProjectConfig_spot4);
+      
 
       projectConfig.forcedVariationMap = {};
 
@@ -110,7 +110,7 @@ module.exports = {
 
       return projectConfig;
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
       return null;
     }
   },
@@ -124,7 +124,7 @@ module.exports = {
    */
   getExperimentId: function(projectConfig, experimentKey) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_getExperimentId);
+      
       var experiment = projectConfig.experimentKeyMap[experimentKey];
       if (fns.isEmpty(experiment)) {
         throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
@@ -134,7 +134,7 @@ module.exports = {
       if(e.message.startsWith(MODULE_NAME)) {
         throw e;
       }
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
       return null;
     }
   },
@@ -148,7 +148,7 @@ module.exports = {
    */
   getLayerId: function(projectConfig, experimentId) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_getLayerId);
+      
       var experiment = projectConfig.experimentIdMap[experimentId];
       if (fns.isEmpty(experiment)) {
         throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
@@ -158,7 +158,7 @@ module.exports = {
       if(e.message.startsWith(MODULE_NAME)) {
         throw e;
       }
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
       return null;
     }
   },
@@ -172,7 +172,7 @@ module.exports = {
    */
   getAttributeId: function(projectConfig, attributeKey, logger) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_getAttributeId);
+      
       var attribute = projectConfig.attributeKeyMap[attributeKey];
       var hasReservedPrefix = attributeKey.indexOf(RESERVED_ATTRIBUTE_PREFIX) === 0;
       if (attribute) {
@@ -187,7 +187,7 @@ module.exports = {
 
       logger.log(LOG_LEVEL.DEBUG, sprintf(ERROR_MESSAGES.UNRECOGNIZED_ATTRIBUTE, MODULE_NAME, attributeKey));
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
     }
     return null;
 
@@ -201,13 +201,13 @@ module.exports = {
    */
   getEventId: function(projectConfig, eventKey) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_getEventId);
+      
       var event = projectConfig.eventKeyMap[eventKey];
       if (event) {
         return event.id;
       }
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
     }
     return null;
   },
@@ -221,7 +221,7 @@ module.exports = {
    */
   getExperimentStatus: function(projectConfig, experimentKey) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_getExperimentStatus);
+      
       var experiment = projectConfig.experimentKeyMap[experimentKey];
       if (fns.isEmpty(experiment)) {
         throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
@@ -231,7 +231,7 @@ module.exports = {
       if(e.message.startsWith(MODULE_NAME)) {
         throw e;
       }
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
       return null;
     }
   },
@@ -244,11 +244,11 @@ module.exports = {
    */
   isActive: function(projectConfig, experimentKey) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_isActive);
+      
       return module.exports.getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_RUNNING_STATUS ||
         module.exports.getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_LAUNCHED_STATUS;
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
       return false;
     }
   },
@@ -258,10 +258,10 @@ module.exports = {
    */
   isRunning: function(projectConfig, experimentKey) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_isRunning);
+      
       return module.exports.getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_RUNNING_STATUS;
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
       return false;
     }
   },
@@ -275,7 +275,7 @@ module.exports = {
    */
   getAudiencesForExperiment: function(projectConfig, experimentKey) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_getAudiencesForExperiment);
+      
       var experiment = projectConfig.experimentKeyMap[experimentKey];
       if (fns.isEmpty(experiment)) {
         throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
@@ -291,7 +291,7 @@ module.exports = {
       if(e.message.startsWith(MODULE_NAME)) {
         throw e;
       }
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
       return [];
     }
   },
@@ -304,12 +304,12 @@ module.exports = {
    */
   getVariationKeyFromId: function(projectConfig, variationId) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_getVariationKeyFromId);
+      
       if (projectConfig.variationIdMap.hasOwnProperty(variationId)) {
         return projectConfig.variationIdMap[variationId].key;
       }
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
     }
     return null;
   },
@@ -323,13 +323,13 @@ module.exports = {
    */
   getVariationIdFromExperimentAndVariationKey: function(projectConfig, experimentKey, variationKey) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_getVariationIdFromExperimentAndVariationKey);
+      
       var experiment = projectConfig.experimentKeyMap[experimentKey];
       if (experiment.variationKeyMap.hasOwnProperty(variationKey)) {
         return experiment.variationKeyMap[variationKey].id;
       }
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
     }
     return null;
   },
@@ -343,7 +343,7 @@ module.exports = {
    */
   getExperimentFromKey: function(projectConfig, experimentKey) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_getExperimentFromKey);
+      
       if (projectConfig.experimentKeyMap.hasOwnProperty(experimentKey)) {
         var experiment = projectConfig.experimentKeyMap[experimentKey];
         if (!!experiment) {
@@ -354,7 +354,7 @@ module.exports = {
       if(e.message.startsWith(MODULE_NAME)) {
         throw e;
       }
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
     }
     throw new Error(sprintf(ERROR_MESSAGES.EXPERIMENT_KEY_NOT_IN_DATAFILE, MODULE_NAME, experimentKey));
   },
@@ -369,7 +369,7 @@ module.exports = {
    */
   getExperimentIdsForEvent: function(projectConfig, eventKey) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_getExperimentIdsForEvent);
+      
       var event = projectConfig.eventKeyMap[eventKey];
       if (event) {
         if (event.experimentIds.length > 0) {
@@ -384,7 +384,7 @@ module.exports = {
       if(e.message.startsWith(MODULE_NAME)) {
         throw e;
       }
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
       return [];
     }
   },
@@ -398,7 +398,7 @@ module.exports = {
    */
   getTrafficAllocation: function(projectConfig, experimentKey) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_getTrafficAllocation);
+      
       var experiment = projectConfig.experimentKeyMap[experimentKey];
       if (fns.isEmpty(experiment)) {
         throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
@@ -408,7 +408,7 @@ module.exports = {
       if(e.message.startsWith(MODULE_NAME)) {
         throw e;
       }
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
       return [];
     }
   },
@@ -424,7 +424,7 @@ module.exports = {
    */
   removeForcedVariation: function(projectConfig, userId, experimentId, experimentKey, logger) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_removeForcedVariation);
+      
       if (!userId) {
         throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_ID, MODULE_NAME));
       }
@@ -439,7 +439,7 @@ module.exports = {
       if(e.message.startsWith(MODULE_NAME)) {
         throw e;
       }
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
       return null;
     }
   },
@@ -455,7 +455,7 @@ module.exports = {
    */
   setInForcedVariationMap: function(projectConfig, userId, experimentId, variationId, logger) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_setInForcedVariationMap);
+      
       if (!userId) {
         throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_ID, MODULE_NAME));
       }
@@ -472,7 +472,7 @@ module.exports = {
       if(e.message.startsWith(MODULE_NAME)) {
         throw e;
       }
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
       return null;
     }
   },
@@ -487,14 +487,14 @@ module.exports = {
    */
   getForcedVariation: function(projectConfig, experimentKey, userId, logger) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_getForcedVariation_spot1);
+      
       var experimentToVariationMap = projectConfig.forcedVariationMap[userId];
       if (!experimentToVariationMap) {
         logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, MODULE_NAME, userId));
         return null;
       }
 
-      faultInjector.injectFault(ExceptionSpot.project_config_getForcedVariation_spot2);
+      
       var experimentId;
       try {
         var experiment = this.getExperimentFromKey(projectConfig, experimentKey);
@@ -511,7 +511,7 @@ module.exports = {
         return null;
       }
 
-      faultInjector.injectFault(ExceptionSpot.project_config_getForcedVariation_spot3);
+      
       var variationId = experimentToVariationMap[experimentId];
       if (!variationId) {
         logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT, MODULE_NAME, experimentKey, userId));
@@ -523,7 +523,7 @@ module.exports = {
 
       return variationKey;
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
       return null;
     }
   },
@@ -538,8 +538,6 @@ module.exports = {
    * @return {boolean} A boolean value that indicates if the set completed successfully.
    */
   setForcedVariation: function(projectConfig, experimentKey, userId, variationKey, logger) {
-    //try {
-    faultInjector.injectFault(ExceptionSpot.project_config_setForcedVariation_spot1);
     var experimentId;
     try {
       var experiment = this.getExperimentFromKey(projectConfig, experimentKey);
@@ -556,7 +554,7 @@ module.exports = {
       return false;
     }
 
-    faultInjector.injectFault(ExceptionSpot.project_config_setForcedVariation_spot2);
+    
     if (!variationKey) {
       try {
         this.removeForcedVariation(projectConfig, userId, experimentId, experimentKey, logger);
@@ -574,7 +572,6 @@ module.exports = {
       return false;
     }
 
-    faultInjector.injectFault(ExceptionSpot.project_config_setForcedVariation_spot3);
 
     try {
       this.setInForcedVariationMap(projectConfig, userId, experimentId, variationId, logger);
@@ -583,10 +580,6 @@ module.exports = {
       logger.log(LOG_LEVEL.ERROR, ex.message);
       return false;
     }
-    /*} catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
-      return false;
-    }*/
   },
 
   /**
@@ -599,7 +592,7 @@ module.exports = {
   getExperimentFromId: function(projectConfig, experimentId, logger) {
     try {
 
-      faultInjector.injectFault(ExceptionSpot.project_config_getExperimentFromId);
+      
       if (projectConfig.experimentIdMap.hasOwnProperty(experimentId)) {
         var experiment = projectConfig.experimentIdMap[experimentId];
         if (!!experiment) {
@@ -609,7 +602,7 @@ module.exports = {
 
       logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
     }
     return null;
   },
@@ -625,7 +618,7 @@ module.exports = {
    */
   getFeatureFromKey: function(projectConfig, featureKey, logger) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_getFeatureFromKey);
+      
       if (projectConfig.featureKeyMap.hasOwnProperty(featureKey)) {
         var feature = projectConfig.featureKeyMap[featureKey];
         if (!!feature) {
@@ -635,7 +628,7 @@ module.exports = {
 
       logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, featureKey));
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
     }
     return null;
   },
@@ -653,7 +646,7 @@ module.exports = {
    */
   getVariableForFeature: function(projectConfig, featureKey, variableKey, logger) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_getVariableForFeature);
+      
       var feature = projectConfig.featureKeyMap[featureKey];
       if (!feature) {
         logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, featureKey));
@@ -668,7 +661,7 @@ module.exports = {
 
       return variable;
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
       return null;
     }
   },
@@ -688,7 +681,7 @@ module.exports = {
    */
   getVariableValueForVariation: function(projectConfig, variable, variation, logger) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_getVariableValueForVariation);
+      
       if (!variable || !variation) {
         return null;
       }
@@ -702,7 +695,7 @@ module.exports = {
       var variableUsage = variableUsages[variable.id];
       return variableUsage ? variableUsage.value : variable.defaultValue;
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
       return null;
     }
   },
@@ -725,7 +718,7 @@ module.exports = {
    */
   getTypeCastValue: function(variableValue, variableType, logger) {
     try {
-      faultInjector.injectFault(ExceptionSpot.project_config_getTypeCastValue);
+      
       var castValue;
 
       switch (variableType) {
@@ -761,7 +754,7 @@ module.exports = {
 
       return castValue;
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
       return null;
     }
   },

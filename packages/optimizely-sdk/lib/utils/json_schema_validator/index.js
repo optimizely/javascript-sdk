@@ -17,8 +17,7 @@ var fns = require('../fns');
 var validate = require('json-schema').validate;
 var sprintf = require('sprintf');
 
-var faultInjector = require("../../fault_injection/faultinjection_manager");
-var ExceptionSpot = require("../../fault_injection/exception_spot");
+ 
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';
@@ -33,7 +32,7 @@ module.exports = {
   validate: function(jsonSchema, jsonObject) {
 
     try {
-      faultInjector.injectFault(ExceptionSpot.json_schema_validator_validate_spot1);
+      
       if (!jsonSchema) {
         throw new Error(sprintf(ERROR_MESSAGES.JSON_SCHEMA_EXPECTED, MODULE_NAME));
       }
@@ -42,7 +41,7 @@ module.exports = {
         throw new Error(sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, MODULE_NAME));
       }
 
-      faultInjector.injectFault(ExceptionSpot.json_schema_validator_validate_spot2);
+      
       var result = validate(jsonObject, jsonSchema);
       if (result.valid) {
         return true;
@@ -56,7 +55,7 @@ module.exports = {
       if(e.message.startsWith(MODULE_NAME)){
         throw e;
       }
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+     
       return false;
     }
   }

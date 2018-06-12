@@ -20,8 +20,8 @@
 
 var sprintf = require('sprintf');
 
-var faultInjector = require("../../fault_injection/faultinjection_manager");
-var ExceptionSpot = require("../../fault_injection/exception_spot");
+
+
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'EVENT_TAGS_VALIDATOR';
@@ -35,7 +35,7 @@ module.exports = {
    */
   validate: function(eventTags) {
     try {
-      faultInjector.injectFault(ExceptionSpot.event_tags_validator_validate);
+      
       if (typeof eventTags === 'object' && !Array.isArray(eventTags) && eventTags !== null) {
         return true;
       } else {
@@ -45,7 +45,7 @@ module.exports = {
       if(e.message.startsWith(MODULE_NAME)){
         throw e;
       }
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+     
       return false;
     }
   },

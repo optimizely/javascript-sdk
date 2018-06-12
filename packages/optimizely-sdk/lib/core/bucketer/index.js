@@ -20,8 +20,8 @@
 var enums = require('../../utils/enums');
 var murmurhash = require('murmurhash');
 var sprintf = require('sprintf');
-var faultInjector = require("../../fault_injection/faultinjection_manager");
-var ExceptionSpot = require("../../fault_injection/exception_spot");
+
+
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var HASH_SEED = 1;
@@ -52,8 +52,6 @@ module.exports = {
 
     try {
 
-      faultInjector.injectFault(ExceptionSpot.bucketer_bucket_spot1);
-
       // Check if user is in a random group; if so, check if user is bucketed into a specific experiment
       var experiment = bucketerParams.experimentKeyMap[bucketerParams.experimentKey];
       var groupId = experiment['groupId'];
@@ -63,7 +61,6 @@ module.exports = {
           throw new Error(sprintf(ERROR_MESSAGES.INVALID_GROUP_ID, MODULE_NAME, groupId));
         }
 
-        faultInjector.injectFault(ExceptionSpot.bucketer_bucket_spot2);
         if (group.policy === RANDOM_POLICY) {
           var bucketedExperimentId = module.exports.bucketUserIntoExperiment(group,
             bucketerParams.bucketingId,
@@ -77,8 +74,7 @@ module.exports = {
             return null;
           }
 
-          faultInjector.injectFault(ExceptionSpot.bucketer_bucket_spot3);
-
+        
           // Return if user is bucketed into a different experiment than the one specified
           if (bucketedExperimentId !== bucketerParams.experimentId) {
             var notBucketedIntoExperimentOfGroupLogMessage = sprintf(LOG_MESSAGES.USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP, MODULE_NAME, bucketerParams.userId, bucketerParams.experimentKey, groupId);
@@ -97,8 +93,7 @@ module.exports = {
       var bucketedUserLogMessage = sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, MODULE_NAME, bucketValue, bucketerParams.userId);
       bucketerParams.logger.log(LOG_LEVEL.DEBUG, bucketedUserLogMessage);
 
-      faultInjector.injectFault(ExceptionSpot.bucketer_bucket_spot4);
-
+      
       var entityId = module.exports._findBucket(bucketValue, bucketerParams.trafficAllocationConfig);
       if (entityId === null) {
         var userHasNoVariationLogMessage = sprintf(LOG_MESSAGES.USER_HAS_NO_VARIATION, MODULE_NAME, bucketerParams.userId, bucketerParams.experimentKey);
@@ -113,14 +108,12 @@ module.exports = {
         bucketerParams.logger.log(LOG_LEVEL.INFO, userInVariationLogMessage);
       }
 
-      faultInjector.injectFault(ExceptionSpot.bucketer_bucket_spot5);
-
+      
       return entityId;
     } catch (e) {
       if(e.message.startsWith(MODULE_NAME)){
         throw e;
       }
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
       return null;
     }
   },
@@ -137,8 +130,7 @@ module.exports = {
 
     try {
 
-      faultInjector.injectFault(ExceptionSpot.bucketer_bucketUserIntoExperiment);
-
+      
       var bucketingKey = sprintf('%s%s', bucketingId, group.id);
       var bucketValue = module.exports._generateBucketValue(bucketingKey);
       logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, MODULE_NAME, bucketValue, userId));
@@ -146,7 +138,6 @@ module.exports = {
       var bucketedExperimentId = module.exports._findBucket(bucketValue, trafficAllocationConfig);
       return bucketedExperimentId;
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
       return "";
     }
   },
@@ -162,15 +153,14 @@ module.exports = {
   _findBucket: function(bucketValue, trafficAllocationConfig) {
     try {
 
-      faultInjector.injectFault(ExceptionSpot.bucketer_findBucket);
-
+      
       for (var i = 0; i < trafficAllocationConfig.length; i++) {
         if (bucketValue < trafficAllocationConfig[i].endOfRange) {
           return trafficAllocationConfig[i].entityId;
         }
       }
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+     
     }
     return null;
   },
@@ -183,14 +173,13 @@ module.exports = {
    */
   _generateBucketValue: function(bucketingKey) {
     try {
-      faultInjector.injectFault(ExceptionSpot.bucketer_generateBucketValue);
+      
       // NOTE: the mmh library already does cast the hash value as an unsigned 32bit int
       // https://github.com/perezd/node-murmurhash/blob/master/murmurhash.js#L115
       var hashValue = murmurhash.v3(bucketingKey, HASH_SEED);
       var ratio = hashValue / MAX_HASH_VALUE;
       return parseInt(ratio * MAX_TRAFFIC_VALUE, 10);
     } catch (ex) {
-      faultInjector.throwExceptionIfTreatmentDisabled(ex);
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, MODULE_NAME, bucketingKey, ex.message));
     }
   },

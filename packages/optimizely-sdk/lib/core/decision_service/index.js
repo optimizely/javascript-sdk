@@ -22,8 +22,8 @@ var projectConfig = require('../project_config');
 
 var sprintf = require('sprintf');
 
-var faultInjector = require("../../fault_injection/faultinjection_manager");
-var ExceptionSpot = require("../../fault_injection/exception_spot");
+
+
 
 var MODULE_NAME = 'DECISION_SERVICE';
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
@@ -52,12 +52,12 @@ var DECISION_SOURCES = enums.DECISION_SOURCES;
  */
 function DecisionService(options) {
   try {
-    faultInjector.injectFault(ExceptionSpot.decision_service_DecisionService);
+    
     this.configObj = options.configObj;
     this.userProfileService = options.userProfileService || null;
     this.logger = options.logger;
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
   }
 }
 
@@ -71,7 +71,7 @@ function DecisionService(options) {
 DecisionService.prototype.getVariation = function(experimentKey, userId, attributes) {
   try {
 
-    faultInjector.injectFault(ExceptionSpot.decision_service_getVariation_spot1);
+    
     // by default, the bucketing ID should be the user ID
     var bucketingId = userId;
 
@@ -83,7 +83,7 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
       }
     }
 
-    faultInjector.injectFault(ExceptionSpot.decision_service_getVariation_spot2);
+    
 
     if (!this.__checkIfExperimentIsActive(experimentKey, userId)) {
       return null;
@@ -94,7 +94,7 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
       return forcedVariationKey;
     }
 
-    faultInjector.injectFault(ExceptionSpot.decision_service_getVariation_spot3);
+    
 
     var variation = this.__getWhitelistedVariation(experiment, userId);
     if (!!variation) {
@@ -109,7 +109,7 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
       return variation.key;
     }
 
-    faultInjector.injectFault(ExceptionSpot.decision_service_getVariation_spot4);
+    
 
     // Perform regular targeting and bucketing
     if (!this.__checkIfUserIsInAudience(experimentKey, userId, attributes)) {
@@ -123,14 +123,14 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
       return null;
     }
 
-    faultInjector.injectFault(ExceptionSpot.decision_service_getVariation_spot5);
+    
 
     // persist bucketing
     this.__saveUserProfile(userProfile, experiment, variation);
 
     return variation.key;
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
     return null;
   }
 };
@@ -145,7 +145,7 @@ DecisionService.prototype.__checkIfExperimentIsActive = function(experimentKey, 
 
   try {
 
-    faultInjector.injectFault(ExceptionSpot.decision_service_checkIfExperimentIsActive);
+    
 
     if (!projectConfig.isActive(this.configObj, experimentKey)) {
       var experimentNotRunningLogMessage = sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey);
@@ -154,7 +154,7 @@ DecisionService.prototype.__checkIfExperimentIsActive = function(experimentKey, 
     }
     return true;
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
     return false;
   }
 };
@@ -167,7 +167,7 @@ DecisionService.prototype.__checkIfExperimentIsActive = function(experimentKey, 
  */
 DecisionService.prototype.__getWhitelistedVariation = function(experiment, userId) {
   try {
-    faultInjector.injectFault(ExceptionSpot.decision_service_getWhitelistedVariation);
+    
     if (!fns.isEmpty(experiment.forcedVariations) && experiment.forcedVariations.hasOwnProperty(userId)) {
       var forcedVariationKey = experiment.forcedVariations[userId];
       if (experiment.variationKeyMap.hasOwnProperty(forcedVariationKey)) {
@@ -181,7 +181,7 @@ DecisionService.prototype.__getWhitelistedVariation = function(experiment, userI
       }
     }
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
   }
   return null;
 };
@@ -195,7 +195,7 @@ DecisionService.prototype.__getWhitelistedVariation = function(experiment, userI
  */
 DecisionService.prototype.__checkIfUserIsInAudience = function(experimentKey, userId, attributes) {
   try {
-    faultInjector.injectFault(ExceptionSpot.decision_service_checkIfUserIsInAudience);
+    
     var audiences = projectConfig.getAudiencesForExperiment(this.configObj, experimentKey);
     if (!audienceEvaluator.evaluate(audiences, attributes)) {
       var userDoesNotMeetConditionsLogMessage = sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, MODULE_NAME, userId, experimentKey);
@@ -204,7 +204,7 @@ DecisionService.prototype.__checkIfUserIsInAudience = function(experimentKey, us
     }
     return true;
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
     return false;
   }
 };
@@ -218,7 +218,7 @@ DecisionService.prototype.__checkIfUserIsInAudience = function(experimentKey, us
  */
 DecisionService.prototype.__buildBucketerParams = function(experimentKey, bucketingId, userId) {
   try {
-    faultInjector.injectFault(ExceptionSpot.decision_service_buildBucketerParams);
+    
     var bucketerParams = {};
     bucketerParams.experimentKey = experimentKey;
     bucketerParams.experimentId = projectConfig.getExperimentId(this.configObj, experimentKey);
@@ -231,7 +231,7 @@ DecisionService.prototype.__buildBucketerParams = function(experimentKey, bucket
     bucketerParams.bucketingId = bucketingId;
     return bucketerParams;
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
     return null;
   }
 };
@@ -244,7 +244,7 @@ DecisionService.prototype.__buildBucketerParams = function(experimentKey, bucket
  */
 DecisionService.prototype.__getStoredVariation = function(experiment, userProfile) {
   try {
-    faultInjector.injectFault(ExceptionSpot.decision_service_getStoredVariation);
+    
     if (!userProfile || !userProfile.experiment_bucket_map) {
       return null;
     }
@@ -259,7 +259,7 @@ DecisionService.prototype.__getStoredVariation = function(experiment, userProfil
       }
     }
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
   }
   return null;
 };
@@ -273,7 +273,7 @@ DecisionService.prototype.__getUserProfile = function(userId) {
 
   try {
 
-    faultInjector.injectFault(ExceptionSpot.decision_service_getUserProfile);
+    
     var userProfile = {
       user_id: userId,
       experiment_bucket_map: {},
@@ -290,7 +290,7 @@ DecisionService.prototype.__getUserProfile = function(userId) {
     }
     return userProfile;
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
     return null;
   }
 };
@@ -303,7 +303,7 @@ DecisionService.prototype.__getUserProfile = function(userId) {
  */
 DecisionService.prototype.__saveUserProfile = function(userProfile, experiment, variation) {
   try {
-    faultInjector.injectFault(ExceptionSpot.decision_service_saveUserProfile);
+    
     if (!this.userProfileService) {
       return;
     }
@@ -319,7 +319,7 @@ DecisionService.prototype.__saveUserProfile = function(userProfile, experiment, 
       this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.USER_PROFILE_SAVE_ERROR, MODULE_NAME, userProfile.user_id, ex.message));
     }
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
   }
 };
 
@@ -340,7 +340,7 @@ DecisionService.prototype.__saveUserProfile = function(userProfile, experiment, 
 DecisionService.prototype.getVariationForFeature = function(feature, userId, attributes) {
   try {
 
-    faultInjector.injectFault(ExceptionSpot.decision_service_getVariationForFeature_spot1);
+    
     var experimentDecision = this._getVariationForFeatureExperiment(feature, userId, attributes);
     if (experimentDecision.variation !== null) {
       this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_IN_FEATURE_EXPERIMENT, MODULE_NAME, userId, experimentDecision.variation.key, experimentDecision.experiment.key, feature.key));
@@ -349,7 +349,7 @@ DecisionService.prototype.getVariationForFeature = function(feature, userId, att
 
     this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_NOT_IN_FEATURE_EXPERIMENT, MODULE_NAME, userId, feature.key));
 
-    faultInjector.injectFault(ExceptionSpot.decision_service_getVariationForFeature_spot2);
+    
     var rolloutDecision = this._getVariationForRollout(feature, userId, attributes);
     if (rolloutDecision.variation !== null) {
       this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_IN_ROLLOUT, MODULE_NAME, userId, feature.key));
@@ -359,7 +359,7 @@ DecisionService.prototype.getVariationForFeature = function(feature, userId, att
     this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_NOT_IN_ROLLOUT, MODULE_NAME, userId, feature.key));
 
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
   }
 
   return {
@@ -371,7 +371,7 @@ DecisionService.prototype.getVariationForFeature = function(feature, userId, att
 
 DecisionService.prototype._getVariationForFeatureExperiment = function(feature, userId, attributes) {
   try {
-    faultInjector.injectFault(ExceptionSpot.decision_service_getVariationForFeatureExperiment_spot1);
+    
 
     var experiment = null;
     var variationKey = null;
@@ -384,7 +384,7 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(feature, 
           variationKey = this.getVariation(experiment.key, userId, attributes);
         }
       }
-      faultInjector.injectFault(ExceptionSpot.decision_service_getVariationForFeatureExperiment_spot2);
+      
     } else if (feature.experimentIds.length > 0) {
       // If the feature does not have a group ID, then it can only be associated
       // with one experiment, so we look at the first experiment ID only
@@ -396,7 +396,7 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(feature, 
       this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.FEATURE_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.key));
     }
 
-    faultInjector.injectFault(ExceptionSpot.decision_service_getVariationForFeatureExperiment_spot3);
+    
 
     var variation = null;
     if (variationKey !== null && experiment !== null) {
@@ -408,7 +408,7 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(feature, 
       decisionSource: DECISION_SOURCES.EXPERIMENT,
     };
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
     return {
       experiment: null,
       variation: null,
@@ -420,7 +420,7 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(feature, 
 
 DecisionService.prototype._getExperimentInGroup = function(group, userId) {
   try {
-    faultInjector.injectFault(ExceptionSpot.decision_service_getExperimentInGroup);
+    
     var experimentId = bucketer.bucketUserIntoExperiment(group, userId, userId, this.logger);
     if (experimentId !== null) {
       this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP, MODULE_NAME, userId, experimentId, group.id));
@@ -432,14 +432,14 @@ DecisionService.prototype._getExperimentInGroup = function(group, userId) {
 
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_NOT_BUCKETED_INTO_ANY_EXPERIMENT_IN_GROUP, MODULE_NAME, userId, group.id));
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
   }
   return null;
 };
 
 DecisionService.prototype._getVariationForRollout = function(feature, userId, attributes) {
   try {
-    faultInjector.injectFault(ExceptionSpot.decision_service_getVariationForRollout_spot1);
+    
     if (!feature.rolloutId) {
       this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.NO_ROLLOUT_EXISTS, MODULE_NAME, feature.key));
       return {
@@ -449,7 +449,7 @@ DecisionService.prototype._getVariationForRollout = function(feature, userId, at
       };
     }
 
-    faultInjector.injectFault(ExceptionSpot.decision_service_getVariationForRollout_spot2);
+    
     var rollout = this.configObj.rolloutIdMap[feature.rolloutId];
     if (!rollout) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.INVALID_ROLLOUT_ID, MODULE_NAME, feature.rolloutId, feature.key));
@@ -469,7 +469,7 @@ DecisionService.prototype._getVariationForRollout = function(feature, userId, at
       };
     }
 
-    faultInjector.injectFault(ExceptionSpot.decision_service_getVariationForRollout_spot3);
+    
 
     // The end index is length - 1 because the last experiment is assumed to be
     // "everyone else", which will be evaluated separately outside this loop
@@ -486,7 +486,7 @@ DecisionService.prototype._getVariationForRollout = function(feature, userId, at
         this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE, MODULE_NAME, userId, index + 1));
         continue;
       }
-      faultInjector.injectFault(ExceptionSpot.decision_service_getVariationForRollout_spot4);
+      
       this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE, MODULE_NAME, userId, index + 1));
       bucketerParams = this.__buildBucketerParams(experiment.key, userId, userId);
       variationId = bucketer.bucket(bucketerParams);
@@ -504,7 +504,7 @@ DecisionService.prototype._getVariationForRollout = function(feature, userId, at
       }
     }
 
-    faultInjector.injectFault(ExceptionSpot.decision_service_getVariationForRollout_spot5);
+    
 
     var everyoneElseExperiment = this.configObj.experimentKeyMap[rollout.experiments[endIndex].key];
     if (this.__checkIfUserIsInAudience(everyoneElseExperiment.key, userId, attributes)) {
@@ -523,9 +523,9 @@ DecisionService.prototype._getVariationForRollout = function(feature, userId, at
       }
     }
 
-    faultInjector.injectFault(ExceptionSpot.decision_service_getVariationForRollout_spot6);
+    
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
   }
 
   return {

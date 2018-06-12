@@ -21,8 +21,6 @@
 var sprintf = require('sprintf');
 var lodashForOwn = require('lodash/forOwn');
 
-var faultInjector = require("../../fault_injection/faultinjection_manager");
-var ExceptionSpot = require("../../fault_injection/exception_spot");
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
@@ -36,7 +34,7 @@ module.exports = {
    */
   validate: function(attributes) {
     try {
-      faultInjector.injectFault(ExceptionSpot.attributes_validator_validate);
+      
       if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
         lodashForOwn(attributes, function (value, key) {
           if (typeof value === 'undefined') {
@@ -51,7 +49,7 @@ module.exports = {
       if(e.message.startsWith(MODULE_NAME)){
         throw e;
       }
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+     
       return false;
     }
   },

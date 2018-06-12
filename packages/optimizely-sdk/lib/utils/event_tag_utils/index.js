@@ -19,9 +19,7 @@
  */
 var enums = require('../enums');
 var sprintf = require('sprintf');
-
-var faultInjector = require("../../fault_injection/faultinjection_manager");
-var ExceptionSpot = require("../../fault_injection/exception_spot");
+ 
 
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
@@ -38,7 +36,7 @@ module.exports = {
    */
   getRevenueValue: function(eventTags, logger) {
     try {
-      faultInjector.injectFault(ExceptionSpot.event_tag_utils_getRevenueValue);
+      
       if (eventTags && eventTags.hasOwnProperty(REVENUE_EVENT_METRIC_NAME)) {
         var rawValue = eventTags[REVENUE_EVENT_METRIC_NAME];
         var parsedRevenueValue = parseInt(rawValue, 10);
@@ -50,7 +48,7 @@ module.exports = {
         return parsedRevenueValue;
       }
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+     
     }
     return null;
   },
@@ -63,7 +61,7 @@ module.exports = {
    */
   getEventValue: function(eventTags, logger) {
     try {
-      faultInjector.injectFault(ExceptionSpot.event_tag_utils_getEventValue);
+      
       if (eventTags && eventTags.hasOwnProperty(VALUE_EVENT_METRIC_NAME)) {
         var rawValue = eventTags[VALUE_EVENT_METRIC_NAME];
         var parsedEventValue = parseFloat(rawValue);
@@ -75,7 +73,7 @@ module.exports = {
         return parsedEventValue;
       }
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+     
     }
     return null;
   },

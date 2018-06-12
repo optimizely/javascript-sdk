@@ -27,8 +27,7 @@ var sprintf = require('sprintf');
 var userProfileServiceValidator = require('../utils/user_profile_service_validator');
 var stringValidator = require('../utils/string_value_validator');
 
-var faultInjector = require("../fault_injection/faultinjection_manager");
-var ExceptionSpot = require("../fault_injection/exception_spot");
+
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
@@ -53,7 +52,7 @@ function Optimizely(config) {
 
   try {
 
-    faultInjector.injectFault(ExceptionSpot.optimizely_Optimizely_spot1);
+    
 
     var clientEngine = config.clientEngine;
     if (clientEngine !== enums.NODE_CLIENT_ENGINE && clientEngine !== enums.JAVASCRIPT_CLIENT_ENGINE) {
@@ -68,7 +67,7 @@ function Optimizely(config) {
     this.isValidInstance = config.isValidInstance;
     this.logger = config.logger;
 
-    faultInjector.injectFault(ExceptionSpot.optimizely_Optimizely_spot2);
+    
     if (!config.datafile) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, MODULE_NAME));
       this.errorHandler.handleError(new Error(sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, MODULE_NAME)));
@@ -85,7 +84,7 @@ function Optimizely(config) {
         }
       }
 
-      faultInjector.injectFault(ExceptionSpot.optimizely_Optimizely_spot3);
+      
 
       if (config.skipJSONValidation === true) {
         this.configObj = projectConfig.createProjectConfig(config.datafile);
@@ -103,7 +102,7 @@ function Optimizely(config) {
         }
       }
 
-      faultInjector.injectFault(ExceptionSpot.optimizely_Optimizely_spot4);
+      
       var userProfileService = null;
       if (config.userProfileService) {
         try {
@@ -122,14 +121,14 @@ function Optimizely(config) {
         logger: this.logger,
       });
 
-      faultInjector.injectFault(ExceptionSpot.optimizely_Optimizely_spot5);
+      
 
       this.notificationCenter = notificationCenter.createNotificationCenter({
         logger: this.logger,
       });
     }
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+   
   }
 }
 
@@ -144,7 +143,7 @@ Optimizely.prototype.activate = function(experimentKey, userId, attributes) {
 
   try {
 
-    faultInjector.injectFault(ExceptionSpot.optimizely_activate_spot1);
+    
 
     if (!this.isValidInstance) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'activate'));
@@ -155,7 +154,7 @@ Optimizely.prototype.activate = function(experimentKey, userId, attributes) {
       return this.__notActivatingExperiment(experimentKey, userId);
     }
 
-    faultInjector.injectFault(ExceptionSpot.optimizely_activate_spot2);
+    
 
     try {
       var variationKey = this.getVariation(experimentKey, userId, attributes);
@@ -175,7 +174,7 @@ Optimizely.prototype.activate = function(experimentKey, userId, attributes) {
 
       this._sendImpressionEvent(experimentKey, variationKey, userId, attributes);
 
-      faultInjector.injectFault(ExceptionSpot.optimizely_activate_spot3);
+      
 
       return variationKey;
     } catch (ex) {
@@ -186,7 +185,7 @@ Optimizely.prototype.activate = function(experimentKey, userId, attributes) {
       return null;
     }
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+   
     return null;
   }
 };
@@ -203,7 +202,7 @@ Optimizely.prototype.activate = function(experimentKey, userId, attributes) {
 Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey, userId, attributes) {
 
   try {
-    faultInjector.injectFault(ExceptionSpot.optimizely_sendImpressionEvent_spot1);
+    
 
     var variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(this.configObj, experimentKey, variationKey);
     var experimentId = projectConfig.getExperimentId(this.configObj, experimentKey);
@@ -224,7 +223,7 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
       JSON.stringify(impressionEvent.params));
     this.logger.log(LOG_LEVEL.DEBUG, dispatchedImpressionEventLogMessage);
 
-    faultInjector.injectFault(ExceptionSpot.optimizely_sendImpressionEvent_spot2);
+    
     var eventDispatcherCallback = function () {
       var activatedLogMessage = sprintf(LOG_MESSAGES.ACTIVATE_USER, MODULE_NAME, userId, experimentKey);
       this.logger.log(LOG_LEVEL.INFO, activatedLogMessage);
@@ -237,7 +236,7 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
       variation = experiment.variationKeyMap[variationKey];
     }
 
-    faultInjector.injectFault(ExceptionSpot.optimizely_sendImpressionEvent_spot3);
+    
     this.notificationCenter.sendNotifications(
       enums.NOTIFICATION_TYPES.ACTIVATE,
       {
@@ -249,7 +248,7 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
       }
     );
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+   
     return null;
   }
 };
@@ -264,7 +263,7 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
 Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
   try {
 
-    faultInjector.injectFault(ExceptionSpot.optimizely_track_spot1);
+    
     if (!this.isValidInstance) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'track'));
       return;
@@ -275,7 +274,7 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
         return;
       }
 
-      faultInjector.injectFault(ExceptionSpot.optimizely_track_spot2);
+      
 
       // determine which experiments and variations we should be tracking for the given event
       var validExperimentsToBucketedVariations = this.__getValidExperimentsForEvent(eventKey, userId, attributes);
@@ -287,7 +286,7 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
         return;
       }
 
-      faultInjector.injectFault(ExceptionSpot.optimizely_track_spot3);
+      
       // remove null values from attributes and eventTags
       attributes = this.__filterEmptyValues(attributes);
       eventTags = this.__filterEmptyValues(eventTags);
@@ -305,7 +304,7 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
       };
       var conversionEvent = eventBuilder.getConversionEvent(conversionEventOptions);
 
-      faultInjector.injectFault(ExceptionSpot.optimizely_track_spot4);
+      
       var dispatchedConversionEventLogMessage = sprintf(LOG_MESSAGES.DISPATCH_CONVERSION_EVENT,
         MODULE_NAME,
         conversionEvent.url,
@@ -319,7 +318,7 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
 
       this.__dispatchEvent(conversionEvent, eventDispatcherCallback);
 
-      faultInjector.injectFault(ExceptionSpot.optimizely_track_spot5);
+      
       this.notificationCenter.sendNotifications(
         enums.NOTIFICATION_TYPES.TRACK,
         {
@@ -340,7 +339,7 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
     if(e.message.startsWith("PROJECT_CONFIG")){
       throw e;
     }
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+   
     return;
   }
 };
@@ -356,7 +355,7 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
 
   try {
 
-    faultInjector.injectFault(ExceptionSpot.optimizely_getVariation_spot1);
+    
     if (!this.isValidInstance) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getVariation'));
       return null;
@@ -367,7 +366,7 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
         return null;
       }
 
-      faultInjector.injectFault(ExceptionSpot.optimizely_getVariation_spot2);
+      
       var experiment = this.configObj.experimentKeyMap[experimentKey];
       if (fns.isEmpty(experiment)) {
         throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
@@ -383,7 +382,7 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
     if(e.message.startsWith(MODULE_NAME)) {
       throw e;
     }
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+   
     return null;
   }
 };
@@ -397,7 +396,7 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
 */
 Optimizely.prototype.setForcedVariation = function(experimentKey, userId, variationKey) {
   try {
-    faultInjector.injectFault(ExceptionSpot.optimizely_setForcedVariation);
+    
     return projectConfig.setForcedVariation(this.configObj, experimentKey, userId, variationKey, this.logger);
   } catch (ex) {
     faultInjector.throwExceptionIfTreatmentDisabled(ex);
@@ -415,7 +414,7 @@ Optimizely.prototype.setForcedVariation = function(experimentKey, userId, variat
 */
 Optimizely.prototype.getForcedVariation = function(experimentKey, userId) {
   try {
-    faultInjector.injectFault(ExceptionSpot.optimizely_getForcedVariation);
+    
     return projectConfig.getForcedVariation(this.configObj, experimentKey, userId, this.logger);
   } catch (ex) {
     faultInjector.throwExceptionIfTreatmentDisabled(ex);
@@ -435,7 +434,7 @@ Optimizely.prototype.getForcedVariation = function(experimentKey, userId) {
  */
 Optimizely.prototype.__validateInputs = function(stringInputs, userAttributes, eventTags) {
   try {
-    faultInjector.injectFault(ExceptionSpot.optimizely_validateInputs);
+    
     var inputKeys = Object.keys(stringInputs);
     for (var index = 0; index < inputKeys.length; index++) {
       var key = inputKeys[index];
@@ -470,7 +469,7 @@ Optimizely.prototype.__getValidExperimentsForEvent = function(eventKey, userId, 
   try {
     var validExperimentsToVariationsMap = {};
 
-    faultInjector.injectFault(ExceptionSpot.optimizely_getValidExperimentsForEvent_spot1);
+    
     // get all the experiments that are tracking this event
     var experimentIdsForEvent = projectConfig.getExperimentIdsForEvent(this.configObj, eventKey);
     if (!experimentIdsForEvent) {
@@ -484,7 +483,7 @@ Optimizely.prototype.__getValidExperimentsForEvent = function(eventKey, userId, 
       // user needs to be bucketed into experiment for us to track the event
       var variationKey = this.getVariation(experimentKey, userId, attributes);
       if (variationKey) {
-        faultInjector.injectFault(ExceptionSpot.optimizely_getValidExperimentsForEvent_spot2);
+        
         // if experiment is active but not running, it is in LAUNCHED state, so we don't track a conversion for it
         if (!projectConfig.isRunning(this.configObj, experimentKey)) {
           var shouldNotDispatchTrackLogMessage = sprintf(LOG_MESSAGES.SHOULD_NOT_DISPATCH_TRACK, MODULE_NAME, experimentKey);
@@ -509,7 +508,7 @@ Optimizely.prototype.__getValidExperimentsForEvent = function(eventKey, userId, 
     if(e.message.startsWith("PROJECT_CONFIG")){
       throw e;
     }
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+   
     return null;
   }
 };
@@ -522,11 +521,11 @@ Optimizely.prototype.__getValidExperimentsForEvent = function(eventKey, userId, 
  */
 Optimizely.prototype.__notActivatingExperiment = function(experimentKey, userId) {
   try {
-    faultInjector.injectFault(ExceptionSpot.optimizely_notActivatingExperiment);
+    
     var failedActivationLogMessage = sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, MODULE_NAME, userId, experimentKey);
     this.logger.log(LOG_LEVEL.INFO, failedActivationLogMessage);
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+   
   }
   return null;
 };
@@ -538,7 +537,7 @@ Optimizely.prototype.__notActivatingExperiment = function(experimentKey, userId)
  */
 Optimizely.prototype.__dispatchEvent = function (eventToDispatch, callback) {
   try {
-    faultInjector.injectFault(ExceptionSpot.optimizely_dispatchEvent);
+    
     var eventDispatcherResponse = this.eventDispatcher.dispatchEvent(eventToDispatch, callback);
     //checking that response value is a promise, not a request object
     if (!fns.isEmpty(eventDispatcherResponse) && typeof eventDispatcherResponse.then === 'function') {
@@ -547,7 +546,7 @@ Optimizely.prototype.__dispatchEvent = function (eventToDispatch, callback) {
       });
     }
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+   
   }
 };
 
@@ -558,7 +557,7 @@ Optimizely.prototype.__dispatchEvent = function (eventToDispatch, callback) {
  */
 Optimizely.prototype.__filterEmptyValues = function (map) {
   try {
-    faultInjector.injectFault(ExceptionSpot.optimizely_filterEmptyValues);
+    
     for (var key in map) {
       if (map.hasOwnProperty(key) && (map[key] === null || map[key] === undefined)) {
         delete map[key];
@@ -566,7 +565,7 @@ Optimizely.prototype.__filterEmptyValues = function (map) {
     }
     return map;
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+   
     return null;
   }
 };
@@ -580,7 +579,7 @@ Optimizely.prototype.__filterEmptyValues = function (map) {
  */
 Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes) {
   try {
-    faultInjector.injectFault(ExceptionSpot.optimizely_isFeatureEnabled_spot1);
+    
     if (!this.isValidInstance) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'isFeatureEnabled'));
       return false;
@@ -595,7 +594,7 @@ Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes)
       return false;
     }
 
-    faultInjector.injectFault(ExceptionSpot.optimizely_isFeatureEnabled_spot2);
+    
 
     var decision = this.decisionService.getVariationForFeature(feature, userId, attributes);
     var variation = decision.variation;
@@ -610,7 +609,7 @@ Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes)
       return false;
     }
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+   
     return false;
   }
 };
@@ -626,7 +625,7 @@ Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
 
   try {
 
-    faultInjector.injectFault(ExceptionSpot.optimizely_getEnabledFeatures);
+    
     var enabledFeatures = [];
     if (!this.isValidInstance) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getEnabledFeatures'));
@@ -641,7 +640,7 @@ Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
 
     return enabledFeatures;
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+   
     return [];
   }
 };
@@ -670,7 +669,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
 
   try {
 
-    faultInjector.injectFault(ExceptionSpot.optimizely_getFeatureVariableForType_spot1);
+    
     if (!this.isValidInstance) {
       var apiName = 'getFeatureVariable' + variableType.charAt(0).toUpperCase() + variableType.slice(1);
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, apiName));
@@ -681,7 +680,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
       return null;
     }
 
-    faultInjector.injectFault(ExceptionSpot.optimizely_getFeatureVariableForType_spot2);
+    
     var featureFlag = projectConfig.getFeatureFromKey(this.configObj, featureKey, this.logger);
     if (!featureFlag) {
       return null;
@@ -697,7 +696,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
       return null;
     }
 
-    faultInjector.injectFault(ExceptionSpot.optimizely_getFeatureVariableForType_spot3);
+    
     var decision = this.decisionService.getVariationForFeature(featureFlag, userId, attributes);
     var variableValue;
     if (decision.variation !== null) {
@@ -710,7 +709,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
 
     return projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+   
     return null;
   }
 };
@@ -731,10 +730,10 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
  */
 Optimizely.prototype.getFeatureVariableBoolean = function(featureKey, variableKey, userId, attributes) {
   try {
-    faultInjector.injectFault(ExceptionSpot.optimizely_getFeatureVariableBoolean);
+    
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.BOOLEAN, userId, attributes);
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+   
     return null;
   }
 };
@@ -755,10 +754,10 @@ Optimizely.prototype.getFeatureVariableBoolean = function(featureKey, variableKe
  */
 Optimizely.prototype.getFeatureVariableDouble = function(featureKey, variableKey, userId, attributes) {
   try {
-    faultInjector.injectFault(ExceptionSpot.optimizely_getFeatureVariableDouble);
+    
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.DOUBLE, userId, attributes);
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+   
     return null;
   }
 };
@@ -779,10 +778,10 @@ Optimizely.prototype.getFeatureVariableDouble = function(featureKey, variableKey
  */
 Optimizely.prototype.getFeatureVariableInteger = function(featureKey, variableKey, userId, attributes) {
   try {
-    faultInjector.injectFault(ExceptionSpot.optimizely_getFeatureVariableInteger);
+    
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.INTEGER, userId, attributes);
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+   
     return null;
   }
 };
@@ -803,10 +802,10 @@ Optimizely.prototype.getFeatureVariableInteger = function(featureKey, variableKe
  */
 Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey, userId, attributes) {
   try {
-    faultInjector.injectFault(ExceptionSpot.optimizely_getFeatureVariableString);
+    
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.STRING, userId, attributes);
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+   
     return null;
   }
 };

@@ -18,8 +18,8 @@ var fns = require('../../utils/fns');
 var eventTagUtils = require('../../utils/event_tag_utils');
 var projectConfig = require('../project_config');
 
-var faultInjector = require("../../fault_injection/faultinjection_manager");
-var ExceptionSpot = require("../../fault_injection/exception_spot");
+
+
 
 var ACTIVATE_EVENT_KEY = 'campaign_activated';
 var CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom';
@@ -40,7 +40,7 @@ function getCommonEventParams(options) {
 
   try {
 
-    faultInjector.injectFault(ExceptionSpot.event_builder_getCommonEventParams_spot1);
+    
     var attributes = options.attributes;
     var configObj = options.configObj;
     var anonymize_ip = configObj.anonymizeIP;
@@ -64,7 +64,7 @@ function getCommonEventParams(options) {
       client_version: options.clientVersion,
       anonymize_ip: anonymize_ip,
     };
-    faultInjector.injectFault(ExceptionSpot.event_builder_getCommonEventParams_spot2);
+    
 
     fns.forOwn(attributes, function (attributeValue, attributeKey) {
       var attributeId = projectConfig.getAttributeId(options.configObj, attributeKey, options.logger);
@@ -88,10 +88,10 @@ function getCommonEventParams(options) {
     }
     ;
 
-    faultInjector.injectFault(ExceptionSpot.event_builder_getCommonEventParams_spot3);
+    
     return commonParams;
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
     return null;
   }
 }
@@ -105,7 +105,7 @@ function getCommonEventParams(options) {
  */
 function getImpressionEventParams(configObj, experimentId, variationId) {
   try {
-    faultInjector.injectFault(ExceptionSpot.event_builder_getImpressionEventParams);
+    
     var impressionEventParams = {
       decisions: [{
         campaign_id: projectConfig.getLayerId(configObj, experimentId),
@@ -122,7 +122,7 @@ function getImpressionEventParams(configObj, experimentId, variationId) {
     };
     return impressionEventParams;
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
     return null;
   }
 }
@@ -138,7 +138,7 @@ function getImpressionEventParams(configObj, experimentId, variationId) {
  */
 function getConversionEventParams(configObj, eventKey, eventTags, experimentsToVariationMap, logger) {
   try {
-    faultInjector.injectFault(ExceptionSpot.event_builder_getConversionEventParams_spot1);
+    
 
     var conversionEventParams = [];
 
@@ -160,7 +160,7 @@ function getConversionEventParams(configObj, eventKey, eventTags, experimentsToV
         key: eventKey,
       };
 
-      faultInjector.injectFault(ExceptionSpot.event_builder_getConversionEventParams_spot2);
+      
 
       if (eventTags) {
         var revenue = eventTagUtils.getRevenueValue(eventTags, logger);
@@ -180,11 +180,11 @@ function getConversionEventParams(configObj, eventKey, eventTags, experimentsToV
       conversionEventParams.push(decision);
     });
 
-    faultInjector.injectFault(ExceptionSpot.event_builder_getConversionEventParams_spot3);
+    
 
     return conversionEventParams;
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
     return null;
   }
 }
@@ -204,7 +204,7 @@ module.exports = {
    */
   getImpressionEvent: function(options) {
     try {
-      faultInjector.injectFault(ExceptionSpot.event_builder_getImpressionEvent);
+      
 
       var impressionEvent = {
         httpVerb: HTTP_VERB
@@ -221,7 +221,7 @@ module.exports = {
 
       return impressionEvent;
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
       return null;
     }
   },
@@ -243,7 +243,7 @@ module.exports = {
   getConversionEvent: function(options) {
 
     try {
-      faultInjector.injectFault(ExceptionSpot.event_builder_getConversionEvent);
+      
 
       var conversionEvent = {
         httpVerb: HTTP_VERB,
@@ -263,7 +263,7 @@ module.exports = {
 
       return conversionEvent;
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
       return null;
     }
 
