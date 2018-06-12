@@ -171,6 +171,7 @@ module.exports = {
    * @return {string|null} Attribute ID corresponding to the provided attribute key. Attribute key if it is a reserved attribute.
    */
   getAttributeId: function(projectConfig, attributeKey, logger) {
+
     try {
       
       var attribute = projectConfig.attributeKeyMap[attributeKey];
@@ -503,7 +504,7 @@ module.exports = {
         } else {
           // catching improperly formatted experiments
           logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT, MODULE_NAME, experimentKey));
-          return null
+          return null;
         }
       } catch (ex) {
         // catching experiment not in datafile

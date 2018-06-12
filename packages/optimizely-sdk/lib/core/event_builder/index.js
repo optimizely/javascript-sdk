@@ -86,12 +86,9 @@ function getCommonEventParams(options) {
         value: botFiltering,
       });
     }
-    ;
-
     
     return commonParams;
   } catch (e) {
-    
     return null;
   }
 }

@@ -41,8 +41,8 @@ describe('javascript-sdk', function() {
         xhr = sinon.useFakeXMLHttpRequest();
         global.XMLHttpRequest = xhr;
         requests = [];
-        xhr.onCreate = function (xhr) {
-            requests.push(xhr);
+        xhr.onCreate = function (req) {
+            requests.push(req);
         };
       });
 
@@ -124,7 +124,7 @@ describe('javascript-sdk', function() {
         assert.strictEqual(didSetVariation, true);
 
         var variation = optlyInstance.getForcedVariation('testExperiment', 'testUser');
-        assert.strictEqual(variation, 'control')
+        assert.strictEqual(variation, 'control');
         done();
       });
 
@@ -140,13 +140,13 @@ describe('javascript-sdk', function() {
         assert.strictEqual(didSetVariation, true);
 
         var variation = optlyInstance.getForcedVariation('testExperiment', 'testUser');
-        assert.strictEqual(variation, 'control')
+        assert.strictEqual(variation, 'control');
 
         var didSetVariation2 = optlyInstance.setForcedVariation('testExperiment', 'testUser', null);
         assert.strictEqual(didSetVariation2, true);
 
         var variation2 = optlyInstance.getForcedVariation('testExperiment', 'testUser');
-        assert.strictEqual(variation2, null)
+        assert.strictEqual(variation2, null);
         done();
       });
 
@@ -166,10 +166,10 @@ describe('javascript-sdk', function() {
 
 
         var variation = optlyInstance.getForcedVariation('testExperiment', 'testUser');
-        assert.strictEqual(variation, 'control')
+        assert.strictEqual(variation, 'control');
 
         var variation2 = optlyInstance.getForcedVariation('testExperimentLaunched', 'testUser');
-        assert.strictEqual(variation2, 'controlLaunched')
+        assert.strictEqual(variation2, 'controlLaunched');
         done();
       });
 
@@ -191,10 +191,10 @@ describe('javascript-sdk', function() {
         assert.strictEqual(didSetVariation2, true);
 
         var variation = optlyInstance.getForcedVariation('testExperiment', 'testUser');
-        assert.strictEqual(variation, 'control')
+        assert.strictEqual(variation, 'control');
 
         var variation2 = optlyInstance.getForcedVariation('testExperimentLaunched', 'testUser');
-        assert.strictEqual(variation2, null)
+        assert.strictEqual(variation2, null);
         done();
       });
 
@@ -216,10 +216,10 @@ describe('javascript-sdk', function() {
         assert.strictEqual(didSetVariation2, true);
 
         var variation = optlyInstance.getForcedVariation('testExperiment', 'testUser');
-        assert.strictEqual(variation, 'control')
+        assert.strictEqual(variation, 'control');
 
         var variation2 = optlyInstance.getForcedVariation('testExperimentLaunched', 'testUser');
-        assert.strictEqual(variation2, 'variationLaunched')
+        assert.strictEqual(variation2, 'variationLaunched');
         done();
       });
 
@@ -235,13 +235,13 @@ describe('javascript-sdk', function() {
         assert.strictEqual(didSetVariation, true);
 
         var variation = optlyInstance.getVariation('testExperiment', 'testUser');
-        assert.strictEqual(variation, 'control')
+        assert.strictEqual(variation, 'control');
 
         var didSetVariation2 = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'variation');
         assert.strictEqual(didSetVariation2, true);
 
         var variation = optlyInstance.getVariation('testExperiment', 'testUser');
-        assert.strictEqual(variation, 'variation')
+        assert.strictEqual(variation, 'variation');
         done();
       });
 
@@ -257,7 +257,7 @@ describe('javascript-sdk', function() {
         assert.strictEqual(didSetVariation, true);
 
         var variation = optlyInstance.getVariation('testExperimentNotRunning', 'testUser');
-        assert.strictEqual(variation, null)
+        assert.strictEqual(variation, null);
 
         done();
       });

@@ -360,7 +360,7 @@ describe('lib/core/decision_service', function() {
 
     var testUserAttributes = {
       'browser_type': 'firefox',
-    }
+    };
     var userAttributesWithBucketingId = {
       'browser_type': 'firefox',
       '$opt_bucketing_id': '123456789'
@@ -436,7 +436,7 @@ describe('lib/core/decision_service', function() {
       var userProfileServiceInstance = {
         lookup: function () {
         },
-      }
+      };
       userProfileLookupStub = sinon.stub(userProfileServiceInstance, 'lookup');
       userProfileLookupStub.returns({
         user_id: 'test_user',

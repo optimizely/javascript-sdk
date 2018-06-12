@@ -69,6 +69,7 @@ function DecisionService(options) {
  * @return {string|null} the variation the user is bucketed into.
  */
 DecisionService.prototype.getVariation = function(experimentKey, userId, attributes) {
+
   try {
 
     
@@ -79,11 +80,9 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
     if (!fns.isEmpty(attributes)) {
       if (attributes.hasOwnProperty(enums.CONTROL_ATTRIBUTES.BUCKETING_ID)) {
         bucketingId = attributes[enums.CONTROL_ATTRIBUTES.BUCKETING_ID];
-        this.logger.log(LOG_LEVEL.DEBUG, sprintf('Setting the bucketing ID to %s.', bucketingId))
+        this.logger.log(LOG_LEVEL.DEBUG, sprintf('Setting the bucketing ID to %s.', bucketingId));
       }
     }
-
-    
 
     if (!this.__checkIfExperimentIsActive(experimentKey, userId)) {
       return null;
