@@ -2654,6 +2654,7 @@ describe('lib/optimizely', function() {
         });
 
         describe('when the variation is toggled OFF', function() {
+          var result;
           beforeEach(function() {
             var experiment = optlyInstance.configObj.experimentKeyMap.test_shared_feature;
             var variation = experiment.variations[1];
@@ -2662,10 +2663,10 @@ describe('lib/optimizely', function() {
               variation: variation,
               decisionSource: DECISION_SOURCES.EXPERIMENT,
             });
+            result = optlyInstance.isFeatureEnabled('shared_feature', 'user1', attributes);
           });
 
           it('should return false', function() {
-            var result = optlyInstance.isFeatureEnabled('shared_feature', 'user1', attributes);
             assert.strictEqual(result, false);
             sinon.assert.calledOnce(optlyInstance.decisionService.getVariationForFeature);
             var feature = optlyInstance.configObj.featureKeyMap.shared_feature;
@@ -2675,6 +2676,62 @@ describe('lib/optimizely', function() {
               'user1',
               attributes
             );
+          });
+
+          it('should dispatch an impression event', function() {
+            sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
+            var expectedImpressionEvent = {
+              'httpVerb': 'POST',
+              'url': 'https://logx.optimizely.com/v1/events',
+              'params': {
+                'account_id': '572018',
+                'project_id': '594001',
+                'visitors': [
+                  {
+                    'snapshots': [
+                      {
+                        'decisions': [
+                          {
+                            'campaign_id': '599023',
+                            'experiment_id': '599028',
+                            'variation_id': '599027'
+                          }
+                        ],
+                        'events': [
+                          {
+                            'entity_id': '599023',
+                            'timestamp': 1509489766569,
+                            'key': 'campaign_activated',
+                            'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c'
+                          }
+                        ]
+                      }
+                    ],
+                    'visitor_id': 'user1',
+                    'attributes': [
+                      {
+                        'entity_id': '594014',
+                        'key': 'test_attribute',
+                        'type': 'custom',
+                        'value': 'test_value',
+                      }, {
+                        'entity_id': '$opt_bot_filtering',
+                        'key': '$opt_bot_filtering',
+                        'type': 'custom',
+                        'value': true,
+                      },
+                    ],
+                  }
+                ],
+                'revision': '35',
+                'client_name': 'node-sdk',
+                'client_version': enums.NODE_CLIENT_VERSION,
+                'anonymize_ip': true
+              }
+            };
+            var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
+            assert.deepEqual(callArgs[0], expectedImpressionEvent);
+            assert.isFunction(callArgs[1]);
           });
         });
 
