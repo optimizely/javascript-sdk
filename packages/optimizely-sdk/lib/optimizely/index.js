@@ -495,16 +495,18 @@ Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes)
 
   var decision = this.decisionService.getVariationForFeature(feature, userId, attributes);
   var variation = decision.variation;
-  if (!!variation && variation.featureEnabled === true) {
-    this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
+  if (!!variation) {
     if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
+      // got a variation from the exp, so we track the impression
       this._sendImpressionEvent(decision.experiment.key, decision.variation.key, userId, attributes);
     }
-    return true;
-  } else {
-    this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
-    return false;
+    if (variation.featureEnabled === true) {
+      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
+      return true;
+    }
   }
+  this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
+  return false;
 };
 
 /**
