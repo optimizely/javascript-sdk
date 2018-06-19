@@ -3,6 +3,11 @@ June 19, 2018
 
 * Fix: send impression event for Feature Test with Feature disabled ([#117](https://github.com/optimizely/javascript-sdk/pull/117))
 
+## 2.0.4
+June 19, 2018
+
+* Fix: send impression event for Feature Test with Feature disabled ([#117](https://github.com/optimizely/javascript-sdk/pull/117))
+
 ## 2.1.0
 May 24, 2018
 
