@@ -77,7 +77,7 @@ describe('lib/plugins/logger', function() {
         defaultLogger.setLogLevel(undefined);
         expect(defaultLogger.logLevel).to.equal(LOG_LEVEL.ERROR);
 
-        defaultLogger.setLogLevel("abc");
+        defaultLogger.setLogLevel('abc');
         expect(defaultLogger.logLevel).to.equal(LOG_LEVEL.ERROR);
       });
     });

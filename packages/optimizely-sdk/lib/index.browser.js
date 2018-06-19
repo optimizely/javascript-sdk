@@ -56,7 +56,8 @@ module.exports = {
       }
     }
 
-    if (config.skipJSONValidation == null) {
+    // Explicitly check for null or undefined
+    if (config.skipJSONValidation == null) { // eslint-disable-line eqeqeq
       config.skipJSONValidation = true;
     }
 

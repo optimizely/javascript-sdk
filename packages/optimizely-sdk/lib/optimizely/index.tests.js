@@ -291,7 +291,7 @@ describe('lib/optimizely', function() {
       });
       bucketStub.returns('111129');
 
-      var activate = instance.activate('testExperiment', 'testUser');;
+      var activate = instance.activate('testExperiment', 'testUser');
 
       assert.strictEqual(activate, 'variation');
       eventDispatcherPromise.then(function() {
@@ -302,7 +302,7 @@ describe('lib/optimizely', function() {
                                                'testUser',
                                                'testExperiment'));
         done();
-      })
+      });
     });
 
     it('should execute a custom dispatchEvent\'s promise in track', function(done) {
@@ -317,7 +317,7 @@ describe('lib/optimizely', function() {
       });
       bucketStub.returns('111129');
 
-      var activate = instance.activate('testExperiment', 'testUser');;
+      var activate = instance.activate('testExperiment', 'testUser');
 
       assert.strictEqual(activate, 'variation');
       instance.track('testEvent', 'testUser');
@@ -329,9 +329,9 @@ describe('lib/optimizely', function() {
                                                'testEvent',
                                                'testUser'));
         done();
-      })
+      });
     });
-  })
+  });
 
   describe('APIs', function() {
     var optlyInstance;
@@ -662,7 +662,7 @@ describe('lib/optimizely', function() {
         sinon.assert.callCount(createdLogger.log, 3);
 
         var logMessage0 = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,'PROJECT_CONFIG','testUser'));
+        assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'testUser'));
 
         var logMessage1 = createdLogger.log.args[1][1];
         assert.strictEqual(logMessage1, sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'testExperimentWithAudiences'));
@@ -676,7 +676,7 @@ describe('lib/optimizely', function() {
         sinon.assert.callCount(createdLogger.log, 3);
 
         var logMessage0 = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,'PROJECT_CONFIG','testUser'));
+        assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'testUser'));
 
         var logMessage1 = createdLogger.log.args[1][1];
         assert.strictEqual(logMessage1, sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'groupExperiment1'));
@@ -776,7 +776,7 @@ describe('lib/optimizely', function() {
           sinon.assert.calledThrice(createdLogger.log);
 
           var logMessage0 = createdLogger.log.args[0][1];
-          assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,'PROJECT_CONFIG','user1'));
+          assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'user1'));
           var logMessage1 = createdLogger.log.args[1][1];
           assert.strictEqual(logMessage1, sprintf(LOG_MESSAGES.USER_FORCED_IN_VARIATION, 'DECISION_SERVICE', 'user1', 'control'));
 
@@ -1219,7 +1219,7 @@ describe('lib/optimizely', function() {
 
         sinon.assert.callCount(createdLogger.log, 4);
         var logMessage0 = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,'PROJECT_CONFIG','testUser'));
+        assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'testUser'));
         var logMessage1 = createdLogger.log.args[1][1];
         assert.strictEqual(logMessage1, sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'testExperimentWithAudiences'));
         var logMessage2 = createdLogger.log.args[2][1];
@@ -1242,7 +1242,7 @@ describe('lib/optimizely', function() {
         optlyInstance.track('testEvent', 'testUser');
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
         var logMessage0 = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,'PROJECT_CONFIG','testUser'));
+        assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'testUser'));
         var logMessage1 = createdLogger.log.args[1][1];
         assert.strictEqual(logMessage1, sprintf(LOG_MESSAGES.NOT_TRACKING_USER_FOR_EXPERIMENT, 'OPTIMIZELY', 'testUser', 'testExperiment'));
       });
@@ -1320,9 +1320,9 @@ describe('lib/optimizely', function() {
         assert.deepEqual(eventDispatcherCall[0], expectedObj);
 
         var logMessage0 = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,'PROJECT_CONFIG','testUser'));
+        assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'testUser'));
         var logMessage1 = createdLogger.log.args[1][1];
-        assert.strictEqual(logMessage1, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,'PROJECT_CONFIG','testUser'));
+        assert.strictEqual(logMessage1, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'testUser'));
         var logMessage2 = createdLogger.log.args[2][1];
         assert.strictEqual(logMessage2, sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning'));
         var logMessage3 = createdLogger.log.args[3][1];
@@ -1421,7 +1421,7 @@ describe('lib/optimizely', function() {
           sinon.assert.calledThrice(createdLogger.log);
 
           var logMessage0 = createdLogger.log.args[0][1];
-          assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,'PROJECT_CONFIG','user1'));
+          assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'user1'));
           var logMessage1 = createdLogger.log.args[1][1];
           assert.strictEqual(logMessage1, sprintf(LOG_MESSAGES.USER_FORCED_IN_VARIATION, 'DECISION_SERVICE', 'user1', 'control'));
 
@@ -1524,7 +1524,7 @@ describe('lib/optimizely', function() {
         sinon.assert.calledThrice(createdLogger.log);
 
         var logMessage0 = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,'PROJECT_CONFIG','testUser'));
+        assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'testUser'));
         var logMessage1 = createdLogger.log.args[1][1];
         assert.strictEqual(logMessage1, sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'testExperimentWithAudiences'));
         var logMessage2 = createdLogger.log.args[2][1];
@@ -1591,7 +1591,7 @@ describe('lib/optimizely', function() {
           sinon.assert.calledTwice(createdLogger.log);
 
           var logMessage0 = createdLogger.log.args[0][1];
-          assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,'PROJECT_CONFIG','user1'));
+          assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'user1'));
           var logMessage = createdLogger.log.args[1][1];
           assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.USER_FORCED_IN_VARIATION, 'DECISION_SERVICE', 'user1', 'control'));
         });
