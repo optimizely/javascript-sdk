@@ -3,7 +3,7 @@
 </h3>
 
 <p align="center">
-  This repository houses the JavaScript SDK for use with Optimizely X Full Stack
+  This repository houses the official JavaScript SDK for use with Optimizely X Full Stack
 </p>
 
 ## Packages
