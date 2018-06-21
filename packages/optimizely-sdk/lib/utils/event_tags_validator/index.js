@@ -20,6 +20,9 @@
 
 var sprintf = require('sprintf');
 
+
+
+
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'EVENT_TAGS_VALIDATOR';
 
@@ -31,10 +34,19 @@ module.exports = {
    * @throws If event tags are not valid
    */
   validate: function(eventTags) {
-    if (typeof eventTags === 'object' && !Array.isArray(eventTags) && eventTags !== null) {
-      return true;
-    } else {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_TAGS, MODULE_NAME));
+    try {
+      
+      if (typeof eventTags === 'object' && !Array.isArray(eventTags) && eventTags !== null) {
+        return true;
+      } else {
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_TAGS, MODULE_NAME));
+      }
+    } catch (e) {
+      if(e.message.startsWith(MODULE_NAME)){
+        throw e;
+      }
+     
+      return false;
     }
   },
 };

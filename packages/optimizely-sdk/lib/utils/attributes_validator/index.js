@@ -21,6 +21,7 @@
 var sprintf = require('sprintf');
 var lodashForOwn = require('lodash/forOwn');
 
+
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
 
@@ -32,15 +33,24 @@ module.exports = {
    * @throws If the attributes are not valid
    */
   validate: function(attributes) {
-    if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
-      lodashForOwn(attributes, function(value, key) {
-        if (typeof value === 'undefined') {
-          throw new Error(sprintf(ERROR_MESSAGES.UNDEFINED_ATTRIBUTE, MODULE_NAME, key));
-        }
-      });
-      return true;
-    } else {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, MODULE_NAME));
+    try {
+      
+      if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
+        lodashForOwn(attributes, function (value, key) {
+          if (typeof value === 'undefined') {
+            throw new Error(sprintf(ERROR_MESSAGES.UNDEFINED_ATTRIBUTE, MODULE_NAME, key));
+          }
+        });
+        return true;
+      } else {
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, MODULE_NAME));
+      }
+    } catch (e) {
+      if(e.message.startsWith(MODULE_NAME)){
+        throw e;
+      }
+     
+      return false;
     }
   },
 };

@@ -15,6 +15,8 @@
  */
 var conditionEvaluator = require('../condition_evaluator');
 
+
+
 module.exports = {
   /**
    * Determine if the given user attributes satisfy the given audience conditions
@@ -25,24 +27,32 @@ module.exports = {
    * @return {Boolean}  True if the user attributes match the given audience conditions
    */
   evaluate: function(audiences, userAttributes) {
-    // if there are no audiences, return true because that means ALL users are included in the experiment
-    if (!audiences || audiences.length === 0) {
-      return true;
-    }
 
-    // if no user attributes specified, return false
-    if (!userAttributes) {
-      return false;
-    }
+    try {
 
-    for (var i = 0; i < audiences.length; i++) {
-      var audience = audiences[i];
-      var conditions = audience.conditions;
-      if (conditionEvaluator.evaluate(conditions, userAttributes)) {
+      
+
+      // if there are no audiences, return true because that means ALL users are included in the experiment
+      if (!audiences || audiences.length === 0) {
         return true;
       }
-    }
 
-    return false;
+      // if no user attributes specified, return false
+      if (!userAttributes) {
+        return false;
+      }
+
+      for (var i = 0; i < audiences.length; i++) {
+        var audience = audiences[i];
+        var conditions = audience.conditions;
+        if (conditionEvaluator.evaluate(conditions, userAttributes)) {
+          return true;
+        }
+      }
+
+      return false;
+    } catch (e) {
+      return false;
+    }
   },
 };

@@ -25,6 +25,7 @@ var sprintf = require('sprintf');
 
 var Optimizely = require('./optimizely');
 
+
 var MODULE_NAME = 'INDEX';
 
 /**
@@ -43,32 +44,41 @@ module.exports = {
    * @return {Object} the Optimizely object
    */
   createInstance: function(config) {
-    var defaultLogger = logger.createNoOpLogger();
-    if (config) {
-      try {
-        configValidator.validate(config);
-        config.isValidInstance = true;
-      } catch (ex) {
-        if (config.logger) {
-          config.logger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
-        } else {
-          var simpleLogger = logger.createLogger({logLevel: 4});
-          simpleLogger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
+
+    try {
+
+      
+
+      var defaultLogger = logger.createNoOpLogger();
+      if (config) {
+        try {
+          configValidator.validate(config);
+          config.isValidInstance = true;
+        } catch (ex) {
+          if (config.logger) {
+            config.logger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
+          } else {
+            var simpleLogger = logger.createLogger({logLevel: 4});
+            simpleLogger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
+          }
+          config.isValidInstance = false;
         }
-        config.isValidInstance = false;
       }
+
+      config = fns.assign({
+        clientEngine: enums.NODE_CLIENT_ENGINE,
+        clientVersion: enums.CLIENT_VERSION,
+        errorHandler: defaultErrorHandler,
+        eventDispatcher: defaultEventDispatcher,
+        jsonSchemaValidator: jsonSchemaValidator,
+        logger: defaultLogger,
+        skipJSONValidation: false
+      }, config);
+
+      return new Optimizely(config);
+    } catch (e) {
+     
+      return null;
     }
-
-    config = fns.assign({
-      clientEngine: enums.NODE_CLIENT_ENGINE,
-      clientVersion: enums.CLIENT_VERSION,
-      errorHandler: defaultErrorHandler,
-      eventDispatcher: defaultEventDispatcher,
-      jsonSchemaValidator: jsonSchemaValidator,
-      logger: defaultLogger,
-      skipJSONValidation: false
-    }, config);
-
-    return new Optimizely(config);
   }
 };

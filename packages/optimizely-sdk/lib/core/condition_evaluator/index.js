@@ -13,6 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+
+
+
 var AND_CONDITION = 'and';
 var OR_CONDITION = 'or';
 var NOT_CONDITION = 'not';
@@ -28,27 +32,39 @@ var DEFAULT_OPERATOR_TYPES = [AND_CONDITION, OR_CONDITION, NOT_CONDITION];
  * @return {Boolean}  true if the given user attributes match the given conditions
  */
 function evaluate(conditions, userAttributes) {
-  if (Array.isArray(conditions)) {
-    var firstOperator = conditions[0];
 
-    // return false for invalid operators
-    if (DEFAULT_OPERATOR_TYPES.indexOf(firstOperator) === -1) {
-      return false;
+  try {
+    
+
+    if (Array.isArray(conditions)) {
+      var firstOperator = conditions[0];
+
+      // return false for invalid operators
+      if (DEFAULT_OPERATOR_TYPES.indexOf(firstOperator) === -1) {
+        return false;
+      }
+
+      
+
+      var restOfConditions = conditions.slice(1);
+      switch (firstOperator) {
+        case AND_CONDITION:
+          return andEvaluator(restOfConditions, userAttributes);
+        case NOT_CONDITION:
+          return notEvaluator(restOfConditions, userAttributes);
+        case OR_CONDITION:
+          return orEvaluator(restOfConditions, userAttributes);
+      }
     }
 
-    var restOfConditions = conditions.slice(1);
-    switch (firstOperator) {
-      case AND_CONDITION:
-        return andEvaluator(restOfConditions, userAttributes);
-      case NOT_CONDITION:
-        return notEvaluator(restOfConditions, userAttributes);
-      case OR_CONDITION:
-        return orEvaluator(restOfConditions, userAttributes);
-    }
+    
+
+    var deserializedConditions = [conditions.name, conditions.value];
+    return evaluator(deserializedConditions, userAttributes);
+  } catch (e) {
+    
+    return false;
   }
-
-  var deserializedConditions = [conditions.name, conditions.value];
-  return evaluator(deserializedConditions, userAttributes);
 }
 
 /**
@@ -59,15 +75,23 @@ function evaluate(conditions, userAttributes) {
  * @return {Boolean}                 true if the user attributes match the given conditions
  */
 function andEvaluator(conditions, userAttributes) {
-  var condition;
-  for (var i = 0; i < conditions.length; i++) {
-    condition = conditions[i];
-    if (!evaluate(condition, userAttributes)) {
-      return false;
-    }
-  }
 
-  return true;
+  try {
+
+    
+    var condition;
+    for (var i = 0; i < conditions.length; i++) {
+      condition = conditions[i];
+      if (!evaluate(condition, userAttributes)) {
+        return false;
+      }
+    }
+
+    return true;
+  } catch (e) {
+    
+    return false;
+  }
 }
 
 /**
@@ -78,11 +102,17 @@ function andEvaluator(conditions, userAttributes) {
  * @return {Boolean}                 true if the user attributes match the given conditions
  */
 function notEvaluator(conditions, userAttributes) {
-  if (conditions.length !== 1) {
+  try {
+    
+    if (conditions.length !== 1) {
+      return false;
+    }
+
+    return !evaluate(conditions[0], userAttributes);
+  } catch (e) {
+    
     return false;
   }
-
-  return !evaluate(conditions[0], userAttributes);
 }
 
 /**
@@ -93,13 +123,17 @@ function notEvaluator(conditions, userAttributes) {
  * @return {Boolean}                 true if the user attributes match the given conditions
  */
 function orEvaluator(conditions, userAttributes) {
-  for (var i = 0; i < conditions.length; i++) {
-    var condition = conditions[i];
-    if (evaluate(condition, userAttributes)) {
-      return true;
+  try {
+    
+    for (var i = 0; i < conditions.length; i++) {
+      var condition = conditions[i];
+      if (evaluate(condition, userAttributes)) {
+        return true;
+      }
     }
+  } catch (e) {
+    
   }
-
   return false;
 }
 
@@ -111,10 +145,14 @@ function orEvaluator(conditions, userAttributes) {
  * @return {Boolean}                 true if the user attributes match the given conditions
  */
 function evaluator(conditions, userAttributes) {
-  if (userAttributes.hasOwnProperty(conditions[0])) {
-    return userAttributes[conditions[0]] === conditions[1];
+  try {
+    
+    if (userAttributes.hasOwnProperty(conditions[0])) {
+      return userAttributes[conditions[0]] === conditions[1];
+    }
+  } catch (e) {
+    
   }
-
   return false;
 }
 

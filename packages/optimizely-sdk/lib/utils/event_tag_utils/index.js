@@ -19,6 +19,7 @@
  */
 var enums = require('../enums');
 var sprintf = require('sprintf');
+ 
 
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
@@ -34,15 +35,20 @@ module.exports = {
    * @return {Integer|null}
    */
   getRevenueValue: function(eventTags, logger) {
-    if (eventTags && eventTags.hasOwnProperty(REVENUE_EVENT_METRIC_NAME)) {
-      var rawValue = eventTags[REVENUE_EVENT_METRIC_NAME];
-      var parsedRevenueValue = parseInt(rawValue, 10);
-      if (isNaN(parsedRevenueValue)) {
-        logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FAILED_TO_PARSE_REVENUE, MODULE_NAME, rawValue));
-        return null;
+    try {
+      
+      if (eventTags && eventTags.hasOwnProperty(REVENUE_EVENT_METRIC_NAME)) {
+        var rawValue = eventTags[REVENUE_EVENT_METRIC_NAME];
+        var parsedRevenueValue = parseInt(rawValue, 10);
+        if (isNaN(parsedRevenueValue)) {
+          logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FAILED_TO_PARSE_REVENUE, MODULE_NAME, rawValue));
+          return null;
+        }
+        logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.PARSED_REVENUE_VALUE, MODULE_NAME, parsedRevenueValue));
+        return parsedRevenueValue;
       }
-      logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.PARSED_REVENUE_VALUE, MODULE_NAME, parsedRevenueValue));
-      return parsedRevenueValue;
+    } catch (e) {
+     
     }
     return null;
   },
@@ -54,15 +60,20 @@ module.exports = {
    * @return {Number|null}
    */
   getEventValue: function(eventTags, logger) {
-    if (eventTags && eventTags.hasOwnProperty(VALUE_EVENT_METRIC_NAME)) {
-      var rawValue = eventTags[VALUE_EVENT_METRIC_NAME];
-      var parsedEventValue = parseFloat(rawValue);
-      if (isNaN(parsedEventValue)) {
-        logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FAILED_TO_PARSE_VALUE, MODULE_NAME, rawValue));
-        return null;
+    try {
+      
+      if (eventTags && eventTags.hasOwnProperty(VALUE_EVENT_METRIC_NAME)) {
+        var rawValue = eventTags[VALUE_EVENT_METRIC_NAME];
+        var parsedEventValue = parseFloat(rawValue);
+        if (isNaN(parsedEventValue)) {
+          logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FAILED_TO_PARSE_VALUE, MODULE_NAME, rawValue));
+          return null;
+        }
+        logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.PARSED_NUMERIC_VALUE, MODULE_NAME, parsedEventValue));
+        return parsedEventValue;
       }
-      logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.PARSED_NUMERIC_VALUE, MODULE_NAME, parsedEventValue));
-      return parsedEventValue;
+    } catch (e) {
+     
     }
     return null;
   },

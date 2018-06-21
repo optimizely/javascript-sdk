@@ -17,6 +17,8 @@ var fns = require('../fns');
 var validate = require('json-schema').validate;
 var sprintf = require('sprintf');
 
+ 
+
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';
 
@@ -28,22 +30,33 @@ module.exports = {
    * @return {Boolean}           True if the given object is valid
    */
   validate: function(jsonSchema, jsonObject) {
-    if (!jsonSchema) {
-      throw new Error(sprintf(ERROR_MESSAGES.JSON_SCHEMA_EXPECTED, MODULE_NAME));
-    }
 
-    if (!jsonObject) {
-      throw new Error(sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, MODULE_NAME));
-    }
-
-    var result = validate(jsonObject, jsonSchema);
-    if (result.valid) {
-      return true;
-    } else {
-      if (fns.isArray(result.errors)) {
-        throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE, MODULE_NAME, result.errors[0].property, result.errors[0].message));
+    try {
+      
+      if (!jsonSchema) {
+        throw new Error(sprintf(ERROR_MESSAGES.JSON_SCHEMA_EXPECTED, MODULE_NAME));
       }
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_JSON, MODULE_NAME));
+
+      if (!jsonObject) {
+        throw new Error(sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, MODULE_NAME));
+      }
+
+      
+      var result = validate(jsonObject, jsonSchema);
+      if (result.valid) {
+        return true;
+      } else {
+        if (fns.isArray(result.errors)) {
+          throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE, MODULE_NAME, result.errors[0].property, result.errors[0].message));
+        }
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_JSON, MODULE_NAME));
+      }
+    } catch (e) {
+      if(e.message.startsWith(MODULE_NAME)){
+        throw e;
+      }
+     
+      return false;
     }
   }
 };

@@ -18,6 +18,9 @@ var fns = require('../../utils/fns');
 var eventTagUtils = require('../../utils/event_tag_utils');
 var projectConfig = require('../project_config');
 
+
+
+
 var ACTIVATE_EVENT_KEY = 'campaign_activated';
 var CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom';
 var ENDPOINT = 'https://logx.optimizely.com/v1/events';
@@ -34,51 +37,60 @@ var HTTP_VERB = 'POST';
  * @return {Object}                       Common params with properties that are used in both conversion and impression events
  */
 function getCommonEventParams(options) {
-  var attributes = options.attributes;
-  var configObj = options.configObj;
-  var anonymize_ip = configObj.anonymizeIP;
-  var botFiltering = configObj.botFiltering;
-  if (anonymize_ip === null || anonymize_ip === undefined) {
-    anonymize_ip = false;
-  }
 
-  var visitor = {
-    snapshots: [],
-    visitor_id: options.userId,
-    attributes: []
-  };
+  try {
 
-  var commonParams = {
-    account_id: configObj.accountId,
-    project_id: configObj.projectId,
-    visitors: [visitor],
-    revision: configObj.revision,
-    client_name: options.clientEngine,
-    client_version: options.clientVersion,
-    anonymize_ip: anonymize_ip,
-  };
+    
+    var attributes = options.attributes;
+    var configObj = options.configObj;
+    var anonymize_ip = configObj.anonymizeIP;
+    var botFiltering = configObj.botFiltering;
+    if (anonymize_ip === null || anonymize_ip === undefined) {
+      anonymize_ip = false;
+    }
 
-  fns.forOwn(attributes, function(attributeValue, attributeKey){
-    var attributeId = projectConfig.getAttributeId(options.configObj, attributeKey, options.logger);
-    if (attributeId) {
+    var visitor = {
+      snapshots: [],
+      visitor_id: options.userId,
+      attributes: []
+    };
+
+    var commonParams = {
+      account_id: configObj.accountId,
+      project_id: configObj.projectId,
+      visitors: [visitor],
+      revision: configObj.revision,
+      client_name: options.clientEngine,
+      client_version: options.clientVersion,
+      anonymize_ip: anonymize_ip,
+    };
+    
+
+    fns.forOwn(attributes, function (attributeValue, attributeKey) {
+      var attributeId = projectConfig.getAttributeId(options.configObj, attributeKey, options.logger);
+      if (attributeId) {
+        commonParams.visitors[0].attributes.push({
+          entity_id: attributeId,
+          key: attributeKey,
+          type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
+          value: attributes[attributeKey],
+        });
+      }
+    });
+
+    if (typeof botFiltering === 'boolean') {
       commonParams.visitors[0].attributes.push({
-        entity_id: attributeId,
-        key: attributeKey,
+        entity_id: enums.CONTROL_ATTRIBUTES.BOT_FILTERING,
+        key: enums.CONTROL_ATTRIBUTES.BOT_FILTERING,
         type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
-        value: attributes[attributeKey],
+        value: botFiltering,
       });
     }
-  });
-
-  if (typeof botFiltering === 'boolean') {
-    commonParams.visitors[0].attributes.push({
-      entity_id: enums.CONTROL_ATTRIBUTES.BOT_FILTERING,
-      key: enums.CONTROL_ATTRIBUTES.BOT_FILTERING,
-      type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
-      value: botFiltering,
-    });
+    
+    return commonParams;
+  } catch (e) {
+    return null;
   }
-  return commonParams;
 }
 
 /**
@@ -89,7 +101,9 @@ function getCommonEventParams(options) {
  * @return {Object}              Impression event params
  */
 function getImpressionEventParams(configObj, experimentId, variationId) {
-  var impressionEventParams = {
+  try {
+    
+    var impressionEventParams = {
       decisions: [{
         campaign_id: projectConfig.getLayerId(configObj, experimentId),
         experiment_id: experimentId,
@@ -103,7 +117,11 @@ function getImpressionEventParams(configObj, experimentId, variationId) {
       }]
 
     };
-  return impressionEventParams;
+    return impressionEventParams;
+  } catch (e) {
+    
+    return null;
+  }
 }
 
 /**
@@ -116,46 +134,56 @@ function getImpressionEventParams(configObj, experimentId, variationId) {
  * @return {Object}                           Conversion event params
  */
 function getConversionEventParams(configObj, eventKey, eventTags, experimentsToVariationMap, logger) {
+  try {
+    
 
-  var conversionEventParams = [];
+    var conversionEventParams = [];
 
-  fns.forOwn(experimentsToVariationMap, function(variationId, experimentId) {
+    fns.forOwn(experimentsToVariationMap, function (variationId, experimentId) {
 
-    var decision = {
-      decisions: [{
-        campaign_id: projectConfig.getLayerId(configObj, experimentId),
-        experiment_id: experimentId,
-        variation_id: variationId,
-      }],
-      events: [],
-    };
+      var decision = {
+        decisions: [{
+          campaign_id: projectConfig.getLayerId(configObj, experimentId),
+          experiment_id: experimentId,
+          variation_id: variationId,
+        }],
+        events: [],
+      };
 
-    var eventDict = {
-      entity_id: projectConfig.getEventId(configObj, eventKey),
-      timestamp: fns.currentTimestamp(),
-      uuid: fns.uuid(),
-      key: eventKey,
-    };
+      var eventDict = {
+        entity_id: projectConfig.getEventId(configObj, eventKey),
+        timestamp: fns.currentTimestamp(),
+        uuid: fns.uuid(),
+        key: eventKey,
+      };
 
-    if (eventTags) {
-      var revenue = eventTagUtils.getRevenueValue(eventTags, logger);
-      if (revenue) {
-        eventDict[enums.RESERVED_EVENT_KEYWORDS.REVENUE] = revenue;
+      
+
+      if (eventTags) {
+        var revenue = eventTagUtils.getRevenueValue(eventTags, logger);
+        if (revenue) {
+          eventDict[enums.RESERVED_EVENT_KEYWORDS.REVENUE] = revenue;
+        }
+
+        var eventValue = eventTagUtils.getEventValue(eventTags, logger);
+        if (eventValue) {
+          eventDict[enums.RESERVED_EVENT_KEYWORDS.VALUE] = eventValue;
+        }
+
+        eventDict['tags'] = eventTags;
       }
+      decision.events = [eventDict];
 
-      var eventValue = eventTagUtils.getEventValue(eventTags, logger);
-      if (eventValue) {
-        eventDict[enums.RESERVED_EVENT_KEYWORDS.VALUE] = eventValue;
-      }
+      conversionEventParams.push(decision);
+    });
 
-      eventDict['tags'] = eventTags;
-    }
-    decision.events = [eventDict];
+    
 
-    conversionEventParams.push(decision);
-  });
-
-  return conversionEventParams;
+    return conversionEventParams;
+  } catch (e) {
+    
+    return null;
+  }
 }
 
 module.exports = {
@@ -172,20 +200,27 @@ module.exports = {
    * @return {Object}                       Params to be used in impression event logging endpoint call
    */
   getImpressionEvent: function(options) {
-    var impressionEvent = {
-      httpVerb: HTTP_VERB
-    };
+    try {
+      
 
-    var commonParams = getCommonEventParams(options);
-    impressionEvent.url = ENDPOINT;
+      var impressionEvent = {
+        httpVerb: HTTP_VERB
+      };
 
-    var impressionEventParams = getImpressionEventParams(options.configObj, options.experimentId, options.variationId);
-    // combine Event params into visitor obj
-    commonParams.visitors[0].snapshots.push(impressionEventParams);
+      var commonParams = getCommonEventParams(options);
+      impressionEvent.url = ENDPOINT;
 
-    impressionEvent.params = commonParams;
+      var impressionEventParams = getImpressionEventParams(options.configObj, options.experimentId, options.variationId);
+      // combine Event params into visitor obj
+      commonParams.visitors[0].snapshots.push(impressionEventParams);
 
-    return impressionEvent;
+      impressionEvent.params = commonParams;
+
+      return impressionEvent;
+    } catch (e) {
+      
+      return null;
+    }
   },
 
   /**
@@ -203,22 +238,31 @@ module.exports = {
    * @return {Object}                                   Params to be used in conversion event logging endpoint call
    */
   getConversionEvent: function(options) {
-    var conversionEvent = {
-      httpVerb: HTTP_VERB,
-    };
 
-    var commonParams = getCommonEventParams(options);
-    conversionEvent.url = ENDPOINT;
+    try {
+      
 
-    var conversionEventParams = getConversionEventParams(options.configObj,
-                                                         options.eventKey,
-                                                         options.eventTags,
-                                                         options.experimentsToVariationMap,
-                                                         options.logger);
+      var conversionEvent = {
+        httpVerb: HTTP_VERB,
+      };
 
-    commonParams.visitors[0].snapshots = conversionEventParams;
-    conversionEvent.params = commonParams;
+      var commonParams = getCommonEventParams(options);
+      conversionEvent.url = ENDPOINT;
 
-    return conversionEvent;
+      var conversionEventParams = getConversionEventParams(options.configObj,
+        options.eventKey,
+        options.eventTags,
+        options.experimentsToVariationMap,
+        options.logger);
+
+      commonParams.visitors[0].snapshots = conversionEventParams;
+      conversionEvent.params = commonParams;
+
+      return conversionEvent;
+    } catch (e) {
+      
+      return null;
+    }
+
   },
 };

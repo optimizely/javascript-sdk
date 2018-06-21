@@ -15,6 +15,7 @@
  */
 var sprintf = require('sprintf');
 
+
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'CONFIG_VALIDATOR';
 
@@ -32,17 +33,26 @@ module.exports = {
    * @throws If any of the config options are not valid
    */
   validate: function(config) {
-    if (config.errorHandler && (typeof config.errorHandler.handleError !== 'function')) {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_ERROR_HANDLER, MODULE_NAME));
-    }
+    try {
+      
+      if (config.errorHandler && (typeof config.errorHandler.handleError !== 'function')) {
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_ERROR_HANDLER, MODULE_NAME));
+      }
 
-    if (config.eventDispatcher && (typeof config.eventDispatcher.dispatchEvent !== 'function')) {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_DISPATCHER, MODULE_NAME));
-    }
-    if (config.logger && (typeof config.logger.log !== 'function')) {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_LOGGER, MODULE_NAME));
-    }
+      if (config.eventDispatcher && (typeof config.eventDispatcher.dispatchEvent !== 'function')) {
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_DISPATCHER, MODULE_NAME));
+      }
+      if (config.logger && (typeof config.logger.log !== 'function')) {
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_LOGGER, MODULE_NAME));
+      }
 
-    return true;
+      return true;
+    } catch (e) {
+      if(e.message.startsWith(MODULE_NAME)){
+        throw e;
+      }
+     
+      return false;
+    }
   }
 };
