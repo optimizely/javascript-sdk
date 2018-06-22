@@ -73,8 +73,6 @@ exports.LOG_MESSAGES = {
   FEATURE_HAS_NO_EXPERIMENTS: '%s: Feature %s is not attached to any experiments.',
   FAILED_TO_PARSE_VALUE: '%s: Failed to parse event value "%s" from event tags.',
   FAILED_TO_PARSE_REVENUE: '%s: Failed to parse revenue value "%s" from event tags.',
-  FAILED_TO_TRACK_CONVERSION_EVENT: '%s: Failed to track conversion event for %s: %s',
-  FAILED_TO_TRACK_IMPRESSION_EVENT: '%s: Failed to track impression event for experiment %s: %s',
   FORCED_BUCKETING_FAILED: '%s: Variation key %s is not in datafile. Not activating user %s.',
   INVALID_OBJECT: '%s: Optimizely object is not valid. Failing %s.',
   INVALID_CLIENT_ENGINE: '%s: Invalid client engine passed: %s. Defaulting to node-sdk.',

@@ -49,7 +49,10 @@ describe('lib/plugins/event_dispatcher/node', function() {
           httpVerb: 'POST',
         };
 
-        eventDispatcher.dispatchEvent(eventObj, done);
+        eventDispatcher.dispatchEvent(eventObj, function(resp) {
+          assert.equal(200, resp.statusCode);
+          done();
+        });
       });
 
       it('should execute the callback passed to event dispatcher', function(done) {
@@ -63,15 +66,15 @@ describe('lib/plugins/event_dispatcher/node', function() {
 
         eventDispatcher.dispatchEvent(eventObj, stubCallback.callback)
         .on('response', function(response) {
-          done();
           sinon.assert.calledOnce(stubCallback.callback);
+          done();
         })
         .on('error', function(error) {
           assert.fail('status code okay', 'status code not okay', '');
         });
       });
 
-      it('rejects GET httpVerb', function(done) {
+      it('rejects GET httpVerb', function() {
         var eventObj = {
           url: 'https://cdn.com/event',
           params: {
@@ -80,29 +83,22 @@ describe('lib/plugins/event_dispatcher/node', function() {
           httpVerb: 'GET',
         };
 
-        var callback = function(err) {
-          if (err) {
-            done();
-          } else {
-            done(new Error('expected error not thrown'));
-          }
-        };
-
+        var callback = sinon.spy();
         eventDispatcher.dispatchEvent(eventObj, callback);
+        sinon.assert.notCalled(callback);
       });
     });
 
-    it('calls callback with err when one is emitted', function(done) {
+    it('does not throw in the event of an error', function() {
       var eventObj = {
         url: 'https://example',
         params: {},
         httpVerb: 'POST',
       };
 
-      eventDispatcher.dispatchEvent(eventObj, function(err) {
-        assert.isNotNull(err);
-        done();
-      });
+      var callback = sinon.spy();
+      eventDispatcher.dispatchEvent(eventObj, callback);
+      sinon.assert.notCalled(callback);
     });
   });
 });
