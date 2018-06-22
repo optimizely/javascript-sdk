@@ -191,7 +191,7 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
   this.logger.log(LOG_LEVEL.DEBUG, dispatchedImpressionEventLogMessage);
   var eventDispatcherCallback = function(err, response) {
     if (err) {
-      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.FAILED_TO_TRACK_EVENT, MODULE_NAME, 'IMPRESSION', experimentKey, err));
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.FAILED_TO_TRACK_IMPRESSION_EVENT, MODULE_NAME, experimentKey, err));
       return;
     }
     var activatedLogMessage = sprintf(LOG_MESSAGES.ACTIVATE_USER, MODULE_NAME, userId, experimentKey);
@@ -269,7 +269,7 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
 
     var eventDispatcherCallback = function(err) {
       if (err) {
-        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.FAILED_TO_TRACK_EVENT, MODULE_NAME, 'CONVERSION', eventKey, err));
+        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.FAILED_TO_TRACK_CONVERSION_EVENT, MODULE_NAME, eventKey, err));
         return;
       }
       var trackedLogMessage = sprintf(LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId);
