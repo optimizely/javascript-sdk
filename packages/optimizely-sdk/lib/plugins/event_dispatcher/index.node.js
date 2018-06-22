@@ -52,16 +52,14 @@ module.exports = {
       }
     };
 
-    var requestCallback = function(error, response, body) {
-      if (response && response.statusCode && response.statusCode >= 200 && response.statusCode < 400 && callback && typeof callback === 'function') {
+    var requestCallback = function(response) {
+      if (response && response.statusCode && response.statusCode >= 200 && response.statusCode < 400) {
         callback();
       }
     };
 
     var req = (parsedUrl.protocol === 'http:' ? http : https).request(requestOptions, requestCallback);
-    req.on('error', function(err) {
-      callback(err);
-    });
+    req.on('error', callback);
     req.write(dataString);
     req.end();
     return req;

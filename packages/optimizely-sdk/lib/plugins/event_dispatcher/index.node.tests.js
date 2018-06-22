@@ -49,14 +49,7 @@ describe('lib/plugins/event_dispatcher/node', function() {
           httpVerb: 'POST',
         };
 
-        eventDispatcher.dispatchEvent(eventObj)
-        .on('response', function(response) {
-          assert.isTrue(response.statusCode === 200);
-          done();
-        })
-        .on('error', function(error) {
-          assert.fail('status code okay', 'status code not okay', '');
-        });
+        eventDispatcher.dispatchEvent(eventObj, done);
       });
 
       it('should execute the callback passed to event dispatcher', function(done) {
