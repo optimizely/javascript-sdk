@@ -59,6 +59,9 @@ module.exports = {
     };
 
     var req = (parsedUrl.protocol === 'http:' ? http : https).request(requestOptions, requestCallback);
+    req.on('error', function(err) {
+      callback(err);
+    });
     req.write(dataString);
     req.end();
     return req;

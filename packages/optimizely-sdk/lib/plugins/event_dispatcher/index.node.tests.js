@@ -98,5 +98,18 @@ describe('lib/plugins/event_dispatcher/node', function() {
         eventDispatcher.dispatchEvent(eventObj, callback);
       });
     });
+
+    it('calls callback with err when one is emitted', function(done) {
+      var eventObj = {
+        url: 'https://example',
+        params: {},
+        httpVerb: 'POST',
+      };
+
+      eventDispatcher.dispatchEvent(eventObj, function(err) {
+        assert.isNotNull(err);
+        done();
+      });
+    });
   });
 });
