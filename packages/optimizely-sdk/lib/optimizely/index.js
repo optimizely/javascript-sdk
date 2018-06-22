@@ -269,7 +269,7 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
 
     var eventDispatcherCallback = function(err) {
       if (err) {
-        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.FAILED_TO_TRACK_EVENT, MODULE_NAME, 'CONVERSION', experimentKey, err));
+        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.FAILED_TO_TRACK_EVENT, MODULE_NAME, 'CONVERSION', eventKey, err));
         return;
       }
       var trackedLogMessage = sprintf(LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId);
