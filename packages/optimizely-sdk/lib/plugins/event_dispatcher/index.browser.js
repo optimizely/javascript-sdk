@@ -35,7 +35,7 @@ module.exports = {
       req.setRequestHeader('Content-Type', 'application/json');
       req.onreadystatechange = function() {
         if (req.readyState === READYSTATE_COMPLETE && callback && typeof callback === 'function') {
-          callback(params);
+          callback(null, params);
         }
       };
       req.send(JSON.stringify(params));

@@ -54,7 +54,7 @@ module.exports = {
 
     var requestCallback = function(response) {
       if (response && response.statusCode && response.statusCode >= 200 && response.statusCode < 400) {
-        callback();
+        callback(null, response);
       }
     };
 
