@@ -71,7 +71,7 @@ function getCommonEventParams(options) {
         key: attributeKey,
         type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
         value: attributes[attributeKey],
-      });      
+      });
     }
   });
 
@@ -82,7 +82,8 @@ function getCommonEventParams(options) {
       type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
       value: botFiltering,
     });
-  };
+
+  }
 
   faultInjector.injectFault(ExceptionSpot.event_builder_getCommonEventParams_spot3);
   return commonParams;

@@ -290,7 +290,7 @@ describe('lib/core/event_builder', function() {
 
         assert.deepEqual(actualParams, expectedParams);
       });
-     
+
       it('should fill in userFeatures for user agent and bot filtering (bot filtering enabled)', function() {
         var v4ConfigObj = projectConfig.createProjectConfig(testData.getTestProjectConfigWithFeatures());
         var expectedParams = {
