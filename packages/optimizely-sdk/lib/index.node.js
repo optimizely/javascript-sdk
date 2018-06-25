@@ -24,8 +24,6 @@ var logger = require('./plugins/logger');
 var sprintf = require('sprintf');
 
 var Optimizely = require('./optimizely');
-var faultInjector = require("./fault_injection/faultinjection_manager");
-var ExceptionSpot = require("./fault_injection/exception_spot");
 
 var LOG_LEVEL = enums.LOG_LEVEL;
 
@@ -48,7 +46,7 @@ module.exports = {
    */
   createInstance: function(config) {
     try{
-        faultInjector.injectFault(ExceptionSpot.createInstance);
+        
 
         var defaultLogger = logger.createNoOpLogger();
         if (config) {
@@ -78,7 +76,7 @@ module.exports = {
 
         return new Optimizely(config);
     } catch (e) {
-        faultInjector.throwExceptionIfTreatmentDisabled(e);
+        
         config.logger.log(LOG_LEVEL.ERROR, e.message);
         config.errorHandler.handleError(e);
         return null;

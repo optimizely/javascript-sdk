@@ -73,7 +73,7 @@ module.exports = {
 
       return new Optimizely(config);
     } catch (e) {
-      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      
       config.logger.log(LOG_LEVEL.ERROR, e.message);
       config.errorHandler.handleError(e);
       return null;

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 var conditionEvaluator = require('../condition_evaluator');
-var faultInjector = require("../../fault_injection/faultinjection_manager");
-var ExceptionSpot = require("../../fault_injection/exception_spot");
 
 module.exports = {
   /**
@@ -28,7 +26,7 @@ module.exports = {
    */
   evaluate: function(audiences, userAttributes) {
 
-    faultInjector.injectFault(ExceptionSpot.audience_evaluator_evaluate);
+    
 
     // if there are no audiences, return true because that means ALL users are included in the experiment
     if (!audiences || audiences.length === 0) {

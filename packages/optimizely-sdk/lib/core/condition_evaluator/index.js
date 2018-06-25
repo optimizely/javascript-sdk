@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-var faultInjector = require("../../fault_injection/faultinjection_manager");
-var ExceptionSpot = require("../../fault_injection/exception_spot");
-
 var AND_CONDITION = 'and';
 var OR_CONDITION = 'or';
 var NOT_CONDITION = 'not';
@@ -33,7 +30,7 @@ var DEFAULT_OPERATOR_TYPES = [AND_CONDITION, OR_CONDITION, NOT_CONDITION];
  */
 function evaluate(conditions, userAttributes) {
 
-  faultInjector.injectFault(ExceptionSpot.condition_evaluator_evaluate_spot1);
+  
 
   if (Array.isArray(conditions)) {
     var firstOperator = conditions[0];
@@ -43,7 +40,7 @@ function evaluate(conditions, userAttributes) {
       return false;
     }
 
-    faultInjector.injectFault(ExceptionSpot.condition_evaluator_evaluate_spot2);
+    
 
     var restOfConditions = conditions.slice(1);
     switch (firstOperator) {
@@ -56,7 +53,7 @@ function evaluate(conditions, userAttributes) {
     }
   }
 
-  faultInjector.injectFault(ExceptionSpot.condition_evaluator_evaluate_spot3);
+  
 
   var deserializedConditions = [conditions.name, conditions.value];
   return evaluator(deserializedConditions, userAttributes);
@@ -70,7 +67,7 @@ function evaluate(conditions, userAttributes) {
  * @return {Boolean}                 true if the user attributes match the given conditions
  */
 function andEvaluator(conditions, userAttributes) {
-  faultInjector.injectFault(ExceptionSpot.condition_evaluator_andEvaluator);
+  
   var condition;
   for (var i = 0; i < conditions.length; i++) {
     condition = conditions[i];
@@ -90,7 +87,7 @@ function andEvaluator(conditions, userAttributes) {
  * @return {Boolean}                 true if the user attributes match the given conditions
  */
 function notEvaluator(conditions, userAttributes) {
-  faultInjector.injectFault(ExceptionSpot.condition_evaluator_notEvaluator);
+  
   if (conditions.length !== 1) {
     return false;
   }
@@ -106,7 +103,7 @@ function notEvaluator(conditions, userAttributes) {
  * @return {Boolean}                 true if the user attributes match the given conditions
  */
 function orEvaluator(conditions, userAttributes) {
-  faultInjector.injectFault(ExceptionSpot.condition_evaluator_orEvaluator);
+  
   for (var i = 0; i < conditions.length; i++) {
     var condition = conditions[i];
     if (evaluate(condition, userAttributes)) {
@@ -125,7 +122,7 @@ function orEvaluator(conditions, userAttributes) {
  * @return {Boolean}                 true if the user attributes match the given conditions
  */
 function evaluator(conditions, userAttributes) {
-  faultInjector.injectFault(ExceptionSpot.condition_evaluator_evaluator);
+  
   if (userAttributes.hasOwnProperty(conditions[0])) {
     return userAttributes[conditions[0]] === conditions[1];
   }

@@ -20,9 +20,6 @@
 
 var sprintf = require('sprintf');
 
-var faultInjector = require("../../fault_injection/faultinjection_manager");
-var ExceptionSpot = require("../../fault_injection/exception_spot");
-
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'USER_PROFILE_SERVICE_VALIDATOR';
 
@@ -34,7 +31,7 @@ module.exports = {
    * @throws If the instance is not valid
    */
   validate: function(userProfileServiceInstance) {
-    faultInjector.injectFault(ExceptionSpot.user_profile_service_validator);
+    
     if (typeof userProfileServiceInstance.lookup !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME, 'Missing function \'lookup\''));
     } else if (typeof userProfileServiceInstance.save !== 'function') {

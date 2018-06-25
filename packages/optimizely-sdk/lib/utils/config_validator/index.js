@@ -15,9 +15,6 @@
  */
 var sprintf = require('sprintf');
 
-var faultInjector = require("../../fault_injection/faultinjection_manager");
-var ExceptionSpot = require("../../fault_injection/exception_spot");
-
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'CONFIG_VALIDATOR';
 
@@ -35,7 +32,7 @@ module.exports = {
    * @throws If any of the config options are not valid
    */
   validate: function(config) {
-    faultInjector.injectFault(ExceptionSpot.config_validator_validate);
+    
     if (config.errorHandler && (typeof config.errorHandler.handleError !== 'function')) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_ERROR_HANDLER, MODULE_NAME));
     }

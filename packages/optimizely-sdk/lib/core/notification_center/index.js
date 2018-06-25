@@ -17,8 +17,6 @@
 var enums = require('../../utils/enums');
 var fns = require('../../utils/fns');
 var sprintf = require('sprintf');
-var faultInjector = require("../../fault_injection/faultinjection_manager");
-var ExceptionSpot = require("../../fault_injection/exception_spot");
 
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
@@ -36,7 +34,7 @@ var MODULE_NAME = 'NOTIFICATION_CENTER';
  * @returns {Object}
  */
 function NotificationCenter(options) {
-  faultInjector.injectFault(ExceptionSpot.notification_center_NotificationCenter);
+  
   this.logger = options.logger;
   this.errorHandler = options.errorHandler;
   this.__notificationListeners = {};
@@ -58,7 +56,7 @@ function NotificationCenter(options) {
  */
 NotificationCenter.prototype.addNotificationListener = function (notificationType, callback) {
   try {
-    faultInjector.injectFault(ExceptionSpot.notification_center_addNotificationListener_spot1);
+    
     var isNotificationTypeValid = fns.values(enums.NOTIFICATION_TYPES)
       .indexOf(notificationType) > -1;
     if (!isNotificationTypeValid) {
@@ -69,7 +67,7 @@ NotificationCenter.prototype.addNotificationListener = function (notificationTyp
       this.__notificationListeners[notificationType] = [];
     }
 
-    faultInjector.injectFault(ExceptionSpot.notification_center_addNotificationListener_spot2);
+    
     var callbackAlreadyAdded = false;
     fns.forEach(this.__notificationListeners[notificationType], function (listenerEntry) {
       if (listenerEntry.callback === callback) {
@@ -86,12 +84,12 @@ NotificationCenter.prototype.addNotificationListener = function (notificationTyp
       callback: callback,
     });
 
-    faultInjector.injectFault(ExceptionSpot.notification_center_addNotificationListener_spot3);
+    
     var returnId = this.__listenerId;
     this.__listenerId += 1;
     return returnId;
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
     return -1;
@@ -106,7 +104,7 @@ NotificationCenter.prototype.addNotificationListener = function (notificationTyp
  */
 NotificationCenter.prototype.removeNotificationListener = function (listenerId) {
   try {
-    faultInjector.injectFault(ExceptionSpot.notification_center_removeNotificationListener_spot1);
+    
     var indexToRemove;
     var typeToRemove;
     fns.forOwn(this.__notificationListeners, function (listenersForType, notificationType) {
@@ -122,14 +120,14 @@ NotificationCenter.prototype.removeNotificationListener = function (listenerId) 
       }
     });
 
-    faultInjector.injectFault(ExceptionSpot.notification_center_removeNotificationListener_spot2);
+    
 
     if (indexToRemove !== undefined && typeToRemove !== undefined) {
       this.__notificationListeners[typeToRemove].splice(indexToRemove, 1);
       return true;
     }
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
   }
@@ -142,12 +140,12 @@ NotificationCenter.prototype.removeNotificationListener = function (listenerId) 
  */
 NotificationCenter.prototype.clearAllNotificationListeners = function () {
   try{
-    faultInjector.injectFault(ExceptionSpot.notification_center_clearAllNotificationListeners);
+    
     fns.forOwn(enums.NOTIFICATION_TYPES, function (notificationTypeEnum) {
       this.__notificationListeners[notificationTypeEnum] = [];
     }.bind(this));
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
   }
@@ -159,10 +157,10 @@ NotificationCenter.prototype.clearAllNotificationListeners = function () {
  */
 NotificationCenter.prototype.clearNotificationListeners = function (notificationType) {
   try {
-    faultInjector.injectFault(ExceptionSpot.notification_center_clearNotificationListeners);
+    
     this.__notificationListeners[notificationType] = [];
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
   }
@@ -176,7 +174,7 @@ NotificationCenter.prototype.clearNotificationListeners = function (notification
  */
 NotificationCenter.prototype.sendNotifications = function (notificationType, notificationData) {
   try {
-    faultInjector.injectFault(ExceptionSpot.notification_center_sendNotifications);
+    
     fns.forEach(this.__notificationListeners[notificationType], function (listenerEntry) {
       var callback = listenerEntry.callback;
       try {
@@ -186,7 +184,7 @@ NotificationCenter.prototype.sendNotifications = function (notificationType, not
       }
     }.bind(this));
   } catch (e) {
-    faultInjector.throwExceptionIfTreatmentDisabled(e);
+    
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
   }
@@ -200,7 +198,7 @@ module.exports = {
    * @returns {Object} An instance of NotificationCenter
    */
   createNotificationCenter: function (options) {
-    faultInjector.injectFault(ExceptionSpot.notification_center_createNotificationCenter);
+    
     return new NotificationCenter(options);
   },
 };
