@@ -30,7 +30,6 @@ module.exports = {
   dispatchEvent: function(eventObj, callback) {
     // Non-POST requests not supported
     if (eventObj.httpVerb !== 'POST') {
-      callback(new Error('httpVerb not supported: ' + eventObj.httpVerb));
       return;
     }
 
@@ -52,13 +51,15 @@ module.exports = {
       }
     };
 
-    var requestCallback = function(error, response, body) {
-      if (response && response.statusCode && response.statusCode >= 200 && response.statusCode < 400 && callback && typeof callback === 'function') {
-        callback();
+    var requestCallback = function(response) {
+      if (response && response.statusCode && response.statusCode >= 200 && response.statusCode < 400) {
+        callback(response);
       }
     };
 
     var req = (parsedUrl.protocol === 'http:' ? http : https).request(requestOptions, requestCallback);
+    // Add no-op error listener to prevent this from throwing
+    req.on('error', function() {});
     req.write(dataString);
     req.end();
     return req;
