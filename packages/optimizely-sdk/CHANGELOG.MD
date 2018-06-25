@@ -1,3 +1,9 @@
+## 2.0.5
+June 25, 2018
+
+* Fix: Failure to log success message when event dispatched ([#123](https://github.com/optimizely/javascript-sdk/pull/123))
+* Fix: Don't call success message when event fails to send ([#123](https://github.com/optimizely/javascript-sdk/pull/123))
+
 ## 2.0.4
 June 19, 2018
 
