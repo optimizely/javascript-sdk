@@ -22,6 +22,7 @@ var logger = require('./plugins/logger');
 var Optimizely = require('./optimizely');
 
 var MODULE_NAME = 'INDEX';
+var LOG_LEVEL = enums.LOG_LEVEL;
 
 /**
  * Entry point into the Optimizely Node testing SDK
@@ -39,36 +40,43 @@ module.exports = {
    * @return {Object} the Optimizely object
    */
   createInstance: function(config) {
-    var logLevel = 'logLevel' in config ? config.logLevel : enums.LOG_LEVEL.INFO;
-    var defaultLogger = logger.createLogger({ logLevel: enums.LOG_LEVEL.INFO });
-    if (config) {
-      try {
-        configValidator.validate(config);
-        config.isValidInstance = true;
-      } catch (ex) {
-        var errorMessage = MODULE_NAME + ':' + ex.message;
-        if (config.logger) {
-          config.logger.log(enums.LOG_LEVEL.ERROR, errorMessage);
-        } else {
-          defaultLogger.log(enums.LOG_LEVEL.ERROR, errorMessage);
+    try {
+      var logLevel = 'logLevel' in config ? config.logLevel : enums.LOG_LEVEL.INFO;
+      var defaultLogger = logger.createLogger({logLevel: enums.LOG_LEVEL.INFO});
+      if (config) {
+        try {
+          configValidator.validate(config);
+          config.isValidInstance = true;
+        } catch (ex) {
+          var errorMessage = MODULE_NAME + ':' + ex.message;
+          if (config.logger) {
+            config.logger.log(enums.LOG_LEVEL.ERROR, errorMessage);
+          } else {
+            defaultLogger.log(enums.LOG_LEVEL.ERROR, errorMessage);
+          }
+          config.isValidInstance = false;
         }
-        config.isValidInstance = false;
       }
+
+      // Explicitly check for null or undefined
+      if (config.skipJSONValidation == null) { // eslint-disable-line eqeqeq
+        config.skipJSONValidation = true;
+      }
+
+      config = fns.assignIn({
+        clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
+        clientVersion: enums.CLIENT_VERSION,
+        errorHandler: defaultErrorHandler,
+        eventDispatcher: defaultEventDispatcher,
+        logger: logger.createLogger({logLevel: logLevel})
+      }, config);
+
+      return new Optimizely(config);
+    } catch (e) {
+      faultInjector.throwExceptionIfTreatmentDisabled(e);
+      config.logger.log(LOG_LEVEL.ERROR, e.message);
+      config.errorHandler.handleError(e);
+      return null;
     }
-
-    // Explicitly check for null or undefined
-    if (config.skipJSONValidation == null) { // eslint-disable-line eqeqeq
-      config.skipJSONValidation = true;
-    }
-
-    config = fns.assignIn({
-      clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
-      clientVersion: enums.CLIENT_VERSION,
-      errorHandler: defaultErrorHandler,
-      eventDispatcher: defaultEventDispatcher,
-      logger: logger.createLogger({ logLevel: logLevel })
-    }, config);
-
-    return new Optimizely(config);
   }
 };

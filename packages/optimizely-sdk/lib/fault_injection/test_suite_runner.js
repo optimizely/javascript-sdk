@@ -6,7 +6,7 @@ var Mocha = require('mocha'),
 // When we throw exceptions on some spots, it crashes a few tests, therefore all tests dont run
 // Hardcoding the total number of tests so that results dont mislead in percentage.
 // TODO: make it dynamic by taking the value of first test suite run which does not throw any exception.
-var totalTests = 369;
+var totalTests = 370;
 
 function runTestSuite(spotName) {
 
