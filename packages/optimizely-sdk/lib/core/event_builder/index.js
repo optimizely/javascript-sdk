@@ -34,7 +34,6 @@ var HTTP_VERB = 'POST';
  * @return {Object}                       Common params with properties that are used in both conversion and impression events
  */
 function getCommonEventParams(options) {
-  
   var attributes = options.attributes;
   var configObj = options.configObj;
   var anonymize_ip = configObj.anonymizeIP;
@@ -58,7 +57,6 @@ function getCommonEventParams(options) {
     client_version: options.clientVersion,
     anonymize_ip: anonymize_ip,
   };
-  
 
   fns.forOwn(attributes, function(attributeValue, attributeKey){
     var attributeId = projectConfig.getAttributeId(options.configObj, attributeKey, options.logger);
@@ -79,10 +77,7 @@ function getCommonEventParams(options) {
       type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
       value: botFiltering,
     });
-
   }
-
-  
   return commonParams;
 }
 
@@ -94,7 +89,6 @@ function getCommonEventParams(options) {
  * @return {Object}              Impression event params
  */
 function getImpressionEventParams(configObj, experimentId, variationId) {
-  
   var impressionEventParams = {
       decisions: [{
         campaign_id: projectConfig.getLayerId(configObj, experimentId),
@@ -122,7 +116,6 @@ function getImpressionEventParams(configObj, experimentId, variationId) {
  * @return {Object}                           Conversion event params
  */
 function getConversionEventParams(configObj, eventKey, eventTags, experimentsToVariationMap, logger) {
-  
 
   var conversionEventParams = [];
 
@@ -144,8 +137,6 @@ function getConversionEventParams(configObj, eventKey, eventTags, experimentsToV
       key: eventKey,
     };
 
-    
-
     if (eventTags) {
       var revenue = eventTagUtils.getRevenueValue(eventTags, logger);
       if (revenue) {
@@ -164,8 +155,6 @@ function getConversionEventParams(configObj, eventKey, eventTags, experimentsToV
     conversionEventParams.push(decision);
   });
 
-  
-
   return conversionEventParams;
 }
 
@@ -183,8 +172,6 @@ module.exports = {
    * @return {Object}                       Params to be used in impression event logging endpoint call
    */
   getImpressionEvent: function(options) {
-    
-
     var impressionEvent = {
       httpVerb: HTTP_VERB
     };
@@ -216,9 +203,6 @@ module.exports = {
    * @return {Object}                                   Params to be used in conversion event logging endpoint call
    */
   getConversionEvent: function(options) {
-
-    
-
     var conversionEvent = {
       httpVerb: HTTP_VERB,
     };

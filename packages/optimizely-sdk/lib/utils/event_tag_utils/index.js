@@ -34,7 +34,6 @@ module.exports = {
    * @return {Integer|null}
    */
   getRevenueValue: function(eventTags, logger) {
-    
     if (eventTags && eventTags.hasOwnProperty(REVENUE_EVENT_METRIC_NAME)) {
       var rawValue = eventTags[REVENUE_EVENT_METRIC_NAME];
       var parsedRevenueValue = parseInt(rawValue, 10);
@@ -55,7 +54,6 @@ module.exports = {
    * @return {Number|null}
    */
   getEventValue: function(eventTags, logger) {
-    
     if (eventTags && eventTags.hasOwnProperty(VALUE_EVENT_METRIC_NAME)) {
       var rawValue = eventTags[VALUE_EVENT_METRIC_NAME];
       var parsedEventValue = parseFloat(rawValue);

@@ -32,7 +32,6 @@ module.exports = {
    * @throws If the attributes are not valid
    */
   validate: function(attributes) {
-    
     if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
       lodashForOwn(attributes, function(value, key) {
         if (typeof value === 'undefined') {

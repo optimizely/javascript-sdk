@@ -31,7 +31,6 @@ module.exports = {
    * @throws If the instance is not valid
    */
   validate: function(userProfileServiceInstance) {
-    
     if (typeof userProfileServiceInstance.lookup !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME, 'Missing function \'lookup\''));
     } else if (typeof userProfileServiceInstance.save !== 'function') {

@@ -21,7 +21,6 @@ var enums = require('../../utils/enums');
 var murmurhash = require('murmurhash');
 var sprintf = require('sprintf');
 
-
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var HASH_SEED = 1;
 var LOG_LEVEL = enums.LOG_LEVEL;
@@ -48,9 +47,6 @@ module.exports = {
    * @return Variation ID that user has been bucketed into, null if user is not bucketed into any experiment
    */
   bucket: function(bucketerParams) {
-
-    
-
     // Check if user is in a random group; if so, check if user is bucketed into a specific experiment
     var experiment = bucketerParams.experimentKeyMap[bucketerParams.experimentKey];
     var groupId = experiment['groupId'];
@@ -59,8 +55,6 @@ module.exports = {
       if (!group) {
         throw new Error(sprintf(ERROR_MESSAGES.INVALID_GROUP_ID, MODULE_NAME, groupId));
       }
-
-      
       if (group.policy === RANDOM_POLICY) {
         var bucketedExperimentId = module.exports.bucketUserIntoExperiment(group,
                                                                           bucketerParams.bucketingId,
@@ -73,8 +67,6 @@ module.exports = {
           bucketerParams.logger.log(LOG_LEVEL.INFO, notbucketedInAnyExperimentLogMessage);
           return null;
         }
-
-        
 
         // Return if user is bucketed into a different experiment than the one specified
         if (bucketedExperimentId !== bucketerParams.experimentId) {
@@ -94,8 +86,6 @@ module.exports = {
     var bucketedUserLogMessage = sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, MODULE_NAME, bucketValue, bucketerParams.userId);
     bucketerParams.logger.log(LOG_LEVEL.DEBUG, bucketedUserLogMessage);
 
-    
-
     var entityId = module.exports._findBucket(bucketValue, bucketerParams.trafficAllocationConfig);
     if (entityId === null) {
       var userHasNoVariationLogMessage = sprintf(LOG_MESSAGES.USER_HAS_NO_VARIATION, MODULE_NAME, bucketerParams.userId, bucketerParams.experimentKey);
@@ -110,8 +100,6 @@ module.exports = {
       bucketerParams.logger.log(LOG_LEVEL.INFO, userInVariationLogMessage);
     }
 
-    
-
     return entityId;
   },
 
@@ -124,9 +112,6 @@ module.exports = {
    * @return {string} ID of experiment if user is bucketed into experiment within the group, null otherwise
    */
   bucketUserIntoExperiment: function(group, bucketingId, userId, logger) {
-
-    
-
     var bucketingKey = sprintf('%s%s', bucketingId, group.id);
     var bucketValue = module.exports._generateBucketValue(bucketingKey);
     logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, MODULE_NAME, bucketValue, userId));
@@ -144,9 +129,6 @@ module.exports = {
    * @return {string}   Entity ID for bucketing if bucket value is within traffic allocation boundaries, null otherwise
    */
   _findBucket: function(bucketValue, trafficAllocationConfig) {
-
-    
-
     for (var i = 0; i < trafficAllocationConfig.length; i++) {
       if (bucketValue < trafficAllocationConfig[i].endOfRange) {
         return trafficAllocationConfig[i].entityId;
@@ -163,7 +145,6 @@ module.exports = {
    */
   _generateBucketValue: function(bucketingKey) {
     try {
-      
       // NOTE: the mmh library already does cast the hash value as an unsigned 32bit int
       // https://github.com/perezd/node-murmurhash/blob/master/murmurhash.js#L115
       var hashValue = murmurhash.v3(bucketingKey, HASH_SEED);

@@ -31,7 +31,6 @@ module.exports = {
    * @throws If event tags are not valid
    */
   validate: function(eventTags) {
-    
     if (typeof eventTags === 'object' && !Array.isArray(eventTags) && eventTags !== null) {
       return true;
     } else {

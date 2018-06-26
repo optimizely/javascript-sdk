@@ -32,7 +32,6 @@ module.exports = {
    * @throws If any of the config options are not valid
    */
   validate: function(config) {
-    
     if (config.errorHandler && (typeof config.errorHandler.handleError !== 'function')) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_ERROR_HANDLER, MODULE_NAME));
     }

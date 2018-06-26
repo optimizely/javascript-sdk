@@ -48,7 +48,6 @@ var DECISION_SOURCES = enums.DECISION_SOURCES;
  * @returns {Object}
  */
 function DecisionService(options) {
-  
   this.configObj = options.configObj;
   this.userProfileService = options.userProfileService || null;
   this.logger = options.logger;
@@ -62,7 +61,6 @@ function DecisionService(options) {
  * @return {string|null} the variation the user is bucketed into.
  */
 DecisionService.prototype.getVariation = function(experimentKey, userId, attributes) {
-  
   // by default, the bucketing ID should be the user ID
   var bucketingId = userId;
 
@@ -74,8 +72,6 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
     }
   }
 
-  
-
   if (!this.__checkIfExperimentIsActive(experimentKey, userId)) {
     return null;
   }
@@ -84,8 +80,6 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
   if (!!forcedVariationKey) {
     return forcedVariationKey;
   }
-
-  
 
   var variation = this.__getWhitelistedVariation(experiment, userId);
   if (!!variation) {
@@ -100,8 +94,6 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
     return variation.key;
   }
 
-  
-
   // Perform regular targeting and bucketing
   if (!this.__checkIfUserIsInAudience(experimentKey, userId, attributes)) {
     return null;
@@ -113,8 +105,6 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
   if (!variation) {
     return null;
   }
-
-  
 
   // persist bucketing
   this.__saveUserProfile(userProfile, experiment, variation);
@@ -129,8 +119,6 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
  * @return {boolean} True if experiment is running
  */
 DecisionService.prototype.__checkIfExperimentIsActive = function(experimentKey, userId) {
-  
-
   if (!projectConfig.isActive(this.configObj, experimentKey)) {
     var experimentNotRunningLogMessage = sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey);
     this.logger.log(LOG_LEVEL.INFO, experimentNotRunningLogMessage);
@@ -147,7 +135,6 @@ DecisionService.prototype.__checkIfExperimentIsActive = function(experimentKey, 
  * @return {string|null} Forced variation if it exists for user ID, otherwise null
  */
 DecisionService.prototype.__getWhitelistedVariation = function(experiment, userId) {
-  
   if (!fns.isEmpty(experiment.forcedVariations) && experiment.forcedVariations.hasOwnProperty(userId)) {
     var forcedVariationKey = experiment.forcedVariations[userId];
     if (experiment.variationKeyMap.hasOwnProperty(forcedVariationKey)) {
@@ -172,7 +159,6 @@ DecisionService.prototype.__getWhitelistedVariation = function(experiment, userI
  * @return {boolean} True if user meets audience conditions
  */
 DecisionService.prototype.__checkIfUserIsInAudience = function(experimentKey, userId, attributes) {
-  
   var audiences = projectConfig.getAudiencesForExperiment(this.configObj, experimentKey);
   if (!audienceEvaluator.evaluate(audiences, attributes)) {
     var userDoesNotMeetConditionsLogMessage = sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, MODULE_NAME, userId, experimentKey);
@@ -191,7 +177,6 @@ DecisionService.prototype.__checkIfUserIsInAudience = function(experimentKey, us
  * @return {Object}
  */
 DecisionService.prototype.__buildBucketerParams = function(experimentKey, bucketingId, userId) {
-  
   var bucketerParams = {};
   bucketerParams.experimentKey = experimentKey;
   bucketerParams.experimentId = projectConfig.getExperimentId(this.configObj, experimentKey);
@@ -212,7 +197,6 @@ DecisionService.prototype.__buildBucketerParams = function(experimentKey, bucket
  * @return {Object} the stored variation or null if the user profile does not have one for the given experiment
  */
 DecisionService.prototype.__getStoredVariation = function(experiment, userProfile) {
-  
   if (!userProfile || !userProfile.experiment_bucket_map) {
     return null;
   }
@@ -236,7 +220,6 @@ DecisionService.prototype.__getStoredVariation = function(experiment, userProfil
  * @return {Object} the stored user profile or an empty one if not found
  */
 DecisionService.prototype.__getUserProfile = function(userId) {
-  
   var userProfile = {
     user_id: userId,
     experiment_bucket_map: {},
@@ -261,7 +244,6 @@ DecisionService.prototype.__getUserProfile = function(userId) {
  * @param {Object} variation
  */
 DecisionService.prototype.__saveUserProfile = function(userProfile, experiment, variation) {
-  
   if (!this.userProfileService) {
     return;
   }
@@ -293,7 +275,6 @@ DecisionService.prototype.__saveUserProfile = function(userProfile, experiment, 
  * property is null.
  */
 DecisionService.prototype.getVariationForFeature = function(feature, userId, attributes) {
-  
   var experimentDecision = this._getVariationForFeatureExperiment(feature, userId, attributes);
   if (experimentDecision.variation !== null) {
     this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_IN_FEATURE_EXPERIMENT, MODULE_NAME, userId, experimentDecision.variation.key, experimentDecision.experiment.key, feature.key));
@@ -302,7 +283,6 @@ DecisionService.prototype.getVariationForFeature = function(feature, userId, att
 
   this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_NOT_IN_FEATURE_EXPERIMENT, MODULE_NAME, userId, feature.key));
 
-  
   var rolloutDecision = this._getVariationForRollout(feature, userId, attributes);
   if (rolloutDecision.variation !== null) {
     this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_IN_ROLLOUT, MODULE_NAME, userId, feature.key));
@@ -319,8 +299,6 @@ DecisionService.prototype.getVariationForFeature = function(feature, userId, att
 };
 
 DecisionService.prototype._getVariationForFeatureExperiment = function(feature, userId, attributes) {
-  
-
   var experiment = null;
   var variationKey = null;
 
@@ -332,7 +310,6 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(feature, 
         variationKey = this.getVariation(experiment.key, userId, attributes);
       }
     }
-    
   } else if (feature.experimentIds.length > 0) {
     // If the feature does not have a group ID, then it can only be associated
     // with one experiment, so we look at the first experiment ID only
@@ -343,8 +320,6 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(feature, 
   } else {
     this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.FEATURE_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.key));
   }
-
-  
 
   var variation = null;
   if (variationKey !== null && experiment !== null) {
@@ -358,7 +333,6 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(feature, 
 };
 
 DecisionService.prototype._getExperimentInGroup = function(group, userId) {
-  
   var experimentId = bucketer.bucketUserIntoExperiment(group, userId, userId, this.logger);
   if (experimentId !== null) {
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP, MODULE_NAME, userId, experimentId, group.id));
@@ -373,7 +347,6 @@ DecisionService.prototype._getExperimentInGroup = function(group, userId) {
 };
 
 DecisionService.prototype._getVariationForRollout = function(feature, userId, attributes) {
-  
   if (!feature.rolloutId) {
     this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.NO_ROLLOUT_EXISTS, MODULE_NAME, feature.key));
     return {
@@ -383,7 +356,6 @@ DecisionService.prototype._getVariationForRollout = function(feature, userId, at
     };
   }
 
-  
   var rollout = this.configObj.rolloutIdMap[feature.rolloutId];
   if (!rollout) {
     this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.INVALID_ROLLOUT_ID, MODULE_NAME, feature.rolloutId, feature.key));
@@ -403,8 +375,6 @@ DecisionService.prototype._getVariationForRollout = function(feature, userId, at
     };
   }
 
-  
-
   // The end index is length - 1 because the last experiment is assumed to be
   // "everyone else", which will be evaluated separately outside this loop
   var endIndex = rollout.experiments.length - 1;
@@ -420,7 +390,7 @@ DecisionService.prototype._getVariationForRollout = function(feature, userId, at
       this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE, MODULE_NAME, userId, index + 1));
       continue;
     }
-    
+
     this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE, MODULE_NAME, userId, index + 1));
     bucketerParams = this.__buildBucketerParams(experiment.key, userId, userId);
     variationId = bucketer.bucket(bucketerParams);
@@ -438,8 +408,6 @@ DecisionService.prototype._getVariationForRollout = function(feature, userId, at
     }
   }
 
-  
-
   var everyoneElseExperiment = this.configObj.experimentKeyMap[rollout.experiments[endIndex].key];
   if (this.__checkIfUserIsInAudience(everyoneElseExperiment.key, userId, attributes)) {
     bucketerParams = this.__buildBucketerParams(everyoneElseExperiment.key, userId, userId);
@@ -456,8 +424,6 @@ DecisionService.prototype._getVariationForRollout = function(feature, userId, at
       this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_NOT_BUCKETED_INTO_EVERYONE_TARGETING_RULE, MODULE_NAME, userId));
     }
   }
-
-  
 
   return {
     experiment: null,

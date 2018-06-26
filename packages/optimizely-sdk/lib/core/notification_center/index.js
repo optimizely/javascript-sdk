@@ -34,11 +34,10 @@ var MODULE_NAME = 'NOTIFICATION_CENTER';
  * @returns {Object}
  */
 function NotificationCenter(options) {
-  
   this.logger = options.logger;
   this.errorHandler = options.errorHandler;
   this.__notificationListeners = {};
-  fns.forOwn(enums.NOTIFICATION_TYPES, function (notificationTypeEnum) {
+  fns.forOwn(enums.NOTIFICATION_TYPES, function(notificationTypeEnum) {
     this.__notificationListeners[notificationTypeEnum] = [];
   }.bind(this));
   this.__listenerId = 1;
@@ -197,8 +196,7 @@ module.exports = {
    * @param {Object} options.logger An instance of a logger to log messages with
    * @returns {Object} An instance of NotificationCenter
    */
-  createNotificationCenter: function (options) {
-    
+  createNotificationCenter: function(options) {
     return new NotificationCenter(options);
   },
 };

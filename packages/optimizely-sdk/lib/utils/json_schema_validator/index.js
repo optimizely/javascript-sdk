@@ -28,8 +28,6 @@ module.exports = {
    * @return {Boolean}           True if the given object is valid
    */
   validate: function(jsonSchema, jsonObject) {
-
-    
     if (!jsonSchema) {
       throw new Error(sprintf(ERROR_MESSAGES.JSON_SCHEMA_EXPECTED, MODULE_NAME));
     }
@@ -38,7 +36,6 @@ module.exports = {
       throw new Error(sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, MODULE_NAME));
     }
 
-    
     var result = validate(jsonObject, jsonSchema);
     if (result.valid) {
       return true;

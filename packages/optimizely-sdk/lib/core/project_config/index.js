@@ -36,8 +36,6 @@ module.exports = {
   createProjectConfig: function(datafile) {
     var projectConfig = fns.cloneDeep(datafile);
 
-    
-
     // Manually parsed for audience targeting
     fns.forEach(projectConfig.audiences, function(audience) {
       audience.conditions = JSON.parse(audience.conditions);
@@ -55,8 +53,6 @@ module.exports = {
       });
     });
 
-    
-
     projectConfig.rolloutIdMap = fns.keyBy(projectConfig.rollouts || [], 'id');
     fns.forOwn(projectConfig.rolloutIdMap, function(rollout) {
       fns.forEach(rollout.experiments || [], function(experiment) {
@@ -65,8 +61,6 @@ module.exports = {
         experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
       });
     });
-
-    
 
     projectConfig.experimentKeyMap = fns.keyBy(projectConfig.experiments, 'key');
     projectConfig.experimentIdMap = fns.keyBy(projectConfig.experiments, 'id');
@@ -86,8 +80,6 @@ module.exports = {
         }
       });
     });
-
-    
 
     projectConfig.forcedVariationMap = {};
 
@@ -115,7 +107,6 @@ module.exports = {
    * @throws If experiment key is not in datafile
    */
   getExperimentId: function(projectConfig, experimentKey) {
-    
     var experiment = projectConfig.experimentKeyMap[experimentKey];
     if (fns.isEmpty(experiment)) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
@@ -131,7 +122,6 @@ module.exports = {
    * @throws If experiment key is not in datafile
    */
   getLayerId: function(projectConfig, experimentId) {
-    
     var experiment = projectConfig.experimentIdMap[experimentId];
     if (fns.isEmpty(experiment)) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
@@ -147,7 +137,6 @@ module.exports = {
    * @return {string|null} Attribute ID corresponding to the provided attribute key. Attribute key if it is a reserved attribute.
    */
   getAttributeId: function(projectConfig, attributeKey, logger) {
-    
     var attribute = projectConfig.attributeKeyMap[attributeKey];
     var hasReservedPrefix = attributeKey.indexOf(RESERVED_ATTRIBUTE_PREFIX) === 0;
     if (attribute) {
@@ -171,7 +160,6 @@ module.exports = {
    * @return {string|null} Event ID corresponding to the provided event key
    */
   getEventId: function(projectConfig, eventKey) {
-    
     var event = projectConfig.eventKeyMap[eventKey];
     if (event) {
       return event.id;
@@ -187,7 +175,6 @@ module.exports = {
    * @throws If experiment key is not in datafile
    */
   getExperimentStatus: function(projectConfig, experimentKey) {
-    
     var experiment = projectConfig.experimentKeyMap[experimentKey];
     if (fns.isEmpty(experiment)) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
@@ -202,7 +189,6 @@ module.exports = {
    * @return {Boolean}               true if experiment status is set to 'Running', false otherwise
    */
   isActive: function(projectConfig, experimentKey) {
-    
     return module.exports.getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_RUNNING_STATUS ||
       module.exports.getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_LAUNCHED_STATUS;
   },
@@ -211,7 +197,6 @@ module.exports = {
    * Determine for given experiment if event is running, which determines whether should be dispatched or not
    */
   isRunning: function(projectConfig, experimentKey) {
-    
     return module.exports.getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_RUNNING_STATUS;
   },
 
@@ -223,7 +208,6 @@ module.exports = {
    * @throws If experiment key is not in datafile
    */
   getAudiencesForExperiment: function(projectConfig, experimentKey) {
-    
     var experiment = projectConfig.experimentKeyMap[experimentKey];
     if (fns.isEmpty(experiment)) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
@@ -244,7 +228,6 @@ module.exports = {
    * @return {string} Variation key or null if the variation ID is not found
    */
   getVariationKeyFromId: function(projectConfig, variationId) {
-    
     if (projectConfig.variationIdMap.hasOwnProperty(variationId)) {
       return projectConfig.variationIdMap[variationId].key;
     }
@@ -259,7 +242,6 @@ module.exports = {
    * @return {string} the variation ID
    */
   getVariationIdFromExperimentAndVariationKey: function(projectConfig, experimentKey, variationKey) {
-    
     var experiment = projectConfig.experimentKeyMap[experimentKey];
     if (experiment.variationKeyMap.hasOwnProperty(variationKey)) {
       return experiment.variationKeyMap[variationKey].id;
@@ -275,7 +257,6 @@ module.exports = {
    * @throws If experiment key is not in datafile
    */
   getExperimentFromKey: function(projectConfig, experimentKey) {
-    
     if (projectConfig.experimentKeyMap.hasOwnProperty(experimentKey)) {
       var experiment = projectConfig.experimentKeyMap[experimentKey];
       if (!!experiment) {
@@ -295,7 +276,6 @@ module.exports = {
    * @throws If event key is not in datafile
    */
   getExperimentIdsForEvent: function(projectConfig, eventKey) {
-    
     var event = projectConfig.eventKeyMap[eventKey];
     if (event) {
       if (event.experimentIds.length > 0) {
@@ -316,7 +296,6 @@ module.exports = {
    * @throws If experiment key is not in datafile
    */
   getTrafficAllocation: function(projectConfig, experimentKey) {
-    
     var experiment = projectConfig.experimentKeyMap[experimentKey];
     if (fns.isEmpty(experiment)) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
@@ -334,7 +313,6 @@ module.exports = {
    * @throws If the user id is not valid or not in the forced variation map
    */
   removeForcedVariation: function(projectConfig, userId, experimentId, experimentKey, logger) {
-    
     if (!userId) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_ID, MODULE_NAME));
     }
@@ -357,7 +335,6 @@ module.exports = {
    * @throws If the user id is not valid
    */
   setInForcedVariationMap: function(projectConfig, userId, experimentId, variationId, logger) {
-    
     if (!userId) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_ID, MODULE_NAME));
     }
@@ -381,14 +358,12 @@ module.exports = {
    * @return {string|null} Variation   The variation which the given user and experiment should be forced into.
    */
   getForcedVariation: function(projectConfig, experimentKey, userId, logger) {
-    
     var experimentToVariationMap = projectConfig.forcedVariationMap[userId];
     if (!experimentToVariationMap) {
       logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, MODULE_NAME, userId));
       return null;
     }
 
-    
     var experimentId;
     try {
       var experiment = this.getExperimentFromKey(projectConfig, experimentKey);
@@ -405,7 +380,6 @@ module.exports = {
       return null;
     }
 
-    
     var variationId = experimentToVariationMap[experimentId];
     if (!variationId) {
       logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT, MODULE_NAME, experimentKey, userId));
@@ -428,7 +402,6 @@ module.exports = {
    * @return {boolean} A boolean value that indicates if the set completed successfully.
    */
   setForcedVariation: function(projectConfig, experimentKey, userId, variationKey, logger) {
-    
     var experimentId;
     try {
       var experiment = this.getExperimentFromKey(projectConfig, experimentKey);
@@ -445,7 +418,6 @@ module.exports = {
       return false;
     }
 
-    
     if (!variationKey) {
       try {
         this.removeForcedVariation(projectConfig, userId, experimentId, experimentKey, logger);
@@ -462,8 +434,6 @@ module.exports = {
       logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.NO_VARIATION_FOR_EXPERIMENT_KEY, MODULE_NAME, variationKey, experimentKey));
       return false;
     }
-
-    
 
     try {
       this.setInForcedVariationMap(projectConfig, userId, experimentId, variationId, logger);
@@ -482,7 +452,6 @@ module.exports = {
    * @return {Object} Experiment object
    */
   getExperimentFromId: function(projectConfig, experimentId, logger) {
-    
     if (projectConfig.experimentIdMap.hasOwnProperty(experimentId)) {
       var experiment = projectConfig.experimentIdMap[experimentId];
       if (!!experiment) {
@@ -504,7 +473,6 @@ module.exports = {
    * key exists
    */
   getFeatureFromKey: function(projectConfig, featureKey, logger) {
-    
     if (projectConfig.featureKeyMap.hasOwnProperty(featureKey)) {
       var feature = projectConfig.featureKeyMap[featureKey];
       if (!!feature) {
@@ -528,7 +496,6 @@ module.exports = {
    * feature and variable keys are invalid
    */
   getVariableForFeature: function(projectConfig, featureKey, variableKey, logger) {
-    
     var feature = projectConfig.featureKeyMap[featureKey];
     if (!feature) {
       logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, featureKey));
@@ -558,7 +525,6 @@ module.exports = {
    * for the given variation, or null if the variation or variable are invalid
    */
   getVariableValueForVariation: function(projectConfig, variable, variation, logger) {
-    
     if (!variable || !variation) {
       return null;
     }
@@ -590,7 +556,6 @@ module.exports = {
    *                                null if the type cast failed
    */
   getTypeCastValue: function(variableValue, variableType, logger) {
-    
     var castValue;
 
     switch (variableType) {

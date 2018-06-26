@@ -25,9 +25,6 @@ module.exports = {
    * @return {Boolean}  True if the user attributes match the given audience conditions
    */
   evaluate: function(audiences, userAttributes) {
-
-    
-
     // if there are no audiences, return true because that means ALL users are included in the experiment
     if (!audiences || audiences.length === 0) {
       return true;
