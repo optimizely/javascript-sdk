@@ -7,7 +7,7 @@ module.exports = env => {
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: `optimizely.${env.platform}${env.platform == 'browser' ? '.' + env.targ : ''}${env.mode == 'production' ? '.min' : ''}.js`,
-      libraryTarget: (env.targ == 'cjs') ? 'commonjs2' : 'umd'
+      libraryTarget: (env.targ == 'cjs') ? ((env.platform == 'node') ? 'commonjs2' : 'commonjs') : 'umd'
     },
     target: (env.platform == 'node') ? 'node' : 'web',
     mode: env.mode
