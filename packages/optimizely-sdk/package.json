@@ -10,12 +10,12 @@
     "build": "npm run build-node && npm run build-browser",
     "build-node": "npm run build-node-dev",
     "build-browser": "npm run build-dev-cjs && npm run build-dev-umd && npm run build-prod-cjs && npm run build-prod-umd",
-    "build-node-dev": "webpack --env.mode=development --env.platform=node --env.target=cjs",
-    "build-node-prod": "webpack -p --env.mode=production --env.platform=node --env.target=cjs",
-    "build-dev-cjs": "webpack  --env.mode=development --env.platform=browser --env.target=cjs",
-    "build-dev-umd": "webpack  --env.mode=development --env.platform=browser --env.target=umd",
-    "build-prod-cjs": "webpack -p  --env.mode=production --env.platform=browser --env.target=cjs",
-    "build-prod-umd": "webpack -p  --env.mode=production --env.platform=browser --env.target=umd",
+    "build-node-dev": "webpack --env.mode=development --env.platform=node --env.targ=cjs",
+    "build-node-prod": "webpack -p --env.mode=production --env.platform=node --env.targ=cjs",
+    "build-dev-cjs": "webpack  --env.mode=development --env.platform=browser --env.targ=cjs",
+    "build-dev-umd": "webpack  --env.mode=development --env.platform=browser --env.targ=umd",
+    "build-prod-cjs": "webpack -p  --env.mode=production --env.platform=browser --env.targ=cjs",
+    "build-prod-umd": "webpack -p  --env.mode=production --env.platform=browser --env.targ=umd",
     "lint": "eslint lib/**",
     "cover": "istanbul cover _mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js",
     "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls",
@@ -61,7 +61,8 @@
     "mocha-lcov-reporter": "^1.3.0",
     "nock": "^7.7.2",
     "sinon": "^2.3.1",
-    "webpack": "^2.6.0"
+    "webpack": "^4.12.1",
+    "webpack-cli": "^3.0.8"
   },
   "publishConfig": {
     "access": "public"
