@@ -10,7 +10,7 @@ module.exports = env => {
       libraryTarget: (env.targ == 'cjs') ? ((env.platform == 'node') ? 'commonjs2' : 'commonjs') : 'umd'
     },
     target: (env.platform == 'node') ? 'node' : 'web',
-    mode: env.mode
+    // mode: env.mode || when webpack upgrades to v4, uncomment and remove -p
   }
 
   return (env.targ == 'umd') ? _.merge(r, {output: {library: 'optimizelyClient'}}) : r;
