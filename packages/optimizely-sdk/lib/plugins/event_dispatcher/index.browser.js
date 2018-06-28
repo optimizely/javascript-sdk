@@ -38,7 +38,7 @@ module.exports = {
           try {
             callback(params);
           } catch (e) {
-            // log it somehow
+            // TODO: Log this somehow (consider adding a logger to the EventDispatcher interface)
           }
         }
       };
@@ -57,7 +57,7 @@ module.exports = {
           try {
             callback();
           } catch (e) {
-
+            // TODO: Log this somehow (consider adding a logger to the EventDispatcher interface)
           }
         }
       };
