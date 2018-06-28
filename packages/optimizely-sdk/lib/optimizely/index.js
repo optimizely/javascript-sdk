@@ -47,7 +47,6 @@ var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
  * @param {Object} config.userProfileService
  */
 function Optimizely(config) {
-
     var clientEngine = config.clientEngine;
     if (clientEngine !== enums.NODE_CLIENT_ENGINE && clientEngine !== enums.JAVASCRIPT_CLIENT_ENGINE) {
       config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, MODULE_NAME, clientEngine));
@@ -485,7 +484,6 @@ Optimizely.prototype.__notActivatingExperiment = function(experimentKey, userId)
  * @param  callback
  */
 Optimizely.prototype.__dispatchEvent = function (eventToDispatch, callback) {
-  
   var eventDispatcherResponse = this.eventDispatcher.dispatchEvent(eventToDispatch, callback);
   //checking that response value is a promise, not a request object
   if (!fns.isEmpty(eventDispatcherResponse) && typeof eventDispatcherResponse.then === 'function') {
@@ -501,7 +499,6 @@ Optimizely.prototype.__dispatchEvent = function (eventToDispatch, callback) {
  * @returns {Object} map
  */
 Optimizely.prototype.__filterEmptyValues = function (map) {
-  
   for (var key in map) {
     if (map.hasOwnProperty(key) && (map[key] === null || map[key] === undefined)) {
       delete map[key];
@@ -519,7 +516,6 @@ Optimizely.prototype.__filterEmptyValues = function (map) {
  */
 Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes) {
   try {
-    
     if (!this.isValidInstance) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'isFeatureEnabled'));
       return false;
