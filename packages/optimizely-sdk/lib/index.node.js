@@ -25,8 +25,6 @@ var sprintf = require('sprintf');
 
 var Optimizely = require('./optimizely');
 
-var LOG_LEVEL = enums.LOG_LEVEL;
-
 var MODULE_NAME = 'INDEX';
 
 /**
@@ -45,41 +43,32 @@ module.exports = {
    * @return {Object} the Optimizely object
    */
   createInstance: function(config) {
-    try{
-        
-
-        var defaultLogger = logger.createNoOpLogger();
-        if (config) {
-            try {
-                configValidator.validate(config);
-                config.isValidInstance = true;
-            } catch (ex) {
-                if (config.logger) {
-                    config.logger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
-                } else {
-                    var simpleLogger = logger.createLogger({logLevel: 4});
-                    simpleLogger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
-                }
-                config.isValidInstance = false;
-            }
+    var defaultLogger = logger.createNoOpLogger();
+    if (config) {
+      try {
+        configValidator.validate(config);
+        config.isValidInstance = true;
+      } catch (ex) {
+        if (config.logger) {
+          config.logger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
+        } else {
+          var simpleLogger = logger.createLogger({logLevel: 4});
+          simpleLogger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
         }
-
-        config = fns.assign({
-            clientEngine: enums.NODE_CLIENT_ENGINE,
-            clientVersion: enums.CLIENT_VERSION,
-            errorHandler: defaultErrorHandler,
-            eventDispatcher: defaultEventDispatcher,
-            jsonSchemaValidator: jsonSchemaValidator,
-            logger: defaultLogger,
-            skipJSONValidation: false
-        }, config);
-
-        return new Optimizely(config);
-    } catch (e) {
-        
-        config.logger.log(LOG_LEVEL.ERROR, e.message);
-        config.errorHandler.handleError(e);
-        return null;
+        config.isValidInstance = false;
+      }
     }
+
+    config = fns.assign({
+      clientEngine: enums.NODE_CLIENT_ENGINE,
+      clientVersion: enums.CLIENT_VERSION,
+      errorHandler: defaultErrorHandler,
+      eventDispatcher: defaultEventDispatcher,
+      jsonSchemaValidator: jsonSchemaValidator,
+      logger: defaultLogger,
+      skipJSONValidation: false
+    }, config);
+
+    return new Optimizely(config);
   }
 };

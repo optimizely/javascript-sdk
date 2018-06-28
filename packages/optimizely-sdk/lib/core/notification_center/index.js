@@ -55,7 +55,6 @@ function NotificationCenter(options) {
  */
 NotificationCenter.prototype.addNotificationListener = function (notificationType, callback) {
   try {
-    
     var isNotificationTypeValid = fns.values(enums.NOTIFICATION_TYPES)
       .indexOf(notificationType) > -1;
     if (!isNotificationTypeValid) {
@@ -66,7 +65,6 @@ NotificationCenter.prototype.addNotificationListener = function (notificationTyp
       this.__notificationListeners[notificationType] = [];
     }
 
-    
     var callbackAlreadyAdded = false;
     fns.forEach(this.__notificationListeners[notificationType], function (listenerEntry) {
       if (listenerEntry.callback === callback) {
@@ -83,12 +81,10 @@ NotificationCenter.prototype.addNotificationListener = function (notificationTyp
       callback: callback,
     });
 
-    
     var returnId = this.__listenerId;
     this.__listenerId += 1;
     return returnId;
   } catch (e) {
-    
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
     return -1;
@@ -103,7 +99,6 @@ NotificationCenter.prototype.addNotificationListener = function (notificationTyp
  */
 NotificationCenter.prototype.removeNotificationListener = function (listenerId) {
   try {
-    
     var indexToRemove;
     var typeToRemove;
     fns.forOwn(this.__notificationListeners, function (listenersForType, notificationType) {
@@ -119,19 +114,15 @@ NotificationCenter.prototype.removeNotificationListener = function (listenerId) 
       }
     });
 
-    
-
     if (indexToRemove !== undefined && typeToRemove !== undefined) {
       this.__notificationListeners[typeToRemove].splice(indexToRemove, 1);
       return true;
     }
   } catch (e) {
-    
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
   }
   return false;
-
 };
 
 /**
@@ -139,12 +130,10 @@ NotificationCenter.prototype.removeNotificationListener = function (listenerId) 
  */
 NotificationCenter.prototype.clearAllNotificationListeners = function () {
   try{
-    
     fns.forOwn(enums.NOTIFICATION_TYPES, function (notificationTypeEnum) {
       this.__notificationListeners[notificationTypeEnum] = [];
     }.bind(this));
   } catch (e) {
-    
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
   }
@@ -156,10 +145,8 @@ NotificationCenter.prototype.clearAllNotificationListeners = function () {
  */
 NotificationCenter.prototype.clearNotificationListeners = function (notificationType) {
   try {
-    
     this.__notificationListeners[notificationType] = [];
   } catch (e) {
-    
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
   }
@@ -173,7 +160,6 @@ NotificationCenter.prototype.clearNotificationListeners = function (notification
  */
 NotificationCenter.prototype.sendNotifications = function (notificationType, notificationData) {
   try {
-    
     fns.forEach(this.__notificationListeners[notificationType], function (listenerEntry) {
       var callback = listenerEntry.callback;
       try {
@@ -183,7 +169,6 @@ NotificationCenter.prototype.sendNotifications = function (notificationType, not
       }
     }.bind(this));
   } catch (e) {
-    
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
   }

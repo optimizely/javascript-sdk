@@ -19,8 +19,7 @@
     "lint": "eslint lib/**",
     "cover": "istanbul cover _mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js",
     "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls",
-    "prepare": "npm test && npm run build",
-    "fault-injection": "node lib/fault_injection/test_processes_manager.js"
+    "prepare": "npm test && npm run build"
   },
   "repository": {
     "type": "git",
@@ -37,7 +36,6 @@
     "json-schema": "^0.2.3",
     "lodash": "^4.0.0",
     "murmurhash": "0.0.2",
-    "recursive-readdir": "^2.2.2",
     "sprintf": "^0.1.5",
     "uuid": "^3.0.1"
   },

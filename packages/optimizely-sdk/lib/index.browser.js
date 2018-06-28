@@ -22,7 +22,6 @@ var logger = require('./plugins/logger');
 var Optimizely = require('./optimizely');
 
 var MODULE_NAME = 'INDEX';
-var LOG_LEVEL = enums.LOG_LEVEL;
 
 /**
  * Entry point into the Optimizely Node testing SDK
@@ -73,8 +72,7 @@ module.exports = {
 
       return new Optimizely(config);
     } catch (e) {
-      
-      config.logger.log(LOG_LEVEL.ERROR, e.message);
+      config.logger.log(enums.LOG_LEVEL.ERROR, e.message);
       config.errorHandler.handleError(e);
       return null;
     }

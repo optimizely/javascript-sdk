@@ -35,7 +35,11 @@ module.exports = {
       req.setRequestHeader('Content-Type', 'application/json');
       req.onreadystatechange = function() {
         if (req.readyState === READYSTATE_COMPLETE && callback && typeof callback === 'function') {
-          callback(params);
+          try {
+            callback(params);
+          } catch (e) {
+            // log it somehow
+          }
         }
       };
       req.send(JSON.stringify(params));
@@ -50,7 +54,11 @@ module.exports = {
       req.open(GET_METHOD, url, true);
       req.onreadystatechange = function() {
         if (req.readyState === READYSTATE_COMPLETE && callback && typeof callback === 'function') {
-          callback();
+          try {
+            callback();
+          } catch (e) {
+
+          }
         }
       };
       req.send();

@@ -28,7 +28,6 @@ var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
 var DECISION_SOURCES = enums.DECISION_SOURCES;
 
-
 /**
  * Optimizely's decision service that determines which variation of an experiment the user will be allocated to.
  *
