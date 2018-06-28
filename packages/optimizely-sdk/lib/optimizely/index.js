@@ -296,14 +296,6 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
       this.errorHandler.handleError(ex);
     }
   } catch (e) {
-    /* Re-throwing the known exceptions and handling only the unexpected ones.
-       Some functions here are using ProjectConfig which through's some known exceptions.
-       we assume that the consumer app will expect these exceptions and handle them.
-     */
-    /*if (e.message.startsWith("PROJECT_CONFIG")) {
-      throw e;
-    }*/
-    
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
     return;
@@ -341,14 +333,6 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
       return null;
     }
   } catch (e) {
-    /* Re-throwing the known exceptions and handling only the unexpected ones.
-       This function throughs some known exceptions. We assume that the consumer app
-       will expect these exceptions and handle them.
-     */
-    /*if (e.message.startsWith(MODULE_NAME)) {
-      throw e;
-    }*/
-    
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
     return null;
