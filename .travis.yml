@@ -21,6 +21,6 @@ addons:
 script:
 - pwd
 - ls -l
-- pwd && ls -l && cd packages/optimizely-sdk && npm run test-travis
+- pwd && ls -l && npm run test-travis
 after_success:
 - npm run coveralls
