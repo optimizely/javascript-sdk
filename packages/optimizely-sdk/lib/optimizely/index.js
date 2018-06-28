@@ -47,73 +47,74 @@ var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
  * @param {Object} config.userProfileService
  */
 function Optimizely(config) {
-  var clientEngine = config.clientEngine;
-  if (clientEngine !== enums.NODE_CLIENT_ENGINE && clientEngine !== enums.JAVASCRIPT_CLIENT_ENGINE) {
-    config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, MODULE_NAME, clientEngine));
-    clientEngine = enums.NODE_CLIENT_ENGINE;
-  }
-
-  this.clientEngine = clientEngine;
-  this.clientVersion = config.clientVersion || enums.NODE_CLIENT_VERSION;
-  this.errorHandler = config.errorHandler;
-  this.eventDispatcher = config.eventDispatcher;
-  this.isValidInstance = config.isValidInstance;
-  this.logger = config.logger;
-
-  if (!config.datafile) {
-    this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, MODULE_NAME));
-    this.errorHandler.handleError(new Error(sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, MODULE_NAME)));
-    this.isValidInstance = false;
-  } else {
-    if (typeof config.datafile === 'string' || config.datafile instanceof String) {
-      // Attempt to parse the datafile string
-      try {
-        config.datafile = JSON.parse(config.datafile);
-      } catch (ex) {
-        this.isValidInstance = false;
-        this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_MALFORMED, MODULE_NAME));
-        return;
-      }
+    var clientEngine = config.clientEngine;
+    if (clientEngine !== enums.NODE_CLIENT_ENGINE && clientEngine !== enums.JAVASCRIPT_CLIENT_ENGINE) {
+      config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, MODULE_NAME, clientEngine));
+      clientEngine = enums.NODE_CLIENT_ENGINE;
     }
 
-    if (config.skipJSONValidation === true) {
-      this.configObj = projectConfig.createProjectConfig(config.datafile);
-      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
+    this.clientEngine = clientEngine;
+    this.clientVersion = config.clientVersion || enums.NODE_CLIENT_VERSION;
+    this.errorHandler = config.errorHandler;
+    this.eventDispatcher = config.eventDispatcher;
+    this.isValidInstance = config.isValidInstance;
+    this.logger = config.logger;
+
+    if (!config.datafile) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, MODULE_NAME));
+      this.errorHandler.handleError(new Error(sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, MODULE_NAME)));
+      this.isValidInstance = false;
     } else {
-      try {
-        if (config.jsonSchemaValidator.validate(projectConfigSchema, config.datafile)) {
-          this.configObj = projectConfig.createProjectConfig(config.datafile);
-          this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
+      if (typeof config.datafile === 'string' || config.datafile instanceof String) {
+        // Attempt to parse the datafile string
+        try {
+          config.datafile = JSON.parse(config.datafile);
+        } catch (ex) {
+          this.isValidInstance = false;
+          this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_MALFORMED, MODULE_NAME));
+          return;
         }
-      } catch (ex) {
-        this.isValidInstance = false;
-        this.logger.log(LOG_LEVEL.ERROR, ex.message);
-        this.errorHandler.handleError(ex);
       }
-    }
 
-    var userProfileService = null;
-    if (config.userProfileService) {
-      try {
-        if (userProfileServiceValidator.validate(config.userProfileService)) {
-          userProfileService = config.userProfileService;
-          this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_USER_PROFILE_SERVICE, MODULE_NAME));
+      if (config.skipJSONValidation === true) {
+        this.configObj = projectConfig.createProjectConfig(config.datafile);
+        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
+      } else {
+        try {
+          if (config.jsonSchemaValidator.validate(projectConfigSchema, config.datafile)) {
+            this.configObj = projectConfig.createProjectConfig(config.datafile);
+            this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
+          }
+        } catch (ex) {
+          this.isValidInstance = false;
+          this.logger.log(LOG_LEVEL.ERROR, ex.message);
+          this.errorHandler.handleError(ex);
         }
-      } catch (ex) {
-        this.logger.log(LOG_LEVEL.WARNING, ex.message);
       }
+
+      var userProfileService = null;
+      if (config.userProfileService) {
+        try {
+          if (userProfileServiceValidator.validate(config.userProfileService)) {
+            userProfileService = config.userProfileService;
+            this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_USER_PROFILE_SERVICE, MODULE_NAME));
+          }
+        } catch (ex) {
+          this.logger.log(LOG_LEVEL.WARNING, ex.message);
+        }
+      }
+
+      this.decisionService = decisionService.createDecisionService({
+        configObj: this.configObj,
+        userProfileService: userProfileService,
+        logger: this.logger,
+      });
+
+      this.notificationCenter = notificationCenter.createNotificationCenter({
+        logger: this.logger,
+        errorHandler: this.errorHandler
+      });
     }
-
-    this.decisionService = decisionService.createDecisionService({
-      configObj: this.configObj,
-      userProfileService: userProfileService,
-      logger: this.logger,
-    });
-
-    this.notificationCenter = notificationCenter.createNotificationCenter({
-      logger: this.logger,
-    });
-  }
 }
 
 /**
@@ -123,40 +124,46 @@ function Optimizely(config) {
  * @param  {Object}      attributes
  * @return {string|null} variation key
  */
-Optimizely.prototype.activate = function(experimentKey, userId, attributes) {
-  if (!this.isValidInstance) {
-    this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'activate'));
-    return null;
-  }
-
-  if (!this.__validateInputs({experiment_key: experimentKey, user_id: userId}, attributes)) {
-    return this.__notActivatingExperiment(experimentKey, userId);
-  }
-
+Optimizely.prototype.activate = function (experimentKey, userId, attributes) {
   try {
-    var variationKey = this.getVariation(experimentKey, userId, attributes);
-    if (variationKey === null) {
+    if (!this.isValidInstance) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'activate'));
+      return null;
+    }
+
+    if (!this.__validateInputs({ experiment_key: experimentKey, user_id: userId }, attributes)) {
       return this.__notActivatingExperiment(experimentKey, userId);
     }
 
-    // If experiment is not set to 'Running' status, log accordingly and return variation key
-    if (!projectConfig.isRunning(this.configObj, experimentKey)) {
-      var shouldNotDispatchActivateLogMessage = sprintf(LOG_MESSAGES.SHOULD_NOT_DISPATCH_ACTIVATE, MODULE_NAME, experimentKey);
-      this.logger.log(LOG_LEVEL.DEBUG, shouldNotDispatchActivateLogMessage);
+    try {
+      var variationKey = this.getVariation(experimentKey, userId, attributes);
+      if (variationKey === null) {
+        return this.__notActivatingExperiment(experimentKey, userId);
+      }
+
+      // If experiment is not set to 'Running' status, log accordingly and return variation key
+      if (!projectConfig.isRunning(this.configObj, experimentKey)) {
+        var shouldNotDispatchActivateLogMessage = sprintf(LOG_MESSAGES.SHOULD_NOT_DISPATCH_ACTIVATE, MODULE_NAME, experimentKey);
+        this.logger.log(LOG_LEVEL.DEBUG, shouldNotDispatchActivateLogMessage);
+        return variationKey;
+      }
+
+      // remove null values from attributes
+      attributes = this.__filterEmptyValues(attributes);
+
+      this._sendImpressionEvent(experimentKey, variationKey, userId, attributes);
+
       return variationKey;
+    } catch (ex) {
+      this.logger.log(LOG_LEVEL.ERROR, ex.message);
+      var failedActivationLogMessage = sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, MODULE_NAME, userId, experimentKey);
+      this.logger.log(LOG_LEVEL.INFO, failedActivationLogMessage);
+      this.errorHandler.handleError(ex);
+      return null;
     }
-
-    // remove null values from attributes
-    attributes = this.__filterEmptyValues(attributes);
-
-    this._sendImpressionEvent(experimentKey, variationKey, userId, attributes);
-
-    return variationKey;
-  } catch (ex) {
-    this.logger.log(LOG_LEVEL.ERROR, ex.message);
-    var failedActivationLogMessage = sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, MODULE_NAME, userId, experimentKey);
-    this.logger.log(LOG_LEVEL.INFO, failedActivationLogMessage);
-    this.errorHandler.handleError(ex);
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
     return null;
   }
 };
@@ -220,71 +227,78 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
  * @param  {Object} eventTags Values associated with the event.
  */
 Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
-  if (!this.isValidInstance) {
-    this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'track'));
-    return;
-  }
-
   try {
-    if (!this.__validateInputs({user_id: userId, event_key: eventKey}, attributes, eventTags)) {
+    
+    if (!this.isValidInstance) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'track'));
       return;
     }
 
-    // determine which experiments and variations we should be tracking for the given event
-    var validExperimentsToBucketedVariations = this.__getValidExperimentsForEvent(eventKey, userId, attributes);
-    if (!Object.keys(validExperimentsToBucketedVariations).length) {
-      // Return and do not send conversion events if the event is not associated with any running experiments
-      this.logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.EVENT_NOT_ASSOCIATED_WITH_EXPERIMENTS,
-                                               MODULE_NAME,
-                                               eventKey));
-      return;
-    }
-
-    // remove null values from attributes and eventTags
-    attributes = this.__filterEmptyValues(attributes);
-    eventTags = this.__filterEmptyValues(eventTags);
-
-    var conversionEventOptions = {
-      attributes: attributes,
-      clientEngine: this.clientEngine,
-      clientVersion: this.clientVersion,
-      configObj: this.configObj,
-      eventKey: eventKey,
-      eventTags: eventTags,
-      experimentsToVariationMap: validExperimentsToBucketedVariations,
-      logger: this.logger,
-      userId: userId,
-    };
-    var conversionEvent = eventBuilder.getConversionEvent(conversionEventOptions);
-
-    var dispatchedConversionEventLogMessage = sprintf(LOG_MESSAGES.DISPATCH_CONVERSION_EVENT,
-                                                      MODULE_NAME,
-                                                      conversionEvent.url,
-                                                      JSON.stringify(conversionEvent.params));
-    this.logger.log(LOG_LEVEL.DEBUG, dispatchedConversionEventLogMessage);
-
-    var eventDispatcherCallback = function() {
-      var trackedLogMessage = sprintf(LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId);
-      this.logger.log(LOG_LEVEL.INFO, trackedLogMessage);
-    }.bind(this);
-
-    this.__dispatchEvent(conversionEvent, eventDispatcherCallback);
-
-    this.notificationCenter.sendNotifications(
-      enums.NOTIFICATION_TYPES.TRACK,
-      {
-        eventKey: eventKey,
-        userId: userId,
-        attributes: attributes,
-        eventTags: eventTags,
-        logEvent: conversionEvent
+    try {
+      if (!this.__validateInputs({ user_id: userId, event_key: eventKey }, attributes, eventTags)) {
+        return;
       }
-    );
-  } catch (ex) {
-    this.logger.log(LOG_LEVEL.ERROR, ex.message);
-    var failedTrackLogMessage = sprintf(LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId);
-    this.logger.log(LOG_LEVEL.INFO, failedTrackLogMessage);
-    this.errorHandler.handleError(ex);
+
+      // determine which experiments and variations we should be tracking for the given event
+      var validExperimentsToBucketedVariations = this.__getValidExperimentsForEvent(eventKey, userId, attributes);
+      if (!Object.keys(validExperimentsToBucketedVariations).length) {
+        // Return and do not send conversion events if the event is not associated with any running experiments
+        this.logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.EVENT_NOT_ASSOCIATED_WITH_EXPERIMENTS,
+          MODULE_NAME,
+          eventKey));
+        return;
+      }
+
+      // remove null values from attributes and eventTags
+      attributes = this.__filterEmptyValues(attributes);
+      eventTags = this.__filterEmptyValues(eventTags);
+
+      var conversionEventOptions = {
+        attributes: attributes,
+        clientEngine: this.clientEngine,
+        clientVersion: this.clientVersion,
+        configObj: this.configObj,
+        eventKey: eventKey,
+        eventTags: eventTags,
+        experimentsToVariationMap: validExperimentsToBucketedVariations,
+        logger: this.logger,
+        userId: userId,
+      };
+      var conversionEvent = eventBuilder.getConversionEvent(conversionEventOptions);
+
+      var dispatchedConversionEventLogMessage = sprintf(LOG_MESSAGES.DISPATCH_CONVERSION_EVENT,
+        MODULE_NAME,
+        conversionEvent.url,
+        JSON.stringify(conversionEvent.params));
+      this.logger.log(LOG_LEVEL.DEBUG, dispatchedConversionEventLogMessage);
+
+      var eventDispatcherCallback = function () {
+        var trackedLogMessage = sprintf(LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId);
+        this.logger.log(LOG_LEVEL.INFO, trackedLogMessage);
+      }.bind(this);
+
+      this.__dispatchEvent(conversionEvent, eventDispatcherCallback);
+
+      this.notificationCenter.sendNotifications(
+        enums.NOTIFICATION_TYPES.TRACK,
+        {
+          eventKey: eventKey,
+          userId: userId,
+          attributes: attributes,
+          eventTags: eventTags,
+          logEvent: conversionEvent
+        }
+      );
+    } catch (ex) {
+      this.logger.log(LOG_LEVEL.ERROR, ex.message);
+      var failedTrackLogMessage = sprintf(LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId);
+      this.logger.log(LOG_LEVEL.INFO, failedTrackLogMessage);
+      this.errorHandler.handleError(ex);
+    }
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
+    return;
   }
 };
 
@@ -296,25 +310,31 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
  * @return {string|null} variation key
  */
 Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) {
-  if (!this.isValidInstance) {
-    this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getVariation'));
-    return null;
-  }
-
   try {
-    if (!this.__validateInputs({experiment_key: experimentKey, user_id: userId}, attributes)) {
+    if (!this.isValidInstance) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getVariation'));
       return null;
     }
 
-    var experiment = this.configObj.experimentKeyMap[experimentKey];
-    if (fns.isEmpty(experiment)) {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
-    }
+    try {
+      if (!this.__validateInputs({experiment_key: experimentKey, user_id: userId}, attributes)) {
+        return null;
+      }
 
-    return this.decisionService.getVariation(experimentKey, userId, attributes);
-  } catch (ex) {
-    this.logger.log(LOG_LEVEL.ERROR, ex.message);
-    this.errorHandler.handleError(ex);
+      var experiment = this.configObj.experimentKeyMap[experimentKey];
+      if (fns.isEmpty(experiment)) {
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
+      }
+
+      return this.decisionService.getVariation(experimentKey, userId, attributes);
+    } catch (ex) {
+      this.logger.log(LOG_LEVEL.ERROR, ex.message);
+      this.errorHandler.handleError(ex);
+      return null;
+    }
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
     return null;
   }
 };
@@ -448,13 +468,13 @@ Optimizely.prototype.__notActivatingExperiment = function(experimentKey, userId)
  * @param  callback
  */
 Optimizely.prototype.__dispatchEvent = function (eventToDispatch, callback) {
-    var eventDispatcherResponse = this.eventDispatcher.dispatchEvent(eventToDispatch, callback);
-    //checking that response value is a promise, not a request object
-    if (!fns.isEmpty(eventDispatcherResponse) && typeof eventDispatcherResponse.then === 'function') {
-      eventDispatcherResponse.then(function() {
-        callback();
-      });
-    }
+  var eventDispatcherResponse = this.eventDispatcher.dispatchEvent(eventToDispatch, callback);
+  //checking that response value is a promise, not a request object
+  if (!fns.isEmpty(eventDispatcherResponse) && typeof eventDispatcherResponse.then === 'function') {
+    eventDispatcherResponse.then(function () {
+      callback();
+    });
+  }
 };
 
 /**
@@ -463,12 +483,12 @@ Optimizely.prototype.__dispatchEvent = function (eventToDispatch, callback) {
  * @returns {Object} map
  */
 Optimizely.prototype.__filterEmptyValues = function (map) {
-    for (var key in map) {
-      if (map.hasOwnProperty(key) && (map[key] === null || map[key] === undefined)) {
-        delete map[key];
-      }
+  for (var key in map) {
+    if (map.hasOwnProperty(key) && (map[key] === null || map[key] === undefined)) {
+      delete map[key];
     }
-    return map;
+  }
+  return map;
 };
 
 /**
@@ -478,35 +498,41 @@ Optimizely.prototype.__filterEmptyValues = function (map) {
  * @param {Object} attributes   Optional user attributes
  * @return {boolean}            True if the feature is enabled for the user, false otherwise
  */
-Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes) {
-  if (!this.isValidInstance) {
-    this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'isFeatureEnabled'));
-    return false;
-  }
-
-  if (!this.__validateInputs({feature_key: featureKey, user_id: userId}, attributes)) {
-    return false;
-  }
-
-  var feature = projectConfig.getFeatureFromKey(this.configObj, featureKey, this.logger);
-  if (!feature) {
-    return false;
-  }
-
-  var decision = this.decisionService.getVariationForFeature(feature, userId, attributes);
-  var variation = decision.variation;
-  if (!!variation) {
-    if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
-      // got a variation from the exp, so we track the impression
-      this._sendImpressionEvent(decision.experiment.key, decision.variation.key, userId, attributes);
+Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes) {
+  try {
+    if (!this.isValidInstance) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'isFeatureEnabled'));
+      return false;
     }
-    if (variation.featureEnabled === true) {
-      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
-      return true;
+
+    if (!this.__validateInputs({ feature_key: featureKey, user_id: userId }, attributes)) {
+      return false;
     }
+
+    var feature = projectConfig.getFeatureFromKey(this.configObj, featureKey, this.logger);
+    if (!feature) {
+      return false;
+    }
+
+    var decision = this.decisionService.getVariationForFeature(feature, userId, attributes);
+    var variation = decision.variation;
+    if (!!variation) {
+      if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
+        // got a variation from the exp, so we track the impression
+        this._sendImpressionEvent(decision.experiment.key, decision.variation.key, userId, attributes);
+      }
+      if (variation.featureEnabled === true) {
+        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
+        return true;
+      }
+    }
+    this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
+    return false;
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
+    return false;
   }
-  this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
-  return false;
 };
 
 /**
@@ -516,20 +542,26 @@ Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes)
  * @param {Object} attributes
  * @return {Array} Array of feature keys (strings)
  */
-Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
-  var enabledFeatures = [];
-  if (!this.isValidInstance) {
-    this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getEnabledFeatures'));
-    return enabledFeatures;
-  }
-
-  fns.forOwn(this.configObj.featureKeyMap, function(feature) {
-    if (this.isFeatureEnabled(feature.key, userId, attributes)) {
-      enabledFeatures.push(feature.key);
+Optimizely.prototype.getEnabledFeatures = function (userId, attributes) {
+  try {
+    var enabledFeatures = [];
+    if (!this.isValidInstance) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getEnabledFeatures'));
+      return enabledFeatures;
     }
-  }.bind(this));
 
-  return enabledFeatures;
+    fns.forOwn(this.configObj.featureKeyMap, function (feature) {
+      if (this.isFeatureEnabled(feature.key, userId, attributes)) {
+        enabledFeatures.push(feature.key);
+      }
+    }.bind(this));
+
+    return enabledFeatures;
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
+    return [];
+  }
 };
 
 /**
@@ -605,8 +637,14 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
  *                              invalid, or there is a mismatch with the type
  *                              of the variable
  */
-Optimizely.prototype.getFeatureVariableBoolean = function(featureKey, variableKey, userId, attributes) {
-  return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.BOOLEAN, userId, attributes);
+Optimizely.prototype.getFeatureVariableBoolean = function (featureKey, variableKey, userId, attributes) {
+  try {
+    return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.BOOLEAN, userId, attributes);
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
+    return null;
+  }
 };
 
 /**
@@ -623,8 +661,14 @@ Optimizely.prototype.getFeatureVariableBoolean = function(featureKey, variableKe
  *                              invalid, or there is a mismatch with the type
  *                              of the variable
  */
-Optimizely.prototype.getFeatureVariableDouble = function(featureKey, variableKey, userId, attributes) {
-  return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.DOUBLE, userId, attributes);
+Optimizely.prototype.getFeatureVariableDouble = function (featureKey, variableKey, userId, attributes) {
+  try {
+    return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.DOUBLE, userId, attributes);
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
+    return null;
+  }
 };
 
 /**
@@ -641,8 +685,14 @@ Optimizely.prototype.getFeatureVariableDouble = function(featureKey, variableKey
  *                              invalid, or there is a mismatch with the type
  *                              of the variable
  */
-Optimizely.prototype.getFeatureVariableInteger = function(featureKey, variableKey, userId, attributes) {
-  return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.INTEGER, userId, attributes);
+Optimizely.prototype.getFeatureVariableInteger = function (featureKey, variableKey, userId, attributes) {
+  try {
+    return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.INTEGER, userId, attributes);
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
+    return null;
+  }
 };
 
 /**
@@ -659,8 +709,14 @@ Optimizely.prototype.getFeatureVariableInteger = function(featureKey, variableKe
  *                              invalid, or there is a mismatch with the type
  *                              of the variable
  */
-Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey, userId, attributes) {
-  return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.STRING, userId, attributes);
+Optimizely.prototype.getFeatureVariableString = function (featureKey, variableKey, userId, attributes) {
+  try {
+    return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.STRING, userId, attributes);
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
+    return null;
+  }
 };
 
 module.exports = Optimizely;
