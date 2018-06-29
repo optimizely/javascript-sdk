@@ -61,5 +61,5 @@ npm test
 npm run test-xbrowser
 ```
 
-[.travis.yml](/.travis.yml) contains the definitions for `BROWSER_STACK_USERNAME` and `BROWSER_STACK_ACCESS_KEY` used in CI. These values are Optimizely's BrowserStack credentials, encrypted with our Travis CI public key. These creds can be rotated by following [these docs](https://docs.travis-ci.com/user/encrypting-files/).
+[.travis.yml](/.travis.yml) contains the definitions for `BROWSER_STACK_USERNAME` and `BROWSER_STACK_ACCESS_KEY` used in CI. These values are Optimizely's BrowserStack credentials, encrypted with our Travis CI public key. These creds can be rotated by following [these docs](https://docs.travis-ci.com/user/environment-variables/#Defining-encrypted-variables-in-.travis.yml).
 
