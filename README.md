@@ -16,7 +16,7 @@ This repository is a monorepo that we manage using [Lerna](https://github.com/le
 
 ## About
 
-`optimizely-sdk` is developed and maintained by [Optimizely](https://optimizely.com) and many [contributors](https://github.com/optimizely/javascript-sdk/graphs/contributors). If you're interested in learning more about what Optimizely X FullStack can do for your company, please [get in touch](mailto:eng@optimizely.com)!
+`@optimizely/optimizely-sdk` is developed and maintained by [Optimizely](https://optimizely.com) and many [contributors](https://github.com/optimizely/javascript-sdk/graphs/contributors). If you're interested in learning more about what Optimizely X Full Stack can do for your company, please [get in touch](mailto:eng@optimizely.com)!
 
 
 ### Contributing
