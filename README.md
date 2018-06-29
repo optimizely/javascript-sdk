@@ -10,7 +10,7 @@ Optimizely X Full Stack is A/B testing and feature management for product develo
 
 ## Packages
 
-This repository is a monorepo that we manage using [Lerna](https://github.com/lerna/lerna). That means that we actually publish [several packages](/packages) to npm from the same codebase, including:
+This repository is a monorepo that we manage using [Lerna](https://github.com/lerna/lerna). Only one package lives here currently, but that may change in the future.
 
 | Package                                                | Version                                                                                                                                   | Docs                                                                                                                                                                                                                                                                          | Description                                                                        |
 | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
