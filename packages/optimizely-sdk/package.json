@@ -2,7 +2,7 @@
   "name": "@optimizely/optimizely-sdk",
   "version": "2.1.1",
   "description": "JavaScript SDK package for Optimizely X Full Stack",
-  "main": "dist/optimizely.node.js",
+  "main": "lib/index.node.js",
   "browser": "lib/index.browser.js",
   "scripts": {
     "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive",
