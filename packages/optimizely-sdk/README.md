@@ -65,4 +65,4 @@ The browser bundles also come with a minified / production-ready version.
 
 The .yml of this project contains environment vairables for ```BROWSER_STACK_USERNAME``` and ```BROWSER_STACK_ACCESS_KEY```.
 
-These variables, created in BrowserStack, are encrypted by the TravisCI public key. This is done directly with the TravisCI command line tools; for additional information see travis encrypt-file.
+These variables, created in BrowserStack, are encrypted by the Travis CI public key. This is done directly with the Travis CI command line tools; for additional information see travis encrypt-file.
