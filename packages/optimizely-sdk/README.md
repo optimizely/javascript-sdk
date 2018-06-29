@@ -3,6 +3,7 @@
 [![npm](https://img.shields.io/npm/dm/%40optimizely%2Foptimizely-sdk.svg)](https://www.npmjs.com/package/@optimizely/optimizely-sdk)
 [![Travis CI](https://img.shields.io/travis/optimizely/javascript-sdk.svg)](https://travis-ci.org/optimizely/javascript-sdk)
 [![Coveralls](https://img.shields.io/coveralls/optimizely/javascript-sdk.svg)](https://coveralls.io/github/optimizely/javascript-sdk)
+[![license](https://img.shields.io/github/license/optimizely/javascript-sdk.svg)](https://choosealicense.com/licenses/apache-2.0/)
 
 
 Optimizely X Full Stack is A/B testing and feature management for product development teams. Experiment in any application. Make every feature on your roadmap an opportunity to learn. Learn more at https://www.optimizely.com/products/full-stack/, or see the [documentation](https://developers.optimizely.com/x/solutions/sdks/reference/index.html?language=node).
