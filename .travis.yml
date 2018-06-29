@@ -1,6 +1,10 @@
 language: node_js
 node_js:
-- '0.10.0'
+# The earliest version of Node.js which shipped with npm@2.x. This is relevant because support
+# for package scopes (e.g., @optimizely/...), was added in npm@2 (https://blog.npmjs.org/post/116936804365/solving-npms-hard-problem-naming-packages).
+# Additionally, we can't simply use an earlier version of Node.js and `npm install -g npm@2.0.0` because
+# npm 1.x can't even fetch and install npm@2--it errors with "Error: CERT_UNTRUSTED" while fetching.
+- '0.10.44'
 - '4'
 - '6'
 - '8'
@@ -18,10 +22,6 @@ env:
   - secure: U0GGZw46rJowBtH9gVluIrerB40u2b3uZpH0HsOdLlsXCCaTVk4JXX/JPVPashWAFLC7Enk3UOE4ofeEpVd0wbG6CxtG9/gklc2U2tvkqsdPpFZKaRrXoUzCyyPOmHEC2mXDXctbrncmttM4APaceRfbdTBEZIIfyLJadomjWylA61szFE9IZjvJpiwJO2xa5HI9GVRu3yXJci+riJux+JsDmfJ1hNwv3waMeeg/scddUH0hfgq69ftGs8cpMlYiO20eh32S7uPF7/IJTH1fDJjVKYQZwpypkF6AeI+od5CFTY1ajb25eaBNXThLS0Bo9ZJE/8Sogvon21dEJkt/ClY6R341InbAFXZvz7jyQAisvh0I4zxcu0VUCfh7bEUl6GXMO8VJnyxHEfqB+AIT2RoMXckkhulwiNUsJYH1yJ8mjnLvZq85mWBCp4n4jg0K6Wf46lHpjnHOVpLyLyoFGfiPf90AQVL02AJ3/ia8RkMuj0Ax+AGtiTC/+wy7dsDQOif/VpBNJcx/RciQ24mYOGzAMh4GsUWnXaZ9vXSxliogVNrmIefK5invJ0omv9pIx8NZHTHYGaulh4w6JsliiEq2kH78SlyvSrcsFGTwCY97LLaxiLm/75/Zf+F7LajKC23Fbtnj/LQizitFZqGMJ09DnR52krBAeultqRq8QLM=
 before_install:
 - cd packages/optimizely-sdk
-# Scopes were added in npm@2, source: https://blog.npmjs.org/post/116936804365/solving-npms-hard-problem-naming-packages
-# This is needed to be able to install the SDK from NPM when testing Node.js versions
-# that shipped with an npm < 2.0.0.
-- if [ "$(node -v)" = "v0.10.0" ]; then npm install -g npm@2.0.0; fi
 install: npm install
 addons:
   srcclr: true
