@@ -12,7 +12,7 @@ This directory contains the source code for the JavaScript SDK, which is usable 
 ### Prerequisites
 
 Ensure the SDK supports all of the platforms you're targeting. In particular, we support any ES5-compliant JavaScript environment, including
-  - Node.js >= 0.10.0, and maybe even earlier. CI validates 0.10.0 and the latest version of all [LTS](https://github.com/nodejs/Release) releases from 4.x onward. By extension, places like AWS Lambda, Google Cloud Functions, and Auth0 Webtasks.
+  - Node.js >= 0.10.0, and maybe even earlier. CI validates 0.10.0 and the latest version of all [LTS](https://github.com/nodejs/Release) releases from 4.x onward. By extension, places like AWS Lambda, Google Cloud Functions, and Auth0 Webtasks are supported as well.
   - [Web browsers](https://caniuse.com/#feat=es5)
   - [Cloudflare Workers](https://developers.cloudflare.com/workers/) and [Fly](https://fly.io/), both of which are powered by V8.
   - Anywhere else you can think of that might embed a JavaScript engine. The sky is the limit; experiment everywhere 🚀!
