@@ -3,7 +3,7 @@
 </h3>
 
 <p align="center">
-  This repository houses the official JavaScript SDK for use with Optimizely X Full Stack
+  This repository houses the official JavaScript SDK for use with Optimizely X Full Stack.
 </p>
 
 ## Packages
@@ -12,7 +12,7 @@ This repository is a monorepo that we manage using [Lerna](https://github.com/le
 
 | Package                                                | Version                                                                                                                                   | Docs                                                                                                                                                                                                                                                                          | Description                                                                        |
 | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| [`optimizely-sdk`](/packages/optimizely-sdk)               | [![npm](https://img.shields.io/npm/v/optimizely-sdk.svg?style=flat-square)](https://npmjs.com/package/@optimizely/optimizely-sdk)                     | [![](https://img.shields.io/badge/API%20Docs-site-green.svg?style=flat-square)](https://developers.optimizely.com/x/solutions/sdks/reference/?language=javascript)           | The Optimizely SDK                                                                                                  |
+| [`@optimizely/optimizely-sdk`](/packages/optimizely-sdk) | [![npm](https://img.shields.io/npm/v/%40optimizely%2Foptimizely-sdk.svg)](https://www.npmjs.com/package/@optimizely/optimizely-sdk)     | [![](https://img.shields.io/badge/API%20Docs-site-green.svg?style=flat-square)](https://developers.optimizely.com/x/solutions/sdks/reference/?language=javascript)           | The Optimizely SDK                                                                                                  |
 
 ## About
 
