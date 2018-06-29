@@ -1,22 +1,33 @@
-# Optimizely JavaScript SDK
+[![npm](https://img.shields.io/npm/v/%40optimizely%2Foptimizely-sdk.svg)](https://www.npmjs.com/package/@optimizely/optimizely-sdk)
+[![npm](https://img.shields.io/npm/dm/%40optimizely%2Foptimizely-sdk.svg)](https://www.npmjs.com/package/@optimizely/optimizely-sdk)
+[![Travis CI](https://img.shields.io/travis/optimizely/javascript-sdk.svg)](https://travis-ci.org/optimizely/javascript-sdk)
 
-This repository houses the JavaScript SDK for Optimizely X Full Stack.
+# JavaScript SDK for Optimizely X Full Stack
+
+Optimizely X Full Stack is A/B testing and feature management for product development teams. Experiment in any application. Make every feature on your roadmap an opportunity to learn. Learn more at https://www.optimizely.com/products/full-stack/, or see the [documentation](https://developers.optimizely.com/x/solutions/sdks/reference/index.html?language=node).
+
+This directory contains the source code for the JavaScript SDK, which is usable in both Node.js and web environments.
 
 ## Getting Started
 
-### Installing the SDK
+### Prerequisites
 
-The SDK is available through [npm](https://npmjs.com/package/optimizely-sdk). To install:
+Ensure the SDK supports all of the platforms you're targeting. In particular, we support any ES5-compliant JavaScript environment, including
+  - Node.js >= 0.10.0, and maybe even earlier. CI validates 0.10.0 and the latest version of all [LTS](https://github.com/nodejs/Release) releases from 4.x onward. By extension, places like AWS Lambda, Google Cloud Functions, and Auth0 Webtasks.
+  - [Web browsers](https://caniuse.com/#feat=es5)
+  - [Cloudflare Workers](https://developers.cloudflare.com/workers/) and [Fly](https://fly.io/), both of which are powered by V8.
+  - Anywhere else you can think of that might embed a JavaScript engine. The sky is the limit; experiment everywhere 🚀 !
+
+Once you've validated that the SDK supports the platforms you're targeting, fetch the package from [NPM](https://www.npmjs.com/package/@optimizely/optimizely-sdk). Using `npm`:
 
 ```
 npm install @optimizely/optimizely-sdk --save
 ```
 
-Or to use in a non CommonJS fashion in the Browser:
+### Usage
+See the Optimizely X Full Stack [developer documentation](http://developers.optimizely.com/server/reference/index.html) to learn how to set up your first JavaScript project and use the SDK.
 
-1. Run `npm run build`
-2. Pull in `dist/optimizely.browser.umd.min.js` as a `<script>`
-3. Use as global variable `window.optimizelyClient`
+Regarding `EventDispatcher`s: In Node.js and browser environments, the default `EventDispatcher` is powered by the [`http/s`](https://nodejs.org/api/http.html) modules and by [`XMLHttpRequest`](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#Browser_compatibility), respectively. In all other environments, you must supply your own `EventDispatcher`.
 
 ### Migrating from 1.x.x
 
@@ -28,41 +39,26 @@ This version represents a major version change and, as such, introduces some bre
 
 - You will no longer be able to pass in `revenue` value as a stand-alone argument to the `track` call. Instead you will need to pass it as an entry in the [`eventTags`](https://developers.optimizely.com/x/solutions/sdks/reference/index.html?language=javascript#event-tags).
 
-### Feature Management Access
+### Feature Management access
 
-To access the Feature Management configuration in the Optimizely dashboard, please contact your Optimizely account executive.
+To access Feature Management in the Optimizely web application, please contact your Optimizely account executive.
 
-### Using the SDK
-See the Optimizely X Full Stack testing [developer documentation](http://developers.optimizely.com/server/reference/index.html) to learn how to set up your first JavaScript project and use the SDK.
+## Contributing
+This information is relevant only if you plan on contributing to the SDK itself.
 
-## Development
+```sh
+# Prerequisite: Install dependencies.
+npm install
 
-### Installing dependencies
-
-```npm install```
-
-### Unit tests
-
-You can run all unit tests with:
-```
+# Run unit tests with mocha.
 npm test
+
+# Run unit tests in many browsers, currently via BrowserStack.
+# For this to work, the following environment variables must be set:
+#   - BROWSER_STACK_USERNAME
+#   - BROWSER_STACK_PASSWORD
+npm run test-xbrowser
 ```
 
-### Build distribution packages
+[.travis.yml](./.travis.yml) contains the definitions for `BROWSER_STACK_USERNAME` and `BROWSER_STACK_ACCESS_KEY` used in CI. These values are Optimizely's BrowserStack credentials, encrypted with our Travis CI public key. These creds can be rotated by following [these docs](https://docs.travis-ci.com/user/encrypting-files/).
 
-```
-npm run build
-```
-
-This command will build several distribution bundles under the `dist` directory:
-1. optimizely.browser.cjs.js - This is the main entry point for browser/client-side bundles
-2. optimizely.browser.umd.js - This is used when not packaging the optimizely-sdk with your own JS bundles. Instead you would load this script as a `<script>` tag and reference it via the global var `optimizelyClient`
-3. optimizely.node.js - This is the main entry point for Node apps
-
-The browser bundles also come with a minified / production-ready version.
-
-### Environment Variables
-
-The .yml of this project contains environment vairables for ```BROWSER_STACK_USERNAME``` and ```BROWSER_STACK_ACCESS_KEY```.
-
-These variables, created in BrowserStack, are encrypted by the Travis CI public key. This is done directly with the Travis CI command line tools; for additional information see travis encrypt-file.
