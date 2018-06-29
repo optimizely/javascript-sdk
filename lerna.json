@@ -1,5 +1,6 @@
 {
   "lerna": "2.9.0",
+  "loglevel": "silly",
   "version": "independent",
   "packages": [
     "packages/*"
