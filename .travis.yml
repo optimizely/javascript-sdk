@@ -21,7 +21,7 @@ addons:
   srcclr: true
 script:
 - npm test
-- NODE_MAJOR=$(node -v | cut -c 2- | cut -d '.' -f 1) && echo "Node.js major version: $NODE_MAJOR"
+- NODE_MAJOR=$(node -v | cut -c 2- | cut -d '.' -f 1) && echo "Node.js major version: ${NODE_MAJOR}"
 # No need to run cross-browser tests against BrowserStack n times; once is fine.
 # Just use the current Node.js release as the sole driver.
 - if [ "$NODE_MAJOR" = "10" ]; then npm run test-xbrowser; fi
