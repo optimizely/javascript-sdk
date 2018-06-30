@@ -35,9 +35,7 @@ Regarding `EventDispatcher`s: In Node.js and browser environments, the default `
 
 This version represents a major version change and, as such, introduces some breaking changes:
 
-- The Node SDK is now combined with the JavaScript SDK so that we have one `optimizely-sdk` package that works across both server + browser environments.
-
-- We no longer support legacy Node versions (under 4.0).
+- The Node.js SDK is now combined with the JavaScript SDK. We now have just one package, `@optimizely/optimizely-sdk`, that works in many JavaScript environments.
 
 - You will no longer be able to pass in `revenue` value as a stand-alone argument to the `track` call. Instead you will need to pass it as an entry in the [`eventTags`](https://developers.optimizely.com/x/solutions/sdks/reference/index.html?language=javascript#event-tags).
 
