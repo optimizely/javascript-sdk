@@ -6,7 +6,7 @@
   "browser": "lib/index.browser.js",
   "scripts": {
     "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive",
-    "test-xbrowser": "karma run karma.bs.conf.js --single-run",
+    "test-xbrowser": "karma start karma.bs.conf.js --single-run",
     "lint": "eslint lib/**",
     "cover": "istanbul cover _mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js",
     "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls",
