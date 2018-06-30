@@ -19,5 +19,7 @@ before_install: cd packages/optimizely-sdk
 install: npm install
 addons:
   srcclr: true
-script: npm run test-xbrowser
+script:
+- npm test
+- npm run test-xbrowser
 after_success: npm run coveralls
