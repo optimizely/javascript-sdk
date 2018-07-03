@@ -23,7 +23,7 @@ Ensure the SDK supports all of the platforms you're targeting. In particular, we
 Once you've validated that the SDK supports the platforms you're targeting, fetch the package from [NPM](https://www.npmjs.com/package/@optimizely/optimizely-sdk). Using `npm`:
 
 ```
-npm install @optimizely/optimizely-sdk --save
+npm install --save @optimizely/optimizely-sdk
 ```
 
 ### Usage
