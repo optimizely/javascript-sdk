@@ -19,6 +19,7 @@ Ensure the SDK supports all of the platforms you're targeting. In particular, th
   - [Web browsers](https://caniuse.com/#feat=es5)
 
 Other environments likely are compatible, too, but note that we don't officially support them:
+  - Progressive Web Apps, WebViews, and hybrid mobile apps like those built with React Native and Apache Cordova.
   - [Cloudflare Workers](https://developers.cloudflare.com/workers/) and [Fly](https://fly.io/), both of which are powered by recent releases of V8.
   - Anywhere else you can think of that might embed a JavaScript engine. The sky is the limit; experiment everywhere! 🚀
 
