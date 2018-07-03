@@ -1,7 +1,7 @@
 {
   "name": "@optimizely/optimizely-sdk",
   "version": "2.1.1",
-  "description": "JavaScript SDK package for Optimizely X Full Stack",
+  "description": "JavaScript SDK for Optimizely X Full Stack",
   "main": "lib/index.node.js",
   "browser": "lib/index.browser.js",
   "scripts": {
@@ -17,13 +17,16 @@
     "url": "git+https://github.com/optimizely/javascript-sdk.git"
   },
   "license": "Apache-2.0",
+  "engines": {
+    "node": ">=4.0.0"
+  },
   "keywords": [
     "optimizely"
   ],
   "bugs": {
     "url": "https://github.com/optimizely/javascript-sdk/issues"
   },
-  "homepage": "https://github.com/optimizely/javascript-sdk#readme",
+  "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/optimizely-sdk",
   "dependencies": {
     "json-schema": "^0.2.3",
     "lodash": "^4.0.0",
