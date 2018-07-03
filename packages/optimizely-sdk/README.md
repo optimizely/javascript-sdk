@@ -37,7 +37,7 @@ This version represents a major version change and, as such, introduces some bre
 
 - The Node.js SDK is now combined with the JavaScript SDK. We now have just one package, `@optimizely/optimizely-sdk`, that works in many JavaScript environments.
 
-- We no longer support Node.js < 4.0.0, which [reached end-of-life](https://github.com/nodejs/Release#end-of-life-releases) 2016-12-31.
+- We no longer support Node.js < 4.0.0, which collectively [reached end-of-life](https://github.com/nodejs/Release#end-of-life-releases) on 2016-12-31.
 
 - You will no longer be able to pass in `revenue` value as a stand-alone argument to the `track` call. Instead you will need to pass it as an entry in the [`eventTags`](https://developers.optimizely.com/x/solutions/sdks/reference/index.html?language=javascript#event-tags).
 
