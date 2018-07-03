@@ -15,10 +15,10 @@ This directory contains the source code for the JavaScript SDK, which is usable 
 ### Prerequisites
 
 Ensure the SDK supports all of the platforms you're targeting. In particular, we support any ES5-compliant JavaScript environment, including
-  - Node.js >= 0.10.44. By extension, environments like AWS Lambda, Google Cloud Functions, and Auth0 Webtasks are supported as well. Older Node.js releases probably work too, we just can't easily test them in Travis CI. 
+  - Node.js >= 4.0.0. By extension, environments like AWS Lambda, Google Cloud Functions, and Auth0 Webtasks are supported as well. Older Node.js releases likely work too (try `npm test` to validate for yourself), but are not formally supported.
   - [Web browsers](https://caniuse.com/#feat=es5)
   - [Cloudflare Workers](https://developers.cloudflare.com/workers/) and [Fly](https://fly.io/), both of which are powered by V8.
-  - Anywhere else you can think of that might embed a JavaScript engine. The sky is the limit; experiment everywhere 🚀!
+  - Anywhere else you can think of that might embed a JavaScript engine. The sky is the limit; experiment everywhere! 🚀
 
 Once you've validated that the SDK supports the platforms you're targeting, fetch the package from [NPM](https://www.npmjs.com/package/@optimizely/optimizely-sdk). Using `npm`:
 
@@ -36,6 +36,8 @@ Regarding `EventDispatcher`s: In Node.js and browser environments, the default `
 This version represents a major version change and, as such, introduces some breaking changes:
 
 - The Node.js SDK is now combined with the JavaScript SDK. We now have just one package, `@optimizely/optimizely-sdk`, that works in many JavaScript environments.
+
+- We no longer support Node.js < 4.0.0, which [reached end-of-life](https://github.com/nodejs/Release#end-of-life-releases) 2016-12-31.
 
 - You will no longer be able to pass in `revenue` value as a stand-alone argument to the `track` call. Instead you will need to pass it as an entry in the [`eventTags`](https://developers.optimizely.com/x/solutions/sdks/reference/index.html?language=javascript#event-tags).
 
