@@ -16,6 +16,7 @@
     "type": "git",
     "url": "git+https://github.com/optimizely/javascript-sdk.git"
   },
+  "license": "Apache-2.0",
   "keywords": [
     "optimizely"
   ],
