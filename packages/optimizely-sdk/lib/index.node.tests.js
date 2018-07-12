@@ -28,37 +28,58 @@ describe('optimizelyFactory', function() {
     describe('createInstance', function() {
       var fakeErrorHandler = { handleError: function() {}};
       var fakeEventDispatcher = { dispatchEvent: function() {}};
-      var fakeLogger = { log: function() {}};
+      var fakeLogger;
 
       beforeEach(function() {
-        sinon.spy(console, 'error');
         sinon.stub(configValidator, 'validate');
+
+        fakeLogger = { log: sinon.spy() };
+        sinon.stub(logger, 'createLogger').returns(fakeLogger);
       });
 
       afterEach(function() {
-        console.error.restore();
+        logger.createLogger.restore();
         configValidator.validate.restore();
       });
 
-      it('should not throw if the provided config is not valid and call console.error if logger is passed in', function() {
-        configValidator.validate.throws(new Error('Invalid config or something'));
-        assert.doesNotThrow(function() {
-          optimizelyFactory.createInstance({
-            datafile: {},
-            logger: logger.createLogger({ logLevel: enums.LOG_LEVEL.INFO }),
-          });
+      context('config fails validation', function() {
+        beforeEach(function() {
+          configValidator.validate.throws(new Error('Invalid config or something'));
         });
-        assert.isTrue(console.error.called);
-      });
 
-      it('should not throw if the provided config is not valid and call console.error if no-op logger is used', function() {
-        configValidator.validate.throws(new Error('Invalid config or something'));
-        assert.doesNotThrow(function() {
-          optimizelyFactory.createInstance({
-            datafile: {},
+        it('catches internal errors', function() {
+          assert.doesNotThrow(function() {
+            optimizelyFactory.createInstance({});
           });
         });
-        assert.isTrue(console.error.called);
+
+        context('a logger was supplied', function() {
+          it('an error message is submitted to the supplied logger', function() {
+            var customLogger = { log: sinon.spy() };
+
+            optimizelyFactory.createInstance({
+              datafile: {},
+              logger: customLogger,
+            });
+
+            sinon.assert.notCalled(fakeLogger.log);
+            // Once for config failing validation, and again within the `Optimizely`
+            // constructor for not supplying a valid datafile.
+            sinon.assert.calledTwice(customLogger.log);
+            sinon.assert.alwaysCalledWith(customLogger.log, enums.LOG_LEVEL.ERROR);
+          });
+        });
+
+        context('a logger was not supplied', function() {
+          it('an error message is submitted to a simple logger', function() {
+            optimizelyFactory.createInstance({});
+
+            // Only the validation error is logged.
+            // The `Optimizely` constructor error is submitted to a NoOpLogger.
+            sinon.assert.calledOnce(fakeLogger.log);
+            sinon.assert.calledWith(fakeLogger.log, enums.LOG_LEVEL.ERROR);
+          });
+        });
       });
 
       it('should create an instance of optimizely', function() {
