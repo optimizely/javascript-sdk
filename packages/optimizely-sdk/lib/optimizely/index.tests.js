@@ -55,200 +55,198 @@ describe('lib/optimizely', function() {
       createdLogger.log.restore();
     });
 
-    describe('constructor', function() {
-      it('should construct an instance of the Optimizely class', function() {
-        var optlyInstance = new Optimizely({
+    it('should construct an instance of the Optimizely class', function() {
+      var optlyInstance = new Optimizely({
+        clientEngine: 'node-sdk',
+        datafile: testData.getTestProjectConfig(),
+        errorHandler: stubErrorHandler,
+        eventDispatcher: stubEventDispatcher,
+        jsonSchemaValidator: jsonSchemaValidator,
+        logger: createdLogger,
+      });
+      assert.instanceOf(optlyInstance, Optimizely);
+      sinon.assert.called(createdLogger.log);
+      var logMessage = createdLogger.log.args[0][1];
+      assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.VALID_DATAFILE, 'OPTIMIZELY'));
+    });
+
+    it('should construct an instance of the Optimizely class when datafile is JSON string', function() {
+      var optlyInstance = new Optimizely({
+        clientEngine: 'node-sdk',
+        datafile: JSON.stringify(testData.getTestProjectConfig()),
+        errorHandler: stubErrorHandler,
+        eventDispatcher: stubEventDispatcher,
+        jsonSchemaValidator: jsonSchemaValidator,
+        logger: createdLogger,
+      });
+      assert.instanceOf(optlyInstance, Optimizely);
+      sinon.assert.called(createdLogger.log);
+      var logMessage = createdLogger.log.args[0][1];
+      assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.VALID_DATAFILE, 'OPTIMIZELY'));
+    });
+
+    it('should log if the client engine passed in is invalid', function() {
+      new Optimizely({
+        datafile: testData.getTestProjectConfig(),
+        errorHandler: stubErrorHandler,
+        eventDispatcher: stubEventDispatcher,
+        logger: createdLogger,
+      });
+
+      sinon.assert.called(createdLogger.log);
+      var logMessage = createdLogger.log.args[0][1];
+      assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, 'OPTIMIZELY', 'undefined'));
+    });
+
+    it('should throw an error if a datafile is not passed into the constructor', function() {
+      var optly = new Optimizely({
+        clientEngine: 'node-sdk',
+        errorHandler: stubErrorHandler,
+        logger: createdLogger,
+      });
+      sinon.assert.calledOnce(stubErrorHandler.handleError);
+      var errorMessage = stubErrorHandler.handleError.lastCall.args[0].message;
+      assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, 'OPTIMIZELY'));
+
+      sinon.assert.calledOnce(createdLogger.log);
+      var logMessage = createdLogger.log.args[0][1];
+      assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, 'OPTIMIZELY'));
+
+      assert.isFalse(optly.isValidInstance);
+    });
+
+    it('should throw an error if the datafile JSON is malformed', function() {
+      var invalidDatafileJSON = 'abc';
+
+      new Optimizely({
+        clientEngine: 'node-sdk',
+        errorHandler: stubErrorHandler,
+        datafile: invalidDatafileJSON,
+        jsonSchemaValidator: jsonSchemaValidator,
+        logger: createdLogger,
+      });
+
+      sinon.assert.calledOnce(createdLogger.log);
+      var logMessage = createdLogger.log.args[0][1];
+      assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_MALFORMED, 'OPTIMIZELY'));
+    });
+
+    it('should throw an error if the datafile is not valid', function() {
+      var invalidDatafile = testData.getTestProjectConfig();
+      delete invalidDatafile['projectId'];
+
+      new Optimizely({
+        clientEngine: 'node-sdk',
+        errorHandler: stubErrorHandler,
+        datafile: invalidDatafile,
+        jsonSchemaValidator: jsonSchemaValidator,
+        logger: createdLogger,
+      });
+      sinon.assert.calledOnce(stubErrorHandler.handleError);
+      var errorMessage = stubErrorHandler.handleError.lastCall.args[0].message;
+      assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE, 'JSON_SCHEMA_VALIDATOR', 'projectId', 'is missing and it is required'));
+
+      sinon.assert.calledOnce(createdLogger.log);
+      var logMessage = createdLogger.log.args[0][1];
+      assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE, 'JSON_SCHEMA_VALIDATOR', 'projectId', 'is missing and it is required'));
+    });
+
+    describe('skipping JSON schema validation', function() {
+      beforeEach(function() {
+        sinon.spy(jsonSchemaValidator, 'validate');
+      });
+
+      afterEach(function() {
+        jsonSchemaValidator.validate.restore();
+      });
+
+      it('should skip JSON schema validation if skipJSONValidation is passed into instance args with `true` value', function() {
+        new Optimizely({
+          clientEngine: 'node-sdk',
+          datafile: testData.getTestProjectConfig(),
+          errorHandler: stubErrorHandler,
+          eventDispatcher: stubEventDispatcher,
+          logger: logger.createLogger(),
+          skipJSONValidation: true,
+        });
+
+        sinon.assert.notCalled(jsonSchemaValidator.validate);
+      });
+
+      it('should not skip JSON schema validation if skipJSONValidation is passed into instance args with any value other than true', function() {
+        new Optimizely({
           clientEngine: 'node-sdk',
           datafile: testData.getTestProjectConfig(),
           errorHandler: stubErrorHandler,
           eventDispatcher: stubEventDispatcher,
           jsonSchemaValidator: jsonSchemaValidator,
           logger: createdLogger,
+          skipJSONValidation: 'hi',
         });
-        assert.instanceOf(optlyInstance, Optimizely);
-        sinon.assert.called(createdLogger.log);
+
+        sinon.assert.calledOnce(jsonSchemaValidator.validate);
+        sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.VALID_DATAFILE, 'OPTIMIZELY'));
       });
+    });
 
-      it('should construct an instance of the Optimizely class when datafile is JSON string', function() {
+    describe('when a user profile service is provided', function() {
+      beforeEach(function() {
+        sinon.stub(decisionService, 'createDecisionService');
+      });
+
+      afterEach(function() {
+        decisionService.createDecisionService.restore();
+      });
+
+      it('should validate and pass the user profile service to the decision service', function() {
+        var userProfileServiceInstance = {
+          lookup: function() {},
+          save: function() {},
+        };
+
         var optlyInstance = new Optimizely({
           clientEngine: 'node-sdk',
-          datafile: JSON.stringify(testData.getTestProjectConfig()),
-          errorHandler: stubErrorHandler,
-          eventDispatcher: stubEventDispatcher,
-          jsonSchemaValidator: jsonSchemaValidator,
           logger: createdLogger,
-        });
-        assert.instanceOf(optlyInstance, Optimizely);
-        sinon.assert.called(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.VALID_DATAFILE, 'OPTIMIZELY'));
-      });
-
-      it('should log if the client engine passed in is invalid', function() {
-        new Optimizely({
           datafile: testData.getTestProjectConfig(),
-          errorHandler: stubErrorHandler,
-          eventDispatcher: stubEventDispatcher,
-          logger: createdLogger,
-        });
-
-        sinon.assert.called(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, 'OPTIMIZELY', 'undefined'));
-      });
-
-      it('should throw an error if a datafile is not passed into the constructor', function() {
-        var optly = new Optimizely({
-          clientEngine: 'node-sdk',
-          errorHandler: stubErrorHandler,
-          logger: createdLogger,
-        });
-        sinon.assert.calledOnce(stubErrorHandler.handleError);
-        var errorMessage = stubErrorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, 'OPTIMIZELY'));
-
-        sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, 'OPTIMIZELY'));
-
-        assert.isFalse(optly.isValidInstance);
-      });
-
-      it('should throw an error if the datafile JSON is malformed', function() {
-        var invalidDatafileJSON = 'abc';
-
-        new Optimizely({
-          clientEngine: 'node-sdk',
-          errorHandler: stubErrorHandler,
-          datafile: invalidDatafileJSON,
           jsonSchemaValidator: jsonSchemaValidator,
+          userProfileService: userProfileServiceInstance,
+        });
+
+        sinon.assert.calledWith(decisionService.createDecisionService, {
+          configObj: optlyInstance.configObj,
+          userProfileService: userProfileServiceInstance,
           logger: createdLogger,
         });
 
-        sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_MALFORMED, 'OPTIMIZELY'));
+        // Checking the second log message as the first one just says "Datafile is valid"
+        var logMessage = createdLogger.log.args[1][1];
+        assert.strictEqual(logMessage, 'OPTIMIZELY: Valid user profile service provided.');
       });
 
-      it('should throw an error if the datafile is not valid', function() {
-        var invalidDatafile = testData.getTestProjectConfig();
-        delete invalidDatafile['projectId'];
+      it('should pass in a null user profile to the decision service if the provided user profile is invalid', function() {
+        var invalidUserProfile = {
+          save: function() {},
+        };
 
-        new Optimizely({
+        var optlyInstance = new Optimizely({
           clientEngine: 'node-sdk',
-          errorHandler: stubErrorHandler,
-          datafile: invalidDatafile,
+          logger: createdLogger,
+          datafile: testData.getTestProjectConfig(),
           jsonSchemaValidator: jsonSchemaValidator,
+          userProfileService: invalidUserProfile,
+        });
+
+        sinon.assert.calledWith(decisionService.createDecisionService, {
+          configObj: optlyInstance.configObj,
+          userProfileService: null,
           logger: createdLogger,
         });
-        sinon.assert.calledOnce(stubErrorHandler.handleError);
-        var errorMessage = stubErrorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE, 'JSON_SCHEMA_VALIDATOR', 'projectId', 'is missing and it is required'));
 
-        sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE, 'JSON_SCHEMA_VALIDATOR', 'projectId', 'is missing and it is required'));
-      });
-
-      describe('skipping JSON schema validation', function() {
-        beforeEach(function() {
-          sinon.spy(jsonSchemaValidator, 'validate');
-        });
-
-        afterEach(function() {
-          jsonSchemaValidator.validate.restore();
-        });
-
-        it('should skip JSON schema validation if skipJSONValidation is passed into instance args with `true` value', function() {
-          new Optimizely({
-            clientEngine: 'node-sdk',
-            datafile: testData.getTestProjectConfig(),
-            errorHandler: stubErrorHandler,
-            eventDispatcher: stubEventDispatcher,
-            logger: logger.createLogger(),
-            skipJSONValidation: true,
-          });
-
-          sinon.assert.notCalled(jsonSchemaValidator.validate);
-        });
-
-        it('should not skip JSON schema validation if skipJSONValidation is passed into instance args with any value other than true', function() {
-          new Optimizely({
-            clientEngine: 'node-sdk',
-            datafile: testData.getTestProjectConfig(),
-            errorHandler: stubErrorHandler,
-            eventDispatcher: stubEventDispatcher,
-            jsonSchemaValidator: jsonSchemaValidator,
-            logger: createdLogger,
-            skipJSONValidation: 'hi',
-          });
-
-          sinon.assert.calledOnce(jsonSchemaValidator.validate);
-          sinon.assert.calledOnce(createdLogger.log);
-          var logMessage = createdLogger.log.args[0][1];
-          assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.VALID_DATAFILE, 'OPTIMIZELY'));
-        });
-      });
-
-      describe('when a user profile service is provided', function() {
-        beforeEach(function() {
-          sinon.stub(decisionService, 'createDecisionService');
-        });
-
-        afterEach(function() {
-          decisionService.createDecisionService.restore();
-        });
-
-        it('should validate and pass the user profile service to the decision service', function() {
-          var userProfileServiceInstance = {
-            lookup: function() {},
-            save: function() {},
-          };
-
-          var optlyInstance = new Optimizely({
-            clientEngine: 'node-sdk',
-            logger: createdLogger,
-            datafile: testData.getTestProjectConfig(),
-            jsonSchemaValidator: jsonSchemaValidator,
-            userProfileService: userProfileServiceInstance,
-          });
-
-          sinon.assert.calledWith(decisionService.createDecisionService, {
-            configObj: optlyInstance.configObj,
-            userProfileService: userProfileServiceInstance,
-            logger: createdLogger,
-          });
-
-          // Checking the second log message as the first one just says "Datafile is valid"
-          var logMessage = createdLogger.log.args[1][1];
-          assert.strictEqual(logMessage, 'OPTIMIZELY: Valid user profile service provided.');
-        });
-
-        it('should pass in a null user profile to the decision service if the provided user profile is invalid', function() {
-          var invalidUserProfile = {
-            save: function() {},
-          };
-
-          var optlyInstance = new Optimizely({
-            clientEngine: 'node-sdk',
-            logger: createdLogger,
-            datafile: testData.getTestProjectConfig(),
-            jsonSchemaValidator: jsonSchemaValidator,
-            userProfileService: invalidUserProfile,
-          });
-
-          sinon.assert.calledWith(decisionService.createDecisionService, {
-            configObj: optlyInstance.configObj,
-            userProfileService: null,
-            logger: createdLogger,
-          });
-
-          // Checking the second log message as the first one just says "Datafile is valid"
-          var logMessage = createdLogger.log.args[1][1];
-          assert.strictEqual(logMessage, 'USER_PROFILE_SERVICE_VALIDATOR: Provided user profile service instance is in an invalid format: Missing function \'lookup\'.');
-        });
+        // Checking the second log message as the first one just says "Datafile is valid"
+        var logMessage = createdLogger.log.args[1][1];
+        assert.strictEqual(logMessage, 'USER_PROFILE_SERVICE_VALIDATOR: Provided user profile service instance is in an invalid format: Missing function \'lookup\'.');
       });
     });
   });
