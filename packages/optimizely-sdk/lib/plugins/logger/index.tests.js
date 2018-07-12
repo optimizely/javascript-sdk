@@ -33,9 +33,20 @@ describe('lib/plugins/logger', function() {
     });
 
     describe('log', function() {
+      var nodeEnv;
+
       beforeEach(function() {
         defaultLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
         sinon.stub(defaultLogger, '__consoleLog');
+
+        // The usual rules of turning off logging don't apply here,
+        // since the code under test _is the logger_.
+        nodeEnv = process.env.NODE_ENV;
+        process.env.NODE_ENV = 'production';
+      });
+
+      afterEach(function() {
+        process.env.NODE_ENV = nodeEnv;
       });
 
       it('should log the given message', function() {

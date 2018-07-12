@@ -78,6 +78,15 @@ Logger.prototype.setLogLevel = function(logLevel) {
  * @private
  */
 Logger.prototype.__shouldLog = function(targetLogLevel) {
+  try {
+    if (process.env.NODE_ENV === 'test') {
+      // Suppress logs during testing.
+      return false;
+    }
+  } catch (e) {
+    // `process` is likely a ReferenceError in non-Node.js environments
+  }
+
   return targetLogLevel >= this.logLevel;
 };
 

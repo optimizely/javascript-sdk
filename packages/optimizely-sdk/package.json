@@ -5,7 +5,7 @@
   "main": "lib/index.node.js",
   "browser": "lib/index.browser.js",
   "scripts": {
-    "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive",
+    "test": "NODE_ENV=test mocha --reporter dot './lib/**/*.tests.js'",
     "test-xbrowser": "karma start karma.bs.conf.js --single-run",
     "lint": "eslint lib/**",
     "cover": "istanbul cover _mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js",
