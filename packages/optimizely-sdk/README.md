@@ -71,7 +71,7 @@ npm run test-xbrowser
 
 First-party code (under lib/) is copyright Optimizely, Inc. and contributors, licensed under Apache 2.0.
 
-## Additional code
+## Additional Code
 
 Prod dependencies are as follows:
 
