@@ -15,7 +15,7 @@ window._optimizelyClientWarningGiven = false;
 Object.defineProperty(window, 'optimizelyClient', {
   get: function () {
     if (!window._optimizelyClientWarningGiven) {
-      console.warn('Accessing the SDK via window.optimizelyClient is deprecated; please use window.optimizelySdk instead. This functionality will be dropped in 3.0.0.');
+      console.warn('Accessing the SDK via window.optimizelyClient is deprecated; please use window.optimizelySdk instead. This alias will be dropped in 3.0.0.');
       window._optimizelyClientWarningGiven = true;
     }
 
