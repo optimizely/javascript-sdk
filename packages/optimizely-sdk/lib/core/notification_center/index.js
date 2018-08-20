@@ -16,7 +16,7 @@
 
 var enums = require('../../utils/enums');
 var fns = require('../../utils/fns');
-var sprintf = require('sprintf');
+var sprintf = require('sprintf-js').sprintf;
 
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;

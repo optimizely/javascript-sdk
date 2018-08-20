@@ -21,7 +21,7 @@ var enums = require('./utils/enums');
 var fns = require('./utils/fns');
 var jsonSchemaValidator = require('./utils/json_schema_validator');
 var logger = require('./plugins/logger');
-var sprintf = require('sprintf');
+var sprintf = require('sprintf-js').sprintf;
 
 var Optimizely = require('./optimizely');
 
