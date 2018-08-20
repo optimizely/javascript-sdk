@@ -15,13 +15,13 @@ This directory contains the source code for the JavaScript SDK, which is usable 
 ### Prerequisites
 
 Ensure the SDK supports all of the platforms you're targeting. In particular, the SDK targets any ES5-compliant JavaScript environment. We officially support:
-  - Node.js >= 4.0.0. By extension, environments like AWS Lambda, Google Cloud Functions, and Auth0 Webtasks are supported as well. Older Node.js releases likely work too (try `npm test` to validate for yourself), but are not formally supported.
-  - [Web browsers](https://caniuse.com/#feat=es5)
+- Node.js >= 4.0.0. By extension, environments like AWS Lambda, Google Cloud Functions, and Auth0 Webtasks are supported as well. Older Node.js releases likely work too (try `npm test` to validate for yourself), but are not formally supported.
+- [Web browsers](https://caniuse.com/#feat=es5)
 
 Other environments likely are compatible, too, but note that we don't officially support them:
-  - Progressive Web Apps, WebViews, and hybrid mobile apps like those built with React Native and Apache Cordova.
-  - [Cloudflare Workers](https://developers.cloudflare.com/workers/) and [Fly](https://fly.io/), both of which are powered by recent releases of V8.
-  - Anywhere else you can think of that might embed a JavaScript engine. The sky is the limit; experiment everywhere! 🚀
+- Progressive Web Apps, WebViews, and hybrid mobile apps like those built with React Native and Apache Cordova.
+- [Cloudflare Workers](https://developers.cloudflare.com/workers/) and [Fly](https://fly.io/), both of which are powered by recent releases of V8.
+- Anywhere else you can think of that might embed a JavaScript engine. The sky is the limit; experiment everywhere! 🚀
 
 Once you've validated that the SDK supports the platforms you're targeting, fetch the package from [NPM](https://www.npmjs.com/package/@optimizely/optimizely-sdk). Using `npm`:
 
@@ -31,6 +31,14 @@ npm install --save @optimizely/optimizely-sdk
 
 ### Usage
 See the Optimizely X Full Stack [developer documentation](http://developers.optimizely.com/server/reference/index.html) to learn how to set up your first JavaScript project and use the SDK.
+
+The package's entry point is a CommonJS module, which can be used directly in environments which support it (e.g., Node.js, or loaded in a browser via Browserify or RequireJS). Additionally, you can include a standalone bundle of the SDK in your web page by fetching it from [unpkg](https://unpkg.com/):
+
+```html
+<script src="https://unpkg.com/@optimizely/optimizely-sdk/dist/optimizely.browser.umd.js"></script>
+```
+
+When evaluated, that bundle assigns the SDK's exports to `window.optimizelySdk`. If you wish to use the asset locally (for example, if unpkg is down), you can find it in your local copy of the package at dist/optimizely.browser.umd.min.js, or [here in GitHub](./dist/optimizely.browser.umd.min.js).
 
 Regarding `EventDispatcher`s: In Node.js and browser environments, the default `EventDispatcher` is powered by the [`http/s`](https://nodejs.org/api/http.html) modules and by [`XMLHttpRequest`](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#Browser_compatibility), respectively. In all other environments, you must supply your own `EventDispatcher`.
 
@@ -67,3 +75,49 @@ npm run test-xbrowser
 
 [.travis.yml](/.travis.yml) contains the definitions for `BROWSER_STACK_USERNAME` and `BROWSER_STACK_ACCESS_KEY` used in CI. These values are Optimizely's BrowserStack credentials, encrypted with our Travis CI public key. These creds can be rotated by following [these docs](https://docs.travis-ci.com/user/environment-variables/#Defining-encrypted-variables-in-.travis.yml).
 
+## Credits
+
+First-party code (under lib/) is copyright Optimizely, Inc. and contributors, licensed under Apache 2.0.
+
+## Additional Code
+
+Prod dependencies are as follows:
+
+```json
+{
+  "json-schema@0.2.3": {
+    "licenses": [
+      "AFLv2.1",
+      "BSD"
+    ],
+    "publisher": "Kris Zyp",
+    "repository": "https://github.com/kriszyp/json-schema"
+  },
+  "lodash@4.17.10": {
+    "licenses": "MIT",
+    "publisher": "John-David Dalton",
+    "repository": "https://github.com/lodash/lodash"
+  },
+  "murmurhash@0.0.2": {
+    "licenses": "MIT*",
+    "repository": "https://github.com/perezd/node-murmurhash"
+  },
+  "sprintf@0.1.5": {
+    "licenses": "BSD-3-Clause",
+    "publisher": "Moritz Peters",
+    "repository": "https://github.com/maritz/node-sprintf"
+  },
+  "uuid@3.2.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/kelektiv/node-uuid"
+  }
+}
+```
+
+To regenerate this, run the following command:
+
+```sh
+npx license-checker --production --json | jq 'map_values({ licenses, publisher, repository }) | del(.[][] | nulls)'
+```
+
+and remove the self (`@optimizely/optimizely-sdk`) entry.
