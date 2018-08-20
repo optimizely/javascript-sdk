@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "name": "optimizely-sdk-packages",
   "scripts": {
-    "postinstall": "lerna bootstrap",
+    "postinstall": "lerna bootstrap && lerna run build",
+    "build": "lerna run build",
     "clean": "lerna run clean",
-    "publish": "lerna publish",
+    "publish": "npm run build && lerna publish",
     "test": "lerna run test --stream",
     "test-xbrowser": "lerna run test-xbrowser --stream"
   },
