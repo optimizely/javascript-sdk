@@ -115,47 +115,45 @@ function getImpressionEventParams(configObj, experimentId, variationId) {
  * @param  {Object} logger                    Logger object
  * @return {Object}                           Conversion event params
  */
-function getConversionEventParams(configObj, eventKey, eventTags, experimentsToVariationMap, logger) {
-
-  var conversionEventParams = [];
+function getVisitorSnapshot(configObj, eventKey, eventTags, experimentsToVariationMap, logger) {  
+  var snapshot = {
+    decisions: [],
+    events: []
+  };
 
   fns.forOwn(experimentsToVariationMap, function(variationId, experimentId) {
-
     var decision = {
-      decisions: [{
-        campaign_id: projectConfig.getLayerId(configObj, experimentId),
-        experiment_id: experimentId,
-        variation_id: variationId,
-      }],
-      events: [],
+      campaign_id: projectConfig.getLayerId(configObj, experimentId),
+      experiment_id: experimentId,
+      variation_id: variationId,
     };
 
-    var eventDict = {
-      entity_id: projectConfig.getEventId(configObj, eventKey),
-      timestamp: fns.currentTimestamp(),
-      uuid: fns.uuid(),
-      key: eventKey,
-    };
-
-    if (eventTags) {
-      var revenue = eventTagUtils.getRevenueValue(eventTags, logger);
-      if (revenue) {
-        eventDict[enums.RESERVED_EVENT_KEYWORDS.REVENUE] = revenue;
-      }
-
-      var eventValue = eventTagUtils.getEventValue(eventTags, logger);
-      if (eventValue) {
-        eventDict[enums.RESERVED_EVENT_KEYWORDS.VALUE] = eventValue;
-      }
-
-      eventDict['tags'] = eventTags;
-    }
-    decision.events = [eventDict];
-
-    conversionEventParams.push(decision);
+    snapshot.decisions.push(decision);
   });
 
-  return conversionEventParams;
+  var eventDict = {
+    entity_id: projectConfig.getEventId(configObj, eventKey),
+    timestamp: fns.currentTimestamp(),
+    uuid: fns.uuid(),
+    key: eventKey,
+  };
+
+  if (eventTags) {
+    var revenue = eventTagUtils.getRevenueValue(eventTags, logger);
+    if (revenue) {
+      eventDict[enums.RESERVED_EVENT_KEYWORDS.REVENUE] = revenue;
+    }
+
+    var eventValue = eventTagUtils.getEventValue(eventTags, logger);
+    if (eventValue) {
+      eventDict[enums.RESERVED_EVENT_KEYWORDS.VALUE] = eventValue;
+    }
+
+    eventDict['tags'] = eventTags;
+  }
+  snapshot.events.push(eventDict);
+
+  return snapshot;
 }
 
 module.exports = {
@@ -210,13 +208,13 @@ module.exports = {
     var commonParams = getCommonEventParams(options);
     conversionEvent.url = ENDPOINT;
 
-    var conversionEventParams = getConversionEventParams(options.configObj,
-                                                         options.eventKey,
-                                                         options.eventTags,
-                                                         options.experimentsToVariationMap,
-                                                         options.logger);
+    var snapshot = getVisitorSnapshot(options.configObj,
+                                            options.eventKey,
+                                            options.eventTags,
+                                            options.experimentsToVariationMap,
+                                            options.logger);
 
-    commonParams.visitors[0].snapshots = conversionEventParams;
+    commonParams.visitors[0].snapshots = [snapshot];
     conversionEvent.params = commonParams;
 
     return conversionEvent;
