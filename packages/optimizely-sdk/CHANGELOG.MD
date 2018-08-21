@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Send all decisions for the same event in one snapshot. ([#155](https://github.com/optimizely/javascript-sdk/pull/155))
 - Give Node.js consumers the unbundled package ([#133](https://github.com/optimizely/javascript-sdk/pull/133))
-- Prevent crash when `http`/`https` emits an error by adding an 'error' listener ([#123](https://github.com/optimizely/javascript-sdk/pull/123)
+- Prevent crash when `http`/`https` emits an error by adding an 'error' listener ([#123](https://github.com/optimizely/javascript-sdk/pull/123))
 
 ## 2.1.1
 June 19, 2018
