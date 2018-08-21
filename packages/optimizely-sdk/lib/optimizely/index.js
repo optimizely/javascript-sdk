@@ -23,7 +23,7 @@ var eventTagsValidator = require('../utils/event_tags_validator');
 var notificationCenter = require('../core/notification_center');
 var projectConfig = require('../core/project_config');
 var projectConfigSchema = require('./project_config_schema');
-var sprintf = require('sprintf');
+var sprintf = require('sprintf-js').sprintf;
 var userProfileServiceValidator = require('../utils/user_profile_service_validator');
 var stringValidator = require('../utils/string_value_validator');
 

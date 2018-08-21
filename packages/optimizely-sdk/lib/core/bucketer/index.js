@@ -19,7 +19,7 @@
  */
 var enums = require('../../utils/enums');
 var murmurhash = require('murmurhash');
-var sprintf = require('sprintf');
+var sprintf = require('sprintf-js').sprintf;
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var HASH_SEED = 1;

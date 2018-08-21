@@ -15,7 +15,7 @@
  */
 var chai = require('chai');
 var assert = chai.assert;
-var sprintf = require('sprintf');
+var sprintf = require('sprintf-js').sprintf;
 var attributesValidator = require('./');
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;

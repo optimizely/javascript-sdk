@@ -15,7 +15,7 @@
  */
 var fns = require('../fns');
 var validate = require('json-schema').validate;
-var sprintf = require('sprintf');
+var sprintf = require('sprintf-js').sprintf;
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';
