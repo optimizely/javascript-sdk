@@ -6,15 +6,26 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
-### Deprecated
-* The UMD build of the SDK now assigns the SDK namespace object to `window.optimizelySdk` rather than to `window.optimizelyClient`. The old name still works, but on its first access a deprecation warning is logged to the console. The alias will be removed in the 3.0.0 release.
-
-## [2.1.2] - August 21, 2018
+## [2.1.3] - August 21, 2018
 
 ### Fixed
 - Send all decisions for the same event in one snapshot. ([#155](https://github.com/optimizely/javascript-sdk/pull/155))
 - Give Node.js consumers the unbundled package ([#133](https://github.com/optimizely/javascript-sdk/pull/133))
-- Prevent crash when `http`/`https` emits an error by adding an 'error' listener ([#123](https://github.com/optimizely/javascript-sdk/pull/123))
+
+### Deprecated
+- The UMD build of the SDK now assigns the SDK namespace object to `window.optimizelySdk` rather than to `window.optimizelyClient`. The old name still works, but on its first access a deprecation warning is logged to the console. The alias will be removed in the 3.0.0 release.
+
+## [2.1.2] - June 25, 2018
+
+### Fixed
+- Failure to log success message when event dispatched ([#123](https://github.com/optimizely/javascript-sdk/pull/123))
+- Fix: Don't call success message when event fails to send ([#123](https://github.com/optimizely/javascript-sdk/pull/123))
+
+## [2.0.5] - June 25, 2018
+
+### Fixed
+- Failure to log success message when event dispatched ([#123](https://github.com/optimizely/javascript-sdk/pull/123))
+- Fix: Don't call success message when event fails to send ([#123](https://github.com/optimizely/javascript-sdk/pull/123))
 
 ## 2.1.1
 June 19, 2018
