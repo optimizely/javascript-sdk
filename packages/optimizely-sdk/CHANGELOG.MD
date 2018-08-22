@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Give Node.js consumers the unbundled package ([#133](https://github.com/optimizely/javascript-sdk/pull/133))
 
 ### Deprecated
-- The UMD build of the SDK now assigns the SDK namespace object to `window.optimizelySdk` rather than to `window.optimizelyClient`. The old name still works, but on its first access a deprecation warning is logged to the console. The alias will be removed in the 3.0.0 release.
+- The UMD build of the SDK now assigns the SDK namespace object to `window.optimizelySdk` rather than to `window.optimizelyClient`. The old name still works, but on its first access a deprecation warning is logged to the console. The alias will be removed in the 3.0.0 release. ([#152](https://github.com/optimizely/javascript-sdk/pull/152))
 
 ## [2.1.2] - June 25, 2018
 
