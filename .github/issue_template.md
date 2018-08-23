@@ -1,16 +1,33 @@
-Thanks for filing in issue! Are you proposing an enhancement or reporting a bug?
+<!--
+  Thanks for filing in issue! Are you proposing an enhancement or reporting a bug?
 
-If proposing an enhancement, please describe your use case in as much detail as you think is needed to convey the value of the enhancement.
+  If proposing an enhancement, please describe your use case in as much detail as you think is needed to convey the value of the enhancement.
+-->
+## How would the enhancement work?
 
-If reporting a bug, please include the following info:
+## When would the enhancement be useful?
 
+<!--  
+  If reporting a bug, please include the following info:
+-->
+
+## What I wanted to do
+
+## What I expected to happen
+
+## What actually happened
+
+## Steps to reproduce
 Link to repository that can reproduce the issue: <link>
 
-OR
+<!--
+  OR provide the following.
+  If possible, whittle down your issue into a [short, self-contained, correct example](http://sscce.org/).
+-->
 
 **`@optimizely/optimizely-sdk` version:** 
 
-and whichever of the following are applicable:
+<!-- ...and whichever of the following are applicable: -->
 
 **Browser and version:**
 
@@ -18,12 +35,5 @@ and whichever of the following are applicable:
 
 **`npm` version:** 
 
-Any other relevant tools (like module bundlers, transpilers, etc.): 
+Versions of any other relevant tools (like module bundlers, transpilers, etc.): 
 
-## Expected behavior
-
-What are you doing, and how is it deviating from your expectations? If possible, whittle down your issue into a [short, self-contained, correct example](http://sscce.org/).
-
-## Actual behavior
-
-Give any sample output or description of what you're observing here.
