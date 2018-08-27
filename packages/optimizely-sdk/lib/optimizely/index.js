@@ -228,7 +228,7 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
  */
 Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
   try {
-    
+
     if (!this.isValidInstance) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'track'));
       return;
@@ -422,7 +422,7 @@ Optimizely.prototype.__getValidExperimentsForEvent = function(eventKey, userId, 
   }
 
   // determine which variations the user has been bucketed into
-  validExperimentsToVariationsMap = fns.reduce(experimentIdsForEvent, function(results, experimentId) {
+  validExperimentsToVariationsMap = experimentIdsForEvent.reduce(function(results, experimentId) {
     var experimentKey = this.configObj.experimentIdMap[experimentId].key;
 
     // user needs to be bucketed into experiment for us to track the event

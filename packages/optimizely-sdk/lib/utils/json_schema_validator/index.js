@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var fns = require('../fns');
 var validate = require('json-schema').validate;
 var sprintf = require('sprintf-js').sprintf;
 
@@ -40,7 +39,7 @@ module.exports = {
     if (result.valid) {
       return true;
     } else {
-      if (fns.isArray(result.errors)) {
+      if (Array.isArray(result.errors)) {
         throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE, MODULE_NAME, result.errors[0].property, result.errors[0].message));
       }
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_JSON, MODULE_NAME));

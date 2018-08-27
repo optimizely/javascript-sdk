@@ -215,7 +215,7 @@ module.exports = {
 
     var audienceIds = experiment.audienceIds;
     var audiencesInExperiment = [];
-    var audiencesInExperiment = fns.filter(projectConfig.audiences, function(audience) {
+    var audiencesInExperiment = (projectConfig.audiences || []).filter(function(audience) {
       return audienceIds.indexOf(audience.id) !== -1;
     });
     return audiencesInExperiment;
