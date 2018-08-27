@@ -22,14 +22,11 @@ module.exports = {
   currentTimestamp: function() {
     return Math.round(new Date().getTime());
   },
-  isArray: require('lodash/isArray'),
   isEmpty: require('lodash/isEmpty'),
   keyBy: require('lodash/keyBy'),
-  filter: require('lodash/filter'),
   forEach: require('lodash/forEach'),
   forOwn: require('lodash/forOwn'),
   map: require('lodash/map'),
-  reduce: require('lodash/reduce'),
   uuid: function() {
     return uuid.v4();
   },
