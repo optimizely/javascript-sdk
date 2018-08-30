@@ -23,7 +23,7 @@ var chai = require('chai');
 var assert = chai.assert;
 var logger = require('../../plugins/logger');
 var sinon = require('sinon');
-var sprintf = require('sprintf');
+var sprintf = require('sprintf-js').sprintf;
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
@@ -217,7 +217,7 @@ describe('lib/core/project_config', function() {
     var testData = testDatafile.getTestProjectConfig();
     var configObj;
     var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
-      
+
     beforeEach(function() {
       configObj = projectConfig.createProjectConfig(testData);
       sinon.stub(createdLogger, 'log');
@@ -258,22 +258,22 @@ describe('lib/core/project_config', function() {
 
     it('should return null for invalid attribute key in getAttributeId', function() {
       assert.isNull(projectConfig.getAttributeId(configObj, 'invalidAttributeKey', createdLogger));
-      sinon.assert.calledWithExactly(createdLogger.log, 
-                                     LOG_LEVEL.DEBUG, 
-                                     'PROJECT_CONFIG: Unrecognized attribute invalidAttributeKey provided. Pruning before sending event to Optimizely.')
+      sinon.assert.calledWithExactly(createdLogger.log,
+                                     LOG_LEVEL.DEBUG,
+                                     'PROJECT_CONFIG: Unrecognized attribute invalidAttributeKey provided. Pruning before sending event to Optimizely.');
     });
 
     it('should return null for invalid attribute key in getAttributeId', function() {
       // Adding attribute in key map with reserved prefix
       configObj.attributeKeyMap['$opt_some_reserved_attribute'] = {
-        id: '42', 
+        id: '42',
         key: '$opt_some_reserved_attribute'
       };
       assert.strictEqual(projectConfig.getAttributeId(configObj, '$opt_some_reserved_attribute', createdLogger), '42');
-      sinon.assert.calledWithExactly(createdLogger.log, 
-                                     LOG_LEVEL.WARN, 
-                                     'Attribute $opt_some_reserved_attribute unexpectedly has reserved prefix $opt_; using attribute ID instead of reserved attribute name.')
-    });    
+      sinon.assert.calledWithExactly(createdLogger.log,
+                                     LOG_LEVEL.WARN,
+                                     'Attribute $opt_some_reserved_attribute unexpectedly has reserved prefix $opt_; using attribute ID instead of reserved attribute name.');
+    });
 
     it('should retrieve event ID for valid event key in getEventId', function() {
       assert.strictEqual(projectConfig.getEventId(configObj, 'testEvent'), '111095');
@@ -365,21 +365,21 @@ describe('lib/core/project_config', function() {
     });
 
     describe('feature management', function() {
-      var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+      var featureManagementLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
       beforeEach(function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
-        sinon.stub(createdLogger, 'log');
+        sinon.stub(featureManagementLogger, 'log');
       });
 
       afterEach(function() {
-        createdLogger.log.restore();
+        featureManagementLogger.log.restore();
       });
 
       describe('getVariableForFeature', function() {
         it('should return a variable object for a valid variable and feature key', function() {
           var featureKey = 'test_feature_for_experiment';
           var variableKey = 'num_buttons';
-          var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, createdLogger);
+          var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
           assert.deepEqual(result, {
             type: 'integer',
             key: 'num_buttons',
@@ -391,28 +391,28 @@ describe('lib/core/project_config', function() {
         it('should return null for an invalid variable key and a valid feature key', function() {
           var featureKey = 'test_feature_for_experiment';
           var variableKey = 'notARealVariable____';
-          var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, createdLogger);
+          var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
           assert.strictEqual(result, null);
-          sinon.assert.calledOnce(createdLogger.log);
-          sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Variable with key "notARealVariable____" associated with feature with key "test_feature_for_experiment" is not in datafile.');
+          sinon.assert.calledOnce(featureManagementLogger.log);
+          sinon.assert.calledWithExactly(featureManagementLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Variable with key "notARealVariable____" associated with feature with key "test_feature_for_experiment" is not in datafile.');
         });
 
         it('should return null for an invalid feature key', function() {
           var featureKey = 'notARealFeature_____';
           var variableKey = 'num_buttons';
-          var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, createdLogger);
+          var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
           assert.strictEqual(result, null);
-          sinon.assert.calledOnce(createdLogger.log);
-          sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key notARealFeature_____ is not in datafile.');
+          sinon.assert.calledOnce(featureManagementLogger.log);
+          sinon.assert.calledWithExactly(featureManagementLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key notARealFeature_____ is not in datafile.');
         });
 
         it('should return null for an invalid variable key and an invalid feature key', function() {
           var featureKey = 'notARealFeature_____';
           var variableKey = 'notARealVariable____';
-          var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, createdLogger);
+          var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
           assert.strictEqual(result, null);
-          sinon.assert.calledOnce(createdLogger.log);
-          sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key notARealFeature_____ is not in datafile.');
+          sinon.assert.calledOnce(featureManagementLogger.log);
+          sinon.assert.calledWithExactly(featureManagementLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key notARealFeature_____ is not in datafile.');
         });
       });
 
@@ -420,40 +420,40 @@ describe('lib/core/project_config', function() {
         it('returns a value for a valid variation and variable', function() {
           var variation = configObj.variationIdMap['594096'];
           var variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
-          var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, createdLogger);
+          var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
           assert.strictEqual(result, '2');
 
           variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.is_button_animated;
-          result = projectConfig.getVariableValueForVariation(configObj, variable, variation, createdLogger);
+          result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
           assert.strictEqual(result, 'true');
 
           variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.button_txt;
-          result = projectConfig.getVariableValueForVariation(configObj, variable, variation, createdLogger);
+          result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
           assert.strictEqual(result, 'Buy me NOW');
 
           variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.button_width;
-          result = projectConfig.getVariableValueForVariation(configObj, variable, variation, createdLogger);
+          result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
           assert.strictEqual(result, '20.25');
         });
 
         it('returns null for a null variation', function() {
           var variation = null;
           var variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
-          var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, createdLogger);
+          var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
           assert.strictEqual(result, null);
         });
 
         it('returns null for a null variable', function() {
           var variation = configObj.variationIdMap['594096'];
           var variable = null;
-          var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, createdLogger);
+          var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
           assert.strictEqual(result, null);
         });
 
         it('returns null for a null variation and null variable', function() {
           var variation = null;
           var variable = null;
-          var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, createdLogger);
+          var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
           assert.strictEqual(result, null);
         });
 
@@ -464,67 +464,67 @@ describe('lib/core/project_config', function() {
             variables: [],
           };
           var variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
-          var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, createdLogger);
+          var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
           assert.strictEqual(result, null);
         });
 
         it('returns the variable default value if the variation does not have a value for this variable', function() {
           var variation = configObj.variationIdMap['595008']; // This variation has no variable values associated with it
           var variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
-          var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, createdLogger);
+          var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
           assert.strictEqual(result, '10');
         });
       });
 
       describe('getTypeCastValue', function() {
         it('can cast a boolean', function() {
-          var result = projectConfig.getTypeCastValue('true', FEATURE_VARIABLE_TYPES.BOOLEAN, createdLogger);
+          var result = projectConfig.getTypeCastValue('true', FEATURE_VARIABLE_TYPES.BOOLEAN, featureManagementLogger);
           assert.strictEqual(result, true);
-          result = projectConfig.getTypeCastValue('false', FEATURE_VARIABLE_TYPES.BOOLEAN, createdLogger);
+          result = projectConfig.getTypeCastValue('false', FEATURE_VARIABLE_TYPES.BOOLEAN, featureManagementLogger);
           assert.strictEqual(result, false);
         });
 
         it('can cast an integer', function() {
-          var result = projectConfig.getTypeCastValue('50', FEATURE_VARIABLE_TYPES.INTEGER, createdLogger);
+          var result = projectConfig.getTypeCastValue('50', FEATURE_VARIABLE_TYPES.INTEGER, featureManagementLogger);
           assert.strictEqual(result, 50);
-          var result = projectConfig.getTypeCastValue('-7', FEATURE_VARIABLE_TYPES.INTEGER, createdLogger);
+          var result = projectConfig.getTypeCastValue('-7', FEATURE_VARIABLE_TYPES.INTEGER, featureManagementLogger);
           assert.strictEqual(result, -7);
-          var result = projectConfig.getTypeCastValue('0', FEATURE_VARIABLE_TYPES.INTEGER, createdLogger);
+          var result = projectConfig.getTypeCastValue('0', FEATURE_VARIABLE_TYPES.INTEGER, featureManagementLogger);
           assert.strictEqual(result, 0);
         });
 
         it('can cast a double', function() {
-          var result = projectConfig.getTypeCastValue('89.99', FEATURE_VARIABLE_TYPES.DOUBLE, createdLogger);
+          var result = projectConfig.getTypeCastValue('89.99', FEATURE_VARIABLE_TYPES.DOUBLE, featureManagementLogger);
           assert.strictEqual(result, 89.99);
-          var result = projectConfig.getTypeCastValue('-257.21', FEATURE_VARIABLE_TYPES.DOUBLE, createdLogger);
+          var result = projectConfig.getTypeCastValue('-257.21', FEATURE_VARIABLE_TYPES.DOUBLE, featureManagementLogger);
           assert.strictEqual(result, -257.21);
-          var result = projectConfig.getTypeCastValue('0', FEATURE_VARIABLE_TYPES.DOUBLE, createdLogger);
+          var result = projectConfig.getTypeCastValue('0', FEATURE_VARIABLE_TYPES.DOUBLE, featureManagementLogger);
           assert.strictEqual(result, 0);
-          var result = projectConfig.getTypeCastValue('10', FEATURE_VARIABLE_TYPES.DOUBLE, createdLogger);
+          var result = projectConfig.getTypeCastValue('10', FEATURE_VARIABLE_TYPES.DOUBLE, featureManagementLogger);
           assert.strictEqual(result, 10);
         });
 
         it('can return a string unmodified', function() {
-          var result = projectConfig.getTypeCastValue('message', FEATURE_VARIABLE_TYPES.STRING, createdLogger);
+          var result = projectConfig.getTypeCastValue('message', FEATURE_VARIABLE_TYPES.STRING, featureManagementLogger);
           assert.strictEqual(result, 'message');
         });
 
         it('returns null and logs an error for an invalid boolean', function() {
-          var result = projectConfig.getTypeCastValue('notabool', FEATURE_VARIABLE_TYPES.BOOLEAN, createdLogger);
+          var result = projectConfig.getTypeCastValue('notabool', FEATURE_VARIABLE_TYPES.BOOLEAN, featureManagementLogger);
           assert.strictEqual(result, null);
-          sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Unable to cast value notabool to type boolean, returning null.');
+          sinon.assert.calledWithExactly(featureManagementLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Unable to cast value notabool to type boolean, returning null.');
         });
 
         it('returns null and logs an error for an invalid integer', function() {
-          var result = projectConfig.getTypeCastValue('notanint', FEATURE_VARIABLE_TYPES.INTEGER, createdLogger);
+          var result = projectConfig.getTypeCastValue('notanint', FEATURE_VARIABLE_TYPES.INTEGER, featureManagementLogger);
           assert.strictEqual(result, null);
-          sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Unable to cast value notanint to type integer, returning null.');
+          sinon.assert.calledWithExactly(featureManagementLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Unable to cast value notanint to type integer, returning null.');
         });
 
         it('returns null and logs an error for an invalid double', function() {
-          var result = projectConfig.getTypeCastValue('notadouble', FEATURE_VARIABLE_TYPES.DOUBLE, createdLogger);
+          var result = projectConfig.getTypeCastValue('notadouble', FEATURE_VARIABLE_TYPES.DOUBLE, featureManagementLogger);
           assert.strictEqual(result, null);
-          sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Unable to cast value notadouble to type double, returning null.');
+          sinon.assert.calledWithExactly(featureManagementLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Unable to cast value notadouble to type double, returning null.');
         });
       });
     });
@@ -555,7 +555,7 @@ describe('lib/core/project_config', function() {
       var variation = projectConfig.getForcedVariation(configObj, 'definitely_not_valid_exp_key', 'user1', createdLogger);
       assert.strictEqual(variation, null);
     });
-  })
+  });
 
   describe('#setForcedVariation', function() {
     var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
@@ -690,7 +690,7 @@ describe('lib/core/project_config', function() {
       assert.strictEqual(variation2, 'controlLaunched');
 
       //reset for one of the experiments
-      var didSetVariationAgain = projectConfig.setForcedVariation(configObj, 'testExperiment', 'user1', null, createdLogger);
+      projectConfig.setForcedVariation(configObj, 'testExperiment', 'user1', null, createdLogger);
       assert.strictEqual(didSetVariation, true);
 
       var variation = projectConfig.getForcedVariation(configObj, 'testExperiment', 'user1', createdLogger);

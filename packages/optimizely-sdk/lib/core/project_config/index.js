@@ -15,7 +15,7 @@
  */
 var fns = require('../../utils/fns');
 var enums = require('../../utils/enums');
-var sprintf = require('sprintf');
+var sprintf = require('sprintf-js').sprintf;
 
 var EXPERIMENT_LAUNCHED_STATUS = 'Launched';
 var EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -141,7 +141,7 @@ module.exports = {
     var hasReservedPrefix = attributeKey.indexOf(RESERVED_ATTRIBUTE_PREFIX) === 0;
     if (attribute) {
       if (hasReservedPrefix) {
-        logger.log(LOG_LEVEL.WARN, 
+        logger.log(LOG_LEVEL.WARN,
                    sprintf('Attribute %s unexpectedly has reserved prefix %s; using attribute ID instead of reserved attribute name.', attributeKey, RESERVED_ATTRIBUTE_PREFIX));
       }
       return attribute.id;
@@ -372,7 +372,7 @@ module.exports = {
       } else {
         // catching improperly formatted experiments
         logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT, MODULE_NAME, experimentKey));
-        return null
+        return null;
       }
     } catch (ex) {
       // catching experiment not in datafile

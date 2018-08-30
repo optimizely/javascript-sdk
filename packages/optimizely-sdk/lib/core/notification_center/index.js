@@ -16,7 +16,7 @@
 
 var enums = require('../../utils/enums');
 var fns = require('../../utils/fns');
-var sprintf = require('sprintf');
+var sprintf = require('sprintf-js').sprintf;
 
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
@@ -30,10 +30,12 @@ var MODULE_NAME = 'NOTIFICATION_CENTER';
  * @constructor
  * @param {Object} options
  * @param {Object} options.logger An instance of a logger to log messages with
+ * @param {object} options.errorHandler An instance of errorHandler to handle any unexpected error
  * @returns {Object}
  */
 function NotificationCenter(options) {
   this.logger = options.logger;
+  this.errorHandler = options.errorHandler;
   this.__notificationListeners = {};
   fns.forOwn(enums.NOTIFICATION_TYPES, function(notificationTypeEnum) {
     this.__notificationListeners[notificationTypeEnum] = [];
@@ -51,36 +53,42 @@ function NotificationCenter(options) {
  * can happen if the first argument is not a valid notification type, or if the same callback
  * function was already added as a listener by a prior call to this function.
  */
-NotificationCenter.prototype.addNotificationListener = function(notificationType, callback) {
-  var isNotificationTypeValid = fns.values(enums.NOTIFICATION_TYPES)
-    .indexOf(notificationType) > -1;
-  if (!isNotificationTypeValid) {
-    return -1;
-  }
-
-  if (!this.__notificationListeners[notificationType]) {
-    this.__notificationListeners[notificationType] = [];
-  }
-
-  var callbackAlreadyAdded = false;
-  fns.forEach(this.__notificationListeners[notificationType], function(listenerEntry) {
-    if (listenerEntry.callback === callback) {
-      callbackAlreadyAdded = true;
-      return false;
+NotificationCenter.prototype.addNotificationListener = function (notificationType, callback) {
+  try {
+    var isNotificationTypeValid = fns.values(enums.NOTIFICATION_TYPES)
+      .indexOf(notificationType) > -1;
+    if (!isNotificationTypeValid) {
+      return -1;
     }
-  });
-  if (callbackAlreadyAdded) {
+
+    if (!this.__notificationListeners[notificationType]) {
+      this.__notificationListeners[notificationType] = [];
+    }
+
+    var callbackAlreadyAdded = false;
+    fns.forEach(this.__notificationListeners[notificationType], function (listenerEntry) {
+      if (listenerEntry.callback === callback) {
+        callbackAlreadyAdded = true;
+        return false;
+      }
+    });
+    if (callbackAlreadyAdded) {
+      return -1;
+    }
+
+    this.__notificationListeners[notificationType].push({
+      id: this.__listenerId,
+      callback: callback,
+    });
+
+    var returnId = this.__listenerId;
+    this.__listenerId += 1;
+    return returnId;
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
     return -1;
   }
-
-  this.__notificationListeners[notificationType].push({
-    id: this.__listenerId,
-    callback: callback,
-  });
-
-  var returnId = this.__listenerId;
-  this.__listenerId += 1;
-  return returnId;
 };
 
 /**
@@ -89,45 +97,59 @@ NotificationCenter.prototype.addNotificationListener = function(notificationType
  * @returns {boolean} Returns true if the listener was found and removed, and false
  * otherwise.
  */
-NotificationCenter.prototype.removeNotificationListener = function(listenerId) {
-  var indexToRemove;
-  var typeToRemove;
-  fns.forOwn(this.__notificationListeners, function(listenersForType, notificationType) {
-    fns.forEach(listenersForType, function(listenerEntry, i) {
-      if (listenerEntry.id === listenerId) {
-        indexToRemove = i;
-        typeToRemove = notificationType;
+NotificationCenter.prototype.removeNotificationListener = function (listenerId) {
+  try {
+    var indexToRemove;
+    var typeToRemove;
+    fns.forOwn(this.__notificationListeners, function (listenersForType, notificationType) {
+      fns.forEach(listenersForType, function (listenerEntry, i) {
+        if (listenerEntry.id === listenerId) {
+          indexToRemove = i;
+          typeToRemove = notificationType;
+          return false;
+        }
+      });
+      if (indexToRemove !== undefined && typeToRemove !== undefined) {
         return false;
       }
     });
+
     if (indexToRemove !== undefined && typeToRemove !== undefined) {
-      return false;
+      this.__notificationListeners[typeToRemove].splice(indexToRemove, 1);
+      return true;
     }
-  });
-
-  if (indexToRemove !== undefined && typeToRemove !== undefined) {
-    this.__notificationListeners[typeToRemove].splice(indexToRemove, 1);
-    return true;
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
   }
-
   return false;
 };
 
 /**
  * Removes all previously added notification listeners, for all notification types
  */
-NotificationCenter.prototype.clearAllNotificationListeners = function() {
-  fns.forOwn(enums.NOTIFICATION_TYPES, function(notificationTypeEnum) {
-    this.__notificationListeners[notificationTypeEnum] = [];
-  }.bind(this));
+NotificationCenter.prototype.clearAllNotificationListeners = function () {
+  try{
+    fns.forOwn(enums.NOTIFICATION_TYPES, function (notificationTypeEnum) {
+      this.__notificationListeners[notificationTypeEnum] = [];
+    }.bind(this));
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
+  }
 };
 
 /**
  * Remove all previously added notification listeners for the argument type
  * @param {string} notificationType One of enums.NOTIFICATION_TYPES
  */
-NotificationCenter.prototype.clearNotificationListeners = function(notificationType) {
-  this.__notificationListeners[notificationType] = [];
+NotificationCenter.prototype.clearNotificationListeners = function (notificationType) {
+  try {
+    this.__notificationListeners[notificationType] = [];
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
+  }
 };
 
 /**
@@ -136,15 +158,20 @@ NotificationCenter.prototype.clearNotificationListeners = function(notificationT
  * @param {string} notificationType One of enums.NOTIFICATION_TYPES
  * @param {Object} notificationData Will be passed to callbacks called
  */
-NotificationCenter.prototype.sendNotifications = function(notificationType, notificationData) {
-  fns.forEach(this.__notificationListeners[notificationType], function(listenerEntry) {
-    var callback = listenerEntry.callback;
-    try {
-      callback(notificationData);
-    } catch (ex) {
-      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION, MODULE_NAME, notificationType, ex.message));
-    }
-  }.bind(this));
+NotificationCenter.prototype.sendNotifications = function (notificationType, notificationData) {
+  try {
+    fns.forEach(this.__notificationListeners[notificationType], function (listenerEntry) {
+      var callback = listenerEntry.callback;
+      try {
+        callback(notificationData);
+      } catch (ex) {
+        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION, MODULE_NAME, notificationType, ex.message));
+      }
+    }.bind(this));
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
+  }
 };
 
 module.exports = {

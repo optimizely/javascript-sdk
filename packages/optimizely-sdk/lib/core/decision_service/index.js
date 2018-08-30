@@ -20,7 +20,7 @@ var enums = require('../../utils/enums');
 var fns = require('../../utils/fns');
 var projectConfig = require('../project_config');
 
-var sprintf = require('sprintf');
+var sprintf = require('sprintf-js').sprintf;
 
 var MODULE_NAME = 'DECISION_SERVICE';
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
@@ -68,7 +68,7 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
   if (!fns.isEmpty(attributes)) {
     if (attributes.hasOwnProperty(enums.CONTROL_ATTRIBUTES.BUCKETING_ID)) {
       bucketingId = attributes[enums.CONTROL_ATTRIBUTES.BUCKETING_ID];
-      this.logger.log(LOG_LEVEL.DEBUG, sprintf('Setting the bucketing ID to %s.', bucketingId))
+      this.logger.log(LOG_LEVEL.DEBUG, sprintf('Setting the bucketing ID to %s.', bucketingId));
     }
   }
 

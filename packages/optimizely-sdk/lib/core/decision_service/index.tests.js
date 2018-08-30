@@ -23,7 +23,7 @@ var DecisionService = require('./');
 var enums = require('../../utils/enums');
 var logger = require('../../plugins/logger');
 var projectConfig = require('../project_config');
-var sprintf = require('sprintf');
+var sprintf = require('sprintf-js').sprintf;
 var testData = require('../../tests/test_data').getTestProjectConfig();
 var testDataWithFeatures = require('../../tests/test_data').getTestProjectConfigWithFeatures();
 var jsonSchemaValidator = require('../../utils/json_schema_validator');
@@ -360,7 +360,7 @@ describe('lib/core/decision_service', function() {
 
     var testUserAttributes = {
       'browser_type': 'firefox',
-    }
+    };
     var userAttributesWithBucketingId = {
       'browser_type': 'firefox',
       '$opt_bucketing_id': '123456789'
@@ -436,7 +436,7 @@ describe('lib/core/decision_service', function() {
       var userProfileServiceInstance = {
         lookup: function () {
         },
-      }
+      };
       userProfileLookupStub = sinon.stub(userProfileServiceInstance, 'lookup');
       userProfileLookupStub.returns({
         user_id: 'test_user',

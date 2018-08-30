@@ -290,7 +290,7 @@ describe('lib/core/event_builder', function() {
 
         assert.deepEqual(actualParams, expectedParams);
       });
-     
+
       it('should fill in userFeatures for user agent and bot filtering (bot filtering enabled)', function() {
         var v4ConfigObj = projectConfig.createProjectConfig(testData.getTestProjectConfigWithFeatures());
         var expectedParams = {
@@ -775,6 +775,59 @@ describe('lib/core/event_builder', function() {
           logger: mockLogger,
           experimentsToVariationMap: { '595010': '595008' },
           userId: 'testUser',
+        };
+
+        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+
+        assert.deepEqual(actualParams, expectedParams);
+      });
+
+      it('should create the correct snapshot for multiple experiments attached to the event', function() {
+        var expectedParams = {
+          url: 'https://logx.optimizely.com/v1/events',
+          httpVerb: 'POST',
+          params: {
+            'account_id': '12001',
+            'project_id': '111001',
+            'visitors': [{
+              'visitor_id': 'testUser',
+              'attributes': [],
+              'snapshots': [{
+                'decisions': [{
+                  'variation_id': '111128',
+                  'experiment_id': '111127',
+                  'campaign_id': '4'
+                }, {
+                  'variation_id': '122228',
+                  'experiment_id': '122227',
+                  'campaign_id': '5'
+                }],
+                'events': [{
+                  'timestamp': Math.round(new Date().getTime()),
+                  'entity_id': '111100',
+                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                  'key': 'testEventWithMultipleExperiments'
+                }]
+              }]
+            }],
+            'revision': '42',
+            'client_name': 'node-sdk',
+            'client_version': packageJSON.version,
+            'anonymize_ip': false,
+          }
+        };
+
+        var eventOptions = {
+          clientEngine: 'node-sdk',
+          clientVersion: packageJSON.version,
+          configObj: configObj,
+          eventKey: 'testEventWithMultipleExperiments',
+          logger: mockLogger,
+          userId: 'testUser',
+          experimentsToVariationMap: {
+            '111127': '111128',
+            '122227': '122228'
+          },
         };
 
         var actualParams = eventBuilder.getConversionEvent(eventOptions);

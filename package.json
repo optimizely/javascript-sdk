@@ -8,7 +8,7 @@
     "clean": "lerna run clean",
     "publish": "npm run build && lerna publish",
     "test": "lerna run test --stream",
-    "test-travis": "lerna run test-travis --stream"
+    "test-xbrowser": "lerna run test-xbrowser --stream"
   },
   "devDependencies": {
     "lerna": "^3.2.1"
