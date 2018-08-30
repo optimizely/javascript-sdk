@@ -11,6 +11,6 @@
     "test-travis": "lerna run test-travis --stream"
   },
   "devDependencies": {
-    "lerna": "^2.9.0"
+    "lerna": "^3.2.1"
   }
 }
