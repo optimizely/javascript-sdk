@@ -76,20 +76,20 @@ function Optimizely(config) {
         }
       }
 
-      if (config.skipJSONValidation === true) {
-        this.configObj = projectConfig.createProjectConfig(config.datafile);
-        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
-      } else {
-        try {
+      try {
+        if (config.skipJSONValidation === true) {
+          this.configObj = projectConfig.createProjectConfig(config.datafile);
+          this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
+        } else {
           if (config.jsonSchemaValidator.validate(projectConfigSchema, config.datafile)) {
             this.configObj = projectConfig.createProjectConfig(config.datafile);
             this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
           }
-        } catch (ex) {
-          this.isValidInstance = false;
-          this.logger.log(LOG_LEVEL.ERROR, ex.message);
-          this.errorHandler.handleError(ex);
         }
+      } catch (ex) {
+        this.isValidInstance = false;
+        this.logger.log(LOG_LEVEL.ERROR, ex.message);
+        this.errorHandler.handleError(ex);
       }
 
       var userProfileService = null;

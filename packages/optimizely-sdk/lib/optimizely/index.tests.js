@@ -152,6 +152,27 @@ describe('lib/optimizely', function() {
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE, 'JSON_SCHEMA_VALIDATOR', 'projectId', 'is missing and it is required'));
       });
 
+      it('should log an error if the datafile version is not valid', function() {
+        var datafileWithInvalidVersion = testData.getTestProjectConfig();
+        datafileWithInvalidVersion.version = '5';
+
+        new Optimizely({
+          clientEngine: 'node-sdk',
+          errorHandler: stubErrorHandler,
+          datafile: datafileWithInvalidVersion,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+        });
+
+        sinon.assert.calledOnce(stubErrorHandler.handleError);
+        var errorMessage = stubErrorHandler.handleError.lastCall.args[0].message;
+        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_CONFIG_VERSION, 'PROJECT_CONFIG', datafileWithInvalidVersion.version));
+
+        sinon.assert.calledOnce(createdLogger.log);
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_CONFIG_VERSION, 'PROJECT_CONFIG', datafileWithInvalidVersion.version));
+      });
+
       describe('skipping JSON schema validation', function() {
         beforeEach(function() {
           sinon.spy(jsonSchemaValidator, 'validate');
