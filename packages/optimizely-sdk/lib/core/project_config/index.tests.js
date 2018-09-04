@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2016-2018, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -146,16 +146,16 @@ describe('lib/core/project_config', function() {
       assert.deepEqual(configObj.variationIdMap, expectedVariationIdMap);
     });
 
-    it('should throw exception with invalid config version', function() {
+    it('throw an error with unsupported datafile version', function() {
       var testData = testDatafile.getTestProjectConfig();
       testData.version = '5';
 
       assert.throws(function() {
         projectConfig.createProjectConfig(testData)
-      }, sprintf(ERROR_MESSAGES.INVALID_CONFIG_VERSION, 'PROJECT_CONFIG', testData.version));
+      }, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, 'PROJECT_CONFIG', testData.version));
     });
 
-    it('should not throw exception with valid config version', function() {
+    it('should not throw an error with valid datafile version', function() {
       var testData = testDatafile.getTestProjectConfig();
       assert.doesNotThrow(function() {
         projectConfig.createProjectConfig(testData)

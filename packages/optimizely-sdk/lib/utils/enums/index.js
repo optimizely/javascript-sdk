@@ -59,7 +59,7 @@ exports.ERROR_MESSAGES = {
   VARIATION_ID_NOT_IN_DATAFILE: '%s: No variation ID %s defined in datafile for experiment %s.',
   VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT: '%s: Variation ID %s is not in the datafile.',
   INVALID_INPUT_FORMAT: '%s: Provided %s is in an invalid format.',
-  INVALID_CONFIG_VERSION: '%s: This version of the Javascript SDK does not support the given datafile version: %s',
+  INVALID_DATAFILE_VERSION: '%s: This version of the Javascript SDK does not support the given datafile version: %s',
 };
 
 exports.LOG_MESSAGES = {
@@ -189,9 +189,9 @@ exports.FEATURE_VARIABLE_TYPES = {
 };
 
 /*
- * Possible types of variables attached to features
+ * Supported datafile versions
  */
-exports.CONFIG_VERSIONS = {
+exports.DATAFILE_VERSIONS = {
   V2: '2',
   V3: '3',
   V4: '4',
