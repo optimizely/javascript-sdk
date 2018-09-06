@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2016-2018, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,10 @@ var enums = require('./utils/enums');
 var logger = require('./plugins/logger');
 var Optimizely = require('./optimizely');
 var optimizelyFactory = require('./index.node');
+var testData = require('./tests/test_data');
+var sprintf = require('sprintf-js').sprintf;
+var LOG_LEVEL = require('./utils/enums').LOG_LEVEL;
+var ERROR_MESSAGES = require('./utils/enums').ERROR_MESSAGES;
 
 var chai = require('chai');
 var assert = chai.assert;
@@ -67,6 +71,61 @@ describe('optimizelyFactory', function() {
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
           logger: fakeLogger,
+        });
+
+        assert.instanceOf(optlyInstance, Optimizely);
+      });
+    });
+
+    describe('datafile validations', function() {
+      var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+
+      beforeEach(function() {
+        sinon.stub(createdLogger, 'log');
+      });
+
+      afterEach(function() {
+        createdLogger.log.restore();
+      });
+
+      it('should log an error when datafile is not provided', function() {
+        optimizelyFactory.createInstance({
+          logger: createdLogger
+        });
+
+        sinon.assert.called(createdLogger.log);
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, 'CONFIG_VALIDATOR'));
+      });
+
+      it('should log an error when datafile is malformed', function() {
+        var invalidDatafileJSON = 'abc';
+        optimizelyFactory.createInstance({
+          datafile: invalidDatafileJSON,
+          logger: createdLogger
+        });
+
+        sinon.assert.called(createdLogger.log);
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_MALFORMED, 'CONFIG_VALIDATOR'));
+      });
+
+      it('should log an error if the datafile version is not supported', function() {
+        var datafileWithInvalidVersion = JSON.stringify(testData.getUnsupportedVersionConfig());
+        optimizelyFactory.createInstance({
+          datafile: datafileWithInvalidVersion,
+          logger: createdLogger
+        });
+
+        sinon.assert.called(createdLogger.log);
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, 'CONFIG_VALIDATOR', '5'));
+      });
+
+      it('should create optimizely instance with valid datafile', function() {
+        var optlyInstance = optimizelyFactory.createInstance({
+          datafile: JSON.stringify(testData.getUnsupportedVersionConfig()),
+          logger: createdLogger
         });
 
         assert.instanceOf(optlyInstance, Optimizely);

@@ -26,13 +26,6 @@ var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
 var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
-var DATAFILE_VERSIONS = enums.DATAFILE_VERSIONS;
-
-var SUPPORTED_VERSIONS = [
-  DATAFILE_VERSIONS.V2,
-  DATAFILE_VERSIONS.V3,
-  DATAFILE_VERSIONS.V4
-];
 
 module.exports = {
   /**
@@ -42,10 +35,6 @@ module.exports = {
    */
   createProjectConfig: function(datafile) {
     var projectConfig = fns.cloneDeep(datafile);
-
-    if (SUPPORTED_VERSIONS.indexOf(projectConfig.version) === -1) {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, MODULE_NAME, projectConfig.version));
-    }
 
     // Manually parsed for audience targeting
     fns.forEach(projectConfig.audiences, function(audience) {

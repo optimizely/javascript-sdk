@@ -17,6 +17,13 @@ var sprintf = require('sprintf-js').sprintf;
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'CONFIG_VALIDATOR';
+var DATAFILE_VERSIONS = require('../enums').DATAFILE_VERSIONS;
+
+var SUPPORTED_VERSIONS = [
+  DATAFILE_VERSIONS.V2,
+  DATAFILE_VERSIONS.V3,
+  DATAFILE_VERSIONS.V4
+];
 
 /**
  * Provides utility methods for validating that the configuration options are valid
@@ -28,6 +35,7 @@ module.exports = {
    * @param  {Object} config.errorHandler
    * @param  {Object} config.eventDispatcher
    * @param  {Object} config.logger
+   * @param  {string} config.datafile
    * @return {Boolean} True if the config options are valid
    * @throws If any of the config options are not valid
    */
@@ -41,6 +49,23 @@ module.exports = {
     }
     if (config.logger && (typeof config.logger.log !== 'function')) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_LOGGER, MODULE_NAME));
+    }
+
+    if (!config.datafile) {
+      throw new Error(sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, MODULE_NAME));
+    }
+    
+    if (typeof config.datafile === 'string' || config.datafile instanceof String) {
+      // Attempt to parse the datafile string
+      try {
+        config.datafile = JSON.parse(config.datafile);
+      } catch (ex) {
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE_MALFORMED, MODULE_NAME));
+      }
+    }
+
+    if (SUPPORTED_VERSIONS.indexOf(config.datafile.version) === -1) {
+      throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, MODULE_NAME, config.datafile.version));
     }
 
     return true;

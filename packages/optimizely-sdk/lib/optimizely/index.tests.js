@@ -105,31 +105,8 @@ describe('lib/optimizely', function() {
           errorHandler: stubErrorHandler,
           logger: createdLogger,
         });
-        sinon.assert.calledOnce(stubErrorHandler.handleError);
-        var errorMessage = stubErrorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, 'OPTIMIZELY'));
-
-        sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, 'OPTIMIZELY'));
 
         assert.isFalse(optly.isValidInstance);
-      });
-
-      it('should throw an error if the datafile JSON is malformed', function() {
-        var invalidDatafileJSON = 'abc';
-
-        new Optimizely({
-          clientEngine: 'node-sdk',
-          errorHandler: stubErrorHandler,
-          datafile: invalidDatafileJSON,
-          jsonSchemaValidator: jsonSchemaValidator,
-          logger: createdLogger,
-        });
-
-        sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_MALFORMED, 'OPTIMIZELY'));
       });
 
       it('should throw an error if the datafile is not valid', function() {
@@ -150,27 +127,6 @@ describe('lib/optimizely', function() {
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE, 'JSON_SCHEMA_VALIDATOR', 'projectId', 'is missing and it is required'));
-      });
-
-      it('should log an error if the datafile version is not supported', function() {
-        var datafileWithInvalidVersion = testData.getTestProjectConfig();
-        datafileWithInvalidVersion.version = '5';
-
-        new Optimizely({
-          clientEngine: 'node-sdk',
-          errorHandler: stubErrorHandler,
-          datafile: datafileWithInvalidVersion,
-          jsonSchemaValidator: jsonSchemaValidator,
-          logger: createdLogger,
-        });
-
-        sinon.assert.calledOnce(stubErrorHandler.handleError);
-        var errorMessage = stubErrorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, 'PROJECT_CONFIG', datafileWithInvalidVersion.version));
-
-        sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, 'PROJECT_CONFIG', datafileWithInvalidVersion.version));
       });
 
       describe('skipping JSON schema validation', function() {
