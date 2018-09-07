@@ -50,10 +50,10 @@ module.exports = {
         config.isValidInstance = true;
       } catch (ex) {
         if (config.logger) {
-          config.logger.log(enums.LOG_LEVEL.ERROR, ex.message);
+          config.logger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
         } else {
           var simpleLogger = logger.createLogger({logLevel: 4});
-          simpleLogger.log(enums.LOG_LEVEL.ERROR, ex.message);
+          simpleLogger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
         }
         config.isValidInstance = false;
       }

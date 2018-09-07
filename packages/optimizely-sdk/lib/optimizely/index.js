@@ -26,6 +26,7 @@ var projectConfigSchema = require('./project_config_schema');
 var sprintf = require('sprintf-js').sprintf;
 var userProfileServiceValidator = require('../utils/user_profile_service_validator');
 var stringValidator = require('../utils/string_value_validator');
+var configValidator = require('../utils/config_validator');
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
@@ -60,18 +61,12 @@ function Optimizely(config) {
   this.isValidInstance = config.isValidInstance;
   this.logger = config.logger;
 
-  if (typeof config.datafile === 'string' || config.datafile instanceof String) {
-    // Attempt to parse the datafile string
-    try {
-      config.datafile = JSON.parse(config.datafile);
-    } catch (ex) {
-      this.isValidInstance = false;
-      this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_MALFORMED, MODULE_NAME));
-      return;
-    }
-  }
-
   try {
+    configValidator.validateDatafile(config.datafile);
+    if (typeof config.datafile === 'string' || config.datafile instanceof String) {
+      config.datafile = JSON.parse(config.datafile);
+    }
+    
     if (config.skipJSONValidation === true) {
       this.configObj = projectConfig.createProjectConfig(config.datafile);
       this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));

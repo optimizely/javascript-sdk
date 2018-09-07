@@ -35,7 +35,6 @@ module.exports = {
    * @param  {Object} config.errorHandler
    * @param  {Object} config.eventDispatcher
    * @param  {Object} config.logger
-   * @param  {string} config.datafile
    * @return {Boolean} True if the config options are valid
    * @throws If any of the config options are not valid
    */
@@ -47,25 +46,36 @@ module.exports = {
     if (config.eventDispatcher && (typeof config.eventDispatcher.dispatchEvent !== 'function')) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_DISPATCHER, MODULE_NAME));
     }
+    
     if (config.logger && (typeof config.logger.log !== 'function')) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_LOGGER, MODULE_NAME));
     }
 
-    if (!config.datafile) {
+    return true;
+  },
+
+  /**
+   * Validates the datafile
+   * @param {string}  datafile
+   * @return {Boolean} True if the datafile is valid
+   * @throws If any of the datafile validations get failed
+   */
+  validateDatafile: function(datafile) {
+    if (!datafile) {
       throw new Error(sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, MODULE_NAME));
     }
     
-    if (typeof config.datafile === 'string' || config.datafile instanceof String) {
+    if (typeof datafile === 'string' || datafile instanceof String) {
       // Attempt to parse the datafile string
       try {
-        config.datafile = JSON.parse(config.datafile);
+        datafile = JSON.parse(datafile);
       } catch (ex) {
         throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE_MALFORMED, MODULE_NAME));
       }
     }
 
-    if (SUPPORTED_VERSIONS.indexOf(config.datafile.version) === -1) {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, MODULE_NAME, config.datafile.version));
+    if (SUPPORTED_VERSIONS.indexOf(datafile.version) === -1) {
+      throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, MODULE_NAME, datafile.version));
     }
 
     return true;

@@ -50,33 +50,25 @@ describe('lib/utils/config_validator', function() {
 
       it('should complain if datafile is not provided', function() {
         assert.throws(function() {
-          configValidator.validate({
-          });
+          configValidator.validateDatafile();
         }, sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, 'CONFIG_VALIDATOR'));
       });
 
       it('should complain if datafile is malformed', function() {
         assert.throws(function() {
-          configValidator.validate({
-            datafile: 'abc'
-          });
+          configValidator.validateDatafile('abc');
         }, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_MALFORMED, 'CONFIG_VALIDATOR'));
       });
 
       it('should complain if datafile version is not supported', function() {
         assert.throws(function() {
-          var datafileWithInvalidVersion = JSON.stringify(testData.getUnsupportedVersionConfig());
-          configValidator.validate({
-            datafile: datafileWithInvalidVersion
-          });
+          configValidator.validateDatafile(JSON.stringify(testData.getUnsupportedVersionConfig()));
         }, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, 'CONFIG_VALIDATOR', '5'));
       });
 
       it('should not complain if datafile is valid', function() {
         assert.doesNotThrow(function() {
-          configValidator.validate({
-            datafile: JSON.stringify(testData.getTestProjectConfig())
-          });
+          configValidator.validateDatafile(JSON.stringify(testData.getTestProjectConfig()));
         });
       });
     });
