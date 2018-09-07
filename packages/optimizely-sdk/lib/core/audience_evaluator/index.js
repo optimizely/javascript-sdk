@@ -31,7 +31,7 @@ module.exports = {
     }
 
     // if no user attributes specified, return false
-    if (!userAttributes) {
+    if (!userAttributes || Object.keys(userAttributes).length === 0) {
       return false;
     }
 
