@@ -31,8 +31,12 @@ describe('lib/core/audience_evaluator', function() {
         assert.isTrue(audienceEvaluator.evaluate([], {}));
       });
 
-      it('should return false if there are audiences but no attributes', function() {
+      it('should return false if there are audiences but the user has emtpy attributes', function() {
         assert.isFalse(audienceEvaluator.evaluate([chromeUserAudience], {}));
+      });
+
+      it('should return false if there are audiences but but the user has null attributes', function() {
+        assert.isFalse(audienceEvaluator.evaluate([chromeUserAudience], null));
       });
 
       it('should return true if any of the audience conditions are met', function() {
