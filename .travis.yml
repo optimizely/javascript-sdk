@@ -8,6 +8,8 @@ node_js:
 branches:
   only:
   - master
+  - 2.0.x
+  - 2.1.x
 env:
   global:
   # BROWSER_STACK_USERNAME
