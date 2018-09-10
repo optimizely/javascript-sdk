@@ -32,7 +32,7 @@ var projectConfig = require('../core/project_config');
 var chai = require('chai');
 var assert = chai.assert;
 var sinon = require('sinon');
-var sprintf = require('sprintf');
+var sprintf = require('sprintf-js').sprintf;
 var uuid = require('uuid');
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
@@ -1272,16 +1272,7 @@ describe('lib/optimizely', function() {
                   'campaign_id': '4',
                   'experiment_id': '111127',
                   'variation_id': '111129'
-                }],
-                'events': [{
-                  'entity_id': '111100',
-                  'timestamp': Math.round(new Date().getTime()),
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'key': 'testEventWithMultipleExperiments',
-                }]
-              },
-              {
-                'decisions': [{
+                }, {
                   'campaign_id': '5',
                   'experiment_id': '122227',
                   'variation_id': '122229'
