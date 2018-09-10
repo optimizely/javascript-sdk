@@ -20,7 +20,7 @@ var enums = require('../../utils/enums');
 var fns = require('../../utils/fns');
 var projectConfig = require('../project_config');
 
-var sprintf = require('sprintf');
+var sprintf = require('sprintf-js').sprintf;
 
 var MODULE_NAME = 'DECISION_SERVICE';
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
