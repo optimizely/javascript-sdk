@@ -58,7 +58,10 @@ module.exports = {
    * Validates the datafile
    * @param {string}  datafile
    * @return {Boolean} True if the datafile is valid
-   * @throws If any of the datafile validations get failed
+   * @throws If the datafile is not valid for any of the following reasons:
+                - The datafile string is undefined
+                - The datafile string cannot be parsed as a JSON object
+                - The datafile version is not supported
    */
   validateDatafile: function(datafile) {
     if (!datafile) {
