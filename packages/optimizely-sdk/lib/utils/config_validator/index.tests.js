@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, Optimizely
+ * Copyright 2016, 2018, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ var chai = require('chai');
 var assert = chai.assert;
 var configValidator = require('./');
 var sprintf = require('sprintf-js').sprintf;
+var testData = require('../../tests/test_data')
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 
@@ -45,6 +46,30 @@ describe('lib/utils/config_validator', function() {
             logger: {},
           });
         }, sprintf(ERROR_MESSAGES.INVALID_LOGGER, 'CONFIG_VALIDATOR'));
+      });
+
+      it('should complain if datafile is not provided', function() {
+        assert.throws(function() {
+          configValidator.validateDatafile();
+        }, sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, 'CONFIG_VALIDATOR'));
+      });
+
+      it('should complain if datafile is malformed', function() {
+        assert.throws(function() {
+          configValidator.validateDatafile('abc');
+        }, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_MALFORMED, 'CONFIG_VALIDATOR'));
+      });
+
+      it('should complain if datafile version is not supported', function() {
+        assert.throws(function() {
+          configValidator.validateDatafile(JSON.stringify(testData.getUnsupportedVersionConfig()));
+        }, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, 'CONFIG_VALIDATOR', '5'));
+      });
+
+      it('should not complain if datafile is valid', function() {
+        assert.doesNotThrow(function() {
+          configValidator.validateDatafile(JSON.stringify(testData.getTestProjectConfig()));
+        });
       });
     });
   });
