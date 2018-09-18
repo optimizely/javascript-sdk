@@ -62,15 +62,7 @@ function DecisionService(options) {
  */
 DecisionService.prototype.getVariation = function(experimentKey, userId, attributes) {
   // by default, the bucketing ID should be the user ID
-  var bucketingId = userId;
-
-  // If the bucketing ID key is defined in attributes, than use that in place of the userID for the murmur hash key
-  if (!fns.isEmpty(attributes)) {
-    if (attributes.hasOwnProperty(enums.CONTROL_ATTRIBUTES.BUCKETING_ID)) {
-      bucketingId = attributes[enums.CONTROL_ATTRIBUTES.BUCKETING_ID];
-      this.logger.log(LOG_LEVEL.DEBUG, sprintf('Setting the bucketing ID to %s.', bucketingId));
-    }
-  }
+  var bucketingId = this._getBucketingId(userId, attributes);
 
   if (!this.__checkIfExperimentIsActive(experimentKey, userId)) {
     return null;
@@ -430,6 +422,28 @@ DecisionService.prototype._getVariationForRollout = function(feature, userId, at
     variation: null,
     decisionSource: DECISION_SOURCES.ROLLOUT,
   };
+};
+
+/**
+ * Get bucketing Id from user attributes.
+ * @param {String} userId
+ * @param {Object} attributes
+ * @returns {String} Bucketing Id if it is a string type in attributes, user Id otherwise.
+ */
+DecisionService.prototype._getBucketingId = function(userId, attributes) {
+  var bucketingId = userId;
+  
+  // If the bucketing ID key is defined in attributes, than use that in place of the userID for the murmur hash key
+  if (!fns.isEmpty(attributes) && attributes.hasOwnProperty(enums.CONTROL_ATTRIBUTES.BUCKETING_ID)) {
+    if (typeof attributes[enums.CONTROL_ATTRIBUTES.BUCKETING_ID] === 'string') {
+      bucketingId = attributes[enums.CONTROL_ATTRIBUTES.BUCKETING_ID];
+      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.VALID_BUCKETING_ID, bucketingId));
+    } else {
+      this.logger.log(LOG_LEVEL.WARNING, LOG_MESSAGES.BUCKETING_ID_NOT_STRING);
+    }
+  }
+
+  return bucketingId;
 };
 
 module.exports = {

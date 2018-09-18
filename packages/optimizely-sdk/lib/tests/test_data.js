@@ -239,6 +239,15 @@ var config = {
     attributes: [{
       key: 'browser_type',
       id: '111094'
+    }, {
+			id: "323434545",
+			key: "boolean_key"
+		}, {
+			id: "616727838",
+			key: "integer_key"
+		}, {
+			id: "808797686",
+      key: "double_key"
     }
   ],
   audiences: [{

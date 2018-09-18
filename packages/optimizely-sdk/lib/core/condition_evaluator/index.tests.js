@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, Optimizely
+ * Copyright 2016, 2018, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@ var conditionEvaluator = require('./');
 
 var browserConditionSafari = {'name': 'browser_type', 'value': 'safari'};
 var deviceConditionIphone = {'name': 'device_model', 'value': 'iphone6'};
+var booleanCondition = {'name': 'is_firefox', 'value': true};
+var integerCondition = {'name': 'num_users', 'value': 10};
+var doubleCondition = {'name': 'pi_value', 'value': 3.14};
 
 describe('lib/core/condition_evaluator', function() {
   describe('APIs', function() {
@@ -37,6 +40,17 @@ describe('lib/core/condition_evaluator', function() {
         };
 
         assert.isFalse(conditionEvaluator.evaluate(['and', browserConditionSafari], userAttributes));
+      });
+
+      it('should evaluate typed attributes', function() {
+        var userAttributes = {
+          browser_type: 'safari',
+          is_firefox: true,
+          num_users: 10,
+          pi_value: 3.14,
+        };
+
+        assert.isTrue(conditionEvaluator.evaluate(['and', browserConditionSafari, booleanCondition, integerCondition, doubleCondition], userAttributes));
       });
 
       describe('and evaluation', function() {
