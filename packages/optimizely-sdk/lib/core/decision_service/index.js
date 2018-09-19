@@ -432,14 +432,14 @@ DecisionService.prototype._getVariationForRollout = function(feature, userId, at
  */
 DecisionService.prototype._getBucketingId = function(userId, attributes) {
   var bucketingId = userId;
-  
+
   // If the bucketing ID key is defined in attributes, than use that in place of the userID for the murmur hash key
   if (!fns.isEmpty(attributes) && attributes.hasOwnProperty(enums.CONTROL_ATTRIBUTES.BUCKETING_ID)) {
     if (typeof attributes[enums.CONTROL_ATTRIBUTES.BUCKETING_ID] === 'string') {
       bucketingId = attributes[enums.CONTROL_ATTRIBUTES.BUCKETING_ID];
-      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.VALID_BUCKETING_ID, bucketingId));
+      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.VALID_BUCKETING_ID, MODULE_NAME, bucketingId));
     } else {
-      this.logger.log(LOG_LEVEL.WARNING, LOG_MESSAGES.BUCKETING_ID_NOT_STRING);
+      this.logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.BUCKETING_ID_NOT_STRING, MODULE_NAME));
     }
   }
 

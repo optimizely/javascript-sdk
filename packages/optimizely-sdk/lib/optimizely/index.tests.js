@@ -557,6 +557,84 @@ describe('lib/optimizely', function() {
                                                JSON.stringify(expectedObj.params)));
       });
 
+      it('should call activate and dispatchEvent with typed attributes and return variation key', function() {
+        bucketStub.returns('122229');
+        var activate = optlyInstance.activate('testExperimentWithAudiences', 'testUser', {
+          browser_type: 'firefox',
+          boolean_key: true,
+          integer_key: 10,
+          double_key: 3.14,
+        });
+        assert.strictEqual(activate, 'variationWithAudience');
+
+        sinon.assert.calledOnce(bucketer.bucket);
+        sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
+        sinon.assert.calledTwice(createdLogger.log);
+
+        var expectedObj = {
+          url: 'https://logx.optimizely.com/v1/events',
+          httpVerb: 'POST',
+          params: {
+            'account_id': '12001',
+            'project_id': '111001',
+            'visitors': [{
+              'snapshots': [{
+                'decisions': [{
+                  'campaign_id': '5',
+                  'experiment_id': '122227',
+                  'variation_id': '122229'
+                }],
+                'events': [{
+                  'entity_id': '5',
+                  'timestamp': Math.round(new Date().getTime()),
+                  'key': 'campaign_activated',
+                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c'
+                }]
+              }],
+              'visitor_id': 'testUser',
+              'attributes': [{
+                'entity_id': '111094',
+                'key': 'browser_type',
+                'type': 'custom',
+                'value': 'firefox'
+              }, {
+                'entity_id': '323434545',
+                'key': 'boolean_key',
+                'type': 'custom',
+                'value': true
+              }, {
+                'entity_id': '616727838',
+                'key': 'integer_key',
+                'type': 'custom',
+                'value': 10
+              }, {
+                'entity_id': '808797686',
+                'key': 'double_key',
+                'type': 'custom',
+                'value': 3.14
+              }],
+            }],
+            'revision': '42',
+            'client_name': 'node-sdk',
+            'client_version': enums.NODE_CLIENT_VERSION,
+            'anonymize_ip': false,
+          }
+        };
+
+        var eventDispatcherCall = eventDispatcher.dispatchEvent.args[0];
+        assert.deepEqual(eventDispatcherCall[0], expectedObj);
+
+        var logMessage1 = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage1, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,
+                                                'PROJECT_CONFIG',
+                                                'testUser'));
+        var logMessage2 = createdLogger.log.args[1][1];
+        assert.strictEqual(logMessage2, sprintf(LOG_MESSAGES.DISPATCH_IMPRESSION_EVENT,
+                                               'OPTIMIZELY',
+                                               expectedObj.url,
+                                               JSON.stringify(expectedObj.params)));
+      });
+
       it('should call bucketer and dispatchEvent with proper args and return variation key if user is in grouped experiment', function() {
         bucketStub.returns('662');
         var activate = optlyInstance.activate('groupExperiment2', 'testUser');

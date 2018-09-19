@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, Optimizely
+ * Copyright 2016, 2018, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ var lodashForOwn = require('lodash/forOwn');
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
 
+var VALID_ATTRIBUTE_TYPES = ['string', 'boolean', 'number'];
+
 module.exports = {
   /**
    * Validates user's provided attributes
@@ -43,4 +45,8 @@ module.exports = {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, MODULE_NAME));
     }
   },
+
+  isAttributeValid: function(attributeKey, attributeValue) {
+    return typeof attributeKey === 'string' && attributeKey !== '' && VALID_ATTRIBUTE_TYPES.indexOf(typeof attributeValue) !== -1;
+  }
 };

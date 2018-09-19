@@ -42,7 +42,7 @@ describe('lib/core/condition_evaluator', function() {
         assert.isFalse(conditionEvaluator.evaluate(['and', browserConditionSafari], userAttributes));
       });
 
-      it('should evaluate typed attributes', function() {
+      it('should evaluate different typed attributes', function() {
         var userAttributes = {
           browser_type: 'safari',
           is_firefox: true,
