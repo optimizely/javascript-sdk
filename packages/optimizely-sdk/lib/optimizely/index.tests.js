@@ -730,14 +730,10 @@ describe('lib/optimizely', function() {
         assert.strictEqual(logMessage2, sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'null', 'testExperiment'));
       });
 
-      it('should throw an error for invalid experiment key', function() {
+      it('should log an error for invalid experiment key', function() {
         assert.isNull(optlyInstance.activate('invalidExperimentKey', 'testUser'));
 
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-
-        sinon.assert.calledOnce(errorHandler.handleError);
-        var errorMessage = errorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'OPTIMIZELY', 'invalidExperimentKey'));
 
         sinon.assert.calledTwice(createdLogger.log);
         var logMessage1 = createdLogger.log.args[0][1];
@@ -1554,14 +1550,9 @@ describe('lib/optimizely', function() {
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
 
-      it('should throw an error for invalid experiment key', function() {
+      it('should log an error for invalid experiment key', function() {
         var getVariationWithError = optlyInstance.getVariation('invalidExperimentKey', 'testUser');
-
         assert.isNull(getVariationWithError);
-
-        sinon.assert.calledOnce(errorHandler.handleError);
-        var errorMessage = errorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'OPTIMIZELY', 'invalidExperimentKey'));
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
