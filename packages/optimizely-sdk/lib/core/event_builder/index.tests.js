@@ -495,6 +495,11 @@ describe('lib/core/event_builder', function() {
                 'key': 'integer_key',
                 'type': 'custom',
                 'value': 10
+              }, {
+                'entity_id': '323434545',
+                'key': 'boolean_key',
+                'type': 'custom',
+                'value': null
               }],
               'visitor_id': 'testUser',
               'snapshots': [{
