@@ -66,7 +66,7 @@ function Optimizely(config) {
     if (typeof config.datafile === 'string' || config.datafile instanceof String) {
       config.datafile = JSON.parse(config.datafile);
     }
-    
+
     if (config.skipJSONValidation === true) {
       this.configObj = projectConfig.createProjectConfig(config.datafile);
       this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
@@ -214,7 +214,7 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
  */
 Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
   try {
-    
+
     if (!this.isValidInstance) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'track'));
       return;
