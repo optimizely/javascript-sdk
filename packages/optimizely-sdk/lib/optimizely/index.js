@@ -308,7 +308,8 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
 
       var experiment = this.configObj.experimentKeyMap[experimentKey];
       if (fns.isEmpty(experiment)) {
-        throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
+        this.logger.log(LOG_LEVEL.DEBUG, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
+        return null;
       }
 
       return this.decisionService.getVariation(experimentKey, userId, attributes);
