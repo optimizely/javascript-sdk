@@ -136,10 +136,7 @@ Optimizely.prototype.activate = function (experimentKey, userId, attributes) {
         this.logger.log(LOG_LEVEL.DEBUG, shouldNotDispatchActivateLogMessage);
         return variationKey;
       }
-
-      // remove null values from attributes
-      attributes = this.__filterEmptyValues(attributes);
-
+      
       this._sendImpressionEvent(experimentKey, variationKey, userId, attributes);
 
       return variationKey;
