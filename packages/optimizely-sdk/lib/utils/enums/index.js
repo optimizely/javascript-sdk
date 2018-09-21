@@ -38,7 +38,7 @@ exports.ERROR_MESSAGES = {
   INVALID_EVENT_DISPATCHER: '%s: Provided "eventDispatcher" is in an invalid format.',
   INVALID_EVENT_KEY: '%s: Event key %s is not in datafile.',
   INVALID_EVENT_TAGS: '%s: Provided event tags are in an invalid format.',
-  INVALID_EXPERIMENT_KEY: '%s: Experiment key %s is not in datafile.',
+  INVALID_EXPERIMENT_KEY: '%s: Experiment key %s is not in datafile. It is either invalid, paused, or archived.',
   INVALID_EXPERIMENT_ID: '%s: Experiment ID %s is not in datafile.',
   INVALID_GROUP_ID: '%s: Group ID %s is not in datafile.',
   INVALID_LOGGER: '%s: Provided "logger" is in an invalid format.',
