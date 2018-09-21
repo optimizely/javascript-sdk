@@ -59,6 +59,7 @@ function getCommonEventParams(options) {
     anonymize_ip: anonymize_ip,
   };
 
+  // Omit attribute values that are not supported by the log endpoint.
   fns.forOwn(attributes, function(attributeValue, attributeKey) {
     if (attributeValidator.isAttributeValid(attributeKey, attributeValue)) {
       var attributeId = projectConfig.getAttributeId(options.configObj, attributeKey, options.logger);

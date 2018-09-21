@@ -17,7 +17,7 @@ var chai = require('chai');
 var assert = chai.assert;
 var sprintf = require('sprintf-js').sprintf;
 var attributesValidator = require('./');
-var lodashForOwn = require('lodash/forOwn');
+var fns = require('./../fns/');
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 
@@ -69,22 +69,22 @@ describe('lib/utils/attributes_validator', function() {
           'is_firefox': false,
           'num_users': 10,
           'pi_value': 3.14,
+          'null': null,
+          '': 'javascript',
         };
 
-        lodashForOwn(userAttributes, function(value, key) {
+        fns.forOwn(userAttributes, function(value, key) {
           assert.isTrue(attributesValidator.isAttributeValid(key, value));
         });
       });
 
       it('isAttributeValid returns false for invalid values', function() {
-        var userAttributes = {
-          '': 'javascript',
-          'null': null,
+        var userAttributes = {          
           'objects': {a: 'b'},
           'pi_value': [1, 2, 3],
         };
 
-        lodashForOwn(userAttributes, function(value, key) {
+        fns.forOwn(userAttributes, function(value, key) {
           assert.isFalse(attributesValidator.isAttributeValid(key, value));
         });
       });
