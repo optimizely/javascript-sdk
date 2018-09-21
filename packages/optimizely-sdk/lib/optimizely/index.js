@@ -66,7 +66,7 @@ function Optimizely(config) {
     if (typeof config.datafile === 'string' || config.datafile instanceof String) {
       config.datafile = JSON.parse(config.datafile);
     }
-    
+
     if (config.skipJSONValidation === true) {
       this.configObj = projectConfig.createProjectConfig(config.datafile);
       this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
@@ -137,9 +137,6 @@ Optimizely.prototype.activate = function (experimentKey, userId, attributes) {
         return variationKey;
       }
 
-      // remove null values from attributes
-      attributes = this.__filterEmptyValues(attributes);
-
       this._sendImpressionEvent(experimentKey, variationKey, userId, attributes);
 
       return variationKey;
@@ -169,6 +166,7 @@ Optimizely.prototype.activate = function (experimentKey, userId, attributes) {
 Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey, userId, attributes) {
   var variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(this.configObj, experimentKey, variationKey);
   var experimentId = projectConfig.getExperimentId(this.configObj, experimentKey);
+  this.__filterEmptyValues(attributes);
   var impressionEventOptions = {
     attributes: attributes,
     clientEngine: this.clientEngine,
@@ -217,7 +215,7 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
  */
 Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
   try {
-    
+
     if (!this.isValidInstance) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'track'));
       return;

@@ -2570,6 +2570,23 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature_for_experiment is enabled for user user1.');
           });
 
+          it('filters null attribute values from the impression event', function () {
+            var attrsWithNull = {test_attribute: null};
+            optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user1', attrsWithNull);
+            sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
+            var impressionEvent = eventDispatcher.dispatchEvent.getCalls()[0].args[0];
+            var impressionEventAttrs = impressionEvent.params.visitors[0].attributes;
+            var expectedAttrs = [
+              {
+                'entity_id': '$opt_bot_filtering',
+                'key': '$opt_bot_filtering',
+                'type': 'custom',
+                'value': true,
+              },
+            ];
+            assert.deepEqual(impressionEventAttrs, expectedAttrs);
+          });
+
           it('returns false and does not dispatch an impression event when feature key is null', function() {
             var result = optlyInstance.isFeatureEnabled(null, 'user1', attributes);
             assert.strictEqual(result, false);
