@@ -499,7 +499,7 @@ describe('lib/core/event_builder', function() {
                 'entity_id': '323434545',
                 'key': 'boolean_key',
                 'type': 'custom',
-                'value': null
+                'value': false
               }],
               'visitor_id': 'testUser',
               'snapshots': [{
@@ -527,7 +527,7 @@ describe('lib/core/event_builder', function() {
           attributes: {
             'browser_type': 'Chrome',
             'integer_key': 10,
-            'boolean_key': null,
+            'boolean_key': false,
             'double_key': [1, 2, 3],
           },
           clientEngine: 'node-sdk',

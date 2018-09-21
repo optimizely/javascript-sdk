@@ -47,6 +47,6 @@ module.exports = {
   },
 
   isAttributeValid: function(attributeKey, attributeValue) {
-    return typeof attributeKey === 'string' && (attributeValue === null || VALID_ATTRIBUTE_TYPES.indexOf(typeof attributeValue) !== -1);
+    return typeof attributeKey === 'string' && VALID_ATTRIBUTE_TYPES.indexOf(typeof attributeValue) !== -1;
   }
 };

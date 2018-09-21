@@ -69,7 +69,6 @@ describe('lib/utils/attributes_validator', function() {
           'is_firefox': false,
           'num_users': 10,
           'pi_value': 3.14,
-          'null': null,
           '': 'javascript',
         };
 
@@ -79,9 +78,10 @@ describe('lib/utils/attributes_validator', function() {
       });
 
       it('isAttributeValid returns false for invalid values', function() {
-        var userAttributes = {          
+        var userAttributes = {
+          'null': null,         
           'objects': {a: 'b'},
-          'pi_value': [1, 2, 3],
+          'array': [1, 2, 3]
         };
 
         fns.forOwn(userAttributes, function(value, key) {
