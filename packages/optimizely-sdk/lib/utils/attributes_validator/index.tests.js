@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, Optimizely
+ * Copyright 2016, 2018, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ var chai = require('chai');
 var assert = chai.assert;
 var sprintf = require('sprintf-js').sprintf;
 var attributesValidator = require('./');
+var fns = require('./../fns/');
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 
@@ -58,6 +59,34 @@ describe('lib/utils/attributes_validator', function() {
         assert.throws(function() {
           attributesValidator.validate(attributes);
         }, sprintf(ERROR_MESSAGES.UNDEFINED_ATTRIBUTE, 'ATTRIBUTES_VALIDATOR', attributeKey));
+      });
+    });
+
+    describe('isAttributeValid', function() {
+      it('isAttributeValid returns true for valid values', function() {
+        var userAttributes = {
+          'browser_type': 'Chrome',
+          'is_firefox': false,
+          'num_users': 10,
+          'pi_value': 3.14,
+          '': 'javascript',
+        };
+
+        fns.forOwn(userAttributes, function(value, key) {
+          assert.isTrue(attributesValidator.isAttributeValid(key, value));
+        });
+      });
+
+      it('isAttributeValid returns false for invalid values', function() {
+        var userAttributes = {
+          'null': null,         
+          'objects': {a: 'b'},
+          'array': [1, 2, 3]
+        };
+
+        fns.forOwn(userAttributes, function(value, key) {
+          assert.isFalse(attributesValidator.isAttributeValid(key, value));
+        });
       });
     });
   });

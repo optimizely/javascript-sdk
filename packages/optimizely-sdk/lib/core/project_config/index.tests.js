@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2016-2018, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,9 @@ describe('lib/core/project_config', function() {
 
       var expectedAttributeKeyMap = {
         browser_type: testData.attributes[0],
+        boolean_key: testData.attributes[1],
+        integer_key: testData.attributes[2],
+        double_key: testData.attributes[3],
       };
 
       assert.deepEqual(configObj.attributeKeyMap, expectedAttributeKeyMap);
