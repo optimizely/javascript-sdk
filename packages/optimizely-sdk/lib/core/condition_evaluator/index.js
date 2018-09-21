@@ -19,24 +19,51 @@ var NOT_CONDITION = 'not';
 
 var DEFAULT_OPERATOR_TYPES = [AND_CONDITION, OR_CONDITION, NOT_CONDITION];
 
+var CUSTOM_ATTRIBUTE_CONDITION_TYPE = 'custom_attribute';
+
+var EXACT_MATCH_TYPE = 'exact';
+var EXISTS_MATCH_TYPE = 'exists';
+var GREATER_THAN_MATCH_TYPE = 'gt';
+var LESS_THAN_MATCH_TYPE = 'lt';
+var SUBSTRING_MATCH_TYPE = 'substring';
+
+var MATCH_TYPES = [
+  EXACT_MATCH_TYPE,
+  EXISTS_MATCH_TYPE,
+  GREATER_THAN_MATCH_TYPE,
+  LESS_THAN_MATCH_TYPE,
+  SUBSTRING_MATCH_TYPE,
+];
+
+var EVALUATORS_BY_MATCH_TYPE = {};
+EVALUATORS_BY_MATCH_TYPE[EXACT_MATCH_TYPE] = exactEvaluator;
+EVALUATORS_BY_MATCH_TYPE[EXISTS_MATCH_TYPE] = existsEvaluator;
+EVALUATORS_BY_MATCH_TYPE[GREATER_THAN_MATCH_TYPE] = greaterThanEvaluator;
+EVALUATORS_BY_MATCH_TYPE[LESS_THAN_MATCH_TYPE] = lessThanEvaluator;
+EVALUATORS_BY_MATCH_TYPE[SUBSTRING_MATCH_TYPE] = substringEvaluator;
+
+var EXACT_MATCH_ALLOWED_TYPES = ['string', 'number', 'boolean'];
+
 /**
  * Top level method to evaluate audience conditions
  * @param  {Object[]} conditions     Nested array of and/or conditions.
  *                                   Example: ['and', operand_1, ['or', operand_2, operand_3]]
  * @param  {Object}   userAttributes Hash representing user attributes which will be used in determining if
  *                                   the audience conditions are met.
- * @return {Boolean}  true if the given user attributes match the given conditions
+ * @return {?Boolean} true/false if the given user attributes match/don't match the given conditions, null if
+ *                    the given user attributes and conditions can't be evaluated
  */
 function evaluate(conditions, userAttributes) {
   if (Array.isArray(conditions)) {
     var firstOperator = conditions[0];
+    var restOfConditions = conditions.slice(1);
 
-    // return false for invalid operators
     if (DEFAULT_OPERATOR_TYPES.indexOf(firstOperator) === -1) {
-      return false;
+      // Operator to apply is not explicit - assume 'or'
+      firstOperator = OR_CONDITION;
+      restOfConditions = conditions;
     }
 
-    var restOfConditions = conditions.slice(1);
     switch (firstOperator) {
       case AND_CONDITION:
         return andEvaluator(restOfConditions, userAttributes);
@@ -47,8 +74,17 @@ function evaluate(conditions, userAttributes) {
     }
   }
 
-  var deserializedConditions = [conditions.name, conditions.value];
-  return evaluator(deserializedConditions, userAttributes);
+  if (conditions.hasOwnProperty('type') && conditions.type !== CUSTOM_ATTRIBUTE_CONDITION_TYPE) {
+    return null;
+  }
+
+  var conditionMatch = conditions.match;
+  if (conditionMatch !== undefined && MATCH_TYPES.indexOf(conditionMatch) === -1) {
+    return null;
+  }
+
+  var evaluatorForMatch = EVALUATORS_BY_MATCH_TYPE[conditionMatch] || exactEvaluator;
+  return evaluatorForMatch(conditions, userAttributes);
 }
 
 /**
@@ -56,18 +92,22 @@ function evaluate(conditions, userAttributes) {
  * to each entry and the results AND-ed together.
  * @param  {Object[]} conditions     Array of conditions ex: [operand_1, operand_2]
  * @param  {Object}   userAttributes Hash representing user attributes
- * @return {Boolean}                 true if the user attributes match the given conditions
+ * @return {?Boolean}                true/false if the user attributes match/don't match the given conditions,
+ *                                   null if the user attributes and conditions can't be evaluated
  */
 function andEvaluator(conditions, userAttributes) {
-  var condition;
+  var conditionResult;
+  var sawNullResult = false;
   for (var i = 0; i < conditions.length; i++) {
-    condition = conditions[i];
-    if (!evaluate(condition, userAttributes)) {
+    conditionResult = evaluate(conditions[i], userAttributes);
+    if (conditionResult === false) {
       return false;
     }
+    if (conditionResult === null) {
+      sawNullResult = true;
+    }
   }
-
-  return true;
+  return sawNullResult ? null : true;
 }
 
 /**
@@ -75,14 +115,15 @@ function andEvaluator(conditions, userAttributes) {
  * to a single entry and NOT was applied to the result.
  * @param  {Object[]} conditions     Array of conditions ex: [operand_1, operand_2]
  * @param  {Object}   userAttributes Hash representing user attributes
- * @return {Boolean}                 true if the user attributes match the given conditions
+ * @return {?Boolean}                true/false if the user attributes match/don't match the given conditions,
+ *                                   null if the user attributes and conditions can't be evaluated
  */
 function notEvaluator(conditions, userAttributes) {
-  if (conditions.length !== 1) {
-    return false;
+  if (conditions.length > 0) {
+    var result = evaluate(conditions[0], userAttributes);
+    return result === null ? null : !result;
   }
-
-  return !evaluate(conditions[0], userAttributes);
+  return null;
 }
 
 /**
@@ -90,32 +131,126 @@ function notEvaluator(conditions, userAttributes) {
  * to each entry and the results OR-ed together.
  * @param  {Object[]} conditions     Array of conditions ex: [operand_1, operand_2]
  * @param  {Object}   userAttributes Hash representing user attributes
- * @return {Boolean}                 true if the user attributes match the given conditions
+ * @return {?Boolean}                 true/false if the user attributes match/don't match the given conditions,
+ *                                    null if the user attributes and conditions can't be evaluated
  */
 function orEvaluator(conditions, userAttributes) {
+  var conditionResult;
+  var sawNullResult = false;
   for (var i = 0; i < conditions.length; i++) {
-    var condition = conditions[i];
-    if (evaluate(condition, userAttributes)) {
+    conditionResult = evaluate(conditions[i], userAttributes);
+    if (conditionResult === true) {
       return true;
     }
+    if (conditionResult === null) {
+      sawNullResult = true;
+    }
   }
-
-  return false;
+  return sawNullResult ? null : false;
 }
 
 /**
- * Evaluates an array of conditions as if the evaluator had been applied
- * to a single entry and NOT was applied to the result.
- * @param  {Object[]} conditions     Array of a single condition ex: [operand_1]
- * @param  {Object}   userAttributes Hash representing user attributes
- * @return {Boolean}                 true if the user attributes match the given conditions
+ * Evaluate the given exact match condition for the given user attributes
+ * @param   {Object}    condition
+ * @param   {Object}    userAttributes
+ * @return  {?Boolean}  true/false if the user attributes match/don't match the given condtiion.
+ *                      null if the condition value or user attribute value has an invalid type, or
+ *                      if there is a mismatch between the user attribute type and the condition value
+ *                      type
  */
-function evaluator(conditions, userAttributes) {
-  if (userAttributes.hasOwnProperty(conditions[0])) {
-    return userAttributes[conditions[0]] === conditions[1];
+function exactEvaluator(condition, userAttributes) {
+  var conditionValue = condition.value;
+  var conditionValueType = typeof conditionValue;
+  var userProvidedValue = userAttributes[condition.name];
+  var userProvidedValueType = typeof userProvidedValue;
+
+  if (EXACT_MATCH_ALLOWED_TYPES.indexOf(conditionValueType) === -1 ||
+      EXACT_MATCH_ALLOWED_TYPES.indexOf(userProvidedValueType) === -1) {
+    return null;
   }
 
-  return false;
+  if (conditionValueType !== userProvidedValueType) {
+    return null;
+  }
+
+  return conditionValue === userProvidedValue;
+}
+
+/**
+ * Evaluate the given exists match condition for the given user attributes
+ * @param   {Object}  condition
+ * @param   {Object}  userAttributes
+ * @returns {Boolean} true/false if the user attributes match/don't match the given condition
+ */
+function existsEvaluator(condition, userAttributes) {
+  var userProvidedValue = userAttributes[condition.name];
+  return userProvidedValue !== undefined && userProvidedValue !== null;
+}
+
+/**
+ * Evaluate the given greater than match condition for the given user attributes
+ * @param   {Object}    condition
+ * @param   {Object}    userAttributes
+ * @returns {?Boolean}  true/false if the user attributes match/don't match the given condition.
+ *                      null if the condition value isn't a number or the user attribute value
+ *                      isn't a number
+ */
+function greaterThanEvaluator(condition, userAttributes) {
+  var userProvidedValue = userAttributes[condition.name];
+  if (typeof userProvidedValue !== 'number') {
+    return null;
+  }
+
+  var conditionValue = condition.value;
+  if (typeof conditionValue !== 'number') {
+    return null;
+  }
+
+  return userProvidedValue > conditionValue;
+}
+
+/**
+ * Evaluate the given less than match condition for the given user attributes
+ * @param   {Object}    condition
+ * @param   {Object}    userAttributes
+ * @returns {?Boolean}  true/false if the user attributes match/don't match the given condition.
+ *                      null if the condition value isn't a number or the user attribute value
+ *                      isn't a number
+ */
+function lessThanEvaluator(condition, userAttributes) {
+  var userProvidedValue = userAttributes[condition.name];
+  if (typeof userProvidedValue !== 'number') {
+    return null;
+  }
+
+  var conditionValue = condition.value;
+  if (typeof conditionValue !== 'number') {
+    return null;
+  }
+
+  return userProvidedValue < conditionValue;
+}
+
+/**
+ * Evaluate the given substring match condition for the given user attributes
+ * @param   {Object}    condition
+ * @param   {Object}    userAttributes
+ * @returns {?Boolean}  true/false if the user attributes match/don't match the given condition.
+ *                      null if the condition value isn't a string or the user attribute value
+ *                      isn't a string
+ */
+function substringEvaluator(condition, userAttributes) {
+  var userProvidedValue = userAttributes[condition.name];
+  if (typeof userProvidedValue !== 'string') {
+    return null;
+  }
+
+  var conditionValue = condition.value;
+  if (typeof conditionValue !== 'string') {
+    return null;
+  }
+
+  return userProvidedValue.indexOf(conditionValue) !== -1;
 }
 
 module.exports = {

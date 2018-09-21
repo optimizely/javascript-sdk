@@ -17,7 +17,7 @@ var chai = require('chai');
 var assert = chai.assert;
 var configValidator = require('./');
 var sprintf = require('sprintf-js').sprintf;
-var testData = require('../../tests/test_data');
+var testData = require('../../tests/test_data')
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 

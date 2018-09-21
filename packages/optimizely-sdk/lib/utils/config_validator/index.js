@@ -46,7 +46,7 @@ module.exports = {
     if (config.eventDispatcher && (typeof config.eventDispatcher.dispatchEvent !== 'function')) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_DISPATCHER, MODULE_NAME));
     }
-
+    
     if (config.logger && (typeof config.logger.log !== 'function')) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_LOGGER, MODULE_NAME));
     }
@@ -67,7 +67,7 @@ module.exports = {
     if (!datafile) {
       throw new Error(sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, MODULE_NAME));
     }
-
+    
     if (typeof datafile === 'string' || datafile instanceof String) {
       // Attempt to parse the datafile string
       try {
