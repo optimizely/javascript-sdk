@@ -247,7 +247,7 @@ var config = {
 			key: "integer_key"
 		}, {
 			id: "808797686",
-      key: "double_key"
+			key: "double_key"
     }
   ],
   audiences: [{
