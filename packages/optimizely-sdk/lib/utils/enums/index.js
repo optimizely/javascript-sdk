@@ -140,7 +140,7 @@ exports.CONTROL_ATTRIBUTES = {
 
 exports.JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 exports.NODE_CLIENT_ENGINE = 'node-sdk';
-exports.NODE_CLIENT_VERSION = '2.1.3';
+exports.NODE_CLIENT_VERSION = '2.2.0';
 
 /*
  * Notification types for use with NotificationCenter

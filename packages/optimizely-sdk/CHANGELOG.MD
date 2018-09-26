@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - September 26, 2018
+
+### Fixed
+- Track and activate should not remove null attributes ([#168](https://github.com/optimizely/javascript-sdk/pull/168))
+- Track attributes with valid attribute types ([#166](https://github.com/optimizely/javascript-sdk/pull/166))
+- Prevent SDK from initializing if the datafile version in invalid ([#161](https://github.com/optimizely/javascript-sdk/pull/161))
+- Updating lerna to latest version ([#160](https://github.com/optimizely/javascript-sdk/pull/160))
+
+### Changed
+- Change invalid experiment key to debug level ([#165](https://github.com/optimizely/javascript-sdk/pull/165))
+
 ## [2.1.3] - August 21, 2018
 
 ### Fixed
