@@ -123,6 +123,8 @@ exports.LOG_MESSAGES = {
   VALID_USER_PROFILE_SERVICE: '%s: Valid user profile service provided.',
   VARIATION_REMOVED_FOR_USER: '%s: Variation mapped to experiment %s has been removed for user %s.',
   VARIABLE_REQUESTED_WITH_WRONG_TYPE: '%s: Requested variable type "%s", but variable is of type "%s". Use correct API to retrieve value. Returning None.',
+  VALID_BUCKETING_ID: '%s: BucketingId is valid: "%s"',
+  BUCKETING_ID_NOT_STRING: '%s: BucketingID attribute is not a string. Defaulted to userId',
 };
 
 exports.RESERVED_EVENT_KEYWORDS = {
@@ -138,7 +140,7 @@ exports.CONTROL_ATTRIBUTES = {
 
 exports.JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 exports.NODE_CLIENT_ENGINE = 'node-sdk';
-exports.NODE_CLIENT_VERSION = '2.1.3';
+exports.NODE_CLIENT_VERSION = '2.2.0';
 
 /*
  * Notification types for use with NotificationCenter

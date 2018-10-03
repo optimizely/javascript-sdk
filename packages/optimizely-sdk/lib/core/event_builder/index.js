@@ -17,6 +17,7 @@ var enums = require('../../utils/enums');
 var fns = require('../../utils/fns');
 var eventTagUtils = require('../../utils/event_tag_utils');
 var projectConfig = require('../project_config');
+var attributeValidator = require('../../utils/attributes_validator');
 
 var ACTIVATE_EVENT_KEY = 'campaign_activated';
 var CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom';
@@ -58,15 +59,18 @@ function getCommonEventParams(options) {
     anonymize_ip: anonymize_ip,
   };
 
-  fns.forOwn(attributes, function(attributeValue, attributeKey){
-    var attributeId = projectConfig.getAttributeId(options.configObj, attributeKey, options.logger);
-    if (attributeId) {
-      commonParams.visitors[0].attributes.push({
-        entity_id: attributeId,
-        key: attributeKey,
-        type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
-        value: attributes[attributeKey],
-      });
+  // Omit attribute values that are not supported by the log endpoint.
+  fns.forOwn(attributes, function(attributeValue, attributeKey) {
+    if (attributeValidator.isAttributeValid(attributeKey, attributeValue)) {
+      var attributeId = projectConfig.getAttributeId(options.configObj, attributeKey, options.logger);
+      if (attributeId) {
+        commonParams.visitors[0].attributes.push({
+          entity_id: attributeId,
+          key: attributeKey,
+          type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
+          value: attributes[attributeKey],
+        });
+      }
     }
   });
 
