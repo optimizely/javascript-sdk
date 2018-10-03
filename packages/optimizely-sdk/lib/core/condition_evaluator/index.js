@@ -1,18 +1,19 @@
-/**
- * Copyright 2016, Optimizely
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+/****************************************************************************
+ * Copyright 2016-2018, Optimizely, Inc. and contributors                   *
+ *                                                                          *
+ * Licensed under the Apache License, Version 2.0 (the "License");          *
+ * you may not use this file except in compliance with the License.         *
+ * You may obtain a copy of the License at                                  *
+ *                                                                          *
+ *    http://www.apache.org/licenses/LICENSE-2.0                            *
+ *                                                                          *
+ * Unless required by applicable law or agreed to in writing, software      *
+ * distributed under the License is distributed on an "AS IS" BASIS,        *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ * See the License for the specific language governing permissions and      *
+ * limitations under the License.                                           *
+ ***************************************************************************/
+
 var AND_CONDITION = 'and';
 var OR_CONDITION = 'or';
 var NOT_CONDITION = 'not';
@@ -46,12 +47,12 @@ var EXACT_MATCH_ALLOWED_TYPES = ['string', 'number', 'boolean'];
 
 /**
  * Top level method to evaluate audience conditions
- * @param  {Object[]} conditions     Nested array of and/or conditions.
- *                                   Example: ['and', operand_1, ['or', operand_2, operand_3]]
- * @param  {Object}   userAttributes Hash representing user attributes which will be used in determining if
- *                                   the audience conditions are met.
- * @return {?Boolean} true/false if the given user attributes match/don't match the given conditions, null if
- *                    the given user attributes and conditions can't be evaluated
+ * @param  {Object[]|Object}  conditions Nested array of and/or conditions, or a single condition object
+ *                            Example: ['and', { type: 'custom_attribute', ... }, ['or', { type: 'custom_attribute', ... }, { type: 'custom_attribute', ... }]]
+ * @param  {Object}           userAttributes Hash representing user attributes which will be used in determining if
+ *                            the audience conditions are met.
+ * @return {?Boolean}         true/false if the given user attributes match/don't match the given conditions, null if
+ *                            the given user attributes and conditions can't be evaluated
  */
 function evaluate(conditions, userAttributes) {
   if (Array.isArray(conditions)) {
@@ -153,7 +154,7 @@ function orEvaluator(conditions, userAttributes) {
  * Evaluate the given exact match condition for the given user attributes
  * @param   {Object}    condition
  * @param   {Object}    userAttributes
- * @return  {?Boolean}  true/false if the user attributes match/don't match the given condtiion.
+ * @return  {?Boolean}  true if the user attribute value is equal (===) to the condition value,
  *                      null if the condition value or user attribute value has an invalid type, or
  *                      if there is a mismatch between the user attribute type and the condition value
  *                      type
@@ -165,11 +166,8 @@ function exactEvaluator(condition, userAttributes) {
   var userProvidedValueType = typeof userProvidedValue;
 
   if (EXACT_MATCH_ALLOWED_TYPES.indexOf(conditionValueType) === -1 ||
-      EXACT_MATCH_ALLOWED_TYPES.indexOf(userProvidedValueType) === -1) {
-    return null;
-  }
-
-  if (conditionValueType !== userProvidedValueType) {
+      EXACT_MATCH_ALLOWED_TYPES.indexOf(userProvidedValueType) === -1 ||
+      conditionValueType !== userProvidedValueType) {
     return null;
   }
 
@@ -180,7 +178,8 @@ function exactEvaluator(condition, userAttributes) {
  * Evaluate the given exists match condition for the given user attributes
  * @param   {Object}  condition
  * @param   {Object}  userAttributes
- * @returns {Boolean} true/false if the user attributes match/don't match the given condition
+ * @returns {Boolean} true if the user attributes have a value for the given condition, and
+ *                    the user attribute value is neither null nor undefined
  */
 function existsEvaluator(condition, userAttributes) {
   var userProvidedValue = userAttributes[condition.name];
@@ -191,7 +190,7 @@ function existsEvaluator(condition, userAttributes) {
  * Evaluate the given greater than match condition for the given user attributes
  * @param   {Object}    condition
  * @param   {Object}    userAttributes
- * @returns {?Boolean}  true/false if the user attributes match/don't match the given condition.
+ * @returns {?Boolean}  true if the user attribute value is greater than the condition value,
  *                      null if the condition value isn't a number or the user attribute value
  *                      isn't a number
  */
@@ -213,7 +212,7 @@ function greaterThanEvaluator(condition, userAttributes) {
  * Evaluate the given less than match condition for the given user attributes
  * @param   {Object}    condition
  * @param   {Object}    userAttributes
- * @returns {?Boolean}  true/false if the user attributes match/don't match the given condition.
+ * @returns {?Boolean}  true if the user attribute value is less than the condition value,
  *                      null if the condition value isn't a number or the user attribute value
  *                      isn't a number
  */
@@ -235,7 +234,7 @@ function lessThanEvaluator(condition, userAttributes) {
  * Evaluate the given substring match condition for the given user attributes
  * @param   {Object}    condition
  * @param   {Object}    userAttributes
- * @returns {?Boolean}  true/false if the user attributes match/don't match the given condition.
+ * @returns {?Boolean}  true if the condition value is a substring of the user attribute value,
  *                      null if the condition value isn't a string or the user attribute value
  *                      isn't a string
  */

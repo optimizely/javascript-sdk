@@ -1,18 +1,19 @@
-/**
- * Copyright 2016, 2018, Optimizely
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+/****************************************************************************
+ * Copyright 2016-2018, Optimizely, Inc. and contributors                   *
+ *                                                                          *
+ * Licensed under the Apache License, Version 2.0 (the "License");          *
+ * you may not use this file except in compliance with the License.         *
+ * You may obtain a copy of the License at                                  *
+ *                                                                          *
+ *    http://www.apache.org/licenses/LICENSE-2.0                            *
+ *                                                                          *
+ * Unless required by applicable law or agreed to in writing, software      *
+ * distributed under the License is distributed on an "AS IS" BASIS,        *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ * See the License for the specific language governing permissions and      *
+ * limitations under the License.                                           *
+ ***************************************************************************/
+
 var chai = require('chai');
 var assert = chai.assert;
 var conditionEvaluator = require('./');
@@ -28,7 +29,7 @@ var exactSafariCondition = {
   type: 'custom_attribute',
   value: 'safari',
 };
-var exactIphoneCondition = {
+var exactIphone6Condition = {
   name: 'device_model',
   match: 'exact',
   type: 'custom_attribute',
@@ -113,7 +114,7 @@ describe('lib/core/condition_evaluator', function() {
               browser_type: 4.5,
               device_model: false,
             };
-            assert.isNull(conditionEvaluator.evaluate(['and', exactSafariCondition, exactIphoneCondition], userAttributes));
+            assert.isNull(conditionEvaluator.evaluate(['and', exactSafariCondition, exactIphone6Condition], userAttributes));
           });
 
           it('should return null when operands evaluate to trues and nulls', function() {
@@ -121,7 +122,7 @@ describe('lib/core/condition_evaluator', function() {
               browser_type: 'safari',
               device_model: false,
             };
-            assert.isNull(conditionEvaluator.evaluate(['and', exactSafariCondition, exactIphoneCondition], userAttributes));
+            assert.isNull(conditionEvaluator.evaluate(['and', exactSafariCondition, exactIphone6Condition], userAttributes));
           });
 
           it('should return false when operands evaluate to falses and nulls', function() {
@@ -129,7 +130,7 @@ describe('lib/core/condition_evaluator', function() {
               browser_type: 'firefox',
               device_model: false,
             };
-            assert.isFalse(conditionEvaluator.evaluate(['and', exactSafariCondition, exactIphoneCondition], userAttributes));
+            assert.isFalse(conditionEvaluator.evaluate(['and', exactSafariCondition, exactIphone6Condition], userAttributes));
           });
 
           it('should return false when operands evaluate to trues, falses, and nulls', function() {
@@ -138,7 +139,7 @@ describe('lib/core/condition_evaluator', function() {
               device_model: false,
               location: 'NY',
             };
-            assert.isFalse(conditionEvaluator.evaluate(['and', exactSafariCondition, exactIphoneCondition, exactLocationCondition], userAttributes));
+            assert.isFalse(conditionEvaluator.evaluate(['and', exactSafariCondition, exactIphone6Condition, exactLocationCondition], userAttributes));
           });
         });
       });
@@ -168,7 +169,7 @@ describe('lib/core/condition_evaluator', function() {
               browser_type: 4.5,
               device_model: false,
             };
-            assert.isNull(conditionEvaluator.evaluate(['or', exactSafariCondition, exactIphoneCondition], userAttributes));
+            assert.isNull(conditionEvaluator.evaluate(['or', exactSafariCondition, exactIphone6Condition], userAttributes));
           });
 
           it('should return true when operands evaluate to trues and nulls', function() {
@@ -176,7 +177,7 @@ describe('lib/core/condition_evaluator', function() {
               browser_type: 'safari',
               device_model: false,
             };
-            assert.isTrue(conditionEvaluator.evaluate(['or', exactSafariCondition, exactIphoneCondition], userAttributes));
+            assert.isTrue(conditionEvaluator.evaluate(['or', exactSafariCondition, exactIphone6Condition], userAttributes));
           });
 
           it('should return null when operands evaluate to falses and nulls', function() {
@@ -184,7 +185,7 @@ describe('lib/core/condition_evaluator', function() {
               browser_type: 'firefox',
               device_model: false,
             };
-            assert.isNull(conditionEvaluator.evaluate(['or', exactSafariCondition, exactIphoneCondition], userAttributes));
+            assert.isNull(conditionEvaluator.evaluate(['or', exactSafariCondition, exactIphone6Condition], userAttributes));
           });
 
           it('should return true when operands evaluate to trues, falses, and nulls', function() {
@@ -193,7 +194,7 @@ describe('lib/core/condition_evaluator', function() {
               device_model: false,
               location: 'NY',
             };
-            assert.isTrue(conditionEvaluator.evaluate(['or', exactSafariCondition, exactIphoneCondition, exactLocationCondition], userAttributes));
+            assert.isTrue(conditionEvaluator.evaluate(['or', exactSafariCondition, exactIphone6Condition, exactLocationCondition], userAttributes));
           });
         });
       });
