@@ -8,6 +8,7 @@ node_js:
 branches:
   only:
   - master
+  - /^\d+\.\d+\.(\d|[x])
 env:
   global:
   # BROWSER_STACK_USERNAME
