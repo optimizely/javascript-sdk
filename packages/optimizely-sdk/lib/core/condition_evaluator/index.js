@@ -14,6 +14,8 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
+var fns = require('../../utils/fns');
+
 var AND_CONDITION = 'and';
 var OR_CONDITION = 'or';
 var NOT_CONDITION = 'not';
@@ -42,8 +44,6 @@ EVALUATORS_BY_MATCH_TYPE[EXISTS_MATCH_TYPE] = existsEvaluator;
 EVALUATORS_BY_MATCH_TYPE[GREATER_THAN_MATCH_TYPE] = greaterThanEvaluator;
 EVALUATORS_BY_MATCH_TYPE[LESS_THAN_MATCH_TYPE] = lessThanEvaluator;
 EVALUATORS_BY_MATCH_TYPE[SUBSTRING_MATCH_TYPE] = substringEvaluator;
-
-var EXACT_MATCH_ALLOWED_TYPES = ['string', 'number', 'boolean'];
 
 /**
  * Top level method to evaluate audience conditions
@@ -151,6 +151,17 @@ function orEvaluator(conditions, userAttributes) {
 }
 
 /**
+ * Returns true if the value is valid for exact conditions. Valid values include
+ * strings, booleans, and numbers that aren't NaN, -Infinity, or Infinity.
+ * @param value
+ * @returns {Boolean}
+ */
+function isValueValidForExactConditions(value) {
+  return typeof value === 'string' || typeof value === 'boolean' ||
+    fns.isFinite(value);
+}
+
+/**
  * Evaluate the given exact match condition for the given user attributes
  * @param   {Object}    condition
  * @param   {Object}    userAttributes
@@ -166,8 +177,8 @@ function exactEvaluator(condition, userAttributes) {
   var userValue = userAttributes[condition.name];
   var userValueType = typeof userValue;
 
-  if (EXACT_MATCH_ALLOWED_TYPES.indexOf(userValueType) === -1 ||
-    EXACT_MATCH_ALLOWED_TYPES.indexOf(conditionValueType) === -1 ||
+  if (!isValueValidForExactConditions(userValue) ||
+    !isValueValidForExactConditions(conditionValueType) ||
     conditionValueType !== userValueType) {
     return null;
   }
@@ -190,15 +201,6 @@ function existsEvaluator(condition, userAttributes) {
 }
 
 /**
- * Returns true if the value is invalid for numeric (greater than or less than) conditions.
- * @param value
- * @returns {boolean} true if the value is not NaN and is a number, false otherwise
- */
-function valueIsInvalidForNumericConditions(value) {
-  return typeof value !== 'number' || isNaN(value);
-}
-
-/**
  * Evaluate the given greater than match condition for the given user attributes
  * @param   {Object}    condition
  * @param   {Object}    userAttributes
@@ -211,8 +213,7 @@ function greaterThanEvaluator(condition, userAttributes) {
   var userValue = userAttributes[condition.name];
   var conditionValue = condition.value;
 
-  if (valueIsInvalidForNumericConditions(userValue) ||
-    valueIsInvalidForNumericConditions(conditionValue)) {
+  if (!fns.isFinite(userValue) || !fns.isFinite(conditionValue)) {
     return null;
   }
 
@@ -224,15 +225,15 @@ function greaterThanEvaluator(condition, userAttributes) {
  * @param   {Object}    condition
  * @param   {Object}    userAttributes
  * @returns {?Boolean}  true if the user attribute value is less than the condition value,
- *                      null if the condition value isn't a number or the user attribute value
- *                      isn't a number
+ *                      false if the user attribute value is greater than or equal to the condition value,
+ *                      null if the condition value isn't a number or the user attribute value isn't a
+ *                      number
  */
 function lessThanEvaluator(condition, userAttributes) {
   var userValue = userAttributes[condition.name];
   var conditionValue = condition.value;
 
-  if (valueIsInvalidForNumericConditions(userValue) ||
-    valueIsInvalidForNumericConditions(conditionValue)) {
+  if (!fns.isFinite(userValue) || !fns.isFinite(conditionValue)) {
     return null;
   }
 
@@ -244,6 +245,7 @@ function lessThanEvaluator(condition, userAttributes) {
  * @param   {Object}    condition
  * @param   {Object}    userAttributes
  * @returns {?Boolean}  true if the condition value is a substring of the user attribute value,
+ *                      false if the condition value is not a substring of the user attribute value,
  *                      null if the condition value isn't a string or the user attribute value
  *                      isn't a string
  */

@@ -24,6 +24,7 @@ module.exports = {
   },
   isArray: require('lodash/isArray'),
   isEmpty: require('lodash/isEmpty'),
+  isFinite: require('lodash/isFinite'),
   keyBy: require('lodash/keyBy'),
   filter: require('lodash/filter'),
   forEach: require('lodash/forEach'),
