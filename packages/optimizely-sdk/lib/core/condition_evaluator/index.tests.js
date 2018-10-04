@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2016-2018, Optimizely, Inc. and contributors                   *
+ * Copyright 2016, 2018, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -18,11 +18,31 @@ var chai = require('chai');
 var assert = chai.assert;
 var conditionEvaluator = require('./');
 
-var browserConditionSafari = {'name': 'browser_type', 'value': 'safari'};
-var deviceConditionIphone = {'name': 'device_model', 'value': 'iphone6'};
-var booleanCondition = {'name': 'is_firefox', 'value': true};
-var integerCondition = {'name': 'num_users', 'value': 10};
-var doubleCondition = {'name': 'pi_value', 'value': 3.14};
+var browserConditionSafari = {
+  name: 'browser_type',
+  value: 'safari',
+  type: 'custom_attribute',
+};
+var deviceConditionIphone = {
+  name: 'device_model',
+  value: 'iphone6',
+  type: 'custom_attribute',
+};
+var booleanCondition = {
+  name: 'is_firefox',
+  value: true,
+  type: 'custom_attribute',
+};
+var integerCondition = {
+  name: 'num_users',
+  value: 10,
+  type: 'custom_attribute',
+};
+var doubleCondition = {
+  name: 'pi_value',
+  value: 3.14,
+  type: 'custom_attribute',
+};
 var exactSafariCondition = {
   name: 'browser_type',
   match: 'exact',

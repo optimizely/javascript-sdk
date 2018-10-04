@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2016-2018, Optimizely, Inc. and contributors                   *
+ * Copyright 2016, 2018, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -70,22 +70,24 @@ function evaluate(conditions, userAttributes) {
         return andEvaluator(restOfConditions, userAttributes);
       case NOT_CONDITION:
         return notEvaluator(restOfConditions, userAttributes);
-      case OR_CONDITION:
+      default: // firstOperator is OR_CONDITION
         return orEvaluator(restOfConditions, userAttributes);
     }
   }
 
-  if (conditions.hasOwnProperty('type') && conditions.type !== CUSTOM_ATTRIBUTE_CONDITION_TYPE) {
+  var leafCondition = conditions;
+
+  if (leafCondition.type !== CUSTOM_ATTRIBUTE_CONDITION_TYPE) {
     return null;
   }
 
-  var conditionMatch = conditions.match;
-  if (conditionMatch !== undefined && MATCH_TYPES.indexOf(conditionMatch) === -1) {
+  var conditionMatch = leafCondition.match;
+  if (typeof conditionMatch !== 'undefined' && MATCH_TYPES.indexOf(conditionMatch) === -1) {
     return null;
   }
 
   var evaluatorForMatch = EVALUATORS_BY_MATCH_TYPE[conditionMatch] || exactEvaluator;
-  return evaluatorForMatch(conditions, userAttributes);
+  return evaluatorForMatch(leafCondition, userAttributes);
 }
 
 /**
@@ -97,10 +99,9 @@ function evaluate(conditions, userAttributes) {
  *                                   null if the user attributes and conditions can't be evaluated
  */
 function andEvaluator(conditions, userAttributes) {
-  var conditionResult;
   var sawNullResult = false;
   for (var i = 0; i < conditions.length; i++) {
-    conditionResult = evaluate(conditions[i], userAttributes);
+    var conditionResult = evaluate(conditions[i], userAttributes);
     if (conditionResult === false) {
       return false;
     }
@@ -136,10 +137,9 @@ function notEvaluator(conditions, userAttributes) {
  *                                    null if the user attributes and conditions can't be evaluated
  */
 function orEvaluator(conditions, userAttributes) {
-  var conditionResult;
   var sawNullResult = false;
   for (var i = 0; i < conditions.length; i++) {
-    conditionResult = evaluate(conditions[i], userAttributes);
+    var conditionResult = evaluate(conditions[i], userAttributes);
     if (conditionResult === true) {
       return true;
     }
@@ -155,6 +155,7 @@ function orEvaluator(conditions, userAttributes) {
  * @param   {Object}    condition
  * @param   {Object}    userAttributes
  * @return  {?Boolean}  true if the user attribute value is equal (===) to the condition value,
+ *                      false if the user attribute value is not equal (!==) to the condition value,
  *                      null if the condition value or user attribute value has an invalid type, or
  *                      if there is a mismatch between the user attribute type and the condition value
  *                      type
@@ -162,28 +163,39 @@ function orEvaluator(conditions, userAttributes) {
 function exactEvaluator(condition, userAttributes) {
   var conditionValue = condition.value;
   var conditionValueType = typeof conditionValue;
-  var userProvidedValue = userAttributes[condition.name];
-  var userProvidedValueType = typeof userProvidedValue;
+  var userValue = userAttributes[condition.name];
+  var userValueType = typeof userValue;
 
-  if (EXACT_MATCH_ALLOWED_TYPES.indexOf(conditionValueType) === -1 ||
-      EXACT_MATCH_ALLOWED_TYPES.indexOf(userProvidedValueType) === -1 ||
-      conditionValueType !== userProvidedValueType) {
+  if (EXACT_MATCH_ALLOWED_TYPES.indexOf(userValueType) === -1 ||
+    EXACT_MATCH_ALLOWED_TYPES.indexOf(conditionValueType) === -1 ||
+    conditionValueType !== userValueType) {
     return null;
   }
 
-  return conditionValue === userProvidedValue;
+  return conditionValue === userValue;
 }
 
 /**
  * Evaluate the given exists match condition for the given user attributes
  * @param   {Object}  condition
  * @param   {Object}  userAttributes
- * @returns {Boolean} true if the user attributes have a value for the given condition, and
- *                    the user attribute value is neither null nor undefined
+ * @returns {Boolean} true if both:
+ *                      1) the user attributes have a value for the given condition, and
+ *                      2) the user attribute value is neither null nor undefined
+ *                    Returns false otherwise
  */
 function existsEvaluator(condition, userAttributes) {
-  var userProvidedValue = userAttributes[condition.name];
-  return userProvidedValue !== undefined && userProvidedValue !== null;
+  var userValue = userAttributes[condition.name];
+  return typeof userValue !== 'undefined' && userValue !== null;
+}
+
+/**
+ * Returns true if the value is invalid for numeric (greater than or less than) conditions.
+ * @param value
+ * @returns {boolean} true if the value is not NaN and is a number, false otherwise
+ */
+function valueIsInvalidForNumericConditions(value) {
+  return typeof value !== 'number' || isNaN(value);
 }
 
 /**
@@ -191,21 +203,20 @@ function existsEvaluator(condition, userAttributes) {
  * @param   {Object}    condition
  * @param   {Object}    userAttributes
  * @returns {?Boolean}  true if the user attribute value is greater than the condition value,
+ *                      false if the user attribute value is less than or equal to the condition value,
  *                      null if the condition value isn't a number or the user attribute value
  *                      isn't a number
  */
 function greaterThanEvaluator(condition, userAttributes) {
-  var userProvidedValue = userAttributes[condition.name];
-  if (typeof userProvidedValue !== 'number') {
-    return null;
-  }
-
+  var userValue = userAttributes[condition.name];
   var conditionValue = condition.value;
-  if (typeof conditionValue !== 'number') {
+
+  if (valueIsInvalidForNumericConditions(userValue) ||
+    valueIsInvalidForNumericConditions(conditionValue)) {
     return null;
   }
 
-  return userProvidedValue > conditionValue;
+  return userValue > conditionValue;
 }
 
 /**
@@ -217,17 +228,15 @@ function greaterThanEvaluator(condition, userAttributes) {
  *                      isn't a number
  */
 function lessThanEvaluator(condition, userAttributes) {
-  var userProvidedValue = userAttributes[condition.name];
-  if (typeof userProvidedValue !== 'number') {
-    return null;
-  }
-
+  var userValue = userAttributes[condition.name];
   var conditionValue = condition.value;
-  if (typeof conditionValue !== 'number') {
+
+  if (valueIsInvalidForNumericConditions(userValue) ||
+    valueIsInvalidForNumericConditions(conditionValue)) {
     return null;
   }
 
-  return userProvidedValue < conditionValue;
+  return userValue < conditionValue;
 }
 
 /**
@@ -239,17 +248,14 @@ function lessThanEvaluator(condition, userAttributes) {
  *                      isn't a string
  */
 function substringEvaluator(condition, userAttributes) {
-  var userProvidedValue = userAttributes[condition.name];
-  if (typeof userProvidedValue !== 'string') {
-    return null;
-  }
-
+  var userValue = userAttributes[condition.name];
   var conditionValue = condition.value;
-  if (typeof conditionValue !== 'string') {
+
+  if (typeof userValue !== 'string' || typeof conditionValue !== 'string') {
     return null;
   }
 
-  return userProvidedValue.indexOf(conditionValue) !== -1;
+  return userValue.indexOf(conditionValue) !== -1;
 }
 
 module.exports = {
