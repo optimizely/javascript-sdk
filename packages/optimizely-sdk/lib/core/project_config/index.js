@@ -40,6 +40,11 @@ module.exports = {
     fns.forEach(projectConfig.audiences, function(audience) {
       audience.conditions = JSON.parse(audience.conditions);
     });
+    projectConfig.audienceIdMap = fns.keyBy(projectConfig.audiences, 'id');
+    fns.forEach(projectConfig.typedAudiences, function(audience) {
+      audience.conditions = JSON.parse(audience.conditions);
+    });
+    projectConfig.typedAudienceIdMap = fns.keyBy(projectConfig.typedAudiences, 'id');
 
     projectConfig.attributeKeyMap = fns.keyBy(projectConfig.attributes, 'key');
     projectConfig.eventKeyMap = fns.keyBy(projectConfig.events, 'key');
@@ -215,8 +220,16 @@ module.exports = {
 
     var audienceIds = experiment.audienceIds;
     var audiencesInExperiment = [];
-    var audiencesInExperiment = fns.filter(projectConfig.audiences, function(audience) {
-      return audienceIds.indexOf(audience.id) !== -1;
+    fns.forEach(audienceIds, function(audienceId) {
+      var typedAudience = projectConfig.typedAudienceIdMap[audienceId];
+      if (typedAudience) {
+        audiencesInExperiment.push(typedAudience);
+        return;
+      }
+      var audience = projectConfig.audienceIdMap[audienceId];
+      if (audience) {
+        audiencesInExperiment.push(audience);
+      }
     });
     return audiencesInExperiment;
   },
