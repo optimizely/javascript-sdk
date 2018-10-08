@@ -2512,12 +2512,23 @@ describe('lib/optimizely', function() {
     });
   });
 
-  describe('APIs, using a v4 project config', function() {
+  describe('feature management', function() {
     var sandbox = sinon.sandbox.create();
     var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
     var optlyInstance;
     var clock;
     beforeEach(function() {
+      optlyInstance = new Optimizely({
+        clientEngine: 'node-sdk',
+        datafile: testData.getTestProjectConfigWithFeatures(),
+        eventBuilder: eventBuilder,
+        errorHandler: errorHandler,
+        eventDispatcher: eventDispatcher,
+        jsonSchemaValidator: jsonSchemaValidator,
+        logger: createdLogger,
+        isValidInstance: true,
+      });
+
       sandbox.stub(eventDispatcher, 'dispatchEvent');
       sandbox.stub(errorHandler, 'handleError');
       sandbox.stub(createdLogger, 'log');
@@ -2531,459 +2542,35 @@ describe('lib/optimizely', function() {
       clock.restore();
     });
 
-    describe('using configWithFeatures', function() {
-      beforeEach(function() {
+    describe('#isFeatureEnabled', function() {
+      it('returns false, and does not dispatch an impression event, for an invalid feature key', function() {
+        var result = optlyInstance.isFeatureEnabled('thisIsDefinitelyNotAFeatureKey', 'user1');
+        assert.strictEqual(result, false);
+        sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+      });
+
+      it('returns false if the instance is invalid', function() {
         optlyInstance = new Optimizely({
           clientEngine: 'node-sdk',
-          datafile: testData.getTestProjectConfigWithFeatures(),
+          datafile: {
+            lasers: 300,
+            message: 'this is not a valid datafile'
+          },
           eventBuilder: eventBuilder,
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
           jsonSchemaValidator: jsonSchemaValidator,
           logger: createdLogger,
-          isValidInstance: true,
         });
+        var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user1');
+        assert.strictEqual(result, false);
+        sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Optimizely object is not valid. Failing isFeatureEnabled.');
       });
 
-      describe('#isFeatureEnabled', function() {
-        it('returns false, and does not dispatch an impression event, for an invalid feature key', function() {
-          var result = optlyInstance.isFeatureEnabled('thisIsDefinitelyNotAFeatureKey', 'user1');
-          assert.strictEqual(result, false);
-          sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-        });
+      describe('when the user bucketed into a variation of an experiment with the feature', function() {
+        var attributes = { test_attribute: 'test_value' };
 
-        it('returns false if the instance is invalid', function() {
-          optlyInstance = new Optimizely({
-            clientEngine: 'node-sdk',
-            datafile: {
-              lasers: 300,
-              message: 'this is not a valid datafile'
-            },
-            eventBuilder: eventBuilder,
-            errorHandler: errorHandler,
-            eventDispatcher: eventDispatcher,
-            jsonSchemaValidator: jsonSchemaValidator,
-            logger: createdLogger,
-          });
-          var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user1');
-          assert.strictEqual(result, false);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Optimizely object is not valid. Failing isFeatureEnabled.');
-        });
-
-        describe('when the user bucketed into a variation of an experiment with the feature', function() {
-          var attributes = { test_attribute: 'test_value' };
-
-          describe('when the variation is toggled ON', function() {
-            beforeEach(function() {
-              var experiment = optlyInstance.configObj.experimentKeyMap.testing_my_feature;
-              var variation = experiment.variations[0];
-              sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
-                experiment: experiment,
-                variation: variation,
-                decisionSource: DECISION_SOURCES.EXPERIMENT,
-              });
-            });
-
-            it('returns true and dispatches an impression event', function() {
-              var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user1', attributes);
-              assert.strictEqual(result, true);
-              sinon.assert.calledOnce(optlyInstance.decisionService.getVariationForFeature);
-              var feature = optlyInstance.configObj.featureKeyMap.test_feature_for_experiment;
-              sinon.assert.calledWithExactly(
-                optlyInstance.decisionService.getVariationForFeature,
-                feature,
-                'user1',
-                attributes
-              );
-              sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
-              var expectedImpressionEvent = {
-                'httpVerb': 'POST',
-                'url': 'https://logx.optimizely.com/v1/events',
-                'params': {
-                  'account_id': '572018',
-                  'project_id': '594001',
-                  'visitors': [
-                    {
-                      'snapshots': [
-                        {
-                          'decisions': [
-                            {
-                              'campaign_id': '594093',
-                              'experiment_id': '594098',
-                              'variation_id': '594096'
-                            }
-                          ],
-                          'events': [
-                            {
-                              'entity_id': '594093',
-                              'timestamp': 1509489766569,
-                              'key': 'campaign_activated',
-                              'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c'
-                            }
-                          ]
-                        }
-                      ],
-                      'visitor_id': 'user1',
-                      'attributes': [
-                        {
-                          'entity_id': '594014',
-                          'key': 'test_attribute',
-                          'type': 'custom',
-                          'value': 'test_value',
-                        }, {
-                          'entity_id': '$opt_bot_filtering',
-                          'key': '$opt_bot_filtering',
-                          'type': 'custom',
-                          'value': true,
-                        },
-                      ],
-                    }
-                  ],
-                  'revision': '35',
-                  'client_name': 'node-sdk',
-                  'client_version': enums.NODE_CLIENT_VERSION,
-                  'anonymize_ip': true
-                }
-              };
-              var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
-              assert.deepEqual(callArgs[0], expectedImpressionEvent);
-              assert.isFunction(callArgs[1]);
-              sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature_for_experiment is enabled for user user1.');
-            });
-
-            it('returns false and does not dispatch an impression event when feature key is null', function() {
-              var result = optlyInstance.isFeatureEnabled(null, 'user1', attributes);
-              assert.strictEqual(result, false);
-              sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-              sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided feature_key is in an invalid format.');
-            });
-
-            it('returns false when user id is null', function() {
-              var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', null, attributes);
-              assert.strictEqual(result, false);
-              sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-              sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
-            });
-
-            it('returns false when feature key and user id are null', function() {
-              var result = optlyInstance.isFeatureEnabled(null, null, attributes);
-              assert.strictEqual(result, false);
-              sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-              sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided feature_key is in an invalid format.');
-            });
-
-            it('returns false when feature key is undefined', function() {
-              var result = optlyInstance.isFeatureEnabled(undefined, 'user1', attributes);
-              assert.strictEqual(result, false);
-              sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-              sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided feature_key is in an invalid format.');
-            });
-
-            it('returns false when user id is undefined', function() {
-              var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', undefined, attributes);
-              assert.strictEqual(result, false);
-              sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-              sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
-            });
-
-            it('returns false when feature key and user id are undefined', function() {
-              var result = optlyInstance.isFeatureEnabled(undefined, undefined, attributes);
-              assert.strictEqual(result, false);
-              sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-            });
-
-            it('returns false when no arguments are provided', function() {
-              var result = optlyInstance.isFeatureEnabled();
-              assert.strictEqual(result, false);
-              sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-              sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided feature_key is in an invalid format.');
-            });
-
-            it('returns false when user id is an object', function() {
-              var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', {}, attributes);
-              assert.strictEqual(result, false);
-              sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-              sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
-            });
-
-            it('returns false when user id is a number', function() {
-              var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', 72, attributes);
-              assert.strictEqual(result, false);
-              sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-              sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
-            });
-
-            it('returns false when feature key is an array', function() {
-              var result = optlyInstance.isFeatureEnabled(['a', 'feature'], 'user1', attributes);
-              assert.strictEqual(result, false);
-              sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-              sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided feature_key is in an invalid format.');
-            });
-
-            it('returns false when user id is an empty string', function() {
-              var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', '', attributes);
-              assert.strictEqual(result, false);
-              sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-            });
-
-            it('returns false when feature key is an empty string', function() {
-              var result = optlyInstance.isFeatureEnabled('', 'user1', attributes);
-              assert.strictEqual(result, false);
-              sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-            });
-
-            it('returns false when a feature key is provided, but a user id is not', function() {
-              var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment');
-              assert.strictEqual(result, false);
-              sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-            });
-          });
-
-          describe('when the variation is toggled OFF', function() {
-            var result;
-            beforeEach(function() {
-              var experiment = optlyInstance.configObj.experimentKeyMap.test_shared_feature;
-              var variation = experiment.variations[1];
-              sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
-                experiment: experiment,
-                variation: variation,
-                decisionSource: DECISION_SOURCES.EXPERIMENT,
-              });
-              result = optlyInstance.isFeatureEnabled('shared_feature', 'user1', attributes);
-            });
-
-            it('should return false', function() {
-              assert.strictEqual(result, false);
-              sinon.assert.calledOnce(optlyInstance.decisionService.getVariationForFeature);
-              var feature = optlyInstance.configObj.featureKeyMap.shared_feature;
-              sinon.assert.calledWithExactly(
-                optlyInstance.decisionService.getVariationForFeature,
-                feature,
-                'user1',
-                attributes
-              );
-            });
-
-            it('should dispatch an impression event', function() {
-              sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
-              var expectedImpressionEvent = {
-                'httpVerb': 'POST',
-                'url': 'https://logx.optimizely.com/v1/events',
-                'params': {
-                  'account_id': '572018',
-                  'project_id': '594001',
-                  'visitors': [
-                    {
-                      'snapshots': [
-                        {
-                          'decisions': [
-                            {
-                              'campaign_id': '599023',
-                              'experiment_id': '599028',
-                              'variation_id': '599027'
-                            }
-                          ],
-                          'events': [
-                            {
-                              'entity_id': '599023',
-                              'timestamp': 1509489766569,
-                              'key': 'campaign_activated',
-                              'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c'
-                            }
-                          ]
-                        }
-                      ],
-                      'visitor_id': 'user1',
-                      'attributes': [
-                        {
-                          'entity_id': '594014',
-                          'key': 'test_attribute',
-                          'type': 'custom',
-                          'value': 'test_value',
-                        }, {
-                          'entity_id': '$opt_bot_filtering',
-                          'key': '$opt_bot_filtering',
-                          'type': 'custom',
-                          'value': true,
-                        },
-                      ],
-                    }
-                  ],
-                  'revision': '35',
-                  'client_name': 'node-sdk',
-                  'client_version': enums.NODE_CLIENT_VERSION,
-                  'anonymize_ip': true
-                }
-              };
-              var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
-              assert.deepEqual(callArgs[0], expectedImpressionEvent);
-              assert.isFunction(callArgs[1]);
-            });
-          });
-
-          describe('when the variation is missing the toggle', function() {
-            beforeEach(function() {
-              var experiment = optlyInstance.configObj.experimentKeyMap.test_shared_feature;
-              var variation = fns.cloneDeep(experiment.variations[0]);
-              delete variation['featureEnabled'];
-              sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
-                experiment: experiment,
-                variation: variation,
-                decisionSource: DECISION_SOURCES.EXPERIMENT,
-              });
-            });
-
-            it('should return false', function() {
-              var result = optlyInstance.isFeatureEnabled('shared_feature', 'user1', attributes);
-              assert.strictEqual(result, false);
-              sinon.assert.calledOnce(optlyInstance.decisionService.getVariationForFeature);
-              var feature = optlyInstance.configObj.featureKeyMap.shared_feature;
-              sinon.assert.calledWithExactly(
-                optlyInstance.decisionService.getVariationForFeature,
-                feature,
-                'user1',
-                attributes
-              );
-            });
-          });
-        });
-
-        describe('user bucketed into a variation of a rollout of the feature', function() {
-          describe('when the variation is toggled ON', function() {
-            beforeEach(function() {
-              // This experiment is the first audience targeting rule in the rollout of feature 'test_feature'
-              var experiment = optlyInstance.configObj.experimentKeyMap['594031'];
-              var variation = experiment.variations[0];
-              sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
-                experiment: experiment,
-                variation: variation,
-                decisionSource: DECISION_SOURCES.ROLLOUT,
-              });
-            });
-
-            it('returns true and does not dispatch an event', function() {
-              var result = optlyInstance.isFeatureEnabled('test_feature', 'user1', {
-                test_attribute: 'test_value',
-              });
-              assert.strictEqual(result, true);
-              sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-              sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature is enabled for user user1.');
-            });
-          });
-
-          describe('when the variation is toggled OFF', function() {
-            beforeEach(function() {
-              // This experiment is the second audience targeting rule in the rollout of feature 'test_feature'
-              var experiment = optlyInstance.configObj.experimentKeyMap['594037'];
-              var variation = experiment.variations[0];
-              sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
-                experiment: experiment,
-                variation: variation,
-                decisionSource: DECISION_SOURCES.ROLLOUT,
-              });
-            });
-
-            it('returns false ', function() {
-              var result = optlyInstance.isFeatureEnabled('test_feature', 'user1', {
-                test_attribute: 'test_value',
-              });
-              assert.strictEqual(result, false);
-              sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature is not enabled for user user1.');
-            });
-          });
-        });
-
-        describe('user not bucketed into an experiment or a rollout', function() {
-          beforeEach(function() {
-            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
-              experiment: null,
-              variation: null,
-              decisionSource: null,
-            });
-          });
-
-          it('returns false and does not dispatch an event', function() {
-            var result = optlyInstance.isFeatureEnabled('test_feature', 'user1');
-            assert.strictEqual(result, false);
-            sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature is not enabled for user user1.');
-          });
-        });
-      });
-
-      describe('#getEnabledFeatures', function() {
-        beforeEach(function() {
-          sandbox.stub(optlyInstance, 'isFeatureEnabled', function(featureKey) {
-            return featureKey === 'test_feature' || featureKey === 'test_feature_for_experiment';
-          });
-        });
-
-        it('returns an empty array if the instance is invalid', function() {
-          optlyInstance = new Optimizely({
-            clientEngine: 'node-sdk',
-            datafile: {
-              lasers: 300,
-              message: 'this is not a valid datafile'
-            },
-            eventBuilder: eventBuilder,
-            errorHandler: errorHandler,
-            eventDispatcher: eventDispatcher,
-            jsonSchemaValidator: jsonSchemaValidator,
-            logger: createdLogger,
-          });
-          var result = optlyInstance.getEnabledFeatures('user1', { test_attribute: 'test_value' });
-          assert.deepEqual(result, []);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Optimizely object is not valid. Failing getEnabledFeatures.');
-        });
-
-        it('returns only enabled features for the specified user and attributes', function() {
-          var attributes = { test_attribute: 'test_value', };
-          var result = optlyInstance.getEnabledFeatures('user1', attributes);
-          assert.strictEqual(result.length, 2);
-          assert.isAbove(result.indexOf('test_feature'), -1);
-          assert.isAbove(result.indexOf('test_feature_for_experiment'), -1);
-          sinon.assert.callCount(optlyInstance.isFeatureEnabled, 6);
-          sinon.assert.calledWithExactly(
-            optlyInstance.isFeatureEnabled,
-            'test_feature',
-            'user1',
-            attributes
-          );
-          sinon.assert.calledWithExactly(
-            optlyInstance.isFeatureEnabled,
-            'test_feature_2',
-            'user1',
-            attributes
-          );
-          sinon.assert.calledWithExactly(
-            optlyInstance.isFeatureEnabled,
-            'test_feature_for_experiment',
-            'user1',
-            attributes
-          );
-          sinon.assert.calledWithExactly(
-            optlyInstance.isFeatureEnabled,
-            'feature_with_group',
-            'user1',
-            attributes
-          );
-          sinon.assert.calledWithExactly(
-            optlyInstance.isFeatureEnabled,
-            'shared_feature',
-            'user1',
-            attributes
-          );
-          sinon.assert.calledWithExactly(
-            optlyInstance.isFeatureEnabled,
-            'unused_flag',
-            'user1',
-            attributes
-          );
-        });
-      });
-
-      describe('feature variable APIs', function() {
-        describe('bucketed into variation in an experiment with variable values', function() {
+        describe('when the variation is toggled ON', function() {
           beforeEach(function() {
             var experiment = optlyInstance.configObj.experimentKeyMap.testing_my_feature;
             var variation = experiment.variations[0];
@@ -2994,618 +2581,723 @@ describe('lib/optimizely', function() {
             });
           });
 
-          it('returns the right value from getFeatureVariableBoolean', function() {
-            var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
+          it('returns true and dispatches an impression event', function() {
+            var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user1', attributes);
             assert.strictEqual(result, true);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "is_button_animated" of feature flag "test_feature_for_experiment" is true for user "user1"');
+            sinon.assert.calledOnce(optlyInstance.decisionService.getVariationForFeature);
+            var feature = optlyInstance.configObj.featureKeyMap.test_feature_for_experiment;
+            sinon.assert.calledWithExactly(
+              optlyInstance.decisionService.getVariationForFeature,
+              feature,
+              'user1',
+              attributes
+            );
+            sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
+            var expectedImpressionEvent = {
+              'httpVerb': 'POST',
+              'url': 'https://logx.optimizely.com/v1/events',
+              'params': {
+                'account_id': '572018',
+                'project_id': '594001',
+                'visitors': [
+                  {
+                    'snapshots': [
+                      {
+                        'decisions': [
+                          {
+                            'campaign_id': '594093',
+                            'experiment_id': '594098',
+                            'variation_id': '594096'
+                          }
+                        ],
+                        'events': [
+                          {
+                            'entity_id': '594093',
+                            'timestamp': 1509489766569,
+                            'key': 'campaign_activated',
+                            'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c'
+                          }
+                        ]
+                      }
+                    ],
+                    'visitor_id': 'user1',
+                    'attributes': [
+                      {
+                        'entity_id': '594014',
+                        'key': 'test_attribute',
+                        'type': 'custom',
+                        'value': 'test_value',
+                      }, {
+                        'entity_id': '$opt_bot_filtering',
+                        'key': '$opt_bot_filtering',
+                        'type': 'custom',
+                        'value': true,
+                      },
+                    ],
+                  }
+                ],
+                'revision': '35',
+                'client_name': 'node-sdk',
+                'client_version': enums.NODE_CLIENT_VERSION,
+                'anonymize_ip': true
+              }
+            };
+            var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
+            assert.deepEqual(callArgs[0], expectedImpressionEvent);
+            assert.isFunction(callArgs[1]);
+            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature_for_experiment is enabled for user user1.');
           });
 
-          it('returns the right value from getFeatureVariableDouble', function() {
-            var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
-            assert.strictEqual(result, 20.25);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "button_width" of feature flag "test_feature_for_experiment" is 20.25 for user "user1"');
-          });
-
-          it('returns the right value from getFeatureVariableInteger', function() {
-            var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
-            assert.strictEqual(result, 2);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "num_buttons" of feature flag "test_feature_for_experiment" is 2 for user "user1"');
-          });
-
-          it('returns the right value from getFeatureVariableString', function() {
-            var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
-            assert.strictEqual(result, 'Buy me NOW');
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "button_txt" of feature flag "test_feature_for_experiment" is Buy me NOW for user "user1"');
-          });
-
-          it('returns null from getFeatureVariableBoolean when called with a non-boolean variable', function() {
-            var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'button_width', 'user1');
-            assert.strictEqual(result, null);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.WARNING, 'OPTIMIZELY: Requested variable type "boolean", but variable is of type "double". Use correct API to retrieve value. Returning None.');
-          });
-
-          it('returns null from getFeatureVariableDouble when called with a non-double variable', function() {
-            var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'is_button_animated', 'user1');
-            assert.strictEqual(result, null);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.WARNING, 'OPTIMIZELY: Requested variable type "double", but variable is of type "boolean". Use correct API to retrieve value. Returning None.');
-          });
-
-          it('returns null from getFeatureVariableInteger when called with a non-integer variable', function() {
-            var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'button_width', 'user1');
-            assert.strictEqual(result, null);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.WARNING, 'OPTIMIZELY: Requested variable type "integer", but variable is of type "double". Use correct API to retrieve value. Returning None.');
-          });
-
-          it('returns null from getFeatureVariableString when called with a non-string variable', function() {
-            var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'num_buttons', 'user1');
-            assert.strictEqual(result, null);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.WARNING, 'OPTIMIZELY: Requested variable type "string", but variable is of type "integer". Use correct API to retrieve value. Returning None.');
-          });
-
-          it('returns null from getFeatureVariableBoolean if user id is null', function() {
-            var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', null, { test_attribute: 'test_value' });
-            assert.strictEqual(result, null);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
-          });
-
-          it('returns null from getFeatureVariableBoolean if user id is undefined', function() {
-            var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', undefined, { test_attribute: 'test_value' });
-            assert.strictEqual(result, null);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
-          });
-
-          it('returns null from getFeatureVariableBoolean if user id is not provided', function() {
-            var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated');
-            assert.strictEqual(result, null);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
-          });
-
-          it('returns null from getFeatureVariableDouble if user id is null', function() {
-            var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', null, { test_attribute: 'test_value' });
-            assert.strictEqual(result, null);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
-          });
-
-          it('returns null from getFeatureVariableDouble if user id is undefined', function() {
-            var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', undefined, { test_attribute: 'test_value' });
-            assert.strictEqual(result, null);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
-          });
-
-          it('returns null from getFeatureVariableDouble if user id is not provided', function() {
-            var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width');
-            assert.strictEqual(result, null);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
-          });
-
-          it('returns null from getFeatureVariableInteger if user id is null', function() {
-            var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', null, { test_attribute: 'test_value' });
-            assert.strictEqual(result, null);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
-          });
-
-          it('returns null from getFeatureVariableInteger if user id is undefined', function() {
-            var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', undefined, { test_attribute: 'test_value' });
-            assert.strictEqual(result, null);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
-          });
-
-          it('returns null from getFeatureVariableInteger if user id is not provided', function() {
-            var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons');
-            assert.strictEqual(result, null);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
-          });
-
-          it('returns null from getFeatureVariableString if user id is null', function() {
-            var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', null, { test_attribute: 'test_value' });
-            assert.strictEqual(result, null);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
-          });
-
-          it('returns null from getFeatureVariableString if user id is undefined', function() {
-            var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', undefined, { test_attribute: 'test_value' });
-            assert.strictEqual(result, null);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
-          });
-
-          it('returns null from getFeatureVariableString if user id is not provided', function() {
-            var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt');
-            assert.strictEqual(result, null);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
-          });
-
-          describe('type casting failures', function() {
-            describe('invalid boolean', function() {
-              beforeEach(function() {
-                sandbox.stub(projectConfig, 'getVariableValueForVariation').returns('falsezzz');
-              });
-
-              it('should return null and log an error', function() {
-                var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1');
-                assert.strictEqual(result, null);
-                sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Unable to cast value falsezzz to type boolean, returning null.');
-              });
-            });
-
-            describe('invalid integer', function() {
-              beforeEach(function() {
-                sandbox.stub(projectConfig, 'getVariableValueForVariation').returns('zzz123');
-              });
-
-              it('should return null and log an error', function() {
-                var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1');
-                assert.strictEqual(result, null);
-                sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Unable to cast value zzz123 to type integer, returning null.');
-              });
-            });
-
-            describe('invalid double', function() {
-              beforeEach(function() {
-                sandbox.stub(projectConfig, 'getVariableValueForVariation').returns('zzz44.55');
-              });
-
-              it('should return null and log an error', function() {
-                var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1');
-                assert.strictEqual(result, null);
-                sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Unable to cast value zzz44.55 to type double, returning null.');
-              });
-            });
-          });
-        });
-
-        describe('not bucketed into a variation', function() {
-          beforeEach(function() {
-            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
-              experiment: null,
-              variation: null,
-              decisionSource: null,
-            });
-          });
-
-          it('returns the variable default value from getFeatureVariableBoolean', function() {
-            var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
+          it('returns false and does not dispatch an impression event when feature key is null', function() {
+            var result = optlyInstance.isFeatureEnabled(null, 'user1', attributes);
             assert.strictEqual(result, false);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "is_button_animated" of feature flag "test_feature_for_experiment".');
+            sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided feature_key is in an invalid format.');
           });
 
-          it('returns the variable default value from getFeatureVariableDouble', function() {
-            var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
-            assert.strictEqual(result, 50.55);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_width" of feature flag "test_feature_for_experiment".');
+          it('returns false when user id is null', function() {
+            var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', null, attributes);
+            assert.strictEqual(result, false);
+            sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
           });
 
-          it('returns the variable default value from getFeatureVariableInteger', function() {
-            var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
-            assert.strictEqual(result, 10);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "num_buttons" of feature flag "test_feature_for_experiment".');
+          it('returns false when feature key and user id are null', function() {
+            var result = optlyInstance.isFeatureEnabled(null, null, attributes);
+            assert.strictEqual(result, false);
+            sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided feature_key is in an invalid format.');
           });
 
-          it('returns the variable default value from getFeatureVariableString', function() {
-            var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
-            assert.strictEqual(result, 'Buy me');
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_txt" of feature flag "test_feature_for_experiment".');
+          it('returns false when feature key is undefined', function() {
+            var result = optlyInstance.isFeatureEnabled(undefined, 'user1', attributes);
+            assert.strictEqual(result, false);
+            sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided feature_key is in an invalid format.');
+          });
+
+          it('returns false when user id is undefined', function() {
+            var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', undefined, attributes);
+            assert.strictEqual(result, false);
+            sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
+          });
+
+          it('returns false when feature key and user id are undefined', function() {
+            var result = optlyInstance.isFeatureEnabled(undefined, undefined, attributes);
+            assert.strictEqual(result, false);
+            sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+          });
+
+          it('returns false when no arguments are provided', function() {
+            var result = optlyInstance.isFeatureEnabled();
+            assert.strictEqual(result, false);
+            sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided feature_key is in an invalid format.');
+          });
+
+          it('returns false when user id is an object', function() {
+            var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', {}, attributes);
+            assert.strictEqual(result, false);
+            sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
+          });
+
+          it('returns false when user id is a number', function() {
+            var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', 72, attributes);
+            assert.strictEqual(result, false);
+            sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
+          });
+
+          it('returns false when feature key is an array', function() {
+            var result = optlyInstance.isFeatureEnabled(['a', 'feature'], 'user1', attributes);
+            assert.strictEqual(result, false);
+            sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided feature_key is in an invalid format.');
+          });
+
+          it('returns false when user id is an empty string', function() {
+            var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', '', attributes);
+            assert.strictEqual(result, false);
+            sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+          });
+
+          it('returns false when feature key is an empty string', function() {
+            var result = optlyInstance.isFeatureEnabled('', 'user1', attributes);
+            assert.strictEqual(result, false);
+            sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+          });
+
+          it('returns false when a feature key is provided, but a user id is not', function() {
+            var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment');
+            assert.strictEqual(result, false);
+            sinon.assert.notCalled(eventDispatcher.dispatchEvent);
           });
         });
 
-        it('returns null from getFeatureVariableBoolean if the argument feature key is invalid', function() {
-          var result = optlyInstance.getFeatureVariableBoolean('thisIsNotAValidKey<><><>', 'is_button_animated', 'user1');
-          assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.');
-        });
-
-        it('returns null from getFeatureVariableDouble if the argument feature key is invalid', function() {
-          var result = optlyInstance.getFeatureVariableDouble('thisIsNotAValidKey<><><>', 'button_width', 'user1');
-          assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.');
-        });
-
-        it('returns null from getFeatureVariableInteger if the argument feature key is invalid', function() {
-          var result = optlyInstance.getFeatureVariableInteger('thisIsNotAValidKey<><><>', 'num_buttons', 'user1');
-          assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.');
-        });
-
-        it('returns null from getFeatureVariableString if the argument feature key is invalid', function() {
-          var result = optlyInstance.getFeatureVariableString('thisIsNotAValidKey<><><>', 'button_txt', 'user1');
-          assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.');
-        });
-
-        it('returns null from getFeatureVariableBoolean if the argument variable key is invalid', function() {
-          var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
-          assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.');
-        });
-
-        it('returns null from getFeatureVariableDouble if the argument variable key is invalid', function() {
-          var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
-          assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.');
-        });
-
-        it('returns null from getFeatureVariableInteger if the argument variable key is invalid', function() {
-          var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
-          assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.');
-        });
-
-        it('returns null from getFeatureVariableString if the argument variable key is invalid', function() {
-          var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
-          assert.strictEqual(result, null);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.');
-        });
-
-        it('returns null from getFeatureVariableBoolean when optimizely object is not a valid instance', function() {
-          var instance = new Optimizely({
-            datafile: {},
-            errorHandler: errorHandler,
-            eventDispatcher: eventDispatcher,
-            logger: createdLogger,
+        describe('when the variation is toggled OFF', function() {
+          var result;
+          beforeEach(function() {
+            var experiment = optlyInstance.configObj.experimentKeyMap.test_shared_feature;
+            var variation = experiment.variations[1];
+            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+              experiment: experiment,
+              variation: variation,
+              decisionSource: DECISION_SOURCES.EXPERIMENT,
+            });
+            result = optlyInstance.isFeatureEnabled('shared_feature', 'user1', attributes);
           });
 
-          createdLogger.log.reset();
-
-          instance.getFeatureVariableBoolean('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
-
-          sinon.assert.calledOnce(createdLogger.log);
-          var logMessage = createdLogger.log.args[0][1];
-          assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableBoolean'));
-        });
-
-        it('returns null from getFeatureVariableDouble when optimizely object is not a valid instance', function() {
-          var instance = new Optimizely({
-            datafile: {},
-            errorHandler: errorHandler,
-            eventDispatcher: eventDispatcher,
-            logger: createdLogger,
+          it('should return false', function() {
+            assert.strictEqual(result, false);
+            sinon.assert.calledOnce(optlyInstance.decisionService.getVariationForFeature);
+            var feature = optlyInstance.configObj.featureKeyMap.shared_feature;
+            sinon.assert.calledWithExactly(
+              optlyInstance.decisionService.getVariationForFeature,
+              feature,
+              'user1',
+              attributes
+            );
           });
 
-          createdLogger.log.reset();
-
-          instance.getFeatureVariableDouble('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
-
-          sinon.assert.calledOnce(createdLogger.log);
-          var logMessage = createdLogger.log.args[0][1];
-          assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableDouble'));
+          it('should dispatch an impression event', function() {
+            sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
+            var expectedImpressionEvent = {
+              'httpVerb': 'POST',
+              'url': 'https://logx.optimizely.com/v1/events',
+              'params': {
+                'account_id': '572018',
+                'project_id': '594001',
+                'visitors': [
+                  {
+                    'snapshots': [
+                      {
+                        'decisions': [
+                          {
+                            'campaign_id': '599023',
+                            'experiment_id': '599028',
+                            'variation_id': '599027'
+                          }
+                        ],
+                        'events': [
+                          {
+                            'entity_id': '599023',
+                            'timestamp': 1509489766569,
+                            'key': 'campaign_activated',
+                            'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c'
+                          }
+                        ]
+                      }
+                    ],
+                    'visitor_id': 'user1',
+                    'attributes': [
+                      {
+                        'entity_id': '594014',
+                        'key': 'test_attribute',
+                        'type': 'custom',
+                        'value': 'test_value',
+                      }, {
+                        'entity_id': '$opt_bot_filtering',
+                        'key': '$opt_bot_filtering',
+                        'type': 'custom',
+                        'value': true,
+                      },
+                    ],
+                  }
+                ],
+                'revision': '35',
+                'client_name': 'node-sdk',
+                'client_version': enums.NODE_CLIENT_VERSION,
+                'anonymize_ip': true
+              }
+            };
+            var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
+            assert.deepEqual(callArgs[0], expectedImpressionEvent);
+            assert.isFunction(callArgs[1]);
+          });
         });
 
-        it('returns null from getFeatureVariableInteger when optimizely object is not a valid instance', function() {
-          var instance = new Optimizely({
-            datafile: {},
-            errorHandler: errorHandler,
-            eventDispatcher: eventDispatcher,
-            logger: createdLogger,
+        describe('when the variation is missing the toggle', function() {
+          beforeEach(function() {
+            var experiment = optlyInstance.configObj.experimentKeyMap.test_shared_feature;
+            var variation = fns.cloneDeep(experiment.variations[0]);
+            delete variation['featureEnabled'];
+            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+              experiment: experiment,
+              variation: variation,
+              decisionSource: DECISION_SOURCES.EXPERIMENT,
+            });
           });
 
-          createdLogger.log.reset();
-
-          instance.getFeatureVariableInteger('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
-
-          sinon.assert.calledOnce(createdLogger.log);
-          var logMessage = createdLogger.log.args[0][1];
-          assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableInteger'));
-        });
-
-        it('returns null from getFeatureVariableString when optimizely object is not a valid instance', function() {
-          var instance = new Optimizely({
-            datafile: {},
-            errorHandler: errorHandler,
-            eventDispatcher: eventDispatcher,
-            logger: createdLogger,
+          it('should return false', function() {
+            var result = optlyInstance.isFeatureEnabled('shared_feature', 'user1', attributes);
+            assert.strictEqual(result, false);
+            sinon.assert.calledOnce(optlyInstance.decisionService.getVariationForFeature);
+            var feature = optlyInstance.configObj.featureKeyMap.shared_feature;
+            sinon.assert.calledWithExactly(
+              optlyInstance.decisionService.getVariationForFeature,
+              feature,
+              'user1',
+              attributes
+            );
           });
-
-          createdLogger.log.reset();
-
-          instance.getFeatureVariableString('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
-
-          sinon.assert.calledOnce(createdLogger.log);
-          var logMessage = createdLogger.log.args[0][1];
-          assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableString'));
         });
       });
 
-      describe('audience match types', function() {
-        it('can activate and track an experiment with an exact match string audience', function() {
-          var variationKey = optlyInstance.activate('typed_audience_experiment', 'user1', {
-            house: 'Gryffindor',
+      describe('user bucketed into a variation of a rollout of the feature', function() {
+        describe('when the variation is toggled ON', function() {
+          beforeEach(function() {
+            // This experiment is the first audience targeting rule in the rollout of feature 'test_feature'
+            var experiment = optlyInstance.configObj.experimentKeyMap['594031'];
+            var variation = experiment.variations[0];
+            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+              experiment: experiment,
+              variation: variation,
+              decisionSource: DECISION_SOURCES.ROLLOUT,
+            });
           });
-          assert.strictEqual(variationKey, 'A');
-          sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
-          assert.includeDeepMembers(
-            eventDispatcher.dispatchEvent.getCall(0).args[0].params.visitors[0].attributes,
-            [{ entity_id: '594015', key: 'house', type: 'custom', value: 'Gryffindor' }]
-          );
-          optlyInstance.track('item_bought', 'user1', {
-            house: 'Gryffindor',
+
+          it('returns true and does not dispatch an event', function() {
+            var result = optlyInstance.isFeatureEnabled('test_feature', 'user1', {
+              test_attribute: 'test_value',
+            });
+            assert.strictEqual(result, true);
+            sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature is enabled for user user1.');
           });
-          sinon.assert.calledTwice(eventDispatcher.dispatchEvent);
-          assert.includeDeepMembers(
-            eventDispatcher.dispatchEvent.getCall(1).args[0].params.visitors[0].attributes,
-            [{ entity_id: '594015', key: 'house', type: 'custom', value: 'Gryffindor' }]
-          );
         });
 
-        it('can activate and track an experiment with a substring match string audience', function() {
-          var variationKey = optlyInstance.activate('typed_audience_experiment', 'user1', {
-            house: 'Welcome to House Slytherin, yall!',
+        describe('when the variation is toggled OFF', function() {
+          beforeEach(function() {
+            // This experiment is the second audience targeting rule in the rollout of feature 'test_feature'
+            var experiment = optlyInstance.configObj.experimentKeyMap['594037'];
+            var variation = experiment.variations[0];
+            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+              experiment: experiment,
+              variation: variation,
+              decisionSource: DECISION_SOURCES.ROLLOUT,
+            });
           });
-          assert.strictEqual(variationKey, 'A');
-          sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
-          assert.includeDeepMembers(
-            eventDispatcher.dispatchEvent.getCall(0).args[0].params.visitors[0].attributes,
-            [{ entity_id: '594015', key: 'house', type: 'custom', value: 'Welcome to House Slytherin, yall!' }]
-          );
-          optlyInstance.track('item_bought', 'user1', {
-            house: 'Welcome to House Slytherin, yall!',
+
+          it('returns false ', function() {
+            var result = optlyInstance.isFeatureEnabled('test_feature', 'user1', {
+              test_attribute: 'test_value',
+            });
+            assert.strictEqual(result, false);
+            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature is not enabled for user user1.');
           });
-          sinon.assert.calledTwice(eventDispatcher.dispatchEvent);
-          assert.includeDeepMembers(
-            eventDispatcher.dispatchEvent.getCall(1).args[0].params.visitors[0].attributes,
-            [{ entity_id: '594015', key: 'house', type: 'custom', value: 'Welcome to House Slytherin, yall!' }]
-          );
+        });
+      });
+
+      describe('user not bucketed into an experiment or a rollout', function() {
+        beforeEach(function() {
+          sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+            experiment: null,
+            variation: null,
+            decisionSource: null,
+          });
         });
 
-        it('can activate and track an experiment with an exists audience', function() {
-          var variationKey = optlyInstance.activate('string_exists_audience_experiment', 'user1', {
-            house: 'Ravenclaw',
-          });
-          assert.strictEqual(variationKey, 'B');
-          sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
-          assert.includeDeepMembers(
-            eventDispatcher.dispatchEvent.getCall(0).args[0].params.visitors[0].attributes,
-            [{ entity_id: '594015', key: 'house', type: 'custom', value: 'Ravenclaw' }]
-          );
-          optlyInstance.track('item_bought', 'user1', {
-            house: 'Ravenclaw',
-          });
-          sinon.assert.calledTwice(eventDispatcher.dispatchEvent);
-          assert.includeDeepMembers(
-            eventDispatcher.dispatchEvent.getCall(1).args[0].params.visitors[0].attributes,
-            [{ entity_id: '594015', key: 'house', type: 'custom', value: 'Ravenclaw' }]
-          );
-        });
-
-        it('can activate and track an experiment with an exact number audience', function() {
-          var variationKey = optlyInstance.activate('typed_audience_experiment', 'user1', {
-            lasers: 45.5,
-          });
-          assert.strictEqual(variationKey, 'A');
-          sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
-          assert.includeDeepMembers(
-            eventDispatcher.dispatchEvent.getCall(0).args[0].params.visitors[0].attributes,
-            [{ entity_id: '594016', key: 'lasers', type: 'custom', value: 45.5 }]
-          );
-          optlyInstance.track('item_bought', 'user1', {
-            lasers: 45.5,
-          });
-          sinon.assert.calledTwice(eventDispatcher.dispatchEvent);
-          assert.includeDeepMembers(
-            eventDispatcher.dispatchEvent.getCall(1).args[0].params.visitors[0].attributes,
-            [{ entity_id: '594016', key: 'lasers', type: 'custom', value: 45.5 }]
-          );
-        });
-
-        it('can activate and track an experiment with a greater than number audience', function() {
-          var variationKey = optlyInstance.activate('typed_audience_experiment', 'user1', {
-            lasers: 71,
-          });
-          assert.strictEqual(variationKey, 'A');
-          sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
-          assert.includeDeepMembers(
-            eventDispatcher.dispatchEvent.getCall(0).args[0].params.visitors[0].attributes,
-            [{ entity_id: '594016', key: 'lasers', type: 'custom', value: 71 }]
-          );
-          optlyInstance.track('item_bought', 'user1', {
-            lasers: 71,
-          });
-          sinon.assert.calledTwice(eventDispatcher.dispatchEvent);
-          assert.includeDeepMembers(
-            eventDispatcher.dispatchEvent.getCall(1).args[0].params.visitors[0].attributes,
-            [{ entity_id: '594016', key: 'lasers', type: 'custom', value: 71 }]
-          );
-        });
-
-        it('can activate and track an experiment with a less than number audience', function() {
-          var variationKey = optlyInstance.activate('typed_audience_experiment', 'user1', {
-            lasers: -3.45,
-          });
-          assert.strictEqual(variationKey, 'A');
-          sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
-          assert.includeDeepMembers(
-            eventDispatcher.dispatchEvent.getCall(0).args[0].params.visitors[0].attributes,
-            [{ entity_id: '594016', key: 'lasers', type: 'custom', value: -3.45 }]
-          );
-          optlyInstance.track('item_bought', 'user1', {
-            lasers: -3.45,
-          });
-          sinon.assert.calledTwice(eventDispatcher.dispatchEvent);
-          assert.includeDeepMembers(
-            eventDispatcher.dispatchEvent.getCall(1).args[0].params.visitors[0].attributes,
-            [{ entity_id: '594016', key: 'lasers', type: 'custom', value: -3.45 }]
-          );
-        });
-
-        it('can activate and track an experiment with an exact boolean audience', function() {
-          var variationKey = optlyInstance.activate('typed_audience_experiment', 'user1', {
-            should_do_it: true,
-          });
-          assert.strictEqual(variationKey, 'A');
-          sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
-          assert.includeDeepMembers(
-            eventDispatcher.dispatchEvent.getCall(0).args[0].params.visitors[0].attributes,
-            [{ entity_id: '594017', key: 'should_do_it', type: 'custom', value: true }]
-          );
-          optlyInstance.track('item_bought', 'user1', {
-            should_do_it: true,
-          });
-          sinon.assert.calledTwice(eventDispatcher.dispatchEvent);
-          assert.includeDeepMembers(
-            eventDispatcher.dispatchEvent.getCall(1).args[0].params.visitors[0].attributes,
-            [{ entity_id: '594017', key: 'should_do_it', type: 'custom', value: true }]
-          );
+        it('returns false and does not dispatch an event', function() {
+          var result = optlyInstance.isFeatureEnabled('test_feature', 'user1');
+          assert.strictEqual(result, false);
+          sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature is not enabled for user user1.');
         });
       });
     });
 
-    describe('using featuresWithTypedAudiencesConfig', function() {
+    describe('#getEnabledFeatures', function() {
       beforeEach(function() {
+        sandbox.stub(optlyInstance, 'isFeatureEnabled', function(featureKey) {
+          return featureKey === 'test_feature' || featureKey === 'test_feature_for_experiment';
+        });
+      });
+
+      it('returns an empty array if the instance is invalid', function() {
         optlyInstance = new Optimizely({
           clientEngine: 'node-sdk',
-          datafile: testData.getFeaturesWithTypedAudiencesConfig(),
+          datafile: {
+            lasers: 300,
+            message: 'this is not a valid datafile'
+          },
           eventBuilder: eventBuilder,
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
           jsonSchemaValidator: jsonSchemaValidator,
           logger: createdLogger,
-          isValidInstance: true,
+        });
+        var result = optlyInstance.getEnabledFeatures('user1', { test_attribute: 'test_value' });
+        assert.deepEqual(result, []);
+        sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Optimizely object is not valid. Failing getEnabledFeatures.');
+      });
+
+      it('returns only enabled features for the specified user and attributes', function() {
+        var attributes = { test_attribute: 'test_value', };
+        var result = optlyInstance.getEnabledFeatures('user1', attributes);
+        assert.strictEqual(result.length, 2);
+        assert.isAbove(result.indexOf('test_feature'), -1);
+        assert.isAbove(result.indexOf('test_feature_for_experiment'), -1);
+        sinon.assert.callCount(optlyInstance.isFeatureEnabled, 6);
+        sinon.assert.calledWithExactly(
+          optlyInstance.isFeatureEnabled,
+          'test_feature',
+          'user1',
+          attributes
+        );
+        sinon.assert.calledWithExactly(
+          optlyInstance.isFeatureEnabled,
+          'test_feature_2',
+          'user1',
+          attributes
+        );
+        sinon.assert.calledWithExactly(
+          optlyInstance.isFeatureEnabled,
+          'test_feature_for_experiment',
+          'user1',
+          attributes
+        );
+        sinon.assert.calledWithExactly(
+          optlyInstance.isFeatureEnabled,
+          'feature_with_group',
+          'user1',
+          attributes
+        );
+        sinon.assert.calledWithExactly(
+          optlyInstance.isFeatureEnabled,
+          'shared_feature',
+          'user1',
+          attributes
+        );
+        sinon.assert.calledWithExactly(
+          optlyInstance.isFeatureEnabled,
+          'unused_flag',
+          'user1',
+          attributes
+        );
+      });
+    });
+
+    describe('feature variable APIs', function() {
+      describe('bucketed into variation in an experiment with variable values', function() {
+        beforeEach(function() {
+          var experiment = optlyInstance.configObj.experimentKeyMap.testing_my_feature;
+          var variation = experiment.variations[0];
+          sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+            experiment: experiment,
+            variation: variation,
+            decisionSource: DECISION_SOURCES.EXPERIMENT,
+          });
+        });
+
+        it('returns the right value from getFeatureVariableBoolean', function() {
+          var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, true);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "is_button_animated" of feature flag "test_feature_for_experiment" is true for user "user1"');
+        });
+
+        it('returns the right value from getFeatureVariableDouble', function() {
+          var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, 20.25);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "button_width" of feature flag "test_feature_for_experiment" is 20.25 for user "user1"');
+        });
+
+        it('returns the right value from getFeatureVariableInteger', function() {
+          var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, 2);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "num_buttons" of feature flag "test_feature_for_experiment" is 2 for user "user1"');
+        });
+
+        it('returns the right value from getFeatureVariableString', function() {
+          var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, 'Buy me NOW');
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "button_txt" of feature flag "test_feature_for_experiment" is Buy me NOW for user "user1"');
+        });
+
+        it('returns null from getFeatureVariableBoolean when called with a non-boolean variable', function() {
+          var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'button_width', 'user1');
+          assert.strictEqual(result, null);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.WARNING, 'OPTIMIZELY: Requested variable type "boolean", but variable is of type "double". Use correct API to retrieve value. Returning None.');
+        });
+
+        it('returns null from getFeatureVariableDouble when called with a non-double variable', function() {
+          var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'is_button_animated', 'user1');
+          assert.strictEqual(result, null);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.WARNING, 'OPTIMIZELY: Requested variable type "double", but variable is of type "boolean". Use correct API to retrieve value. Returning None.');
+        });
+
+        it('returns null from getFeatureVariableInteger when called with a non-integer variable', function() {
+          var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'button_width', 'user1');
+          assert.strictEqual(result, null);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.WARNING, 'OPTIMIZELY: Requested variable type "integer", but variable is of type "double". Use correct API to retrieve value. Returning None.');
+        });
+
+        it('returns null from getFeatureVariableString when called with a non-string variable', function() {
+          var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'num_buttons', 'user1');
+          assert.strictEqual(result, null);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.WARNING, 'OPTIMIZELY: Requested variable type "string", but variable is of type "integer". Use correct API to retrieve value. Returning None.');
+        });
+
+        it('returns null from getFeatureVariableBoolean if user id is null', function() {
+          var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', null, { test_attribute: 'test_value' });
+          assert.strictEqual(result, null);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
+        });
+
+        it('returns null from getFeatureVariableBoolean if user id is undefined', function() {
+          var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', undefined, { test_attribute: 'test_value' });
+          assert.strictEqual(result, null);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
+        });
+
+        it('returns null from getFeatureVariableBoolean if user id is not provided', function() {
+          var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated');
+          assert.strictEqual(result, null);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
+        });
+
+        it('returns null from getFeatureVariableDouble if user id is null', function() {
+          var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', null, { test_attribute: 'test_value' });
+          assert.strictEqual(result, null);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
+        });
+
+        it('returns null from getFeatureVariableDouble if user id is undefined', function() {
+          var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', undefined, { test_attribute: 'test_value' });
+          assert.strictEqual(result, null);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
+        });
+
+        it('returns null from getFeatureVariableDouble if user id is not provided', function() {
+          var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width');
+          assert.strictEqual(result, null);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
+        });
+
+        it('returns null from getFeatureVariableInteger if user id is null', function() {
+          var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', null, { test_attribute: 'test_value' });
+          assert.strictEqual(result, null);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
+        });
+
+        it('returns null from getFeatureVariableInteger if user id is undefined', function() {
+          var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', undefined, { test_attribute: 'test_value' });
+          assert.strictEqual(result, null);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
+        });
+
+        it('returns null from getFeatureVariableInteger if user id is not provided', function() {
+          var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons');
+          assert.strictEqual(result, null);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
+        });
+
+        it('returns null from getFeatureVariableString if user id is null', function() {
+          var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', null, { test_attribute: 'test_value' });
+          assert.strictEqual(result, null);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
+        });
+
+        it('returns null from getFeatureVariableString if user id is undefined', function() {
+          var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', undefined, { test_attribute: 'test_value' });
+          assert.strictEqual(result, null);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
+        });
+
+        it('returns null from getFeatureVariableString if user id is not provided', function() {
+          var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt');
+          assert.strictEqual(result, null);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
+        });
+
+        describe('type casting failures', function() {
+          describe('invalid boolean', function() {
+            beforeEach(function() {
+              sandbox.stub(projectConfig, 'getVariableValueForVariation').returns('falsezzz');
+            });
+
+            it('should return null and log an error', function() {
+              var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1');
+              assert.strictEqual(result, null);
+              sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Unable to cast value falsezzz to type boolean, returning null.');
+            });
+          });
+
+          describe('invalid integer', function() {
+            beforeEach(function() {
+              sandbox.stub(projectConfig, 'getVariableValueForVariation').returns('zzz123');
+            });
+
+            it('should return null and log an error', function() {
+              var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1');
+              assert.strictEqual(result, null);
+              sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Unable to cast value zzz123 to type integer, returning null.');
+            });
+          });
+
+          describe('invalid double', function() {
+            beforeEach(function() {
+              sandbox.stub(projectConfig, 'getVariableValueForVariation').returns('zzz44.55');
+            });
+
+            it('should return null and log an error', function() {
+              var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1');
+              assert.strictEqual(result, null);
+              sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Unable to cast value zzz44.55 to type double, returning null.');
+            });
+          });
         });
       });
 
-      it('can enable a feature through a rollout with an exact match string audience', function() {
-        var featureEnabled = optlyInstance.isFeatureEnabled('feat', 'user1', {
-          house: 'Gryffindor',
+      describe('not bucketed into a variation', function() {
+        beforeEach(function() {
+          sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+            experiment: null,
+            variation: null,
+            decisionSource: null,
+          });
         });
-        assert.strictEqual(featureEnabled, true);
+
+        it('returns the variable default value from getFeatureVariableBoolean', function() {
+          var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, false);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "is_button_animated" of feature flag "test_feature_for_experiment".');
+        });
+
+        it('returns the variable default value from getFeatureVariableDouble', function() {
+          var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, 50.55);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_width" of feature flag "test_feature_for_experiment".');
+        });
+
+        it('returns the variable default value from getFeatureVariableInteger', function() {
+          var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, 10);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "num_buttons" of feature flag "test_feature_for_experiment".');
+        });
+
+        it('returns the variable default value from getFeatureVariableString', function() {
+          var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, 'Buy me');
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_txt" of feature flag "test_feature_for_experiment".');
+        });
       });
 
-      it('can enable a feature through a feature test with an exact match string audience', function() {
-        var featureEnabled = optlyInstance.isFeatureEnabled('feat_with_var', 'user1', {
-          house: 'Gryffindor',
-        });
-        assert.strictEqual(featureEnabled, true);
+      it('returns null from getFeatureVariableBoolean if the argument feature key is invalid', function() {
+        var result = optlyInstance.getFeatureVariableBoolean('thisIsNotAValidKey<><><>', 'is_button_animated', 'user1');
+        assert.strictEqual(result, null);
+        sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.');
       });
 
-      it('can access a feature variable through a feature test with an exact match string audience', function() {
-        var variableValue = optlyInstance.getFeatureVariableString('feat_with_var', 'x', 'user1', {
-          house: 'Gryffindor',
-        });
-        assert.strictEqual(variableValue, 'xyz');
+      it('returns null from getFeatureVariableDouble if the argument feature key is invalid', function() {
+        var result = optlyInstance.getFeatureVariableDouble('thisIsNotAValidKey<><><>', 'button_width', 'user1');
+        assert.strictEqual(result, null);
+        sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.');
       });
 
-      it('can enable a feature through a rollout with a substring match string audience', function() {
-        var featureEnabled = optlyInstance.isFeatureEnabled('feat', 'user1', {
-          house: 'Welcome to House Slytherin, yall!',
-        });
-        assert.strictEqual(featureEnabled, true);
+      it('returns null from getFeatureVariableInteger if the argument feature key is invalid', function() {
+        var result = optlyInstance.getFeatureVariableInteger('thisIsNotAValidKey<><><>', 'num_buttons', 'user1');
+        assert.strictEqual(result, null);
+        sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.');
       });
 
-      it('can enable a feature through a feature test with a substring match string audience', function() {
-        var featureEnabled = optlyInstance.isFeatureEnabled('feat_with_var', 'user1', {
-          house: 'Welcome to House Slytherin, yall!',
-        });
-        assert.strictEqual(featureEnabled, true);
+      it('returns null from getFeatureVariableString if the argument feature key is invalid', function() {
+        var result = optlyInstance.getFeatureVariableString('thisIsNotAValidKey<><><>', 'button_txt', 'user1');
+        assert.strictEqual(result, null);
+        sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.');
       });
 
-      it('can access a feature variable through a feature test with a substring match string audience', function() {
-        var variableValue = optlyInstance.getFeatureVariableString('feat_with_var', 'x', 'user1', {
-          house: 'Welcome to House Slytherin, yall!',
-        });
-        assert.strictEqual(variableValue, 'xyz');
+      it('returns null from getFeatureVariableBoolean if the argument variable key is invalid', function() {
+        var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
+        assert.strictEqual(result, null);
+        sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.');
       });
 
-      it('can enable a feature through a rollout with an exists audience', function() {
-        var featureEnabled = optlyInstance.isFeatureEnabled('feat', 'user1', {
-          favorite_ice_cream: 'chocolate',
-        });
-        assert.strictEqual(featureEnabled, true);
+      it('returns null from getFeatureVariableDouble if the argument variable key is invalid', function() {
+        var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
+        assert.strictEqual(result, null);
+        sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.');
       });
 
-      it('can enable a feature through a feature test with an exists audience', function() {
-        var featureEnabled = optlyInstance.isFeatureEnabled('feat_with_var', 'user1', {
-          favorite_ice_cream: 'chocolate',
-        });
-        assert.strictEqual(featureEnabled, true);
+      it('returns null from getFeatureVariableInteger if the argument variable key is invalid', function() {
+        var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
+        assert.strictEqual(result, null);
+        sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.');
       });
 
-      it('can access a feature variable through a feature test with an exists audience', function() {
-        var variableValue = optlyInstance.getFeatureVariableString('feat_with_var', 'x', 'user1', {
-          favorite_ice_cream: 'chocolate',
-        });
-        assert.strictEqual(variableValue, 'xyz');
+      it('returns null from getFeatureVariableString if the argument variable key is invalid', function() {
+        var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
+        assert.strictEqual(result, null);
+        sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.');
       });
 
-      it('can enable a feature through a rollout with an exact number audience', function() {
-        var featureEnabled = optlyInstance.isFeatureEnabled('feat', 'user1', {
-          lasers: 45.5,
+      it('returns null from getFeatureVariableBoolean when optimizely object is not a valid instance', function() {
+        var instance = new Optimizely({
+          datafile: {},
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          logger: createdLogger,
         });
-        assert.strictEqual(featureEnabled, true);
+
+        createdLogger.log.reset();
+
+        instance.getFeatureVariableBoolean('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
+
+        sinon.assert.calledOnce(createdLogger.log);
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableBoolean'));
       });
 
-      it('can enable a feature through a feature test with an exact number audience', function() {
-        var featureEnabled = optlyInstance.isFeatureEnabled('feat_with_var', 'user1', {
-          lasers: 45.5,
+      it('returns null from getFeatureVariableDouble when optimizely object is not a valid instance', function() {
+        var instance = new Optimizely({
+          datafile: {},
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          logger: createdLogger,
         });
-        assert.strictEqual(featureEnabled, true);
+
+        createdLogger.log.reset();
+
+        instance.getFeatureVariableDouble('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
+
+        sinon.assert.calledOnce(createdLogger.log);
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableDouble'));
       });
 
-      it('can access a feature variable through a feature test with an exact number audience', function() {
-        var variableValue = optlyInstance.getFeatureVariableString('feat_with_var', 'x', 'user1', {
-          lasers: 45.5,
+      it('returns null from getFeatureVariableInteger when optimizely object is not a valid instance', function() {
+        var instance = new Optimizely({
+          datafile: {},
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          logger: createdLogger,
         });
-        assert.strictEqual(variableValue, 'xyz');
+
+        createdLogger.log.reset();
+
+        instance.getFeatureVariableInteger('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
+
+        sinon.assert.calledOnce(createdLogger.log);
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableInteger'));
       });
 
-      it('can enable a feature through a rollout with a greater than number audience', function() {
-        var featureEnabled = optlyInstance.isFeatureEnabled('feat', 'user1', {
-          lasers: 71,
+      it('returns null from getFeatureVariableString when optimizely object is not a valid instance', function() {
+        var instance = new Optimizely({
+          datafile: {},
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          logger: createdLogger,
         });
-        assert.strictEqual(featureEnabled, true);
-      });
 
-      it('can enable a feature through a feature test with a greater than number audience', function() {
-        var featureEnabled = optlyInstance.isFeatureEnabled('feat_with_var', 'user1', {
-          lasers: 71,
-        });
-        assert.strictEqual(featureEnabled, true);
-      });
+        createdLogger.log.reset();
 
-      it('can access a feature variable through a feature test with a greater than number audience', function() {
-        var variableValue = optlyInstance.getFeatureVariableString('feat_with_var', 'x', 'user1', {
-          lasers: 71,
-        });
-        assert.strictEqual(variableValue, 'xyz');
-      });
+        instance.getFeatureVariableString('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
 
-      it('can enable a feature through a rollout with a less than number audience', function() {
-        var featureEnabled = optlyInstance.isFeatureEnabled('feat', 'user1', {
-          lasers: -3.45,
-        });
-        assert.strictEqual(featureEnabled, true);
-      });
-
-      it('can enable a feature through a feature test with a less than number audience', function() {
-        var featureEnabled = optlyInstance.isFeatureEnabled('feat_with_var', 'user1', {
-          lasers: -3.45,
-        });
-        assert.strictEqual(featureEnabled, true);
-      });
-
-      it('can access a feature variable through a feature test with a less than number audience', function() {
-        var variableValue = optlyInstance.getFeatureVariableString('feat_with_var', 'x', 'user1', {
-          lasers: -3.45,
-        });
-        assert.strictEqual(variableValue, 'xyz');
-      });
-
-      it('can enable a feature through a rollout with an exact boolean audience', function() {
-        var featureEnabled = optlyInstance.isFeatureEnabled('feat', 'user1', {
-          should_do_it: true,
-        });
-        assert.strictEqual(featureEnabled, true);
-      });
-
-      it('can enable a feature through a feature test with an exact boolean audience', function() {
-        var featureEnabled = optlyInstance.isFeatureEnabled('feat_with_var', 'user1', {
-          should_do_it: true,
-        });
-        assert.strictEqual(featureEnabled, true);
-      });
-
-      it('can access a feature variable through a feature test with a less than number audience', function() {
-        var variableValue = optlyInstance.getFeatureVariableString('feat_with_var', 'x', 'user1', {
-          should_do_it: true,
-        });
-        assert.strictEqual(variableValue, 'xyz');
+        sinon.assert.calledOnce(createdLogger.log);
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableString'));
       });
     });
   });
