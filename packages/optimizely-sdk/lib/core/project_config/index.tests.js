@@ -534,12 +534,12 @@ describe('lib/core/project_config', function() {
 
     describe('audience match types', function() {
       beforeEach(function() {
-        configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
+        configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
       });
 
       it('should retrieve audiences in getAudiencesForExperiment by checking first in typedAudiences, and then second in audiences', function() {
         assert.deepEqual(
-          projectConfig.getAudiencesForExperiment(configObj, 'typed_audience_experiment'),
+          projectConfig.getAudiencesForExperiment(configObj, 'feat_with_var_test'),
           testDatafile.parsedTypedAudiences
         );
       });

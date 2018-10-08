@@ -1776,10 +1776,264 @@ var getUnsupportedVersionConfig = function() {
   return cloneDeep(unsupportedVersionConfig);
 };
 
+var typedAudiencesConfig = {
+  'version': '4',
+  'rollouts': [
+    {
+      'experiments': [
+        {
+          'status': 'Running',
+          'key': '11488548027',
+          'layerId': '11551226731',
+          'trafficAllocation': [
+            {
+              'entityId': '11557362669',
+              'endOfRange': 10000
+            }
+          ],
+          'audienceIds': ['3468206642', '3988293898', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643'],
+          'variations': [
+            {
+              'variables': [],
+              'id': '11557362669',
+              'key': '11557362669',
+              'featureEnabled': true
+            }
+          ],
+          'forcedVariations': {},
+          'id': '11488548027'
+        }
+      ],
+      'id': '11551226731'
+    },
+    {
+      'experiments': [
+        {
+          'status': 'Paused',
+          'key': '11630490911',
+          'layerId': '11638870867',
+          'trafficAllocation': [
+            {
+              'entityId': '11475708558',
+              'endOfRange': 0
+            }
+          ],
+          'audienceIds': [],
+          'variations': [
+            {
+              'variables': [],
+              'id': '11475708558',
+              'key': '11475708558',
+              'featureEnabled': false
+            }
+          ],
+          'forcedVariations': {},
+          'id': '11630490911'
+        }
+      ],
+      'id': '11638870867'
+    }
+  ],
+  'anonymizeIP': false,
+  'projectId': '11624721371',
+  'variables': [],
+  'featureFlags': [
+    {
+      'experimentIds': [],
+      'rolloutId': '11551226731',
+      'variables': [],
+      'id': '11477755619',
+      'key': 'feat'
+    },
+    {
+      'experimentIds': [
+        '11564051718'
+      ],
+      'rolloutId': '11638870867',
+      'variables': [
+        {
+          'defaultValue': 'x',
+          'type': 'string',
+          'id': '11535264366',
+          'key': 'x'
+        }
+      ],
+      'id': '11567102051',
+      'key': 'feat_with_var'
+    }
+  ],
+  'experiments': [
+    {
+      'status': 'Running',
+      'key': 'feat_with_var_test',
+      'layerId': '11504144555',
+      'trafficAllocation': [
+        {
+          'entityId': '11617170975',
+          'endOfRange': 10000
+        }
+      ],
+      'audienceIds': ['3468206642', '3988293898', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643'],
+      'variations': [
+        {
+          'variables': [
+            {
+              'id': '11535264366',
+              'value': 'xyz'
+            }
+          ],
+          'id': '11617170975',
+          'key': 'variation_2',
+          'featureEnabled': true
+        }
+      ],
+      'forcedVariations': {},
+      'id': '11564051718'
+    }
+  ],
+  'audiences': [
+    {
+      'id': '3468206642',
+      'name': 'exactString',
+      'conditions': '["and", ["or", ["or", {"name": "house", "type": "custom_attribute", "value": "Gryffindor"}]]]'
+    },
+    {
+      'id': '3988293898',
+      'name': '$$dummySubstringString',
+      'conditions': '["and", ["or"]]',
+      'conditions': '{ "type": "custom_attribute", "name": "$opt_dummy_attribute", "value": "impossible_value" }'
+    },
+    {
+      'id': '3988293899',
+      'name': '$$dummyExists',
+      'conditions': '{ "type": "custom_attribute", "name": "$opt_dummy_attribute", "value": "impossible_value" }'
+    },
+    {
+      'id': '3468206646',
+      'name': '$$dummyExactNumber',
+      'conditions': '{ "type": "custom_attribute", "name": "$opt_dummy_attribute", "value": "impossible_value" }'
+    },
+    {
+      'id': '3468206647',
+      'name': '$$dummyGtNumber',
+      'conditions': '{ "type": "custom_attribute", "name": "$opt_dummy_attribute", "value": "impossible_value" }'
+    },
+    {
+      'id': '3468206644',
+      'name': '$$dummyLtNumber',
+      'conditions': '{ "type": "custom_attribute", "name": "$opt_dummy_attribute", "value": "impossible_value" }'
+    },
+    {
+      'id': '3468206643',
+      'name': '$$dummyExactBoolean',
+      'conditions': '{ "type": "custom_attribute", "name": "$opt_dummy_attribute", "value": "impossible_value" }'
+    }
+  ],
+  'typedAudiences': [
+    {
+      'id': '3988293898',
+      'name': 'substringString',
+      'conditions': '["and", ["or", ["or", {"name": "house", "type": "custom_attribute", "match":"substring", "value":"Slytherin"}]]]'
+    },
+    {
+      'id': '3988293899',
+      'name': 'exists',
+      'conditions': '["and", ["or", ["or", {"name": "favorite_ice_cream", "type": "custom_attribute", "match":"exists"}]]]'
+    },
+    {
+      'id': '3468206646',
+      'name': 'exactNumber',
+      'conditions': '["and", ["or", ["or", {"name": "lasers", "type": "custom_attribute", "match":"exact", "value": 45.5}]]]'
+    },
+    {
+      'id': '3468206647',
+      'name': 'gtNumber',
+      'conditions': '["and", ["or", ["or", {"name": "lasers", "type": "custom_attribute", "match":"gt", "value": 70 }]]]'
+    },
+    {
+      'id': '3468206644',
+      'name': 'ltNumber',
+      'conditions': '["and", ["or", ["or", {"name": "lasers", "type": "custom_attribute", "match":"lt", "value": 1.0 }]]]'
+    },
+    {
+      'id': '3468206643',
+      'name': 'exactBoolean',
+      'conditions': '["and", ["or", ["or", {"name": "should_do_it", "type": "custom_attribute", "match":"exact", "value": true}]]]'
+    }
+  ],
+  'groups': [],
+  'attributes': [
+    {
+      'key': 'house',
+      'id': '594015'
+    },
+    {
+      'key': 'lasers',
+      'id': '594016'
+    },
+    {
+      'key': 'should_do_it',
+      'id': '594017'
+    },
+    {
+      'key': 'favorite_ice_cream',
+      'id': '594018'
+    }
+  ],
+  'botFiltering': false,
+  'accountId': '4879520872',
+  'events': [],
+  'revision': '3'
+};
+
+var getTypedAudiencesConfig = function() {
+  return cloneDeep(typedAudiencesConfig);
+};
+
+var parsedTypedAudiences = [
+  {
+    'id': '3468206642',
+    'name': 'exactString',
+    'conditions': ['and', ['or', ['or', {'name': 'house', 'type': 'custom_attribute', 'value': 'Gryffindor'}]]]
+  },
+  {
+    'id': '3988293898',
+    'name': 'substringString',
+    'conditions': ['and', ['or', ['or', {'name': 'house', 'type': 'custom_attribute', 'match': 'substring', 'value': 'Slytherin'}]]],
+  },
+  {
+    'id': '3988293899',
+    'name': 'exists',
+    'conditions': ['and', ['or', ['or', {'name': 'favorite_ice_cream', 'type': 'custom_attribute', 'match': 'exists'}]]],
+  },
+  {
+    'id': '3468206646',
+    'name': 'exactNumber',
+    'conditions': ['and', ['or', ['or', {'name': 'lasers', 'type': 'custom_attribute', 'match': 'exact', 'value': 45.5}]]]
+  },
+  {
+    'id': '3468206647',
+    'name': 'gtNumber',
+    'conditions': ['and', ['or', ['or', {'name': 'lasers', 'type': 'custom_attribute', 'match': 'gt', 'value': 70}]]]
+  },
+  {
+    'id': '3468206644',
+    'name': 'ltNumber',
+    'conditions': ['and', ['or', ['or', {'name': 'lasers', 'type': 'custom_attribute', 'match': 'lt', 'value': 1.0}]]]
+  },
+  {
+    'id': '3468206643',
+    'name': 'exactBoolean',
+    'conditions': ['and', ['or', ['or', {'name': 'should_do_it', 'type': 'custom_attribute', 'match': 'exact', 'value': true}]]]
+  },
+];
+
 module.exports = {
   getTestProjectConfig: getTestProjectConfig,
   getParsedAudiences: getParsedAudiences,
   getTestProjectConfigWithFeatures: getTestProjectConfigWithFeatures,
   datafileWithFeaturesExpectedData: datafileWithFeaturesExpectedData,
   getUnsupportedVersionConfig: getUnsupportedVersionConfig,
+  getTypedAudiencesConfig: getTypedAudiencesConfig,
+  parsedTypedAudiences: parsedTypedAudiences,
 };
