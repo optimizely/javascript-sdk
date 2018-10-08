@@ -3321,7 +3321,6 @@ describe('lib/optimizely', function() {
       sandbox.stub(eventDispatcher, 'dispatchEvent');
       sandbox.stub(errorHandler, 'handleError');
       sandbox.stub(createdLogger, 'log');
-      sandbox.stub(fns, 'currentTimestamp').returns(1509489766569);
     });
 
     afterEach(function() {
