@@ -1889,6 +1889,27 @@ var typedAudiencesConfig = {
       ],
       'forcedVariations': {},
       'id': '11564051718'
+    },
+    {
+      'id': '1323241597',
+      'key': 'typed_audience_experiment',
+      'layerId': '1630555627',
+      'status': 'Running',
+      'variations': [
+        {
+          'id': '1423767503',
+          'key': 'A',
+          'variables': []
+        }
+      ],
+      'trafficAllocation': [
+        {
+          'entityId': '1423767503',
+          'endOfRange': 10000
+        }
+      ],
+      'audienceIds': ['3468206642', '3988293898', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643'],
+      'forcedVariations': {}
     }
   ],
   'audiences': [
@@ -1982,7 +2003,16 @@ var typedAudiencesConfig = {
   ],
   'botFiltering': false,
   'accountId': '4879520872',
-  'events': [],
+  'events': [
+    {
+      'key': 'item_bought',
+      'id': '594089',
+      'experimentIds': [
+        '11564051718',
+        '1323241597'
+      ]
+    }
+  ],
   'revision': '3'
 };
 
