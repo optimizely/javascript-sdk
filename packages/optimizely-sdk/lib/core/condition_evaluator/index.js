@@ -14,38 +14,14 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
-var fns = require('../../utils/fns');
-
 var AND_CONDITION = 'and';
 var OR_CONDITION = 'or';
 var NOT_CONDITION = 'not';
 
 var DEFAULT_OPERATOR_TYPES = [AND_CONDITION, OR_CONDITION, NOT_CONDITION];
 
-var CUSTOM_ATTRIBUTE_CONDITION_TYPE = 'custom_attribute';
-
-var EXACT_MATCH_TYPE = 'exact';
-var EXISTS_MATCH_TYPE = 'exists';
-var GREATER_THAN_MATCH_TYPE = 'gt';
-var LESS_THAN_MATCH_TYPE = 'lt';
-var SUBSTRING_MATCH_TYPE = 'substring';
-
-var MATCH_TYPES = [
-  EXACT_MATCH_TYPE,
-  EXISTS_MATCH_TYPE,
-  GREATER_THAN_MATCH_TYPE,
-  LESS_THAN_MATCH_TYPE,
-  SUBSTRING_MATCH_TYPE,
-];
-
-var EVALUATORS_BY_MATCH_TYPE = {};
-EVALUATORS_BY_MATCH_TYPE[EXACT_MATCH_TYPE] = exactEvaluator;
-EVALUATORS_BY_MATCH_TYPE[EXISTS_MATCH_TYPE] = existsEvaluator;
-EVALUATORS_BY_MATCH_TYPE[GREATER_THAN_MATCH_TYPE] = greaterThanEvaluator;
-EVALUATORS_BY_MATCH_TYPE[LESS_THAN_MATCH_TYPE] = lessThanEvaluator;
-EVALUATORS_BY_MATCH_TYPE[SUBSTRING_MATCH_TYPE] = substringEvaluator;
-
 /**
+ * TODO: update this
  * Top level method to evaluate audience conditions
  * @param  {Object[]|Object}  conditions Nested array of and/or conditions, or a single condition object
  *                            Example: ['and', { type: 'custom_attribute', ... }, ['or', { type: 'custom_attribute', ... }, { type: 'custom_attribute', ... }]]
@@ -54,7 +30,7 @@ EVALUATORS_BY_MATCH_TYPE[SUBSTRING_MATCH_TYPE] = substringEvaluator;
  * @return {?Boolean}         true/false if the given user attributes match/don't match the given conditions, null if
  *                            the given user attributes and conditions can't be evaluated
  */
-function evaluate(conditions, userAttributes) {
+function evaluate(conditions, leafEvaluator) {
   if (Array.isArray(conditions)) {
     var firstOperator = conditions[0];
     var restOfConditions = conditions.slice(1);
@@ -67,30 +43,20 @@ function evaluate(conditions, userAttributes) {
 
     switch (firstOperator) {
       case AND_CONDITION:
-        return andEvaluator(restOfConditions, userAttributes);
+        return andEvaluator(restOfConditions, leafEvaluator);
       case NOT_CONDITION:
-        return notEvaluator(restOfConditions, userAttributes);
+        return notEvaluator(restOfConditions, leafEvaluator);
       default: // firstOperator is OR_CONDITION
-        return orEvaluator(restOfConditions, userAttributes);
+        return orEvaluator(restOfConditions, leafEvaluator);
     }
   }
 
   var leafCondition = conditions;
-
-  if (leafCondition.type !== CUSTOM_ATTRIBUTE_CONDITION_TYPE) {
-    return null;
-  }
-
-  var conditionMatch = leafCondition.match;
-  if (typeof conditionMatch !== 'undefined' && MATCH_TYPES.indexOf(conditionMatch) === -1) {
-    return null;
-  }
-
-  var evaluatorForMatch = EVALUATORS_BY_MATCH_TYPE[conditionMatch] || exactEvaluator;
-  return evaluatorForMatch(leafCondition, userAttributes);
+  return leafEvaluator(leafCondition);
 }
 
 /**
+ * TODO: update this
  * Evaluates an array of conditions as if the evaluator had been applied
  * to each entry and the results AND-ed together.
  * @param  {Object[]} conditions     Array of conditions ex: [operand_1, operand_2]
@@ -98,10 +64,10 @@ function evaluate(conditions, userAttributes) {
  * @return {?Boolean}                true/false if the user attributes match/don't match the given conditions,
  *                                   null if the user attributes and conditions can't be evaluated
  */
-function andEvaluator(conditions, userAttributes) {
+function andEvaluator(conditions, leafEvaluator) {
   var sawNullResult = false;
   for (var i = 0; i < conditions.length; i++) {
-    var conditionResult = evaluate(conditions[i], userAttributes);
+    var conditionResult = evaluate(conditions[i], leafEvaluator);
     if (conditionResult === false) {
       return false;
     }
@@ -113,6 +79,7 @@ function andEvaluator(conditions, userAttributes) {
 }
 
 /**
+ * TODO: update this
  * Evaluates an array of conditions as if the evaluator had been applied
  * to a single entry and NOT was applied to the result.
  * @param  {Object[]} conditions     Array of conditions ex: [operand_1, operand_2]
@@ -120,15 +87,16 @@ function andEvaluator(conditions, userAttributes) {
  * @return {?Boolean}                true/false if the user attributes match/don't match the given conditions,
  *                                   null if the user attributes and conditions can't be evaluated
  */
-function notEvaluator(conditions, userAttributes) {
+function notEvaluator(conditions, leafEvaluator) {
   if (conditions.length > 0) {
-    var result = evaluate(conditions[0], userAttributes);
+    var result = evaluate(conditions[0], leafEvaluator);
     return result === null ? null : !result;
   }
   return null;
 }
 
 /**
+ * TODO: update this
  * Evaluates an array of conditions as if the evaluator had been applied
  * to each entry and the results OR-ed together.
  * @param  {Object[]} conditions     Array of conditions ex: [operand_1, operand_2]
@@ -136,10 +104,10 @@ function notEvaluator(conditions, userAttributes) {
  * @return {?Boolean}                 true/false if the user attributes match/don't match the given conditions,
  *                                    null if the user attributes and conditions can't be evaluated
  */
-function orEvaluator(conditions, userAttributes) {
+function orEvaluator(conditions, leafEvaluator) {
   var sawNullResult = false;
   for (var i = 0; i < conditions.length; i++) {
-    var conditionResult = evaluate(conditions[i], userAttributes);
+    var conditionResult = evaluate(conditions[i], leafEvaluator);
     if (conditionResult === true) {
       return true;
     }
@@ -148,116 +116,6 @@ function orEvaluator(conditions, userAttributes) {
     }
   }
   return sawNullResult ? null : false;
-}
-
-/**
- * Returns true if the value is valid for exact conditions. Valid values include
- * strings, booleans, and numbers that aren't NaN, -Infinity, or Infinity.
- * @param value
- * @returns {Boolean}
- */
-function isValueValidForExactConditions(value) {
-  return typeof value === 'string' || typeof value === 'boolean' ||
-    fns.isFinite(value);
-}
-
-/**
- * Evaluate the given exact match condition for the given user attributes
- * @param   {Object}    condition
- * @param   {Object}    userAttributes
- * @return  {?Boolean}  true if the user attribute value is equal (===) to the condition value,
- *                      false if the user attribute value is not equal (!==) to the condition value,
- *                      null if the condition value or user attribute value has an invalid type, or
- *                      if there is a mismatch between the user attribute type and the condition value
- *                      type
- */
-function exactEvaluator(condition, userAttributes) {
-  var conditionValue = condition.value;
-  var conditionValueType = typeof conditionValue;
-  var userValue = userAttributes[condition.name];
-  var userValueType = typeof userValue;
-
-  if (!isValueValidForExactConditions(userValue) ||
-    !isValueValidForExactConditions(conditionValueType) ||
-    conditionValueType !== userValueType) {
-    return null;
-  }
-
-  return conditionValue === userValue;
-}
-
-/**
- * Evaluate the given exists match condition for the given user attributes
- * @param   {Object}  condition
- * @param   {Object}  userAttributes
- * @returns {Boolean} true if both:
- *                      1) the user attributes have a value for the given condition, and
- *                      2) the user attribute value is neither null nor undefined
- *                    Returns false otherwise
- */
-function existsEvaluator(condition, userAttributes) {
-  var userValue = userAttributes[condition.name];
-  return typeof userValue !== 'undefined' && userValue !== null;
-}
-
-/**
- * Evaluate the given greater than match condition for the given user attributes
- * @param   {Object}    condition
- * @param   {Object}    userAttributes
- * @returns {?Boolean}  true if the user attribute value is greater than the condition value,
- *                      false if the user attribute value is less than or equal to the condition value,
- *                      null if the condition value isn't a number or the user attribute value
- *                      isn't a number
- */
-function greaterThanEvaluator(condition, userAttributes) {
-  var userValue = userAttributes[condition.name];
-  var conditionValue = condition.value;
-
-  if (!fns.isFinite(userValue) || !fns.isFinite(conditionValue)) {
-    return null;
-  }
-
-  return userValue > conditionValue;
-}
-
-/**
- * Evaluate the given less than match condition for the given user attributes
- * @param   {Object}    condition
- * @param   {Object}    userAttributes
- * @returns {?Boolean}  true if the user attribute value is less than the condition value,
- *                      false if the user attribute value is greater than or equal to the condition value,
- *                      null if the condition value isn't a number or the user attribute value isn't a
- *                      number
- */
-function lessThanEvaluator(condition, userAttributes) {
-  var userValue = userAttributes[condition.name];
-  var conditionValue = condition.value;
-
-  if (!fns.isFinite(userValue) || !fns.isFinite(conditionValue)) {
-    return null;
-  }
-
-  return userValue < conditionValue;
-}
-
-/**
- * Evaluate the given substring match condition for the given user attributes
- * @param   {Object}    condition
- * @param   {Object}    userAttributes
- * @returns {?Boolean}  true if the condition value is a substring of the user attribute value,
- *                      false if the condition value is not a substring of the user attribute value,
- *                      null if the condition value isn't a string or the user attribute value
- *                      isn't a string
- */
-function substringEvaluator(condition, userAttributes) {
-  var userValue = userAttributes[condition.name];
-  var conditionValue = condition.value;
-
-  if (typeof userValue !== 'string' || typeof conditionValue !== 'string') {
-    return null;
-  }
-
-  return userValue.indexOf(conditionValue) !== -1;
 }
 
 module.exports = {

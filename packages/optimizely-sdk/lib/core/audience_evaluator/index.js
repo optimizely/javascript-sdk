@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 var conditionEvaluator = require('../condition_evaluator');
+var customAttributeEvaluator = require('../custom_attribute_evaluator');
 
 module.exports = {
   /**
@@ -35,10 +36,14 @@ module.exports = {
       userAttributes = {};
     }
 
+    var leafEvaluator = function(leafCondition) {
+      return customAttributeEvaluator.evaluate(leafCondition, userAttributes);
+    };
+
     for (var i = 0; i < audiences.length; i++) {
       var audience = audiences[i];
       var conditions = audience.conditions;
-      if (conditionEvaluator.evaluate(conditions, userAttributes)) {
+      if (conditionEvaluator.evaluate(conditions, leafEvaluator)) {
         return true;
       }
     }
