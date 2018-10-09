@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, Optimizely
+ * Copyright 2016, 2018 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ module.exports = {
    * Determine if the given user attributes satisfy the given audience conditions
    * @param  {Object[]} audiences            Audiences to match the user attributes against
    * @param  {Object[]} audiences.conditions Audience conditions to match the user attributes against
-   * @param  {Object}   userAttributes       Hash representing user attributes which will be used in determining if
-   *                                         the audience conditions are met
+   * @param  {Object}   [userAttributes]     Hash representing user attributes which will be used in
+   *                                         determining if the audience conditions are met. If not
+   *                                         provided, defaults to an empty object.
    * @return {Boolean}  True if the user attributes match the given audience conditions
    */
   evaluate: function(audiences, userAttributes) {
@@ -30,9 +31,8 @@ module.exports = {
       return true;
     }
 
-    // if no user attributes specified, return false
     if (!userAttributes) {
-      return false;
+      userAttributes = {};
     }
 
     for (var i = 0; i < audiences.length; i++) {
