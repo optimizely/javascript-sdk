@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2016-2018, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,11 @@ module.exports = {
     fns.forEach(projectConfig.audiences, function(audience) {
       audience.conditions = JSON.parse(audience.conditions);
     });
+    fns.forEach(projectConfig.typedAudiences, function(audience) {
+      audience.conditions = JSON.parse(audience.conditions);
+    });
+    projectConfig.audiencesById = fns.keyBy(projectConfig.audiences, 'id');
+    fns.assign(projectConfig.audiencesById, fns.keyBy(projectConfig.typedAudiences, 'id'));
 
     projectConfig.attributeKeyMap = fns.keyBy(projectConfig.attributes, 'key');
     projectConfig.eventKeyMap = fns.keyBy(projectConfig.events, 'key');
@@ -215,8 +220,11 @@ module.exports = {
 
     var audienceIds = experiment.audienceIds;
     var audiencesInExperiment = [];
-    var audiencesInExperiment = fns.filter(projectConfig.audiences, function(audience) {
-      return audienceIds.indexOf(audience.id) !== -1;
+    fns.forEach(audienceIds, function(audienceId) {
+      var audience = projectConfig.audiencesById[audienceId];
+      if (audience) {
+        audiencesInExperiment.push(audience);
+      }
     });
     return audiencesInExperiment;
   },

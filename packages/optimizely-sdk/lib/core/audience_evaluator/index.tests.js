@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, Optimizely
+ * Copyright 2016, 2018 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,18 @@ var chai = require('chai');
 var assert = chai.assert;
 
 var chromeUserAudience = {
-  conditions: ['and', {'name': 'browser_type', 'value': 'chrome'}],
+  conditions: ['and', {
+    name: 'browser_type',
+    value: 'chrome',
+    type: 'custom_attribute',
+  }],
 };
 var iphoneUserAudience = {
-  conditions: ['and', {'name': 'device_model', 'value': 'iphone'}],
+  conditions: ['and', {
+    name: 'device_model',
+    value: 'iphone',
+    type: 'custom_attribute',
+  }],
 };
 
 describe('lib/core/audience_evaluator', function() {
@@ -71,6 +79,18 @@ describe('lib/core/audience_evaluator', function() {
         assert.isFalse(audienceEvaluator.evaluate([chromeUserAudience, iphoneUserAudience], nexusUsers));
         assert.isFalse(audienceEvaluator.evaluate([chromeUserAudience, iphoneUserAudience], safariUsers));
         assert.isFalse(audienceEvaluator.evaluate([chromeUserAudience, iphoneUserAudience], nexusSafariUsers));
+      });
+
+      it('should return true if no attributes are passed and the audience conditions evaluate to true in the absence of attributes', function() {
+        var conditionsPassingWithNoAttrs = ['not', {
+          match: 'exists',
+          name: 'input_value',
+          type: 'custom_attribute',
+        }];
+        var audience = {
+          conditions: conditionsPassingWithNoAttrs,
+        };
+        assert.isTrue(audienceEvaluator.evaluate([audience]));
       });
     });
   });
