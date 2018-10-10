@@ -297,17 +297,6 @@ describe('lib/core/project_config', function() {
       }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'invalidExperimentKey'));
     });
 
-    it('should retrieve audiences for valid experiment key in getAudiencesForExperiment', function() {
-      assert.deepEqual(projectConfig.getAudiencesForExperiment(configObj, testData.experiments[1].key),
-                       parsedAudiences);
-    });
-
-    it('should throw error for invalid experiment key in getAudiencesForExperiment', function() {
-      assert.throws(function() {
-        projectConfig.getAudiencesForExperiment(configObj, 'invalidExperimentKey');
-      }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'invalidExperimentKey'));
-    });
-
     it('should return true if experiment status is set to Running or Launch in isActive', function() {
       assert.isTrue(projectConfig.isActive(configObj, 'testExperiment'));
 
@@ -532,16 +521,43 @@ describe('lib/core/project_config', function() {
       });
     });
 
-    describe('audience match types', function() {
+    describe('#getAudiencesById', function() {
       beforeEach(function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
       });
 
-      it('should retrieve audiences in getAudiencesForExperiment by checking first in typedAudiences, and then second in audiences', function() {
+      it('should retrieve audiences by checking first in typedAudiences, and then second in audiences', function() {
         assert.deepEqual(
-          projectConfig.getAudiencesForExperiment(configObj, 'feat_with_var_test'),
+          projectConfig.getAudiencesById(configObj),
           testDatafile.parsedTypedAudiences
         );
+      });
+    });
+
+    describe('#getExperimentAudienceConditions', function() {
+      it('should retrieve audiences for valid experiment key in getExperimentAudienceConditions', function() {
+        configObj = projectConfig.createProjectConfig(testData);
+        assert.deepEqual(projectConfig.getExperimentAudienceConditions(configObj, testData.experiments[1].key),
+                         ['11154']);
+      });
+
+      it('should throw error for invalid experiment key in getExperimentAudienceConditions', function() {
+        configObj = projectConfig.createProjectConfig(testData);
+        assert.throws(function() {
+          projectConfig.getExperimentAudienceConditions(configObj, 'invalidExperimentKey');
+        }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'invalidExperimentKey'));
+      });
+
+      it('should return experiment audienceIds if experiment has no audienceConditions', function() {
+        configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
+        var result = projectConfig.getExperimentAudienceConditions(configObj, 'feat_with_var_test');
+        assert.deepEqual(result, ['3468206642', '3988293898', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643']);
+      });
+
+      it('should return experiment audienceConditions if experiment has audienceConditions', function() {
+        configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
+        var result = projectConfig.getExperimentAudienceConditions(configObj, 'audience_combinations_experiment');
+        assert.deepEqual(result, ['and', ['or', '3468206642', '3988293898'], ['or', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643']]);
       });
     });
   });

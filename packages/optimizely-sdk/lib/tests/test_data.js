@@ -1910,6 +1910,28 @@ var typedAudiencesConfig = {
       ],
       'audienceIds': ['3468206642', '3988293898', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643'],
       'forcedVariations': {}
+    },
+    {
+      'id': '1323241598',
+      'key': 'audience_combinations_experiment',
+      'layerId': '1323241598',
+      'status': 'Running',
+      'variations': [
+        {
+          'id': '1423767504',
+          'key': 'A',
+          'variables': []
+        }
+      ],
+      'trafficAllocation': [
+        {
+          'entityId': '1423767504',
+          'endOfRange': 10000
+        }
+      ],
+      'audienceIds': ['0'],
+      'audienceConditions': ['and', ['or', '3468206642', '3988293898'], ['or', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643']],
+      'forcedVariations': {}
     }
   ],
   'audiences': [
@@ -1948,6 +1970,11 @@ var typedAudiencesConfig = {
       'id': '3468206643',
       'name': '$$dummyExactBoolean',
       'conditions': '{ "type": "custom_attribute", "name": "$opt_dummy_attribute", "value": "impossible_value" }'
+    },
+    {
+      'id': '0',
+      'name': '$$dummy',
+      'conditions': '{ "type": "custom_attribute", "name": "$opt_dummy_attribute", "value": "impossible_value" }',
     }
   ],
   'typedAudiences': [
@@ -2020,43 +2047,48 @@ var getTypedAudiencesConfig = function() {
   return cloneDeep(typedAudiencesConfig);
 };
 
-var parsedTypedAudiences = [
-  {
+var parsedTypedAudiences = {
+  3468206642: {
     'id': '3468206642',
     'name': 'exactString',
     'conditions': ['and', ['or', ['or', {'name': 'house', 'type': 'custom_attribute', 'value': 'Gryffindor'}]]]
   },
-  {
+  3988293898: {
     'id': '3988293898',
     'name': 'substringString',
     'conditions': ['and', ['or', ['or', {'name': 'house', 'type': 'custom_attribute', 'match': 'substring', 'value': 'Slytherin'}]]],
   },
-  {
+  3988293899: {
     'id': '3988293899',
     'name': 'exists',
     'conditions': ['and', ['or', ['or', {'name': 'favorite_ice_cream', 'type': 'custom_attribute', 'match': 'exists'}]]],
   },
-  {
+  3468206646: {
     'id': '3468206646',
     'name': 'exactNumber',
     'conditions': ['and', ['or', ['or', {'name': 'lasers', 'type': 'custom_attribute', 'match': 'exact', 'value': 45.5}]]]
   },
-  {
+  3468206647: {
     'id': '3468206647',
     'name': 'gtNumber',
     'conditions': ['and', ['or', ['or', {'name': 'lasers', 'type': 'custom_attribute', 'match': 'gt', 'value': 70}]]]
   },
-  {
+  3468206644: {
     'id': '3468206644',
     'name': 'ltNumber',
     'conditions': ['and', ['or', ['or', {'name': 'lasers', 'type': 'custom_attribute', 'match': 'lt', 'value': 1.0}]]]
   },
-  {
+  3468206643: {
     'id': '3468206643',
     'name': 'exactBoolean',
     'conditions': ['and', ['or', ['or', {'name': 'should_do_it', 'type': 'custom_attribute', 'match': 'exact', 'value': true}]]]
   },
-];
+  0: {
+    'id': '0',
+    'name': '$$dummy',
+    'conditions': { 'type': 'custom_attribute', 'name': '$opt_dummy_attribute', 'value': 'impossible_value' },
+  }
+};
 
 module.exports = {
   getTestProjectConfig: getTestProjectConfig,
