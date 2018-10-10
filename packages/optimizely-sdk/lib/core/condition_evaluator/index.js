@@ -21,14 +21,16 @@ var NOT_CONDITION = 'not';
 var DEFAULT_OPERATOR_TYPES = [AND_CONDITION, OR_CONDITION, NOT_CONDITION];
 
 /**
- * TODO: update this
- * Top level method to evaluate audience conditions
- * @param  {Object[]|Object}  conditions Nested array of and/or conditions, or a single condition object
- *                            Example: ['and', { type: 'custom_attribute', ... }, ['or', { type: 'custom_attribute', ... }, { type: 'custom_attribute', ... }]]
- * @param  {Object}           userAttributes Hash representing user attributes which will be used in determining if
- *                            the audience conditions are met.
- * @return {?Boolean}         true/false if the given user attributes match/don't match the given conditions, null if
- *                            the given user attributes and conditions can't be evaluated
+ * Top level method to evaluate conditions
+ * @param  {Array|*}    conditions      Nested array of and/or conditions, or a single leaf
+ *                                      condition value of any type
+ *                                      Example: ['and', '0', ['or', '1', '2']]
+ * @param  {Function}   leafEvaluator   Function which will be called to evaluate leaf condition
+ *                                      values
+ * @return {?Boolean}                   Result of evaluating the conditions using the operator
+ *                                      rules and the leaf evaluator. A return value of null
+ *                                      indicates that the conditions are invalid or unable to be
+ *                                      evaluated
  */
 function evaluate(conditions, leafEvaluator) {
   if (Array.isArray(conditions)) {
@@ -56,13 +58,13 @@ function evaluate(conditions, leafEvaluator) {
 }
 
 /**
- * TODO: update this
  * Evaluates an array of conditions as if the evaluator had been applied
  * to each entry and the results AND-ed together.
- * @param  {Object[]} conditions     Array of conditions ex: [operand_1, operand_2]
- * @param  {Object}   userAttributes Hash representing user attributes
- * @return {?Boolean}                true/false if the user attributes match/don't match the given conditions,
- *                                   null if the user attributes and conditions can't be evaluated
+ * @param  {Array}      conditions      Array of conditions ex: [operand_1, operand_2]
+ * @param  {Function}   leafEvaluator   Function which will be called to evaluate leaf condition values
+ * @return {?Boolean}                   Result of evaluating the conditions. A return value of null
+ *                                      indicates that the conditions are invalid or unable to be
+ *                                      evaluated.
  */
 function andEvaluator(conditions, leafEvaluator) {
   var sawNullResult = false;
@@ -79,13 +81,13 @@ function andEvaluator(conditions, leafEvaluator) {
 }
 
 /**
- * TODO: update this
  * Evaluates an array of conditions as if the evaluator had been applied
  * to a single entry and NOT was applied to the result.
- * @param  {Object[]} conditions     Array of conditions ex: [operand_1, operand_2]
- * @param  {Object}   userAttributes Hash representing user attributes
- * @return {?Boolean}                true/false if the user attributes match/don't match the given conditions,
- *                                   null if the user attributes and conditions can't be evaluated
+ * @param  {Array}      conditions      Array of conditions ex: [operand_1]
+ * @param  {Function}   leafEvaluator   Function which will be called to evaluate leaf condition values
+ * @return {?Boolean}                   Result of evaluating the conditions. A return value of null
+ *                                      indicates that the conditions are invalid or unable to be
+ *                                      evaluated.
  */
 function notEvaluator(conditions, leafEvaluator) {
   if (conditions.length > 0) {
@@ -96,13 +98,13 @@ function notEvaluator(conditions, leafEvaluator) {
 }
 
 /**
- * TODO: update this
  * Evaluates an array of conditions as if the evaluator had been applied
  * to each entry and the results OR-ed together.
- * @param  {Object[]} conditions     Array of conditions ex: [operand_1, operand_2]
- * @param  {Object}   userAttributes Hash representing user attributes
- * @return {?Boolean}                 true/false if the user attributes match/don't match the given conditions,
- *                                    null if the user attributes and conditions can't be evaluated
+ * @param  {Array}      conditions      Array of conditions ex: [operand_1, operand_2]
+ * @param  {Function}   leafEvaluator   Function which will be called to evaluate leaf condition values
+ * @return {?Boolean}                   Result of evaluating the conditions. A return value of null
+ *                                      indicates that the conditions are invalid or unable to be
+ *                                      evaluated.
  */
 function orEvaluator(conditions, leafEvaluator) {
   var sawNullResult = false;
