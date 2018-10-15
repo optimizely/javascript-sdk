@@ -40,7 +40,7 @@ var doubleCondition = {
   type: 'custom_attribute',
 };
 
-describe('lib/core/custom_attribute_evaluator', function() {
+describe('lib/core/custom_attribute_condition_evaluator', function() {
   it('should return true there is a match', function() {
     var userAttributes = {
       browser_type: 'safari',

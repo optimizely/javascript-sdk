@@ -15,8 +15,8 @@
  */
 var audienceEvaluator = require('./');
 var chai = require('chai');
-var conditionEvaluator = require('../condition_evaluator');
-var customAttributeEvaluator = require('../custom_attribute_evaluator');
+var conditionTreeEvaluator = require('../condition_tree_evaluator');
+var customAttributeConditionEvaluator = require('../custom_attribute_condition_evaluator');
 var sinon = require('sinon');
 
 var assert = chai.assert;
@@ -136,16 +136,16 @@ describe('lib/core/audience_evaluator', function() {
         var sandbox = sinon.sandbox.create();
 
         beforeEach(function() {
-          sandbox.stub(conditionEvaluator, 'evaluate');
-          sandbox.stub(customAttributeEvaluator, 'evaluate');
+          sandbox.stub(conditionTreeEvaluator, 'evaluate');
+          sandbox.stub(customAttributeConditionEvaluator, 'evaluate');
         });
 
         afterEach(function() {
           sandbox.restore();
         });
 
-        it('returns true if conditionEvaluator.evaluate returns true', function() {
-          conditionEvaluator.evaluate.returns(true);
+        it('returns true if conditionTreeEvaluator.evaluate returns true', function() {
+          conditionTreeEvaluator.evaluate.returns(true);
           var result = audienceEvaluator.evaluate(
             ['or', '0', '1'],
             audiencesById,
@@ -154,8 +154,8 @@ describe('lib/core/audience_evaluator', function() {
           assert.isTrue(result);
         });
 
-        it('returns false if conditionEvaluator.evaluate returns false', function() {
-          conditionEvaluator.evaluate.returns(false);
+        it('returns false if conditionTreeEvaluator.evaluate returns false', function() {
+          conditionTreeEvaluator.evaluate.returns(false);
           var result = audienceEvaluator.evaluate(
             ['or', '0', '1'],
             audiencesById,
@@ -164,8 +164,8 @@ describe('lib/core/audience_evaluator', function() {
           assert.isFalse(result);
         });
 
-        it('returns false if conditionEvaluator.evaluate returns null', function() {
-          conditionEvaluator.evaluate.returns(null);
+        it('returns false if conditionTreeEvaluator.evaluate returns null', function() {
+          conditionTreeEvaluator.evaluate.returns(null);
           var result = audienceEvaluator.evaluate(
             ['or', '0', '1'],
             audiencesById,
@@ -174,15 +174,15 @@ describe('lib/core/audience_evaluator', function() {
           assert.isFalse(result);
         });
 
-        it('calls customAttributeEvaluator.evaluate in the leaf evaluator for audience conditions', function() {
-          conditionEvaluator.evaluate.callsFake(function(conditions, leafEvaluator) {
+        it('calls customAttributeConditionEvaluator.evaluate in the leaf evaluator for audience conditions', function() {
+          conditionTreeEvaluator.evaluate.callsFake(function(conditions, leafEvaluator) {
             return leafEvaluator(conditions[1]);
           });
-          customAttributeEvaluator.evaluate.returns(false);
+          customAttributeConditionEvaluator.evaluate.returns(false);
           var userAttributes = { device_model: 'android' };
           var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
-          sinon.assert.calledOnce(customAttributeEvaluator.evaluate);
-          sinon.assert.calledWithExactly(customAttributeEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes);
+          sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
+          sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes);
           assert.isFalse(result);
         });
       });

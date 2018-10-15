@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var conditionEvaluator = require('../condition_evaluator');
-var customAttributeEvaluator = require('../custom_attribute_evaluator');
+var conditionTreeEvaluator = require('../condition_tree_evaluator');
+var customAttributeConditionEvaluator = require('../custom_attribute_condition_evaluator');
 
 module.exports = {
   /**
@@ -40,19 +40,19 @@ module.exports = {
       userAttributes = {};
     }
 
-    var customAttributeConditionEvaluator = function(condition) {
-      return customAttributeEvaluator.evaluate(condition, userAttributes);
+    var evaluateConditionWithUserAttributes = function(condition) {
+      return customAttributeConditionEvaluator.evaluate(condition, userAttributes);
     };
 
-    var audienceIdEvaluator = function(audienceId) {
+    var evaluateAudience = function(audienceId) {
       var audience = audiencesById[audienceId];
       if (audience) {
-        return conditionEvaluator.evaluate(audience.conditions, customAttributeConditionEvaluator);
+        return conditionTreeEvaluator.evaluate(audience.conditions, evaluateConditionWithUserAttributes);
       }
       return null;
     };
 
-    if (conditionEvaluator.evaluate(audienceConditions, audienceIdEvaluator)) {
+    if (conditionTreeEvaluator.evaluate(audienceConditions, evaluateAudience)) {
       return true;
     }
 

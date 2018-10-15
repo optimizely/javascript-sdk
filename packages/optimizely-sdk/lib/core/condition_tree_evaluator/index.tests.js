@@ -36,7 +36,7 @@ var conditionC = {
   value: 'CA',
 };
 
-describe('lib/core/condition_evaluator', function() {
+describe('lib/core/condition_tree_evaluator', function() {
   describe('APIs', function() {
     describe('evaluate', function() {
       it('should return true for a leaf condition when the leaf condition evaluator returns true', function() {
