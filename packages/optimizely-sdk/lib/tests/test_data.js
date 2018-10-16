@@ -1832,6 +1832,61 @@ var typedAudiencesConfig = {
         }
       ],
       'id': '11638870867'
+    },
+    {
+      'experiments': [
+        {
+          'status': 'Running',
+          'key': '11488548028',
+          'layerId': '11551226732',
+          'trafficAllocation': [
+            {
+              'entityId': '11557362670',
+              'endOfRange': 10000
+            }
+          ],
+          'audienceIds': ['0'],
+          'audienceConditions': ['and', ['or', '3468206642', '3988293898'], ['or', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643']],
+          'variations': [
+            {
+              'variables': [],
+              'id': '11557362670',
+              'key': '11557362670',
+              'featureEnabled': true
+            }
+          ],
+          'forcedVariations': {},
+          'id': '11488548028'
+        }
+      ],
+      'id': '11551226732'
+    },
+    {
+      'experiments': [
+        {
+          'status': 'Paused',
+          'key': '11630490912',
+          'layerId': '11638870868',
+          'trafficAllocation': [
+            {
+              'entityId': '11475708559',
+              'endOfRange': 0
+            }
+          ],
+          'audienceIds': [],
+          'variations': [
+            {
+              'variables': [],
+              'id': '11475708559',
+              'key': '11475708559',
+              'featureEnabled': false
+            }
+          ],
+          'forcedVariations': {},
+          'id': '11630490912'
+        }
+      ],
+      'id': '11638870868'
     }
   ],
   'anonymizeIP': false,
@@ -1860,7 +1915,28 @@ var typedAudiencesConfig = {
       ],
       'id': '11567102051',
       'key': 'feat_with_var'
-    }
+    },
+    {
+      'experimentIds': [],
+      'rolloutId': '11551226732',
+      'variables': [],
+      'id': '11567102052',
+      'key': 'feat2'
+    },
+    {
+      'experimentIds': ['1323241599'],
+      'rolloutId': '11638870868',
+      'variables': [
+        {
+          'defaultValue': '10',
+          'type': 'integer',
+          'id': '11535264367',
+          'key': 'z'
+        }
+      ],
+      'id': '11567102053',
+      'key': 'feat2_with_var'
+    },
   ],
   'experiments': [
     {
@@ -1932,7 +2008,35 @@ var typedAudiencesConfig = {
       'audienceIds': ['0'],
       'audienceConditions': ['and', ['or', '3468206642', '3988293898'], ['or', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643']],
       'forcedVariations': {}
-    }
+    },
+    {
+      'id': '1323241599',
+      'key': 'feat2_with_var_test',
+      'layerId': '1323241600',
+      'status': 'Running',
+      'variations': [
+        {
+          'variables': [
+            {
+              'id': '11535264367',
+              'value': '150'
+            }
+          ],
+          'id': '1423767505',
+          'key': 'variation_2',
+          'featureEnabled': true
+        }
+      ],
+      'trafficAllocation': [
+        {
+          'entityId': '1423767505',
+          'endOfRange': 10000
+        }
+      ],
+      'audienceIds': ['0'],
+      'audienceConditions': ['and', ['or', '3468206642', '3988293898'], ['or', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643']],
+      'forcedVariations': {}
+    },
   ],
   'audiences': [
     {
@@ -2038,6 +2142,11 @@ var typedAudiencesConfig = {
         '11564051718',
         '1323241597'
       ]
+    },
+    {
+      'key': 'user_signed_up',
+      'id': '594090',
+      'experimentIds': ['1323241598', '1323241599'],
     }
   ],
   'revision': '3'
