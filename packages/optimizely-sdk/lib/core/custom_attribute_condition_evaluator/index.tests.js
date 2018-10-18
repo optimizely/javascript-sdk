@@ -41,7 +41,7 @@ var doubleCondition = {
 };
 
 describe('lib/core/custom_attribute_condition_evaluator', function() {
-  it('should return true there is a match', function() {
+  it('should return true when the attributes pass the audience conditions and no match type is provided', function() {
     var userAttributes = {
       browser_type: 'safari',
     };
@@ -49,7 +49,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
     assert.isTrue(customAttributeEvaluator.evaluate(browserConditionSafari, userAttributes));
   });
 
-  it('should return false when there is no match', function() {
+  it('should return false when the attributes do not pass the audience conditions and no match type is provided', function() {
     var userAttributes = {
       browser_type: 'firefox',
     };
@@ -74,6 +74,14 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
   it('should return null when condition has an invalid type property', function() {
     var result = customAttributeEvaluator.evaluate(
       { match: 'exact', name: 'weird_condition', type: 'weird', value: 'hi' },
+      { weird_condition: 'bye' }
+    );
+    assert.isNull(result);
+  });
+
+  it('should return null when condition has no type property', function() {
+    var result = customAttributeEvaluator.evaluate(
+      { match: 'exact', name: 'weird_condition', value: 'hi' },
       { weird_condition: 'bye' }
     );
     assert.isNull(result);
@@ -276,6 +284,11 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         meters_travelled: 'a long way',
       });
       assert.isNull(result);
+
+      var result = customAttributeEvaluator.evaluate(gtCondition, {
+        meters_travelled: '1000',
+      });
+      assert.isNull(result);
     });
 
     it('should return null if there is no user-provided value', function() {
@@ -309,6 +322,11 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
     it('should return null if the user-provided value is not a number', function() {
       var result = customAttributeEvaluator.evaluate(ltCondition, {
         meters_travelled: true,
+      });
+      assert.isNull(result);
+
+      var result = customAttributeEvaluator.evaluate(ltCondition, {
+        meters_travelled: '48.2',
       });
       assert.isNull(result);
     });

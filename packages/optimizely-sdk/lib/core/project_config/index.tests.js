@@ -535,13 +535,13 @@ describe('lib/core/project_config', function() {
     });
 
     describe('#getExperimentAudienceConditions', function() {
-      it('should retrieve audiences for valid experiment key in getExperimentAudienceConditions', function() {
+      it('should retrieve audiences for valid experiment key', function() {
         configObj = projectConfig.createProjectConfig(testData);
         assert.deepEqual(projectConfig.getExperimentAudienceConditions(configObj, testData.experiments[1].key),
                          ['11154']);
       });
 
-      it('should throw error for invalid experiment key in getExperimentAudienceConditions', function() {
+      it('should throw error for invalid experiment key', function() {
         configObj = projectConfig.createProjectConfig(testData);
         assert.throws(function() {
           projectConfig.getExperimentAudienceConditions(configObj, 'invalidExperimentKey');
@@ -556,6 +556,8 @@ describe('lib/core/project_config', function() {
 
       it('should return experiment audienceConditions if experiment has audienceConditions', function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
+        // audience_combinations_experiment has both audienceConditions and audienceIds
+        // audienceConditions should be preferred over audienceIds
         var result = projectConfig.getExperimentAudienceConditions(configObj, 'audience_combinations_experiment');
         assert.deepEqual(result, ['and', ['or', '3468206642', '3988293898'], ['or', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643']]);
       });
