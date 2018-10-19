@@ -206,27 +206,21 @@ module.exports = {
   },
 
   /**
-   * Get audiences for the experiment
+   * Get audience conditions for the experiment
    * @param  {Object}         projectConfig Object representing project configuration
-   * @param  {string}         experimentKey Experiment key for which audience IDs are to be determined
-   * @return {Array<Object>}  Audiences corresponding to the experiment
+   * @param  {string}         experimentKey Experiment key for which audience conditions are to be determined
+   * @return {Array}          Audience conditions for the experiment - can be an array of audience IDs, or a
+   *                          nested array of conditions
+   *                          Examples: ["5", "6"], ["and", ["or", "1", "2"], "3"]
    * @throws If experiment key is not in datafile
    */
-  getAudiencesForExperiment: function(projectConfig, experimentKey) {
+  getExperimentAudienceConditions: function(projectConfig, experimentKey) {
     var experiment = projectConfig.experimentKeyMap[experimentKey];
     if (fns.isEmpty(experiment)) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
     }
 
-    var audienceIds = experiment.audienceIds;
-    var audiencesInExperiment = [];
-    fns.forEach(audienceIds, function(audienceId) {
-      var audience = projectConfig.audiencesById[audienceId];
-      if (audience) {
-        audiencesInExperiment.push(audience);
-      }
-    });
-    return audiencesInExperiment;
+    return experiment.audienceConditions || experiment.audienceIds;
   },
 
   /**
@@ -598,5 +592,15 @@ module.exports = {
     }
 
     return castValue;
+  },
+
+  /**
+   * Returns an object containing all audiences in the project config. Keys are audience IDs
+   * and values are audience objects.
+   * @param projectConfig
+   * @returns {Object}
+   */
+  getAudiencesById: function(projectConfig) {
+    return projectConfig.audiencesById;
   },
 };

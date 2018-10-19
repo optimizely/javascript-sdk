@@ -15,6 +15,7 @@
  ***************************************************************************/
 
 var Optimizely = require('./');
+var audienceEvaluator = require('../core/audience_evaluator');
 var bluebird = require('bluebird');
 var bucketer = require('../core/bucketer');
 var enums = require('../utils/enums');
@@ -3416,6 +3417,173 @@ describe('lib/optimizely', function() {
         lasers: 50,
       });
       assert.strictEqual(variableValue, 'x');
+    });
+  });
+
+  describe('audience combinations', function() {
+    var sandbox = sinon.sandbox.create();
+    var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+    var optlyInstance;
+    beforeEach(function() {
+      optlyInstance = new Optimizely({
+        clientEngine: 'node-sdk',
+        datafile: testData.getTypedAudiencesConfig(),
+        eventBuilder: eventBuilder,
+        errorHandler: errorHandler,
+        eventDispatcher: eventDispatcher,
+        jsonSchemaValidator: jsonSchemaValidator,
+        logger: createdLogger,
+        isValidInstance: true,
+      });
+
+      sandbox.stub(eventDispatcher, 'dispatchEvent');
+      sandbox.stub(errorHandler, 'handleError');
+      sandbox.stub(createdLogger, 'log');
+      sandbox.spy(audienceEvaluator, 'evaluate');
+    });
+
+    afterEach(function() {
+      sandbox.restore();
+    });
+
+    it('can activate an experiment with complex audience conditions', function() {
+      var variationKey = optlyInstance.activate('audience_combinations_experiment', 'user1', {
+        // Should be included via substring match string audience with id '3988293898', and
+        // exact match number audience with id '3468206646'
+        house: 'Welcome to Slytherin!',
+        lasers: 45.5,
+      });
+      assert.strictEqual(variationKey, 'A');
+      sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
+      assert.includeDeepMembers(
+        eventDispatcher.dispatchEvent.getCall(0).args[0].params.visitors[0].attributes,
+        [
+          { entity_id: '594015', key: 'house', type: 'custom', value: 'Welcome to Slytherin!' },
+          { entity_id: '594016', key: 'lasers', type: 'custom', value: 45.5 },
+        ]
+      );
+      sinon.assert.calledWithExactly(
+        audienceEvaluator.evaluate,
+        optlyInstance.configObj.experiments[2].audienceConditions,
+        optlyInstance.configObj.audiencesById,
+        { house: 'Welcome to Slytherin!', lasers: 45.5 }
+      );
+    });
+
+    it('can exclude a user from an experiment with complex audience conditions', function() {
+      var variationKey = optlyInstance.activate('audience_combinations_experiment', 'user1', {
+        // Should be excluded - substring string audience with id '3988293898' does not match,
+        // so the overall conditions fail
+        house: 'Hufflepuff',
+        lasers: 45.5,
+      });
+      assert.isNull(variationKey);
+      sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+      sinon.assert.calledWithExactly(
+        audienceEvaluator.evaluate,
+        optlyInstance.configObj.experiments[2].audienceConditions,
+        optlyInstance.configObj.audiencesById,
+        { house: 'Hufflepuff', lasers: 45.5 }
+      );
+    });
+
+    it('can track an experiment with complex audience conditions', function() {
+      optlyInstance.track('user_signed_up', 'user1', {
+        // Should be included via exact match string audience with id '3468206642', and
+        // exact match boolean audience with id '3468206643'
+        house: 'Gryffindor',
+        should_do_it: true,
+      });
+      sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
+      assert.includeDeepMembers(
+        eventDispatcher.dispatchEvent.getCall(0).args[0].params.visitors[0].attributes,
+        [
+          { entity_id: '594015', key: 'house', type: 'custom', value: 'Gryffindor' },
+          { entity_id: '594017', key: 'should_do_it', type: 'custom', value: true }
+        ]
+      );
+      sinon.assert.calledWithExactly(
+        audienceEvaluator.evaluate,
+        optlyInstance.configObj.experiments[2].audienceConditions,
+        optlyInstance.configObj.audiencesById,
+        { house: 'Gryffindor', should_do_it: true }
+      );
+    });
+
+    it('can exclude a user from an experiment with complex audience conditions via track', function() {
+      optlyInstance.track('user_signed_up', 'user1', {
+        // Should be excluded - exact match boolean audience with id '3468206643' does not match,
+        // so the overall conditions fail
+        house: 'Gryffindor',
+        should_do_it: false,
+      });
+      sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+      sinon.assert.calledWithExactly(
+        audienceEvaluator.evaluate,
+        optlyInstance.configObj.experiments[2].audienceConditions,
+        optlyInstance.configObj.audiencesById,
+        { house: 'Gryffindor', should_do_it: false }
+      );
+    });
+
+    it('can include a user in a rollout with complex audience conditions via isFeatureEnabled', function() {
+      var featureEnabled = optlyInstance.isFeatureEnabled('feat2', 'user1', {
+        // Should be included via substring match string audience with id '3988293898', and
+        // exists audience with id '3988293899'
+        house: '...Slytherinnn...sss.',
+        favorite_ice_cream: 'matcha',
+      });
+      assert.isTrue(featureEnabled);
+      sinon.assert.calledWithExactly(
+        audienceEvaluator.evaluate,
+        optlyInstance.configObj.rollouts[2].experiments[0].audienceConditions,
+        optlyInstance.configObj.audiencesById,
+        { house: '...Slytherinnn...sss.', favorite_ice_cream: 'matcha' }
+      );
+    });
+
+    it('can exclude a user from a rollout with complex audience conditions via isFeatureEnabled', function() {
+      var featureEnabled = optlyInstance.isFeatureEnabled('feat2', 'user1', {
+        // Should be excluded - substring match string audience with id '3988293898' does not match,
+        // and no audience in the other branch of the 'and' matches either
+        house: 'Lannister',
+      });
+      assert.isFalse(featureEnabled);
+      sinon.assert.calledWithExactly(
+        audienceEvaluator.evaluate,
+        optlyInstance.configObj.rollouts[2].experiments[0].audienceConditions,
+        optlyInstance.configObj.audiencesById,
+        { house: 'Lannister' }
+      );
+    });
+
+    it('can return a variable value from a feature test with complex audience conditions via getFeatureVariableString', function() {
+      var variableValue = optlyInstance.getFeatureVariableInteger('feat2_with_var', 'z', 'user1', {
+        // Should be included via exact match string audience with id '3468206642', and
+        // greater than audience with id '3468206647'
+        house: 'Gryffindor',
+        lasers: 700,
+      });
+      assert.strictEqual(variableValue, 150);
+      sinon.assert.calledWithExactly(
+        audienceEvaluator.evaluate,
+        optlyInstance.configObj.experiments[3].audienceConditions,
+        optlyInstance.configObj.audiencesById,
+        { house: 'Gryffindor', lasers: 700 }
+      );
+    });
+
+    it('can return the default value for a feature variable from getFeatureVariableString, via excluding a user from a feature test with complex audience conditions', function() {
+      var variableValue = optlyInstance.getFeatureVariableInteger('feat2_with_var', 'z', 'user1', {
+        // Should be excluded - no audiences match with no attributes
+      });
+      assert.strictEqual(variableValue, 10);
+      sinon.assert.calledWithExactly(
+        audienceEvaluator.evaluate,
+        optlyInstance.configObj.experiments[3].audienceConditions,
+        optlyInstance.configObj.audiencesById,
+        {}
+      );
     });
   });
 });

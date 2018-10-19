@@ -151,8 +151,9 @@ DecisionService.prototype.__getWhitelistedVariation = function(experiment, userI
  * @return {boolean} True if user meets audience conditions
  */
 DecisionService.prototype.__checkIfUserIsInAudience = function(experimentKey, userId, attributes) {
-  var audiences = projectConfig.getAudiencesForExperiment(this.configObj, experimentKey);
-  if (!audienceEvaluator.evaluate(audiences, attributes)) {
+  var experimentAudienceConditions = projectConfig.getExperimentAudienceConditions(this.configObj, experimentKey);
+  var audiencesById = projectConfig.getAudiencesById(this.configObj);
+  if (!audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, attributes)) {
     var userDoesNotMeetConditionsLogMessage = sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, MODULE_NAME, userId, experimentKey);
     this.logger.log(LOG_LEVEL.INFO, userDoesNotMeetConditionsLogMessage);
     return false;

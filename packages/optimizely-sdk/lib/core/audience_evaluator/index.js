@@ -13,21 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var conditionEvaluator = require('../condition_evaluator');
+var conditionTreeEvaluator = require('../condition_tree_evaluator');
+var customAttributeConditionEvaluator = require('../custom_attribute_condition_evaluator');
 
 module.exports = {
   /**
    * Determine if the given user attributes satisfy the given audience conditions
-   * @param  {Object[]} audiences            Audiences to match the user attributes against
-   * @param  {Object[]} audiences.conditions Audience conditions to match the user attributes against
-   * @param  {Object}   [userAttributes]     Hash representing user attributes which will be used in
-   *                                         determining if the audience conditions are met. If not
-   *                                         provided, defaults to an empty object.
-   * @return {Boolean}  True if the user attributes match the given audience conditions
+   * @param  {Array|String|null|undefined}  audienceConditions    Audience conditions to match the user attributes against - can be an array
+   *                                                              of audience IDs, a nested array of conditions, or a single leaf condition.
+   *                                                              Examples: ["5", "6"], ["and", ["or", "1", "2"], "3"], "1"
+   * @param  {Object}                       audiencesById         Object providing access to full audience objects for audience IDs
+   *                                                              contained in audienceConditions. Keys should be audience IDs, values
+   *                                                              should be full audience objects with conditions properties
+   * @param  {Object}                       [userAttributes]      User attributes which will be used in determining if audience conditions
+   *                                                              are met. If not provided, defaults to an empty object
+   * @return {Boolean}                                            true if the user attributes match the given audience conditions, false
+   *                                                              otherwise
    */
-  evaluate: function(audiences, userAttributes) {
+  evaluate: function(audienceConditions, audiencesById, userAttributes) {
     // if there are no audiences, return true because that means ALL users are included in the experiment
-    if (!audiences || audiences.length === 0) {
+    if (!audienceConditions || audienceConditions.length === 0) {
       return true;
     }
 
@@ -35,14 +40,18 @@ module.exports = {
       userAttributes = {};
     }
 
-    for (var i = 0; i < audiences.length; i++) {
-      var audience = audiences[i];
-      var conditions = audience.conditions;
-      if (conditionEvaluator.evaluate(conditions, userAttributes)) {
-        return true;
-      }
-    }
+    var evaluateConditionWithUserAttributes = function(condition) {
+      return customAttributeConditionEvaluator.evaluate(condition, userAttributes);
+    };
 
-    return false;
+    var evaluateAudience = function(audienceId) {
+      var audience = audiencesById[audienceId];
+      if (audience) {
+        return conditionTreeEvaluator.evaluate(audience.conditions, evaluateConditionWithUserAttributes);
+      }
+      return null;
+    };
+
+    return conditionTreeEvaluator.evaluate(audienceConditions, evaluateAudience) || false;
   },
 };

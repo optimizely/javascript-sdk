@@ -1832,6 +1832,61 @@ var typedAudiencesConfig = {
         }
       ],
       'id': '11638870867'
+    },
+    {
+      'experiments': [
+        {
+          'status': 'Running',
+          'key': '11488548028',
+          'layerId': '11551226732',
+          'trafficAllocation': [
+            {
+              'entityId': '11557362670',
+              'endOfRange': 10000
+            }
+          ],
+          'audienceIds': ['0'],
+          'audienceConditions': ['and', ['or', '3468206642', '3988293898'], ['or', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643']],
+          'variations': [
+            {
+              'variables': [],
+              'id': '11557362670',
+              'key': '11557362670',
+              'featureEnabled': true
+            }
+          ],
+          'forcedVariations': {},
+          'id': '11488548028'
+        }
+      ],
+      'id': '11551226732'
+    },
+    {
+      'experiments': [
+        {
+          'status': 'Paused',
+          'key': '11630490912',
+          'layerId': '11638870868',
+          'trafficAllocation': [
+            {
+              'entityId': '11475708559',
+              'endOfRange': 0
+            }
+          ],
+          'audienceIds': [],
+          'variations': [
+            {
+              'variables': [],
+              'id': '11475708559',
+              'key': '11475708559',
+              'featureEnabled': false
+            }
+          ],
+          'forcedVariations': {},
+          'id': '11630490912'
+        }
+      ],
+      'id': '11638870868'
     }
   ],
   'anonymizeIP': false,
@@ -1860,7 +1915,28 @@ var typedAudiencesConfig = {
       ],
       'id': '11567102051',
       'key': 'feat_with_var'
-    }
+    },
+    {
+      'experimentIds': [],
+      'rolloutId': '11551226732',
+      'variables': [],
+      'id': '11567102052',
+      'key': 'feat2'
+    },
+    {
+      'experimentIds': ['1323241599'],
+      'rolloutId': '11638870868',
+      'variables': [
+        {
+          'defaultValue': '10',
+          'type': 'integer',
+          'id': '11535264367',
+          'key': 'z'
+        }
+      ],
+      'id': '11567102053',
+      'key': 'feat2_with_var'
+    },
   ],
   'experiments': [
     {
@@ -1910,7 +1986,57 @@ var typedAudiencesConfig = {
       ],
       'audienceIds': ['3468206642', '3988293898', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643'],
       'forcedVariations': {}
-    }
+    },
+    {
+      'id': '1323241598',
+      'key': 'audience_combinations_experiment',
+      'layerId': '1323241598',
+      'status': 'Running',
+      'variations': [
+        {
+          'id': '1423767504',
+          'key': 'A',
+          'variables': []
+        }
+      ],
+      'trafficAllocation': [
+        {
+          'entityId': '1423767504',
+          'endOfRange': 10000
+        }
+      ],
+      'audienceIds': ['0'],
+      'audienceConditions': ['and', ['or', '3468206642', '3988293898'], ['or', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643']],
+      'forcedVariations': {}
+    },
+    {
+      'id': '1323241599',
+      'key': 'feat2_with_var_test',
+      'layerId': '1323241600',
+      'status': 'Running',
+      'variations': [
+        {
+          'variables': [
+            {
+              'id': '11535264367',
+              'value': '150'
+            }
+          ],
+          'id': '1423767505',
+          'key': 'variation_2',
+          'featureEnabled': true
+        }
+      ],
+      'trafficAllocation': [
+        {
+          'entityId': '1423767505',
+          'endOfRange': 10000
+        }
+      ],
+      'audienceIds': ['0'],
+      'audienceConditions': ['and', ['or', '3468206642', '3988293898'], ['or', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643']],
+      'forcedVariations': {}
+    },
   ],
   'audiences': [
     {
@@ -1948,6 +2074,11 @@ var typedAudiencesConfig = {
       'id': '3468206643',
       'name': '$$dummyExactBoolean',
       'conditions': '{ "type": "custom_attribute", "name": "$opt_dummy_attribute", "value": "impossible_value" }'
+    },
+    {
+      'id': '0',
+      'name': '$$dummy',
+      'conditions': '{ "type": "custom_attribute", "name": "$opt_dummy_attribute", "value": "impossible_value" }',
     }
   ],
   'typedAudiences': [
@@ -2011,6 +2142,11 @@ var typedAudiencesConfig = {
         '11564051718',
         '1323241597'
       ]
+    },
+    {
+      'key': 'user_signed_up',
+      'id': '594090',
+      'experimentIds': ['1323241598', '1323241599'],
     }
   ],
   'revision': '3'
@@ -2020,43 +2156,48 @@ var getTypedAudiencesConfig = function() {
   return cloneDeep(typedAudiencesConfig);
 };
 
-var parsedTypedAudiences = [
-  {
+var parsedTypedAudiences = {
+  3468206642: {
     'id': '3468206642',
     'name': 'exactString',
     'conditions': ['and', ['or', ['or', {'name': 'house', 'type': 'custom_attribute', 'value': 'Gryffindor'}]]]
   },
-  {
+  3988293898: {
     'id': '3988293898',
     'name': 'substringString',
     'conditions': ['and', ['or', ['or', {'name': 'house', 'type': 'custom_attribute', 'match': 'substring', 'value': 'Slytherin'}]]],
   },
-  {
+  3988293899: {
     'id': '3988293899',
     'name': 'exists',
     'conditions': ['and', ['or', ['or', {'name': 'favorite_ice_cream', 'type': 'custom_attribute', 'match': 'exists'}]]],
   },
-  {
+  3468206646: {
     'id': '3468206646',
     'name': 'exactNumber',
     'conditions': ['and', ['or', ['or', {'name': 'lasers', 'type': 'custom_attribute', 'match': 'exact', 'value': 45.5}]]]
   },
-  {
+  3468206647: {
     'id': '3468206647',
     'name': 'gtNumber',
     'conditions': ['and', ['or', ['or', {'name': 'lasers', 'type': 'custom_attribute', 'match': 'gt', 'value': 70}]]]
   },
-  {
+  3468206644: {
     'id': '3468206644',
     'name': 'ltNumber',
     'conditions': ['and', ['or', ['or', {'name': 'lasers', 'type': 'custom_attribute', 'match': 'lt', 'value': 1.0}]]]
   },
-  {
+  3468206643: {
     'id': '3468206643',
     'name': 'exactBoolean',
     'conditions': ['and', ['or', ['or', {'name': 'should_do_it', 'type': 'custom_attribute', 'match': 'exact', 'value': true}]]]
   },
-];
+  0: {
+    'id': '0',
+    'name': '$$dummy',
+    'conditions': { 'type': 'custom_attribute', 'name': '$opt_dummy_attribute', 'value': 'impossible_value' },
+  }
+};
 
 module.exports = {
   getTestProjectConfig: getTestProjectConfig,
