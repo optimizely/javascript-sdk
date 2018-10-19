@@ -15,6 +15,7 @@
  ***************************************************************************/
 
 var Optimizely = require('./');
+var audienceEvaluator = require('../core/audience_evaluator');
 var bluebird = require('bluebird');
 var bucketer = require('../core/bucketer');
 var enums = require('../utils/enums');
@@ -3438,6 +3439,7 @@ describe('lib/optimizely', function() {
       sandbox.stub(eventDispatcher, 'dispatchEvent');
       sandbox.stub(errorHandler, 'handleError');
       sandbox.stub(createdLogger, 'log');
+      sandbox.spy(audienceEvaluator, 'evaluate');
     });
 
     afterEach(function() {
@@ -3460,6 +3462,12 @@ describe('lib/optimizely', function() {
           { entity_id: '594016', key: 'lasers', type: 'custom', value: 45.5 },
         ]
       );
+      sinon.assert.calledWithExactly(
+        audienceEvaluator.evaluate,
+        optlyInstance.configObj.experiments[2].audienceConditions,
+        optlyInstance.configObj.audiencesById,
+        { house: 'Welcome to Slytherin!', lasers: 45.5 }
+      );
     });
 
     it('can exclude a user from an experiment with complex audience conditions', function() {
@@ -3471,6 +3479,12 @@ describe('lib/optimizely', function() {
       });
       assert.isNull(variationKey);
       sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+      sinon.assert.calledWithExactly(
+        audienceEvaluator.evaluate,
+        optlyInstance.configObj.experiments[2].audienceConditions,
+        optlyInstance.configObj.audiencesById,
+        { house: 'Hufflepuff', lasers: 45.5 }
+      );
     });
 
     it('can track an experiment with complex audience conditions', function() {
@@ -3488,6 +3502,12 @@ describe('lib/optimizely', function() {
           { entity_id: '594017', key: 'should_do_it', type: 'custom', value: true }
         ]
       );
+      sinon.assert.calledWithExactly(
+        audienceEvaluator.evaluate,
+        optlyInstance.configObj.experiments[2].audienceConditions,
+        optlyInstance.configObj.audiencesById,
+        { house: 'Gryffindor', should_do_it: true }
+      );
     });
 
     it('can exclude a user from an experiment with complex audience conditions via track', function() {
@@ -3498,6 +3518,12 @@ describe('lib/optimizely', function() {
         should_do_it: false,
       });
       sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+      sinon.assert.calledWithExactly(
+        audienceEvaluator.evaluate,
+        optlyInstance.configObj.experiments[2].audienceConditions,
+        optlyInstance.configObj.audiencesById,
+        { house: 'Gryffindor', should_do_it: false }
+      );
     });
 
     it('can include a user in a rollout with complex audience conditions via isFeatureEnabled', function() {
@@ -3508,6 +3534,12 @@ describe('lib/optimizely', function() {
         favorite_ice_cream: 'matcha',
       });
       assert.isTrue(featureEnabled);
+      sinon.assert.calledWithExactly(
+        audienceEvaluator.evaluate,
+        optlyInstance.configObj.rollouts[2].experiments[0].audienceConditions,
+        optlyInstance.configObj.audiencesById,
+        { house: '...Slytherinnn...sss.', favorite_ice_cream: 'matcha' }
+      );
     });
 
     it('can exclude a user from a rollout with complex audience conditions via isFeatureEnabled', function() {
@@ -3517,6 +3549,12 @@ describe('lib/optimizely', function() {
         house: 'Lannister',
       });
       assert.isFalse(featureEnabled);
+      sinon.assert.calledWithExactly(
+        audienceEvaluator.evaluate,
+        optlyInstance.configObj.rollouts[2].experiments[0].audienceConditions,
+        optlyInstance.configObj.audiencesById,
+        { house: 'Lannister' }
+      );
     });
 
     it('can return a variable value from a feature test with complex audience conditions via getFeatureVariableString', function() {
@@ -3527,6 +3565,12 @@ describe('lib/optimizely', function() {
         lasers: 700,
       });
       assert.strictEqual(variableValue, 150);
+      sinon.assert.calledWithExactly(
+        audienceEvaluator.evaluate,
+        optlyInstance.configObj.experiments[3].audienceConditions,
+        optlyInstance.configObj.audiencesById,
+        { house: 'Gryffindor', lasers: 700 }
+      );
     });
 
     it('can return the default value for a feature variable from getFeatureVariableString, via excluding a user from a feature test with complex audience conditions', function() {
@@ -3534,6 +3578,12 @@ describe('lib/optimizely', function() {
         // Should be excluded - no audiences match with no attributes
       });
       assert.strictEqual(variableValue, 10);
+      sinon.assert.calledWithExactly(
+        audienceEvaluator.evaluate,
+        optlyInstance.configObj.experiments[3].audienceConditions,
+        optlyInstance.configObj.audiencesById,
+        {}
+      );
     });
   });
 });
