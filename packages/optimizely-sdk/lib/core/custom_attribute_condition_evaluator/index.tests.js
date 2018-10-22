@@ -190,6 +190,17 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         var result = customAttributeEvaluator.evaluate(exactNumberCondition, {});
         assert.isNull(result);
       });
+
+      it('should return null if the condition value is not finite', function() {
+        var invalidValueCondition = {
+          match: 'exact',
+          name: 'lasers_count',
+          type: 'custom_attribute',
+          value: Infinity,
+        };
+        var result = customAttributeEvaluator.evaluate(invalidValueCondition, { lasers_count: 9000 });
+        assert.isNull(result);
+      });
     });
 
     describe('with a boolean condition value', function() {
@@ -279,20 +290,41 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       assert.isFalse(result);
     });
 
-    it('should return null if the user-provided value is not a number', function() {
+    it('should return null if the user-provided value is not a finite number', function() {
       var result = customAttributeEvaluator.evaluate(gtCondition, {
         meters_travelled: 'a long way',
       });
       assert.isNull(result);
 
-      var result = customAttributeEvaluator.evaluate(gtCondition, {
+      result = customAttributeEvaluator.evaluate(gtCondition, {
         meters_travelled: '1000',
+      });
+      assert.isNull(result);
+
+      result = customAttributeEvaluator.evaluate(gtCondition, {
+        meters_travelled: Infinity,
       });
       assert.isNull(result);
     });
 
     it('should return null if there is no user-provided value', function() {
       var result = customAttributeEvaluator.evaluate(gtCondition, {});
+      assert.isNull(result);
+    });
+
+    it('should return null if the condition value is not a finite number', function() {
+      var userAttributes = { meters_travelled: 58.4 };
+      var invalidValueCondition = {
+        match: 'gt',
+        name: 'meters_travelled',
+        type: 'custom_attribute',
+        value: Infinity,
+      };
+      var result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes);
+      assert.isNull(result);
+
+      invalidValueCondition.value = null;
+      result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes);
       assert.isNull(result);
     });
   });
@@ -319,20 +351,41 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       assert.isFalse(result);
     });
 
-    it('should return null if the user-provided value is not a number', function() {
+    it('should return null if the user-provided value is not a finite number', function() {
       var result = customAttributeEvaluator.evaluate(ltCondition, {
         meters_travelled: true,
       });
       assert.isNull(result);
 
-      var result = customAttributeEvaluator.evaluate(ltCondition, {
+      result = customAttributeEvaluator.evaluate(ltCondition, {
         meters_travelled: '48.2',
+      });
+      assert.isNull(result);
+
+      result = customAttributeEvaluator.evaluate(ltCondition, {
+        meters_travelled: Infinity,
       });
       assert.isNull(result);
     });
 
     it('should return null if there is no user-provided value', function() {
       var result = customAttributeEvaluator.evaluate(ltCondition, {});
+      assert.isNull(result);
+    });
+
+    it('should return null if the condition value is not a finite number', function() {
+      var userAttributes = { meters_travelled: 10 };
+      var invalidValueCondition = {
+        match: 'lt',
+        name: 'meters_travelled',
+        type: 'custom_attribute',
+        value: Infinity,
+      };
+      var result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes);
+      assert.isNull(result);
+
+      invalidValueCondition.value = {};
+      result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes);
       assert.isNull(result);
     });
   });
