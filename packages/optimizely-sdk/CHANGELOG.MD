@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [3.0.0-alpha1] - October 22, 2018
+
+This is the alpha release of the 3.0 SDK, which includes a number of improvements to audience targeting:
+
+### Added
+
+- Support for number-valued and boolean-valued attributes ([#174](https://github.com/optimizely/javascript-sdk/pull/174)).
+- Support for audiences with new match conditions for attribute values, including 'substring' and 'exists' matches for strings; 'greater than', 'less than', 'exact, and 'exists' matches for numbers; and "exact" and 'exists' matches for booleans ([#174](https://github.com/optimizely/javascript-sdk/pull/174)).
+
+### Fixed
+
+- Previously, when a 'not' audience condition was applied to a malformed attribute, it was possible for the condition to evaluate to `true`.  We’ve corrected this behavior, so that malformed attributes always evaluate to `null` and are ignored ([#174](https://github.com/optimizely/javascript-sdk/pull/174)).
+
 ## [2.2.0] - September 26, 2018
 
 ### Fixed
