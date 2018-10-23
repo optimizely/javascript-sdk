@@ -89,7 +89,7 @@ function exactEvaluator(condition, userAttributes) {
   var userValueType = typeof userValue;
 
   if (!isValueValidForExactConditions(userValue) ||
-    !isValueValidForExactConditions(conditionValueType) ||
+    !isValueValidForExactConditions(conditionValue) ||
     conditionValueType !== userValueType) {
     return null;
   }
