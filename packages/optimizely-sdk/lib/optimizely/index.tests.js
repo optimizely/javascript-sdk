@@ -2911,7 +2911,7 @@ describe('lib/optimizely', function() {
 
     describe('#getEnabledFeatures', function() {
       beforeEach(function() {
-        sandbox.stub(optlyInstance, 'isFeatureEnabled', function(featureKey) {
+        sandbox.stub(optlyInstance, 'isFeatureEnabled').callsFake(function(featureKey) {
           return featureKey === 'test_feature' || featureKey === 'test_feature_for_experiment';
         });
       });
