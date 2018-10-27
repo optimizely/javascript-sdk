@@ -333,7 +333,10 @@ describe('lib/core/decision_service', function() {
 
   describe('when a bucketingID is provided', function() {
     var configObj = projectConfig.createProjectConfig(testData);
-    var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.DEBUG});
+    var createdLogger = logger.createLogger({
+      logLevel: LOG_LEVEL.DEBUG,
+      logToConsole: false,
+    });
     var optlyInstance;
     beforeEach(function () {
       optlyInstance = new Optimizely({
@@ -349,13 +352,11 @@ describe('lib/core/decision_service', function() {
 
       sinon.stub(eventDispatcher, 'dispatchEvent');
       sinon.stub(errorHandler, 'handleError');
-      sinon.stub(createdLogger, 'log');
     });
 
     afterEach(function () {
       eventDispatcher.dispatchEvent.restore();
       errorHandler.handleError.restore();
-      createdLogger.log.restore();
     });
 
     var testUserAttributes = {

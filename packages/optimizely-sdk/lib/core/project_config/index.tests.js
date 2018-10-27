@@ -565,13 +565,9 @@ describe('lib/core/project_config', function() {
   });
 
   describe('#getForcedVariation', function() {
-    var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
-    beforeEach(function() {
-      sinon.stub(createdLogger, 'log');
-    });
-
-    afterEach(function() {
-      createdLogger.log.restore();
+    var createdLogger = logger.createLogger({
+      logLevel: LOG_LEVEL.INFO,
+      logToConsole: false,
     });
 
     it('should return null for valid experimentKey, not set', function() {
@@ -592,13 +588,9 @@ describe('lib/core/project_config', function() {
   });
 
   describe('#setForcedVariation', function() {
-    var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
-    beforeEach(function() {
-      sinon.stub(createdLogger, 'log');
-    });
-
-    afterEach(function() {
-      createdLogger.log.restore();
+    var createdLogger = logger.createLogger({
+      logLevel: LOG_LEVEL.INFO,
+      logToConsole: false,
     });
 
     it('should return true for a valid forcedVariation in setForcedVariation', function() {

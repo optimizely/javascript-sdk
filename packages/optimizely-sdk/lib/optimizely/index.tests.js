@@ -186,7 +186,7 @@ describe('lib/optimizely', function() {
             datafile: testData.getTestProjectConfig(),
             errorHandler: stubErrorHandler,
             eventDispatcher: stubEventDispatcher,
-            logger: logger.createLogger(),
+            logger: logger.createLogger({ logToConsole: false }),
             skipJSONValidation: true,
           });
 
@@ -357,7 +357,10 @@ describe('lib/optimizely', function() {
     var bucketStub;
     var clock;
 
-    var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+    var createdLogger = logger.createLogger({
+      logLevel: LOG_LEVEL.INFO,
+      logToConsole: false,
+    });
     beforeEach(function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
@@ -843,7 +846,10 @@ describe('lib/optimizely', function() {
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
           jsonSchemaValidator: jsonSchemaValidator,
-          logger: logger.createLogger({logLevel: 1}),
+          logger: logger.createLogger({
+            logLevel: enums.LOG_LEVEL.DEBUG,
+            logToConsole: false,
+          }),
           isValidInstance: true,
         });
 
@@ -1480,7 +1486,10 @@ describe('lib/optimizely', function() {
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
           jsonSchemaValidator: jsonSchemaValidator,
-          logger: logger.createLogger({logLevel: 1}),
+          logger: logger.createLogger({
+            logLevel: enums.LOG_LEVEL.DEBUG,
+            logToConsole: false,
+          }),
           isValidInstance: true,
         });
 
@@ -2459,7 +2468,10 @@ describe('lib/optimizely', function() {
   //tests separated out from APIs because of mock bucketing
   describe('getVariationBucketingIdAttribute', function() {
     var optlyInstance;
-    var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+    var createdLogger = logger.createLogger({
+      logLevel: LOG_LEVEL.INFO,
+      logToConsole: false,
+    });
     beforeEach(function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
@@ -2515,7 +2527,10 @@ describe('lib/optimizely', function() {
 
   describe('feature management', function() {
     var sandbox = sinon.sandbox.create();
-    var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+    var createdLogger = logger.createLogger({
+      logLevel: LOG_LEVEL.INFO,
+      logToConsole: false,
+    });
     var optlyInstance;
     var clock;
     beforeEach(function() {
@@ -3305,7 +3320,10 @@ describe('lib/optimizely', function() {
 
   describe('audience match types', function() {
     var sandbox = sinon.sandbox.create();
-    var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+    var createdLogger = logger.createLogger({
+      logLevel: LOG_LEVEL.INFO,
+      logToConsole: false,
+    });
     var optlyInstance;
     beforeEach(function() {
       optlyInstance = new Optimizely({
@@ -3422,7 +3440,10 @@ describe('lib/optimizely', function() {
 
   describe('audience combinations', function() {
     var sandbox = sinon.sandbox.create();
-    var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+    var createdLogger = logger.createLogger({
+      logLevel: LOG_LEVEL.INFO,
+      logToConsole: false,
+    });
     var optlyInstance;
     beforeEach(function() {
       optlyInstance = new Optimizely({
