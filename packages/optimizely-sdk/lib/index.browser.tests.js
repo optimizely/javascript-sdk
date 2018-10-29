@@ -24,6 +24,7 @@ var testData = require('./tests/test_data');
 
 var chai = require('chai');
 var assert = chai.assert;
+var find = require('lodash/find');
 var sinon = require('sinon');
 
 describe('javascript-sdk', function() {
@@ -269,7 +270,7 @@ describe('javascript-sdk', function() {
             datafile: testData.getTestProjectConfig(),
             logLevel: enums.LOG_LEVEL.ERROR,
           });
-          var foundCall = logger.createLogger.getCalls().find(function(call) {
+          var foundCall = find(logger.createLogger.getCalls(), function(call) {
             return call.returned(sinon.match.same(optlyInstance.logger));
           });
           assert.strictEqual(foundCall.args[0].logLevel, enums.LOG_LEVEL.ERROR);
@@ -279,7 +280,7 @@ describe('javascript-sdk', function() {
           var optlyInstance = optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
           });
-          var foundCall = logger.createLogger.getCalls().find(function(call) {
+          var foundCall = find(logger.createLogger.getCalls(), function(call) {
             return call.returned(sinon.match.same(optlyInstance.logger));
           });
           assert.strictEqual(foundCall.args[0].logLevel, enums.LOG_LEVEL.INFO);
