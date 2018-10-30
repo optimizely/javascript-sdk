@@ -15,6 +15,7 @@
  */
 var configValidator = require('./utils/config_validator');
 var enums = require('./utils/enums');
+var logger = require('./plugins/logger');
 var Optimizely = require('./optimizely');
 var optimizelyFactory = require('./index.browser');
 var packageJSON = require('../package.json');
@@ -23,6 +24,7 @@ var testData = require('./tests/test_data');
 
 var chai = require('chai');
 var assert = chai.assert;
+var find = require('lodash/find');
 var sinon = require('sinon');
 
 describe('javascript-sdk', function() {
@@ -32,9 +34,13 @@ describe('javascript-sdk', function() {
     describe('createInstance', function() {
       var fakeErrorHandler = { handleError: function() {}};
       var fakeEventDispatcher = { dispatchEvent: function() {}};
-      var fakeLogger = { log: function() {}};
+      var silentLogger;
 
       beforeEach(function() {
+        silentLogger = logger.createLogger({
+          logLevel: enums.LOG_LEVEL.INFO,
+          logToConsole: false,
+        });
         sinon.spy(console, 'error');
         sinon.stub(configValidator, 'validate');
 
@@ -57,6 +63,7 @@ describe('javascript-sdk', function() {
         assert.doesNotThrow(function() {
           optimizelyFactory.createInstance({
             datafile: {},
+            logger: silentLogger,
           });
         });
       });
@@ -66,7 +73,7 @@ describe('javascript-sdk', function() {
           datafile: {},
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
-          logger: fakeLogger,
+          logger: silentLogger,
         });
 
         assert.instanceOf(optlyInstance, Optimizely);
@@ -77,27 +84,10 @@ describe('javascript-sdk', function() {
           datafile: {},
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
-          logger: fakeLogger,
+          logger: silentLogger,
         });
         assert.equal('javascript-sdk', optlyInstance.clientEngine);
         assert.equal(packageJSON.version, optlyInstance.clientVersion);
-      });
-
-      it('should instantiate the logger with a custom logLevel when provided', function() {
-        var optlyInstance = optimizelyFactory.createInstance({
-          datafile: {},
-          logLevel: enums.LOG_LEVEL.ERROR,
-        });
-
-        assert.equal(optlyInstance.logger.logLevel, enums.LOG_LEVEL.ERROR);
-      });
-
-      it('should default to INFO when no logLevel is provided', function() {
-        var optlyInstance = optimizelyFactory.createInstance({
-          datafile: {},
-        });
-
-        assert.equal(optlyInstance.logger.logLevel, enums.LOG_LEVEL.INFO);
       });
 
       it('should activate with provided event dispatcher', function(done) {
@@ -105,7 +95,7 @@ describe('javascript-sdk', function() {
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: eventDispatcher,
-          logger: fakeLogger,
+          logger: silentLogger,
         });
         var activate = optlyInstance.activate('testExperiment', 'testUser');
         assert.strictEqual(activate, 'control');
@@ -117,7 +107,7 @@ describe('javascript-sdk', function() {
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: eventDispatcher,
-          logger: fakeLogger,
+          logger: silentLogger,
         });
 
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
@@ -133,7 +123,7 @@ describe('javascript-sdk', function() {
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: eventDispatcher,
-          logger: fakeLogger,
+          logger: silentLogger,
         });
 
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
@@ -155,7 +145,7 @@ describe('javascript-sdk', function() {
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: eventDispatcher,
-          logger: fakeLogger,
+          logger: silentLogger,
         });
 
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
@@ -178,7 +168,7 @@ describe('javascript-sdk', function() {
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: eventDispatcher,
-          logger: fakeLogger,
+          logger: silentLogger,
         });
 
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
@@ -203,7 +193,7 @@ describe('javascript-sdk', function() {
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: eventDispatcher,
-          logger: fakeLogger,
+          logger: silentLogger,
         });
 
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
@@ -228,7 +218,7 @@ describe('javascript-sdk', function() {
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: eventDispatcher,
-          logger: fakeLogger,
+          logger: silentLogger,
         });
 
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
@@ -250,7 +240,7 @@ describe('javascript-sdk', function() {
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: eventDispatcher,
-          logger: fakeLogger,
+          logger: silentLogger,
         });
 
         var didSetVariation = optlyInstance.setForcedVariation('testExperimentNotRunning', 'testUser', 'controlNotRunning');
@@ -260,6 +250,41 @@ describe('javascript-sdk', function() {
         assert.strictEqual(variation, null);
 
         done();
+      });
+
+      describe('automatically created logger instances', function() {
+        beforeEach(function() {
+          sinon.stub(logger, 'createLogger').callsFake(function() {
+            return {
+              log: function() {},
+            };
+          });
+        });
+
+        afterEach(function() {
+          logger.createLogger.restore();
+        });
+
+        it('should instantiate the logger with a custom logLevel when provided', function() {
+          var optlyInstance = optimizelyFactory.createInstance({
+            datafile: testData.getTestProjectConfig(),
+            logLevel: enums.LOG_LEVEL.ERROR,
+          });
+          var foundCall = find(logger.createLogger.getCalls(), function(call) {
+            return call.returned(sinon.match.same(optlyInstance.logger));
+          });
+          assert.strictEqual(foundCall.args[0].logLevel, enums.LOG_LEVEL.ERROR);
+        });
+
+        it('should default to INFO when no logLevel is provided', function() {
+          var optlyInstance = optimizelyFactory.createInstance({
+            datafile: testData.getTestProjectConfig(),
+          });
+          var foundCall = find(logger.createLogger.getCalls(), function(call) {
+            return call.returned(sinon.match.same(optlyInstance.logger));
+          });
+          assert.strictEqual(foundCall.args[0].logLevel, enums.LOG_LEVEL.INFO);
+        });
       });
     });
   });

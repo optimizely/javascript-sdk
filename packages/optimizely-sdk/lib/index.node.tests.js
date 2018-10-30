@@ -28,19 +28,20 @@ describe('optimizelyFactory', function() {
     describe('createInstance', function() {
       var fakeErrorHandler = { handleError: function() {}};
       var fakeEventDispatcher = { dispatchEvent: function() {}};
-      var fakeLogger = { log: function() {}};
+      var fakeLogger;
 
       beforeEach(function() {
-        sinon.spy(console, 'error');
+        fakeLogger = { log: sinon.spy() };
+        sinon.stub(logger, 'createLogger').returns(fakeLogger);
         sinon.stub(configValidator, 'validate');
       });
 
       afterEach(function() {
-        console.error.restore();
+        logger.createLogger.restore();
         configValidator.validate.restore();
       });
 
-      it('should not throw if the provided config is not valid and call console.error if logger is passed in', function() {
+      it('should not throw if the provided config is not valid and log an error if logger is passed in', function() {
         configValidator.validate.throws(new Error('Invalid config or something'));
         assert.doesNotThrow(function() {
           optimizelyFactory.createInstance({
@@ -48,17 +49,17 @@ describe('optimizelyFactory', function() {
             logger: logger.createLogger({ logLevel: enums.LOG_LEVEL.INFO }),
           });
         });
-        assert.isTrue(console.error.called);
+        sinon.assert.calledWith(fakeLogger.log, enums.LOG_LEVEL.ERROR);
       });
 
-      it('should not throw if the provided config is not valid and call console.error if no-op logger is used', function() {
+      it('should not throw if the provided config is not valid and log an error if no-op logger is used', function() {
         configValidator.validate.throws(new Error('Invalid config or something'));
         assert.doesNotThrow(function() {
           optimizelyFactory.createInstance({
             datafile: {},
           });
         });
-        assert.isTrue(console.error.called);
+        sinon.assert.calledWith(fakeLogger.log, enums.LOG_LEVEL.ERROR);
       });
 
       it('should create an instance of optimizely', function() {
