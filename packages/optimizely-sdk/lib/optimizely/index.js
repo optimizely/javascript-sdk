@@ -106,21 +106,6 @@ function Optimizely(config) {
   });
 }
 
-Optimizely.prototype.activateWithUserProfileService = function (experimentKey, userId, attributes, cb) {
-  this.decisionService.getUserProfile(userId, function(err, res) {
-    var experiment_bucket_map = {}
-    if (res && res.experiment_bucket_map) {
-      experiment_bucket_map = res.experiment_bucket_map
-    }
-
-    const variation = this.activate(experimentKey, userId, fns.assignIn({}, attributes, {
-      experiment_bucket_map,
-    }))
-
-    cb(null, variation)
-  }.bind(this))
-}
-
 /**
  * Buckets visitor and sends impression event to Optimizely.
  * @param  {string}      experimentKey
