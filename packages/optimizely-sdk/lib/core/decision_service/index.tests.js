@@ -87,6 +87,22 @@ describe('lib/core/decision_service', function() {
         assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: Experiment testExperimentNotRunning is not running.');
       });
 
+      describe('when attributes.$opt_experiment_bucket_map is supplied', function() {
+        it('should respect the sticky bucketing information for attributes', function() {
+          bucketerStub.returns('111128'); // ID of the 'control' variation from `test_data`
+          const attributes = {
+            $opt_experiment_bucket_map: {
+              '111127': {
+                'variation_id': '111129' // ID of the 'variation' variation
+              },
+            },
+          };
+
+          assert.strictEqual('variation', decisionServiceInstance.getVariation('testExperiment', 'decision_service_user', attributes));
+          sinon.assert.notCalled(bucketerStub);
+        });
+      });
+
       describe('when a user profile service is provided', function () {
         var userProfileServiceInstance = null;
         var userProfileLookupStub;
@@ -250,6 +266,102 @@ describe('lib/core/decision_service', function() {
                 'variation_id': '111128',
               }
             },
+          });
+        });
+
+        describe('when passing `attributes.$opt_experiment_bucket_map`', function() {
+          it('should respect attributes over the userProfileService for the matching experiment id', function () {
+            userProfileLookupStub.returns({
+              user_id: 'decision_service_user',
+              experiment_bucket_map: {
+                '111127': {
+                  'variation_id': '111128' // ID of the 'control' variation
+                },
+              },
+            });
+
+            const attributes = {
+              $opt_experiment_bucket_map: {
+                '111127': {
+                  'variation_id': '111129' // ID of the 'variation' variation
+                },
+              },
+            };
+
+
+            assert.strictEqual('variation', decisionServiceInstance.getVariation('testExperiment', 'decision_service_user', attributes));
+            sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
+            sinon.assert.notCalled(bucketerStub);
+            assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User decision_service_user is not in the forced variation map.');
+            assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Returning previously activated variation \"variation\" of experiment \"testExperiment\" for user \"decision_service_user\" from user profile.');
+          });
+
+          it('should respect ignore attributes for a different experiment id', function () {
+            userProfileLookupStub.returns({
+              user_id: 'decision_service_user',
+              experiment_bucket_map: {
+                '111127': {
+                  'variation_id': '111128' // ID of the 'control' variation
+                },
+              },
+            });
+
+            const attributes = {
+              $opt_experiment_bucket_map: {
+                '122227': {
+                  'variation_id': '122229' // ID of the 'variationWithAudience' variation
+                },
+              },
+            };
+
+            assert.strictEqual('control', decisionServiceInstance.getVariation('testExperiment', 'decision_service_user', attributes));
+            sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
+            sinon.assert.notCalled(bucketerStub);
+            assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User decision_service_user is not in the forced variation map.');
+            assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Returning previously activated variation \"control\" of experiment \"testExperiment\" for user \"decision_service_user\" from user profile.');
+          });
+
+          it('should use attributes when the userProfileLookup returns null', function () {
+            userProfileLookupStub.returns({
+              user_id: 'decision_service_user',
+              experiment_bucket_map: {
+                '122227': {
+                  'variation_id': '122229' // ID of the 'variationWithAudience' variation
+                },
+              }
+            })
+
+            const attributes = {
+              $opt_experiment_bucket_map: {
+                '111127': {
+                  'variation_id': '111129' // ID of the 'variation' variation
+                },
+              },
+            };
+
+            assert.strictEqual('variation', decisionServiceInstance.getVariation('testExperiment', 'decision_service_user', attributes));
+            sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
+            sinon.assert.notCalled(bucketerStub);
+            assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User decision_service_user is not in the forced variation map.');
+            assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Returning previously activated variation \"variation\" of experiment \"testExperiment\" for user \"decision_service_user\" from user profile.');
+          });
+
+          it('should use attributes when the userProfileLookup variations for other experiments', function () {
+            userProfileLookupStub.returns(null)
+
+            const attributes = {
+              $opt_experiment_bucket_map: {
+                '111127': {
+                  'variation_id': '111129' // ID of the 'variation' variation
+                },
+              },
+            };
+
+            assert.strictEqual('variation', decisionServiceInstance.getVariation('testExperiment', 'decision_service_user', attributes));
+            sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
+            sinon.assert.notCalled(bucketerStub);
+            assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User decision_service_user is not in the forced variation map.');
+            assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Returning previously activated variation \"variation\" of experiment \"testExperiment\" for user \"decision_service_user\" from user profile.');
           });
         });
       });
@@ -459,6 +571,7 @@ describe('lib/core/decision_service', function() {
           'test_user',
           userAttributesWithBucketingId
       ));
+      sinon.assert.calledWithExactly(userProfileLookupStub, 'test_user');
     });
   });
 
