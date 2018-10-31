@@ -90,7 +90,7 @@ describe('lib/core/decision_service', function() {
       describe('when attributes.$opt_experiment_bucket_map is supplied', function() {
         it('should respect the sticky bucketing information for attributes', function() {
           bucketerStub.returns('111128'); // ID of the 'control' variation from `test_data`
-          const attributes = {
+          var attributes = {
             $opt_experiment_bucket_map: {
               '111127': {
                 'variation_id': '111129' // ID of the 'variation' variation
@@ -280,7 +280,7 @@ describe('lib/core/decision_service', function() {
               },
             });
 
-            const attributes = {
+            var attributes = {
               $opt_experiment_bucket_map: {
                 '111127': {
                   'variation_id': '111129' // ID of the 'variation' variation
@@ -306,7 +306,7 @@ describe('lib/core/decision_service', function() {
               },
             });
 
-            const attributes = {
+            var attributes = {
               $opt_experiment_bucket_map: {
                 '122227': {
                   'variation_id': '122229' // ID of the 'variationWithAudience' variation
@@ -329,9 +329,9 @@ describe('lib/core/decision_service', function() {
                   'variation_id': '122229' // ID of the 'variationWithAudience' variation
                 },
               }
-            })
+            });
 
-            const attributes = {
+            var attributes = {
               $opt_experiment_bucket_map: {
                 '111127': {
                   'variation_id': '111129' // ID of the 'variation' variation
@@ -347,9 +347,9 @@ describe('lib/core/decision_service', function() {
           });
 
           it('should use attributes when the userProfileLookup variations for other experiments', function () {
-            userProfileLookupStub.returns(null)
+            userProfileLookupStub.returns(null);
 
-            const attributes = {
+            var attributes = {
               $opt_experiment_bucket_map: {
                 '111127': {
                   'variation_id': '111129' // ID of the 'variation' variation
@@ -588,7 +588,7 @@ describe('lib/core/decision_service', function() {
       'browser_type': 'safari',
       '$opt_bucketing_id': 50
     };
-    
+
     beforeEach(function() {
       sinon.stub(mockLogger, 'log');
       configObj = projectConfig.createProjectConfig(testData);

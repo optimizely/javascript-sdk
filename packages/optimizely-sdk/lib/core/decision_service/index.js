@@ -63,7 +63,7 @@ function DecisionService(options) {
  * @return {string|null} the variation the user is bucketed into.
  */
 DecisionService.prototype.getVariation = function(experimentKey, userId, attributes) {
-  attributes = attributes || {}
+  attributes = attributes || {};
   // by default, the bucketing ID should be the user ID
   var bucketingId = this._getBucketingId(userId, attributes);
 
@@ -82,7 +82,7 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
   }
 
   // check for sticky bucketing
-  const experimentBucketMap = this.__resolveExperimentBucketMap(userId, attributes);
+  var experimentBucketMap = this.__resolveExperimentBucketMap(userId, attributes);
   variation = this.__getStoredVariation(experiment, userId, experimentBucketMap);
   if (!!variation) {
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.RETURNING_STORED_VARIATION, MODULE_NAME, variation.key, experimentKey, userId));
@@ -104,7 +104,7 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
   // persist bucketing
   this.__saveUserProfile(experiment, variation, userId, experimentBucketMap);
 
-  return variation.key
+  return variation.key;
 };
 
 /**
@@ -116,7 +116,7 @@ DecisionService.prototype.__resolveExperimentBucketMap = function(userId, attrib
   var userProfile = this.__getUserProfile(userId) || {};
   var attributeExperimentBucketMap = attributes[STICKY_BUCKETING_KEY];
   return fns.assignIn({}, userProfile.experiment_bucket_map, attributeExperimentBucketMap);
-}
+};
 
 
 /**
@@ -234,7 +234,7 @@ DecisionService.prototype.__getUserProfile = function(userId) {
   }
 
   try {
-    return this.userProfileService.lookup(userId)
+    return this.userProfileService.lookup(userId);
   } catch (ex) {
     this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.USER_PROFILE_LOOKUP_ERROR, MODULE_NAME, userId, ex.message));
   }
@@ -252,10 +252,10 @@ DecisionService.prototype.__saveUserProfile = function(experiment, variation, us
   }
 
   try {
-    newBucketMap = fns.cloneDeep(experimentBucketMap)
+    newBucketMap = fns.cloneDeep(experimentBucketMap);
     newBucketMap[experiment.id] = {
       variation_id: variation.id
-    }
+    };
 
     this.userProfileService.save({
       user_id: userId,
