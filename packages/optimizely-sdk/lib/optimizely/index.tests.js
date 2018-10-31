@@ -639,6 +639,22 @@ describe('lib/optimizely', function() {
                                                JSON.stringify(expectedObj.params)));
       });
 
+      describe('when experiment_bucket_map attribute is present', function() {
+        it('should call activate and respect attribute experiment_bucket_map', function() {
+          bucketStub.returns('111128'); // id of "control" variation
+          var activate = optlyInstance.activate('testExperiment', 'testUser', {
+            $opt_experiment_bucket_map: {
+              '111127': {
+                variation_id: '111129', // id of "variation" variation
+              },
+            },
+          });
+
+          assert.strictEqual(activate, 'variation');
+          sinon.assert.notCalled(bucketer.bucket);
+        });
+      });
+
       it('should call bucketer and dispatchEvent with proper args and return variation key if user is in grouped experiment', function() {
         bucketStub.returns('662');
         var activate = optlyInstance.activate('groupExperiment2', 'testUser');
