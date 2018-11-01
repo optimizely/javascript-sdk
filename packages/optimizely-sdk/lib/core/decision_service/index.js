@@ -63,7 +63,6 @@ function DecisionService(options) {
  * @return {string|null} the variation the user is bucketed into.
  */
 DecisionService.prototype.getVariation = function(experimentKey, userId, attributes) {
-  attributes = attributes || {};
   // by default, the bucketing ID should be the user ID
   var bucketingId = this._getBucketingId(userId, attributes);
 
@@ -113,6 +112,7 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
  * @return {Object} finalized copy of experiment_bucket_map
  */
 DecisionService.prototype.__resolveExperimentBucketMap = function(userId, attributes) {
+  attributes = attributes || {}
   var userProfile = this.__getUserProfile(userId) || {};
   var attributeExperimentBucketMap = attributes[STICKY_BUCKETING_KEY];
   return fns.assignIn({}, userProfile.experiment_bucket_map, attributeExperimentBucketMap);
@@ -201,7 +201,8 @@ DecisionService.prototype.__buildBucketerParams = function(experimentKey, bucket
 /**
  * Get the stored variation from the user profile for the given experiment
  * @param  {Object} experiment
- * @param  {Object} userProfile
+ * @param  {String} userId
+ * @param  {Object} experimentBucketMap mapping experiment => { variation_id: <variationId> }
  * @return {Object} the stored variation or null if the user profile does not have one for the given experiment
  */
 DecisionService.prototype.__getStoredVariation = function(experiment, userId, experimentBucketMap) {
@@ -221,7 +222,7 @@ DecisionService.prototype.__getStoredVariation = function(experiment, userId, ex
 /**
  * Get the user profile with the given user ID
  * @param  {string} userId
- * @return {Object} the stored user profile or an empty one if not found
+ * @return {Object|undefined} the stored user profile or undefined if one isn't found
  */
 DecisionService.prototype.__getUserProfile = function(userId) {
   var userProfile = {
@@ -252,7 +253,7 @@ DecisionService.prototype.__saveUserProfile = function(experiment, variation, us
   }
 
   try {
-    newBucketMap = fns.cloneDeep(experimentBucketMap);
+    var newBucketMap = fns.cloneDeep(experimentBucketMap);
     newBucketMap[experiment.id] = {
       variation_id: variation.id
     };

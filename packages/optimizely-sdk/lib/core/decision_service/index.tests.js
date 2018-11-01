@@ -296,11 +296,11 @@ describe('lib/core/decision_service', function() {
             assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Returning previously activated variation \"variation\" of experiment \"testExperiment\" for user \"decision_service_user\" from user profile.');
           });
 
-          it('should respect ignore attributes for a different experiment id', function () {
+          it('should ignore attributes for a different experiment id', function () {
             userProfileLookupStub.returns({
               user_id: 'decision_service_user',
               experiment_bucket_map: {
-                '111127': {
+                '111127': { // 'testExperiment' ID
                   'variation_id': '111128' // ID of the 'control' variation
                 },
               },
@@ -308,7 +308,7 @@ describe('lib/core/decision_service', function() {
 
             var attributes = {
               $opt_experiment_bucket_map: {
-                '122227': {
+                '122227': { // other experiment ID
                   'variation_id': '122229' // ID of the 'variationWithAudience' variation
                 },
               },
@@ -321,11 +321,11 @@ describe('lib/core/decision_service', function() {
             assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Returning previously activated variation \"control\" of experiment \"testExperiment\" for user \"decision_service_user\" from user profile.');
           });
 
-          it('should use attributes when the userProfileLookup returns null', function () {
+          it('should use attributes when the userProfileLookup variations for other experiments', function () {
             userProfileLookupStub.returns({
               user_id: 'decision_service_user',
               experiment_bucket_map: {
-                '122227': {
+                '122227': { // other experiment ID
                   'variation_id': '122229' // ID of the 'variationWithAudience' variation
                 },
               }
@@ -333,7 +333,7 @@ describe('lib/core/decision_service', function() {
 
             var attributes = {
               $opt_experiment_bucket_map: {
-                '111127': {
+                '111127': { // 'testExperiment' ID
                   'variation_id': '111129' // ID of the 'variation' variation
                 },
               },
@@ -346,7 +346,7 @@ describe('lib/core/decision_service', function() {
             assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Returning previously activated variation \"variation\" of experiment \"testExperiment\" for user \"decision_service_user\" from user profile.');
           });
 
-          it('should use attributes when the userProfileLookup variations for other experiments', function () {
+          it('should use attributes when the userProfileLookup returns null', function () {
             userProfileLookupStub.returns(null);
 
             var attributes = {
