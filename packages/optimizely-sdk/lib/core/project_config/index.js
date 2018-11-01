@@ -40,9 +40,10 @@ module.exports = {
     fns.forEach(projectConfig.audiences, function(audience) {
       audience.conditions = JSON.parse(audience.conditions);
     });
-    fns.forEach(projectConfig.typedAudiences, function(audience) {
-      audience.conditions = JSON.parse(audience.conditions);
-    });
+    /*
+     * Note: conditions of audiences in projectConfig.typedAudiences are not
+     * expected to be string-encoded as they are in projectConfig.audiences.
+     */
     projectConfig.audiencesById = fns.keyBy(projectConfig.audiences, 'id');
     fns.assign(projectConfig.audiencesById, fns.keyBy(projectConfig.typedAudiences, 'id'));
 

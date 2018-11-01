@@ -529,7 +529,7 @@ describe('lib/core/project_config', function() {
       it('should retrieve audiences by checking first in typedAudiences, and then second in audiences', function() {
         assert.deepEqual(
           projectConfig.getAudiencesById(configObj),
-          testDatafile.parsedTypedAudiences
+          testDatafile.typedAudiencesById
         );
       });
     });
