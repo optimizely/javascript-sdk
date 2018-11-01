@@ -27,7 +27,6 @@ var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
 var DECISION_SOURCES = enums.DECISION_SOURCES;
-var STICKY_BUCKETING_KEY = '$opt_experiment_bucket_map';
 
 
 
@@ -114,7 +113,7 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
 DecisionService.prototype.__resolveExperimentBucketMap = function(userId, attributes) {
   attributes = attributes || {}
   var userProfile = this.__getUserProfile(userId) || {};
-  var attributeExperimentBucketMap = attributes[STICKY_BUCKETING_KEY];
+  var attributeExperimentBucketMap = attributes[enums.CONTROL_ATTRIBUTES.STICKY_BUCKETING_KEY];
   return fns.assignIn({}, userProfile.experiment_bucket_map, attributeExperimentBucketMap);
 };
 

@@ -136,6 +136,7 @@ exports.CONTROL_ATTRIBUTES = {
   BOT_FILTERING: '$opt_bot_filtering',
   BUCKETING_ID: '$opt_bucketing_id',
   USER_AGENT: '$opt_user_agent',
+  STICKY_BUCKETING_KEY: '$opt_experiment_bucket_map',
 };
 
 exports.JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
