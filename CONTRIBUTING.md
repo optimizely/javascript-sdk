@@ -5,12 +5,13 @@ We welcome contributions and feedback! All contributors must sign our [Contribut
 ## Development process
 
 1. Create a branch off of `master`: `git checkout -b YOUR_NAME/branch_name`.
-2. Commit your changes. Make sure to add tests!
-3. Run `npm run lint` to ensure there are no lint errors.
-4. `git push` your changes to GitHub.
-5. Make sure that all unit tests are passing and that there are no merge conflicts between your branch and `master`.
-6. Open a pull request from `YOUR_NAME/branch_name` to `master`.
-7. A repository maintainer will review your pull request and, if all goes well, squash and merge it!
+2. Commit your changes. We follow the [commit message guidelines](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-guidelines) from Angular. 
+3. Make sure to add tests!
+4. Run `npm run lint` to ensure there are no lint errors.
+5. `git push` your changes to GitHub.
+6. Make sure that all unit tests are passing and that there are no merge conflicts between your branch and `master`.
+7. Open a pull request from `YOUR_NAME/branch_name` to `master`.
+8. A repository maintainer will review your pull request and, if all goes well, squash and merge it!
 
 ## Pull request acceptance criteria
 
