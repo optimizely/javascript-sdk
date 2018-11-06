@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [3.0.0-rc] - November 6, 2018
+
+This is the release candidate version of the 3.0 SDK:
+
+### New Features
+
+- Support for boolean combinations of audiences on experiments ([#175](https://github.com/optimizely/javascript-sdk/pull/175))
+- Added PR template and commit message guidelines ([#183](https://github.com/optimizely/javascript-sdk/pull/183))
+
+### Fixes
+
+- Updated dependency versions ([#180](https://github.com/optimizely/javascript-sdk/pull/180))
+- Suppressed unwanted console output in tests ([#181](https://github.com/optimizely/javascript-sdk/pull/181))
+- Update project config to handle latest 3.0 datafile format ([#182](https://github.com/optimizely/javascript-sdk/pull/182))
+
 ## [3.0.0-alpha] - October 22, 2018
 
 This is the alpha release of the 3.0 SDK, which includes a number of improvements to audience targeting:
