@@ -36,11 +36,11 @@ module.exports = {
   createProjectConfig: function(datafile) {
     var projectConfig = fns.cloneDeep(datafile);
 
-    // Manually parsed for audience targeting
+    /*
+     * Conditions of audiences in projectConfig.typedAudiences are not
+     * expected to be string-encoded as they are here in projectConfig.audiences.
+     */
     fns.forEach(projectConfig.audiences, function(audience) {
-      audience.conditions = JSON.parse(audience.conditions);
-    });
-    fns.forEach(projectConfig.typedAudiences, function(audience) {
       audience.conditions = JSON.parse(audience.conditions);
     });
     projectConfig.audiencesById = fns.keyBy(projectConfig.audiences, 'id');

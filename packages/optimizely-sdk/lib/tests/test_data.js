@@ -2085,32 +2085,32 @@ var typedAudiencesConfig = {
     {
       'id': '3988293898',
       'name': 'substringString',
-      'conditions': '["and", ["or", ["or", {"name": "house", "type": "custom_attribute", "match":"substring", "value":"Slytherin"}]]]'
+      'conditions': ['and', ['or', ['or', {'name': 'house', 'type': 'custom_attribute', 'match':'substring', 'value':'Slytherin'}]]]
     },
     {
       'id': '3988293899',
       'name': 'exists',
-      'conditions': '["and", ["or", ["or", {"name": "favorite_ice_cream", "type": "custom_attribute", "match":"exists"}]]]'
+      'conditions': ['and', ['or', ['or', {'name': 'favorite_ice_cream', 'type': 'custom_attribute', 'match':'exists'}]]]
     },
     {
       'id': '3468206646',
       'name': 'exactNumber',
-      'conditions': '["and", ["or", ["or", {"name": "lasers", "type": "custom_attribute", "match":"exact", "value": 45.5}]]]'
+      'conditions': ['and', ['or', ['or', {'name': 'lasers', 'type': 'custom_attribute', 'match':'exact', 'value': 45.5}]]]
     },
     {
       'id': '3468206647',
       'name': 'gtNumber',
-      'conditions': '["and", ["or", ["or", {"name": "lasers", "type": "custom_attribute", "match":"gt", "value": 70 }]]]'
+      'conditions': ['and', ['or', ['or', {'name': 'lasers', 'type': 'custom_attribute', 'match':'gt', 'value': 70 }]]]
     },
     {
       'id': '3468206644',
       'name': 'ltNumber',
-      'conditions': '["and", ["or", ["or", {"name": "lasers", "type": "custom_attribute", "match":"lt", "value": 1.0 }]]]'
+      'conditions': ['and', ['or', ['or', {'name': 'lasers', 'type': 'custom_attribute', 'match':'lt', 'value': 1.0 }]]]
     },
     {
       'id': '3468206643',
       'name': 'exactBoolean',
-      'conditions': '["and", ["or", ["or", {"name": "should_do_it", "type": "custom_attribute", "match":"exact", "value": true}]]]'
+      'conditions': ['and', ['or', ['or', {'name': 'should_do_it', 'type': 'custom_attribute', 'match':'exact', 'value': true}]]]
     }
   ],
   'groups': [],
@@ -2156,7 +2156,7 @@ var getTypedAudiencesConfig = function() {
   return cloneDeep(typedAudiencesConfig);
 };
 
-var parsedTypedAudiences = {
+var typedAudiencesById = {
   3468206642: {
     'id': '3468206642',
     'name': 'exactString',
@@ -2206,5 +2206,5 @@ module.exports = {
   datafileWithFeaturesExpectedData: datafileWithFeaturesExpectedData,
   getUnsupportedVersionConfig: getUnsupportedVersionConfig,
   getTypedAudiencesConfig: getTypedAudiencesConfig,
-  parsedTypedAudiences: parsedTypedAudiences,
+  typedAudiencesById: typedAudiencesById,
 };
