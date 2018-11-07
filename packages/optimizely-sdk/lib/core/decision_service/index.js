@@ -198,7 +198,7 @@ DecisionService.prototype.__buildBucketerParams = function(experimentKey, bucket
 };
 
 /**
- * Get the stored variation from the user profile for the given experiment
+ * Pull the stored variation out of the experimentBucketMap for an experiment/userId
  * @param  {Object} experiment
  * @param  {String} userId
  * @param  {Object} experimentBucketMap mapping experiment => { variation_id: <variationId> }
@@ -245,6 +245,7 @@ DecisionService.prototype.__getUserProfile = function(userId) {
  * @param {Object} userProfile
  * @param {Object} experiment
  * @param {Object} variation
+ * @param {Object} experimentBucketMap
  */
 DecisionService.prototype.__saveUserProfile = function(experiment, variation, userId, experimentBucketMap) {
   if (!this.userProfileService) {
