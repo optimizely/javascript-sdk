@@ -29,6 +29,7 @@ var LOG_MESSAGES = enums.LOG_MESSAGES;
 var DECISION_SOURCES = enums.DECISION_SOURCES;
 
 
+
 /**
  * Optimizely's decision service that determines which variation of an experiment the user will be allocated to.
  *
@@ -79,8 +80,8 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
   }
 
   // check for sticky bucketing
-  var userProfile = this.__getUserProfile(userId);
-  variation = this.__getStoredVariation(experiment, userProfile);
+  var experimentBucketMap = this.__resolveExperimentBucketMap(userId, attributes);
+  variation = this.__getStoredVariation(experiment, userId, experimentBucketMap);
   if (!!variation) {
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.RETURNING_STORED_VARIATION, MODULE_NAME, variation.key, experimentKey, userId));
     return variation.key;
@@ -99,10 +100,23 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
   }
 
   // persist bucketing
-  this.__saveUserProfile(userProfile, experiment, variation);
+  this.__saveUserProfile(experiment, variation, userId, experimentBucketMap);
 
   return variation.key;
 };
+
+/**
+ * Merges attributes from attributes[STICKY_BUCKETING_KEY] and userProfileService
+ * @param  {Object} attributes
+ * @return {Object} finalized copy of experiment_bucket_map
+ */
+DecisionService.prototype.__resolveExperimentBucketMap = function(userId, attributes) {
+  attributes = attributes || {}
+  var userProfile = this.__getUserProfile(userId) || {};
+  var attributeExperimentBucketMap = attributes[enums.CONTROL_ATTRIBUTES.STICKY_BUCKETING_KEY];
+  return fns.assignIn({}, userProfile.experiment_bucket_map, attributeExperimentBucketMap);
+};
+
 
 /**
  * Checks whether the experiment is running or launched
@@ -183,23 +197,20 @@ DecisionService.prototype.__buildBucketerParams = function(experimentKey, bucket
 };
 
 /**
- * Get the stored variation from the user profile for the given experiment
+ * Pull the stored variation out of the experimentBucketMap for an experiment/userId
  * @param  {Object} experiment
- * @param  {Object} userProfile
+ * @param  {String} userId
+ * @param  {Object} experimentBucketMap mapping experiment => { variation_id: <variationId> }
  * @return {Object} the stored variation or null if the user profile does not have one for the given experiment
  */
-DecisionService.prototype.__getStoredVariation = function(experiment, userProfile) {
-  if (!userProfile || !userProfile.experiment_bucket_map) {
-    return null;
-  }
-
-  if (userProfile.experiment_bucket_map.hasOwnProperty(experiment.id)) {
-    var decision = userProfile.experiment_bucket_map[experiment.id];
+DecisionService.prototype.__getStoredVariation = function(experiment, userId, experimentBucketMap) {
+  if (experimentBucketMap.hasOwnProperty(experiment.id)) {
+    var decision = experimentBucketMap[experiment.id];
     var variationId = decision.variation_id;
     if (this.configObj.variationIdMap.hasOwnProperty(variationId)) {
       return this.configObj.variationIdMap[decision.variation_id];
     } else {
-      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SAVED_VARIATION_NOT_FOUND, MODULE_NAME, userProfile.user_id, variationId, experiment.key));
+      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SAVED_VARIATION_NOT_FOUND, MODULE_NAME, userId, variationId, experiment.key));
     }
   }
 
@@ -209,7 +220,7 @@ DecisionService.prototype.__getStoredVariation = function(experiment, userProfil
 /**
  * Get the user profile with the given user ID
  * @param  {string} userId
- * @return {Object} the stored user profile or an empty one if not found
+ * @return {Object|undefined} the stored user profile or undefined if one isn't found
  */
 DecisionService.prototype.__getUserProfile = function(userId) {
   var userProfile = {
@@ -222,11 +233,10 @@ DecisionService.prototype.__getUserProfile = function(userId) {
   }
 
   try {
-    userProfile = this.userProfileService.lookup(userId) || userProfile; // only assign if the lookup is successful
+    return this.userProfileService.lookup(userId);
   } catch (ex) {
     this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.USER_PROFILE_LOOKUP_ERROR, MODULE_NAME, userId, ex.message));
   }
-  return userProfile;
 };
 
 /**
@@ -234,21 +244,27 @@ DecisionService.prototype.__getUserProfile = function(userId) {
  * @param {Object} userProfile
  * @param {Object} experiment
  * @param {Object} variation
+ * @param {Object} experimentBucketMap
  */
-DecisionService.prototype.__saveUserProfile = function(userProfile, experiment, variation) {
+DecisionService.prototype.__saveUserProfile = function(experiment, variation, userId, experimentBucketMap) {
   if (!this.userProfileService) {
     return;
   }
 
   try {
-    userProfile.experiment_bucket_map[experiment.id] = {
-      variation_id: variation.id,
+    var newBucketMap = fns.cloneDeep(experimentBucketMap);
+    newBucketMap[experiment.id] = {
+      variation_id: variation.id
     };
 
-    this.userProfileService.save(userProfile);
-    this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SAVED_VARIATION, MODULE_NAME, variation.key, experiment.key, userProfile.user_id));
+    this.userProfileService.save({
+      user_id: userId,
+      experiment_bucket_map: newBucketMap,
+    });
+
+    this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SAVED_VARIATION, MODULE_NAME, variation.key, experiment.key, userId));
   } catch (ex) {
-    this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.USER_PROFILE_SAVE_ERROR, MODULE_NAME, userProfile.user_id, ex.message));
+    this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.USER_PROFILE_SAVE_ERROR, MODULE_NAME, userId, ex.message));
   }
 };
 
