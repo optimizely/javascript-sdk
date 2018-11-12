@@ -116,3 +116,4 @@ export declare class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     protected getVariableDef(feature: string, variable: string): VariableDef | null;
 }
 export {};
+
