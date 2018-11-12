@@ -1,0 +1,54 @@
+Arguments: 
+  /Users/jordan/.nvm/versions/node/v10.13.0/bin/node /usr/local/Cellar/yarn/1.12.3/libexec/bin/yarn.js add @lodash/find
+
+PATH: 
+  /Users/jordan/.nvm/versions/node/v10.13.0/bin:/Users/jordan/.pyenv/shims:/Users/jordan/.rbenv/shims:/usr/local/bin:/Users/jordan/.dotfiles/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+
+Yarn version: 
+  1.12.3
+
+Node version: 
+  10.13.0
+
+Platform: 
+  darwin x64
+
+Trace: 
+  Error: https://registry.yarnpkg.com/@lodash%2ffind: Not found
+      at Request.params.callback [as _callback] (/usr/local/Cellar/yarn/1.12.3/libexec/lib/cli.js:65894:18)
+      at Request.self.callback (/usr/local/Cellar/yarn/1.12.3/libexec/lib/cli.js:129018:22)
+      at Request.emit (events.js:182:13)
+      at Request.<anonymous> (/usr/local/Cellar/yarn/1.12.3/libexec/lib/cli.js:129990:10)
+      at Request.emit (events.js:182:13)
+      at IncomingMessage.<anonymous> (/usr/local/Cellar/yarn/1.12.3/libexec/lib/cli.js:129912:12)
+      at Object.onceWrapper (events.js:273:13)
+      at IncomingMessage.emit (events.js:187:15)
+      at endReadableNT (_stream_readable.js:1094:12)
+      at process._tickCallback (internal/process/next_tick.js:63:19)
+
+npm manifest: 
+  {
+    "name": "js-sdk-wrapper",
+    "version": "0.0.0",
+    "description": "> TODO: description",
+    "author": "jordangarcia <jordan.garcia@gmail.com>",
+    "homepage": "",
+    "license": "ISC",
+    "main": "lib/js-sdk-wrapper.js",
+    "directories": {
+      "lib": "lib",
+      "test": "__tests__"
+    },
+    "files": [
+      "lib"
+    ],
+    "scripts": {
+      "test": "echo \"Error: run tests from root\" && exit 1"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

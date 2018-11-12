@@ -1,0 +1,24 @@
+{
+ "compilerOptions": {
+   "module": "commonjs",
+   "declaration": true,
+   "target": "es6",
+   "lib": ["es6", "dom"],
+   "jsx": "react",
+   "moduleResolution": "node",
+   "noImplicitReturns": true,
+   "noImplicitThis": true,
+   "noImplicitAny": true,
+   "importHelpers": false,
+   "strictNullChecks": true,
+   "suppressImplicitAnyIndexErrors": true,
+   "noLib": false,
+   "emitDecoratorMetadata": true,
+   "experimentalDecorators": true,
+   "sourceMap": true
+ },
+ "exclude": [
+   "node_modules",
+   "**/*.spec.ts"
+ ]
+}
