@@ -16,6 +16,7 @@
 var fns = require('../../utils/fns');
 var enums = require('../../utils/enums');
 var sprintf = require('sprintf-js').sprintf;
+var stringValidator = require('../../utils/string_value_validator');
 
 var EXPERIMENT_LAUNCHED_STATUS = 'Launched';
 var EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -404,6 +405,10 @@ module.exports = {
    * @return {boolean} A boolean value that indicates if the set completed successfully.
    */
   setForcedVariation: function(projectConfig, experimentKey, userId, variationKey, logger) {
+    if (variationKey != null && !stringValidator.validate(variationKey)) {
+      logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.INVALID_VARIATION_KEY, MODULE_NAME))
+    }
+
     var experimentId;
     try {
       var experiment = this.getExperimentFromKey(projectConfig, experimentKey);
@@ -420,7 +425,7 @@ module.exports = {
       return false;
     }
 
-    if (!variationKey) {
+    if (variationKey == null) {
       try {
         this.removeForcedVariation(projectConfig, userId, experimentId, experimentKey, logger);
         return true;
