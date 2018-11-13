@@ -406,7 +406,8 @@ module.exports = {
    */
   setForcedVariation: function(projectConfig, experimentKey, userId, variationKey, logger) {
     if (variationKey != null && !stringValidator.validate(variationKey)) {
-      logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.INVALID_VARIATION_KEY, MODULE_NAME))
+      logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.INVALID_VARIATION_KEY, MODULE_NAME));
+      return false;
     }
 
     var experimentId;
