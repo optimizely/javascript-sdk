@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/js-sdk-wrapper",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "> TODO: description",
   "author": "jordangarcia <jordan.garcia@gmail.com>",
   "homepage": "",
@@ -22,7 +22,6 @@
     "@optimizely/optimizely-sdk": "^2.2.0"
   },
   "devDependencies": {
-    "@optimizely/optimizely-sdk-types": "^0.1.0",
     "typescript": "^3.1.6"
   }
 }
