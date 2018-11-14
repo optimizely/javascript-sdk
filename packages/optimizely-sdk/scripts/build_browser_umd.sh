@@ -33,7 +33,7 @@ npx webpack lib/index.browser.js dist/optimizely.browser.umd.js \
   --output-library="$BUNDLE_NAME"
 
 # Append some backwards-compatibility code to the bundle
-cat - >> dist/optimizely.browser.umd.min.js <<EOF
+cat - >> dist/optimizely.browser.umd.js <<EOF
 
 
 window._optimizelyClientWarningGiven = false;
