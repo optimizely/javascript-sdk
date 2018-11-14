@@ -6,6 +6,8 @@ module.exports = [
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: 'optimizely.browser.umd.js',
+      library: 'optimizelySdk',
+      libraryTarget: 'umd',
     },
     mode: 'none',
   },
@@ -14,6 +16,8 @@ module.exports = [
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: 'optimizely.browser.umd.min.js',
+      library: 'optimizelySdk',
+      libraryTarget: 'umd',
     },
     mode: 'production',
   },
