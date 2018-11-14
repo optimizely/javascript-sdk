@@ -36,6 +36,9 @@ The package's entry point is a CommonJS module, which can be used directly in en
 
 ```html
 <script src="https://unpkg.com/@optimizely/optimizely-sdk/dist/optimizely.browser.umd.js"></script>
+
+<!-- You can also use the minified version instead -->
+<script src="https://unpkg.com/@optimizely/optimizely-sdk/dist/optimizely.browser.umd.min.js"></script>
 ```
 
 When evaluated, that bundle assigns the SDK's exports to `window.optimizelySdk`. If you wish to use the asset locally (for example, if unpkg is down), you can find it in your local copy of the package at dist/optimizely.browser.umd.min.js.
