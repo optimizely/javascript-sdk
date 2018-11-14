@@ -6,7 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 Changes that have landed but are not yet released.
-- fix(bundling): Publish the unminified UMD bundle along with the minified one.
+
+## [2.3.1] - November 14, 2018
+
+### Fixed
+- fix(bundling): Publish the unminified UMD bundle along with the minified one. ([#187](https://github.com/optimizely/javascript-sdk/pull/187))
+
 
 ## [2.3.0] - November 14, 2018
 
