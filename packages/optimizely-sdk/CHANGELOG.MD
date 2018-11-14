@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - November 14, 2018
+
+### New Features
+* Allow sticky bucketing via passing in `attributes.$opt_experiment_bucket_map`, this more easily allows customers to do some async data fetching and ensure a user gets a specific variation.
+
+```
+const userId = '123'
+const expId = '456'
+const variationId = '678'
+const userAttributes = {
+  $opt_experiment_bucket_map: {
+    [expId]: {
+      variation_id: variationId
+    }
+  }
+}
+
+var selectedVariationKey = optimizelyClient.activate('experiment-1', userId, userAttributes);
+```
+
 ## [2.2.0] - September 26, 2018
 
 ### Fixed
