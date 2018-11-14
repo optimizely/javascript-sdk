@@ -35,10 +35,10 @@ See the Optimizely X Full Stack [developer documentation](http://developers.opti
 The package's entry point is a CommonJS module, which can be used directly in environments which support it (e.g., Node.js, or loaded in a browser via Browserify or RequireJS). Additionally, you can include a standalone bundle of the SDK in your web page by fetching it from [unpkg](https://unpkg.com/):
 
 ```html
-<script src="https://unpkg.com/@optimizely/optimizely-sdk/dist/optimizely.browser.umd.js"></script>
-
-<!-- You can also use the minified version instead -->
 <script src="https://unpkg.com/@optimizely/optimizely-sdk/dist/optimizely.browser.umd.min.js"></script>
+
+<!-- You can also use the unminified version if necessary -->
+<script src="https://unpkg.com/@optimizely/optimizely-sdk/dist/optimizely.browser.umd.js"></script>
 ```
 
 When evaluated, that bundle assigns the SDK's exports to `window.optimizelySdk`. If you wish to use the asset locally (for example, if unpkg is down), you can find it in your local copy of the package at dist/optimizely.browser.umd.min.js.
