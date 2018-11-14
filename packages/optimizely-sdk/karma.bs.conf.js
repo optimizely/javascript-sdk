@@ -10,6 +10,10 @@ module.exports = function(config) {
     //plugins
     plugins: ['karma-mocha', 'karma-webpack', require('karma-browserstack-launcher')],
 
+    webpack: {
+      mode: 'production',
+    },
+
     //browserStack setup
     browserStack: {
       username: process.env.BROWSER_STACK_USERNAME,
@@ -17,10 +21,10 @@ module.exports = function(config) {
     },
 
     // to avoid DISCONNECTED messages when connecting to BrowserStack
-    browserDisconnectTimeout : 10000, // default 2000
-    browserDisconnectTolerance : 1, // default 0
-    browserNoActivityTimeout : 4*60*1000, //default 10000
-    captureTimeout : 4*60*1000, //default 60000
+    browserDisconnectTimeout: 10000, // default 2000
+    browserDisconnectTolerance: 1, // default 0
+    browserNoActivityTimeout: 4 * 60 * 1000, //default 10000
+    captureTimeout: 4 * 60 * 1000, //default 60000
 
     // define browsers
     customLaunchers: {
@@ -37,7 +41,7 @@ module.exports = function(config) {
         os_version: '10',
         browser: 'edge',
         device: null,
-        browser_version: "15.0"
+        browser_version: '15.0'
       },
       bs_firefox_mac: {
         base: 'BrowserStack',
@@ -48,11 +52,11 @@ module.exports = function(config) {
       },
       bs_ie: {
         base: 'BrowserStack',
-        os: "Windows",
-        os_version: "7",
-        browser: "ie",
+        os: 'Windows',
+        os_version: '7',
+        browser: 'ie',
         device: null,
-        browser_version: "10.0"
+        browser_version: '10.0'
       },
       bs_iphone6: {
         base: 'BrowserStack',
@@ -69,11 +73,11 @@ module.exports = function(config) {
       },
       bs_safari: {
         base: 'BrowserStack',
-        os: "OS X",
-        os_version: "Mountain Lion",
-        browser: "safari",
+        os: 'OS X',
+        os_version: 'Mountain Lion',
+        browser: 'safari',
         device: null,
-        browser_version: "6.2"
+        browser_version: '6.2'
       }
     },
 
@@ -131,5 +135,5 @@ module.exports = function(config) {
     // Concurrency level
     // how many browser should be started simultaneous
     concurrency: Infinity
-  })
-}
+  });
+};

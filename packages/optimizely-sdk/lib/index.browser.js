@@ -78,3 +78,21 @@ module.exports = {
     }
   }
 };
+
+if (typeof window !== 'undefined') {
+  window.optimizelySdk = module.exports;
+  var _optimizelyClientWarningGiven = false;
+
+  Object.defineProperty(window, 'optimizelyClient', {
+    get: function () {
+      if (!_optimizelyClientWarningGiven) {
+        console.warn('Accessing the SDK via window.optimizelyClient is deprecated; please use window.optimizelySdk instead. This alias will be dropped in 3.0.0.');
+        _optimizelyClientWarningGiven = true;
+      }
+
+      return {
+        createInstance: window.optimizelySdk.createInstance
+      };
+    }
+  });
+}
