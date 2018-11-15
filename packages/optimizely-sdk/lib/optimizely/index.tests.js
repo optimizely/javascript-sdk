@@ -1899,6 +1899,14 @@ describe('lib/optimizely', function() {
         assert.strictEqual(setVariationLogMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key'));
       });
 
+      it('should return false for an empty experimentKey', function() {
+        var didSetVariation = optlyInstance.setForcedVariation('', 'user1', 'control');
+        assert.strictEqual(didSetVariation, false);
+
+        var setVariationLogMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(setVariationLogMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key'));
+      });
+
       it('should return false for a null userId', function() {
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', null, 'control');
         assert.strictEqual(didSetVariation, false);
