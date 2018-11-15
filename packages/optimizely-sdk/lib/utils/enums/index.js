@@ -60,6 +60,7 @@ exports.ERROR_MESSAGES = {
   VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT: '%s: Variation ID %s is not in the datafile.',
   INVALID_INPUT_FORMAT: '%s: Provided %s is in an invalid format.',
   INVALID_DATAFILE_VERSION: '%s: This version of the JavaScript SDK does not support the given datafile version: %s',
+  INVALID_VARIATION_KEY: '%s: Provided variation key is in an invalid format.',
 };
 
 exports.LOG_MESSAGES = {
@@ -135,12 +136,13 @@ exports.RESERVED_EVENT_KEYWORDS = {
 exports.CONTROL_ATTRIBUTES = {
   BOT_FILTERING: '$opt_bot_filtering',
   BUCKETING_ID: '$opt_bucketing_id',
+  STICKY_BUCKETING_KEY: '$opt_experiment_bucket_map',
   USER_AGENT: '$opt_user_agent',
 };
 
 exports.JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 exports.NODE_CLIENT_ENGINE = 'node-sdk';
-exports.NODE_CLIENT_VERSION = '2.2.0';
+exports.NODE_CLIENT_VERSION = '3.0.0-rc';
 
 /*
  * Notification types for use with NotificationCenter

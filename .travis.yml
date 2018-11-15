@@ -8,6 +8,7 @@ node_js:
 branches:
   only:
   - master
+  - /^\d+\.\d+\.(\d|[x])
 env:
   global:
   # BROWSER_STACK_USERNAME
@@ -22,7 +23,6 @@ matrix:
 before_install: cd packages/optimizely-sdk
 install: npm install
 addons:
-# Disabled temporarily while we work out integration issues
-#  srcclr: true
+srcclr: true
 script: npm test
 after_success: npm run coveralls

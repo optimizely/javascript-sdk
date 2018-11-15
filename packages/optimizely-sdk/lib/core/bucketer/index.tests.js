@@ -312,7 +312,10 @@ describe('lib/core/bucketer', function() {
     });
 
     describe('testBucketWithBucketingId', function() {
-      var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+      var createdLogger = logger.createLogger({
+        logLevel: LOG_LEVEL.INFO,
+        logToConsole: false,
+      });
 
       beforeEach(function() {
         configObj = projectConfig.createProjectConfig(testData);
