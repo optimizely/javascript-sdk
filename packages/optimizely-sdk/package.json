@@ -7,11 +7,11 @@
   "scripts": {
     "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive",
     "test-xbrowser": "karma start karma.bs.conf.js --single-run",
-    "build-browser-umd": "./scripts/build_browser_umd.sh",
+    "build-browser-umd": "webpack",
     "lint": "eslint lib/**",
     "cover": "istanbul cover _mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js",
     "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls",
-    "prepublishOnly": "webpack && npm test && npm run test-xbrowser"
+    "prepublishOnly": "npm run build-browser-umd && npm test && npm run test-xbrowser"
   },
   "repository": {
     "type": "git",
