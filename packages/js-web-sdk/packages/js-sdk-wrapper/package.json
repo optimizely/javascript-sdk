@@ -19,7 +19,8 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
-    "@optimizely/optimizely-sdk": "^2.2.0"
+    "@optimizely/optimizely-sdk": "^2.2.0",
+    "node-fetch": "^2.3.0"
   },
   "devDependencies": {
     "typescript": "^3.1.6"

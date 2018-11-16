@@ -16,10 +16,17 @@ export type OptimizelyDatafile = {
   readonly anonymizeIP: boolean
   readonly botFiltering: boolean
   readonly revision: string
+  readonly events: Event[]
 
   // deprecated
   readonly typedAudiences: Array<object> /* TODO */
   readonly variables: Array<object>
+}
+
+export type Event = {
+  experimentIds: Array<string>
+  id: string
+  key: string
 }
 
 export type Group = {
@@ -75,7 +82,7 @@ export type ExperimentVariationVariables = {
 
 namespace Experiment {
   export type Variation = {
-    readonly variables: ExperimentVariationVariables
+    readonly variables: ExperimentVariationVariables[]
     readonly id: string
     readonly key: string
     readonly featureEnabled: boolean
