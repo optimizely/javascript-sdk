@@ -32,6 +32,7 @@ var selectedVariationKey = optimizelyClient.activate('experiment-1', userId, use
 ```
 
 ### Fixes
+* `setForcedVariation` treats empty variation key as invalid and does not reset variation. ([#185](https://github.com/optimizely/javascript-sdk/pull/185))
 * Publish the unminified UMD bundle along with the minified one. ([#187](https://github.com/optimizely/javascript-sdk/pull/187))
 
 ## [3.0.0-rc] - November 6, 2018
