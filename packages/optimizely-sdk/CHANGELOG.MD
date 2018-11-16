@@ -7,12 +7,32 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [3.0.0-rc2] - November 16, 2018
+
 ### Breaking Changes
 
-Drops `window.optimizelyClient` from the bundled build ([#189](https://github.com/optimizely/javascript-sdk/pull/189)).
+* Drops `window.optimizelyClient` from the bundled build ([#189](https://github.com/optimizely/javascript-sdk/pull/189)).
+
+### New Features
+* Allow sticky bucketing via passing in `attributes.$opt_experiment_bucket_map`, this more easily allows customers to do some async data fetching and ensure a user gets a specific variation.
+
+```
+const userId = '123'
+const expId = '456'
+const variationId = '678'
+const userAttributes = {
+  $opt_experiment_bucket_map: {
+    [expId]: {
+      variation_id: variationId
+    }
+  }
+}
+
+var selectedVariationKey = optimizelyClient.activate('experiment-1', userId, userAttributes);
+```
 
 ### Fixes
-- fix(bundling): Publish the unminified UMD bundle along with the minified one. ([#187](https://github.com/optimizely/javascript-sdk/pull/187))
+* Publish the unminified UMD bundle along with the minified one. ([#187](https://github.com/optimizely/javascript-sdk/pull/187))
 
 ## [3.0.0-rc] - November 6, 2018
 
