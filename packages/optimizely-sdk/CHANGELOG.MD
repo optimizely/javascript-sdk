@@ -14,7 +14,7 @@ Changes that have landed but are not yet released.
 * Drops `window.optimizelyClient` from the bundled build ([#189](https://github.com/optimizely/javascript-sdk/pull/189)).
 
 ### New Features
-* Allow sticky bucketing via passing in `attributes.$opt_experiment_bucket_map`, this more easily allows customers to do some async data fetching and ensure a user gets a specific variation.
+* Allow sticky bucketing via passing in `attributes.$opt_experiment_bucket_map`, this more easily allows customers to do some async data fetching and ensure a user gets a specific variation ([#179](https://github.com/optimizely/javascript-sdk/pull/179)).
 
 ```
 const userId = '123'
