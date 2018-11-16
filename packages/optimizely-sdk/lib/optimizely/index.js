@@ -333,9 +333,12 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
 * @return boolean A boolean value that indicates if the set completed successfully.
 */
 Optimizely.prototype.setForcedVariation = function(experimentKey, userId, variationKey) {
+  if (!this.__validateInputs({ experiment_key: experimentKey, user_id: userId })) {
+    return false;
+  }
+
   try {
-    return this.__validateInputs({ experiment_key: experimentKey, user_id: userId })
-    && projectConfig.setForcedVariation(this.configObj, experimentKey, userId, variationKey, this.logger);
+    return projectConfig.setForcedVariation(this.configObj, experimentKey, userId, variationKey, this.logger);
   } catch (ex) {
     this.logger.log(LOG_LEVEL.ERROR, ex.message);
     this.errorHandler.handleError(ex);
@@ -364,7 +367,7 @@ Optimizely.prototype.getForcedVariation = function(experimentKey, userId) {
 };
 
 /**
- * Validates user ID and attributes parameters
+ * Validate string inputs, user attributes and event tags.
  * @param  {string}  stringInputs   Map of string keys and associated values
  * @param  {Object}  userAttributes Optional parameter for user's attributes
  * @param  {Object}  eventTags      Optional parameter for event tags
@@ -373,7 +376,7 @@ Optimizely.prototype.getForcedVariation = function(experimentKey, userId) {
  */
 Optimizely.prototype.__validateInputs = function(stringInputs, userAttributes, eventTags) {
   try {
-    // Empty user Id is valid value.
+    // Null, undefined or non-string user Id is invalid.
     if (stringInputs.hasOwnProperty('user_id')) {
       var userId = stringInputs.user_id;
       if (typeof userId !== 'string' || userId === null || userId === 'undefined') {
