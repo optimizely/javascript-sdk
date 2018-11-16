@@ -1,188 +1,172 @@
 import * as optimizely from '@optimizely/optimizely-sdk'
+import {
+  OptimizelyDatafile,
+  VariableValue,
+  VariableValuesObject,
+  VariableType,
+  VariableDef,
+} from './Datafile'
+import {
+  UserIdManager,
+  StaticUserIdManager,
+} from './UserIdManagers'
 import { find } from './utils'
-export type VariableValue = string | boolean | number
-
-export type OptimizelyDatafile = {
-  readonly version: string
-  readonly projectId: string
-  readonly accountId: string
-
-  readonly rollouts: RolloutGroup[]
-  readonly featureFlags: FeatureFlag[]
-  readonly attributes: Attribute[]
-
-  readonly audiences: Audience[]
-  readonly groups: Group[]
-  readonly experiments: Experiment[]
-
-  readonly anonymizeIP: boolean
-  readonly botFiltering: boolean
-  readonly revision: string
-
-  // deprecated
-  readonly typedAudiences: Array<object> /* TODO */
-  readonly variables: Array<object>
-}
-
-export type Group = {
-  readonly id: string
-  readonly policy: 'random' // TODO
-  readonly trafficAllocation: TrafficAllocation[]
-  readonly experiments: Experiment[]
-}
-
-export type Audience = {
-  readonly id: string
-  readonly conditions: string
-  readonly name: string
-}
-
-export type Attribute = {
-  readonly id: string
-  readonly key: string
-}
-
-export type VariableDef = {
-  readonly defaultValue: string | number | boolean
-  readonly type: VariableType
-  readonly id: string
-  readonly key: string
-}
-
-export type VariableType = 'string' | 'double' | 'integer' | 'boolean'
-
-export type FeatureFlag = {
-  readonly id: string
-  readonly key: string
-  readonly experimentIds: string[]
-  readonly rolloutId: string
-  readonly variables: VariableDef[]
-}
-
-/* is this the right name*/
-export type RolloutGroup = {
-  readonly id: string
-  readonly experiments: Experiment[]
-}
-
-export type TrafficAllocation = {
-  readonly entityId: string
-  readonly endOfRange: number
-}
-
-export type ExperimentVariationVariables = {
-  readonly id: string
-  readonly value: string | boolean | number
-}
-
-namespace Experiment {
-  export type Variation = {
-    readonly variables: ExperimentVariationVariables
-    readonly id: string
-    readonly key: string
-    readonly featureEnabled: boolean
-  }
-}
-
-export type Experiment = {
-  readonly id: string
-  readonly status: 'Running' | 'Paused' | 'Not started'
-  readonly key: string
-  readonly layerId: string
-  readonly trafficAllocation: TrafficAllocation[]
-  readonly audienceIds: string[]
-  readonly variations: Experiment.Variation[]
-  readonly forcedVariations: object /** readonly TODO: type */
-}
-
-export type VariableValuesObject = {
-  [key: string]: VariableValue
-}
 
 export interface IOptimizelySDKWrapper {
-  datafile: OptimizelyDatafile
   instance: optimizely.Client
 
-  getFeatureVariable: (feature: string, variable: string) => VariableValue | null
-  getFeatureVariables: (feature: string) => VariableValuesObject
-  isFeatureEnabled: (feature: string) => boolean
-  activate: (experimentKey: string) => string | null
-  track: (eventKey: string, eventTags?: optimizely.EventTags) => void
+  getFeatureVariables: (
+    feature: string,
+    overrides?: ClientProxyOverrides,
+  ) => VariableValuesObject
+  isFeatureEnabled: (feature: string, overrides?: ClientProxyOverrides) => boolean
+  activate: (experimentKey: string, overrides?: ClientProxyOverrides) => string | null
+  track: (
+    eventKey: string,
+    eventTags?: optimizely.EventTags,
+    overrides?: ClientProxyOverrides,
+  ) => void
 }
 
 export type OptimizelySDKWrapperConfig = {
-  datafile: OptimizelyDatafile
-  userId: string
+  datafile?: OptimizelyDatafile
   attributes?: optimizely.UserAttributes
+  userId?: string
+  userIdManager?: UserIdManager
+}
+
+type ClientProxyOverrides = {
+  userId?: string
+  attributes?: optimizely.UserAttributes | null
   bucketingId?: string
 }
 
+interface UserAttributesProvider {
+  getAndStoreUserAttributes: () => string
+}
+
+interface UserIdProvider {
+  getExistingUserId: () => string
+  generateAndStoreRandomUserId: () => string
+}
+
+type TrackEventCallArgs = [
+  string,
+  optimizely.EventTags | undefined,
+  ClientProxyOverrides
+]
+
 export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
-  datafile: OptimizelyDatafile
-  instance: optimizely.Client
-  userId: string
-  bucketingId: string | undefined
-  attributes: optimizely.UserAttributes | undefined
-  featureVariableGetters: {
+  public instance: optimizely.Client
+  public isInitialized: boolean
+
+  protected userIdManager: UserIdManager
+  protected datafile: OptimizelyDatafile
+  protected userId: string
+  protected attributes: optimizely.UserAttributes
+  protected onInitializeQueue: Array<Function>
+  protected trackEventQueue: Array<TrackEventCallArgs>
+  protected featureVariableGetters: {
     string: (
       feature: string,
       variable: string,
       userid: string,
-      attributes: object | undefined,
-    ) => string
+      attributes?: object | undefined,
+    ) => string | null
     boolean: (
       feature: string,
       variable: string,
       userid: string,
-      attributes: object | undefined,
-    ) => boolean
+      attributes?: object | undefined,
+    ) => boolean | null
     double: (
       feature: string,
       variable: string,
       userid: string,
-      attributes: object | undefined,
-    ) => number
+      attributes?: object | undefined,
+    ) => number | null
     integer: (
       feature: string,
       variable: string,
       userid: string,
-      attributes: object | undefined,
-    ) => number
+      attributes?: object | undefined,
+    ) => number | null
   }
 
-  constructor(config: OptimizelySDKWrapperConfig) {
+  constructor(config: OptimizelySDKWrapperConfig = {}) {
+    this.isInitialized = false
+    this.onInitializeQueue = []
+    this.trackEventQueue = []
+
+    if (config.userIdManager) {
+      this.userIdManager = config.userIdManager
+    } else if (config.userId) {
+      this.userIdManager = new StaticUserIdManager(config.userId)
+    } else {
+      throw new Error('Must supply "userId" or "userIdManager"')
+    }
+  }
+
+  /**
+   * Initialize happens when the datafile and attributes are fully loaded
+   */
+  protected initialize(config: {
+    datafile: OptimizelyDatafile
+    userId: string
+    attributes: optimizely.UserAttributes
+  }) {
     this.datafile = config.datafile
     this.userId = config.userId
     this.attributes = config.attributes
-    this.bucketingId = config.bucketingId
     this.instance = optimizely.createInstance({
       datafile: config.datafile,
     })
-
     this.featureVariableGetters = {
       string: this.instance.getFeatureVariableString.bind(this.instance),
       boolean: this.instance.getFeatureVariableBoolean.bind(this.instance),
       double: this.instance.getFeatureVariableDouble.bind(this.instance),
       integer: this.instance.getFeatureVariableInteger.bind(this.instance),
     }
+    this.isInitialized = true
+
+    this.flushTrackEventQueue()
+    this.flushOnInitializeQueue()
   }
 
-  activate(experimentKey: string): string | null {
-    let id = this.bucketingId !== undefined ? this.bucketingId : this.userId
-
-    return this.instance.activate(experimentKey, id, this.attributes)
+  public activate(experimentKey: string, overrides: ClientProxyOverrides = {}): string | null {
+    if (!this.isInitialized) {
+      return null
+    }
+    const [userId, attributes] = this.getUserIdAndAttributes(overrides)
+    return this.instance.activate(experimentKey, userId, attributes)
   }
 
-  track(eventKey: string, eventTags?: optimizely.EventTags): void {
-    this.instance.track(eventKey, this.userId, this.attributes, eventTags)
+  public track(
+    eventKey: string,
+    eventTags?: optimizely.EventTags,
+    overrides: ClientProxyOverrides = {},
+  ): void {
+    if (!this.isInitialized) {
+      this.trackEventQueue.push([eventKey, eventTags, overrides])
+      return
+    }
+    const [userId, attributes] = this.getUserIdAndAttributes(overrides)
+    this.instance.track(eventKey, userId, attributes, eventTags)
   }
 
-  isFeatureEnabled(feature: string): boolean {
-    return this.instance.isFeatureEnabled(feature, this.userId, this.attributes)
+  isFeatureEnabled(feature: string, overrides: ClientProxyOverrides = {}): boolean {
+    if (!this.isInitialized) {
+      return false
+    }
+    const [userId, attributes] = this.getUserIdAndAttributes(overrides)
+    return this.instance.isFeatureEnabled(feature, userId, attributes)
   }
 
-  getFeatureVariables = (feature: string): VariableValuesObject => {
-    const { attributes, userId } = this
+  getFeatureVariables = (
+    feature: string,
+    overrides: ClientProxyOverrides = {},
+  ): VariableValuesObject => {
+    const [userId, attributes] = this.getUserIdAndAttributes(overrides)
     const variableDefs = this.getVariableDefsForFeature(feature)
     if (!variableDefs) {
       // TODO: error
@@ -200,17 +184,42 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     return variableObj
   }
 
-  getFeatureVariable = (feature: string, variable: string): VariableValue | null => {
-    const { attributes, userId } = this
-    const variableType = this.getFeatureVariableType(feature, variable)
-    if (!variableType) {
-      return null
+  protected flushOnInitializeQueue(): void {
+    while (this.onInitializeQueue.length) {
+      let fnToExec = this.onInitializeQueue.shift()
+      if (fnToExec) {
+        fnToExec()
+      }
     }
-    const getFn = this.featureVariableGetters[variableType]
-    if (!getFn) {
-      return null
+  }
+
+  protected flushTrackEventQueue(): void {
+    while (this.trackEventQueue.length) {
+      const args = this.trackEventQueue.shift()
+      this.track.apply(this, args)
     }
-    return getFn(feature, variable, userId, attributes)
+  }
+
+  protected getUserIdAndAttributes(
+    overrides: ClientProxyOverrides,
+  ): [string, optimizely.UserAttributes] {
+    let userId = this.userIdManager.lookup()
+    let attributes = this.attributes
+
+    if (overrides.userId) {
+      userId = overrides.userId
+    }
+
+    if (overrides.attributes) {
+      // should we override or merge attributes here
+      attributes = overrides.attributes
+    }
+
+    if (overrides.bucketingId) {
+      attributes['$opt_bucketing_id'] = overrides.bucketingId
+    }
+
+    return [userId, attributes]
   }
 
   protected getVariableDefsForFeature(feature: string): VariableDef[] | null {

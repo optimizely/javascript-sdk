@@ -1,24 +1,26 @@
-# Optimizely SDK React
+ Optimizely SDK React
 # Setup
 ## `<OptimizelyProvider>`
 This is required at the root level and leverages React’s `Context` API to allow access to the OptimizelySDKWrapper to components like `<OptimizelyFeature>`  and  `<OptimizelyExperiment>`
 
 *props*
-* `datafile : OptimizelyDatafile`
-* `userId : string`
-* `bucketingId? : string`
-* `attributes? : object`
+* `optimizely : OptimizelySDKWrapper`
+
 
 ```jsx
-import { OptimizelyProvider } from 'optimizely-sdk-react'
+import { OptimizelyProvider } from '@optimizely/react-sdk'
+import { Optimizely } from '@optimizely/js-web-sdk'
+
+const optimizely = new Optimizely({
+  userId: window.userId,
+  datafile: window.datafile,
+})
+optimizely.initialize()
 
 class App extends React.Component {
-  render() {
+	render() {
     return (
-      <OptimizelyProvider
-        datafile={datafile}
-        userId='jordan'>
-
+      <OptimizelyProvider optimizely={optimizely}>
         <App />
       </OptimizelyProvider>
   }
@@ -27,108 +29,104 @@ class App extends React.Component {
 
 # Use Cases
 ## Experiment
-### Switch based on variation
+### Render different components based on variation
 ```jsx
-<OptimizelyExperimentSwitch experiment='exp1'>
-  <OptimizelyMatch value="variation1">
-    <Comp1 />
-  </OptimizelyMatch>
-
-  <OptimizelyMatch value="variation2">
-    <Comp2 />
-  </OptimizelyMatch>
-
-  <OptimizelyMatch default>
-    <Comp3 />
-  </OptimizelyMatch>
-</OptimizelyExperimentSwitch>
+<OptimizelyExperiment experiment="exp1">
+  {(variation) => (
+    variation === 'simple'
+      ? <SimpleComponent />
+      : <DetailedComponent />
+  )}
+</OptimizelyExperiment>
 ```
 
+### Render fallback in case datafile hasn’t loaded in time
+This is only applicable when async loading datafile.  Also note on second page view datafile will always be available.
 
-## Feature / Feature Variables
-### Render a string
 ```jsx
-<OptimizelyFeatureVariables
-  feature='feature1'
-  render={({ header }) => <h1>{header}</h1>}
-/>
+<OptimizelyExperiment 
+  experiment="exp1"
+  fallbackTimeout={200}
+  fallback={() => <SimpleComponent /> }>
+  {(variation) => (
+    variation === 'simple'
+      ? <SimpleComponent />
+      : <DetailedComponent />
+  )}
+</OptimizelyExperiment>
 ```
 
-### Pass variable values as props to component
+*question:* in the case where datafile is null should `variation` be `null`
+
+## Feature
+### Render something if feature is enabled
 ```jsx
-<OptimizelyFeatureVariables
-  feature='feature1'
-  render={({ header }) => <Comp1 header={header} />}
-/>
+<OptimizelyFeature feature="new-login-page">
+  {(isEnabled, variables) => (
+    <a href={isEnabled ? "/login" : "/login2"}>
+      Login
+    </a>
+  )}
+</OptimizelyFeature>
 ```
 
-### Switch component rendering based variable enum / value
+### Render feature variables
 ```jsx
-<OptimizelyFeatureVariableSwitch 
-  feature='feature1'
-  variable="variable1">
-  <OptimizelyMatch value="value1">
-    <Comp1 />
-  </OptimizelyMatch>
-
-  <OptimizelyMatch value="value2">
-    <Comp2 />
-  </OptimizelyMatch>
-
-  <OptimizelyMatch default>
-    <Comp3 />
-  </OptimizelyMatch>
-</OptimizelyFeatureVariableSwitch>
+<OptimizelyFeature feature="new-login-page">
+  {(isEnabled, variables) => (
+    <a href={isEnabled ? "/login" : "/login2"}>
+      {variables.loginText}
+    </a>
+  )}
+</OptimizelyFeature>
 ```
 
-### Render based on isFeatureEnabled
-```jsx
-<OptimizelyFeature feature="feature1"
-  renderEnabled={(vars) => <h1>Is enabled</h1>}
-  renderDisabled={(vars) => <h1>Is disabled</h1>}
-/>
-```
 
 ### Programmatic access inside component
+Any component under the `<OptimizelyProvider>` can get access to the optimizely js-web-sdk via the HoC / decorator `@withOptimizely` 
+
 ```jsx
+import { withOptimizely } from '@optimizely/react-sdk`
+
 @withOptimizely
 class MyComp extends React.Component {
   constructor(props) {
     super(props)
-    const { optimizely } = this.props
-    const isFeat1Enabled = optimizely.isFeatureEnabled('feat1')
-    const feat1Variables = optimizely.getFeatureVariables('feat1')
-    this.state = {
+  	  const { optimizely } = this.props
+    const isFeat1Enabled = 
+      optimizely.isFeatureEnabled('feat1')
+    const feat1Variables =
+      optimizely.getFeatureVariables('feat1')
+    
+	  this.state = {
        isFeat1Enabled,
        feat1Variables,
     }
-  }
-
+	}
   render() {
   }
 }
 ```
 
 ## Tracking
+Tracking is easy with the `withOptimizely` HoC / decorator.
 
 ```jsx
-import {
-  withOptimizely,
-} from '@optimizely/react-sdk'
+import { withOptimizely } from '@optimizely/react-sdk`
 
 @withOptimizely
-class MyComp extends React.Component {
+class SignupButton extends React.Component {
   onClick = () => {
     const { optimizely } = this.props
-    optimizely.track('signup')
-
+    optimizely.track('signup-clicked')
     // rest of click handler
   }
 
   render() {
-    return (
-      <Button onClick={this.onClick}>Signup</Button>
-    )
+    <button onClick={this.onClick}>
+      Signup
+    </button>
   }
 }
 ```
+
