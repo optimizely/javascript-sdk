@@ -9,61 +9,59 @@ import {
 import { UserIdManager, StaticUserIdManager } from './UserIdManagers'
 import { find } from './utils'
 import {
-  DatafileLoader,
-  LocalStorageDatafileCache,
-  DatafileCache,
-  UrlDatafileLoader,
-} from './DatafileManagers'
+  InitializationResourceLoader,
+  ProvidedDatafileLoader,
+  FetchUrlDatafileLoader,
+} from './DatafileLoaders'
+import { ProvidedAttributesLoader } from './UserAttributesManagers'
 
 export interface IOptimizelySDKWrapper {
   instance: optimizely.Client
 
   getFeatureVariables: (
     feature: string,
-    overrides?: ClientProxyOverrides,
+    overrideUserId?: string,
+    overrideAttributes?: optimizely.UserAttributes,
   ) => VariableValuesObject
-  isFeatureEnabled: (feature: string, overrides?: ClientProxyOverrides) => boolean
-  activate: (experimentKey: string, overrides?: ClientProxyOverrides) => string | null
+  isFeatureEnabled: (
+    feature: string,
+    overrideUserId?: string,
+    overrideAttributes?: optimizely.UserAttributes,
+  ) => boolean
+  activate: (
+    experimentKey: string,
+    overrideUserId?: string,
+    overrideAttributes?: optimizely.UserAttributes,
+  ) => string | null
   track: (
     eventKey: string,
     eventTags?: optimizely.EventTags,
-    overrides?: ClientProxyOverrides,
+    overrideUserId?: string,
+    overrideAttributes?: optimizely.UserAttributes,
   ) => void
 }
 
 export type OptimizelySDKWrapperConfig = {
   datafile?: OptimizelyDatafile
-  datafileLoader?: DatafileLoader
-  datafileCache?: DatafileCache
   datafileUrl?: string
+  datafileLoader?: InitializationResourceLoader<OptimizelyDatafile>
+
   attributes?: optimizely.UserAttributes
+  attributesLoader?: InitializationResourceLoader<optimizely.UserAttributes>
+
   userId?: string
   userIdManager?: UserIdManager
-}
-
-type ClientProxyOverrides = {
-  userId?: string
-  attributes?: optimizely.UserAttributes | null
-  bucketingId?: string
-}
-
-interface UserAttributesProvider {
-  getAndStoreUserAttributes: () => string
-}
-
-interface UserIdProvider {
-  getExistingUserId: () => string
-  generateAndStoreRandomUserId: () => string
 }
 
 type TrackEventCallArgs = [
   string,
   optimizely.EventTags | undefined,
-  ClientProxyOverrides
+  string | undefined,
+  optimizely.UserAttributes | undefined
 ]
 
 export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
-  static featureVariableGetters: {
+  static featureVariableGetters = {
     string: 'getFeatureVariableString',
     double: 'getFeatureVariableDouble',
     boolean: 'getFeatureVariableBoolean',
@@ -72,121 +70,137 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
 
   public instance: optimizely.Client
   public isInitialized: boolean
+  public datafile: OptimizelyDatafile | null
 
-  protected userIdManager: UserIdManager
-
-  protected datafileCache: DatafileCache
-  protected datafileLoader?: DatafileLoader
-  public datafile: OptimizelyDatafile
+  private userIdManager: UserIdManager
+  private attributes: optimizely.UserAttributes
 
   // state
-  protected userId: string
-  protected attributes: optimizely.UserAttributes
-  protected onInitializeQueue: Array<Function>
-  protected trackEventQueue: Array<TrackEventCallArgs>
+  private onInitializeQueue: Array<Function>
+  private trackEventQueue: Array<TrackEventCallArgs>
   // promise keeping track of async requests for initializing client instance
   // This will be `datafile` and `attributes`
   private initializingPromise: Promise<any>
+  private initializingLoaders: Array<Promise<any> | true>
 
   constructor(config: OptimizelySDKWrapperConfig = {}) {
     this.isInitialized = false
     this.attributes = {}
     this.onInitializeQueue = []
     this.trackEventQueue = []
-    this.datafileCache = config.datafileCache || new LocalStorageDatafileCache()
-    this.datafileLoader = config.datafileLoader
-
+    this.initializingLoaders = []
 
     if (config.userIdManager) {
       this.userIdManager = config.userIdManager
     } else if (config.userId) {
       this.userIdManager = new StaticUserIdManager(config.userId)
-    } else {
-      throw new Error('Must supply "userId" or "userIdManager"')
     }
 
-    if (!config.datafile && !config.datafileUrl && !config.datafileLoader) {
-      throw new Error(
-        'Must either provide "datafile", "datafileUrl", or "datafileLoader',
+    this.initializingLoaders.push(this.setupDatafileLoader(config))
+    this.initializingLoaders.push(this.setupAttributesLoader(config))
+
+    if (this.initializingLoaders.every(a => a === true)) {
+      // handle case where everything initializes synchronously
+      this.onInitialized()
+      this.initializingPromise = Promise.resolve()
+    } else {
+      this.initializingPromise = Promise.all(this.initializingLoaders).then(() =>
+        this.onInitialized(),
       )
     }
+  }
 
-    if (config.datafileUrl && config.datafileLoader) {
-      throw new Error('Must provide either "datafileUrl", or "datafileLoader')
-    }
+  private setupAttributesLoader(
+    config: OptimizelySDKWrapperConfig,
+  ): Promise<optimizely.UserAttributes | null> | true {
+    let attributesLoader: InitializationResourceLoader<optimizely.UserAttributes>
 
-    if (config.datafileUrl) {
-      this.datafileLoader = new UrlDatafileLoader({
-        datafileUrl: config.datafileUrl,
+    if (config.attributesLoader){
+      attributesLoader = config.attributesLoader
+    } else {
+      attributesLoader = new ProvidedAttributesLoader({
+        attributes: config.attributes,
       })
     }
 
-    let initializingPromise: Promise<any> = this.loadDatafile(config.datafile)
-    if (this.isInitialized) {
-      // handle the case where datafile and attributes are both loaded synchronously
-      this.onInitialized()
+    return this.setupInitializationResourceLoader(attributesLoader, (val) => {
+      // attributes *can* be null here in the case of a Loader returning null
+      this.attributes = val || {}
+    })
+  }
+
+  private setupDatafileLoader(
+    config: OptimizelySDKWrapperConfig,
+  ): Promise<OptimizelyDatafile | null> | true {
+    let datafileLoader: InitializationResourceLoader<OptimizelyDatafile>
+
+    if (config.datafile) {
+      datafileLoader = new ProvidedDatafileLoader({
+        datafile: config.datafile,
+      })
+    } else if (config.datafileUrl) {
+      datafileLoader = new FetchUrlDatafileLoader({
+        datafileUrl: config.datafileUrl,
+        preferCached: true,
+        backgroundLoadIfCacheHit: true,
+      })
+    } else if (config.datafileLoader) {
+      datafileLoader = config.datafileLoader
     } else {
-      initializingPromise = initializingPromise.then(() => this.onInitialized())
+      throw new Error('Must supply either "datafile", "datafileUrl" or "datafileLoader"')
     }
-    this.initializingPromise = initializingPromise
+
+    return this.setupInitializationResourceLoader(datafileLoader, (val) => {
+      this.datafile = val
+    })
+  }
+
+  private setupInitializationResourceLoader<K>(
+    loader: InitializationResourceLoader<K>,
+    propertySetter: (value: K | null) => void,
+  ): Promise<K | null> | true {
+
+    const { preferCached, loadIfCacheHit } = loader
+    const cachedResult = loader.loadFromCache()
+
+    if (cachedResult) {
+      propertySetter(cachedResult)
+      // this[property] = cachedResult
+
+      if (loadIfCacheHit) {
+        // fire off background loading for next page view
+        // load can have the side-effect of saving to cache
+        loader.load().then(result => {
+          // what do we do with null here, does that indicate there is an error
+          // an empty project would still have a bare bones datafile
+          // only case where null would happen is if the environment was deleted
+          propertySetter(result)
+        })
+      }
+
+      if (preferCached) {
+        // by returning true here we are saying this initializer is ready to go
+        return true
+      }
+    }
+    // returning the `load()` allows us to race against the timeout in onReady()
+    return loader.load().then(result => {
+      propertySetter(result)
+      return result
+    })
   }
 
   private onInitialized() {
+    if (!this.datafile) {
+      // could not initialize
+      return
+    }
     this.instance = optimizely.createInstance({
       datafile: this.datafile,
     })
     this.isInitialized = true
     this.flushTrackEventQueue()
     this.flushOnInitializeQueue()
-  }
-
-  /**
-   * initial load of datafile using datafileLoader
-   * If a cache is present try to load from cache
-   *
-   * Returns a promise that's resolved when the datafile is loaded,
-   * in the case where a cached datafile exists and a background load happens
-   * returns an immediately resolved promise
-   */
-  private loadDatafile(datafile?: OptimizelyDatafile) {
-    if (datafile) {
-      this.onDatafileLoaded(datafile)
-      return Promise.resolve(datafile)
-    }
-    if (!this.datafileLoader) {
-      throw new Error('Cannot call loadDatafile without instantiated DatafileLoader')
-    }
-
-    const cachedResult = this.datafileCache.get()
-
-    if (cachedResult) {
-      this.onDatafileLoaded(cachedResult, false)
-      this.datafileLoader
-        .load()
-        .then(datafile => this.onBackgroundDatafileLoaded(datafile))
-      return Promise.resolve(cachedResult)
-    }
-
-    return this.datafileLoader.load().then(datafile => this.onDatafileLoaded(datafile))
-  }
-
-  private onDatafileLoaded(
-    datafile: OptimizelyDatafile,
-    saveToCache: boolean = true,
-  ): OptimizelyDatafile {
-    this.datafile = datafile
-    if (saveToCache) {
-      this.datafileCache.cache(datafile)
-    }
-
-    // handle checking if attribtues are here and calling on onInitialized
-    return datafile
-    // call onReady stuff
-  }
-
-  private onBackgroundDatafileLoaded(datafile: OptimizelyDatafile): void {
-    this.datafileCache.cache(datafile)
-    // TODO determine if we should have another hook for bg datafile loaded
   }
 
   /**
@@ -221,47 +235,69 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
 
   public activate(
     experimentKey: string,
-    overrides: ClientProxyOverrides = {},
+    overrideUserId?: string,
+    overrideAttributes?: optimizely.UserAttributes,
   ): string | null {
     if (!this.isInitialized) {
       return null
     }
-    const [userId, attributes] = this.getUserIdAndAttributes(overrides)
+    const [userId, attributes] = this.getUserIdAndAttributes(
+      overrideUserId,
+      overrideAttributes,
+    )
     return this.instance.activate(experimentKey, userId, attributes)
   }
 
   public track(
     eventKey: string,
     eventTags?: optimizely.EventTags,
-    overrides: ClientProxyOverrides = {},
+    overrideUserId?: string,
+    overrideAttributes?: optimizely.UserAttributes,
   ): void {
     if (!this.isInitialized) {
-      this.trackEventQueue.push([eventKey, eventTags, overrides])
+      this.trackEventQueue.push([
+        eventKey,
+        eventTags,
+        overrideUserId,
+        overrideAttributes,
+      ])
       return
     }
-    const [userId, attributes] = this.getUserIdAndAttributes(overrides)
+    let [userId, attributes] = this.getUserIdAndAttributes(
+      overrideUserId,
+      overrideAttributes,
+    )
+    console.log('tracking', ...arguments)
     this.instance.track(eventKey, userId, attributes, eventTags)
   }
 
   public isFeatureEnabled(
     feature: string,
-    overrides: ClientProxyOverrides = {},
+    overrideUserId?: string,
+    overrideAttributes?: optimizely.UserAttributes,
   ): boolean {
     if (!this.isInitialized) {
       return false
     }
-    const [userId, attributes] = this.getUserIdAndAttributes(overrides)
+    const [userId, attributes] = this.getUserIdAndAttributes(
+      overrideUserId,
+      overrideAttributes,
+    )
     return this.instance.isFeatureEnabled(feature, userId, attributes)
   }
 
-  public getFeatureVariables = (
+  public getFeatureVariables(
     feature: string,
-    overrides: ClientProxyOverrides = {},
-  ): VariableValuesObject => {
+    overrideUserId?: string,
+    overrideAttributes?: optimizely.UserAttributes,
+  ): VariableValuesObject {
     if (!this.isInitialized) {
       return {}
     }
-    const [userId, attributes] = this.getUserIdAndAttributes(overrides)
+    const [userId, attributes] = this.getUserIdAndAttributes(
+      overrideUserId,
+      overrideAttributes,
+    )
     const variableDefs = this.getVariableDefsForFeature(feature)
     if (!variableDefs) {
       // TODO: error
@@ -271,8 +307,7 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     const variableObj = {}
     variableDefs.forEach(({ key, type }) => {
       const variableGetFnName = OptimizelySDKWrapper.featureVariableGetters[type]
-      const getFn = OptimizelySDKWrapper.featureVariableGetters[type]
-      const value = getFn
+      const value = variableGetFnName
         ? this.instance[variableGetFnName](feature, key, userId, attributes)
         : null
 
@@ -299,59 +334,40 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
   }
 
   protected getUserIdAndAttributes(
-    overrides: ClientProxyOverrides,
+    overrideUserId?: string,
+    overrideAttributes?: optimizely.UserAttributes,
   ): [string, optimizely.UserAttributes] {
-    let userId = this.userIdManager.lookup()
+    let userId
+    if (overrideUserId) {
+      userId = overrideUserId
+    } else if (this.userIdManager) {
+      userId = this.userIdManager.lookup()
+    }
+
+    if (!userId) {
+      // TODO make this a warning
+      throw new Error('No userId supplied')
+    }
+
     let attributes = this.attributes
-
-    if (overrides.userId) {
-      userId = overrides.userId
-    }
-
-    if (overrides.attributes) {
+    if (overrideAttributes) {
       // should we override or merge attributes here
-      attributes = overrides.attributes
-    }
-
-    if (overrides.bucketingId) {
-      attributes['$opt_bucketing_id'] = overrides.bucketingId
+      attributes = overrideAttributes
     }
 
     return [userId, attributes]
   }
 
   protected getVariableDefsForFeature(feature: string): VariableDef[] | null {
+    if (!this.datafile) {
+      return null
+    }
+
     const featureDef = find(this.datafile.featureFlags, entry => entry.key === feature)
     if (!featureDef) {
       return null
     }
 
     return featureDef.variables
-  }
-
-  protected getFeatureVariableType(
-    feature: string,
-    variable: string,
-  ): VariableType | null {
-    const variableDef = this.getVariableDef(feature, variable)
-    if (!variableDef) {
-      return null
-    }
-
-    return variableDef.type
-  }
-
-  protected getVariableDef(feature: string, variable: string): VariableDef | null {
-    const featureDef = find(this.datafile.featureFlags, entry => entry.key === feature)
-    if (!featureDef) {
-      return null
-    }
-
-    const variableDef = find(featureDef.variables, i => i.key === variable)
-    if (!variableDef) {
-      return null
-    }
-
-    return variableDef
   }
 }

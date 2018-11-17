@@ -25,7 +25,7 @@ declare namespace DatafileV2 {
   }
 
   interface FeatureVariation extends Variation {
-    featureEnabled: boolean
+    featureEnabled: boolean[]
     variables: VariablesObject
   }
 
