@@ -75,8 +75,6 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
   private userIdManager: UserIdManager
   private attributes: optimizely.UserAttributes
 
-  // state
-  private onInitializeQueue: Array<Function>
   private trackEventQueue: Array<TrackEventCallArgs>
   // promise keeping track of async requests for initializing client instance
   // This will be `datafile` and `attributes`
@@ -86,7 +84,6 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
   constructor(config: OptimizelySDKWrapperConfig = {}) {
     this.isInitialized = false
     this.attributes = {}
-    this.onInitializeQueue = []
     this.trackEventQueue = []
     this.initializingLoaders = []
 
@@ -200,7 +197,6 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     })
     this.isInitialized = true
     this.flushTrackEventQueue()
-    this.flushOnInitializeQueue()
   }
 
   /**
@@ -315,15 +311,6 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     })
 
     return variableObj
-  }
-
-  protected flushOnInitializeQueue(): void {
-    while (this.onInitializeQueue.length) {
-      let fnToExec = this.onInitializeQueue.shift()
-      if (fnToExec) {
-        fnToExec()
-      }
-    }
   }
 
   protected flushTrackEventQueue(): void {
