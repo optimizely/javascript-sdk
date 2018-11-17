@@ -1,5 +1,4 @@
 export interface UserIdManager {
-  save: (userId: string) => void
   lookup: () => string
 }
 
@@ -11,9 +10,7 @@ export class StaticUserIdManager implements UserIdManager {
   constructor(userId: string) {
     this.userId = userId
   }
-  save(userId: string) {
-    return
-  }
+
   lookup(): string {
     return this.userId
   }
@@ -31,8 +28,8 @@ export class LocalStorageRandomUserIdManager implements UserIdManager {
     this.localStorageKey = config.localStorageKey || 'optly_fs_userid'
     const existing = window.localStorage.getItem(this.localStorageKey)
     if (!existing) {
-      const userId = this.randomUserId()
-      this.save(userId)
+      this.userId = this.randomUserId()
+      window.localStorage.setItem(this.localStorageKey, this.userId)
     } else {
       this.userId = existing
     }
@@ -46,11 +43,6 @@ export class LocalStorageRandomUserIdManager implements UserIdManager {
       text += possible.charAt(Math.floor(Math.random() * possible.length));
 
     return text;
-  }
-
-  save(userId: string): void {
-    this.userId = userId
-    window.localStorage.setItem(this.localStorageKey, userId)
   }
 
   lookup(): string {

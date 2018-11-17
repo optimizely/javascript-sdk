@@ -13,7 +13,7 @@ import {
   ProvidedDatafileLoader,
   FetchUrlDatafileLoader,
 } from './DatafileLoaders'
-import { ProvidedAttributesLoader } from './UserAttributesManagers'
+import { ProvidedAttributesLoader } from './UserAttributesLoaders'
 
 export interface IOptimizelySDKWrapper {
   instance: optimizely.Client
