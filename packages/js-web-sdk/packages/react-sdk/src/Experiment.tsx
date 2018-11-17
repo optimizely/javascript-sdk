@@ -5,10 +5,12 @@ import { VariationProps } from './Variation'
 
 export type ChildrenRenderFunction = (variableValues: VariableValuesObject) => React.ReactNode
 
+type ChildRenderFunction = (variation: string | null) => React.ReactNode
+
 export interface ExperimentProps extends WithOptimizelyProps {
   // TODO add support for overrideUserId
   experiment: string
-  children: any
+  children: React.ReactNode | ChildRenderFunction
 }
 
 export interface ExperimentState {
@@ -51,7 +53,7 @@ export class Experiment extends React.Component<ExperimentProps, ExperimentState
     }
 
     if (children != null && typeof children === 'function') {
-      return children(variation)
+      return (children as ChildRenderFunction)(variation)
     }
 
     let match: React.ReactElement<VariationProps> | null = null
