@@ -50,7 +50,7 @@ class App extends React.Component<AppProps> {
                     return 'var2'
 =======
                     return "var1"
-                  } else if (variation === 'var1') {
+                  } else if (variation === 'var2') {
                     return "var2"
 >>>>>>> Add ExperimentVariation component
                   } else {

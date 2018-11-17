@@ -1,1 +1,0 @@
-export { OptimizelySDKWrapper } from './OptimizelySDKWrapper';
