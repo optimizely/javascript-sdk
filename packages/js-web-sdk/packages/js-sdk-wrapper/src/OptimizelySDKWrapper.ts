@@ -15,6 +15,7 @@ import {
 } from './DatafileLoaders'
 import { ProvidedAttributesLoader } from './UserAttributesLoaders'
 
+export { VariableValuesObject, VariableValue }
 export interface IOptimizelySDKWrapper {
   instance: optimizely.Client
 

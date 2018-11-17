@@ -2,14 +2,11 @@ import * as React from 'react'
 import * as optimizely from '@optimizely/optimizely-sdk'
 
 import { OptimizelyContextProvider } from './Context'
-import { OptimizelySDKWrapper, OptimizelyDatafile } from '@optimizely/js-sdk-wrapper'
+import { OptimizelySDKWrapper } from '@optimizely/js-sdk-wrapper'
 
 interface OptimizelyProviderProps {
-  userId: string
-  datafile: OptimizelyDatafile
-  sdkOptions?: object
-  attributes?: optimizely.UserAttributes
-  bucketingId?: string
+  optimizely: OptimizelySDKWrapper
+  timeout: number
 }
 
 interface OptimizelyProviderState {
@@ -23,22 +20,25 @@ export class OptimizelyProvider extends React.Component<
 > {
   sdkWrapper: OptimizelySDKWrapper
 
+  static defaultProps = {
+    timeout: 0,
+  }
+
   constructor(props: OptimizelyProviderProps) {
     super(props)
 
-    const { datafile, sdkOptions, userId, attributes, bucketingId } = props
-    this.sdkWrapper = new OptimizelySDKWrapper({
-      datafile,
-      userId,
-      attributes,
-      bucketingId,
-    })
+    const { timeout, optimizely } = props
+    this.sdkWrapper = optimizely
   }
 
   render() {
-    const { children } = this.props
+    const { children, timeout } = this.props
+    const value = {
+      optimizely: this.sdkWrapper,
+      timeout,
+    }
     return (
-      <OptimizelyContextProvider value={this.sdkWrapper}>
+      <OptimizelyContextProvider value={value}>
         {children}
       </OptimizelyContextProvider>
     )

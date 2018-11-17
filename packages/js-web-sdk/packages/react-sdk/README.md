@@ -5,7 +5,7 @@ This is required at the root level and leverages React’s `Context` API to allo
 
 *props*
 * `optimizely : OptimizelySDKWrapper`
-
+* `timeout : Number` the amount for OptimizelyExperiment and OptimizelyFeature components to render `null` before resolving
 
 ```jsx
 import { OptimizelyProvider } from '@optimizely/react-sdk'
@@ -20,7 +20,7 @@ optimizely.initialize()
 class App extends React.Component {
 	render() {
     return (
-      <OptimizelyProvider optimizely={optimizely}>
+      <OptimizelyProvider optimizely={optimizely} timeout={50}>
         <App />
       </OptimizelyProvider>
   }
@@ -44,10 +44,7 @@ class App extends React.Component {
 This is only applicable when async loading datafile.  Also note on second page view datafile will always be available.
 
 ```jsx
-<OptimizelyExperiment 
-  experiment="exp1"
-  fallbackTimeout={200}
-  fallback={() => <SimpleComponent /> }>
+<OptimizelyExperiment experiment="exp1">
   {(variation) => (
     variation === 'simple'
       ? <SimpleComponent />
@@ -56,7 +53,7 @@ This is only applicable when async loading datafile.  Also note on second page v
 </OptimizelyExperiment>
 ```
 
-*question:* in the case where datafile is null should `variation` be `null`
+**It's important that you handle the `variation === null` case if you are loading the datafile async**
 
 ## Feature
 ### Render something if feature is enabled
@@ -92,17 +89,16 @@ import { withOptimizely } from '@optimizely/react-sdk`
 class MyComp extends React.Component {
   constructor(props) {
     super(props)
-  	  const { optimizely } = this.props
-    const isFeat1Enabled = 
-      optimizely.isFeatureEnabled('feat1')
-    const feat1Variables =
-      optimizely.getFeatureVariables('feat1')
+    const { optimizely } = this.props
+    const isFeat1Enabled = optimizely.isFeatureEnabled('feat1')
+    const feat1Variables = optimizely.getFeatureVariables('feat1')
     
-	  this.state = {
-       isFeat1Enabled,
-       feat1Variables,
+    this.state = {
+      isFeat1Enabled,
+      feat1Variables,
     }
-	}
+  }
+
   render() {
   }
 }

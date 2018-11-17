@@ -4,7 +4,8 @@ import { Subtract } from 'utility-types'
 import { OptimizelySDKWrapper } from '@optimizely/js-sdk-wrapper'
 
 export interface WithOptimizelyProps {
-  optimizely: OptimizelySDKWrapper | null
+  optimizely: OptimizelySDKWrapper | null,
+  optimizelyReadyTimeout: number,
 }
 
 export function withOptimizely<P extends WithOptimizelyProps>(
@@ -14,7 +15,7 @@ export function withOptimizely<P extends WithOptimizelyProps>(
     render() {
       return (
         <OptimizelyContextConsumer>
-          {context => <Component {...this.props} optimizely={context} />}
+          {({ optimizely, timeout }) => <Component {...this.props} optimizely={optimizely} optimizelyReadyTimeout={timeout} />}
         </OptimizelyContextConsumer>
       )
     }
