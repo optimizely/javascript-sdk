@@ -85,7 +85,7 @@ namespace Experiment {
     readonly variables: ExperimentVariationVariables[]
     readonly id: string
     readonly key: string
-    readonly featureEnabled: boolean
+    readonly featureEnabled?: boolean
   }
 }
 
