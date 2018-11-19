@@ -52,7 +52,7 @@ initApp()
 
 // additionally in other places you can hook into onReady without a timeout
 // to gaurantee optimizely is loaded
-optimizely.onReady(() => {
+optimizely.onReady().then(() => {
   // optimizely is gauranteed to be loaded at this point
 })
 ```
@@ -87,27 +87,22 @@ import { optimizely } from './optimizely'
 import {
   OptimizelyProvider,
   OptimizelyExperiment,
-  OptimizelyReady,
 } from '@optimizely/react-sdk'
 
 class App extends Component {
   render() {
-    <OptimizelyProvider optimizely={optimizely}>
-      <OptimizelyReady
-        fallbackTimeout={50} // wait 50ms max
-        fallback={() => <h1>Optimizely didnt load</h1>}
-      >
-        {/* Optimizely is gauranteed to be loaded */}
-        <OptimizelyExperiment experiment="header-test">
-          {variation =>
-            variation === 'detailed' ? <DetailedHeader /> : <SimpleHeader />
-          }
-        </OptimizelyExperiment>
-      </OptimizelyReady>
+    <OptimizelyProvider optimizely={optimizely} timeout={50}>
+      <OptimizelyExperiment experiment="header-test">
+        {variation =>
+          variation === 'detailed' ? <DetailedHeader /> : <SimpleHeader />
+        }
+      </OptimizelyExperiment>
     </OptimizelyProvider>
   }
 }
 ```
+
+In the above example, setting `timeout={50}` will allow any Optimizely components to wait up to 50ms for the datafile to load. 
 
 _Benefits to the React approach_
 In the case where the datafile is already loaded, either from being on the page already or cached in local storage this approach doesn’t have a flash or a loading spinner.

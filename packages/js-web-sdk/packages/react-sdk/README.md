@@ -18,11 +18,12 @@ const optimizely = new Optimizely({
 optimizely.initialize()
 
 class App extends React.Component {
-	render() {
+  render() {
     return (
       <OptimizelyProvider optimizely={optimizely} timeout={50}>
         <App />
       </OptimizelyProvider>
+    )
   }
 }
 ```
@@ -40,20 +41,26 @@ class App extends React.Component {
 </OptimizelyExperiment>
 ```
 
-### Render fallback in case datafile hasn’t loaded in time
-This is only applicable when async loading datafile.  Also note on second page view datafile will always be available.
+Or you can also use the `<OptimizelyVariation>` component.
+
+**Note: Be sure to include an `<OptimizelyVariation default>` component if you are loading the datafile async, as the render path if the datafile fails to load.**
 
 ```jsx
+import { OptimizelyExperiment, OptimizelyVariation } from '@optimizely/react-sdk'
 <OptimizelyExperiment experiment="exp1">
-  {(variation) => (
-    variation === 'simple'
-      ? <SimpleComponent />
-      : <DetailedComponent />
-  )}
+  <OptimizelyVariation value="simple">
+    <SimpleComponent />
+  </OptimizelyVariation>
+
+  <OptimizelyVariation value="detailed">
+    <ComplexComponent />
+  </OptimizelyVariation>
+
+  <OptimizelyVariation default>
+    <SimpleComponent />
+  </OptimizelyVariation>
 </OptimizelyExperiment>
 ```
-
-**It's important that you handle the `variation === null` case if you are loading the datafile async**
 
 ## Feature
 ### Render something if feature is enabled
