@@ -23,6 +23,13 @@
     "node-fetch": "^2.3.0"
   },
   "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.5",
+    "@types/sinon": "^5.0.6",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "sinon": "^2.3.1",
+    "ts-mocha": "^2.0.0",
     "typescript": "^3.1.6"
   }
 }
