@@ -38,7 +38,7 @@ The above example may not be great, perhaps you want a gaurantee that the page w
 _Asnyc load and wait up til 100ms_
 
 ```js
-import { Optimizely, URLDatafileManager } from '@optimizely/js-web-sdk'
+import { Optimizely } from '@optimizely/js-web-sdk'
 
 const datafileUrl = 'https://cdn.optimizely.com/datafiles/GaXr9RoDhRcqXJm3ruskRa.json'
 const optimizely = new Optimizely({
