@@ -44,15 +44,9 @@ class App extends React.Component<AppProps> {
               <OptimizelyExperiment experiment="abtest1">
                 {(variation: any) => {
                   if (variation === 'var1') {
-<<<<<<< HEAD
                     return 'var1'
                   } else if (variation === 'var2') {
                     return 'var2'
-=======
-                    return "var1"
-                  } else if (variation === 'var2') {
-                    return "var2"
->>>>>>> Add ExperimentVariation component
                   } else {
                     return 'default'
                   }
