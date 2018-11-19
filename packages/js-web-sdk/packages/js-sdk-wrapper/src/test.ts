@@ -14,21 +14,32 @@ function testLocalDatafile() {
   console.log(optimizely.isInitialized)
 }
 
-function testUrlLoad() {
+async function testUrlLoad() {
   let optimizely = new OptimizelySDKWrapper({
+    datafileUrl: 'https://cdn.optimizely.com/datafiles/GaXr9RoDhRcqXJm3ruskRa.json?OPTIMIZELY_NOCACHE=1',
+    userId: 'user',
+  })
+  optimizely.track('foo', 'jordan')
+  optimizely.track('foo', {
+    revenue: 123
+  })
+  optimizely.track('foo', 'jordan', {
+    plan_type: 'bronze'
+  })
+  optimizely.track(
+    'foo',
+    'jodran',
+    { plan_type: 'bronze' },
+    { revenue: 123 },
+  )
+  await optimizely.onReady()
+
+  console.log('optly1 - feature1', optimizely.isFeatureEnabled('feature1', 'jordan'))
+
+  let optimizely2 = new OptimizelySDKWrapper({
     datafileUrl: 'https://cdn.optimizely.com/datafiles/GaXr9RoDhRcqXJm3ruskRa.json?OPTIMIZELY_NOCACHE=1'
   })
-  optimizely.track('foo', {}, 'jordan')
-
-  ;(async function() {
-    await optimizely.onReady()
-    console.log('optly1 - feature1', optimizely.isFeatureEnabled('feature1', 'jordan'))
-
-    let optimizely2 = new OptimizelySDKWrapper({
-      datafileUrl: 'https://cdn.optimizely.com/datafiles/GaXr9RoDhRcqXJm3ruskRa.json?OPTIMIZELY_NOCACHE=1'
-    })
-    console.log('optly2 - feature1', optimizely2.isFeatureEnabled('feature1', 'jordan'))
-  })()
+  console.log('optly2 - feature1', optimizely2.isFeatureEnabled('feature1', 'jordan'))
 }
 
 

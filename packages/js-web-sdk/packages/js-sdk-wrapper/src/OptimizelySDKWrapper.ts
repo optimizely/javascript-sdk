@@ -1,13 +1,14 @@
 import * as optimizely from '@optimizely/optimizely-sdk'
-import { OptimizelyDatafile, VariableValue, VariableValuesObject, VariableType, VariableDef } from './Datafile'
+import { OptimizelyDatafile, VariableValue, VariableValuesObject, VariableDef } from './Datafile'
 import { UserIdManager, StaticUserIdManager } from './UserIdManagers'
 import { find } from './utils'
 import { InitializationResourceLoader, ProvidedDatafileLoader, FetchUrlDatafileLoader } from './DatafileLoaders'
 import { ProvidedAttributesLoader } from './UserAttributesLoaders'
 
+// export types
 export { OptimizelyDatafile }
-
 export { VariableValuesObject, VariableValue }
+
 export interface IOptimizelySDKWrapper {
   instance: optimizely.Client
 
@@ -28,9 +29,9 @@ export interface IOptimizelySDKWrapper {
   ) => string | null
   track: (
     eventKey: string,
-    eventTags?: optimizely.EventTags,
     overrideUserId?: string,
     overrideAttributes?: optimizely.UserAttributes,
+    eventTags?: optimizely.EventTags,
   ) => void
 
   getEnabledFeatures: (overrideUserId?: string, overrideAttributes?: optimizely.UserAttributes) => Array<string>
@@ -56,11 +57,16 @@ export type OptimizelySDKWrapperConfig = {
 
 type TrackEventCallArgs = [
   string,
-  optimizely.EventTags | undefined,
   string | undefined,
-  optimizely.UserAttributes | undefined
+  optimizely.UserAttributes | undefined,
+  optimizely.EventTags | undefined
 ]
 
+/**
+ * @export
+ * @class OptimizelySDKWrapper
+ * @implements {IOptimizelySDKWrapper}
+ */
 export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
   static featureVariableGetters = {
     string: 'getFeatureVariableString',
@@ -82,9 +88,14 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
   private initializingPromise: Promise<any>
   private initializingLoaders: Array<Promise<any> | true>
 
+  /**
+   * Creates an instance of OptimizelySDKWrapper.
+   * @param {OptimizelySDKWrapperConfig} [config={}]
+   * @memberof OptimizelySDKWrapper
+   */
   constructor(config: OptimizelySDKWrapperConfig = {}) {
     this.isInitialized = false
-    this.datafile = null;
+    this.datafile = null
     this.attributes = {}
     this.trackEventQueue = []
     this.initializingLoaders = []
@@ -108,10 +119,14 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
   }
 
   /**
-   * Initialize happens when the datafile and attributes are fully loaded
+   * onREady happens when the datafile and attributes are fully loaded
    * Returns a promise where the resolved value is a boolean indicating whether
    * the optimizely instance has been initialized.  This only is false when
    * you supply a timeout
+   *
+   * @param {{ timeout?: number }} [config={}]
+   * @returns {Promise<boolean>}
+   * @memberof OptimizelySDKWrapper
    */
   public async onReady(config: { timeout?: number } = {}): Promise<boolean> {
     let timeoutId: number | undefined
@@ -137,6 +152,15 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     }
   }
 
+  /**
+   *
+   *
+   * @param {string} experimentKey
+   * @param {string} [overrideUserId]
+   * @param {optimizely.UserAttributes} [overrideAttributes]
+   * @returns {(string | null)}
+   * @memberof OptimizelySDKWrapper
+   */
   public activate(
     experimentKey: string,
     overrideUserId?: string,
@@ -149,6 +173,14 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     return this.instance.activate(experimentKey, userId, attributes)
   }
 
+  /**
+   *
+   * @param {string} experimentKey
+   * @param {string} [overrideUserId]
+   * @param {optimizely.UserAttributes} [overrideAttributes]
+   * @returns {(string | null)}
+   * @memberof OptimizelySDKWrapper
+   */
   public getVariation(
     experimentKey: string,
     overrideUserId?: string,
@@ -161,21 +193,51 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     return this.instance.getVariation(experimentKey, userId, attributes)
   }
 
+  /**
+   *
+   * Track an event, this method can take two signatures
+   * 1) track(eventKey, eventTags?)
+   * 2) track(eventKey, overrideUserId?, overrideAttributes?, eventTags?)
+   * 
+   * The first is a shortcut in the case where userId and attributes are stored on the SDK instance
+   *
+   * @param {string} eventKey
+   * @param {(string | optimizely.EventTags)} [overrideUserId]
+   * @param {optimizely.UserAttributes} [overrideAttributes]
+   * @param {optimizely.EventTags} [eventTags]
+   * @memberof OptimizelySDKWrapper
+   */
   public track(
     eventKey: string,
-    eventTags?: optimizely.EventTags,
-    overrideUserId?: string,
+    overrideUserId?: string | optimizely.EventTags,
     overrideAttributes?: optimizely.UserAttributes,
+    eventTags?: optimizely.EventTags,
   ): void {
+    if (typeof overrideUserId !== 'undefined' && typeof overrideUserId !== 'string') {
+      eventTags = overrideUserId
+      overrideUserId = undefined
+      overrideAttributes = undefined
+    }
+
     if (!this.isInitialized) {
-      this.trackEventQueue.push([eventKey, eventTags, overrideUserId, overrideAttributes])
+      this.trackEventQueue.push([eventKey, overrideUserId, overrideAttributes, eventTags])
       return
     }
     let [userId, attributes] = this.getUserIdAndAttributes(overrideUserId, overrideAttributes)
-    console.log('tracking', ...arguments)
+    console.log('tracking', eventKey, userId, attributes, eventTags)
     this.instance.track(eventKey, userId, attributes, eventTags)
   }
 
+  /**
+   * Note: in the case where the feature isnt in the datafile or the datafile hasnt been
+   * loaded, this will return `false`
+   * 
+   * @param {string} feature
+   * @param {string} [overrideUserId]
+   * @param {optimizely.UserAttributes} [overrideAttributes]
+   * @returns {boolean}
+   * @memberof OptimizelySDKWrapper
+   */
   public isFeatureEnabled(
     feature: string,
     overrideUserId?: string,
@@ -188,6 +250,15 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     return this.instance.isFeatureEnabled(feature, userId, attributes)
   }
 
+  /**
+   * Get all variables for a feature, regardless of the feature being enabled/disabled
+   *
+   * @param {string} feature
+   * @param {string} [overrideUserId]
+   * @param {optimizely.UserAttributes} [overrideAttributes]
+   * @returns {VariableValuesObject}
+   * @memberof OptimizelySDKWrapper
+   */
   public getFeatureVariables(
     feature: string,
     overrideUserId?: string,
@@ -214,6 +285,14 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     return variableObj
   }
 
+  /**
+   * Get an array of all enabled features
+   *
+   * @param {string} [overrideUserId]
+   * @param {optimizely.UserAttributes} [overrideAttributes]
+   * @returns {Array<string>}
+   * @memberof OptimizelySDKWrapper
+   */
   public getEnabledFeatures(overrideUserId?: string, overrideAttributes?: optimizely.UserAttributes): Array<string> {
     if (!this.isInitialized) {
       return []

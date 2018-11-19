@@ -6,3 +6,7 @@ export function find<K>(arr: Array<K>, pred: (item: K) => boolean): K | undefine
   }
   return undefined
 }
+
+export function isPlainObject(someValue: any): boolean {
+  return someValue != null && Object.prototype.toString.call(someValue) === '[object Object]'
+}
