@@ -41,6 +41,10 @@ export interface IOptimizelySDKWrapper {
     overrideUserId?: string,
     overrideAttributes?: optimizely.UserAttributes,
   ) => string | null
+
+  getForcedVariation: (experimentKey: string, overrideUserId?: string) => string | null
+
+  setForcedVariation: (experimentKey: string, overrideUserId?: string, variationKey?: string) => void
 }
 
 export type OptimizelySDKWrapperConfig = {
@@ -198,7 +202,7 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
    * Track an event, this method can take two signatures
    * 1) track(eventKey, eventTags?)
    * 2) track(eventKey, overrideUserId?, overrideAttributes?, eventTags?)
-   * 
+   *
    * The first is a shortcut in the case where userId and attributes are stored on the SDK instance
    *
    * @param {string} eventKey
@@ -231,7 +235,7 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
   /**
    * Note: in the case where the feature isnt in the datafile or the datafile hasnt been
    * loaded, this will return `false`
-   * 
+   *
    * @param {string} feature
    * @param {string} [overrideUserId]
    * @param {optimizely.UserAttributes} [overrideAttributes]
@@ -299,6 +303,34 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     }
     const [userId, attributes] = this.getUserIdAndAttributes(overrideUserId, overrideAttributes)
     return this.instance.getEnabledFeatures(userId, attributes)
+  }
+
+  /**
+   * @param {string} experiment
+   * @param {string} [overrideUserId]
+   * @returns {(string | null)}
+   * @memberof OptimizelySDKWrapper
+   */
+  public getForcedVariation(experiment: string, overrideUserId?: string): string | null {
+    const [userId] = this.getUserIdAndAttributes(overrideUserId)
+    return this.instance.getForcedVariation(experiment, userId)
+  }
+
+  /**
+   * @param {string} experiment
+   * @param {string} overrideUserIdOrVariationKey
+   * @param {string} [variationKey]
+   * @returns {boolean}
+   * @memberof OptimizelySDKWrapper
+   */
+  public setForcedVariation(experiment: string, overrideUserIdOrVariationKey: string, variationKey?: string): boolean {
+    if (typeof variationKey === 'undefined') {
+      const [userId] = this.getUserIdAndAttributes()
+      return this.instance.setForcedVariation(experiment, userId, overrideUserIdOrVariationKey)
+    }
+
+    const [userId] = this.getUserIdAndAttributes(overrideUserIdOrVariationKey)
+    return this.instance.setForcedVariation(experiment, userId, variationKey)
   }
 
   protected getUserIdAndAttributes(

@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "tsc": "tsc",
-    "test": "echo \"Error: run tests from root\" && exit 1"
+    "test": "./node_modules/.bin/ts-mocha tests/**"
   },
   "dependencies": {
     "@optimizely/optimizely-sdk": "^2.2.0",
