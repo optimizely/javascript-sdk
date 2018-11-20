@@ -7,6 +7,7 @@
   "scripts": {
     "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive",
     "test-xbrowser": "karma start karma.bs.conf.js --single-run",
+    "test-umdbrowser": "karma start karma.umd.conf.js --single-run",
     "build-browser-umd": "rm -rf dist && webpack",
     "lint": "eslint lib/**",
     "cover": "istanbul cover _mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js",
