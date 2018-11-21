@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "tsc": "tsc",
-    "test": "./node_modules/.bin/ts-mocha tests/**"
+    "test": "./node_modules/.bin/ts-mocha --exit tests/**"
   },
   "dependencies": {
     "@optimizely/optimizely-sdk": "^2.2.0",
@@ -25,9 +25,11 @@
   "devDependencies": {
     "@types/chai": "^4.1.7",
     "@types/mocha": "^5.2.5",
+    "@types/nock": "^9.3.0",
     "@types/sinon": "^5.0.6",
     "chai": "^4.2.0",
     "mocha": "^5.2.0",
+    "nock": "^10.0.2",
     "sinon": "^2.3.1",
     "ts-mocha": "^2.0.0",
     "typescript": "^3.1.6"
