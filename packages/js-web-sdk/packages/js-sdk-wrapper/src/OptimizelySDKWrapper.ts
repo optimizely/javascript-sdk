@@ -2,8 +2,9 @@ import * as optimizely from '@optimizely/optimizely-sdk'
 import { OptimizelyDatafile, VariableValue, VariableValuesObject, VariableDef } from './Datafile'
 import { UserIdManager, StaticUserIdManager } from './UserIdManagers'
 import { find } from './utils'
-import { InitializationResourceLoader, ProvidedDatafileLoader, FetchUrlDatafileLoader } from './DatafileLoaders'
+import { ProvidedDatafileLoader, FetchUrlDatafileLoader, ResourceLoader } from './DatafileLoaders'
 import { ProvidedAttributesLoader } from './UserAttributesLoaders'
+import { ResourceManager} from './ResourceManager'
 
 // export types
 export { OptimizelyDatafile }
@@ -50,10 +51,10 @@ export interface IOptimizelySDKWrapper {
 export type OptimizelySDKWrapperConfig = {
   datafile?: OptimizelyDatafile
   datafileUrl?: string
-  datafileLoader?: InitializationResourceLoader<OptimizelyDatafile>
+  datafileLoader?: ResourceLoader<OptimizelyDatafile>
 
   attributes?: optimizely.UserAttributes
-  attributesLoader?: InitializationResourceLoader<optimizely.UserAttributes>
+  attributesLoader?: ResourceLoader<optimizely.UserAttributes>
 
   userId?: string
   userIdManager?: UserIdManager
@@ -84,13 +85,13 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
   public datafile: OptimizelyDatafile | null
 
   private userIdManager: UserIdManager
-  private attributes: optimizely.UserAttributes
 
   private trackEventQueue: Array<TrackEventCallArgs>
   // promise keeping track of async requests for initializing client instance
   // This will be `datafile` and `attributes`
   private initializingPromise: Promise<any>
-  private initializingLoaders: Array<Promise<any> | true>
+
+  private resourceManager: ResourceManager
 
   /**
    * Creates an instance of OptimizelySDKWrapper.
@@ -100,9 +101,7 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
   constructor(config: OptimizelySDKWrapperConfig = {}) {
     this.isInitialized = false
     this.datafile = null
-    this.attributes = {}
     this.trackEventQueue = []
-    this.initializingLoaders = []
 
     if (config.userIdManager) {
       this.userIdManager = config.userIdManager
@@ -110,15 +109,19 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
       this.userIdManager = new StaticUserIdManager(config.userId)
     }
 
-    this.initializingLoaders.push(this.setupDatafileLoader(config))
-    this.initializingLoaders.push(this.setupAttributesLoader(config))
+    this.resourceManager = new ResourceManager({
+      datafileLoader: this.setupDatafileLoader(config),
+      attributesLoader: this.setupAttributesLoader(config),
+    })
 
-    if (this.initializingLoaders.every(a => a === true)) {
-      // handle case where everything initializes synchronously
+    if (this.resourceManager.isReady()) {
       this.onInitialized()
       this.initializingPromise = Promise.resolve()
     } else {
-      this.initializingPromise = Promise.all(this.initializingLoaders).then(() => this.onInitialized())
+      const promise = this.resourceManager.onReadyPromise.then(() => {
+        this.onInitialized()
+      })
+      this.initializingPromise = promise
     }
   }
 
@@ -228,7 +231,6 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
       return
     }
     let [userId, attributes] = this.getUserIdAndAttributes(overrideUserId, overrideAttributes)
-    console.log('tracking', eventKey, userId, attributes, eventTags)
     this.instance.track(eventKey, userId, attributes, eventTags)
   }
 
@@ -349,7 +351,7 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
       throw new Error('No userId supplied')
     }
 
-    let attributes = this.attributes
+    let attributes = this.resourceManager.getAttributes()
     if (overrideAttributes) {
       // should we override or merge attributes here
       attributes = overrideAttributes
@@ -378,8 +380,8 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     }
   }
 
-  private setupAttributesLoader(config: OptimizelySDKWrapperConfig): Promise<optimizely.UserAttributes | null> | true {
-    let attributesLoader: InitializationResourceLoader<optimizely.UserAttributes>
+  private setupAttributesLoader(config: OptimizelySDKWrapperConfig): ResourceLoader<optimizely.UserAttributes> {
+    let attributesLoader: ResourceLoader<optimizely.UserAttributes>
 
     if (config.attributesLoader) {
       attributesLoader = config.attributesLoader
@@ -388,15 +390,11 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
         attributes: config.attributes,
       })
     }
-
-    return this.setupInitializationResourceLoader(attributesLoader, val => {
-      // attributes *can* be null here in the case of a Loader returning null
-      this.attributes = val || {}
-    })
+    return attributesLoader
   }
 
-  private setupDatafileLoader(config: OptimizelySDKWrapperConfig): Promise<OptimizelyDatafile | null> | true {
-    let datafileLoader: InitializationResourceLoader<OptimizelyDatafile>
+  private setupDatafileLoader(config: OptimizelySDKWrapperConfig): ResourceLoader<OptimizelyDatafile> {
+    let datafileLoader: ResourceLoader<OptimizelyDatafile>
 
     if (config.datafile) {
       datafileLoader = new ProvidedDatafileLoader({
@@ -414,46 +412,12 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
       throw new Error('Must supply either "datafile", "datafileUrl" or "datafileLoader"')
     }
 
-    return this.setupInitializationResourceLoader(datafileLoader, val => {
-      this.datafile = val
-    })
-  }
-
-  private setupInitializationResourceLoader<K>(
-    loader: InitializationResourceLoader<K>,
-    propertySetter: (value: K | null) => void,
-  ): Promise<K | null> | true {
-    const { preferCached, loadIfCacheHit } = loader
-    const cachedResult = loader.loadFromCache()
-
-    if (cachedResult) {
-      propertySetter(cachedResult)
-      // this[property] = cachedResult
-
-      if (loadIfCacheHit) {
-        // fire off background loading for next page view
-        // load can have the side-effect of saving to cache
-        loader.load().then(result => {
-          // what do we do with null here, does that indicate there is an error
-          // an empty project would still have a bare bones datafile
-          // only case where null would happen is if the environment was deleted
-          propertySetter(result)
-        })
-      }
-
-      if (preferCached) {
-        // by returning true here we are saying this initializer is ready to go
-        return true
-      }
-    }
-    // returning the `load()` allows us to race against the timeout in onReady()
-    return loader.load().then(result => {
-      propertySetter(result)
-      return result
-    })
+    return datafileLoader
   }
 
   private onInitialized() {
+    this.datafile = this.resourceManager.getDatafile()
+    this.isInitialized = true
     if (!this.datafile) {
       // could not initialize
       return
@@ -461,7 +425,6 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     this.instance = optimizely.createInstance({
       datafile: this.datafile,
     })
-    this.isInitialized = true
     this.flushTrackEventQueue()
   }
 }
