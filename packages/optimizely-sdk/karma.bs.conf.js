@@ -60,9 +60,9 @@ module.exports = function(config) {
       },
       bs_iphone6: {
         base: 'BrowserStack',
-        device: 'iPhone 6',
+        device: 'iPhone X',
         os: 'ios',
-        os_version: '8.3'
+        os_version: '11.0'
       },
       bs_opera_mac: {
         base: 'BrowserStack',
