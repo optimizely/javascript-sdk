@@ -9,9 +9,9 @@ import { datafile } from './testData'
 /**
  * DRY function to test the public OptimizelySDKWrapper API, this is to ensure parity with existing
  * OptimizelySDK API, and to test different method signatures (where userId and attributes are provided)
- * 
+ *
  * The `createOptimizelyFn` always expects an already initialized instance of OptimizelySDKWrapper
- * 
+ *
  * The `createOptimizelyFn` is an async / promise-returning function since we need to do
  * `await optimizely.onReady()` before we can do testing.
  *
@@ -476,11 +476,11 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
     const datafileUrlPath = '/datafiles/test.json'
     const datafileUrl = `${datafileUrlHost}${datafileUrlPath}`
 
-    describe('when datafileUrl responds 200', function() {
+    describe('when requesting datafile responds 200', function() {
       this.beforeEach(function() {
         nock(datafileUrlHost)
           .get(datafileUrlPath)
-          .reply(400, datafile)
+          .reply(200, datafile)
       })
 
       it('should wait for datafile loaded and invoke onReady()', async function() {
@@ -502,6 +502,45 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
           await optimizely.onReady()
           return optimizely
         })
+      })
+    })
+
+    describe('when requesting datafile responds 400', function() {
+      this.beforeEach(function() {
+        nock(datafileUrlHost)
+          .get(datafileUrlPath)
+          .reply(400, datafile)
+      })
+
+      it('should wait for datafile loaded and invoke onReady()', async function() {
+        const optimizely: OptimizelySDKWrapper = new OptimizelySDKWrapper({
+          datafileUrl,
+          userId,
+        })
+        assert.isFalse(optimizely.isInitialized)
+        await optimizely.onReady()
+        assert.isTrue(optimizely.isInitialized)
+      })
+    })
+
+    describe('when requesting the datafile is delayed', function() {
+      this.beforeEach(function() {
+        nock(datafileUrlHost)
+          .get(datafileUrlPath)
+          .delay(100)
+          .reply(200, datafile)
+      })
+
+      it('should race the datafile loading with onReady({ timeout }) option', async function() {
+        const optimizely: OptimizelySDKWrapper = new OptimizelySDKWrapper({
+          datafileUrl,
+          userId,
+        })
+        assert.isFalse(optimizely.isInitialized)
+        await optimizely.onReady({ timeout: 50 })
+        assert.isFalse(optimizely.isInitialized)
+        await optimizely.onReady()
+        assert.isTrue(optimizely.isInitialized)
       })
     })
   })

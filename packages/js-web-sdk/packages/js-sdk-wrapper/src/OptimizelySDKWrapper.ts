@@ -123,7 +123,7 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
   }
 
   /**
-   * onREady happens when the datafile and attributes are fully loaded
+   * onReady happens when the datafile and attributes are fully loaded
    * Returns a promise where the resolved value is a boolean indicating whether
    * the optimizely instance has been initialized.  This only is false when
    * you supply a timeout
