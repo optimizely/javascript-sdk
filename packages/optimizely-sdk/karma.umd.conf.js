@@ -91,7 +91,7 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       './dist/optimizely.browser.umd.min.js',
-      './lib/index.umdbrowser.tests.js'
+      './lib/index.browser.umdtests.js'
     ],
 
 
