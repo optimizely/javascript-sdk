@@ -443,7 +443,7 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
   }
 
   describe('initializing a static Datafile with no userId', function() {
-    it('instantiate successfully and be immediately initailized', function() {
+    it.only('instantiate successfully and be immediately initailized', function() {
       const optimizely = new OptimizelySDKWrapper({
         datafile,
       })

@@ -1,11 +1,11 @@
 import * as optimizely from '@optimizely/optimizely-sdk'
 import { OptimizelyDatafile, VariableValue, VariableValuesObject, VariableDef } from './Datafile'
-import { UserIdManager, StaticUserIdManager } from './UserIdManagers'
+import { StaticUserIdLoader, UserId } from './UserIdManagers'
 import { find } from './utils'
 import { ProvidedDatafileLoader, FetchUrlDatafileLoader } from './DatafileLoaders'
-import { ResourceLoader } from "./ResourceLoader";
+import { ResourceLoader } from './ResourceLoader'
 import { ProvidedAttributesLoader } from './UserAttributesLoaders'
-import { ResourceManager} from './ResourceManager'
+import { ResourceManager2 } from './ResourceManager'
 
 // export types
 export { OptimizelyDatafile }
@@ -58,7 +58,7 @@ export type OptimizelySDKWrapperConfig = {
   attributesLoader?: ResourceLoader<optimizely.UserAttributes>
 
   userId?: string
-  userIdManager?: UserIdManager
+  userIdLoader?: ResourceLoader<UserId>
 }
 
 type TrackEventCallArgs = [
@@ -83,16 +83,17 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
 
   public instance: optimizely.Client
   public isInitialized: boolean
-  public datafile: OptimizelyDatafile | null
 
-  private userIdManager: UserIdManager
+  public datafile: OptimizelyDatafile | null
+  private userId: string | null
+  private attributes: optimizely.UserAttributes
 
   private trackEventQueue: Array<TrackEventCallArgs>
   // promise keeping track of async requests for initializing client instance
   // This will be `datafile` and `attributes`
   private initializingPromise: Promise<any>
 
-  private resourceManager: ResourceManager
+  private resourceManager: ResourceManager2
 
   /**
    * Creates an instance of OptimizelySDKWrapper.
@@ -104,25 +105,26 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     this.datafile = null
     this.trackEventQueue = []
 
-    if (config.userIdManager) {
-      this.userIdManager = config.userIdManager
-    } else if (config.userId) {
-      this.userIdManager = new StaticUserIdManager(config.userId)
-    }
-
-    this.resourceManager = new ResourceManager({
-      datafileLoader: this.setupDatafileLoader(config),
-      attributesLoader: this.setupAttributesLoader(config),
+    this.resourceManager = new ResourceManager2({
+      datafile: this.setupDatafileLoader(config),
+      attributes: this.setupAttributesLoader(config),
+      userId: this.setupUserIdLoader(config),
     })
 
-    if (this.resourceManager.isReady()) {
+    console.log('all ready', this.resourceManager.allResourcesReady())
+    if (this.resourceManager.allResourcesReady()) {
       this.onInitialized()
       this.initializingPromise = Promise.resolve()
     } else {
-      const promise = this.resourceManager.onReadyPromise.then(() => {
-        this.onInitialized()
+      // TODO handle unsubscribe
+      this.initializingPromise = new Promise(resolve => {
+        this.resourceManager.observable.subscribe({
+          complete: () => {
+            this.onInitialized()
+            resolve()
+          },
+        })
       })
-      this.initializingPromise = promise
     }
   }
 
@@ -343,8 +345,8 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     let userId
     if (overrideUserId) {
       userId = overrideUserId
-    } else if (this.userIdManager) {
-      userId = this.userIdManager.lookup()
+    } else if (this.userId) {
+      userId = this.userId
     }
 
     if (!userId) {
@@ -352,7 +354,8 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
       throw new Error('No userId supplied')
     }
 
-    let attributes = this.resourceManager.getAttributes()
+    // TODO store this as state when onInitialized is called
+    let attributes = this.attributes
     if (overrideAttributes) {
       // should we override or merge attributes here
       attributes = overrideAttributes
@@ -416,13 +419,30 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     return datafileLoader
   }
 
+  private setupUserIdLoader(config: OptimizelySDKWrapperConfig): ResourceLoader<UserId> {
+    if (config.userIdLoader) {
+      return config.userIdLoader
+    } else if (config.userId) {
+      return new StaticUserIdLoader(config.userId)
+    } else {
+      return new StaticUserIdLoader(null)
+    }
+  }
+
   private onInitialized() {
-    this.datafile = this.resourceManager.getDatafile()
-    this.isInitialized = true
+    const datafile = this.resourceManager.datafile.getValue()
+    this.userId = this.resourceManager.userId.getValue() || null
+    this.attributes = this.resourceManager.attributes.getValue() || {}
+    if (datafile) {
+      this.datafile = datafile
+    }
+
+    // can initialize check
     if (!this.datafile) {
-      // could not initialize
       return
     }
+
+    this.isInitialized = true
     this.instance = optimizely.createInstance({
       datafile: this.datafile,
     })
