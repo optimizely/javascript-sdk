@@ -1,6 +1,6 @@
 import { UserAttributes } from '@optimizely/optimizely-sdk'
 
-import { ResourceLoader, ResourceLoaderConnection } from './DatafileLoaders'
+import { ResourceLoader, ResourceLoaderConnection } from "./ResourceLoader";
 
 export class ProvidedAttributesLoader implements ResourceLoader<UserAttributes> {
   private attributes: UserAttributes

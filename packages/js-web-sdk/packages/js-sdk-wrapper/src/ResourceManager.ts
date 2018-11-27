@@ -1,8 +1,6 @@
-import { ResourceLoader, LoadedResourceMetadata, FailedLoadedResourceMetadata } from './DatafileLoaders'
+import { ResourceLoader, LoadedResourceMetadata, FailedLoadedResourceMetadata } from "./ResourceLoader";
 import { OptimizelyDatafile } from './OptimizelySDKWrapper'
 import { UserAttributes } from '@optimizely/optimizely-sdk'
-
-type ResourceLoadersMap = { [key: string]: ResourceLoader<any> }
 
 type ResourceLoaderState<K> = {
   resource: K | null
@@ -23,7 +21,10 @@ type ResourceEntry<K> = {
 }
 
 export class ResourceManager {
-  public onReadyPromise: Promise<void>
+  public onReadyPromise: Promise<{
+    datafile: ResourceLoaderState<OptimizelyDatafile>,
+    attributes: ResourceLoaderState<UserAttributes>
+  }>
 
   private datafile: ResourceEntry<OptimizelyDatafile>
   private attributes: ResourceEntry<UserAttributes>
@@ -55,7 +56,11 @@ export class ResourceManager {
 
     this.onReadyPromise = new Promise((resolve, reject) => {
       this.resolvePromise = () => {
-        resolve()
+
+        resolve({
+          attributes: this.attributes.state,
+          datafile: this.datafile.state,
+        })
       }
     })
 

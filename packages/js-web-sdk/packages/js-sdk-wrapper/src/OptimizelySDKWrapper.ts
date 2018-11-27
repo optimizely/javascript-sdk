@@ -2,7 +2,8 @@ import * as optimizely from '@optimizely/optimizely-sdk'
 import { OptimizelyDatafile, VariableValue, VariableValuesObject, VariableDef } from './Datafile'
 import { UserIdManager, StaticUserIdManager } from './UserIdManagers'
 import { find } from './utils'
-import { ProvidedDatafileLoader, FetchUrlDatafileLoader, ResourceLoader } from './DatafileLoaders'
+import { ProvidedDatafileLoader, FetchUrlDatafileLoader } from './DatafileLoaders'
+import { ResourceLoader } from "./ResourceLoader";
 import { ProvidedAttributesLoader } from './UserAttributesLoaders'
 import { ResourceManager} from './ResourceManager'
 
