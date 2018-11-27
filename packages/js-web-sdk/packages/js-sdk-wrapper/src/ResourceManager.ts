@@ -86,20 +86,21 @@ export class ResourceManager {
   setupLoader<K>(entry: ResourceEntry<K>) :void{
     let state = entry.state
     entry.loader.load({
-      load(resource: K, metadata: LoadedResourceMetadata) {
+      next(value: {resource: K, metadata: LoadedResourceMetadata}) {
+        const { resource, metadata } = value
         if (!state.isReady && !state.failed) {
           // can only load if not ready or failed
           state.resource = resource
           state.metadata = metadata
         }
       },
-      ready: () => {
+      complete: () => {
         state.isReady = true
         if (this.areAllResourcesDone()) {
           this.resolvePromise()
         }
       },
-      fail: (metadata: FailedLoadedResourceMetadata) => {
+      error: (metadata: FailedLoadedResourceMetadata) => {
         state.failed = true
         state.failureReason = metadata.reason
         if (this.areAllResourcesDone()) {

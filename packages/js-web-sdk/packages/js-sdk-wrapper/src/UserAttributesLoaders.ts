@@ -1,6 +1,6 @@
 import { UserAttributes } from '@optimizely/optimizely-sdk'
 
-import { ResourceLoader, ResourceLoaderConnection } from "./ResourceLoader";
+import { ResourceLoader, ResourceObserver } from './ResourceLoader'
 
 export class ProvidedAttributesLoader implements ResourceLoader<UserAttributes> {
   private attributes: UserAttributes
@@ -9,8 +9,11 @@ export class ProvidedAttributesLoader implements ResourceLoader<UserAttributes> 
     this.attributes = config.attributes || {}
   }
 
-  load(connection: ResourceLoaderConnection<UserAttributes>) : void {
-    connection.load(this.attributes, { source: 'fresh' })
-    connection.ready()
+  load(observer: ResourceObserver<UserAttributes>): void {
+    observer.next({
+      resource: this.attributes,
+      metadata: { source: 'fresh' },
+    })
+    observer.complete()
   }
 }

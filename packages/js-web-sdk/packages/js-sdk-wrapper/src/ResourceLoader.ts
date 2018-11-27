@@ -1,5 +1,5 @@
 export interface ResourceLoader<K> {
-  load: (connection: ResourceLoaderConnection<K>) => void;
+  load: (observer: ResourceObserver<K>) => void;
 }
 export interface LoadedResourceMetadata {
   source: 'fresh' | 'cache';
@@ -7,8 +7,8 @@ export interface LoadedResourceMetadata {
 export interface FailedLoadedResourceMetadata extends LoadedResourceMetadata {
   reason: string;
 }
-export interface ResourceLoaderConnection<K> {
-  load: (resource: K, metadata: LoadedResourceMetadata) => void;
-  fail: (metadata: FailedLoadedResourceMetadata) => void;
-  ready: () => void;
+export interface ResourceObserver<K> {
+  next: (data: {resource: K, metadata: LoadedResourceMetadata}) => void;
+  error: (metadata: FailedLoadedResourceMetadata) => void;
+  complete: () => void;
 }
