@@ -78,7 +78,7 @@ describe('javascript-sdk', function() {
         assert.equal(packageJSON.version, optlyInstance.clientVersion);
       });
 
-      it('should activate with provided event dispatcher', function(done) {
+      it('should activate with provided event dispatcher', function() {
         var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
@@ -87,10 +87,9 @@ describe('javascript-sdk', function() {
         });
         var activate = optlyInstance.activate('testExperiment', 'testUser');
         assert.strictEqual(activate, 'control');
-        done();
       });
 
-      it('should be able to set and get a forced variation', function(done) {
+      it('should be able to set and get a forced variation', function() {
         var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
@@ -103,10 +102,9 @@ describe('javascript-sdk', function() {
 
         var variation = optlyInstance.getForcedVariation('testExperiment', 'testUser');
         assert.strictEqual(variation, 'control');
-        done();
       });
 
-      it('should be able to set and unset a forced variation', function(done) {
+      it('should be able to set and unset a forced variation', function() {
         var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
@@ -125,10 +123,9 @@ describe('javascript-sdk', function() {
 
         var variation2 = optlyInstance.getForcedVariation('testExperiment', 'testUser');
         assert.strictEqual(variation2, null);
-        done();
       });
 
-      it('should be able to set multiple experiments for one user', function(done) {
+      it('should be able to set multiple experiments for one user', function() {
         var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
@@ -148,10 +145,9 @@ describe('javascript-sdk', function() {
 
         var variation2 = optlyInstance.getForcedVariation('testExperimentLaunched', 'testUser');
         assert.strictEqual(variation2, 'controlLaunched');
-        done();
       });
 
-      it('should be able to set multiple experiments for one user, and unset one', function(done) {
+      it('should be able to set multiple experiments for one user, and unset one', function() {
         var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
@@ -173,10 +169,9 @@ describe('javascript-sdk', function() {
 
         var variation2 = optlyInstance.getForcedVariation('testExperimentLaunched', 'testUser');
         assert.strictEqual(variation2, null);
-        done();
       });
 
-      it('should be able to set multiple experiments for one user, and reset one', function(done) {
+      it('should be able to set multiple experiments for one user, and reset one', function() {
         var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
@@ -198,10 +193,9 @@ describe('javascript-sdk', function() {
 
         var variation2 = optlyInstance.getForcedVariation('testExperimentLaunched', 'testUser');
         assert.strictEqual(variation2, 'variationLaunched');
-        done();
       });
 
-      it('should override bucketing when setForcedVariation is called', function(done) {
+      it('should override bucketing when setForcedVariation is called', function() {
         var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
@@ -220,10 +214,9 @@ describe('javascript-sdk', function() {
 
         var variation = optlyInstance.getVariation('testExperiment', 'testUser');
         assert.strictEqual(variation, 'variation');
-        done();
       });
 
-      it('should override bucketing when setForcedVariation is called for a not running experiment', function(done) {
+      it('should override bucketing when setForcedVariation is called for a not running experiment', function() {
         var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
@@ -236,8 +229,6 @@ describe('javascript-sdk', function() {
 
         var variation = optlyInstance.getVariation('testExperimentNotRunning', 'testUser');
         assert.strictEqual(variation, null);
-
-        done();
       });
     });
   });
