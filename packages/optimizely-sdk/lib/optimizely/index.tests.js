@@ -1762,7 +1762,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(forcedVariation, null);
 
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'user1'));
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key'));
       });
 
       it('should return null with an undefined experimentKey', function() {
@@ -1770,7 +1770,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(forcedVariation, null);
 
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'user1'));
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key'));
       });
 
       it('should return null with a null userId', function() {
@@ -1778,7 +1778,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(forcedVariation, null);
 
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', null));
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
 
       it('should return null with an undefined userId', function() {
@@ -1786,7 +1786,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(forcedVariation, null);
 
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', undefined));
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
     });
 
@@ -1888,7 +1888,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(didSetVariation, false);
 
         var setVariationLogMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(setVariationLogMessage, 'PROJECT_CONFIG: Experiment key null is not in datafile.');
+        assert.strictEqual(setVariationLogMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key'));
       });
 
       it('should return false for an undefined experimentKey', function() {
@@ -1896,7 +1896,15 @@ describe('lib/optimizely', function() {
         assert.strictEqual(didSetVariation, false);
 
         var setVariationLogMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(setVariationLogMessage, 'PROJECT_CONFIG: Experiment key undefined is not in datafile.');
+        assert.strictEqual(setVariationLogMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key'));
+      });
+
+      it('should return false for an empty experimentKey', function() {
+        var didSetVariation = optlyInstance.setForcedVariation('', 'user1', 'control');
+        assert.strictEqual(didSetVariation, false);
+
+        var setVariationLogMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(setVariationLogMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key'));
       });
 
       it('should return false for a null userId', function() {
@@ -1904,7 +1912,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(didSetVariation, false);
 
         var setVariationLogMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(setVariationLogMessage, 'PROJECT_CONFIG: Provided user ID is in an invalid format.');
+        assert.strictEqual(setVariationLogMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
 
       it('should return false for an undefined userId', function() {
@@ -1912,7 +1920,12 @@ describe('lib/optimizely', function() {
         assert.strictEqual(didSetVariation, false);
 
         var setVariationLogMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(setVariationLogMessage, 'PROJECT_CONFIG: Provided user ID is in an invalid format.');
+        assert.strictEqual(setVariationLogMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
+      });
+
+      it('should return true for an empty userId', function() {
+        var didSetVariation = optlyInstance.setForcedVariation('testExperiment', '', 'control');
+        assert.strictEqual(didSetVariation, true);
       });
 
       it('should return false for a null variationKey', function() {
@@ -1949,6 +1962,7 @@ describe('lib/optimizely', function() {
     describe('__validateInputs', function() {
       it('should return true if user ID and attributes are valid', function() {
         assert.isTrue(optlyInstance.__validateInputs({user_id: 'testUser'}));
+        assert.isTrue(optlyInstance.__validateInputs({user_id: ''}));
         assert.isTrue(optlyInstance.__validateInputs({user_id: 'testUser'}, {browser_type: 'firefox'}));
         sinon.assert.notCalled(createdLogger.log);
       });
@@ -1957,11 +1971,17 @@ describe('lib/optimizely', function() {
         var falseUserIdInput = optlyInstance.__validateInputs({user_id: []});
         assert.isFalse(falseUserIdInput);
 
-        sinon.assert.calledOnce(errorHandler.handleError);
+        falseUserIdInput = optlyInstance.__validateInputs({user_id: null});
+        assert.isFalse(falseUserIdInput);
+
+        falseUserIdInput = optlyInstance.__validateInputs({user_id: 3.14});
+        assert.isFalse(falseUserIdInput);
+
+        sinon.assert.calledThrice(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
         assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
 
-        sinon.assert.calledOnce(createdLogger.log);
+        sinon.assert.calledThrice(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
@@ -2698,7 +2718,7 @@ describe('lib/optimizely', function() {
             var result = optlyInstance.isFeatureEnabled(null, null, attributes);
             assert.strictEqual(result, false);
             sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided feature_key is in an invalid format.');
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
           });
 
           it('returns false when feature key is undefined', function() {
@@ -2725,7 +2745,7 @@ describe('lib/optimizely', function() {
             var result = optlyInstance.isFeatureEnabled();
             assert.strictEqual(result, false);
             sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided feature_key is in an invalid format.');
+            sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided user_id is in an invalid format.');
           });
 
           it('returns false when user id is an object', function() {
@@ -2749,10 +2769,10 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Provided feature_key is in an invalid format.');
           });
 
-          it('returns false when user id is an empty string', function() {
+          it('returns true when user id is an empty string', function() {
             var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', '', attributes);
-            assert.strictEqual(result, false);
-            sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+            assert.strictEqual(result, true);
+            sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
           });
 
           it('returns false when feature key is an empty string', function() {

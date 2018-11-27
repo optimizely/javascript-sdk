@@ -726,22 +726,6 @@ describe('lib/core/project_config', function() {
       assert.strictEqual(variation2, 'controlLaunched');
     });
 
-    it('should return false for a null userId', function() {
-      var testData = testDatafile.getTestProjectConfig();
-      var configObj = projectConfig.createProjectConfig(testData);
-
-      var didSetVariation = projectConfig.setForcedVariation(configObj, 'testExperiment', null, 'control', createdLogger);
-      assert.strictEqual(didSetVariation, false);
-    });
-
-    it('should return false for an undefined userId', function() {
-      var testData = testDatafile.getTestProjectConfig();
-      var configObj = projectConfig.createProjectConfig(testData);
-
-      var didSetVariation = projectConfig.setForcedVariation(configObj, 'testExperiment', undefined, 'control', createdLogger);
-      assert.strictEqual(didSetVariation, false);
-    });
-
     it('should return false for an empty variation key', function() {
       var testData = testDatafile.getTestProjectConfig();
       var configObj = projectConfig.createProjectConfig(testData);
