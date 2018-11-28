@@ -3,9 +3,10 @@ import { OptimizelyDatafile, VariableValue, VariableValuesObject, VariableDef } 
 import { StaticUserIdLoader, UserId } from './UserIdManagers'
 import { find } from './utils'
 import { ProvidedDatafileLoader, FetchUrlDatafileLoader } from './DatafileLoaders'
-import { ResourceLoader } from './ResourceLoader'
 import { ProvidedAttributesLoader } from './UserAttributesLoaders'
-import { ResourceManager2 } from './ResourceManager'
+import { ResourceManager } from './ResourceManager'
+import { ResourceLoader } from './ResourceStream'
+import { rejects } from 'assert'
 
 // export types
 export { OptimizelyDatafile }
@@ -93,7 +94,7 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
   // This will be `datafile` and `attributes`
   private initializingPromise: Promise<any>
 
-  private resourceManager: ResourceManager2
+  private resourceManager: ResourceManager
 
   /**
    * Creates an instance of OptimizelySDKWrapper.
@@ -105,23 +106,26 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     this.datafile = null
     this.trackEventQueue = []
 
-    this.resourceManager = new ResourceManager2({
+    this.resourceManager = new ResourceManager({
       datafile: this.setupDatafileLoader(config),
       attributes: this.setupAttributesLoader(config),
       userId: this.setupUserIdLoader(config),
     })
 
-    console.log('all ready', this.resourceManager.allResourcesReady())
     if (this.resourceManager.allResourcesReady()) {
       this.onInitialized()
       this.initializingPromise = Promise.resolve()
     } else {
       // TODO handle unsubscribe
-      this.initializingPromise = new Promise(resolve => {
-        this.resourceManager.observable.subscribe({
+      this.initializingPromise = new Promise((resolve, reject) => {
+        this.resourceManager.stream.subscribe({
           complete: () => {
             this.onInitialized()
             resolve()
+          },
+          error: ({ resourceKey, reason }) => {
+            console.log('did error')
+            reject(`"${resourceKey}" failed to load: ${reason}`)
           },
         })
       })
@@ -144,7 +148,7 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     if (this.isInitialized) {
       return Promise.resolve(true)
     } else if (config.timeout == null) {
-      return this.initializingPromise.then(() => true)
+      return this.initializingPromise.then(() => true, reason => false)
     } else {
       // handle the case where its not initialized and timeout is set
 

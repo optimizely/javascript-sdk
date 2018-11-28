@@ -443,7 +443,7 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
   }
 
   describe('initializing a static Datafile with no userId', function() {
-    it.only('instantiate successfully and be immediately initailized', function() {
+    it('instantiate successfully and be immediately initailized', function() {
       const optimizely = new OptimizelySDKWrapper({
         datafile,
       })
@@ -518,8 +518,8 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
           userId,
         })
         assert.isFalse(optimizely.isInitialized)
-        await optimizely.onReady()
-        assert.isTrue(optimizely.isInitialized)
+        const result = await optimizely.onReady()
+        assert.isFalse(result)
       })
     })
 

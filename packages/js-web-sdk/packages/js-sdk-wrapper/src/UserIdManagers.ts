@@ -1,23 +1,25 @@
-import { ResourceLoader, ResourceObserver } from './ResourceLoader'
+import { ResourceLoader, ResourceEmitter } from './ResourceStream'
+import { emitter } from 'nock';
 
-export type UserId = string
+export type UserId = string | null
 
 export interface UserIdManager {
   lookup: () => string
 }
 
-export class StaticUserIdLoader implements ResourceLoader<string | null> {
-  protected userId: string | null
-  constructor(userId: string | null) {
+export class StaticUserIdLoader implements ResourceLoader<UserId> {
+  protected userId: UserId
+  constructor(userId: UserId) {
     this.userId = userId
   }
 
-  load(observer: ResourceObserver<string | null>) {
-    observer.next({
+  load(emitter: ResourceEmitter<UserId>) {
+    emitter.data({
+      resourceKey: 'userId',
       resource: this.userId,
       metadata: { source: 'fresh' },
     })
-    observer.complete()
+    emitter.complete()
   }
 }
 
@@ -49,12 +51,13 @@ export class CookieRandomUserIdLoader implements ResourceLoader<UserId> {
     return text
   }
 
-  load(observer: ResourceObserver<UserId>) {
-    observer.next({
+  load(emitter: ResourceEmitter<UserId>) {
+    emitter.data({
+      resourceKey: 'userId',
       resource: this.userId,
       metadata: { source: 'fresh' },
     })
-    observer.complete()
+    emitter.complete()
   }
 
   setCookie(cname: string, cvalue: string): void {
@@ -82,7 +85,7 @@ export class CookieRandomUserIdLoader implements ResourceLoader<UserId> {
 export class UniversalAnalyticsClientIdUserIdLoader implements ResourceLoader<UserId> {
   private intervalId: NodeJS.Timeout
   private userId: string
-  private observer?: ResourceObserver<UserId>
+  private emitter?: ResourceEmitter<UserId>
 
   constructor() {
     this.intervalId = setInterval(() => {
@@ -91,9 +94,10 @@ export class UniversalAnalyticsClientIdUserIdLoader implements ResourceLoader<Us
         this.userId = clientId
       }
 
-      if (this.userId && this.observer) {
-        this.observer.next({
+      if (this.userId && this.emitter) {
+        this.emitter.data({
           resource: this.userId,
+          resourceKey: 'userId',
           metadata: {
             source: 'fresh',
           },
@@ -102,8 +106,8 @@ export class UniversalAnalyticsClientIdUserIdLoader implements ResourceLoader<Us
     }, 50)
   }
 
-  load(observer: ResourceObserver<UserId>): void {
-    this.observer = observer
+  load(emitter: ResourceEmitter<UserId>): void {
+    this.emitter = emitter
   }
 
   getClientId(): string | undefined {

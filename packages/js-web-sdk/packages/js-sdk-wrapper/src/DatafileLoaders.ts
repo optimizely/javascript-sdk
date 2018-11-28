@@ -1,5 +1,5 @@
 import { OptimizelyDatafile } from './Datafile'
-import { ResourceLoader, ResourceObserver } from './ResourceLoader'
+import { ResourceLoader, ResourceEmitter } from './ResourceStream'
 const fetch = require('node-fetch')
 
 export class ProvidedDatafileLoader implements ResourceLoader<OptimizelyDatafile> {
@@ -9,12 +9,13 @@ export class ProvidedDatafileLoader implements ResourceLoader<OptimizelyDatafile
     this.datafile = config.datafile
   }
 
-  load(observer: ResourceObserver<OptimizelyDatafile>): void {
-    observer.next({
+  load(emitter: ResourceEmitter<OptimizelyDatafile>): void {
+    emitter.data({
+      resourceKey: 'datafile',
       resource: this.datafile,
       metadata: { source: 'fresh' },
     })
-    observer.complete()
+    emitter.complete()
   }
 }
 
@@ -45,15 +46,16 @@ export class FetchUrlDatafileLoader implements ResourceLoader<OptimizelyDatafile
     this.preferCached = !!config.preferCached
   }
 
-  load(observer: ResourceObserver<OptimizelyDatafile>): void {
+  load(emitter: ResourceEmitter<OptimizelyDatafile>): void {
     const cacheResult = this.getFromCache()
     if (cacheResult && this.shouldUseCache(cacheResult)) {
-      observer.next({
+      emitter.data({
+        resourceKey: 'datafile',
         resource: cacheResult.datafile,
         metadata: { source: 'cache' },
       })
       if (this.preferCached) {
-        observer.complete()
+        emitter.complete()
       }
       if (!this.backgroundLoadIfCacheHit) {
         // no need to load anything else, we're done
@@ -62,11 +64,12 @@ export class FetchUrlDatafileLoader implements ResourceLoader<OptimizelyDatafile
     }
     this.fetchDatafile().then(
       datafile => {
-        observer.next({
+        emitter.data({
+          resourceKey: 'datafile',
           resource: datafile,
           metadata: { source: 'fresh' },
         })
-        observer.complete()
+        emitter.complete()
         const cacheEntry: FetchUrlCacheEntry = {
           datafile,
           metadata: {
@@ -76,7 +79,10 @@ export class FetchUrlDatafileLoader implements ResourceLoader<OptimizelyDatafile
         this.saveToCache(cacheEntry)
       },
       response => {
-        observer.error({ source: 'fresh', reason: 'failed to load' })
+        emitter.error({
+          resourceKey: 'datafile',
+          reason: 'failed to load',
+        })
       },
     )
   }
