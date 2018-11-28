@@ -1,12 +1,11 @@
 import * as optimizely from '@optimizely/optimizely-sdk'
 import { OptimizelyDatafile, VariableValue, VariableValuesObject, VariableDef } from './Datafile'
-import { StaticUserIdLoader, UserId } from './UserIdManagers'
+import { StaticUserIdLoader, UserId } from './UserIdLoaders'
 import { find } from './utils'
 import { ProvidedDatafileLoader, FetchUrlDatafileLoader } from './DatafileLoaders'
 import { ProvidedAttributesLoader } from './UserAttributesLoaders'
 import { ResourceManager } from './ResourceManager'
 import { ResourceLoader } from './ResourceStream'
-import { rejects } from 'assert'
 
 // export types
 export { OptimizelyDatafile }

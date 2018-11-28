@@ -1,6 +1,6 @@
 import { OptimizelyDatafile } from './OptimizelySDKWrapper'
 import { UserAttributes } from '@optimizely/optimizely-sdk'
-import { UserId } from './UserIdManagers'
+import { UserId } from './UserIdLoaders'
 
 import {
   ResourceEmitter,

@@ -1,3 +1,3 @@
 export { OptimizelySDKWrapper } from './OptimizelySDKWrapper'
 export { OptimizelyDatafile, VariableValuesObject } from './Datafile'
-export { CookieRandomUserIdLoader } from './UserIdManagers';
+export { CookieRandomUserIdLoader } from './UserIdLoaders';
