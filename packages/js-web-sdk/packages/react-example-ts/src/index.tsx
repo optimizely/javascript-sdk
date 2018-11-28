@@ -1,11 +1,11 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import App from './App';
-import { OptimizelySDKWrapper } from '@optimizely/js-sdk-wrapper';
+import { OptimizelySDKWrapper, CookieRandomUserIdLoader } from '@optimizely/js-sdk-wrapper';
 
 ;(async function () {
   const optimizely = new OptimizelySDKWrapper({
-    userId: 'jordan',
+    userIdLoader: new CookieRandomUserIdLoader(),
     datafileUrl: 'https://optimizely.s3.amazonaws.com/datafiles/BsSyVRsUbE3ExgGCJ9w1to.json',
   })
 

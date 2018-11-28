@@ -102,7 +102,7 @@ class App extends Component {
 }
 ```
 
-In the above example, setting `timeout={50}` will allow any Optimizely components to wait up to 50ms for the datafile to load. 
+In the above example, setting `timeout={50}` will allow any Optimizely components to wait up to 50ms for the datafile to load.
 
 _Benefits to the React approach_
 In the case where the datafile is already loaded, either from being on the page already or cached in local storage this approach doesn’t have a flash or a loading spinner.

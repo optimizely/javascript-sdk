@@ -124,7 +124,6 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
             resolve()
           },
           error: ({ resourceKey, reason }) => {
-            console.log('did error')
             reject(`"${resourceKey}" failed to load: ${reason}`)
           },
         })

@@ -37,7 +37,7 @@ class App extends React.Component<AppProps> {
     const { optimizely } = this.props
 
     return (
-      <OptimizelyProvider optimizely={optimizely} timeout={100}>
+      <OptimizelyProvider optimizely={optimizely} timeout={200}>
         <div className="App">
           <Example title="Experiment Example">
             <p>
