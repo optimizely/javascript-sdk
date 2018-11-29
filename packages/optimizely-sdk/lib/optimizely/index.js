@@ -333,6 +333,10 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
 * @return boolean A boolean value that indicates if the set completed successfully.
 */
 Optimizely.prototype.setForcedVariation = function(experimentKey, userId, variationKey) {
+  if (!this.__validateInputs({ experiment_key: experimentKey, user_id: userId })) {
+    return false;
+  }
+
   try {
     return projectConfig.setForcedVariation(this.configObj, experimentKey, userId, variationKey, this.logger);
   } catch (ex) {
@@ -349,6 +353,10 @@ Optimizely.prototype.setForcedVariation = function(experimentKey, userId, variat
  * @return {string|null} The forced variation key.
 */
 Optimizely.prototype.getForcedVariation = function(experimentKey, userId) {
+  if (!this.__validateInputs({ experiment_key: experimentKey, user_id: userId })) {
+    return null;
+  }
+
   try {
     return projectConfig.getForcedVariation(this.configObj, experimentKey, userId, this.logger);
   } catch (ex) {
@@ -359,7 +367,7 @@ Optimizely.prototype.getForcedVariation = function(experimentKey, userId) {
 };
 
 /**
- * Validates user ID and attributes parameters
+ * Validate string inputs, user attributes and event tags.
  * @param  {string}  stringInputs   Map of string keys and associated values
  * @param  {Object}  userAttributes Optional parameter for user's attributes
  * @param  {Object}  eventTags      Optional parameter for event tags
@@ -368,6 +376,16 @@ Optimizely.prototype.getForcedVariation = function(experimentKey, userId) {
  */
 Optimizely.prototype.__validateInputs = function(stringInputs, userAttributes, eventTags) {
   try {
+    // Null, undefined or non-string user Id is invalid.
+    if (stringInputs.hasOwnProperty('user_id')) {
+      var userId = stringInputs.user_id;
+      if (typeof userId !== 'string' || userId === null || userId === 'undefined') {
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, 'user_id'));
+      }
+
+      delete stringInputs.user_id;
+    }
+
     var inputKeys = Object.keys(stringInputs);
     for (var index = 0; index < inputKeys.length; index++) {
       var key = inputKeys[index];
@@ -533,6 +551,10 @@ Optimizely.prototype.getEnabledFeatures = function (userId, attributes) {
     var enabledFeatures = [];
     if (!this.isValidInstance) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getEnabledFeatures'));
+      return enabledFeatures;
+    }
+
+    if (!this.__validateInputs({ user_id: userId })) {
       return enabledFeatures;
     }
 
