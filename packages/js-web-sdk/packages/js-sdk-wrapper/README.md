@@ -1,4 +1,13 @@
-# JS Web SDK
+# JS SDK Wrapper
+
+# What is it
+
+- A backwards compatible wrapper around the JavascriptSDK
+- Provides extendible datafile loading and caching strategies
+- Handles async loading of userId and UserAttributes
+- Provides mechanisms to block rendering / execution until Optimizely is loaeded with a fallback timeout
+- All new features are opt-in, can be used exactly the same way as JavascriptSDK if desired
+
 
 # Datafile loading / management
 
@@ -136,64 +145,24 @@ optimizely.activate('my-exp', 'otheruser', {
 // TODO: does easy event tracking fix this?
 ```
 
-## Generating a random user Id
+## Generating a random user Id and storing in cookie
 
-The following code will generate a random userId if the user doesnt already have one saved in localStorage.
+The following code will generate a random userId if the user doesnt already have one saved in a cookie.
 
 ```js
 import {
   Optimizely,
-  LocalStorageRandomUserIdManager
+  CookieRandomUserIdLoader,
 } from '@optimizely/js-web-sdk'
 
-const userIdManager = new LocalStorageRandomUserIdManager()
 const optimizely = new Optimizely({
   datafile: window.datafile,
-  userIdManager,
+  userIdLoader: new CookieRandomUserIdLoader(),
   attibutes: {
     plan_type: 'silver'
   }
 })
 ```
-
-## Implementing your own UserIdManager
-
-It's quite easy to implement your own userId manager, perhaps you want to make userIds only last a certain duration, or you want to dynamically change them.  You just have to implement the below interface, and pass it to the `Optimizely` constructor
-
-```typescript
-interface UserIdManager {
-  lookup: () => string
-}
-```
-
-Below is a sample random User ID Manager
-
-```js
-class LocalStorageRandomUserIdManager {
-  constructor(config = {}) {
-    this.localStorageKey = config.localStorageKey || 'optly_fs_userid'
-    const existing = window.localStorage.getItem(this.localStorageKey)
-    if (!existing) {
-      this.userId = this.randomUserId()
-      window.localStorage.setItem(this.localStorageKey, this.userId)
-    } else {
-      this.userId = existing
-    }
-  }
-  randomUserId() {
-    var text = ''
-    var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-    for (var i = 0; i < 5; i++)
-      text += possible.charAt(Math.floor(Math.random() * possible.length))
-    return text
-  }
-  lookup() {
-    return this.userId
-  }
-}
-````
-
-The `userIdManager.lookup` is called whenever a function requiring the userId is invoked.
 
 ## Not managing User IDs
 

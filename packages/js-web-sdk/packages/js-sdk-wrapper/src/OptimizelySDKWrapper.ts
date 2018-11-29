@@ -143,9 +143,7 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
   public async onReady(config: { timeout?: number } = {}): Promise<boolean> {
     let timeoutId: number | undefined
 
-    if (this.isInitialized) {
-      return Promise.resolve(true)
-    } else if (config.timeout == null) {
+    if (config.timeout == null) {
       return this.initializingPromise.then(() => true, reason => false)
     } else {
       // handle the case where its not initialized and timeout is set
