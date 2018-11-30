@@ -36,7 +36,7 @@ var DECISION_SOURCES = enums.DECISION_SOURCES;
  * The decision service contains all logic determining how a user decision is made. The following tasks are performed in order:
  *   1. Check the experiment status.
  *   2. Check for forced bucketing.
- *   3. Check for whitelisting.
+ *   3. Check for white listing.
  *   4. Check the user profile service for past bucketing decisions (sticky bucketing).
  *   5. Check for audience targeting.
  *   6. Bucket the user.
@@ -120,7 +120,7 @@ DecisionService.prototype.__resolveExperimentBucketMap = function(userId, attrib
 
 
 /**
- * Checks whether the experiment is running or launched.
+ * Returns a boolean indicating whether the experiment is running or launched.
  * @param  {string}  experimentKey   The ID of the of experiment being validated.
  * @param  {string}  userId          The ID of the user.
  * @return {boolean} `true` if the experiment is running, `false` if the experiment is not running.
@@ -139,7 +139,7 @@ DecisionService.prototype.__checkIfExperimentIsActive = function(experimentKey, 
  * Checks if a user is whitelisted into any variation, and returns that variation.
  * @param  {Object} experiment    The experiment to check for any forced variations.
  * @param  {string} userId        The ID of the user for whom to get the variation.
- * @return {string|null} The forced variation, if it exists, for the specified user ID; `null` otherwise.
+ * @return {string|null} The forced variation for the specified user ID or `null` if a forced variation doesn't exist.
  */
 DecisionService.prototype.__getWhitelistedVariation = function(experiment, userId) {
   if (!fns.isEmpty(experiment.forcedVariations) && experiment.forcedVariations.hasOwnProperty(userId)) {
@@ -159,11 +159,11 @@ DecisionService.prototype.__getWhitelistedVariation = function(experiment, userI
 };
 
 /**
- * Checks if a user is included in an experiment's audience.
+ * Returns a boolean indicating if a user is included in an experiment's audience.
  * @param  {string}  experimentKey The ID of the experiment being validated.
  * @param  {string}  userId        The ID of the user to check.
  * @param  {Object}  attributes    An optional key/value pair collection containing user attributes.
- * @return {boolean} `true` if the user meets audience conditions; `false` otherwise.
+ * @return {boolean} `true` if the user satisfies the audience conditions or `false` if it doesn't.
  */
 DecisionService.prototype.__checkIfUserIsInAudience = function(experimentKey, userId, attributes) {
   var experimentAudienceConditions = projectConfig.getExperimentAudienceConditions(this.configObj, experimentKey);
@@ -369,7 +369,7 @@ DecisionService.prototype._getExperimentInGroup = function(group, userId) {
  * @param   {String} userId     The ID of the user for the variation.
  * @param   {Object} attributes An optional key/value pair collection containing user attributes.
  * @return  {Object} An object containing 'experiment', 'variation', and 'decisionSource' properties.
- * If the user was not bucketed into a variation, the variation property is null. If there are no experiments in the rollout, the experiment property is null.
+ * If the user was not bucketed into a variation, the variation property is `null`. If there are no experiments in the rollout, the experiment property is `null`.
  */
 DecisionService.prototype._getVariationForRollout = function(feature, userId, attributes) {
   if (!feature.rolloutId) {
