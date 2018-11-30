@@ -338,10 +338,6 @@ module.exports = {
    * @throws If the user id is not valid
    */
   setInForcedVariationMap: function(projectConfig, userId, experimentId, variationId, logger) {
-    if (!userId) {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_ID, MODULE_NAME));
-    }
-
     if (projectConfig.forcedVariationMap.hasOwnProperty(userId)) {
       projectConfig.forcedVariationMap[userId][experimentId] = variationId;
     } else {

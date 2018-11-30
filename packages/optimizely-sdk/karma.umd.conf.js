@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// Karma configuration for cross-browser testing
+// Karma configuration for UMD bundle testing
 const baseConfig = require('./karma.base.conf.js')
 
 module.exports = function(config) {
@@ -27,7 +27,8 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      './lib/index.browser.tests.js'
+      './dist/optimizely.browser.umd.min.js',
+      './lib/index.browser.umdtests.js'
     ],
   });
 };
