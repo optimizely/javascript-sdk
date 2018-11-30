@@ -63,6 +63,26 @@ This is the alpha release of the 3.0 SDK, which includes a number of improvement
 
 - Previously, when a 'not' audience condition was applied to a malformed attribute, it was possible for the condition to evaluate to `true`.  We’ve corrected this behavior, so that malformed attributes always evaluate to `null` and are ignored ([#174](https://github.com/optimizely/javascript-sdk/pull/174)).
 
+## [2.3.0] - November 14, 2018
+
+### New Features
+* Allow sticky bucketing via passing in `attributes.$opt_experiment_bucket_map`, this more easily allows customers to do some async data fetching and ensure a user gets a specific variation.
+
+```
+const userId = '123'
+const expId = '456'
+const variationId = '678'
+const userAttributes = {
+  $opt_experiment_bucket_map: {
+    [expId]: {
+      variation_id: variationId
+    }
+  }
+}
+
+var selectedVariationKey = optimizelyClient.activate('experiment-1', userId, userAttributes);
+```
+
 ## [2.2.0] - September 26, 2018
 
 ### Fixed
