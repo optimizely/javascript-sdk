@@ -38,15 +38,18 @@ var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
 /** @public
  * @class
  * The Optimizely client class containing an API to programmatically interact with Optimizely.
- * The constructor takes in information to configure Optimizely.
+ * The constructor accepts a configuration object to configure Optimizely.
+ * For more information see [Instantiate](https://dash.readme.io/project/staging-optimizely-full-stack/v2/docs/instantiate).
  * @param {Object} config                     Contains information to configure Optimizely.
- * @param {string} config.clientEngine        Specifies the type of JavaScript used by the client. The value for this field must be set to "enums.NODE_CLIENT_ENGINE" or "enums.JAVASCRIPT_CLIENT_ENGINE".
+ * @param {string} config.clientEngine        Specifies the type of JavaScript used by the client. The value for this field must 
+ *                                            be set to "enums.NODE_CLIENT_ENGINE" or "enums.JAVASCRIPT_CLIENT_ENGINE".
  * @param {string} config.clientVersion       Specifies the version of the client's JavaScript engine.
  * @param {Object} config.datafile            The JSON string representing the project.
- * @param {Object} config.errorHandler        An error handler to handle errors.
+ * @param {Object} config.errorHandler        An error handler object to handle errors.
  * @param {Object} config.eventDispatcher     An event dispatcher to manage network calls.
- * @param {Object} config.logger              Used to log information.
- * @param {Object} config.skipJSONValidation  Specifies whether the JSON should be validated. Set to "true" to perform JSON validation on the schema, or "false" to skip validation.
+ * @param {Object} config.logger              A logger object to log issues.
+ * @param {Object} config.skipJSONValidation  Specifies whether the JSON should be validated. Set to "true" to perform JSON validation 
+ *                                            on the schema, or "false" to skip validation.
  * @param {Object} config.userProfileService  A user profile service.
  */
 function Optimizely(config) {
@@ -109,11 +112,15 @@ function Optimizely(config) {
 }
 
 /** 
- * Buckets a visitor and sends an impression event to Optimizely.
+ * Activates an A/B test for a user, deciding whether they qualify for the experiment, bucketing them into a variation 
+ * if they do, and sending an impression event to Optimizely.
+ * For more information see [Activate](https://dash.readme.io/project/staging-optimizely-full-stack/v2/docs/instantiate).
  * @param  {string}      experimentKey  The key of the experiment for which to activate the variation.
  * @param  {string}      userId         The ID of the user for whom to activate the variation.
- * @param  {Object}      attributes     An optional map of up to 100 custom key-value string pairs. The attribute keys can be set to "experiment key", "user id", and "attributes".
- * @return {string|null} variation key  A key identifying the variation where the visitor will be bucketed, or `null` if the experiment is not running, the user is not in the experiment, or the datafile is invalid.
+ * @param  {Object}      attributes     An optional map of up to 100 custom key-value string pairs defining attributes for the user. 
+ *                                      See [Define audiences and attributes](https://docs.developers.optimizely.com/full-stack/docs/attributes-and-audiences) for more information.
+ * @return {string|null} variation key  A key identifying the variation where the visitor will be bucketed, or `null` if the 
+ *                                      experiment is not running, the user is not in the experiment, or the datafile is invalid.
  */
 Optimizely.prototype.activate = function (experimentKey, userId, attributes) {
   try {
@@ -163,7 +170,8 @@ Optimizely.prototype.activate = function (experimentKey, userId, attributes) {
  * @param {string} experimentKey  The key of the experiment that was activated.
  * @param {string} variationKey   The key of the variation shown in the experiment that was activated.
  * @param {string} userId         The ID of the user to whom the variation was shown.
- * @param {Object} attributes     An optional map of up to 100 custom key-value string pairs. The attribute keys can be set to "experiment key", "user id", and "attributes".
+ * @param {Object} attributes     An optional map of up to 100 custom key-value string pairs specifying attributes 
+ *                                for the user. See [Define audiences and attributes](https://docs.developers.optimizely.com/full-stack/docs/attributes-and-audiences) for more information.
  */
 Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey, userId, attributes) {
   var variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(this.configObj, experimentKey, variationKey);
@@ -208,10 +216,13 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
 };
 
 /**
- * Sends a conversion event to Optimizely.
- * @param  {string} eventKey   The key of the event to be tracked. This key must match the event key provided when the event was created in the Optimizely app.
- * @param  {string} userId     The key of the user associated with the event being tracked.
- * @param  {string} attributes An optional map of up to 100 custom key-value string pairs. The attribute keys can be set to "experiment key", "user id", and "attributes".
+ * Tracks a conversion event.
+ * For more information see [Track](https://dash.readme.io/project/staging-optimizely-full-stack/v2/docs/track).
+ * @param  {string} eventKey   The key of the event to be tracked. This key must match the event key provided when the event 
+ *                             was created in the Optimizely app.
+ * @param  {string} userId     The ID of the user associated with the event being tracked.
+ * @param  {string} attributes An optional map of up to 100 custom key-value string pairs specifying attributes for the user. 
+ *                             See [Define audiences and attributes](https://docs.developers.optimizely.com/full-stack/docs/attributes-and-audiences) for more information.
  * @param  {Object} eventTags  A map of key-value string pairs specifying event names and their corresponding event values associated with the event.
  */
 Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
@@ -294,10 +305,13 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
  * This method performs the same logic as the "Activate" method, where it activates an A/B test for a user and 
  * buckets them into a variation if they qualify for the experiment. Unlike the "Activate" method, getVariation 
  * does not send an impression network request. 
+ * For more information see [Get Variation](https://dash.readme.io/project/staging-optimizely-full-stack/v2/docs/get-variation).
  * @param  {string}      experimentKey  The key of the experiment for which to retrieve the forced variation.
  * @param  {string}      userId         The ID of the user for whom to retrieve the forced variation.
- * @param  {Object}      attributes     An optional map of up to 100 custom key-value string pairs. The attribute keys can be set to "experiment key", "user id", and "attributes".
- * @return {string|null} variation key  A key identifying the variation where the visitor will be bucketed, or `null` if the experiment is not running, the user is not in the experiment, or the datafile is invalid.
+ * @param  {Object}      attributes     An optional map of up to 100 custom key-value string pairs specifying attributes for the user. 
+ *                                      See [Define audiences and attributes](https://docs.developers.optimizely.com/full-stack/docs/attributes-and-audiences) for more information.
+ * @return {string|null} variation key  A key identifying the variation where the visitor will be bucketed, or `null` if the 
+ *                                      experiment is not running, the user is not in the experiment, or the datafile is invalid.
  */
 Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) {
   try {
@@ -333,6 +347,7 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
 /**
 * Forces a user into a variation for a given experiment for the lifetime of the Optimizely client. 
 * This is used to force a user into a specific variation or a personalized experience for a given experiment.
+* For more information see [Is Feature Enabled](https://dash.readme.io/project/staging-optimizely-full-stack/v2/docs/is-feature-enabled).
 * @param {string} experimentKey  The key of the experiment for which to set the forced variation.
 * @param {string} userId         The ID of the user for whom to set the forced variation.
 * @param {string|null} variationKey The ID of the variation to force the user into. Set the value to null to clear the existing experiment-to-variation mapping.
@@ -351,6 +366,7 @@ Optimizely.prototype.setForcedVariation = function(experimentKey, userId, variat
 /**
  * Gets the forced variation for a given user and experiment. A user can be forced into a variation for
  * a given experiment for the lifetime of the Optimizely client.
+ * For more information see [Get Forced Variation](https://dash.readme.io/project/staging-optimizely-full-stack/v2/docs/get-forced-variation).
  * @param  {string} experimentKey  The key of the experiment for which to retrieve the forced variation.
  * @param  {string} userId         The ID of the user for whom to retrieve the forced variation.
  * @return {string|null}           A variation key identifying the forced variation for the specified experiment and user.
@@ -402,7 +418,8 @@ Optimizely.prototype.__validateInputs = function(stringInputs, userAttributes, e
  * the user has been bucketed into.
  * @param  {string} eventKey    The key of the experiment for which to retrieve experiments.
  * @param  {string} userId      The ID of the user for whom to retrieve experiments.
- * @param  {Object} attributes  An optional map of up to 100 custom key-value string pairs. The attribute keys can be set to "experiment key", "user id", and "attributes".
+ * @param  {Object} attributes  An optional map of up to 100 custom key-value string pairs specifying attributes for the user.
+ *                              See [Define audiences and attributes](https://docs.developers.optimizely.com/full-stack/docs/attributes-and-audiences) for more information.
  * @return {Object}             A map of experiment keys for which to track to variations in which the user has been bucketed.
  */
 Optimizely.prototype.__getValidExperimentsForEvent = function(eventKey, userId, attributes) {
@@ -487,9 +504,12 @@ Optimizely.prototype.__filterEmptyValues = function (map) {
 /**
  * Determines whether a feature test or rollout is enabled for a given user. 
  * This is used to separate the process of developing and deploying features, from the decision to turn on a feature. 
- * @param {string} featureKey   They key of the feature on which to perform the check. 
- * @param {string} userId       The ID of the user on which to perform the check.
- * @param {Object} attributes   An optional map of up to 100 custom key-value string pairs. The attribute keys can be set to "experiment key", "user id", and "attributes".
+ * For more information see [Is Feature Enabled](https://dash.readme.io/project/staging-optimizely-full-stack/v2/docs/is-feature-enabled).
+ * @param {string} featureKey   They key of the feature on which to perform the check. The feature key is defined in the Features dashboard, as described in 
+ *                              [Feature tests: Experiment on features](https://help.optimizely.com/Build_Campaigns_and_Experiments/Feature_tests%3A_Experiment_on_features).
+ * @param {string} userId       The ID of the user on which to perform the check. See [User IDs](https://docs.developers.optimizely.com/full-stack/docs/user-ids).
+ * @param {Object} attributes   An optional map of up to 100 custom key-value string pairs specifying attributes for the user. 
+ *                              See [Define audiences and attributes](https://docs.developers.optimizely.com/full-stack/docs/attributes-and-audiences) for more information.
  * @return {boolean}            "true" if the feature is enabled for the user, or "false" if the feature is not enabled for the user.
  */
 Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes) {
@@ -532,8 +552,10 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
 /**
  * Retrieves a list of features that are enabled for the user.
  * Invoking this method is equivalent to running "IsFeatureEnabled" for each sequential feature in the datafile.
+ * For more information see [Get Enabled Features](https://dash.readme.io/project/staging-optimizely-full-stack/v2/docs/get-enabled-features).
  * @param {string} userId      The ID of the user for whom to return the list of features for.
- * @param {Object} attributes  An optional map of up to 100 custom key-value string pairs. The attribute keys can be set to "experiment key", "user id", and "attributes".
+ * @param {Object} attributes  An optional map of up to 100 custom key-value string pairs specifying attributes for the user. 
+ *                             See [Define audiences and attributes](https://docs.developers.optimizely.com/full-stack/docs/attributes-and-audiences) for more information.
  * @return {Array} An array of keys corresponding to the features that are enabled for the user.
  */
 Optimizely.prototype.getEnabledFeatures = function (userId, attributes) {
@@ -572,7 +594,8 @@ Optimizely.prototype.getEnabledFeatures = function (userId, attributes) {
  *                              accessed. The value must be set to one of the "FEATURE_VARIABLE_TYPES"
  *                              (defined in lib/utils/enums/index.js).
  * @param {string} userId       The ID of the user.
- * @param {Object} attributes   An optional map of up to 100 custom key-value string pairs. The attribute keys can be set to "experiment key", "user id", and "attributes".
+ * @param {Object} attributes   An optional map of up to 100 custom key-value string pairs specifying attributes for the user.
+ *                              See [Define audiences and attributes](https://docs.developers.optimizely.com/full-stack/docs/attributes-and-audiences) for more information.
  * @return {*}                  The value of the variable cast to the appropriate
  *                              type, or null if the feature key is invalid, the
  *                              variable key is invalid, or there is a mismatch
@@ -619,13 +642,13 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
 
 /**
  * Returns the value for the specified boolean variable associated with a feature.
- * flag.
- * @param {string} featureKey   The key of the feature whose variable's value is
- *                              being accessed.
- * @param {string} variableKey  The key of the variable whose value is being
- *                              accessed.
- * @param {string} userId       The ID of the user associated with the feature and key whose value is being accessed.
- * @param {Object} attributes   An optional map of up to 100 custom key-value string pairs. The attribute keys can be set to "experiment key", "user id", and "attributes".
+ * For more information see [Get Feature Variable](https://dash.readme.io/project/staging-optimizely-full-stack/v2/docs/get-feature-variable).
+ * @param {string} featureKey   The key of the feature whose variable's value is being accessed. The feature key is defined in the Features dashboard, as described in 
+ *                              [Feature tests: Experiment on features](https://help.optimizely.com/Build_Campaigns_and_Experiments/Feature_tests%3A_Experiment_on_features).
+ * @param {string} variableKey  The key of the variable whose value is being accessed.
+ * @param {string} userId       The ID of the user participating in the experiment. See [Create user IDs](https://docs.developers.optimizely.com/full-stack/docs/user-ids) for more information.
+ * @param {Object} attributes   An optional map of up to 100 custom key-value string pairs specifying attributes for the user. 
+ *                              See [Define audiences and attributes](https://docs.developers.optimizely.com/full-stack/docs/attributes-and-audiences) for more information.
  * @return {boolean|null}       The boolean value of the variable, or null if the
  *                              feature key is invalid, the variable key is
  *                              invalid, or there is a mismatch with the type
@@ -642,14 +665,15 @@ Optimizely.prototype.getFeatureVariableBoolean = function (featureKey, variableK
 };
 
 /**
- * Returns the value for the given double variable associated with a feature.
- * flag.
- * @param {string} featureKey   The key of the feature whose variable's value is
- *                              being accessed.
- * @param {string} variableKey  The key of the variable whose value is being
- *                              accessed.
- * @param {string} userId       The ID of the user associated with the feature and key whose value is being accessed.
- * @param {Object} attributes   An optional map of up to 100 custom key-value string pairs. The attribute keys can be set to "experiment key", "user id", and "attributes".
+ * Evaluates and returns the value for the given double variable associated with a feature.
+ * For more information see [Get Feature Variable](https://dash.readme.io/project/staging-optimizely-full-stack/v2/docs/get-feature-variable).
+ * @param {string} featureKey   The key of the feature whose variable's value is being accessed. The feature key is defined in the Features dashboard, as described in 
+ *                              [Feature tests: Experiment on features](https://help.optimizely.com/Build_Campaigns_and_Experiments/Feature_tests%3A_Experiment_on_features).
+ * @param {string} variableKey  The key of the variable whose value is being accessed.
+ * @param {string} userId       The ID of the user participating in the experiment.
+ *                              See [Create user IDs](https://docs.developers.optimizely.com/full-stack/docs/user-ids) for more information.
+ * @param {Object} attributes   An optional map of up to 100 custom key-value string pairs specifying attributes for the user.
+ *                              See [Define audiences and attributes](https://docs.developers.optimizely.com/full-stack/docs/attributes-and-audiences) for more information.
  * @return {number|null}        The numeric value of the variable, or null if the
  *                              feature key is invalid, the variable key is
  *                              invalid, or there is a mismatch with the type
@@ -666,14 +690,15 @@ Optimizely.prototype.getFeatureVariableDouble = function (featureKey, variableKe
 };
 
 /**
- * Returns the value for the given integer variable associated with a feature.
- * flag.
- * @param {string} featureKey   The key of the feature whose variable's value is
- *                              being accessed.
- * @param {string} variableKey  The key of the variable whose value is being
- *                              accessed.
- * @param {string} userId       The ID of the user associated with the feature and key whose value is being accessed.
- * @param {Object} attributes   An optional map of up to 100 custom key-value string pairs. The attribute keys can be set to "experiment key", "user id", and "attributes".
+ * Evaluates and returns the value for the given integer variable associated with a feature.
+ * For more information see [Get Feature Variable](https://dash.readme.io/project/staging-optimizely-full-stack/v2/docs/get-feature-variable).
+ * @param {string} featureKey   The key of the feature whose variable's value is being accessed. The feature key is defined in the Features dashboard, as described in 
+ *                              [Feature tests: Experiment on features](https://help.optimizely.com/Build_Campaigns_and_Experiments/Feature_tests%3A_Experiment_on_features).
+ * @param {string} variableKey  The key of the variable whose value is being accessed.
+ * @param {string} userId       The ID of the user participating in the experiment.
+ *                              See [Create user IDs](https://docs.developers.optimizely.com/full-stack/docs/user-ids) for more information.
+ * @param {Object} attributes   An optional map of up to 100 custom key-value string pairs specifying attributes for the user. 
+ *                              See [Define audiences and attributes](https://docs.developers.optimizely.com/full-stack/docs/attributes-and-audiences) for more information.
  * @return {number|null}        The numeric value of the variable, or null if the
  *                              feature key is invalid, the variable key is
  *                              invalid, or there is a mismatch with the type
@@ -690,14 +715,15 @@ Optimizely.prototype.getFeatureVariableInteger = function (featureKey, variableK
 };
 
 /**
- * Returns the value for the given string variable associated with a given feature.
- * flag.
- * @param {string} featureKey   The key of the feature whose variable's value is
- *                              being accessed.
- * @param {string} variableKey  The key of the variable whose value is being
- *                              accessed.
- * @param {string} userId       The ID for the user associated with the feature and key whose value is being accessed.
- * @param {Object} attributes   An optional map of up to 100 custom key-value string pairs. The attribute keys can be set to "experiment key", "user id", and "attributes".
+ * Evaluates and returns the value for the given string variable associated with a given feature.
+ * For more information see [Get Feature Variable](https://dash.readme.io/project/staging-optimizely-full-stack/v2/docs/get-feature-variable).
+ * @param {string} featureKey   The key of the feature whose variable's value is being accessed. The feature key is defined in the Features dashboard, as described in 
+ *                              [Feature tests: Experiment on features](https://help.optimizely.com/Build_Campaigns_and_Experiments/Feature_tests%3A_Experiment_on_features).
+ * @param {string} variableKey  The key of the variable whose value is being accessed.
+ * @param {string} userId       The ID of the user participating in the experiment. 
+ *                              See [Create user IDs](https://docs.developers.optimizely.com/full-stack/docs/user-ids) for more information.
+ * @param {Object} attributes   An optional map of up to 100 custom key-value string pairs specifying attributes for the user.
+ *                              See [Define audiences and attributes](https://docs.developers.optimizely.com/full-stack/docs/attributes-and-audiences) for more information.
  * @return {string|null}        The string value of the variable, or null if the
  *                              feature key is invalid, the variable key is
  *                              invalid, or there is a mismatch with the type
