@@ -13,7 +13,7 @@
     "lint": "eslint lib/**",
     "cover": "istanbul cover _mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js",
     "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls",
-    "prepublishOnly": "npm run build-browser-umd && npm test && npm run test-xbrowser"
+    "prepublishOnly": "npm run build-browser-umd && npm test && npm run test-ci"
   },
   "repository": {
     "type": "git",
