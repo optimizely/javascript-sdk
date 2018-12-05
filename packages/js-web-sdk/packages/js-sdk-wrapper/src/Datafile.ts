@@ -48,7 +48,7 @@ export type Attribute = {
 }
 
 export type VariableDef = {
-  readonly defaultValue: string | number | boolean
+  readonly defaultValue: string
   readonly type: VariableType
   readonly id: string
   readonly key: string
@@ -77,7 +77,7 @@ export type TrafficAllocation = {
 
 export type ExperimentVariationVariables = {
   readonly id: string
-  readonly value: string | boolean | number
+  readonly value: string
 }
 
 namespace Experiment {

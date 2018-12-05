@@ -31,6 +31,9 @@ function testPublicApi(userId: string, createOptimizelyFn: () => Promise<Optimiz
     sandbox.spy(optimizely.instance, 'getVariation')
     sandbox.spy(optimizely.instance, 'isFeatureEnabled')
     sandbox.spy(optimizely.instance, 'getFeatureVariableString')
+    sandbox.spy(optimizely.instance, 'getFeatureVariableDouble')
+    sandbox.spy(optimizely.instance, 'getFeatureVariableInteger')
+    sandbox.spy(optimizely.instance, 'getFeatureVariableBoolean')
     sandbox.spy(optimizely.instance, 'getEnabledFeatures')
     sandbox.spy(optimizely.instance, 'getForcedVariation')
     sandbox.spy(optimizely.instance, 'setForcedVariation')
@@ -156,6 +159,181 @@ function testPublicApi(userId: string, createOptimizelyFn: () => Promise<Optimiz
       assert.equal(result, true)
     })
   })
+  describe('getFeatureVariableString', function() {
+    const featureKey = 'variable_test_feature'
+    const variableKey = 'stringVar'
+    const expected = 'value'
+
+    it('should allow getFeatureVariableString(featureKey, variableKey)', function() {
+      const result = optimizely.getFeatureVariableString(featureKey, variableKey)
+      assert.equal(result, expected)
+    })
+
+    it('should allow getFeatureVariableString(featureKey, variableKey, overrideUserId)', function() {
+      const overrideUserId = 'jon'
+      const result = optimizely.getFeatureVariableString(featureKey, 'stringVar', overrideUserId)
+      assert.equal(result, expected)
+
+      sandbox.assert.calledOnce(optimizely.instance.getFeatureVariableString as sinon.SinonSpy)
+      sandbox.assert.calledWithExactly(
+        optimizely.instance.getFeatureVariableString as sinon.SinonSpy,
+        featureKey,
+        variableKey,
+        overrideUserId,
+        {},
+      )
+    })
+
+    it('should allow getFeatureVariableString(featureKey, variableKey, overrideUserId, overrideAttributes)', function() {
+      const overrideUserId = 'jon'
+      const overrideAttributes = {
+        foo: 'bar',
+      }
+      const result = optimizely.getFeatureVariableString(featureKey, 'stringVar', overrideUserId, overrideAttributes)
+      assert.equal(result, expected)
+
+      sandbox.assert.calledOnce(optimizely.instance.getFeatureVariableString as sinon.SinonSpy)
+      sandbox.assert.calledWithExactly(
+        optimizely.instance.getFeatureVariableString as sinon.SinonSpy,
+        featureKey,
+        variableKey,
+        overrideUserId,
+        overrideAttributes,
+      )
+    })
+  })
+
+  describe('getFeatureVariableBoolean', function() {
+    const featureKey = 'variable_test_feature'
+    const variableKey = 'booleanVar'
+    const expected = true
+
+    it('should allow getFeatureVariableBoolean(featureKey, variableKey)', function() {
+      const result = optimizely.getFeatureVariableBoolean(featureKey, variableKey)
+      assert.equal(result, expected)
+    })
+
+    it('should allow getFeatureVariableBoolean(featureKey, variableKey, overrideUserId)', function() {
+      const overrideUserId = 'jon'
+      const result = optimizely.getFeatureVariableBoolean(featureKey, variableKey, overrideUserId)
+      assert.equal(result, expected)
+
+      sandbox.assert.calledOnce(optimizely.instance.getFeatureVariableBoolean as sinon.SinonSpy)
+      sandbox.assert.calledWithExactly(
+        optimizely.instance.getFeatureVariableBoolean as sinon.SinonSpy,
+        featureKey,
+        variableKey,
+        overrideUserId,
+        {},
+      )
+    })
+
+    it('should allow getFeatureVariableBoolean(featureKey, variableKey, overrideUserId, overrideAttributes)', function() {
+      const overrideUserId = 'jon'
+      const overrideAttributes = {
+        foo: 'bar',
+      }
+      const result = optimizely.getFeatureVariableBoolean(featureKey, variableKey, overrideUserId, overrideAttributes)
+      assert.equal(result, expected)
+
+      sandbox.assert.calledOnce(optimizely.instance.getFeatureVariableBoolean as sinon.SinonSpy)
+      sandbox.assert.calledWithExactly(
+        optimizely.instance.getFeatureVariableBoolean as sinon.SinonSpy,
+        featureKey,
+        variableKey,
+        overrideUserId,
+        overrideAttributes,
+      )
+    })
+  })
+
+  describe('getFeatureVariableInteger', function() {
+    const featureKey = 'variable_test_feature'
+    const variableKey = 'integerVar'
+    const expected = 10
+
+    it('should allow getFeatureVariableInteger(featureKey, variableKey)', function() {
+      const result = optimizely.getFeatureVariableInteger(featureKey, variableKey)
+      assert.equal(result, expected)
+    })
+
+    it('should allow getFeatureVariableInteger(featureKey, variableKey, overrideUserId)', function() {
+      const overrideUserId = 'jon'
+      const result = optimizely.getFeatureVariableInteger(featureKey, variableKey, overrideUserId)
+      assert.equal(result, expected)
+
+      sandbox.assert.calledOnce(optimizely.instance.getFeatureVariableInteger as sinon.SinonSpy)
+      sandbox.assert.calledWithExactly(
+        optimizely.instance.getFeatureVariableInteger as sinon.SinonSpy,
+        featureKey,
+        variableKey,
+        overrideUserId,
+        {},
+      )
+    })
+
+    it('should allow getFeatureVariableInteger(featureKey, variableKey, overrideUserId, overrideAttributes)', function() {
+      const overrideUserId = 'jon'
+      const overrideAttributes = {
+        foo: 'bar',
+      }
+      const result = optimizely.getFeatureVariableInteger(featureKey, variableKey, overrideUserId, overrideAttributes)
+      assert.equal(result, expected)
+
+      sandbox.assert.calledOnce(optimizely.instance.getFeatureVariableInteger as sinon.SinonSpy)
+      sandbox.assert.calledWithExactly(
+        optimizely.instance.getFeatureVariableInteger as sinon.SinonSpy,
+        featureKey,
+        variableKey,
+        overrideUserId,
+        overrideAttributes,
+      )
+    })
+  })
+
+  describe('getFeatureVariableDouble', function() {
+    const featureKey = 'variable_test_feature'
+    const variableKey = 'doubleVar'
+    const expected = 20
+
+    it('should allow getFeatureVariableDouble(featureKey, variableKey)', function() {
+      const result = optimizely.getFeatureVariableDouble(featureKey, variableKey)
+      assert.equal(result, expected)
+    })
+
+    it('should allow getFeatureVariableDouble(featureKey, variableKey, overrideUserId)', function() {
+      const overrideUserId = 'jon'
+      const result = optimizely.getFeatureVariableDouble(featureKey, variableKey, overrideUserId)
+      assert.equal(result, expected)
+
+      sandbox.assert.calledOnce(optimizely.instance.getFeatureVariableDouble as sinon.SinonSpy)
+      sandbox.assert.calledWithExactly(
+        optimizely.instance.getFeatureVariableDouble as sinon.SinonSpy,
+        featureKey,
+        variableKey,
+        overrideUserId,
+        {},
+      )
+    })
+
+    it('should allow getFeatureVariableDouble(featureKey, variableKey, overrideUserId, overrideAttributes)', function() {
+      const overrideUserId = 'jon'
+      const overrideAttributes = {
+        foo: 'bar',
+      }
+      const result = optimizely.getFeatureVariableDouble(featureKey, variableKey, overrideUserId, overrideAttributes)
+      assert.equal(result, expected)
+
+      sandbox.assert.calledOnce(optimizely.instance.getFeatureVariableDouble as sinon.SinonSpy)
+      sandbox.assert.calledWithExactly(
+        optimizely.instance.getFeatureVariableDouble as sinon.SinonSpy,
+        featureKey,
+        variableKey,
+        overrideUserId,
+        overrideAttributes,
+      )
+    })
+  })
 
   describe('getFeatureVariables', function() {
     const featureKey = 'feature1'
@@ -270,7 +448,7 @@ function testPublicApi(userId: string, createOptimizelyFn: () => Promise<Optimiz
       const result = optimizely.getEnabledFeatures()
       sandbox.assert.calledOnce(optimizely.instance.getEnabledFeatures as sinon.SinonSpy)
       sandbox.assert.calledWithExactly(optimizely.instance.getEnabledFeatures as sinon.SinonSpy, userId, {})
-      assert.deepEqual(result, ['feature1'])
+      assert.deepEqual(result, ['feature1', 'variable_test_feature'])
     })
 
     it('should allow getEnabledFeatures(overrideUserId)', function() {
@@ -281,7 +459,7 @@ function testPublicApi(userId: string, createOptimizelyFn: () => Promise<Optimiz
       const result = optimizely.getEnabledFeatures(overrideUserId)
       sandbox.assert.calledOnce(optimizely.instance.getEnabledFeatures as sinon.SinonSpy)
       sandbox.assert.calledWithExactly(optimizely.instance.getEnabledFeatures as sinon.SinonSpy, overrideUserId, {})
-      assert.deepEqual(result, ['feature1'])
+      assert.deepEqual(result, ['feature1', 'variable_test_feature'])
     })
 
     it('should allow getEnabledFeatures(overrideUserId, overrideAttributes)', function() {
@@ -294,7 +472,7 @@ function testPublicApi(userId: string, createOptimizelyFn: () => Promise<Optimiz
         overrideUserId,
         overrideAttributes,
       )
-      assert.deepEqual(result, ['feature1'])
+      assert.deepEqual(result, ['feature1', 'variable_test_feature'])
     })
   })
 

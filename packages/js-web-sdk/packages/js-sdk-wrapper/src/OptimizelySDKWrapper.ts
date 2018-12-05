@@ -294,6 +294,65 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     return variableObj
   }
 
+  public getFeatureVariableString(
+    feature: string,
+    variable: string,
+    overrideUserId?: string,
+    overrideAttributes?: optimizely.UserAttributes,
+  ): string | null {
+    if (!this.isInitialized) {
+      return null
+    }
+    const [userId, attributes] = this.getUserIdAndAttributes(overrideUserId, overrideAttributes)
+
+    return this.instance.getFeatureVariableString(feature, variable, userId, attributes)
+  }
+
+  public getFeatureVariableBoolean(
+    feature: string,
+    variable: string,
+    overrideUserId?: string,
+    overrideAttributes?: optimizely.UserAttributes,
+  ): boolean | null {
+    console.log('getFeatureVariableBoolean')
+    if (!this.isInitialized) {
+      return null
+    }
+    console.log('getFeatureVariableBoolean2')
+    const [userId, attributes] = this.getUserIdAndAttributes(overrideUserId, overrideAttributes)
+    console.log('getFeatureVariableBoolean3', feature, variable, userId, attributes)
+
+    return this.instance.getFeatureVariableBoolean(feature, variable, userId, attributes)
+  }
+
+  public getFeatureVariableInteger(
+    feature: string,
+    variable: string,
+    overrideUserId?: string,
+    overrideAttributes?: optimizely.UserAttributes,
+  ): number | null {
+    if (!this.isInitialized) {
+      return null
+    }
+    const [userId, attributes] = this.getUserIdAndAttributes(overrideUserId, overrideAttributes)
+
+    return this.instance.getFeatureVariableInteger(feature, variable, userId, attributes)
+  }
+
+  public getFeatureVariableDouble(
+    feature: string,
+    variable: string,
+    overrideUserId?: string,
+    overrideAttributes?: optimizely.UserAttributes,
+  ): number | null {
+    if (!this.isInitialized) {
+      return null
+    }
+    const [userId, attributes] = this.getUserIdAndAttributes(overrideUserId, overrideAttributes)
+
+    return this.instance.getFeatureVariableDouble(feature, variable, userId, attributes)
+  }
+
   /**
    * Get an array of all enabled features
    *
@@ -335,6 +394,7 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     }
 
     const [userId] = this.getUserIdAndAttributes(overrideUserIdOrVariationKey)
+
     return this.instance.setForcedVariation(experiment, userId, variationKey)
   }
 

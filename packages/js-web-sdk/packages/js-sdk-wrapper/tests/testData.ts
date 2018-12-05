@@ -33,6 +33,33 @@ const datafile: OptimizelyDatafile = {
       ],
       id: '12103610772',
     },
+    {
+      experiments: [
+        {
+          status: 'Running',
+          key: '12135400122',
+          layerId: '11111112',
+          trafficAllocation: [{ entityId: '12097946344', endOfRange: 10000 }],
+          audienceIds: [],
+          variations: [
+            {
+              variables: [
+                { value: 'value', id: '12103011967' },
+                { value: 'true', id: '12303830477' },
+                { value: '10', id: '14303830477' },
+                { value: '20.0', id: '15303830477' },
+              ],
+              id: '12097946344',
+              key: '12097946344',
+              featureEnabled: true,
+            },
+          ],
+          forcedVariations: {},
+          id: '12135400122',
+        },
+      ],
+      id: '11111112',
+    },
   ],
   typedAudiences: [],
   anonymizeIP: false,
@@ -55,6 +82,18 @@ const datafile: OptimizelyDatafile = {
       ],
       id: '12113321010',
       key: 'feature1',
+    },
+    {
+      experimentIds: [],
+      rolloutId: '11111112',
+      variables: [
+        { defaultValue: 'default', type: 'string', id: '12103011967', key: 'stringVar' },
+        { defaultValue: 'false', type: 'boolean', id: '12303830477', key: 'booleanVar' },
+        { defaultValue: '1', type: 'integer', id: '14303830477', key: 'integerVar' },
+        { defaultValue: '2.0', type: 'double', id: '15303830477', key: 'doubleVar' },
+      ],
+      id: '12113321090',
+      key: 'variable_test_feature',
     },
   ],
   experiments: [
@@ -118,9 +157,7 @@ const datafile: OptimizelyDatafile = {
       layerId: '12123005403',
       trafficAllocation: [{ entityId: '12184734628', endOfRange: 10000 }],
       audienceIds: [],
-      variations: [
-        { variables: [], id: '12184734628', key: 'var1' },
-      ],
+      variations: [{ variables: [], id: '12184734628', key: 'var1' }],
       forcedVariations: {},
       id: '12133781795',
     },
