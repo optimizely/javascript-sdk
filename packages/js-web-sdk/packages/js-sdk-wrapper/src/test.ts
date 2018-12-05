@@ -8,8 +8,19 @@ function testLocalDatafile() {
   console.log('testLocalDatafile')
   const optimizely = new OptimizelySDKWrapper({
     datafile: localDatafile,
+    userProfileService: {
+      lookup(userId) {
+        console.log('lookup', userId)
+        let a : any = 'foo'
+        return a
+      },
+      save(data) {
+
+      }
+    }
   })
 
+  optimizely.isFeatureEnabled('feature1', 'jordan')
   optimizely.getFeatureVariables('feature1', 'jordan')
   console.log(optimizely.isInitialized)
 }

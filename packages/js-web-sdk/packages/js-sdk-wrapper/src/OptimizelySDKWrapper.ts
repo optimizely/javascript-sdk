@@ -11,6 +11,8 @@ import { ResourceLoader } from './ResourceStream'
 export { OptimizelyDatafile }
 export { VariableValuesObject, VariableValue }
 
+type Partial<T> = { [P in keyof T]?: T[P] }
+
 export interface IOptimizelySDKWrapper {
   instance: optimizely.Client
 
@@ -49,7 +51,7 @@ export interface IOptimizelySDKWrapper {
   setForcedVariation: (experimentKey: string, overrideUserId?: string, variationKey?: string) => void
 }
 
-export type OptimizelySDKWrapperConfig = {
+export interface OptimizelySDKWrapperConfig extends Partial<optimizely.Config> {
   datafile?: OptimizelyDatafile
   datafileUrl?: string
   datafileLoader?: ResourceLoader<OptimizelyDatafile>
@@ -81,12 +83,24 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     integer: 'getFeatureVariableInteger',
   }
 
+  static passthroughConfig: Array<keyof optimizely.Config> = [
+    'errorHandler',
+    'eventDispatcher',
+    'logger',
+    'logLevel',
+    'skipJSONValidation',
+    'jsonSchemaValidator',
+    'userProfileService',
+  ]
+
   public instance: optimizely.Client
   public isInitialized: boolean
 
   public datafile: OptimizelyDatafile | null
   private userId: string | null
   private attributes: optimizely.UserAttributes
+
+  private initialConfig: OptimizelySDKWrapperConfig
 
   private trackEventQueue: Array<TrackEventCallArgs>
   // promise keeping track of async requests for initializing client instance
@@ -101,6 +115,7 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
    * @memberof OptimizelySDKWrapper
    */
   constructor(config: OptimizelySDKWrapperConfig = {}) {
+    this.initialConfig = config
     this.isInitialized = false
     this.datafile = null
     this.trackEventQueue = []
@@ -489,6 +504,19 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     }
   }
 
+  /**
+   * Get options passed in to initialConfig to instantiate every new client with
+   */
+  private getInstantiationOptions(): Partial<{[k in keyof optimizely.Config]: any}> {
+    const opts = {}
+    OptimizelySDKWrapper.passthroughConfig.forEach(key => {
+      if (this.initialConfig[key]) {
+        opts[key] = this.initialConfig[key]
+      }
+    })
+    return opts
+  }
+
   private onInitialized() {
     const datafile = this.resourceManager.datafile.getValue()
     this.userId = this.resourceManager.userId.getValue() || null
@@ -505,6 +533,7 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     this.isInitialized = true
     this.instance = optimizely.createInstance({
       datafile: this.datafile,
+      ...this.getInstantiationOptions(),
     })
     this.flushTrackEventQueue()
   }
