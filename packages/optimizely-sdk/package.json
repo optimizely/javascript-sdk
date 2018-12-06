@@ -4,6 +4,7 @@
   "description": "JavaScript SDK for Optimizely X Full Stack",
   "main": "lib/index.node.js",
   "browser": "lib/index.browser.js",
+  "typings": "lib/index.d.ts",
   "scripts": {
     "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive",
     "test-xbrowser": "karma start karma.bs.conf.js --single-run",
