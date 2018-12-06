@@ -230,6 +230,46 @@ describe('javascript-sdk', function() {
         var variation = optlyInstance.getVariation('testExperimentNotRunning', 'testUser');
         assert.strictEqual(variation, null);
       });
+
+      describe('automatically created logger instances', function() {
+        beforeEach(function() {
+          sinon.spy(console, 'log')
+        });
+
+        afterEach(function() {
+          console.log.restore();
+        });
+
+        it('should instantiate the logger with a custom logLevel when provided', function() {
+          // checking that INFO logs do not log for a logLevel of ERROR
+          var optlyInstance = window.optimizelySdk.createInstance({
+            datafile: testData.getTestProjectConfig(),
+            logLevel: enums.LOG_LEVEL.ERROR,
+            skipJSONValidation: true
+          });
+          assert.strictEqual(console.log.getCalls().length, 0)
+
+          // checking that ERROR logs do log for a logLevel of ERROR
+          var optlyInstanceInvalid = window.optimizelySdk.createInstance({
+            datafile: {},
+            logLevel: enums.LOG_LEVEL.ERROR
+          });
+          optlyInstance.activate('testExperiment', 'testUser')
+          assert.strictEqual(console.error.getCalls().length, 1)
+        });
+
+        it('should default to INFO when no logLevel is provided', function() {
+          // checking that INFO logs log for an unspecified logLevel
+          var optlyInstance = window.optimizelySdk.createInstance({
+            datafile: testData.getTestProjectConfig(),
+            skipJSONValidation: true
+          });
+          assert.strictEqual(console.log.getCalls().length, 1)
+          call = console.log.getCalls()[0]
+          assert.strictEqual(call.args.length, 1)
+          assert(call.args[0].indexOf('OPTIMIZELY: Skipping JSON schema validation.') > -1)
+        });
+      });
     });
   });
 });
