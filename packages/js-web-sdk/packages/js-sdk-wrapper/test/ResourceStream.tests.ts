@@ -29,7 +29,7 @@ describe('SingleResourceStream', function() {
   beforeEach(function() {
     subscriberSpy = {
       data: sandbox.spy(),
-      complete: sandbox.spy(),
+      ready: sandbox.spy(),
       error: sandbox.spy(),
     }
   })
@@ -46,11 +46,11 @@ describe('SingleResourceStream', function() {
     }
 
     testLoader.emitter.data(data)
-    testLoader.emitter.complete()
+    testLoader.emitter.ready()
 
     sinon.assert.calledOnce(subscriberSpy.data)
     sinon.assert.calledWithExactly(subscriberSpy.data, data)
-    sinon.assert.calledOnce(subscriberSpy.complete)
+    sinon.assert.calledOnce(subscriberSpy.ready)
   })
 
   it('should replay subscription messages to a subscriber', function() {
@@ -64,17 +64,17 @@ describe('SingleResourceStream', function() {
     }
 
     testLoader.emitter.data(data)
-    testLoader.emitter.complete()
+    testLoader.emitter.ready()
     testLoader.emitter.error({ resourceKey: 'test', reason: 'foo' })
 
     stream.subscribe(subscriberSpy)
 
     sinon.assert.calledOnce(subscriberSpy.data)
     sinon.assert.calledWithExactly(subscriberSpy.data, data)
-    sinon.assert.calledOnce(subscriberSpy.complete)
+    sinon.assert.calledOnce(subscriberSpy.ready)
     sinon.assert.calledOnce(subscriberSpy.error)
 
-    sinon.assert.callOrder(subscriberSpy.data, subscriberSpy.complete, subscriberSpy.error)
+    sinon.assert.callOrder(subscriberSpy.data, subscriberSpy.ready, subscriberSpy.error)
   })
 
   it('should allow unsubscribe', function() {
@@ -91,10 +91,10 @@ describe('SingleResourceStream', function() {
     unsubscribe()
 
     testLoader.emitter.data(data)
-    testLoader.emitter.complete()
+    testLoader.emitter.ready()
 
     sinon.assert.notCalled(subscriberSpy.data)
-    sinon.assert.notCalled(subscriberSpy.complete)
+    sinon.assert.notCalled(subscriberSpy.ready)
   })
 
   it('should allow multiple subscribers', function() {
@@ -102,7 +102,7 @@ describe('SingleResourceStream', function() {
     const stream = new SingleResourceStream(testLoader)
     const subscriberSpy2 = {
       data: sandbox.spy(),
-      complete: sandbox.spy(),
+      ready: sandbox.spy(),
       error: sandbox.spy(),
     }
 
@@ -122,12 +122,12 @@ describe('SingleResourceStream', function() {
 
     testLoader.emitter.data(data)
     testLoader.emitter.data(data2)
-    testLoader.emitter.complete()
+    testLoader.emitter.ready()
 
     sinon.assert.calledTwice(subscriberSpy.data)
     sinon.assert.calledTwice(subscriberSpy2.data)
-    sinon.assert.calledOnce(subscriberSpy.complete)
-    sinon.assert.calledOnce(subscriberSpy2.complete)
+    sinon.assert.calledOnce(subscriberSpy.ready)
+    sinon.assert.calledOnce(subscriberSpy2.ready)
   })
 })
 
@@ -141,7 +141,7 @@ describe('CombinedResourceStream', function() {
   beforeEach(function() {
     subscriberSpy = {
       data: sandbox.spy(),
-      complete: sandbox.spy(),
+      ready: sandbox.spy(),
       error: sandbox.spy(),
     }
   })
@@ -168,7 +168,7 @@ describe('CombinedResourceStream', function() {
     sinon.assert.calledWithExactly(subscriberSpy.data, data)
   })
 
-  it(`should invoke 'complete' when all streams have passed complete`, function() {
+  it(`should invoke 'ready' when all streams have passed ready`, function() {
     const testLoader1 = new TestLoader()
     const testLoader2 = new TestLoader()
     const stream1 = new SingleResourceStream(testLoader1)
@@ -177,10 +177,10 @@ describe('CombinedResourceStream', function() {
 
     combinedStream.subscribe(subscriberSpy)
 
-    testLoader1.emitter.complete()
-    sinon.assert.notCalled(subscriberSpy.complete)
-    testLoader2.emitter.complete()
-    sinon.assert.calledOnce(subscriberSpy.complete)
+    testLoader1.emitter.ready()
+    sinon.assert.notCalled(subscriberSpy.ready)
+    testLoader2.emitter.ready()
+    sinon.assert.calledOnce(subscriberSpy.ready)
   })
 
   it(`should invoke 'error' when any streams emit 'error'`, function() {

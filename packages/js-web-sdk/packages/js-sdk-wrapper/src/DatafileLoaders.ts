@@ -15,7 +15,7 @@ export class ProvidedDatafileLoader implements ResourceLoader<OptimizelyDatafile
       resource: this.datafile,
       metadata: { source: 'fresh' },
     })
-    emitter.complete()
+    emitter.ready()
   }
 }
 
@@ -55,7 +55,7 @@ export class FetchUrlDatafileLoader implements ResourceLoader<OptimizelyDatafile
         metadata: { source: 'cache' },
       })
       if (this.preferCached) {
-        emitter.complete()
+        emitter.ready()
       }
       if (!this.backgroundLoadIfCacheHit) {
         // no need to load anything else, we're done
@@ -69,7 +69,7 @@ export class FetchUrlDatafileLoader implements ResourceLoader<OptimizelyDatafile
           resource: datafile,
           metadata: { source: 'fresh' },
         })
-        emitter.complete()
+        emitter.ready()
         const cacheEntry: FetchUrlCacheEntry = {
           datafile,
           metadata: {

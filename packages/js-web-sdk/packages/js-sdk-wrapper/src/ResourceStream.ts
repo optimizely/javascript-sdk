@@ -19,7 +19,7 @@ export namespace ResourceEmitter {
 
 export interface ResourceEmitter<K> {
   data: (msg: ResourceEmitter.DataMessage<K>) => void
-  complete: () => void
+  ready: () => void
   error: (msg: ResourceEmitter.ErrorMessage) => void
 }
 
@@ -34,8 +34,8 @@ type DataStreamMessage<K> = {
   payload: ResourceEmitter.DataMessage<K>
 }
 
-type CompleteStreamMessage = {
-  type: 'complete'
+type ReadyStreamMessage = {
+  type: 'ready'
   payload: null
 }
 
@@ -44,7 +44,7 @@ type ErrorStreamMessage = {
   payload: ResourceEmitter.ErrorMessage
 }
 
-export type ResourceStreamMessage<K> = DataStreamMessage<K> | CompleteStreamMessage | ErrorStreamMessage
+export type ResourceStreamMessage<K> = DataStreamMessage<K> | ReadyStreamMessage | ErrorStreamMessage
 
 export interface ResourceStream<K> {
   subscribe: (emitter: PartialResourceEmitter<K>) => () => void
@@ -61,7 +61,7 @@ abstract class ReplayableResourceStream<K> implements ResourceStream<K> {
 
     this.emitter = {
       data: this.data,
-      complete: this.complete,
+      ready: this.ready,
       error: this.error,
     }
   }
@@ -75,9 +75,9 @@ abstract class ReplayableResourceStream<K> implements ResourceStream<K> {
     this.streamMessages.push(msg)
   }
 
-  protected complete = () => {
+  protected ready = () => {
     const msg: Readonly<ResourceStreamMessage<K>> = {
-      type: 'complete',
+      type: 'ready',
       payload: null,
     }
     this.emitOnAll(msg)
@@ -117,8 +117,8 @@ abstract class ReplayableResourceStream<K> implements ResourceStream<K> {
   }
 
   protected emit(msg: ResourceStreamMessage<K>, emitter: PartialResourceEmitter<K>): void {
-    if (msg.type === 'complete' && emitter.complete) {
-      emitter.complete()
+    if (msg.type === 'ready' && emitter.ready) {
+      emitter.ready()
     } else if (msg.type === 'error' && emitter.error) {
       emitter.error(msg.payload)
     } else if (msg.type === 'data' && emitter.data) {
@@ -136,20 +136,20 @@ export class SingleResourceStream<K> extends ReplayableResourceStream<K> {
 
 export class CombinedResourceStream extends ReplayableResourceStream<any> {
   private unsubscribeFns: (() => void)[]
-  private remainingComplete: number
+  private remainingReady: number
 
   constructor(streams: ResourceStream<any>[]) {
     super()
 
-    this.remainingComplete = streams.length
+    this.remainingReady = streams.length
     this.unsubscribeFns = streams.map(stream =>
       stream.subscribe({
         data: (msg: ResourceEmitter.DataMessage<any>) => {
           this.emitter.data(msg)
         },
-        complete: () => {
-          if (--this.remainingComplete === 0) {
-            this.emitter.complete()
+        ready: () => {
+          if (--this.remainingReady === 0) {
+            this.emitter.ready()
           }
         },
         error: (msg: ResourceEmitter.ErrorMessage) => {

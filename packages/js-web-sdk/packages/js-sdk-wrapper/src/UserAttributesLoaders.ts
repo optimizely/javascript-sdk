@@ -15,6 +15,6 @@ export class ProvidedAttributesLoader implements ResourceLoader<UserAttributes> 
       resource: this.attributes,
       metadata: { source: 'fresh' },
     })
-    emitter.complete()
+    emitter.ready()
   }
 }

@@ -1,5 +1,6 @@
 import { ResourceLoader, ResourceEmitter } from './ResourceStream'
 import { emitter } from 'nock';
+import * as utils from './utils'
 
 export type UserId = string | null
 
@@ -19,7 +20,7 @@ export class StaticUserIdLoader implements ResourceLoader<UserId> {
       resource: this.userId,
       metadata: { source: 'fresh' },
     })
-    emitter.complete()
+    emitter.ready()
   }
 }
 
@@ -33,10 +34,10 @@ export class CookieRandomUserIdLoader implements ResourceLoader<UserId> {
     } = {},
   ) {
     this.cookieKey = config.cookieKey || 'optly_fs_userid'
-    const existing = this.getCookie(this.cookieKey)
+    const existing = utils.getCookie(this.cookieKey)
     if (!existing) {
       this.userId = this.randomUserId()
-      this.setCookie(this.cookieKey, this.userId)
+      utils.setInfiniteCookie(this.cookieKey, this.userId)
     } else {
       this.userId = existing
     }
@@ -48,36 +49,11 @@ export class CookieRandomUserIdLoader implements ResourceLoader<UserId> {
       resource: this.userId,
       metadata: { source: 'fresh' },
     })
-    emitter.complete()
-  }
-
-  getDateNow() {
-    return Date.now()
+    emitter.ready()
   }
 
   randomUserId() {
-    return 'oeu' + this.getDateNow() + 'r' + Math.random();
-  }
-
-  setCookie(cname: string, cvalue: string): void {
-    var expires = 'expires=Fri, 31 Dec 9999 23:59:59 GMT'
-    document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/'
-  }
-
-  getCookie(cname: string): string {
-    var name = cname + '='
-    var decodedCookie = decodeURIComponent(document.cookie)
-    var ca = decodedCookie.split(';')
-    for (var i = 0; i < ca.length; i++) {
-      var c = ca[i]
-      while (c.charAt(0) == ' ') {
-        c = c.substring(1)
-      }
-      if (c.indexOf(name) == 0) {
-        return c.substring(name.length, c.length)
-      }
-    }
-    return ''
+    return 'oeu' + Date.now() + 'r' + Math.random();
   }
 }
 

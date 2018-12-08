@@ -133,7 +133,7 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
       // TODO handle unsubscribe
       this.initializingPromise = new Promise((resolve, reject) => {
         this.resourceManager.stream.subscribe({
-          complete: () => {
+          ready: () => {
             this.onInitialized()
             resolve()
           },

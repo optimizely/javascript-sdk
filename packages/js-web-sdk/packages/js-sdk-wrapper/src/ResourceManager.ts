@@ -46,7 +46,7 @@ class BaseResource<K> implements Resource<K> {
         this.state.resource = msg.resource
         this.state.metadata = msg.metadata
       },
-      complete: () => {
+      ready: () => {
         this.state.isReady = true
       },
       error: msg => {
