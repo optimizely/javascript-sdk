@@ -25,7 +25,7 @@ describe('SingleResourceStream', function() {
     sandbox.reset()
   })
 
-  let subscriberSpy
+  let subscriberSpy: any
   beforeEach(function() {
     subscriberSpy = {
       data: sandbox.spy(),
@@ -137,7 +137,7 @@ describe('CombinedResourceStream', function() {
     sandbox.reset()
   })
 
-  let subscriberSpy
+  let subscriberSpy: any
   beforeEach(function() {
     subscriberSpy = {
       data: sandbox.spy(),

@@ -53,14 +53,14 @@ export interface IOptimizelySDKWrapper {
 
 export interface OptimizelySDKWrapperConfig extends Partial<optimizely.Config> {
   datafile?: OptimizelyDatafile
-  datafileUrl?: string
-  datafileLoader?: ResourceLoader<OptimizelyDatafile>
+  SDKKey?: string
+  UNSTABLE_datafileLoader?: ResourceLoader<OptimizelyDatafile>
 
   attributes?: optimizely.UserAttributes
-  attributesLoader?: ResourceLoader<optimizely.UserAttributes>
+  UNSTABLE_attributesLoader?: ResourceLoader<optimizely.UserAttributes>
 
   userId?: string
-  userIdLoader?: ResourceLoader<UserId>
+  UNSTABLE_userIdLoader?: ResourceLoader<UserId>
 }
 
 type TrackEventCallArgs = [
@@ -329,13 +329,10 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     overrideUserId?: string,
     overrideAttributes?: optimizely.UserAttributes,
   ): boolean | null {
-    console.log('getFeatureVariableBoolean')
     if (!this.isInitialized) {
       return null
     }
-    console.log('getFeatureVariableBoolean2')
     const [userId, attributes] = this.getUserIdAndAttributes(overrideUserId, overrideAttributes)
-    console.log('getFeatureVariableBoolean3', feature, variable, userId, attributes)
 
     return this.instance.getFeatureVariableBoolean(feature, variable, userId, attributes)
   }
@@ -462,8 +459,8 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
   private setupAttributesLoader(config: OptimizelySDKWrapperConfig): ResourceLoader<optimizely.UserAttributes> {
     let attributesLoader: ResourceLoader<optimizely.UserAttributes>
 
-    if (config.attributesLoader) {
-      attributesLoader = config.attributesLoader
+    if (config.UNSTABLE_attributesLoader) {
+      attributesLoader = config.UNSTABLE_attributesLoader
     } else {
       attributesLoader = new ProvidedAttributesLoader({
         attributes: config.attributes,
@@ -479,24 +476,24 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
       datafileLoader = new ProvidedDatafileLoader({
         datafile: config.datafile,
       })
-    } else if (config.datafileUrl) {
+    } else if (config.SDKKey) {
       datafileLoader = new FetchUrlDatafileLoader({
-        datafileUrl: config.datafileUrl,
+        SDKKey: config.SDKKey,
         preferCached: true,
         backgroundLoadIfCacheHit: true,
       })
-    } else if (config.datafileLoader) {
-      datafileLoader = config.datafileLoader
+    } else if (config.UNSTABLE_datafileLoader) {
+      datafileLoader = config.UNSTABLE_datafileLoader
     } else {
-      throw new Error('Must supply either "datafile", "datafileUrl" or "datafileLoader"')
+      throw new Error('Must supply either "datafile", "SDKKey" or "datafileLoader"')
     }
 
     return datafileLoader
   }
 
   private setupUserIdLoader(config: OptimizelySDKWrapperConfig): ResourceLoader<UserId> {
-    if (config.userIdLoader) {
-      return config.userIdLoader
+    if (config.UNSTABLE_userIdLoader) {
+      return config.UNSTABLE_userIdLoader
     } else if (config.userId) {
       return new StaticUserIdLoader(config.userId)
     } else {

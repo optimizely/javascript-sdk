@@ -42,15 +42,6 @@ export class CookieRandomUserIdLoader implements ResourceLoader<UserId> {
     }
   }
 
-  randomUserId() {
-    var text = ''
-    var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-
-    for (var i = 0; i < 5; i++) text += possible.charAt(Math.floor(Math.random() * possible.length))
-
-    return text
-  }
-
   load(emitter: ResourceEmitter<UserId>) {
     emitter.data({
       resourceKey: 'userId',
@@ -58,6 +49,14 @@ export class CookieRandomUserIdLoader implements ResourceLoader<UserId> {
       metadata: { source: 'fresh' },
     })
     emitter.complete()
+  }
+
+  getDateNow() {
+    return Date.now()
+  }
+
+  randomUserId() {
+    return 'oeu' + this.getDateNow() + 'r' + Math.random();
   }
 
   setCookie(cname: string, cvalue: string): void {
@@ -82,48 +81,3 @@ export class CookieRandomUserIdLoader implements ResourceLoader<UserId> {
   }
 }
 
-export class UniversalAnalyticsClientIdUserIdLoader implements ResourceLoader<UserId> {
-  private intervalId: NodeJS.Timeout
-  private userId: string
-  private emitter?: ResourceEmitter<UserId>
-
-  constructor() {
-    this.intervalId = setInterval(() => {
-      const clientId = this.getClientId()
-      if (clientId) {
-        this.userId = clientId
-      }
-
-      if (this.userId && this.emitter) {
-        this.emitter.data({
-          resource: this.userId,
-          resourceKey: 'userId',
-          metadata: {
-            source: 'fresh',
-          },
-        })
-      }
-    }, 50)
-  }
-
-  load(emitter: ResourceEmitter<UserId>): void {
-    this.emitter = emitter
-  }
-
-  getClientId(): string | undefined {
-    let clientId
-    if (typeof window != 'undefined' && typeof window['ga'] != 'undefined') {
-      window['ga']((tracker: UniversalAnalytics.Tracker) => {
-        clientId = tracker.get('clientId')
-      })
-    }
-
-    return clientId
-  }
-
-  cleanup():  void {
-    if (this.intervalId) {
-      clearInterval(this.intervalId)
-    }
-  }
-}

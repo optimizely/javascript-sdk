@@ -9,12 +9,12 @@ function testLocalDatafile() {
   const optimizely = new OptimizelySDKWrapper({
     datafile: localDatafile,
     userProfileService: {
-      lookup(userId) {
+      lookup(userId: string) {
         console.log('lookup', userId)
         let a : any = 'foo'
         return a
       },
-      save(data) {
+      save(data: any) {
 
       }
     }
