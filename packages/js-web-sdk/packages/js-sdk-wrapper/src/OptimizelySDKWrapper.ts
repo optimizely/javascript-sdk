@@ -532,6 +532,7 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
       datafile: this.datafile,
       ...this.getInstantiationOptions(),
     })
+    // TODO: make sure this is flushed after notification listeners can be added
     this.flushTrackEventQueue()
   }
 }
