@@ -31,12 +31,12 @@ var DECISION_SOURCES = enums.DECISION_SOURCES;
 
 
 /**
- * A decision service that determines which variation of an experiment to which to allocate a user.
+ * A decision service that allocates a user to a variation of an experiment.
  *
  * The decision service contains all logic determining how a user decision is made. The following tasks are performed in order:
  *   1. Check the experiment status.
  *   2. Check for forced bucketing.
- *   3. Check for white listing.
+ *   3. Check for whitelisting.
  *   4. Check the user profile service for past bucketing decisions (sticky bucketing).
  *   5. Check for audience targeting.
  *   6. Bucket the user.
@@ -55,10 +55,12 @@ function DecisionService(options) {
 }
 
 /**
- * Returns a variation where the visitor will be bucketed.
+ * Returns a variation where the visitor will be bucketed, without triggering an impression.
+ *
  * @param  {string}      experimentKey          The ID of the experiment for which to get the variation.
  * @param  {string}      userId                 The ID of the visitor.
  * @param  {object}      attributes             A collection of key/value pairs of user attributes.
+ *
  * @return {string|null} The variation into which the user is bucketed.
  */
 DecisionService.prototype.getVariation = function(experimentKey, userId, attributes) {
@@ -107,8 +109,10 @@ DecisionService.prototype.getVariation = function(experimentKey, userId, attribu
 
 /**
  * Merges attributes from 'attributes[STICKY_BUCKETING_KEY]' and 'userProfileService'.
+ *
  * @param  {string} userId        The ID of the user.
  * @param  {object} attributes    An optional key/value pair collection containing user attributes.
+ *
  * @return {object} A finalized copy of 'experiment_bucket_map' from the user's profile.
  */
 DecisionService.prototype.__resolveExperimentBucketMap = function(userId, attributes) {
@@ -121,8 +125,10 @@ DecisionService.prototype.__resolveExperimentBucketMap = function(userId, attrib
 
 /**
  * Returns a boolean indicating whether the experiment is running or launched.
+ *
  * @param  {string}  experimentKey   The ID of the of experiment being validated.
  * @param  {string}  userId          The ID of the user.
+ *
  * @return {boolean} `true` if the experiment is running, `false` if the experiment is not running.
  */
 DecisionService.prototype.__checkIfExperimentIsActive = function(experimentKey, userId) {
@@ -137,8 +143,10 @@ DecisionService.prototype.__checkIfExperimentIsActive = function(experimentKey, 
 
 /**
  * Checks if a user is whitelisted into any variation, and returns that variation.
+ *
  * @param  {Object} experiment    The experiment to check for any forced variations.
  * @param  {string} userId        The ID of the user for whom to get the variation.
+ *
  * @return {string|null} The forced variation for the specified user ID or `null` if a forced variation doesn't exist.
  */
 DecisionService.prototype.__getWhitelistedVariation = function(experiment, userId) {
@@ -159,10 +167,12 @@ DecisionService.prototype.__getWhitelistedVariation = function(experiment, userI
 };
 
 /**
- * Returns a boolean indicating if a user is included in an experiment's audience.
+ * Returns a boolean indicating whether a user matches an experiment's audience conditions.
+ *
  * @param  {string}  experimentKey The ID of the experiment being validated.
  * @param  {string}  userId        The ID of the user to check.
  * @param  {Object}  attributes    An optional key/value pair collection containing user attributes.
+ *
  * @return {boolean} `true` if the user satisfies the audience conditions or `false` if it doesn't.
  */
 DecisionService.prototype.__checkIfUserIsInAudience = function(experimentKey, userId, attributes) {
@@ -179,9 +189,11 @@ DecisionService.prototype.__checkIfUserIsInAudience = function(experimentKey, us
 
 /**
  * Retrieves the parameters used in the bucketer call for a given experiment key and user ID.
+ *
  * @param  {string}  experimentKey The ID of the experiment used for the bucketer.
  * @param  {string}  bucketingId   The ID into which to bucket the user.
  * @param  {string}  userId        The ID of the user to be bucketed.
+ *
  * @return {Object} An object containing the bucketer parameters.
  */
 DecisionService.prototype.__buildBucketerParams = function(experimentKey, bucketingId, userId) {
@@ -200,9 +212,11 @@ DecisionService.prototype.__buildBucketerParams = function(experimentKey, bucket
 
 /**
  * Retrieves the stored variation for the specified experiment and user.
+ *
  * @param  {Object} experiment           The ID of the experiment from which to get the variation.
- * @param  {String} userId               The ID of the user for whom to get the variation,
+ * @param  {String} userId               The ID of the user for whom to get the variation.
  * @param  {Object} experimentBucketMap  A mapping between an experiment ID and variation ID.
+ *
  * @return {Object} The stored variation, or `null` if the user profile does not have a variation for the experiment.
  */
 DecisionService.prototype.__getStoredVariation = function(experiment, userId, experimentBucketMap) {
@@ -221,7 +235,9 @@ DecisionService.prototype.__getStoredVariation = function(experiment, userId, ex
 
 /**
  * Retrieves the user profile for a specific user.
+ *
  * @param  {string} userId The ID of the user.
+ *
  * @return {Object|undefined} The stored user profile, or 'undefined' if one isn't found.
  */
 DecisionService.prototype.__getUserProfile = function(userId) {
@@ -243,6 +259,7 @@ DecisionService.prototype.__getUserProfile = function(userId) {
 
 /**
  * Saves the bucketing decision to the user profile.
+ *
  * @param {Object} experiment          The experiment for which to save the bucketing decision.
  * @param {Object} variation           The variation for which to save the bucketing decision.
  * @param {String} userId              The ID of the user.
@@ -276,11 +293,13 @@ DecisionService.prototype.__saveUserProfile = function(experiment, variation, us
  * and attributes, the decision object returned will have both 'variation' and
  * 'experiment' properties, as well as a 'decisionSource' property.
  * 'decisionSource' indicates whether the decision was due to a rollout for an experiment.
+ *
  * @param   {Object} feature    The feature flag object from a project configuration.
  * @param   {String} userId     The ID of the user.
  * @param   {Object} attributes An optional key/value pair collection containing user attributes.
+ *
  * @return  {Object} An object containing 'experiment', 'variation', and 'decisionSource' properties.
- * If the user was not bucketed into a variation, the 'variation' property is null.
+ *                   If the user was not bucketed into a variation, the 'variation' property is null.
  */
 DecisionService.prototype.getVariationForFeature = function(feature, userId, attributes) {
   var experimentDecision = this._getVariationForFeatureExperiment(feature, userId, attributes);
@@ -308,11 +327,13 @@ DecisionService.prototype.getVariationForFeature = function(feature, userId, att
 
 /**
  * Retrieves an object containing a variation for a specific experiment.
+ *
  * @param   {Object} feature    The feature flag object from a project configuration.
  * @param   {String} userId     The ID of the user for the variation.
  * @param   {Object} attributes An optional key/value pair collection containing user attributes.
+ *
  * @return  {Object} An object containing 'experiment', 'variation', and 'decisionSource' properties.
- * If the user was not bucketed into a variation, the variation property is null.
+ *                   If the user was not bucketed into a variation, the variation property is null.
  */
 DecisionService.prototype._getVariationForFeatureExperiment = function(feature, userId, attributes) {
   var experiment = null;
@@ -365,11 +386,14 @@ DecisionService.prototype._getExperimentInGroup = function(group, userId) {
 
 /**
  * Retrieves a variation for a specific feature rollout.
+ *
  * @param   {Object} feature    The feature flag object from a project configuration.
  * @param   {String} userId     The ID of the user for the variation.
  * @param   {Object} attributes An optional key/value pair collection containing user attributes.
+ *
  * @return  {Object} An object containing 'experiment', 'variation', and 'decisionSource' properties.
- * If the user was not bucketed into a variation, the variation property is `null`. If there are no experiments in the rollout, the experiment property is `null`.
+ *                   If the user was not bucketed into a variation, the variation property is `null`. 
+ *                   If there are no experiments in the rollout, the experiment property is `null`.
  */
 DecisionService.prototype._getVariationForRollout = function(feature, userId, attributes) {
   if (!feature.rolloutId) {
@@ -459,9 +483,11 @@ DecisionService.prototype._getVariationForRollout = function(feature, userId, at
 
 /**
  * Retrieves a bucketing ID for a specific user ID and user attributes.
+ *
  * @param {String} userId      The ID of the user for the variation.
  * @param {Object} attributes  An optional key/value pair collection containing user attributes.
- * @returns {String} The bucketing ID if it available in the attributes; otherwise the user ID is returned.
+ *
+ * @returns {String} The bucketing ID if it is available in the attributes; otherwise the user ID is returned.
  */
 DecisionService.prototype._getBucketingId = function(userId, attributes) {
   var bucketingId = userId;
@@ -482,10 +508,12 @@ DecisionService.prototype._getBucketingId = function(userId, attributes) {
 module.exports = {
   /**
    * Creates an instance of the decision service.
+   *
    * @param  {Object} options               Configuration options.
    * @param  {Object} options.configObj     The parsed project configuration object that contains all of the experiment configurations.
    * @param  {Object} options.userProfileService An instance of the user profile service for sticky bucketing.
-   * @param  {Object} options.logger An instance of a logger used to log messages.
+   * @param  {Object} options.logger        An instance of a logger used to log messages.
+   *
    * @return {Object} An instance of the decision service.
    */
   createDecisionService: function(options) {
