@@ -1,16 +1,22 @@
+@font-face {
+  font-family: 'fira_codemedium';
+  src: url('FiraCode-Medium-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+  font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
 .App {
@@ -47,7 +53,7 @@ body {
 }
 
 .board {
-  width: 75vw;
+  width: 80vw;
   /* border: 10px solid #79ADDC;
   background: #79ADDC; */
   display: flex;
@@ -55,6 +61,7 @@ body {
   transition: 0.5s opacity;
   opacity: 0;
   position: relative;
+  margin-bottom: 2rem;
 }
 .board.ready {
   opacity: 1;
@@ -67,9 +74,14 @@ body {
   font-size: 75%;
   text-align: center;
   margin-top: 1rem !important;
-
+}
+.tile pre {
+  font-size: 80%;
+  opacity: .75;
+  margin-bottom: .5rem;
 }
 .tile {
+  font-family: 'fira_codemedium';
   display: flex;
   width: 24%;
   background: #fcf5c7;
@@ -81,6 +93,10 @@ body {
   flex: 1 0 auto;
   height: auto;
   transition: 0.5s all;
+  justify-content: center;
+  align-items: center;
+  font-size: 100%;
+  color: #777;
 }
 .board.ready .tile:hover {
   cursor: pointer;
@@ -90,9 +106,11 @@ body {
 }
 .tile.result-false {
   background: #ff7023;
+  color: black;
 }
 .tile.result-true {
   background: #adf7b6;
+  color: black;
 }
 .tile:before {
   content: '';
@@ -100,24 +118,55 @@ body {
   padding-top: 100%;
 }
 .outcome {
-  /* position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  transition: 0.5s all;
-  display: flex;
-  align-items: center;
-  justify-content: center; */
+  z-index: 5;
+  font-family: 'fira_codemedium';
   font-size: 200%;
   text-align: center;
   margin-bottom: 1rem;
+  transition: 0.5s all;
+  width: 0;
+  height: 0;
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  font-size: 120%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
+
+.outcome strong {
+  font-size: 150%;
+  display: block;
+  margin: 5px 5px 0 0;
+}
+
+.outcome .log-wrapper {
+  font-size: 100%;
+  margin-top: 1rem;
+}
+
 .outcome-lose {
+  margin-left: -200px;
+  box-shadow: 0 0 30px 0 rgba(0, 0, 0, 0.3);
+  width: 400px;
+  height: inherit;
+  padding: 20px;
   opacity: 1;
 }
 .outcome-win {
+  margin-left: -200px;
+  box-shadow: 0 0 30px 0 rgba(0, 0, 0, 0.3);
+  height: inherit;
+  width: 400px;
+  padding: 20px;
   opacity: 1;
 }
 
@@ -133,4 +182,44 @@ form.user p {
 
 form.user input {
   font-size: 100%;
+}
+
+@media (max-width: 768px) {
+  h1 {
+    text-align: center;
+  }
+
+  .board {
+    width: 100vw;
+  }
+  .tile pre {
+    display: none;
+  }
+  .tile {
+    font-size: 40%;
+    font-family: 'Fira Sans';
+  }
+
+  .outcome-lose,
+  .outcome-win {
+    left: 0;
+    margin-left: 3%;
+    width: 94%;
+    box-sizing: border-box;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .board {
+    width: 80vh;
+  }
+  .tile span {
+    font-size: 80%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1280px) {
+  .tile span {
+    font-size: 80%;
+  }
 }
