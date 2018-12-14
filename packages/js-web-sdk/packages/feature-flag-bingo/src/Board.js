@@ -29,6 +29,7 @@ export const Tile = ({ value, onActivate, feature }) => (
     <div>
       <pre>optimizely.isFeatureEnabled</pre>
       <span>("{feature}")</span>
+        <pre className={value !== null ? 'activated' : 'not-activated'}>{value ? 'true' : 'false'}</pre>
     </div>
   </a>
 )

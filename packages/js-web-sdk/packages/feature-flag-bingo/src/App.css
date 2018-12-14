@@ -117,8 +117,17 @@ body {
   float: left;
   padding-top: 100%;
 }
+.tile pre {
+  transition: .5s all;
+}
+.tile .activated {
+  opacity: 1;
+
+}
+.tile .not-activated {
+  opacity: 0;
+}
 .outcome {
-  z-index: 5;
   font-family: 'fira_codemedium';
   font-size: 200%;
   text-align: center;
@@ -140,6 +149,7 @@ body {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  z-index: -1;
 }
 
 .outcome strong {
@@ -154,6 +164,7 @@ body {
 }
 
 .outcome-lose {
+  z-index: 5;
   margin-left: -200px;
   box-shadow: 0 0 30px 0 rgba(0, 0, 0, 0.3);
   width: 400px;
@@ -162,6 +173,7 @@ body {
   opacity: 1;
 }
 .outcome-win {
+  z-index: 5;
   margin-left: -200px;
   box-shadow: 0 0 30px 0 rgba(0, 0, 0, 0.3);
   height: inherit;
