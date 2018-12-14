@@ -41,14 +41,13 @@ body {
 }
 
 #game {
-  width: 75vw;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .board {
-  width: 640px;
+  width: 75vw;
   /* border: 10px solid #79ADDC;
   background: #79ADDC; */
   display: flex;
@@ -126,7 +125,7 @@ form.user {
   font-size: 150%;
   margin: 1rem 2rem 2rem;
   text-align: center;
-  width: 640px;
+  max-width: 640px;
 }
 form.user p {
   margin: 0;
