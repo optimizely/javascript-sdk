@@ -26,3 +26,17 @@ addons:
 srcclr: true
 script: npm test
 after_success: npm run coveralls
+
+jobs:
+  include:
+    - stage: 'Integration tests'
+      env: SDK=javascript
+      language: python
+      before_install: skip
+      install:
+        - "pip install awscli"
+      before_script:
+        - "aws s3 cp s3://optimizely-travisci-artifacts/ci/trigger_fullstack-sdk-compat.sh ci/ && chmod u+x ci/trigger_fullstack-sdk-compat.sh"
+      script:
+        - "ci/trigger_fullstack-sdk-compat.sh"
+      after_success: skip
