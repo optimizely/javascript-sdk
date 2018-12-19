@@ -16,7 +16,7 @@
 This is the ideal case and prevents a lot of timing issues and complexity, however we realize not all customers will have the ability to this.
 
 ```js
-import { Optimizely } from '@optimizely/js-web-sdk'
+import { Optimizely } from '@optimizely/js-sdk-wrapper'
 const optimizely = new Optimizely({
   datafile: window.datafile,
 })
@@ -31,7 +31,7 @@ This is not an optimal solution as it requires us to think about timing and ensu
 _Asnyc load and wait until datafile is loaded_
 
 ```js
-import { Optimizely } from '@optimizely/js-web-sdk'
+import { Optimizely } from '@optimizely/js-sdk-wrapper'
 
 const datafileUrl = 'https://cdn.optimizely.com/datafiles/GaXr9RoDhRcqXJm3ruskRa.json'
 const optimizely = new Optimizely({
@@ -47,7 +47,7 @@ The above example may not be great, perhaps you want a gaurantee that the page w
 _Asnyc load and wait up til 100ms_
 
 ```js
-import { Optimizely } from '@optimizely/js-web-sdk'
+import { Optimizely } from '@optimizely/js-sdk-wrapper'
 
 const datafileUrl = 'https://cdn.optimizely.com/datafiles/GaXr9RoDhRcqXJm3ruskRa.json'
 const optimizely = new Optimizely({
@@ -78,7 +78,7 @@ _When using optimizely async the user will only have to pay the loading cost onc
 
 ```js
 // ./optimizely.js
-import { Optimizely } from '@optimizely/js-web-sdk'
+import { Optimizely } from '@optimizely/js-sdk-wrapper'
 
 const datafileUrl = 'https://cdn.optimizely.com/datafiles/GaXr9RoDhRcqXJm3ruskRa.json'
 const optimizely = new Optimizely({
@@ -125,7 +125,7 @@ On first page load, if the datafile is slow (due to slow connection) it will ren
 This SDK supports remembering userId and attributes by passing them to instantiation
 
 ```js
-import { Optimizely } from '@optimizely/js-web-sdk'
+import { Optimizely } from '@optimizely/js-sdk-wrapper'
 const optimizely = new Optimizely({
   datafile: window.datafile,
   userId: window.userId
@@ -153,7 +153,7 @@ The following code will generate a random userId if the user doesnt already have
 import {
   Optimizely,
   CookieRandomUserIdLoader,
-} from '@optimizely/js-web-sdk'
+} from '@optimizely/js-sdk-wrapper'
 
 const optimizely = new Optimizely({
   datafile: window.datafile,
@@ -169,7 +169,7 @@ const optimizely = new Optimizely({
 Of course this is totally opt in, you can continue to pass userId into all api calls, the same as the Node Javascript SDK
 
 ```js
-import { Optimizely } from '@optimizely/js-web-sdk'
+import { Optimizely } from '@optimizely/js-sdk-wrapper'
 
 const optimizely = new Optimizely({
   datafile: window.datafile,

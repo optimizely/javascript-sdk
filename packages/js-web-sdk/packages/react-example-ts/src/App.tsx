@@ -64,10 +64,10 @@ class App extends React.Component<AppProps> {
           <Example title="Experiment & Variations Example">
             <p>
               <OptimizelyExperiment experiment="abtest1">
-                <OptimizelyVariation value='var1'>
+                <OptimizelyVariation variation='var1'>
                 hi
                 </OptimizelyVariation>
-                <OptimizelyVariation value='var2'>
+                <OptimizelyVariation variation='var2'>
                 hi2
                 </OptimizelyVariation>
                 <OptimizelyVariation default>

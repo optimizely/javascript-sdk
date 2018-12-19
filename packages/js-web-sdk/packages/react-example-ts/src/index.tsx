@@ -5,8 +5,8 @@ import { OptimizelySDKWrapper, CookieRandomUserIdLoader } from '@optimizely/js-s
 
 ;(async function () {
   const optimizely = new OptimizelySDKWrapper({
-    userIdLoader: new CookieRandomUserIdLoader(),
-    datafileUrl: 'https://optimizely.s3.amazonaws.com/datafiles/BsSyVRsUbE3ExgGCJ9w1to.json',
+    UNSTABLE_userIdLoader: new CookieRandomUserIdLoader(),
+    SDKKey: 'BsSyVRsUbE3ExgGCJ9w1to',
   })
 
 

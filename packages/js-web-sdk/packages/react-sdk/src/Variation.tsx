@@ -3,7 +3,7 @@ import { VariableValuesObject } from '@optimizely/js-sdk-wrapper'
 
 
 export type VariationProps = {
-  value?: any
+  variation?: any
   default?: any
   children?: React.ReactNode
 }

@@ -68,8 +68,8 @@ export class Experiment extends React.Component<ExperimentProps, ExperimentState
           return
         }
 
-        if (child.props.value) {
-          if (variation === child.props.value) {
+        if (child.props.variation) {
+          if (variation === child.props.variation) {
             match = child
           }
         } else if (child.props.default) {
