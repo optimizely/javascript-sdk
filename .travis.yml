@@ -26,6 +26,11 @@ srcclr: true
 script: npm test
 after_success: npm run coveralls
 
+# Integration tests need to run first to reset the PR build status to pending
+stages:
+  - 'Integration tests'
+  - 'Test'
+
 jobs:
   include:
     - stage: 'Integration tests'
