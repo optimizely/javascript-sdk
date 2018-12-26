@@ -1,17 +1,20 @@
 {
   "name": "@optimizely/optimizely-sdk",
-  "version": "2.1.3",
+  "version": "3.0.0-rc2",
   "description": "JavaScript SDK for Optimizely X Full Stack",
   "main": "lib/index.node.js",
   "browser": "lib/index.browser.js",
+  "typings": "lib/index.d.ts",
   "scripts": {
     "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive",
     "test-xbrowser": "karma start karma.bs.conf.js --single-run",
-    "build-browser-umd": "./scripts/build_browser_umd.sh",
+    "test-umdbrowser": "npm run build-browser-umd && karma start karma.umd.conf.js --single-run",
+    "build-browser-umd": "rm -rf dist && webpack",
+    "test-ci": "npm run test-xbrowser && npm run test-umdbrowser",
     "lint": "eslint lib/**",
     "cover": "istanbul cover _mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js",
     "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls",
-    "prepublishOnly": "npm test && npm run test-xbrowser && npm run build-browser-umd"
+    "prepublishOnly": "npm run build-browser-umd && npm test && npm run test-xbrowser && npm run test-umdbrowser"
   },
   "repository": {
     "type": "git",
@@ -33,28 +36,28 @@
     "lodash": "^4.0.0",
     "murmurhash": "0.0.2",
     "sprintf-js": "^1.1.1",
-    "uuid": "^3.0.1"
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "bluebird": "^3.4.6",
-    "chai": "^3.5.0",
-    "coveralls": "^2.13.1",
+    "chai": "^4.2.0",
+    "coveralls": "^3.0.2",
     "eslint": "^2.9.0",
     "istanbul": "^0.4.5",
     "json-loader": "^0.5.4",
-    "karma": "^2.0.0",
+    "karma": "^3.1.4",
     "karma-browserstack-launcher": "^1.2.0",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.1.1",
     "karma-mocha": "^1.3.0",
     "karma-sinon": "^1.0.5",
-    "karma-webpack": "^2.0.3",
-    "mathjs": "^3.3.0",
+    "karma-webpack": "^3.0.5",
     "mocha": "^5.2.0",
     "mocha-lcov-reporter": "^1.3.0",
     "nock": "^7.7.2",
     "sinon": "^2.3.1",
-    "webpack": "^2.6.0"
+    "webpack": "^4.25.1",
+    "webpack-cli": "^3.1.2"
   },
   "publishConfig": {
     "access": "public"

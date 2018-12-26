@@ -26,6 +26,7 @@ var projectConfigSchema = require('./project_config_schema');
 var sprintf = require('sprintf-js').sprintf;
 var userProfileServiceValidator = require('../utils/user_profile_service_validator');
 var stringValidator = require('../utils/string_value_validator');
+var configValidator = require('../utils/config_validator');
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
@@ -47,74 +48,62 @@ var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
  * @param {Object} config.userProfileService
  */
 function Optimizely(config) {
-    var clientEngine = config.clientEngine;
-    if (clientEngine !== enums.NODE_CLIENT_ENGINE && clientEngine !== enums.JAVASCRIPT_CLIENT_ENGINE) {
-      config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, MODULE_NAME, clientEngine));
-      clientEngine = enums.NODE_CLIENT_ENGINE;
+  var clientEngine = config.clientEngine;
+  if (clientEngine !== enums.NODE_CLIENT_ENGINE && clientEngine !== enums.JAVASCRIPT_CLIENT_ENGINE) {
+    config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, MODULE_NAME, clientEngine));
+    clientEngine = enums.NODE_CLIENT_ENGINE;
+  }
+
+  this.clientEngine = clientEngine;
+  this.clientVersion = config.clientVersion || enums.NODE_CLIENT_VERSION;
+  this.errorHandler = config.errorHandler;
+  this.eventDispatcher = config.eventDispatcher;
+  this.isValidInstance = config.isValidInstance;
+  this.logger = config.logger;
+
+  try {
+    configValidator.validateDatafile(config.datafile);
+    if (typeof config.datafile === 'string' || config.datafile instanceof String) {
+      config.datafile = JSON.parse(config.datafile);
     }
-
-    this.clientEngine = clientEngine;
-    this.clientVersion = config.clientVersion || enums.NODE_CLIENT_VERSION;
-    this.errorHandler = config.errorHandler;
-    this.eventDispatcher = config.eventDispatcher;
-    this.isValidInstance = config.isValidInstance;
-    this.logger = config.logger;
-
-    if (!config.datafile) {
-      this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, MODULE_NAME));
-      this.errorHandler.handleError(new Error(sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, MODULE_NAME)));
-      this.isValidInstance = false;
+    
+    if (config.skipJSONValidation === true) {
+      this.configObj = projectConfig.createProjectConfig(config.datafile);
+      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
     } else {
-      if (typeof config.datafile === 'string' || config.datafile instanceof String) {
-        // Attempt to parse the datafile string
-        try {
-          config.datafile = JSON.parse(config.datafile);
-        } catch (ex) {
-          this.isValidInstance = false;
-          this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_MALFORMED, MODULE_NAME));
-          return;
-        }
-      }
-
-      if (config.skipJSONValidation === true) {
+      if (config.jsonSchemaValidator.validate(projectConfigSchema, config.datafile)) {
         this.configObj = projectConfig.createProjectConfig(config.datafile);
-        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
-      } else {
-        try {
-          if (config.jsonSchemaValidator.validate(projectConfigSchema, config.datafile)) {
-            this.configObj = projectConfig.createProjectConfig(config.datafile);
-            this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
-          }
-        } catch (ex) {
-          this.isValidInstance = false;
-          this.logger.log(LOG_LEVEL.ERROR, ex.message);
-          this.errorHandler.handleError(ex);
-        }
+        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
       }
-
-      var userProfileService = null;
-      if (config.userProfileService) {
-        try {
-          if (userProfileServiceValidator.validate(config.userProfileService)) {
-            userProfileService = config.userProfileService;
-            this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_USER_PROFILE_SERVICE, MODULE_NAME));
-          }
-        } catch (ex) {
-          this.logger.log(LOG_LEVEL.WARNING, ex.message);
-        }
-      }
-
-      this.decisionService = decisionService.createDecisionService({
-        configObj: this.configObj,
-        userProfileService: userProfileService,
-        logger: this.logger,
-      });
-
-      this.notificationCenter = notificationCenter.createNotificationCenter({
-        logger: this.logger,
-        errorHandler: this.errorHandler
-      });
     }
+  } catch (ex) {
+    this.isValidInstance = false;
+    this.logger.log(LOG_LEVEL.ERROR, ex.message);
+    this.errorHandler.handleError(ex);
+  }
+
+  var userProfileService = null;
+  if (config.userProfileService) {
+    try {
+      if (userProfileServiceValidator.validate(config.userProfileService)) {
+        userProfileService = config.userProfileService;
+        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_USER_PROFILE_SERVICE, MODULE_NAME));
+      }
+    } catch (ex) {
+      this.logger.log(LOG_LEVEL.WARNING, ex.message);
+    }
+  }
+
+  this.decisionService = decisionService.createDecisionService({
+    configObj: this.configObj,
+    userProfileService: userProfileService,
+    logger: this.logger,
+  });
+
+  this.notificationCenter = notificationCenter.createNotificationCenter({
+    logger: this.logger,
+    errorHandler: this.errorHandler
+  });
 }
 
 /**
@@ -147,10 +136,7 @@ Optimizely.prototype.activate = function (experimentKey, userId, attributes) {
         this.logger.log(LOG_LEVEL.DEBUG, shouldNotDispatchActivateLogMessage);
         return variationKey;
       }
-
-      // remove null values from attributes
-      attributes = this.__filterEmptyValues(attributes);
-
+      
       this._sendImpressionEvent(experimentKey, variationKey, userId, attributes);
 
       return variationKey;
@@ -249,8 +235,7 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
         return;
       }
 
-      // remove null values from attributes and eventTags
-      attributes = this.__filterEmptyValues(attributes);
+      // remove null values from eventTags      
       eventTags = this.__filterEmptyValues(eventTags);
 
       var conversionEventOptions = {
@@ -323,7 +308,8 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
 
       var experiment = this.configObj.experimentKeyMap[experimentKey];
       if (fns.isEmpty(experiment)) {
-        throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
+        this.logger.log(LOG_LEVEL.DEBUG, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
+        return null;
       }
 
       return this.decisionService.getVariation(experimentKey, userId, attributes);
@@ -347,6 +333,10 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
 * @return boolean A boolean value that indicates if the set completed successfully.
 */
 Optimizely.prototype.setForcedVariation = function(experimentKey, userId, variationKey) {
+  if (!this.__validateInputs({ experiment_key: experimentKey, user_id: userId })) {
+    return false;
+  }
+
   try {
     return projectConfig.setForcedVariation(this.configObj, experimentKey, userId, variationKey, this.logger);
   } catch (ex) {
@@ -363,6 +353,10 @@ Optimizely.prototype.setForcedVariation = function(experimentKey, userId, variat
  * @return {string|null} The forced variation key.
 */
 Optimizely.prototype.getForcedVariation = function(experimentKey, userId) {
+  if (!this.__validateInputs({ experiment_key: experimentKey, user_id: userId })) {
+    return null;
+  }
+
   try {
     return projectConfig.getForcedVariation(this.configObj, experimentKey, userId, this.logger);
   } catch (ex) {
@@ -373,7 +367,7 @@ Optimizely.prototype.getForcedVariation = function(experimentKey, userId) {
 };
 
 /**
- * Validates user ID and attributes parameters
+ * Validate string inputs, user attributes and event tags.
  * @param  {string}  stringInputs   Map of string keys and associated values
  * @param  {Object}  userAttributes Optional parameter for user's attributes
  * @param  {Object}  eventTags      Optional parameter for event tags
@@ -382,6 +376,16 @@ Optimizely.prototype.getForcedVariation = function(experimentKey, userId) {
  */
 Optimizely.prototype.__validateInputs = function(stringInputs, userAttributes, eventTags) {
   try {
+    // Null, undefined or non-string user Id is invalid.
+    if (stringInputs.hasOwnProperty('user_id')) {
+      var userId = stringInputs.user_id;
+      if (typeof userId !== 'string' || userId === null || userId === 'undefined') {
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, 'user_id'));
+      }
+
+      delete stringInputs.user_id;
+    }
+
     var inputKeys = Object.keys(stringInputs);
     for (var index = 0; index < inputKeys.length; index++) {
       var key = inputKeys[index];
@@ -547,6 +551,10 @@ Optimizely.prototype.getEnabledFeatures = function (userId, attributes) {
     var enabledFeatures = [];
     if (!this.isValidInstance) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getEnabledFeatures'));
+      return enabledFeatures;
+    }
+
+    if (!this.__validateInputs({ user_id: userId })) {
       return enabledFeatures;
     }
 

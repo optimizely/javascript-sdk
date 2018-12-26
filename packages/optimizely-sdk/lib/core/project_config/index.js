@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2016-2018, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 var fns = require('../../utils/fns');
 var enums = require('../../utils/enums');
 var sprintf = require('sprintf-js').sprintf;
+var stringValidator = require('../../utils/string_value_validator');
 
 var EXPERIMENT_LAUNCHED_STATUS = 'Launched';
 var EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -36,10 +37,15 @@ module.exports = {
   createProjectConfig: function(datafile) {
     var projectConfig = fns.cloneDeep(datafile);
 
-    // Manually parsed for audience targeting
+    /*
+     * Conditions of audiences in projectConfig.typedAudiences are not
+     * expected to be string-encoded as they are here in projectConfig.audiences.
+     */
     fns.forEach(projectConfig.audiences, function(audience) {
       audience.conditions = JSON.parse(audience.conditions);
     });
+    projectConfig.audiencesById = fns.keyBy(projectConfig.audiences, 'id');
+    fns.assign(projectConfig.audiencesById, fns.keyBy(projectConfig.typedAudiences, 'id'));
 
     projectConfig.attributeKeyMap = fns.keyBy(projectConfig.attributes, 'key');
     projectConfig.eventKeyMap = fns.keyBy(projectConfig.events, 'key');
@@ -201,24 +207,21 @@ module.exports = {
   },
 
   /**
-   * Get audiences for the experiment
+   * Get audience conditions for the experiment
    * @param  {Object}         projectConfig Object representing project configuration
-   * @param  {string}         experimentKey Experiment key for which audience IDs are to be determined
-   * @return {Array<Object>}  Audiences corresponding to the experiment
+   * @param  {string}         experimentKey Experiment key for which audience conditions are to be determined
+   * @return {Array}          Audience conditions for the experiment - can be an array of audience IDs, or a
+   *                          nested array of conditions
+   *                          Examples: ["5", "6"], ["and", ["or", "1", "2"], "3"]
    * @throws If experiment key is not in datafile
    */
-  getAudiencesForExperiment: function(projectConfig, experimentKey) {
+  getExperimentAudienceConditions: function(projectConfig, experimentKey) {
     var experiment = projectConfig.experimentKeyMap[experimentKey];
     if (fns.isEmpty(experiment)) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
     }
 
-    var audienceIds = experiment.audienceIds;
-    var audiencesInExperiment = [];
-    var audiencesInExperiment = fns.filter(projectConfig.audiences, function(audience) {
-      return audienceIds.indexOf(audience.id) !== -1;
-    });
-    return audiencesInExperiment;
+    return experiment.audienceConditions || experiment.audienceIds;
   },
 
   /**
@@ -335,10 +338,6 @@ module.exports = {
    * @throws If the user id is not valid
    */
   setInForcedVariationMap: function(projectConfig, userId, experimentId, variationId, logger) {
-    if (!userId) {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_ID, MODULE_NAME));
-    }
-
     if (projectConfig.forcedVariationMap.hasOwnProperty(userId)) {
       projectConfig.forcedVariationMap[userId][experimentId] = variationId;
     } else {
@@ -402,6 +401,11 @@ module.exports = {
    * @return {boolean} A boolean value that indicates if the set completed successfully.
    */
   setForcedVariation: function(projectConfig, experimentKey, userId, variationKey, logger) {
+    if (variationKey != null && !stringValidator.validate(variationKey)) {
+      logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.INVALID_VARIATION_KEY, MODULE_NAME));
+      return false;
+    }
+
     var experimentId;
     try {
       var experiment = this.getExperimentFromKey(projectConfig, experimentKey);
@@ -418,7 +422,7 @@ module.exports = {
       return false;
     }
 
-    if (!variationKey) {
+    if (variationKey == null) {
       try {
         this.removeForcedVariation(projectConfig, userId, experimentId, experimentKey, logger);
         return true;
@@ -590,5 +594,15 @@ module.exports = {
     }
 
     return castValue;
+  },
+
+  /**
+   * Returns an object containing all audiences in the project config. Keys are audience IDs
+   * and values are audience objects.
+   * @param projectConfig
+   * @returns {Object}
+   */
+  getAudiencesById: function(projectConfig) {
+    return projectConfig.audiencesById;
   },
 };

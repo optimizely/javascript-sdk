@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2018, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ var configValidator = require('./utils/config_validator');
 var enums = require('./utils/enums');
 var logger = require('./plugins/logger');
 var Optimizely = require('./optimizely');
-var optimizelyFactory = require('./index.browser');
 var packageJSON = require('../package.json');
 var eventDispatcher = require('./plugins/event_dispatcher/index.browser');
 var testData = require('./tests/test_data');
@@ -61,26 +60,15 @@ describe('javascript-sdk', function() {
       it('should not throw if the provided config is not valid', function() {
         configValidator.validate.throws(new Error('Invalid config or something'));
         assert.doesNotThrow(function() {
-          optimizelyFactory.createInstance({
+          window.optimizelySdk.createInstance({
             datafile: {},
             logger: silentLogger,
           });
         });
       });
 
-      it('should create an instance of optimizely', function() {
-        var optlyInstance = optimizelyFactory.createInstance({
-          datafile: {},
-          errorHandler: fakeErrorHandler,
-          eventDispatcher: fakeEventDispatcher,
-          logger: silentLogger,
-        });
-
-        assert.instanceOf(optlyInstance, Optimizely);
-      });
-
       it('should set the JavaScript client engine and version', function() {
-        var optlyInstance = optimizelyFactory.createInstance({
+        var optlyInstance = window.optimizelySdk.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
@@ -91,7 +79,7 @@ describe('javascript-sdk', function() {
       });
 
       it('should activate with provided event dispatcher', function() {
-        var optlyInstance = optimizelyFactory.createInstance({
+        var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: eventDispatcher,
@@ -102,7 +90,7 @@ describe('javascript-sdk', function() {
       });
 
       it('should be able to set and get a forced variation', function() {
-        var optlyInstance = optimizelyFactory.createInstance({
+        var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: eventDispatcher,
@@ -117,7 +105,7 @@ describe('javascript-sdk', function() {
       });
 
       it('should be able to set and unset a forced variation', function() {
-        var optlyInstance = optimizelyFactory.createInstance({
+        var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: eventDispatcher,
@@ -138,7 +126,7 @@ describe('javascript-sdk', function() {
       });
 
       it('should be able to set multiple experiments for one user', function() {
-        var optlyInstance = optimizelyFactory.createInstance({
+        var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: eventDispatcher,
@@ -160,7 +148,7 @@ describe('javascript-sdk', function() {
       });
 
       it('should be able to set multiple experiments for one user, and unset one', function() {
-        var optlyInstance = optimizelyFactory.createInstance({
+        var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: eventDispatcher,
@@ -184,7 +172,7 @@ describe('javascript-sdk', function() {
       });
 
       it('should be able to set multiple experiments for one user, and reset one', function() {
-        var optlyInstance = optimizelyFactory.createInstance({
+        var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: eventDispatcher,
@@ -208,7 +196,7 @@ describe('javascript-sdk', function() {
       });
 
       it('should override bucketing when setForcedVariation is called', function() {
-        var optlyInstance = optimizelyFactory.createInstance({
+        var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: eventDispatcher,
@@ -229,7 +217,7 @@ describe('javascript-sdk', function() {
       });
 
       it('should override bucketing when setForcedVariation is called for a not running experiment', function() {
-        var optlyInstance = optimizelyFactory.createInstance({
+        var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: eventDispatcher,
@@ -245,36 +233,41 @@ describe('javascript-sdk', function() {
 
       describe('automatically created logger instances', function() {
         beforeEach(function() {
-          sinon.stub(logger, 'createLogger').callsFake(function() {
-            return {
-              log: function() {},
-            };
-          });
+          sinon.spy(console, 'log')
         });
 
         afterEach(function() {
-          logger.createLogger.restore();
+          console.log.restore();
         });
 
         it('should instantiate the logger with a custom logLevel when provided', function() {
-          var optlyInstance = optimizelyFactory.createInstance({
+          // checking that INFO logs do not log for a logLevel of ERROR
+          var optlyInstance = window.optimizelySdk.createInstance({
             datafile: testData.getTestProjectConfig(),
             logLevel: enums.LOG_LEVEL.ERROR,
+            skipJSONValidation: true
           });
-          var foundCall = find(logger.createLogger.getCalls(), function(call) {
-            return call.returned(sinon.match.same(optlyInstance.logger));
+          assert.strictEqual(console.log.getCalls().length, 0)
+
+          // checking that ERROR logs do log for a logLevel of ERROR
+          var optlyInstanceInvalid = window.optimizelySdk.createInstance({
+            datafile: {},
+            logLevel: enums.LOG_LEVEL.ERROR
           });
-          assert.strictEqual(foundCall.args[0].logLevel, enums.LOG_LEVEL.ERROR);
+          optlyInstance.activate('testExperiment', 'testUser')
+          assert.strictEqual(console.error.getCalls().length, 1)
         });
 
         it('should default to INFO when no logLevel is provided', function() {
-          var optlyInstance = optimizelyFactory.createInstance({
+          // checking that INFO logs log for an unspecified logLevel
+          var optlyInstance = window.optimizelySdk.createInstance({
             datafile: testData.getTestProjectConfig(),
+            skipJSONValidation: true
           });
-          var foundCall = find(logger.createLogger.getCalls(), function(call) {
-            return call.returned(sinon.match.same(optlyInstance.logger));
-          });
-          assert.strictEqual(foundCall.args[0].logLevel, enums.LOG_LEVEL.INFO);
+          assert.strictEqual(console.log.getCalls().length, 1)
+          call = console.log.getCalls()[0]
+          assert.strictEqual(call.args.length, 1)
+          assert(call.args[0].indexOf('OPTIMIZELY: Skipping JSON schema validation.') > -1)
         });
       });
     });

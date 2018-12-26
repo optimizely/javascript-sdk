@@ -10,7 +10,7 @@
     "test": "lerna run test --stream",
     "test-xbrowser": "lerna run test-xbrowser --stream"
   },
-  "devDependencies": {
-    "lerna": "^2.9.0"
+  "dependencies": {
+    "lerna": "^3.2.1"
   }
 }

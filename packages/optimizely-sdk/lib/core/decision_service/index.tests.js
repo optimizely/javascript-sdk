@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2017, Optimizely, Inc. and contributors                        *
+ * Copyright 2017-2018, Optimizely, Inc. and contributors                        *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -85,6 +85,22 @@ describe('lib/core/decision_service', function() {
         sinon.assert.notCalled(bucketerStub);
         assert.strictEqual(1, mockLogger.log.callCount);
         assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: Experiment testExperimentNotRunning is not running.');
+      });
+
+      describe('when attributes.$opt_experiment_bucket_map is supplied', function() {
+        it('should respect the sticky bucketing information for attributes', function() {
+          bucketerStub.returns('111128'); // ID of the 'control' variation from `test_data`
+          var attributes = {
+            $opt_experiment_bucket_map: {
+              '111127': {
+                'variation_id': '111129' // ID of the 'variation' variation
+              },
+            },
+          };
+
+          assert.strictEqual('variation', decisionServiceInstance.getVariation('testExperiment', 'decision_service_user', attributes));
+          sinon.assert.notCalled(bucketerStub);
+        });
       });
 
       describe('when a user profile service is provided', function () {
@@ -252,6 +268,102 @@ describe('lib/core/decision_service', function() {
             },
           });
         });
+
+        describe('when passing `attributes.$opt_experiment_bucket_map`', function() {
+          it('should respect attributes over the userProfileService for the matching experiment id', function () {
+            userProfileLookupStub.returns({
+              user_id: 'decision_service_user',
+              experiment_bucket_map: {
+                '111127': {
+                  'variation_id': '111128' // ID of the 'control' variation
+                },
+              },
+            });
+
+            var attributes = {
+              $opt_experiment_bucket_map: {
+                '111127': {
+                  'variation_id': '111129' // ID of the 'variation' variation
+                },
+              },
+            };
+
+
+            assert.strictEqual('variation', decisionServiceInstance.getVariation('testExperiment', 'decision_service_user', attributes));
+            sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
+            sinon.assert.notCalled(bucketerStub);
+            assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User decision_service_user is not in the forced variation map.');
+            assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Returning previously activated variation \"variation\" of experiment \"testExperiment\" for user \"decision_service_user\" from user profile.');
+          });
+
+          it('should ignore attributes for a different experiment id', function () {
+            userProfileLookupStub.returns({
+              user_id: 'decision_service_user',
+              experiment_bucket_map: {
+                '111127': { // 'testExperiment' ID
+                  'variation_id': '111128' // ID of the 'control' variation
+                },
+              },
+            });
+
+            var attributes = {
+              $opt_experiment_bucket_map: {
+                '122227': { // other experiment ID
+                  'variation_id': '122229' // ID of the 'variationWithAudience' variation
+                },
+              },
+            };
+
+            assert.strictEqual('control', decisionServiceInstance.getVariation('testExperiment', 'decision_service_user', attributes));
+            sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
+            sinon.assert.notCalled(bucketerStub);
+            assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User decision_service_user is not in the forced variation map.');
+            assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Returning previously activated variation \"control\" of experiment \"testExperiment\" for user \"decision_service_user\" from user profile.');
+          });
+
+          it('should use attributes when the userProfileLookup variations for other experiments', function () {
+            userProfileLookupStub.returns({
+              user_id: 'decision_service_user',
+              experiment_bucket_map: {
+                '122227': { // other experiment ID
+                  'variation_id': '122229' // ID of the 'variationWithAudience' variation
+                },
+              }
+            });
+
+            var attributes = {
+              $opt_experiment_bucket_map: {
+                '111127': { // 'testExperiment' ID
+                  'variation_id': '111129' // ID of the 'variation' variation
+                },
+              },
+            };
+
+            assert.strictEqual('variation', decisionServiceInstance.getVariation('testExperiment', 'decision_service_user', attributes));
+            sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
+            sinon.assert.notCalled(bucketerStub);
+            assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User decision_service_user is not in the forced variation map.');
+            assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Returning previously activated variation \"variation\" of experiment \"testExperiment\" for user \"decision_service_user\" from user profile.');
+          });
+
+          it('should use attributes when the userProfileLookup returns null', function () {
+            userProfileLookupStub.returns(null);
+
+            var attributes = {
+              $opt_experiment_bucket_map: {
+                '111127': {
+                  'variation_id': '111129' // ID of the 'variation' variation
+                },
+              },
+            };
+
+            assert.strictEqual('variation', decisionServiceInstance.getVariation('testExperiment', 'decision_service_user', attributes));
+            sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
+            sinon.assert.notCalled(bucketerStub);
+            assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User decision_service_user is not in the forced variation map.');
+            assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Returning previously activated variation \"variation\" of experiment \"testExperiment\" for user \"decision_service_user\" from user profile.');
+          });
+        });
       });
     });
 
@@ -333,7 +445,10 @@ describe('lib/core/decision_service', function() {
 
   describe('when a bucketingID is provided', function() {
     var configObj = projectConfig.createProjectConfig(testData);
-    var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.DEBUG});
+    var createdLogger = logger.createLogger({
+      logLevel: LOG_LEVEL.DEBUG,
+      logToConsole: false,
+    });
     var optlyInstance;
     beforeEach(function () {
       optlyInstance = new Optimizely({
@@ -349,13 +464,11 @@ describe('lib/core/decision_service', function() {
 
       sinon.stub(eventDispatcher, 'dispatchEvent');
       sinon.stub(errorHandler, 'handleError');
-      sinon.stub(createdLogger, 'log');
     });
 
     afterEach(function () {
       eventDispatcher.dispatchEvent.restore();
       errorHandler.handleError.restore();
-      createdLogger.log.restore();
     });
 
     var testUserAttributes = {
@@ -458,6 +571,52 @@ describe('lib/core/decision_service', function() {
           'test_user',
           userAttributesWithBucketingId
       ));
+      sinon.assert.calledWithExactly(userProfileLookupStub, 'test_user');
+    });
+  });
+
+  describe('_getBucketingId', function() {
+    var configObj;
+    var decisionService;
+    var mockLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+    var userId = 'testUser1';
+    var userAttributesWithBucketingId = {
+      'browser_type': 'firefox',
+      '$opt_bucketing_id': '123456789'
+    };
+    var userAttributesWithInvalidBucketingId = {
+      'browser_type': 'safari',
+      '$opt_bucketing_id': 50
+    };
+
+    beforeEach(function() {
+      sinon.stub(mockLogger, 'log');
+      configObj = projectConfig.createProjectConfig(testData);
+      decisionService = DecisionService.createDecisionService({
+        configObj: configObj,
+        logger: mockLogger,
+      });
+    });
+
+    afterEach(function() {
+      mockLogger.log.restore();
+    });
+
+    it('should return userId if bucketingId is not defined in user attributes', function() {
+      assert.strictEqual(userId, decisionService._getBucketingId(userId, null));
+      assert.strictEqual(userId, decisionService._getBucketingId(userId, {'browser_type': 'safari'}));
+    });
+
+    it('should log warning in case of invalid bucketingId', function() {
+      assert.strictEqual(userId, decisionService._getBucketingId(userId, userAttributesWithInvalidBucketingId));
+      assert.strictEqual(1, mockLogger.log.callCount);
+      assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: BucketingID attribute is not a string. Defaulted to userId');
+    });
+
+    it('should return correct bucketingId when provided in attributes', function() {
+      assert.strictEqual('123456789', decisionService._getBucketingId(userId, userAttributesWithBucketingId));
+      assert.strictEqual(1, mockLogger.log.callCount);
+      assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: BucketingId is valid: "123456789"');
     });
   });
 

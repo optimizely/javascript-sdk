@@ -405,6 +405,143 @@ describe('lib/core/event_builder', function() {
 
         assert.deepEqual(actualParams, expectedParams);
       });
+
+      it('should create proper params for getImpressionEvent with typed attributes', function() {
+        var expectedParams = {
+          url: 'https://logx.optimizely.com/v1/events',
+          httpVerb: 'POST',
+          params: {
+            'account_id': '12001',
+            'project_id': '111001',
+            'visitors': [{
+              'attributes': [{
+                'entity_id': '111094',
+                'key': 'browser_type',
+                'type': 'custom',
+                'value': 'Chrome'
+              }, {
+                'entity_id': '323434545',
+                'key': 'boolean_key',
+                'type': 'custom',
+                'value': true
+              }, {
+                'entity_id': '616727838',
+                'key': 'integer_key',
+                'type': 'custom',
+                'value': 10
+              }, {
+                'entity_id': '808797686',
+                'key': 'double_key',
+                'type': 'custom',
+                'value': 3.14
+              }],
+              'visitor_id': 'testUser',
+              'snapshots': [{
+                'decisions': [{
+                  'variation_id': '111128',
+                  'experiment_id': '111127',
+                  'campaign_id': '4'
+                }],
+                'events': [{
+                  'timestamp': Math.round(new Date().getTime()),
+                  'entity_id': '4',
+                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                  'key': 'campaign_activated'
+                }]
+              }]
+            }],
+            'revision': '42',
+            'client_name': 'node-sdk',
+            'client_version': packageJSON.version,
+            'anonymize_ip': false,
+          }
+        };
+
+        var eventOptions = {
+          attributes: {
+            'browser_type': 'Chrome',
+            'boolean_key': true,
+            'integer_key': 10,
+            'double_key': 3.14,
+          },
+          clientEngine: 'node-sdk',
+          clientVersion: packageJSON.version,
+          configObj: configObj,
+          experimentId: '111127',
+          variationId: '111128',
+          userId: 'testUser',
+        };
+
+        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+
+        assert.deepEqual(actualParams, expectedParams);
+      });
+
+      it('should remove invalid params from impression event payload', function() {
+        var expectedParams = {
+          url: 'https://logx.optimizely.com/v1/events',
+          httpVerb: 'POST',
+          params: {
+            'account_id': '12001',
+            'project_id': '111001',
+            'visitors': [{
+              'attributes': [{
+                'entity_id': '111094',
+                'key': 'browser_type',
+                'type': 'custom',
+                'value': 'Chrome'
+              }, {
+                'entity_id': '616727838',
+                'key': 'integer_key',
+                'type': 'custom',
+                'value': 10
+              }, {
+                'entity_id': '323434545',
+                'key': 'boolean_key',
+                'type': 'custom',
+                'value': false
+              }],
+              'visitor_id': 'testUser',
+              'snapshots': [{
+                'decisions': [{
+                  'variation_id': '111128',
+                  'experiment_id': '111127',
+                  'campaign_id': '4'
+                }],
+                'events': [{
+                  'timestamp': Math.round(new Date().getTime()),
+                  'entity_id': '4',
+                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                  'key': 'campaign_activated'
+                }]
+              }]
+            }],
+            'revision': '42',
+            'client_name': 'node-sdk',
+            'client_version': packageJSON.version,
+            'anonymize_ip': false,
+          }
+        };
+
+        var eventOptions = {
+          attributes: {
+            'browser_type': 'Chrome',
+            'integer_key': 10,
+            'boolean_key': false,
+            'double_key': [1, 2, 3],
+          },
+          clientEngine: 'node-sdk',
+          clientVersion: packageJSON.version,
+          configObj: configObj,
+          experimentId: '111127',
+          variationId: '111128',
+          userId: 'testUser',
+        };
+
+        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+
+        assert.deepEqual(actualParams, expectedParams);
+      });
     });
 
     describe('getConversionEvent', function() {

@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2016-2018, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,9 @@ describe('lib/core/project_config', function() {
 
       var expectedAttributeKeyMap = {
         browser_type: testData.attributes[0],
+        boolean_key: testData.attributes[1],
+        integer_key: testData.attributes[2],
+        double_key: testData.attributes[3],
       };
 
       assert.deepEqual(configObj.attributeKeyMap, expectedAttributeKeyMap);
@@ -291,17 +294,6 @@ describe('lib/core/project_config', function() {
     it('should throw error for invalid experiment key in getExperimentStatus', function() {
       assert.throws(function() {
         projectConfig.getExperimentStatus(configObj, 'invalidExperimentKey');
-      }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'invalidExperimentKey'));
-    });
-
-    it('should retrieve audiences for valid experiment key in getAudiencesForExperiment', function() {
-      assert.deepEqual(projectConfig.getAudiencesForExperiment(configObj, testData.experiments[1].key),
-                       parsedAudiences);
-    });
-
-    it('should throw error for invalid experiment key in getAudiencesForExperiment', function() {
-      assert.throws(function() {
-        projectConfig.getAudiencesForExperiment(configObj, 'invalidExperimentKey');
       }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'invalidExperimentKey'));
     });
 
@@ -528,16 +520,54 @@ describe('lib/core/project_config', function() {
         });
       });
     });
+
+    describe('#getAudiencesById', function() {
+      beforeEach(function() {
+        configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
+      });
+
+      it('should retrieve audiences by checking first in typedAudiences, and then second in audiences', function() {
+        assert.deepEqual(
+          projectConfig.getAudiencesById(configObj),
+          testDatafile.typedAudiencesById
+        );
+      });
+    });
+
+    describe('#getExperimentAudienceConditions', function() {
+      it('should retrieve audiences for valid experiment key', function() {
+        configObj = projectConfig.createProjectConfig(testData);
+        assert.deepEqual(projectConfig.getExperimentAudienceConditions(configObj, testData.experiments[1].key),
+                         ['11154']);
+      });
+
+      it('should throw error for invalid experiment key', function() {
+        configObj = projectConfig.createProjectConfig(testData);
+        assert.throws(function() {
+          projectConfig.getExperimentAudienceConditions(configObj, 'invalidExperimentKey');
+        }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'invalidExperimentKey'));
+      });
+
+      it('should return experiment audienceIds if experiment has no audienceConditions', function() {
+        configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
+        var result = projectConfig.getExperimentAudienceConditions(configObj, 'feat_with_var_test');
+        assert.deepEqual(result, ['3468206642', '3988293898', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643']);
+      });
+
+      it('should return experiment audienceConditions if experiment has audienceConditions', function() {
+        configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
+        // audience_combinations_experiment has both audienceConditions and audienceIds
+        // audienceConditions should be preferred over audienceIds
+        var result = projectConfig.getExperimentAudienceConditions(configObj, 'audience_combinations_experiment');
+        assert.deepEqual(result, ['and', ['or', '3468206642', '3988293898'], ['or', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643']]);
+      });
+    });
   });
 
   describe('#getForcedVariation', function() {
-    var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
-    beforeEach(function() {
-      sinon.stub(createdLogger, 'log');
-    });
-
-    afterEach(function() {
-      createdLogger.log.restore();
+    var createdLogger = logger.createLogger({
+      logLevel: LOG_LEVEL.INFO,
+      logToConsole: false,
     });
 
     it('should return null for valid experimentKey, not set', function() {
@@ -558,13 +588,9 @@ describe('lib/core/project_config', function() {
   });
 
   describe('#setForcedVariation', function() {
-    var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
-    beforeEach(function() {
-      sinon.stub(createdLogger, 'log');
-    });
-
-    afterEach(function() {
-      createdLogger.log.restore();
+    var createdLogger = logger.createLogger({
+      logLevel: LOG_LEVEL.INFO,
+      logToConsole: false,
     });
 
     it('should return true for a valid forcedVariation in setForcedVariation', function() {
@@ -700,19 +726,11 @@ describe('lib/core/project_config', function() {
       assert.strictEqual(variation2, 'controlLaunched');
     });
 
-    it('should return false for a null userId', function() {
+    it('should return false for an empty variation key', function() {
       var testData = testDatafile.getTestProjectConfig();
       var configObj = projectConfig.createProjectConfig(testData);
 
-      var didSetVariation = projectConfig.setForcedVariation(configObj, 'testExperiment', null, 'control', createdLogger);
-      assert.strictEqual(didSetVariation, false);
-    });
-
-    it('should return false for an undefined userId', function() {
-      var testData = testDatafile.getTestProjectConfig();
-      var configObj = projectConfig.createProjectConfig(testData);
-
-      var didSetVariation = projectConfig.setForcedVariation(configObj, 'testExperiment', undefined, 'control', createdLogger);
+      var didSetVariation = projectConfig.setForcedVariation(configObj, 'testExperiment', 'user1', '', createdLogger);
       assert.strictEqual(didSetVariation, false);
     });
   });

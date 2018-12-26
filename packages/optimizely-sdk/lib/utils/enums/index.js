@@ -38,7 +38,7 @@ exports.ERROR_MESSAGES = {
   INVALID_EVENT_DISPATCHER: '%s: Provided "eventDispatcher" is in an invalid format.',
   INVALID_EVENT_KEY: '%s: Event key %s is not in datafile.',
   INVALID_EVENT_TAGS: '%s: Provided event tags are in an invalid format.',
-  INVALID_EXPERIMENT_KEY: '%s: Experiment key %s is not in datafile.',
+  INVALID_EXPERIMENT_KEY: '%s: Experiment key %s is not in datafile. It is either invalid, paused, or archived.',
   INVALID_EXPERIMENT_ID: '%s: Experiment ID %s is not in datafile.',
   INVALID_GROUP_ID: '%s: Group ID %s is not in datafile.',
   INVALID_LOGGER: '%s: Provided "logger" is in an invalid format.',
@@ -59,6 +59,8 @@ exports.ERROR_MESSAGES = {
   VARIATION_ID_NOT_IN_DATAFILE: '%s: No variation ID %s defined in datafile for experiment %s.',
   VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT: '%s: Variation ID %s is not in the datafile.',
   INVALID_INPUT_FORMAT: '%s: Provided %s is in an invalid format.',
+  INVALID_DATAFILE_VERSION: '%s: This version of the JavaScript SDK does not support the given datafile version: %s',
+  INVALID_VARIATION_KEY: '%s: Provided variation key is in an invalid format.',
 };
 
 exports.LOG_MESSAGES = {
@@ -122,6 +124,8 @@ exports.LOG_MESSAGES = {
   VALID_USER_PROFILE_SERVICE: '%s: Valid user profile service provided.',
   VARIATION_REMOVED_FOR_USER: '%s: Variation mapped to experiment %s has been removed for user %s.',
   VARIABLE_REQUESTED_WITH_WRONG_TYPE: '%s: Requested variable type "%s", but variable is of type "%s". Use correct API to retrieve value. Returning None.',
+  VALID_BUCKETING_ID: '%s: BucketingId is valid: "%s"',
+  BUCKETING_ID_NOT_STRING: '%s: BucketingID attribute is not a string. Defaulted to userId',
 };
 
 exports.RESERVED_EVENT_KEYWORDS = {
@@ -132,12 +136,13 @@ exports.RESERVED_EVENT_KEYWORDS = {
 exports.CONTROL_ATTRIBUTES = {
   BOT_FILTERING: '$opt_bot_filtering',
   BUCKETING_ID: '$opt_bucketing_id',
+  STICKY_BUCKETING_KEY: '$opt_experiment_bucket_map',
   USER_AGENT: '$opt_user_agent',
 };
 
 exports.JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 exports.NODE_CLIENT_ENGINE = 'node-sdk';
-exports.NODE_CLIENT_VERSION = '2.1.3';
+exports.NODE_CLIENT_VERSION = '3.0.0-rc2';
 
 /*
  * Notification types for use with NotificationCenter
@@ -185,4 +190,13 @@ exports.FEATURE_VARIABLE_TYPES = {
   DOUBLE: 'double',
   INTEGER: 'integer',
   STRING: 'string',
+};
+
+/*
+ * Supported datafile versions
+ */
+exports.DATAFILE_VERSIONS = {
+  V2: '2',
+  V3: '3',
+  V4: '4',
 };
