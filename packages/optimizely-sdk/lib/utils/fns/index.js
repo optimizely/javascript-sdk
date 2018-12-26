@@ -1,5 +1,5 @@
 /**
- * Copyright 2017, Optimizely
+ * Copyright 2017-2018, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 var uuid = require('uuid');
+var finite = require('lodash/isFinite');
 
 module.exports = {
   assign: require('lodash/assign'),
@@ -24,7 +25,9 @@ module.exports = {
   },
   isArray: require('lodash/isArray'),
   isEmpty: require('lodash/isEmpty'),
-  isFinite: require('lodash/isFinite'),
+  isFinite: function(number) {
+    return finite(number) && Math.abs(number) <= Math.pow(2, 53);
+  },
   keyBy: require('lodash/keyBy'),
   filter: require('lodash/filter'),
   forEach: require('lodash/forEach'),

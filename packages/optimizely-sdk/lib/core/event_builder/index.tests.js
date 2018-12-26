@@ -485,22 +485,7 @@ describe('lib/core/event_builder', function() {
             'account_id': '12001',
             'project_id': '111001',
             'visitors': [{
-              'attributes': [{
-                'entity_id': '111094',
-                'key': 'browser_type',
-                'type': 'custom',
-                'value': 'Chrome'
-              }, {
-                'entity_id': '616727838',
-                'key': 'integer_key',
-                'type': 'custom',
-                'value': 10
-              }, {
-                'entity_id': '323434545',
-                'key': 'boolean_key',
-                'type': 'custom',
-                'value': false
-              }],
+              'attributes': [],
               'visitor_id': 'testUser',
               'snapshots': [{
                 'decisions': [{
@@ -525,9 +510,9 @@ describe('lib/core/event_builder', function() {
 
         var eventOptions = {
           attributes: {
-            'browser_type': 'Chrome',
-            'integer_key': 10,
-            'boolean_key': false,
+            'browser_type': Infinity,
+            'integer_key': NaN,
+            'boolean_key': (Math.pow(2, 53) + 2) * -1,
             'double_key': [1, 2, 3],
           },
           clientEngine: 'node-sdk',
@@ -964,6 +949,65 @@ describe('lib/core/event_builder', function() {
           experimentsToVariationMap: {
             '111127': '111128',
             '122227': '122228'
+          },
+        };
+
+        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+
+        assert.deepEqual(actualParams, expectedParams);
+      });
+
+      it('should remove invalid params from conversion event payload', function() {
+        var expectedParams = {
+          url: 'https://logx.optimizely.com/v1/events',
+          httpVerb: 'POST',
+          params: {
+            'account_id': '12001',
+            'project_id': '111001',
+            'visitors': [{
+              'visitor_id': 'testUser',
+              'attributes': [],
+              'snapshots': [{
+                'decisions': [{
+                  'variation_id': '111128',
+                  'experiment_id': '111127',
+                  'campaign_id': '4'
+                }, {
+                  'variation_id': '122228',
+                  'experiment_id': '122227',
+                  'campaign_id': '5'
+                }],
+                'events': [{
+                  'timestamp': Math.round(new Date().getTime()),
+                  'entity_id': '111100',
+                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                  'key': 'testEventWithMultipleExperiments'
+                }]
+              }]
+            }],
+            'revision': '42',
+            'client_name': 'node-sdk',
+            'client_version': packageJSON.version,
+            'anonymize_ip': false,
+          }
+        };
+
+        var eventOptions = {
+          clientEngine: 'node-sdk',
+          clientVersion: packageJSON.version,
+          configObj: configObj,
+          eventKey: 'testEventWithMultipleExperiments',
+          logger: mockLogger,
+          userId: 'testUser',
+          experimentsToVariationMap: {
+            '111127': '111128',
+            '122227': '122228'
+          },
+          attributes: {
+            'browser_type': -Infinity,
+            'integer_key': NaN,
+            'boolean_key': Math.pow(2, 53) + 2,
+            'double_key': [1, 2, 3],
           },
         };
 

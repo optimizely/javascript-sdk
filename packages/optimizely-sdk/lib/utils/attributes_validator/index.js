@@ -20,6 +20,7 @@
 
 var sprintf = require('sprintf-js').sprintf;
 var lodashForOwn = require('lodash/forOwn');
+var fns = require('../../utils/fns');
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
@@ -47,6 +48,7 @@ module.exports = {
   },
 
   isAttributeValid: function(attributeKey, attributeValue) {
-    return typeof attributeKey === 'string' && VALID_ATTRIBUTE_TYPES.indexOf(typeof attributeValue) !== -1;
-  }
+    return (typeof attributeKey === 'string') && 
+    (typeof attributeValue === 'string' || typeof attributeValue === 'boolean' || fns.isFinite(attributeValue));
+  },
 };

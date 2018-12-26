@@ -200,6 +200,10 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         };
         var result = customAttributeEvaluator.evaluate(invalidValueCondition, { lasers_count: 9000 });
         assert.isNull(result);
+
+        invalidValueCondition.value = Math.pow(2, 53) + 2;
+        result = customAttributeEvaluator.evaluate(invalidValueCondition, { lasers_count: 9000 });
+        assert.isNull(result);
       });
     });
 
@@ -305,6 +309,11 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         meters_travelled: Infinity,
       });
       assert.isNull(result);
+
+      result = customAttributeEvaluator.evaluate(gtCondition, {
+        meters_travelled: Math.pow(2, 53) + 2,
+      });
+      assert.isNull(result);
     });
 
     it('should return null if there is no user-provided value', function() {
@@ -326,6 +335,11 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       invalidValueCondition.value = null;
       result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes);
       assert.isNull(result);
+
+      invalidValueCondition.value = Math.pow(2, 53) + 2;
+      result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes);
+      assert.isNull(result);
+
     });
   });
 
@@ -366,6 +380,11 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         meters_travelled: Infinity,
       });
       assert.isNull(result);
+
+      result = customAttributeEvaluator.evaluate(ltCondition, {
+        meters_travelled: Math.pow(2, 53) + 2,
+      });
+      assert.isNull(result);
     });
 
     it('should return null if there is no user-provided value', function() {
@@ -385,6 +404,10 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       assert.isNull(result);
 
       invalidValueCondition.value = {};
+      result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes);
+      assert.isNull(result);
+
+      invalidValueCondition.value = Math.pow(2, 53) + 2;
       result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes);
       assert.isNull(result);
     });
