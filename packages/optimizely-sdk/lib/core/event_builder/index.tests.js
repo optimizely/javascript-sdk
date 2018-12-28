@@ -485,7 +485,22 @@ describe('lib/core/event_builder', function() {
             'account_id': '12001',
             'project_id': '111001',
             'visitors': [{
-              'attributes': [],
+              'attributes': [{
+                'entity_id': '111094',
+                'key': 'browser_type',
+                'type': 'custom',
+                'value': 'Chrome'
+              }, {
+                'entity_id': '808797687',
+                'key': 'valid_positive_number',
+                'type': 'custom',
+                'value': Math.pow(2, 53)
+              }, {
+                'entity_id': '808797688',
+                'key': 'valid_negative_number',
+                'type': 'custom',
+                'value': -Math.pow(2, 53)
+              }],
               'visitor_id': 'testUser',
               'snapshots': [{
                 'decisions': [{
@@ -510,10 +525,11 @@ describe('lib/core/event_builder', function() {
 
         var eventOptions = {
           attributes: {
-            'browser_type': Infinity,
-            'integer_key': NaN,
-            'boolean_key': (Math.pow(2, 53) + 2) * -1,
-            'double_key': [1, 2, 3],
+            'browser_type': 'Chrome',
+            'valid_positive_number': Math.pow(2, 53),
+            'valid_negative_number': -Math.pow(2, 53),
+            'invalid_number': Math.pow(2, 53) + 2,
+            'array': [1, 2, 3],
           },
           clientEngine: 'node-sdk',
           clientVersion: packageJSON.version,
@@ -966,7 +982,22 @@ describe('lib/core/event_builder', function() {
             'project_id': '111001',
             'visitors': [{
               'visitor_id': 'testUser',
-              'attributes': [],
+              'attributes': [{
+                'entity_id': '111094',
+                'key': 'browser_type',
+                'type': 'custom',
+                'value': 'Chrome'
+              }, {
+                'entity_id': '808797687',
+                'key': 'valid_positive_number',
+                'type': 'custom',
+                'value': Math.pow(2, 53)
+              }, {
+                'entity_id': '808797688',
+                'key': 'valid_negative_number',
+                'type': 'custom',
+                'value': -Math.pow(2, 53)
+              }],
               'snapshots': [{
                 'decisions': [{
                   'variation_id': '111128',
@@ -1004,10 +1035,11 @@ describe('lib/core/event_builder', function() {
             '122227': '122228'
           },
           attributes: {
-            'browser_type': -Infinity,
-            'integer_key': NaN,
-            'boolean_key': Math.pow(2, 53) + 2,
-            'double_key': [1, 2, 3],
+            'browser_type': 'Chrome',
+            'valid_positive_number': Math.pow(2, 53),
+            'valid_negative_number': -Math.pow(2, 53),
+            'invalid_number': -Math.pow(2, 53) - 2,
+            'array': [1, 2, 3],
           },
         };
 

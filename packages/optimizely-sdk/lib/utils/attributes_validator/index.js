@@ -25,8 +25,6 @@ var fns = require('../../utils/fns');
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
 
-var VALID_ATTRIBUTE_TYPES = ['string', 'boolean', 'number'];
-
 module.exports = {
   /**
    * Validates user's provided attributes
