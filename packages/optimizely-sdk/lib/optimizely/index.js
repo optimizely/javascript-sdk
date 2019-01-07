@@ -42,9 +42,9 @@ var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
  * For more information, @see {@link https://docs.developers.optimizely.com/full-stack/docs/instantiate}.
  *
  * @param {Object} config                     Contains information to configure Optimizely.
- * @param {string} config.clientEngine        Specifies the type of JavaScript used by the client. The value for this field must 
+ * @param {string} [config.clientEngine]      Specifies the type of JavaScript used by the client. The value for this field must 
  *                                            be set to "enums.NODE_CLIENT_ENGINE" or "enums.JAVASCRIPT_CLIENT_ENGINE".
- * @param {string} config.clientVersion       Specifies the version of the client's JavaScript engine.
+ * @param {string} [config.clientVersion]     Specifies the version of the client's JavaScript engine.
  * @param {Object} config.datafile            The JSON string representing the datafile.
  * @param {Object} config.errorHandler        An error handler object to handle errors.
  * @param {Object} config.eventDispatcher     An event dispatcher to manage network calls.
@@ -118,7 +118,7 @@ function Optimizely(config) {
  *
  * For more information, @see {@link https://docs.developers.optimizely.com/full-stack/docs/activate}.
  *
- * @param  {string}      experimentKey  The key of the variation's experiment to activate.
+ * @param  {string}      experimentKey  The experiment to activate.
  * @param  {string}      userId         The user ID.
  * @param  {Object}      attributes     A map of custom key-value string pairs specifying attributes for the user. 
  *
@@ -533,7 +533,10 @@ Optimizely.prototype.__filterEmptyValues = function (map) {
 
 /**
  * Determines whether a feature test or rollout is enabled for a given user, and sends
- * an impression event if the user is bucketed into an experiment using the feature.
+ * an impression event if the user is bucketed into a feature test using the feature. 
+ * No impression event is sent if the user is bucketed into a rollout.
+ *
+ * Note: a feature test takes priority over the rollout.
  *
  * This method takes into account the user `attributes` passed in, to determine if the user
  * is part of the audience that qualifies for the experiment.
@@ -592,7 +595,7 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
  *
  * For more information, @see {@link https://docs.developers.optimizely.com/full-stack/docs/get-enabled-features}.
  *
- * @param {string} userId      The ID of the user who may have features enabled in one or more experiments.
+ * @param {string} userId      The ID of the user to check.
  * @param {Object} attributes  A map of custom key-value string pairs specifying attributes for the user. 
  *
  * @return {Array}             A list of keys corresponding to the features that are enabled for the user, or an empty list if no
