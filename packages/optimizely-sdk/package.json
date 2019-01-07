@@ -14,7 +14,7 @@
     "lint": "eslint lib/**",
     "cover": "istanbul cover _mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js",
     "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls",
-    "prepublishOnly": "npm run build-browser-umd && npm test && npm run test-xbrowser"
+    "prepublishOnly": "npm run build-browser-umd && npm test && npm run test-xbrowser && npm run test-umdbrowser"
   },
   "repository": {
     "type": "git",
@@ -45,13 +45,13 @@
     "eslint": "^2.9.0",
     "istanbul": "^0.4.5",
     "json-loader": "^0.5.4",
-    "karma": "^2.0.0",
+    "karma": "^3.1.4",
     "karma-browserstack-launcher": "^1.2.0",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.1.1",
     "karma-mocha": "^1.3.0",
     "karma-sinon": "^1.0.5",
-    "karma-webpack": "^2.0.3",
+    "karma-webpack": "^3.0.5",
     "mocha": "^5.2.0",
     "mocha-lcov-reporter": "^1.3.0",
     "nock": "^7.7.2",
