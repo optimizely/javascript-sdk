@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2018, Optimizely
+ * Copyright 2016, 2018-2019, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,10 @@
 
 var sprintf = require('sprintf-js').sprintf;
 var lodashForOwn = require('lodash/forOwn');
+var fns = require('../../utils/fns');
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
-
-var VALID_ATTRIBUTE_TYPES = ['string', 'boolean', 'number'];
 
 module.exports = {
   /**
@@ -47,6 +46,7 @@ module.exports = {
   },
 
   isAttributeValid: function(attributeKey, attributeValue) {
-    return typeof attributeKey === 'string' && VALID_ATTRIBUTE_TYPES.indexOf(typeof attributeValue) !== -1;
-  }
+    return (typeof attributeKey === 'string') && 
+    (typeof attributeValue === 'string' || typeof attributeValue === 'boolean' || fns.isFinite(attributeValue));
+  },
 };
