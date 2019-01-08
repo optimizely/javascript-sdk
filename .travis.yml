@@ -34,7 +34,9 @@ stages:
 jobs:
   include:
     - stage: 'Integration tests'
+      merge_mode: replace
       env: SDK=javascript
+      cache: false
       language: python
       before_install: skip
       install:
@@ -43,4 +45,4 @@ jobs:
         - "aws s3 cp s3://optimizely-travisci-artifacts/ci/trigger_fullstack-sdk-compat.sh ci/ && chmod u+x ci/trigger_fullstack-sdk-compat.sh"
       script:
         - "ci/trigger_fullstack-sdk-compat.sh"
-      after_success: skip
+      after_success: travis_terminate 0
