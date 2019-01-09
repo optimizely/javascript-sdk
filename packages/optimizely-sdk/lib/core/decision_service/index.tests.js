@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2017-2018, Optimizely, Inc. and contributors                        *
+ * Copyright 2017-2019, Optimizely, Inc. and contributors                        *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -888,6 +888,18 @@ describe('lib/core/decision_service', function() {
             };
             assert.deepEqual(decision, expectedDecision);
             sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG, 'DECISION_SERVICE: User user1 is not in any experiment on the feature feature_with_group.');
+          });
+
+          it('bucketed group experiment does not exist in the feature', function() {
+            var noTrafficExpFeature = configObj.featureKeyMap.feature_exp_no_traffic;
+            var decision = decisionServiceInstance.getVariationForFeature(noTrafficExpFeature, 'user1');
+            var expectedDecision = {
+              experiment: null,
+              variation: null,
+              decisionSource: null,
+            };
+            assert.deepEqual(decision, expectedDecision);
+            sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG, 'DECISION_SERVICE: User user1 is not in any experiment on the feature feature_exp_no_traffic.');
           });
         });
 

@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2017-2018, Optimizely, Inc. and contributors                   *
+ * Copyright 2017-2019, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -315,7 +315,7 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(feature, 
     var group = this.configObj.groupIdMap[feature.groupId];
     if (group) {
       experiment = this._getExperimentInGroup(group, userId);
-      if (experiment) {
+      if (experiment && feature.experimentIds.indexOf(experiment.id) !== -1) {
         variationKey = this.getVariation(experiment.key, userId, attributes);
       }
     }
