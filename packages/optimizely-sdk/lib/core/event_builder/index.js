@@ -57,6 +57,7 @@ function getCommonEventParams(options) {
     client_name: options.clientEngine,
     client_version: options.clientVersion,
     anonymize_ip: anonymize_ip,
+    enrich_decisions: true,
   };
 
   // Omit attribute values that are not supported by the log endpoint.
@@ -115,25 +116,13 @@ function getImpressionEventParams(configObj, experimentId, variationId) {
  * @param  {Object} configObj                 Object representing project configuration
  * @param  {string} eventKey                  Event key representing the event which needs to be recorded
  * @param  {Object} eventTags                 Values associated with the event.
- * @param  {Array}  experimentsToVariationMap Map of experiment IDs to bucketed variation IDs
  * @param  {Object} logger                    Logger object
  * @return {Object}                           Conversion event params
  */
-function getVisitorSnapshot(configObj, eventKey, eventTags, experimentsToVariationMap, logger) {  
+function getVisitorSnapshot(configObj, eventKey, eventTags, logger) {
   var snapshot = {
-    decisions: [],
     events: []
   };
-
-  fns.forOwn(experimentsToVariationMap, function(variationId, experimentId) {
-    var decision = {
-      campaign_id: projectConfig.getLayerId(configObj, experimentId),
-      experiment_id: experimentId,
-      variation_id: variationId,
-    };
-
-    snapshot.decisions.push(decision);
-  });
 
   var eventDict = {
     entity_id: projectConfig.getEventId(configObj, eventKey),
@@ -199,7 +188,6 @@ module.exports = {
    * @param  {Object} options.configObj                 Object representing project configuration, including datafile information and mappings for quick lookup
    * @param  {string} options.eventKey                  Event key representing the event which needs to be recorded
    * @param  {Object} options.eventTags                 Object with event-specific tags
-   * @param  {Object} options.experimentsToVariationMap Map of experiment IDs to bucketed variation IDs
    * @param  {Object} options.logger                    Logger object
    * @param  {string} options.userId                    ID for user
    * @return {Object}                                   Params to be used in conversion event logging endpoint call
@@ -215,7 +203,6 @@ module.exports = {
     var snapshot = getVisitorSnapshot(options.configObj,
                                             options.eventKey,
                                             options.eventTags,
-                                            options.experimentsToVariationMap,
                                             options.logger);
 
     commonParams.visitors[0].snapshots = [snapshot];

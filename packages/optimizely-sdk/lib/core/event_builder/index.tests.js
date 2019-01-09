@@ -75,7 +75,8 @@ describe('lib/core/event_builder', function() {
             'client_name': 'node-sdk',
             'client_version': packageJSON.version,
             'anonymize_ip': false,
-          }
+            'enrich_decisions': true,
+          },
         };
 
         var eventOptions = {
@@ -125,7 +126,8 @@ describe('lib/core/event_builder', function() {
             'client_name': 'node-sdk',
             'client_version': packageJSON.version,
             'anonymize_ip': false,
-          }
+            'enrich_decisions': true,
+          },
         };
         var eventOptions = {
           attributes: {browser_type: 'firefox'},
@@ -175,6 +177,7 @@ describe('lib/core/event_builder', function() {
             'client_name': 'node-sdk',
             'client_version': packageJSON.version,
             'anonymize_ip': false,
+            'enrich_decisions': true,
           }
         };
 
@@ -226,7 +229,8 @@ describe('lib/core/event_builder', function() {
             'client_name': 'node-sdk',
             'client_version': packageJSON.version,
             'anonymize_ip': false,
-          }
+            'enrich_decisions': true,
+          },
         };
 
         var eventOptions = {
@@ -272,7 +276,8 @@ describe('lib/core/event_builder', function() {
             'client_name': 'node-sdk',
             'client_version': packageJSON.version,
             'anonymize_ip': false,
-          }
+            'enrich_decisions': true,
+          },
         };
 
         var eventOptions = {
@@ -330,7 +335,8 @@ describe('lib/core/event_builder', function() {
             'client_name': 'node-sdk',
             'client_version': packageJSON.version,
             'anonymize_ip': true,
-          }
+            'enrich_decisions': true,
+          },
         };
 
         var eventOptions = {
@@ -388,7 +394,8 @@ describe('lib/core/event_builder', function() {
             'client_name': 'node-sdk',
             'client_version': packageJSON.version,
             'anonymize_ip': true,
-          }
+            'enrich_decisions': true,
+          },
         };
 
         var eventOptions = {
@@ -454,7 +461,8 @@ describe('lib/core/event_builder', function() {
             'client_name': 'node-sdk',
             'client_version': packageJSON.version,
             'anonymize_ip': false,
-          }
+            'enrich_decisions': true,
+          },
         };
 
         var eventOptions = {
@@ -520,7 +528,8 @@ describe('lib/core/event_builder', function() {
             'client_name': 'node-sdk',
             'client_version': packageJSON.version,
             'anonymize_ip': false,
-          }
+            'enrich_decisions': true,
+          },
         };
 
         var eventOptions = {
@@ -557,11 +566,6 @@ describe('lib/core/event_builder', function() {
               'visitor_id': 'testUser',
               'attributes': [],
               'snapshots': [{
-                'decisions': [{
-                  'variation_id': '111128',
-                  'experiment_id': '111127',
-                  'campaign_id': '4'
-                }],
                 'events': [{
                   'timestamp': Math.round(new Date().getTime()),
                   'entity_id': '111095',
@@ -574,7 +578,8 @@ describe('lib/core/event_builder', function() {
             'client_name': 'node-sdk',
             'client_version': packageJSON.version,
             'anonymize_ip': false,
-          }
+            'enrich_decisions': true,
+          },
         };
 
         var eventOptions = {
@@ -584,7 +589,6 @@ describe('lib/core/event_builder', function() {
           eventKey: 'testEvent',
           logger: mockLogger,
           userId: 'testUser',
-          experimentsToVariationMap: { '111127': '111128' },
         };
 
         var actualParams = eventBuilder.getConversionEvent(eventOptions);
@@ -608,11 +612,6 @@ describe('lib/core/event_builder', function() {
                 'key': 'browser_type'
               }],
               'snapshots': [{
-                'decisions': [{
-                  'variation_id': '111128',
-                  'experiment_id': '111127',
-                  'campaign_id': '4'
-                }],
                 'events': [{
                   'timestamp': Math.round(new Date().getTime()),
                   'entity_id': '111095',
@@ -625,7 +624,8 @@ describe('lib/core/event_builder', function() {
             'client_name': 'node-sdk',
             'client_version': packageJSON.version,
             'anonymize_ip': false,
-          }
+            'enrich_decisions': true,
+          },
         };
 
         var eventOptions = {
@@ -634,7 +634,6 @@ describe('lib/core/event_builder', function() {
           clientVersion: packageJSON.version,
           configObj: configObj,
           eventKey: 'testEvent',
-          experimentsToVariationMap: { '111127': '111128' },
           logger: mockLogger,
           userId: 'testUser',
         };
@@ -655,11 +654,6 @@ describe('lib/core/event_builder', function() {
               'attributes': [],
               'visitor_id': 'testUser',
               'snapshots': [{
-                'decisions': [{
-                  'variation_id': '111128',
-                  'experiment_id': '111127',
-                  'campaign_id': '4'
-                }],
                 'events': [{
                   'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
                   'tags': {
@@ -676,7 +670,8 @@ describe('lib/core/event_builder', function() {
             'client_name': 'node-sdk',
             'revision': '42',
             'anonymize_ip': false,
-          }
+            'enrich_decisions': true,
+          },
         };
 
         var eventOptions = {
@@ -687,7 +682,6 @@ describe('lib/core/event_builder', function() {
           eventTags: {
             revenue: 4200,
           },
-          experimentsToVariationMap: { '111127': '111128' },
           logger: mockLogger,
           userId: 'testUser',
         };
@@ -713,11 +707,6 @@ describe('lib/core/event_builder', function() {
               }],
               'visitor_id': 'testUser',
               'snapshots': [{
-                'decisions': [{
-                  'variation_id': '111128',
-                  'experiment_id': '111127',
-                  'campaign_id': '4'
-                }],
                 'events': [{
                   'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
                   'tags': {
@@ -734,7 +723,8 @@ describe('lib/core/event_builder', function() {
             'client_name': 'node-sdk',
             'revision': '42',
             'anonymize_ip': false,
-          }
+            'enrich_decisions': true,
+          },
         };
 
         var eventOptions = {
@@ -746,7 +736,6 @@ describe('lib/core/event_builder', function() {
           eventTags: {
             revenue: 4200
           },
-          experimentsToVariationMap: { '111127': '111128' },
           logger: mockLogger,
           userId: 'testUser',
         };
@@ -767,11 +756,6 @@ describe('lib/core/event_builder', function() {
               'attributes': [],
               'visitor_id': 'testUser',
               'snapshots': [{
-                'decisions': [{
-                  'variation_id': '111128',
-                  'experiment_id': '111127',
-                  'campaign_id': '4'
-                }],
                 'events': [{
                   'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
                   'timestamp': Math.round(new Date().getTime()),
@@ -784,7 +768,8 @@ describe('lib/core/event_builder', function() {
             'client_name': 'node-sdk',
             'revision': '42',
             'anonymize_ip': false,
-          }
+            'enrich_decisions': true,
+          },
         };
 
         var eventOptions = {
@@ -793,7 +778,6 @@ describe('lib/core/event_builder', function() {
           clientVersion: packageJSON.version,
           configObj: configObj,
           eventKey: 'testEvent',
-          experimentsToVariationMap: { '111127': '111128' },
           logger: mockLogger,
           userId: 'testUser',
         };
@@ -825,11 +809,6 @@ describe('lib/core/event_builder', function() {
               }],
               'visitor_id': 'testUser',
               'snapshots': [{
-                'decisions': [{
-                  'variation_id': '595008',
-                  'experiment_id': '595010',
-                  'campaign_id': '595005'
-                }],
                 'events': [{
                   'timestamp': Math.round(new Date().getTime()),
                   'entity_id': '594089',
@@ -842,7 +821,8 @@ describe('lib/core/event_builder', function() {
             'client_name': 'node-sdk',
             'client_version': packageJSON.version,
             'anonymize_ip': true,
-          }
+            'enrich_decisions': true,
+          },
         };
 
         var eventOptions = {
@@ -852,7 +832,6 @@ describe('lib/core/event_builder', function() {
           configObj: v4ConfigObj,
           eventKey: 'item_bought',
           logger: mockLogger,
-          experimentsToVariationMap: { '595010': '595008' },
           userId: 'testUser',
         };
 
@@ -884,11 +863,6 @@ describe('lib/core/event_builder', function() {
               }],
               'visitor_id': 'testUser',
               'snapshots': [{
-                'decisions': [{
-                  'variation_id': '595008',
-                  'experiment_id': '595010',
-                  'campaign_id': '595005'
-                }],
                 'events': [{
                   'timestamp': Math.round(new Date().getTime()),
                   'entity_id': '594089',
@@ -901,7 +875,8 @@ describe('lib/core/event_builder', function() {
             'client_name': 'node-sdk',
             'client_version': packageJSON.version,
             'anonymize_ip': true,
-          }
+            'enrich_decisions': true,
+          },
         };
 
         var eventOptions = {
@@ -911,7 +886,6 @@ describe('lib/core/event_builder', function() {
           configObj: v4ConfigObj,
           eventKey: 'item_bought',
           logger: mockLogger,
-          experimentsToVariationMap: { '595010': '595008' },
           userId: 'testUser',
         };
 
@@ -931,15 +905,6 @@ describe('lib/core/event_builder', function() {
               'visitor_id': 'testUser',
               'attributes': [],
               'snapshots': [{
-                'decisions': [{
-                  'variation_id': '111128',
-                  'experiment_id': '111127',
-                  'campaign_id': '4'
-                }, {
-                  'variation_id': '122228',
-                  'experiment_id': '122227',
-                  'campaign_id': '5'
-                }],
                 'events': [{
                   'timestamp': Math.round(new Date().getTime()),
                   'entity_id': '111100',
@@ -952,7 +917,8 @@ describe('lib/core/event_builder', function() {
             'client_name': 'node-sdk',
             'client_version': packageJSON.version,
             'anonymize_ip': false,
-          }
+            'enrich_decisions': true,
+          },
         };
 
         var eventOptions = {
@@ -962,10 +928,6 @@ describe('lib/core/event_builder', function() {
           eventKey: 'testEventWithMultipleExperiments',
           logger: mockLogger,
           userId: 'testUser',
-          experimentsToVariationMap: {
-            '111127': '111128',
-            '122227': '122228'
-          },
         };
 
         var actualParams = eventBuilder.getConversionEvent(eventOptions);
@@ -999,15 +961,6 @@ describe('lib/core/event_builder', function() {
                 'value': -Math.pow(2, 53)
               }],
               'snapshots': [{
-                'decisions': [{
-                  'variation_id': '111128',
-                  'experiment_id': '111127',
-                  'campaign_id': '4'
-                }, {
-                  'variation_id': '122228',
-                  'experiment_id': '122227',
-                  'campaign_id': '5'
-                }],
                 'events': [{
                   'timestamp': Math.round(new Date().getTime()),
                   'entity_id': '111100',
@@ -1020,7 +973,8 @@ describe('lib/core/event_builder', function() {
             'client_name': 'node-sdk',
             'client_version': packageJSON.version,
             'anonymize_ip': false,
-          }
+            'enrich_decisions': true,
+          },
         };
 
         var eventOptions = {
@@ -1030,10 +984,6 @@ describe('lib/core/event_builder', function() {
           eventKey: 'testEventWithMultipleExperiments',
           logger: mockLogger,
           userId: 'testUser',
-          experimentsToVariationMap: {
-            '111127': '111128',
-            '122227': '122228'
-          },
           attributes: {
             'browser_type': 'Chrome',
             'valid_positive_number': Math.pow(2, 53),
@@ -1060,11 +1010,6 @@ describe('lib/core/event_builder', function() {
                 'attributes': [],
                 'visitor_id': 'testUser',
                 'snapshots': [{
-                  'decisions': [{
-                    'variation_id': '111128',
-                    'experiment_id': '111127',
-                    'campaign_id': '4'
-                  }],
                   'events': [{
                     'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
                     'tags': {
@@ -1080,7 +1025,8 @@ describe('lib/core/event_builder', function() {
               'client_name': 'node-sdk',
               'revision': '42',
               'anonymize_ip': false,
-            }
+              'enrich_decisions': true,
+            },
           };
 
           var eventOptions = {
@@ -1091,7 +1037,6 @@ describe('lib/core/event_builder', function() {
             eventTags: {
               'non-revenue': 'cool',
             },
-            experimentsToVariationMap: { '111127': '111128' },
             logger: mockLogger,
             userId: 'testUser',
           };
@@ -1113,11 +1058,6 @@ describe('lib/core/event_builder', function() {
                   'attributes': [],
                   'visitor_id': 'testUser',
                   'snapshots': [{
-                    'decisions': [{
-                      'variation_id': '111128',
-                      'experiment_id': '111127',
-                      'campaign_id': '4'
-                    }],
                     'events': [{
                       'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
                       'tags': {
@@ -1135,7 +1075,8 @@ describe('lib/core/event_builder', function() {
                 'client_name': 'node-sdk',
                 'revision': '42',
                 'anonymize_ip': false,
-              }
+                'enrich_decisions': true,
+              },
             };
 
             var eventOptions = {
@@ -1147,7 +1088,6 @@ describe('lib/core/event_builder', function() {
                 'revenue': 4200,
                 'non-revenue': 'cool',
               },
-              experimentsToVariationMap: { '111127': '111128' },
               logger: mockLogger,
               userId: 'testUser',
             };
@@ -1169,11 +1109,6 @@ describe('lib/core/event_builder', function() {
                     'attributes': [],
                     'visitor_id': 'testUser',
                     'snapshots': [{
-                      'decisions': [{
-                        'variation_id': '111128',
-                        'experiment_id': '111127',
-                        'campaign_id': '4'
-                      }],
                       'events': [{
                         'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
                         'tags': {
@@ -1190,7 +1125,8 @@ describe('lib/core/event_builder', function() {
                   'client_name': 'node-sdk',
                   'revision': '42',
                   'anonymize_ip': false,
-                }
+                  'enrich_decisions': true,
+                },
               };
 
               var eventOptions = {
@@ -1202,7 +1138,6 @@ describe('lib/core/event_builder', function() {
                   'revenue': 'invalid revenue',
                   'non-revenue': 'cool',
                 },
-                experimentsToVariationMap: { '111127': '111128' },
                 logger: mockLogger,
                 userId: 'testUser',
               };
@@ -1226,11 +1161,6 @@ describe('lib/core/event_builder', function() {
                   'attributes': [],
                   'visitor_id': 'testUser',
                   'snapshots': [{
-                    'decisions': [{
-                      'variation_id': '111128',
-                      'experiment_id': '111127',
-                      'campaign_id': '4'
-                    }],
                     'events': [{
                       'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
                       'tags': {
@@ -1248,7 +1178,8 @@ describe('lib/core/event_builder', function() {
                 'client_name': 'node-sdk',
                 'revision': '42',
                 'anonymize_ip': false,
-              }
+                'enrich_decisions': true,
+              },
             };
 
             var eventOptions = {
@@ -1260,7 +1191,6 @@ describe('lib/core/event_builder', function() {
                 'value': '13.37',
                 'non-revenue': 'cool',
               },
-              experimentsToVariationMap: { '111127': '111128' },
               logger: mockLogger,
               userId: 'testUser',
             };
@@ -1282,11 +1212,6 @@ describe('lib/core/event_builder', function() {
                     'attributes': [],
                     'visitor_id': 'testUser',
                     'snapshots': [{
-                      'decisions': [{
-                        'variation_id': '111128',
-                        'experiment_id': '111127',
-                        'campaign_id': '4'
-                      }],
                       'events': [{
                         'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
                         'tags': {
@@ -1303,7 +1228,8 @@ describe('lib/core/event_builder', function() {
                   'client_name': 'node-sdk',
                   'revision': '42',
                   'anonymize_ip': false,
-                }
+                  'enrich_decisions': true,
+                },
               };
 
               var eventOptions = {
@@ -1315,7 +1241,6 @@ describe('lib/core/event_builder', function() {
                   'value': 'invalid value',
                   'non-revenue': 'cool',
                 },
-                experimentsToVariationMap: { '111127': '111128' },
                 logger: mockLogger,
                 userId: 'testUser',
               };
@@ -1345,11 +1270,6 @@ describe('lib/core/event_builder', function() {
                   'value': 'variation',
                 }],
                 'snapshots': [{
-                  'decisions': [{
-                    'variation_id': '111128',
-                    'experiment_id': '111127',
-                    'campaign_id': '4'
-                  }],
                   'events': [{
                     'timestamp': Math.round(new Date().getTime()),
                     'entity_id': '111095',
@@ -1362,7 +1282,8 @@ describe('lib/core/event_builder', function() {
               'client_name': 'node-sdk',
               'client_version': packageJSON.version,
               'anonymize_ip': false,
-            }
+              'enrich_decisions': true,
+            },
           };
 
           var eventOptions = {
@@ -1370,7 +1291,6 @@ describe('lib/core/event_builder', function() {
             clientVersion: packageJSON.version,
             configObj: configObj,
             eventKey: 'testEvent',
-            experimentsToVariationMap: {'111127': '111128'},
             logger: mockLogger,
             userId: 'testUser',
             attributes: {'$opt_bucketing_id': 'variation'},

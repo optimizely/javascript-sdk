@@ -325,17 +325,6 @@ describe('lib/core/project_config', function() {
                        testData.experiments[0].variations[0].key);
     });
 
-    it('should retrieve experiment IDs for event given valid event key in getExperimentIdsForEvent', function() {
-      assert.deepEqual(projectConfig.getExperimentIdsForEvent(configObj, testData.events[0].key),
-                       testData.events[0].experimentIds);
-    });
-
-    it('should throw error for invalid event key in getExperimentIdsForEvent', function() {
-      assert.throws(function() {
-        projectConfig.getExperimentIdsForEvent(configObj, 'invalidEventKey');
-      }, sprintf(ERROR_MESSAGES.INVALID_EVENT_KEY, 'PROJECT_CONFIG', 'invalidEventKey'));
-    });
-
     it('should retrieve traffic allocation given valid experiment key in getTrafficAllocation', function() {
       assert.deepEqual(projectConfig.getTrafficAllocation(configObj, testData.experiments[0].key),
                        testData.experiments[0].trafficAllocation);

@@ -270,27 +270,6 @@ module.exports = {
     throw new Error(sprintf(ERROR_MESSAGES.EXPERIMENT_KEY_NOT_IN_DATAFILE, MODULE_NAME, experimentKey));
   },
 
-
-  /**
-   * Get experiment IDs for the provided event key
-   * @param  {Object} projectConfig Object representing project configuration
-   * @param  {string} eventKey      Event key for which experiment IDs are to be retrieved
-   * @return {Array<string>}        All experiment IDs for the event
-   * @throws If event key is not in datafile
-   */
-  getExperimentIdsForEvent: function(projectConfig, eventKey) {
-    var event = projectConfig.eventKeyMap[eventKey];
-    if (event) {
-      if (event.experimentIds.length > 0) {
-        return event.experimentIds;
-      } else {
-        return null;
-      }
-    } else {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_KEY, MODULE_NAME, eventKey));
-    }
-  },
-
   /**
    * Given an experiment key, returns the traffic allocation within that experiment
    * @param  {Object} projectConfig Object representing project configuration
@@ -604,5 +583,15 @@ module.exports = {
    */
   getAudiencesById: function(projectConfig) {
     return projectConfig.audiencesById;
+  },
+
+  /**
+   * Returns true if an event with the given key exists in the datafile, and false otherwise
+   * @param {Object} projectConfig
+   * @param {string} eventKey
+   * @returns {boolean}
+   */
+  eventWithKeyExists: function(projectConfig, eventKey) {
+    return projectConfig.eventKeyMap.hasOwnProperty(eventKey);
   },
 };
