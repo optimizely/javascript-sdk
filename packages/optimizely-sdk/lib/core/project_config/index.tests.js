@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018, Optimizely
+ * Copyright 2016-2019, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,10 @@ describe('lib/core/project_config', function() {
         boolean_key: testData.attributes[1],
         integer_key: testData.attributes[2],
         double_key: testData.attributes[3],
+        valid_positive_number: testData.attributes[4],
+        valid_negative_number: testData.attributes[5],
+        invalid_number: testData.attributes[6],
+        array: testData.attributes[7],
       };
 
       assert.deepEqual(configObj.attributeKeyMap, expectedAttributeKeyMap);
