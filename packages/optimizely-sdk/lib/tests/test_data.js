@@ -248,6 +248,18 @@ var config = {
 		}, {
 			id: "808797686",
 			key: "double_key"
+    }, {
+			id: "808797687",
+			key: "valid_positive_number"
+    }, {
+			id: "808797688",
+			key: "valid_negative_number"
+    }, {
+			id: "808797689",
+			key: "invalid_number"
+    }, {
+			id: "808797690",
+			key: "array"
     }
   ],
   audiences: [{
