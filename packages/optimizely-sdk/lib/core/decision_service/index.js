@@ -315,7 +315,7 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(feature, 
     var group = this.configObj.groupIdMap[feature.groupId];
     if (group) {
       experiment = this._getExperimentInGroup(group, userId);
-      if (experiment) {
+      if (experiment && feature.experimentIds.indexOf(experiment.id) !== -1) {
         variationKey = this.getVariation(experiment.key, userId, attributes);
       }
     }
