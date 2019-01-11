@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018, Optimizely
+ * Copyright 2016-2019, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -417,6 +417,15 @@ var configWithFeatures = {
       'id': '599110',
       'experimentIds': [],
       'variables': []
+    },
+    {
+      'rolloutId': '',
+      'key': 'feature_exp_no_traffic',
+      'id': '4482920079',
+      'experimentIds': [
+        '12115595439'
+      ],
+      'variables': []
     }
   ],
   'experiments': [
@@ -623,6 +632,74 @@ var configWithFeatures = {
         {
           'endOfRange': 10000,
           'entityId': '599082'
+        }
+      ]
+    },
+    {
+      'policy': 'random',
+      'id': '595025',
+      'experiments': [
+        {
+          'trafficAllocation': [
+            {
+              'endOfRange': 10000,
+              'entityId': '12098126627'
+            }
+          ],
+          'layerId': '595005',
+          'forcedVariations': {},
+          'audienceIds': [],
+          'variations': [
+            {
+              'key': 'all_traffic_variation',
+              'id': '12098126627',
+              'variables': []
+            },
+            {
+              'key': 'no_traffic_variation',
+              'id': '12098126628',
+              'variables': []
+            }
+          ],
+          'status': 'Running',
+          'key': 'all_traffic_experiment',
+          'id': '12198292375'
+        },
+        {
+          'trafficAllocation': [
+            {
+              'endOfRange': 5000,
+              'entityId': '12098126629'
+            },
+            {
+              'endOfRange': 10000,
+              'entityId': '12098126630'
+            }
+          ],
+          'layerId': '12187694826',
+          'forcedVariations': {},
+          'audienceIds': [],
+          'variations': [
+            {
+              'key': 'variation_5000',
+              'id': '12098126629',
+              'variables': []
+            },
+            {
+              'key': 'variation_10000',
+              'id': '12098126630',
+              'variables': []
+            }
+          ],
+          'status': 'Running',
+          'key': 'no_traffic_experiment',
+          'id': '12115595439'
+        }
+      ],
+      'trafficAllocation': [
+        {
+          'endOfRange': 10000,
+          'entityId': '12198292375'
         }
       ]
     }
@@ -1321,6 +1398,10 @@ var datafileWithFeaturesExpectedData = {
     },
     599080: {},
     599081: {},
+    12098126627: {},
+    12098126628: {},
+    12098126629: {},
+    12098126630: {},
   },
 
   featureKeyMap: {
@@ -1534,6 +1615,15 @@ var datafileWithFeaturesExpectedData = {
       'experimentIds': [],
       'variables': [],
       variableKeyMap: {},
+    },
+    feature_exp_no_traffic: {
+      'rolloutId': '',
+      'key': 'feature_exp_no_traffic',
+      'id': '4482920079',
+      'experimentIds': ['12115595439'],
+      'variables': [],
+      variableKeyMap: {},
+      groupId: '595025',
     },
   },
 };
