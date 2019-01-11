@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018, Optimizely
+ * Copyright 2016-2019, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -491,15 +491,15 @@ describe('lib/core/event_builder', function() {
                 'type': 'custom',
                 'value': 'Chrome'
               }, {
-                'entity_id': '616727838',
-                'key': 'integer_key',
+                'entity_id': '808797687',
+                'key': 'valid_positive_number',
                 'type': 'custom',
-                'value': 10
+                'value': Math.pow(2, 53)
               }, {
-                'entity_id': '323434545',
-                'key': 'boolean_key',
+                'entity_id': '808797688',
+                'key': 'valid_negative_number',
                 'type': 'custom',
-                'value': false
+                'value': -Math.pow(2, 53)
               }],
               'visitor_id': 'testUser',
               'snapshots': [{
@@ -526,9 +526,10 @@ describe('lib/core/event_builder', function() {
         var eventOptions = {
           attributes: {
             'browser_type': 'Chrome',
-            'integer_key': 10,
-            'boolean_key': false,
-            'double_key': [1, 2, 3],
+            'valid_positive_number': Math.pow(2, 53),
+            'valid_negative_number': -Math.pow(2, 53),
+            'invalid_number': Math.pow(2, 53) + 2,
+            'array': [1, 2, 3],
           },
           clientEngine: 'node-sdk',
           clientVersion: packageJSON.version,
@@ -964,6 +965,81 @@ describe('lib/core/event_builder', function() {
           experimentsToVariationMap: {
             '111127': '111128',
             '122227': '122228'
+          },
+        };
+
+        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+
+        assert.deepEqual(actualParams, expectedParams);
+      });
+
+      it('should remove invalid params from conversion event payload', function() {
+        var expectedParams = {
+          url: 'https://logx.optimizely.com/v1/events',
+          httpVerb: 'POST',
+          params: {
+            'account_id': '12001',
+            'project_id': '111001',
+            'visitors': [{
+              'visitor_id': 'testUser',
+              'attributes': [{
+                'entity_id': '111094',
+                'key': 'browser_type',
+                'type': 'custom',
+                'value': 'Chrome'
+              }, {
+                'entity_id': '808797687',
+                'key': 'valid_positive_number',
+                'type': 'custom',
+                'value': Math.pow(2, 53)
+              }, {
+                'entity_id': '808797688',
+                'key': 'valid_negative_number',
+                'type': 'custom',
+                'value': -Math.pow(2, 53)
+              }],
+              'snapshots': [{
+                'decisions': [{
+                  'variation_id': '111128',
+                  'experiment_id': '111127',
+                  'campaign_id': '4'
+                }, {
+                  'variation_id': '122228',
+                  'experiment_id': '122227',
+                  'campaign_id': '5'
+                }],
+                'events': [{
+                  'timestamp': Math.round(new Date().getTime()),
+                  'entity_id': '111100',
+                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                  'key': 'testEventWithMultipleExperiments'
+                }]
+              }]
+            }],
+            'revision': '42',
+            'client_name': 'node-sdk',
+            'client_version': packageJSON.version,
+            'anonymize_ip': false,
+          }
+        };
+
+        var eventOptions = {
+          clientEngine: 'node-sdk',
+          clientVersion: packageJSON.version,
+          configObj: configObj,
+          eventKey: 'testEventWithMultipleExperiments',
+          logger: mockLogger,
+          userId: 'testUser',
+          experimentsToVariationMap: {
+            '111127': '111128',
+            '122227': '122228'
+          },
+          attributes: {
+            'browser_type': 'Chrome',
+            'valid_positive_number': Math.pow(2, 53),
+            'valid_negative_number': -Math.pow(2, 53),
+            'invalid_number': -Math.pow(2, 53) - 2,
+            'array': [1, 2, 3],
           },
         };
 
