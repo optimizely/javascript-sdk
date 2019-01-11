@@ -2992,7 +2992,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(result.length, 2);
         assert.isAbove(result.indexOf('test_feature'), -1);
         assert.isAbove(result.indexOf('test_feature_for_experiment'), -1);
-        sinon.assert.callCount(optlyInstance.isFeatureEnabled, 6);
+        sinon.assert.callCount(optlyInstance.isFeatureEnabled, 7);
         sinon.assert.calledWithExactly(
           optlyInstance.isFeatureEnabled,
           'test_feature',
@@ -3026,6 +3026,12 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           optlyInstance.isFeatureEnabled,
           'unused_flag',
+          'user1',
+          attributes
+        );
+        sinon.assert.calledWithExactly(
+          optlyInstance.isFeatureEnabled,
+          'feature_exp_no_traffic',
           'user1',
           attributes
         );
