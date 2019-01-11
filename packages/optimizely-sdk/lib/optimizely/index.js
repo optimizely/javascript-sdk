@@ -396,6 +396,9 @@ Optimizely.prototype.setForcedVariation = function(experimentKey, userId, variat
  *                                 failed to force the user into the variation.
 */
 Optimizely.prototype.getForcedVariation = function(experimentKey, userId) {
+  if (!this.__validateInputs({ experiment_key: experimentKey, user_id: userId })) {
+    return null;
+  }
   try {
     return projectConfig.getForcedVariation(this.configObj, experimentKey, userId, this.logger);
   } catch (ex) {
@@ -416,6 +419,16 @@ Optimizely.prototype.getForcedVariation = function(experimentKey, userId) {
  */
 Optimizely.prototype.__validateInputs = function(stringInputs, userAttributes, eventTags) {
   try {
+    // Null, undefined or non-string user Id is invalid.
+    if (stringInputs.hasOwnProperty('user_id')) {
+      var userId = stringInputs.user_id;
+      if (typeof userId !== 'string' || userId === null || userId === 'undefined') {
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, 'user_id'));
+      }
+
+      delete stringInputs.user_id;
+    }
+
     var inputKeys = Object.keys(stringInputs);
     for (var index = 0; index < inputKeys.length; index++) {
       var key = inputKeys[index];
@@ -436,7 +449,6 @@ Optimizely.prototype.__validateInputs = function(stringInputs, userAttributes, e
     return false;
   }
 };
-
 /**
  * Determines which experiments to track for a given user in an event.
  * Events are only dispatched for experiments with a "Running" status and the specific bucketed user.
@@ -606,6 +618,10 @@ Optimizely.prototype.getEnabledFeatures = function (userId, attributes) {
     var enabledFeatures = [];
     if (!this.isValidInstance) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getEnabledFeatures'));
+      return enabledFeatures;
+    }
+
+    if (!this.__validateInputs({ user_id: userId })) {
       return enabledFeatures;
     }
 
