@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2016-2018, Optimizely, Inc. and contributors                   *
+ * Copyright 2016-2019, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -2991,7 +2991,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(result.length, 2);
         assert.isAbove(result.indexOf('test_feature'), -1);
         assert.isAbove(result.indexOf('test_feature_for_experiment'), -1);
-        sinon.assert.callCount(optlyInstance.isFeatureEnabled, 6);
+        sinon.assert.callCount(optlyInstance.isFeatureEnabled, 7);
         sinon.assert.calledWithExactly(
           optlyInstance.isFeatureEnabled,
           'test_feature',
@@ -3025,6 +3025,12 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           optlyInstance.isFeatureEnabled,
           'unused_flag',
+          'user1',
+          attributes
+        );
+        sinon.assert.calledWithExactly(
+          optlyInstance.isFeatureEnabled,
+          'feature_exp_no_traffic',
           'user1',
           attributes
         );
