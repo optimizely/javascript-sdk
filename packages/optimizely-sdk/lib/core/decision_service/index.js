@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2017-2018, Optimizely, Inc. and contributors                   *
+ * Copyright 2017-2019, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -421,7 +421,7 @@ DecisionService.prototype._getVariationForRollout = function(feature, userId, at
 
   var everyoneElseExperiment = this.configObj.experimentKeyMap[rollout.experiments[endIndex].key];
   if (this.__checkIfUserIsInAudience(everyoneElseExperiment.key, userId, attributes)) {
-    bucketerParams = this.__buildBucketerParams(everyoneElseExperiment.key, userId, userId);
+    bucketerParams = this.__buildBucketerParams(everyoneElseExperiment.key, bucketingId, userId);
     variationId = bucketer.bucket(bucketerParams);
     variation = this.configObj.variationIdMap[variationId];
     if (variation) {
