@@ -1356,5 +1356,47 @@ describe('lib/core/decision_service', function() {
         });
       });
     });
+
+    describe('_getVariationForRollout', function() {
+      var feature;
+      var configObj;
+      var decisionService;
+      var __buildBucketerParamsSpy;
+
+      beforeEach(function() {
+        configObj = projectConfig.createProjectConfig(testDataWithFeatures);
+        feature = configObj.featureKeyMap.test_feature;
+        decisionService = DecisionService.createDecisionService({
+          configObj: configObj,
+          logger: logger.createLogger({logLevel: LOG_LEVEL.INFO}),
+        });
+        __buildBucketerParamsSpy = sinon.spy(decisionService, '__buildBucketerParams');
+      });
+      
+      afterEach(function() {
+        __buildBucketerParamsSpy.restore();
+      });
+
+      it('should call __buildBucketerParams with user Id when bucketing Id is not provided in the attributes', function () {
+        var attributes = { test_attribute: 'test_value' };
+        decisionService._getVariationForRollout(feature, 'testUser', attributes);
+
+        sinon.assert.callCount(__buildBucketerParamsSpy, 2);
+        sinon.assert.calledWithExactly(__buildBucketerParamsSpy, '594031', 'testUser', 'testUser');
+        sinon.assert.calledWithExactly(__buildBucketerParamsSpy, '594037', 'testUser', 'testUser');
+      });
+
+      it('should call __buildBucketerParams with bucketing Id when bucketing Id is provided in the attributes', function () {
+        var attributes = {
+          test_attribute: 'test_value',
+          $opt_bucketing_id: 'abcdefg' 
+        };
+        decisionService._getVariationForRollout(feature, 'testUser', attributes);
+        
+        sinon.assert.callCount(__buildBucketerParamsSpy, 2);
+        sinon.assert.calledWithExactly(__buildBucketerParamsSpy, '594031', 'abcdefg', 'testUser');
+        sinon.assert.calledWithExactly(__buildBucketerParamsSpy, '594037', 'abcdefg', 'testUser');
+      });
+    });
   });
 });
