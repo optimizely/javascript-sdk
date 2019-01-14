@@ -28,18 +28,18 @@ type FetchUrlCacheEntry = {
 }
 
 export class FetchUrlDatafileLoader implements ResourceLoader<OptimizelyDatafile> {
-  private SDKKey: string
+  private sdkKey: string
   private localStorageKey: string
   private preferCached: boolean
   private backgroundLoadIfCacheHit: boolean
 
   constructor(config: {
-    SDKKey: string
+    sdkKey: string
     localStorageKey?: string
     preferCached?: boolean
     backgroundLoadIfCacheHit?: boolean
   }) {
-    this.SDKKey = config.SDKKey
+    this.sdkKey = config.sdkKey
     this.localStorageKey = config.localStorageKey || 'optly_fs_datafile'
 
     this.backgroundLoadIfCacheHit = !!config.backgroundLoadIfCacheHit
@@ -101,7 +101,7 @@ export class FetchUrlDatafileLoader implements ResourceLoader<OptimizelyDatafile
   }
 
   async fetchDatafile(): Promise<OptimizelyDatafile> {
-    const datafileUrl = `https://cdn.optimizely.com/datafiles/${this.SDKKey}.json`
+    const datafileUrl = `https://cdn.optimizely.com/datafiles/${this.sdkKey}.json`
     const resp = await fetch(datafileUrl, { mode: 'cors' })
     if (resp.status !== 200) {
       return Promise.reject(resp)

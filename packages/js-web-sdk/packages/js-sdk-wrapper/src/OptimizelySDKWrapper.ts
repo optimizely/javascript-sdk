@@ -53,7 +53,7 @@ export interface IOptimizelySDKWrapper {
 
 export interface OptimizelySDKWrapperConfig extends Partial<optimizely.Config> {
   datafile?: OptimizelyDatafile
-  SDKKey?: string
+  sdkKey?: string
   UNSTABLE_datafileLoader?: ResourceLoader<OptimizelyDatafile>
 
   attributes?: optimizely.UserAttributes
@@ -476,9 +476,9 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
       datafileLoader = new ProvidedDatafileLoader({
         datafile: config.datafile,
       })
-    } else if (config.SDKKey) {
+    } else if (config.sdkKey) {
       datafileLoader = new FetchUrlDatafileLoader({
-        SDKKey: config.SDKKey,
+        sdkKey: config.sdkKey,
         preferCached: true,
         backgroundLoadIfCacheHit: true,
       })

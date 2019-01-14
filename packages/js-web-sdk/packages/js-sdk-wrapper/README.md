@@ -33,9 +33,8 @@ _Asnyc load and wait until datafile is loaded_
 ```js
 import { Optimizely } from '@optimizely/js-sdk-wrapper'
 
-const datafileUrl = 'https://cdn.optimizely.com/datafiles/GaXr9RoDhRcqXJm3ruskRa.json'
 const optimizely = new Optimizely({
-  datafileUrl,
+  SDKKey: 'GaXr9RoDhRcqXJm3ruskRa',
 })
 await optimizely.onReady()
 // datafile is gauranteed to be loaded
@@ -49,9 +48,8 @@ _Asnyc load and wait up til 100ms_
 ```js
 import { Optimizely } from '@optimizely/js-sdk-wrapper'
 
-const datafileUrl = 'https://cdn.optimizely.com/datafiles/GaXr9RoDhRcqXJm3ruskRa.json'
 const optimizely = new Optimizely({
-  datafileUrl,
+  SDKKey: 'GaXr9RoDhRcqXJm3ruskRa',
 })
 // dont block for more than 100sec
 await optimizely.onReady({ timeout: 100 })
@@ -78,11 +76,10 @@ _When using optimizely async the user will only have to pay the loading cost onc
 
 ```js
 // ./optimizely.js
-import { Optimizely } from '@optimizely/js-sdk-wrapper'
+import optimizelySDK from '@optimizely/js-sdk-wrapper'
 
-const datafileUrl = 'https://cdn.optimizely.com/datafiles/GaXr9RoDhRcqXJm3ruskRa.json'
-const optimizely = new Optimizely({
-  datafileUrl: datafileUrl,
+const optimizely = optimizelySDK.createInstance({
+  SDKKey: 'GaXr9RoDhRcqXJm3ruskRa',
   userId: window.userId,
 })
 

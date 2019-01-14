@@ -27,7 +27,7 @@ function testLocalDatafile() {
 
 async function testUrlLoad() {
   let optimizely = new OptimizelySDKWrapper({
-    SDKKey: 'GaXr9RoDhRcqXJm3ruskRa',
+    sdkKey: 'GaXr9RoDhRcqXJm3ruskRa',
     userId: 'user',
   })
   optimizely.track('foo', 'jordan')
@@ -48,7 +48,7 @@ async function testUrlLoad() {
   console.log('optly1 - feature1', optimizely.isFeatureEnabled('feature1', 'jordan'))
 
   let optimizely2 = new OptimizelySDKWrapper({
-    SDKKey: 'GaXr9RoDhRcqXJm3ruskRa',
+    sdkKey: 'GaXr9RoDhRcqXJm3ruskRa',
   })
   console.log('optly2 - feature1', optimizely2.isFeatureEnabled('feature1', 'jordan'))
 }

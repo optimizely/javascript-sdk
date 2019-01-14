@@ -15,7 +15,7 @@ export function withOptimizely<P extends WithOptimizelyProps>(
     render() {
       return (
         <OptimizelyContextConsumer>
-          {({ optimizely, timeout }) => <Component {...this.props} optimizely={optimizely} optimizelyReadyTimeout={timeout} />}
+          {({ optimizely, timeout }) => <React.Component {...this.props} optimizely={optimizely} optimizelyReadyTimeout={timeout} />}
         </OptimizelyContextConsumer>
       )
     }
