@@ -4,9 +4,16 @@ import * as PropTypes from 'prop-types'
 import './App.css'
 import Example from './Example'
 
-import { OptimizelyFeature, OptimizelyProvider, OptimizelyExperiment, OptimizelyVariation } from '@optimizely/react-sdk'
+import {
+  OptimizelyFeature,
+  OptimizelyProvider,
+  OptimizelyExperiment,
+  OptimizelyVariation,
+} from '@optimizely/react-sdk'
 
-import { VariableValuesObject, OptimizelyDatafile, OptimizelySDKWrapper } from '@optimizely/js-sdk-wrapper'
+import {
+  OptimizelySDKWrapper,
+} from '@optimizely/js-sdk-wrapper'
 
 interface AppProps {
   optimizely: OptimizelySDKWrapper
@@ -14,7 +21,7 @@ interface AppProps {
 
 type FeatureProps = { isEnabled: boolean; variables: object }
 function Feature1(props: FeatureProps): JSX.Element {
-  const { variables, isEnabled} = props
+  const { variables, isEnabled } = props
   return (
     <>
       <h4>Feature 1</h4>
@@ -28,7 +35,7 @@ function Feature1(props: FeatureProps): JSX.Element {
   )
 }
 
-class App extends React.Component<AppProps> {
+export default class App extends React.Component<AppProps> {
   static propTypes = {
     datafile: PropTypes.object,
   }
@@ -39,47 +46,35 @@ class App extends React.Component<AppProps> {
     return (
       <OptimizelyProvider optimizely={optimizely} timeout={200}>
         <div className="App">
-          <Example title="Experiment Example">
-            <p>
-              <OptimizelyExperiment experiment="abtest1">
-                {(variation: any) => {
-                  if (variation === 'var1') {
-                    return 'var1'
-                  } else if (variation === 'var2') {
-                    return 'var2'
-                  } else {
-                    return 'default'
-                  }
-                }}
-              </OptimizelyExperiment>
-            </p>
-
-            <p>
-              <OptimizelyFeature feature="feature1">
-                {(isEnabled, variables) => <Feature1 {...{isEnabled, variables}} />}
-
-              </OptimizelyFeature>
-            </p>
+          <Example title="Experiment (child render function)">
+            <OptimizelyExperiment experiment="abtest1">
+              {(variation: any) => {
+                if (variation === 'var1') {
+                  return 'var1'
+                } else if (variation === 'var2') {
+                  return 'var2'
+                } else {
+                  return 'default'
+                }
+              }}
+            </OptimizelyExperiment>
           </Example>
-          <Example title="Experiment & Variations Example">
-            <p>
-              <OptimizelyExperiment experiment="abtest1">
-                <OptimizelyVariation variation='var1'>
-                hi
-                </OptimizelyVariation>
-                <OptimizelyVariation variation='var2'>
-                hi2
-                </OptimizelyVariation>
-                <OptimizelyVariation default>
-                hi3
-                </OptimizelyVariation>
-              </OptimizelyExperiment>
-            </p>
+
+          <Example title="Feature (child render function)">
+            <OptimizelyFeature feature="feature1">
+              {(isEnabled, variables) => <Feature1 {...{ isEnabled, variables }} />}
+            </OptimizelyFeature>
+          </Example>
+
+          <Example title="Experiment (Variation child component)">
+            <OptimizelyExperiment experiment="abtest1">
+              <OptimizelyVariation variation="var1">hi</OptimizelyVariation>
+              <OptimizelyVariation variation="var2">hi2</OptimizelyVariation>
+              <OptimizelyVariation default>hi3</OptimizelyVariation>
+            </OptimizelyExperiment>
           </Example>
         </div>
       </OptimizelyProvider>
     )
   }
 }
-
-export default App
