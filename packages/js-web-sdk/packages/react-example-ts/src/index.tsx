@@ -6,7 +6,7 @@ import { OptimizelySDKWrapper, CookieRandomUserIdLoader } from '@optimizely/js-s
 ;(async function () {
   const optimizely = new OptimizelySDKWrapper({
     UNSTABLE_userIdLoader: new CookieRandomUserIdLoader(),
-    SDKKey: 'BsSyVRsUbE3ExgGCJ9w1to',
+    sdkKey: 'BsSyVRsUbE3ExgGCJ9w1to',
   })
 
 
