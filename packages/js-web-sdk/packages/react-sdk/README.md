@@ -15,7 +15,7 @@ any delay or asynchronous complexity to your application.
 
 ```jsx
 import { OptimizelyProvider } from '@optimizely/react-sdk'
-import optimizelySDK from '@optimizely/js-sdk-wrapper'
+import optimizelySDK from '@optimizely/js-web-sdk'
 
 const optimizely = optimizelySDK.createInstance({
   userId: window.userId,
@@ -35,13 +35,13 @@ class App extends React.Component {
 
 ### Loading the datafile asynchronously
 
-If you don't have the datafile already downloaded then the `js-sdk-wrapper` provides functionality to fetch the datafile for you.  However instead of waiting for the datafile to fetch before you render your app, you can immediately render your app and provide a `timeout`
+If you don't have the datafile already downloaded then the `js-web-sdk` provides functionality to fetch the datafile for you.  However instead of waiting for the datafile to fetch before you render your app, you can immediately render your app and provide a `timeout`
 option to `<OptimizelyProvider optimizely={optimizely} timeout={50}>`.  This will block rendering of `<OptimizelyExperiment>` and `<OptimizelyFeature>` components until the datafile
 loads or the timeout is up (in that case `variation` is `null` and `isFeatureEnabled` is `false`)
 
 ```jsx
 import { OptimizelyProvider } from '@optimizely/react-sdk'
-import optimizelySDK from '@optimizely/js-sdk-wrapper'
+import optimizelySDK from '@optimizely/js-web-sdk'
 
 const optimizely = optimizelySDK.createInstance({
   userId: window.userId,
@@ -118,7 +118,7 @@ import { OptimizelyExperiment, OptimizelyVariation } from '@optimizely/react-sdk
 
 
 ### Programmatic access inside component
-Any component under the `<OptimizelyProvider>` can get access to the optimizely js-sdk-wrapper via the HoC / decorator `@withOptimizely`
+Any component under the `<OptimizelyProvider>` can get access to the optimizely js-web-sdk via the HoC / decorator `@withOptimizely`
 
 ```jsx
 import { withOptimizely } from '@optimizely/react-sdk`

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { OptimizelySDKWrapper } from '@optimizely/js-sdk-wrapper'
+import { OptimizelySDKWrapper } from '@optimizely/js-web-sdk'
 
 type OptimizelyContextValue = {
   optimizely: OptimizelySDKWrapper | null,

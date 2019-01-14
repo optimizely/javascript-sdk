@@ -1,6 +1,4 @@
 import * as React from 'react'
-import { VariableValuesObject } from '@optimizely/js-sdk-wrapper'
-
 
 export type VariationProps = {
   variation?: any

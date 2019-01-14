@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { OptimizelyContextConsumer } from './Context'
 import { Subtract } from 'utility-types'
-import { OptimizelySDKWrapper } from '@optimizely/js-sdk-wrapper'
+import { OptimizelySDKWrapper } from '@optimizely/js-web-sdk'
 
 export interface WithOptimizelyProps {
   optimizely: OptimizelySDKWrapper | null,

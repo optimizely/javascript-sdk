@@ -5,7 +5,7 @@
   "dependencies": {
     "react": "^16.6.1",
     "react-dom": "^16.6.1",
-    "@optimizely/js-sdk-wrapper": "^0.1.0",
+    "@optimizely/js-web-sdk": "^0.1.0",
     "@optimizely/react-sdk": "^0.1.0"
   },
   "scripts": {

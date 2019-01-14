@@ -1,5 +1,5 @@
 {
-  "name": "@optimizely/js-sdk-wrapper",
+  "name": "@optimizely/js-web-sdk",
   "version": "0.1.0",
   "description": "Wrapper for Optimizely JavscriptSDK",
   "author": "Jordan Garcia <jordan@optimizely.com>",

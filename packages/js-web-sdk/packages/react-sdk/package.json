@@ -18,7 +18,7 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
-    "@optimizely/js-sdk-wrapper": "^0.1.0",
+    "@optimizely/js-web-sdk": "^0.1.0",
     "prop-types": "^15.6.2",
     "react": "^16.6.1"
   },

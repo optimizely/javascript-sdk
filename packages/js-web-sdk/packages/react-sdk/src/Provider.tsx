@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as optimizely from '@optimizely/optimizely-sdk'
 
 import { OptimizelyContextProvider } from './Context'
-import { OptimizelySDKWrapper } from '@optimizely/js-sdk-wrapper'
+import { OptimizelySDKWrapper } from '@optimizely/js-web-sdk'
 
 interface OptimizelyProviderProps {
   optimizely: OptimizelySDKWrapper

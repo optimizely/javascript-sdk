@@ -13,7 +13,7 @@ import {
 
 import {
   OptimizelySDKWrapper,
-} from '@optimizely/js-sdk-wrapper'
+} from '@optimizely/js-web-sdk'
 
 interface AppProps {
   optimizely: OptimizelySDKWrapper

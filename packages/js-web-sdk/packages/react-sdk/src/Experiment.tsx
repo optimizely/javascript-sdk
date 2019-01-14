@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { withOptimizely, WithOptimizelyProps } from './withOptimizely'
-import { VariableValuesObject } from '@optimizely/js-sdk-wrapper'
+import { VariableValuesObject } from '@optimizely/js-web-sdk'
 import { VariationProps } from './Variation'
 
 export type ChildrenRenderFunction = (variableValues: VariableValuesObject) => React.ReactNode
