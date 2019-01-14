@@ -137,7 +137,7 @@ declare module '@optimizely/optimizely-sdk/lib/utils/enums'{
       WARNING =  3,
       ERROR = 4,
   }
-  export enum NOTIFICATION_TYPES { 
+  export enum NOTIFICATION_TYPES {
       ACTIVATE = 'ACTIVATE:experiment, user_id, attributes, variation, events',
       TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
   }

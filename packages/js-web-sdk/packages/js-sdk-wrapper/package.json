@@ -20,7 +20,7 @@
     "prepublishOnly": "npm run build-browser-umd && npm test && npm run test-xbrowser"
   },
   "dependencies": {
-    "@optimizely/optimizely-sdk": "^2.2.0",
+    "@optimizely/optimizely-sdk": "^3.0.0-rc2",
     "node-fetch": "^2.3.0"
   },
   "devDependencies": {
