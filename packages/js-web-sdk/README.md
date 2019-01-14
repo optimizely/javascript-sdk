@@ -4,7 +4,7 @@
 
 ### JS SDK Wrapper
 
-[JS SDK Wrapper README](packages/js-sdk-wrapper/README.md)
+[JS SDK Wrapper README](packages/js-web-sdk/README.md)
 
 An OptimizelySDK wrapper targeted for browsers, maintains state of user and attributes as well as supplying a simpler API.
 
