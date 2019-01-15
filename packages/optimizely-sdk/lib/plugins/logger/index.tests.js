@@ -35,30 +35,52 @@ describe('lib/plugins/logger', function() {
     describe('log', function() {
       beforeEach(function() {
         defaultLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
-        sinon.stub(defaultLogger, '__consoleLog');
+
+        sinon.stub(console, 'log');
+        sinon.stub(console, 'debug');
+        sinon.stub(console, 'info');
+        sinon.stub(console, 'warn');
+        sinon.stub(console, 'error');
+      });
+
+      afterEach(function() {
+        console.log.restore();
+        console.debug.restore();
+        console.info.restore();
+        console.warn.restore();
+        console.error.restore();
       });
 
       it('should log a message at the threshold log level', function() {
         defaultLogger.log(LOG_LEVEL.INFO, 'message');
-        sinon.assert.calledOnce(defaultLogger.__consoleLog);
-        sinon.assert.calledWithExactly(
-          defaultLogger.__consoleLog,
-          LOG_LEVEL.INFO, [sinon.match(/.*INFO.*message.*/)]
-        );
+
+        sinon.assert.notCalled(console.log);
+        sinon.assert.notCalled(console.debug);
+        sinon.assert.calledOnce(console.info);
+        sinon.assert.calledWithExactly(console.info, sinon.match(/.*INFO.*message.*/));
+        sinon.assert.notCalled(console.warn);
+        sinon.assert.notCalled(console.error);
       });
 
       it('should log a message if its log level is higher than the threshold log level', function() {
         defaultLogger.log(LOG_LEVEL.WARNING, 'message');
-        sinon.assert.calledOnce(defaultLogger.__consoleLog);
-        sinon.assert.calledWithExactly(
-          defaultLogger.__consoleLog,
-          LOG_LEVEL.WARNING, [sinon.match(/.*WARNING.*message.*/)]
-        );
+
+        sinon.assert.notCalled(console.log);
+        sinon.assert.notCalled(console.debug);
+        sinon.assert.notCalled(console.info);
+        sinon.assert.calledOnce(console.warn);
+        sinon.assert.calledWithExactly(console.warn, sinon.match(/.*WARNING.*message.*/));
+        sinon.assert.notCalled(console.error);
       });
 
       it('should not log a message if its log level is lower than the threshold log level', function() {
         defaultLogger.log(LOG_LEVEL.DEBUG, 'message');
-        sinon.assert.notCalled(defaultLogger.__consoleLog);
+
+        sinon.assert.notCalled(console.log);
+        sinon.assert.notCalled(console.debug);
+        sinon.assert.notCalled(console.info);
+        sinon.assert.notCalled(console.warn);
+        sinon.assert.notCalled(console.error);
       });
     });
 

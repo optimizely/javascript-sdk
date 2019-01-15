@@ -97,7 +97,7 @@ Logger.prototype.__consoleLog = function(logLevel, logArguments) {
       console.log.apply(console, logArguments);
       break;
     case enums.LOG_LEVEL.INFO:
-      console.log.apply(console, logArguments);
+      console.info.apply(console, logArguments);
       break;
     case enums.LOG_LEVEL.WARNING:
       console.warn.apply(console, logArguments);
