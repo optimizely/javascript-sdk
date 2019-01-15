@@ -1,6 +1,9 @@
 'use strict';
 
+Object.defineProperty(exports, '__esModule', { value: true });
+
 var React = require('react');
+var reactBroadcast = require('react-broadcast');
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
@@ -42,8 +45,8 @@ var __assign = function() {
     return __assign.apply(this, arguments);
 };
 
-var createContext = require('react-broadcast').createContext;
-var _a = createContext({
+// @ts-ignore
+var _a = reactBroadcast.createContext({
     optimizely: null,
     timeout: 0,
 }), Consumer = _a.Consumer, Provider = _a.Provider;
@@ -199,14 +202,8 @@ var Variation = /** @class */ (function (_super) {
 }(React.Component));
 var OptimizelyVariation = Variation;
 
-
-
-var optimizelyReactSDK = /*#__PURE__*/Object.freeze({
-    OptimizelyProvider: OptimizelyProvider,
-    OptimizelyFeature: OptimizelyFeature,
-    withOptimizely: withOptimizely,
-    OptimizelyExperiment: OptimizelyExperiment,
-    OptimizelyVariation: OptimizelyVariation
-});
-
-module.exports = optimizelyReactSDK;
+exports.OptimizelyProvider = OptimizelyProvider;
+exports.OptimizelyFeature = OptimizelyFeature;
+exports.withOptimizely = withOptimizely;
+exports.OptimizelyExperiment = OptimizelyExperiment;
+exports.OptimizelyVariation = OptimizelyVariation;

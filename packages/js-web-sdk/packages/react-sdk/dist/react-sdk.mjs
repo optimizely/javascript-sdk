@@ -1,4 +1,5 @@
 import { createElement, Component, Children, isValidElement, cloneElement } from 'react';
+import { createContext } from 'react-broadcast';
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
@@ -40,7 +41,7 @@ var __assign = function() {
     return __assign.apply(this, arguments);
 };
 
-var createContext = require('react-broadcast').createContext;
+// @ts-ignore
 var _a = createContext({
     optimizely: null,
     timeout: 0,

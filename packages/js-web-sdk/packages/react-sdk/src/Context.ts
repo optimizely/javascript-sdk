@@ -1,10 +1,7 @@
 import { OptimizelySDKWrapper } from '@optimizely/js-web-sdk'
-const { createContext } = require('react-broadcast')
+// @ts-ignore
+import { createContext } from 'react-broadcast'
 
-type OptimizelyContextValue = {
-  optimizely: OptimizelySDKWrapper | null,
-  timeout: number,
-}
 const { Consumer, Provider } = createContext({
   optimizely: null,
   timeout: 0,

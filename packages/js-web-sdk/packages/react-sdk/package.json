@@ -5,7 +5,8 @@
 	"author": "jordangarcia <jordan.garcia@gmail.com>",
 	"homepage": "",
 	"license": "ISC",
-	"module": "lib/react-sdk.mjs",
+	"module": "dist/react-sdk.mjs",
+	"types": "dist/index.d.ts",
 	"main": "dist/react-sdk.js",
 	"browser": "dist/react-sdk.js",
 	"directories": {
@@ -21,7 +22,6 @@
 		"test": "echo \"Error: run tests from root\" && exit 1"
 	},
 	"dependencies": {
-		"@optimizely/js-web-sdk": "^0.1.0",
 		"prop-types": "^15.6.2",
 		"react-broadcast": "^0.7.1"
 	},
@@ -29,14 +29,15 @@
 		"react": ">=15 || ^16"
 	},
 	"devDependencies": {
+		"@optimizely/js-web-sdk": "^0.1.0",
 		"@types/prop-types": "^15.5.6",
-		"@types/react-broadcast": "^0.6.1",
 		"@types/react": "^16.7.18",
+		"@types/react-broadcast": "^0.6.1",
 		"rollup": "^1.1.0",
 		"rollup-plugin-commonjs": "^9.2.0",
 		"rollup-plugin-node-resolve": "^4.0.0",
 		"rollup-plugin-replace": "^2.1.0",
-		"rollup-plugin-typescript": "^1.0.0",
+		"rollup-plugin-typescript2": "^0.18.1",
 		"rollup-plugin-uglify": "^6.0.1",
 		"tslib": "^1.9.3",
 		"utility-types": "^2.1.0"

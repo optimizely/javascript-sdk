@@ -1,15 +1,13 @@
 {
- "extends": "../../tsconfig.json",
- "compilerOptions": {
-   "target": "es5",
-   "lib": ["es2015", "dom"],
-   "jsx": "react",
-   "outDir": "./lib"
- },
- "include": [
-   "./src"
- ],
- "exclude": [
-   "./node_modules"
- ],
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationDir": "./dist",
+    "target": "es5",
+    "lib": ["es2015", "dom"],
+    "jsx": "react",
+    "outDir": "./lib"
+  },
+  "include": ["./src"],
+  "exclude": ["./node_modules"]
 }

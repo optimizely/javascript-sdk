@@ -10,7 +10,6 @@ import {
   OptimizelyExperiment,
   OptimizelyVariation,
   withOptimizely,
-  initialize
 } from '@optimizely/react-sdk'
 
 import { OptimizelySDKWrapper } from '@optimizely/js-web-sdk'
