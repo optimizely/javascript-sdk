@@ -37,7 +37,6 @@ describe('lib/plugins/logger', function() {
         defaultLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
 
         sinon.stub(console, 'log');
-        sinon.stub(console, 'debug');
         sinon.stub(console, 'info');
         sinon.stub(console, 'warn');
         sinon.stub(console, 'error');
@@ -45,7 +44,6 @@ describe('lib/plugins/logger', function() {
 
       afterEach(function() {
         console.log.restore();
-        console.debug.restore();
         console.info.restore();
         console.warn.restore();
         console.error.restore();
@@ -55,7 +53,6 @@ describe('lib/plugins/logger', function() {
         defaultLogger.log(LOG_LEVEL.INFO, 'message');
 
         sinon.assert.notCalled(console.log);
-        sinon.assert.notCalled(console.debug);
         sinon.assert.calledOnce(console.info);
         sinon.assert.calledWithExactly(console.info, sinon.match(/.*INFO.*message.*/));
         sinon.assert.notCalled(console.warn);
@@ -66,7 +63,6 @@ describe('lib/plugins/logger', function() {
         defaultLogger.log(LOG_LEVEL.WARNING, 'message');
 
         sinon.assert.notCalled(console.log);
-        sinon.assert.notCalled(console.debug);
         sinon.assert.notCalled(console.info);
         sinon.assert.calledOnce(console.warn);
         sinon.assert.calledWithExactly(console.warn, sinon.match(/.*WARNING.*message.*/));
@@ -77,7 +73,6 @@ describe('lib/plugins/logger', function() {
         defaultLogger.log(LOG_LEVEL.DEBUG, 'message');
 
         sinon.assert.notCalled(console.log);
-        sinon.assert.notCalled(console.debug);
         sinon.assert.notCalled(console.info);
         sinon.assert.notCalled(console.warn);
         sinon.assert.notCalled(console.error);
