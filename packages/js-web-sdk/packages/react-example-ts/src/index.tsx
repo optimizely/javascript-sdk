@@ -10,12 +10,7 @@ import * as optimizelyReactSdk from '@optimizely/react-sdk'
     userId: 'user' + Date.now(),
     sdkKey: 'BsSyVRsUbE3ExgGCJ9w1to',
   })
-
-  optimizelyReactSdk.initialize({
-    instance: optimizely,
-  })
-
-
+  console.log('passing optimizely')
 
   ReactDOM.render(
     <App optimizely={optimizely} />,

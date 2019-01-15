@@ -5,14 +5,15 @@ import './App.css'
 import Example from './Example'
 
 import {
+  OptimizelyProvider,
   OptimizelyFeature,
   OptimizelyExperiment,
   OptimizelyVariation,
+  withOptimizely,
+  initialize
 } from '@optimizely/react-sdk'
 
-import {
-  OptimizelySDKWrapper,
-} from '@optimizely/js-web-sdk'
+import { OptimizelySDKWrapper } from '@optimizely/js-web-sdk'
 
 interface AppProps {
   optimizely: OptimizelySDKWrapper
@@ -43,10 +44,12 @@ export default class App extends React.Component<AppProps> {
     const { optimizely } = this.props
 
     return (
+      <OptimizelyProvider optimizely={optimizely} timeout={200}>
         <div className="App">
           <Example title="Experiment (child render function)">
             <OptimizelyExperiment experiment="abtest1">
               {(variation: any) => {
+                console.log(variation)
                 if (variation === 'var1') {
                   return 'var1'
                 } else if (variation === 'var2') {
@@ -72,6 +75,7 @@ export default class App extends React.Component<AppProps> {
             </OptimizelyExperiment>
           </Example>
         </div>
+      </OptimizelyProvider>
     )
   }
 }
