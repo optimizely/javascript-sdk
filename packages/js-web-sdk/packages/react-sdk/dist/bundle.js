@@ -178,10 +178,14 @@ var Variation = /** @class */ (function (_super) {
 }(React.Component));
 var OptimizelyVariation = Variation;
 
-module.exports = {
+
+
+var optimizelyReactSDK = /*#__PURE__*/Object.freeze({
     OptimizelyFeature: OptimizelyFeature,
     withOptimizely: withOptimizely,
     OptimizelyExperiment: OptimizelyExperiment,
     OptimizelyVariation: OptimizelyVariation,
-    initialize: initialize,
-};
+    initialize: initialize
+});
+
+module.exports = optimizelyReactSDK;

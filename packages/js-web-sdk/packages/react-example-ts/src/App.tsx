@@ -6,7 +6,6 @@ import Example from './Example'
 
 import {
   OptimizelyFeature,
-  OptimizelyProvider,
   OptimizelyExperiment,
   OptimizelyVariation,
 } from '@optimizely/react-sdk'
@@ -44,7 +43,6 @@ export default class App extends React.Component<AppProps> {
     const { optimizely } = this.props
 
     return (
-      <OptimizelyProvider optimizely={optimizely} timeout={200}>
         <div className="App">
           <Example title="Experiment (child render function)">
             <OptimizelyExperiment experiment="abtest1">
@@ -74,7 +72,6 @@ export default class App extends React.Component<AppProps> {
             </OptimizelyExperiment>
           </Example>
         </div>
-      </OptimizelyProvider>
     )
   }
 }

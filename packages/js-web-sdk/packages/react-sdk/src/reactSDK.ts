@@ -9,13 +9,13 @@ export function initialize({
   timeout,
 }: {
   instance: OptimizelySDKWrapper
-  timeout: number
+  timeout?: number
 }) {
   globalInstance = instance
   globalTimeout = timeout
 }
 
-export function getTimeout(): number|undefined {
+export function getTimeout(): number | undefined {
   return globalTimeout
 }
 
