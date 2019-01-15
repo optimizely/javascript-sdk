@@ -1,6 +1,4 @@
-'use strict';
-
-var React = require('react');
+import { createElement, Component, Children, isValidElement, cloneElement } from 'react';
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
@@ -64,15 +62,15 @@ var OptimizelyProvider = /** @class */ (function (_super) {
             optimizely: this.sdkWrapper,
             timeout: timeout,
         };
-        return (React.createElement(OptimizelyContextProvider, { value: value }, children));
+        return (createElement(OptimizelyContextProvider, { value: value }, children));
     };
     OptimizelyProvider.defaultProps = {
         timeout: 0,
     };
     return OptimizelyProvider;
-}(React.Component));
+}(Component));
 
-function withOptimizely(Component) {
+function withOptimizely(Component$$1) {
     return /** @class */ (function (_super) {
         __extends(WithOptimizely, _super);
         function WithOptimizely() {
@@ -80,10 +78,10 @@ function withOptimizely(Component) {
         }
         WithOptimizely.prototype.render = function () {
             var _this = this;
-            return (React.createElement(OptimizelyContextConsumer, null, function (value) { return (React.createElement(Component, __assign({}, _this.props, { optimizely: value.optimizely, optimizelyReadyTimeout: value.optimizelyReadyTimeout }))); }));
+            return (createElement(OptimizelyContextConsumer, null, function (value) { return (createElement(Component$$1, __assign({}, _this.props, { optimizely: value.optimizely, optimizelyReadyTimeout: value.optimizelyReadyTimeout }))); }));
         };
         return WithOptimizely;
-    }(React.Component));
+    }(Component));
 }
 
 var FeatureComponent = /** @class */ (function (_super) {
@@ -122,7 +120,7 @@ var FeatureComponent = /** @class */ (function (_super) {
         return children(isEnabled, variables);
     };
     return FeatureComponent;
-}(React.Component));
+}(Component));
 var OptimizelyFeature = withOptimizely(FeatureComponent);
 
 var Experiment = /** @class */ (function (_super) {
@@ -162,9 +160,9 @@ var Experiment = /** @class */ (function (_super) {
         // We use React.Children.forEach instead of React.Children.toArray().find()
         // here because toArray adds keys to all child elements and we do not want
         // to trigger an unmount/remount
-        React.Children.forEach(this.props.children, function (child) {
-            if (match || !React.isValidElement(child)) {
-                console.log('found', match, !React.isValidElement(child));
+        Children.forEach(this.props.children, function (child) {
+            if (match || !isValidElement(child)) {
+                console.log('found', match, !isValidElement(child));
                 return;
             }
             console.log('child props', child.props);
@@ -180,11 +178,11 @@ var Experiment = /** @class */ (function (_super) {
             }
         });
         return match
-            ? React.cloneElement(match, { variation: variation })
+            ? cloneElement(match, { variation: variation })
             : null;
     };
     return Experiment;
-}(React.Component));
+}(Component));
 var OptimizelyExperiment = withOptimizely(Experiment);
 
 var Variation = /** @class */ (function (_super) {
@@ -196,22 +194,7 @@ var Variation = /** @class */ (function (_super) {
         return this.props.children;
     };
     return Variation;
-}(React.Component));
+}(Component));
 var OptimizelyVariation = Variation;
 
-function initialize(_a) {
-    var instance = _a.instance, timeout = _a.timeout;
-}
-
-
-
-var optimizelyReactSDK = /*#__PURE__*/Object.freeze({
-    OptimizelyProvider: OptimizelyProvider,
-    OptimizelyFeature: OptimizelyFeature,
-    withOptimizely: withOptimizely,
-    OptimizelyExperiment: OptimizelyExperiment,
-    OptimizelyVariation: OptimizelyVariation,
-    initialize: initialize
-});
-
-module.exports = optimizelyReactSDK;
+export { OptimizelyProvider, OptimizelyFeature, withOptimizely, OptimizelyExperiment, OptimizelyVariation };

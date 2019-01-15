@@ -1,4 +1,3 @@
-import * as React from 'react'
 import { OptimizelySDKWrapper } from '@optimizely/js-web-sdk'
 const { createContext } = require('react-broadcast')
 

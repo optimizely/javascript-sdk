@@ -5,8 +5,9 @@
 	"author": "jordangarcia <jordan.garcia@gmail.com>",
 	"homepage": "",
 	"license": "ISC",
-	"main": "lib/index.js",
-	"browser": "dist/bundle.js",
+	"module": "lib/react-sdk.mjs",
+	"main": "dist/react-sdk.js",
+	"browser": "dist/react-sdk.js",
 	"directories": {
 		"lib": "lib",
 		"test": "__tests__"
@@ -16,12 +17,11 @@
 	],
 	"scripts": {
 		"tsc": "rm -rf lib/ && tsc",
-		"rollup": "rollup",
+		"build": "rm -rf dist/ && rollup -c",
 		"test": "echo \"Error: run tests from root\" && exit 1"
 	},
 	"dependencies": {
 		"@optimizely/js-web-sdk": "^0.1.0",
-		"@types/react-broadcast": "^0.6.1",
 		"prop-types": "^15.6.2",
 		"react-broadcast": "^0.7.1"
 	},
@@ -30,6 +30,7 @@
 	},
 	"devDependencies": {
 		"@types/prop-types": "^15.5.6",
+		"@types/react-broadcast": "^0.6.1",
 		"@types/react": "^16.7.18",
 		"rollup": "^1.1.0",
 		"rollup-plugin-commonjs": "^9.2.0",
