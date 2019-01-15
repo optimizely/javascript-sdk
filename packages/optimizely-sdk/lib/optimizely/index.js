@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2016-2018, Optimizely, Inc. and contributors                   *
+ * Copyright 2016-2019, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -66,7 +66,7 @@ function Optimizely(config) {
     if (typeof config.datafile === 'string' || config.datafile instanceof String) {
       config.datafile = JSON.parse(config.datafile);
     }
-    
+
     if (config.skipJSONValidation === true) {
       this.configObj = projectConfig.createProjectConfig(config.datafile);
       this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
@@ -136,7 +136,7 @@ Optimizely.prototype.activate = function (experimentKey, userId, attributes) {
         this.logger.log(LOG_LEVEL.DEBUG, shouldNotDispatchActivateLogMessage);
         return variationKey;
       }
-      
+
       this._sendImpressionEvent(experimentKey, variationKey, userId, attributes);
 
       return variationKey;
@@ -214,7 +214,7 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
  */
 Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
   try {
-    
+
     if (!this.isValidInstance) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'track'));
       return;
@@ -225,17 +225,11 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
         return;
       }
 
-      // determine which experiments and variations we should be tracking for the given event
-      var validExperimentsToBucketedVariations = this.__getValidExperimentsForEvent(eventKey, userId, attributes);
-      if (!Object.keys(validExperimentsToBucketedVariations).length) {
-        // Return and do not send conversion events if the event is not associated with any running experiments
-        this.logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.EVENT_NOT_ASSOCIATED_WITH_EXPERIMENTS,
-          MODULE_NAME,
-          eventKey));
-        return;
+      if (!projectConfig.eventWithKeyExists(this.configObj, eventKey)) {
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_KEY, MODULE_NAME, eventKey));
       }
 
-      // remove null values from eventTags      
+      // remove null values from eventTags
       eventTags = this.__filterEmptyValues(eventTags);
 
       var conversionEventOptions = {
@@ -245,7 +239,6 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
         configObj: this.configObj,
         eventKey: eventKey,
         eventTags: eventTags,
-        experimentsToVariationMap: validExperimentsToBucketedVariations,
         logger: this.logger,
         userId: userId,
       };
@@ -405,53 +398,6 @@ Optimizely.prototype.__validateInputs = function(stringInputs, userAttributes, e
     this.errorHandler.handleError(ex);
     return false;
   }
-};
-
-/**
- * Given an event, determine which experiments we should be tracking for the given user.
- * We only dispatch events for experiments that are have the "Running" status and for which
- * the user has been bucketed into.
- * @param  {string} eventKey
- * @param  {string} userId
- * @param  {Object} attributes
- * @return {Object} Map of experiment ids that we want to track to variations ids in which the user has been bucketed
- */
-Optimizely.prototype.__getValidExperimentsForEvent = function(eventKey, userId, attributes) {
-  var validExperimentsToVariationsMap = {};
-
-  // get all the experiments that are tracking this event
-  var experimentIdsForEvent = projectConfig.getExperimentIdsForEvent(this.configObj, eventKey);
-  if (!experimentIdsForEvent) {
-    return validExperimentsToVariationsMap;
-  }
-
-  // determine which variations the user has been bucketed into
-  validExperimentsToVariationsMap = fns.reduce(experimentIdsForEvent, function(results, experimentId) {
-    var experimentKey = this.configObj.experimentIdMap[experimentId].key;
-
-    // user needs to be bucketed into experiment for us to track the event
-    var variationKey = this.getVariation(experimentKey, userId, attributes);
-    if (variationKey) {
-      // if experiment is active but not running, it is in LAUNCHED state, so we don't track a conversion for it
-      if (!projectConfig.isRunning(this.configObj, experimentKey)) {
-        var shouldNotDispatchTrackLogMessage = sprintf(LOG_MESSAGES.SHOULD_NOT_DISPATCH_TRACK, MODULE_NAME, experimentKey);
-        this.logger.log(LOG_LEVEL.DEBUG, shouldNotDispatchTrackLogMessage);
-      } else {
-        // if running + user is bucketed then add to result
-        var variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(this.configObj, experimentKey, variationKey);
-        results[experimentId] = variationId;
-      }
-    } else {
-      var notTrackingUserForExperimentLogMessage = sprintf(LOG_MESSAGES.NOT_TRACKING_USER_FOR_EXPERIMENT,
-                                                           MODULE_NAME,
-                                                           userId,
-                                                           experimentKey);
-      this.logger.log(LOG_LEVEL.DEBUG, notTrackingUserForExperimentLogMessage);
-    }
-    return results;
-  }.bind(this), {});
-
-  return validExperimentsToVariationsMap;
 };
 
 /**
