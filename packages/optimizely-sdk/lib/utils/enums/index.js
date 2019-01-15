@@ -90,6 +90,7 @@ exports.LOG_MESSAGES = {
   ROLLOUT_HAS_NO_EXPERIMENTS: '%s: Rollout of feature %s has no experiments',
   SAVED_VARIATION: '%s: Saved variation "%s" of experiment "%s" for user "%s".',
   SAVED_VARIATION_NOT_FOUND: '%s: User %s was previously bucketed into variation with ID %s for experiment %s, but no matching variation was found.',
+  SET_LOG_LEVEL: '%s: Setting log level to "%s"',
   SHOULD_NOT_DISPATCH_ACTIVATE: '%s: Experiment %s is in "Launched" state. Not activating user.',
   SHOULD_NOT_DISPATCH_TRACK: '%s: Experiment %s is in "Launched" state. Not tracking user for it.',
   SKIPPING_JSON_VALIDATION: '%s: Skipping JSON schema validation.',

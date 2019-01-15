@@ -38,15 +38,27 @@ describe('lib/plugins/logger', function() {
         sinon.stub(defaultLogger, '__consoleLog');
       });
 
-      it('should log the given message', function() {
+      it('should log a message at the threshold log level', function() {
         defaultLogger.log(LOG_LEVEL.INFO, 'message');
-        assert.isTrue(defaultLogger.__consoleLog.calledOnce);
-        assert.notStrictEqual(defaultLogger.__consoleLog.firstCall.args, [LOG_LEVEL.INFO, ['message']]);
+        sinon.assert.calledOnce(defaultLogger.__consoleLog);
+        sinon.assert.calledWithExactly(
+          defaultLogger.__consoleLog,
+          LOG_LEVEL.INFO, [sinon.match(/.*INFO.*message.*/)]
+        );
       });
 
-      it('should not log the message if the log level is lower than the current log level', function() {
+      it('should log a message if its log level is higher than the threshold log level', function() {
+        defaultLogger.log(LOG_LEVEL.WARNING, 'message');
+        sinon.assert.calledOnce(defaultLogger.__consoleLog);
+        sinon.assert.calledWithExactly(
+          defaultLogger.__consoleLog,
+          LOG_LEVEL.WARNING, [sinon.match(/.*WARNING.*message.*/)]
+        );
+      });
+
+      it('should not log a message if its log level is lower than the threshold log level', function() {
         defaultLogger.log(LOG_LEVEL.DEBUG, 'message');
-        assert.isTrue(defaultLogger.__consoleLog.notCalled);
+        sinon.assert.notCalled(defaultLogger.__consoleLog);
       });
     });
 
