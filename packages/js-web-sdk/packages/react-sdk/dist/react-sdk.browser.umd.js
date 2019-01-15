@@ -1326,12 +1326,11 @@
             var _a = this.props, children = _a.children, timeout = _a.timeout;
             var value = {
                 optimizely: this.sdkWrapper,
-                timeout: timeout,
             };
+            if (timeout !== undefined) {
+                value['timeout'] = timeout;
+            }
             return (React.createElement(OptimizelyContextProvider, { value: value }, children));
-        };
-        OptimizelyProvider.defaultProps = {
-            timeout: 0,
         };
         return OptimizelyProvider;
     }(React.Component));
@@ -1344,7 +1343,7 @@
             }
             WithOptimizely.prototype.render = function () {
                 var _this = this;
-                return (React.createElement(OptimizelyContextConsumer, null, function (value) { return (React.createElement(Component, __assign({}, _this.props, { optimizely: value.optimizely, optimizelyReadyTimeout: value.optimizelyReadyTimeout }))); }));
+                return (React.createElement(OptimizelyContextConsumer, null, function (value) { return (React.createElement(Component, __assign({}, _this.props, { optimizely: value.optimizely, optimizelyReadyTimeout: value.timeout }))); }));
             };
             return WithOptimizely;
         }(React.Component));
@@ -1402,7 +1401,7 @@
         Experiment.prototype.componentDidMount = function () {
             var _this = this;
             var _a = this.props, experiment = _a.experiment, optimizely = _a.optimizely, optimizelyReadyTimeout = _a.optimizelyReadyTimeout;
-            if (optimizely === null) {
+            if (!optimizely) {
                 throw new Error('optimizely prop must be supplied');
             }
             optimizely.onReady({ timeout: optimizelyReadyTimeout }).then(function () {
@@ -1428,18 +1427,14 @@
             // to trigger an unmount/remount
             React.Children.forEach(this.props.children, function (child) {
                 if (match || !React.isValidElement(child)) {
-                    console.log('found', match, !React.isValidElement(child));
                     return;
                 }
-                console.log('child props', child.props);
                 if (child.props.variation) {
-                    console.log('child variation', child.props.variation);
                     if (variation === child.props.variation) {
                         match = child;
                     }
                 }
                 else if (child.props.default) {
-                    console.log('child default', child.props.default);
                     match = child;
                 }
             });

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { OptimizelySDKWrapper } from '@optimizely/js-web-sdk';
 interface OptimizelyProviderProps {
     optimizely: OptimizelySDKWrapper;
-    timeout: number;
+    timeout?: number;
 }
 interface OptimizelyProviderState {
     userId: string;
@@ -12,9 +12,6 @@ interface OptimizelyProviderState {
 }
 export declare class OptimizelyProvider extends React.Component<OptimizelyProviderProps, OptimizelyProviderState> {
     sdkWrapper: OptimizelySDKWrapper;
-    static defaultProps: {
-        timeout: number;
-    };
     constructor(props: OptimizelyProviderProps);
     render(): JSX.Element;
 }

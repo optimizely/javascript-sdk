@@ -19,7 +19,7 @@
 	"scripts": {
 		"tsc": "rm -rf lib/ && tsc",
 		"build": "rm -rf dist/ && node ./scripts/build.js",
-		"test": "jest"
+		"test": "jest --silent"
   },
 	"dependencies": {
 		"prop-types": "^15.6.2",
