@@ -18,7 +18,7 @@
 	],
 	"scripts": {
 		"tsc": "rm -rf lib/ && tsc",
-		"build": "rm -rf dist/ && rollup -c",
+		"build": "rm -rf dist/ && node ./scripts/build.js",
 		"test": "echo \"Error: run tests from root\" && exit 1"
 	},
 	"dependencies": {
