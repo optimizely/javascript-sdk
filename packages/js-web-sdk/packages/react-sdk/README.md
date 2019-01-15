@@ -1,11 +1,67 @@
 # Optimizely SDK React
 
+Use Optimizely Feature Flags and AB Tests easily in React with a library of pre-built components.
+
+### Compatibility
+
+`React 15.x +`
+
+### Example
+
+```jsx
+import {
+  OptimizelyProvider,
+  OptimizelyExperiment,
+  OptimizelyVariation,
+  OptimizelyFeature,
+} from '@optimizely/react-sdk'
+import optimizelySDK from '@optimizely/js-web-sdk'
+
+const optimizely = optimizelySDK.createInstance({
+  sdkKey: 'your-optimizely-sdk-key',
+  userId: window.userId,
+})
+
+class App extends React.Component {
+  render() {
+    <OptimizelyProvider optimizely={optimizely} timeout={500}>
+      <OptimizelyExperiment experiment="ab-test">
+        {(variation) => (
+          <p>got variation {variation}</p>
+        )}
+      </OptimizelyExperiment>
+
+      <OptimizelyExperiment experiment="button-color">
+        <OptimizelyVariation variation="blue">
+          <BlueButton />
+        </OptimizelyVariation>
+
+        <OptimizelyVariation variation="green">
+          <GreenButton />
+        </OptimizelyVariation>
+
+        <OptimizelyVariation default>
+          <DefaultButton />
+        </OptimizelyVariation>
+      </OptimizelyExperiment>
+
+      <OptimizelyFeature feature="sort-algorithm">
+        {(isEnabled, variables) => (
+          <SearchComponent algorithm={variables.algorithm} />
+        )}
+      </OptimizelyFeature>
+    </OptimizelyProvider>
+  }
+}
+
+```
+
 # Setup
 ## `<OptimizelyProvider>`
 This is required at the root level and leverages React’s `Context` API to allow access to the OptimizelySDKWrapper to components like `<OptimizelyFeature>`  and  `<OptimizelyExperiment>`
 
 *props*
-* `optimizely : OptimizelySDKWrapper`
+* `optimizely : OptimizelySDK` instance of the OptimizelySDK from `@optimizely/js-web-sdk`
 * `timeout : Number` the amount for OptimizelyExperiment and OptimizelyFeature components to render `null` before resolving
 
 ### Loading the datafile synchronously
@@ -36,7 +92,7 @@ class App extends React.Component {
 ### Loading the datafile asynchronously
 
 If you don't have the datafile already downloaded then the `js-web-sdk` provides functionality to fetch the datafile for you.  However instead of waiting for the datafile to fetch before you render your app, you can immediately render your app and provide a `timeout`
-option to `<OptimizelyProvider optimizely={optimizely} timeout={50}>`.  This will block rendering of `<OptimizelyExperiment>` and `<OptimizelyFeature>` components until the datafile
+option to `<OptimizelyProvider optimizely={optimizely} timeout={200}>`.  This will block rendering of `<OptimizelyExperiment>` and `<OptimizelyFeature>` components until the datafile
 loads or the timeout is up (in that case `variation` is `null` and `isFeatureEnabled` is `false`)
 
 ```jsx
@@ -45,13 +101,13 @@ import optimizelySDK from '@optimizely/js-web-sdk'
 
 const optimizely = optimizelySDK.createInstance({
   userId: window.userId,
-  SDKKey: 'yourSDKKey', // Optimizely environment key
+  SDKKey: 'your-optimizely-sdk-key', // Optimizely environment key
 })
 
 class App extends React.Component {
   render() {
     return (
-      <OptimizelyProvider optimizely={optimizely} timeout={100}>
+      <OptimizelyProvider optimizely={optimizely} timeout={200}>
         <App />
       </OptimizelyProvider>
     )
@@ -62,6 +118,9 @@ class App extends React.Component {
 # Use Cases
 ## Experiment
 ### Render different components based on variation
+
+The first way to use OptimizelyExperiment is via a child render function. If the component contains a function as a child, `<OptimizelyExperiment>` will call that with the result of `optimizely.activate(experimentKey)`
+
 ```jsx
 <OptimizelyExperiment experiment="exp1">
   {(variation) => (
@@ -140,7 +199,13 @@ class MyComp extends React.Component {
   render() {
   }
 }
+
+// or alternatively (if decorators arent enabled)
+const WrappedMyComponent = withOptimizely(MyComp)
 ```
+
+
+
 
 ## Tracking
 Tracking is easy with the `withOptimizely` HoC / decorator.
@@ -163,4 +228,3 @@ class SignupButton extends React.Component {
   }
 }
 ```
-
