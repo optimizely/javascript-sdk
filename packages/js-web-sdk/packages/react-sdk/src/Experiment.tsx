@@ -30,7 +30,7 @@ export class Experiment extends React.Component<ExperimentProps, ExperimentState
 
   componentDidMount() {
     const { experiment, optimizely, optimizelyReadyTimeout } = this.props
-    if (optimizely === null) {
+    if (!optimizely) {
       throw new Error('optimizely prop must be supplied')
     }
 
@@ -65,18 +65,14 @@ export class Experiment extends React.Component<ExperimentProps, ExperimentState
       this.props.children,
       (child: React.ReactElement<VariationProps>) => {
         if (match || !React.isValidElement(child)) {
-          console.log('found', match, !React.isValidElement(child))
           return
         }
 
-        console.log('child props', child.props)
         if (child.props.variation) {
-          console.log('child variation', child.props.variation)
           if (variation === child.props.variation) {
             match = child
           }
         } else if (child.props.default) {
-          console.log('child default', child.props.default)
           match = child
         }
       },

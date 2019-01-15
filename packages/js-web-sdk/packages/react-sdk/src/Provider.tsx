@@ -5,7 +5,7 @@ import { OptimizelySDKWrapper } from '@optimizely/js-web-sdk'
 
 interface OptimizelyProviderProps {
   optimizely: OptimizelySDKWrapper
-  timeout: number
+  timeout?: number
 }
 
 interface OptimizelyProviderState {
@@ -19,10 +19,6 @@ export class OptimizelyProvider extends React.Component<
 > {
   sdkWrapper: OptimizelySDKWrapper
 
-  static defaultProps = {
-    timeout: 0,
-  }
-
   constructor(props: OptimizelyProviderProps) {
     super(props)
 
@@ -34,7 +30,9 @@ export class OptimizelyProvider extends React.Component<
     const { children, timeout } = this.props
     const value = {
       optimizely: this.sdkWrapper,
-      timeout,
+    }
+    if (timeout !== undefined) {
+      value['timeout'] = timeout
     }
     return (
       <OptimizelyContextProvider value={value}>
