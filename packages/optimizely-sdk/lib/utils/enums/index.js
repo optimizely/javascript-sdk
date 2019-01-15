@@ -129,6 +129,8 @@ exports.LOG_MESSAGES = {
   BUCKETING_ID_NOT_STRING: '%s: BucketingID attribute is not a string. Defaulted to userId',
 };
 
+exports.DEFAULT_LOGGER_MESSAGE_TEMPLATE = '%s - %s %s %s';
+
 exports.RESERVED_EVENT_KEYWORDS = {
   REVENUE: 'revenue',
   VALUE: 'value',

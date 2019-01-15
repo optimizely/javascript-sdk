@@ -17,7 +17,7 @@ var fns = require('../../utils/fns');
 var enums = require('../../utils/enums');
 var sprintf = require('sprintf-js').sprintf;
 
-var MODULE_NAME = 'LOGGER';
+var MODULE_NAME = 'DEFAULT_LOGGER';
 
 /**
  * Default logger implementation
@@ -54,7 +54,10 @@ Logger.prototype.log = function(logLevel, logMessage) {
   if (this.__shouldLog(logLevel)) {
     if (this.prefix) {
       var logLevelName = getLogLevelName(logLevel);
-      logMessage = this.prefix + ' - ' + logLevelName + ' ' + getTime() + ' ' + logMessage;
+      logMessage = sprintf(
+        enums.DEFAULT_LOGGER_MESSAGE_TEMPLATE,
+        this.prefix, logLevelName, getTime(), logMessage
+      );
     }
 
     if (this.logToConsole) {
