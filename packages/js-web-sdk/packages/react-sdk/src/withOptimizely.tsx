@@ -1,11 +1,12 @@
 import * as React from 'react'
-import { OptimizelyContextConsumer } from './Context'
+// import { OptimizelyContextConsumer } from './Context'
 import { Subtract } from 'utility-types'
 import { OptimizelySDKWrapper } from '@optimizely/js-web-sdk'
+import { getInstance, getTimeout } from './reactSDK';
 
 export interface WithOptimizelyProps {
   optimizely: OptimizelySDKWrapper | null,
-  optimizelyReadyTimeout: number,
+  optimizelyReadyTimeout: number| undefined,
 }
 
 export function withOptimizely<P extends WithOptimizelyProps>(
@@ -14,9 +15,7 @@ export function withOptimizely<P extends WithOptimizelyProps>(
   return class WithOptimizely extends React.Component<Subtract<P, WithOptimizelyProps>> {
     render() {
       return (
-        <OptimizelyContextConsumer>
-          {({ optimizely, timeout }) => <Component {...this.props} optimizely={optimizely} optimizelyReadyTimeout={timeout} />}
-        </OptimizelyContextConsumer>
+        <Component {...this.props} optimizely={getInstance()} optimizelyReadyTimeout={getTimeout()} />
       )
     }
   }

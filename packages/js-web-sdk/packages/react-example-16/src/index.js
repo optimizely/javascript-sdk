@@ -4,17 +4,22 @@ import './index.css'
 import App from './App'
 import * as serviceWorker from './serviceWorker'
 
-import * as optimizelySdk from '@optimizely/js-web-sdk'
+import optimizelyReactSDK, { withOptimizely } from '@optimizely/react-sdk'
+import * as optimizelySDK from '@optimizely/js-web-sdk'
 
-const optimizely = optimizelySdk.createInstance({
+const optimizely = optimizelySDK.createInstance({
   userId: 'user' + Date.now(),
   sdkKey: 'BsSyVRsUbE3ExgGCJ9w1to',
 })
 
-async function main() {
-  await optimizely.onReady()
+optimizelyReactSDK.initialize({
+  instance: optimizely,
+  timeout: 500,
+})
+console.log(withOptimizely)
 
-  ReactDOM.render(<App optimizely={optimizely} />, document.getElementById('root'))
+async function main() {
+  ReactDOM.render(<App />, document.getElementById('root'))
 
   // If you want your app to work offline and load faster, you can change
   // unregister() to register() below. Note this comes with some pitfalls.

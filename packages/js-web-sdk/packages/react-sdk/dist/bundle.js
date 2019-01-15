@@ -1,7 +1,5 @@
 'use strict';
 
-Object.defineProperty(exports, '__esModule', { value: true });
-
 var React = require('react');
 
 /*! *****************************************************************************
@@ -44,12 +42,19 @@ var __assign = function() {
     return __assign.apply(this, arguments);
 };
 
-var _a = React.createContext({
-    optimizely: null,
-    timeout: 0,
-}), Consumer = _a.Consumer, Provider = _a.Provider;
-var OptimizelyContextConsumer = Consumer;
-var OptimizelyContextProvider = Provider;
+var globalInstance;
+var globalTimeout;
+function initialize(_a) {
+    var instance = _a.instance, timeout = _a.timeout;
+    globalInstance = instance;
+    globalTimeout = timeout;
+}
+function getTimeout() {
+    return globalTimeout;
+}
+function getInstance() {
+    return globalInstance;
+}
 
 function withOptimizely(Component) {
     return /** @class */ (function (_super) {
@@ -58,11 +63,7 @@ function withOptimizely(Component) {
             return _super !== null && _super.apply(this, arguments) || this;
         }
         WithOptimizely.prototype.render = function () {
-            var _this = this;
-            return (React.createElement(OptimizelyContextConsumer, null, function (_a) {
-                var optimizely = _a.optimizely, timeout = _a.timeout;
-                return React.createElement(Component, __assign({}, _this.props, { optimizely: optimizely, optimizelyReadyTimeout: timeout }));
-            }));
+            return (React.createElement(Component, __assign({}, this.props, { optimizely: getInstance(), optimizelyReadyTimeout: getTimeout() })));
         };
         return WithOptimizely;
     }(React.Component));
@@ -106,28 +107,6 @@ var FeatureComponent = /** @class */ (function (_super) {
     return FeatureComponent;
 }(React.Component));
 var OptimizelyFeature = withOptimizely(FeatureComponent);
-
-var OptimizelyProvider = /** @class */ (function (_super) {
-    __extends(OptimizelyProvider, _super);
-    function OptimizelyProvider(props) {
-        var _this = _super.call(this, props) || this;
-        var timeout = props.timeout, optimizely = props.optimizely;
-        _this.sdkWrapper = optimizely;
-        return _this;
-    }
-    OptimizelyProvider.prototype.render = function () {
-        var _a = this.props, children = _a.children, timeout = _a.timeout;
-        var value = {
-            optimizely: this.sdkWrapper,
-            timeout: timeout,
-        };
-        return (React.createElement(OptimizelyContextProvider, { value: value }, children));
-    };
-    OptimizelyProvider.defaultProps = {
-        timeout: 0,
-    };
-    return OptimizelyProvider;
-}(React.Component));
 
 var Experiment = /** @class */ (function (_super) {
     __extends(Experiment, _super);
@@ -199,8 +178,10 @@ var Variation = /** @class */ (function (_super) {
 }(React.Component));
 var OptimizelyVariation = Variation;
 
-exports.OptimizelyFeature = OptimizelyFeature;
-exports.OptimizelyProvider = OptimizelyProvider;
-exports.withOptimizely = withOptimizely;
-exports.OptimizelyExperiment = OptimizelyExperiment;
-exports.OptimizelyVariation = OptimizelyVariation;
+module.exports = {
+    OptimizelyFeature: OptimizelyFeature,
+    withOptimizely: withOptimizely,
+    OptimizelyExperiment: OptimizelyExperiment,
+    OptimizelyVariation: OptimizelyVariation,
+    initialize: initialize,
+};

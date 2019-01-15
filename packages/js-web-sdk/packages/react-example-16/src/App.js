@@ -3,7 +3,6 @@ import logo from './logo.svg'
 import './App.css'
 
 import {
-  OptimizelyProvider,
   OptimizelyFeature,
   OptimizelyExperiment,
   OptimizelyVariation,
@@ -12,12 +11,12 @@ import {
 class App extends Component {
   render() {
     return (
-      <OptimizelyProvider optimizely={this.props.optimizely}>
+      <div>
         <h1>Test app: React 16</h1>
         <OptimizelyFeature feature="feature1">
           {(isEnabled, variables) => (
             <div>
-              <h2>feature1</h2>
+              <h2>feature: feature1</h2>
               <h3>{isEnabled ? 'enabled' : 'disabled'}</h3>
               <pre>{JSON.stringify(variables, null, '  ')}</pre>
             </div>
@@ -36,7 +35,7 @@ class App extends Component {
           <OptimizelyVariation variation="large">large</OptimizelyVariation>
           <OptimizelyVariation default>default</OptimizelyVariation>
         </OptimizelyExperiment>
-      </OptimizelyProvider>
+      </div>
     )
   }
 }
