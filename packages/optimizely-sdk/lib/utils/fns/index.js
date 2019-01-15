@@ -34,7 +34,6 @@ module.exports = {
   forEach: require('lodash/forEach'),
   forOwn: require('lodash/forOwn'),
   map: require('lodash/map'),
-  reduce: require('lodash/reduce'),
   uuid: function() {
     return uuid.v4();
   },

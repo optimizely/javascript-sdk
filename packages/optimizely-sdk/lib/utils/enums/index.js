@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2016-2018, Optimizely, Inc. and contributors                   *
+ * Copyright 2016-2019, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -68,7 +68,6 @@ exports.LOG_MESSAGES = {
   DISPATCH_CONVERSION_EVENT: '%s: Dispatching conversion event to URL %s with params %s.',
   DISPATCH_IMPRESSION_EVENT: '%s: Dispatching impression event to URL %s with params %s.',
   DEPRECATED_EVENT_VALUE: '%s: Event value is deprecated in %s call.',
-  EVENT_NOT_ASSOCIATED_WITH_EXPERIMENTS: '%s: Event %s is not associated with any running experiments.',
   EXPERIMENT_NOT_RUNNING: '%s: Experiment %s is not running.',
   FEATURE_ENABLED_FOR_USER: '%s: Feature %s is enabled for user %s.',
   FEATURE_NOT_ENABLED_FOR_USER: '%s: Feature %s is not enabled for user %s.',
@@ -83,7 +82,6 @@ exports.LOG_MESSAGES = {
   NO_ROLLOUT_EXISTS: '%s: There is no rollout of feature %s.',
   NOT_ACTIVATING_USER: '%s: Not activating user %s for experiment %s.',
   NOT_TRACKING_USER: '%s: Not tracking user %s.',
-  NOT_TRACKING_USER_FOR_EXPERIMENT: '%s: Not tracking user %s for experiment %s.',
   PARSED_REVENUE_VALUE: '%s: Parsed revenue value "%s" from event tags.',
   PARSED_NUMERIC_VALUE: '%s: Parsed event value "%s" from event tags.',
   RETURNING_STORED_VARIATION: '%s: Returning previously activated variation "%s" of experiment "%s" for user "%s" from user profile.',
@@ -92,7 +90,6 @@ exports.LOG_MESSAGES = {
   SAVED_VARIATION_NOT_FOUND: '%s: User %s was previously bucketed into variation with ID %s for experiment %s, but no matching variation was found.',
   SET_LOG_LEVEL: '%s: Setting log level to "%s"',
   SHOULD_NOT_DISPATCH_ACTIVATE: '%s: Experiment %s is in "Launched" state. Not activating user.',
-  SHOULD_NOT_DISPATCH_TRACK: '%s: Experiment %s is in "Launched" state. Not tracking user for it.',
   SKIPPING_JSON_VALIDATION: '%s: Skipping JSON schema validation.',
   TRACK_EVENT: '%s: Tracking event %s for user %s.',
   USER_ASSIGNED_TO_VARIATION_BUCKET: '%s: Assigned variation bucket %s to user %s.',
