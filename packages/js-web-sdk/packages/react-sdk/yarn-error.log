@@ -1,8 +1,8 @@
 Arguments: 
-  /Users/jordan/.nvm/versions/node/v10.13.0/bin/node /usr/local/Cellar/yarn/1.12.3/libexec/bin/yarn.js add -D utilitiy/types
+  /Users/jordan/.nvm/versions/node/v10.13.0/bin/node /usr/local/Cellar/yarn/1.12.3/libexec/bin/yarn.js add react-broadcast
 
 PATH: 
-  /Users/jordan/.nvm/versions/node/v10.13.0/bin:/Users/jordan/.pyenv/shims:/Users/jordan/.rbenv/shims:/usr/local/bin:/Users/jordan/.dotfiles/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+  /Users/jordan/.pyenv/shims:/Users/jordan/.rbenv/shims:/Users/jordan/.nvm/versions/node/v10.13.0/bin:/Users/jordan/code/flutter/bin:/usr/local/bin:/Users/jordan/.dotfiles/bin:/Users/jordan/.nvm/versions/node/v10.13.0/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
 Yarn version: 
   1.12.3
@@ -14,7 +14,7 @@ Platform:
   darwin x64
 
 Trace: 
-  Error: https://registry.yarnpkg.com/@optimizely%2fjs-sdk-wrapper: Not found
+  Error: https://registry.yarnpkg.com/@optimizely%2fjs-web-sdk: Not found
       at Request.params.callback [as _callback] (/usr/local/Cellar/yarn/1.12.3/libexec/lib/cli.js:65894:18)
       at Request.self.callback (/usr/local/Cellar/yarn/1.12.3/libexec/lib/cli.js:129018:22)
       at Request.emit (events.js:182:13)
@@ -29,7 +29,7 @@ Trace:
 npm manifest: 
   {
     "name": "@optimizely/react-sdk",
-    "version": "0.0.0",
+    "version": "0.1.0",
     "description": "> TODO: description",
     "author": "jordangarcia <jordan.garcia@gmail.com>",
     "homepage": "",
@@ -47,13 +47,14 @@ npm manifest:
       "test": "echo \"Error: run tests from root\" && exit 1"
     },
     "dependencies": {
-      "@optimizely/js-sdk-wrapper": "^1.0.0",
+      "@optimizely/js-web-sdk": "^0.1.0",
       "prop-types": "^15.6.2",
       "react": "^16.6.1"
     },
     "devDependencies": {
       "@types/prop-types": "^15.5.6",
-      "@types/react": "^16.7.3"
+      "@types/react": "^16.7.3",
+      "utility-types": "^2.1.0"
     }
   }
 
@@ -125,3 +126,8 @@ Lockfile:
     dependencies:
       loose-envify "^1.1.0"
       object-assign "^4.1.1"
+  
+  utility-types@^2.1.0:
+    version "2.1.0"
+    resolved "https://registry.yarnpkg.com/utility-types/-/utility-types-2.1.0.tgz#0c78fc9f7eb424d14302222b4ddd13fdb17f44ab"
+    integrity sha512-/nP2gqavggo6l38rtQI/CdeV+2fmBGXVvHgj9kV2MAnms3TIi77Mz9BtapPFI0+GZQCqqom0vACQ+VlTTaCovw==

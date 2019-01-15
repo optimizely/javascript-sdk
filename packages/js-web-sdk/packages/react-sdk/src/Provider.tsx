@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as optimizely from '@optimizely/optimizely-sdk'
 
 import { OptimizelyContextProvider } from './Context'
 import { OptimizelySDKWrapper } from '@optimizely/js-web-sdk'
@@ -11,7 +10,7 @@ interface OptimizelyProviderProps {
 
 interface OptimizelyProviderState {
   userId: string
-  attributes: optimizely.UserAttributes | undefined
+  attributes: { [key: string]: string } | undefined
 }
 
 export class OptimizelyProvider extends React.Component<
