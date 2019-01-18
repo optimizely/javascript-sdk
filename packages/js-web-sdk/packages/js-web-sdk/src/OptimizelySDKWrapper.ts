@@ -4,8 +4,7 @@ import { StaticUserIdLoader, UserId } from './UserIdLoaders'
 import { find } from './utils'
 import { ProvidedDatafileLoader, FetchUrlDatafileLoader } from './DatafileLoaders'
 import { ProvidedAttributesLoader } from './UserAttributesLoaders'
-import { ResourceManager } from './ResourceManager'
-import { ResourceLoader } from './ResourceStream'
+import { ResourceLoader, ResourceManager } from './ResourceManager'
 
 // export types
 export { OptimizelyDatafile }
@@ -126,22 +125,14 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
       userId: this.setupUserIdLoader(config),
     })
 
-    if (this.resourceManager.allResourcesReady()) {
+    if (this.resourceManager.allResourcesLoaded()) {
       this.onInitialized()
       this.initializingPromise = Promise.resolve()
     } else {
-      // TODO handle unsubscribe
-      this.initializingPromise = new Promise((resolve, reject) => {
-        this.resourceManager.stream.subscribe({
-          ready: () => {
-            this.onInitialized()
-            resolve()
-          },
-          error: ({ resourceKey, reason }) => {
-            reject(`"${resourceKey}" failed to load: ${reason}`)
-          },
+      this.initializingPromise = this.resourceManager.allResourcePromises()
+        .then(() => {
+          this.onInitialized();
         })
-      })
     }
   }
 
@@ -479,8 +470,6 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     } else if (config.sdkKey) {
       datafileLoader = new FetchUrlDatafileLoader({
         sdkKey: config.sdkKey,
-        preferCached: true,
-        backgroundLoadIfCacheHit: true,
       })
     } else if (config.UNSTABLE_datafileLoader) {
       datafileLoader = config.UNSTABLE_datafileLoader
@@ -515,9 +504,9 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
   }
 
   private onInitialized() {
-    const datafile = this.resourceManager.datafile.getValue()
-    this.userId = this.resourceManager.userId.getValue() || null
-    this.attributes = this.resourceManager.attributes.getValue() || {}
+    const datafile = this.resourceManager.datafile.value
+    this.userId = this.resourceManager.userId.value || null
+    this.attributes = this.resourceManager.attributes.value || {}
     if (datafile) {
       this.datafile = datafile
     }

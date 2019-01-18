@@ -2,116 +2,78 @@ import { OptimizelyDatafile } from './OptimizelySDKWrapper'
 import { UserAttributes } from '@optimizely/optimizely-sdk'
 import { UserId } from './UserIdLoaders'
 
-import {
-  ResourceEmitter,
-  ResourceStream,
-  SingleResourceStream,
-  ResourceLoader,
-  CombinedResourceStream,
-} from './ResourceStream'
-
-interface Resource<K> {
-  getValue(): K | undefined
-  hasValue(): boolean
-  isReady(): boolean
-  hasFailed(): boolean
-  getMetadata(): ResourceEmitter.DataMessage.Metadata | undefined
-  getFailureReason(): string
+export interface ResourceLoader<K> {
+  load: () => K | Promise<K>
 }
 
-type ResourceLoaderState<K> = {
-  resource: K | undefined
-  metadata: ResourceEmitter.DataMessage.Metadata | undefined
-  isReady: boolean
-  failed: boolean
-  failureReason: string
-}
+class Resource<K> {
+  private loader: ResourceLoader<K>
 
-class BaseResource<K> implements Resource<K> {
-  public stream: ResourceStream<K>
-  protected state: ResourceLoaderState<K>
+  private _value?: K
+
+  private _hasLoaded: boolean
+
+  public readonly promise: Promise<K>
+
+  public get value(): K | undefined {
+    return this._value
+  }
+
+  public get hasLoaded(): boolean {
+    return this._hasLoaded
+  }
 
   constructor(loader: ResourceLoader<K>) {
-    this.state = {
-      resource: undefined,
-      metadata: undefined,
-      isReady: false,
-      failed: false,
-      failureReason: '',
+    this.loader = loader;
+    this._hasLoaded = false;
+    this.promise = this.load();
+  }
+
+  private updateStateFromLoadResult(value: K) {
+    this._value = value;
+    this._hasLoaded = true;
+  }
+
+  private load(): Promise<K> {
+    const maybeValue = this.loader.load()
+    // TODO: test does this work with polyfilled promise?
+    if (maybeValue instanceof Promise) {
+      return maybeValue.then(value => {
+        this.updateStateFromLoadResult(value);
+        return value
+      })
     }
-
-    this.stream = new SingleResourceStream(loader)
-    this.stream.subscribe({
-      data: msg => {
-        this.state.resource = msg.resource
-        this.state.metadata = msg.metadata
-      },
-      ready: () => {
-        this.state.isReady = true
-      },
-      error: msg => {
-        this.state.failed = true
-        this.state.failureReason = msg.reason
-      },
-    })
-  }
-
-  getValue(): K | undefined {
-    return this.state.resource
-  }
-
-  hasValue(): boolean {
-    return this.getValue() !== void 0
-  }
-
-  isReady(): boolean {
-    return this.state.isReady
-  }
-
-  hasFailed(): boolean {
-    return this.state.failed
-    throw new Error('Method not implemented.')
-  }
-
-  getMetadata(): ResourceEmitter.DataMessage.Metadata | undefined {
-    return this.state.metadata
-  }
-
-  getFailureReason(): string {
-    return this.state.failureReason
+    this.updateStateFromLoadResult(maybeValue);
+    return Promise.resolve(maybeValue);
   }
 }
 
+type OptimizelyResource = OptimizelyDatafile | UserAttributes | UserId
+
 export class ResourceManager {
-  protected resourceKeys = ['datafile', 'attributes', 'userId']
+  public datafile: Resource<OptimizelyDatafile>
+  public attributes: Resource<UserAttributes>
+  public userId: Resource<UserId>
 
-  public datafile: BaseResource<OptimizelyDatafile>
-  public attributes: BaseResource<UserAttributes>
-  public userId: BaseResource<UserId>
-
-  public stream: ResourceStream<any>
+  private resources: Resource<OptimizelyResource>[]
 
   constructor(loaders: {
     datafile: ResourceLoader<OptimizelyDatafile>
     attributes: ResourceLoader<UserAttributes>
     userId: ResourceLoader<UserId>
   }) {
-    this.datafile = new BaseResource(loaders.datafile)
-    this.attributes = new BaseResource(loaders.attributes)
-    this.userId = new BaseResource(loaders.userId)
+    this.datafile = new Resource(loaders.datafile)
+    this.attributes = new Resource(loaders.attributes)
+    this.userId = new Resource(loaders.userId)
 
-    this.stream = new CombinedResourceStream([this.datafile.stream, this.attributes.stream, this.userId.stream])
+    this.resources = [this.datafile, this.attributes, this.userId];
   }
 
-  allResourcesHaveValues(): boolean {
-    return this.everyResource(resource => resource.hasValue())
+  public allResourcesLoaded(): boolean {
+    return this.resources.every(resource => resource.hasLoaded);
   }
 
-  allResourcesReady(): boolean {
-    return this.everyResource(resource => resource.isReady())
-  }
-
-  private everyResource(fn: (resource: Resource<any>) => boolean): boolean {
-    return this.resourceKeys.every(key => fn(this[key]))
+  public allResourcePromises(): Promise<OptimizelyResource[]> {
+    return Promise.all([...this.resources.map(resource => resource.promise)])
   }
 }

@@ -1,5 +1,5 @@
 import { OptimizelyDatafile } from './Datafile'
-import { ResourceLoader, ResourceEmitter } from './ResourceStream'
+import { ResourceLoader } from './ResourceManager'
 const fetch = require('node-fetch')
 
 export class ProvidedDatafileLoader implements ResourceLoader<OptimizelyDatafile> {
@@ -9,13 +9,8 @@ export class ProvidedDatafileLoader implements ResourceLoader<OptimizelyDatafile
     this.datafile = config.datafile
   }
 
-  load(emitter: ResourceEmitter<OptimizelyDatafile>): void {
-    emitter.data({
-      resourceKey: 'datafile',
-      resource: this.datafile,
-      metadata: { source: 'fresh' },
-    })
-    emitter.ready()
+  public load() {
+    return this.datafile;
   }
 }
 
@@ -30,74 +25,49 @@ type FetchUrlCacheEntry = {
 export class FetchUrlDatafileLoader implements ResourceLoader<OptimizelyDatafile> {
   private sdkKey: string
   private localStorageKey: string
-  private preferCached: boolean
-  private backgroundLoadIfCacheHit: boolean
+
+  // 1 week in ms = 7 days * 24 hours * 60 minutes * 60 seconds * 1000 ms
+  private static MAX_CACHE_AGE_MS: number = 7 * 24 * 60 * 60 * 1000
 
   constructor(config: {
     sdkKey: string
     localStorageKey?: string
-    preferCached?: boolean
-    backgroundLoadIfCacheHit?: boolean
   }) {
     this.sdkKey = config.sdkKey
     this.localStorageKey = config.localStorageKey || 'optly_fs_datafile'
-
-    this.backgroundLoadIfCacheHit = !!config.backgroundLoadIfCacheHit
-    this.preferCached = !!config.preferCached
   }
 
-  load(emitter: ResourceEmitter<OptimizelyDatafile>): void {
+  public load() {
     const cacheResult = this.getFromCache()
-    if (cacheResult && this.shouldUseCache(cacheResult)) {
-      emitter.data({
-        resourceKey: 'datafile',
-        resource: cacheResult.datafile,
-        metadata: { source: 'cache' },
-      })
-      if (this.preferCached) {
-        emitter.ready()
-      }
-      if (!this.backgroundLoadIfCacheHit) {
-        // no need to load anything else, we're done
-        return
-      }
-    }
-    this.fetchDatafile().then(
+    const freshDatafileFetch = this.fetchDatafile().then(
       datafile => {
-        emitter.data({
-          resourceKey: 'datafile',
-          resource: datafile,
-          metadata: { source: 'fresh' },
-        })
-        emitter.ready()
-        const cacheEntry: FetchUrlCacheEntry = {
-          datafile,
-          metadata: {
-            timestampCached: new Date().getTime(),
-          },
-        }
-        this.saveToCache(cacheEntry)
-      },
-      response => {
-        emitter.error({
-          resourceKey: 'datafile',
-          reason: 'failed to load',
-        })
-      },
+        this.saveToCache(datafile)
+        return datafile;
+      }
     )
+    if (cacheResult && this.shouldUseCache(cacheResult)) {
+      return cacheResult.datafile;
+    }
+    return freshDatafileFetch;
   }
 
-  saveToCache(toSave: FetchUrlCacheEntry): void {
+  saveToCache(datafileToSave: OptimizelyDatafile): void {
     if (typeof window !== 'undefined') {
+      const cacheEntry: FetchUrlCacheEntry = {
+        datafile: datafileToSave,
+        metadata: {
+          timestampCached: Date.now(),
+        },
+      }
       // use setTimeout as to not block on a potentially expensive JSON.stringify
       setTimeout(() => {
-        window.localStorage.setItem(this.localStorageKey, JSON.stringify(toSave))
+        window.localStorage.setItem(this.localStorageKey, JSON.stringify(cacheEntry))
       }, 0)
     }
   }
 
   shouldUseCache(cacheResult: FetchUrlCacheEntry): boolean {
-    return true
+    return (Date.now() - cacheResult.metadata.timestampCached) <= FetchUrlDatafileLoader.MAX_CACHE_AGE_MS
   }
 
   async fetchDatafile(): Promise<OptimizelyDatafile> {

@@ -1,4 +1,4 @@
-import { ResourceLoader, ResourceEmitter } from './ResourceStream'
+import { ResourceLoader } from './ResourceManager'
 import { emitter } from 'nock';
 import * as utils from './utils'
 
@@ -14,13 +14,8 @@ export class StaticUserIdLoader implements ResourceLoader<UserId> {
     this.userId = userId
   }
 
-  load(emitter: ResourceEmitter<UserId>) {
-    emitter.data({
-      resourceKey: 'userId',
-      resource: this.userId,
-      metadata: { source: 'fresh' },
-    })
-    emitter.ready()
+  public load() {
+    return this.userId;
   }
 }
 
@@ -43,13 +38,8 @@ export class CookieRandomUserIdLoader implements ResourceLoader<UserId> {
     }
   }
 
-  load(emitter: ResourceEmitter<UserId>) {
-    emitter.data({
-      resourceKey: 'userId',
-      resource: this.userId,
-      metadata: { source: 'fresh' },
-    })
-    emitter.ready()
+  public load() {
+    return this.userId;
   }
 
   randomUserId() {
