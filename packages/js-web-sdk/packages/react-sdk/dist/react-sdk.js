@@ -53,22 +53,85 @@ var _a = reactBroadcast.createContext({
 var OptimizelyContextConsumer = Consumer;
 var OptimizelyContextProvider = Provider;
 
+/**
+ * Wrapper to memoize the userId / userAttributes around an OptimizelySDKWrapper instance
+ *
+ * @param {{
+ *   instance: OptimizelySDKWrapper
+ *   userId: string
+ *   attributes?: UserAttributes
+ * }} {
+ *   instance,
+ *   userId,
+ *   attributes,
+ * }
+ * @returns
+ */
+function createUserWrapper(_a) {
+    var instance = _a.instance, userId = _a.userId, userAttributes = _a.userAttributes;
+    function getUserIdAndAttributes(overrideUserId, overrideAttributes) {
+        var finalUserId = overrideUserId !== undefined ? overrideUserId : userId;
+        var finalUserAttributes = overrideAttributes !== undefined ? overrideAttributes : userAttributes;
+        return [finalUserId, finalUserAttributes || {}];
+    }
+    return __assign({}, instance, { activate: function (experimentKey, overrideUserId, overrideAttributes) {
+            return instance.activate.apply(instance, [experimentKey].concat(getUserIdAndAttributes(overrideUserId, overrideAttributes)));
+        },
+        getVariation: function (experimentKey, overrideUserId, overrideAttributes) {
+            return instance.getVariation.apply(instance, [experimentKey].concat(getUserIdAndAttributes(overrideUserId, overrideAttributes)));
+        },
+        getFeatureVariables: function (featureKey, overrideUserId, overrideAttributes) {
+            return instance.getFeatureVariables.apply(instance, [featureKey].concat(getUserIdAndAttributes(overrideUserId, overrideAttributes)));
+        },
+        getFeatureVariableInteger: function (featureKey, variableKey, overrideUserId, overrideAttributes) {
+            return instance.getFeatureVariableInteger.apply(instance, [featureKey,
+                variableKey].concat(getUserIdAndAttributes(overrideUserId, overrideAttributes)));
+        },
+        getFeatureVariableString: function (featureKey, variableKey, overrideUserId, overrideAttributes) {
+            return instance.getFeatureVariableString.apply(instance, [featureKey,
+                variableKey].concat(getUserIdAndAttributes(overrideUserId, overrideAttributes)));
+        },
+        getFeatureVariableBoolean: function (featureKey, variableKey, overrideUserId, overrideAttributes) {
+            return instance.getFeatureVariableBoolean.apply(instance, [featureKey,
+                variableKey].concat(getUserIdAndAttributes(overrideUserId, overrideAttributes)));
+        },
+        getFeatureVariableDouble: function (featureKey, variableKey, overrideUserId, overrideAttributes) {
+            return instance.getFeatureVariableDouble.apply(instance, [featureKey,
+                variableKey].concat(getUserIdAndAttributes(overrideUserId, overrideAttributes)));
+        },
+        isFeatureEnabled: function (featureKey, overrideUserId, overrideAttributes) {
+            return instance.isFeatureEnabled.apply(instance, [featureKey].concat(getUserIdAndAttributes(overrideUserId, overrideAttributes)));
+        },
+        track: function (eventKey, overrideUserId, overrideAttributes, eventTags) {
+            if (typeof overrideUserId !== 'undefined' && typeof overrideUserId !== 'string') {
+                eventTags = overrideUserId;
+                overrideUserId = undefined;
+                overrideAttributes = undefined;
+            }
+            var _a = getUserIdAndAttributes(overrideUserId, overrideAttributes), userId = _a[0], attributes = _a[1];
+            return instance.track(eventKey, userId, attributes, eventTags);
+        } });
+}
+
 var OptimizelyProvider = /** @class */ (function (_super) {
     __extends(OptimizelyProvider, _super);
     function OptimizelyProvider(props) {
         var _this = _super.call(this, props) || this;
-        var timeout = props.timeout, optimizely = props.optimizely;
-        _this.sdkWrapper = optimizely;
+        var optimizely = props.optimizely, userId = props.userId, userAttributes = props.userAttributes;
+        console.log('creating wrapper', userId, userAttributes);
+        _this.sdkWrapper = createUserWrapper({
+            instance: optimizely,
+            userId: userId,
+            userAttributes: userAttributes,
+        });
         return _this;
     }
     OptimizelyProvider.prototype.render = function () {
         var _a = this.props, children = _a.children, timeout = _a.timeout;
         var value = {
             optimizely: this.sdkWrapper,
+            timeout: timeout,
         };
-        if (timeout !== undefined) {
-            value['timeout'] = timeout;
-        }
         return (React.createElement(OptimizelyContextProvider, { value: value }, children));
     };
     return OptimizelyProvider;

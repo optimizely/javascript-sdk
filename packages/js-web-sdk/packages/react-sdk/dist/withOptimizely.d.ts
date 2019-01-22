@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { OptimizelySDKWrapper } from '@optimizely/js-web-sdk';
+import { UserWrappedOptimizelySDK } from './createUserWrapper';
 export interface WithOptimizelyProps {
-    optimizely: OptimizelySDKWrapper | null;
+    optimizely: UserWrappedOptimizelySDK | null;
     optimizelyReadyTimeout: number | undefined;
 }
 export declare function withOptimizely<P extends WithOptimizelyProps>(Component: React.ComponentType<P>): {
