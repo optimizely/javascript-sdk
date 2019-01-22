@@ -48,14 +48,14 @@ describe('<OptimizelyFeature>', () => {
     } as unknown) as OptimizelySDKWrapper
 
     const component = mount(
-      <OptimizelyProvider optimizely={optimizelyMock}>
+      <OptimizelyProvider optimizely={optimizelyMock} userId="jordan">
         <OptimizelyFeature feature="feature1">
           {(isEnabled, variables) => `${isEnabled ? 'true' : 'false'}|${variables.foo}`}
         </OptimizelyFeature>
       </OptimizelyProvider>,
     )
 
-    expect(optimizelyMock.onReady).toHaveBeenCalledWith({timeout: undefined})
+    expect(optimizelyMock.onReady).toHaveBeenCalledWith({ timeout: undefined })
 
     // while it's waiting for onReady()
     expect(component.text()).toBe(null)
@@ -63,8 +63,16 @@ describe('<OptimizelyFeature>', () => {
 
     await sleep()
 
-    expect(optimizelyMock.isFeatureEnabled).toHaveBeenCalledWith('feature1')
-    expect(optimizelyMock.getFeatureVariables).toHaveBeenCalledWith('feature1')
+    expect(optimizelyMock.isFeatureEnabled).toHaveBeenCalledWith(
+      'feature1',
+      'jordan',
+      {},
+    )
+    expect(optimizelyMock.getFeatureVariables).toHaveBeenCalledWith(
+      'feature1',
+      'jordan',
+      {},
+    )
     expect(component.text()).toBe('true|bar')
   })
 
@@ -88,14 +96,19 @@ describe('<OptimizelyFeature>', () => {
     } as unknown) as OptimizelySDKWrapper
 
     const component = mount(
-      <OptimizelyProvider optimizely={optimizelyMock} timeout={200}>
+      <OptimizelyProvider
+        optimizely={optimizelyMock}
+        timeout={200}
+        userId="jordan"
+        userAttributes={{ plan_type: 'bronze' }}
+      >
         <OptimizelyFeature feature="feature1">
           {(isEnabled, variables) => `${isEnabled ? 'true' : 'false'}|${variables.foo}`}
         </OptimizelyFeature>
       </OptimizelyProvider>,
     )
 
-    expect(optimizelyMock.onReady).toHaveBeenCalledWith({timeout: 200})
+    expect(optimizelyMock.onReady).toHaveBeenCalledWith({ timeout: 200 })
 
     // while it's waiting for onReady()
     expect(component.text()).toBe(null)
@@ -103,8 +116,14 @@ describe('<OptimizelyFeature>', () => {
 
     await sleep()
 
-    expect(optimizelyMock.isFeatureEnabled).toHaveBeenCalledWith('feature1')
-    expect(optimizelyMock.getFeatureVariables).toHaveBeenCalledWith('feature1')
+    expect(optimizelyMock.isFeatureEnabled).toHaveBeenCalledWith('feature1', 'jordan', {
+      plan_type: 'bronze',
+    })
+    expect(optimizelyMock.getFeatureVariables).toHaveBeenCalledWith(
+      'feature1',
+      'jordan',
+      { plan_type: 'bronze' },
+    )
     expect(component.text()).toBe('true|bar')
   })
 })

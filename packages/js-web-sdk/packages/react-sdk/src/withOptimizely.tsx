@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { Subtract } from 'utility-types'
-import { OptimizelySDKWrapper } from '@optimizely/js-web-sdk'
 
 import { OptimizelyContextConsumer } from './Context'
+import { UserWrappedOptimizelySDK } from './createUserWrapper';
 
 export interface WithOptimizelyProps {
-  optimizely: OptimizelySDKWrapper | null
+  optimizely: UserWrappedOptimizelySDK | null
   optimizelyReadyTimeout: number | undefined
 }
 
@@ -17,7 +17,7 @@ export function withOptimizely<P extends WithOptimizelyProps>(
       return (
         <OptimizelyContextConsumer>
           {(value: {
-            optimizely: OptimizelySDKWrapper
+            optimizely: UserWrappedOptimizelySDK
             timeout: number | undefined
           }) => (
             <Component

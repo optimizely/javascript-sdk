@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 import * as React from 'react'
 import * as Enzyme from 'enzyme'
 import * as Adapter from 'enzyme-adapter-react-16'
@@ -8,7 +9,7 @@ import { Experiment, OptimizelyExperiment } from './Experiment'
 import { mount } from 'enzyme'
 import { OptimizelyProvider } from './Provider'
 import { OptimizelySDKWrapper } from '@optimizely/js-web-sdk'
-import { OptimizelyVariation } from './Variation';
+import { OptimizelyVariation } from './Variation'
 
 async function sleep(timeout = 0): Promise<{}> {
   return new Promise(resolve => {
@@ -46,7 +47,12 @@ describe('<OptimizelyExperiment>', () => {
     } as unknown) as OptimizelySDKWrapper
 
     const component = mount(
-      <OptimizelyProvider optimizely={optimizelyMock} timeout={100}>
+      <OptimizelyProvider
+        optimizely={optimizelyMock}
+        timeout={100}
+        userId="jordan"
+        userAttributes={{ plan_type: 'bronze' }}
+      >
         <OptimizelyExperiment experiment="experiment1">
           {variation => variation}
         </OptimizelyExperiment>
@@ -60,7 +66,9 @@ describe('<OptimizelyExperiment>', () => {
 
     await sleep()
 
-    expect(optimizelyMock.activate).toHaveBeenCalledWith('experiment1')
+    expect(optimizelyMock.activate).toHaveBeenCalledWith('experiment1', 'jordan', {
+      plan_type: 'bronze',
+    })
     expect(component.text()).toBe(variationKey)
   })
 
@@ -80,7 +88,7 @@ describe('<OptimizelyExperiment>', () => {
     } as unknown) as OptimizelySDKWrapper
 
     const component = mount(
-      <OptimizelyProvider optimizely={optimizelyMock}>
+      <OptimizelyProvider optimizely={optimizelyMock} userId="jordan">
         <OptimizelyExperiment experiment="experiment1">
           <OptimizelyVariation variation="otherVariation">
             other variation
@@ -88,9 +96,7 @@ describe('<OptimizelyExperiment>', () => {
           <OptimizelyVariation variation="variationResult">
             correct variation
           </OptimizelyVariation>
-          <OptimizelyVariation default>
-            default variation
-          </OptimizelyVariation>
+          <OptimizelyVariation default>default variation</OptimizelyVariation>
         </OptimizelyExperiment>
       </OptimizelyProvider>,
     )
@@ -120,14 +126,12 @@ describe('<OptimizelyExperiment>', () => {
     } as unknown) as OptimizelySDKWrapper
 
     const component = mount(
-      <OptimizelyProvider optimizely={optimizelyMock}>
+      <OptimizelyProvider optimizely={optimizelyMock} userId="jordan">
         <OptimizelyExperiment experiment="experiment1">
           <OptimizelyVariation variation="otherVariation">
             other variation
           </OptimizelyVariation>
-          <OptimizelyVariation default>
-            default variation
-          </OptimizelyVariation>
+          <OptimizelyVariation default>default variation</OptimizelyVariation>
         </OptimizelyExperiment>
       </OptimizelyProvider>,
     )
@@ -157,7 +161,7 @@ describe('<OptimizelyExperiment>', () => {
     } as unknown) as OptimizelySDKWrapper
 
     const component = mount(
-      <OptimizelyProvider optimizely={optimizelyMock}>
+      <OptimizelyProvider optimizely={optimizelyMock} userId="jordan">
         <OptimizelyExperiment experiment="experiment1">
           <OptimizelyVariation variation="otherVariation">
             other variation
