@@ -2,6 +2,15 @@
 
 Use Optimizely Feature Flags and AB Tests easily in React with a library of pre-built components.
 
+### Features
+
+- Automatic datafile downloading and caching (through LocalStorage)
+- User ID + Attributes memoization
+- Render blocking until datafile is ready via an easy to use React API
+- Optimizely Timeout - only block rendering up to X ms
+- Event queuing for `track`, allows `track` calls to happen before datafile is downloaded
+- Library of React components to use with Feature Flags and AB Tests
+
 ### Compatibility
 
 `React 15.x +`
@@ -19,12 +28,16 @@ import optimizelySDK from '@optimizely/js-web-sdk'
 
 const optimizely = optimizelySDK.createInstance({
   sdkKey: 'your-optimizely-sdk-key',
-  userId: window.userId,
 })
 
 class App extends React.Component {
   render() {
-    <OptimizelyProvider optimizely={optimizely} timeout={500}>
+    <OptimizelyProvider
+      optimizely={optimizely}
+      timeout={500}
+      userId={window.userId}
+      userAttributes={{ plan_type: 'bronze' }}
+    >
       <OptimizelyExperiment experiment="ab-test">
         {(variation) => (
           <p>got variation {variation}</p>
@@ -62,7 +75,9 @@ This is required at the root level and leverages React’s `Context` API to allo
 
 *props*
 * `optimizely : OptimizelySDK` instance of the OptimizelySDK from `@optimizely/js-web-sdk`
-* `timeout : Number` the amount for OptimizelyExperiment and OptimizelyFeature components to render `null` before resolving
+* `userId : String` userId to be passed to the SDK for every Feature Flag / AB Test / `track` call
+* `userAttributes : Object` (optional) userAttributes passed for every Feature Flag / AB Test / `track` call
+* `timeout : Number` (optional) the amount for OptimizelyExperiment and OptimizelyFeature components to render `null` before resolving
 
 ### Loading the datafile synchronously
 
@@ -74,14 +89,13 @@ import { OptimizelyProvider } from '@optimizely/react-sdk'
 import optimizelySDK from '@optimizely/js-web-sdk'
 
 const optimizely = optimizelySDK.createInstance({
-  userId: window.userId,
   datafile: window.datafile,
 })
 
 class App extends React.Component {
   render() {
     return (
-      <OptimizelyProvider optimizely={optimizely}>
+      <OptimizelyProvider optimizely={optimizely} userId={window.userId}>
         <App />
       </OptimizelyProvider>
     )
@@ -100,14 +114,18 @@ import { OptimizelyProvider } from '@optimizely/react-sdk'
 import optimizelySDK from '@optimizely/js-web-sdk'
 
 const optimizely = optimizelySDK.createInstance({
-  userId: window.userId,
   SDKKey: 'your-optimizely-sdk-key', // Optimizely environment key
 })
 
 class App extends React.Component {
   render() {
     return (
-      <OptimizelyProvider optimizely={optimizely} timeout={200}>
+      <OptimizelyProvider
+        optimizely={optimizely}
+        timeout={500}
+        userId={window.userId}
+        userAttributes={{ plan_type: 'bronze' }}
+      >
         <App />
       </OptimizelyProvider>
     )
