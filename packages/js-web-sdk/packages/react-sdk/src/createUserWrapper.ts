@@ -100,9 +100,7 @@ export function createUserWrapper({
     return [finalUserId, finalUserAttributes || {}]
   }
 
-  return {
-    ...instance,
-
+  return Object.assign(Object.create(instance), {
     activate(
       experimentKey: string,
       overrideUserId?: string,
@@ -217,5 +215,5 @@ export function createUserWrapper({
 
       return instance.track(eventKey, userId, attributes, eventTags)
     },
-  } as UserWrappedOptimizelySDK
+  })
 }

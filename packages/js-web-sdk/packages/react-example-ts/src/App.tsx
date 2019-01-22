@@ -13,6 +13,7 @@ import {
 } from '@optimizely/react-sdk'
 
 import { OptimizelySDKWrapper } from '@optimizely/js-web-sdk'
+import OTrackerButton from './TrackerButton'
 
 interface AppProps {
   optimizely: OptimizelySDKWrapper
@@ -43,8 +44,16 @@ export default class App extends React.Component<AppProps> {
     const { optimizely } = this.props
 
     return (
-      <OptimizelyProvider optimizely={optimizely} timeout={200}>
+      <OptimizelyProvider
+        optimizely={optimizely}
+        timeout={200}
+        userId={`jordan${Date.now()}`}
+        userAttributes={{ attribute1: 'yesssss' }}
+      >
         <div className="App">
+          <Example title="Decorator">
+            <OTrackerButton text="jordan" />
+          </Example>
           <Example title="Experiment (child render function)">
             <OptimizelyExperiment experiment="abtest1">
               {(variation: any) => {

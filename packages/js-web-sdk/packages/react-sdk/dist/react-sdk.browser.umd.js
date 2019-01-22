@@ -1335,7 +1335,8 @@
             var finalUserAttributes = overrideAttributes !== undefined ? overrideAttributes : userAttributes;
             return [finalUserId, finalUserAttributes || {}];
         }
-        return __assign({}, instance, { activate: function (experimentKey, overrideUserId, overrideAttributes) {
+        return Object.assign(Object.create(instance), {
+            activate: function (experimentKey, overrideUserId, overrideAttributes) {
                 return instance.activate.apply(instance, [experimentKey].concat(getUserIdAndAttributes(overrideUserId, overrideAttributes)));
             },
             getVariation: function (experimentKey, overrideUserId, overrideAttributes) {
@@ -1371,7 +1372,8 @@
                 }
                 var _a = getUserIdAndAttributes(overrideUserId, overrideAttributes), userId = _a[0], attributes = _a[1];
                 return instance.track(eventKey, userId, attributes, eventTags);
-            } });
+            },
+        });
     }
 
     var OptimizelyProvider = /** @class */ (function (_super) {

@@ -7,14 +7,33 @@ import {
   OptimizelyFeature,
   OptimizelyExperiment,
   OptimizelyVariation,
+  withOptimizely,
 } from '@optimizely/react-sdk'
+
+class TrackerButton extends React.Component {
+  componentDidMount() {
+    const { optimizely } = this.props
+    console.log(optimizely)
+    debugger
+  }
+
+  render() {
+    return <h3>{this.props.text}</h3>
+  }
+}
+const OptimizelyTrackerButton = withOptimizely(TrackerButton)
 
 class App extends Component {
   render() {
     return (
-      <OptimizelyProvider optimizely={this.props.optimizely} timeout={200}>
+      <OptimizelyProvider
+        optimizely={this.props.optimizely}
+        timeout={200}
+        userId="jordan"
+      >
         <div>
           <h1>Test app: React 16</h1>
+          <OptimizelyTrackerButton text="Jordan" />
           <OptimizelyFeature feature="feature1">
             {(isEnabled, variables) => (
               <div>

@@ -195,12 +195,11 @@ import { OptimizelyExperiment, OptimizelyVariation } from '@optimizely/react-sdk
 
 
 ### Programmatic access inside component
-Any component under the `<OptimizelyProvider>` can get access to the optimizely js-web-sdk via the HoC / decorator `@withOptimizely`
+Any component under the `<OptimizelyProvider>` can get access to the optimizely js-web-sdk via the HoC `withOptimizely`
 
 ```jsx
 import { withOptimizely } from '@optimizely/react-sdk`
 
-@withOptimizely
 class MyComp extends React.Component {
   constructor(props) {
     super(props)
@@ -218,20 +217,16 @@ class MyComp extends React.Component {
   }
 }
 
-// or alternatively (if decorators arent enabled)
 const WrappedMyComponent = withOptimizely(MyComp)
 ```
 
 
-
-
 ## Tracking
-Tracking is easy with the `withOptimizely` HoC / decorator.
+Tracking is easy with the `withOptimizely` HoC.
 
 ```jsx
 import { withOptimizely } from '@optimizely/react-sdk`
 
-@withOptimizely
 class SignupButton extends React.Component {
   onClick = () => {
     const { optimizely } = this.props
@@ -245,4 +240,6 @@ class SignupButton extends React.Component {
     </button>
   }
 }
+
+const WrappedSignupButton = withOptimizely(SignupButton)
 ```
