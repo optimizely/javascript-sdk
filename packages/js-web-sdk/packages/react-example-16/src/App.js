@@ -11,14 +11,29 @@ import {
 } from '@optimizely/react-sdk'
 
 class TrackerButton extends React.Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      variation: null,
+    }
+  }
+
   componentDidMount() {
-    const { optimizely } = this.props
-    console.log(optimizely)
-    debugger
+    const { optimizely, experimentKey } = this.props
+
+    optimizely.onReady().then(() => {
+      const variation = optimizely.getVariation(experimentKey)
+      this.setState({ variation })
+    })
+  }
+
+  track = () => {
+    this.props.optimizely.track('win')
   }
 
   render() {
-    return <h3>{this.props.text}</h3>
+    return <button onClick={this.track}>{JSON.stringify(this.state.variation)}</button>
   }
 }
 const OptimizelyTrackerButton = withOptimizely(TrackerButton)
@@ -33,7 +48,7 @@ class App extends Component {
       >
         <div>
           <h1>Test app: React 16</h1>
-          <OptimizelyTrackerButton text="Jordan" />
+          <OptimizelyTrackerButton experimentKey="cat_size" />
           <OptimizelyFeature feature="feature1">
             {(isEnabled, variables) => (
               <div>
