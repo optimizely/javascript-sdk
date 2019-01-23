@@ -8,11 +8,8 @@ import optimizelyReactSDK, { withOptimizely } from '@optimizely/react-sdk'
 import * as optimizelySDK from '@optimizely/js-web-sdk'
 
 const optimizely = optimizelySDK.createInstance({
-  userId: 'user' + Date.now(),
   sdkKey: 'BsSyVRsUbE3ExgGCJ9w1to',
 })
-
-console.log(withOptimizely)
 
 async function main() {
   ReactDOM.render(<App optimizely={optimizely} />, document.getElementById('root'))

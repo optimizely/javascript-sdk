@@ -26,7 +26,6 @@ export class OptimizelyProvider extends React.Component<
     super(props)
 
     const { optimizely, userId, userAttributes } = props
-    console.log('creating wrapper', userId, userAttributes)
     this.sdkWrapper = createUserWrapper({
       instance: optimizely,
       userId,

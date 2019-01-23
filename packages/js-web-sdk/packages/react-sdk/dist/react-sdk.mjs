@@ -116,7 +116,6 @@ var OptimizelyProvider = /** @class */ (function (_super) {
     function OptimizelyProvider(props) {
         var _this = _super.call(this, props) || this;
         var optimizely = props.optimizely, userId = props.userId, userAttributes = props.userAttributes;
-        console.log('creating wrapper', userId, userAttributes);
         _this.sdkWrapper = createUserWrapper({
             instance: optimizely,
             userId: userId,
