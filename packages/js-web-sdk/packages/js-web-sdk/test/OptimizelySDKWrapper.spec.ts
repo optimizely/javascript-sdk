@@ -4,8 +4,22 @@ import * as optimizelySDK from '@optimizely/optimizely-sdk'
 import { OptimizelySDKWrapper, OptimizelySDKWrapperConfig } from '../src/OptimizelySDKWrapper'
 import { assert } from 'chai'
 import * as sinon from 'sinon'
-import * as nock from 'nock'
 import { datafile } from './testData'
+
+function getControlledOutputSDKWrapper(config: OptimizelySDKWrapperConfig): OptimizelySDKWrapper {
+  const controlledConfig = {
+    ...config,
+    eventDispatcher: {
+      dispatchEvent() {
+      },
+    },
+    logger: {
+      log() {
+      },
+    },
+  }
+  return new OptimizelySDKWrapper(controlledConfig)
+}
 
 /**
  * DRY function to test the public OptimizelySDKWrapper API, this is to ensure parity with existing
@@ -21,7 +35,7 @@ import { datafile } from './testData'
  */
 function testPublicApi(userId: string, createOptimizelyFn: () => Promise<OptimizelySDKWrapper>): void {
   let optimizely: OptimizelySDKWrapper
-  const sandbox = sinon.sandbox.create()
+  const sandbox = sinon.createSandbox()
   afterEach(function() {
     sandbox.reset()
   })
@@ -612,7 +626,7 @@ function testPublicApi(userId: string, createOptimizelyFn: () => Promise<Optimiz
 }
 
 describe('OptimizelySDKWrapper blackbox tests', function() {
-  const sandbox = sinon.sandbox.create()
+  const sandbox = sinon.createSandbox()
   this.afterEach(function() {
     sandbox.reset()
   })
@@ -666,7 +680,7 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
 
   describe('initializing a static Datafile with no userId', function() {
     it('instantiate successfully and be immediately initailized', function() {
-      const optimizely = new OptimizelySDKWrapper({
+      const optimizely = getControlledOutputSDKWrapper({
         datafile,
       })
       assert.isTrue(optimizely.isInitialized)
@@ -677,7 +691,7 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
     })
 
     it('shold throw an error if userId is not supplied', function() {
-      const optimizely = new OptimizelySDKWrapper({
+      const optimizely = getControlledOutputSDKWrapper({
         datafile,
       })
 
@@ -691,15 +705,20 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
     const userId = 'bob'
 
     it('instantiate successfully and be immediately initailized', function() {
-      const optimizely = new OptimizelySDKWrapper({ datafile, userId })
+      const optimizely = getControlledOutputSDKWrapper({ datafile, userId })
       assert.isTrue(optimizely.isInitialized)
       assert.deepEqual(optimizely.datafile, datafile)
     })
 
     testPublicApi(userId, async function() {
-      return new OptimizelySDKWrapper({ datafile, userId })
+      return getControlledOutputSDKWrapper({ datafile, userId })
     })
   })
+
+  interface DatafileRequestStubs {
+    restore: () => void
+    requests: sinon.SinonFakeXMLHttpRequest[]
+  }
 
   describe('initializing with `datafileUrl` and `userId`', function() {
     const userId = 'bob'
@@ -709,29 +728,53 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
     const datafileUrlPath = `/datafiles/${sdkKey}.json`
     const datafileUrl = `${datafileUrlHost}${datafileUrlPath}`
 
+    function setupDatafileRequestStubs(): DatafileRequestStubs {
+      const xhr = sinon.useFakeXMLHttpRequest()
+      const requests: sinon.SinonFakeXMLHttpRequest[] = []
+      xhr.onCreate = (req) => requests.push(req)
+      // Ignore localStorage caching
+      // TODO: Tests for local storage caching
+      // TODO: Why doesn't this work with the existing sandbox
+      const localStorageStub = sinon.stub(window.localStorage, 'getItem').returns(null)
+      return {
+        requests,
+        restore() {
+          xhr.restore()
+          localStorageStub.restore()
+        }
+      }
+    }
+
     describe('when requesting datafile responds 200', function() {
+      let datafileStubs: DatafileRequestStubs;
       this.beforeEach(function() {
-        nock(datafileUrlHost)
-          .get(datafileUrlPath)
-          .reply(200, datafile)
+        datafileStubs = setupDatafileRequestStubs();
+      })
+
+      this.afterEach(function() {
+        datafileStubs.restore();
       })
 
       it('should wait for datafile loaded and invoke onReady()', async function() {
-        const optimizely: OptimizelySDKWrapper = new OptimizelySDKWrapper({
+        const optimizely: OptimizelySDKWrapper = getControlledOutputSDKWrapper({
           sdkKey,
           userId,
         })
         assert.isFalse(optimizely.isInitialized)
+        assert.equal(datafileStubs.requests.length, 1);
+        datafileStubs.requests[0].respond(200, {}, JSON.stringify(datafile));
         await optimizely.onReady()
         assert.isTrue(optimizely.isInitialized)
       })
 
       describe('after the datafile has been loaded', function() {
         testPublicApi(userId, async function() {
-          const optimizely: OptimizelySDKWrapper = new OptimizelySDKWrapper({
+          const optimizely: OptimizelySDKWrapper = getControlledOutputSDKWrapper({
             sdkKey,
             userId,
           })
+          assert.equal(datafileStubs.requests.length, 1);
+          datafileStubs.requests[0].respond(200, {}, JSON.stringify(datafile));
           await optimizely.onReady()
           return optimizely
         })
@@ -739,33 +782,45 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
     })
 
     describe('when requesting datafile responds 400', function() {
+      let datafileStubs: DatafileRequestStubs;
       this.beforeEach(function() {
-        nock(datafileUrlHost)
-          .get(datafileUrlPath)
-          .reply(400, datafile)
+        datafileStubs = setupDatafileRequestStubs()
+      })
+
+      this.afterEach(function() {
+        datafileStubs.restore();
       })
 
       it('should wait for datafile loaded and invoke onReady()', async function() {
-        const optimizely: OptimizelySDKWrapper = new OptimizelySDKWrapper({
+        const optimizely: OptimizelySDKWrapper = getControlledOutputSDKWrapper({
           sdkKey,
           userId,
         })
         assert.isFalse(optimizely.isInitialized)
+        assert.equal(datafileStubs.requests.length, 1)
+        datafileStubs.requests[0].respond(400, {}, JSON.stringify(datafile))
         const result = await optimizely.onReady()
         assert.isFalse(result)
       })
     })
 
     describe('when requesting the datafile is delayed', function() {
+      let datafileStubs: DatafileRequestStubs
+      let responseTimeoutId: number
       this.beforeEach(function() {
-        nock(datafileUrlHost)
-          .get(datafileUrlPath)
-          .delay(50)
-          .reply(200, datafile)
+        datafileStubs = setupDatafileRequestStubs()
+        responseTimeoutId = window.setTimeout(() => {
+          datafileStubs.requests[0].respond(200, {}, JSON.stringify(datafile))
+        }, 50)
+      })
+
+      this.afterEach(function() {
+        datafileStubs.restore();
+        window.clearTimeout(responseTimeoutId);
       })
 
       it('should race the datafile loading with onReady({ timeout }) option', async function() {
-        const optimizely: OptimizelySDKWrapper = new OptimizelySDKWrapper({
+        const optimizely: OptimizelySDKWrapper = getControlledOutputSDKWrapper({
           sdkKey,
           userId,
         })
@@ -777,7 +832,7 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
       })
 
       it('should race the datafile loading with onReady({ timeout: 0 }) option', async function() {
-        const optimizely: OptimizelySDKWrapper = new OptimizelySDKWrapper({
+        const optimizely: OptimizelySDKWrapper = getControlledOutputSDKWrapper({
           sdkKey,
           userId,
         })
@@ -789,7 +844,7 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
       })
 
       it('should return the result of isInitialized in the promise when failing to load in time', function(done) {
-        const optimizely: OptimizelySDKWrapper = new OptimizelySDKWrapper({
+        const optimizely: OptimizelySDKWrapper = getControlledOutputSDKWrapper({
           sdkKey,
           userId,
         })
@@ -801,7 +856,7 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
       })
 
       it('should return the result of isInitialized in the promise when succeeding to load in time', function(done) {
-        const optimizely: OptimizelySDKWrapper = new OptimizelySDKWrapper({
+        const optimizely: OptimizelySDKWrapper = getControlledOutputSDKWrapper({
           sdkKey,
           userId,
         })
@@ -813,7 +868,7 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
       })
 
       it('should properly initialize if the datafile loads faster', async function() {
-        const optimizely: OptimizelySDKWrapper = new OptimizelySDKWrapper({
+        const optimizely: OptimizelySDKWrapper = getControlledOutputSDKWrapper({
           sdkKey,
           userId,
         })
@@ -827,7 +882,7 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
         const expKey = 'single_variation_test'
         const featureKey = 'feature1'
         it('activate/getVariation should return null', function() {
-          const optimizely: OptimizelySDKWrapper = new OptimizelySDKWrapper({
+          const optimizely: OptimizelySDKWrapper = getControlledOutputSDKWrapper({
             sdkKey,
             userId,
           })
@@ -838,7 +893,7 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
         })
 
         it('isFeatureEnabled should return false', function() {
-          const optimizely: OptimizelySDKWrapper = new OptimizelySDKWrapper({
+          const optimizely: OptimizelySDKWrapper = getControlledOutputSDKWrapper({
             sdkKey,
             userId,
           })
@@ -848,7 +903,7 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
         })
 
         it('getFeatureVariables should return {}', function() {
-          const optimizely: OptimizelySDKWrapper = new OptimizelySDKWrapper({
+          const optimizely: OptimizelySDKWrapper = getControlledOutputSDKWrapper({
             sdkKey,
             userId,
           })
@@ -858,7 +913,7 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
         })
 
         it('getFeatureVariableX should return null', function() {
-          const optimizely: OptimizelySDKWrapper = new OptimizelySDKWrapper({
+          const optimizely: OptimizelySDKWrapper = getControlledOutputSDKWrapper({
             sdkKey,
             userId,
           })
@@ -871,7 +926,7 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
         })
 
         it('getEnabled features should return []', function() {
-          const optimizely: OptimizelySDKWrapper = new OptimizelySDKWrapper({
+          const optimizely: OptimizelySDKWrapper = getControlledOutputSDKWrapper({
             sdkKey,
             userId,
           })
@@ -881,7 +936,7 @@ describe('OptimizelySDKWrapper blackbox tests', function() {
         })
 
         it('should queue up track calls and flush them when initialized', async function() {
-          const optimizely: OptimizelySDKWrapper = new OptimizelySDKWrapper({
+          const optimizely: OptimizelySDKWrapper = getControlledOutputSDKWrapper({
             sdkKey,
             userId,
           })

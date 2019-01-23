@@ -1,5 +1,4 @@
 import { ResourceLoader } from './ResourceManager'
-import { emitter } from 'nock';
 import * as utils from './utils'
 
 export type UserId = string | null

@@ -1,6 +1,5 @@
 import { OptimizelyDatafile } from './Datafile'
 import { ResourceLoader } from './ResourceManager'
-const fetch = require('node-fetch')
 
 export class ProvidedDatafileLoader implements ResourceLoader<OptimizelyDatafile> {
   private datafile: OptimizelyDatafile
@@ -70,17 +69,35 @@ export class FetchUrlDatafileLoader implements ResourceLoader<OptimizelyDatafile
     return (Date.now() - cacheResult.metadata.timestampCached) <= FetchUrlDatafileLoader.MAX_CACHE_AGE_MS
   }
 
+  private static GET_METHOD = 'GET'
+
+  private static READY_STATE_COMPLETE = 4
+
   async fetchDatafile(): Promise<OptimizelyDatafile> {
     const datafileUrl = `https://cdn.optimizely.com/datafiles/${this.sdkKey}.json`
-    const resp = await fetch(datafileUrl, { mode: 'cors' })
-    if (resp.status !== 200) {
-      return Promise.reject(resp)
-    }
+    return new Promise((resolve, reject) => {
+      const req = new XMLHttpRequest()
+      req.open(FetchUrlDatafileLoader.GET_METHOD, datafileUrl, true);
+      req.onreadystatechange = () => {
+        if (req.readyState === FetchUrlDatafileLoader.READY_STATE_COMPLETE) {
+          // TODO: Improve & add more error handling
+          if (req.status >= 400) {
+            reject('Error response fetching datafile')
+            return
+          }
 
-    let datafile: any = await resp.json()
-    // TODO handle errors
-
-    return datafile
+          let datafile
+          try {
+            datafile = JSON.parse(req.response)
+          } catch (e) {
+            reject(`Datafile was not valid JSON. Got: ${req.response}`)
+            return;
+          }
+          resolve(datafile)
+        }
+      }
+      req.send()
+    })
   }
 
   getFromCache(): FetchUrlCacheEntry | null {
