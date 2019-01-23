@@ -123,6 +123,15 @@ exports.LOG_MESSAGES = {
   VARIABLE_REQUESTED_WITH_WRONG_TYPE: '%s: Requested variable type "%s", but variable is of type "%s". Use correct API to retrieve value. Returning None.',
   VALID_BUCKETING_ID: '%s: BucketingId is valid: "%s"',
   BUCKETING_ID_NOT_STRING: '%s: BucketingID attribute is not a string. Defaulted to userId',
+  AUDIENCE_EVALUATION_RESULT: '%s: Audience "%s" evaluated to %s.',
+  AUDIENCE_EVALUATION_RESULT_COMBINED: '%s: Audiences for experiment %s collectively evaluated to %s.',
+  EVALUATING_AUDIENCES: '%s: Evaluating audiences for experiment "%s": "%s".',
+  EVALUATING_AUDIENCE_WITH_CONDITIONS: '%s: Starting to evaluate audience "%s" with conditions: "%s".',
+  MISSING_ATTRIBUTE_VALUE: '%s: Audience condition %s evaluated to UNKNOWN because no value was passed for user attribute "%s".',
+  UNEXPECTED_TYPE: '%s: Audience condition %s evaluated to UNKNOWN because a value of type "%s" was passed for user attribute "%s".',
+  UNEXPECTED_TYPE_NULL: '%s: Audience condition %s evaluated to UNKNOWN because a null value was passed for user attribute "%s".',
+  UNKNOWN_CONDITION_TYPE: '%s: Audience condition "%s" has an unknown condition type. You may need to upgrade to a newer release of the Optimizely SDK.',
+  UNKNOWN_MATCH_TYPE: '%s: Audience condition "%s" uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.',
 };
 
 exports.RESERVED_EVENT_KEYWORDS = {

@@ -14,10 +14,17 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
-var chai = require('chai');
 var customAttributeEvaluator = require('./');
+var enums = require('../../utils/enums');
+var logger = require('../../plugins/logger');
+var sprintf = require('sprintf-js').sprintf;
 
+var chai = require('chai');
+var sinon = require('sinon');
 var assert = chai.assert;
+
+var LOG_LEVEL = enums.LOG_LEVEL;
+var LOG_MESSAGES = enums.LOG_MESSAGES;
 
 var browserConditionSafari = {
   name: 'browser_type',
@@ -41,12 +48,22 @@ var doubleCondition = {
 };
 
 describe('lib/core/custom_attribute_condition_evaluator', function() {
+  var mockLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+
+  beforeEach(function () {
+    sinon.stub(mockLogger, 'log');
+  });
+
+  afterEach(function () {
+    mockLogger.log.restore();
+  });
+
   it('should return true when the attributes pass the audience conditions and no match type is provided', function() {
     var userAttributes = {
       browser_type: 'safari',
     };
 
-    assert.isTrue(customAttributeEvaluator.evaluate(browserConditionSafari, userAttributes));
+    assert.isTrue(customAttributeEvaluator.evaluate(browserConditionSafari, userAttributes, mockLogger));
   });
 
   it('should return false when the attributes do not pass the audience conditions and no match type is provided', function() {
@@ -54,7 +71,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       browser_type: 'firefox',
     };
 
-    assert.isFalse(customAttributeEvaluator.evaluate(browserConditionSafari, userAttributes));
+    assert.isFalse(customAttributeEvaluator.evaluate(browserConditionSafari, userAttributes, mockLogger));
   });
 
   it('should evaluate different typed attributes', function() {
@@ -65,34 +82,59 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       pi_value: 3.14,
     };
 
-    assert.isTrue(customAttributeEvaluator.evaluate(browserConditionSafari, userAttributes));
-    assert.isTrue(customAttributeEvaluator.evaluate(booleanCondition, userAttributes));
-    assert.isTrue(customAttributeEvaluator.evaluate(integerCondition, userAttributes));
-    assert.isTrue(customAttributeEvaluator.evaluate(doubleCondition, userAttributes));
+    assert.isTrue(customAttributeEvaluator.evaluate(browserConditionSafari, userAttributes, mockLogger));
+    assert.isTrue(customAttributeEvaluator.evaluate(booleanCondition, userAttributes, mockLogger));
+    assert.isTrue(customAttributeEvaluator.evaluate(integerCondition, userAttributes, mockLogger));
+    assert.isTrue(customAttributeEvaluator.evaluate(doubleCondition, userAttributes, mockLogger));
   });
 
-  it('should return null when condition has an invalid type property', function() {
+  it('should log and return null when condition has an invalid type property', function() {
     var result = customAttributeEvaluator.evaluate(
       { match: 'exact', name: 'weird_condition', type: 'weird', value: 'hi' },
-      { weird_condition: 'bye' }
+      { weird_condition: 'bye' },
+      mockLogger
     );
     assert.isNull(result);
+    sinon.assert.calledOnce(mockLogger.log);
+    sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
+      sprintf(
+          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition "%s" has an unknown condition type. ' +
+          'You may need to upgrade to a newer release of the Optimizely SDK.',
+          JSON.stringify({ match: 'exact', name: 'weird_condition', type: 'weird', value: 'hi' })
+      )
+    );
   });
 
-  it('should return null when condition has no type property', function() {
+  it('should log and return null when condition has no type property', function() {
     var result = customAttributeEvaluator.evaluate(
       { match: 'exact', name: 'weird_condition', value: 'hi' },
-      { weird_condition: 'bye' }
+      { weird_condition: 'bye' },
+      mockLogger
     );
     assert.isNull(result);
+    sinon.assert.calledOnce(mockLogger.log);
+    sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
+      sprintf(
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition "%s" has an unknown condition type. ' +
+        'You may need to upgrade to a newer release of the Optimizely SDK.',
+        JSON.stringify({ match: 'exact', name: 'weird_condition', value: 'hi' })
+      )
+    );
   });
 
-  it('should return null when condition has an invalid match property', function() {
+  it('should log and return null when condition has an invalid match property', function() {
     var result = customAttributeEvaluator.evaluate(
       { match: 'weird', name: 'weird_condition', type: 'custom_attribute', value: 'hi' },
-      { weird_condition: 'bye' }
+      { weird_condition: 'bye' },
+      mockLogger
     );
     assert.isNull(result);
+    sinon.assert.calledOnce(mockLogger.log);
+    sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
+      sprintf('CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition "%s" uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.',
+      JSON.stringify({ match: 'weird', name: 'weird_condition', type: 'custom_attribute', value: 'hi' })
+      )
+    );
   });
 
   describe('exists match type', function() {
@@ -103,32 +145,33 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
     };
 
     it('should return false if there is no user-provided value', function() {
-      var result = customAttributeEvaluator.evaluate(existsCondition, {});
+      var result = customAttributeEvaluator.evaluate(existsCondition, {}, mockLogger);
       assert.isFalse(result);
+      sinon.assert.notCalled(mockLogger.log);
     });
 
     it('should return false if the user-provided value is undefined', function() {
-      var result = customAttributeEvaluator.evaluate(existsCondition, { input_value: undefined });
+      var result = customAttributeEvaluator.evaluate(existsCondition, { input_value: undefined }, mockLogger);
       assert.isFalse(result);
     });
 
     it('should return false if the user-provided value is null', function() {
-      var result = customAttributeEvaluator.evaluate(existsCondition, { input_value: null });
+      var result = customAttributeEvaluator.evaluate(existsCondition, { input_value: null }, mockLogger);
       assert.isFalse(result);
     });
 
     it('should return true if the user-provided value is a string', function() {
-      var result = customAttributeEvaluator.evaluate(existsCondition, { input_value: 'hi' });
+      var result = customAttributeEvaluator.evaluate(existsCondition, { input_value: 'hi' }, mockLogger);
       assert.isTrue(result);
     });
 
     it('should return true if the user-provided value is a number', function() {
-      var result = customAttributeEvaluator.evaluate(existsCondition, { input_value: 10 });
+      var result = customAttributeEvaluator.evaluate(existsCondition, { input_value: 10 }, mockLogger);
       assert.isTrue(result);
     });
 
     it('should return true if the user-provided value is a boolean', function() {
-      var result = customAttributeEvaluator.evaluate(existsCondition, { input_value: true });
+      var result = customAttributeEvaluator.evaluate(existsCondition, { input_value: true }, mockLogger);
       assert.isTrue(result);
     });
   });
@@ -143,22 +186,41 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       };
 
       it('should return true if the user-provided value is equal to the condition value', function() {
-        var result = customAttributeEvaluator.evaluate(exactStringCondition, { favorite_constellation: 'Lacerta' });
+        var result = customAttributeEvaluator.evaluate(exactStringCondition, { favorite_constellation: 'Lacerta' }, mockLogger);
         assert.isTrue(result);
       });
 
       it('should return false if the user-provided value is not equal to the condition value', function() {
-        var result = customAttributeEvaluator.evaluate(exactStringCondition, { favorite_constellation: 'The Big Dipper' });
+        var result = customAttributeEvaluator.evaluate(exactStringCondition, { favorite_constellation: 'The Big Dipper' }, mockLogger);
         assert.isFalse(result);
       });
 
-      it('should return null if the user-provided value is of a different type than the condition value', function() {
-        var result = customAttributeEvaluator.evaluate(exactStringCondition, { favorite_constellation: false });
+      it('should log and return null if the user-provided value is of a different type than the condition value', function() {
+        var result = customAttributeEvaluator.evaluate(exactStringCondition, { favorite_constellation: false }, mockLogger);
         assert.isNull(result);
+        sinon.assert.calledOnce(mockLogger.log);
+        sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
+          sprintf(
+            'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s evaluated to UNKNOWN because a value of type "%s" was passed for user attribute "%s".',
+            JSON.stringify(exactStringCondition), 'boolean', 'favorite_constellation'
+          )
+        );
       });
 
-      it('should return null if there is no user-provided value', function() {
-        var result = customAttributeEvaluator.evaluate(exactStringCondition, {});
+      it('should log and return null if there is no user-provided value', function() {
+        var result = customAttributeEvaluator.evaluate(exactStringCondition, {}, mockLogger);
+        assert.isNull(result);
+        sinon.assert.calledOnce(mockLogger.log);
+        sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
+          sprintf(
+            'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s evaluated to UNKNOWN because no value was passed for user attribute "%s".',
+            JSON.stringify(exactStringCondition), 'favorite_constellation'
+          )
+        );
+      });
+
+      it('should log and return null if the user-provided value is of a unexpected type', function() {
+        var result = customAttributeEvaluator.evaluate(exactStringCondition, { favorite_constellation: [] }, mockLogger);
         assert.isNull(result);
       });
     });
@@ -172,22 +234,22 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       };
 
       it('should return true if the user-provided value is equal to the condition value', function() {
-        var result = customAttributeEvaluator.evaluate(exactNumberCondition, { lasers_count: 9000 });
+        var result = customAttributeEvaluator.evaluate(exactNumberCondition, { lasers_count: 9000 }, mockLogger);
         assert.isTrue(result);
       });
 
       it('should return false if the user-provided value is not equal to the condition value', function() {
-        var result = customAttributeEvaluator.evaluate(exactNumberCondition, { lasers_count: 8000 });
+        var result = customAttributeEvaluator.evaluate(exactNumberCondition, { lasers_count: 8000 }, mockLogger);
         assert.isFalse(result);
       });
 
       it('should return null if the user-provided value is of a different type than the condition value', function() {
-        var result = customAttributeEvaluator.evaluate(exactNumberCondition, { lasers_count: 'yes' });
+        var result = customAttributeEvaluator.evaluate(exactNumberCondition, { lasers_count: 'yes' }, mockLogger);
         assert.isNull(result);
       });
 
       it('should return null if there is no user-provided value', function() {
-        var result = customAttributeEvaluator.evaluate(exactNumberCondition, {});
+        var result = customAttributeEvaluator.evaluate(exactNumberCondition, {}, mockLogger);
         assert.isNull(result);
       });
 
@@ -198,11 +260,11 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
           type: 'custom_attribute',
           value: Infinity,
         };
-        var result = customAttributeEvaluator.evaluate(invalidValueCondition, { lasers_count: 9000 });
+        var result = customAttributeEvaluator.evaluate(invalidValueCondition, { lasers_count: 9000 }, mockLogger);
         assert.isNull(result);
 
         invalidValueCondition.value = Math.pow(2, 53) + 2;
-        result = customAttributeEvaluator.evaluate(invalidValueCondition, { lasers_count: 9000 });
+        result = customAttributeEvaluator.evaluate(invalidValueCondition, { lasers_count: 9000 }, mockLogger);
         assert.isNull(result);
       });
     });
@@ -216,22 +278,22 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       };
 
       it('should return true if the user-provided value is equal to the condition value', function() {
-        var result = customAttributeEvaluator.evaluate(exactBoolCondition, { did_register_user: false });
+        var result = customAttributeEvaluator.evaluate(exactBoolCondition, { did_register_user: false }, mockLogger);
         assert.isTrue(result);
       });
 
       it('should return false if the user-provided value is not equal to the condition value', function() {
-        var result = customAttributeEvaluator.evaluate(exactBoolCondition, { did_register_user: true });
+        var result = customAttributeEvaluator.evaluate(exactBoolCondition, { did_register_user: true }, mockLogger);
         assert.isFalse(result);
       });
 
       it('should return null if the user-provided value is of a different type than the condition value', function() {
-        var result = customAttributeEvaluator.evaluate(exactBoolCondition, { did_register_user: 10 });
+        var result = customAttributeEvaluator.evaluate(exactBoolCondition, { did_register_user: 10 }, mockLogger);
         assert.isNull(result);
       });
 
       it('should return null if there is no user-provided value', function() {
-        var result = customAttributeEvaluator.evaluate(exactBoolCondition, {});
+        var result = customAttributeEvaluator.evaluate(exactBoolCondition, {}, mockLogger);
         assert.isNull(result);
       });
     });
@@ -248,26 +310,26 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
     it('should return true if the condition value is a substring of the user-provided value', function() {
       var result = customAttributeEvaluator.evaluate(substringCondition, {
         headline_text: 'Limited time, buy now!',
-      });
+      }, mockLogger);
       assert.isTrue(result);
     });
 
     it('should return false if the user-provided value is not a substring of the condition value', function() {
       var result = customAttributeEvaluator.evaluate(substringCondition, {
         headline_text: 'Breaking news!',
-      });
+      }, mockLogger);
       assert.isFalse(result);
     });
 
     it('should return null if the user-provided value is not a string', function() {
       var result = customAttributeEvaluator.evaluate(substringCondition, {
         headline_text: 10,
-      });
+      }, mockLogger);
       assert.isNull(result);
     });
 
     it('should return null if there is no user-provided value', function() {
-      var result = customAttributeEvaluator.evaluate(substringCondition, {});
+      var result = customAttributeEvaluator.evaluate(substringCondition, {}, mockLogger);
       assert.isNull(result);
     });
   });
@@ -283,41 +345,41 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
     it('should return true if the user-provided value is greater than the condition value', function() {
       var result = customAttributeEvaluator.evaluate(gtCondition, {
         meters_travelled: 58.4,
-      });
+      }, mockLogger);
       assert.isTrue(result);
     });
 
     it('should return false if the user-provided value is not greater than the condition value', function() {
       var result = customAttributeEvaluator.evaluate(gtCondition, {
         meters_travelled: 20,
-      });
+      }, mockLogger);
       assert.isFalse(result);
     });
 
     it('should return null if the user-provided value is not a finite number', function() {
       var result = customAttributeEvaluator.evaluate(gtCondition, {
         meters_travelled: 'a long way',
-      });
+      }, mockLogger);
       assert.isNull(result);
 
       result = customAttributeEvaluator.evaluate(gtCondition, {
         meters_travelled: '1000',
-      });
+      }, mockLogger);
       assert.isNull(result);
 
       result = customAttributeEvaluator.evaluate(gtCondition, {
         meters_travelled: Infinity,
-      });
+      }, mockLogger);
       assert.isNull(result);
 
       result = customAttributeEvaluator.evaluate(gtCondition, {
         meters_travelled: Math.pow(2, 53) + 2,
-      });
+      }, mockLogger);
       assert.isNull(result);
     });
 
     it('should return null if there is no user-provided value', function() {
-      var result = customAttributeEvaluator.evaluate(gtCondition, {});
+      var result = customAttributeEvaluator.evaluate(gtCondition, {}, mockLogger);
       assert.isNull(result);
     });
 
@@ -329,15 +391,15 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         type: 'custom_attribute',
         value: Infinity,
       };
-      var result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes);
+      var result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes, mockLogger);
       assert.isNull(result);
 
       invalidValueCondition.value = null;
-      result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes);
+      result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes, mockLogger);
       assert.isNull(result);
 
       invalidValueCondition.value = Math.pow(2, 53) + 2;
-      result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes);
+      result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes, mockLogger);
       assert.isNull(result);
 
     });
@@ -354,41 +416,41 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
     it('should return true if the user-provided value is less than the condition value', function() {
       var result = customAttributeEvaluator.evaluate(ltCondition, {
         meters_travelled: 10,
-      });
+      }, mockLogger);
       assert.isTrue(result);
     });
 
     it('should return false if the user-provided value is not less than the condition value', function() {
       var result = customAttributeEvaluator.evaluate(ltCondition, {
         meters_travelled: 64.64,
-      });
+      }, mockLogger);
       assert.isFalse(result);
     });
 
     it('should return null if the user-provided value is not a finite number', function() {
       var result = customAttributeEvaluator.evaluate(ltCondition, {
         meters_travelled: true,
-      });
+      }, mockLogger);
       assert.isNull(result);
 
       result = customAttributeEvaluator.evaluate(ltCondition, {
         meters_travelled: '48.2',
-      });
+      }, mockLogger);
       assert.isNull(result);
 
       result = customAttributeEvaluator.evaluate(ltCondition, {
         meters_travelled: Infinity,
-      });
+      }, mockLogger);
       assert.isNull(result);
 
       result = customAttributeEvaluator.evaluate(ltCondition, {
         meters_travelled: Math.pow(2, 53) + 2,
-      });
+      }, mockLogger);
       assert.isNull(result);
     });
 
     it('should return null if there is no user-provided value', function() {
-      var result = customAttributeEvaluator.evaluate(ltCondition, {});
+      var result = customAttributeEvaluator.evaluate(ltCondition, {}, mockLogger);
       assert.isNull(result);
     });
 
@@ -400,15 +462,15 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         type: 'custom_attribute',
         value: Infinity,
       };
-      var result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes);
+      var result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes, mockLogger);
       assert.isNull(result);
 
       invalidValueCondition.value = {};
-      result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes);
+      result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes, mockLogger);
       assert.isNull(result);
 
       invalidValueCondition.value = Math.pow(2, 53) + 2;
-      result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes);
+      result = customAttributeEvaluator.evaluate(invalidValueCondition, userAttributes, mockLogger);
       assert.isNull(result);
     });
   });
