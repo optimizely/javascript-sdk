@@ -31,9 +31,6 @@ async function testUrlLoad() {
     userId: 'user',
   })
   optimizely.track('foo', 'jordan')
-  optimizely.track('foo', {
-    revenue: 123
-  })
   optimizely.track('foo', 'jordan', {
     plan_type: 'bronze'
   })

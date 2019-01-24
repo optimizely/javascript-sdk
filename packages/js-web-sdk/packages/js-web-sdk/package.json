@@ -13,7 +13,7 @@
     "test": "tests"
   },
   "scripts": {
-    "tsc": "tsc",
+    "tsc": "rm -rf lib/ && tsc",
     "test": "karma start karma.conf.js --single-run",
     "test:watch": "karma start karma.conf.js",
     "build": "rm -rf dist/ && node ./scripts/build.js",

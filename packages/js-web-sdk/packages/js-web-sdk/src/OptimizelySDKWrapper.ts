@@ -12,13 +12,19 @@ export { VariableValuesObject, VariableValue }
 
 type Partial<T> = { [P in keyof T]?: T[P] }
 
+// TODO use optimizely.UserAttributes when this is fixed in
+// https://github.com/optimizely/javascript-sdk/issues/211
+type UserAttributes = {
+  [attribute: string]: any
+}
+
 export interface OptimizelySDKWrapperConfig extends Partial<optimizely.Config> {
   datafile?: OptimizelyDatafile
   sdkKey?: string
   UNSTABLE_datafileLoader?: ResourceLoader<OptimizelyDatafile>
 
-  attributes?: optimizely.UserAttributes
-  UNSTABLE_attributesLoader?: ResourceLoader<optimizely.UserAttributes>
+  attributes?: UserAttributes
+  UNSTABLE_attributesLoader?: ResourceLoader<UserAttributes>
 
   userId?: string
   UNSTABLE_userIdLoader?: ResourceLoader<UserId>
@@ -27,7 +33,7 @@ export interface OptimizelySDKWrapperConfig extends Partial<optimizely.Config> {
 type TrackEventCallArgs = [
   string,
   string | undefined,
-  optimizely.UserAttributes | undefined,
+  UserAttributes | undefined,
   optimizely.EventTags | undefined
 ]
 
@@ -42,7 +48,7 @@ export class OptimizelySDKWrapper {
 
   public datafile: OptimizelyDatafile | null
   private userId: string | null
-  private attributes: optimizely.UserAttributes
+  private attributes: UserAttributes
 
   private initialConfig: OptimizelySDKWrapperConfig
 
@@ -117,40 +123,38 @@ export class OptimizelySDKWrapper {
    *
    *
    * @param {string} experimentKey
-   * @param {string} [overrideUserId]
-   * @param {optimizely.UserAttributes} [overrideAttributes]
+   * @param {string} [userId]
+   * @param {UserAttributes} [attributes]
    * @returns {(string | null)}
    * @memberof OptimizelySDKWrapper
    */
   public activate(
     experimentKey: string,
-    overrideUserId?: string,
-    overrideAttributes?: optimizely.UserAttributes,
+    userId: string,
+    attributes?: UserAttributes,
   ): string | null {
     if (!this.isInitialized) {
       return null
     }
-    const [userId, attributes] = this.getUserIdAndAttributes(overrideUserId, overrideAttributes)
     return this.instance.activate(experimentKey, userId, attributes)
   }
 
   /**
    *
    * @param {string} experimentKey
-   * @param {string} [overrideUserId]
-   * @param {optimizely.UserAttributes} [overrideAttributes]
+   * @param {string} [userId]
+   * @param {UserAttributes} [attributes]
    * @returns {(string | null)}
    * @memberof OptimizelySDKWrapper
    */
   public getVariation(
     experimentKey: string,
-    overrideUserId?: string,
-    overrideAttributes?: optimizely.UserAttributes,
+    userId: string,
+    attributes?: UserAttributes,
   ): string | null {
     if (!this.isInitialized) {
       return null
     }
-    const [userId, attributes] = this.getUserIdAndAttributes(overrideUserId, overrideAttributes)
     return this.instance.getVariation(experimentKey, userId, attributes)
   }
 
@@ -163,28 +167,21 @@ export class OptimizelySDKWrapper {
    * The first is a shortcut in the case where userId and attributes are stored on the SDK instance
    *
    * @param {string} eventKey
-   * @param {(string | optimizely.EventTags)} [overrideUserId]
-   * @param {optimizely.UserAttributes} [overrideAttributes]
+   * @param {(string | optimizely.EventTags)} [userId]
+   * @param {UserAttributes} [attributes]
    * @param {optimizely.EventTags} [eventTags]
    * @memberof OptimizelySDKWrapper
    */
   public track(
     eventKey: string,
-    overrideUserId?: string | optimizely.EventTags,
-    overrideAttributes?: optimizely.UserAttributes,
+    userId: string,
+    attributes?: UserAttributes,
     eventTags?: optimizely.EventTags,
   ): void {
-    if (typeof overrideUserId !== 'undefined' && typeof overrideUserId !== 'string') {
-      eventTags = overrideUserId
-      overrideUserId = undefined
-      overrideAttributes = undefined
-    }
-
     if (!this.isInitialized) {
-      this.trackEventQueue.push([eventKey, overrideUserId, overrideAttributes, eventTags])
+      this.trackEventQueue.push([eventKey, userId, attributes, eventTags])
       return
     }
-    let [userId, attributes] = this.getUserIdAndAttributes(overrideUserId, overrideAttributes)
     this.instance.track(eventKey, userId, attributes, eventTags)
   }
 
@@ -193,20 +190,19 @@ export class OptimizelySDKWrapper {
    * loaded, this will return `false`
    *
    * @param {string} feature
-   * @param {string} [overrideUserId]
-   * @param {optimizely.UserAttributes} [overrideAttributes]
+   * @param {string} [userId]
+   * @param {UserAttributes} [attributes]
    * @returns {boolean}
    * @memberof OptimizelySDKWrapper
    */
   public isFeatureEnabled(
     feature: string,
-    overrideUserId?: string,
-    overrideAttributes?: optimizely.UserAttributes,
+    userId: string,
+    attributes?: UserAttributes,
   ): boolean {
     if (!this.isInitialized) {
       return false
     }
-    const [userId, attributes] = this.getUserIdAndAttributes(overrideUserId, overrideAttributes)
     return this.instance.isFeatureEnabled(feature, userId, attributes)
   }
 
@@ -214,20 +210,19 @@ export class OptimizelySDKWrapper {
    * Get all variables for a feature, regardless of the feature being enabled/disabled
    *
    * @param {string} feature
-   * @param {string} [overrideUserId]
-   * @param {optimizely.UserAttributes} [overrideAttributes]
+   * @param {string} [userId]
+   * @param {UserAttributes} [attributes]
    * @returns {VariableValuesObject}
    * @memberof OptimizelySDKWrapper
    */
   public getFeatureVariables(
     feature: string,
-    overrideUserId?: string,
-    overrideAttributes?: optimizely.UserAttributes,
+    userId: string,
+    attributes?: UserAttributes,
   ): VariableValuesObject {
     if (!this.isInitialized) {
       return {}
     }
-    const [userId, attributes] = this.getUserIdAndAttributes(overrideUserId, overrideAttributes)
     const variableDefs = this.getVariableDefsForFeature(feature)
     if (!variableDefs) {
       // TODO: error
@@ -261,13 +256,12 @@ export class OptimizelySDKWrapper {
   public getFeatureVariableString(
     feature: string,
     variable: string,
-    overrideUserId?: string,
-    overrideAttributes?: optimizely.UserAttributes,
+    userId: string,
+    attributes?: UserAttributes,
   ): string | null {
     if (!this.isInitialized) {
       return null
     }
-    const [userId, attributes] = this.getUserIdAndAttributes(overrideUserId, overrideAttributes)
 
     return this.instance.getFeatureVariableString(feature, variable, userId, attributes)
   }
@@ -275,13 +269,12 @@ export class OptimizelySDKWrapper {
   public getFeatureVariableBoolean(
     feature: string,
     variable: string,
-    overrideUserId?: string,
-    overrideAttributes?: optimizely.UserAttributes,
+    userId: string,
+    attributes?: UserAttributes,
   ): boolean | null {
     if (!this.isInitialized) {
       return null
     }
-    const [userId, attributes] = this.getUserIdAndAttributes(overrideUserId, overrideAttributes)
 
     return this.instance.getFeatureVariableBoolean(feature, variable, userId, attributes)
   }
@@ -289,13 +282,12 @@ export class OptimizelySDKWrapper {
   public getFeatureVariableInteger(
     feature: string,
     variable: string,
-    overrideUserId?: string,
-    overrideAttributes?: optimizely.UserAttributes,
+    userId: string,
+    attributes?: UserAttributes,
   ): number | null {
     if (!this.isInitialized) {
       return null
     }
-    const [userId, attributes] = this.getUserIdAndAttributes(overrideUserId, overrideAttributes)
 
     return this.instance.getFeatureVariableInteger(feature, variable, userId, attributes)
   }
@@ -303,86 +295,49 @@ export class OptimizelySDKWrapper {
   public getFeatureVariableDouble(
     feature: string,
     variable: string,
-    overrideUserId?: string,
-    overrideAttributes?: optimizely.UserAttributes,
+    userId: string,
+    attributes?: UserAttributes,
   ): number | null {
     if (!this.isInitialized) {
       return null
     }
-    const [userId, attributes] = this.getUserIdAndAttributes(overrideUserId, overrideAttributes)
-
     return this.instance.getFeatureVariableDouble(feature, variable, userId, attributes)
   }
 
   /**
    * Get an array of all enabled features
    *
-   * @param {string} [overrideUserId]
-   * @param {optimizely.UserAttributes} [overrideAttributes]
+   * @param {string} [userId]
+   * @param {UserAttributes} [attributes]
    * @returns {Array<string>}
    * @memberof OptimizelySDKWrapper
    */
-  public getEnabledFeatures(overrideUserId?: string, overrideAttributes?: optimizely.UserAttributes): Array<string> {
+  public getEnabledFeatures(userId: string, attributes?: UserAttributes): Array<string> {
     if (!this.isInitialized) {
       return []
     }
-    const [userId, attributes] = this.getUserIdAndAttributes(overrideUserId, overrideAttributes)
     return this.instance.getEnabledFeatures(userId, attributes)
   }
 
   /**
    * @param {string} experiment
-   * @param {string} [overrideUserId]
+   * @param {string} [userId]
    * @returns {(string | null)}
    * @memberof OptimizelySDKWrapper
    */
-  public getForcedVariation(experiment: string, overrideUserId?: string): string | null {
-    const [userId] = this.getUserIdAndAttributes(overrideUserId)
+  public getForcedVariation(experiment: string, userId: string): string | null {
     return this.instance.getForcedVariation(experiment, userId)
   }
 
   /**
    * @param {string} experiment
-   * @param {string} overrideUserIdOrVariationKey
+   * @param {string} userId
    * @param {string} [variationKey]
    * @returns {boolean}
    * @memberof OptimizelySDKWrapper
    */
-  public setForcedVariation(experiment: string, overrideUserIdOrVariationKey: string, variationKey?: string): boolean {
-    if (typeof variationKey === 'undefined') {
-      const [userId] = this.getUserIdAndAttributes()
-      return this.instance.setForcedVariation(experiment, userId, overrideUserIdOrVariationKey)
-    }
-
-    const [userId] = this.getUserIdAndAttributes(overrideUserIdOrVariationKey)
-
+  public setForcedVariation(experiment: string, userId: string, variationKey: string): boolean {
     return this.instance.setForcedVariation(experiment, userId, variationKey)
-  }
-
-  protected getUserIdAndAttributes(
-    overrideUserId?: string,
-    overrideAttributes?: optimizely.UserAttributes,
-  ): [string, optimizely.UserAttributes] {
-    let userId
-    if (overrideUserId) {
-      userId = overrideUserId
-    } else if (this.userId) {
-      userId = this.userId
-    }
-
-    if (!userId) {
-      // TODO make this a warning
-      throw new Error('No userId supplied')
-    }
-
-    // TODO store this as state when onInitialized is called
-    let attributes = this.attributes
-    if (overrideAttributes) {
-      // should we override or merge attributes here
-      attributes = overrideAttributes
-    }
-
-    return [userId, attributes]
   }
 
   protected getVariableDefsForFeature(feature: string): VariableDef[] | null {
@@ -405,8 +360,8 @@ export class OptimizelySDKWrapper {
     }
   }
 
-  private setupAttributesLoader(config: OptimizelySDKWrapperConfig): ResourceLoader<optimizely.UserAttributes> {
-    let attributesLoader: ResourceLoader<optimizely.UserAttributes>
+  private setupAttributesLoader(config: OptimizelySDKWrapperConfig): ResourceLoader<UserAttributes> {
+    let attributesLoader: ResourceLoader<UserAttributes>
 
     if (config.UNSTABLE_attributesLoader) {
       attributesLoader = config.UNSTABLE_attributesLoader
