@@ -101,5 +101,5 @@ export type Experiment = {
 }
 
 export type VariableValuesObject = {
-  [key: string]: VariableValue
+  [key: string]: VariableValue | null
 }

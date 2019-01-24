@@ -75,13 +75,6 @@ type TrackEventCallArgs = [
  * @implements {IOptimizelySDKWrapper}
  */
 export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
-  static featureVariableGetters = {
-    string: 'getFeatureVariableString',
-    double: 'getFeatureVariableDouble',
-    boolean: 'getFeatureVariableBoolean',
-    integer: 'getFeatureVariableInteger',
-  }
-
   static passthroughConfig: Array<keyof optimizely.Config> = [
     'errorHandler',
     'eventDispatcher',
@@ -289,12 +282,25 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
       return {}
     }
 
-    const variableObj = {}
+    const variableObj: VariableValuesObject = {}
     variableDefs.forEach(({ key, type }) => {
-      const variableGetFnName = OptimizelySDKWrapper.featureVariableGetters[type]
-      const value = variableGetFnName ? this.instance[variableGetFnName](feature, key, userId, attributes) : null
+      switch(type) {
+        case 'string':
+          variableObj[key] = this.instance.getFeatureVariableString(feature, key, userId, attributes)
+          break;
 
-      variableObj[key] = value
+        case 'boolean':
+          variableObj[key] = this.instance.getFeatureVariableBoolean(feature, key, userId, attributes)
+          break
+
+        case 'integer':
+          variableObj[key] = this.instance.getFeatureVariableInteger(feature, key, userId, attributes)
+          break
+
+        case 'double':
+          variableObj[key] = this.instance.getFeatureVariableDouble(feature, key, userId, attributes)
+          break
+      }
     })
 
     return variableObj
@@ -490,19 +496,6 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
     }
   }
 
-  /**
-   * Get options passed in to initialConfig to instantiate every new client with
-   */
-  private getInstantiationOptions(): Partial<{[k in keyof optimizely.Config]: any}> {
-    const opts = {}
-    OptimizelySDKWrapper.passthroughConfig.forEach(key => {
-      if (this.initialConfig[key]) {
-        opts[key] = this.initialConfig[key]
-      }
-    })
-    return opts
-  }
-
   private onInitialized() {
     const datafile = this.resourceManager.datafile.value
     this.userId = this.resourceManager.userId.value || null
@@ -518,8 +511,8 @@ export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
 
     this.isInitialized = true
     this.instance = optimizely.createInstance({
+      ...this.initialConfig,
       datafile: this.datafile,
-      ...this.getInstantiationOptions(),
     })
     // TODO: make sure this is flushed after notification listeners can be added
     this.flushTrackEventQueue()
