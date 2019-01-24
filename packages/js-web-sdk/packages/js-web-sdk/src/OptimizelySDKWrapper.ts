@@ -108,10 +108,8 @@ export class OptimizelySDKWrapper {
   }
 
   /**
-   *
-   *
    * @param {string} experimentKey
-   * @param {string} [userId]
+   * @param {string} userId
    * @param {UserAttributes} [attributes]
    * @returns {(string | null)}
    * @memberof OptimizelySDKWrapper
@@ -129,8 +127,9 @@ export class OptimizelySDKWrapper {
 
   /**
    *
+   *
    * @param {string} experimentKey
-   * @param {string} [userId]
+   * @param {string} userId
    * @param {UserAttributes} [attributes]
    * @returns {(string | null)}
    * @memberof OptimizelySDKWrapper
@@ -147,15 +146,8 @@ export class OptimizelySDKWrapper {
   }
 
   /**
-   *
-   * Track an event, this method can take two signatures
-   * 1) track(eventKey, eventTags?)
-   * 2) track(eventKey, overrideUserId?, overrideAttributes?, eventTags?)
-   *
-   * The first is a shortcut in the case where userId and attributes are stored on the SDK instance
-   *
    * @param {string} eventKey
-   * @param {(string | optimizely.EventTags)} [userId]
+   * @param {string} userId
    * @param {UserAttributes} [attributes]
    * @param {optimizely.EventTags} [eventTags]
    * @memberof OptimizelySDKWrapper
@@ -178,7 +170,7 @@ export class OptimizelySDKWrapper {
    * loaded, this will return `false`
    *
    * @param {string} feature
-   * @param {string} [userId]
+   * @param {string} userId
    * @param {UserAttributes} [attributes]
    * @returns {boolean}
    * @memberof OptimizelySDKWrapper
@@ -198,7 +190,7 @@ export class OptimizelySDKWrapper {
    * Get all variables for a feature, regardless of the feature being enabled/disabled
    *
    * @param {string} feature
-   * @param {string} [userId]
+   * @param {string} userId
    * @param {UserAttributes} [attributes]
    * @returns {VariableValuesObject}
    * @memberof OptimizelySDKWrapper
@@ -261,6 +253,14 @@ export class OptimizelySDKWrapper {
     return variableObj
   }
 
+  /**
+   * @param {string} feature
+   * @param {string} variable
+   * @param {string} userId
+   * @param {UserAttributes} [attributes]
+   * @returns {(string | null)}
+   * @memberof OptimizelySDKWrapper
+   */
   public getFeatureVariableString(
     feature: string,
     variable: string,
@@ -274,6 +274,14 @@ export class OptimizelySDKWrapper {
     return this.instance.getFeatureVariableString(feature, variable, userId, attributes)
   }
 
+  /**
+   * @param {string} feature
+   * @param {string} variable
+   * @param {string} userId
+   * @param {UserAttributes} [attributes]
+   * @returns {(boolean | null)}
+   * @memberof OptimizelySDKWrapper
+   */
   public getFeatureVariableBoolean(
     feature: string,
     variable: string,
@@ -287,6 +295,14 @@ export class OptimizelySDKWrapper {
     return this.instance.getFeatureVariableBoolean(feature, variable, userId, attributes)
   }
 
+  /**
+   * @param {string} feature
+   * @param {string} variable
+   * @param {string} userId
+   * @param {UserAttributes} [attributes]
+   * @returns {(number | null)}
+   * @memberof OptimizelySDKWrapper
+   */
   public getFeatureVariableInteger(
     feature: string,
     variable: string,
@@ -300,6 +316,14 @@ export class OptimizelySDKWrapper {
     return this.instance.getFeatureVariableInteger(feature, variable, userId, attributes)
   }
 
+  /**
+   * @param {string} feature
+   * @param {string} variable
+   * @param {string} userId
+   * @param {UserAttributes} [attributes]
+   * @returns {(number | null)}
+   * @memberof OptimizelySDKWrapper
+   */
   public getFeatureVariableDouble(
     feature: string,
     variable: string,
@@ -315,7 +339,7 @@ export class OptimizelySDKWrapper {
   /**
    * Get an array of all enabled features
    *
-   * @param {string} [userId]
+   * @param {string} userId
    * @param {UserAttributes} [attributes]
    * @returns {Array<string>}
    * @memberof OptimizelySDKWrapper
@@ -329,7 +353,7 @@ export class OptimizelySDKWrapper {
 
   /**
    * @param {string} experiment
-   * @param {string} [userId]
+   * @param {string} userId
    * @returns {(string | null)}
    * @memberof OptimizelySDKWrapper
    */
@@ -340,7 +364,7 @@ export class OptimizelySDKWrapper {
   /**
    * @param {string} experiment
    * @param {string} userId
-   * @param {string} [variationKey]
+   * @param {string} variationKey
    * @returns {boolean}
    * @memberof OptimizelySDKWrapper
    */
