@@ -12,44 +12,6 @@ export { VariableValuesObject, VariableValue }
 
 type Partial<T> = { [P in keyof T]?: T[P] }
 
-export interface IOptimizelySDKWrapper {
-  instance: optimizely.Client
-
-  getFeatureVariables: (
-    feature: string,
-    overrideUserId?: string,
-    overrideAttributes?: optimizely.UserAttributes,
-  ) => VariableValuesObject
-  isFeatureEnabled: (
-    feature: string,
-    overrideUserId?: string,
-    overrideAttributes?: optimizely.UserAttributes,
-  ) => boolean
-  activate: (
-    experimentKey: string,
-    overrideUserId?: string,
-    overrideAttributes?: optimizely.UserAttributes,
-  ) => string | null
-  track: (
-    eventKey: string,
-    overrideUserId?: string,
-    overrideAttributes?: optimizely.UserAttributes,
-    eventTags?: optimizely.EventTags,
-  ) => void
-
-  getEnabledFeatures: (overrideUserId?: string, overrideAttributes?: optimizely.UserAttributes) => Array<string>
-
-  getVariation: (
-    experimentKey: string,
-    overrideUserId?: string,
-    overrideAttributes?: optimizely.UserAttributes,
-  ) => string | null
-
-  getForcedVariation: (experimentKey: string, overrideUserId?: string) => string | null
-
-  setForcedVariation: (experimentKey: string, overrideUserId?: string, variationKey?: string) => void
-}
-
 export interface OptimizelySDKWrapperConfig extends Partial<optimizely.Config> {
   datafile?: OptimizelyDatafile
   sdkKey?: string
@@ -74,17 +36,7 @@ type TrackEventCallArgs = [
  * @class OptimizelySDKWrapper
  * @implements {IOptimizelySDKWrapper}
  */
-export class OptimizelySDKWrapper implements IOptimizelySDKWrapper {
-  static passthroughConfig: Array<keyof optimizely.Config> = [
-    'errorHandler',
-    'eventDispatcher',
-    'logger',
-    'logLevel',
-    'skipJSONValidation',
-    'jsonSchemaValidator',
-    'userProfileService',
-  ]
-
+export class OptimizelySDKWrapper {
   public instance: optimizely.Client
   public isInitialized: boolean
 
