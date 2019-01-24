@@ -14,10 +14,8 @@
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noImplicitAny": true,
-    "strictNullChecks": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "experimentalDecorators": true
-},
+    "strictNullChecks": true
+  },
   "exclude": [
     "node_modules",
     "build",
