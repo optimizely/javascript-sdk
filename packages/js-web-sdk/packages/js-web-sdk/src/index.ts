@@ -3,7 +3,6 @@ import { OptimizelySDKWrapperConfig, OptimizelySDKWrapper } from './OptimizelySD
 
 export { OptimizelySDKWrapper } from './OptimizelySDKWrapper'
 export { OptimizelyDatafile, VariableValuesObject } from './Datafile'
-export { CookieRandomUserIdLoader } from './UserIdLoaders'
 import * as optimizelyEnums from '@optimizely/optimizely-sdk/lib/utils/enums'
 
 export function createInstance(config: OptimizelySDKWrapperConfig): OptimizelySDKWrapper {

@@ -28,7 +28,6 @@ function testLocalDatafile() {
 async function testUrlLoad() {
   let optimizely = new OptimizelySDKWrapper({
     sdkKey: 'GaXr9RoDhRcqXJm3ruskRa',
-    userId: 'user',
   })
   optimizely.track('foo', 'jordan')
   optimizely.track('foo', 'jordan', {

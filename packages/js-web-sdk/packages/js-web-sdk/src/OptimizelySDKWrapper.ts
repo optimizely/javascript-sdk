@@ -1,10 +1,13 @@
 import * as optimizely from '@optimizely/optimizely-sdk'
-import { OptimizelyDatafile, VariableValue, VariableValuesObject, VariableDef } from './Datafile'
-import { StaticUserIdLoader, UserId } from './UserIdLoaders'
+import {
+  OptimizelyDatafile,
+  VariableValue,
+  VariableValuesObject,
+  VariableDef,
+} from './Datafile'
 import { find } from './utils'
 import { ProvidedDatafileLoader, FetchUrlDatafileLoader } from './DatafileLoaders'
-import { ProvidedAttributesLoader } from './UserAttributesLoaders'
-import { ResourceLoader, ResourceManager } from './ResourceManager'
+import { ResourceLoader, Resource } from './ResourceManager'
 
 // export types
 export { OptimizelyDatafile }
@@ -21,18 +24,11 @@ type UserAttributes = {
 export interface OptimizelySDKWrapperConfig extends Partial<optimizely.Config> {
   datafile?: OptimizelyDatafile
   sdkKey?: string
-  UNSTABLE_datafileLoader?: ResourceLoader<OptimizelyDatafile>
-
-  attributes?: UserAttributes
-  UNSTABLE_attributesLoader?: ResourceLoader<UserAttributes>
-
-  userId?: string
-  UNSTABLE_userIdLoader?: ResourceLoader<UserId>
 }
 
 type TrackEventCallArgs = [
   string,
-  string | undefined,
+  string,
   UserAttributes | undefined,
   optimizely.EventTags | undefined
 ]
@@ -46,9 +42,8 @@ export class OptimizelySDKWrapper {
   public instance: optimizely.Client
   public isInitialized: boolean
 
+  public datafileResource: Resource<OptimizelyDatafile>
   public datafile: OptimizelyDatafile | null
-  private userId: string | null
-  private attributes: UserAttributes
 
   private initialConfig: OptimizelySDKWrapperConfig
 
@@ -56,8 +51,6 @@ export class OptimizelySDKWrapper {
   // promise keeping track of async requests for initializing client instance
   // This will be `datafile` and `attributes`
   private initializingPromise: Promise<any>
-
-  private resourceManager: ResourceManager
 
   /**
    * Creates an instance of OptimizelySDKWrapper.
@@ -70,20 +63,15 @@ export class OptimizelySDKWrapper {
     this.datafile = null
     this.trackEventQueue = []
 
-    this.resourceManager = new ResourceManager({
-      datafile: this.setupDatafileLoader(config),
-      attributes: this.setupAttributesLoader(config),
-      userId: this.setupUserIdLoader(config),
-    })
+    this.datafileResource = this.setupDatafileResource(config)
 
-    if (this.resourceManager.allResourcesLoaded()) {
+    if (this.datafileResource.hasLoaded) {
       this.onInitialized()
       this.initializingPromise = Promise.resolve()
     } else {
-      this.initializingPromise = this.resourceManager.allResourcePromises()
-        .then(() => {
-          this.onInitialized();
-        })
+      this.initializingPromise = this.datafileResource.promise.then(() => {
+        this.onInitialized()
+      })
     }
   }
 
@@ -92,7 +80,7 @@ export class OptimizelySDKWrapper {
    * Returns a promise where the resolved value is a boolean indicating whether
    * the optimizely instance has been initialized.  This only is false when
    * you supply a timeout
-   *
+
    * @param {{ timeout?: number }} [config={}]
    * @returns {Promise<boolean>}
    * @memberof OptimizelySDKWrapper
@@ -231,21 +219,41 @@ export class OptimizelySDKWrapper {
 
     const variableObj: VariableValuesObject = {}
     variableDefs.forEach(({ key, type }) => {
-      switch(type) {
+      switch (type) {
         case 'string':
-          variableObj[key] = this.instance.getFeatureVariableString(feature, key, userId, attributes)
-          break;
+          variableObj[key] = this.instance.getFeatureVariableString(
+            feature,
+            key,
+            userId,
+            attributes,
+          )
+          break
 
         case 'boolean':
-          variableObj[key] = this.instance.getFeatureVariableBoolean(feature, key, userId, attributes)
+          variableObj[key] = this.instance.getFeatureVariableBoolean(
+            feature,
+            key,
+            userId,
+            attributes,
+          )
           break
 
         case 'integer':
-          variableObj[key] = this.instance.getFeatureVariableInteger(feature, key, userId, attributes)
+          variableObj[key] = this.instance.getFeatureVariableInteger(
+            feature,
+            key,
+            userId,
+            attributes,
+          )
           break
 
         case 'double':
-          variableObj[key] = this.instance.getFeatureVariableDouble(feature, key, userId, attributes)
+          variableObj[key] = this.instance.getFeatureVariableDouble(
+            feature,
+            key,
+            userId,
+            attributes,
+          )
           break
       }
     })
@@ -336,7 +344,11 @@ export class OptimizelySDKWrapper {
    * @returns {boolean}
    * @memberof OptimizelySDKWrapper
    */
-  public setForcedVariation(experiment: string, userId: string, variationKey: string): boolean {
+  public setForcedVariation(
+    experiment: string,
+    userId: string,
+    variationKey: string,
+  ): boolean {
     return this.instance.setForcedVariation(experiment, userId, variationKey)
   }
 
@@ -360,20 +372,9 @@ export class OptimizelySDKWrapper {
     }
   }
 
-  private setupAttributesLoader(config: OptimizelySDKWrapperConfig): ResourceLoader<UserAttributes> {
-    let attributesLoader: ResourceLoader<UserAttributes>
-
-    if (config.UNSTABLE_attributesLoader) {
-      attributesLoader = config.UNSTABLE_attributesLoader
-    } else {
-      attributesLoader = new ProvidedAttributesLoader({
-        attributes: config.attributes,
-      })
-    }
-    return attributesLoader
-  }
-
-  private setupDatafileLoader(config: OptimizelySDKWrapperConfig): ResourceLoader<OptimizelyDatafile> {
+  private setupDatafileResource(
+    config: OptimizelySDKWrapperConfig,
+  ): Resource<OptimizelyDatafile> {
     let datafileLoader: ResourceLoader<OptimizelyDatafile>
 
     if (config.datafile) {
@@ -384,29 +385,15 @@ export class OptimizelySDKWrapper {
       datafileLoader = new FetchUrlDatafileLoader({
         sdkKey: config.sdkKey,
       })
-    } else if (config.UNSTABLE_datafileLoader) {
-      datafileLoader = config.UNSTABLE_datafileLoader
     } else {
-      throw new Error('Must supply either "datafile", "SDKKey" or "datafileLoader"')
+      throw new Error('Must supply either "datafile", "SDKKey"')
     }
 
-    return datafileLoader
-  }
-
-  private setupUserIdLoader(config: OptimizelySDKWrapperConfig): ResourceLoader<UserId> {
-    if (config.UNSTABLE_userIdLoader) {
-      return config.UNSTABLE_userIdLoader
-    } else if (config.userId) {
-      return new StaticUserIdLoader(config.userId)
-    } else {
-      return new StaticUserIdLoader(null)
-    }
+    return new Resource(datafileLoader)
   }
 
   private onInitialized() {
-    const datafile = this.resourceManager.datafile.value
-    this.userId = this.resourceManager.userId.value || null
-    this.attributes = this.resourceManager.attributes.value || {}
+    const datafile = this.datafileResource.value
     if (datafile) {
       this.datafile = datafile
     }
