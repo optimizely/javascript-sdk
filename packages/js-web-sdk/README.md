@@ -1,45 +1,175 @@
-# Fullstack Labs
+# JS SDK Wrapper
 
-## Installation
+# What is it
 
-This repo uses Lerna, to install all depedencies run:
+- A backwards compatible wrapper around the JavascriptSDK
+- Provides extendible datafile loading and caching strategies
+- Handles async loading of userId and UserAttributes
+- Provides mechanisms to block rendering / execution until Optimizely is loaeded with a fallback timeout
+- All new features are opt-in, can be used exactly the same way as JavascriptSDK if desired
 
+
+# Datafile loading / management
+
+## Load datafile already on the page
+
+This is the ideal case and prevents a lot of timing issues and complexity, however we realize not all customers will have the ability to this.
+
+```js
+import { Optimizely } from '@optimizely/js-web-sdk'
+const optimizely = new Optimizely({
+  datafile: window.datafile,
+})
+// all calls can happen immediately after (sync)
+optimizely.activate('my-exp', 'user1')
 ```
-lerna bootstrap
+
+## Load datafile by URL
+
+This is not an optimal solution as it requires us to think about timing and ensure that we only call `optimizely` functions after the datafile is loaded or ensure we handle the case where `optimizely` is not ready and we need to delay loading or display a default.
+
+_Asnyc load and wait until datafile is loaded_
+
+```js
+import { Optimizely } from '@optimizely/js-web-sdk'
+
+const optimizely = new Optimizely({
+  SDKKey: 'GaXr9RoDhRcqXJm3ruskRa',
+})
+await optimizely.onReady()
+// datafile is gauranteed to be loaded
+initApp()
 ```
 
-To run an individual project
+The above example may not be great, perhaps you want a gaurantee that the page wont block longer than X milliseconds.
 
+_Asnyc load and wait up til 100ms_
+
+```js
+import { Optimizely } from '@optimizely/js-web-sdk'
+
+const optimizely = new Optimizely({
+  SDKKey: 'GaXr9RoDhRcqXJm3ruskRa',
+})
+// dont block for more than 100sec
+await optimizely.onReady({ timeout: 100 })
+// at this point datafile may or may not be loaded
+// however calls to track will be queued when the datafile is ready
+initApp()
+
+// additionally in other places you can hook into onReady without a timeout
+// to gaurantee optimizely is loaded
+optimizely.onReady().then(() => {
+  // optimizely is gauranteed to be loaded at this point
+})
 ```
-cd packages/PACKAGE_NAME
+
+### Second page load
+
+By default loading the datafile by URL will store the contents of the datafile in `localStorage`, on second page load we are guaranteed to have synchronous access to the datafile.
+
+The underlying DatafileManager will also make a background request to get an updated datafile, however that will not be registered until the next instantiation of `Optimizely` which is usually the next page load.
+
+_When using optimizely async the user will only have to pay the loading cost once on first page load, subsequent page loads are always synchronous_
+
+### Using React
+
+```js
+// ./optimizely.js
+import optimizelySDK from '@optimizely/js-web-sdk'
+
+const optimizely = optimizelySDK.createInstance({
+  SDKKey: 'GaXr9RoDhRcqXJm3ruskRa',
+  userId: window.userId,
+})
+
+export { optimizely }
 ```
 
-and lookup what available commands in in the `package.json` scripts field
+```jsx
+// ./App.jsx
+import React, { Component } from 'react'
+import { optimizely } from './optimizely'
+import {
+  OptimizelyProvider,
+  OptimizelyExperiment,
+} from '@optimizely/react-sdk'
 
-## Packages
+class App extends Component {
+  render() {
+    <OptimizelyProvider optimizely={optimizely} timeout={50}>
+      <OptimizelyExperiment experiment="header-test">
+        {variation =>
+          variation === 'detailed' ? <DetailedHeader /> : <SimpleHeader />
+        }
+      </OptimizelyExperiment>
+    </OptimizelyProvider>
+  }
+}
+```
 
-### JS Web SDK Wrapper
+In the above example, setting `timeout={50}` will allow any Optimizely components to wait up to 50ms for the datafile to load.
 
-[JS Web SDK README](packages/js-web-sdk/)
+_Benefits to the React approach_
+In the case where the datafile is already loaded, either from being on the page already or cached in local storage this approach doesn’t have a flash or a loading spinner.
 
-An OptimizelySDK wrapper targeted for browsers
+On first page load, if the datafile is slow (due to slow connection) it will render the fallback.
 
-### React SDK
+# User management
 
-[React SDK README](packages/react-sdk/)
+## Storing userId and attributes on instance
 
-A collection of components to more easily implement fullstack AB Tests, Feature Test and Feature Variables
+This SDK supports remembering userId and attributes by passing them to instantiation
 
-An OptimizelySDK wrapper targeted for browsers, maintains state of user and attributes as well as supplying a simpler API.
+```js
+import { Optimizely } from '@optimizely/js-web-sdk'
+const optimizely = new Optimizely({
+  datafile: window.datafile,
+  userId: window.userId
+  attibutes: {
+    plan_type: 'silver'
+  }
+})
+// no need to pass userId or attributes
+optimizely.activate('my-exp')
 
-### React Example (TypeScript)
+// you can always override on a per call basis
+optimizely.activate('my-exp', 'otheruser', {
+  plan_type: 'gold',
+})
 
-[React Example TypeScript README](packages/react-example-ts/)
+// However this isn't recommeneded as "track" calls also need to match this
+// TODO: does easy event tracking fix this?
+```
 
-### React Example (React v15)
+## Generating a random user Id and storing in cookie
 
-[React Example (React v15) README](packages/react-example-15/)
+The following code will generate a random userId if the user doesnt already have one saved in a cookie.
 
-### React Example (React v16)
+```js
+import {
+  Optimizely,
+  CookieRandomUserIdLoader,
+} from '@optimizely/js-web-sdk'
 
-[React Example (React v16) README](packages/react-example-16/)
+const optimizely = new Optimizely({
+  datafile: window.datafile,
+  userIdLoader: new CookieRandomUserIdLoader(),
+  attibutes: {
+    plan_type: 'silver'
+  }
+})
+```
+
+## Not managing User IDs
+
+Of course this is totally opt in, you can continue to pass userId into all api calls, the same as the Node Javascript SDK
+
+```js
+import { Optimizely } from '@optimizely/js-web-sdk'
+
+const optimizely = new Optimizely({
+  datafile: window.datafile,
+})
+optimizely.activate('exp1', 'user1')
+```

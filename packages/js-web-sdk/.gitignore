@@ -1,6 +1,4 @@
-node_modules/
-lerna-debug.log
-npm-debug.log
-packages/*/lib
-.idea
-.npmrc
+dist
+coverage
+.nyc_output
+.rpt2_cache
