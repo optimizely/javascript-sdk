@@ -7,7 +7,7 @@
   "license": "ISC",
   "main": "dist/js-web-sdk.js",
   "module": "dist/js-web-sdk.mjs",
-  "typings": "lib/index.d.ts",
+  "typings": "lib/src/index.d.ts",
   "directories": {
     "lib": "lib",
     "test": "tests"
@@ -16,7 +16,7 @@
     "tsc": "rm -rf lib/ && tsc",
     "test": "karma start karma.conf.js --single-run",
     "test:watch": "karma start karma.conf.js",
-    "build": "rm -rf dist/ && node ./scripts/build.js",
+    "build": "rm -rf dist/ && yarn tsc && node ./scripts/build.js",
     "cover": "nyc mocha test/**",
     "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls",
     "prepublishOnly": "npm run build-browser-umd && npm test && npm run test-xbrowser"

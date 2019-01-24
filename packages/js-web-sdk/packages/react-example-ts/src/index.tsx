@@ -7,7 +7,6 @@ import * as optimizelyReactSdk from '@optimizely/react-sdk'
 
 ;(async function () {
   const optimizely = optimizelySdk.createInstance({
-    userId: 'user' + Date.now(),
     sdkKey: 'BsSyVRsUbE3ExgGCJ9w1to',
   })
 
