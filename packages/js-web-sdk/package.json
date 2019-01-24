@@ -22,7 +22,7 @@
     "prepublishOnly": "npm run build-browser-umd && npm test && npm run test-xbrowser"
   },
   "dependencies": {
-    "@optimizely/optimizely-sdk": "^3.0.0-rc2"
+    "@optimizely/optimizely-sdk": "3.0.0-rc2"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",

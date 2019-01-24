@@ -1,0 +1,25 @@
+.App {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.example {
+  width: 500px;
+  margin-bottom: 20px;
+  background: #fdfdfd;
+  border: 1px solid #ddd;
+}
+
+
+.example-title {
+  font-style: italic;
+  padding: 5px;
+  margin: 0px;
+  background: #ddd;
+}
+
+.example-body {
+  padding: 10px 20px;
+}

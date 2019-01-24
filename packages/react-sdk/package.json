@@ -23,7 +23,7 @@
   },
 	"dependencies": {
 		"prop-types": "^15.6.2",
-		"react-broadcast": "^0.7.1"
+		"react-broadcast": "0.7.1"
 	},
 	"peerDependencies": {
 		"react": ">=15 || ^16"
