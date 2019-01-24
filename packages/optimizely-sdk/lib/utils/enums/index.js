@@ -88,6 +88,7 @@ exports.LOG_MESSAGES = {
   ROLLOUT_HAS_NO_EXPERIMENTS: '%s: Rollout of feature %s has no experiments',
   SAVED_VARIATION: '%s: Saved variation "%s" of experiment "%s" for user "%s".',
   SAVED_VARIATION_NOT_FOUND: '%s: User %s was previously bucketed into variation with ID %s for experiment %s, but no matching variation was found.',
+  SET_LOG_LEVEL: '%s: Setting log level to "%s"',
   SHOULD_NOT_DISPATCH_ACTIVATE: '%s: Experiment %s is in "Launched" state. Not activating user.',
   SKIPPING_JSON_VALIDATION: '%s: Skipping JSON schema validation.',
   TRACK_EVENT: '%s: Tracking event %s for user %s.',
@@ -124,6 +125,8 @@ exports.LOG_MESSAGES = {
   VALID_BUCKETING_ID: '%s: BucketingId is valid: "%s"',
   BUCKETING_ID_NOT_STRING: '%s: BucketingID attribute is not a string. Defaulted to userId',
 };
+
+exports.DEFAULT_LOGGER_MESSAGE_TEMPLATE = '%s - %s %s %s';
 
 exports.RESERVED_EVENT_KEYWORDS = {
   REVENUE: 'revenue',
