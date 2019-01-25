@@ -1,4 +1,4 @@
-/// <reference path="../src/OptimizelySDK.d.ts" />
+/// <reference path="../../optimizely-sdk/lib/index.d.ts" />
 /// <reference types="mocha" />
 
 import * as optimizelySDK from '@optimizely/optimizely-sdk'

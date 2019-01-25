@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/js-web-sdk",
-  "version": "3.0.0",
+  "version": "3.0.0-beta1",
   "description": "Wrapper for Optimizely JavscriptSDK",
   "author": "Jordan Garcia <jordan@optimizely.com>",
   "homepage": "",
@@ -19,7 +19,7 @@
     "build": "rm -rf dist/ && yarn tsc && node ./scripts/build.js",
     "cover": "nyc mocha test/**",
     "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls",
-    "prepublishOnly": "npm run build-browser-umd && npm test && npm run test-xbrowser"
+    "prepublishOnly": "npm run test && npm run build"
   },
   "dependencies": {
     "@optimizely/optimizely-sdk": "3.0.0-rc2"
