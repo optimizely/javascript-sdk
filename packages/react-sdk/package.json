@@ -14,7 +14,10 @@
 		"test": "__tests__"
 	},
 	"files": [
-		"lib"
+		"dist",
+    "LICENSE",
+    "CHANGELOG",
+    "README.md"
 	],
 	"scripts": {
 		"tsc": "rm -rf lib/ && tsc",
