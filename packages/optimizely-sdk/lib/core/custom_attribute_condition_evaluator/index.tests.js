@@ -207,6 +207,18 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         );
       });
 
+      it('should log and return null if the user-provided value is null', function() {
+        var result = customAttributeEvaluator.evaluate(exactStringCondition, { favorite_constellation: null }, mockLogger);
+        assert.isNull(result);
+        sinon.assert.calledOnce(mockLogger.log);
+        sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
+          sprintf(
+            'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s evaluated to UNKNOWN because a null value was passed for user attribute "%s".',
+            JSON.stringify(exactStringCondition), 'favorite_constellation'
+          )
+        );
+      });
+
       it('should log and return null if there is no user-provided value', function() {
         var result = customAttributeEvaluator.evaluate(exactStringCondition, {}, mockLogger);
         assert.isNull(result);

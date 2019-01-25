@@ -3568,6 +3568,23 @@ describe('lib/optimizely', function() {
       );
     });
 
+    it('can track an experiment with complex audience conditions', function() {
+      optlyInstance.track('user_signed_up', 'user1', {
+        // Should be included via exact match string audience with id '3468206642', and
+        // exact match boolean audience with id '3468206643'
+        house: 'Gryffindor',
+        should_do_it: true,
+      });
+      sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
+      assert.includeDeepMembers(
+        eventDispatcher.dispatchEvent.getCall(0).args[0].params.visitors[0].attributes,
+        [
+          { entity_id: '594015', key: 'house', type: 'custom', value: 'Gryffindor' },
+          { entity_id: '594017', key: 'should_do_it', type: 'custom', value: true }
+        ]
+      );
+    });
+
     it('can include a user in a rollout with complex audience conditions via isFeatureEnabled', function() {
       var featureEnabled = optlyInstance.isFeatureEnabled('feat2', 'user1', {
         // Should be included via substring match string audience with id '3988293898', and
