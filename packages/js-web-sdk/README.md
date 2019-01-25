@@ -4,7 +4,7 @@
 
 - A backwards compatible wrapper around the JavascriptSDK
 - Provides extendible datafile loading and caching strategies
-- Provides mechanisms to block rendering / execution until Optimizely is loaded with the ability to set a maximum timeout duration
+- Provides mechanisms for only parts of the page to block rendering until Optimizely is loaded (supplying a maximum timeout)
 - All new features are opt-in, can be used exactly the same way as JavascriptSDK if desired
 - Enqueue `track` calls that happen before the datafile is downloaded
 
