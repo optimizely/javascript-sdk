@@ -27,7 +27,7 @@ function getPlugins(env) {
   plugins.push(
     typescript(),
     commonjs({
-      include: /node_modules/
+      include: /node_modules/,
     })
   );
 

@@ -1,4 +1,4 @@
-/// <reference path="./OptimizelySDK.d.ts" />
+/// <reference path="../../optimizely-sdk/lib/index.d.ts" />
 import { OptimizelySDKWrapper } from './OptimizelySDKWrapper';
 export { OptimizelySDKWrapper } from './OptimizelySDKWrapper';
 import * as optimizelyEnums from '@optimizely/optimizely-sdk/lib/utils/enums';

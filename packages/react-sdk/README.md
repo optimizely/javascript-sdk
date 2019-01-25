@@ -69,7 +69,15 @@ class App extends React.Component {
 
 ```
 
-# Setup
+# Installation
+
+To use the `ReactSDK` components you must use the [`@optimizely/js-web-sdk`](../js-web-sdk/) which is an API compatible SDK wrapper build on top of the existing `@optimizely/javascript-sdk`.  `@optimizely/js-web-sdk` adds a few new API methods to enabled greater functionality (async loading and render blocking) with the ReactSDK.
+
+```
+npm install @optimizely/js-web-sdk @optimizely/react-sdk
+```
+
+# Usage
 ## `<OptimizelyProvider>`
 This is required at the root level and leverages React’s `Context` API to allow access to the OptimizelySDKWrapper to components like `<OptimizelyFeature>`  and  `<OptimizelyExperiment>`
 
