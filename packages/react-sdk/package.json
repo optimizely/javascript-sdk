@@ -1,6 +1,6 @@
 {
 	"name": "@optimizely/react-sdk",
-	"version": "0.2.0-beta1",
+	"version": "0.2.0-beta3",
 	"description": "Use Optimizely Feature Flags and AB Tests easily in React with a library of pre-built components",
 	"author": "Jordan Garcia <jordan@gmail.com>",
 	"homepage": "",
@@ -15,25 +15,26 @@
 	},
 	"files": [
 		"dist",
-    "LICENSE",
-    "CHANGELOG",
-    "README.md"
+		"LICENSE",
+		"CHANGELOG",
+		"README.md"
 	],
 	"scripts": {
 		"tsc": "rm -rf lib/ && tsc",
 		"build": "rm -rf dist/ && node ./scripts/build.js",
 		"test": "jest --silent",
-    "prepublishOnly": "npm run test && npm run build"
+		"prepublishOnly": "npm run test && npm run build"
 	},
 	"dependencies": {
 		"prop-types": "^15.6.2",
-		"react-broadcast": "0.7.1"
+		"react-broadcast": "0.7.1",
+		"utility-types": "^2.1.0"
 	},
 	"peerDependencies": {
 		"react": ">=15 || ^16"
 	},
 	"devDependencies": {
-		"@optimizely/js-web-sdk": "3.0.0-beta1",
+		"@optimizely/js-web-sdk": "3.0.0-beta2",
 		"@types/enzyme": "^3.1.15",
 		"@types/enzyme-adapter-react-16": "^1.0.3",
 		"@types/jest": "^23.3.12",
@@ -52,7 +53,6 @@
 		"rollup-plugin-typescript2": "^0.18.1",
 		"rollup-plugin-uglify": "^6.0.1",
 		"ts-jest": "^23.10.5",
-		"tslib": "^1.9.3",
-		"utility-types": "^2.1.0"
+		"tslib": "^1.9.3"
 	}
 }
