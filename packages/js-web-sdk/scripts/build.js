@@ -14,9 +14,9 @@ function exec(command, extraEnv) {
 const packageName = 'js-web-sdk';
 const umdName = 'jsWebSdk'
 
-console.log("\nBuilding ES modules...");
+// console.log("\nBuilding ES modules...");
 
-exec(`./node_modules/.bin/rollup -c scripts/config.js -f es -o dist/${packageName}.mjs`);
+// exec(`./node_modules/.bin/rollup -c scripts/config.js -f es -o dist/${packageName}.mjs`);
 
 console.log("\nBuilding CommonJS modules...");
 

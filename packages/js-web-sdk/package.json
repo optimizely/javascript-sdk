@@ -1,12 +1,11 @@
 {
   "name": "@optimizely/js-web-sdk",
-  "version": "3.0.0-beta2",
+  "version": "3.0.0-beta3",
   "description": "Wrapper for Optimizely JavscriptSDK",
   "author": "Jordan Garcia <jordan@optimizely.com>",
   "homepage": "",
   "license": "ISC",
   "main": "dist/js-web-sdk.js",
-  "module": "dist/js-web-sdk.mjs",
   "typings": "lib/src/index.d.ts",
   "directories": {
     "lib": "lib",
