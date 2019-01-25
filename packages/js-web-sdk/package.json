@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/js-web-sdk",
-  "version": "3.0.0-beta1",
+  "version": "3.0.0-beta2",
   "description": "Wrapper for Optimizely JavscriptSDK",
   "author": "Jordan Garcia <jordan@optimizely.com>",
   "homepage": "",
@@ -75,6 +75,7 @@
   "files": [
     "dist/",
     "lib/",
+    "OptimizelySDK.d.ts",
     "LICENSE",
     "CHANGELOG",
     "README.md"

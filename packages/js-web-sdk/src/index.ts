@@ -1,4 +1,4 @@
-/// <reference path="../../optimizely-sdk/lib/index.d.ts" />
+/// <reference path="../OptimizelySDK.d.ts" />
 import { OptimizelySDKWrapperConfig, OptimizelySDKWrapper } from './OptimizelySDKWrapper'
 
 export { OptimizelySDKWrapper } from './OptimizelySDKWrapper'
