@@ -133,12 +133,12 @@ function getVisitorSnapshot(configObj, eventKey, eventTags, logger) {
 
   if (eventTags) {
     var revenue = eventTagUtils.getRevenueValue(eventTags, logger);
-    if (revenue) {
+    if (revenue !== null) {
       eventDict[enums.RESERVED_EVENT_KEYWORDS.REVENUE] = revenue;
     }
 
     var eventValue = eventTagUtils.getEventValue(eventTags, logger);
-    if (eventValue) {
+    if (eventValue !== null) {
       eventDict[enums.RESERVED_EVENT_KEYWORDS.VALUE] = eventValue;
     }
 

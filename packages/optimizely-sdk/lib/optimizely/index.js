@@ -231,7 +231,6 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
 
       // remove null values from eventTags
       eventTags = this.__filterEmptyValues(eventTags);
-
       var conversionEventOptions = {
         attributes: attributes,
         clientEngine: this.clientEngine,
