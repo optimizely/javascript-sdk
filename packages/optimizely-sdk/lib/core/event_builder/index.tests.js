@@ -1097,7 +1097,7 @@ describe('lib/core/event_builder', function() {
             assert.deepEqual(actualParams, expectedParams);
           });
 
-          it('should include falsy revenue values in the event object', function() {
+          it('should include revenue value of 0 in the event object', function() {
             var expectedParams = {
               url: 'https://logx.optimizely.com/v1/events',
               httpVerb: 'POST',
