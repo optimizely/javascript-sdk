@@ -1097,6 +1097,54 @@ describe('lib/core/event_builder', function() {
             assert.deepEqual(actualParams, expectedParams);
           });
 
+          it('should include revenue value of 0 in the event object', function() {
+            var expectedParams = {
+              url: 'https://logx.optimizely.com/v1/events',
+              httpVerb: 'POST',
+              params: {
+                'client_version': packageJSON.version,
+                'project_id': '111001',
+                'visitors': [{
+                  'attributes': [],
+                  'visitor_id': 'testUser',
+                  'snapshots': [{
+                    'events': [{
+                      'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                      'tags': {
+                        'revenue': 0
+                      },
+                      'timestamp': Math.round(new Date().getTime()),
+                      'revenue': 0,
+                      'key': 'testEvent',
+                      'entity_id': '111095'
+                    }]
+                  }]
+                }],
+                'account_id': '12001',
+                'client_name': 'node-sdk',
+                'revision': '42',
+                'anonymize_ip': false,
+                'enrich_decisions': true,
+              },
+            };
+
+            var eventOptions = {
+              clientEngine: 'node-sdk',
+              clientVersion: packageJSON.version,
+              configObj: configObj,
+              eventKey: 'testEvent',
+              eventTags: {
+                'revenue': 0,
+              },
+              logger: mockLogger,
+              userId: 'testUser',
+            };
+
+            var actualParams = eventBuilder.getConversionEvent(eventOptions);
+
+            assert.deepEqual(actualParams, expectedParams);
+          });
+
           describe('and the revenue value is invalid', function() {
             it('should not include the revenue value in the event object', function() {
               var expectedParams = {
@@ -1190,6 +1238,54 @@ describe('lib/core/event_builder', function() {
               eventTags: {
                 'value': '13.37',
                 'non-revenue': 'cool',
+              },
+              logger: mockLogger,
+              userId: 'testUser',
+            };
+
+            var actualParams = eventBuilder.getConversionEvent(eventOptions);
+
+            assert.deepEqual(actualParams, expectedParams);
+          });
+
+          it('should include the falsy event values in the event object', function() {
+            var expectedParams = {
+              url: 'https://logx.optimizely.com/v1/events',
+              httpVerb: 'POST',
+              params: {
+                'client_version': packageJSON.version,
+                'project_id': '111001',
+                'visitors': [{
+                  'attributes': [],
+                  'visitor_id': 'testUser',
+                  'snapshots': [{
+                    'events': [{
+                      'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                      'tags': {
+                        'value': '0.0'
+                      },
+                      'timestamp': Math.round(new Date().getTime()),
+                      'value': 0.0,
+                      'key': 'testEvent',
+                      'entity_id': '111095'
+                    }]
+                  }]
+                }],
+                'account_id': '12001',
+                'client_name': 'node-sdk',
+                'revision': '42',
+                'anonymize_ip': false,
+                'enrich_decisions': true,
+              },
+            };
+
+            var eventOptions = {
+              clientEngine: 'node-sdk',
+              clientVersion: packageJSON.version,
+              configObj: configObj,
+              eventKey: 'testEvent',
+              eventTags: {
+                'value': '0.0',
               },
               logger: mockLogger,
               userId: 'testUser',

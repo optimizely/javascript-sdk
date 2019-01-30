@@ -15,6 +15,9 @@
  */
 var fns = require('../../utils/fns');
 var enums = require('../../utils/enums');
+var sprintf = require('sprintf-js').sprintf;
+
+var MODULE_NAME = 'DEFAULT_LOGGER';
 
 /**
  * Default logger implementation
@@ -37,9 +40,9 @@ function Logger(config) {
     prefix: '[OPTIMIZELY]',
   }, config);
 
-  this.setLogLevel(config.logLevel);
   this.logToConsole = config.logToConsole;
   this.prefix = config.prefix;
+  this.setLogLevel(config.logLevel);
 }
 
 /**
@@ -50,7 +53,11 @@ function Logger(config) {
 Logger.prototype.log = function(logLevel, logMessage) {
   if (this.__shouldLog(logLevel)) {
     if (this.prefix) {
-      logMessage = this.prefix + ' - ' + this.logLevelName + ' ' + getTime() + ' ' + logMessage;
+      var logLevelName = getLogLevelName(logLevel);
+      logMessage = sprintf(
+        enums.DEFAULT_LOGGER_MESSAGE_TEMPLATE,
+        this.prefix, logLevelName, getTime(), logMessage
+      );
     }
 
     if (this.logToConsole) {
@@ -66,8 +73,8 @@ Logger.prototype.log = function(logLevel, logMessage) {
 Logger.prototype.setLogLevel = function(logLevel) {
   // Check that logLevel is valid, otherwise default to ERROR
   this.logLevel = (fns.values(enums.LOG_LEVEL).indexOf(logLevel) > -1) ? logLevel : enums.LOG_LEVEL.ERROR;
-  this.logLevelName = getLogLevelName(this.logLevel);
-  this.log('Setting log level to ' + logLevel);
+  var logLevelName = getLogLevelName(this.logLevel);
+  this.log(enums.LOG_LEVEL.DEBUG, sprintf(enums.LOG_MESSAGES.SET_LOG_LEVEL, MODULE_NAME, logLevelName));
 };
 
 /**
@@ -93,7 +100,7 @@ Logger.prototype.__consoleLog = function(logLevel, logArguments) {
       console.log.apply(console, logArguments);
       break;
     case enums.LOG_LEVEL.INFO:
-      console.log.apply(console, logArguments);
+      console.info.apply(console, logArguments);
       break;
     case enums.LOG_LEVEL.WARNING:
       console.warn.apply(console, logArguments);
