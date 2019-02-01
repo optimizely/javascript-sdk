@@ -340,6 +340,30 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       assert.isNull(result);
     });
 
+    it('should return null if the condition value is not a string', function() {
+      var nonStringCondition = {
+        match: 'substring',
+        name: 'headline_text',
+        type: 'custom_attribute',
+        value: 10,
+      };
+
+      var result = customAttributeEvaluator.evaluate(nonStringCondition, {headline_text: 'hello'}, mockLogger);
+      assert.isNull(result);
+    });
+
+    it('should log and return null if the user-provided value is null', function() {
+      var result = customAttributeEvaluator.evaluate(substringCondition, { headline_text: null }, mockLogger);
+      assert.isNull(result);
+      sinon.assert.calledOnce(mockLogger.log);
+      sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
+        sprintf(
+          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s evaluated to UNKNOWN because a null value was passed for user attribute "%s".',
+          JSON.stringify(substringCondition), 'headline_text'
+        )
+      );
+    });
+
     it('should return null if there is no user-provided value', function() {
       var result = customAttributeEvaluator.evaluate(substringCondition, {}, mockLogger);
       assert.isNull(result);
@@ -388,6 +412,18 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         meters_travelled: Math.pow(2, 53) + 2,
       }, mockLogger);
       assert.isNull(result);
+    });
+
+    it('should log and return null if the user-provided value is null', function() {
+      var result = customAttributeEvaluator.evaluate(gtCondition, { meters_travelled: null }, mockLogger);
+      assert.isNull(result);
+      sinon.assert.calledOnce(mockLogger.log);
+      sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
+        sprintf(
+          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s evaluated to UNKNOWN because a null value was passed for user attribute "%s".',
+          JSON.stringify(gtCondition), 'meters_travelled'
+        )
+      );
     });
 
     it('should return null if there is no user-provided value', function() {
@@ -459,6 +495,18 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         meters_travelled: Math.pow(2, 53) + 2,
       }, mockLogger);
       assert.isNull(result);
+    });
+
+    it('should log and return null if the user-provided value is null', function() {
+      var result = customAttributeEvaluator.evaluate(ltCondition, { meters_travelled: null }, mockLogger);
+      assert.isNull(result);
+      sinon.assert.calledOnce(mockLogger.log);
+      sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
+        sprintf(
+          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s evaluated to UNKNOWN because a null value was passed for user attribute "%s".',
+          JSON.stringify(ltCondition), 'meters_travelled'
+        )
+      );
     });
 
     it('should return null if there is no user-provided value', function() {

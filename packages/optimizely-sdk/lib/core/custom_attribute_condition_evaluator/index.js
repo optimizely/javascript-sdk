@@ -156,7 +156,7 @@ function greaterThanEvaluator(condition, userAttributes, logger) {
   }
 
   if (userValue === null) {
-    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), attributeKey));
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName));
     return null;
   }
 
@@ -188,7 +188,7 @@ function lessThanEvaluator(condition, userAttributes, logger) {
   }
 
   if (userValue === null) {
-    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), attributeKey));
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName));
     return null;
   }
 
@@ -220,7 +220,7 @@ function substringEvaluator(condition, userAttributes, logger) {
   }
 
   if (userValue === null) {
-    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), attributeKey));
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName));
     return null;
   }
 
