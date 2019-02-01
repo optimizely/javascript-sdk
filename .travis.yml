@@ -22,7 +22,7 @@ matrix:
 before_install: cd packages/optimizely-sdk
 install: npm install
 addons:
-srcclr: true
+  srcclr: true
 script: npm test
 after_success: npm run coveralls
 
