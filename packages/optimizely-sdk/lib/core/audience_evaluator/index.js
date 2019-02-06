@@ -54,10 +54,10 @@ module.exports = {
     var evaluateAudience = function(audienceId) {
       var audience = audiencesById[audienceId];
       if (audience) {
-        logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.EVALUATING_AUDIENCE_WITH_CONDITIONS, MODULE_NAME, audienceId, JSON.stringify(audience.conditions)));
+        logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.EVALUATING_AUDIENCE, MODULE_NAME, audienceId, JSON.stringify(audience.conditions)));
         var result = conditionTreeEvaluator.evaluate(audience.conditions, evaluateConditionWithUserAttributes);
-        var resultText = result === null ? 'UNKNOWN' : sprintf('%s', result);
-        logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText));
+        var resultText = result === null ? 'UNKNOWN' : result.toString().toUpperCase();
+        logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText));
         return result;
       }
 

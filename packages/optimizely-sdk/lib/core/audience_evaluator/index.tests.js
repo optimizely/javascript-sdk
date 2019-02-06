@@ -218,7 +218,7 @@ describe('lib/core/audience_evaluator', function() {
           sandbox.restore();
         });
 
-        it('returns false if conditionTreeEvaluator.evaluate returns null', function() {
+        it('logs correctly when conditionTreeEvaluator.evaluate returns null', function() {
           conditionTreeEvaluator.evaluate.callsFake(function(conditions, leafEvaluator) {
             return leafEvaluator(conditions[1]);
           });
@@ -232,14 +232,14 @@ describe('lib/core/audience_evaluator', function() {
           assert.strictEqual(
             mockLogger.log.args[0][1],
             sprintf(
-              'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: "%s".',
+              'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: %s.',
               JSON.stringify([ 'and',{ name: 'device_model', value: 'iphone', type: 'custom_attribute' } ])
             )
           );
           assert.strictEqual(mockLogger.log.args[1][1], 'AUDIENCE_EVALUATOR: Audience "1" evaluated to UNKNOWN.');
         });
 
-        it('returns true if conditionTreeEvaluator.evaluate returns true', function() {
+        it('logs correctly when conditionTreeEvaluator.evaluate returns true', function() {
           conditionTreeEvaluator.evaluate.callsFake(function(conditions, leafEvaluator) {
             return leafEvaluator(conditions[1]);
           });
@@ -253,14 +253,14 @@ describe('lib/core/audience_evaluator', function() {
           assert.strictEqual(
             mockLogger.log.args[0][1],
             sprintf(
-              'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: "%s".',
+              'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: %s.',
               JSON.stringify([ 'and',{ name: 'device_model', value: 'iphone', type: 'custom_attribute' } ])
             )
           );
-          assert.strictEqual(mockLogger.log.args[1][1], 'AUDIENCE_EVALUATOR: Audience "1" evaluated to true.');
+          assert.strictEqual(mockLogger.log.args[1][1], 'AUDIENCE_EVALUATOR: Audience "1" evaluated to TRUE.');
         });
 
-        it('returns false if conditionTreeEvaluator.evaluate returns false', function() {
+        it('logs correctly when conditionTreeEvaluator.evaluate returns false', function() {
           conditionTreeEvaluator.evaluate.callsFake(function(conditions, leafEvaluator) {
             return leafEvaluator(conditions[1]);
           });
@@ -274,11 +274,11 @@ describe('lib/core/audience_evaluator', function() {
           assert.strictEqual(
             mockLogger.log.args[0][1],
             sprintf(
-              'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: "%s".',
+              'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: %s.',
               JSON.stringify([ 'and',{ name: 'device_model', value: 'iphone', type: 'custom_attribute' } ])
             )
           );
-          assert.strictEqual(mockLogger.log.args[1][1], 'AUDIENCE_EVALUATOR: Audience "1" evaluated to false.');
+          assert.strictEqual(mockLogger.log.args[1][1], 'AUDIENCE_EVALUATOR: Audience "1" evaluated to FALSE.');
         });
       });
     });
