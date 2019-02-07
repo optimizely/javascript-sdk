@@ -229,13 +229,7 @@ describe('lib/core/audience_evaluator', function() {
           sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes, mockLogger);
           assert.isFalse(result);
           assert.strictEqual(2, mockLogger.log.callCount);
-          assert.strictEqual(
-            mockLogger.log.args[0][1],
-            sprintf(
-              'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: %s.',
-              JSON.stringify([ 'and',{ name: 'device_model', value: 'iphone', type: 'custom_attribute' } ])
-            )
-          );
+          assert.strictEqual(mockLogger.log.args[0][1], 'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: ["and",{"name":"device_model","value":"iphone","type":"custom_attribute"}].');
           assert.strictEqual(mockLogger.log.args[1][1], 'AUDIENCE_EVALUATOR: Audience "1" evaluated to UNKNOWN.');
         });
 
@@ -250,13 +244,7 @@ describe('lib/core/audience_evaluator', function() {
           sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes, mockLogger);
           assert.isTrue(result);
           assert.strictEqual(2, mockLogger.log.callCount);
-          assert.strictEqual(
-            mockLogger.log.args[0][1],
-            sprintf(
-              'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: %s.',
-              JSON.stringify([ 'and',{ name: 'device_model', value: 'iphone', type: 'custom_attribute' } ])
-            )
-          );
+          assert.strictEqual(mockLogger.log.args[0][1], 'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: ["and",{"name":"device_model","value":"iphone","type":"custom_attribute"}].');
           assert.strictEqual(mockLogger.log.args[1][1], 'AUDIENCE_EVALUATOR: Audience "1" evaluated to TRUE.');
         });
 
@@ -271,13 +259,7 @@ describe('lib/core/audience_evaluator', function() {
           sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes, mockLogger);
           assert.isFalse(result);
           assert.strictEqual(2, mockLogger.log.callCount);
-          assert.strictEqual(
-            mockLogger.log.args[0][1],
-            sprintf(
-              'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: %s.',
-              JSON.stringify([ 'and',{ name: 'device_model', value: 'iphone', type: 'custom_attribute' } ])
-            )
-          );
+          assert.strictEqual(mockLogger.log.args[0][1], 'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: ["and",{"name":"device_model","value":"iphone","type":"custom_attribute"}].');
           assert.strictEqual(mockLogger.log.args[1][1], 'AUDIENCE_EVALUATOR: Audience "1" evaluated to FALSE.');
         });
       });

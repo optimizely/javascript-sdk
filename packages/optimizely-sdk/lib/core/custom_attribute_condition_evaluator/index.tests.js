@@ -97,12 +97,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
     assert.isNull(result);
     sinon.assert.calledOnce(mockLogger.log);
     sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
-      sprintf(
-          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s has an unknown condition type. ' +
-          'You may need to upgrade to a newer release of the Optimizely SDK.',
-          JSON.stringify({ match: 'exact', name: 'weird_condition', type: 'weird', value: 'hi' })
-      )
-    );
+      'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"exact","name":"weird_condition","type":"weird","value":"hi"} has an unknown condition type. You may need to upgrade to a newer release of the Optimizely SDK.');
   });
 
   it('should log and return null when condition has no type property', function() {
@@ -114,12 +109,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
     assert.isNull(result);
     sinon.assert.calledOnce(mockLogger.log);
     sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
-      sprintf(
-        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s has an unknown condition type. ' +
-        'You may need to upgrade to a newer release of the Optimizely SDK.',
-        JSON.stringify({ match: 'exact', name: 'weird_condition', value: 'hi' })
-      )
-    );
+      'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"exact","name":"weird_condition","value":"hi"} has an unknown condition type. You may need to upgrade to a newer release of the Optimizely SDK.');
   });
 
   it('should log and return null when condition has an invalid match property', function() {
@@ -131,10 +121,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
     assert.isNull(result);
     sinon.assert.calledOnce(mockLogger.log);
     sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
-      sprintf('CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.',
-      JSON.stringify({ match: 'weird', name: 'weird_condition', type: 'custom_attribute', value: 'hi' })
-      )
-    );
+      'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"weird","name":"weird_condition","type":"custom_attribute","value":"hi"} uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.');
   });
 
   describe('exists match type', function() {
@@ -206,11 +193,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         assert.isNull(result);
         sinon.assert.calledOnce(mockLogger.log);
         sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
-          sprintf(
-            'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s evaluated to UNKNOWN because the condition value is not supported.',
-            JSON.stringify(invalidExactCondition), 'favorite_constellation'
-          )
-        );
+          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"exact","name":"favorite_constellation","type":"custom_attribute","value":[]} evaluated to UNKNOWN because the condition value is not supported.');
       });
 
       it('should log and return null if the user-provided value is of a different type than the condition value', function() {
@@ -218,11 +201,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         assert.isNull(result);
         sinon.assert.calledOnce(mockLogger.log);
         sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
-          sprintf(
-            'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s evaluated to UNKNOWN because a value of type "%s" was passed for user attribute "%s".',
-            JSON.stringify(exactStringCondition), 'boolean', 'favorite_constellation'
-          )
-        );
+          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"exact","name":"favorite_constellation","type":"custom_attribute","value":"Lacerta"} evaluated to UNKNOWN because a value of type "boolean" was passed for user attribute "favorite_constellation".');
       });
 
       it('should log and return null if the user-provided value is null', function() {
@@ -230,23 +209,15 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         assert.isNull(result);
         sinon.assert.calledOnce(mockLogger.log);
         sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG,
-          sprintf(
-            'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s evaluated to UNKNOWN because a null value was passed for user attribute "%s".',
-            JSON.stringify(exactStringCondition), 'favorite_constellation'
-          )
-        );
+          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"exact","name":"favorite_constellation","type":"custom_attribute","value":"Lacerta"} evaluated to UNKNOWN because a null value was passed for user attribute "favorite_constellation".');
       });
 
       it('should log and return null if there is no user-provided value', function() {
         var result = customAttributeEvaluator.evaluate(exactStringCondition, {}, mockLogger);
         assert.isNull(result);
         sinon.assert.calledOnce(mockLogger.log);
-        sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG,
-          sprintf(
-            'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s evaluated to UNKNOWN because no value was passed for user attribute "%s".',
-            JSON.stringify(exactStringCondition), 'favorite_constellation'
-          )
-        );
+        sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG, 
+          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"exact","name":"favorite_constellation","type":"custom_attribute","value":"Lacerta"} evaluated to UNKNOWN because no value was passed for user attribute "favorite_constellation".');
       });
 
       it('should log and return null if the user-provided value is of an unexpected type', function() {
@@ -376,11 +347,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       assert.isNull(result);
       sinon.assert.calledOnce(mockLogger.log);
       sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
-        sprintf(
-          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s evaluated to UNKNOWN because the condition value is not supported.',
-          JSON.stringify(nonStringCondition)
-        )
-      );
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"substring","name":"headline_text","type":"custom_attribute","value":10} evaluated to UNKNOWN because the condition value is not supported.');
     });
 
     it('should log and return null if the user-provided value is null', function() {
@@ -388,11 +355,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       assert.isNull(result);
       sinon.assert.calledOnce(mockLogger.log);
       sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG,
-        sprintf(
-          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s evaluated to UNKNOWN because a null value was passed for user attribute "%s".',
-          JSON.stringify(substringCondition), 'headline_text'
-        )
-      );
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"substring","name":"headline_text","type":"custom_attribute","value":"buy now"} evaluated to UNKNOWN because a null value was passed for user attribute "headline_text".');
     });
 
     it('should return null if there is no user-provided value', function() {
@@ -436,9 +399,9 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
 
       assert.strictEqual(2, mockLogger.log.callCount);
       assert.strictEqual(mockLogger.log.args[0][1],
-          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"gt","name":"meters_travelled","type":"custom_attribute","value":48.2} evaluated to UNKNOWN because a value of type "string" was passed for user attribute "meters_travelled".');
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"gt","name":"meters_travelled","type":"custom_attribute","value":48.2} evaluated to UNKNOWN because a value of type "string" was passed for user attribute "meters_travelled".');
       assert.strictEqual(mockLogger.log.args[1][1],
-          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"gt","name":"meters_travelled","type":"custom_attribute","value":48.2} evaluated to UNKNOWN because a value of type "string" was passed for user attribute "meters_travelled".');
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"gt","name":"meters_travelled","type":"custom_attribute","value":48.2} evaluated to UNKNOWN because a value of type "string" was passed for user attribute "meters_travelled".');
     });
 
     it('should log and return null if the user-provided number value is out of bounds', function() {
@@ -464,11 +427,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       assert.isNull(result);
       sinon.assert.calledOnce(mockLogger.log);
       sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG,
-        sprintf(
-          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s evaluated to UNKNOWN because a null value was passed for user attribute "%s".',
-          JSON.stringify(gtCondition), 'meters_travelled'
-        )
-      );
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"gt","name":"meters_travelled","type":"custom_attribute","value":48.2} evaluated to UNKNOWN because a null value was passed for user attribute "meters_travelled".');
     });
 
     it('should return null if there is no user-provided value', function() {
@@ -497,12 +456,8 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
 
       sinon.assert.calledThrice(mockLogger.log);
       var logMessage = mockLogger.log.args[2][1];
-      assert.strictEqual(logMessage, 
-        sprintf(
-          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s evaluated to UNKNOWN because the condition value is not supported.',
-          JSON.stringify(invalidValueCondition)
-        )
-      );
+      assert.strictEqual(logMessage,
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"gt","name":"meters_travelled","type":"custom_attribute","value":9007199254740994} evaluated to UNKNOWN because the condition value is not supported.');
     });
   });
 
@@ -541,9 +496,9 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
 
       assert.strictEqual(2, mockLogger.log.callCount);
       assert.strictEqual(mockLogger.log.args[0][1],
-          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"lt","name":"meters_travelled","type":"custom_attribute","value":48.2} evaluated to UNKNOWN because a value of type "boolean" was passed for user attribute "meters_travelled".');
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"lt","name":"meters_travelled","type":"custom_attribute","value":48.2} evaluated to UNKNOWN because a value of type "boolean" was passed for user attribute "meters_travelled".');
       assert.strictEqual(mockLogger.log.args[1][1],
-          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"lt","name":"meters_travelled","type":"custom_attribute","value":48.2} evaluated to UNKNOWN because a value of type "string" was passed for user attribute "meters_travelled".');
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"lt","name":"meters_travelled","type":"custom_attribute","value":48.2} evaluated to UNKNOWN because a value of type "string" was passed for user attribute "meters_travelled".');
     });
 
     it('should log and return null if the user-provided number value is out of bounds', function() {
@@ -569,11 +524,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       assert.isNull(result);
       sinon.assert.calledOnce(mockLogger.log);
       sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG,
-        sprintf(
-          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s evaluated to UNKNOWN because a null value was passed for user attribute "%s".',
-          JSON.stringify(ltCondition), 'meters_travelled'
-        )
-      );
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"lt","name":"meters_travelled","type":"custom_attribute","value":48.2} evaluated to UNKNOWN because a null value was passed for user attribute "meters_travelled".');
     });
 
     it('should return null if there is no user-provided value', function() {
@@ -603,11 +554,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       sinon.assert.calledThrice(mockLogger.log);
       var logMessage = mockLogger.log.args[2][1];
       assert.strictEqual(logMessage, 
-        sprintf(
-          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition %s evaluated to UNKNOWN because the condition value is not supported.',
-          JSON.stringify(invalidValueCondition)
-        )
-      );
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"lt","name":"meters_travelled","type":"custom_attribute","value":9007199254740994} evaluated to UNKNOWN because the condition value is not supported.');
     });
   });
 });
