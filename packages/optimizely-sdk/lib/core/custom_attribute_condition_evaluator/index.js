@@ -84,7 +84,7 @@ function evaluate(condition, userAttributes, logger) {
  */
 function isValueValidForExactConditions(value) {
   return typeof value === 'string' || typeof value === 'boolean' ||
-    fns.isFinite(value);
+    fns.isNumber(value);
 }
 
 /**
@@ -105,7 +105,7 @@ function exactEvaluator(condition, userAttributes, logger) {
   var userValue = userAttributes[conditionName];
   var userValueType = typeof userValue;
 
-  if (!isValueValidForExactConditions(conditionValue)) {
+  if (!isValueValidForExactConditions(conditionValue) || (fns.isNumber(conditionValue) && !fns.isFinite(conditionValue))) {
     logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)));
     return null;
   }
@@ -117,6 +117,11 @@ function exactEvaluator(condition, userAttributes, logger) {
 
   if (!isValueValidForExactConditions(userValue) || conditionValueType !== userValueType) {
     logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName));
+    return null;
+  }
+
+  if (fns.isNumber(userValue) && !fns.isFinite(userValue)) {
+    logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName));
     return null;
   }
 
@@ -163,8 +168,13 @@ function greaterThanEvaluator(condition, userAttributes, logger) {
     return null;
   }
 
-  if (!fns.isFinite(userValue)) {
+  if (!fns.isNumber(userValue)) {
     logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName));
+    return null;
+  }
+
+  if (!fns.isFinite(userValue)) {
+    logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName));
     return null;
   }
 
@@ -197,8 +207,13 @@ function lessThanEvaluator(condition, userAttributes, logger) {
     return null;
   }
 
-  if (!fns.isFinite(userValue)) {
+  if (!fns.isNumber(userValue)) {
     logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName));
+    return null;
+  }
+
+  if (!fns.isFinite(userValue)) {
+    logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName));
     return null;
   }
 

@@ -27,7 +27,7 @@ var sprintf = require('sprintf-js').sprintf;
 var testData = require('../../tests/test_data').getTestProjectConfig();
 var testDataWithFeatures = require('../../tests/test_data').getTestProjectConfigWithFeatures();
 var jsonSchemaValidator = require('../../utils/json_schema_validator');
-
+var audienceEvaluator = require('../audience_evaluator');
 
 var chai = require('chai');
 var sinon = require('sinon');
@@ -418,6 +418,16 @@ describe('lib/core/decision_service', function() {
     });
 
     describe('__checkIfUserIsInAudience', function () {
+      var __audienceEvaluateSpy;
+      
+      beforeEach(function() {
+        __audienceEvaluateSpy = sinon.spy(audienceEvaluator, 'evaluate');
+      });
+
+      afterEach(function() {
+        __audienceEvaluateSpy.restore();
+      });
+
       it('should return true when audience conditions are met', function () {
         assert.isTrue(decisionServiceInstance.__checkIfUserIsInAudience('testExperimentWithAudiences', 'testUser', {browser_type: 'firefox'}));
         assert.strictEqual(4, mockLogger.log.callCount);
@@ -427,13 +437,27 @@ describe('lib/core/decision_service', function() {
 
       it('should return true when experiment has no audience', function () {
         assert.isTrue(decisionServiceInstance.__checkIfUserIsInAudience('testExperiment', 'testUser'));
-          assert.strictEqual(2, mockLogger.log.callCount);
-          assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: Evaluating audiences for experiment "testExperiment": [].');
-          assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Audiences for experiment testExperiment collectively evaluated to TRUE.');
+        assert.isTrue(__audienceEvaluateSpy.alwaysReturned(true));
+
+        assert.strictEqual(2, mockLogger.log.callCount);
+        assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: Evaluating audiences for experiment "testExperiment": [].');
+        assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Audiences for experiment testExperiment collectively evaluated to TRUE.');
+      });
+
+      it('should return false when audience conditions can not be evaluated', function() {
+        assert.isFalse(decisionServiceInstance.__checkIfUserIsInAudience('testExperimentWithAudiences', 'testUser'));
+        assert.isTrue(__audienceEvaluateSpy.alwaysReturned(false));
+      
+        assert.strictEqual(6, mockLogger.log.callCount);
+        assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: Evaluating audiences for experiment "testExperimentWithAudiences": ["11154"].');
+        assert.strictEqual(mockLogger.log.args[4][1], 'DECISION_SERVICE: Audiences for experiment testExperimentWithAudiences collectively evaluated to FALSE.');
+        assert.strictEqual(mockLogger.log.args[5][1], 'DECISION_SERVICE: User testUser does not meet conditions to be in experiment testExperimentWithAudiences.');
       });
 
       it('should return false when audience conditions are not met', function () {
         assert.isFalse(decisionServiceInstance.__checkIfUserIsInAudience('testExperimentWithAudiences', 'testUser', {browser_type: 'chrome'}));
+        assert.isTrue(__audienceEvaluateSpy.alwaysReturned(false));
+        
         assert.strictEqual(5, mockLogger.log.callCount);
         assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: Evaluating audiences for experiment "testExperimentWithAudiences": ["11154"].');
         assert.strictEqual(mockLogger.log.args[3][1], 'DECISION_SERVICE: Audiences for experiment testExperimentWithAudiences collectively evaluated to FALSE.');

@@ -249,9 +249,12 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         );
       });
 
-      it('should log and return null if the user-provided value is of a unexpected type', function() {
+      it('should log and return null if the user-provided value is of an unexpected type', function() {
         var result = customAttributeEvaluator.evaluate(exactStringCondition, { favorite_constellation: [] }, mockLogger);
         assert.isNull(result);
+        sinon.assert.calledOnce(mockLogger.log);
+        sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
+          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"exact","name":"favorite_constellation","type":"custom_attribute","value":"Lacerta"} evaluated to UNKNOWN because a value of type "object" was passed for user attribute "favorite_constellation".');
       });
     });
 
@@ -351,11 +354,14 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       assert.isFalse(result);
     });
 
-    it('should return null if the user-provided value is not a string', function() {
+    it('should log and return null if the user-provided value is not a string', function() {
       var result = customAttributeEvaluator.evaluate(substringCondition, {
         headline_text: 10,
       }, mockLogger);
       assert.isNull(result);
+      sinon.assert.calledOnce(mockLogger.log);
+      sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"substring","name":"headline_text","type":"custom_attribute","value":"buy now"} evaluated to UNKNOWN because a value of type "number" was passed for user attribute "headline_text".');
     });
 
     it('should log and return null if the condition value is not a string', function() {
@@ -417,7 +423,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       assert.isFalse(result);
     });
 
-    it('should return null if the user-provided value is not a finite number', function() {
+    it('should log and return null if the user-provided value is not a number', function() {
       var result = customAttributeEvaluator.evaluate(gtCondition, {
         meters_travelled: 'a long way',
       }, mockLogger);
@@ -428,8 +434,16 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       }, mockLogger);
       assert.isNull(result);
 
-      result = customAttributeEvaluator.evaluate(gtCondition, {
-        meters_travelled: Infinity,
+      assert.strictEqual(2, mockLogger.log.callCount);
+      assert.strictEqual(mockLogger.log.args[0][1],
+          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"gt","name":"meters_travelled","type":"custom_attribute","value":48.2} evaluated to UNKNOWN because a value of type "string" was passed for user attribute "meters_travelled".');
+      assert.strictEqual(mockLogger.log.args[1][1],
+          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"gt","name":"meters_travelled","type":"custom_attribute","value":48.2} evaluated to UNKNOWN because a value of type "string" was passed for user attribute "meters_travelled".');
+    });
+
+    it('should log and return null if the user-provided number value is out of bounds', function() {
+      var result = customAttributeEvaluator.evaluate(gtCondition, {
+        meters_travelled: -Infinity,
       }, mockLogger);
       assert.isNull(result);
 
@@ -437,6 +451,12 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         meters_travelled: Math.pow(2, 53) + 2,
       }, mockLogger);
       assert.isNull(result);
+
+      assert.strictEqual(2, mockLogger.log.callCount);
+      assert.strictEqual(mockLogger.log.args[0][1],
+          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"gt","name":"meters_travelled","type":"custom_attribute","value":48.2} evaluated to UNKNOWN because the number value for user attribute "meters_travelled" is not in the range [-2^53, +2^53].');
+      assert.strictEqual(mockLogger.log.args[1][1],
+          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"gt","name":"meters_travelled","type":"custom_attribute","value":48.2} evaluated to UNKNOWN because the number value for user attribute "meters_travelled" is not in the range [-2^53, +2^53].');
     });
 
     it('should log and return null if the user-provided value is null', function() {
@@ -508,7 +528,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       assert.isFalse(result);
     });
 
-    it('should return null if the user-provided value is not a finite number', function() {
+    it('should log and return null if the user-provided value is not a number', function() {
       var result = customAttributeEvaluator.evaluate(ltCondition, {
         meters_travelled: true,
       }, mockLogger);
@@ -519,7 +539,15 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       }, mockLogger);
       assert.isNull(result);
 
-      result = customAttributeEvaluator.evaluate(ltCondition, {
+      assert.strictEqual(2, mockLogger.log.callCount);
+      assert.strictEqual(mockLogger.log.args[0][1],
+          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"lt","name":"meters_travelled","type":"custom_attribute","value":48.2} evaluated to UNKNOWN because a value of type "boolean" was passed for user attribute "meters_travelled".');
+      assert.strictEqual(mockLogger.log.args[1][1],
+          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"lt","name":"meters_travelled","type":"custom_attribute","value":48.2} evaluated to UNKNOWN because a value of type "string" was passed for user attribute "meters_travelled".');
+    });
+
+    it('should log and return null if the user-provided number value is out of bounds', function() {
+      var result = customAttributeEvaluator.evaluate(ltCondition, {
         meters_travelled: Infinity,
       }, mockLogger);
       assert.isNull(result);
@@ -528,6 +556,12 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         meters_travelled: Math.pow(2, 53) + 2,
       }, mockLogger);
       assert.isNull(result);
+
+      assert.strictEqual(2, mockLogger.log.callCount);
+      assert.strictEqual(mockLogger.log.args[0][1],
+          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"lt","name":"meters_travelled","type":"custom_attribute","value":48.2} evaluated to UNKNOWN because the number value for user attribute "meters_travelled" is not in the range [-2^53, +2^53].');
+      assert.strictEqual(mockLogger.log.args[1][1],
+          'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"lt","name":"meters_travelled","type":"custom_attribute","value":48.2} evaluated to UNKNOWN because the number value for user attribute "meters_travelled" is not in the range [-2^53, +2^53].');
     });
 
     it('should log and return null if the user-provided value is null', function() {
