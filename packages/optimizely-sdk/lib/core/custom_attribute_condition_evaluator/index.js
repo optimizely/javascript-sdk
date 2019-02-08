@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2018, Optimizely, Inc. and contributors                        *
+ * Copyright 2018-2019, Optimizely, Inc. and contributors                        *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -15,6 +15,12 @@
  ***************************************************************************/
 
 var fns = require('../../utils/fns');
+var enums = require('../../utils/enums');
+var sprintf = require('sprintf-js').sprintf;
+
+var LOG_LEVEL = enums.LOG_LEVEL;
+var LOG_MESSAGES = enums.LOG_MESSAGES;
+var MODULE_NAME = 'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR';
 
 var CUSTOM_ATTRIBUTE_CONDITION_TYPE = 'custom_attribute';
 
@@ -42,23 +48,32 @@ EVALUATORS_BY_MATCH_TYPE[SUBSTRING_MATCH_TYPE] = substringEvaluator;
 /**
  * Given a custom attribute audience condition and user attributes, evaluate the
  * condition against the attributes.
- * @param {Object}    condition
- * @param {Object}    userAttributes
- * @return {?Boolean} true/false if the given user attributes match/don't match the given condition, null if
- *                    the given user attributes and condition can't be evaluated
+ * @param  {Object}     condition
+ * @param  {Object}     userAttributes
+ * @param  {Object}     logger
+ * @return {?Boolean}   true/false if the given user attributes match/don't match the given condition,
+ *                                      null if the given user attributes and condition can't be evaluated
  */
-function evaluate(condition, userAttributes) {
+function evaluate(condition, userAttributes, logger) {
   if (condition.type !== CUSTOM_ATTRIBUTE_CONDITION_TYPE) {
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNKNOWN_CONDITION_TYPE, MODULE_NAME, JSON.stringify(condition)));
     return null;
   }
 
   var conditionMatch = condition.match;
   if (typeof conditionMatch !== 'undefined' && MATCH_TYPES.indexOf(conditionMatch) === -1) {
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, JSON.stringify(condition)));
+    return null;
+  }
+
+  var attributeKey = condition.name;
+  if (!userAttributes.hasOwnProperty(attributeKey) && conditionMatch != EXISTS_MATCH_TYPE) {
+    logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.MISSING_ATTRIBUTE_VALUE, MODULE_NAME, JSON.stringify(condition), attributeKey));
     return null;
   }
 
   var evaluatorForMatch = EVALUATORS_BY_MATCH_TYPE[conditionMatch] || exactEvaluator;
-  return evaluatorForMatch(condition, userAttributes);
+  return evaluatorForMatch(condition, userAttributes, logger);
 }
 
 /**
@@ -67,30 +82,46 @@ function evaluate(condition, userAttributes) {
  * @param value
  * @returns {Boolean}
  */
-function isValueValidForExactConditions(value) {
+function isValueTypeValidForExactConditions(value) {
   return typeof value === 'string' || typeof value === 'boolean' ||
-    fns.isFinite(value);
+    fns.isNumber(value);
 }
 
 /**
  * Evaluate the given exact match condition for the given user attributes
  * @param   {Object}    condition
  * @param   {Object}    userAttributes
+ * @param   {Object}    logger
  * @return  {?Boolean}  true if the user attribute value is equal (===) to the condition value,
  *                      false if the user attribute value is not equal (!==) to the condition value,
  *                      null if the condition value or user attribute value has an invalid type, or
  *                      if there is a mismatch between the user attribute type and the condition value
  *                      type
  */
-function exactEvaluator(condition, userAttributes) {
+function exactEvaluator(condition, userAttributes, logger) {
   var conditionValue = condition.value;
   var conditionValueType = typeof conditionValue;
-  var userValue = userAttributes[condition.name];
+  var conditionName = condition.name;
+  var userValue = userAttributes[conditionName];
   var userValueType = typeof userValue;
 
-  if (!isValueValidForExactConditions(userValue) ||
-    !isValueValidForExactConditions(conditionValue) ||
-    conditionValueType !== userValueType) {
+  if (!isValueTypeValidForExactConditions(conditionValue) || (fns.isNumber(conditionValue) && !fns.isFinite(conditionValue))) {
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)));
+    return null;
+  }
+
+  if (userValue === null) {
+    logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName));
+    return null;
+  }
+
+  if (!isValueTypeValidForExactConditions(userValue) || conditionValueType !== userValueType) {
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName));
+    return null;
+  }
+
+  if (fns.isNumber(userValue) && !fns.isFinite(userValue)) {
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName));
     return null;
   }
 
@@ -115,16 +146,35 @@ function existsEvaluator(condition, userAttributes) {
  * Evaluate the given greater than match condition for the given user attributes
  * @param   {Object}    condition
  * @param   {Object}    userAttributes
+ * @param   {Object}    logger
  * @returns {?Boolean}  true if the user attribute value is greater than the condition value,
  *                      false if the user attribute value is less than or equal to the condition value,
  *                      null if the condition value isn't a number or the user attribute value
  *                      isn't a number
  */
-function greaterThanEvaluator(condition, userAttributes) {
-  var userValue = userAttributes[condition.name];
+function greaterThanEvaluator(condition, userAttributes, logger) {
+  var conditionName = condition.name;
+  var userValue = userAttributes[conditionName];
+  var userValueType = typeof userValue;
   var conditionValue = condition.value;
 
-  if (!fns.isFinite(userValue) || !fns.isFinite(conditionValue)) {
+  if (!fns.isFinite(conditionValue)) {
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)));
+    return null;
+  }
+
+  if (userValue === null) {
+    logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName));
+    return null;
+  }
+
+  if (!fns.isNumber(userValue)) {
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName));
+    return null;
+  }
+
+  if (!fns.isFinite(userValue)) {
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName));
     return null;
   }
 
@@ -135,16 +185,35 @@ function greaterThanEvaluator(condition, userAttributes) {
  * Evaluate the given less than match condition for the given user attributes
  * @param   {Object}    condition
  * @param   {Object}    userAttributes
+ * @param   {Object}    logger
  * @returns {?Boolean}  true if the user attribute value is less than the condition value,
  *                      false if the user attribute value is greater than or equal to the condition value,
  *                      null if the condition value isn't a number or the user attribute value isn't a
  *                      number
  */
-function lessThanEvaluator(condition, userAttributes) {
+function lessThanEvaluator(condition, userAttributes, logger) {
+  var conditionName = condition.name;
   var userValue = userAttributes[condition.name];
+  var userValueType = typeof userValue;
   var conditionValue = condition.value;
 
-  if (!fns.isFinite(userValue) || !fns.isFinite(conditionValue)) {
+  if (!fns.isFinite(conditionValue)) {
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)));
+    return null;
+  }
+
+  if (userValue === null) {
+    logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName));
+    return null;
+  }
+
+  if (!fns.isNumber(userValue)) {
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName));
+    return null;
+  }
+
+  if (!fns.isFinite(userValue)) {
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName));
     return null;
   }
 
@@ -155,16 +224,30 @@ function lessThanEvaluator(condition, userAttributes) {
  * Evaluate the given substring match condition for the given user attributes
  * @param   {Object}    condition
  * @param   {Object}    userAttributes
+ * @param   {Object}    logger
  * @returns {?Boolean}  true if the condition value is a substring of the user attribute value,
  *                      false if the condition value is not a substring of the user attribute value,
  *                      null if the condition value isn't a string or the user attribute value
  *                      isn't a string
  */
-function substringEvaluator(condition, userAttributes) {
+function substringEvaluator(condition, userAttributes, logger) {
+  var conditionName = condition.name;
   var userValue = userAttributes[condition.name];
+  var userValueType = typeof userValue;
   var conditionValue = condition.value;
 
-  if (typeof userValue !== 'string' || typeof conditionValue !== 'string') {
+  if (typeof conditionValue !== 'string') {
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)));
+    return null;
+  }
+
+  if (userValue === null) {
+    logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName));
+    return null;
+  }
+
+  if (typeof userValue !== 'string') {
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName));
     return null;
   }
 

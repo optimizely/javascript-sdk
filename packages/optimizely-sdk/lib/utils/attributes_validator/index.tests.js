@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2018, Optimizely
+ * Copyright 2016, 2018-2019, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,11 @@ describe('lib/utils/attributes_validator', function() {
         var userAttributes = {
           'null': null,         
           'objects': {a: 'b'},
-          'array': [1, 2, 3]
+          'array': [1, 2, 3],
+          'infinity': Infinity,
+          'negativeInfinity': -Infinity,
+          'NaN': NaN,
+          'outOfBound': Math.pow(2, 53) + 2,
         };
 
         fns.forOwn(userAttributes, function(value, key) {
