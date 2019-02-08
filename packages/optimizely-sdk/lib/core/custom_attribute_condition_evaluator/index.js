@@ -82,7 +82,7 @@ function evaluate(condition, userAttributes, logger) {
  * @param value
  * @returns {Boolean}
  */
-function isValueValidForExactConditions(value) {
+function isValueTypeValidForExactConditions(value) {
   return typeof value === 'string' || typeof value === 'boolean' ||
     fns.isNumber(value);
 }
@@ -105,7 +105,7 @@ function exactEvaluator(condition, userAttributes, logger) {
   var userValue = userAttributes[conditionName];
   var userValueType = typeof userValue;
 
-  if (!isValueValidForExactConditions(conditionValue) || (fns.isNumber(conditionValue) && !fns.isFinite(conditionValue))) {
+  if (!isValueTypeValidForExactConditions(conditionValue) || (fns.isNumber(conditionValue) && !fns.isFinite(conditionValue))) {
     logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)));
     return null;
   }
@@ -115,13 +115,13 @@ function exactEvaluator(condition, userAttributes, logger) {
     return null;
   }
 
-  if (!isValueValidForExactConditions(userValue) || conditionValueType !== userValueType) {
+  if (!isValueTypeValidForExactConditions(userValue) || conditionValueType !== userValueType) {
     logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName));
     return null;
   }
 
   if (fns.isNumber(userValue) && !fns.isFinite(userValue)) {
-    logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName));
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName));
     return null;
   }
 
@@ -174,7 +174,7 @@ function greaterThanEvaluator(condition, userAttributes, logger) {
   }
 
   if (!fns.isFinite(userValue)) {
-    logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName));
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName));
     return null;
   }
 
@@ -213,7 +213,7 @@ function lessThanEvaluator(condition, userAttributes, logger) {
   }
 
   if (!fns.isFinite(userValue)) {
-    logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName));
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName));
     return null;
   }
 
