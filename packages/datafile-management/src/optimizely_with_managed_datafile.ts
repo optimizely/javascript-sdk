@@ -1,35 +1,27 @@
-import { Client, Config, EventTags, NotificationCenter, UserAttributes } from '@optimizely/optimizely-sdk'
+import { Client, Config, EventTags, UserAttributes } from '@optimizely/optimizely-sdk'
 import { Datafile, DatafileManager, ListenerDisposer } from './datafile_manager_types'
-import StaticDatafileManager from './static_datafile_manager'
-import NoopNotificationCenter from './noop_notification_center'
-
-interface OptimizelyWithManagedDatafile extends Client {
-  onReady: Promise<void>
-  close: () => void
-}
+import createStaticDatafileManager from './static_datafile_manager'
+import createDefaultClient from './default_client'
 
 export interface OptimizelyWithManagedDatafileConfig {
-  // TODO: Should make datafile illegal to pass in clientConfig?
-  clientConfig: Partial<Config>
+  clientConfig: Config
   datafile?: Datafile
   sdkKey?: string
   datafileManager?: DatafileManager
-  defaultDatafileManagerFactory: (sdkKey: string) => DatafileManager
+  createDefaultDatafileManager: (sdkKey: string) => DatafileManager
   createInstance: (config: Config) => Client
 }
 
-class Optimizely implements OptimizelyWithManagedDatafile {
+export default class OptimizelyWithManagedDatafile implements Client {
   readonly onReady: Promise<void>
 
-  private readonly datafileManager: DatafileManager
+  private readonly datafileManager: DatafileManager | undefined
 
-  private core: Client | undefined
+  private client: Client
 
   private datafileListenerDisposer: ListenerDisposer | undefined
 
   private createInstance: (config: Config) => Client
-
-  private noopNotificationCenter: NotificationCenter
 
   constructor(config: OptimizelyWithManagedDatafileConfig) {
     const {
@@ -37,27 +29,33 @@ class Optimizely implements OptimizelyWithManagedDatafile {
       createInstance,
       datafile,
       datafileManager,
-      defaultDatafileManagerFactory,
+      createDefaultDatafileManager,
       sdkKey,
     } = config
 
     this.createInstance = createInstance
 
+    this.client = createDefaultClient()
+
     if (sdkKey) {
-      this.datafileManager = defaultDatafileManagerFactory(sdkKey)
-    } else if (datafileManager) {
-      this.datafileManager = this.datafileManager
+      this.datafileManager = createDefaultDatafileManager(sdkKey)
     } else if (datafile) {
-      this.datafileManager = new StaticDatafileManager(datafile)
+      this.datafileManager = createStaticDatafileManager(datafile)
+    } else if (datafileManager) {
+      this.datafileManager = datafileManager
+    } else {
+      // TODO: Log? Reject with error message str?
+      this.onReady = Promise.reject()
+      return
     }
 
-    const managerDatafile = this.datafileManager.get()
-    if (managerDatafile) {
-      this.setupCore(managerDatafile, clientConfig)
+    const datafileFromManager = this.datafileManager.get()
+    if (datafileFromManager) {
+      this.setupClient(datafileFromManager, clientConfig)
       this.onReady = Promise.resolve()
     } else {
       this.onReady = this.datafileManager.onReady.then(freshDatafile => {
-        this.setupCore(freshDatafile, clientConfig)
+        this.setupClient(freshDatafile, clientConfig)
       })
     }
 
@@ -65,6 +63,8 @@ class Optimizely implements OptimizelyWithManagedDatafile {
     // Or, use it and dont put datafile in the main config?
 
     // TODO: Need to do runtime config validation because we get consumed by regular JS?
+
+    // TODO: Logging
   }
 
   activate(
@@ -72,7 +72,7 @@ class Optimizely implements OptimizelyWithManagedDatafile {
     userId: string,
     attributes?: UserAttributes,
   ): string | null {
-    return null
+    return this.client.activate(experimentKey, userId, attributes)
   }
 
   getVariation(
@@ -80,7 +80,7 @@ class Optimizely implements OptimizelyWithManagedDatafile {
     userId: string,
     attributes?: UserAttributes,
   ): string | null {
-    return null
+    return this.client.getVariation(experimentKey, userId, attributes)
   }
 
   track(
@@ -89,6 +89,7 @@ class Optimizely implements OptimizelyWithManagedDatafile {
     attributes?: UserAttributes,
     eventTags?: EventTags,
   ): void {
+    return this.client.track(eventKey, userId, attributes, eventTags)
   }
 
   isFeatureEnabled(
@@ -96,11 +97,11 @@ class Optimizely implements OptimizelyWithManagedDatafile {
     userId: string,
     attributes?: UserAttributes,
   ): boolean {
-    return false
+    return this.client.isFeatureEnabled(feature, userId, attributes)
   }
 
   getEnabledFeatures(userId: string, attributes?: UserAttributes): Array<string> {
-    return []
+    return this.client.getEnabledFeatures(userId, attributes)
   }
 
   getFeatureVariableString(
@@ -109,7 +110,7 @@ class Optimizely implements OptimizelyWithManagedDatafile {
     userId: string,
     attributes?: UserAttributes,
   ): string | null {
-    return null
+    return this.client.getFeatureVariableString(feature, variable, userId, attributes)
   }
 
   getFeatureVariableBoolean(
@@ -118,7 +119,7 @@ class Optimizely implements OptimizelyWithManagedDatafile {
     userId: string,
     attributes?: UserAttributes,
   ): boolean | null {
-    return null
+    return this.client.getFeatureVariableBoolean(feature, variable, userId, attributes)
   }
 
   getFeatureVariableInteger(
@@ -127,7 +128,7 @@ class Optimizely implements OptimizelyWithManagedDatafile {
     userId: string,
     attributes?: UserAttributes,
   ): number | null {
-    return null
+    return this.client.getFeatureVariableInteger(feature, variable, userId, attributes)
   }
 
   getFeatureVariableDouble(
@@ -136,11 +137,11 @@ class Optimizely implements OptimizelyWithManagedDatafile {
     userId: string,
     attributes?: UserAttributes,
   ): number | null {
-    return null
+    return this.client.getFeatureVariableDouble(feature, variable, userId, attributes)
   }
 
   getForcedVariation(experiment: string, userId: string): string | null {
-    return null
+    return this.client.getVariation(experiment, userId)
   }
 
   setForcedVariation(
@@ -148,17 +149,11 @@ class Optimizely implements OptimizelyWithManagedDatafile {
     userId: string,
     variationKey: string,
   ): boolean {
-    return false
+    return this.client.setForcedVariation(experiment, userId, variationKey)
   }
 
   get notificationCenter() {
-    if (this.core) {
-      return this.core.notificationCenter
-    }
-    if (!this.noopNotificationCenter) {
-      this.noopNotificationCenter = new NoopNotificationCenter()
-    }
-    return this.noopNotificationCenter
+    return this.client.notificationCenter
   }
 
   close(): void {
@@ -167,19 +162,19 @@ class Optimizely implements OptimizelyWithManagedDatafile {
     }
   }
 
-  private setupCore(datafile: Datafile, clientConfig: Partial<Config>): void {
-    this.core = this.createInstance({
+  private setupClient(datafile: Datafile, clientConfig: Config): void {
+    this.client = this.createInstance({
       ...clientConfig,
       datafile,
     })
 
-    this.datafileListenerDisposer = this.datafileManager.onUpdate(nextDatafile => {
-      this.core = this.createInstance({
-        ...clientConfig,
-        datafile: nextDatafile,
+    if (this.datafileManager) {
+      this.datafileListenerDisposer = this.datafileManager.onUpdate(nextDatafile => {
+        this.client = this.createInstance({
+          ...clientConfig,
+          datafile: nextDatafile,
+        })
       })
-    })
+    }
   }
 }
-
-export default Optimizely

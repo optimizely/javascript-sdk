@@ -22,4 +22,6 @@ class StaticDatafileManager implements DatafileManager {
   }
 }
 
-export default StaticDatafileManager
+export default function createStaticDatafileManager(datafile: Datafile) {
+  return new StaticDatafileManager(datafile)
+}

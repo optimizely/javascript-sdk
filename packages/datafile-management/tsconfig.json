@@ -2,11 +2,12 @@
   "compilerOptions": {
     "outDir": "./dist",
     "lib": ["es2015"],
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noImplicitAny": true,
-    "importHelpers": false,
-    "strictNullChecks": true,
+    "strict": true,
+    // "noImplicitReturns": true,
+    // "noImplicitThis": true,
+    // "noImplicitAny": true,
+    // "importHelpers": false,
+    // "strictNullChecks": true,
     "target":"es5"
   },
   "include": [
