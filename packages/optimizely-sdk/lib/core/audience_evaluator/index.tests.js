@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var audienceEvaluator = require('./');
+var AudienceEvaluator = require('./');
 var chai = require('chai');
 var sprintf = require('sprintf-js').sprintf;
 var conditionTreeEvaluator = require('../condition_tree_evaluator');
@@ -53,6 +53,11 @@ var audiencesById = {
 };
 
 describe('lib/core/audience_evaluator', function() {
+  var audienceEvaluator;
+  beforeEach(function() {
+    audienceEvaluator = new AudienceEvaluator();
+  });
+
   describe('APIs', function() {
     describe('evaluate', function() {
       var mockLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});

@@ -15,6 +15,7 @@
  */
 var conditionTreeEvaluator = require('../condition_tree_evaluator');
 var customAttributeConditionEvaluator = require('../custom_attribute_condition_evaluator');
+var ERROR_MESSAGES = require('../../utils/enums').ERROR_MESSAGES;
 var enums = require('../../utils/enums');
 var sprintf = require('sprintf-js').sprintf;
 
@@ -22,48 +23,60 @@ var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
 var MODULE_NAME = 'AUDIENCE_EVALUATOR';
 
-module.exports = {
-  /**
-   * Determine if the given user attributes satisfy the given audience conditions
-   * @param  {Array|String|null|undefined}  audienceConditions    Audience conditions to match the user attributes against - can be an array
-   *                                                              of audience IDs, a nested array of conditions, or a single leaf condition.
-   *                                                              Examples: ["5", "6"], ["and", ["or", "1", "2"], "3"], "1"
-   * @param  {Object}                       audiencesById         Object providing access to full audience objects for audience IDs
-   *                                                              contained in audienceConditions. Keys should be audience IDs, values
-   *                                                              should be full audience objects with conditions properties
-   * @param  {Object}                       [userAttributes]      User attributes which will be used in determining if audience conditions
-   *                                                              are met. If not provided, defaults to an empty object
-   * @param  {Object}                       logger                Logger instance.
-   * @return {Boolean}                                            true if the user attributes match the given audience conditions, false
-   *                                                              otherwise
-   */
-  evaluate: function(audienceConditions, audiencesById, userAttributes, logger) {
-    // if there are no audiences, return true because that means ALL users are included in the experiment
-    if (!audienceConditions || audienceConditions.length === 0) {
-      return true;
+
+function AudienceEvaluator(conditionEvaluators) {
+  this.typeToEvaluatorMap = Object.assign({
+    'custom_attribute': customAttributeConditionEvaluator
+  }, conditionEvaluators);
+}
+
+/**
+ * Determine if the given user attributes satisfy the given audience conditions
+ * @param  {Array|String|null|undefined}  audienceConditions    Audience conditions to match the user attributes against - can be an array
+ *                                                              of audience IDs, a nested array of conditions, or a single leaf condition.
+ *                                                              Examples: ["5", "6"], ["and", ["or", "1", "2"], "3"], "1"
+ * @param  {Object}                       audiencesById         Object providing access to full audience objects for audience IDs
+ *                                                              contained in audienceConditions. Keys should be audience IDs, values
+ *                                                              should be full audience objects with conditions properties
+ * @param  {Object}                       [userAttributes]      User attributes which will be used in determining if audience conditions
+ *                                                              are met. If not provided, defaults to an empty object
+ * @param  {Object}                       logger                Logger instance.
+ * @return {Boolean}                                            true if the user attributes match the given audience conditions, false
+ *                                                              otherwise
+ */
+AudienceEvaluator.prototype.evaluate = function(audienceConditions, audiencesById, userAttributes, logger) {
+  // if there are no audiences, return true because that means ALL users are included in the experiment
+  if (!audienceConditions || audienceConditions.length === 0) {
+    return true;
+  }
+
+  if (!userAttributes) {
+    userAttributes = {};
+  }
+
+  var evaluateConditionWithUserAttributes = function(condition) {
+    var evaluator = this.typeToEvaluatorMap[condition.type];
+    if (!evaluator) {
+      logger.log(LOG_LEVEL.WARNING, sprintf(ERROR_MESSAGES.AUDIENCE_EVALUATOR_EXPECTED, MODULE_NAME, condition.type));
+      return false;
+    }
+    return evaluator.evaluate(condition, userAttributes, logger);
+  };
+
+  var evaluateAudience = function(audienceId) {
+    var audience = audiencesById[audienceId];
+    if (audience) {
+      logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.EVALUATING_AUDIENCE, MODULE_NAME, audienceId, JSON.stringify(audience.conditions)));
+      var result = conditionTreeEvaluator.evaluate(audience.conditions, evaluateConditionWithUserAttributes);
+      var resultText = result === null ? 'UNKNOWN' : result.toString().toUpperCase();
+      logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText));
+      return result;
     }
 
-    if (!userAttributes) {
-      userAttributes = {};
-    }
+    return null;
+  };
 
-    var evaluateConditionWithUserAttributes = function(condition) {
-      return customAttributeConditionEvaluator.evaluate(condition, userAttributes, logger);
-    };
-
-    var evaluateAudience = function(audienceId) {
-      var audience = audiencesById[audienceId];
-      if (audience) {
-        logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.EVALUATING_AUDIENCE, MODULE_NAME, audienceId, JSON.stringify(audience.conditions)));
-        var result = conditionTreeEvaluator.evaluate(audience.conditions, evaluateConditionWithUserAttributes);
-        var resultText = result === null ? 'UNKNOWN' : result.toString().toUpperCase();
-        logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText));
-        return result;
-      }
-
-      return null;
-    };
-
-    return conditionTreeEvaluator.evaluate(audienceConditions, evaluateAudience) || false;
-  },
+  return conditionTreeEvaluator.evaluate(audienceConditions, evaluateAudience) || false;
 };
+
+module.exports = AudienceEvaluator;
