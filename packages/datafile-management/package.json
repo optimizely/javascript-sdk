@@ -1,0 +1,21 @@
+{
+  "name": "@optimizely/datafile-management",
+  "version": "0.0.1",
+  "private": true,
+  "description": "> TODO: description",
+  "author": "Matt Carroll <matt.carroll@optimizely.com>",
+  "homepage": "https://github.com/optimizely/javascript-sdk#readme",
+  "license": "ISC",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/optimizely/javascript-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/optimizely/javascript-sdk/issues"
+  },
+  "devDependencies": {
+    "@optimizely/optimizely-sdk": "^3.0.0-rc2",
+    "typescript": "^3.3.3"
+  }
+}
