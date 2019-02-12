@@ -15,7 +15,9 @@
     "url": "https://github.com/optimizely/javascript-sdk/issues"
   },
   "devDependencies": {
-    "@optimizely/optimizely-sdk": "^3.0.0-rc2",
     "typescript": "^3.3.3"
+  },
+  "dependencies": {
+    "@optimizely/optimizely-sdk": "^3.0.0-rc2"
   }
 }
