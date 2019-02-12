@@ -61,7 +61,7 @@ AudienceEvaluator.prototype.evaluate = function(audienceConditions, audiencesByI
       return false;
     }
     return evaluator.evaluate(condition, userAttributes, logger);
-  };
+  }.bind(this);
 
   var evaluateAudience = function(audienceId) {
     var audience = audiencesById[audienceId];
