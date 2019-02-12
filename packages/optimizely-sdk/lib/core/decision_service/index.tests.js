@@ -28,7 +28,7 @@ var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var testData = require('../../tests/test_data').getTestProjectConfig();
 var testDataWithFeatures = require('../../tests/test_data').getTestProjectConfigWithFeatures();
 var jsonSchemaValidator = require('../../utils/json_schema_validator');
-var audienceEvaluator = require('../audience_evaluator');
+var AudienceEvaluator = require('../audience_evaluator');
 
 var chai = require('chai');
 var sinon = require('sinon');
@@ -420,7 +420,7 @@ describe('lib/core/decision_service', function() {
       var __audienceEvaluateSpy;
 
       beforeEach(function() {
-        __audienceEvaluateSpy = sinon.spy(audienceEvaluator, 'evaluate');
+        __audienceEvaluateSpy = sinon.spy(AudienceEvaluator.prototype, 'evaluate');
       });
 
       afterEach(function() {

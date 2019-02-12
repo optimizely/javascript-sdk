@@ -15,7 +15,7 @@
  ***************************************************************************/
 
 var Optimizely = require('./');
-var audienceEvaluator = require('../core/audience_evaluator');
+var AudienceEvaluator = require('../core/audience_evaluator');
 var bluebird = require('bluebird');
 var bucketer = require('../core/bucketer');
 var projectConfigManager = require('../core/project_config/project_config_manager');
@@ -167,6 +167,7 @@ describe('lib/optimizely', function() {
           sinon.assert.calledWith(decisionService.createDecisionService, {
             userProfileService: userProfileServiceInstance,
             logger: createdLogger,
+            __exploratoryConditionEvaluators: undefined
           });
 
           var logMessage = createdLogger.log.args[0][1];
@@ -189,6 +190,7 @@ describe('lib/optimizely', function() {
           sinon.assert.calledWith(decisionService.createDecisionService, {
             userProfileService: null,
             logger: createdLogger,
+            __exploratoryConditionEvaluators: undefined
           });
 
           var logMessage = createdLogger.log.args[0][1];
@@ -4363,6 +4365,7 @@ describe('lib/optimizely', function() {
       logToConsole: false,
     });
     var optlyInstance;
+    var audienceEvaluator;
     beforeEach(function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
@@ -4374,6 +4377,7 @@ describe('lib/optimizely', function() {
         logger: createdLogger,
         isValidInstance: true,
       });
+      audienceEvaluator = AudienceEvaluator.prototype;
 
       sandbox.stub(eventDispatcher, 'dispatchEvent');
       sandbox.stub(errorHandler, 'handleError');

@@ -14,7 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
-var audienceEvaluator = require('../audience_evaluator');
+var AudienceEvaluator = require('../audience_evaluator');
 var bucketer = require('../bucketer');
 var enums = require('../../utils/enums');
 var fns = require('../../utils/fns');
@@ -49,9 +49,10 @@ var DECISION_SOURCES = enums.DECISION_SOURCES;
  * @returns {Object}
  */
 function DecisionService(options) {
-  this.userProfileService = options.userProfileService || null;
-  this.logger = options.logger;
+  this.audienceEvaluator = new AudienceEvaluator(options.logger, options.__exploratoryConditionEvaluators);
   this.forcedVariationMap = {};
+  this.logger = options.logger;
+  this.userProfileService = options.userProfileService || null;
 }
 
 /**
@@ -171,7 +172,7 @@ DecisionService.prototype.__checkIfUserIsInAudience = function(configObj, experi
   var experimentAudienceConditions = projectConfig.getExperimentAudienceConditions(configObj, experimentKey);
   var audiencesById = projectConfig.getAudiencesById(configObj);
   this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.EVALUATING_AUDIENCES_COMBINED, MODULE_NAME, experimentKey, JSON.stringify(experimentAudienceConditions)));
-  var result = audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, attributes, this.logger);
+  var result = this.audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, attributes);
   this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED, MODULE_NAME, experimentKey, result.toString().toUpperCase()));
 
   if (!result) {

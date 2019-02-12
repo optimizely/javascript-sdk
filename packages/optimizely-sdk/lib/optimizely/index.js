@@ -100,6 +100,7 @@ function Optimizely(config) {
   this.decisionService = decisionService.createDecisionService({
     userProfileService: userProfileService,
     logger: this.logger,
+    __exploratoryConditionEvaluators: config.__exploratoryConditionEvaluators
   });
 
   this.notificationCenter = notificationCenter.createNotificationCenter({

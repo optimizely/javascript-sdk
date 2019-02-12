@@ -56,7 +56,6 @@ EVALUATORS_BY_MATCH_TYPE[SUBSTRING_MATCH_TYPE] = substringEvaluator;
  */
 function evaluate(condition, userAttributes, logger) {
   if (condition.type !== CUSTOM_ATTRIBUTE_CONDITION_TYPE) {
-    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNKNOWN_CONDITION_TYPE, MODULE_NAME, JSON.stringify(condition)));
     return null;
   }
 
