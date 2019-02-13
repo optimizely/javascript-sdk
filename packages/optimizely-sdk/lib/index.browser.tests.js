@@ -79,6 +79,16 @@ describe('javascript-sdk', function() {
         assert.instanceOf(optlyInstance, Optimizely);
       });
 
+      // it.only('should create a datafile-managed instance of optimizely when sdkKey is provided', function() {
+      //   var managedOptlyInstance = optimizelyFactory.createInstance({
+      //     sdkKey: 'abcd1234',
+      //     errorHandler: fakeErrorHandler,
+      //     eventDispatcher: fakeEventDispatcher,
+      //     logger: silentLogger,
+      //   });
+      //   assert.instanceOf(managedOptlyInstance.onReady, Promise);
+      // });
+
       it('should set the JavaScript client engine and version', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: {},

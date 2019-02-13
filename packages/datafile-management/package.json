@@ -6,7 +6,7 @@
   "author": "Matt Carroll <matt.carroll@optimizely.com>",
   "homepage": "https://github.com/optimizely/javascript-sdk#readme",
   "license": "ISC",
-  "main": "index.js",
+  "main": "dist/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/optimizely/javascript-sdk.git"

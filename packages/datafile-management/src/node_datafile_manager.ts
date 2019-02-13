@@ -1,11 +1,9 @@
 import { Datafile, DatafileManager, DatafileUpdateListener } from './datafile_manager_types'
 
-const GET_METHOD = 'GET'
-const READY_STATE_COMPLETE = 4
-const POLLING_INTERVAL = 5000
+// TODO: Refactor to share implementation of some parts with BrowserDatafileManager
 
-function defaultUrlBuilder(sdkKey: string): string {
-  return `https://cdn.optimizely.com/datafiles/${sdkKey}.json`
+interface ManagerOptions {
+  urlBuilder?: (sdkKey: string) => string
 }
 
 const enum ManagerStatus {
@@ -14,11 +12,13 @@ const enum ManagerStatus {
   STOPPED = "stopped",
 }
 
-interface ManagerOptions {
-  urlBuilder?: (sdkKey: string) => string
+const POLLING_INTERVAL = 5000
+
+function defaultUrlBuilder(sdkKey: string): string {
+  return `https://cdn.optimizely.com/datafiles/${sdkKey}.json`
 }
 
-class BrowserDatafileManager implements DatafileManager {
+class NodeDatafileManager implements DatafileManager {
   readonly onReady: Promise<Datafile>
 
   private sdkKey: string
@@ -81,6 +81,7 @@ class BrowserDatafileManager implements DatafileManager {
   // TODO: Better error handling, reject reasons/messages
   private fetchAndUpdateCurrentDatafile(): Promise<Datafile> {
     return new Promise((resolve, reject) => {
+      /*
       const req = new XMLHttpRequest()
       req.open(GET_METHOD, this.urlBuilder(this.sdkKey), true)
       req.onreadystatechange = () => {
@@ -105,6 +106,7 @@ class BrowserDatafileManager implements DatafileManager {
         }
       }
       req.send()
+      */
     })
   }
 
@@ -122,8 +124,9 @@ class BrowserDatafileManager implements DatafileManager {
       }
     }, POLLING_INTERVAL)
   }
+
 }
 
-export default function create(sdkKey: string, options?: ManagerOptions) {
-  return new BrowserDatafileManager(sdkKey, options)
+export default function create(sdkKey: string, options?: ManagerOptions): NodeDatafileManager {
+  return new NodeDatafileManager(sdkKey, options)
 }

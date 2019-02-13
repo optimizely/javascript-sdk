@@ -12,7 +12,7 @@ export interface OptimizelyWithManagedDatafileConfig {
   createInstance: (config: Config) => Client
 }
 
-export default class OptimizelyWithManagedDatafile implements Client {
+class OptimizelyWithManagedDatafile implements Client {
   readonly onReady: Promise<void>
 
   private readonly datafileManager: DatafileManager | undefined
@@ -183,4 +183,8 @@ export default class OptimizelyWithManagedDatafile implements Client {
       })
     }
   }
+}
+
+export default function create(config: OptimizelyWithManagedDatafileConfig): OptimizelyWithManagedDatafile {
+  return new OptimizelyWithManagedDatafile(config)
 }

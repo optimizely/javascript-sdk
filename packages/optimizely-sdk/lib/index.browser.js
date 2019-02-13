@@ -20,61 +20,77 @@ var defaultEventDispatcher = require('./plugins/event_dispatcher/index.browser')
 var enums = require('./utils/enums');
 var logger = require('./plugins/logger');
 var Optimizely = require('./optimizely');
+var datafileManagement = require('@optimizely/datafile-management');
 
 var MODULE_NAME = 'INDEX';
 
 /**
- * Entry point into the Optimizely Node testing SDK
+ * Browser entry point into the Optimizely SDK
  */
-module.exports = {
-  /**
-   * Creates an instance of the Optimizely class
-   * @param  {Object} config
-   * @param  {Object} config.datafile
-   * @param  {Object} config.errorHandler
-   * @param  {Object} config.eventDispatcher
-   * @param  {Object} config.logger
-   * @param  {Object} config.logLevel
-   * @param  {Object} config.userProfileService
-   * @return {Object} the Optimizely object
-   */
-  createInstance: function(config) {
-    try {
-      var logLevel = 'logLevel' in config ? config.logLevel : enums.LOG_LEVEL.INFO;
-      var defaultLogger = logger.createLogger({logLevel: enums.LOG_LEVEL.INFO});
-      if (config) {
-        try {
-          configValidator.validate(config);
-          config.isValidInstance = true;
-        } catch (ex) {
-          var errorMessage = MODULE_NAME + ':' + ex.message;
-          if (config.logger) {
-            config.logger.log(enums.LOG_LEVEL.ERROR, errorMessage);
-          } else {
-            defaultLogger.log(enums.LOG_LEVEL.ERROR, errorMessage);
-          }
-          config.isValidInstance = false;
+
+
+/**
+ * Creates an instance of the Optimizely class
+ * @param  {Object} config
+ * @param  {Object} config.datafile
+ * @param  {Object} config.errorHandler
+ * @param  {Object} config.eventDispatcher
+ * @param  {Object} config.logger
+ * @param  {Object} config.logLevel
+ * @param  {Object} config.userProfileService
+ * @return {Object} the Optimizely object
+ */
+function createCoreInstance(config) {
+  try {
+    var logLevel = 'logLevel' in config ? config.logLevel : enums.LOG_LEVEL.INFO;
+    var defaultLogger = logger.createLogger({ logLevel: enums.LOG_LEVEL.INFO });
+    if (config) {
+      try {
+        configValidator.validate(config);
+        config.isValidInstance = true;
+      } catch (ex) {
+        var errorMessage = MODULE_NAME + ':' + ex.message;
+        if (config.logger) {
+          config.logger.log(enums.LOG_LEVEL.ERROR, errorMessage);
+        } else {
+          defaultLogger.log(enums.LOG_LEVEL.ERROR, errorMessage);
         }
+        config.isValidInstance = false;
       }
-
-      // Explicitly check for null or undefined
-      if (config.skipJSONValidation == null) { // eslint-disable-line eqeqeq
-        config.skipJSONValidation = true;
-      }
-
-      config = fns.assignIn({
-        clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
-        clientVersion: enums.CLIENT_VERSION,
-        errorHandler: defaultErrorHandler,
-        eventDispatcher: defaultEventDispatcher,
-        logger: logger.createLogger({logLevel: logLevel})
-      }, config);
-
-      return new Optimizely(config);
-    } catch (e) {
-      config.logger.log(enums.LOG_LEVEL.ERROR, e.message);
-      config.errorHandler.handleError(e);
-      return null;
     }
+
+    // Explicitly check for null or undefined
+    if (config.skipJSONValidation == null) { // eslint-disable-line eqeqeq
+      config.skipJSONValidation = true;
+    }
+
+    config = fns.assignIn({
+      clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
+      clientVersion: enums.CLIENT_VERSION,
+      errorHandler: defaultErrorHandler,
+      eventDispatcher: defaultEventDispatcher,
+      logger: logger.createLogger({ logLevel: logLevel })
+    }, config);
+
+    return new Optimizely(config);
+  } catch (e) {
+    config.logger.log(enums.LOG_LEVEL.ERROR, e.message);
+    config.errorHandler.handleError(e);
+    return null;
   }
+}
+
+exports.createInstance = function(config) {
+  var managedConfig = {
+    clientConfig: config,
+    createInstance: createCoreInstance,
+    createDefaultDatafileManager: datafileManagement.createBrowserDefaultDatafileManager,
+  };
+  if (Object.prototype.hasOwnProperty.call(config, 'sdkKey')) {
+    managedConfig.sdkKey = config.sdkKey;
+  }
+  if (Object.prototype.hasOwnProperty.call(config, 'datafileManager')) {
+    managedConfig.datafileManager = config.datafileManager;
+  }
+  return datafileManagement.createInstanceWithManagedDatafile(managedConfig);
 };

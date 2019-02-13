@@ -72,6 +72,16 @@ describe('optimizelyFactory', function() {
 
         assert.instanceOf(optlyInstance, Optimizely);
       });
+
+      it.only('should create a datafile-managed instance of optimizely when sdkKey is provided', function() {
+        var managedOptlyInstance = optimizelyFactory.createInstance({
+          sdkKey: 'abcd1234',
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          logger: fakeLogger,
+        });
+        assert.instanceOf(managedOptlyInstance.onReady, Promise);
+      });
     });
   });
 });
