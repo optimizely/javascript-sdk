@@ -233,11 +233,15 @@ describe('javascript-sdk', function() {
 
       describe('automatically created logger instances', function() {
         beforeEach(function() {
-          sinon.spy(console, 'log')
+          sinon.spy(console, 'log');
+          sinon.spy(console, 'info');
+          sinon.spy(console, 'warn');
         });
 
         afterEach(function() {
           console.log.restore();
+          console.info.restore();
+          console.warn.restore();
         });
 
         it('should instantiate the logger with a custom logLevel when provided', function() {
@@ -264,10 +268,10 @@ describe('javascript-sdk', function() {
             datafile: testData.getTestProjectConfig(),
             skipJSONValidation: true
           });
-          assert.strictEqual(console.log.getCalls().length, 1)
-          call = console.log.getCalls()[0]
-          assert.strictEqual(call.args.length, 1)
-          assert(call.args[0].indexOf('OPTIMIZELY: Skipping JSON schema validation.') > -1)
+          assert.strictEqual(console.info.getCalls().length, 1);
+          call = console.info.getCalls()[0];
+          assert.strictEqual(call.args.length, 1);
+          assert(call.args[0].indexOf('OPTIMIZELY: Skipping JSON schema validation.') > -1);
         });
       });
     });
