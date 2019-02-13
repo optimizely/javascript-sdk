@@ -14,6 +14,10 @@ const enum ManagerStatus {
   STOPPED = "stopped",
 }
 
+interface ManagerOptions {
+  urlBuilder?: (sdkKey: string) => string
+}
+
 class BrowserDatafileManager implements DatafileManager {
   readonly onReady: Promise<Datafile>
 
@@ -30,7 +34,7 @@ class BrowserDatafileManager implements DatafileManager {
 
   private status: ManagerStatus
 
-  constructor(sdkKey: string, { urlBuilder = defaultUrlBuilder }) {
+  constructor(sdkKey: string, { urlBuilder = defaultUrlBuilder }: ManagerOptions = {}) {
     this.sdkKey = sdkKey
     this.urlBuilder = urlBuilder
     this.updateListeners = new Set()
@@ -50,6 +54,7 @@ class BrowserDatafileManager implements DatafileManager {
     }
   }
 
+  // TODO: Ugly
   start() {
     if (this.status === ManagerStatus.STARTED) {
       return
@@ -57,7 +62,7 @@ class BrowserDatafileManager implements DatafileManager {
 
     this.status = ManagerStatus.STARTED
 
-    this.onReady.then((datafile: Datafile) => {
+    this.onReady.then(() => {
       if (this.status === ManagerStatus.STARTED) {
         this.startPolling()
       }
@@ -102,6 +107,7 @@ class BrowserDatafileManager implements DatafileManager {
     })
   }
 
+  // TODO: Ugly
   private startPolling(): void {
     this.pollingInterval = setInterval(() => {
       if (this.status === ManagerStatus.STARTED) {
@@ -115,4 +121,8 @@ class BrowserDatafileManager implements DatafileManager {
       }
     }, POLLING_INTERVAL)
   }
+}
+
+export default function create(sdkKey: string, options: ManagerOptions) {
+  return new BrowserDatafileManager(sdkKey, options)
 }
