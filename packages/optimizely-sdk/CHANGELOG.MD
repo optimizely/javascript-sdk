@@ -7,61 +7,48 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
-## [3.0.0-rc2] - November 16, 2018
+## 3.0.0 - February 13, 2019
 
-### Breaking Changes
+The 3.0 release improves event tracking and supports additional audience targeting functionality.
+### New Features:
+- Event tracking:
+  - The `track` method now dispatches its conversion event _unconditionally_, without first determining whether the user is targeted by a known experiment that uses the event. This may increase outbound network traffic.
+  - In Optimizely results, conversion events sent by 3.0 SDKs are automatically attributed to variations that the user has previously seen, as long as our backend has actually received the impression events for those variations.
+  - Altogether, this allows you to track conversion events and attribute them to variations even when you don't know all of a user's attribute values, and even if the user's attribute values or the experiment's configuration have changed such that the user is no longer affected by the experiment. As a result, **you may observe an increase in the conversion rate for previously-instrumented events.** If that is undesirable, you can reset the results of previously-running experiments after upgrading to the 3.0 SDK.
+  - This will also allow you to attribute events to variations from other Optimizely projects in your account, even though those experiments don't appear in the same datafile.
+  - Note that for results segmentation in Optimizely results, the user attribute values from one event are automatically applied to all other events in the same session, as long as the events in question were actually received by our backend. This behavior was already in place and is not affected by the 3.0 release.
+- Support for all types of attribute values, not just strings.
+  - All values are passed through to notification listeners.
+  - Strings, booleans, and valid numbers are passed to the event dispatcher and can be used for Optimizely results segmentation. A valid number is a finite number in the inclusive range [-2⁵³, 2⁵³].
+  - Strings, booleans, and valid numbers are relevant for audience conditions.
+- Support for additional matchers in audience conditions:
+  - An `exists` matcher that passes if the user has a non-null value for the targeted user attribute and fails otherwise.
+  - A `substring` matcher that resolves if the user has a string value for the targeted attribute.
+  - `gt` (greater than) and `lt` (less than) matchers that resolve if the user has a valid number value for the targeted attribute. A valid number is a finite number in the inclusive range [-2⁵³, 2⁵³].
+  - The original (`exact`) matcher can now be used to target booleans and valid numbers, not just strings.
+- Support for A/B tests, feature tests, and feature rollouts whose audiences are combined using `"and"` and `"not"` operators, not just the `"or"` operator.
+- Datafile-version compatibility check: The SDK will remain uninitialized (i.e., will gracefully fail to activate experiments and features) if given a datafile version greater than 4.
+- Updated Pull Request template and commit message guidelines.
+- Support for sticky bucketing. You can pass an `$opt_experiment_bucket_map` attribute to ensure that the user gets a specific variation.
+- Support for bucketing IDs when evaluating feature rollouts, not just when evaluating A/B tests and feature tests.
+- TypeScript declarations in package.json.
+- An unminified UMD bundle in addition to the minified one.
 
-* Drops `window.optimizelyClient` from the bundled build ([#189](https://github.com/optimizely/javascript-sdk/pull/189)).
+### Breaking Changes:
+- Previously, notification listeners were only given string-valued user attributes because only strings could be passed into various method calls. That is no longer the case. You may pass non-string attribute values, and if you do, you must update your notification listeners to be able to receive whatever values you pass in.
+- Drops `window.optimizelyClient` from the bundled build.
 
-### New Features
-* Allow sticky bucketing via passing in `attributes.$opt_experiment_bucket_map`, this more easily allows customers to do some async data fetching and ensure a user gets a specific variation ([#179](https://github.com/optimizely/javascript-sdk/pull/179)).
+### Bug Fixes:
+- Experiments and features can no longer activate when a negatively targeted attribute has a missing, null, or malformed value.
+- Audience conditions (except for the new `exists` matcher) no longer resolve to `false` when they fail to find an legitimate value for the targeted user attribute. The result remains `null` (unknown). Therefore, an audience that negates such a condition (using the `"not"` operator) can no longer resolve to `true` unless there is an unrelated branch in the condition tree that itself resolves to `true`.
+- `setForcedVariation` now treats an empty variation key as invalid and does not reset the variation.
+- You can now specify `0` as the `revenue` or `value` for a conversion event when using the `track` method. Previously, `0` was withheld and would not appear in your data export.
+- The existence of a feature test in an experimentation group no longer causes A/B tests in the same group to activate the same feature.
 
-```
-const userId = '123'
-const expId = '456'
-const variationId = '678'
-const userAttributes = {
-  $opt_experiment_bucket_map: {
-    [expId]: {
-      variation_id: variationId
-    }
-  }
-}
+## [2.3.1] - November 14, 2018
 
-var selectedVariationKey = optimizelyClient.activate('experiment-1', userId, userAttributes);
-```
-
-### Fixes
-* `setForcedVariation` treats empty variation key as invalid and does not reset variation. ([#185](https://github.com/optimizely/javascript-sdk/pull/185))
-* Publish the unminified UMD bundle along with the minified one. ([#187](https://github.com/optimizely/javascript-sdk/pull/187))
-
-## [3.0.0-rc] - November 6, 2018
-
-This is the release candidate version of the 3.0 SDK:
-
-### New Features
-
-- Support for boolean combinations of audiences on experiments ([#175](https://github.com/optimizely/javascript-sdk/pull/175))
-- Added PR template and commit message guidelines ([#183](https://github.com/optimizely/javascript-sdk/pull/183))
-
-### Fixes
-
-- Updated dependency versions ([#180](https://github.com/optimizely/javascript-sdk/pull/180))
-- Suppressed unwanted console output in tests ([#181](https://github.com/optimizely/javascript-sdk/pull/181))
-- Update project config to handle latest 3.0 datafile format ([#182](https://github.com/optimizely/javascript-sdk/pull/182))
-
-## [3.0.0-alpha] - October 22, 2018
-
-This is the alpha release of the 3.0 SDK, which includes a number of improvements to audience targeting:
-
-### New Features
-
-- Support for number-valued and boolean-valued attributes ([#174](https://github.com/optimizely/javascript-sdk/pull/174)).
-- Support for audiences with new match conditions for attribute values, including 'substring' and 'exists' matches for strings; 'greater than', 'less than', 'exact, and 'exists' matches for numbers; and "exact" and 'exists' matches for booleans ([#174](https://github.com/optimizely/javascript-sdk/pull/174)).
-
-### Breaking Changes
-
-- Previously, when a 'not' audience condition was applied to a malformed attribute, it was possible for the condition to evaluate to `true`.  We’ve corrected this behavior, so that malformed attributes always evaluate to `null` and are ignored ([#174](https://github.com/optimizely/javascript-sdk/pull/174)).
+### Fixed
+- fix(bundling): Publish the unminified UMD bundle along with the minified one. ([#187](https://github.com/optimizely/javascript-sdk/pull/187))
 
 ## [2.3.0] - November 14, 2018
 
