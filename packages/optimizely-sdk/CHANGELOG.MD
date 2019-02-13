@@ -37,7 +37,7 @@ The 3.0 release improves event tracking and supports additional audience targeti
 ### Breaking Changes:
 
 - Previously, notification listeners were only given string-valued user attributes because only strings could be passed into various method calls. That is no longer the case. You may pass non-string attribute values, and if you do, you must update your notification listeners to be able to receive whatever values you pass in ([#174](https://github.com/optimizely/javascript-sdk/pull/174), [#204](https://github.com/optimizely/javascript-sdk/pull/204)).
-- Drops `window.optimizelyClient` from the bundled build ([#189](https://github.com/optimizely/javascript-sdk/pull/189)).
+- Drops `window.optimizelyClient` from the bundled build. Now, `window.optimizelySdk` can be used instead. ([#189](https://github.com/optimizely/javascript-sdk/pull/189)).
 
 ### Bug Fixes:
 
