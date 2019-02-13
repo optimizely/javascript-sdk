@@ -1,4 +1,4 @@
-import { NotificationCenter } from "@optimizely/optimizely-sdk";
+import { NotificationCenter } from "@optimizely/optimizely-sdk"
 
 // TODO: Logging
 

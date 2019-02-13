@@ -18,6 +18,7 @@
     "typescript": "^3.3.3"
   },
   "dependencies": {
-    "@optimizely/optimizely-sdk": "^3.0.0-rc2"
+    "@optimizely/optimizely-sdk": "^3.0.0-rc2",
+    "tslib": "^1.9.3"
   }
 }

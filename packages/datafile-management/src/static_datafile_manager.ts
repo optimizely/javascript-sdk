@@ -20,6 +20,12 @@ class StaticDatafileManager implements DatafileManager {
   onUpdate() {
     return doNothing
   }
+
+  start() {
+  }
+
+  stop() {
+  }
 }
 
 export default function createStaticDatafileManager(datafile: Datafile) {

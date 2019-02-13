@@ -38,6 +38,7 @@ export default class OptimizelyWithManagedDatafile implements Client {
     this.client = createDefaultClient()
 
     if (sdkKey) {
+      // TODO: Provide ability to pass through datafile manager options
       this.datafileManager = createDefaultDatafileManager(sdkKey)
     } else if (datafile) {
       this.datafileManager = createStaticDatafileManager(datafile)
@@ -48,6 +49,8 @@ export default class OptimizelyWithManagedDatafile implements Client {
       this.onReady = Promise.reject()
       return
     }
+
+    this.datafileManager.start()
 
     const datafileFromManager = this.datafileManager.get()
     if (datafileFromManager) {
@@ -159,6 +162,9 @@ export default class OptimizelyWithManagedDatafile implements Client {
   close(): void {
     if (this.datafileListenerDisposer) {
       this.datafileListenerDisposer()
+    }
+    if (this.datafileManager) {
+      this.datafileManager.stop()
     }
   }
 
