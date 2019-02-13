@@ -40,6 +40,7 @@ class BrowserDatafileManager implements DatafileManager {
     this.updateListeners = new Set()
     this.currentDatafile = null
     this.status = ManagerStatus.INITIAL
+    // TODO: Only fetch when start is called
     this.onReady = this.fetchAndUpdateCurrentDatafile()
   }
 

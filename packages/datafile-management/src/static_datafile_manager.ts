@@ -1,4 +1,3 @@
-// TODO: Is this the only way to "import type definitions"? Or the best way?
 import { Datafile, DatafileManager } from './datafile_manager_types'
 
 const doNothing = () => {}
