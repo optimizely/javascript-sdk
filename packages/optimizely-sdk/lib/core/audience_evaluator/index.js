@@ -15,19 +15,29 @@
  */
 var conditionTreeEvaluator = require('../condition_tree_evaluator');
 var customAttributeConditionEvaluator = require('../custom_attribute_condition_evaluator');
-var ERROR_MESSAGES = require('../../utils/enums').ERROR_MESSAGES;
 var enums = require('../../utils/enums');
+var fns = require('../../utils/fns');
 var sprintf = require('sprintf-js').sprintf;
 
+var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
 var MODULE_NAME = 'AUDIENCE_EVALUATOR';
 
 
-function AudienceEvaluator(conditionEvaluators) {
-  this.typeToEvaluatorMap = Object.assign({
+/**
+ * Construct an instance of AudienceEvaluator with a given logger and options
+ * @param {Logger}  logger                           The Logger instance
+ * @param {Object=} __exploratoryConditionEvaluators A map of condition evaluators provided by the consumer. This enables matching
+ *                                                   condition types which are not supported natively by the SDK. Note that built in
+ *                                                   Optimizely evaluators cannot be overridden.
+ * @constructor
+ */
+function AudienceEvaluator(logger, __exploratoryConditionEvaluators) {
+  this.logger = logger;
+  this.typeToEvaluatorMap = fns.assignIn({}, __exploratoryConditionEvaluators, {
     'custom_attribute': customAttributeConditionEvaluator
-  }, conditionEvaluators);
+  });
 }
 
 /**
@@ -40,11 +50,10 @@ function AudienceEvaluator(conditionEvaluators) {
  *                                                              should be full audience objects with conditions properties
  * @param  {Object}                       [userAttributes]      User attributes which will be used in determining if audience conditions
  *                                                              are met. If not provided, defaults to an empty object
- * @param  {Object}                       logger                Logger instance.
  * @return {Boolean}                                            true if the user attributes match the given audience conditions, false
  *                                                              otherwise
  */
-AudienceEvaluator.prototype.evaluate = function(audienceConditions, audiencesById, userAttributes, logger) {
+AudienceEvaluator.prototype.evaluate = function(audienceConditions, audiencesById, userAttributes) {
   // if there are no audiences, return true because that means ALL users are included in the experiment
   if (!audienceConditions || audienceConditions.length === 0) {
     return true;
@@ -54,29 +63,41 @@ AudienceEvaluator.prototype.evaluate = function(audienceConditions, audiencesByI
     userAttributes = {};
   }
 
-  var evaluateConditionWithUserAttributes = function(condition) {
-    var evaluator = this.typeToEvaluatorMap[condition.type];
-    if (!evaluator) {
-      logger.log(LOG_LEVEL.WARNING, sprintf(ERROR_MESSAGES.AUDIENCE_EVALUATOR_EXPECTED, MODULE_NAME, condition.type));
-      return false;
-    }
-    return evaluator.evaluate(condition, userAttributes, logger);
-  }.bind(this);
-
   var evaluateAudience = function(audienceId) {
     var audience = audiencesById[audienceId];
     if (audience) {
-      logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.EVALUATING_AUDIENCE, MODULE_NAME, audienceId, JSON.stringify(audience.conditions)));
-      var result = conditionTreeEvaluator.evaluate(audience.conditions, evaluateConditionWithUserAttributes);
+      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.EVALUATING_AUDIENCE, MODULE_NAME, audienceId, JSON.stringify(audience.conditions)));
+      var result = conditionTreeEvaluator.evaluate(audience.conditions, this.evaluateConditionWithUserAttributes.bind(this, userAttributes));
       var resultText = result === null ? 'UNKNOWN' : result.toString().toUpperCase();
-      logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText));
+      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText));
       return result;
     }
 
     return null;
-  };
+  }.bind(this);
 
   return conditionTreeEvaluator.evaluate(audienceConditions, evaluateAudience) || false;
+};
+
+/**
+ * Wrapper around evaluator.evaluate that is passed to the conditionTreeEvaluator.
+ * Evaluates the condition provided given the user attributes if an evaluator has been defined for the condition type.
+ * @param  {Object} userAttributes     A map of user attributes.
+ * @param  {Object} condition          A single condition object to evaluate.
+ * @return {Boolean|null}              true if the condition is satisfied, null if a matcher is not found.
+ */
+AudienceEvaluator.prototype.evaluateConditionWithUserAttributes = function(userAttributes, condition) {
+  var evaluator = this.typeToEvaluatorMap[condition.type];
+  if (!evaluator) {
+    this.logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNKNOWN_CONDITION_TYPE, MODULE_NAME, JSON.stringify(condition)));
+    return null;
+  }
+  try {
+    return evaluator.evaluate(condition, userAttributes, this.logger);
+  } catch (err) {
+    this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.CONDITION_EVALUATOR_ERROR, MODULE_NAME, condition.type, err.message));
+  }
+  return null;
 };
 
 module.exports = AudienceEvaluator;

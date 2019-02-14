@@ -98,7 +98,7 @@ function Optimizely(config) {
     configObj: this.configObj,
     userProfileService: userProfileService,
     logger: this.logger,
-    conditionEvaluators: config.conditionEvaluators
+    __exploratoryConditionEvaluators: config.__exploratoryConditionEvaluators
   });
 
   this.notificationCenter = notificationCenter.createNotificationCenter({

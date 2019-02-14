@@ -26,7 +26,7 @@ exports.LOG_LEVEL = {
 };
 
 exports.ERROR_MESSAGES = {
-  AUDIENCE_EVALUATOR_EXPECTED: '%s: No audience evaluator present for condition type: %s.',
+  CONDITION_EVALUATOR_ERROR: '%s: Error evaluating condition type %s: %s',
   EXPERIMENT_KEY_NOT_IN_DATAFILE: '%s: Experiment key %s is not in datafile.',
   FEATURE_NOT_IN_DATAFILE: '%s: Feature key %s is not in datafile.',
   IMPROPERLY_FORMATTED_EXPERIMENT: '%s: Experiment key %s is improperly formatted.',

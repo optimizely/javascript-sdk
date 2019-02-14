@@ -238,7 +238,7 @@ describe('lib/optimizely', function() {
             configObj: optlyInstance.configObj,
             userProfileService: userProfileServiceInstance,
             logger: createdLogger,
-            conditionEvaluators: undefined
+            __exploratoryConditionEvaluators: undefined
           });
 
           // Checking the second log message as the first one just says "Datafile is valid"
@@ -263,7 +263,7 @@ describe('lib/optimizely', function() {
             configObj: optlyInstance.configObj,
             userProfileService: null,
             logger: createdLogger,
-            conditionEvaluators: undefined
+            __exploratoryConditionEvaluators: undefined
           });
 
           // Checking the second log message as the first one just says "Datafile is valid"
