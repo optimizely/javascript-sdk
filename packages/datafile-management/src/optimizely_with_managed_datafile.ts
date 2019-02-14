@@ -1,13 +1,11 @@
+// TODO:
+// create logger module containing a singleton, setLogger & getLogger. expose setLogger & getLogger as top-level exports of datafile-management package. Later this would be replaced.
+
 import { Client, Config, EventTags, UserAttributes } from '@optimizely/optimizely-sdk'
 import { Datafile, DatafileManager, ListenerDisposer } from './datafile_manager_types'
 import createStaticDatafileManager from './static_datafile_manager'
 import createDefaultClient from './default_client'
-
-type UpdateListener = () => void
-
-interface UpdateListeners {
-  [index: string]: Set<UpdateListener>
-}
+import { default as EventEmitter, Listener } from './event_emitter';
 
 export interface OptimizelyWithManagedDatafileConfig {
   clientConfig: Config
@@ -29,10 +27,9 @@ class OptimizelyWithManagedDatafile implements Client {
 
   private datafileListenerDisposer: ListenerDisposer | undefined
 
-  private createInstance: (config: Config) => Client
+  private emitter: EventEmitter
 
-  // TODO: Can I use Set? Do we need to ask user to polyfill when necessary?
-  private updateListeners: UpdateListeners
+  private createInstance: (config: Config) => Client
 
   constructor(config: OptimizelyWithManagedDatafileConfig) {
     const {
@@ -44,7 +41,7 @@ class OptimizelyWithManagedDatafile implements Client {
       sdkKey,
     } = config
 
-    this.updateListeners = {}
+    this.emitter = new EventEmitter()
 
     this.createInstance = createInstance
 
@@ -194,24 +191,13 @@ class OptimizelyWithManagedDatafile implements Client {
           ...clientConfig,
           datafile: nextDatafile,
         })
-        const datafileUpdateListeners = this.updateListeners[DATAFILE_UPDATE_EVT]
-        if (datafileUpdateListeners) {
-          datafileUpdateListeners.forEach(listener => listener())
-        }
+        this.emitter.emit(DATAFILE_UPDATE_EVT)
       })
     }
   }
 
-  on(eventName: string, listener: UpdateListener): ListenerDisposer {
-    if (!this.updateListeners[eventName]) {
-      this.updateListeners[eventName] = new Set()
-    }
-    this.updateListeners[eventName].add(listener)
-    return () => {
-      if (!this.updateListeners[eventName]) {
-        this.updateListeners[eventName].delete(listener)
-      }
-    }
+  on(eventName: string, listener: Listener): ListenerDisposer {
+    return this.emitter.on(eventName, listener)
   }
 }
 
