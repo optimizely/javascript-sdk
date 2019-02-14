@@ -103,4 +103,3 @@ export default class DefaultDatafileManager implements DatafileManager {
     }, POLLING_INTERVAL)
   }
 }
-
