@@ -66,7 +66,6 @@ module.exports = {
 
     config = fns.assign({
       clientEngine: enums.NODE_CLIENT_ENGINE,
-      clientVersion: enums.CLIENT_VERSION,
       errorHandler: defaultErrorHandler,
       eventDispatcher: defaultEventDispatcher,
       jsonSchemaValidator: jsonSchemaValidator,
