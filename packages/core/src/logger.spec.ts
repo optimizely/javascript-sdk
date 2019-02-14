@@ -21,6 +21,7 @@ describe('logger', () => {
     beforeEach(() => {
       stubLogger = {
         log: jest.fn(),
+        setLogLevel: jest.fn(),
       }
     })
 
