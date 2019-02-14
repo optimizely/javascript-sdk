@@ -80,10 +80,10 @@ exports.createInstance = function(config) {
     createInstance: createCoreInstance,
     createDefaultDatafileManager: datafileManagement.createNodeDefaultDatafileManager,
   };
-  if (Object.prototype.hasOwnProperty.call(config, 'sdkKey')) {
+  if (config.sdkKey) {
     managedConfig.sdkKey = config.sdkKey;
   }
-  if (Object.prototype.hasOwnProperty.call(config, 'datafileManager')) {
+  if (config.datafileManager) {
     managedConfig.datafileManager = config.datafileManager;
   }
   return datafileManagement.createInstanceWithManagedDatafile(managedConfig);

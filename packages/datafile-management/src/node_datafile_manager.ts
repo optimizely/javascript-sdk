@@ -151,6 +151,7 @@ class NodeDatafileManager implements DatafileManager {
   }
 
   // TODO: Ugly
+  // TODO: Only call update if revision is different?
   private startPolling(): void {
     this.pollingInterval = setInterval(() => {
       if (this.status === ManagerStatus.STARTED) {

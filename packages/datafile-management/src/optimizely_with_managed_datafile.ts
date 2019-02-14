@@ -3,6 +3,12 @@ import { Datafile, DatafileManager, ListenerDisposer } from './datafile_manager_
 import createStaticDatafileManager from './static_datafile_manager'
 import createDefaultClient from './default_client'
 
+type UpdateListener = () => void
+
+interface UpdateListeners {
+  [index: string]: Set<UpdateListener>
+}
+
 export interface OptimizelyWithManagedDatafileConfig {
   clientConfig: Config
   datafile?: Datafile
@@ -11,6 +17,8 @@ export interface OptimizelyWithManagedDatafileConfig {
   createDefaultDatafileManager: (sdkKey: string) => DatafileManager
   createInstance: (config: Config) => Client
 }
+
+const DATAFILE_UPDATE_EVT = 'datafileUpdate'
 
 class OptimizelyWithManagedDatafile implements Client {
   readonly onReady: Promise<void>
@@ -23,6 +31,9 @@ class OptimizelyWithManagedDatafile implements Client {
 
   private createInstance: (config: Config) => Client
 
+  // TODO: Can I use Set? Do we need to ask user to polyfill when necessary?
+  private updateListeners: UpdateListeners
+
   constructor(config: OptimizelyWithManagedDatafileConfig) {
     const {
       clientConfig,
@@ -33,10 +44,13 @@ class OptimizelyWithManagedDatafile implements Client {
       sdkKey,
     } = config
 
+    this.updateListeners = {}
+
     this.createInstance = createInstance
 
     this.client = createDefaultClient()
 
+    // TODO: If both datafile and sdkKey, seed manager with datafile, but keep updating in thef turue
     if (sdkKey) {
       // TODO: Provide ability to pass through datafile manager options
       this.datafileManager = createDefaultDatafileManager(sdkKey)
@@ -50,8 +64,7 @@ class OptimizelyWithManagedDatafile implements Client {
       return
     }
 
-    // TODO: Start datafile manager
-    // this.datafileManager.start()
+    this.datafileManager.start()
 
     const datafileFromManager = this.datafileManager.get()
     if (datafileFromManager) {
@@ -181,7 +194,23 @@ class OptimizelyWithManagedDatafile implements Client {
           ...clientConfig,
           datafile: nextDatafile,
         })
+        const datafileUpdateListeners = this.updateListeners[DATAFILE_UPDATE_EVT]
+        if (datafileUpdateListeners) {
+          datafileUpdateListeners.forEach(listener => listener())
+        }
       })
+    }
+  }
+
+  on(eventName: string, listener: UpdateListener): ListenerDisposer {
+    if (!this.updateListeners[eventName]) {
+      this.updateListeners[eventName] = new Set()
+    }
+    this.updateListeners[eventName].add(listener)
+    return () => {
+      if (!this.updateListeners[eventName]) {
+        this.updateListeners[eventName].delete(listener)
+      }
     }
   }
 }

@@ -73,7 +73,7 @@ describe('optimizelyFactory', function() {
         assert.instanceOf(optlyInstance, Optimizely);
       });
 
-      it.only('should create a datafile-managed instance of optimizely when sdkKey is provided', function() {
+      it('should create a datafile-managed instance of optimizely when sdkKey is provided', function() {
         var managedOptlyInstance = optimizelyFactory.createInstance({
           sdkKey: 'abcd1234',
           errorHandler: fakeErrorHandler,
