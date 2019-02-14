@@ -2,6 +2,7 @@ import http from 'http';
 import https from 'https';
 import url from 'url';
 import { Datafile, DatafileManager, DatafileUpdateListener } from './datafile_manager_types'
+import EventEmitter from './event_emitter';
 
 // TODO: Refactor to share implementation of some parts with BrowserDatafileManager
 
@@ -21,6 +22,8 @@ function defaultUrlBuilder(sdkKey: string): string {
   return `https://cdn.optimizely.com/datafiles/${sdkKey}.json`
 }
 
+const UPDATE_EVT = 'update'
+
 class NodeDatafileManager implements DatafileManager {
   readonly onReady: Promise<Datafile>
 
@@ -28,8 +31,7 @@ class NodeDatafileManager implements DatafileManager {
 
   private urlBuilder: (sdkKey: string) => string
 
-    // TODO: Can I use Set? Do we need to ask user to polyfill when necessary?
-  private updateListeners: Set<DatafileUpdateListener>
+  private emitter: EventEmitter
 
   private currentDatafile: Datafile | null
 
@@ -40,7 +42,7 @@ class NodeDatafileManager implements DatafileManager {
   constructor(sdkKey: string, { urlBuilder = defaultUrlBuilder }: ManagerOptions = {}) {
     this.sdkKey = sdkKey
     this.urlBuilder = urlBuilder
-    this.updateListeners = new Set()
+    this.emitter = new EventEmitter()
     this.currentDatafile = null
     this.status = ManagerStatus.INITIAL
     // TODO: Only fetch when start is called
@@ -52,10 +54,7 @@ class NodeDatafileManager implements DatafileManager {
   }
 
   onUpdate(listener: DatafileUpdateListener) {
-    this.updateListeners.add(listener)
-    return () => {
-      this.updateListeners.delete(listener)
-    }
+    return this.emitter.on(UPDATE_EVT, listener)
   }
 
   // TODO: Ugly
@@ -78,7 +77,6 @@ class NodeDatafileManager implements DatafileManager {
     if (typeof this.pollingInterval !== 'undefined') {
       clearInterval(this.pollingInterval)
     }
-    this.updateListeners.clear()
   }
 
   // TODO: Better error handling, reject reasons/messages
@@ -157,9 +155,7 @@ class NodeDatafileManager implements DatafileManager {
       if (this.status === ManagerStatus.STARTED) {
         this.fetchAndUpdateCurrentDatafile().then((datafile: Datafile) => {
           if (this.status === ManagerStatus.STARTED) {
-            this.updateListeners.forEach((listener: DatafileUpdateListener) => {
-              listener(datafile)
-            })
+            this.emitter.emit(UPDATE_EVT, datafile)
           }
         })
       }

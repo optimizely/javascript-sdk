@@ -1,4 +1,5 @@
 import { Datafile, DatafileManager, DatafileUpdateListener } from './datafile_manager_types'
+import EventEmitter from './event_emitter';
 
 const GET_METHOD = 'GET'
 const READY_STATE_COMPLETE = 4
@@ -18,6 +19,8 @@ interface ManagerOptions {
   urlBuilder?: (sdkKey: string) => string
 }
 
+const UPDATE_EVT = 'update'
+
 class BrowserDatafileManager implements DatafileManager {
   readonly onReady: Promise<Datafile>
 
@@ -25,8 +28,7 @@ class BrowserDatafileManager implements DatafileManager {
 
   private urlBuilder: (sdkKey: string) => string
 
-    // TODO: Can I use Set? Do we need to ask user to polyfill when necessary?
-  private updateListeners: Set<DatafileUpdateListener>
+  private emitter: EventEmitter
 
   private currentDatafile: Datafile | null
 
@@ -37,7 +39,7 @@ class BrowserDatafileManager implements DatafileManager {
   constructor(sdkKey: string, { urlBuilder = defaultUrlBuilder }: ManagerOptions = {}) {
     this.sdkKey = sdkKey
     this.urlBuilder = urlBuilder
-    this.updateListeners = new Set()
+    this.emitter = new EventEmitter()
     this.currentDatafile = null
     this.status = ManagerStatus.INITIAL
     // TODO: Only fetch when start is called
@@ -49,10 +51,7 @@ class BrowserDatafileManager implements DatafileManager {
   }
 
   onUpdate(listener: DatafileUpdateListener) {
-    this.updateListeners.add(listener)
-    return () => {
-      this.updateListeners.delete(listener)
-    }
+    return this.emitter.on(UPDATE_EVT, listener)
   }
 
   // TODO: Ugly
@@ -75,7 +74,6 @@ class BrowserDatafileManager implements DatafileManager {
     if (typeof this.pollingInterval !== 'undefined') {
       clearInterval(this.pollingInterval)
     }
-    this.updateListeners.clear()
   }
 
   // TODO: Better error handling, reject reasons/messages
@@ -114,9 +112,7 @@ class BrowserDatafileManager implements DatafileManager {
       if (this.status === ManagerStatus.STARTED) {
         this.fetchAndUpdateCurrentDatafile().then((datafile: Datafile) => {
           if (this.status === ManagerStatus.STARTED) {
-            this.updateListeners.forEach((listener: DatafileUpdateListener) => {
-              listener(datafile)
-            })
+            this.emitter.emit(UPDATE_EVT, datafile)
           }
         })
       }

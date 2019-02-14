@@ -1,8 +1,8 @@
 // TODO: move this type in here? Does it need exported from top level module?
 import { ListenerDisposer } from './datafile_manager_types'
 
-// TODO: any args or return type?
-export type Listener = () => void
+// TODO: Is this the right type? any sucks
+export type Listener = (...args: any[]) => any
 
 interface Listeners {
   [index: string]: { [index: number]: { listener: Listener, id: number } }
@@ -24,18 +24,17 @@ export default class EventEmitter {
     this.listenerId++
 
     return () => {
-      if (!this.listeners[eventName]) {
+      if (this.listeners[eventName]) {
         delete this.listeners[eventName][currentListenerId]
       }
     }
   }
 
-  // TODO: pass arguments to listeners
-  emit(eventName: string) {
+  // TODO: Bad type? any is bad
+  emit(eventName: string, ...args: any[]) {
     const listeners = this.listeners[eventName]
     if (listeners) {
-      Object.values(listeners).forEach(({ listener }) => listener())
+      Object.values(listeners).forEach(({ listener }) => listener(...args))
     }
   }
-
 }

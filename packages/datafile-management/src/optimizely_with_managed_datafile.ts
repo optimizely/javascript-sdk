@@ -184,6 +184,8 @@ class OptimizelyWithManagedDatafile implements Client {
       ...clientConfig,
       datafile,
     })
+    // TODO: Should emit datafile?
+    this.emitter.emit(DATAFILE_UPDATE_EVT)
 
     if (this.datafileManager) {
       this.datafileListenerDisposer = this.datafileManager.onUpdate(nextDatafile => {
@@ -191,6 +193,7 @@ class OptimizelyWithManagedDatafile implements Client {
           ...clientConfig,
           datafile: nextDatafile,
         })
+        // TODO: Should emit datafile?
         this.emitter.emit(DATAFILE_UPDATE_EVT)
       })
     }
