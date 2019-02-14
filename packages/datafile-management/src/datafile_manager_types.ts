@@ -1,8 +1,8 @@
+import { ListenerDisposer } from './event_emitter'
+
 export type Datafile = object
 
 export type DatafileUpdateListener = (datafile: Datafile) => void
-
-export type ListenerDisposer = () => void
 
 export interface DatafileManager {
   get: () => Datafile | null

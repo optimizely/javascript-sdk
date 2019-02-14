@@ -1,5 +1,5 @@
 // TODO: move this type in here? Does it need exported from top level module?
-import { ListenerDisposer } from './datafile_manager_types'
+export type ListenerDisposer = () => void
 
 // TODO: Is this the right type? any sucks
 export type Listener = (...args: any[]) => any
