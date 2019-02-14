@@ -82,6 +82,7 @@ describe('javascript-sdk', function() {
         });
 
         assert.instanceOf(optlyInstance, Optimizely);
+        assert.equal(optlyInstance.clientVersion, '3.0.0');
       });
 
       it('should set the JavaScript client engine and version', function() {

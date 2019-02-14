@@ -71,7 +71,6 @@ module.exports = {
 
       config = fns.assignIn({
         clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
-        clientVersion: enums.CLIENT_VERSION,
         errorHandler: defaultErrorHandler,
         eventDispatcher: defaultEventDispatcher,
         logger: logger.createLogger({logLevel: logLevel})
