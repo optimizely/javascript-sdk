@@ -50,7 +50,8 @@ class OptimizelyWithManagedDatafile implements Client {
       return
     }
 
-    this.datafileManager.start()
+    // TODO: Start datafile manager
+    // this.datafileManager.start()
 
     const datafileFromManager = this.datafileManager.get()
     if (datafileFromManager) {

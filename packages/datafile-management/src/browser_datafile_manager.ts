@@ -110,7 +110,7 @@ class BrowserDatafileManager implements DatafileManager {
 
   // TODO: Ugly
   private startPolling(): void {
-    this.pollingInterval = setInterval(() => {
+    this.pollingInterval = window.setInterval(() => {
       if (this.status === ManagerStatus.STARTED) {
         this.fetchAndUpdateCurrentDatafile().then((datafile: Datafile) => {
           if (this.status === ManagerStatus.STARTED) {

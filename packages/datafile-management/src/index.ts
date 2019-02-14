@@ -9,5 +9,9 @@ export {
 } from './datafile_manager_types'
 
 export {
-  default as createBrowserDefaultDatafileManager
+  default as createBrowserDefaultDatafileManager,
 } from './browser_datafile_manager'
+
+export {
+  default as createNodeDefaultDatafileManager,
+} from './node_datafile_manager'

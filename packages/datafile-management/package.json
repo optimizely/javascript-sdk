@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@optimizely/optimizely-sdk": "^3.0.0-rc2",
+    "@types/node": "^11.9.3",
     "tslib": "^1.9.3"
   }
 }
