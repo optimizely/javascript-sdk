@@ -32,11 +32,18 @@ export default class DefaultDatafileManager implements DatafileManager {
 
   private currentDatafile: Datafile | null
 
+  // TODO: No NodeJS-specific types in default datafile manager. Must handle this setInterval crap.
   private pollingInterval: NodeJS.Timeout | undefined
 
   private status: ManagerStatus
 
   private fetchDatafile: (datafileUrl: string) => Promise<string>
+
+  private resolveOnReady: (() => void) | undefined
+
+  private rejectOnReady: (() => void) | undefined
+
+  private isReady: boolean
 
   constructor(sdkKey: string, { urlBuilder = defaultUrlBuilder, fetchDatafile }: ManagerOptions) {
     this.sdkKey = sdkKey
@@ -45,8 +52,11 @@ export default class DefaultDatafileManager implements DatafileManager {
     this.currentDatafile = null
     this.status = ManagerStatus.INITIAL
     this.fetchDatafile = fetchDatafile
-    // TODO: Only fetch when start is called
-    this.onReady = this.fetchAndUpdateCurrentDatafile()
+    this.onReady = new Promise((resolve, reject) => {
+      this.resolveOnReady = resolve
+      this.rejectOnReady = reject
+    })
+    this.isReady = false
   }
 
   get() {
@@ -65,17 +75,31 @@ export default class DefaultDatafileManager implements DatafileManager {
 
     this.status = ManagerStatus.STARTED
 
-    this.onReady.then(() => {
-      if (this.status === ManagerStatus.STARTED) {
-        this.startPolling()
-      }
-    })
+    if (this.isReady) {
+      this.startPolling()
+    } else {
+      // TODO: Should handle errors & retry N times on failure, before rejecting?
+      this.fetchAndUpdateCurrentDatafile()
+        .then(
+          () => {
+            this.isReady = true
+            if (this.status === ManagerStatus.STARTED) {
+              this.startPolling()
+            }
+            this.resolveOnReady && this.resolveOnReady()
+          },
+          () => {
+            this.rejectOnReady && this.rejectOnReady()
+          },
+        )
+    }
   }
 
   stop() {
     this.status = ManagerStatus.STOPPED
     if (typeof this.pollingInterval !== 'undefined') {
       clearInterval(this.pollingInterval)
+      this.pollingInterval = void 0
     }
   }
 
