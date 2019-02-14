@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "outDir": "./built",
+    "outDir": "./lib",
     "allowJs": true,
     "target": "es5"
   },
-  "include": ["./lib/**/*"]
+  "include": ["./src/**/*"]
 }
