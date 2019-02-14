@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Optimizely Full Stack Core",
   "author": "jordangarcia <jordan@optimizely.com>",
-  "homepage": "",
+  "homepage": "https://github.com/optimizely/javascript-sdk",
   "license": "MIT",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -16,7 +16,8 @@
   ],
   "scripts": {
     "tsc": "rm -rf lib && tsc",
-    "test": "jest"
+    "test": "jest",
+    "prepublishOnly": "jest && npm run tsc"
   },
   "dependencies": {
     "sprintf-js": "^1.1.1",
