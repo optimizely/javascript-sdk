@@ -23,10 +23,17 @@ var Optimizely = require('./optimizely');
 
 var MODULE_NAME = 'INDEX';
 
+
+
 /**
- * Entry point into the Optimizely Node testing SDK
+ * Entry point into the Optimizely Browser SDK
  */
 module.exports = {
+  logger: logger,
+  errorHandler: defaultErrorHandler,
+  eventDispatcher: defaultEventDispatcher,
+  enums: enums,
+
   /**
    * Creates an instance of the Optimizely class
    * @param  {Object} config
@@ -76,5 +83,8 @@ module.exports = {
       config.errorHandler.handleError(e);
       return null;
     }
-  }
+  },
+
+
+
 };

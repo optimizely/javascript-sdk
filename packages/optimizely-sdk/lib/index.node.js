@@ -31,6 +31,11 @@ var MODULE_NAME = 'INDEX';
  * Entry point into the Optimizely Node testing SDK
  */
 module.exports = {
+  logger: logger,
+  errorHandler: defaultErrorHandler,
+  eventDispatcher: defaultEventDispatcher,
+  enums: enums,
+
   /**
    * Creates an instance of the Optimizely class
    * @param  {Object} config
