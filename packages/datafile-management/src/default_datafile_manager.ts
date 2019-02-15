@@ -158,10 +158,7 @@ export default class DefaultDatafileManager implements DatafileManager {
   // TODO: Better error handling, reject reasons/messages
   private fetchAndParseDatafile(): Promise<Datafile> {
     return this.fetchDatafile(this.urlBuilder(this.sdkKey))
-      .then((datafileStr: string) => {
-        const datafileObj = JSON.parse(datafileStr)
-        return datafileObj
-      })
+      .then((datafileStr: string) => JSON.parse(datafileStr))
   }
 
   // TODO: Ugly
