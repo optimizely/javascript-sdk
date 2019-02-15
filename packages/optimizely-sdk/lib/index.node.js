@@ -84,6 +84,10 @@ exports.createInstance = function(config) {
     managedConfig.sdkKey = config.sdkKey;
   }
 
+  if (config.datafile) {
+    managedConfig.datafile = config.datafile;
+  }
+
   if (config.createDatafileManager) {
     managedConfig.createDatafileManager = config.createDatafileManager;
   } else {

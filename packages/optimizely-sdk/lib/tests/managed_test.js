@@ -1,6 +1,9 @@
 var optly = require('../index.node');
 
+var datafileStringExpDisabled = '{"version": "4", "rollouts": [], "typedAudiences": [], "anonymizeIP": false, "projectId": "13355390152", "variables": [], "featureFlags": [], "experiments": [], "audiences": [{"conditions": "[\\"or\\", {\\"match\\": \\"exact\\", \\"name\\": \\"$opt_dummy_attribute\\", \\"type\\": \\"custom_attribute\\", \\"value\\": \\"$opt_dummy_value\\"}]", "id": "$opt_dummy_audience", "name": "Optimizely-Generated Audience for Backwards Compatibility"}], "groups": [], "attributes": [{"id": "13354750384", "key": "my_attr"}], "botFiltering": false, "accountId": "4879520872", "events": [{"experimentIds": [], "id": "13348940610", "key": "my_evt"}], "revision": "62"}';
+
 var managedInstance = optly.createInstance({
+  datafile: datafileStringExpDisabled,
   sdkKey: '9LCprAQyd1bs1BBXZ3nVji',
   eventDispatcher: {
     dispatchEvent: function() {
