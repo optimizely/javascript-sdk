@@ -1,8 +1,12 @@
+// TODO: Too complex. isReady, resolveOnReady, status, async stuff
+
 import { Datafile, DatafileManager, DatafileUpdateListener } from './datafile_manager_types'
 import EventEmitter from './event_emitter';
 
 export interface ManagerOptions {
+  datafile?: string | Datafile
   fetchDatafile: (datafileUrl: string) => Promise<string>
+  sdkKey: string,
   urlBuilder?: (sdkKey: string) => string
 }
 
@@ -39,24 +43,51 @@ export default class DefaultDatafileManager implements DatafileManager {
 
   private fetchDatafile: (datafileUrl: string) => Promise<string>
 
-  private resolveOnReady: (() => void) | undefined
+  private resolveOnReady: ((datafile: Datafile) => void) | undefined
 
+  // TODO: Reject with what?
   private rejectOnReady: (() => void) | undefined
 
-  private isReady: boolean
-
-  constructor(sdkKey: string, { urlBuilder = defaultUrlBuilder, fetchDatafile }: ManagerOptions) {
+  // TODO: Clean up this constructor
+  constructor({ datafile, sdkKey, urlBuilder = defaultUrlBuilder, fetchDatafile }: ManagerOptions) {
     this.sdkKey = sdkKey
     this.urlBuilder = urlBuilder
     this.emitter = new EventEmitter()
-    this.currentDatafile = null
     this.status = ManagerStatus.INITIAL
     this.fetchDatafile = fetchDatafile
-    this.onReady = new Promise((resolve, reject) => {
-      this.resolveOnReady = resolve
-      this.rejectOnReady = reject
-    })
-    this.isReady = false
+
+    this.currentDatafile = null
+
+    switch (typeof datafile) {
+      case 'undefined':
+        break
+
+      case 'string':
+        let datafileObj: Datafile | undefined
+        try {
+          datafileObj = JSON.parse(datafile)
+        } catch (e) {
+          // TODO: log
+        }
+        if (datafileObj) {
+          this.currentDatafile = datafileObj
+        }
+        break
+
+      default: // type is object
+        this.currentDatafile = datafile
+        break
+    }
+
+    if (this.currentDatafile !== null) {
+      this.onReady = Promise.resolve(this.currentDatafile)
+    } else {
+      this.onReady = new Promise((resolve, reject) => {
+        this.resolveOnReady = resolve
+        this.rejectOnReady = reject
+      })
+    }
+
   }
 
   get() {
@@ -75,18 +106,17 @@ export default class DefaultDatafileManager implements DatafileManager {
 
     this.status = ManagerStatus.STARTED
 
-    if (this.isReady) {
+    if (this.currentDatafile !== null) {
       this.startPolling()
     } else {
       // TODO: Should handle errors & retry N times on failure, before rejecting?
       this.fetchAndUpdateCurrentDatafile()
         .then(
-          () => {
-            this.isReady = true
+          (datafile: Datafile) => {
             if (this.status === ManagerStatus.STARTED) {
               this.startPolling()
             }
-            this.resolveOnReady && this.resolveOnReady()
+            this.resolveOnReady && this.resolveOnReady(datafile)
           },
           () => {
             this.rejectOnReady && this.rejectOnReady()

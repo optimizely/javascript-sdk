@@ -21,8 +21,8 @@ function fetchDatafile(datafileUrl: string): Promise<string> {
   })
 }
 
-export default function create(sdkKey: string, options?: ManagerOptions): DefaultDatafileManager {
-  return new DefaultDatafileManager(sdkKey, {
+export default function create(options: ManagerOptions): DefaultDatafileManager {
+  return new DefaultDatafileManager({
     ...options,
     fetchDatafile,
   })

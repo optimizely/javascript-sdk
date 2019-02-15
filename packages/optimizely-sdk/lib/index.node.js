@@ -78,13 +78,17 @@ exports.createInstance = function(config) {
   var managedConfig = {
     clientConfig: config,
     createInstance: createCoreInstance,
-    createDefaultDatafileManager: datafileManagement.createNodeDefaultDatafileManager,
   };
+
   if (config.sdkKey) {
     managedConfig.sdkKey = config.sdkKey;
   }
-  if (config.datafileManager) {
-    managedConfig.datafileManager = config.datafileManager;
+
+  if (config.createDatafileManager) {
+    managedConfig.createDatafileManager = config.createDatafileManager;
+  } else {
+    managedConfig.createDatafileManager = datafileManagement.createNodeDefaultDatafileManager;
   }
+
   return datafileManagement.createInstanceWithManagedDatafile(managedConfig);
 };

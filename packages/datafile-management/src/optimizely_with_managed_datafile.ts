@@ -7,12 +7,16 @@ import createStaticDatafileManager from './static_datafile_manager'
 import createDefaultClient from './default_client'
 import { default as EventEmitter, Listener, ListenerDisposer } from './event_emitter';
 
+interface DatafileManagerConfig {
+  sdkKey: string
+  datafile?: string | Datafile
+}
+
 export interface OptimizelyWithManagedDatafileConfig {
   clientConfig: Config
   datafile?: Datafile
   sdkKey?: string
-  datafileManager?: DatafileManager
-  createDefaultDatafileManager: (sdkKey: string) => DatafileManager
+  createDatafileManager: (config: DatafileManagerConfig) => DatafileManager
   createInstance: (config: Config) => Client
 }
 
@@ -27,17 +31,16 @@ class OptimizelyWithManagedDatafile implements Client {
 
   private datafileListenerDisposer: ListenerDisposer | undefined
 
-  private emitter: EventEmitter
+  private readonly emitter: EventEmitter
 
-  private createInstance: (config: Config) => Client
+  private readonly createInstance: (config: Config) => Client
 
   constructor(config: OptimizelyWithManagedDatafileConfig) {
     const {
       clientConfig,
       createInstance,
       datafile,
-      datafileManager,
-      createDefaultDatafileManager,
+      createDatafileManager,
       sdkKey,
     } = config
 
@@ -47,14 +50,11 @@ class OptimizelyWithManagedDatafile implements Client {
 
     this.client = createDefaultClient()
 
-    // TODO: If both datafile and sdkKey, seed manager with datafile, but keep updating in thef turue
     if (sdkKey) {
       // TODO: Provide ability to pass through datafile manager options
-      this.datafileManager = createDefaultDatafileManager(sdkKey)
+      this.datafileManager = createDatafileManager({ sdkKey, datafile })
     } else if (datafile) {
       this.datafileManager = createStaticDatafileManager(datafile)
-    } else if (datafileManager) {
-      this.datafileManager = datafileManager
     } else {
       // TODO: Log? Reject with error message str?
       this.onReady = Promise.reject()

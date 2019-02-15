@@ -7,7 +7,8 @@ var managedInstance = optly.createInstance({
     },
   },
   logger: {
-    log: function() {
+    log: function(level, msg) {
+      // console.log('--- ', msg);
     },
   },
 });
