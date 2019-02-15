@@ -2,25 +2,13 @@
 
 import { Datafile, DatafileManager, DatafileUpdateListener } from './datafile_manager_types'
 import EventEmitter from './event_emitter';
+import { getDatafileRevision } from './datafile'
 
-// TODO: Move to another module
-function getDatafileRevision(datafile: Datafile | null): number {
-  if (!datafile) {
-    return -Infinity
-  }
-  const revision = datafile.revision
-  if (typeof revision === 'undefined') {
-    // TODO: Log?
-    return -Infinity
-  }
-  return revision
-}
-
-// TODO: Add config option to poll for updates or not
 export interface ManagerOptions {
   datafile?: string | Datafile
   fetchDatafile: (datafileUrl: string) => Promise<string>
   sdkKey: string,
+  updateStrategy: PollingUpdateStrategy
   urlBuilder?: (sdkKey: string) => string
 }
 
@@ -71,14 +59,20 @@ export default class DefaultDatafileManager implements DatafileManager {
   private updateStrategy: PollingUpdateStrategy
 
   // TODO: Clean up this constructor
-  constructor({ datafile, sdkKey, urlBuilder = defaultUrlBuilder, fetchDatafile }: ManagerOptions) {
+  constructor({
+    datafile,
+    fetchDatafile,
+    sdkKey,
+    updateStrategy,
+    urlBuilder = defaultUrlBuilder,
+  }: ManagerOptions) {
     this.sdkKey = sdkKey
     this.urlBuilder = urlBuilder
     this.emitter = new EventEmitter()
     this.status = ManagerStatus.INITIAL
     this.fetchDatafile = fetchDatafile
     this.currentDatafile = null
-    this.updateStrategy = PollingUpdateStrategy.ALWAYS
+    this.updateStrategy = updateStrategy
 
     switch (typeof datafile) {
       case 'undefined':
@@ -136,13 +130,15 @@ export default class DefaultDatafileManager implements DatafileManager {
       this.startPolling()
     } else {
       // TODO: Should handle errors & retry N times on failure, before rejecting?
-      this.fetchAndUpdateCurrentDatafile()
+      this.fetchAndParseDatafile()
         .then(
           (datafile: Datafile) => {
+            this.currentDatafile = datafile
+            this.emitter.emit(UPDATE_EVT, datafile)
+            this.resolveOnReady && this.resolveOnReady(datafile)
             if (this.status === ManagerStatus.STARTED) {
               this.startPolling()
             }
-            this.resolveOnReady && this.resolveOnReady(datafile)
           },
           () => {
             this.rejectOnReady && this.rejectOnReady()
@@ -160,11 +156,10 @@ export default class DefaultDatafileManager implements DatafileManager {
   }
 
   // TODO: Better error handling, reject reasons/messages
-  private fetchAndUpdateCurrentDatafile(): Promise<Datafile> {
+  private fetchAndParseDatafile(): Promise<Datafile> {
     return this.fetchDatafile(this.urlBuilder(this.sdkKey))
       .then((datafileStr: string) => {
         const datafileObj = JSON.parse(datafileStr)
-        this.currentDatafile = datafileObj
         return datafileObj
       })
   }
@@ -174,19 +169,24 @@ export default class DefaultDatafileManager implements DatafileManager {
   private startPolling(): void {
     this.pollingInterval = setInterval(() => {
       if (this.status === ManagerStatus.STARTED) {
-        const priorRevision = getDatafileRevision(this.currentDatafile)
-        this.fetchAndUpdateCurrentDatafile().then((datafile: Datafile) => {
+        this.fetchAndParseDatafile().then((datafile: Datafile) => {
           if (this.status !== ManagerStatus.STARTED) {
             return
           }
 
           if (this.updateStrategy === PollingUpdateStrategy.NEW_REVISION) {
+            const priorRevision = getDatafileRevision(this.currentDatafile)
+            console.log('prior revision: ', priorRevision)
             const newRevision = getDatafileRevision(datafile)
+            console.log('new revision: ', newRevision)
             if (newRevision <= priorRevision) {
               return
             }
           }
 
+          // TODO: Method or setter property to automatically emit every time it's assigned?
+          // Doing this in several places
+          this.currentDatafile = datafile
           this.emitter.emit(UPDATE_EVT, datafile)
         })
       }

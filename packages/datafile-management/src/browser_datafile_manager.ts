@@ -1,4 +1,4 @@
-import { default as DefaultDatafileManager, ManagerOptions } from './default_datafile_manager'
+import { default as DefaultDatafileManager, ManagerOptions, PollingUpdateStrategy } from './default_datafile_manager'
 
 const GET_METHOD = 'GET'
 const READY_STATE_COMPLETE = 4
@@ -25,5 +25,6 @@ export default function create(options: ManagerOptions): DefaultDatafileManager 
   return new DefaultDatafileManager({
     ...options,
     fetchDatafile,
+    updateStrategy: PollingUpdateStrategy.NEVER,
   })
 }

@@ -1,7 +1,7 @@
 import http from 'http';
 import https from 'https';
 import url from 'url';
-import { default as DefaultDatafileManager, ManagerOptions } from './default_datafile_manager'
+import { default as DefaultDatafileManager, ManagerOptions, PollingUpdateStrategy } from './default_datafile_manager'
 
 // TODO: Better error handling, reject reasons/messages
 function fetchDatafile(datafileUrl: string): Promise<string> {
@@ -69,5 +69,6 @@ export default function create(options: ManagerOptions): DefaultDatafileManager 
   return new DefaultDatafileManager({
     ...options,
     fetchDatafile,
+    updateStrategy: PollingUpdateStrategy.NEW_REVISION,
   })
 }
