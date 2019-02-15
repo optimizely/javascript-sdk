@@ -1,6 +1,6 @@
 import { sprintf } from 'sprintf-js'
 import { getErrorHandler } from './errorHandler'
-import { isValidEnum } from './utils';
+import { isValidEnum } from './utils'
 
 export enum LogLevel {
   NOTSET = 0,
@@ -36,11 +36,14 @@ class BasicLogger implements Logger {
   private logLevel: LogLevel
 
   constructor(config: BasicLoggerConfig) {
-    if (config.logLevel !== undefined) {
+    if (config.logLevel !== undefined && isValidEnum(LogLevel, config.logLevel)) {
       // TODO should it set the global log level here?
       this.setLogLevel(config.logLevel)
+    } else {
+      this.logLevel = LogLevel.ERROR
     }
-    this.logToConsole = !!config.logToConsole
+
+    this.logToConsole = config.logToConsole !== undefined ? !!config.logToConsole : true
     this.prefix = config.prefix !== undefined ? config.prefix : '[OPTIMIZELY]'
   }
 
@@ -55,7 +58,6 @@ class BasicLogger implements Logger {
 
     this.consoleLog(level, [logMessage])
   }
-
 
   setLogLevel(level: LogLevel) {
     if (isValidEnum(LogLevel, level)) {
@@ -122,8 +124,13 @@ class OptimizelyLogger {
       return
     }
     this.logLevel = level
-    if (this.loggerBackend) {
-      this.loggerBackend.setLogLevel(level)
+    try {
+      if (this.loggerBackend) {
+        this.loggerBackend.setLogLevel(level)
+      }
+    } catch(e) {
+      // swallow
+      this.handleError(e, 'Logger: could not call setLogLevel on supplied logger')
     }
   }
 
