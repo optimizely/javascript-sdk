@@ -3,6 +3,20 @@
 import { Datafile, DatafileManager, DatafileUpdateListener } from './datafile_manager_types'
 import EventEmitter from './event_emitter';
 
+// TODO: Move to another module
+function getDatafileRevision(datafile: Datafile | null): number {
+  if (!datafile) {
+    return -Infinity
+  }
+  const revision = datafile.revision
+  if (typeof revision === 'undefined') {
+    // TODO: Log?
+    return -Infinity
+  }
+  return revision
+}
+
+// TODO: Add config option to poll for updates or not
 export interface ManagerOptions {
   datafile?: string | Datafile
   fetchDatafile: (datafileUrl: string) => Promise<string>
@@ -11,9 +25,15 @@ export interface ManagerOptions {
 }
 
 const enum ManagerStatus {
-  INITIAL = "initial",
-  STARTED = "started",
-  STOPPED = "stopped",
+  INITIAL = 'initial',
+  STARTED = 'started',
+  STOPPED = 'stopped',
+}
+
+export const enum PollingUpdateStrategy {
+  ALWAYS = 'always',
+  NEW_REVISION = 'new_revision',
+  NEVER = 'never',
 }
 
 // TODO: Should be configurable
@@ -48,6 +68,8 @@ export default class DefaultDatafileManager implements DatafileManager {
   // TODO: Reject with what?
   private rejectOnReady: (() => void) | undefined
 
+  private updateStrategy: PollingUpdateStrategy
+
   // TODO: Clean up this constructor
   constructor({ datafile, sdkKey, urlBuilder = defaultUrlBuilder, fetchDatafile }: ManagerOptions) {
     this.sdkKey = sdkKey
@@ -55,8 +77,8 @@ export default class DefaultDatafileManager implements DatafileManager {
     this.emitter = new EventEmitter()
     this.status = ManagerStatus.INITIAL
     this.fetchDatafile = fetchDatafile
-
     this.currentDatafile = null
+    this.updateStrategy = PollingUpdateStrategy.ALWAYS
 
     switch (typeof datafile) {
       case 'undefined':
@@ -106,6 +128,10 @@ export default class DefaultDatafileManager implements DatafileManager {
 
     this.status = ManagerStatus.STARTED
 
+    if (this.updateStrategy === PollingUpdateStrategy.NEVER) {
+      return
+    }
+
     if (this.currentDatafile !== null) {
       this.startPolling()
     } else {
@@ -148,10 +174,20 @@ export default class DefaultDatafileManager implements DatafileManager {
   private startPolling(): void {
     this.pollingInterval = setInterval(() => {
       if (this.status === ManagerStatus.STARTED) {
+        const priorRevision = getDatafileRevision(this.currentDatafile)
         this.fetchAndUpdateCurrentDatafile().then((datafile: Datafile) => {
-          if (this.status === ManagerStatus.STARTED) {
-            this.emitter.emit(UPDATE_EVT, datafile)
+          if (this.status !== ManagerStatus.STARTED) {
+            return
           }
+
+          if (this.updateStrategy === PollingUpdateStrategy.NEW_REVISION) {
+            const newRevision = getDatafileRevision(datafile)
+            if (newRevision <= priorRevision) {
+              return
+            }
+          }
+
+          this.emitter.emit(UPDATE_EVT, datafile)
         })
       }
     }, POLLING_INTERVAL)

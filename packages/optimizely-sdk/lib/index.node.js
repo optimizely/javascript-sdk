@@ -88,6 +88,7 @@ exports.createInstance = function(config) {
     managedConfig.datafile = config.datafile;
   }
 
+  // TODO: Don't allow customer to provide datafile manager? Only configuration?
   if (config.createDatafileManager) {
     managedConfig.createDatafileManager = config.createDatafileManager;
   } else {
