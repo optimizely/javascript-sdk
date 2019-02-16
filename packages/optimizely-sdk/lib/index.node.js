@@ -76,7 +76,7 @@ module.exports = {
         if (hasLogger) {
           core.getLogger().log(enums.LOG_LEVEL.ERROR, errorMessage);
         } else {
-          core.createLogger().log(enums.LOG_LEVEL.ERROR, errorMessage);
+          core.createConsoleLogger().log(enums.LOG_LEVEL.ERROR, errorMessage);
         }
         config.isValidInstance = false;
       }

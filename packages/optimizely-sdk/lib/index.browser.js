@@ -23,7 +23,7 @@ var logger = require('./plugins/logger');
 var Optimizely = require('./optimizely');
 
 var MODULE_NAME = 'INDEX';
-core.setLoggerBackend(core.createLogger());
+core.setLoggerBackend(core.createConsoleLogger());
 core.setLogLevel(core.LogLevel.INFO);
 
 /**
