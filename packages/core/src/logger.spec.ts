@@ -8,6 +8,7 @@ import {
   createConsoleLogger,
   resetLogger,
   LoggerFacade,
+  getLogLevel,
 } from './logger'
 
 import { resetErrorHandler } from './errorHandler'
@@ -35,6 +36,43 @@ describe('logger', () => {
       setLoggerBackend(stubLogger)
       setErrorHandler(stubErrorHandler)
       logger = getLogger()
+    })
+
+    describe('setLogLevel', () => {
+      it('should coerce "debug"', () => {
+        setLogLevel('debug')
+        expect(getLogLevel()).toBe(LogLevel.DEBUG)
+      })
+
+      it('should coerce "deBug"', () => {
+        setLogLevel('debug')
+        expect(getLogLevel()).toBe(LogLevel.DEBUG)
+      })
+
+      it('should coerce "INFO"', () => {
+        setLogLevel('INFO')
+        expect(getLogLevel()).toBe(LogLevel.INFO)
+      })
+
+      it('should coerce "WARN"', () => {
+        setLogLevel('WARN')
+        expect(getLogLevel()).toBe(LogLevel.WARNING)
+      })
+
+      it('should coerce "warning"', () => {
+        setLogLevel('warning')
+        expect(getLogLevel()).toBe(LogLevel.WARNING)
+      })
+
+      it('should coerce "ERROR"', () => {
+        setLogLevel('WARN')
+        expect(getLogLevel()).toBe(LogLevel.WARNING)
+      })
+
+      it('should default to error if invalid', () => {
+        setLogLevel('invalid')
+        expect(getLogLevel()).toBe(LogLevel.ERROR)
+      })
     })
 
     describe('getLogger(name)', () => {

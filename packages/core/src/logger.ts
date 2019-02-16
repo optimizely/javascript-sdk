@@ -14,6 +14,31 @@ export enum LogLevel {
   ERROR = 4,
 }
 
+const stringToLogLevel = {
+  NOTSET: 0,
+  DEBUG: 1,
+  INFO: 2,
+  WARNING: 3,
+  ERROR: 4,
+}
+
+function coerceLogLevel(level: any): LogLevel {
+  if (typeof level !== 'string') {
+    return level
+  }
+
+  level = level.toUpperCase()
+  if (level === 'WARN') {
+    level = 'WARNING'
+  }
+
+  if (!stringToLogLevel[level]) {
+    return level
+  }
+
+  return stringToLogLevel[level]
+}
+
 /**
  * @export
  * @interface Logger
@@ -131,6 +156,7 @@ class ConsoleLogger implements Logger {
    * @memberof ConsoleLogger
    */
   setLogLevel(level: LogLevel) {
+    level = coerceLogLevel(level)
     if (!isValidEnum(LogLevel, level) || level === undefined) {
       this.logLevel = LogLevel.ERROR
     } else {
@@ -317,12 +343,17 @@ export function setLoggerBackend(logger: Logger | null) {
  * @export
  * @param {LogLevel} level
  */
-export function setLogLevel(level: LogLevel) {
+export function setLogLevel(level: LogLevel | string) {
+  level = coerceLogLevel(level)
   if (!isValidEnum(LogLevel, level) || level === undefined) {
     globalLogLevel = LogLevel.ERROR
   } else {
     globalLogLevel = level
   }
+}
+
+export function getLogLevel(): LogLevel {
+  return globalLogLevel
 }
 
 /**
