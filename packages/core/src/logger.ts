@@ -59,9 +59,9 @@ class NoopLogger implements Logger {
  * @implements {Logger}
  */
 class ConsoleLogger implements Logger {
+  public logLevel: LogLevel
   private logToConsole: boolean
   private prefix: string
-  private logLevel: LogLevel
 
   /**
    * Creates an instance of ConsoleLogger.
@@ -102,7 +102,9 @@ class ConsoleLogger implements Logger {
    * @memberof ConsoleLogger
    */
   setLogLevel(level: LogLevel) {
-    if (isValidEnum(LogLevel, level)) {
+    if (!isValidEnum(LogLevel, level) || level === undefined) {
+      this.logLevel = LogLevel.ERROR
+    } else {
       this.logLevel = level
     }
   }
@@ -273,10 +275,11 @@ export function setLoggerBackend(logger: Logger | null) {
  * @param {LogLevel} level
  */
 export function setLogLevel(level: LogLevel) {
-  if (!isValidEnum(LogLevel, level)) {
-    return
+  if (!isValidEnum(LogLevel, level) || level === undefined) {
+    globalLogLevel = LogLevel.ERROR
+  } else {
+    globalLogLevel = level
   }
-  globalLogLevel = level
 }
 
 /**
