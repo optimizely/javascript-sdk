@@ -19,10 +19,9 @@ var configValidator = require('./utils/config_validator');
 var defaultErrorHandler = require('./plugins/error_handler');
 var defaultEventDispatcher = require('./plugins/event_dispatcher/index.browser');
 var enums = require('./utils/enums');
-var logger = require('./plugins/logger');
 var Optimizely = require('./optimizely');
 
-var MODULE_NAME = 'INDEX';
+var logger = core.getLogger('INDEX');
 core.setLoggerBackend(core.createConsoleLogger());
 core.setLogLevel(core.LogLevel.INFO);
 
@@ -30,7 +29,7 @@ core.setLogLevel(core.LogLevel.INFO);
  * Entry point into the Optimizely Browser SDK
  */
 module.exports = {
-  logging: logger,
+  logging: require('./plugins/logger'),
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
   enums: enums,
@@ -67,7 +66,7 @@ module.exports = {
         configValidator.validate(config);
         config.isValidInstance = true;
       } catch (ex) {
-        core.getLogger().log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
+        logger.error(ex);
         config.isValidInstance = false;
       }
 
@@ -85,14 +84,14 @@ module.exports = {
         {
           clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
           // always get the OptimizelyLogger facade from core
-          logger: core.getLogger(),
+          logger: logger,
           errorHandler: core.getErrorHandler(),
         }
       );
 
       return new Optimizely(config);
     } catch (e) {
-      core.getLogger().handleError(e);
+      logger.error(e);
       return null;
     }
   },
