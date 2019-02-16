@@ -2,6 +2,7 @@ import http from 'http';
 import https from 'https';
 import url from 'url';
 import { default as DefaultDatafileManager, ManagerOptions, PollingUpdateStrategy } from './default_datafile_manager'
+import * as Interval from './interval'
 
 // TODO: Better error handling, reject reasons/messages
 function fetchDatafile(datafileUrl: string): Promise<string> {
@@ -65,10 +66,21 @@ function fetchDatafile(datafileUrl: string): Promise<string> {
   })
 }
 
+const intervalSetter: Interval.IntervalSetter = {
+  setInterval(listener: Interval.IntervalListener, intervalMs: number) {
+    const timeout = setInterval(listener, intervalMs)
+    return () => {
+      clearTimeout(timeout)
+    }
+  }
+}
+
+// TODO: argument options type should be Partial
 export default function create(options: ManagerOptions): DefaultDatafileManager {
   return new DefaultDatafileManager({
     ...options,
     fetchDatafile,
+    intervalSetter,
     updateStrategy: PollingUpdateStrategy.NEW_REVISION,
   })
 }

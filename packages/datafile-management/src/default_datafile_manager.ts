@@ -3,10 +3,12 @@
 import { Datafile, DatafileManager, DatafileUpdateListener } from './datafile_manager_types'
 import EventEmitter from './event_emitter';
 import { getDatafileRevision } from './datafile'
+import * as Interval from './interval'
 
 export interface ManagerOptions {
   datafile?: string | Datafile
   fetchDatafile: (datafileUrl: string) => Promise<string>
+  intervalSetter: Interval.IntervalSetter,
   sdkKey: string,
   updateStrategy: PollingUpdateStrategy
   urlBuilder?: (sdkKey: string) => string
@@ -44,8 +46,9 @@ export default class DefaultDatafileManager implements DatafileManager {
 
   private currentDatafile: Datafile | null
 
-  // TODO: No NodeJS-specific types in default datafile manager. Must handle this setInterval crap.
-  private pollingInterval: NodeJS.Timeout | undefined
+  private intervalSetter: Interval.IntervalSetter
+
+  private intervalClearer: Interval.IntervalClearer | undefined
 
   private status: ManagerStatus
 
@@ -62,6 +65,7 @@ export default class DefaultDatafileManager implements DatafileManager {
   constructor({
     datafile,
     fetchDatafile,
+    intervalSetter,
     sdkKey,
     updateStrategy,
     urlBuilder = defaultUrlBuilder,
@@ -72,6 +76,7 @@ export default class DefaultDatafileManager implements DatafileManager {
     this.status = ManagerStatus.INITIAL
     this.fetchDatafile = fetchDatafile
     this.currentDatafile = null
+    this.intervalSetter = intervalSetter
     this.updateStrategy = updateStrategy
 
     switch (typeof datafile) {
@@ -149,9 +154,9 @@ export default class DefaultDatafileManager implements DatafileManager {
 
   stop() {
     this.status = ManagerStatus.STOPPED
-    if (typeof this.pollingInterval !== 'undefined') {
-      clearInterval(this.pollingInterval)
-      this.pollingInterval = void 0
+    if (typeof this.intervalClearer !== 'undefined') {
+      this.intervalClearer()
+      this.intervalClearer = void 0
     }
   }
 
@@ -164,7 +169,7 @@ export default class DefaultDatafileManager implements DatafileManager {
   // TODO: Ugly
   // TODO: Only call update if revision is different?
   private startPolling(): void {
-    this.pollingInterval = setInterval(() => {
+    this.intervalClearer = this.intervalSetter.setInterval(() => {
       if (this.status === ManagerStatus.STARTED) {
         this.fetchAndParseDatafile().then((datafile: Datafile) => {
           if (this.status !== ManagerStatus.STARTED) {

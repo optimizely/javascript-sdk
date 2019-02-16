@@ -1,4 +1,5 @@
 import { default as DefaultDatafileManager, ManagerOptions, PollingUpdateStrategy } from './default_datafile_manager'
+import * as Interval from './interval'
 
 const GET_METHOD = 'GET'
 const READY_STATE_COMPLETE = 4
@@ -67,10 +68,21 @@ function fetchDatafile(datafileUrl: string): Promise<string> {
   })
 }
 
+const intervalSetter: Interval.IntervalSetter = {
+  setInterval(listener: Interval.IntervalListener, intervalMs: number) {
+    const timeout = window.setInterval(listener, intervalMs)
+    return () => {
+      window.clearTimeout(timeout)
+    }
+  }
+}
+
+// TODO: argument options type should be Partial
 export default function create(options: ManagerOptions): DefaultDatafileManager {
   return new DefaultDatafileManager({
     ...options,
     fetchDatafile,
+    intervalSetter,
     updateStrategy: PollingUpdateStrategy.NEVER,
   })
 }
