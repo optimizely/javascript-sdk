@@ -77,42 +77,6 @@ describe('logger', () => {
       })
     })
 
-    describe('logger.log(obj)', () => {
-      it('should work with `log(obj)`', () => {
-        setLogLevel(LogLevel.INFO)
-
-        logger.log({
-          level: LogLevel.INFO,
-          message: '%s - %s',
-          splat: ['foo', 'bar'],
-        })
-
-        expect(stubLogger.log).toHaveBeenCalledTimes(1)
-        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.INFO, 'foo - bar')
-      })
-
-      it('error should take an error and invoke the error handler', () => {
-        class MyError extends Error {
-          constructor(message: string) {
-            super(message)
-          }
-        }
-
-        try {
-          throw new MyError('test')
-        } catch (ex) {
-          logger.log({
-            level: LogLevel.ERROR,
-            message: ex.message,
-            error: ex,
-          })
-          expect(stubLogger.log).toHaveBeenCalledTimes(1)
-          expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.ERROR, 'test')
-          expect(stubErrorHandler.handleError).toHaveBeenCalledWith(ex)
-        }
-      })
-    })
-
     describe('logger.info', () => {
       it('should handle info(message)', () => {
         logger.info('test')
