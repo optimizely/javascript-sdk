@@ -27,23 +27,15 @@ type LogData = {
   splat?: any[]
   error?: Error
 }
-type LogInputObject = LogData & { level: LogLevel }
 
 /**
  * @export
  * @interface LoggerFacade
  */
 export interface LoggerFacade {
-  /**
-   * @param {(LogLevel | LogInputObject)} levelOrObj
-   * @param {string} [message]
-   * @memberof LoggerFacade
-   */
-  log(levelOrObj: LogLevel | LogInputObject, message?: string): void
+  log(level: LogLevel, message: string): void
 
-  info(message: string): void
-  info(message: Error): void
-  info(message: string, ...splat: any[]): void
+  info(message: string | Error, ...splat: any[]): void
 
   debug(message: string | Error, ...splat: any[]): void
 
@@ -232,68 +224,62 @@ class OptimizelyLogger implements LoggerFacade {
    * @param {string} [message]
    * @memberof OptimizelyLogger
    */
-  log(levelOrObj: LogLevel | LogInputObject, message?: string): void {
+  log(level: LogLevel, message: string): void {
+    this.internalLog(level, { message })
+  }
+
+  info(message: string | Error, ...splat: any[]): void {
+    this.namedLog(LogLevel.INFO, message, splat)
+  }
+
+  debug(message: string | Error, ...splat: any[]): void {
+    this.namedLog(LogLevel.DEBUG, message, splat)
+  }
+
+  warn(message: string | Error, ...splat: any[]): void {
+    this.namedLog(LogLevel.WARNING, message, splat)
+  }
+
+  error(message: string | Error, ...splat: any[]): void {
+    this.namedLog(LogLevel.ERROR, message, splat)
+  }
+
+  private format(data: LogData): string {
+    return `${this.messagePrefix ? this.messagePrefix + ': ' : ''}${sprintf(
+      data.message,
+      data.splat,
+    )}`
+  }
+
+  private internalLog(level: LogLevel, data: LogData): void {
     if (!globalLoggerBackend) {
       return
     }
 
-    let opts: LogInputObject
-    if (arguments.length === 1 && typeof levelOrObj === 'object') {
-      opts = levelOrObj as LogInputObject
-    } else if (arguments.length === 2 && typeof message === 'string') {
-      opts = {
-        level: levelOrObj as LogLevel,
-        message,
-      }
-    } else {
+    if (level < globalLogLevel) {
       return
     }
 
-    if (opts.level < globalLogLevel) {
-      return
-    }
+    // TODO turn this into a format log function
+    globalLoggerBackend.log(level, this.format(data))
 
-    let sprintfArgs = opts.splat || []
-
-    const logMessage = `${this.messagePrefix ? this.messagePrefix + ': ' : ''}${sprintf(
-      opts.message,
-      ...sprintfArgs,
-    )}`
-    globalLoggerBackend.log(opts.level, logMessage)
-
-    if (opts.error && opts.error instanceof Error) {
-      getErrorHandler().handleError(opts.error)
+    if (data.error && data.error instanceof Error) {
+      getErrorHandler().handleError(data.error)
     }
   }
 
-  info(message: string | Error, ...splat: any[]): void {
-    this.internalLog(LogLevel.INFO, message, splat)
-  }
-
-  debug(message: string | Error, ...splat: any[]): void {
-    this.internalLog(LogLevel.DEBUG, message, splat)
-  }
-
-  warn(message: string | Error, ...splat: any[]): void {
-    this.internalLog(LogLevel.WARNING, message, splat)
-  }
-
-  error(message: string | Error, ...splat: any[]): void {
-    this.internalLog(LogLevel.ERROR, message, splat)
-  }
-
-  private internalLog(level: LogLevel, message: string | Error, splat: any[]): void {
+  private namedLog(level: LogLevel, message: string | Error, splat: any[]): void {
     let error: Error | undefined
 
     if (message instanceof Error) {
       error = message
       message = error.message
-      this.log({ error, message, level })
+      this.internalLog(level, { error, message })
       return
     }
 
     if (splat.length === 0) {
-      this.log({ message, level })
+      this.internalLog(level, { message })
       return
     }
 
@@ -303,7 +289,7 @@ class OptimizelyLogger implements LoggerFacade {
       splat.splice(-1)
     }
 
-    this.log({ message, error, splat, level })
+    this.internalLog(level, { message, error, splat })
   }
 }
 
