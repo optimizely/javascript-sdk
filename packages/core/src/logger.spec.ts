@@ -9,8 +9,9 @@ import {
   resetLogger,
 } from './logger'
 
-import { resetErrorHandler} from './errorHandler'
+import { resetErrorHandler } from './errorHandler'
 import { ErrorHandler, setErrorHandler } from './errorHandler'
+import { LoggerFacade } from '../lib'
 
 describe('logger', () => {
   afterEach(() => {
@@ -20,105 +21,173 @@ describe('logger', () => {
 
   describe('OptimizelyLogger', () => {
     let stubLogger: Logger
+    let logger: LoggerFacade
+
     beforeEach(() => {
       stubLogger = {
         log: jest.fn(),
       }
-    })
-
-    it('should call the loggerBackend when the message logLevel is equal to the configured logLevel threshold', () => {
-      setLogLevel(LogLevel.INFO)
+      setLogLevel(LogLevel.DEBUG)
       setLoggerBackend(stubLogger)
-      getLogger().log(LogLevel.INFO, 'test')
-
-      expect(stubLogger.log).toHaveBeenCalledTimes(1)
-      expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.INFO, 'test')
+      logger = getLogger()
     })
 
-    it('should call the loggerBackend when the message logLevel is above to the configured logLevel threshold', () => {
-      setLogLevel(LogLevel.INFO)
-      setLoggerBackend(stubLogger)
-      getLogger().log(LogLevel.WARNING, 'test')
+    describe('getLogger(name)', () => {
+      it('should prepend the name in the log messages', () => {
 
-      expect(stubLogger.log).toHaveBeenCalledTimes(1)
-      expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.WARNING, 'test')
+        const myLogger = getLogger('doit')
+        myLogger.info('test')
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.INFO, 'doit: test')
+      })
+
     })
 
-    it('should not call the loggerBackend when the message logLevel is above to the configured logLevel threshold', () => {
-      setLogLevel(LogLevel.INFO)
-      setLoggerBackend(stubLogger)
-      getLogger().log(LogLevel.DEBUG, 'test')
+    describe('logger.log(level, msg)', () => {
+      it('should call the loggerBackend when the message logLevel is equal to the configured logLevel threshold', () => {
+        setLogLevel(LogLevel.INFO)
+        logger.log(LogLevel.INFO, 'test')
 
-      expect(stubLogger.log).toHaveBeenCalledTimes(0)
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.INFO, 'test')
+      })
+
+      it('should call the loggerBackend when the message logLevel is above to the configured logLevel threshold', () => {
+        setLogLevel(LogLevel.INFO)
+        logger.log(LogLevel.WARNING, 'test')
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.WARNING, 'test')
+      })
+
+      it('should not call the loggerBackend when the message logLevel is above to the configured logLevel threshold', () => {
+        setLogLevel(LogLevel.INFO)
+        logger.log(LogLevel.DEBUG, 'test')
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(0)
+      })
+
+      it('should not throw if loggerBackend is not supplied', () => {
+        setLogLevel(LogLevel.INFO)
+        logger.log(LogLevel.ERROR, 'test')
+      })
     })
 
-    it('should not throw if loggerBackend is not supplied', () => {
-      setLogLevel(LogLevel.INFO)
-      getLogger().log(LogLevel.ERROR, 'test')
-    })
+    describe('logger.log(obj)', () => {
+      it('should work with `log(obj)`', () => {
+        setLogLevel(LogLevel.INFO)
 
-    it('handleError should invoke the error handler with message', () => {
-      const stubErrorHandler: ErrorHandler = {
-        handleError: jest.fn(),
-      }
-      setLoggerBackend(stubLogger)
-      setErrorHandler(stubErrorHandler)
+        logger.log({
+          level: LogLevel.INFO,
+          message: '%s - %s',
+          splat: ['foo', 'bar'],
+        })
 
-      class MyError extends Error {
-        constructor(message: string) {
-          super(message)
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.INFO, 'foo - bar')
+      })
+
+      it('error should take an error and invoke the error handler', () => {
+        const stubErrorHandler: ErrorHandler = {
+          handleError: jest.fn(),
         }
-      }
+        setErrorHandler(stubErrorHandler)
 
-      try {
-        throw new MyError('test')
-      } catch (ex) {
-        getLogger().handleError(ex)
+        class MyError extends Error {
+          constructor(message: string) {
+            super(message)
+          }
+        }
+
+        try {
+          throw new MyError('test')
+        } catch (ex) {
+          logger.log({
+            level: LogLevel.ERROR,
+            message: ex.message,
+            error: ex,
+          })
+          expect(stubLogger.log).toHaveBeenCalledTimes(1)
+          expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.ERROR, 'test')
+          expect(stubErrorHandler.handleError).toHaveBeenCalledWith(ex)
+        }
+      })
+    })
+
+    describe('logger.info(msg)', () => {
+      it('should invoke loggerBackend with level == LoglLevel.INFO', () => {
+        logger.info('test')
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.INFO, 'test')
+      })
+    })
+
+    describe('logger.debug(obj)', () => {
+      it('should invoke loggerBackend with level == LoglLevel.INFO', () => {
+        logger.info({ message: 'test: %s', splat: ['hey'] })
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.INFO, 'test: hey')
+      })
+    })
+
+    describe('logger.debug(msg)', () => {
+      it('should invoke loggerBackend with level == LoglLevel.DEBUG', () => {
+        logger.debug('test')
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.DEBUG, 'test')
+      })
+    })
+
+    describe('logger.warn(obj)', () => {
+      it('should invoke loggerBackend with level == LoglLevel.WARNING', () => {
+        logger.warn({ message: 'test: %s', splat: ['hey'] })
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.WARNING, 'test: hey')
+      })
+    })
+
+    describe('logger.warn(msg)', () => {
+      it('should invoke loggerBackend with level == LoglLevel.WARNING', () => {
+        logger.warn('test')
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.WARNING, 'test')
+      })
+    })
+
+    describe('logger.error(obj)', () => {
+      it('should invoke loggerBackend with level == LoglLevel.ERROR', () => {
+        logger.error({ message: 'test: %s', splat: ['hey'] })
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.ERROR, 'test: hey')
+      })
+    })
+
+    describe('logger.error(msg)', () => {
+      it('should invoke loggerBackend with level == LoglLevel.ERROR', () => {
+        logger.error('test')
 
         expect(stubLogger.log).toHaveBeenCalledTimes(1)
         expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.ERROR, 'test')
-        expect(stubErrorHandler.handleError).toHaveBeenCalledWith(ex)
-      }
+      })
     })
 
-    it('handleError should invoke the error handler with custom supplied message', () => {
-      const stubErrorHandler: ErrorHandler = {
-        handleError: jest.fn(),
-      }
-      setLoggerBackend(stubLogger)
-      setErrorHandler(stubErrorHandler)
-
-      class MyError extends Error {
-        constructor(message: string) {
-          super(message)
-        }
-      }
-
-      try {
-        throw new MyError('test')
-      } catch (ex) {
-        getLogger().handleError(ex, 'custom message')
+    describe('logger.debug(obj)', () => {
+      it('should invoke loggerBackend with level == LoglLevel.DEBUG', () => {
+        logger.debug({ message: 'test: %s', splat: ['hey'] })
 
         expect(stubLogger.log).toHaveBeenCalledTimes(1)
-        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.ERROR, 'custom message')
-        expect(stubErrorHandler.handleError).toHaveBeenCalledWith(ex)
-      }
-    })
-
-    it('should work with `log(obj)`', () => {
-      setLogLevel(LogLevel.INFO)
-      setLoggerBackend(stubLogger)
-      getLogger().log({
-        level: LogLevel.INFO,
-        message: '%s - %s',
-        splat: ['foo', 'bar'],
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.DEBUG, 'test: hey')
       })
-
-      expect(stubLogger.log).toHaveBeenCalledTimes(1)
-      expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.INFO, 'foo - bar')
     })
 
-    describe('with BasicLogger', () => {
+    describe('with ConsoleLogger', () => {
       beforeEach(() => {
         jest.spyOn(console, 'info').mockImplementation(() => {})
       })
@@ -134,7 +203,7 @@ describe('logger', () => {
         setLogLevel(LogLevel.INFO)
         jest.spyOn(logger, 'getTime').mockImplementation(() => TIME)
 
-        getLogger().log(LogLevel.INFO, 'hey')
+        logger.log(LogLevel.INFO, 'hey')
 
         expect(console.info).toBeCalledTimes(1)
         expect(console.info).toBeCalledWith('[OPTIMIZELY] - INFO 12:00 hey')
@@ -142,17 +211,17 @@ describe('logger', () => {
 
       it('should set logLevel to ERROR when setLogLevel is called with invalid value', () => {
         const logger = createConsoleLogger()
-        logger.setLogLevel('invalid' as any);
+        logger.setLogLevel('invalid' as any)
 
-        expect(logger.logLevel).toEqual(LogLevel.ERROR);
+        expect(logger.logLevel).toEqual(LogLevel.ERROR)
       })
 
       it('should set logLevel to ERROR when setLogLevel is called with no value', () => {
         const logger = createConsoleLogger()
         // @ts-ignore
-        logger.setLogLevel();
+        logger.setLogLevel()
 
-        expect(logger.logLevel).toEqual(LogLevel.ERROR);
+        expect(logger.logLevel).toEqual(LogLevel.ERROR)
       })
     })
   })
