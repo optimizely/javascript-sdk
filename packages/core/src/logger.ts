@@ -12,8 +12,12 @@ export enum LogLevel {
 
 export interface Logger {
   log(level: LogLevel, message: string): void
+}
 
-  setLogLevel(level: LogLevel): void
+export interface LoggerFacade {
+  log(levelOrObj: LogLevel | LogInputObject, message?: string): void
+
+  handleError(ex: Error, message?: string): void
 }
 
 type BasicLoggerConfig = {
@@ -26,8 +30,6 @@ class NoopLogger implements Logger {
   log(level: LogLevel, message: string): void {
     return
   }
-
-  setLogLevel(level: LogLevel): void {}
 }
 
 class BasicLogger implements Logger {
@@ -40,7 +42,7 @@ class BasicLogger implements Logger {
       // TODO should it set the global log level here?
       this.setLogLevel(config.logLevel)
     } else {
-      this.logLevel = LogLevel.ERROR
+      this.logLevel = LogLevel.NOTSET
     }
 
     this.logToConsole = config.logToConsole !== undefined ? !!config.logToConsole : true
@@ -48,11 +50,11 @@ class BasicLogger implements Logger {
   }
 
   log(level: LogLevel, message: string) {
-    if (!this.shouldLog(level)) {
+    if (!this.shouldLog(level) || !this.logToConsole) {
       return
     }
 
-    let logMessage: string = `${OptimizelyLogger.PREFIX} - ${this.getLogLevelName(
+    let logMessage: string = `${this.prefix} - ${this.getLogLevelName(
       level,
     )} ${this.getTime()} ${message}`
 
@@ -110,29 +112,10 @@ class BasicLogger implements Logger {
 
 type LogInputObject = { level: LogLevel; message: string; splat?: any[] }
 
-class OptimizelyLogger {
-  static PREFIX = '[OPTIMIZELY]'
-  private logLevel: LogLevel
+let globalLogLevel: LogLevel = LogLevel.ERROR
+
+class OptimizelyLogger implements LoggerFacade {
   private loggerBackend: Logger
-
-  constructor() {
-    this.setLogLevel(LogLevel.ERROR)
-  }
-
-  setLogLevel(level: LogLevel): void {
-    if (!isValidEnum(LogLevel, level)) {
-      return
-    }
-    this.logLevel = level
-    try {
-      if (this.loggerBackend) {
-        this.loggerBackend.setLogLevel(level)
-      }
-    } catch(e) {
-      // swallow
-      this.handleError(e, 'Logger: could not call setLogLevel on supplied logger')
-    }
-  }
 
   log(levelOrObj: LogLevel | LogInputObject, message?: string): void {
     if (!this.loggerBackend) {
@@ -151,7 +134,7 @@ class OptimizelyLogger {
       return
     }
 
-    if (!this.shouldLog(opts.level)) {
+    if (opts.level < globalLogLevel) {
       return
     }
 
@@ -183,16 +166,12 @@ class OptimizelyLogger {
       this.loggerBackend = logger
     }
   }
-
-  private shouldLog(targetLogLevel: LogLevel): boolean {
-    return targetLogLevel >= this.logLevel
-  }
 }
 
 let globalLogger = new OptimizelyLogger()
 
 // TODO figure out if we want to support passing a string to `getLogger`
-export function getLogger(): OptimizelyLogger {
+export function getLogger(): LoggerFacade {
   return globalLogger
 }
 
@@ -201,7 +180,10 @@ export function setLoggerBackend(logger: Logger | null) {
 }
 
 export function setLogLevel(level: LogLevel) {
-  globalLogger.setLogLevel(level)
+  if (!isValidEnum(LogLevel, level)) {
+    return
+  }
+  globalLogLevel = level
 }
 
 export function createLogger(config: BasicLoggerConfig = {}): BasicLogger {
