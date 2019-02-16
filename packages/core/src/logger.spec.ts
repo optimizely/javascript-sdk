@@ -7,11 +7,11 @@ import {
   getLogger,
   createConsoleLogger,
   resetLogger,
+  LoggerFacade,
 } from './logger'
 
 import { resetErrorHandler } from './errorHandler'
 import { ErrorHandler, setErrorHandler } from './errorHandler'
-import { LoggerFacade } from '../lib'
 
 describe('logger', () => {
   afterEach(() => {
@@ -22,26 +22,29 @@ describe('logger', () => {
   describe('OptimizelyLogger', () => {
     let stubLogger: Logger
     let logger: LoggerFacade
+    let stubErrorHandler: ErrorHandler
 
     beforeEach(() => {
       stubLogger = {
         log: jest.fn(),
       }
+      stubErrorHandler = {
+        handleError: jest.fn(),
+      }
       setLogLevel(LogLevel.DEBUG)
       setLoggerBackend(stubLogger)
+      setErrorHandler(stubErrorHandler)
       logger = getLogger()
     })
 
     describe('getLogger(name)', () => {
       it('should prepend the name in the log messages', () => {
-
         const myLogger = getLogger('doit')
         myLogger.info('test')
 
         expect(stubLogger.log).toHaveBeenCalledTimes(1)
         expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.INFO, 'doit: test')
       })
-
     })
 
     describe('logger.log(level, msg)', () => {
@@ -89,11 +92,6 @@ describe('logger', () => {
       })
 
       it('error should take an error and invoke the error handler', () => {
-        const stubErrorHandler: ErrorHandler = {
-          handleError: jest.fn(),
-        }
-        setErrorHandler(stubErrorHandler)
-
         class MyError extends Error {
           constructor(message: string) {
             super(message)
@@ -115,75 +113,138 @@ describe('logger', () => {
       })
     })
 
-    describe('logger.info(msg)', () => {
-      it('should invoke loggerBackend with level == LoglLevel.INFO', () => {
+    describe('logger.info', () => {
+      it('should handle info(message)', () => {
         logger.info('test')
 
         expect(stubLogger.log).toHaveBeenCalledTimes(1)
         expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.INFO, 'test')
       })
-    })
-
-    describe('logger.debug(obj)', () => {
-      it('should invoke loggerBackend with level == LoglLevel.INFO', () => {
-        logger.info({ message: 'test: %s', splat: ['hey'] })
+      it('should handle info(message, ...splat)', () => {
+        logger.info('test: %s', 'hey')
 
         expect(stubLogger.log).toHaveBeenCalledTimes(1)
         expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.INFO, 'test: hey')
       })
+
+      it('should handle info(message, ...splat, error)', () => {
+        const error = new Error('hey')
+        logger.info('test: %s', 'hey', error)
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.INFO, 'test: hey')
+        expect(stubErrorHandler.handleError).toHaveBeenCalledWith(error)
+      })
+
+      it('should handle info(error)', () => {
+        const error = new Error('hey')
+        logger.info(error)
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.INFO, 'hey')
+        expect(stubErrorHandler.handleError).toHaveBeenCalledWith(error)
+      })
     })
 
-    describe('logger.debug(msg)', () => {
-      it('should invoke loggerBackend with level == LoglLevel.DEBUG', () => {
+    describe('logger.debug', () => {
+      it('should handle debug(message)', () => {
         logger.debug('test')
 
         expect(stubLogger.log).toHaveBeenCalledTimes(1)
         expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.DEBUG, 'test')
       })
-    })
 
-    describe('logger.warn(obj)', () => {
-      it('should invoke loggerBackend with level == LoglLevel.WARNING', () => {
-        logger.warn({ message: 'test: %s', splat: ['hey'] })
+      it('should handle debug(message, ...splat)', () => {
+        logger.debug('test: %s', 'hey')
 
         expect(stubLogger.log).toHaveBeenCalledTimes(1)
-        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.WARNING, 'test: hey')
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.DEBUG, 'test: hey')
+      })
+
+      it('should handle debug(message, ...splat, error)', () => {
+        const error = new Error('hey')
+        logger.debug('test: %s', 'hey', error)
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.DEBUG, 'test: hey')
+        expect(stubErrorHandler.handleError).toHaveBeenCalledWith(error)
+      })
+
+      it('should handle debug(error)', () => {
+        const error = new Error('hey')
+        logger.debug(error)
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.DEBUG, 'hey')
+        expect(stubErrorHandler.handleError).toHaveBeenCalledWith(error)
       })
     })
 
-    describe('logger.warn(msg)', () => {
-      it('should invoke loggerBackend with level == LoglLevel.WARNING', () => {
+    describe('logger.warn', () => {
+      it('should handle warn(message)', () => {
         logger.warn('test')
 
         expect(stubLogger.log).toHaveBeenCalledTimes(1)
         expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.WARNING, 'test')
       })
-    })
 
-    describe('logger.error(obj)', () => {
-      it('should invoke loggerBackend with level == LoglLevel.ERROR', () => {
-        logger.error({ message: 'test: %s', splat: ['hey'] })
+      it('should handle warn(message, ...splat)', () => {
+        logger.warn('test: %s', 'hey')
 
         expect(stubLogger.log).toHaveBeenCalledTimes(1)
-        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.ERROR, 'test: hey')
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.WARNING, 'test: hey')
+      })
+
+      it('should handle warn(message, ...splat, error)', () => {
+        const error = new Error('hey')
+        logger.warn('test: %s', 'hey', error)
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.WARNING, 'test: hey')
+        expect(stubErrorHandler.handleError).toHaveBeenCalledWith(error)
+      })
+
+      it('should handle info(error)', () => {
+        const error = new Error('hey')
+        logger.warn(error)
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.WARNING, 'hey')
+        expect(stubErrorHandler.handleError).toHaveBeenCalledWith(error)
       })
     })
 
-    describe('logger.error(msg)', () => {
-      it('should invoke loggerBackend with level == LoglLevel.ERROR', () => {
+    describe('logger.error', () => {
+      it('should handle error(message)', () => {
         logger.error('test')
 
         expect(stubLogger.log).toHaveBeenCalledTimes(1)
         expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.ERROR, 'test')
       })
-    })
 
-    describe('logger.debug(obj)', () => {
-      it('should invoke loggerBackend with level == LoglLevel.DEBUG', () => {
-        logger.debug({ message: 'test: %s', splat: ['hey'] })
+      it('should handle error(message, ...splat)', () => {
+        logger.error('test: %s', 'hey')
 
         expect(stubLogger.log).toHaveBeenCalledTimes(1)
-        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.DEBUG, 'test: hey')
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.ERROR, 'test: hey')
+      })
+
+      it('should handle error(message, ...splat, error)', () => {
+        const error = new Error('hey')
+        logger.error('test: %s', 'hey', error)
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.ERROR, 'test: hey')
+        expect(stubErrorHandler.handleError).toHaveBeenCalledWith(error)
+      })
+
+      it('should handle info(error)', () => {
+        const error = new Error('hey')
+        logger.error(error)
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.ERROR, 'hey')
+        expect(stubErrorHandler.handleError).toHaveBeenCalledWith(error)
       })
     })
 
