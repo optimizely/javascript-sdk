@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+var core = require('@optimizely/js-sdk-core');
 var configValidator = require('./utils/config_validator');
 var enums = require('./utils/enums');
 var logger = require('./plugins/logger');
@@ -40,28 +41,29 @@ describe('optimizelyFactory', function() {
       var fakeLogger;
 
       beforeEach(function() {
-        fakeLogger = { log: sinon.spy() };
-        sinon.stub(logger, 'createLogger').returns(fakeLogger);
+        fakeLogger = { log: sinon.spy(), setLogLevel: sinon.spy() };
+        sinon.stub(core, 'createLogger').returns(fakeLogger);
         sinon.stub(configValidator, 'validate');
       });
 
       afterEach(function() {
-        logger.createLogger.restore();
+        core.createLogger.restore();
         configValidator.validate.restore();
       });
 
       it('should not throw if the provided config is not valid and log an error if logger is passed in', function() {
         configValidator.validate.throws(new Error('Invalid config or something'));
+        var localLogger = core.createLogger({ logLevel: enums.LOG_LEVEL.INFO });
         assert.doesNotThrow(function() {
           optimizelyFactory.createInstance({
             datafile: {},
-            logger: logger.createLogger({ logLevel: enums.LOG_LEVEL.INFO }),
+            logger: localLogger,
           });
         });
-        sinon.assert.calledWith(fakeLogger.log, enums.LOG_LEVEL.ERROR);
+        sinon.assert.calledWith(localLogger.log, enums.LOG_LEVEL.ERROR);
       });
 
-      it('should not throw if the provided config is not valid and log an error if no-op logger is used', function() {
+      it('should not throw if the provided config is not valid and log an error if no logger is provided', function() {
         configValidator.validate.throws(new Error('Invalid config or something'));
         assert.doesNotThrow(function() {
           optimizelyFactory.createInstance({
