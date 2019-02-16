@@ -41,13 +41,15 @@ export interface LoggerFacade {
    */
   log(levelOrObj: LogLevel | LogInputObject, message?: string): void
 
-  info(data: LogData | string): void
+  info(message: string): void
+  info(message: Error): void
+  info(message: string, ...splat: any[]): void
 
-  debug(data: LogData | string): void
+  debug(message: string | Error, ...splat: any[]): void
 
-  warn(data: LogData | string): void
+  warn(message: string | Error, ...splat: any[]): void
 
-  error(data: LogData | string): void
+  error(message: string | Error, ...splat: any[]): void
 }
 
 interface LoggerFactory {
@@ -264,36 +266,44 @@ class OptimizelyLogger implements LoggerFacade {
     }
   }
 
-  info(data: LogData): void {
-    const obj = typeof data === 'string' ? { message: data } : data
-    this.log({
-      ...obj,
-      level: LogLevel.INFO,
-    })
+  info(message: string | Error, ...splat: any[]): void {
+    this.internalLog(LogLevel.INFO, message, splat)
   }
 
-  debug(data: LogData): void {
-    const obj = typeof data === 'string' ? { message: data } : data
-    this.log({
-      ...obj,
-      level: LogLevel.DEBUG,
-    })
+  debug(message: string | Error, ...splat: any[]): void {
+    this.internalLog(LogLevel.DEBUG, message, splat)
   }
 
-  warn(data: LogData): void {
-    const obj = typeof data === 'string' ? { message: data } : data
-    this.log({
-      ...obj,
-      level: LogLevel.WARNING,
-    })
+  warn(message: string | Error, ...splat: any[]): void {
+    this.internalLog(LogLevel.WARNING, message, splat)
   }
 
-  error(data: LogData | Error): void {
-    const obj = typeof data === 'string' ? { message: data } : data
-    this.log({
-      ...obj,
-      level: LogLevel.ERROR,
-    })
+  error(message: string | Error, ...splat: any[]): void {
+    this.internalLog(LogLevel.ERROR, message, splat)
+  }
+
+  private internalLog(level: LogLevel, message: string | Error, splat: any[]): void {
+    let error: Error | undefined
+
+    if (message instanceof Error) {
+      error = message
+      message = error.message
+      this.log({ error, message, level })
+      return
+    }
+
+    if (splat.length === 0) {
+      this.log({ message, level })
+      return
+    }
+
+    const last = splat[splat.length - 1]
+    if (last instanceof Error) {
+      error = last
+      splat.splice(-1)
+    }
+
+    this.log({ message, error, splat, level })
   }
 }
 
