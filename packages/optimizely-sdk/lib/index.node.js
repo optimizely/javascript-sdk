@@ -20,19 +20,17 @@ var defaultEventDispatcher = require('./plugins/event_dispatcher/index.node');
 var enums = require('./utils/enums');
 var fns = require('./utils/fns');
 var jsonSchemaValidator = require('./utils/json_schema_validator');
-var logger = require('./plugins/logger');
-var sprintf = require('sprintf-js').sprintf;
 
 var Optimizely = require('./optimizely');
 
-var MODULE_NAME = 'INDEX';
+var logger = core.getLogger('INDEX');
 core.setLogLevel(core.LogLevel.ERROR);
 
 /**
  * Entry point into the Optimizely Node testing SDK
  */
 module.exports = {
-  logging: logger,
+  logging: require('./plugins/logger'),
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
   enums: enums,
@@ -72,11 +70,10 @@ module.exports = {
         configValidator.validate(config);
         config.isValidInstance = true;
       } catch (ex) {
-        var errorMessage = sprintf('%s: %s', MODULE_NAME, ex.message);
         if (hasLogger) {
-          core.getLogger().log(enums.LOG_LEVEL.ERROR, errorMessage);
+          logger.error(ex);
         } else {
-          core.createConsoleLogger().log(enums.LOG_LEVEL.ERROR, errorMessage);
+          core.createConsoleLogger().log(enums.LOG_LEVEL.ERROR, ex.message);
         }
         config.isValidInstance = false;
       }
@@ -91,14 +88,14 @@ module.exports = {
         {
           clientEngine: enums.NODE_CLIENT_ENGINE,
           // always get the OptimizelyLogger facade from core
-          logger: core.getLogger(),
+          logger: logger,
           errorHandler: core.getErrorHandler(),
         }
       );
 
       return new Optimizely(config);
     } catch (e) {
-      core.getLogger().handleError(e);
+      logger.error(e);
       return null;
     }
   },
