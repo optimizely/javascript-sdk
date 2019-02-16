@@ -1,4 +1,3 @@
-// TODO: move this type in here? Does it need exported from top level module?
 export type ListenerDisposer = () => void
 
 // TODO: Is this the right type? any sucks

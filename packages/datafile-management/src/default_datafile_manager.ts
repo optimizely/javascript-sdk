@@ -95,7 +95,7 @@ export default class DefaultDatafileManager implements DatafileManager {
         }
         break
 
-      default: // type is object
+      default: // type is Datafile
         this.currentDatafile = datafile
         break
     }

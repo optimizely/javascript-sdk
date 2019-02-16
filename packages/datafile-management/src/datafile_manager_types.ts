@@ -13,3 +13,8 @@ export interface DatafileManager {
   onReady: Promise<Datafile>
   onUpdate: (listener: DatafileUpdateListener) => ListenerDisposer
 }
+
+export interface DatafileManagerConfig {
+  sdkKey: string
+  datafile?: string | Datafile
+}

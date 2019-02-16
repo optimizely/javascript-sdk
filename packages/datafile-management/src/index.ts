@@ -13,6 +13,7 @@ export {
   DatafileManager,
 } from './datafile_manager_types'
 
+// TODO: Need separate entry points here for node vs browser (index.node.ts, index.browser.ts), instead of exporting both
 export {
   default as createBrowserDefaultDatafileManager,
 } from './browser_datafile_manager'

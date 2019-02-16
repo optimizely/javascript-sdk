@@ -1,5 +1,6 @@
-import { default as DefaultDatafileManager, ManagerOptions, PollingUpdateStrategy } from './default_datafile_manager'
+import { default as DefaultDatafileManager, PollingUpdateStrategy } from './default_datafile_manager'
 import * as Interval from './interval'
+import { DatafileManagerConfig } from './datafile_manager_types';
 
 const GET_METHOD = 'GET'
 const READY_STATE_COMPLETE = 4
@@ -77,8 +78,7 @@ const intervalSetter: Interval.IntervalSetter = {
   }
 }
 
-// TODO: argument options type should be Partial
-export default function create(options: ManagerOptions): DefaultDatafileManager {
+export default function create(options: DatafileManagerConfig): DefaultDatafileManager {
   return new DefaultDatafileManager({
     ...options,
     fetchDatafile,
