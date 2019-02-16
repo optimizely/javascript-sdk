@@ -5,15 +5,17 @@ import {
   setLogLevel,
   LogLevel,
   getLogger,
-  createLogger,
+  createConsoleLogger,
+  resetLogger,
 } from './logger'
-import { ErrorHandler, setErrorHandler, NoopErrorHandler } from './errorHandler'
+
+import { resetErrorHandler} from './errorHandler'
+import { ErrorHandler, setErrorHandler } from './errorHandler'
 
 describe('logger', () => {
   afterEach(() => {
-    setLoggerBackend(null)
-    setLogLevel(LogLevel.ERROR)
-    setErrorHandler(new NoopErrorHandler())
+    resetLogger()
+    resetErrorHandler()
   })
 
   describe('OptimizelyLogger', () => {
@@ -126,7 +128,7 @@ describe('logger', () => {
       })
 
       it('should work with BasicLogger', () => {
-        const logger = createLogger()
+        const logger = createConsoleLogger()
         const TIME = '12:00'
         setLoggerBackend(logger)
         setLogLevel(LogLevel.INFO)
@@ -140,7 +142,7 @@ describe('logger', () => {
     })
   })
 
-  describe('BasicLogger', function() {
+  describe('ConsoleLogger', function() {
     beforeEach(() => {
       jest.spyOn(console, 'info')
       jest.spyOn(console, 'log')
@@ -153,7 +155,7 @@ describe('logger', () => {
     })
 
     it('should log to console.info for LogLevel.INFO', () => {
-      const logger = createLogger({
+      const logger = createConsoleLogger({
         logLevel: LogLevel.DEBUG,
       })
       const TIME = '12:00'
@@ -166,7 +168,7 @@ describe('logger', () => {
     })
 
     it('should log to console.log for LogLevel.DEBUG', () => {
-      const logger = createLogger({
+      const logger = createConsoleLogger({
         logLevel: LogLevel.DEBUG,
       })
       const TIME = '12:00'
@@ -179,7 +181,7 @@ describe('logger', () => {
     })
 
     it('should log to console.warn for LogLevel.WARNING', () => {
-      const logger = createLogger({
+      const logger = createConsoleLogger({
         logLevel: LogLevel.DEBUG,
       })
       const TIME = '12:00'
@@ -192,7 +194,7 @@ describe('logger', () => {
     })
 
     it('should log to console.error for LogLevel.ERROR', () => {
-      const logger = createLogger({
+      const logger = createConsoleLogger({
         logLevel: LogLevel.DEBUG,
       })
       const TIME = '12:00'
@@ -205,7 +207,7 @@ describe('logger', () => {
     })
 
     it('should not log if the configured logLevel is higher', () => {
-      const logger = createLogger({
+      const logger = createConsoleLogger({
         logLevel: LogLevel.INFO,
       })
 
