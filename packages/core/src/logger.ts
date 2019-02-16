@@ -22,6 +22,13 @@ export interface Logger {
   log(level: LogLevel, message: string): void
 }
 
+type LogData = {
+  message: string
+  splat?: any[]
+  error?: Error
+}
+type LogInputObject = LogData & { level: LogLevel }
+
 /**
  * @export
  * @interface LoggerFacade
@@ -34,12 +41,40 @@ export interface LoggerFacade {
    */
   log(levelOrObj: LogLevel | LogInputObject, message?: string): void
 
-  /**
-   * @param {Error} ex
-   * @param {string} [message]
-   * @memberof LoggerFacade
-   */
-  handleError(ex: Error, message?: string): void
+  info(data: LogData | string): void
+
+  debug(data: LogData | string): void
+
+  warn(data: LogData | string): void
+
+  error(data: LogData | string): void
+}
+
+interface LoggerFactory {
+  getLogger(name?: string): LoggerFacade
+}
+
+class DefaultLoggerFactory {
+  private loggers: {
+    [name: string]: LoggerFacade
+  }
+  private defaultLoggerFacade = new OptimizelyLogger()
+
+  constructor() {
+    this.loggers = {}
+  }
+
+  getLogger(name?: string): LoggerFacade {
+    if (!name) {
+      return this.defaultLoggerFacade
+    }
+
+    if (!this.loggers[name]) {
+      this.loggers[name] = new OptimizelyLogger({ messagePrefix: name })
+    }
+
+    return this.loggers[name]
+  }
 }
 
 type ConsoleLoggerConfig = {
@@ -174,16 +209,21 @@ class ConsoleLogger implements Logger {
   }
 }
 
-type LogInputObject = { level: LogLevel; message: string; splat?: any[] }
-
 let globalLogLevel: LogLevel = LogLevel.NOTSET
+let globalLoggerBackend: Logger | null = null
 
 /**
  * @class OptimizelyLogger
  * @implements {LoggerFacade}
  */
 class OptimizelyLogger implements LoggerFacade {
-  private loggerBackend: Logger
+  private messagePrefix: string
+
+  constructor(opts: { messagePrefix?: string } = {}) {
+    if (opts.messagePrefix) {
+      this.messagePrefix = opts.messagePrefix
+    }
+  }
 
   /**
    * @param {(LogLevel | LogInputObject)} levelOrObj
@@ -191,7 +231,7 @@ class OptimizelyLogger implements LoggerFacade {
    * @memberof OptimizelyLogger
    */
   log(levelOrObj: LogLevel | LogInputObject, message?: string): void {
-    if (!this.loggerBackend) {
+    if (!globalLoggerBackend) {
       return
     }
 
@@ -213,44 +253,51 @@ class OptimizelyLogger implements LoggerFacade {
 
     let sprintfArgs = opts.splat || []
 
-    const logMessage = sprintf(opts.message, ...sprintfArgs)
-    this.loggerBackend.log(opts.level, logMessage)
+    const logMessage = `${this.messagePrefix ? this.messagePrefix + ': ' : ''}${sprintf(
+      opts.message,
+      ...sprintfArgs,
+    )}`
+    globalLoggerBackend.log(opts.level, logMessage)
+
+    if (opts.error && opts.error instanceof Error) {
+      getErrorHandler().handleError(opts.error)
+    }
   }
 
-  /**
-   * @param {Error} ex
-   * @param {string} [message]
-   * @memberof OptimizelyLogger
-   */
-  handleError(ex: Error, message?: string): void {
-    if (message === undefined) {
-      message = ex.message
-    }
+  info(data: LogData): void {
+    const obj = typeof data === 'string' ? { message: data } : data
     this.log({
-      level: LogLevel.ERROR,
-      message,
+      ...obj,
+      level: LogLevel.INFO,
     })
-
-    const errorHandler = getErrorHandler()
-    if (errorHandler && errorHandler.handleError) {
-      errorHandler.handleError(ex)
-    }
   }
 
-  /**
-   * @param {(Logger | null)} logger
-   * @memberof OptimizelyLogger
-   */
-  setLoggerBackend(logger: Logger | null): void {
-    if (logger === null) {
-      delete this.loggerBackend
-    } else {
-      this.loggerBackend = logger
-    }
+  debug(data: LogData): void {
+    const obj = typeof data === 'string' ? { message: data } : data
+    this.log({
+      ...obj,
+      level: LogLevel.DEBUG,
+    })
+  }
+
+  warn(data: LogData): void {
+    const obj = typeof data === 'string' ? { message: data } : data
+    this.log({
+      ...obj,
+      level: LogLevel.WARNING,
+    })
+  }
+
+  error(data: LogData | Error): void {
+    const obj = typeof data === 'string' ? { message: data } : data
+    this.log({
+      ...obj,
+      level: LogLevel.ERROR,
+    })
   }
 }
 
-let globalLogger = new OptimizelyLogger()
+let globalLoggerFactory: LoggerFactory = new DefaultLoggerFactory()
 
 // TODO figure out if we want to support passing a string to `getLogger`
 /**
@@ -258,8 +305,8 @@ let globalLogger = new OptimizelyLogger()
  * @export
  * @returns {LoggerFacade}
  */
-export function getLogger(): LoggerFacade {
-  return globalLogger
+export function getLogger(name?: string): LoggerFacade {
+  return globalLoggerFactory.getLogger(name)
 }
 
 /**
@@ -267,7 +314,7 @@ export function getLogger(): LoggerFacade {
  * @param {(Logger | null)} logger
  */
 export function setLoggerBackend(logger: Logger | null) {
-  globalLogger.setLoggerBackend(logger)
+  globalLoggerBackend = logger
 }
 
 /**
@@ -303,6 +350,6 @@ export function createNoOpLogger(): NoopLogger {
  * Resets all global logger state to it's original
  */
 export function resetLogger() {
-  globalLogger = new OptimizelyLogger()
+  globalLoggerFactory = new DefaultLoggerFactory()
   globalLogLevel = LogLevel.NOTSET
 }
