@@ -139,6 +139,21 @@ describe('logger', () => {
         expect(console.info).toBeCalledTimes(1)
         expect(console.info).toBeCalledWith('[OPTIMIZELY] - INFO 12:00 hey')
       })
+
+      it('should set logLevel to ERROR when setLogLevel is called with invalid value', () => {
+        const logger = createConsoleLogger()
+        logger.setLogLevel('invalid' as any);
+
+        expect(logger.logLevel).toEqual(LogLevel.ERROR);
+      })
+
+      it('should set logLevel to ERROR when setLogLevel is called with no value', () => {
+        const logger = createConsoleLogger()
+        // @ts-ignore
+        logger.setLogLevel();
+
+        expect(logger.logLevel).toEqual(LogLevel.ERROR);
+      })
     })
   })
 
