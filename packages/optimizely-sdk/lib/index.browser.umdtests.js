@@ -31,8 +31,8 @@ describe('javascript-sdk', function() {
     var xhr;
     var requests;
     describe('createInstance', function() {
-      var fakeErrorHandler = { handleError: function() {}};
-      var fakeEventDispatcher = { dispatchEvent: function() {}};
+      var fakeErrorHandler = { handleError: function() {} };
+      var fakeEventDispatcher = { dispatchEvent: function() {} };
       var silentLogger;
 
       beforeEach(function() {
@@ -46,8 +46,8 @@ describe('javascript-sdk', function() {
         xhr = sinon.useFakeXMLHttpRequest();
         global.XMLHttpRequest = xhr;
         requests = [];
-        xhr.onCreate = function (req) {
-            requests.push(req);
+        xhr.onCreate = function(req) {
+          requests.push(req);
         };
       });
 
@@ -136,9 +136,12 @@ describe('javascript-sdk', function() {
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
         assert.strictEqual(didSetVariation, true);
 
-        var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', 'controlLaunched');
+        var didSetVariation2 = optlyInstance.setForcedVariation(
+          'testExperimentLaunched',
+          'testUser',
+          'controlLaunched'
+        );
         assert.strictEqual(didSetVariation2, true);
-
 
         var variation = optlyInstance.getForcedVariation('testExperiment', 'testUser');
         assert.strictEqual(variation, 'control');
@@ -158,7 +161,11 @@ describe('javascript-sdk', function() {
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
         assert.strictEqual(didSetVariation, true);
 
-        var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', 'controlLaunched');
+        var didSetVariation2 = optlyInstance.setForcedVariation(
+          'testExperimentLaunched',
+          'testUser',
+          'controlLaunched'
+        );
         assert.strictEqual(didSetVariation2, true);
 
         var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', null);
@@ -182,10 +189,18 @@ describe('javascript-sdk', function() {
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
         assert.strictEqual(didSetVariation, true);
 
-        var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', 'controlLaunched');
+        var didSetVariation2 = optlyInstance.setForcedVariation(
+          'testExperimentLaunched',
+          'testUser',
+          'controlLaunched'
+        );
         assert.strictEqual(didSetVariation2, true);
 
-        var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', 'variationLaunched');
+        var didSetVariation2 = optlyInstance.setForcedVariation(
+          'testExperimentLaunched',
+          'testUser',
+          'variationLaunched'
+        );
         assert.strictEqual(didSetVariation2, true);
 
         var variation = optlyInstance.getForcedVariation('testExperiment', 'testUser');
@@ -224,14 +239,18 @@ describe('javascript-sdk', function() {
           logger: silentLogger,
         });
 
-        var didSetVariation = optlyInstance.setForcedVariation('testExperimentNotRunning', 'testUser', 'controlNotRunning');
+        var didSetVariation = optlyInstance.setForcedVariation(
+          'testExperimentNotRunning',
+          'testUser',
+          'controlNotRunning'
+        );
         assert.strictEqual(didSetVariation, true);
 
         var variation = optlyInstance.getVariation('testExperimentNotRunning', 'testUser');
         assert.strictEqual(variation, null);
       });
 
-      describe('automatically created logger instances', function() {
+      describe.only('automatically created logger instances', function() {
         beforeEach(function() {
           sinon.spy(console, 'log');
           sinon.spy(console, 'info');
@@ -244,34 +263,35 @@ describe('javascript-sdk', function() {
           console.warn.restore();
         });
 
-        it('should instantiate the logger with a custom logLevel when provided', function() {
-          // checking that INFO logs do not log for a logLevel of ERROR
-          var optlyInstance = window.optimizelySdk.createInstance({
-            datafile: testData.getTestProjectConfig(),
-            logLevel: enums.LOG_LEVEL.ERROR,
-            skipJSONValidation: true
-          });
-          assert.strictEqual(console.log.getCalls().length, 0)
-
-          // checking that ERROR logs do log for a logLevel of ERROR
-          var optlyInstanceInvalid = window.optimizelySdk.createInstance({
-            datafile: {},
-            logLevel: enums.LOG_LEVEL.ERROR
-          });
-          optlyInstance.activate('testExperiment', 'testUser')
-          assert.strictEqual(console.error.getCalls().length, 1)
-        });
-
+        // this test has to come first due to local state of the logLevel
         it('should default to INFO when no logLevel is provided', function() {
           // checking that INFO logs log for an unspecified logLevel
           var optlyInstance = window.optimizelySdk.createInstance({
             datafile: testData.getTestProjectConfig(),
-            skipJSONValidation: true
+            skipJSONValidation: true,
           });
           assert.strictEqual(console.info.getCalls().length, 1);
           call = console.info.getCalls()[0];
           assert.strictEqual(call.args.length, 1);
           assert(call.args[0].indexOf('OPTIMIZELY: Skipping JSON schema validation.') > -1);
+        });
+
+        it('should instantiate the logger with a custom logLevel when provided', function() {
+          // checking that INFO logs do not log for a logLevel of ERROR
+          var optlyInstance = window.optimizelySdk.createInstance({
+            datafile: testData.getTestProjectConfig(),
+            logLevel: enums.LOG_LEVEL.ERROR,
+            skipJSONValidation: true,
+          });
+          assert.strictEqual(console.log.getCalls().length, 0);
+
+          // checking that ERROR logs do log for a logLevel of ERROR
+          var optlyInstanceInvalid = window.optimizelySdk.createInstance({
+            datafile: {},
+            logLevel: enums.LOG_LEVEL.ERROR,
+          });
+          optlyInstance.activate('testExperiment', 'testUser');
+          assert.strictEqual(console.error.getCalls().length, 1);
         });
       });
     });
