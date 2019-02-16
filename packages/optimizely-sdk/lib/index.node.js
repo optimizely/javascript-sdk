@@ -35,6 +35,9 @@ module.exports = {
   eventDispatcher: defaultEventDispatcher,
   enums: enums,
 
+  setLogger: core.setLoggerBackend,
+  setLogLevel: core.setLogLevel,
+
   /**
    * Creates an instance of the Optimizely class
    * @param  {Object} config
