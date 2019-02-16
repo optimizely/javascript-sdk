@@ -13,10 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-exports.LOG_LEVEL = {
-  NOTSET: 0,
-  DEBUG: 1,
-  INFO: 2,
-  WARNING: 3,
-  ERROR: 4,
-};
+exports.LOG_LEVEL = require('@optimizely/js-sdk-core').LogLevel;

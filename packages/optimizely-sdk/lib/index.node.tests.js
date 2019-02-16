@@ -42,18 +42,18 @@ describe('optimizelyFactory', function() {
 
       beforeEach(function() {
         fakeLogger = { log: sinon.spy(), setLogLevel: sinon.spy() };
-        sinon.stub(core, 'createLogger').returns(fakeLogger);
+        sinon.stub(core, 'createConsoleLogger').returns(fakeLogger);
         sinon.stub(configValidator, 'validate');
       });
 
       afterEach(function() {
-        core.createLogger.restore();
+        core.createConsoleLogger.restore();
         configValidator.validate.restore();
       });
 
       it('should not throw if the provided config is not valid and log an error if logger is passed in', function() {
         configValidator.validate.throws(new Error('Invalid config or something'));
-        var localLogger = core.createLogger({ logLevel: enums.LOG_LEVEL.INFO });
+        var localLogger = core.createConsoleLogger({ logLevel: enums.LOG_LEVEL.INFO });
         assert.doesNotThrow(function() {
           optimizelyFactory.createInstance({
             datafile: {},
