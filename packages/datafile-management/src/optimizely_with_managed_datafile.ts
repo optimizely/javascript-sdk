@@ -2,15 +2,10 @@
 // create logger module containing a singleton, setLogger & getLogger. expose setLogger & getLogger as top-level exports of datafile-management package. Later this would be replaced.
 
 import { Client, Config, EventTags, UserAttributes } from '@optimizely/optimizely-sdk'
-import { Datafile, DatafileManager } from './datafile_manager_types'
+import { Datafile, DatafileManager, DatafileManagerConfig } from './datafile_manager_types'
 import createStaticDatafileManager from './static_datafile_manager'
 import createDefaultClient from './default_client'
 import { default as EventEmitter, Listener, ListenerDisposer } from './event_emitter';
-
-interface DatafileManagerConfig {
-  sdkKey: string
-  datafile?: string | Datafile
-}
 
 export interface OptimizelyWithManagedDatafileConfig {
   clientConfig: Config
@@ -23,6 +18,7 @@ export interface OptimizelyWithManagedDatafileConfig {
 const DATAFILE_UPDATE_EVT = 'datafileUpdate'
 
 class OptimizelyWithManagedDatafile implements Client {
+  // TODO: Function that accepts a timeout, returns a Promise
   readonly onReady: Promise<void>
 
   private readonly datafileManager: DatafileManager | undefined

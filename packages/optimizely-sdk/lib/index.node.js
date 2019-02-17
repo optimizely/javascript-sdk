@@ -82,18 +82,28 @@ exports.createInstance = function(config) {
 
   if (config.sdkKey) {
     managedConfig.sdkKey = config.sdkKey;
+    delete config.sdkKey;
   }
 
   if (config.datafile) {
     managedConfig.datafile = config.datafile;
+    delete config.datafile;
   }
 
-  // TODO: Don't allow customer to provide datafile manager? Only configuration?
-  if (config.createDatafileManager) {
-    managedConfig.createDatafileManager = config.createDatafileManager;
-  } else {
-    managedConfig.createDatafileManager = datafileManagement.createNodeDefaultDatafileManager;
+  if (config.datafileManagerOptions) {
+    managedConfig.datafileManagerOptions = config.datafileManagerOptions;
+    delete config.datafileManagerOptions;
   }
+
+  managedConfig.createDatafileManager = datafileManagement.createNodeDefaultDatafileManager;
+
+  // config.datafileManagerOptions
+  // {
+      // getUrl,
+      // liveUpdates // boolean
+      // maxCacheAge // number
+
+  // }
 
   return datafileManagement.createInstanceWithManagedDatafile(managedConfig);
 };

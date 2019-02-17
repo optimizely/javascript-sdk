@@ -20,8 +20,8 @@ const enum ManagerStatus {
   STOPPED = 'stopped',
 }
 
+// TODO: Make this a boolean: liveUpdates yes or no
 export const enum PollingUpdateStrategy {
-  ALWAYS = 'always',
   NEW_REVISION = 'new_revision',
   NEVER = 'never',
 }
