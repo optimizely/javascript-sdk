@@ -10,7 +10,7 @@ export interface ManagerOptions {
   fetchDatafile: (datafileUrl: string) => Promise<string>
   intervalSetter: Interval.IntervalSetter,
   sdkKey: string,
-  updateStrategy: PollingUpdateStrategy
+  liveUpdates: boolean,
   urlBuilder?: (sdkKey: string) => string
 }
 
@@ -18,12 +18,6 @@ const enum ManagerStatus {
   INITIAL = 'initial',
   STARTED = 'started',
   STOPPED = 'stopped',
-}
-
-// TODO: Make this a boolean: liveUpdates yes or no
-export const enum PollingUpdateStrategy {
-  NEW_REVISION = 'new_revision',
-  NEVER = 'never',
 }
 
 // TODO: Should be configurable
@@ -59,7 +53,7 @@ export default class DefaultDatafileManager implements DatafileManager {
   // TODO: Reject with what?
   private rejectOnReady: (() => void) | undefined
 
-  private updateStrategy: PollingUpdateStrategy
+  private liveUpdates: boolean
 
   // TODO: Clean up this constructor
   constructor({
@@ -67,7 +61,7 @@ export default class DefaultDatafileManager implements DatafileManager {
     fetchDatafile,
     intervalSetter,
     sdkKey,
-    updateStrategy,
+    liveUpdates,
     urlBuilder = defaultUrlBuilder,
   }: ManagerOptions) {
     this.sdkKey = sdkKey
@@ -77,7 +71,7 @@ export default class DefaultDatafileManager implements DatafileManager {
     this.fetchDatafile = fetchDatafile
     this.currentDatafile = null
     this.intervalSetter = intervalSetter
-    this.updateStrategy = updateStrategy
+    this.liveUpdates = liveUpdates
 
     switch (typeof datafile) {
       case 'undefined':
@@ -127,7 +121,7 @@ export default class DefaultDatafileManager implements DatafileManager {
 
     this.status = ManagerStatus.STARTED
 
-    if (this.updateStrategy === PollingUpdateStrategy.NEVER) {
+    if (!this.liveUpdates) {
       return
     }
 
@@ -176,14 +170,12 @@ export default class DefaultDatafileManager implements DatafileManager {
             return
           }
 
-          if (this.updateStrategy === PollingUpdateStrategy.NEW_REVISION) {
-            const priorRevision = getDatafileRevision(this.currentDatafile)
-            console.log('prior revision: ', priorRevision)
-            const newRevision = getDatafileRevision(datafile)
-            console.log('new revision: ', newRevision)
-            if (newRevision <= priorRevision) {
-              return
-            }
+          // TODO: How reliable is revision provided by the backend?
+          // Should we design it in a resilient way (i.e., always emit every 5000 ms even if same revision?)
+          const priorRevision = getDatafileRevision(this.currentDatafile)
+          const newRevision = getDatafileRevision(datafile)
+          if (newRevision <= priorRevision) {
+            return
           }
 
           // TODO: Method or setter property to automatically emit every time it's assigned?

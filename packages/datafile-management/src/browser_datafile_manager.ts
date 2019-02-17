@@ -1,4 +1,4 @@
-import { default as DefaultDatafileManager, PollingUpdateStrategy } from './default_datafile_manager'
+import DefaultDatafileManager from './default_datafile_manager'
 import * as Interval from './interval'
 import { DatafileManagerConfig } from './datafile_manager_types';
 
@@ -83,6 +83,6 @@ export default function create(options: DatafileManagerConfig): DefaultDatafileM
     ...options,
     fetchDatafile,
     intervalSetter,
-    updateStrategy: PollingUpdateStrategy.NEVER,
+    liveUpdates: false,
   })
 }
