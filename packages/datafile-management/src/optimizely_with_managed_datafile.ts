@@ -175,6 +175,8 @@ class OptimizelyWithManagedDatafile implements Client {
     }
   }
 
+  // TODO: Check validity of datafile, only reinstantiate client for valid datafiles, log if it's invalid maybe
+  // Or look at client.isValidInstance
   private setupClient(datafile: Datafile, clientConfig: Config): void {
     this.client = this.createInstance({
       ...clientConfig,

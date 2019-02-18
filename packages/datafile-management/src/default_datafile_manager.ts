@@ -7,6 +7,7 @@ import * as Interval from './interval'
 
 export interface ManagerOptions {
   datafile?: string | Datafile
+  // TODO: Both fetchDatafile and intervalSetter can be replaced by the abstract class redesign
   fetchDatafile: (datafileUrl: string) => Promise<string>
   intervalSetter: Interval.IntervalSetter,
   sdkKey: string,
