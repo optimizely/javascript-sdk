@@ -101,6 +101,7 @@ exports.createInstance = function(config) {
   // {
       // getUrl,
       // liveUpdates // boolean
+      // updateInterval // number
       // maxCacheAge // number
 
   // }

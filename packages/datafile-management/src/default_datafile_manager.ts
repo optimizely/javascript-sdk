@@ -3,13 +3,10 @@
 import { Datafile, DatafileManager, DatafileUpdateListener } from './datafile_manager_types'
 import EventEmitter from './event_emitter';
 import { getDatafileRevision } from './datafile'
-import * as Interval from './interval'
+import { IntervalListener, IntervalClearer } from './interval'
 
 export interface ManagerOptions {
   datafile?: string | Datafile
-  // TODO: Both fetchDatafile and intervalSetter can be replaced by the abstract class redesign
-  fetchDatafile: (datafileUrl: string) => Promise<string>
-  intervalSetter: Interval.IntervalSetter,
   sdkKey: string,
   liveUpdates: boolean,
   urlBuilder?: (sdkKey: string) => string
@@ -30,8 +27,12 @@ function defaultUrlBuilder(sdkKey: string): string {
 
 const UPDATE_EVT = 'update'
 
-export default class DefaultDatafileManager implements DatafileManager {
+export default abstract class DefaultDatafileManager implements DatafileManager {
   readonly onReady: Promise<Datafile>
+
+  protected abstract fetchDatafile(datafileUrl: string): Promise<string>
+
+  protected abstract setInterval(listener: IntervalListener, intervalMs: number): IntervalClearer
 
   private sdkKey: string
 
@@ -41,13 +42,9 @@ export default class DefaultDatafileManager implements DatafileManager {
 
   private currentDatafile: Datafile | null
 
-  private intervalSetter: Interval.IntervalSetter
-
-  private intervalClearer: Interval.IntervalClearer | undefined
+  private intervalClearer: IntervalClearer | undefined
 
   private status: ManagerStatus
-
-  private fetchDatafile: (datafileUrl: string) => Promise<string>
 
   private resolveOnReady: ((datafile: Datafile) => void) | undefined
 
@@ -59,8 +56,6 @@ export default class DefaultDatafileManager implements DatafileManager {
   // TODO: Clean up this constructor
   constructor({
     datafile,
-    fetchDatafile,
-    intervalSetter,
     sdkKey,
     liveUpdates,
     urlBuilder = defaultUrlBuilder,
@@ -69,9 +64,7 @@ export default class DefaultDatafileManager implements DatafileManager {
     this.urlBuilder = urlBuilder
     this.emitter = new EventEmitter()
     this.status = ManagerStatus.INITIAL
-    this.fetchDatafile = fetchDatafile
     this.currentDatafile = null
-    this.intervalSetter = intervalSetter
     this.liveUpdates = liveUpdates
 
     switch (typeof datafile) {
@@ -164,7 +157,7 @@ export default class DefaultDatafileManager implements DatafileManager {
   // TODO: Ugly
   // TODO: Only call update if revision is different?
   private startPolling(): void {
-    this.intervalClearer = this.intervalSetter.setInterval(() => {
+    this.intervalClearer = this.setInterval(() => {
       if (this.status === ManagerStatus.STARTED) {
         this.fetchAndParseDatafile().then((datafile: Datafile) => {
           if (this.status !== ManagerStatus.STARTED) {

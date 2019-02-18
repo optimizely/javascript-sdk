@@ -29,48 +29,48 @@ function isFreshAndValid(cacheEntry: CacheEntry): boolean {
   return (Date.now() - cacheEntry.timestamp) < MAX_CACHE_AGE_MS
 }
 
-// TODO: Better error handling, reject reasons/messages
-function fetchDatafile(datafileUrl: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    let resolvedFromCache = false
-    const cacheEntryStr = window.localStorage.getItem(STORAGE_KEY)
-    if (cacheEntryStr !== null) {
-      let cacheEntry: CacheEntry | undefined
-      try {
-        cacheEntry = JSON.parse(cacheEntryStr)
-      } catch(e) {
-      }
-      if (typeof cacheEntry !== 'undefined' && isFreshAndValid(cacheEntry)) {
-        resolve(cacheEntry.datafile)
-        resolvedFromCache = true
-      }
-    }
-
-    const req = new XMLHttpRequest()
-    req.open(GET_METHOD, datafileUrl, true)
-    req.onreadystatechange = () => {
-      if (req.readyState === READY_STATE_COMPLETE) {
-        if (req.status >= 400 && !resolvedFromCache) {
-          reject('Datafile response error')
-          return
+class BrowserDatafileManager extends DefaultDatafileManager {
+  // TODO: Better error handling, reject reasons/messages
+  protected fetchDatafile(datafileUrl: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      let resolvedFromCache = false
+      const cacheEntryStr = window.localStorage.getItem(STORAGE_KEY)
+      if (cacheEntryStr !== null) {
+        let cacheEntry: CacheEntry | undefined
+        try {
+          cacheEntry = JSON.parse(cacheEntryStr)
+        } catch(e) {
         }
-
-        if (!resolvedFromCache) {
-          resolve(req.responseText)
+        if (typeof cacheEntry !== 'undefined' && isFreshAndValid(cacheEntry)) {
+          resolve(cacheEntry.datafile)
+          resolvedFromCache = true
         }
-
-        window.localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify(makeCacheEntry(req.responseText))
-        )
       }
-    }
-    req.send()
-  })
-}
 
-const intervalSetter: Interval.IntervalSetter = {
-  setInterval(listener: Interval.IntervalListener, intervalMs: number) {
+      const req = new XMLHttpRequest()
+      req.open(GET_METHOD, datafileUrl, true)
+      req.onreadystatechange = () => {
+        if (req.readyState === READY_STATE_COMPLETE) {
+          if (req.status >= 400 && !resolvedFromCache) {
+            reject('Datafile response error')
+            return
+          }
+
+          if (!resolvedFromCache) {
+            resolve(req.responseText)
+          }
+
+          window.localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(makeCacheEntry(req.responseText))
+          )
+        }
+      }
+      req.send()
+    })
+  }
+
+  protected setInterval(listener: Interval.IntervalListener, intervalMs: number) {
     const timeout = window.setInterval(listener, intervalMs)
     return () => {
       window.clearTimeout(timeout)
@@ -79,10 +79,8 @@ const intervalSetter: Interval.IntervalSetter = {
 }
 
 export default function create(options: DatafileManagerConfig): DefaultDatafileManager {
-  return new DefaultDatafileManager({
+  return new BrowserDatafileManager({
     ...options,
-    fetchDatafile,
-    intervalSetter,
     liveUpdates: false,
   })
 }
