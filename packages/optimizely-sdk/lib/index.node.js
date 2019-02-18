@@ -75,36 +75,9 @@ function createCoreInstance(config) {
 }
 
 exports.createInstance = function(config) {
-  var managedConfig = {
-    clientConfig: config,
-    createInstance: createCoreInstance,
-  };
-
-  if (config.sdkKey) {
-    managedConfig.sdkKey = config.sdkKey;
-    delete config.sdkKey;
-  }
-
-  if (config.datafile) {
-    managedConfig.datafile = config.datafile;
-    delete config.datafile;
-  }
-
-  if (config.datafileManagerOptions) {
-    managedConfig.datafileManagerOptions = config.datafileManagerOptions;
-    delete config.datafileManagerOptions;
-  }
-
-  managedConfig.createDatafileManager = datafileManagement.createNodeDefaultDatafileManager;
-
-  // config.datafileManagerOptions
-  // {
-      // getUrl,
-      // liveUpdates // boolean
-      // updateInterval // number
-      // maxCacheAge // number
-
-  // }
-
-  return datafileManagement.createInstanceWithManagedDatafile(managedConfig);
+  return datafileManagement.createInstanceWithManagedDatafile(
+    createCoreInstance,
+    datafileManagement.createNodeDefaultDatafileManager,
+    config
+  );
 };

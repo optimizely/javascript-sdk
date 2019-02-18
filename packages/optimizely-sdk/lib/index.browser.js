@@ -81,24 +81,9 @@ function createCoreInstance(config) {
 }
 
 exports.createInstance = function(config) {
-  var managedConfig = {
-    clientConfig: config,
-    createInstance: createCoreInstance,
-  };
-
-  if (config.sdkKey) {
-    managedConfig.sdkKey = config.sdkKey;
-  }
-
-  if (config.datafile) {
-    managedConfig.datafile = config.datafile;
-  }
-
-  if (config.createDatafileManager) {
-    managedConfig.createDatafileManager = config.createDatafileManager;
-  } else {
-    managedConfig.createDatafileManager = datafileManagement.createBrowserDefaultDatafileManager;
-  }
-
-  return datafileManagement.createInstanceWithManagedDatafile(managedConfig);
+  return datafileManagement.createInstanceWithManagedDatafile(
+    createCoreInstance,
+    datafileManagement.createBrowserDefaultDatafileManager,
+    config
+  );
 };

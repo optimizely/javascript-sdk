@@ -6,12 +6,26 @@ import createStaticDatafileManager from './static_datafile_manager'
 import createDefaultClient from './default_client'
 import { default as EventEmitter, Listener, ListenerDisposer } from './event_emitter';
 
-export interface OptimizelyWithManagedDatafileConfig {
-  clientConfig: Config
-  datafile?: Datafile
+interface ManagedConfig extends Partial<Config> {
   sdkKey?: string
+  // TODO: datafileManagerOptions
+  /*
+    // {
+      // getUrl,
+      // liveUpdates // boolean
+      // updateInterval // number
+      // maxCacheAge // number
+
+  // }
+  */
+}
+
+export interface OptimizelyWithManagedDatafileConfig {
+  clientConfig: Partial<Config>
   createDatafileManager: (config: DatafileManagerConfig) => DatafileManager
   createInstance: (config: Config) => Client
+  datafile?: Datafile
+  sdkKey?: string
 }
 
 const DATAFILE_UPDATE_EVT = 'datafileUpdate'
@@ -178,7 +192,7 @@ class OptimizelyWithManagedDatafile implements Client {
     }
   }
 
-  private setupClient(datafile: Datafile, clientConfig: Config): void {
+  private setupClient(datafile: Datafile, clientConfig: Partial<Config>): void {
     const nextClient = this.createInstance({
       ...clientConfig,
       datafile,
@@ -210,6 +224,16 @@ class OptimizelyWithManagedDatafile implements Client {
   }
 }
 
-export default function create(config: OptimizelyWithManagedDatafileConfig): OptimizelyWithManagedDatafile {
-  return new OptimizelyWithManagedDatafile(config)
+export default function create(
+  createInstance: (config: Config) => Client,
+  createDatafileManager: (config: DatafileManagerConfig) => DatafileManager,
+  config: ManagedConfig
+): OptimizelyWithManagedDatafile {
+  return new OptimizelyWithManagedDatafile({
+    clientConfig: config,
+    createDatafileManager,
+    createInstance,
+    datafile: config.datafile,
+    sdkKey: config.sdkKey,
+  })
 }
