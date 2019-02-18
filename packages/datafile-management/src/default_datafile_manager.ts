@@ -115,10 +115,6 @@ export default abstract class DefaultDatafileManager implements DatafileManager 
 
     this.status = ManagerStatus.STARTED
 
-    if (!this.liveUpdates) {
-      return
-    }
-
     if (this.currentDatafile !== null) {
       this.startPolling()
     } else {
@@ -129,7 +125,8 @@ export default abstract class DefaultDatafileManager implements DatafileManager 
             this.currentDatafile = datafile
             this.emitter.emit(UPDATE_EVT, datafile)
             this.resolveOnReady && this.resolveOnReady(datafile)
-            if (this.status === ManagerStatus.STARTED) {
+
+            if (this.liveUpdates && this.status === ManagerStatus.STARTED) {
               this.startPolling()
             }
           },
@@ -155,7 +152,6 @@ export default abstract class DefaultDatafileManager implements DatafileManager 
   }
 
   // TODO: Ugly
-  // TODO: Only call update if revision is different?
   private startPolling(): void {
     this.intervalClearer = this.setInterval(() => {
       if (this.status === ManagerStatus.STARTED) {

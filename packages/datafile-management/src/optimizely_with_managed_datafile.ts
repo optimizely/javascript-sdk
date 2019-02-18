@@ -1,5 +1,4 @@
-// TODO:
-// create logger module containing a singleton, setLogger & getLogger. expose setLogger & getLogger as top-level exports of datafile-management package. Later this would be replaced.
+// TODO: create logger module containing a singleton, setLogger & getLogger. expose setLogger & getLogger as top-level exports of datafile-management package. Later this would be replaced.
 
 import { Client, Config, EventTags, UserAttributes } from '@optimizely/optimizely-sdk'
 import { Datafile, DatafileManager, DatafileManagerConfig } from './datafile_manager_types'
@@ -166,6 +165,10 @@ class OptimizelyWithManagedDatafile implements Client {
     return this.client.notificationCenter
   }
 
+  get isValidInstance() {
+    return this.client.isValidInstance
+  }
+
   close(): void {
     if (this.datafileListenerDisposer) {
       this.datafileListenerDisposer()
@@ -175,24 +178,29 @@ class OptimizelyWithManagedDatafile implements Client {
     }
   }
 
-  // TODO: Check validity of datafile, only reinstantiate client for valid datafiles, log if it's invalid maybe
-  // Or look at client.isValidInstance
   private setupClient(datafile: Datafile, clientConfig: Config): void {
-    this.client = this.createInstance({
+    const nextClient = this.createInstance({
       ...clientConfig,
       datafile,
     })
-    // TODO: Should emit datafile?
-    this.emitter.emit(DATAFILE_UPDATE_EVT)
+
+    if (nextClient.isValidInstance) {
+      this.client = nextClient
+      // TODO: Should emit datafile?
+      this.emitter.emit(DATAFILE_UPDATE_EVT)
+    } // TODO: else log error
 
     if (this.datafileManager) {
       this.datafileListenerDisposer = this.datafileManager.onUpdate(nextDatafile => {
-        this.client = this.createInstance({
+        const nextClient = this.createInstance({
           ...clientConfig,
           datafile: nextDatafile,
         })
-        // TODO: Should emit datafile?
-        this.emitter.emit(DATAFILE_UPDATE_EVT)
+        if (nextClient.isValidInstance) {
+          this.client = nextClient
+          // TODO: Should emit datafile?
+          this.emitter.emit(DATAFILE_UPDATE_EVT)
+        } // TODO: else log error
       })
     }
   }

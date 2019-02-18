@@ -1,5 +1,4 @@
 // TODO: live/not live boolean
-// TODO: abstract class instead of fetch function
 // TODO: allow passing a timeout to onReady
 // TODO: Logging all over the place
 // TODO: handle setForceVariation before ready and when internal instance is re-instantiated

@@ -4,6 +4,8 @@ import NoopNotificationCenter from './noop_notification_center'
 class DefaultClient implements Client {
   notificationCenter = new NoopNotificationCenter()
 
+  isValidInstance = true
+
   activate(): null {
     return null
   }
