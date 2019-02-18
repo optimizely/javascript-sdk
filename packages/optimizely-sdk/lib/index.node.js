@@ -77,7 +77,7 @@ function createCoreInstance(config) {
 exports.createInstance = function(config) {
   return datafileManagement.createInstanceWithManagedDatafile(
     createCoreInstance,
-    datafileManagement.createNodeDefaultDatafileManager,
+    datafileManagement.createDefaultDatafileManager,
     config
   );
 };

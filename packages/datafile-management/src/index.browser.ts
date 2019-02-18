@@ -17,9 +17,5 @@ export {
 
 // TODO: Need separate entry points here for node vs browser (index.node.ts, index.browser.ts), instead of exporting both
 export {
-  default as createBrowserDefaultDatafileManager,
+  default as createDefaultDatafileManager,
 } from './browser_datafile_manager'
-
-export {
-  default as createNodeDefaultDatafileManager,
-} from './node_datafile_manager'
