@@ -49,7 +49,7 @@ export default abstract class DefaultDatafileManager implements DatafileManager 
   private resolveOnReady: ((datafile: Datafile) => void) | undefined
 
   // TODO: Reject with what?
-  private rejectOnReady: (() => void) | undefined
+  private rejectOnReady: ((err: Error) => void) | undefined
 
   private liveUpdates: boolean
 
@@ -115,26 +115,28 @@ export default abstract class DefaultDatafileManager implements DatafileManager 
 
     this.status = ManagerStatus.STARTED
 
-    if (this.currentDatafile !== null) {
-      this.startPolling()
+    let datafileAvailable: Promise<void>
+    if (this.currentDatafile) {
+      datafileAvailable = Promise.resolve()
     } else {
-      // TODO: Should handle errors & retry N times on failure, before rejecting?
-      this.fetchAndParseDatafile()
+      datafileAvailable = this.fetchAndParseDatafile()
         .then(
           (datafile: Datafile) => {
             this.currentDatafile = datafile
-            this.emitter.emit(UPDATE_EVT, datafile)
             this.resolveOnReady && this.resolveOnReady(datafile)
-
-            if (this.liveUpdates && this.status === ManagerStatus.STARTED) {
-              this.startPolling()
-            }
           },
           () => {
-            this.rejectOnReady && this.rejectOnReady()
-          },
+            this.rejectOnReady && this.rejectOnReady(new Error('Error fetching and parsing datafile'))
+          }
         )
     }
+
+    datafileAvailable.then(() => {
+      if (this.liveUpdates && this.status === ManagerStatus.STARTED) {
+        this.emitter.emit(UPDATE_EVT, this.currentDatafile)
+        this.startPolling()
+      }
+    })
   }
 
   stop() {
@@ -146,6 +148,7 @@ export default abstract class DefaultDatafileManager implements DatafileManager 
   }
 
   // TODO: Better error handling, reject reasons/messages
+  // TODO: Should handle errors & retry N times on failure, before rejecting?
   private fetchAndParseDatafile(): Promise<Datafile> {
     return this.fetchDatafile(this.urlBuilder(this.sdkKey))
       .then((datafileStr: string) => JSON.parse(datafileStr))
