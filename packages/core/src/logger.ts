@@ -58,7 +58,7 @@ type LogData = {
  * @interface LoggerFacade
  */
 export interface LoggerFacade {
-  log(level: LogLevel, message: string): void
+  log(level: LogLevel | string, message: string): void
 
   info(message: string | Error, ...splat: any[]): void
 
@@ -250,8 +250,8 @@ class OptimizelyLogger implements LoggerFacade {
    * @param {string} [message]
    * @memberof OptimizelyLogger
    */
-  log(level: LogLevel, message: string): void {
-    this.internalLog(level, { message })
+  log(level: LogLevel | string, message: string): void {
+    this.internalLog(coerceLogLevel(level), { message })
   }
 
   info(message: string | Error, ...splat: any[]): void {

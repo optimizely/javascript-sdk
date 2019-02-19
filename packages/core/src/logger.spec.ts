@@ -86,6 +86,14 @@ describe('logger', () => {
     })
 
     describe('logger.log(level, msg)', () => {
+      it('should work with a string logLevel', () => {
+        setLogLevel(LogLevel.INFO)
+        logger.log('info', 'test')
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.INFO, 'test')
+      })
+
       it('should call the loggerBackend when the message logLevel is equal to the configured logLevel threshold', () => {
         setLogLevel(LogLevel.INFO)
         logger.log(LogLevel.INFO, 'test')
@@ -240,12 +248,21 @@ describe('logger', () => {
         expect(stubErrorHandler.handleError).toHaveBeenCalledWith(error)
       })
 
-      it('should handle info(error)', () => {
+      it('should handle error(error)', () => {
         const error = new Error('hey')
         logger.error(error)
 
         expect(stubLogger.log).toHaveBeenCalledTimes(1)
         expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.ERROR, 'hey')
+        expect(stubErrorHandler.handleError).toHaveBeenCalledWith(error)
+      })
+
+      it('should work with an insufficient amount of splat args error(msg, ...splat, message)', () => {
+        const error = new Error('hey')
+        logger.error('hey %s', error)
+
+        expect(stubLogger.log).toHaveBeenCalledTimes(1)
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.ERROR, 'hey ')
         expect(stubErrorHandler.handleError).toHaveBeenCalledWith(error)
       })
     })
