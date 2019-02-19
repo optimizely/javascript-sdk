@@ -3,7 +3,7 @@
 const optimizelySDK = require('@optimizely/optimizely-sdk')
 
 // setup with a noop logger
-optimizelySDK.setLoggerBackend(optimizelySDK.createNoOpLogger())
+optimizelySDK.setLogger(optimizelySDK.createNoOpLogger())
 
 const instance = optimizelySDK.createInstance(config)
 
@@ -12,8 +12,10 @@ const instance = optimizelySDK.createInstance(config)
 const optimizelySDK = require('@optimizely/optimizely-sdk')
 
 // create standard console logger
-optimizelySDK.setLoggerBackend(optimizelySDK.createLogger())
+optimizelySDK.setLogger(optimizelySDK.createLogger())
 optimizelySDK.setLogLevel(optimizelySDK.enums.LOG_LEVEL.DEBUG)
+// or with a string (eliminating the need to require enums)
+optimizelySDK.setLogLevel('DEBUG')
 
 const instance = optimizelySDK.createInstance(config)
 
@@ -47,14 +49,13 @@ function convertLogLevels(level) {
   }
 }
 
-optimizelySDK.setLoggerBackend({
+optimizelySDK.setLogger({
   log(level, message) {
     winstonLogger.log({
       level: convertLogLevels(level),
       message,
     })
-  },
-  setLogLevel() { /** noop */}
+  }
 })
 const instance = optimizelySDK.createInstance(config)
 
