@@ -49,7 +49,7 @@ export interface Logger {
 
 type LogData = {
   message: string
-  splat?: any[]
+  splat: any[]
   error?: Error
 }
 
@@ -251,7 +251,10 @@ class OptimizelyLogger implements LoggerFacade {
    * @memberof OptimizelyLogger
    */
   log(level: LogLevel | string, message: string): void {
-    this.internalLog(coerceLogLevel(level), { message })
+    this.internalLog(coerceLogLevel(level), {
+      message,
+      splat: [],
+    })
   }
 
   info(message: string | Error, ...splat: any[]): void {
@@ -273,7 +276,7 @@ class OptimizelyLogger implements LoggerFacade {
   private format(data: LogData): string {
     return `${this.messagePrefix ? this.messagePrefix + ': ' : ''}${sprintf(
       data.message,
-      data.splat,
+      ...data.splat,
     )}`
   }
 
@@ -300,12 +303,19 @@ class OptimizelyLogger implements LoggerFacade {
     if (message instanceof Error) {
       error = message
       message = error.message
-      this.internalLog(level, { error, message })
+      this.internalLog(level, {
+        error,
+        message,
+        splat,
+      })
       return
     }
 
     if (splat.length === 0) {
-      this.internalLog(level, { message })
+      this.internalLog(level, {
+        message,
+        splat,
+      })
       return
     }
 

@@ -131,10 +131,10 @@ describe('logger', () => {
         expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.INFO, 'test')
       })
       it('should handle info(message, ...splat)', () => {
-        logger.info('test: %s', 'hey')
+        logger.info('test: %s %s', 'hey', 'jude')
 
         expect(stubLogger.log).toHaveBeenCalledTimes(1)
-        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.INFO, 'test: hey')
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.INFO, 'test: hey jude')
       })
 
       it('should handle info(message, ...splat, error)', () => {
@@ -262,7 +262,7 @@ describe('logger', () => {
         logger.error('hey %s', error)
 
         expect(stubLogger.log).toHaveBeenCalledTimes(1)
-        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.ERROR, 'hey ')
+        expect(stubLogger.log).toHaveBeenCalledWith(LogLevel.ERROR, 'hey undefined')
         expect(stubErrorHandler.handleError).toHaveBeenCalledWith(error)
       })
     })
