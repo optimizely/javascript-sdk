@@ -12,7 +12,7 @@ class NodeDatafileManager extends DefaultDatafileManager {
       const parsedUrl = url.parse(datafileUrl)
       const path = parsedUrl.path
       if (typeof path === 'undefined') {
-        reject('Invalid url')
+        reject(new Error('Invalid url'))
         return
       }
       // TODO: Don't use type assertion
@@ -44,7 +44,7 @@ class NodeDatafileManager extends DefaultDatafileManager {
       }
 
       if (typeof parsedUrl.protocol === 'undefined') {
-        reject('Invalid protocol')
+        reject(new Error('Invalid protocol'))
         return
       }
 
@@ -56,7 +56,7 @@ class NodeDatafileManager extends DefaultDatafileManager {
       } else if (protocolString === 'http:') {
         req = http.request(requestOptions, requestCallback)
       } else {
-        reject(`Unknown protocol: ${protocolString}`)
+        reject(new Error(`Unknown protocol: ${protocolString}`))
         return
       }
 

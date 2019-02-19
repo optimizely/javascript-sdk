@@ -52,7 +52,7 @@ class BrowserDatafileManager extends DefaultDatafileManager {
       req.onreadystatechange = () => {
         if (req.readyState === READY_STATE_COMPLETE) {
           if (req.status >= 400 && !resolvedFromCache) {
-            reject('Datafile response error')
+            reject(new Error('Datafile response error'))
             return
           }
 

@@ -1,3 +1,9 @@
+// TODO: live/not live boolean
+// TODO: allow passing a timeout to onReady
+// TODO: Logging all over the place
+// TODO: handle setForceVariation before ready and when internal instance is re-instantiated
+// TODO: handle notificationCenter before ready and when internal instance is re-instantiated
+// TODO: use a 3rd-party library for event emitter instead of writing my own?
 // TODO: create logger module containing a singleton, setLogger & getLogger. expose setLogger & getLogger as top-level exports of datafile-management package. Later this would be replaced.
 
 import { Client, Config, EventTags, UserAttributes } from '@optimizely/optimizely-sdk'
@@ -5,20 +11,6 @@ import { Datafile, DatafileManager, DatafileManagerConfig } from './datafile_man
 import createStaticDatafileManager from './static_datafile_manager'
 import createDefaultClient from './default_client'
 import { default as EventEmitter, Listener, ListenerDisposer } from './event_emitter';
-
-interface ManagedConfig extends Partial<Config> {
-  sdkKey?: string
-  // TODO: datafileManagerOptions
-  /*
-    // {
-      // getUrl,
-      // liveUpdates // boolean
-      // updateInterval // number
-      // maxCacheAge // number
-
-  // }
-  */
-}
 
 export interface OptimizelyWithManagedDatafileConfig {
   clientConfig: Partial<Config>
@@ -65,8 +57,10 @@ class OptimizelyWithManagedDatafile implements Client {
     } else if (datafile) {
       this.datafileManager = createStaticDatafileManager(datafile)
     } else {
-      // TODO: Log? Reject with error message str?
-      this.onReady = Promise.reject()
+      // TODO: Log? Should throw earlier?
+      // As it stands, we will have a default client, isValidInstance will be true, but onReady will be rejected
+      // Not sure this is what we want
+      this.onReady = Promise.reject(new Error('Must provide datafile or sdkKey'))
       return
     }
 
@@ -222,6 +216,20 @@ class OptimizelyWithManagedDatafile implements Client {
   on(eventName: string, listener: Listener): ListenerDisposer {
     return this.emitter.on(eventName, listener)
   }
+}
+
+interface ManagedConfig extends Partial<Config> {
+  sdkKey?: string
+  // TODO: datafileManagerOptions
+  /*
+    // {
+      // getUrl,
+      // liveUpdates // boolean
+      // updateInterval // number
+      // maxCacheAge // number
+
+  // }
+  */
 }
 
 export default function create(
