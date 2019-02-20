@@ -6,7 +6,7 @@
    "strictNullChecks": true,
  },
  "include": [
-   "./src", "__tests__/logger.spec.ts"
+   "./src",
  ],
  "exclude": [
    "./lib",
