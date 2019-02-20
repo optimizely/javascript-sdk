@@ -8,6 +8,10 @@ export function getDatafileRevision(datafile: Datafile | null): number {
   if (typeof revision === 'undefined') {
     return -Infinity
   }
-  return revision
+  const revisionNum = parseInt(revision, 10)
+  if (Number.isNaN(revisionNum)) {
+    return -Infinity
+  }
+  return revisionNum
 }
 

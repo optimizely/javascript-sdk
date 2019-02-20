@@ -1,7 +1,7 @@
 import { ListenerDisposer } from './event_emitter'
 
 export interface Datafile {
-  revision?: number
+  revision?: string
 }
 
 // onUpdate callback - will be called with a Datafile
