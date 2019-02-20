@@ -22,7 +22,7 @@ var enums = require('./utils/enums');
 var Optimizely = require('./optimizely');
 
 var logger = core.getLogger('INDEX');
-core.setLoggerBackend(core.createConsoleLogger());
+core.setLogHandler(core.createConsoleLogHandler());
 core.setLogLevel(core.LogLevel.INFO);
 
 /**
@@ -34,7 +34,7 @@ module.exports = {
   eventDispatcher: defaultEventDispatcher,
   enums: enums,
 
-  setLogger: core.setLoggerBackend,
+  setLogger: core.setLogHandler,
   setLogLevel: core.setLogLevel,
 
   /**
@@ -57,7 +57,7 @@ module.exports = {
         core.setErrorHandler(config.errorHandler);
       }
       if (config.logger) {
-        core.setLoggerBackend(config.logger);
+        core.setLogHandler(config.logger);
         // respect the logger's shouldLog functionality
         core.setLogLevel(core.LogLevel.NOTSET);
       }

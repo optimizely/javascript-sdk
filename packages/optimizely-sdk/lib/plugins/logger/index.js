@@ -16,6 +16,6 @@
 var core = require('@optimizely/js-sdk-core');
 
 module.exports = {
-  createLogger: core.createConsoleLogger,
-  createNoOpLogger: core.createNoOpLogger,
+  createLogger: core.createConsoleLogHandler,
+  createNoOpLogger: core.createNoopLogHandler,
 };
