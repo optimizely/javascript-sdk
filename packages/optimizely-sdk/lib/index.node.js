@@ -35,7 +35,7 @@ module.exports = {
   eventDispatcher: defaultEventDispatcher,
   enums: enums,
 
-  setLogger: core.setLoggerBackend,
+  setLogger: core.setLogHandler,
   setLogLevel: core.setLogLevel,
 
   /**
@@ -61,7 +61,7 @@ module.exports = {
       if (config.logger) {
         // only set a logger in node if one is provided, by not setting we are noop-ing
         hasLogger = true;
-        core.setLoggerBackend(config.logger);
+        core.setLogHandler(config.logger);
         // respect the logger's shouldLog functionality
         core.setLogLevel(core.LogLevel.NOTSET);
       }
@@ -76,7 +76,7 @@ module.exports = {
         if (hasLogger) {
           logger.error(ex);
         } else {
-          core.createConsoleLogger().log(enums.LOG_LEVEL.ERROR, ex.message);
+          console.error(ex.message);
         }
         config.isValidInstance = false;
       }

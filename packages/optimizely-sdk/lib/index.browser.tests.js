@@ -273,21 +273,21 @@ describe('javascript-sdk', function() {
 
       describe('when passing in logger', function() {
         beforeEach(function() {
-          sinon.stub(core, 'setLoggerBackend');
+          sinon.stub(core, 'setLogHandler');
         });
 
         afterEach(function() {
-          core.setLoggerBackend.restore();
+          core.setLogHandler.restore();
         });
 
-        it('should call core.setLoggerBackend with the supplied logger', function() {
+        it('should call core.setLogHandler with the supplied logger', function() {
           var fakeLogger = { log: function() {} };
           optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
             logger: fakeLogger,
           });
-          sinon.assert.calledOnce(core.setLoggerBackend);
-          sinon.assert.calledWithExactly(core.setLoggerBackend, fakeLogger);
+          sinon.assert.calledOnce(core.setLogHandler);
+          sinon.assert.calledWithExactly(core.setLogHandler, fakeLogger);
         });
       });
     });
