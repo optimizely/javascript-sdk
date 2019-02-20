@@ -31,6 +31,7 @@ export function isValidEnum(enumToCheck: object, value: any): boolean {
   return found
 }
 
+// used once
 export function groupBy<K>(arr: K[], grouperFn: (item: K) => string): Array<K[]> {
   const grouper = {}
 
@@ -43,10 +44,12 @@ export function groupBy<K>(arr: K[], grouperFn: (item: K) => string): Array<K[]>
   return objectValues(grouper)
 }
 
+// used once
 export function objectValues<K>(obj: { [key: string]: K }): K[] {
   return Object.keys(obj).map(key => obj[key])
 }
 
+// not used
 export function mapObj<J, K>(
   obj: { [key: string]: J },
   handler: (val: J, key: string) => K,
@@ -58,6 +61,7 @@ export function mapObj<J, K>(
   return newObj
 }
 
+// not used
 export function each<K>(
   obj: { [key: string]: K },
   handler: (val: K, key: string) => void,
@@ -67,7 +71,7 @@ export function each<K>(
   })
 }
 
-
+// not used
 export function without<K>(
   obj: { [key: string]: K },
   keys: string[],

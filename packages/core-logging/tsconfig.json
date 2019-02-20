@@ -1,0 +1,15 @@
+{
+ "extends": "../../tsconfig.json",
+ "compilerOptions": {
+   "outDir": "./lib",
+   "noImplicitAny": true,
+   "strictNullChecks": true,
+ },
+ "include": [
+   "./src", "__tests__/logger.spec.ts"
+ ],
+ "exclude": [
+   "./lib",
+   "./src/**/*.spec.ts"
+ ]
+}

@@ -3,7 +3,7 @@ import {
   LogLevel,
   LogHandler,
   LoggerFacade,
-} from './models'
+} from '../src/models'
 
 import {
   setLogHandler,
@@ -12,10 +12,10 @@ import {
   createConsoleLogHandler,
   resetLogger,
   getLogLevel,
-} from './logger'
+} from '../src/logger'
 
-import { resetErrorHandler } from './errorHandler'
-import { ErrorHandler, setErrorHandler } from './errorHandler'
+import { resetErrorHandler } from '../src/errorHandler'
+import { ErrorHandler, setErrorHandler } from '../src/errorHandler'
 
 describe('logger', () => {
   afterEach(() => {

@@ -1,0 +1,169 @@
+[OPTIMIZELY] - DEBUG Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) DEFAULT_LOGGER: Setting log level to "NOTSET"
+[OPTIMIZELY] - INFO Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) OPTIMIZELY: Datafile is valid.
+config { clientEngine: 'node-sdk',
+  errorHandler: { handleError: [Function: handleError] },
+  eventDispatcher: { dispatchEvent: [Function: dispatchEvent] },
+  jsonSchemaValidator: { validate: [Function: validate] },
+  logger:
+   Logger { logToConsole: true, prefix: '[OPTIMIZELY]', logLevel: 0 },
+  skipJSONValidation: false,
+  datafile:
+   { version: '4',
+     rollouts: [],
+     typedAudiences: [],
+     anonymizeIP: false,
+     projectId: '13627400256',
+     variables: [],
+     featureFlags: [],
+     experiments: [ [Object] ],
+     audiences: [ [Object] ],
+     groups: [],
+     attributes: [],
+     botFiltering: false,
+     accountId: '804231466',
+     events: [],
+     revision: '4' },
+  eventFlushInterval: 3000,
+  eventFlushSize: 100,
+  isValidInstance: true }
+[OPTIMIZELY] - DEBUG Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) PROJECT_CONFIG: User jordan is not in the forced variation map.
+[OPTIMIZELY] - DEBUG Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) DECISION_SERVICE: Evaluating audiences for experiment "abtest1": [].
+[OPTIMIZELY] - INFO Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) DECISION_SERVICE: Audiences for experiment abtest1 collectively evaluated to TRUE.
+[OPTIMIZELY] - DEBUG Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) BUCKETER: Assigned variation bucket 9706 to user jordan.
+[OPTIMIZELY] - INFO Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) BUCKETER: User jordan is in variation var2 of experiment abtest1.
+var2
+[OPTIMIZELY] - DEBUG Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) PROJECT_CONFIG: User jordan1 is not in the forced variation map.
+[OPTIMIZELY] - DEBUG Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) DECISION_SERVICE: Evaluating audiences for experiment "abtest1": [].
+[OPTIMIZELY] - INFO Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) DECISION_SERVICE: Audiences for experiment abtest1 collectively evaluated to TRUE.
+[OPTIMIZELY] - DEBUG Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) BUCKETER: Assigned variation bucket 9253 to user jordan1.
+[OPTIMIZELY] - INFO Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) BUCKETER: User jordan1 is in variation var2 of experiment abtest1.
+var2
+[OPTIMIZELY] - DEBUG Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) PROJECT_CONFIG: User jordan2 is not in the forced variation map.
+[OPTIMIZELY] - DEBUG Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) DECISION_SERVICE: Evaluating audiences for experiment "abtest1": [].
+[OPTIMIZELY] - INFO Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) DECISION_SERVICE: Audiences for experiment abtest1 collectively evaluated to TRUE.
+[OPTIMIZELY] - DEBUG Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) BUCKETER: Assigned variation bucket 8440 to user jordan2.
+[OPTIMIZELY] - INFO Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) BUCKETER: User jordan2 is in variation var2 of experiment abtest1.
+var2
+[OPTIMIZELY] - DEBUG Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) PROJECT_CONFIG: User jordan is not in the forced variation map.
+[OPTIMIZELY] - DEBUG Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) DECISION_SERVICE: Evaluating audiences for experiment "abtest1": [].
+[OPTIMIZELY] - INFO Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) DECISION_SERVICE: Audiences for experiment abtest1 collectively evaluated to TRUE.
+[OPTIMIZELY] - DEBUG Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) BUCKETER: Assigned variation bucket 9706 to user jordan.
+[OPTIMIZELY] - INFO Tue Feb 19 2019 14:59:03 GMT-0800 (Pacific Standard Time) BUCKETER: User jordan is in variation var2 of experiment abtest1.
+var2
+dispatching {
+  "client_name": "node-sdk",
+  "client_version": "3.0.0",
+  "account_id": "804231466",
+  "project_id": "13627400256",
+  "revision": "4",
+  "anonymize_ip": false,
+  "visitors": [
+    {
+      "snapshots": [
+        {
+          "decisions": [
+            {
+              "campaign_id": "13619500363",
+              "experiment_id": "13623600328",
+              "variation_id": "13648280126"
+            }
+          ],
+          "events": [
+            {
+              "entity_id": "13619500363",
+              "timestamp": 1550617143530,
+              "key": "campaign_activated",
+              "uuid": "efb96172-c784-422b-83ce-6cc1c6a20331"
+            }
+          ]
+        },
+        {
+          "decisions": [
+            {
+              "campaign_id": "13619500363",
+              "experiment_id": "13623600328",
+              "variation_id": "13648280126"
+            }
+          ],
+          "events": [
+            {
+              "entity_id": "13619500363",
+              "timestamp": 1550617143533,
+              "key": "campaign_activated",
+              "uuid": "7b0dc3ca-e52b-4e89-b491-80672329de29"
+            }
+          ]
+        }
+      ],
+      "visitor_id": "jordan",
+      "attributes": [
+        {
+          "entity_id": "$opt_bot_filtering",
+          "key": "$opt_bot_filtering",
+          "type": "custom",
+          "value": false
+        }
+      ]
+    },
+    {
+      "snapshots": [
+        {
+          "decisions": [
+            {
+              "campaign_id": "13619500363",
+              "experiment_id": "13623600328",
+              "variation_id": "13648280126"
+            }
+          ],
+          "events": [
+            {
+              "entity_id": "13619500363",
+              "timestamp": 1550617143532,
+              "key": "campaign_activated",
+              "uuid": "0fa0dbe2-9ba8-429a-a29a-be82f565e886"
+            }
+          ]
+        }
+      ],
+      "visitor_id": "jordan1",
+      "attributes": [
+        {
+          "entity_id": "$opt_bot_filtering",
+          "key": "$opt_bot_filtering",
+          "type": "custom",
+          "value": false
+        }
+      ]
+    },
+    {
+      "snapshots": [
+        {
+          "decisions": [
+            {
+              "campaign_id": "13619500363",
+              "experiment_id": "13623600328",
+              "variation_id": "13648280126"
+            }
+          ],
+          "events": [
+            {
+              "entity_id": "13619500363",
+              "timestamp": 1550617143533,
+              "key": "campaign_activated",
+              "uuid": "da4ce650-fab7-4f8f-aa7c-6a2a258c27e1"
+            }
+          ]
+        }
+      ],
+      "visitor_id": "jordan2",
+      "attributes": [
+        {
+          "entity_id": "$opt_bot_filtering",
+          "key": "$opt_bot_filtering",
+          "type": "custom",
+          "value": false
+        }
+      ]
+    }
+  ]
+}
