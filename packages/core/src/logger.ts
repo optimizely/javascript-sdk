@@ -2,17 +2,7 @@ import { sprintf } from 'sprintf-js'
 import { getErrorHandler } from './errorHandler'
 import { isValidEnum } from './utils'
 
-/**
- * @export
- * @enum {number}
- */
-export enum LogLevel {
-  NOTSET = 0,
-  DEBUG = 1,
-  INFO = 2,
-  WARNING = 3,
-  ERROR = 4,
-}
+import { LogLevel, LoggerFacade, LogManager, LogHandler } from './models'
 
 const stringToLogLevel = {
   NOTSET: 0,
@@ -39,41 +29,13 @@ function coerceLogLevel(level: any): LogLevel {
   return stringToLogLevel[level]
 }
 
-/**
- * @export
- * @interface Logger
- */
-export interface Logger {
-  log(level: LogLevel, message: string): void
-}
-
 type LogData = {
   message: string
   splat: any[]
   error?: Error
 }
 
-/**
- * @export
- * @interface LoggerFacade
- */
-export interface LoggerFacade {
-  log(level: LogLevel | string, message: string): void
-
-  info(message: string | Error, ...splat: any[]): void
-
-  debug(message: string | Error, ...splat: any[]): void
-
-  warn(message: string | Error, ...splat: any[]): void
-
-  error(message: string | Error, ...splat: any[]): void
-}
-
-interface LoggerFactory {
-  getLogger(name?: string): LoggerFacade
-}
-
-class DefaultLoggerFactory {
+class DefaultLogManager implements LogManager {
   private loggers: {
     [name: string]: LoggerFacade
   }
@@ -96,13 +58,13 @@ class DefaultLoggerFactory {
   }
 }
 
-type ConsoleLoggerConfig = {
+type ConsoleLogHandlerConfig = {
   logLevel?: LogLevel
   logToConsole?: boolean
   prefix?: string
 }
 
-class NoopLogger implements Logger {
+class NoopLogHandler implements LogHandler {
   log(level: LogLevel, message: string): void {
     return
   }
@@ -112,17 +74,17 @@ class NoopLogger implements Logger {
  * @class ConsoleLogger
  * @implements {Logger}
  */
-class ConsoleLogger implements Logger {
+class ConsoleLogHandler implements LogHandler {
   public logLevel: LogLevel
   private logToConsole: boolean
   private prefix: string
 
   /**
    * Creates an instance of ConsoleLogger.
-   * @param {ConsoleLoggerConfig} config
+   * @param {ConsoleLogHandlerConfig} config
    * @memberof ConsoleLogger
    */
-  constructor(config: ConsoleLoggerConfig) {
+  constructor(config: ConsoleLogHandlerConfig) {
     if (config.logLevel !== undefined && isValidEnum(LogLevel, config.logLevel)) {
       // TODO should it set the global log level here?
       this.setLogLevel(config.logLevel)
@@ -230,12 +192,8 @@ class ConsoleLogger implements Logger {
 }
 
 let globalLogLevel: LogLevel = LogLevel.NOTSET
-let globalLoggerBackend: Logger | null = null
+let globalLogHandler: LogHandler | null = null
 
-/**
- * @class OptimizelyLogger
- * @implements {LoggerFacade}
- */
 class OptimizelyLogger implements LoggerFacade {
   private messagePrefix: string
 
@@ -281,7 +239,7 @@ class OptimizelyLogger implements LoggerFacade {
   }
 
   private internalLog(level: LogLevel, data: LogData): void {
-    if (!globalLoggerBackend) {
+    if (!globalLogHandler) {
       return
     }
 
@@ -290,7 +248,7 @@ class OptimizelyLogger implements LoggerFacade {
     }
 
     // TODO turn this into a format log function
-    globalLoggerBackend.log(level, this.format(data))
+    globalLogHandler.log(level, this.format(data))
 
     if (data.error && data.error instanceof Error) {
       getErrorHandler().handleError(data.error)
@@ -329,30 +287,16 @@ class OptimizelyLogger implements LoggerFacade {
   }
 }
 
-let globalLoggerFactory: LoggerFactory = new DefaultLoggerFactory()
+let globalLogManager: LogManager = new DefaultLogManager()
 
-// TODO figure out if we want to support passing a string to `getLogger`
-/**
- * Always returns the global LoggerFacade
- * @export
- * @returns {LoggerFacade}
- */
 export function getLogger(name?: string): LoggerFacade {
-  return globalLoggerFactory.getLogger(name)
+  return globalLogManager.getLogger(name)
 }
 
-/**
- * @export
- * @param {(Logger | null)} logger
- */
-export function setLoggerBackend(logger: Logger | null) {
-  globalLoggerBackend = logger
+export function setLogHandler(logger: LogHandler | null) {
+  globalLogHandler = logger
 }
 
-/**
- * @export
- * @param {LogLevel} level
- */
 export function setLogLevel(level: LogLevel | string) {
   level = coerceLogLevel(level)
   if (!isValidEnum(LogLevel, level) || level === undefined) {
@@ -366,27 +310,18 @@ export function getLogLevel(): LogLevel {
   return globalLogLevel
 }
 
-/**
- * @export
- * @param {ConsoleLoggerConfig} [config={}]
- * @returns {ConsoleLogger}
- */
-export function createConsoleLogger(config: ConsoleLoggerConfig = {}): ConsoleLogger {
-  return new ConsoleLogger(config)
+export function createConsoleLogHandler(config: ConsoleLogHandlerConfig = {}): ConsoleLogHandler {
+  return new ConsoleLogHandler(config)
 }
 
-/**
- * @export
- * @returns {NoopLogger}
- */
-export function createNoOpLogger(): NoopLogger {
-  return new NoopLogger()
+export function createNoopLogHandler(): NoopLogHandler {
+  return new NoopLogHandler()
 }
 
 /**
  * Resets all global logger state to it's original
  */
 export function resetLogger() {
-  globalLoggerFactory = new DefaultLoggerFactory()
+  globalLogManager = new DefaultLogManager()
   globalLogLevel = LogLevel.NOTSET
 }
