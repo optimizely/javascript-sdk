@@ -9,7 +9,7 @@ import {
   setLogHandler,
   setLogLevel,
   getLogger,
-  createConsoleLogHandler,
+  ConsoleLogHandler,
   resetLogger,
   getLogLevel,
 } from '../src/logger'
@@ -270,7 +270,7 @@ describe('logger', () => {
       })
     })
 
-    describe('with ConsoleLogger', () => {
+    describe('using ConsoleLoggerHandler', () => {
       beforeEach(() => {
         jest.spyOn(console, 'info').mockImplementation(() => {})
       })
@@ -280,7 +280,7 @@ describe('logger', () => {
       })
 
       it('should work with BasicLogger', () => {
-        const logger = createConsoleLogHandler()
+        const logger = new ConsoleLogHandler()
         const TIME = '12:00'
         setLogHandler(logger)
         setLogLevel(LogLevel.INFO)
@@ -293,14 +293,14 @@ describe('logger', () => {
       })
 
       it('should set logLevel to ERROR when setLogLevel is called with invalid value', () => {
-        const logger = createConsoleLogHandler()
+        const logger = new ConsoleLogHandler()
         logger.setLogLevel('invalid' as any)
 
         expect(logger.logLevel).toEqual(LogLevel.ERROR)
       })
 
       it('should set logLevel to ERROR when setLogLevel is called with no value', () => {
-        const logger = createConsoleLogHandler()
+        const logger = new ConsoleLogHandler()
         // @ts-ignore
         logger.setLogLevel()
 
@@ -322,7 +322,7 @@ describe('logger', () => {
     })
 
     it('should log to console.info for LogLevel.INFO', () => {
-      const logger = createConsoleLogHandler({
+      const logger = new ConsoleLogHandler({
         logLevel: LogLevel.DEBUG,
       })
       const TIME = '12:00'
@@ -335,7 +335,7 @@ describe('logger', () => {
     })
 
     it('should log to console.log for LogLevel.DEBUG', () => {
-      const logger = createConsoleLogHandler({
+      const logger = new ConsoleLogHandler({
         logLevel: LogLevel.DEBUG,
       })
       const TIME = '12:00'
@@ -348,7 +348,7 @@ describe('logger', () => {
     })
 
     it('should log to console.warn for LogLevel.WARNING', () => {
-      const logger = createConsoleLogHandler({
+      const logger = new ConsoleLogHandler({
         logLevel: LogLevel.DEBUG,
       })
       const TIME = '12:00'
@@ -361,7 +361,7 @@ describe('logger', () => {
     })
 
     it('should log to console.error for LogLevel.ERROR', () => {
-      const logger = createConsoleLogHandler({
+      const logger = new ConsoleLogHandler({
         logLevel: LogLevel.DEBUG,
       })
       const TIME = '12:00'
@@ -374,7 +374,7 @@ describe('logger', () => {
     })
 
     it('should not log if the configured logLevel is higher', () => {
-      const logger = createConsoleLogHandler({
+      const logger = new ConsoleLogHandler({
         logLevel: LogLevel.INFO,
       })
 

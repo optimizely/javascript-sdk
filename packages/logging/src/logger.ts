@@ -64,17 +64,7 @@ type ConsoleLogHandlerConfig = {
   prefix?: string
 }
 
-class NoopLogHandler implements LogHandler {
-  log(level: LogLevel, message: string): void {
-    return
-  }
-}
-
-/**
- * @class ConsoleLogger
- * @implements {Logger}
- */
-class ConsoleLogHandler implements LogHandler {
+export class ConsoleLogHandler implements LogHandler {
   public logLevel: LogLevel
   private logToConsole: boolean
   private prefix: string
@@ -84,7 +74,7 @@ class ConsoleLogHandler implements LogHandler {
    * @param {ConsoleLogHandlerConfig} config
    * @memberof ConsoleLogger
    */
-  constructor(config: ConsoleLogHandlerConfig) {
+  constructor(config: ConsoleLogHandlerConfig = {}) {
     if (config.logLevel !== undefined && isValidEnum(LogLevel, config.logLevel)) {
       // TODO should it set the global log level here?
       this.setLogLevel(config.logLevel)
@@ -308,14 +298,6 @@ export function setLogLevel(level: LogLevel | string) {
 
 export function getLogLevel(): LogLevel {
   return globalLogLevel
-}
-
-export function createConsoleLogHandler(config: ConsoleLogHandlerConfig = {}): ConsoleLogHandler {
-  return new ConsoleLogHandler(config)
-}
-
-export function createNoopLogHandler(): NoopLogHandler {
-  return new NoopLogHandler()
 }
 
 /**
