@@ -49,44 +49,6 @@ export function objectValues<K>(obj: { [key: string]: K }): K[] {
   return Object.keys(obj).map(key => obj[key])
 }
 
-// not used
-export function mapObj<J, K>(
-  obj: { [key: string]: J },
-  handler: (val: J, key: string) => K,
-): { [key: string]: K } {
-  const newObj = {}
-  each(obj, (val, key) => {
-    newObj[key] = handler(val, key)
-  })
-  return newObj
-}
-
-// not used
-export function each<K>(
-  obj: { [key: string]: K },
-  handler: (val: K, key: string) => void,
-): void {
-  Object.keys(obj).forEach((key, index) => {
-    handler(obj[key], key)
-  })
-}
-
-// not used
-export function without<K>(
-  obj: { [key: string]: K },
-  keys: string[],
-): { [key: string]: K } {
-  const newObj = {}
-
-  each(obj, (val, key) => {
-    if (keys.indexOf(key) === -1) {
-      newObj[key] = val
-    }
-  })
-
-  return newObj
-}
-
 export function find<K>(arr: K[], cond: (arg: K) => boolean): K | undefined {
   let found
 
