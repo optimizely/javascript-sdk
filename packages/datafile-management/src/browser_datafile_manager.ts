@@ -38,6 +38,7 @@ class BrowserDatafileManager extends DefaultDatafileManager {
       if (cacheEntryStr !== null) {
         let cacheEntry: CacheEntry | undefined
         try {
+          // TODO: JSON.parse bull shit (fix this)
           cacheEntry = JSON.parse(cacheEntryStr)
         } catch(e) {
         }

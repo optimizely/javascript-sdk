@@ -9,9 +9,28 @@ export function getDatafileRevision(datafile: Datafile | null): number {
     return -Infinity
   }
   const revisionNum = parseInt(revision, 10)
-  if (Number.isNaN(revisionNum)) {
+  if (isNaN(revisionNum)) {
     return -Infinity
   }
   return revisionNum
 }
 
+export function parseAndValidateDatafileString(datafileStr: string): Datafile | null {
+  let maybeDatafile: any
+  try {
+    maybeDatafile = JSON.parse(datafileStr)
+  } catch (e) {
+    return null
+  }
+
+  if (typeof maybeDatafile !== 'object') {
+    return null
+  }
+
+  const revision = maybeDatafile.revision
+  if (typeof revision === 'string' || revision instanceof String) {
+    return maybeDatafile
+  }
+
+  return null
+}

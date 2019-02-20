@@ -2,7 +2,7 @@
 
 import { Datafile, DatafileManager, DatafileUpdateListener } from './datafile_manager_types'
 import EventEmitter from './event_emitter';
-import { getDatafileRevision } from './datafile'
+import { getDatafileRevision, parseAndValidateDatafileString } from './datafile'
 import { IntervalListener, IntervalClearer } from './interval'
 
 export interface ManagerOptions {
@@ -72,14 +72,9 @@ export default abstract class DefaultDatafileManager implements DatafileManager 
         break
 
       case 'string':
-        let datafileObj: Datafile | undefined
-        try {
-          datafileObj = JSON.parse(datafile)
-        } catch (e) {
-          // TODO: log
-        }
-        if (datafileObj) {
-          this.currentDatafile = datafileObj
+        const maybeDatafile = parseAndValidateDatafileString(datafile)
+        if (maybeDatafile) {
+          this.currentDatafile = maybeDatafile
         }
         break
 
