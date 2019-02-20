@@ -1,6 +1,6 @@
 import { sprintf } from 'sprintf-js'
 import { getErrorHandler } from './errorHandler'
-import { isValidEnum } from '@optimizely/js-sdk-core-utils'
+import { isValidEnum } from '@optimizely/js-sdk-utils'
 
 import { LogLevel, LoggerFacade, LogManager, LogHandler } from './models'
 
