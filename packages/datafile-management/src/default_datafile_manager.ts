@@ -67,6 +67,11 @@ export default abstract class DefaultDatafileManager implements DatafileManager 
     this.currentDatafile = null
     this.liveUpdates = liveUpdates
 
+    // TODO: Improve this. Maybe we should handle/allow object only?
+    // Every time we emit, it's an object
+    // Every return value from get() is an object
+    // We don't want to be in the business of validating datafiles here...only passing them through to real clients
+    // The revision checking complicates this
     switch (typeof datafile) {
       case 'undefined':
         break
@@ -121,6 +126,8 @@ export default abstract class DefaultDatafileManager implements DatafileManager 
             this.resolveOnReady && this.resolveOnReady(datafile)
           },
           () => {
+            // TODO: We should only reject if we can't get a datafile
+            // Should not reject based on the validity of the datafile (leave validation to the core client)
             this.rejectOnReady && this.rejectOnReady(new Error('Error fetching and parsing datafile'))
           }
         )

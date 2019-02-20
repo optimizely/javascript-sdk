@@ -192,6 +192,7 @@ class OptimizelyWithManagedDatafile implements Client {
       datafile,
     })
 
+    // TODO: Get rid of this. Just update regardless of whether it's valid
     if (nextClient.isValidInstance) {
       this.client = nextClient
       // TODO: Should emit datafile?
