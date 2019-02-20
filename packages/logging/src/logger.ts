@@ -59,7 +59,7 @@ class DefaultLogManager implements LogManager {
 }
 
 type ConsoleLogHandlerConfig = {
-  logLevel?: LogLevel
+  logLevel?: LogLevel | string
   logToConsole?: boolean
   prefix?: string
 }
@@ -107,7 +107,7 @@ export class ConsoleLogHandler implements LogHandler {
    * @param {LogLevel} level
    * @memberof ConsoleLogger
    */
-  setLogLevel(level: LogLevel) {
+  setLogLevel(level: LogLevel | string) {
     level = coerceLogLevel(level)
     if (!isValidEnum(LogLevel, level) || level === undefined) {
       this.logLevel = LogLevel.ERROR
