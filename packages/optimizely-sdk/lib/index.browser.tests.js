@@ -30,7 +30,9 @@ describe('javascript-sdk', function() {
     var requests;
 
     it('should expose logger, errorHandler, eventDispatcher and enums', function() {
-      assert.isDefined(optimizelyFactory.logger);
+      assert.isDefined(optimizelyFactory.logging);
+      assert.isDefined(optimizelyFactory.logging.createLogger);
+      assert.isDefined(optimizelyFactory.logging.createNoOpLogger);
       assert.isDefined(optimizelyFactory.errorHandler);
       assert.isDefined(optimizelyFactory.eventDispatcher);
       assert.isDefined(optimizelyFactory.enums);
@@ -42,7 +44,7 @@ describe('javascript-sdk', function() {
       var silentLogger;
 
       beforeEach(function() {
-        silentLogger = optimizelyFactory.logger.createLogger({
+        silentLogger = optimizelyFactory.logging.createLogger({
           logLevel: optimizelyFactory.enums.LOG_LEVEL.INFO,
           logToConsole: false,
         });
@@ -82,7 +84,7 @@ describe('javascript-sdk', function() {
         });
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '3.0.0');
+        assert.equal(optlyInstance.clientVersion, '3.0.1');
       });
 
       it('should set the JavaScript client engine and version', function() {
@@ -251,7 +253,7 @@ describe('javascript-sdk', function() {
 
       describe('automatically created logger instances', function() {
         beforeEach(function() {
-          sinon.stub(optimizelyFactory.logger, 'createLogger').callsFake(function() {
+          sinon.stub(optimizelyFactory.logging, 'createLogger').callsFake(function() {
             return {
               log: function() {},
             };
@@ -259,7 +261,7 @@ describe('javascript-sdk', function() {
         });
 
         afterEach(function() {
-          optimizelyFactory.logger.createLogger.restore();
+          optimizelyFactory.logging.createLogger.restore();
         });
 
         it('should instantiate the logger with a custom logLevel when provided', function() {
@@ -267,7 +269,7 @@ describe('javascript-sdk', function() {
             datafile: testData.getTestProjectConfig(),
             logLevel: optimizelyFactory.enums.LOG_LEVEL.ERROR,
           });
-          var foundCall = find(optimizelyFactory.logger.createLogger.getCalls(), function(call) {
+          var foundCall = find(optimizelyFactory.logging.createLogger.getCalls(), function(call) {
             return call.returned(sinon.match.same(optlyInstance.logger));
           });
           assert.strictEqual(foundCall.args[0].logLevel, optimizelyFactory.enums.LOG_LEVEL.ERROR);
@@ -277,7 +279,7 @@ describe('javascript-sdk', function() {
           var optlyInstance = optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
           });
-          var foundCall = find(optimizelyFactory.logger.createLogger.getCalls(), function(call) {
+          var foundCall = find(optimizelyFactory.logging.createLogger.getCalls(), function(call) {
             return call.returned(sinon.match.same(optlyInstance.logger));
           });
           assert.strictEqual(foundCall.args[0].logLevel, optimizelyFactory.enums.LOG_LEVEL.INFO);

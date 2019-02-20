@@ -29,7 +29,7 @@ var MODULE_NAME = 'INDEX';
  * Entry point into the Optimizely Browser SDK
  */
 module.exports = {
-  logger: logger,
+  logging: logger,
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
   enums: enums,
