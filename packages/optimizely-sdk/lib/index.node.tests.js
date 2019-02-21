@@ -26,7 +26,9 @@ var sinon = require('sinon');
 describe('optimizelyFactory', function() {
   describe('APIs', function() {
     it('should expose logger, errorHandler, eventDispatcher and enums', function() {
-      assert.isDefined(optimizelyFactory.logger);
+      assert.isDefined(optimizelyFactory.logging);
+      assert.isDefined(optimizelyFactory.logging.createLogger);
+      assert.isDefined(optimizelyFactory.logging.createNoOpLogger);
       assert.isDefined(optimizelyFactory.errorHandler);
       assert.isDefined(optimizelyFactory.eventDispatcher);
       assert.isDefined(optimizelyFactory.enums);
