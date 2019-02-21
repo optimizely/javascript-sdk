@@ -13,9 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var core = require('@optimizely/js-sdk-core');
+var logging = require('@optimizely/js-sdk-logging');
 
 module.exports = {
-  createLogger: core.createConsoleLogHandler,
-  createNoOpLogger: core.createNoopLogHandler,
+  createLogger: function(opts) {
+    return new logging.ConsoleLogHandler(opts);
+  },
+
+  createNoOpLogger: function() {
+    return {
+      log: function() {},
+    };
+  },
 };

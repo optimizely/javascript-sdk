@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var core = require('@optimizely/js-sdk-core');
+var logging = require('@optimizely/js-sdk-logging');
 var configValidator = require('./utils/config_validator');
 var enums = require('./utils/enums');
-var logger = require('./plugins/logger');
+var loggerPlugin = require('./plugins/logger');
 var Optimizely = require('./optimizely');
 var optimizelyFactory = require('./index.node');
 
@@ -42,20 +42,20 @@ describe('optimizelyFactory', function() {
 
       beforeEach(function() {
         fakeLogger = { log: sinon.spy(), setLogLevel: sinon.spy() };
-        sinon.stub(core, 'createConsoleLogHandler').returns(fakeLogger);
+        sinon.stub(loggerPlugin, 'createLogger').returns(fakeLogger);
         sinon.stub(configValidator, 'validate');
         sinon.stub(console, 'error');
       });
 
       afterEach(function() {
-        core.createConsoleLogHandler.restore();
+        loggerPlugin.createLogger.restore();
         configValidator.validate.restore();
         console.error.restore();
       });
 
       it('should not throw if the provided config is not valid and log an error if logger is passed in', function() {
         configValidator.validate.throws(new Error('Invalid config or something'));
-        var localLogger = core.createConsoleLogHandler({ logLevel: enums.LOG_LEVEL.INFO });
+        var localLogger = loggerPlugin.createLogger({ logLevel: enums.LOG_LEVEL.INFO });
         assert.doesNotThrow(function() {
           optimizelyFactory.createInstance({
             datafile: {},
