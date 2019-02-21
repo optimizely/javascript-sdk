@@ -13,29 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var core = require('@optimizely/js-sdk-core');
+var logging = require('@optimizely/js-sdk-logging');
 var fns = require('./utils/fns');
 var configValidator = require('./utils/config_validator');
 var defaultErrorHandler = require('./plugins/error_handler');
 var defaultEventDispatcher = require('./plugins/event_dispatcher/index.browser');
 var enums = require('./utils/enums');
+var loggerPlugin = require('./plugins/logger');
 var Optimizely = require('./optimizely');
 
-var logger = core.getLogger('INDEX');
-core.setLogHandler(core.createConsoleLogHandler());
-core.setLogLevel(core.LogLevel.INFO);
+var logger = logging.getLogger('INDEX');
+logging.setLogHandler(loggerPlugin.createLogger());
+logging.setLogLevel(logging.LogLevel.INFO);
 
 /**
  * Entry point into the Optimizely Browser SDK
  */
 module.exports = {
-  logging: require('./plugins/logger'),
+  logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
   enums: enums,
 
-  setLogger: core.setLogHandler,
-  setLogLevel: core.setLogLevel,
+  setLogger: logging.setLogHandler,
+  setLogLevel: logging.setLogLevel,
 
   /**
    * Creates an instance of the Optimizely class
@@ -54,15 +55,15 @@ module.exports = {
 
       // TODO warn about setting per instance errorHandler / logger / logLevel
       if (config.errorHandler) {
-        core.setErrorHandler(config.errorHandler);
+        logging.setErrorHandler(config.errorHandler);
       }
       if (config.logger) {
-        core.setLogHandler(config.logger);
+        logging.setLogHandler(config.logger);
         // respect the logger's shouldLog functionality
-        core.setLogLevel(core.LogLevel.NOTSET);
+        logging.setLogLevel(logging.LogLevel.NOTSET);
       }
       if (config.logLevel !== undefined) {
-        core.setLogLevel(config.logLevel);
+        logging.setLogLevel(config.logLevel);
       }
 
       try {
@@ -86,9 +87,9 @@ module.exports = {
         config,
         {
           clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
-          // always get the OptimizelyLogger facade from core
+          // always get the OptimizelyLogger facade from logging
           logger: logger,
-          errorHandler: core.getErrorHandler(),
+          errorHandler: logging.getErrorHandler(),
         }
       );
 

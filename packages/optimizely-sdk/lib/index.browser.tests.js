@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var core = require('@optimizely/js-sdk-core');
+var logging = require('@optimizely/js-sdk-logging');
 var configValidator = require('./utils/config_validator');
 var Optimizely = require('./optimizely');
 var optimizelyFactory = require('./index.browser');
@@ -254,40 +254,40 @@ describe('javascript-sdk', function() {
 
       describe('when passing in logLevel', function() {
         beforeEach(function() {
-          sinon.stub(core, 'setLogLevel');
+          sinon.stub(logging, 'setLogLevel');
         });
 
         afterEach(function() {
-          core.setLogLevel.restore();
+          logging.setLogLevel.restore();
         });
 
-        it('should call core.setLogLevel', function() {
+        it('should call logging.setLogLevel', function() {
           optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
             logLevel: optimizelyFactory.enums.LOG_LEVEL.ERROR,
           });
-          sinon.assert.calledOnce(core.setLogLevel);
-          sinon.assert.calledWithExactly(core.setLogLevel, optimizelyFactory.enums.LOG_LEVEL.ERROR);
+          sinon.assert.calledOnce(logging.setLogLevel);
+          sinon.assert.calledWithExactly(logging.setLogLevel, optimizelyFactory.enums.LOG_LEVEL.ERROR);
         });
       });
 
       describe('when passing in logger', function() {
         beforeEach(function() {
-          sinon.stub(core, 'setLogHandler');
+          sinon.stub(logging, 'setLogHandler');
         });
 
         afterEach(function() {
-          core.setLogHandler.restore();
+          logging.setLogHandler.restore();
         });
 
-        it('should call core.setLogHandler with the supplied logger', function() {
+        it('should call logging.setLogHandler with the supplied logger', function() {
           var fakeLogger = { log: function() {} };
           optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
             logger: fakeLogger,
           });
-          sinon.assert.calledOnce(core.setLogHandler);
-          sinon.assert.calledWithExactly(core.setLogHandler, fakeLogger);
+          sinon.assert.calledOnce(logging.setLogHandler);
+          sinon.assert.calledWithExactly(logging.setLogHandler, fakeLogger);
         });
       });
     });

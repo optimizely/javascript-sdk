@@ -1,4 +1,5 @@
 var path = require('path');
+var BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = [
   {
@@ -19,6 +20,9 @@ module.exports = [
       library: 'optimizelySdk',
       libraryTarget: 'umd',
     },
+  plugins: [
+    new BundleAnalyzerPlugin()
+  ],
     mode: 'production',
   },
 ];
