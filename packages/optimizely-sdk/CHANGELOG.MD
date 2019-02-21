@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
-## [3.0.1] - February 15, 2019
+## [3.0.1] - February 21, 2019
 
 ### Changed
 - Expose default `loggers`, `errorHandlers`, `eventDispatcher` and `enums` on top level require.
