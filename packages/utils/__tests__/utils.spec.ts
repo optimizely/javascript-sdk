@@ -44,12 +44,6 @@ describe('utils', () => {
     // TODO test for enumerable properties only
   })
 
-  describe('objectValues', () => {
-    it('should return object values', () => {
-      expect(objectValues({ foo: 'bar', bar: 123 })).toEqual(['bar', 123])
-    })
-  })
-
   describe('find', () => {
     it('should return the value if found in an array', () => {
       const input = [

@@ -76,7 +76,6 @@ export class ConsoleLogHandler implements LogHandler {
    */
   constructor(config: ConsoleLogHandlerConfig = {}) {
     if (config.logLevel !== undefined && isValidEnum(LogLevel, config.logLevel)) {
-      // TODO should it set the global log level here?
       this.setLogLevel(config.logLevel)
     } else {
       this.logLevel = LogLevel.NOTSET
@@ -237,7 +236,6 @@ class OptimizelyLogger implements LoggerFacade {
       return
     }
 
-    // TODO turn this into a format log function
     globalLogHandler.log(level, this.format(data))
 
     if (data.error && data.error instanceof Error) {

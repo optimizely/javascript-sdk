@@ -11,7 +11,7 @@ export function generateUUID(): string {
 }
 
 /**
- * Valids a valid is a valid TypeScript enum
+ * Validates a value is a valid TypeScript enum
  *
  * @export
  * @param {object} enumToCheck

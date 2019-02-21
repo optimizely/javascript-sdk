@@ -48,7 +48,7 @@ describe('logger', () => {
       })
 
       it('should coerce "deBug"', () => {
-        setLogLevel('debug')
+        setLogLevel('deBug')
         expect(getLogLevel()).toBe(LogLevel.DEBUG)
       })
 
