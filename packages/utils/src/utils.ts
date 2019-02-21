@@ -18,7 +18,7 @@ export function generateUUID(): string {
  * @param {*} value
  * @returns {boolean}
  */
-export function isValidEnum(enumToCheck: object, value: any): boolean {
+export function isValidEnum(enumToCheck: {[key: string]: any}, value: any): boolean {
   let found = false
 
   const keys = Object.keys(enumToCheck)
@@ -32,7 +32,7 @@ export function isValidEnum(enumToCheck: object, value: any): boolean {
 }
 
 export function groupBy<K>(arr: K[], grouperFn: (item: K) => string): Array<K[]> {
-  const grouper = {}
+  const grouper: { [key: string]: K[] } = {}
 
   arr.forEach(item => {
     const key = grouperFn(item)
@@ -60,8 +60,8 @@ export function find<K>(arr: K[], cond: (arg: K) => boolean): K | undefined {
   return found
 }
 
-export function keyBy<K>(arr: K[], keyByFn: (item: K) => string): {[key: string]: K} {
-  let map = {}
+export function keyBy<K>(arr: K[], keyByFn: (item: K) => string): { [key: string]: K } {
+  let map: {[key: string]: K} = {}
   arr.forEach(item => {
     const key = keyByFn(item)
     map[key] = item

@@ -75,10 +75,9 @@ export class ConsoleLogHandler implements LogHandler {
    * @memberof ConsoleLogger
    */
   constructor(config: ConsoleLogHandlerConfig = {}) {
+    this.logLevel = LogLevel.NOTSET
     if (config.logLevel !== undefined && isValidEnum(LogLevel, config.logLevel)) {
       this.setLogLevel(config.logLevel)
-    } else {
-      this.logLevel = LogLevel.NOTSET
     }
 
     this.logToConsole = config.logToConsole !== undefined ? !!config.logToConsole : true
@@ -160,7 +159,7 @@ export class ConsoleLogHandler implements LogHandler {
    * @param {string[]} logArguments
    * @memberof ConsoleLogger
    */
-  private consoleLog(logLevel: LogLevel, logArguments: string[]) {
+  private consoleLog(logLevel: LogLevel, logArguments: [string, ...string[]]) {
     switch (logLevel) {
       case LogLevel.DEBUG:
         console.log.apply(console, logArguments)
@@ -184,7 +183,7 @@ let globalLogLevel: LogLevel = LogLevel.NOTSET
 let globalLogHandler: LogHandler | null = null
 
 class OptimizelyLogger implements LoggerFacade {
-  private messagePrefix: string
+  private messagePrefix: string = ''
 
   constructor(opts: { messagePrefix?: string } = {}) {
     if (opts.messagePrefix) {
