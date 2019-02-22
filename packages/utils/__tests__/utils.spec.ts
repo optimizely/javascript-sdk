@@ -1,5 +1,5 @@
 /// <reference types="jest" />
-import { isValidEnum, groupBy, objectValues, find, keyBy } from '../src/utils'
+import { isValidEnum, groupBy, objectValues, find, keyBy, sprintf } from '../src'
 
 describe('utils', () => {
   describe('isValidEnum', () => {
@@ -82,6 +82,36 @@ describe('utils', () => {
         bar: { key: 'bar', firstName: 'jordan', lastName: 'bar' },
         baz: { key: 'baz', firstName: 'james', lastName: 'foxy' },
       })
+    })
+  })
+
+  describe('sprintf', () => {
+    it('sprintf(msg)', () => {
+      expect(sprintf('this is my message')).toBe('this is my message')
+    })
+
+    it('sprintf(msg, arg1)', () => {
+      expect(sprintf('hi %s', 'jordan')).toBe('hi jordan')
+    })
+
+    it('sprintf(msg, arg1, arg2)', () => {
+      expect(sprintf('hi %s its %s', 'jordan', 'jon')).toBe('hi jordan its jon')
+    })
+
+    it('should print undefined if an argument is missing', () => {
+      expect(sprintf('hi %s its %s', 'jordan')).toBe('hi jordan its undefined')
+    })
+
+    it('should evaluate a function', () => {
+      expect(sprintf('hi %s its %s', 'jordan', () => 'a function')).toBe('hi jordan its a function')
+    })
+
+    it('should work with numbers', () => {
+      expect(sprintf('hi %s', 123)).toBe('hi 123')
+    })
+
+    it('should not error when passed an object', () => {
+      expect(sprintf('hi %s', { foo: 'bar' })).toBe('hi [object Object]')
     })
   })
 })
