@@ -1,4 +1,19 @@
 /**
+ * Copyright 2019, Optimizely
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/**
  * Bridges the existing event dispatcher interface with the one in the eventProcessor
  *
  * new EventDispatcher interface
@@ -19,14 +34,12 @@ interface HttpEventDispatcher extends EventDispatcher {
   dispatch(request: HttpRequest, callback: (success: boolean) => void): void
 }
  */
-var fns = require('../utils/fns');
 
 function EventDispatcherBridge(oldEventDispatcher) {
   this.dispatcher = oldEventDispatcher;
 }
 
 EventDispatcherBridge.prototype.dispatch = function(request, callback) {
-  console.log('dispatching', request.event);
   var maybePromise = this.dispatcher.dispatchEvent(
     {
       httpVerb: request.method,
@@ -39,9 +52,9 @@ EventDispatcherBridge.prototype.dispatch = function(request, callback) {
     }
   );
 
-  if (!fns.isEmpty(maybePromise) && typeof maybePromise.then === 'function') {
+  if (typeof maybePromise === 'object' && typeof maybePromise.then === 'function') {
     maybePromise.then(function() {
-      callback();
+      callback(true);
     });
   }
 };
