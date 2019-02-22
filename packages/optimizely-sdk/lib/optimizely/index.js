@@ -449,21 +449,6 @@ Optimizely.prototype.__notActivatingExperiment = function(experimentKey, userId)
 };
 
 /**
- * Dispatches an event and executes the designated callback if the dispatch returns a promise
- * @param  eventToDispatch
- * @param  callback
- */
-Optimizely.prototype.__dispatchEvent = function(eventToDispatch, callback) {
-  var eventDispatcherResponse = this.eventDispatcher.dispatchEvent(eventToDispatch, callback);
-  //checking that response value is a promise, not a request object
-  if (!fns.isEmpty(eventDispatcherResponse) && typeof eventDispatcherResponse.then === 'function') {
-    eventDispatcherResponse.then(function() {
-      callback();
-    });
-  }
-};
-
-/**
  * Filters out attributes/eventTags with null or undefined values
  * @param  map
  * @returns {Object} map
