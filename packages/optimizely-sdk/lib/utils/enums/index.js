@@ -88,7 +88,6 @@ exports.LOG_MESSAGES = {
   ROLLOUT_HAS_NO_EXPERIMENTS: '%s: Rollout of feature %s has no experiments',
   SAVED_VARIATION: '%s: Saved variation "%s" of experiment "%s" for user "%s".',
   SAVED_VARIATION_NOT_FOUND: '%s: User %s was previously bucketed into variation with ID %s for experiment %s, but no matching variation was found.',
-  SET_LOG_LEVEL: '%s: Setting log level to "%s"',
   SHOULD_NOT_DISPATCH_ACTIVATE: '%s: Experiment %s is in "Launched" state. Not activating user.',
   SKIPPING_JSON_VALIDATION: '%s: Skipping JSON schema validation.',
   TRACK_EVENT: '%s: Tracking event %s for user %s.',
@@ -136,8 +135,6 @@ exports.LOG_MESSAGES = {
   UNKNOWN_MATCH_TYPE: '%s: Audience condition %s uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.',
   OUT_OF_BOUNDS: '%s: Audience condition %s evaluated to UNKNOWN because the number value for user attribute "%s" is not in the range [-2^53, +2^53].',
 };
-
-exports.DEFAULT_LOGGER_MESSAGE_TEMPLATE = '%s - %s %s %s';
 
 exports.RESERVED_EVENT_KEYWORDS = {
   REVENUE: 'revenue',

@@ -15,14 +15,16 @@
  */
 var logging = require('@optimizely/js-sdk-logging');
 
+function NoOpLogger() {}
+
+NoOpLogger.prototype.log = function() {};
+
 module.exports = {
   createLogger: function(opts) {
     return new logging.ConsoleLogHandler(opts);
   },
 
   createNoOpLogger: function() {
-    return {
-      log: function() {},
-    };
+    return new NoOpLogger();
   },
 };
