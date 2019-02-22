@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf } from 'sprintf-js'
 import { getErrorHandler } from './errorHandler'
-import { isValidEnum } from '@optimizely/js-sdk-utils'
+import { isValidEnum, sprintf } from '@optimizely/js-sdk-utils'
 
 import { LogLevel, LoggerFacade, LogManager, LogHandler } from './models'
 
