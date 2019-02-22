@@ -137,7 +137,8 @@ Optimizely.prototype.activate = function (experimentKey, userId, attributes) {
         return variationKey;
       }
 
-      this._sendImpressionEvent(experimentKey, variationKey, userId, attributes);
+      var impressionEvent = this._createImpressionEvent(experimentKey, variationKey, userId, attributes);
+      this._sendImpressionEvent(experimentKey, variationKey, userId, attributes, impressionEvent);
 
       return variationKey;
     } catch (ex) {
@@ -155,15 +156,13 @@ Optimizely.prototype.activate = function (experimentKey, userId, attributes) {
 };
 
 /**
- * Create an impression event and call the event dispatcher's dispatch method to
- * send this event to Optimizely. Then use the notification center to trigger
- * any notification listeners for the ACTIVATE notification type.
+ * Create an impression event.
  * @param {string} experimentKey  Key of experiment that was activated
  * @param {string} variationKey   Key of variation shown in experiment that was activated
  * @param {string} userId         ID of user to whom the variation was shown
  * @param {Object} attributes     Optional user attributes
  */
-Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey, userId, attributes) {
+Optimizely.prototype._createImpressionEvent = function(experimentKey, variationKey, userId, attributes) {
   var variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(this.configObj, experimentKey, variationKey);
   var experimentId = projectConfig.getExperimentId(this.configObj, experimentKey);
   var impressionEventOptions = {
@@ -176,7 +175,20 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
     variationId: variationId,
     logger: this.logger,
   };
-  var impressionEvent = eventBuilder.getImpressionEvent(impressionEventOptions);
+
+  return eventBuilder.getImpressionEvent(impressionEventOptions);
+}
+
+/**
+ * Create an impression event and call the event dispatcher's dispatch method to
+ * send this event to Optimizely. Then use the notification center to trigger
+ * any notification listeners for the ACTIVATE notification type.
+ * @param {string} experimentKey  Key of experiment that was activated
+ * @param {string} variationKey   Key of variation shown in experiment that was activated
+ * @param {string} userId         ID of user to whom the variation was shown
+ * @param {Object} attributes     Optional user attributes
+ */
+Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey, userId, attributes, impressionEvent) {
   var dispatchedImpressionEventLogMessage = sprintf(LOG_MESSAGES.DISPATCH_IMPRESSION_EVENT,
     MODULE_NAME,
     impressionEvent.url,
@@ -463,12 +475,14 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
       return false;
     }
 
+    var impressionEvent = null;
     var decision = this.decisionService.getVariationForFeature(feature, userId, attributes);
     var variation = decision.variation;
     if (!!variation) {
       if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
         // got a variation from the exp, so we track the impression
-        this._sendImpressionEvent(decision.experiment.key, decision.variation.key, userId, attributes);
+        impressionEvent = this._createImpressionEvent(experimentKey, variationKey, userId, attributes);
+        this._sendImpressionEvent(decision.experiment.key, decision.variation.key, userId, attributes, impressionEvent);
       }
       if (variation.featureEnabled === true) {
         this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
@@ -476,6 +490,19 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
       }
     }
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
+    this.notificationCenter.sendNotifications(
+      enums.NOTIFICATION_TYPES.IS_FEATURE_ENABLED,
+      {
+        featureKey: featureKey,
+        userId: userId,
+        attributes: attributes,
+        feature_info: {
+          enabled: variation.featureEnabled, 
+          source: decision.decisionSource,
+          event: impressionEvent
+        }
+      }
+    );
     return false;
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
@@ -508,6 +535,15 @@ Optimizely.prototype.getEnabledFeatures = function (userId, attributes) {
         enabledFeatures.push(feature.key);
       }
     }.bind(this));
+
+    this.notificationCenter.sendNotifications(
+      enums.NOTIFICATION_TYPES.GET_ENABLED_FEATURES,
+      {
+        userId: userId,
+        attributes: attributes,
+        enabledFeatures: enabledFeatures
+      }
+    );
 
     return enabledFeatures;
   } catch (e) {
@@ -573,7 +609,24 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE, MODULE_NAME, userId, variableKey, featureFlag.key));
   }
 
-  return projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
+  var actualValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
+  this.notificationCenter.sendNotifications(
+    enums.NOTIFICATION_TYPES.GET_FEATURE_VARIABLE,
+    {
+      featureKey: featureKey,
+      variableKey: variableKey,
+      userId: userId,
+      attributes: attributes,
+      feature_variable_info: {
+        feature_enabled: decision.variation.featureEnabled,
+        feature_enabled_source: decision.decisionSource,
+        variable_type: variableType,
+        variable_value: actualValue
+      }
+    }
+  );
+
+  return actualValue;
 };
 
 /**
