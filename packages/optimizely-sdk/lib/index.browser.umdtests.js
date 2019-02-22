@@ -16,14 +16,13 @@
 var configValidator = require('./utils/config_validator');
 var enums = require('./utils/enums');
 var logger = require('./plugins/logger');
-var Optimizely = require('./optimizely');
+
 var packageJSON = require('../package.json');
 var eventDispatcher = require('./plugins/event_dispatcher/index.browser');
 var testData = require('./tests/test_data');
 
 var chai = require('chai');
 var assert = chai.assert;
-var find = require('lodash/find');
 var sinon = require('sinon');
 
 describe('javascript-sdk', function() {
@@ -40,7 +39,6 @@ describe('javascript-sdk', function() {
           logLevel: enums.LOG_LEVEL.INFO,
           logToConsole: false,
         });
-        sinon.spy(console, 'error');
         sinon.stub(configValidator, 'validate');
 
         xhr = sinon.useFakeXMLHttpRequest();
@@ -49,12 +47,51 @@ describe('javascript-sdk', function() {
         xhr.onCreate = function(req) {
           requests.push(req);
         };
+
+        sinon.spy(console, 'log');
+        sinon.spy(console, 'info');
+        sinon.spy(console, 'warn');
+        sinon.spy(console, 'error');
       });
 
       afterEach(function() {
+        console.log.restore();
+        console.info.restore();
+        console.warn.restore();
         console.error.restore();
         configValidator.validate.restore();
         xhr.restore();
+      });
+
+      // this test has to come first due to local state of the logLevel
+      it('should default to INFO when no logLevel is provided', function() {
+        // checking that INFO logs log for an unspecified logLevel
+        var optlyInstance = window.optimizelySdk.createInstance({
+          datafile: testData.getTestProjectConfig(),
+          skipJSONValidation: true,
+        });
+        assert.strictEqual(console.info.getCalls().length, 1);
+        call = console.info.getCalls()[0];
+        assert.strictEqual(call.args.length, 1);
+        assert(call.args[0].indexOf('OPTIMIZELY: Skipping JSON schema validation.') > -1);
+      });
+
+      it('should instantiate the logger with a custom logLevel when provided', function() {
+        // checking that INFO logs do not log for a logLevel of ERROR
+        var optlyInstance = window.optimizelySdk.createInstance({
+          datafile: testData.getTestProjectConfig(),
+          logLevel: enums.LOG_LEVEL.ERROR,
+          skipJSONValidation: true,
+        });
+        assert.strictEqual(console.log.getCalls().length, 0);
+
+        // checking that ERROR logs do log for a logLevel of ERROR
+        var optlyInstanceInvalid = window.optimizelySdk.createInstance({
+          datafile: {},
+          logLevel: enums.LOG_LEVEL.ERROR,
+        });
+        optlyInstance.activate('testExperiment', 'testUser');
+        assert.strictEqual(console.error.getCalls().length, 1);
       });
 
       it('should not throw if the provided config is not valid', function() {
@@ -248,51 +285,6 @@ describe('javascript-sdk', function() {
 
         var variation = optlyInstance.getVariation('testExperimentNotRunning', 'testUser');
         assert.strictEqual(variation, null);
-      });
-
-      describe('automatically created logger instances', function() {
-        beforeEach(function() {
-          sinon.spy(console, 'log');
-          sinon.spy(console, 'info');
-          sinon.spy(console, 'warn');
-        });
-
-        afterEach(function() {
-          console.log.restore();
-          console.info.restore();
-          console.warn.restore();
-        });
-
-        // this test has to come first due to local state of the logLevel
-        it('should default to INFO when no logLevel is provided', function() {
-          // checking that INFO logs log for an unspecified logLevel
-          var optlyInstance = window.optimizelySdk.createInstance({
-            datafile: testData.getTestProjectConfig(),
-            skipJSONValidation: true,
-          });
-          assert.strictEqual(console.info.getCalls().length, 1);
-          call = console.info.getCalls()[0];
-          assert.strictEqual(call.args.length, 1);
-          assert(call.args[0].indexOf('OPTIMIZELY: Skipping JSON schema validation.') > -1);
-        });
-
-        it('should instantiate the logger with a custom logLevel when provided', function() {
-          // checking that INFO logs do not log for a logLevel of ERROR
-          var optlyInstance = window.optimizelySdk.createInstance({
-            datafile: testData.getTestProjectConfig(),
-            logLevel: enums.LOG_LEVEL.ERROR,
-            skipJSONValidation: true,
-          });
-          assert.strictEqual(console.log.getCalls().length, 0);
-
-          // checking that ERROR logs do log for a logLevel of ERROR
-          var optlyInstanceInvalid = window.optimizelySdk.createInstance({
-            datafile: {},
-            logLevel: enums.LOG_LEVEL.ERROR,
-          });
-          optlyInstance.activate('testExperiment', 'testUser');
-          assert.strictEqual(console.error.getCalls().length, 1);
-        });
       });
     });
   });
