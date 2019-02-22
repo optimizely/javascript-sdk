@@ -19,21 +19,31 @@ interface HttpEventDispatcher extends EventDispatcher {
   dispatch(request: HttpRequest, callback: (success: boolean) => void): void
 }
  */
+var fns = require('../utils/fns');
 
 function EventDispatcherBridge(oldEventDispatcher) {
   this.dispatcher = oldEventDispatcher;
 }
 
-EventDispatcherBridge.prototype.dispatch = function(event, callback) {
-  console.log('dispatching', JSON.parse(event.body))
-  this.dispatcher.dispatchEvent({
-    httpVerb: event.method,
-    url: event.url,
-    params: event.body,
-  }, function(response) {
-    // right now callbacks only happen if statusCode >= 200 && < 400
-    callback(true);
-  });
+EventDispatcherBridge.prototype.dispatch = function(request, callback) {
+  console.log('dispatching', request.event);
+  var maybePromise = this.dispatcher.dispatchEvent(
+    {
+      httpVerb: request.method,
+      url: request.url,
+      params: request.event,
+    },
+    function(response) {
+      // right now callbacks only happen if statusCode >= 200 && < 400
+      callback(true);
+    }
+  );
+
+  if (!fns.isEmpty(maybePromise) && typeof maybePromise.then === 'function') {
+    maybePromise.then(function() {
+      callback();
+    });
+  }
 };
 
 module.exports = EventDispatcherBridge;
