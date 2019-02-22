@@ -250,7 +250,7 @@ describe('javascript-sdk', function() {
         assert.strictEqual(variation, null);
       });
 
-      describe.only('automatically created logger instances', function() {
+      describe('automatically created logger instances', function() {
         beforeEach(function() {
           sinon.spy(console, 'log');
           sinon.spy(console, 'info');

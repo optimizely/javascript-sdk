@@ -24,7 +24,7 @@ var loggerPlugin = require('./plugins/logger');
 
 var Optimizely = require('./optimizely');
 
-var logger = logging.getLogger('INDEX');
+var logger = logging.getLogger();
 logging.setLogLevel(logging.LogLevel.ERROR);
 
 /**
