@@ -18,7 +18,7 @@ var chai = require('chai');
 var assert = chai.assert;
 var sinon = require('sinon');
 
-describe.only('lib/optimizely/event_dispatcher_bridge', function() {
+describe('lib/optimizely/event_dispatcher_bridge', function() {
   var legacyDispatcher;
   var eventSpy;
 

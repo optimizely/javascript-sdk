@@ -1,10 +1,10 @@
 var logging = require('@optimizely/js-sdk-logging');
+
 var attributesValidator = require('../../utils/attributes_validator');
 var fns = require('../../utils/fns');
 var eventTagUtils = require('../../utils/event_tag_utils');
 var projectConfig = require('../project_config');
 
-var CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom';
 var logger = logging.getLogger('EVENT_BUILDER');
 
 exports.buildImpressionEvent = function buildImpressionEvent(config) {
@@ -105,7 +105,6 @@ function buildVisitorAttributes(configObj, attributes) {
   fns.forOwn(attributes, function(attributeValue, attributeKey) {
     if (attributesValidator.isAttributeValid(attributeKey, attributeValue)) {
       var attributeId = projectConfig.getAttributeId(configObj, attributeKey, logger);
-      console.log('got attribute', attributeKey, attributeId)
       if (attributeId) {
         builtAttributes.push({
           entityId: attributeId,
