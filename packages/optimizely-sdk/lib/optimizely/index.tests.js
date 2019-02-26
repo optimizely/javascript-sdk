@@ -2616,6 +2616,11 @@ describe('lib/optimizely', function() {
     });
 
     describe('#isFeatureEnabled', function() {
+      var featureEnabledListener;
+      beforeEach(function() {
+        featureEnabledListener = sinon.spy();
+      });
+
       it('returns false, and does not dispatch an impression event, for an invalid feature key', function() {
         var result = optlyInstance.isFeatureEnabled('thisIsDefinitelyNotAFeatureKey', 'user1');
         assert.strictEqual(result, false);
@@ -2654,7 +2659,11 @@ describe('lib/optimizely', function() {
             });
           });
 
-          it('returns true and dispatches an impression event', function() {
+          it('returns true, sends featureEnabled notification and dispatches an impression event', function() {
+            optlyInstance.notificationCenter.addNotificationListener(
+              enums.NOTIFICATION_TYPES.IS_FEATURE_ENABLED,
+              featureEnabledListener
+            );
             var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user1', attributes);
             assert.strictEqual(result, true);
             sinon.assert.calledOnce(optlyInstance.decisionService.getVariationForFeature);
@@ -2720,6 +2729,19 @@ describe('lib/optimizely', function() {
             assert.deepEqual(callArgs[0], expectedImpressionEvent);
             assert.isFunction(callArgs[1]);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature_for_experiment is enabled for user user1.');
+
+            var expectedArgument = {
+              featureKey: 'test_feature_for_experiment',
+              userId: 'user1',
+              attributes: attributes,
+              feature_info: {
+                enabled: true,
+                source: DECISION_SOURCES.EXPERIMENT,
+                event: expectedImpressionEvent,
+              }
+            };
+
+            sinon.assert.calledWith(featureEnabledListener, expectedArgument);
           });
 
           it('returns false and does not dispatch an impression event when feature key is null', function() {
@@ -2820,6 +2842,10 @@ describe('lib/optimizely', function() {
               variation: variation,
               decisionSource: DECISION_SOURCES.EXPERIMENT,
             });
+            optlyInstance.notificationCenter.addNotificationListener(
+              enums.NOTIFICATION_TYPES.IS_FEATURE_ENABLED,
+              featureEnabledListener
+            );
             result = optlyInstance.isFeatureEnabled('shared_feature', 'user1', attributes);
           });
 
@@ -2835,7 +2861,7 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('should dispatch an impression event', function() {
+          it('should dispatch an impression event and sends featureEnabled notification', function() {
             sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
             var expectedImpressionEvent = {
               'httpVerb': 'POST',
@@ -2890,6 +2916,19 @@ describe('lib/optimizely', function() {
             var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
             assert.deepEqual(callArgs[0], expectedImpressionEvent);
             assert.isFunction(callArgs[1]);
+
+            var expectedArgument = {
+              featureKey: 'shared_feature',
+              userId: 'user1',
+              attributes: attributes,
+              feature_info: {
+                enabled: false,
+                source: DECISION_SOURCES.EXPERIMENT,
+                event: expectedImpressionEvent,
+              }
+            };
+
+            sinon.assert.calledWith(featureEnabledListener, expectedArgument);
           });
         });
 
@@ -2933,13 +2972,31 @@ describe('lib/optimizely', function() {
             });
           });
 
-          it('returns true and does not dispatch an event', function() {
+          it('returns true, sends featureenabled notification and does not dispatch an event', function() {
+            optlyInstance.notificationCenter.addNotificationListener(
+              enums.NOTIFICATION_TYPES.IS_FEATURE_ENABLED,
+              featureEnabledListener
+            );
+
             var result = optlyInstance.isFeatureEnabled('test_feature', 'user1', {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, true);
             sinon.assert.notCalled(eventDispatcher.dispatchEvent);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature is enabled for user user1.');
+
+            var expectedArgument = {
+              featureKey: 'test_feature',
+              userId: 'user1',
+              attributes: { test_attribute: 'test_value' },
+              feature_info: {
+                enabled: true,
+                source: DECISION_SOURCES.ROLLOUT,
+                event: null,
+              }
+            };
+
+            sinon.assert.calledWith(featureEnabledListener, expectedArgument);
           });
         });
 
@@ -2955,12 +3012,30 @@ describe('lib/optimizely', function() {
             });
           });
 
-          it('returns false ', function() {
+          it('returns false and sends featureenabled notification', function() {
+            optlyInstance.notificationCenter.addNotificationListener(
+              enums.NOTIFICATION_TYPES.IS_FEATURE_ENABLED,
+              featureEnabledListener
+            );
+
             var result = optlyInstance.isFeatureEnabled('test_feature', 'user1', {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, false);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature is not enabled for user user1.');
+
+            var expectedArgument = {
+              featureKey: 'test_feature',
+              userId: 'user1',
+              attributes: { test_attribute: 'test_value' },
+              feature_info: {
+                enabled: false,
+                source: DECISION_SOURCES.ROLLOUT,
+                event: null,
+              }
+            };
+
+            sinon.assert.calledWith(featureEnabledListener, expectedArgument);
           });
         });
       });
@@ -2970,15 +3045,33 @@ describe('lib/optimizely', function() {
           sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
             experiment: null,
             variation: null,
-            decisionSource: null,
+            decisionSource: DECISION_SOURCES.ROLLOUT,
           });
         });
 
-        it('returns false and does not dispatch an event', function() {
+        it('returns false, sends featureenabled notification and does not dispatch an event', function() {
+          optlyInstance.notificationCenter.addNotificationListener(
+            enums.NOTIFICATION_TYPES.IS_FEATURE_ENABLED,
+            featureEnabledListener
+          );
+
           var result = optlyInstance.isFeatureEnabled('test_feature', 'user1');
           assert.strictEqual(result, false);
           sinon.assert.notCalled(eventDispatcher.dispatchEvent);
           sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature is not enabled for user user1.');
+
+          var expectedArgument = {
+            featureKey: 'test_feature',
+            userId: 'user1',
+            attributes: undefined,
+            feature_info: {
+              enabled: false,
+              source: DECISION_SOURCES.ROLLOUT,
+              event: null,
+            }
+          };
+
+          sinon.assert.calledWith(featureEnabledListener, expectedArgument);
         });
       });
     });

@@ -481,14 +481,11 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
         featureKey: featureKey,
         userId: userId,
         attributes: attributes,
-        feature_info: {
-          enabled: featureInfo.featureEnabled, 
-          source: featureInfo.source,
-          event: featureInfo.event
-        }
+        feature_info: featureInfo
       }
     );
-    return featureInfo.featureEnabled;
+
+    return featureInfo.enabled;
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
@@ -549,9 +546,12 @@ Optimizely.prototype._isFeatureEnabledForUser = function (featureKey, userId, at
     var variation = decision.variation;
     if (!!variation) {
       if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
+        var experimentKey = decision.experiment.key;
+        var variationKey = variation.key;
+        
         // got a variation from the exp, so we track the impression
         impressionEvent = this._createImpressionEvent(experimentKey, variationKey, userId, attributes);
-        this._sendImpressionEvent(decision.experiment.key, variation.key, userId, attributes, impressionEvent);
+        this._sendImpressionEvent(experimentKey, variationKey, userId, attributes, impressionEvent);
       }
       if (variation.featureEnabled === true) {
         this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
@@ -564,7 +564,7 @@ Optimizely.prototype._isFeatureEnabledForUser = function (featureKey, userId, at
     }
 
     return {
-      featureEnabled: result,
+      enabled: result,
       source: decision.decisionSource,
       event: impressionEvent
     };
