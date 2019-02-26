@@ -470,26 +470,11 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
       return false;
     }
 
-    var feature = projectConfig.getFeatureFromKey(this.configObj, featureKey, this.logger);
-    if (!feature) {
+    var featureInfo = this._isFeatureEnabledForUser(featureKey, userId, attributes);
+    if (featureInfo == null) {
       return false;
     }
 
-    var impressionEvent = null;
-    var decision = this.decisionService.getVariationForFeature(feature, userId, attributes);
-    var variation = decision.variation;
-    if (!!variation) {
-      if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
-        // got a variation from the exp, so we track the impression
-        impressionEvent = this._createImpressionEvent(experimentKey, variationKey, userId, attributes);
-        this._sendImpressionEvent(decision.experiment.key, decision.variation.key, userId, attributes, impressionEvent);
-      }
-      if (variation.featureEnabled === true) {
-        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
-        return true;
-      }
-    }
-    this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
     this.notificationCenter.sendNotifications(
       enums.NOTIFICATION_TYPES.IS_FEATURE_ENABLED,
       {
@@ -497,13 +482,13 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
         userId: userId,
         attributes: attributes,
         feature_info: {
-          enabled: variation.featureEnabled, 
-          source: decision.decisionSource,
-          event: impressionEvent
+          enabled: featureInfo.featureEnabled, 
+          source: featureInfo.source,
+          event: featureInfo.event
         }
       }
     );
-    return false;
+    return featureInfo.featureEnabled;
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
@@ -536,21 +521,53 @@ Optimizely.prototype.getEnabledFeatures = function (userId, attributes) {
       }
     }.bind(this));
 
-    this.notificationCenter.sendNotifications(
-      enums.NOTIFICATION_TYPES.GET_ENABLED_FEATURES,
-      {
-        userId: userId,
-        attributes: attributes,
-        enabledFeatures: enabledFeatures
-      }
-    );
-
     return enabledFeatures;
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
     return [];
   }
+};
+
+/**
+ * Check if the feature is enabled for the given user.
+ * @param {string} featureKey   Key of feature which will be checked
+ * @param {string} userId       ID of user which will be checked
+ * @param {Object} attributes   Optional user attributes
+ * @return {Object}             Object containing information about feature enabled,
+ * decision source and impression event.
+ */
+Optimizely.prototype._isFeatureEnabledForUser = function (featureKey, userId, attributes) {
+  var feature = projectConfig.getFeatureFromKey(this.configObj, featureKey, this.logger);
+    if (!feature) {
+      return null;
+    }
+
+    var result = false;
+    var impressionEvent = null;
+    var decision = this.decisionService.getVariationForFeature(feature, userId, attributes);
+    var variation = decision.variation;
+    if (!!variation) {
+      if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
+        // got a variation from the exp, so we track the impression
+        impressionEvent = this._createImpressionEvent(experimentKey, variationKey, userId, attributes);
+        this._sendImpressionEvent(decision.experiment.key, variation.key, userId, attributes, impressionEvent);
+      }
+      if (variation.featureEnabled === true) {
+        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
+        result = true;
+      }
+    }
+
+    if (!result) {
+      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
+    }
+
+    return {
+      featureEnabled: result,
+      source: decision.decisionSource,
+      event: impressionEvent
+    };
 };
 
 /**
@@ -609,24 +626,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE, MODULE_NAME, userId, variableKey, featureFlag.key));
   }
 
-  var actualValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
-  this.notificationCenter.sendNotifications(
-    enums.NOTIFICATION_TYPES.GET_FEATURE_VARIABLE,
-    {
-      featureKey: featureKey,
-      variableKey: variableKey,
-      userId: userId,
-      attributes: attributes,
-      feature_variable_info: {
-        feature_enabled: decision.variation.featureEnabled,
-        feature_enabled_source: decision.decisionSource,
-        variable_type: variableType,
-        variable_value: actualValue
-      }
-    }
-  );
-
-  return actualValue;
+  return projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
 };
 
 /**
