@@ -3077,13 +3077,34 @@ describe('lib/optimizely', function() {
     });
 
     describe('#getEnabledFeatures', function() {
+      var getEnabledFeaturesListener;
       beforeEach(function() {
-        sandbox.stub(optlyInstance, 'isFeatureEnabled').callsFake(function(featureKey) {
-          return featureKey === 'test_feature' || featureKey === 'test_feature_for_experiment';
+        getEnabledFeaturesListener = sinon.spy();
+        optlyInstance.notificationCenter.addNotificationListener(
+          enums.NOTIFICATION_TYPES.GET_ENABLED_FEATURES,
+          getEnabledFeaturesListener
+        );
+
+        sandbox.stub(optlyInstance, '_isFeatureEnabledForUser').callsFake(function(featureKey, userId) {
+          var featureInfo = {
+            enabled: false,
+            source: DECISION_SOURCES.EXPERIMENT,
+            event: null
+          };
+
+          // No feature is enabled for this user.
+          if (userId === 'no_feature_enabled_user') {
+            return featureInfo;
+          }
+
+          if (featureKey === 'test_feature' || featureKey === 'test_feature_for_experiment') {
+            featureInfo.enabled = true;
+          }
+          return featureInfo;
         });
       });
 
-      it('returns an empty array if the instance is invalid', function() {
+      it('returns an empty array and does not call getenabledfeatures listener if the instance is invalid', function() {
         optlyInstance = new Optimizely({
           clientEngine: 'node-sdk',
           datafile: {
@@ -3096,60 +3117,82 @@ describe('lib/optimizely', function() {
           jsonSchemaValidator: jsonSchemaValidator,
           logger: createdLogger,
         });
+
+        
         var result = optlyInstance.getEnabledFeatures('user1', { test_attribute: 'test_value' });
         assert.deepEqual(result, []);
         sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'OPTIMIZELY: Optimizely object is not valid. Failing getEnabledFeatures.');
+        sinon.assert.notCalled(getEnabledFeaturesListener);
       });
 
-      it('returns only enabled features for the specified user and attributes', function() {
+      it('returns empty features array for if no feature is enabled for the user', function() {
+        var result = optlyInstance.getEnabledFeatures('no_feature_enabled_user', null);
+        assert.strictEqual(result.length, 0);
+
+        var expectedArgument = {
+          userId: 'no_feature_enabled_user',
+          attributes: null,
+          enabledFeatures: []
+        };
+        sinon.assert.calledWith(getEnabledFeaturesListener, expectedArgument);
+      });
+
+      it('returns only enabled features for the specified user and attributes and call getenabledfeatures listener', function() {
         var attributes = { test_attribute: 'test_value', };
         var result = optlyInstance.getEnabledFeatures('user1', attributes);
         assert.strictEqual(result.length, 2);
         assert.isAbove(result.indexOf('test_feature'), -1);
         assert.isAbove(result.indexOf('test_feature_for_experiment'), -1);
-        sinon.assert.callCount(optlyInstance.isFeatureEnabled, 7);
+        sinon.assert.callCount(optlyInstance._isFeatureEnabledForUser, 7);
         sinon.assert.calledWithExactly(
-          optlyInstance.isFeatureEnabled,
+          optlyInstance._isFeatureEnabledForUser,
           'test_feature',
           'user1',
           attributes
         );
         sinon.assert.calledWithExactly(
-          optlyInstance.isFeatureEnabled,
+          optlyInstance._isFeatureEnabledForUser,
           'test_feature_2',
           'user1',
           attributes
         );
         sinon.assert.calledWithExactly(
-          optlyInstance.isFeatureEnabled,
+          optlyInstance._isFeatureEnabledForUser,
           'test_feature_for_experiment',
           'user1',
           attributes
         );
         sinon.assert.calledWithExactly(
-          optlyInstance.isFeatureEnabled,
+          optlyInstance._isFeatureEnabledForUser,
           'feature_with_group',
           'user1',
           attributes
         );
         sinon.assert.calledWithExactly(
-          optlyInstance.isFeatureEnabled,
+          optlyInstance._isFeatureEnabledForUser,
           'shared_feature',
           'user1',
           attributes
         );
         sinon.assert.calledWithExactly(
-          optlyInstance.isFeatureEnabled,
+          optlyInstance._isFeatureEnabledForUser,
           'unused_flag',
           'user1',
           attributes
         );
         sinon.assert.calledWithExactly(
-          optlyInstance.isFeatureEnabled,
+          optlyInstance._isFeatureEnabledForUser,
           'feature_exp_no_traffic',
           'user1',
           attributes
         );
+
+        var expectedArgument = {
+          userId: 'user1',
+          attributes: attributes,
+          enabledFeatures: result
+        };
+        sinon.assert.calledWith(getEnabledFeaturesListener, expectedArgument);
       });
     });
 

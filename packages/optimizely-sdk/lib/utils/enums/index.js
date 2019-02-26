@@ -181,6 +181,7 @@ exports.NOTIFICATION_TYPES = {
   ACTIVATE: 'ACTIVATE:experiment, user_id,attributes, variation, event',
   TRACK: 'TRACK:event_key, user_id, attributes, event_tags, event',
   IS_FEATURE_ENABLED: 'IS_FEATURE_ENABLED:feature_key, user_id, attributes, feature_info',
+  GET_ENABLED_FEATURES: 'GET_ENABLED_FEATURES:user_id, attributes, enabled_features',
 };
 
 /*

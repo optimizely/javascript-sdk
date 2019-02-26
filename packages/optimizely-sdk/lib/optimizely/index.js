@@ -513,10 +513,20 @@ Optimizely.prototype.getEnabledFeatures = function (userId, attributes) {
     }
 
     fns.forOwn(this.configObj.featureKeyMap, function (feature) {
-      if (this.isFeatureEnabled(feature.key, userId, attributes)) {
+      var featureInfo = this._isFeatureEnabledForUser(feature.key, userId, attributes);
+      if (featureInfo != null && featureInfo.enabled) {
         enabledFeatures.push(feature.key);
       }
     }.bind(this));
+
+    this.notificationCenter.sendNotifications(
+      enums.NOTIFICATION_TYPES.GET_ENABLED_FEATURES,
+      {
+        userId: userId,
+        attributes: attributes,
+        enabledFeatures: enabledFeatures
+      }
+    );
 
     return enabledFeatures;
   } catch (e) {
