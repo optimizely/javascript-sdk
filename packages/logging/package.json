@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/js-sdk-logging",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Optimizely Full Stack Core Logging",
   "author": "jordangarcia <jordan@optimizely.com>",
   "homepage": "https://github.com/optimizely/javascript-sdk",
@@ -20,12 +20,10 @@
     "prepublishOnly": "jest && npm run tsc"
   },
   "dependencies": {
-    "@optimizely/js-sdk-utils": "^0.1.1",
-    "sprintf-js": "^1.1.1"
+    "@optimizely/js-sdk-utils": "^0.1.2"
   },
   "devDependencies": {
     "@types/jest": "^23.3.12",
-    "@types/sprintf-js": "^1.1.1",
     "jest": "^23.6.0",
     "ts-jest": "^23.10.5"
   }

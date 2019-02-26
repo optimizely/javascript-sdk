@@ -67,6 +67,7 @@
     "lib/",
     "LICENSE",
     "CHANGELOG",
-    "README.md"
+    "README.md",
+    "package.json"
   ]
 }
