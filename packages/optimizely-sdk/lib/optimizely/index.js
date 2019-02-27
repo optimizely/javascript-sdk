@@ -482,7 +482,7 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
         featureKey: featureKey,
         userId: userId,
         attributes: attributes,
-        feature_info: featureInfo
+        featureInfo: featureInfo
       }
     );
 
