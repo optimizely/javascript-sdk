@@ -470,11 +470,12 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
       return false;
     }
 
-    var featureInfo = this._isFeatureEnabledForUser(featureKey, userId, attributes);
-    if (featureInfo == null) {
+    var feature = projectConfig.getFeatureFromKey(this.configObj, featureKey, this.logger);
+    if (!feature) {
       return false;
     }
 
+    var featureInfo = this._isFeatureEnabledForUser(feature, userId, attributes);
     this.notificationCenter.sendNotifications(
       enums.NOTIFICATION_TYPES.IS_FEATURE_ENABLED,
       {
@@ -528,23 +529,19 @@ Optimizely.prototype.getEnabledFeatures = function (userId, attributes) {
 
 /**
  * Check if the feature is enabled for the given user.
- * @param {string} featureKey   Key of feature which will be checked
+ * @param {string} feature      Feature entity
  * @param {string} userId       ID of user which will be checked
  * @param {Object} attributes   Optional user attributes
  * @return {Object}             Object containing information about feature enabled,
  * decision source and impression event.
  */
-Optimizely.prototype._isFeatureEnabledForUser = function (featureKey, userId, attributes) {
-  var feature = projectConfig.getFeatureFromKey(this.configObj, featureKey, this.logger);
-    if (!feature) {
-      return null;
-    }
-
-    var result = false;
-    var impressionEvent = null;
-    var decision = this.decisionService.getVariationForFeature(feature, userId, attributes);
-    var variation = decision.variation;
-    if (!!variation) {
+Optimizely.prototype._isFeatureEnabledForUser = function (feature, userId, attributes) {
+  var result = false;
+  var impressionEvent = null;
+  var decision = this.decisionService.getVariationForFeature(feature, userId, attributes);
+  var variation = decision.variation;
+  
+  if (!!variation) {
       if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
         var experimentKey = decision.experiment.key;
         var variationKey = variation.key;
@@ -554,13 +551,13 @@ Optimizely.prototype._isFeatureEnabledForUser = function (featureKey, userId, at
         this._sendImpressionEvent(experimentKey, variationKey, userId, attributes, impressionEvent);
       }
       if (variation.featureEnabled === true) {
-        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
+        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, feature.key, userId));
         result = true;
       }
     }
 
     if (!result) {
-      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
+      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, feature.key, userId));
     }
 
     return {
