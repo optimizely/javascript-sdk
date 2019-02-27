@@ -2734,7 +2734,7 @@ describe('lib/optimizely', function() {
               featureKey: 'test_feature_for_experiment',
               userId: 'user1',
               attributes: attributes,
-              feature_info: {
+              featureInfo: {
                 enabled: true,
                 source: DECISION_SOURCES.EXPERIMENT,
                 event: expectedImpressionEvent,
@@ -2921,7 +2921,7 @@ describe('lib/optimizely', function() {
               featureKey: 'shared_feature',
               userId: 'user1',
               attributes: attributes,
-              feature_info: {
+              featureInfo: {
                 enabled: false,
                 source: DECISION_SOURCES.EXPERIMENT,
                 event: expectedImpressionEvent,
@@ -2989,7 +2989,7 @@ describe('lib/optimizely', function() {
               featureKey: 'test_feature',
               userId: 'user1',
               attributes: { test_attribute: 'test_value' },
-              feature_info: {
+              featureInfo: {
                 enabled: true,
                 source: DECISION_SOURCES.ROLLOUT,
                 event: null,
@@ -3028,7 +3028,7 @@ describe('lib/optimizely', function() {
               featureKey: 'test_feature',
               userId: 'user1',
               attributes: { test_attribute: 'test_value' },
-              feature_info: {
+              featureInfo: {
                 enabled: false,
                 source: DECISION_SOURCES.ROLLOUT,
                 event: null,
@@ -3064,7 +3064,7 @@ describe('lib/optimizely', function() {
             featureKey: 'test_feature',
             userId: 'user1',
             attributes: undefined,
-            feature_info: {
+            featureInfo: {
               enabled: false,
               source: DECISION_SOURCES.ROLLOUT,
               event: null,
