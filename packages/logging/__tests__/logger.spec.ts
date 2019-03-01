@@ -289,7 +289,7 @@ describe('logger', () => {
         logger.log(LogLevel.INFO, 'hey')
 
         expect(console.info).toBeCalledTimes(1)
-        expect(console.info).toBeCalledWith('[OPTIMIZELY] - INFO 12:00 hey')
+        expect(console.info).toBeCalledWith('[OPTIMIZELY] - INFO  12:00 hey')
       })
 
       it('should set logLevel to ERROR when setLogLevel is called with invalid value', () => {
@@ -331,7 +331,7 @@ describe('logger', () => {
       logger.log(LogLevel.INFO, 'test')
 
       expect(console.info).toBeCalledTimes(1)
-      expect(console.info).toBeCalledWith('[OPTIMIZELY] - INFO 12:00 test')
+      expect(console.info).toBeCalledWith('[OPTIMIZELY] - INFO  12:00 test')
     })
 
     it('should log to console.log for LogLevel.DEBUG', () => {
@@ -357,7 +357,7 @@ describe('logger', () => {
       logger.log(LogLevel.WARNING, 'warning')
 
       expect(console.warn).toBeCalledTimes(1)
-      expect(console.warn).toBeCalledWith('[OPTIMIZELY] - WARNING 12:00 warning')
+      expect(console.warn).toBeCalledWith('[OPTIMIZELY] - WARN  12:00 warning')
     })
 
     it('should log to console.error for LogLevel.ERROR', () => {

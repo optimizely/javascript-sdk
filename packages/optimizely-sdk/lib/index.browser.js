@@ -13,26 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+var logging = require('@optimizely/js-sdk-logging');
 var fns = require('./utils/fns');
 var configValidator = require('./utils/config_validator');
 var defaultErrorHandler = require('./plugins/error_handler');
 var defaultEventDispatcher = require('./plugins/event_dispatcher/index.browser');
 var enums = require('./utils/enums');
-var logger = require('./plugins/logger');
+var loggerPlugin = require('./plugins/logger');
 var Optimizely = require('./optimizely');
 
-var MODULE_NAME = 'INDEX';
-
-
+var logger = logging.getLogger();
+logging.setLogHandler(loggerPlugin.createLogger());
+logging.setLogLevel(logging.LogLevel.INFO);
 
 /**
  * Entry point into the Optimizely Browser SDK
  */
 module.exports = {
-  logging: logger,
+  logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
   enums: enums,
+
+  setLogger: logging.setLogHandler,
+  setLogLevel: logging.setLogLevel,
 
   /**
    * Creates an instance of the Optimizely class
@@ -47,43 +51,52 @@ module.exports = {
    */
   createInstance: function(config) {
     try {
-      var logLevel = 'logLevel' in config ? config.logLevel : enums.LOG_LEVEL.INFO;
-      var defaultLogger = logger.createLogger({logLevel: enums.LOG_LEVEL.INFO});
-      if (config) {
-        try {
-          configValidator.validate(config);
-          config.isValidInstance = true;
-        } catch (ex) {
-          var errorMessage = MODULE_NAME + ':' + ex.message;
-          if (config.logger) {
-            config.logger.log(enums.LOG_LEVEL.ERROR, errorMessage);
-          } else {
-            defaultLogger.log(enums.LOG_LEVEL.ERROR, errorMessage);
-          }
-          config.isValidInstance = false;
-        }
+      config = config || {};
+
+      // TODO warn about setting per instance errorHandler / logger / logLevel
+      if (config.errorHandler) {
+        logging.setErrorHandler(config.errorHandler);
+      }
+      if (config.logger) {
+        logging.setLogHandler(config.logger);
+        // respect the logger's shouldLog functionality
+        logging.setLogLevel(logging.LogLevel.NOTSET);
+      }
+      if (config.logLevel !== undefined) {
+        logging.setLogLevel(config.logLevel);
+      }
+
+      try {
+        configValidator.validate(config);
+        config.isValidInstance = true;
+      } catch (ex) {
+        logger.error(ex);
+        config.isValidInstance = false;
       }
 
       // Explicitly check for null or undefined
+      // prettier-ignore
       if (config.skipJSONValidation == null) { // eslint-disable-line eqeqeq
         config.skipJSONValidation = true;
       }
 
-      config = fns.assignIn({
-        clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
-        errorHandler: defaultErrorHandler,
-        eventDispatcher: defaultEventDispatcher,
-        logger: logger.createLogger({logLevel: logLevel})
-      }, config);
+      config = fns.assignIn(
+        {
+          eventDispatcher: defaultEventDispatcher,
+        },
+        config,
+        {
+          clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
+          // always get the OptimizelyLogger facade from logging
+          logger: logger,
+          errorHandler: logging.getErrorHandler(),
+        }
+      );
 
       return new Optimizely(config);
     } catch (e) {
-      config.logger.log(enums.LOG_LEVEL.ERROR, e.message);
-      config.errorHandler.handleError(e);
+      logger.error(e);
       return null;
     }
   },
-
-
-
 };

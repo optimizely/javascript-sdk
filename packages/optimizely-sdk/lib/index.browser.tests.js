@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+var logging = require('@optimizely/js-sdk-logging');
 var configValidator = require('./utils/config_validator');
 var Optimizely = require('./optimizely');
 var optimizelyFactory = require('./index.browser');
@@ -251,38 +252,42 @@ describe('javascript-sdk', function() {
         assert.strictEqual(variation, null);
       });
 
-      describe('automatically created logger instances', function() {
+      describe('when passing in logLevel', function() {
         beforeEach(function() {
-          sinon.stub(optimizelyFactory.logging, 'createLogger').callsFake(function() {
-            return {
-              log: function() {},
-            };
-          });
+          sinon.stub(logging, 'setLogLevel');
         });
 
         afterEach(function() {
-          optimizelyFactory.logging.createLogger.restore();
+          logging.setLogLevel.restore();
         });
 
-        it('should instantiate the logger with a custom logLevel when provided', function() {
-          var optlyInstance = optimizelyFactory.createInstance({
+        it('should call logging.setLogLevel', function() {
+          optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
             logLevel: optimizelyFactory.enums.LOG_LEVEL.ERROR,
           });
-          var foundCall = find(optimizelyFactory.logging.createLogger.getCalls(), function(call) {
-            return call.returned(sinon.match.same(optlyInstance.logger));
-          });
-          assert.strictEqual(foundCall.args[0].logLevel, optimizelyFactory.enums.LOG_LEVEL.ERROR);
+          sinon.assert.calledOnce(logging.setLogLevel);
+          sinon.assert.calledWithExactly(logging.setLogLevel, optimizelyFactory.enums.LOG_LEVEL.ERROR);
+        });
+      });
+
+      describe('when passing in logger', function() {
+        beforeEach(function() {
+          sinon.stub(logging, 'setLogHandler');
         });
 
-        it('should default to INFO when no logLevel is provided', function() {
-          var optlyInstance = optimizelyFactory.createInstance({
+        afterEach(function() {
+          logging.setLogHandler.restore();
+        });
+
+        it('should call logging.setLogHandler with the supplied logger', function() {
+          var fakeLogger = { log: function() {} };
+          optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
+            logger: fakeLogger,
           });
-          var foundCall = find(optimizelyFactory.logging.createLogger.getCalls(), function(call) {
-            return call.returned(sinon.match.same(optlyInstance.logger));
-          });
-          assert.strictEqual(foundCall.args[0].logLevel, optimizelyFactory.enums.LOG_LEVEL.INFO);
+          sinon.assert.calledOnce(logging.setLogHandler);
+          sinon.assert.calledWithExactly(logging.setLogHandler, fakeLogger);
         });
       });
     });

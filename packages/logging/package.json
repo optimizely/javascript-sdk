@@ -1,9 +1,9 @@
 {
   "name": "@optimizely/js-sdk-logging",
-  "version": "0.1.2",
+  "version": "0.1.0",
   "description": "Optimizely Full Stack Core Logging",
   "author": "jordangarcia <jordan@optimizely.com>",
-  "homepage": "https://github.com/optimizely/javascript-sdk",
+  "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/logging",
   "license": "MIT",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -12,15 +12,32 @@
     "test": "test"
   },
   "files": [
-    "lib"
+    "lib",
+    "LICENSE",
+    "CHANGELOG",
+    "README.md",
+    "package.json"
   ],
   "scripts": {
     "tsc": "rm -rf lib && tsc",
     "test": "jest",
     "prepublishOnly": "jest && npm run tsc"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/optimizely/javascript-sdk.git"
+  },
+  "keywords": [
+    "optimizely"
+  ],
+  "bugs": {
+    "url": "https://github.com/optimizely/javascript-sdk/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
-    "@optimizely/js-sdk-utils": "^0.1.2"
+    "@optimizely/js-sdk-utils": "^0.1.0"
   },
   "devDependencies": {
     "@types/jest": "^23.3.12",
