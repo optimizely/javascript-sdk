@@ -157,9 +157,9 @@ export class ConsoleLogHandler implements LogHandler {
       case LogLevel.DEBUG:
         return 'DEBUG'
       case LogLevel.INFO:
-        return 'INFO'
+        return 'INFO '
       case LogLevel.WARNING:
-        return 'WARNING'
+        return 'WARN '
       case LogLevel.ERROR:
         return 'ERROR'
       default:
