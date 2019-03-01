@@ -12,7 +12,8 @@
     "test": "test"
   },
   "files": [
-    "lib"
+    "lib",
+    "package.json"
   ],
   "scripts": {
     "tsc": "rm -rf lib && tsc",
