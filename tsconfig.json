@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "compilerOptions": {
     /* Basic Options */
     "target": "es5" /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017','ES2018' or 'ESNEXT'. */,
@@ -62,28 +61,4 @@
     // "emitDecoratorMetadata": true,         /* Enables experimental support for emitting type metadata for decorators. */
   },
   "exclude": ["node_modules", "src/**/*.spec.ts"]
-=======
- "compilerOptions": {
-   "module": "commonjs",
-   "declaration": true,
-   "target": "es5",
-   "lib": ["es2015", "dom"],
-   "jsx": "react",
-   "moduleResolution": "node",
-   "noImplicitReturns": true,
-   "noImplicitThis": true,
-   "noImplicitAny": true,
-   "importHelpers": false,
-   "strictNullChecks": true,
-   "suppressImplicitAnyIndexErrors": true,
-   "noLib": false,
-   "emitDecoratorMetadata": true,
-   "experimentalDecorators": true,
-   "sourceMap": false
- },
- "exclude": [
-   "node_modules",
-   "src/**/*.spec.ts"
- ]
->>>>>>> Drop in core logger package
 }
