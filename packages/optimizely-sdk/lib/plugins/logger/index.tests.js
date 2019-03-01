@@ -65,7 +65,7 @@ describe('lib/plugins/logger', function() {
         sinon.assert.notCalled(console.log);
         sinon.assert.notCalled(console.info);
         sinon.assert.calledOnce(console.warn);
-        sinon.assert.calledWithExactly(console.warn, sinon.match(/.*WARNING.*message.*/));
+        sinon.assert.calledWithExactly(console.warn, sinon.match(/.*WARN.*message.*/));
         sinon.assert.notCalled(console.error);
       });
 
