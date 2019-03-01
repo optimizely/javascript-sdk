@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/optimizely-sdk",
   "dependencies": {
-    "@optimizely/js-sdk-logging": "^0.1.2",
+    "@optimizely/js-sdk-logging": "^0.1.0",
     "json-schema": "^0.2.3",
     "lodash": "^4.0.0",
     "murmurhash": "0.0.2",
