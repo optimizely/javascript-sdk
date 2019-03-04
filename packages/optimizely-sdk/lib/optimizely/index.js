@@ -484,21 +484,18 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
     var decision = this.decisionService.getVariationForFeature(feature, userId, attributes);
     var variation = decision.variation;
     if (!!variation) {
-      var featureEnabled = false;
+      var featureEnabled = variation.featureEnabled;
       if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
         // got a variation from the exp, so we track the impression
         this._sendImpressionEvent(decision.experiment.key, decision.variation.key, userId, attributes);
       }
-      if (variation.featureEnabled === true) {
-        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
-        featureEnabled = true;
-      }
 
-      if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
-        decisionSource = sprintf('%s {%s}', DECISION_SOURCES.EXPERIMENT, decision.experiment.key);
-      } else {
-        decisionSource = DECISION_SOURCES.ROLLOUT;
-      }
+      var decisionSource = decision.decisionSource + decision.decisionSource === DECISION_SOURCES.EXPERIMENT ? sprintf('{%s}', decision.experiment.key) : '';
+      // if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
+      //   decisionSource = sprintf('%s {%s}', DECISION_SOURCES.EXPERIMENT, decision.experiment.key);
+      // } else {
+      //   decisionSource = DECISION_SOURCES.ROLLOUT;
+      // }
 
       this.notificationCenter.sendNotifications(
         enums.NOTIFICATION_TYPES.ON_DECISION,
@@ -514,7 +511,10 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
         }
       );
 
-      return featureEnabled;
+      if (variation.featureEnabled === true) {
+        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
+        return true;
+      }
     }
 
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
