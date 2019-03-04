@@ -1,0 +1,32 @@
+{
+  "name": "@optimizely/js-sdk-event-processor",
+  "version": "0.3.3",
+  "description": "Optimizely Full Stack Event Processor",
+  "author": "jordangarcia <jordan@optimizely.com>",
+  "homepage": "https://github.com/optimizely/javascript-sdk/",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "tsc": "rm -rf lib && tsc",
+    "test": "jest",
+    "prepublishOnly": "yarn test && yarn tsc"
+  },
+  "dependencies": {
+    "@optimizely/js-sdk-logging": "^0.1.0",
+    "@optimizely/js-sdk-utils": "^0.1.0",
+    "@optimizely/js-sdk-models": "^0.1.3"
+  },
+  "devDependencies": {
+    "jest": "^23.6.0",
+    "ts-jest": "^23.10.5",
+    "typescript": "^3.3.3"
+  }
+}
