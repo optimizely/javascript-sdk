@@ -48,7 +48,7 @@ module.exports = {
    * @param  {Object} config.jsonSchemaValidator
    * @param  {Object} config.logger
    * @param  {Object} config.userProfileService
-   * @param {Object} config.eventFlushSize
+   * @param {Object} config.eventBatchSize
    * @param {Object} config.eventFlushInterval
    * @return {Object} the Optimizely object
    */

@@ -292,7 +292,6 @@ describe('lib/optimizely', function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
         datafile: testData.getTestProjectConfig(),
-        eventBuilder: eventBuilder,
         errorHandler: errorHandler,
         eventDispatcher: eventDispatcher,
         jsonSchemaValidator: jsonSchemaValidator,
@@ -753,7 +752,7 @@ describe('lib/optimizely', function() {
           datafile: testData.getTestProjectConfig(),
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
-          jsonSchemaValidator: jsonSchemaValidator,
+          skipJSONValidation: true,
           logger: logger.createLogger({
             logLevel: enums.LOG_LEVEL.DEBUG,
             logToConsole: false,
@@ -3471,6 +3470,268 @@ describe('lib/optimizely', function() {
         {},
         createdLogger
       );
+    });
+  });
+
+  describe('event batching', function() {
+    var bucketStub;
+    var clock;
+
+    var createdLogger = logger.createLogger({
+      logLevel: LOG_LEVEL.INFO,
+      logToConsole: false,
+    });
+
+    beforeEach(function() {
+      bucketStub = sinon.stub(bucketer, 'bucket');
+      sinon.stub(eventDispatcher, 'dispatchEvent');
+      sinon.stub(errorHandler, 'handleError');
+      sinon.stub(createdLogger, 'log');
+      sinon.stub(uuid, 'v4').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
+
+      clock = sinon.useFakeTimers(new Date().getTime());
+    });
+
+    afterEach(function() {
+      bucketer.bucket.restore();
+      eventDispatcher.dispatchEvent.restore();
+      errorHandler.handleError.restore();
+      createdLogger.log.restore();
+      clock.restore();
+      uuid.v4.restore();
+    });
+
+    describe('when eventBatchSize = 3 and eventFlushInterval = 100', function() {
+      var optlyInstance;
+
+      beforeEach(function() {
+        optlyInstance = new Optimizely({
+          clientEngine: 'node-sdk',
+          datafile: testData.getTestProjectConfig(),
+          eventBuilder: eventBuilder,
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+          isValidInstance: true,
+          eventBatchSize: 3,
+          eventFlushInterval: 100,
+        });
+      });
+
+      afterEach(function() {
+        optlyInstance.close();
+      });
+
+      it('should send batched events when the maxQueueSize is reached', function() {
+        bucketStub.returns('111129');
+        var activate = optlyInstance.activate('testExperiment', 'testUser');
+        assert.strictEqual(activate, 'variation');
+
+        optlyInstance.track('testEvent', 'testUser');
+        optlyInstance.track('testEvent', 'testUser');
+
+        sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
+
+        var expectedObj = {
+          url: 'https://logx.optimizely.com/v1/events',
+          httpVerb: 'POST',
+          params: {
+            'account_id': '12001',
+            'project_id': '111001',
+            'visitors': [
+              {
+                'snapshots': [{
+                  'decisions': [{
+                    'campaign_id': '4',
+                    'experiment_id': '111127',
+                    'variation_id': '111129'
+                  }],
+                  'events': [{
+                    'entity_id': '4',
+                    'timestamp': Math.round(new Date().getTime()),
+                    'key': 'campaign_activated',
+                    'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c'
+                  }]
+                }],
+                'visitor_id': 'testUser',
+                'attributes': [],
+              },
+              {
+                attributes: [],
+                snapshots: [
+                  {
+                    events: [
+                      {
+                        entity_id: '111095',
+                        key: 'testEvent',
+                        timestamp: new Date().getTime(),
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c'
+                      }
+                    ]
+                  }
+                ],
+                visitor_id: 'testUser',
+              },
+              {
+                attributes: [],
+                snapshots: [
+                  {
+                    events: [
+                      {
+                        entity_id: '111095',
+                        key: 'testEvent',
+                        timestamp: new Date().getTime(),
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c'
+                      }
+                    ]
+                  }
+                ],
+                visitor_id: 'testUser',
+              },
+            ],
+            'revision': '42',
+            'client_name': 'node-sdk',
+            'client_version': enums.NODE_CLIENT_VERSION,
+            'anonymize_ip': false,
+            'enrich_decisions': true,
+          },
+        };
+        var eventDispatcherCall = eventDispatcher.dispatchEvent.args[0];
+        assert.deepEqual(eventDispatcherCall[0], expectedObj);
+      });
+
+      it('should flush the queue when the flushInterval occurs', function() {
+        var timestamp = new Date().getTime();
+        bucketStub.returns('111129');
+        var activate = optlyInstance.activate('testExperiment', 'testUser');
+        assert.strictEqual(activate, 'variation');
+
+        optlyInstance.track('testEvent', 'testUser');
+
+        sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+
+        clock.tick(100);
+
+        sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
+
+        var expectedObj = {
+          url: 'https://logx.optimizely.com/v1/events',
+          httpVerb: 'POST',
+          params: {
+            'account_id': '12001',
+            'project_id': '111001',
+            'visitors': [
+              {
+                'snapshots': [{
+                  'decisions': [{
+                    'campaign_id': '4',
+                    'experiment_id': '111127',
+                    'variation_id': '111129'
+                  }],
+                  'events': [{
+                    'entity_id': '4',
+                    'timestamp': timestamp,
+                    'key': 'campaign_activated',
+                    'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c'
+                  }]
+                }],
+                'visitor_id': 'testUser',
+                'attributes': [],
+              },
+              {
+                attributes: [],
+                snapshots: [
+                  {
+                    events: [
+                      {
+                        entity_id: '111095',
+                        key: 'testEvent',
+                        timestamp: timestamp,
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c'
+                      }
+                    ]
+                  }
+                ],
+                visitor_id: 'testUser',
+              },
+            ],
+            'revision': '42',
+            'client_name': 'node-sdk',
+            'client_version': enums.NODE_CLIENT_VERSION,
+            'anonymize_ip': false,
+            'enrich_decisions': true,
+          },
+        };
+        var eventDispatcherCall = eventDispatcher.dispatchEvent.args[0];
+        assert.deepEqual(eventDispatcherCall[0], expectedObj);
+      });
+
+      it('should flush the queue when optimizely.close() is called', function() {
+        bucketStub.returns('111129');
+        var activate = optlyInstance.activate('testExperiment', 'testUser');
+        assert.strictEqual(activate, 'variation');
+
+        optlyInstance.track('testEvent', 'testUser');
+
+
+        sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+
+        optlyInstance.close();
+
+        sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
+
+        var expectedObj = {
+          url: 'https://logx.optimizely.com/v1/events',
+          httpVerb: 'POST',
+          params: {
+            'account_id': '12001',
+            'project_id': '111001',
+            'visitors': [
+              {
+                'snapshots': [{
+                  'decisions': [{
+                    'campaign_id': '4',
+                    'experiment_id': '111127',
+                    'variation_id': '111129'
+                  }],
+                  'events': [{
+                    'entity_id': '4',
+                    'timestamp': Math.round(new Date().getTime()),
+                    'key': 'campaign_activated',
+                    'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c'
+                  }]
+                }],
+                'visitor_id': 'testUser',
+                'attributes': [],
+              },
+              {
+                attributes: [],
+                snapshots: [
+                  {
+                    events: [
+                      {
+                        entity_id: '111095',
+                        key: 'testEvent',
+                        timestamp: new Date().getTime(),
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c'
+                      }
+                    ]
+                  }
+                ],
+                visitor_id: 'testUser',
+              },
+            ],
+            'revision': '42',
+            'client_name': 'node-sdk',
+            'client_version': enums.NODE_CLIENT_VERSION,
+            'anonymize_ip': false,
+            'enrich_decisions': true,
+          },
+        };
+        var eventDispatcherCall = eventDispatcher.dispatchEvent.args[0];
+        assert.deepEqual(eventDispatcherCall[0], expectedObj);
+      });
     });
   });
 });

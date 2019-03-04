@@ -52,7 +52,7 @@ var DEFAULT_EVENT_FLUSH_INTERVAL = 30000;
  * @param {Object} config.logger
  * @param {Object} config.skipJSONValidation
  * @param {Object} config.userProfileService
- * @param {Object} config.eventFlushSize
+ * @param {Object} config.eventBatchSize
  * @param {Object} config.eventFlushInterval
  */
 function Optimizely(config) {
@@ -116,7 +116,7 @@ function Optimizely(config) {
   this.eventProcessor = new eventProcessor.LogTierV1EventProcessor({
     dispatcher: this.eventDispatcher,
     flushInterval: config.eventFlushInterval || DEFAULT_EVENT_FLUSH_INTERVAL,
-    maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
+    maxQueueSize: config.eventBatchSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
   });
   // TODO figure out some way to specify batching vs non-batching
   // to help be backwards compatible with existing implementation
