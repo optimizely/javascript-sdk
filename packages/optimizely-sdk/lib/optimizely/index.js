@@ -491,12 +491,6 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
       }
 
       var decisionSource = decision.decisionSource + decision.decisionSource === DECISION_SOURCES.EXPERIMENT ? sprintf('{%s}', decision.experiment.key) : '';
-      // if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
-      //   decisionSource = sprintf('%s {%s}', DECISION_SOURCES.EXPERIMENT, decision.experiment.key);
-      // } else {
-      //   decisionSource = DECISION_SOURCES.ROLLOUT;
-      // }
-
       this.notificationCenter.sendNotifications(
         enums.NOTIFICATION_TYPES.ON_DECISION,
         {
