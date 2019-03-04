@@ -177,6 +177,7 @@ exports.NODE_CLIENT_VERSION = '3.0.1';
 exports.NOTIFICATION_TYPES = {
   ACTIVATE: 'ACTIVATE:experiment, user_id,attributes, variation, event',
   TRACK: 'TRACK:event_key, user_id, attributes, event_tags, event',
+  ON_DECISION: 'ON_DECISION:type, user_id, attributes, decision_info',
 };
 
 /*

@@ -304,7 +304,25 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
         return null;
       }
 
-      return this.decisionService.getVariation(experimentKey, userId, attributes);
+      var variationKey = this.decisionService.getVariation(experimentKey, userId, attributes);
+      if (!variationKey) {
+        return null;
+      }
+
+      this.notificationCenter.sendNotifications(
+        enums.NOTIFICATION_TYPES.ON_DECISION,
+        {
+          type: 'experiment_variation',
+          user_id: userId,
+          attributes: attributes,
+          decision_info: {
+            experiment_key: experimentKey,
+            variation_key: variationKey,
+          }
+        }
+      );
+
+      return variationKey;
     } catch (ex) {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       this.errorHandler.handleError(ex);
@@ -466,15 +484,39 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
     var decision = this.decisionService.getVariationForFeature(feature, userId, attributes);
     var variation = decision.variation;
     if (!!variation) {
+      var featureEnabled = false;
       if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
         // got a variation from the exp, so we track the impression
         this._sendImpressionEvent(decision.experiment.key, decision.variation.key, userId, attributes);
       }
       if (variation.featureEnabled === true) {
         this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
-        return true;
+        featureEnabled = true;
       }
+
+      if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
+        decisionSource = sprintf('%s {%s}', DECISION_SOURCES.EXPERIMENT, decision.experiment.key);
+      } else {
+        decisionSource = DECISION_SOURCES.ROLLOUT;
+      }
+
+      this.notificationCenter.sendNotifications(
+        enums.NOTIFICATION_TYPES.ON_DECISION,
+        {
+          type: 'feature',
+          user_id: userId,
+          attributes: attributes,
+          decision_info: {
+            feature_key: featureKey,
+            feature_enabled: featureEnabled,
+            source: decisionSource,
+          }
+        }
+      );
+
+      return featureEnabled;
     }
+
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
     return false;
   } catch (e) {
@@ -564,16 +606,41 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
   }
 
   var decision = this.decisionService.getVariationForFeature(featureFlag, userId, attributes);
-  var variableValue;
+  var typeCastedValue;
   if (decision.variation !== null) {
-    variableValue = projectConfig.getVariableValueForVariation(this.configObj, variable, decision.variation, this.logger);
+    var variableValue = projectConfig.getVariableValueForVariation(this.configObj, variable, decision.variation, this.logger);
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE, MODULE_NAME, variableKey, featureFlag.key, variableValue, userId));
+    typeCastedValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
+
+    var decisionSource;
+    if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
+      decisionSource = sprintf('%s {%s}', DECISION_SOURCES.EXPERIMENT, decision.experiment.key);
+    } else {
+      decisionSource = DECISION_SOURCES.ROLLOUT;
+    }
+
+    this.notificationCenter.sendNotifications(
+      enums.NOTIFICATION_TYPES.ON_DECISION,
+      {
+        type: 'feature_variable',
+        user_id: userId,
+        attributes: attributes,
+        decision_info: {
+          feature_key: featureKey,
+          feature_enabled: decision.variation.featureEnabled,
+          variable_key: variableKey,
+          variable_value: typeCastedValue,
+          variable_type: variableType,
+          source: decisionSource,
+        }
+      }
+    );
   } else {
-    variableValue = variable.defaultValue;
+    typeCastedValue = projectConfig.getTypeCastValue(variable.defaultValue, variableType, this.logger);
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE, MODULE_NAME, userId, variableKey, featureFlag.key));
   }
 
-  return projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
+  return typeCastedValue;
 };
 
 /**
