@@ -180,6 +180,12 @@ exports.NOTIFICATION_TYPES = {
   ON_DECISION: 'ON_DECISION:type, user_id, attributes, decision_info',
 };
 
+exports.ON_DECISION_NOTIFICATION_TYPES = {
+  EXPERIMENT_VARIATION: 'experiment_variation',
+  FEATURE: 'feature',
+  FEATURE_VARIABLE: 'feature_variable',
+};
+
 /*
  * Represents the source of a decision for feature management. When a feature
  * is accessed through isFeatureEnabled or getVariableValue APIs, the decision
