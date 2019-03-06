@@ -1,6 +1,6 @@
 /// <reference types="jest" />
 
-import { DefaultEventQueue } from '../src/eventQueue'
+import { DefaultEventQueue, SingleEventQueue } from '../src/eventQueue'
 
 describe('eventQueue', () => {
   beforeEach(() => {
@@ -9,6 +9,28 @@ describe('eventQueue', () => {
 
   afterEach(() => {
     jest.resetAllMocks()
+  })
+
+  describe('SingleEventQueue', () => {
+    it('should immediately invoke the sink function when items are enqueued', () => {
+      const sinkFn = jest.fn()
+      const queue = new SingleEventQueue<number>({
+        sink: sinkFn,
+      })
+
+      queue.start()
+
+      queue.enqueue(1)
+
+      expect(sinkFn).toBeCalledTimes(1)
+      expect(sinkFn).toHaveBeenLastCalledWith([1])
+
+      queue.enqueue(2)
+      expect(sinkFn).toBeCalledTimes(2)
+      expect(sinkFn).toHaveBeenLastCalledWith([2])
+
+      queue.stop()
+    })
   })
 
   describe('DefaultEventQueue', () => {

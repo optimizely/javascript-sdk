@@ -3,9 +3,8 @@
 import { LogTierV1EventProcessor } from '../src/v1/v1EventProcessor'
 import { HttpEventDispatcher, EventV1Request } from '../src/eventDispatcher'
 import { ProjectConfig, TestProjectConfig } from '@optimizely/js-sdk-models'
-import { EventProcessor, ProcessableEvents } from '../src/eventProcessor'
+import { EventProcessor } from '../src/eventProcessor'
 import { buildImpressionEventV1, makeBatchedEventV1 } from '../src/v1/buildEventV1'
-import { EventQueueFactory, EventQueue } from '../src/eventQueue'
 
 function sleep(time = 0): Promise<any> {
   return new Promise(resolve => {
@@ -121,6 +120,19 @@ describe('LogTierV1EventProcessor', () => {
           localCallback = callback
         },
       }
+    })
+
+
+    it('should return a resolved promise when there is nothing in queue', (done) => {
+      const processor = new LogTierV1EventProcessor({
+        dispatcher: stubDispatcher,
+        flushInterval: 100,
+        maxQueueSize: 100,
+      })
+
+      processor.stop().then(() => {
+        done()
+      })
     })
 
     it('should return a promise that is resolved when the dispatcher callback fires true', done => {
@@ -315,58 +327,6 @@ describe('LogTierV1EventProcessor', () => {
     })
   })
 
-  describe('supplying a custom EventQueueFactory', () => {
-    let processor: EventProcessor
-    let eventQueueFactory: EventQueueFactory<ProcessableEvents>
-    let stubEventQueue: EventQueue<ProcessableEvents>
-
-    beforeEach(() => {
-      stubEventQueue = {
-        stop: jest.fn(),
-        start: jest.fn(),
-        enqueue: jest.fn(),
-      }
-
-      eventQueueFactory = {
-        createEventQueue: jest.fn().mockImplementation(() => {
-          return stubEventQueue
-        }),
-      }
-
-      processor = new LogTierV1EventProcessor({
-        dispatcher: stubDispatcher,
-        eventQueueFactory,
-        maxQueueSize: 100,
-        flushInterval: 1000,
-      })
-    })
-
-    afterEach(() => {
-      processor.stop()
-    })
-
-    it('should inovke createEventQueue with maxQueueSize and flushInterval', () => {
-      expect(eventQueueFactory.createEventQueue).toHaveBeenCalledTimes(1)
-      expect(eventQueueFactory.createEventQueue).toHaveBeenCalledWith(
-        expect.objectContaining({
-          maxQueueSize: 100,
-          flushInterval: 1000,
-        }),
-      )
-    })
-
-    it('eventProcessor.start should call queue.start()', () => {
-      processor.start()
-      expect(stubEventQueue.start).toHaveBeenCalled()
-    })
-
-    it('eventProcessor.stop should call queue.stop()', () => {
-      processor.start()
-      processor.stop()
-      expect(stubEventQueue.stop).toHaveBeenCalled()
-    })
-  })
-
   describe('plugins', () => {
     let processor: EventProcessor
 
@@ -439,7 +399,7 @@ describe('LogTierV1EventProcessor', () => {
         })
       })
 
-      it('should drop the event if a transformer throws an error', async () => {
+      it('should continue with the event if a transformer throws an error', async () => {
         processor = new LogTierV1EventProcessor({
           transformers: [
             async (event, projectConfig) => {
@@ -457,7 +417,13 @@ describe('LogTierV1EventProcessor', () => {
         // sleep to let async functions run
         await sleep(0)
 
-        expect(dispatchStub).toHaveBeenCalledTimes(0)
+        expect(dispatchStub).toHaveBeenCalledTimes(1)
+        expect(dispatchStub).toHaveBeenCalledWith({
+          url: 'https://logx.optimizely.com/v1/events',
+          method: 'POST',
+          headers: {},
+          event: makeBatchedEventV1([impressionEvent]),
+        })
       })
     })
 
@@ -476,7 +442,7 @@ describe('LogTierV1EventProcessor', () => {
           interceptors: [
             async (event, projectConfig) => {
               interceptor(event, projectConfig)
-              return event
+              return true
             },
           ],
           dispatcher: stubDispatcher,
@@ -494,7 +460,7 @@ describe('LogTierV1EventProcessor', () => {
         expect(interceptor).toHaveBeenCalledWith(impressionEvent, testProjectConfig)
       })
 
-      it('should drop the event if a transformer throws an error', async () => {
+      it('should continue with the event if a interceptor throws an error', async () => {
         processor = new LogTierV1EventProcessor({
           interceptors: [
             async (event, projectConfig) => {
@@ -512,14 +478,20 @@ describe('LogTierV1EventProcessor', () => {
         // sleep to let async functions run
         await sleep(0)
 
-        expect(dispatchStub).toHaveBeenCalledTimes(0)
+        expect(dispatchStub).toHaveBeenCalledTimes(1)
+        expect(dispatchStub).toHaveBeenCalledWith({
+          url: 'https://logx.optimizely.com/v1/events',
+          method: 'POST',
+          headers: {},
+          event: makeBatchedEventV1([impressionEvent]),
+        })
       })
 
-      it('should drop the event if a interceptor returns null', async () => {
+      it('should drop the event if a interceptor returns false', async () => {
         processor = new LogTierV1EventProcessor({
           interceptors: [
             async (event, projectConfig) => {
-              return null
+              return false
             },
           ],
           dispatcher: stubDispatcher,

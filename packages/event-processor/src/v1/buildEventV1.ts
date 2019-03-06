@@ -84,8 +84,6 @@ export function makeBatchedEventV1(events: ProcessableEvents[]): EventV1 {
       }
 
       visitors.push(visitor)
-    } else if (event.type === 'summary') {
-      // TODO
     }
   })
 

@@ -1,12 +1,12 @@
 import { Managed, ProjectConfig } from '@optimizely/js-sdk-models'
-import { ConversionEvent, ImpressionEvent, SummaryEvent } from './events'
+import { ConversionEvent, ImpressionEvent } from './events'
 import { EventDispatcher } from './eventDispatcher'
-import { EventQueue, EventQueueFactory, DefaultEventQueueFactory } from './eventQueue'
+import { EventQueue, DefaultEventQueue, SingleEventQueue } from './eventQueue'
 import { getLogger } from '@optimizely/js-sdk-logging'
 
 const logger = getLogger('EventProcessor')
 
-export type ProcessableEvents = ConversionEvent | ImpressionEvent | SummaryEvent
+export type ProcessableEvents = ConversionEvent | ImpressionEvent
 
 export type EventDispatchResult = { result: boolean; event: ProcessableEvents }
 
@@ -20,7 +20,7 @@ export type EventTransformer = (
 export type EventInterceptor = (
   event: ProcessableEvents,
   projectConfig: ProjectConfig,
-) => Promise<ProcessableEvents | null>
+) => Promise<boolean>
 
 export interface EventProcessor extends Managed {
   process(event: ProcessableEvents, projectConfig: ProjectConfig): void
@@ -37,7 +37,6 @@ export abstract class AbstractEventProcessor implements EventProcessor {
 
   constructor({
     dispatcher,
-    eventQueueFactory,
     transformers = [],
     interceptors = [],
     callbacks = [],
@@ -45,7 +44,6 @@ export abstract class AbstractEventProcessor implements EventProcessor {
     maxQueueSize = 3000,
   }: {
     dispatcher: EventDispatcher
-    eventQueueFactory?: EventQueueFactory<ProcessableEvents>
     transformers?: EventTransformer[]
     interceptors?: EventInterceptor[]
     callbacks?: EventCallback[]
@@ -54,17 +52,22 @@ export abstract class AbstractEventProcessor implements EventProcessor {
   }) {
     this.dispatcher = dispatcher
 
-    const factory = eventQueueFactory || new DefaultEventQueueFactory()
+    maxQueueSize = Math.max(1, maxQueueSize)
+    if (maxQueueSize > 1) {
+      this.queue = new DefaultEventQueue({
+        flushInterval,
+        maxQueueSize,
+        sink: buffer => this.drainQueue(buffer),
+      })
+    } else {
+      this.queue = new SingleEventQueue({
+        sink: buffer => this.drainQueue(buffer),
+      })
+    }
 
     this.transformers = transformers
     this.interceptors = interceptors
     this.callbacks = callbacks
-
-    this.queue = factory.createEventQueue({
-      flushInterval,
-      maxQueueSize,
-      sink: buffer => this.drainQueue(buffer),
-    })
   }
 
   drainQueue(buffer: ProcessableEvents[]): Promise<any> {
@@ -94,15 +97,14 @@ export abstract class AbstractEventProcessor implements EventProcessor {
     return Promise.all(promises)
   }
 
-  // TODO pass 2nd argument EventMeta /w ProjectConfig
   async process(event: ProcessableEvents, projectConfig: ProjectConfig): Promise<void> {
     // loop and apply all transformers
     for (let transformer of this.transformers) {
       try {
         await transformer(event, projectConfig)
       } catch (ex) {
+        // swallow error and move on
         logger.error('eventTransformer threw error', ex.message, ex)
-        return
       }
     }
     Object.freeze(event)
@@ -113,13 +115,12 @@ export abstract class AbstractEventProcessor implements EventProcessor {
       try {
         result = await interceptor(event, projectConfig)
       } catch (ex) {
+        // swallow and continue
         logger.error('eventInterceptor threw error', ex.message, ex)
+      }
+      if (result === false) {
         return
       }
-      if (result === null) {
-        return
-      }
-      event = result
     }
 
     this.queue.enqueue(event)
@@ -130,7 +131,7 @@ export abstract class AbstractEventProcessor implements EventProcessor {
       // swallow, an error stopping this queue should prevent this from stopping
       return this.queue.stop()
     } catch (e) {
-      // TODO error
+      logger.error('Error stopping EventProcessor: "%s"', e.message, e)
     }
     return Promise.resolve()
   }

@@ -13,15 +13,6 @@ export interface EventQueueFactory<K> {
   }): EventQueue<K>
 }
 
-export class DefaultEventQueueFactory<K> implements EventQueueFactory<K> {
-  createEventQueue(config: {
-    sink: EventQueueSink<K>
-    flushInterval: number
-    maxQueueSize: number
-  }): EventQueue<K> {
-    return new DefaultEventQueue(config)
-  }
-}
 
 class IntervalTimer {
   private interval: number
@@ -46,6 +37,31 @@ class IntervalTimer {
   refresh(): void {
     this.stop()
     this.start()
+  }
+}
+
+export class SingleEventQueue<K> implements EventQueue<K> {
+  private sink: EventQueueSink<K>
+
+  constructor({
+    sink,
+  }: {
+    sink: EventQueueSink<K>
+  }) {
+    this.sink = sink
+  }
+
+  start(): void {
+    // no-op
+  }
+
+  stop(): Promise<any> {
+    // no-op
+    return Promise.resolve()
+  }
+
+  enqueue(event: K): void {
+    this.sink([event])
   }
 }
 
@@ -75,9 +91,7 @@ export class DefaultEventQueue<K> implements EventQueue<K> {
   }
 
   start(): void {
-    if (this.maxQueueSize > 1) {
-      this.timer.start()
-    }
+    this.timer.start()
   }
 
   stop(): Promise<any> {
