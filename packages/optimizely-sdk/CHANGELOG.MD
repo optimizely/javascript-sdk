@@ -11,7 +11,7 @@ Changes that have landed but are not yet released.
 
 ### Changed
 
-- New APIs for setting `logger` and `logLevel` on the optimizelySDK singleton
+- New APIs for setting `logger` and `logLevel` on the optimizelySDK singleton ([#232](https://github.com/optimizely/javascript-sdk/pull/232))
 - `logger` and `logLevel` are now set globally for all instances of Optimizely.  If you were passing
 different loggers to individual instances of Optimizely, logging behavior may now be different.
 
