@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/js-sdk-models",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Optimizely Full Stack Models",
   "author": "jordangarcia <jordan@optimizely.com>",
   "homepage": "https://github.com/optimizely/javascript-sdk/",

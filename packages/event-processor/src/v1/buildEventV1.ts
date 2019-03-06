@@ -5,6 +5,23 @@ const ACTIVATE_EVENT_KEY = 'campaign_activated'
 const CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom'
 const BOT_FILTERING_KEY = '$opt_bot_filtering'
 
+export type EventV1 = {
+  account_id: string
+  project_id: string
+  revision: string
+  client_name: string
+  client_version: string
+  anonymize_ip: boolean
+  enrich_decisions: boolean
+  visitors: Visitor[]
+}
+
+type Visitor = {
+  snapshots: Visitor.Snapshot[]
+  visitor_id: string
+  attributes: Visitor.Attribute[]
+}
+
 namespace Visitor {
   type AttributeType = 'custom'
 
@@ -39,22 +56,7 @@ namespace Visitor {
   }
 }
 
-type Visitor = {
-  snapshots: Visitor.Snapshot[]
-  visitor_id: string
-  attributes: Visitor.Attribute[]
-}
 
-export type EventV1 = {
-  account_id: string
-  project_id: string
-  revision: string
-  client_name: string
-  client_version: string
-  anonymize_ip: boolean
-  enrich_decisions: boolean
-  visitors: Visitor[]
-}
 
 type Attributes = {
   [key: string]: string | number | boolean

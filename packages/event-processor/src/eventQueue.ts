@@ -1,8 +1,7 @@
-export type EventQueueSink<K> = (buffer: K[]) => void
+import { Managed } from '@optimizely/js-sdk-models'
+export type EventQueueSink<K> = (buffer: K[]) => Promise<any>
 
-export interface EventQueue<K> {
-  start(): void
-  stop(): void
+export interface EventQueue<K> extends Managed {
   enqueue(event: K): void
 }
 
@@ -81,9 +80,10 @@ export class DefaultEventQueue<K> implements EventQueue<K> {
     }
   }
 
-  stop(): void {
-    this.sink(this.buffer)
+  stop(): Promise<any> {
+    const result = this.sink(this.buffer)
     this.timer.stop()
+    return result
   }
 
   enqueue(event: K): void {

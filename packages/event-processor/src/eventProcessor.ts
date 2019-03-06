@@ -67,25 +67,31 @@ export abstract class AbstractEventProcessor implements EventProcessor {
     })
   }
 
-  drainQueue(buffer: ProcessableEvents[]) {
+  drainQueue(buffer: ProcessableEvents[]): Promise<any> {
     logger.debug('draining queue with %s events', buffer.length)
 
-    this.groupEvents(buffer).forEach(eventGroup => {
+    const promises = this.groupEvents(buffer).map(eventGroup => {
       const formattedEvent = this.formatEvents(eventGroup)
 
-      this.dispatcher.dispatch(formattedEvent, result => {
-        // loop through every event in the group and run the callback handler
-        // with result
-        eventGroup.forEach(event => {
-          this.callbacks.forEach(handler => {
-            handler({
-              result,
-              event,
+      return new Promise((resolve, reject) => {
+        this.dispatcher.dispatch(formattedEvent, result => {
+          // loop through every event in the group and run the callback handler
+          // with result
+          eventGroup.forEach(event => {
+            this.callbacks.forEach(handler => {
+              handler({
+                result,
+                event,
+              })
             })
           })
+
+          resolve()
         })
       })
     })
+
+    return Promise.all(promises)
   }
 
   // TODO pass 2nd argument EventMeta /w ProjectConfig
@@ -119,13 +125,14 @@ export abstract class AbstractEventProcessor implements EventProcessor {
     this.queue.enqueue(event)
   }
 
-  stop(): void {
+  stop(): Promise<any> {
     try {
       // swallow, an error stopping this queue should prevent this from stopping
-      this.queue.stop()
+      return this.queue.stop()
     } catch (e) {
       // TODO error
     }
+    return Promise.resolve()
   }
 
   start(): void {

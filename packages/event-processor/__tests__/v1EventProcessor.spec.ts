@@ -112,6 +112,86 @@ describe('LogTierV1EventProcessor', () => {
     jest.resetAllMocks()
   })
 
+  describe('stop()', () => {
+    let localCallback: (result: boolean) => void
+    beforeEach(() => {
+      stubDispatcher = {
+        dispatch(event: EventV1Request, callback: (success: boolean) => void): void {
+          dispatchStub(event)
+          localCallback = callback
+        },
+      }
+    })
+
+    it('should return a promise that is resolved when the dispatcher callback fires true', done => {
+      const processor = new LogTierV1EventProcessor({
+        dispatcher: stubDispatcher,
+        flushInterval: 100,
+        maxQueueSize: 100,
+      })
+
+      const impressionEvent = createImpressionEvent()
+      processor.process(impressionEvent, testProjectConfig)
+
+      processor.stop().then(() => {
+        done()
+      })
+
+      localCallback(true)
+    })
+
+    it('should return a promise that is resolved when the dispatcher callback fires false', done => {
+      let localCallback: any
+      stubDispatcher = {
+        dispatch(event: EventV1Request, callback: (success: boolean) => void): void {
+          dispatchStub(event)
+          localCallback = callback
+        },
+      }
+
+      const processor = new LogTierV1EventProcessor({
+        dispatcher: stubDispatcher,
+        flushInterval: 100,
+        maxQueueSize: 100,
+      })
+
+      const impressionEvent = createImpressionEvent()
+      processor.process(impressionEvent, testProjectConfig)
+
+      processor.stop().then(() => {
+        done()
+      })
+
+      localCallback(false)
+    })
+
+    it('should return a promise when multiple event batches are sent', done => {
+      stubDispatcher = {
+        dispatch(event: EventV1Request, callback: (success: boolean) => void): void {
+          dispatchStub(event)
+          callback(true)
+        },
+      }
+
+      const processor = new LogTierV1EventProcessor({
+        dispatcher: stubDispatcher,
+        flushInterval: 100,
+        maxQueueSize: 100,
+      })
+
+      const impressionEvent1 = createImpressionEvent()
+      const impressionEvent2 = createImpressionEvent()
+      impressionEvent2.context.revision = '2'
+      processor.process(impressionEvent1, testProjectConfig)
+      processor.process(impressionEvent2, testProjectConfig)
+
+      processor.stop().then(() => {
+        expect(dispatchStub).toBeCalledTimes(2)
+        done()
+      })
+    })
+  })
+
   describe('when maxQueueSize = 1', () => {
     let processor: EventProcessor
     beforeEach(() => {

@@ -126,7 +126,7 @@ describe('eventQueue', () => {
       expect(queue.timer.stop).toBeCalledTimes(1)
     })
 
-    it('flush() should clear the current butter', () => {
+    it('flush() should clear the current batch', () => {
       const sinkFn = jest.fn()
       const queue = new DefaultEventQueue<number>({
         flushInterval: 100,
@@ -145,6 +145,18 @@ describe('eventQueue', () => {
       expect(queue.timer.refresh).toBeCalledTimes(1)
 
       queue.stop()
+    })
+
+    it('stop() should return a promise', () => {
+      const promise = Promise.resolve()
+      const sinkFn = jest.fn().mockReturnValue(promise)
+      const queue = new DefaultEventQueue<number>({
+        flushInterval: 100,
+        maxQueueSize: 100,
+        sink: sinkFn,
+      })
+
+      expect(queue.stop()).toBe(promise)
     })
   })
 })
