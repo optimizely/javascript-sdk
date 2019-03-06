@@ -42,6 +42,7 @@ var LOG_MESSAGES = enums.LOG_MESSAGES;
 var DECISION_SOURCES = enums.DECISION_SOURCES;
 var NOTIFICATION_TYPES = enums.NOTIFICATION_TYPES;
 var ON_DECISION_NOTIFICATION_TYPES = enums.ON_DECISION_NOTIFICATION_TYPES;
+var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
 
 describe('lib/optimizely', function() {
   describe('constructor', function() {
@@ -3228,10 +3229,83 @@ describe('lib/optimizely', function() {
           isValidInstance: true,
         });
         
-        var result = optlyInstance.getEnabledFeatures('user1', { test_attribute: 'test_value' });
+        var attributes = { test_attribute: 'test_value' };
+        optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+        var result = optlyInstance.getEnabledFeatures('user1', attributes);
         assert.strictEqual(result.length, 2);
         assert.isAbove(result.indexOf('test_feature_2'), -1);
         assert.isAbove(result.indexOf('test_feature_for_experiment'), -1);
+
+        assert.isTrue(onDecisionListener.getCall(0).calledWith({
+          type: ON_DECISION_NOTIFICATION_TYPES.FEATURE,
+          user_id: 'user1',
+          attributes: attributes,
+          decision_info: {
+            feature_key: 'test_feature',
+            feature_enabled: false,
+            source: DECISION_SOURCES.ROLLOUT
+          }
+        }));
+        assert.isTrue(onDecisionListener.getCall(1).calledWith({
+          type: ON_DECISION_NOTIFICATION_TYPES.FEATURE,
+          user_id: 'user1',
+          attributes: attributes,
+          decision_info: {
+            feature_key: 'test_feature_2',
+            feature_enabled: true,
+            source: DECISION_SOURCES.ROLLOUT
+          }
+        }));
+        assert.isTrue(onDecisionListener.getCall(2).calledWith({
+          type: ON_DECISION_NOTIFICATION_TYPES.FEATURE,
+          user_id: 'user1',
+          attributes: attributes,
+          decision_info: {
+            feature_key: 'test_feature_for_experiment',
+            feature_enabled: true,
+            source: DECISION_SOURCES.EXPERIMENT + ' {testing_my_feature}'
+          }
+        }));
+        assert.isTrue(onDecisionListener.getCall(3).calledWith({
+          type: ON_DECISION_NOTIFICATION_TYPES.FEATURE,
+          user_id: 'user1',
+          attributes: attributes,
+          decision_info: {
+            feature_key: 'feature_with_group',
+            feature_enabled: false,
+            source: DECISION_SOURCES.EXPERIMENT + ' {exp_with_group}'
+          }
+        }));
+        assert.isTrue(onDecisionListener.getCall(4).calledWith({
+          type: ON_DECISION_NOTIFICATION_TYPES.FEATURE,
+          user_id: 'user1',
+          attributes: attributes,
+          decision_info: {
+            feature_key: 'shared_feature',
+            feature_enabled: false,
+            source: DECISION_SOURCES.EXPERIMENT + ' {test_shared_feature}'
+          }
+        }));
+        assert.isTrue(onDecisionListener.getCall(5).calledWith({
+          type: ON_DECISION_NOTIFICATION_TYPES.FEATURE,
+          user_id: 'user1',
+          attributes: attributes,
+          decision_info: {
+            feature_key: 'unused_flag',
+            feature_enabled: false,
+            source: DECISION_SOURCES.ROLLOUT
+          }
+        }));
+        assert.isTrue(onDecisionListener.getCall(6).calledWith({
+          type: ON_DECISION_NOTIFICATION_TYPES.FEATURE,
+          user_id: 'user1',
+          attributes: attributes,
+          decision_info: {
+            feature_key: 'feature_exp_no_traffic',
+            feature_enabled: false,
+            source: DECISION_SOURCES.ROLLOUT
+          }
+        }));
       });
     });
 
@@ -3248,27 +3322,83 @@ describe('lib/optimizely', function() {
         });
 
         it('returns the right value from getFeatureVariableBoolean', function() {
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
           var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
           assert.strictEqual(result, true);
           sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "is_button_animated" of feature flag "test_feature_for_experiment" is true for user "user1"');
+          sinon.assert.calledWith(onDecisionListener, {
+            type: ON_DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+            user_id: 'user1',
+            attributes: { test_attribute: 'test_value' },
+            decision_info: {
+              feature_key: 'test_feature_for_experiment',
+              feature_enabled: true,
+              variable_key: 'is_button_animated',
+              variable_value: true,
+              variable_type: FEATURE_VARIABLE_TYPES.BOOLEAN,
+              source: DECISION_SOURCES.EXPERIMENT + ' {testing_my_feature}'
+            }
+          });
         });
 
         it('returns the right value from getFeatureVariableDouble', function() {
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
           var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
           assert.strictEqual(result, 20.25);
           sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "button_width" of feature flag "test_feature_for_experiment" is 20.25 for user "user1"');
+          sinon.assert.calledWith(onDecisionListener, {
+            type: ON_DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+            user_id: 'user1',
+            attributes: { test_attribute: 'test_value' },
+            decision_info: {
+              feature_key: 'test_feature_for_experiment',
+              feature_enabled: true,
+              variable_key: 'button_width',
+              variable_value: 20.25,
+              variable_type: FEATURE_VARIABLE_TYPES.DOUBLE,
+              source: DECISION_SOURCES.EXPERIMENT + ' {testing_my_feature}'
+            }
+          });
         });
 
         it('returns the right value from getFeatureVariableInteger', function() {
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
           var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
           assert.strictEqual(result, 2);
           sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "num_buttons" of feature flag "test_feature_for_experiment" is 2 for user "user1"');
+          sinon.assert.calledWith(onDecisionListener, {
+            type: ON_DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+            user_id: 'user1',
+            attributes: { test_attribute: 'test_value' },
+            decision_info: {
+              feature_key: 'test_feature_for_experiment',
+              feature_enabled: true,
+              variable_key: 'num_buttons',
+              variable_value: 2,
+              variable_type: FEATURE_VARIABLE_TYPES.INTEGER,
+              source: DECISION_SOURCES.EXPERIMENT + ' {testing_my_feature}'
+            }
+          });
         });
 
         it('returns the right value from getFeatureVariableString', function() {
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
           var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
           assert.strictEqual(result, 'Buy me NOW');
           sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "button_txt" of feature flag "test_feature_for_experiment" is Buy me NOW for user "user1"');
+          sinon.assert.calledWith(onDecisionListener, {
+            type: ON_DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+            user_id: 'user1',
+            attributes: { test_attribute: 'test_value' },
+            decision_info: {
+              feature_key: 'test_feature_for_experiment',
+              feature_enabled: true,
+              variable_key: 'button_txt',
+              variable_value: 'Buy me NOW',
+              variable_type: FEATURE_VARIABLE_TYPES.STRING,
+              source: DECISION_SOURCES.EXPERIMENT + ' {testing_my_feature}'
+            }
+          });
         });
 
         it('returns null from getFeatureVariableBoolean when called with a non-boolean variable', function() {
@@ -3416,27 +3546,269 @@ describe('lib/optimizely', function() {
         });
 
         it('returns the variable default value from getFeatureVariableBoolean', function() {
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
           var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
           assert.strictEqual(result, false);
           sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "is_button_animated" of feature flag "test_feature_for_experiment".');
+          sinon.assert.calledWith(onDecisionListener, {
+            type: ON_DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+            user_id: 'user1',
+            attributes: { test_attribute: 'test_value' },
+            decision_info: {
+              feature_key: 'test_feature_for_experiment',
+              feature_enabled: false,
+              variable_key: 'is_button_animated',
+              variable_value: false,
+              variable_type: FEATURE_VARIABLE_TYPES.BOOLEAN,
+              source: DECISION_SOURCES.ROLLOUT
+            }
+          });
         });
 
         it('returns the variable default value from getFeatureVariableDouble', function() {
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
           var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
           assert.strictEqual(result, 50.55);
           sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_width" of feature flag "test_feature_for_experiment".');
+          sinon.assert.calledWith(onDecisionListener, {
+            type: ON_DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+            user_id: 'user1',
+            attributes: { test_attribute: 'test_value' },
+            decision_info: {
+              feature_key: 'test_feature_for_experiment',
+              feature_enabled: false,
+              variable_key: 'button_width',
+              variable_value: 50.55,
+              variable_type: FEATURE_VARIABLE_TYPES.DOUBLE,
+              source: DECISION_SOURCES.ROLLOUT
+            }
+          });
         });
 
         it('returns the variable default value from getFeatureVariableInteger', function() {
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
           var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
           assert.strictEqual(result, 10);
           sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "num_buttons" of feature flag "test_feature_for_experiment".');
+          sinon.assert.calledWith(onDecisionListener, {
+            type: ON_DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+            user_id: 'user1',
+            attributes: { test_attribute: 'test_value' },
+            decision_info: {
+              feature_key: 'test_feature_for_experiment',
+              feature_enabled: false,
+              variable_key: 'num_buttons',
+              variable_value: 10,
+              variable_type: FEATURE_VARIABLE_TYPES.INTEGER,
+              source: DECISION_SOURCES.ROLLOUT
+            }
+          });
         });
 
         it('returns the variable default value from getFeatureVariableString', function() {
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
           var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
           assert.strictEqual(result, 'Buy me');
           sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_txt" of feature flag "test_feature_for_experiment".');
+          sinon.assert.calledWith(onDecisionListener, {
+            type: ON_DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+            user_id: 'user1',
+            attributes: { test_attribute: 'test_value' },
+            decision_info: {
+              feature_key: 'test_feature_for_experiment',
+              feature_enabled: false,
+              variable_key: 'button_txt',
+              variable_value: 'Buy me',
+              variable_type: FEATURE_VARIABLE_TYPES.STRING,
+              source: DECISION_SOURCES.ROLLOUT
+            }
+          });
+        });
+      });
+
+      describe('bucketed into variation of a rollout with variable values', function() {
+        beforeEach(function() {
+          // This experiment is the first audience targeting rule in the rollout of feature 'test_feature'
+          var experiment = optlyInstance.configObj.experimentKeyMap['594031'];
+          var variation = experiment.variations[0];
+          sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+            experiment: experiment,
+            variation: variation,
+            decisionSource: DECISION_SOURCES.ROLLOUT,
+          });
+        });
+
+        it('should return the right value and send notification from getFeatureVariableBoolean', function() {
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+          var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, true);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "new_content" of feature flag "test_feature" is true for user "user1"');
+          sinon.assert.calledWith(onDecisionListener, {
+            type: ON_DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+            user_id: 'user1',
+            attributes: { test_attribute: 'test_value' },
+            decision_info: {
+              feature_key: 'test_feature',
+              feature_enabled: true,
+              variable_key: 'new_content',
+              variable_value: true,
+              variable_type: FEATURE_VARIABLE_TYPES.BOOLEAN,
+              source: DECISION_SOURCES.ROLLOUT
+            }
+          });
+        });
+
+        it('should return the right value and send notification from getFeatureVariableDouble', function() {
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+          var result = optlyInstance.getFeatureVariableDouble('test_feature', 'price', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, 4.99);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "price" of feature flag "test_feature" is 4.99 for user "user1"');
+          sinon.assert.calledWith(onDecisionListener, {
+            type: ON_DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+            user_id: 'user1',
+            attributes: { test_attribute: 'test_value' },
+            decision_info: {
+              feature_key: 'test_feature',
+              feature_enabled: true,
+              variable_key: 'price',
+              variable_value: 4.99,
+              variable_type: FEATURE_VARIABLE_TYPES.DOUBLE,
+              source: DECISION_SOURCES.ROLLOUT
+            }
+          });
+        });
+
+        it('should return the right value and send notification from getFeatureVariableInteger', function() {
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+          var result = optlyInstance.getFeatureVariableInteger('test_feature', 'lasers', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, 395);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "lasers" of feature flag "test_feature" is 395 for user "user1"');
+          sinon.assert.calledWith(onDecisionListener, {
+            type: ON_DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+            user_id: 'user1',
+            attributes: { test_attribute: 'test_value' },
+            decision_info: {
+              feature_key: 'test_feature',
+              feature_enabled: true,
+              variable_key: 'lasers',
+              variable_value: 395,
+              variable_type: FEATURE_VARIABLE_TYPES.INTEGER,
+              source: DECISION_SOURCES.ROLLOUT
+            }
+          });
+        });
+
+        it('should return the right value and send notification from getFeatureVariableString', function() {
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+          var result = optlyInstance.getFeatureVariableString('test_feature', 'message', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, 'Hello audience');
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "message" of feature flag "test_feature" is Hello audience for user "user1"');
+          sinon.assert.calledWith(onDecisionListener, {
+            type: ON_DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+            user_id: 'user1',
+            attributes: { test_attribute: 'test_value' },
+            decision_info: {
+              feature_key: 'test_feature',
+              feature_enabled: true,
+              variable_key: 'message',
+              variable_value: 'Hello audience',
+              variable_type: FEATURE_VARIABLE_TYPES.STRING,
+              source: DECISION_SOURCES.ROLLOUT
+            }
+          });
+        });
+      });
+
+      describe('not bucketed into variation of a rollout', function() {
+        beforeEach(function() {
+          // This experiment is the second audience targeting rule in the rollout of feature 'test_feature'
+          var experiment = optlyInstance.configObj.experimentKeyMap['594037'];
+          var variation = experiment.variations[0];
+          sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+            experiment: experiment,
+            variation: variation,
+            decisionSource: DECISION_SOURCES.ROLLOUT,
+          });
+        });
+
+        it('should return the default value and send notification from getFeatureVariableBoolean', function() {
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+          var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, false);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "new_content" of feature flag "test_feature" is false for user "user1"');
+          sinon.assert.calledWith(onDecisionListener, {
+            type: ON_DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+            user_id: 'user1',
+            attributes: { test_attribute: 'test_value' },
+            decision_info: {
+              feature_key: 'test_feature',
+              feature_enabled: false,
+              variable_key: 'new_content',
+              variable_value: false,
+              variable_type: FEATURE_VARIABLE_TYPES.BOOLEAN,
+              source: DECISION_SOURCES.ROLLOUT
+            }
+          });
+        });
+
+        it('should return the default value and send notification from getFeatureVariableDouble', function() {
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+          var result = optlyInstance.getFeatureVariableDouble('test_feature', 'price', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, 14.99);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "price" of feature flag "test_feature" is 14.99 for user "user1"');
+          sinon.assert.calledWith(onDecisionListener, {
+            type: ON_DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+            user_id: 'user1',
+            attributes: { test_attribute: 'test_value' },
+            decision_info: {
+              feature_key: 'test_feature',
+              feature_enabled: false,
+              variable_key: 'price',
+              variable_value: 14.99,
+              variable_type: FEATURE_VARIABLE_TYPES.DOUBLE,
+              source: DECISION_SOURCES.ROLLOUT
+            }
+          });
+        });
+
+        it('should return the default value and send notification from getFeatureVariableInteger', function() {
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+          var result = optlyInstance.getFeatureVariableInteger('test_feature', 'lasers', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, 400);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "lasers" of feature flag "test_feature" is 400 for user "user1"');
+          sinon.assert.calledWith(onDecisionListener, {
+            type: ON_DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+            user_id: 'user1',
+            attributes: { test_attribute: 'test_value' },
+            decision_info: {
+              feature_key: 'test_feature',
+              feature_enabled: false,
+              variable_key: 'lasers',
+              variable_value: 400,
+              variable_type: FEATURE_VARIABLE_TYPES.INTEGER,
+              source: DECISION_SOURCES.ROLLOUT
+            }
+          });
+        });
+
+        it('should return the default value and send notification from getFeatureVariableString', function() {
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+          var result = optlyInstance.getFeatureVariableString('test_feature', 'message', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, 'Hello');
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "message" of feature flag "test_feature" is Hello for user "user1"');
+          sinon.assert.calledWith(onDecisionListener, {
+            type: ON_DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+            user_id: 'user1',
+            attributes: { test_attribute: 'test_value' },
+            decision_info: {
+              feature_key: 'test_feature',
+              feature_enabled: false,
+              variable_key: 'message',
+              variable_value: 'Hello',
+              variable_type: FEATURE_VARIABLE_TYPES.STRING,
+              source: DECISION_SOURCES.ROLLOUT
+            }
+          });
         });
       });
 

@@ -499,8 +499,10 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
       featureEnabled = false;
     }
 
-    var decisionSource = decision.decisionSource;
+    var decisionSource = decision.decisionSource || DECISION_SOURCES.ROLLOUT;
     decisionSource += decisionSource === DECISION_SOURCES.EXPERIMENT ? sprintf(' {%s}', decision.experiment.key) : '';
+
+    console.log(sprintf('Feature: %s - Enabled: %s, Source: %s', featureKey, featureEnabled, decisionSource))
     this.notificationCenter.sendNotifications(
       enums.NOTIFICATION_TYPES.ON_DECISION,
       {
@@ -613,7 +615,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE, MODULE_NAME, userId, variableKey, featureFlag.key));
   }
 
-  var decisionSource = decision.decisionSource;
+  var decisionSource = decision.decisionSource || DECISION_SOURCES.ROLLOUT;
   decisionSource += decisionSource === DECISION_SOURCES.EXPERIMENT ? sprintf(' {%s}', decision.experiment.key) : '';
   var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
 
