@@ -20,7 +20,7 @@ var enums = require('../../utils/enums');
 var fns = require('../../utils/fns');
 var projectConfig = require('../project_config');
 
-var sprintf = require('sprintf-js').sprintf;
+var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 
 var MODULE_NAME = 'DECISION_SERVICE';
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
@@ -170,7 +170,7 @@ DecisionService.prototype.__checkIfUserIsInAudience = function(experimentKey, us
   this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.EVALUATING_AUDIENCES_COMBINED, MODULE_NAME, experimentKey, JSON.stringify(experimentAudienceConditions)));
   var result = audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, attributes, this.logger);
   this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED, MODULE_NAME, experimentKey, result.toString().toUpperCase()));
-  
+
   if (!result) {
     var userDoesNotMeetConditionsLogMessage = sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, MODULE_NAME, userId, experimentKey);
     this.logger.log(LOG_LEVEL.INFO, userDoesNotMeetConditionsLogMessage);

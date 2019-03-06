@@ -15,7 +15,7 @@
  */
 var audienceEvaluator = require('./');
 var chai = require('chai');
-var sprintf = require('sprintf-js').sprintf;
+var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var conditionTreeEvaluator = require('../condition_tree_evaluator');
 var customAttributeConditionEvaluator = require('../custom_attribute_condition_evaluator');
 var sinon = require('sinon');
