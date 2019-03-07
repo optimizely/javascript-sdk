@@ -13,41 +13,36 @@ export interface EventQueueFactory<K> {
   }): EventQueue<K>
 }
 
-
-class IntervalTimer {
-  private interval: number
+class Timer {
+  private timeout: number
   private callback: () => void
-  private intervalId?: number
+  private timeoutId?: number
 
-  constructor({ interval, callback }: { interval: number; callback: () => void }) {
-    this.interval = interval
+  constructor({ timeout, callback }: { timeout: number; callback: () => void }) {
+    this.timeout = timeout
     this.callback = callback
   }
 
   start(): void {
-    this.intervalId = setInterval(this.callback, this.interval) as any
-  }
-
-  stop(): void {
-    if (this.intervalId) {
-      clearInterval(this.intervalId as any)
-    }
+    this.timeoutId = setTimeout(this.callback, this.timeout) as any
   }
 
   refresh(): void {
     this.stop()
     this.start()
   }
+
+  stop(): void {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId as any)
+    }
+  }
 }
 
 export class SingleEventQueue<K> implements EventQueue<K> {
   private sink: EventQueueSink<K>
 
-  constructor({
-    sink,
-  }: {
-    sink: EventQueueSink<K>
-  }) {
+  constructor({ sink }: { sink: EventQueueSink<K> }) {
     this.sink = sink
   }
 
@@ -67,7 +62,7 @@ export class SingleEventQueue<K> implements EventQueue<K> {
 
 export class DefaultEventQueue<K> implements EventQueue<K> {
   // expose for testing
-  public timer: IntervalTimer
+  public timer: Timer
   private buffer: K[]
   private maxQueueSize: number
   private sink: EventQueueSink<K>
@@ -84,14 +79,14 @@ export class DefaultEventQueue<K> implements EventQueue<K> {
     this.buffer = []
     this.maxQueueSize = Math.max(maxQueueSize, 1)
     this.sink = sink
-    this.timer = new IntervalTimer({
+    this.timer = new Timer({
       callback: this.flush.bind(this),
-      interval: flushInterval,
+      timeout: flushInterval,
     })
   }
 
   start(): void {
-    this.timer.start()
+    // dont start the timer until the first event is enqueued
   }
 
   stop(): Promise<any> {
@@ -101,17 +96,20 @@ export class DefaultEventQueue<K> implements EventQueue<K> {
   }
 
   enqueue(event: K): void {
+    // start the timer when the first event is put in
+    if (this.buffer.length === 0) {
+      this.timer.refresh()
+    }
     this.buffer.push(event)
 
     if (this.buffer.length >= this.maxQueueSize) {
       this.flush()
-      this.timer.refresh()
     }
   }
 
   flush() {
     this.sink(this.buffer)
     this.buffer = []
-    this.timer.refresh()
+    this.timer.stop()
   }
 }

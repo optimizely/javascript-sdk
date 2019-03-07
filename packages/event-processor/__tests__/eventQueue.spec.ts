@@ -145,7 +145,6 @@ describe('eventQueue', () => {
 
       expect(sinkFn).toHaveBeenCalledTimes(1)
       expect(sinkFn).toHaveBeenCalledWith([1])
-      expect(queue.timer.stop).toBeCalledTimes(1)
     })
 
     it('flush() should clear the current batch', () => {
@@ -179,6 +178,38 @@ describe('eventQueue', () => {
       })
 
       expect(queue.stop()).toBe(promise)
+    })
+
+    it('should start the timer when the first event is put into the queue', () => {
+      const sinkFn = jest.fn()
+      const queue = new DefaultEventQueue<number>({
+        flushInterval: 100,
+        maxQueueSize: 100,
+        sink: sinkFn,
+      })
+
+      queue.start()
+      jest.advanceTimersByTime(99)
+      queue.enqueue(1)
+
+      jest.advanceTimersByTime(2)
+      expect(sinkFn).toHaveBeenCalledTimes(0)
+      jest.advanceTimersByTime(98)
+
+      expect(sinkFn).toHaveBeenCalledTimes(1)
+      expect(sinkFn).toHaveBeenCalledWith([1])
+
+      jest.advanceTimersByTime(500)
+
+      queue.enqueue(2)
+
+      jest.advanceTimersByTime(100)
+
+      expect(sinkFn).toHaveBeenCalledTimes(2)
+      expect(sinkFn).toHaveBeenLastCalledWith([2])
+
+      queue.stop()
+
     })
   })
 })
