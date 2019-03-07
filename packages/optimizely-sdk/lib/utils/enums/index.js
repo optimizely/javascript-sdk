@@ -116,6 +116,7 @@ exports.LOG_MESSAGES = {
   USER_NOT_IN_ANY_EXPERIMENT: '%s: User %s is not in any experiment of group %s.',
   USER_NOT_IN_EXPERIMENT: '%s: User %s does not meet conditions to be in experiment %s.',
   USER_RECEIVED_DEFAULT_VARIABLE_VALUE: '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
+  FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE: '%s: Feature %s is not enabled for user %s. Returning default value for variable "%s".',
   USER_RECEIVED_VARIABLE_VALUE: '%s: Value for variable "%s" of feature flag "%s" is %s for user "%s"',
   VALID_DATAFILE: '%s: Datafile is valid.',
   VALID_USER_PROFILE_SERVICE: '%s: Valid user profile service provided.',
@@ -180,7 +181,7 @@ exports.NOTIFICATION_TYPES = {
   ON_DECISION: 'ON_DECISION:type, user_id, attributes, decision_info',
 };
 
-exports.ON_DECISION_NOTIFICATION_TYPES = {
+exports.DECISION_INFO_TYPES = {
   EXPERIMENT_VARIATION: 'experiment_variation',
   FEATURE: 'feature',
   FEATURE_VARIABLE: 'feature_variable',

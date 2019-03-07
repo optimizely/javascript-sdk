@@ -34,7 +34,7 @@ var LOG_MESSAGES = enums.LOG_MESSAGES;
 var MODULE_NAME = 'OPTIMIZELY';
 var DECISION_SOURCES = enums.DECISION_SOURCES;
 var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
-var ON_DECISION_NOTIFICATION_TYPES = enums.ON_DECISION_NOTIFICATION_TYPES;
+var DECISION_INFO_TYPES = enums.DECISION_INFO_TYPES;
 
 /**
  * The Optimizely class
@@ -309,12 +309,12 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
       this.notificationCenter.sendNotifications(
         enums.NOTIFICATION_TYPES.ON_DECISION,
         {
-          type: ON_DECISION_NOTIFICATION_TYPES.EXPERIMENT_VARIATION,
-          user_id: userId,
+          type: DECISION_INFO_TYPES.EXPERIMENT_VARIATION,
+          userId: userId,
           attributes: attributes,
-          decision_info: {
-            experiment_key: experimentKey,
-            variation_key: variationKey,
+          decisionInfo: {
+            experimentKey: experimentKey,
+            variationKey: variationKey,
           }
         }
       );
@@ -483,39 +483,37 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
     var variation = decision.variation;
 
     if (!!variation) {
+      featureEnabled = variation.featureEnabled;
       if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
         // got a variation from the exp, so we track the impression
         this._sendImpressionEvent(decision.experiment.key, decision.variation.key, userId, attributes);
-      }
-
-      featureEnabled = variation.featureEnabled;
-      if (featureEnabled === true) {
-        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
       }
     }
     
     if (!featureEnabled) {
       this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
       featureEnabled = false;
+    } else {
+      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
     }
 
     var decisionSource = decision.decisionSource || DECISION_SOURCES.ROLLOUT;
-    decisionSource += decisionSource === DECISION_SOURCES.EXPERIMENT ? sprintf(' {%s}', decision.experiment.key) : '';
-
-    console.log(sprintf('Feature: %s - Enabled: %s, Source: %s', featureKey, featureEnabled, decisionSource))
+    var experimentKey = decisionSource === DECISION_SOURCES.EXPERIMENT ? decision.experiment.key : null;
     this.notificationCenter.sendNotifications(
       enums.NOTIFICATION_TYPES.ON_DECISION,
       {
-        type: ON_DECISION_NOTIFICATION_TYPES.FEATURE,
-        user_id: userId,
+        type: DECISION_INFO_TYPES.FEATURE,
+        userId: userId,
         attributes: attributes,
-        decision_info: {
-          feature_key: featureKey,
-          feature_enabled: featureEnabled,
+        decisionInfo: {
+          featureKey: featureKey,
+          featureEnabled: featureEnabled,
           source: decisionSource,
+          experimentKey: experimentKey
         }
       }
     );
+
     return featureEnabled;
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
@@ -603,35 +601,40 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     return null;
   }
 
-  var decision = this.decisionService.getVariationForFeature(featureFlag, userId, attributes);
-  var variableValue;
   var featureEnabled = false;
+  var variableValue = variable.defaultValue;
+  var decision = this.decisionService.getVariationForFeature(featureFlag, userId, attributes);
+  
   if (decision.variation !== null) {
-    variableValue = projectConfig.getVariableValueForVariation(this.configObj, variable, decision.variation, this.logger);
     featureEnabled = decision.variation.featureEnabled;
-    this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE, MODULE_NAME, variableKey, featureFlag.key, variableValue, userId));
+    if (featureEnabled) {
+      variableValue = projectConfig.getVariableValueForVariation(this.configObj, variable, decision.variation, this.logger);
+      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE, MODULE_NAME, variableKey, featureFlag.key, variableValue, userId));
+    } else {
+      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE, MODULE_NAME, featureFlag.key, userId, variableKey));
+    }
   } else {
-    variableValue = variable.defaultValue;
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE, MODULE_NAME, userId, variableKey, featureFlag.key));
   }
 
   var decisionSource = decision.decisionSource || DECISION_SOURCES.ROLLOUT;
-  decisionSource += decisionSource === DECISION_SOURCES.EXPERIMENT ? sprintf(' {%s}', decision.experiment.key) : '';
+  var experimentKey = decisionSource === DECISION_SOURCES.EXPERIMENT ? decision.experiment.key : null;
   var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
 
   this.notificationCenter.sendNotifications(
     enums.NOTIFICATION_TYPES.ON_DECISION,
     {
-      type: ON_DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
-      user_id: userId,
+      type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+      userId: userId,
       attributes: attributes,
-      decision_info: {
-        feature_key: featureKey,
-        feature_enabled: featureEnabled,
-        variable_key: variableKey,
-        variable_value: typeCastedValue,
-        variable_type: variableType,
+      decisionInfo: {
+        featureKey: featureKey,
+        featureEnabled: featureEnabled,
+        variableKey: variableKey,
+        variableValue: typeCastedValue,
+        variableType: variableType,
         source: decisionSource,
+        experimentKey: experimentKey
       }
     }
   );
