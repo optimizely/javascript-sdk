@@ -21,7 +21,7 @@ declare module '@optimizely/optimizely-sdk' {
   
     // The options object given to Optimizely.createInstance.
     export interface Config {
-        datafile: object;
+        datafile: string | object;
         errorHandler?: object;
         eventDispatcher?: object;
         logger?: object;
