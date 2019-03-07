@@ -200,11 +200,13 @@ describe('eventQueue', () => {
       expect(sinkFn).toHaveBeenCalledWith([1])
 
       jest.advanceTimersByTime(500)
+      // ensure sink function wasnt called again since no events have
+      // been added
+      expect(sinkFn).toHaveBeenCalledTimes(1)
 
       queue.enqueue(2)
 
       jest.advanceTimersByTime(100)
-
       expect(sinkFn).toHaveBeenCalledTimes(2)
       expect(sinkFn).toHaveBeenLastCalledWith([2])
 
