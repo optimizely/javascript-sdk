@@ -120,11 +120,11 @@ function makeConversionSnapshot(conversion: ConversionEvent): Visitor.Snapshot {
     event.tags = conversion.tags
   }
 
-  if (conversion.value) {
+  if (conversion.value != null) {
     event.value = conversion.value
   }
 
-  if (conversion.revenue) {
+  if (conversion.revenue != null) {
     event.revenue = conversion.revenue
   }
 

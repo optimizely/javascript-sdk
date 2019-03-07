@@ -185,6 +185,93 @@ describe('buildEventV1', () => {
       })
     })
 
+    it('should include revenue and value if they are 0', () => {
+      const conversionEvent: ConversionEvent = {
+        type: 'conversion',
+        timestamp: 69,
+        uuid: 'uuid',
+
+        context: {
+          accountId: 'accountId',
+          projectId: 'projectId',
+          clientName: 'node-sdk',
+          clientVersion: '3.0.0',
+          revision: 'revision',
+          botFiltering: true,
+          anonymizeIP: true,
+        },
+
+        user: {
+          id: 'userId',
+          attributes: [{ entityId: 'attr1-id', key: 'attr1-key', value: 'attr1-value' }],
+        },
+
+        event: {
+          id: 'event-id',
+          key: 'event-key',
+        },
+
+        tags: {
+          foo: 'bar',
+          value: 0,
+          revenue: 0,
+        },
+
+        revenue: 0,
+        value: 0,
+      }
+
+      const result = buildConversionEventV1(conversionEvent)
+      expect(result).toEqual({
+        client_name: 'node-sdk',
+        client_version: '3.0.0',
+        account_id: 'accountId',
+        project_id: 'projectId',
+        revision: 'revision',
+        anonymize_ip: true,
+        enrich_decisions: true,
+
+        visitors: [
+          {
+            snapshots: [
+              {
+                events: [
+                  {
+                    entity_id: 'event-id',
+                    timestamp: 69,
+                    key: 'event-key',
+                    uuid: 'uuid',
+                    tags: {
+                      foo: 'bar',
+                      value: 0,
+                      revenue: 0,
+                    },
+                    revenue: 0,
+                    value: 0,
+                  },
+                ],
+              },
+            ],
+            visitor_id: 'userId',
+            attributes: [
+              {
+                entity_id: 'attr1-id',
+                key: 'attr1-key',
+                type: 'custom',
+                value: 'attr1-value',
+              },
+              {
+                entity_id: '$opt_bot_filtering',
+                key: '$opt_bot_filtering',
+                type: 'custom',
+                value: true,
+              },
+            ],
+          },
+        ],
+      })
+    })
+
     it('should not include $opt_bot_filtering attribute if context.botFiltering is undefined', () => {
       const conversionEvent: ConversionEvent = {
         type: 'conversion',
