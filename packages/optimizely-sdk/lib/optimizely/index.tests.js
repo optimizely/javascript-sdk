@@ -411,7 +411,7 @@ describe('lib/optimizely', function() {
         sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
 
         var expectedArgument = {
-          type: DECISION_INFO_TYPES.EXPERIMENT_VARIATION,
+          type: DECISION_INFO_TYPES.EXPERIMENT,
           userId: 'testUser',
           attributes: undefined,
           decisionInfo: {
@@ -794,7 +794,7 @@ describe('lib/optimizely', function() {
             'testExperiment'));
 
         var expectedArgument = {
-          type: DECISION_INFO_TYPES.EXPERIMENT_VARIATION,
+          type: DECISION_INFO_TYPES.EXPERIMENT,
           userId: 'testUser',
           attributes: undefined,
           decisionInfo: {
@@ -1678,7 +1678,7 @@ describe('lib/optimizely', function() {
         );
 
         var expectedArguments = {
-          type: DECISION_INFO_TYPES.EXPERIMENT_VARIATION,
+          type: DECISION_INFO_TYPES.EXPERIMENT,
           userId: 'testUser',
           attributes: undefined,
           decisionInfo: {
@@ -1735,7 +1735,7 @@ describe('lib/optimizely', function() {
         );
 
         var expectedArguments = {
-          type: DECISION_INFO_TYPES.EXPERIMENT_VARIATION,
+          type: DECISION_INFO_TYPES.EXPERIMENT,
           userId: 'testUser',
           attributes: {},
           decisionInfo: {
@@ -2754,7 +2754,7 @@ describe('lib/optimizely', function() {
                 featureKey: 'test_feature_for_experiment',
                 featureEnabled: true,
                 source: DECISION_SOURCES.EXPERIMENT,
-                experimentKey: 'testing_my_feature'
+                sourceExperimentKey: 'testing_my_feature'
               }
             };
             sinon.assert.calledWith(onDecisionListener, expectedArguments);
@@ -2943,7 +2943,7 @@ describe('lib/optimizely', function() {
                 featureKey: 'shared_feature',
                 featureEnabled: false,
                 source: DECISION_SOURCES.EXPERIMENT,
-                experimentKey: 'test_shared_feature'
+                sourceExperimentKey: 'test_shared_feature'
               }
             };
             sinon.assert.calledWith(onDecisionListener, expectedArguments);
@@ -3066,7 +3066,7 @@ describe('lib/optimizely', function() {
                 featureKey: 'test_feature',
                 featureEnabled: true,
                 source: DECISION_SOURCES.ROLLOUT,
-                experimentKey: null
+                sourceExperimentKey: null
               }
             };
             sinon.assert.calledWith(onDecisionListener, expectedArguments);
@@ -3104,7 +3104,7 @@ describe('lib/optimizely', function() {
                 featureKey: 'test_feature',
                 featureEnabled: false,
                 source: DECISION_SOURCES.ROLLOUT,
-                experimentKey: null
+                sourceExperimentKey: null
               }
             };
             sinon.assert.calledWith(onDecisionListener, expectedArguments);
@@ -3117,7 +3117,7 @@ describe('lib/optimizely', function() {
           sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
             experiment: null,
             variation: null,
-            decisionSource: DECISION_SOURCES.ROLLOUT,
+            decisionSource: null,
           });
         });
 
@@ -3138,7 +3138,7 @@ describe('lib/optimizely', function() {
               featureKey: 'test_feature',
               featureEnabled: false,
               source: DECISION_SOURCES.ROLLOUT,
-              experimentKey: null
+              sourceExperimentKey: null
             }
           };
           sinon.assert.calledWith(onDecisionListener, expectedArguments);
@@ -3250,7 +3250,7 @@ describe('lib/optimizely', function() {
             featureKey: 'test_feature',
             featureEnabled: false,
             source: DECISION_SOURCES.ROLLOUT,
-            experimentKey: null
+            sourceExperimentKey: null
           }
         }));
         assert.isTrue(onDecisionListener.getCall(1).calledWith({
@@ -3261,7 +3261,7 @@ describe('lib/optimizely', function() {
             featureKey: 'test_feature_2',
             featureEnabled: true,
             source: DECISION_SOURCES.ROLLOUT,
-            experimentKey: null
+            sourceExperimentKey: null
           }
         }));
         assert.isTrue(onDecisionListener.getCall(2).calledWith({
@@ -3272,7 +3272,7 @@ describe('lib/optimizely', function() {
             featureKey: 'test_feature_for_experiment',
             featureEnabled: true,
             source: DECISION_SOURCES.EXPERIMENT,
-            experimentKey: 'testing_my_feature'
+            sourceExperimentKey: 'testing_my_feature'
           }
         }));
         assert.isTrue(onDecisionListener.getCall(3).calledWith({
@@ -3283,7 +3283,7 @@ describe('lib/optimizely', function() {
             featureKey: 'feature_with_group',
             featureEnabled: false,
             source: DECISION_SOURCES.ROLLOUT,
-            experimentKey: null
+            sourceExperimentKey: null
           }
         }));
         assert.isTrue(onDecisionListener.getCall(4).calledWith({
@@ -3294,7 +3294,7 @@ describe('lib/optimizely', function() {
             featureKey: 'shared_feature',
             featureEnabled: true,
             source: DECISION_SOURCES.EXPERIMENT,
-            experimentKey: 'test_shared_feature'
+            sourceExperimentKey: 'test_shared_feature'
           }
         }));
         assert.isTrue(onDecisionListener.getCall(5).calledWith({
@@ -3305,7 +3305,7 @@ describe('lib/optimizely', function() {
             featureKey: 'unused_flag',
             featureEnabled: false,
             source: DECISION_SOURCES.ROLLOUT,
-            experimentKey: null
+            sourceExperimentKey: null
           }
         }));
         assert.isTrue(onDecisionListener.getCall(6).calledWith({
@@ -3316,7 +3316,7 @@ describe('lib/optimizely', function() {
             featureKey: 'feature_exp_no_traffic',
             featureEnabled: false,
             source: DECISION_SOURCES.ROLLOUT,
-            experimentKey: null
+            sourceExperimentKey: null
           }
         }));
       });
@@ -3351,7 +3351,7 @@ describe('lib/optimizely', function() {
                 variableValue: true,
                 variableType: FEATURE_VARIABLE_TYPES.BOOLEAN,
                 source: DECISION_SOURCES.EXPERIMENT,
-                experimentKey: 'testing_my_feature'
+                sourceExperimentKey: 'testing_my_feature'
               }
             });
           });
@@ -3372,7 +3372,7 @@ describe('lib/optimizely', function() {
                 variableValue: 20.25,
                 variableType: FEATURE_VARIABLE_TYPES.DOUBLE,
                 source: DECISION_SOURCES.EXPERIMENT,
-                experimentKey: 'testing_my_feature'
+                sourceExperimentKey: 'testing_my_feature'
               }
             });
           });
@@ -3393,7 +3393,7 @@ describe('lib/optimizely', function() {
                 variableValue: 2,
                 variableType: FEATURE_VARIABLE_TYPES.INTEGER,
                 source: DECISION_SOURCES.EXPERIMENT,
-                experimentKey: 'testing_my_feature'
+                sourceExperimentKey: 'testing_my_feature'
               }
             });
           });
@@ -3414,7 +3414,7 @@ describe('lib/optimizely', function() {
                 variableValue: 'Buy me NOW',
                 variableType: FEATURE_VARIABLE_TYPES.STRING,
                 source: DECISION_SOURCES.EXPERIMENT,
-                experimentKey: 'testing_my_feature'
+                sourceExperimentKey: 'testing_my_feature'
               }
             });
           });
@@ -3450,7 +3450,7 @@ describe('lib/optimizely', function() {
                 variableValue: false,
                 variableType: FEATURE_VARIABLE_TYPES.BOOLEAN,
                 source: DECISION_SOURCES.EXPERIMENT,
-                experimentKey: 'testing_my_feature'
+                sourceExperimentKey: 'testing_my_feature'
               }
             });
           });
@@ -3471,7 +3471,7 @@ describe('lib/optimizely', function() {
                 variableValue: 50.55,
                 variableType: FEATURE_VARIABLE_TYPES.DOUBLE,
                 source: DECISION_SOURCES.EXPERIMENT,
-                experimentKey: 'testing_my_feature'
+                sourceExperimentKey: 'testing_my_feature'
               }
             });
           });
@@ -3492,7 +3492,7 @@ describe('lib/optimizely', function() {
                 variableValue: 10,
                 variableType: FEATURE_VARIABLE_TYPES.INTEGER,
                 source: DECISION_SOURCES.EXPERIMENT,
-                experimentKey: 'testing_my_feature'
+                sourceExperimentKey: 'testing_my_feature'
               }
             });
           });
@@ -3513,7 +3513,7 @@ describe('lib/optimizely', function() {
                 variableValue: 'Buy me',
                 variableType: FEATURE_VARIABLE_TYPES.STRING,
                 source: DECISION_SOURCES.EXPERIMENT,
-                experimentKey: 'testing_my_feature'
+                sourceExperimentKey: 'testing_my_feature'
               }
             });
           });
@@ -3548,7 +3548,7 @@ describe('lib/optimizely', function() {
                 variableValue: true,
                 variableType: FEATURE_VARIABLE_TYPES.BOOLEAN,
                 source: DECISION_SOURCES.ROLLOUT,
-                experimentKey: null
+                sourceExperimentKey: null
               }
             });
           });
@@ -3569,7 +3569,7 @@ describe('lib/optimizely', function() {
                 variableValue: 4.99,
                 variableType: FEATURE_VARIABLE_TYPES.DOUBLE,
                 source: DECISION_SOURCES.ROLLOUT,
-                experimentKey: null
+                sourceExperimentKey: null
               }
             });
           });
@@ -3590,7 +3590,7 @@ describe('lib/optimizely', function() {
                 variableValue: 395,
                 variableType: FEATURE_VARIABLE_TYPES.INTEGER,
                 source: DECISION_SOURCES.ROLLOUT,
-                experimentKey: null
+                sourceExperimentKey: null
               }
             });
           });
@@ -3611,7 +3611,7 @@ describe('lib/optimizely', function() {
                 variableValue: 'Hello audience',
                 variableType: FEATURE_VARIABLE_TYPES.STRING,
                 source: DECISION_SOURCES.ROLLOUT,
-                experimentKey: null
+                sourceExperimentKey: null
               }
             });
           });
@@ -3644,7 +3644,7 @@ describe('lib/optimizely', function() {
                 variableValue: false,
                 variableType: FEATURE_VARIABLE_TYPES.BOOLEAN,
                 source: DECISION_SOURCES.ROLLOUT,
-                experimentKey: null
+                sourceExperimentKey: null
               }
             });
           });
@@ -3665,7 +3665,7 @@ describe('lib/optimizely', function() {
                 variableValue: 14.99,
                 variableType: FEATURE_VARIABLE_TYPES.DOUBLE,
                 source: DECISION_SOURCES.ROLLOUT,
-                experimentKey: null
+                sourceExperimentKey: null
               }
             });
           });
@@ -3686,7 +3686,7 @@ describe('lib/optimizely', function() {
                 variableValue: 400,
                 variableType: FEATURE_VARIABLE_TYPES.INTEGER,
                 source: DECISION_SOURCES.ROLLOUT,
-                experimentKey: null
+                sourceExperimentKey: null
               }
             });
           });
@@ -3707,7 +3707,7 @@ describe('lib/optimizely', function() {
                 variableValue: 'Hello',
                 variableType: FEATURE_VARIABLE_TYPES.STRING,
                 source: DECISION_SOURCES.ROLLOUT,
-                experimentKey: null
+                sourceExperimentKey: null
               }
             });
           });
@@ -3739,7 +3739,7 @@ describe('lib/optimizely', function() {
               variableValue: false,
               variableType: FEATURE_VARIABLE_TYPES.BOOLEAN,
               source: DECISION_SOURCES.ROLLOUT,
-              experimentKey: null
+              sourceExperimentKey: null
             }
           });
         });
@@ -3760,7 +3760,7 @@ describe('lib/optimizely', function() {
               variableValue: 50.55,
               variableType: FEATURE_VARIABLE_TYPES.DOUBLE,
               source: DECISION_SOURCES.ROLLOUT,
-              experimentKey: null
+              sourceExperimentKey: null
             }
           });
         });
@@ -3781,7 +3781,7 @@ describe('lib/optimizely', function() {
               variableValue: 10,
               variableType: FEATURE_VARIABLE_TYPES.INTEGER,
               source: DECISION_SOURCES.ROLLOUT,
-              experimentKey: null
+              sourceExperimentKey: null
             }
           });
         });
@@ -3802,7 +3802,7 @@ describe('lib/optimizely', function() {
               variableValue: 'Buy me',
               variableType: FEATURE_VARIABLE_TYPES.STRING,
               source: DECISION_SOURCES.ROLLOUT,
-              experimentKey: null
+              sourceExperimentKey: null
             }
           });
         });

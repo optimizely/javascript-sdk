@@ -309,7 +309,7 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
       this.notificationCenter.sendNotifications(
         enums.NOTIFICATION_TYPES.ON_DECISION,
         {
-          type: DECISION_INFO_TYPES.EXPERIMENT_VARIATION,
+          type: DECISION_INFO_TYPES.EXPERIMENT,
           userId: userId,
           attributes: attributes,
           decisionInfo: {
@@ -509,7 +509,7 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
           featureKey: featureKey,
           featureEnabled: featureEnabled,
           source: decisionSource,
-          experimentKey: experimentKey
+          sourceExperimentKey: experimentKey
         }
       }
     );
@@ -634,7 +634,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
         variableValue: typeCastedValue,
         variableType: variableType,
         source: decisionSource,
-        experimentKey: experimentKey
+        sourceExperimentKey: experimentKey
       }
     }
   );
