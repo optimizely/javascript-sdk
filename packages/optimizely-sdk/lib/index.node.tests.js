@@ -84,7 +84,7 @@ describe('optimizelyFactory', function() {
         });
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '3.0.1');
+        assert.equal(optlyInstance.clientVersion, '3.1.0-beta1');
       });
     });
   });
