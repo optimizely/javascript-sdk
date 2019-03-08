@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2016-2017, 2019 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ var bucketer = require('./');
 var enums = require('../../utils/enums');
 var logger = require('../../plugins/logger');
 var projectConfig = require('../project_config');
-var sprintf = require('sprintf-js').sprintf;
+var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var testData = require('../../tests/test_data').getTestProjectConfig();
 
 var chai = require('chai');

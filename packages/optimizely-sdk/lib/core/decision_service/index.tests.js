@@ -23,7 +23,7 @@ var DecisionService = require('./');
 var enums = require('../../utils/enums');
 var logger = require('../../plugins/logger');
 var projectConfig = require('../project_config');
-var sprintf = require('sprintf-js').sprintf;
+var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var testData = require('../../tests/test_data').getTestProjectConfig();
 var testDataWithFeatures = require('../../tests/test_data').getTestProjectConfigWithFeatures();
 var jsonSchemaValidator = require('../../utils/json_schema_validator');
@@ -419,7 +419,7 @@ describe('lib/core/decision_service', function() {
 
     describe('__checkIfUserIsInAudience', function () {
       var __audienceEvaluateSpy;
-      
+
       beforeEach(function() {
         __audienceEvaluateSpy = sinon.spy(audienceEvaluator, 'evaluate');
       });
@@ -447,7 +447,7 @@ describe('lib/core/decision_service', function() {
       it('should return false when audience conditions can not be evaluated', function() {
         assert.isFalse(decisionServiceInstance.__checkIfUserIsInAudience('testExperimentWithAudiences', 'testUser'));
         assert.isTrue(__audienceEvaluateSpy.alwaysReturned(false));
-      
+
         assert.strictEqual(6, mockLogger.log.callCount);
         assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: Evaluating audiences for experiment "testExperimentWithAudiences": ["11154"].');
         assert.strictEqual(mockLogger.log.args[4][1], 'DECISION_SERVICE: Audiences for experiment testExperimentWithAudiences collectively evaluated to FALSE.');
@@ -457,7 +457,7 @@ describe('lib/core/decision_service', function() {
       it('should return false when audience conditions are not met', function () {
         assert.isFalse(decisionServiceInstance.__checkIfUserIsInAudience('testExperimentWithAudiences', 'testUser', {browser_type: 'chrome'}));
         assert.isTrue(__audienceEvaluateSpy.alwaysReturned(false));
-        
+
         assert.strictEqual(5, mockLogger.log.callCount);
         assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: Evaluating audiences for experiment "testExperimentWithAudiences": ["11154"].');
         assert.strictEqual(mockLogger.log.args[3][1], 'DECISION_SERVICE: Audiences for experiment testExperimentWithAudiences collectively evaluated to FALSE.');
@@ -1408,7 +1408,7 @@ describe('lib/core/decision_service', function() {
         });
         __buildBucketerParamsSpy = sinon.spy(decisionService, '__buildBucketerParams');
       });
-      
+
       afterEach(function() {
         __buildBucketerParamsSpy.restore();
       });
@@ -1425,10 +1425,10 @@ describe('lib/core/decision_service', function() {
       it('should call __buildBucketerParams with bucketing Id when bucketing Id is provided in the attributes', function () {
         var attributes = {
           test_attribute: 'test_value',
-          $opt_bucketing_id: 'abcdefg' 
+          $opt_bucketing_id: 'abcdefg'
         };
         decisionService._getVariationForRollout(feature, 'testUser', attributes);
-        
+
         sinon.assert.callCount(__buildBucketerParamsSpy, 2);
         sinon.assert.calledWithExactly(__buildBucketerParamsSpy, '594031', 'abcdefg', 'testUser');
         sinon.assert.calledWithExactly(__buildBucketerParamsSpy, '594037', 'abcdefg', 'testUser');
