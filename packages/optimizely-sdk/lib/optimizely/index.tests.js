@@ -40,6 +40,8 @@ var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
 var DECISION_SOURCES = enums.DECISION_SOURCES;
+var NOTIFICATION_TYPES = enums.NOTIFICATION_TYPES;
+var DECISION_INFO_TYPES = enums.DECISION_INFO_TYPES;
 
 describe('lib/optimizely', function() {
   describe('constructor', function() {
@@ -356,7 +358,7 @@ describe('lib/optimizely', function() {
     var optlyInstance;
     var bucketStub;
     var clock;
-
+    var onDecisionListener;
     var createdLogger = logger.createLogger({
       logLevel: LOG_LEVEL.INFO,
       logToConsole: false,
@@ -373,6 +375,7 @@ describe('lib/optimizely', function() {
         isValidInstance: true,
       });
 
+      onDecisionListener = sinon.spy();
       bucketStub = sinon.stub(bucketer, 'bucket');
       sinon.stub(eventDispatcher, 'dispatchEvent');
       sinon.stub(errorHandler, 'handleError');
@@ -392,13 +395,29 @@ describe('lib/optimizely', function() {
     });
 
     describe('#activate', function() {
-      it('should call bucketer and dispatchEvent with proper args and return variation key', function() {
+      it('should call bucketer, send notifications and dispatchEvent with proper args and return variation key', function() {
         bucketStub.returns('111129');
-        var activate = optlyInstance.activate('testExperiment', 'testUser');
-        assert.strictEqual(activate, 'variation');
+        optlyInstance.notificationCenter.addNotificationListener(
+          NOTIFICATION_TYPES.ON_DECISION,
+          onDecisionListener
+        );
+
+        var variation = optlyInstance.activate('testExperiment', 'testUser');
+        assert.strictEqual(variation, 'variation');
 
         sinon.assert.calledOnce(bucketer.bucket);
         sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
+
+        var expectedArgument = {
+          type: DECISION_INFO_TYPES.EXPERIMENT,
+          userId: 'testUser',
+          attributes: undefined,
+          decisionInfo: {
+            experimentKey: 'testExperiment',
+            variationKey: variation
+          }
+        };
+        sinon.assert.calledWith(onDecisionListener, expectedArgument);
 
         var expectedObj = {
           url: 'https://logx.optimizely.com/v1/events',
@@ -751,8 +770,13 @@ describe('lib/optimizely', function() {
         assert.deepEqual(eventDispatcherCall[0], expectedObj);
       });
 
-      it('should not make a dispatch event call if variation ID is null', function() {
+      it('should not make a dispatch event call but send notification if variation ID is null', function() {
         bucketStub.returns(null);
+        optlyInstance.notificationCenter.addNotificationListener(
+          NOTIFICATION_TYPES.ON_DECISION,
+          onDecisionListener
+        );
+
         assert.isNull(optlyInstance.activate('testExperiment', 'testUser'));
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
         sinon.assert.called(createdLogger.log);
@@ -766,6 +790,17 @@ describe('lib/optimizely', function() {
             'OPTIMIZELY',
             'testUser',
             'testExperiment'));
+
+        var expectedArgument = {
+          type: DECISION_INFO_TYPES.EXPERIMENT,
+          userId: 'testUser',
+          attributes: undefined,
+          decisionInfo: {
+            experimentKey: 'testExperiment',
+            variationKey: null
+          }
+        };
+        sinon.assert.calledWith(onDecisionListener, expectedArgument);
       });
 
       it('should return null if user is not in audience and user is not in group', function() {
@@ -1620,11 +1655,16 @@ describe('lib/optimizely', function() {
     });
 
     describe('#getVariation', function() {
-      it('should call bucketer and return variation key', function() {
+      it('should call bucketer, send notification and return variation key', function() {
         bucketStub.returns('111129');
-        var getVariation = optlyInstance.getVariation('testExperiment', 'testUser');
+        optlyInstance.notificationCenter.addNotificationListener(
+          NOTIFICATION_TYPES.ON_DECISION,
+          onDecisionListener
+        );
 
-        assert.strictEqual(getVariation, 'variation');
+        var variation = optlyInstance.getVariation('testExperiment', 'testUser');
+
+        assert.strictEqual(variation, 'variation');
 
         sinon.assert.calledOnce(bucketer.bucket);
         sinon.assert.called(createdLogger.log);
@@ -1634,6 +1674,17 @@ describe('lib/optimizely', function() {
             LOG_LEVEL.DEBUG,
             sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'testUser')
         );
+
+        var expectedArguments = {
+          type: DECISION_INFO_TYPES.EXPERIMENT,
+          userId: 'testUser',
+          attributes: undefined,
+          decisionInfo: {
+            experimentKey: 'testExperiment',
+            variationKey: variation
+          }
+        };
+        sinon.assert.calledWith(onDecisionListener, expectedArguments);
       });
 
       it('should call bucketer and return variation key with attributes', function() {
@@ -1648,7 +1699,12 @@ describe('lib/optimizely', function() {
         sinon.assert.called(createdLogger.log);
       });
 
-      it('should return null if user is not in audience or experiment is not running', function() {
+      it('should return null and send notification if user is not in audience or experiment is not running', function() {
+        optlyInstance.notificationCenter.addNotificationListener(
+          NOTIFICATION_TYPES.ON_DECISION,
+          onDecisionListener
+        );
+
         var getVariationReturnsNull1 = optlyInstance.getVariation('testExperimentWithAudiences', 'testUser', {});
         var getVariationReturnsNull2 = optlyInstance.getVariation('testExperimentNotRunning', 'testUser');
 
@@ -1675,6 +1731,22 @@ describe('lib/optimizely', function() {
             LOG_LEVEL.INFO,
             sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning')
         );
+
+        var expectedArguments = {
+          type: DECISION_INFO_TYPES.EXPERIMENT,
+          userId: 'testUser',
+          attributes: {},
+          decisionInfo: {
+            experimentKey: 'testExperimentWithAudiences',
+            variationKey: null
+          }
+        };
+        sinon.assert.calledTwice(onDecisionListener);
+        assert.isTrue(onDecisionListener.getCall(0).calledWith(expectedArguments));
+
+        expectedArguments.attributes = undefined;
+        expectedArguments.decisionInfo.experimentKey = 'testExperimentNotRunning';
+        assert.isTrue(onDecisionListener.getCall(1).calledWith(expectedArguments));
       });
 
       it('should throw an error for invalid user ID', function() {
@@ -2084,7 +2156,7 @@ describe('lib/optimizely', function() {
 
       it('should call a listener added for activate when activate is called', function() {
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.ACTIVATE,
+          NOTIFICATION_TYPES.ACTIVATE,
           decisionListener
         );
         var variationKey = optlyInstance.activate('testExperiment', 'testUser');
@@ -2094,7 +2166,7 @@ describe('lib/optimizely', function() {
 
       it('should call a listener added for track when track is called', function() {
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.TRACK,
+          NOTIFICATION_TYPES.TRACK,
           trackListener
         );
         optlyInstance.activate('testExperiment', 'testUser');
@@ -2104,7 +2176,7 @@ describe('lib/optimizely', function() {
 
       it('should not call a removed activate listener when activate is called', function() {
         var listenerId = optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.ACTIVATE,
+          NOTIFICATION_TYPES.ACTIVATE,
           decisionListener
         );
         optlyInstance.notificationCenter.removeNotificationListener(listenerId);
@@ -2115,7 +2187,7 @@ describe('lib/optimizely', function() {
 
       it('should not call a removed track listener when track is called', function() {
         var listenerId = optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.TRACK,
+          NOTIFICATION_TYPES.TRACK,
           trackListener
         );
         optlyInstance.notificationCenter.removeNotificationListener(listenerId);
@@ -2126,11 +2198,11 @@ describe('lib/optimizely', function() {
 
       it('removeNotificationListener should only remove the listener with the argument ID', function() {
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.ACTIVATE,
+          NOTIFICATION_TYPES.ACTIVATE,
           decisionListener
         );
         var trackListenerId = optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.TRACK,
+          NOTIFICATION_TYPES.TRACK,
           trackListener
         );
         optlyInstance.notificationCenter.removeNotificationListener(trackListenerId);
@@ -2141,11 +2213,11 @@ describe('lib/optimizely', function() {
 
       it('should clear all notification listeners when clearAllNotificationListeners is called', function() {
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.ACTIVATE,
+          NOTIFICATION_TYPES.ACTIVATE,
           decisionListener
         );
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.TRACK,
+          NOTIFICATION_TYPES.TRACK,
           trackListener
         );
         optlyInstance.notificationCenter.clearAllNotificationListeners();
@@ -2158,14 +2230,14 @@ describe('lib/optimizely', function() {
 
       it('should clear listeners of certain notification type when clearNotificationListeners is called', function() {
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.ACTIVATE,
+          NOTIFICATION_TYPES.ACTIVATE,
           decisionListener
         );
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.TRACK,
+          NOTIFICATION_TYPES.TRACK,
           trackListener
         );
-        optlyInstance.notificationCenter.clearNotificationListeners(enums.NOTIFICATION_TYPES.ACTIVATE);
+        optlyInstance.notificationCenter.clearNotificationListeners(NOTIFICATION_TYPES.ACTIVATE);
         optlyInstance.activate('testExperiment', 'testUser');
         optlyInstance.track('testEvent', 'testUser');
 
@@ -2175,11 +2247,11 @@ describe('lib/optimizely', function() {
 
       it('should only call the listener once after the same listener was added twice', function() {
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.ACTIVATE,
+          NOTIFICATION_TYPES.ACTIVATE,
           decisionListener
         );
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.ACTIVATE,
+          NOTIFICATION_TYPES.ACTIVATE,
           decisionListener
         );
         optlyInstance.activate('testExperiment', 'testUser');
@@ -2200,11 +2272,11 @@ describe('lib/optimizely', function() {
 
       it('should call multiple notification listeners for activate when activate is called', function() {
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.ACTIVATE,
+          NOTIFICATION_TYPES.ACTIVATE,
           decisionListener
         );
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.ACTIVATE,
+          NOTIFICATION_TYPES.ACTIVATE,
           decisionListener2
         );
         optlyInstance.activate('testExperiment', 'testUser');
@@ -2214,11 +2286,11 @@ describe('lib/optimizely', function() {
 
       it('should call multiple notification listeners for track when track is called', function() {
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.TRACK,
+          NOTIFICATION_TYPES.TRACK,
           trackListener
         );
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.TRACK,
+          NOTIFICATION_TYPES.TRACK,
           trackListener2
         );
         optlyInstance.activate('testExperiment', 'testUser');
@@ -2229,7 +2301,7 @@ describe('lib/optimizely', function() {
 
       it('should pass the correct arguments to an activate listener when activate is called', function() {
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.ACTIVATE,
+          NOTIFICATION_TYPES.ACTIVATE,
           decisionListener
         );
         optlyInstance.activate('testExperiment', 'testUser');
@@ -2287,7 +2359,7 @@ describe('lib/optimizely', function() {
           browser_type: 'firefox',
         };
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.ACTIVATE,
+          NOTIFICATION_TYPES.ACTIVATE,
           decisionListener
         );
         optlyInstance.activate('testExperiment', 'testUser', attributes);
@@ -2349,7 +2421,7 @@ describe('lib/optimizely', function() {
 
       it('should pass the correct arguments to a track listener when track is called', function() {
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.TRACK,
+          NOTIFICATION_TYPES.TRACK,
           trackListener
         );
         optlyInstance.activate('testExperiment', 'testUser');
@@ -2400,7 +2472,7 @@ describe('lib/optimizely', function() {
           browser_type: 'firefox',
         };
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.TRACK,
+          NOTIFICATION_TYPES.TRACK,
           trackListener
         );
         optlyInstance.activate('testExperiment', 'testUser', attributes);
@@ -2462,7 +2534,7 @@ describe('lib/optimizely', function() {
           non_revenue: 'abc',
         };
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.TRACK,
+          NOTIFICATION_TYPES.TRACK,
           trackListener
         );
         optlyInstance.activate('testExperiment', 'testUser', attributes);

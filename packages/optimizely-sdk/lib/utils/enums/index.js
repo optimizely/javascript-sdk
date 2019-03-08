@@ -175,8 +175,13 @@ exports.NODE_CLIENT_VERSION = '3.1.0-beta1';
  *    - logEvent {Object}
  */
 exports.NOTIFICATION_TYPES = {
-  ACTIVATE: 'ACTIVATE:experiment, user_id,attributes, variation, event',
-  TRACK: 'TRACK:event_key, user_id, attributes, event_tags, event',
+  ACTIVATE: 'ACTIVATE:experiment, userId, attributes, variation, logEvent',
+  TRACK: 'TRACK:eventKey, userId, attributes, eventTags, logEvent',
+  ON_DECISION: 'ON_DECISION:type, userId, attributes, decisionInfo',
+};
+
+exports.DECISION_INFO_TYPES = {
+  EXPERIMENT: 'experiment',
 };
 
 /*
