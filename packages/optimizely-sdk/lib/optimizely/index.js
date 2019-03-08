@@ -34,6 +34,7 @@ var LOG_MESSAGES = enums.LOG_MESSAGES;
 var MODULE_NAME = 'OPTIMIZELY';
 var DECISION_SOURCES = enums.DECISION_SOURCES;
 var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
+var DECISION_INFO_TYPES = enums.DECISION_INFO_TYPES;
 
 /**
  * The Optimizely class
@@ -463,20 +464,47 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
       return false;
     }
 
+    var featureEnabled = false;
+    var experimentKey = null;
+    var variationKey = null;
     var decision = this.decisionService.getVariationForFeature(feature, userId, attributes);
     var variation = decision.variation;
+    
     if (!!variation) {
+      featureEnabled = variation.featureEnabled;
       if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
+        experimentKey = decision.experiment.key;
+        variationKey = decision.variation.key;
         // got a variation from the exp, so we track the impression
         this._sendImpressionEvent(decision.experiment.key, decision.variation.key, userId, attributes);
       }
-      if (variation.featureEnabled === true) {
-        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
-        return true;
-      }
     }
-    this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
-    return false;
+    
+    if (!featureEnabled) {
+      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
+      featureEnabled = false;
+    } else {
+      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
+    }
+
+    var decisionSource = decision.decisionSource || DECISION_SOURCES.ROLLOUT;
+    this.notificationCenter.sendNotifications(
+      enums.NOTIFICATION_TYPES.ON_DECISION,
+      {
+        type: DECISION_INFO_TYPES.FEATURE,
+        userId: userId,
+        attributes: attributes,
+        decisionInfo: {
+          featureKey: featureKey,
+          featureEnabled: featureEnabled,
+          source: decisionSource,
+          sourceExperimentKey: experimentKey,
+          sourceVariationKey: variationKey,
+        }
+      }
+    );
+
+    return featureEnabled;
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);

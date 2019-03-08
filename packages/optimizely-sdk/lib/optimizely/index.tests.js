@@ -40,6 +40,8 @@ var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
 var DECISION_SOURCES = enums.DECISION_SOURCES;
+var NOTIFICATION_TYPES = enums.NOTIFICATION_TYPES;
+var DECISION_INFO_TYPES = enums.DECISION_INFO_TYPES;
 
 describe('lib/optimizely', function() {
   describe('constructor', function() {
@@ -2590,6 +2592,8 @@ describe('lib/optimizely', function() {
     });
     var optlyInstance;
     var clock;
+    var onDecisionListener;
+
     beforeEach(function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
@@ -2608,6 +2612,7 @@ describe('lib/optimizely', function() {
       sandbox.stub(uuid, 'v4').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
       sandbox.stub(fns, 'currentTimestamp').returns(1509489766569);
       clock = sinon.useFakeTimers(new Date().getTime());
+      onDecisionListener = sinon.spy();
     });
 
     afterEach(function() {
@@ -2654,7 +2659,11 @@ describe('lib/optimizely', function() {
             });
           });
 
-          it('returns true and dispatches an impression event', function() {
+          it('returns true, sends notification and dispatches an impression event', function() {
+            optlyInstance.notificationCenter.addNotificationListener(
+              NOTIFICATION_TYPES.ON_DECISION,
+              onDecisionListener
+            );
             var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user1', attributes);
             assert.strictEqual(result, true);
             sinon.assert.calledOnce(optlyInstance.decisionService.getVariationForFeature);
@@ -2665,6 +2674,21 @@ describe('lib/optimizely', function() {
               'user1',
               attributes
             );
+
+            var expectedArguments = {
+              type: DECISION_INFO_TYPES.FEATURE,
+              userId: 'user1',
+              attributes: attributes,
+              decisionInfo: {
+                featureKey: 'test_feature_for_experiment',
+                featureEnabled: true,
+                source: DECISION_SOURCES.EXPERIMENT,
+                sourceExperimentKey: 'testing_my_feature',
+                sourceVariationKey: 'variation'
+              }
+            };
+            sinon.assert.calledWith(onDecisionListener, expectedArguments);
+            
             sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
             var expectedImpressionEvent = {
               'httpVerb': 'POST',
@@ -2820,6 +2844,10 @@ describe('lib/optimizely', function() {
               variation: variation,
               decisionSource: DECISION_SOURCES.EXPERIMENT,
             });
+            optlyInstance.notificationCenter.addNotificationListener(
+              NOTIFICATION_TYPES.ON_DECISION,
+              onDecisionListener
+            );
             result = optlyInstance.isFeatureEnabled('shared_feature', 'user1', attributes);
           });
 
@@ -2833,6 +2861,23 @@ describe('lib/optimizely', function() {
               'user1',
               attributes
             );
+          });
+
+          it('should send notification', function() {
+            assert.strictEqual(result, false);
+            var expectedArguments = {
+              type: DECISION_INFO_TYPES.FEATURE,
+              userId: 'user1',
+              attributes: attributes,
+              decisionInfo: {
+                featureKey: 'shared_feature',
+                featureEnabled: false,
+                source: DECISION_SOURCES.EXPERIMENT,
+                sourceExperimentKey: 'test_shared_feature',
+                sourceVariationKey: 'control'
+              }
+            };
+            sinon.assert.calledWith(onDecisionListener, expectedArguments);
           });
 
           it('should dispatch an impression event', function() {
@@ -2933,13 +2978,30 @@ describe('lib/optimizely', function() {
             });
           });
 
-          it('returns true and does not dispatch an event', function() {
+          it('returns true sends notification and does not dispatch an event', function() {
+            optlyInstance.notificationCenter.addNotificationListener(
+              NOTIFICATION_TYPES.ON_DECISION,
+              onDecisionListener
+            );
             var result = optlyInstance.isFeatureEnabled('test_feature', 'user1', {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, true);
             sinon.assert.notCalled(eventDispatcher.dispatchEvent);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature is enabled for user user1.');
+            var expectedArguments = {
+              type: DECISION_INFO_TYPES.FEATURE,
+              userId: 'user1',
+              attributes: { test_attribute: 'test_value' },
+              decisionInfo: {
+                featureKey: 'test_feature',
+                featureEnabled: true,
+                source: DECISION_SOURCES.ROLLOUT,
+                sourceExperimentKey: null,
+                sourceVariationKey: null
+              }
+            };
+            sinon.assert.calledWith(onDecisionListener, expectedArguments);
           });
         });
 
@@ -2955,12 +3017,30 @@ describe('lib/optimizely', function() {
             });
           });
 
-          it('returns false ', function() {
+          it('returns false and send notification', function() {
+            optlyInstance.notificationCenter.addNotificationListener(
+              NOTIFICATION_TYPES.ON_DECISION,
+              onDecisionListener
+            );
             var result = optlyInstance.isFeatureEnabled('test_feature', 'user1', {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, false);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature is not enabled for user user1.');
+
+            var expectedArguments = {
+              type: DECISION_INFO_TYPES.FEATURE,
+              userId: 'user1',
+              attributes: { test_attribute: 'test_value' },
+              decisionInfo: {
+                featureKey: 'test_feature',
+                featureEnabled: false,
+                source: DECISION_SOURCES.ROLLOUT,
+                sourceExperimentKey: null,
+                sourceVariationKey: null
+              }
+            };
+            sinon.assert.calledWith(onDecisionListener, expectedArguments);
           });
         });
       });
@@ -2975,10 +3055,27 @@ describe('lib/optimizely', function() {
         });
 
         it('returns false and does not dispatch an event', function() {
+          optlyInstance.notificationCenter.addNotificationListener(
+            NOTIFICATION_TYPES.ON_DECISION,
+            onDecisionListener
+          );
           var result = optlyInstance.isFeatureEnabled('test_feature', 'user1');
           assert.strictEqual(result, false);
           sinon.assert.notCalled(eventDispatcher.dispatchEvent);
           sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature is not enabled for user user1.');
+          var expectedArguments = {
+            type: DECISION_INFO_TYPES.FEATURE,
+            userId: 'user1',
+            attributes: undefined,
+            decisionInfo: {
+              featureKey: 'test_feature',
+              featureEnabled: false,
+              source: DECISION_SOURCES.ROLLOUT,
+              sourceExperimentKey: null,
+              sourceVariationKey: null
+            }
+          };
+          sinon.assert.calledWith(onDecisionListener, expectedArguments);
         });
       });
     });
@@ -3057,6 +3154,112 @@ describe('lib/optimizely', function() {
           'user1',
           attributes
         );
+      });
+
+      it('return features that are enabled for the user and send notification for every feature', function() {
+        optlyInstance = new Optimizely({
+          clientEngine: 'node-sdk',
+          datafile: testData.getTestProjectConfigWithFeatures(),
+          eventBuilder: eventBuilder,
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+          isValidInstance: true,
+        });
+        
+        var attributes = { test_attribute: 'test_value' };
+        optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+        var result = optlyInstance.getEnabledFeatures('test_user', attributes);
+        assert.strictEqual(result.length, 3);
+        assert.isAbove(result.indexOf('test_feature_2'), -1);
+        assert.isAbove(result.indexOf('test_feature_for_experiment'), -1);
+        assert.isAbove(result.indexOf('shared_feature'), -1);
+
+        assert.isTrue(onDecisionListener.getCall(0).calledWith({
+          type: DECISION_INFO_TYPES.FEATURE,
+          userId: 'test_user',
+          attributes: attributes,
+          decisionInfo: {
+            featureKey: 'test_feature',
+            featureEnabled: false,
+            source: DECISION_SOURCES.ROLLOUT,
+            sourceExperimentKey: null,
+            sourceVariationKey: null
+          }
+        }));
+        assert.isTrue(onDecisionListener.getCall(1).calledWith({
+          type: DECISION_INFO_TYPES.FEATURE,
+          userId: 'test_user',
+          attributes: attributes,
+          decisionInfo: {
+            featureKey: 'test_feature_2',
+            featureEnabled: true,
+            source: DECISION_SOURCES.ROLLOUT,
+            sourceExperimentKey: null,
+            sourceVariationKey: null
+          }
+        }));
+        assert.isTrue(onDecisionListener.getCall(2).calledWith({
+          type: DECISION_INFO_TYPES.FEATURE,
+          userId: 'test_user',
+          attributes: attributes,
+          decisionInfo: {
+            featureKey: 'test_feature_for_experiment',
+            featureEnabled: true,
+            source: DECISION_SOURCES.EXPERIMENT,
+            sourceExperimentKey: 'testing_my_feature',
+            sourceVariationKey: 'variation'
+          }
+        }));
+        assert.isTrue(onDecisionListener.getCall(3).calledWith({
+          type: DECISION_INFO_TYPES.FEATURE,
+          userId: 'test_user',
+          attributes: attributes,
+          decisionInfo: {
+            featureKey: 'feature_with_group',
+            featureEnabled: false,
+            source: DECISION_SOURCES.ROLLOUT,
+            sourceExperimentKey: null,
+            sourceVariationKey: null
+          }
+        }));
+        assert.isTrue(onDecisionListener.getCall(4).calledWith({
+          type: DECISION_INFO_TYPES.FEATURE,
+          userId: 'test_user',
+          attributes: attributes,
+          decisionInfo: {
+            featureKey: 'shared_feature',
+            featureEnabled: true,
+            source: DECISION_SOURCES.EXPERIMENT,
+            sourceExperimentKey: 'test_shared_feature',
+            sourceVariationKey: 'treatment'
+          }
+        }));
+        assert.isTrue(onDecisionListener.getCall(5).calledWith({
+          type: DECISION_INFO_TYPES.FEATURE,
+          userId: 'test_user',
+          attributes: attributes,
+          decisionInfo: {
+            featureKey: 'unused_flag',
+            featureEnabled: false,
+            source: DECISION_SOURCES.ROLLOUT,
+            sourceExperimentKey: null,
+            sourceVariationKey: null
+          }
+        }));
+        assert.isTrue(onDecisionListener.getCall(6).calledWith({
+          type: DECISION_INFO_TYPES.FEATURE,
+          userId: 'test_user',
+          attributes: attributes,
+          decisionInfo: {
+            featureKey: 'feature_exp_no_traffic',
+            featureEnabled: false,
+            source: DECISION_SOURCES.ROLLOUT,
+            sourceExperimentKey: null,
+            sourceVariationKey: null
+          }
+        }));
       });
     });
 
