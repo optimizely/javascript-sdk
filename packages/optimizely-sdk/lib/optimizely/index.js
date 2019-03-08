@@ -34,6 +34,7 @@ var LOG_MESSAGES = enums.LOG_MESSAGES;
 var MODULE_NAME = 'OPTIMIZELY';
 var DECISION_SOURCES = enums.DECISION_SOURCES;
 var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
+var DECISION_INFO_TYPES = enums.DECISION_INFO_TYPES;
 
 /**
  * The Optimizely class
@@ -563,17 +564,50 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     return null;
   }
 
+  var featureEnabled = false;
+  var variableValue = variable.defaultValue;
   var decision = this.decisionService.getVariationForFeature(featureFlag, userId, attributes);
-  var variableValue;
+  
   if (decision.variation !== null) {
-    variableValue = projectConfig.getVariableValueForVariation(this.configObj, variable, decision.variation, this.logger);
-    this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE, MODULE_NAME, variableKey, featureFlag.key, variableValue, userId));
+    featureEnabled = decision.variation.featureEnabled;
+    if (featureEnabled) {
+      variableValue = projectConfig.getVariableValueForVariation(this.configObj, variable, decision.variation, this.logger);
+      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE, MODULE_NAME, variableKey, featureFlag.key, variableValue, userId));
+    } else {
+      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE, MODULE_NAME, featureFlag.key, userId, variableKey));
+    }
   } else {
-    variableValue = variable.defaultValue;
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE, MODULE_NAME, userId, variableKey, featureFlag.key));
   }
 
-  return projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
+  var experimentKey = null;
+  var variationKey = null;
+  var decisionSource = decision.decisionSource || DECISION_SOURCES.ROLLOUT;
+  if (decisionSource === DECISION_SOURCES.EXPERIMENT) {
+    experimentKey = decision.experiment.key;
+    variationKey = decision.variation.key;
+  }
+
+  var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
+  this.notificationCenter.sendNotifications(
+    enums.NOTIFICATION_TYPES.ON_DECISION,
+    {
+      type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+      userId: userId,
+      attributes: attributes,
+      decisionInfo: {
+        featureKey: featureKey,
+        featureEnabled: featureEnabled,
+        variableKey: variableKey,
+        variableValue: typeCastedValue,
+        variableType: variableType,
+        source: decisionSource,
+        sourceExperimentKey: experimentKey,
+        sourceVariationKey: variationKey
+      }
+    }
+  );
+  return typeCastedValue;
 };
 
 /**
