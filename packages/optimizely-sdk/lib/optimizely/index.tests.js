@@ -2530,9 +2530,7 @@ describe('lib/optimizely', function() {
     
         describe('feature management', function() {
           var sandbox = sinon.sandbox.create();
-          var experiment;
-          var variation;
-      
+
           beforeEach(function() {
             optlyInstance = new Optimizely({
               clientEngine: 'node-sdk',
@@ -2561,8 +2559,8 @@ describe('lib/optimizely', function() {
       
               describe('when the variation is toggled ON', function() {
                 beforeEach(function() {
-                  experiment = optlyInstance.configObj.experimentKeyMap.testing_my_feature;
-                  variation = experiment.variations[0];
+                  var experiment = optlyInstance.configObj.experimentKeyMap.testing_my_feature;
+                  var variation = experiment.variations[0];
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
                     variation: variation,
