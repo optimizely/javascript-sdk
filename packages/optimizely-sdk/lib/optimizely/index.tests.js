@@ -395,29 +395,13 @@ describe('lib/optimizely', function() {
     });
 
     describe('#activate', function() {
-      it('should call bucketer, send notifications and dispatchEvent with proper args and return variation key', function() {
+      it('should call bucketer and dispatchEvent with proper args and return variation key', function() {
         bucketStub.returns('111129');
-        optlyInstance.notificationCenter.addNotificationListener(
-          NOTIFICATION_TYPES.ON_DECISION,
-          onDecisionListener
-        );
-
         var variation = optlyInstance.activate('testExperiment', 'testUser');
         assert.strictEqual(variation, 'variation');
 
         sinon.assert.calledOnce(bucketer.bucket);
         sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
-
-        var expectedArgument = {
-          type: DECISION_INFO_TYPES.EXPERIMENT,
-          userId: 'testUser',
-          attributes: undefined,
-          decisionInfo: {
-            experimentKey: 'testExperiment',
-            variationKey: variation
-          }
-        };
-        sinon.assert.calledWith(onDecisionListener, expectedArgument);
 
         var expectedObj = {
           url: 'https://logx.optimizely.com/v1/events',
@@ -770,13 +754,8 @@ describe('lib/optimizely', function() {
         assert.deepEqual(eventDispatcherCall[0], expectedObj);
       });
 
-      it('should not make a dispatch event call but send notification if variation ID is null', function() {
+      it('should not make a dispatch event call if variation ID is null', function() {
         bucketStub.returns(null);
-        optlyInstance.notificationCenter.addNotificationListener(
-          NOTIFICATION_TYPES.ON_DECISION,
-          onDecisionListener
-        );
-
         assert.isNull(optlyInstance.activate('testExperiment', 'testUser'));
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
         sinon.assert.called(createdLogger.log);
@@ -790,17 +769,6 @@ describe('lib/optimizely', function() {
             'OPTIMIZELY',
             'testUser',
             'testExperiment'));
-
-        var expectedArgument = {
-          type: DECISION_INFO_TYPES.EXPERIMENT,
-          userId: 'testUser',
-          attributes: undefined,
-          decisionInfo: {
-            experimentKey: 'testExperiment',
-            variationKey: null
-          }
-        };
-        sinon.assert.calledWith(onDecisionListener, expectedArgument);
       });
 
       it('should return null if user is not in audience and user is not in group', function() {
@@ -1006,6 +974,45 @@ describe('lib/optimizely', function() {
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'activate'));
 
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+      });
+
+      describe('OnDecision Listener', function() {
+        beforeEach(function() {
+          optlyInstance.notificationCenter.addNotificationListener(
+            NOTIFICATION_TYPES.ON_DECISION,
+            onDecisionListener
+          );
+        });
+
+        it('should send notification with actual variation key when activate returns variation', function() {
+          bucketStub.returns('111129');
+          var variation = optlyInstance.activate('testExperiment', 'testUser');
+          assert.strictEqual(variation, 'variation');
+          sinon.assert.calledWith(onDecisionListener, {
+            type: DECISION_INFO_TYPES.EXPERIMENT,
+            userId: 'testUser',
+            attributes: undefined,
+            decisionInfo: {
+              experimentKey: 'testExperiment',
+              variationKey: variation
+            }
+          });
+        });
+
+        it('should send notification with null variation key when activate returns null', function() {
+          bucketStub.returns(null);
+          var variation = optlyInstance.activate('testExperiment', 'testUser');
+          assert.isNull(variation);
+          sinon.assert.calledWith(onDecisionListener, {
+            type: DECISION_INFO_TYPES.EXPERIMENT,
+            userId: 'testUser',
+            attributes: undefined,
+            decisionInfo: {
+              experimentKey: 'testExperiment',
+              variationKey: null
+            }
+          });
+        });
       });
     });
 
@@ -1655,13 +1662,8 @@ describe('lib/optimizely', function() {
     });
 
     describe('#getVariation', function() {
-      it('should call bucketer, send notification and return variation key', function() {
+      it('should call bucketer and return variation key', function() {
         bucketStub.returns('111129');
-        optlyInstance.notificationCenter.addNotificationListener(
-          NOTIFICATION_TYPES.ON_DECISION,
-          onDecisionListener
-        );
-
         var variation = optlyInstance.getVariation('testExperiment', 'testUser');
 
         assert.strictEqual(variation, 'variation');
@@ -1674,17 +1676,6 @@ describe('lib/optimizely', function() {
             LOG_LEVEL.DEBUG,
             sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'testUser')
         );
-
-        var expectedArguments = {
-          type: DECISION_INFO_TYPES.EXPERIMENT,
-          userId: 'testUser',
-          attributes: undefined,
-          decisionInfo: {
-            experimentKey: 'testExperiment',
-            variationKey: variation
-          }
-        };
-        sinon.assert.calledWith(onDecisionListener, expectedArguments);
       });
 
       it('should call bucketer and return variation key with attributes', function() {
@@ -1699,12 +1690,7 @@ describe('lib/optimizely', function() {
         sinon.assert.called(createdLogger.log);
       });
 
-      it('should return null and send notification if user is not in audience or experiment is not running', function() {
-        optlyInstance.notificationCenter.addNotificationListener(
-          NOTIFICATION_TYPES.ON_DECISION,
-          onDecisionListener
-        );
-
+      it('should return null if user is not in audience or experiment is not running', function() {
         var getVariationReturnsNull1 = optlyInstance.getVariation('testExperimentWithAudiences', 'testUser', {});
         var getVariationReturnsNull2 = optlyInstance.getVariation('testExperimentNotRunning', 'testUser');
 
@@ -1731,22 +1717,6 @@ describe('lib/optimizely', function() {
             LOG_LEVEL.INFO,
             sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning')
         );
-
-        var expectedArguments = {
-          type: DECISION_INFO_TYPES.EXPERIMENT,
-          userId: 'testUser',
-          attributes: {},
-          decisionInfo: {
-            experimentKey: 'testExperimentWithAudiences',
-            variationKey: null
-          }
-        };
-        sinon.assert.calledTwice(onDecisionListener);
-        assert.isTrue(onDecisionListener.getCall(0).calledWith(expectedArguments));
-
-        expectedArguments.attributes = undefined;
-        expectedArguments.decisionInfo.experimentKey = 'testExperimentNotRunning';
-        assert.isTrue(onDecisionListener.getCall(1).calledWith(expectedArguments));
       });
 
       it('should throw an error for invalid user ID', function() {
@@ -1853,6 +1823,44 @@ describe('lib/optimizely', function() {
           // valid user, running experiment, whitelisted, meets audience conditions
           // expect user to be forced into `variationWithAudience (122229)` through whitelisting
           assert.strictEqual(optlyInstance.activate('testExperimentWithAudiences', 'user2', { browser_type: 'firefox' }), 'variationWithAudience');
+        });
+      });
+
+      describe('OnDecision Listener', function() {
+        beforeEach(function() {
+          optlyInstance.notificationCenter.addNotificationListener(
+            NOTIFICATION_TYPES.ON_DECISION,
+            onDecisionListener
+          );
+        });
+
+        it('should send notification with actual variation key when getVariation returns variation', function() {
+          bucketStub.returns('111129');
+          var variation = optlyInstance.getVariation('testExperiment', 'testUser');
+          assert.strictEqual(variation, 'variation');
+          sinon.assert.calledWith(onDecisionListener, {
+            type: DECISION_INFO_TYPES.EXPERIMENT,
+            userId: 'testUser',
+            attributes: undefined,
+            decisionInfo: {
+              experimentKey: 'testExperiment',
+              variationKey: variation
+            }
+          });
+        });
+
+        it('should send notification with null variation key when getVariation returns null', function() {
+          var variation = optlyInstance.getVariation('testExperimentWithAudiences', 'testUser', {});
+          assert.isNull(variation);
+          sinon.assert.calledWith(onDecisionListener, {
+            type: DECISION_INFO_TYPES.EXPERIMENT,
+            userId: 'testUser',
+            attributes: {},
+            decisionInfo: {
+              experimentKey: 'testExperimentWithAudiences',
+              variationKey: null
+            }
+          });
         });
       });
     });
