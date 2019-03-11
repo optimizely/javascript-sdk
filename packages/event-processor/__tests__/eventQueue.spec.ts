@@ -8,6 +8,7 @@ describe('eventQueue', () => {
   })
 
   afterEach(() => {
+    jest.useRealTimers()
     jest.resetAllMocks()
   })
 
@@ -129,7 +130,7 @@ describe('eventQueue', () => {
       queue.stop()
     })
 
-    it('should flush the queue and invoke clearInterval', () => {
+    it('stop() should flush the existing queue and call timer.stop()', () => {
       const sinkFn = jest.fn()
       const queue = new DefaultEventQueue<number>({
         flushInterval: 100,
@@ -141,10 +142,15 @@ describe('eventQueue', () => {
 
       queue.start()
       queue.enqueue(1)
+
+      // stop + start is called when the first item is enqueued
+      expect(queue.timer.stop).toHaveBeenCalledTimes(1)
+
       queue.stop()
 
       expect(sinkFn).toHaveBeenCalledTimes(1)
       expect(sinkFn).toHaveBeenCalledWith([1])
+      expect(queue.timer.stop).toHaveBeenCalledTimes(2)
     })
 
     it('flush() should clear the current batch', () => {

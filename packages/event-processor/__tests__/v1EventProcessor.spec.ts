@@ -2,7 +2,6 @@
 
 import { LogTierV1EventProcessor } from '../src/v1/v1EventProcessor'
 import { HttpEventDispatcher, EventV1Request } from '../src/eventDispatcher'
-import { ProjectConfig, TestProjectConfig } from '@optimizely/js-sdk-models'
 import { EventProcessor } from '../src/eventProcessor'
 import { buildImpressionEventV1, makeBatchedEventV1 } from '../src/v1/buildEventV1'
 
@@ -91,12 +90,13 @@ function createConversionEvent() {
 describe('LogTierV1EventProcessor', () => {
   let stubDispatcher: HttpEventDispatcher
   let dispatchStub: jest.Mock
-  let testProjectConfig: ProjectConfig
+  // TODO change this to ProjectConfig when js-sdk-models is available
+  let testProjectConfig: any
 
   beforeEach(() => {
     jest.useFakeTimers()
 
-    testProjectConfig = new TestProjectConfig()
+    testProjectConfig = {}
     dispatchStub = jest.fn()
 
     stubDispatcher = {
@@ -153,6 +153,8 @@ describe('LogTierV1EventProcessor', () => {
     })
 
     it('should return a promise that is resolved when the dispatcher callback fires false', done => {
+      // This test is saying that even if the request fails to send but
+      // the `dispatcher` yielded control back, then the `.stop()` promise should be resolved
       let localCallback: any
       stubDispatcher = {
         dispatch(event: EventV1Request, callback: (success: boolean) => void): void {

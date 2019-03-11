@@ -1,4 +1,5 @@
-import { Managed } from '@optimizely/js-sdk-models'
+// TODO change this to use Managed from js-sdk-models when available
+import { Managed } from './managed'
 export type EventQueueSink<K> = (buffer: K[]) => Promise<any>
 
 export interface EventQueue<K> extends Managed {

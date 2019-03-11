@@ -1,4 +1,5 @@
-import { Managed, ProjectConfig } from '@optimizely/js-sdk-models'
+// TODO change this to use Managed from js-sdk-models when available
+import { Managed } from './managed'
 import { ConversionEvent, ImpressionEvent } from './events'
 import { EventDispatcher } from './eventDispatcher'
 import { EventQueue, DefaultEventQueue, SingleEventQueue } from './eventQueue'
@@ -14,16 +15,19 @@ export type EventCallback = (result: EventDispatchResult) => void
 
 export type EventTransformer = (
   event: ProcessableEvents,
-  projectConfig: ProjectConfig,
-) => Promise<any>
+  // TODO change this to ProjectConfig when js-sdk-models is available
+  projectConfig: any,
+) => Promise<void>
 
 export type EventInterceptor = (
   event: ProcessableEvents,
-  projectConfig: ProjectConfig,
+  // TODO change this to ProjectConfig when js-sdk-models is available
+  projectConfig: any,
 ) => Promise<boolean>
 
 export interface EventProcessor extends Managed {
-  process(event: ProcessableEvents, projectConfig: ProjectConfig): void
+  // TODO change this to ProjectConfig when js-sdk-models is available
+  process(event: ProcessableEvents, projectConfig: any): void
 }
 
 export abstract class AbstractEventProcessor implements EventProcessor {
@@ -97,7 +101,8 @@ export abstract class AbstractEventProcessor implements EventProcessor {
     return Promise.all(promises)
   }
 
-  async process(event: ProcessableEvents, projectConfig: ProjectConfig): Promise<void> {
+  // TODO change this to ProjectConfig when js-sdk-models is available
+  async process(event: ProcessableEvents, projectConfig: any): Promise<void> {
     // loop and apply all transformers
     for (let transformer of this.transformers) {
       try {

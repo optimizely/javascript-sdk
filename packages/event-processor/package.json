@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/js-sdk-event-processor",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Optimizely Full Stack Event Processor",
   "author": "jordangarcia <jordan@optimizely.com>",
   "homepage": "https://github.com/optimizely/javascript-sdk/",
@@ -21,8 +21,7 @@
   },
   "dependencies": {
     "@optimizely/js-sdk-logging": "^0.1.0",
-    "@optimizely/js-sdk-utils": "^0.1.0",
-    "@optimizely/js-sdk-models": "^0.2.0"
+    "@optimizely/js-sdk-utils": "^0.1.0"
   },
   "devDependencies": {
     "@types/jest": "^24.0.9",
