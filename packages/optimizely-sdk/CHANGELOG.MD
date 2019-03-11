@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [3.1.0-beta1] - March 5th, 2019
+
+### Changed
+
+- New APIs for setting `logger` and `logLevel` on the optimizelySDK singleton ([#232](https://github.com/optimizely/javascript-sdk/pull/232))
+- `logger` and `logLevel` are now set globally for all instances of Optimizely.  If you were passing
+different loggers to individual instances of Optimizely, logging behavior may now be different.
+
+#### Setting a ConsoleLogger
+
+```js
+var optimizelySDK = require('@optimizely/optimizely-sdk')
+
+// logger and logLevel are now set on the optimizelySDK singleton
+optimizelySDK.setLogger(optimizelySDK.logging.createLogger())
+
+// valid levels: 'DEBUG', 'INFO', 'WARN', 'ERROR'
+optimizelySDK.setLogLevel('WARN')
+// enums can also be used
+optimizelySDK.setLogLevel(optimizely.enums.LOG_LEVEL.ERROR)
+```
+
+#### Disable logging
+
+```js
+var optimizelySDK = require('@optimizely/optimizely-sdk')
+
+optimizelySDK.setLogger(null)
+```
+
 ## [3.0.1] - February 21, 2019
 
 ### Changed

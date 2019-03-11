@@ -15,7 +15,7 @@
  */
 var chai = require('chai');
 var assert = chai.assert;
-var sprintf = require('sprintf-js').sprintf;
+var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var attributesValidator = require('./');
 var fns = require('./../fns/');
 
@@ -79,7 +79,7 @@ describe('lib/utils/attributes_validator', function() {
 
       it('isAttributeValid returns false for invalid values', function() {
         var userAttributes = {
-          'null': null,         
+          'null': null,
           'objects': {a: 'b'},
           'array': [1, 2, 3],
           'infinity': Infinity,

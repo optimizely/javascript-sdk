@@ -15,7 +15,7 @@
  */
 var fns = require('../../utils/fns');
 var enums = require('../../utils/enums');
-var sprintf = require('sprintf-js').sprintf;
+var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var stringValidator = require('../../utils/string_value_validator');
 
 var EXPERIMENT_LAUNCHED_STATUS = 'Launched';
