@@ -9,6 +9,7 @@ import {
   OptimizelyAudience,
   VariableType,
   OptimizelyFeature,
+  ExperimentStatus,
 } from '../src/models'
 
 describe('models', () => {
@@ -39,7 +40,7 @@ describe('models', () => {
 
       const experiment = new OptimizelyExperiment({
         id: 'id',
-        status: 'Running',
+        status: ExperimentStatus.RUNNING,
         key: 'key',
         layerId: 'layerId',
         audienceIds: ['1'],
@@ -134,7 +135,7 @@ describe('models', () => {
 
       const rolloutExperiment = new OptimizelyExperiment({
         id: 'rollout-id',
-        status: 'Running',
+        status: ExperimentStatus.RUNNING,
         key: 'rollout-key',
         layerId: 'rollout-layerId',
         audienceIds: [],
@@ -173,7 +174,7 @@ describe('models', () => {
 
       const featureExperiment = new OptimizelyExperiment({
         id: 'exp-id',
-        status: 'Running',
+        status: ExperimentStatus.RUNNING,
         key: 'exp-key',
         layerId: 'exp-layerId',
         audienceIds: [],

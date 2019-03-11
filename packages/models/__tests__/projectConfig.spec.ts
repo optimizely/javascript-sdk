@@ -14,6 +14,7 @@ import {
   FeatureFlag,
   Experiment,
   Attribute,
+  ExperimentStatus,
 } from '../src/models'
 
 import { OptimizelyProjectConfig, ProjectConfig } from '../src/projectConfig'
@@ -46,7 +47,7 @@ describe('projectConfig', () => {
 
       rolloutExperiment = new OptimizelyExperiment({
         id: 'rollout-id',
-        status: 'Running',
+        status: ExperimentStatus.RUNNING,
         key: 'rollout-key',
         layerId: 'rollout-layerId',
         audienceIds: [],
@@ -85,7 +86,7 @@ describe('projectConfig', () => {
 
       featureExperiment = new OptimizelyExperiment({
         id: 'exp-id',
-        status: 'Running',
+        status: ExperimentStatus.RUNNING,
         key: 'exp-key',
         layerId: 'exp-layerId',
         audienceIds: [],
@@ -136,7 +137,7 @@ describe('projectConfig', () => {
 
       experiment = new OptimizelyExperiment({
         id: 'id',
-        status: 'Running',
+        status: ExperimentStatus.RUNNING,
         key: 'key',
         layerId: 'layerId',
         audienceIds: ['1'],

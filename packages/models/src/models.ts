@@ -9,6 +9,12 @@ export enum VariableType {
   INTEGER = 'integer',
   BOOLEAN = 'boolean',
 }
+export enum ExperimentStatus {
+  RUNNING = 'Running',
+  LAUNCHED = 'Launched',
+  PAUSED = 'Paused',
+  NOT_STARTED = 'Not Started',
+}
 
 export type Variable = {
   key: string
@@ -76,8 +82,6 @@ export interface Group {
 type UserVariationMap = {
   [userId: string]: string // variationId
 }
-
-type ExperimentStatus = 'Running' | 'Launched' | 'Paused' | 'Not started'
 
 export interface Experiment {
   id: string
@@ -259,8 +263,7 @@ export class OptimizelyExperiment implements Experiment {
     return this._audienceIds
   }
 
-
-  get group():Group | null {
+  get group(): Group | null {
     return this._group || null
   }
 
