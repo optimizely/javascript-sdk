@@ -17,7 +17,7 @@ var chai = require('chai');
 var assert = chai.assert;
 var jsonSchemaValidator = require('./');
 var projectConfigSchema = require('../../optimizely/project_config_schema');
-var sprintf = require('sprintf-js').sprintf;
+var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var testData = require('../../tests/test_data.js');
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
