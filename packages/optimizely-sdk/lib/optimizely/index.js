@@ -480,11 +480,11 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
       }
     }
     
-    if (!featureEnabled) {
+    if (featureEnabled === true) {
+      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
+    } else {
       this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
       featureEnabled = false;
-    } else {
-      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
     }
 
     var decisionSource = decision.decisionSource || DECISION_SOURCES.ROLLOUT;
