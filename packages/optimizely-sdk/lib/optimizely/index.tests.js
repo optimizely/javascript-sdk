@@ -40,7 +40,6 @@ var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
 var DECISION_SOURCES = enums.DECISION_SOURCES;
-var NOTIFICATION_TYPES = enums.NOTIFICATION_TYPES;
 var DECISION_INFO_TYPES = enums.DECISION_INFO_TYPES;
 
 describe('lib/optimizely', function() {
@@ -2544,7 +2543,7 @@ describe('lib/optimizely', function() {
             });
 
             optlyInstance.notificationCenter.addNotificationListener(
-              NOTIFICATION_TYPES.DECISION,
+              enums.NOTIFICATION_TYPES.DECISION,
               decisionListener
             );
           });
@@ -3270,7 +3269,7 @@ describe('lib/optimizely', function() {
         
         var decisionListener = sinon.spy();
         var attributes = { test_attribute: 'test_value' };
-        optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, decisionListener);
+        optlyInstance.notificationCenter.addNotificationListener(enums.NOTIFICATION_TYPES.DECISION, decisionListener);
         var result = optlyInstance.getEnabledFeatures('test_user', attributes);
         assert.strictEqual(result.length, 3);
         assert.isAbove(result.indexOf('test_feature_2'), -1);
