@@ -489,11 +489,11 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
 
     var decisionSource = decision.decisionSource || DECISION_SOURCES.ROLLOUT;
     this.notificationCenter.sendNotifications(
-      enums.NOTIFICATION_TYPES.ON_DECISION,
+      enums.NOTIFICATION_TYPES.DECISION,
       {
         type: DECISION_INFO_TYPES.FEATURE,
         userId: userId,
-        attributes: attributes,
+        attributes: attributes || {},
         decisionInfo: {
           featureKey: featureKey,
           featureEnabled: featureEnabled,
