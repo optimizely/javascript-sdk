@@ -174,7 +174,7 @@ exports.NODE_CLIENT_VERSION = '3.1.0-beta1';
  *    - eventTags {Object|undefined}
  *    - logEvent {Object}
  * 
- *  ON_DECISION: A decision is made in the system. i.e. user activation, 
+ *  DECISION: A decision is made in the system. i.e. user activation, 
  *  feature access or feature-variable value retrieval
  *  Callbacks will receive an object argument with the following properties:
  *    - type {string}
@@ -185,7 +185,7 @@ exports.NODE_CLIENT_VERSION = '3.1.0-beta1';
 exports.NOTIFICATION_TYPES = {
   ACTIVATE: 'ACTIVATE:experiment, user_id,attributes, variation, event',
   TRACK: 'TRACK:event_key, user_id, attributes, event_tags, event',
-  ON_DECISION: 'ON_DECISION:type, userId, attributes, decisionInfo',
+  DECISION: 'DECISION:type, userId, attributes, decisionInfo',
 };
 
 exports.DECISION_INFO_TYPES = {

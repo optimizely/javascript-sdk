@@ -308,11 +308,11 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
 
       var variationKey = this.decisionService.getVariation(experimentKey, userId, attributes);
       this.notificationCenter.sendNotifications(
-        NOTIFICATION_TYPES.ON_DECISION,
+        NOTIFICATION_TYPES.DECISION,
         {
           type: DECISION_INFO_TYPES.EXPERIMENT,
           userId: userId,
-          attributes: attributes,
+          attributes: attributes || {},
           decisionInfo: {
             experimentKey: experimentKey,
             variationKey: variationKey,
