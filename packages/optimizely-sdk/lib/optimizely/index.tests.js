@@ -3080,7 +3080,7 @@ describe('lib/optimizely', function() {
           });
 
           it('returns the right value from getFeatureVariableBoolean', function() {
-            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
             var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, true);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "is_button_animated" of feature flag "test_feature_for_experiment" is true for user "user1"');
@@ -3102,7 +3102,7 @@ describe('lib/optimizely', function() {
           });
 
           it('returns the right value from getFeatureVariableDouble', function() {
-            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
             var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, 20.25);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "button_width" of feature flag "test_feature_for_experiment" is 20.25 for user "user1"');
@@ -3124,7 +3124,7 @@ describe('lib/optimizely', function() {
           });
 
           it('returns the right value from getFeatureVariableInteger', function() {
-            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
             var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, 2);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "num_buttons" of feature flag "test_feature_for_experiment" is 2 for user "user1"');
@@ -3146,7 +3146,7 @@ describe('lib/optimizely', function() {
           });
 
           it('returns the right value from getFeatureVariableString', function() {
-            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
             var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, 'Buy me NOW');
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "button_txt" of feature flag "test_feature_for_experiment" is Buy me NOW for user "user1"');
@@ -3178,7 +3178,7 @@ describe('lib/optimizely', function() {
               decisionSource: DECISION_SOURCES.EXPERIMENT,
             });
             optlyInstance.notificationCenter.addNotificationListener(
-              NOTIFICATION_TYPES.ON_DECISION,
+              NOTIFICATION_TYPES.DECISION,
               onDecisionListener
             );
           });
@@ -3205,7 +3205,7 @@ describe('lib/optimizely', function() {
           });
 
           it('returns the default value from getFeatureVariableDouble', function() {
-            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
             var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, 50.55);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature_for_experiment is not enabled for user user1. Returning default value for variable "button_width".');
@@ -3227,7 +3227,7 @@ describe('lib/optimizely', function() {
           });
 
           it('returns the default value from getFeatureVariableInteger', function() {
-            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
             var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, 10);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature_for_experiment is not enabled for user user1. Returning default value for variable "num_buttons".');
@@ -3249,7 +3249,7 @@ describe('lib/optimizely', function() {
           });
 
           it('returns the default value from getFeatureVariableString', function() {
-            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
             var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, 'Buy me');
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature_for_experiment is not enabled for user user1. Returning default value for variable "button_txt".');
@@ -3285,7 +3285,7 @@ describe('lib/optimizely', function() {
           });
 
           it('should return the right value and send notification from getFeatureVariableBoolean', function() {
-            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
             var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, true);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "new_content" of feature flag "test_feature" is true for user "user1"');
@@ -3307,7 +3307,7 @@ describe('lib/optimizely', function() {
           });
 
           it('should return the right value and send notification from getFeatureVariableDouble', function() {
-            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
             var result = optlyInstance.getFeatureVariableDouble('test_feature', 'price', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, 4.99);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "price" of feature flag "test_feature" is 4.99 for user "user1"');
@@ -3329,7 +3329,7 @@ describe('lib/optimizely', function() {
           });
 
           it('should return the right value and send notification from getFeatureVariableInteger', function() {
-            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
             var result = optlyInstance.getFeatureVariableInteger('test_feature', 'lasers', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, 395);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "lasers" of feature flag "test_feature" is 395 for user "user1"');
@@ -3351,7 +3351,7 @@ describe('lib/optimizely', function() {
           });
 
           it('should return the right value and send notification from getFeatureVariableString', function() {
-            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
             var result = optlyInstance.getFeatureVariableString('test_feature', 'message', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, 'Hello audience');
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "message" of feature flag "test_feature" is Hello audience for user "user1"');
@@ -3385,7 +3385,7 @@ describe('lib/optimizely', function() {
           });
 
           it('should return the default value and send notification from getFeatureVariableBoolean', function() {
-            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
             var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, false);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature is not enabled for user user1. Returning default value for variable "new_content".');
@@ -3407,7 +3407,7 @@ describe('lib/optimizely', function() {
           });
 
           it('should return the default value and send notification from getFeatureVariableDouble', function() {
-            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
             var result = optlyInstance.getFeatureVariableDouble('test_feature', 'price', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, 14.99);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature is not enabled for user user1. Returning default value for variable "price".');
@@ -3429,7 +3429,7 @@ describe('lib/optimizely', function() {
           });
 
           it('should return the default value and send notification from getFeatureVariableInteger', function() {
-            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
             var result = optlyInstance.getFeatureVariableInteger('test_feature', 'lasers', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, 400);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature is not enabled for user user1. Returning default value for variable "lasers".');
@@ -3451,7 +3451,7 @@ describe('lib/optimizely', function() {
           });
 
           it('should return the default value and send notification from getFeatureVariableString', function() {
-            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+            optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
             var result = optlyInstance.getFeatureVariableString('test_feature', 'message', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, 'Hello');
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature is not enabled for user user1. Returning default value for variable "message".');
@@ -3484,7 +3484,7 @@ describe('lib/optimizely', function() {
         });
 
         it('returns the variable default value from getFeatureVariableBoolean', function() {
-          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
           var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
           assert.strictEqual(result, false);
           sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "is_button_animated" of feature flag "test_feature_for_experiment".');
@@ -3506,7 +3506,7 @@ describe('lib/optimizely', function() {
         });
 
         it('returns the variable default value from getFeatureVariableDouble', function() {
-          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
           var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
           assert.strictEqual(result, 50.55);
           sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_width" of feature flag "test_feature_for_experiment".');
@@ -3528,7 +3528,7 @@ describe('lib/optimizely', function() {
         });
 
         it('returns the variable default value from getFeatureVariableInteger', function() {
-          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
           var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
           assert.strictEqual(result, 10);
           sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "num_buttons" of feature flag "test_feature_for_experiment".');
@@ -3550,7 +3550,7 @@ describe('lib/optimizely', function() {
         });
 
         it('returns the variable default value from getFeatureVariableString', function() {
-          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.ON_DECISION, onDecisionListener);
+          optlyInstance.notificationCenter.addNotificationListener(NOTIFICATION_TYPES.DECISION, onDecisionListener);
           var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
           assert.strictEqual(result, 'Buy me');
           sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_txt" of feature flag "test_feature_for_experiment".');

@@ -570,11 +570,12 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
   
   if (decision.variation !== null) {
     featureEnabled = decision.variation.featureEnabled;
-    if (featureEnabled) {
+    if (featureEnabled === true) {
       variableValue = projectConfig.getVariableValueForVariation(this.configObj, variable, decision.variation, this.logger);
       this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE, MODULE_NAME, variableKey, featureFlag.key, variableValue, userId));
     } else {
       this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE, MODULE_NAME, featureFlag.key, userId, variableKey));
+      featureEnabled = false;
     }
   } else {
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE, MODULE_NAME, userId, variableKey, featureFlag.key));
@@ -590,11 +591,11 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
 
   var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
   this.notificationCenter.sendNotifications(
-    enums.NOTIFICATION_TYPES.ON_DECISION,
+    enums.NOTIFICATION_TYPES.DECISION,
     {
       type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
       userId: userId,
-      attributes: attributes,
+      attributes: attributes || {},
       decisionInfo: {
         featureKey: featureKey,
         featureEnabled: featureEnabled,
