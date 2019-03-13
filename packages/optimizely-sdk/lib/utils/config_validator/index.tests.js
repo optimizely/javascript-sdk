@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2018, Optimizely
+ * Copyright 2016, 2018, 2019 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 var chai = require('chai');
 var assert = chai.assert;
 var configValidator = require('./');
-var sprintf = require('sprintf-js').sprintf;
+var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var testData = require('../../tests/test_data')
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;

@@ -18,7 +18,7 @@
  * Provides utility method for validating that the attributes user has provided are valid
  */
 
-var sprintf = require('sprintf-js').sprintf;
+var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var lodashForOwn = require('lodash/forOwn');
 var fns = require('../../utils/fns');
 
@@ -46,7 +46,7 @@ module.exports = {
   },
 
   isAttributeValid: function(attributeKey, attributeValue) {
-    return (typeof attributeKey === 'string') && 
+    return (typeof attributeKey === 'string') &&
     (typeof attributeValue === 'string' || typeof attributeValue === 'boolean' || (fns.isNumber(attributeValue) && fns.isFinite(attributeValue)));
   },
 };
