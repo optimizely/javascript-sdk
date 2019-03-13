@@ -1,3 +1,18 @@
+/**
+ * Copyright 2019, Optimizely
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 var logging = require('@optimizely/js-sdk-logging');
 
 var attributesValidator = require('../../utils/attributes_validator');
@@ -7,6 +22,18 @@ var projectConfig = require('../project_config');
 
 var logger = logging.getLogger('EVENT_BUILDER');
 
+/**
+ * Creates an ImpressionEvent object from decision data
+ * @param {Object} config
+ * @param {Object} config.configObj
+ * @param {String} config.experimentKey
+ * @param {String} config.variationKey
+ * @param {String} config.userId
+ * @param {Object} config.userAttributes
+ * @param {String} config.clientEngine
+ * @param {String} config.clientVersion
+ * @return {Object} an ImpressionEvent object
+ */
 exports.buildImpressionEvent = function buildImpressionEvent(config) {
   var configObj = config.configObj;
   var experimentKey = config.experimentKey;
@@ -30,7 +57,6 @@ exports.buildImpressionEvent = function buildImpressionEvent(config) {
       attributes: buildVisitorAttributes(configObj, userAttributes),
     },
 
-    // TODO handle enrich_decisions
     context: {
       accountId: configObj.accountId,
       projectId: configObj.projectId,
@@ -57,7 +83,19 @@ exports.buildImpressionEvent = function buildImpressionEvent(config) {
   };
 };
 
-exports.buildConversionEvent = function buildImpressionEvent(config) {
+/**
+ * Creates a ConversionEvent object from track
+ * @param {Object} config
+ * @param {Object} config.configObj
+ * @param {String} config.eventKey
+ * @param {Object|undefined} config.eventTags
+ * @param {String} config.userId
+ * @param {Object} config.userAttributes
+ * @param {String} config.clientEngine
+ * @param {String} config.clientVersion
+ * @return {Object} a ConversionEvent object
+ */
+exports.buildConversionEvent = function buildConversionEvent(config) {
   var configObj = config.configObj;
   var userId = config.userId;
   var userAttributes = config.userAttributes;
