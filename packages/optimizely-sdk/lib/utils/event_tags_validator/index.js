@@ -18,7 +18,7 @@
  * Provides utility method for validating that event tags user has provided are valid
  */
 
-var sprintf = require('sprintf-js').sprintf;
+var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'EVENT_TAGS_VALIDATOR';

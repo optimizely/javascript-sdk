@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2018, Optimizely
+ * Copyright 2016, 2018, 2019 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var sprintf = require('sprintf-js').sprintf;
+var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'CONFIG_VALIDATOR';
@@ -46,7 +46,7 @@ module.exports = {
     if (config.eventDispatcher && (typeof config.eventDispatcher.dispatchEvent !== 'function')) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_DISPATCHER, MODULE_NAME));
     }
-    
+
     if (config.logger && (typeof config.logger.log !== 'function')) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_LOGGER, MODULE_NAME));
     }
@@ -67,7 +67,7 @@ module.exports = {
     if (!datafile) {
       throw new Error(sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, MODULE_NAME));
     }
-    
+
     if (typeof datafile === 'string' || datafile instanceof String) {
       // Attempt to parse the datafile string
       try {

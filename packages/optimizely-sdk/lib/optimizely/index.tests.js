@@ -33,7 +33,7 @@ var projectConfig = require('../core/project_config');
 var chai = require('chai');
 var assert = chai.assert;
 var sinon = require('sinon');
-var sprintf = require('sprintf-js').sprintf;
+var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var uuid = require('uuid');
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
