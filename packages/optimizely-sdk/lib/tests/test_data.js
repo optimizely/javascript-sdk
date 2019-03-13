@@ -482,23 +482,23 @@ var configWithFeatures = {
         {
           'key': 'control',
           'id': '594097',
-          'featureEnabled': false,
+          'featureEnabled': true,
           'variables': [
             {
               'id': '4792309476491264',
-              'value': '40'
+              'value': '10'
             },
             {
               'id': '5073784453201920',
-              'value': 'true'
+              'value': 'false'
             },
             {
               'id': '5636734406623232',
-              'value': 'Buy me Later'
+              'value': 'Buy me'
             },
             {
               'id': '6199684360044544',
-              'value': '99.99'
+              'value': '50.55'
             }
           ]
         }
@@ -1360,19 +1360,19 @@ var datafileWithFeaturesExpectedData = {
     },
     594097: {
       4792309476491264: {
-        'value': '40',
+        'value': '10',
         'id': '4792309476491264'
       },
       5073784453201920: {
-        'value': 'true',
+        'value': 'false',
         'id': '5073784453201920'
       },
       5636734406623232: {
-        'value': 'Buy me Later',
+        'value': 'Buy me',
         'id': '5636734406623232'
       },
       6199684360044544: {
-        'value': '99.99',
+        'value': '50.55',
         'id': '6199684360044544'
       },
     },

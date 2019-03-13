@@ -729,22 +729,22 @@ describe('lib/core/decision_service', function() {
                     'variables': [
                       {
                         'id': '4792309476491264',
-                        'value': '40'
+                        'value': '10'
                       },
                       {
                         'id': '5073784453201920',
-                        'value': 'true'
+                        'value': 'false'
                       },
                       {
                         'id': '5636734406623232',
-                        'value': 'Buy me Later'
+                        'value': 'Buy me'
                       },
                       {
                         'id': '6199684360044544',
-                        'value': '99.99'
+                        'value': '50.55'
                       }
                     ],
-                    'featureEnabled': false,
+                    'featureEnabled': true,
                     'key': 'control'
                   }
                 ],
@@ -760,22 +760,22 @@ describe('lib/core/decision_service', function() {
                     'variables': [
                       {
                         'id': '4792309476491264',
-                        'value': '40'
+                        'value': '10'
                       },
                       {
                         'id': '5073784453201920',
-                        'value': 'true'
+                        'value': 'false'
                       },
                       {
                         'id': '5636734406623232',
-                        'value': 'Buy me Later'
+                        'value': 'Buy me'
                       },
                       {
                         'id': '6199684360044544',
-                        'value': '99.99'
+                        'value': '50.55'
                       }
                     ],
-                    'featureEnabled': false,
+                    'featureEnabled': true,
                     'key': 'control'
                   },
                   variation: {
