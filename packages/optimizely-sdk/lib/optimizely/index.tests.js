@@ -2649,21 +2649,14 @@ describe('lib/optimizely', function() {
       
               describe('when the variation is toggled OFF', function() {
                 beforeEach(function() {
-                  // Setting featureEnabled to false for verifying feature toggle off.
-                  optlyInstance.configObj.experimentKeyMap.testing_my_feature.variations[0].featureEnabled = false;
                   var experiment = optlyInstance.configObj.experimentKeyMap.testing_my_feature;
-                  var variation = experiment.variations[0];
+                  var variation = experiment.variations[1];
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
                     variation: variation,
                     decisionSource: DECISION_SOURCES.EXPERIMENT,
                   });
                 });
-
-                afterEach(function() {
-                  // Resetting featureEnabled value to true.
-                  optlyInstance.configObj.experimentKeyMap.testing_my_feature.variations[0].featureEnabled = true;
-                })
       
                 it('returns the default value from getFeatureVariableBoolean and send notification', function() {
                   var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
@@ -2680,7 +2673,7 @@ describe('lib/optimizely', function() {
                       variableType: FEATURE_VARIABLE_TYPES.BOOLEAN,
                       source: DECISION_SOURCES.EXPERIMENT,
                       sourceExperimentKey: 'testing_my_feature',
-                      sourceVariationKey: 'variation'
+                      sourceVariationKey: 'control'
                     }
                   });
                 });
@@ -2700,7 +2693,7 @@ describe('lib/optimizely', function() {
                       variableType: FEATURE_VARIABLE_TYPES.DOUBLE,
                       source: DECISION_SOURCES.EXPERIMENT,
                       sourceExperimentKey: 'testing_my_feature',
-                      sourceVariationKey: 'variation'
+                      sourceVariationKey: 'control'
                     }
                   });
                 });
@@ -2720,7 +2713,7 @@ describe('lib/optimizely', function() {
                       variableType: FEATURE_VARIABLE_TYPES.INTEGER,
                       source: DECISION_SOURCES.EXPERIMENT,
                       sourceExperimentKey: 'testing_my_feature',
-                      sourceVariationKey: 'variation'
+                      sourceVariationKey: 'control'
                     }
                   });
                 });
@@ -2740,7 +2733,7 @@ describe('lib/optimizely', function() {
                       variableType: FEATURE_VARIABLE_TYPES.STRING,
                       source: DECISION_SOURCES.EXPERIMENT,
                       sourceExperimentKey: 'testing_my_feature',
-                      sourceVariationKey: 'variation'
+                      sourceVariationKey: 'control'
                     }
                   });
                 });
