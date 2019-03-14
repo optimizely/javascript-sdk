@@ -3097,7 +3097,6 @@ describe('lib/optimizely', function() {
     });
     var optlyInstance;
     var clock;
-    var onDecisionListener;
 
     beforeEach(function() {
       optlyInstance = new Optimizely({
@@ -3117,7 +3116,6 @@ describe('lib/optimizely', function() {
       sandbox.stub(uuid, 'v4').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
       sandbox.stub(fns, 'currentTimestamp').returns(1509489766569);
       clock = sinon.useFakeTimers(new Date().getTime());
-      onDecisionListener = sinon.spy();
     });
 
     afterEach(function() {
