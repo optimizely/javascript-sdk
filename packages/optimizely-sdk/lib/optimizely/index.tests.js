@@ -2938,7 +2938,7 @@ describe('lib/optimizely', function() {
                 sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                   experiment: null,
                   variation: null,
-                  decisionSource: null,
+                  decisionSource: DECISION_SOURCES.ROLLOUT,
                 });
               });
       
@@ -3480,7 +3480,7 @@ describe('lib/optimizely', function() {
           sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
             experiment: null,
             variation: null,
-            decisionSource: null,
+            decisionSource: DECISION_SOURCES.ROLLOUT,
           });
         });
 

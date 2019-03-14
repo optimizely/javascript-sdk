@@ -583,8 +583,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
 
   var experimentKey = null;
   var variationKey = null;
-  var decisionSource = decision.decisionSource || DECISION_SOURCES.ROLLOUT;
-  if (decisionSource === DECISION_SOURCES.EXPERIMENT) {
+  if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
     experimentKey = decision.experiment.key;
     variationKey = decision.variation.key;
   }
@@ -602,7 +601,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
         variableKey: variableKey,
         variableValue: typeCastedValue,
         variableType: variableType,
-        source: decisionSource,
+        source: decision.decisionSource,
         sourceExperimentKey: experimentKey,
         sourceVariationKey: variationKey
       }
