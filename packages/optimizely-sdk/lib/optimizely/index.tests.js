@@ -2535,9 +2535,7 @@ describe('lib/optimizely', function() {
             optlyInstance = new Optimizely({
               clientEngine: 'node-sdk',
               datafile: testData.getTestProjectConfigWithFeatures(),
-              eventBuilder: eventBuilder,
               errorHandler: errorHandler,
-              eventDispatcher: eventDispatcher,
               jsonSchemaValidator: jsonSchemaValidator,
               logger: createdLogger,
               isValidInstance: true,
@@ -2557,7 +2555,7 @@ describe('lib/optimizely', function() {
             describe('bucketed into variation of an experiment with variable values', function() {
               describe('when the variation is toggled ON', function() {
                 beforeEach(function() {
-                  var experiment = optlyInstance.configObj.experimentKeyMap.testing_my_feature;
+                  var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, 'testing_my_feature');
                   var variation = experiment.variations[0];
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
@@ -2649,7 +2647,7 @@ describe('lib/optimizely', function() {
       
               describe('when the variation is toggled OFF', function() {
                 beforeEach(function() {
-                  var experiment = optlyInstance.configObj.experimentKeyMap.testing_my_feature;
+                  var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, 'testing_my_feature');
                   var variation = experiment.variations[1];
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
@@ -2743,7 +2741,7 @@ describe('lib/optimizely', function() {
             describe('bucketed into variation of a rollout with variable values', function() {
               describe('when the variation is toggled ON', function() {
                 beforeEach(function() {
-                  var experiment = optlyInstance.configObj.experimentKeyMap['594031'];
+                  var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, '594031');
                   var variation = experiment.variations[0];
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
@@ -2835,7 +2833,7 @@ describe('lib/optimizely', function() {
       
               describe('when the variation is toggled OFF', function() {
                 beforeEach(function() {
-                  var experiment = optlyInstance.configObj.experimentKeyMap['594037'];
+                  var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, '594037');
                   var variation = experiment.variations[0];
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
