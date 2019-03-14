@@ -487,7 +487,6 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
       featureEnabled = false;
     }
 
-    var decisionSource = decision.decisionSource || DECISION_SOURCES.ROLLOUT;
     this.notificationCenter.sendNotifications(
       enums.NOTIFICATION_TYPES.DECISION,
       {
@@ -497,7 +496,7 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
         decisionInfo: {
           featureKey: featureKey,
           featureEnabled: featureEnabled,
-          source: decisionSource,
+          source: decision.decisionSource,
           sourceExperimentKey: experimentKey,
           sourceVariationKey: variationKey,
         }

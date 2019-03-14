@@ -2689,7 +2689,7 @@ describe('lib/optimizely', function() {
                 sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                   experiment: null,
                   variation: null,
-                  decisionSource: null,
+                  decisionSource: DECISION_SOURCES.ROLLOUT,
                 });
               });
       
@@ -3166,7 +3166,7 @@ describe('lib/optimizely', function() {
           sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
             experiment: null,
             variation: null,
-            decisionSource: null,
+            decisionSource: DECISION_SOURCES.ROLLOUT,
           });
         });
 
@@ -3272,11 +3272,9 @@ describe('lib/optimizely', function() {
         optlyInstance.notificationCenter.addNotificationListener(enums.NOTIFICATION_TYPES.DECISION, decisionListener);
         var result = optlyInstance.getEnabledFeatures('test_user', attributes);
         assert.strictEqual(result.length, 3);
-        assert.isAbove(result.indexOf('test_feature_2'), -1);
-        assert.isAbove(result.indexOf('test_feature_for_experiment'), -1);
-        assert.isAbove(result.indexOf('shared_feature'), -1);
+        assert.deepEqual(result, ['test_feature_2', 'test_feature_for_experiment', 'shared_feature']);
 
-        assert.isTrue(decisionListener.getCall(0).calledWith({
+        sinon.assert.calledWithExactly(decisionListener.getCall(0), {
           type: DECISION_INFO_TYPES.FEATURE,
           userId: 'test_user',
           attributes: attributes,
@@ -3287,8 +3285,8 @@ describe('lib/optimizely', function() {
             sourceExperimentKey: null,
             sourceVariationKey: null
           }
-        }));
-        assert.isTrue(decisionListener.getCall(1).calledWith({
+        });
+        sinon.assert.calledWithExactly(decisionListener.getCall(1), {
           type: DECISION_INFO_TYPES.FEATURE,
           userId: 'test_user',
           attributes: attributes,
@@ -3299,8 +3297,8 @@ describe('lib/optimizely', function() {
             sourceExperimentKey: null,
             sourceVariationKey: null
           }
-        }));
-        assert.isTrue(decisionListener.getCall(2).calledWith({
+        });
+        sinon.assert.calledWithExactly(decisionListener.getCall(2), {
           type: DECISION_INFO_TYPES.FEATURE,
           userId: 'test_user',
           attributes: attributes,
@@ -3311,8 +3309,8 @@ describe('lib/optimizely', function() {
             sourceExperimentKey: 'testing_my_feature',
             sourceVariationKey: 'variation'
           }
-        }));
-        assert.isTrue(decisionListener.getCall(3).calledWith({
+        });
+        sinon.assert.calledWithExactly(decisionListener.getCall(3), {
           type: DECISION_INFO_TYPES.FEATURE,
           userId: 'test_user',
           attributes: attributes,
@@ -3323,8 +3321,8 @@ describe('lib/optimizely', function() {
             sourceExperimentKey: null,
             sourceVariationKey: null
           }
-        }));
-        assert.isTrue(decisionListener.getCall(4).calledWith({
+        });
+        sinon.assert.calledWithExactly(decisionListener.getCall(4), {
           type: DECISION_INFO_TYPES.FEATURE,
           userId: 'test_user',
           attributes: attributes,
@@ -3335,8 +3333,8 @@ describe('lib/optimizely', function() {
             sourceExperimentKey: 'test_shared_feature',
             sourceVariationKey: 'treatment'
           }
-        }));
-        assert.isTrue(decisionListener.getCall(5).calledWith({
+        });
+        sinon.assert.calledWithExactly(decisionListener.getCall(5), {
           type: DECISION_INFO_TYPES.FEATURE,
           userId: 'test_user',
           attributes: attributes,
@@ -3347,8 +3345,8 @@ describe('lib/optimizely', function() {
             sourceExperimentKey: null,
             sourceVariationKey: null
           }
-        }));
-        assert.isTrue(decisionListener.getCall(6).calledWith({
+        });
+        sinon.assert.calledWithExactly(decisionListener.getCall(6), {
           type: DECISION_INFO_TYPES.FEATURE,
           userId: 'test_user',
           attributes: attributes,
@@ -3359,7 +3357,7 @@ describe('lib/optimizely', function() {
             sourceExperimentKey: null,
             sourceVariationKey: null
           }
-        }));
+        });
       });
     });
 
