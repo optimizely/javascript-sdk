@@ -52,7 +52,7 @@ EventDispatcherBridge.prototype.dispatch = function(request, callback) {
     }
   );
 
-  if (typeof maybePromise === 'object' && typeof maybePromise.then === 'function') {
+  if (maybePromise !== null && typeof maybePromise === 'object' && typeof maybePromise.then === 'function') {
     maybePromise.then(function() {
       callback(true);
     });

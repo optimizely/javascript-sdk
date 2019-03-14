@@ -42,13 +42,6 @@ var LOG_MESSAGES = enums.LOG_MESSAGES;
 var DECISION_SOURCES = enums.DECISION_SOURCES;
 
 describe('lib/optimizely', function() {
-
-  afterEach(function(done) {
-    setTimeout(function() {
-      done();
-    }, 0);
-  })
-
   describe('constructor', function() {
     var stubErrorHandler = { handleError: function() {}};
     var stubEventDispatcher = { dispatchEvent: function() { return bluebird.resolve(null); } };
@@ -752,7 +745,7 @@ describe('lib/optimizely', function() {
           datafile: testData.getTestProjectConfig(),
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
-          skipJSONValidation: true,
+          jsonSchemaValidator: jsonSchemaValidator,
           logger: logger.createLogger({
             logLevel: enums.LOG_LEVEL.DEBUG,
             logToConsole: false,

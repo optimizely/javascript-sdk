@@ -118,8 +118,6 @@ function Optimizely(config) {
     flushInterval: config.eventFlushInterval || DEFAULT_EVENT_FLUSH_INTERVAL,
     maxQueueSize: config.eventBatchSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
   });
-  // TODO figure out some way to specify batching vs non-batching
-  // to help be backwards compatible with existing implementation
   this.eventProcessor.start();
 }
 
