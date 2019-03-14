@@ -34,6 +34,8 @@ var LOG_MESSAGES = enums.LOG_MESSAGES;
 var MODULE_NAME = 'OPTIMIZELY';
 var DECISION_SOURCES = enums.DECISION_SOURCES;
 var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
+var DECISION_INFO_TYPES = enums.DECISION_INFO_TYPES;
+var NOTIFICATION_TYPES = enums.NOTIFICATION_TYPES;
 
 /**
  * The Optimizely class
@@ -194,7 +196,7 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
     variation = experiment.variationKeyMap[variationKey];
   }
   this.notificationCenter.sendNotifications(
-    enums.NOTIFICATION_TYPES.ACTIVATE,
+    NOTIFICATION_TYPES.ACTIVATE,
     {
       experiment: experiment,
       userId: userId,
@@ -257,7 +259,7 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
       this.__dispatchEvent(conversionEvent, eventDispatcherCallback);
 
       this.notificationCenter.sendNotifications(
-        enums.NOTIFICATION_TYPES.TRACK,
+        NOTIFICATION_TYPES.TRACK,
         {
           eventKey: eventKey,
           userId: userId,
@@ -304,7 +306,21 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
         return null;
       }
 
-      return this.decisionService.getVariation(experimentKey, userId, attributes);
+      var variationKey = this.decisionService.getVariation(experimentKey, userId, attributes);
+      this.notificationCenter.sendNotifications(
+        NOTIFICATION_TYPES.DECISION,
+        {
+          type: DECISION_INFO_TYPES.EXPERIMENT,
+          userId: userId,
+          attributes: attributes || {},
+          decisionInfo: {
+            experimentKey: experimentKey,
+            variationKey: variationKey,
+          }
+        }
+      );
+
+      return variationKey;
     } catch (ex) {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       this.errorHandler.handleError(ex);

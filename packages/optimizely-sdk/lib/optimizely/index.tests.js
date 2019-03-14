@@ -40,6 +40,7 @@ var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
 var DECISION_SOURCES = enums.DECISION_SOURCES;
+var DECISION_INFO_TYPES = enums.DECISION_INFO_TYPES;
 
 describe('lib/optimizely', function() {
   describe('constructor', function() {
@@ -356,7 +357,6 @@ describe('lib/optimizely', function() {
     var optlyInstance;
     var bucketStub;
     var clock;
-
     var createdLogger = logger.createLogger({
       logLevel: LOG_LEVEL.INFO,
       logToConsole: false,
@@ -394,8 +394,8 @@ describe('lib/optimizely', function() {
     describe('#activate', function() {
       it('should call bucketer and dispatchEvent with proper args and return variation key', function() {
         bucketStub.returns('111129');
-        var activate = optlyInstance.activate('testExperiment', 'testUser');
-        assert.strictEqual(activate, 'variation');
+        var variation = optlyInstance.activate('testExperiment', 'testUser');
+        assert.strictEqual(variation, 'variation');
 
         sinon.assert.calledOnce(bucketer.bucket);
         sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
@@ -1622,9 +1622,9 @@ describe('lib/optimizely', function() {
     describe('#getVariation', function() {
       it('should call bucketer and return variation key', function() {
         bucketStub.returns('111129');
-        var getVariation = optlyInstance.getVariation('testExperiment', 'testUser');
+        var variation = optlyInstance.getVariation('testExperiment', 'testUser');
 
-        assert.strictEqual(getVariation, 'variation');
+        assert.strictEqual(variation, 'variation');
 
         sinon.assert.calledOnce(bucketer.bucket);
         sinon.assert.called(createdLogger.log);
@@ -2064,15 +2064,15 @@ describe('lib/optimizely', function() {
     });
 
     describe('notification listeners', function() {
-      var decisionListener;
+      var activateListener;
       var trackListener;
-      var decisionListener2;
+      var activateListener2;
       var trackListener2;
 
       beforeEach(function() {
-        decisionListener = sinon.spy();
+        activateListener = sinon.spy();
         trackListener = sinon.spy();
-        decisionListener2 = sinon.spy();
+        activateListener2 = sinon.spy();
         trackListener2 = sinon.spy();
         bucketStub.returns('111129');
         sinon.stub(fns, 'currentTimestamp').returns(1509489766569);
@@ -2085,11 +2085,11 @@ describe('lib/optimizely', function() {
       it('should call a listener added for activate when activate is called', function() {
         optlyInstance.notificationCenter.addNotificationListener(
           enums.NOTIFICATION_TYPES.ACTIVATE,
-          decisionListener
+          activateListener
         );
         var variationKey = optlyInstance.activate('testExperiment', 'testUser');
         assert.strictEqual(variationKey, 'variation');
-        sinon.assert.calledOnce(decisionListener);
+        sinon.assert.calledOnce(activateListener);
       });
 
       it('should call a listener added for track when track is called', function() {
@@ -2105,12 +2105,12 @@ describe('lib/optimizely', function() {
       it('should not call a removed activate listener when activate is called', function() {
         var listenerId = optlyInstance.notificationCenter.addNotificationListener(
           enums.NOTIFICATION_TYPES.ACTIVATE,
-          decisionListener
+          activateListener
         );
         optlyInstance.notificationCenter.removeNotificationListener(listenerId);
         var variationKey = optlyInstance.activate('testExperiment', 'testUser');
         assert.strictEqual(variationKey, 'variation');
-        sinon.assert.notCalled(decisionListener);
+        sinon.assert.notCalled(activateListener);
       });
 
       it('should not call a removed track listener when track is called', function() {
@@ -2127,7 +2127,7 @@ describe('lib/optimizely', function() {
       it('removeNotificationListener should only remove the listener with the argument ID', function() {
         optlyInstance.notificationCenter.addNotificationListener(
           enums.NOTIFICATION_TYPES.ACTIVATE,
-          decisionListener
+          activateListener
         );
         var trackListenerId = optlyInstance.notificationCenter.addNotificationListener(
           enums.NOTIFICATION_TYPES.TRACK,
@@ -2136,13 +2136,13 @@ describe('lib/optimizely', function() {
         optlyInstance.notificationCenter.removeNotificationListener(trackListenerId);
         optlyInstance.activate('testExperiment', 'testUser');
         optlyInstance.track('testEvent', 'testUser');
-        sinon.assert.calledOnce(decisionListener);
+        sinon.assert.calledOnce(activateListener);
       });
 
       it('should clear all notification listeners when clearAllNotificationListeners is called', function() {
         optlyInstance.notificationCenter.addNotificationListener(
           enums.NOTIFICATION_TYPES.ACTIVATE,
-          decisionListener
+          activateListener
         );
         optlyInstance.notificationCenter.addNotificationListener(
           enums.NOTIFICATION_TYPES.TRACK,
@@ -2152,14 +2152,14 @@ describe('lib/optimizely', function() {
         optlyInstance.activate('testExperiment', 'testUser');
         optlyInstance.track('testEvent', 'testUser');
 
-        sinon.assert.notCalled(decisionListener);
+        sinon.assert.notCalled(activateListener);
         sinon.assert.notCalled(trackListener);
       });
 
       it('should clear listeners of certain notification type when clearNotificationListeners is called', function() {
         optlyInstance.notificationCenter.addNotificationListener(
           enums.NOTIFICATION_TYPES.ACTIVATE,
-          decisionListener
+          activateListener
         );
         optlyInstance.notificationCenter.addNotificationListener(
           enums.NOTIFICATION_TYPES.TRACK,
@@ -2169,47 +2169,47 @@ describe('lib/optimizely', function() {
         optlyInstance.activate('testExperiment', 'testUser');
         optlyInstance.track('testEvent', 'testUser');
 
-        sinon.assert.notCalled(decisionListener);
+        sinon.assert.notCalled(activateListener);
         sinon.assert.calledOnce(trackListener);
       });
 
       it('should only call the listener once after the same listener was added twice', function() {
         optlyInstance.notificationCenter.addNotificationListener(
           enums.NOTIFICATION_TYPES.ACTIVATE,
-          decisionListener
+          activateListener
         );
         optlyInstance.notificationCenter.addNotificationListener(
           enums.NOTIFICATION_TYPES.ACTIVATE,
-          decisionListener
+          activateListener
         );
         optlyInstance.activate('testExperiment', 'testUser');
-        sinon.assert.calledOnce(decisionListener);
+        sinon.assert.calledOnce(activateListener);
       });
 
       it('should not add a listener with an invalid type argument', function() {
         var listenerId = optlyInstance.notificationCenter.addNotificationListener(
           'not a notification type',
-          decisionListener
+          activateListener
         );
         assert.strictEqual(listenerId, -1);
         optlyInstance.activate('testExperiment', 'testUser');
-        sinon.assert.notCalled(decisionListener);
+        sinon.assert.notCalled(activateListener);
         optlyInstance.track('testEvent', 'testUser');
-        sinon.assert.notCalled(decisionListener);
+        sinon.assert.notCalled(activateListener);
       });
 
       it('should call multiple notification listeners for activate when activate is called', function() {
         optlyInstance.notificationCenter.addNotificationListener(
           enums.NOTIFICATION_TYPES.ACTIVATE,
-          decisionListener
+          activateListener
         );
         optlyInstance.notificationCenter.addNotificationListener(
           enums.NOTIFICATION_TYPES.ACTIVATE,
-          decisionListener2
+          activateListener2
         );
         optlyInstance.activate('testExperiment', 'testUser');
-        sinon.assert.calledOnce(decisionListener);
-        sinon.assert.calledOnce(decisionListener2);
+        sinon.assert.calledOnce(activateListener);
+        sinon.assert.calledOnce(activateListener2);
       });
 
       it('should call multiple notification listeners for track when track is called', function() {
@@ -2230,7 +2230,7 @@ describe('lib/optimizely', function() {
       it('should pass the correct arguments to an activate listener when activate is called', function() {
         optlyInstance.notificationCenter.addNotificationListener(
           enums.NOTIFICATION_TYPES.ACTIVATE,
-          decisionListener
+          activateListener
         );
         optlyInstance.activate('testExperiment', 'testUser');
         var expectedImpressionEvent = {
@@ -2279,7 +2279,7 @@ describe('lib/optimizely', function() {
           variation: instanceExperiments[0].variations[1],
           logEvent: expectedImpressionEvent,
         };
-        sinon.assert.calledWith(decisionListener, expectedArgument);
+        sinon.assert.calledWith(activateListener, expectedArgument);
       });
 
       it('should pass the correct arguments to an activate listener when activate is called with attributes', function() {
@@ -2288,7 +2288,7 @@ describe('lib/optimizely', function() {
         };
         optlyInstance.notificationCenter.addNotificationListener(
           enums.NOTIFICATION_TYPES.ACTIVATE,
-          decisionListener
+          activateListener
         );
         optlyInstance.activate('testExperiment', 'testUser', attributes);
         var expectedImpressionEvent = {
@@ -2344,7 +2344,7 @@ describe('lib/optimizely', function() {
           variation: instanceExperiments[0].variations[1],
           logEvent: expectedImpressionEvent,
         };
-        sinon.assert.calledWith(decisionListener, expectedArgument);
+        sinon.assert.calledWith(activateListener, expectedArgument);
       });
 
       it('should pass the correct arguments to a track listener when track is called', function() {
@@ -2518,6 +2518,80 @@ describe('lib/optimizely', function() {
           logEvent: expectedConversionEvent,
         };
         sinon.assert.calledWith(trackListener, expectedArgument);
+      });
+
+      describe('Decision Listener', function() {
+        var decisionListener;
+        beforeEach(function() {
+          decisionListener = sinon.spy();
+          optlyInstance.notificationCenter.addNotificationListener(
+            enums.NOTIFICATION_TYPES.DECISION,
+            decisionListener
+          );
+        });
+
+        describe('activate', function() {
+          it('should send notification with actual variation key when activate returns variation', function() {
+            bucketStub.returns('111129');
+            var variation = optlyInstance.activate('testExperiment', 'testUser');
+            assert.strictEqual(variation, 'variation');
+            sinon.assert.calledWith(decisionListener, {
+              type: DECISION_INFO_TYPES.EXPERIMENT,
+              userId: 'testUser',
+              attributes: {},
+              decisionInfo: {
+                experimentKey: 'testExperiment',
+                variationKey: variation
+              }
+            });
+          });
+
+          it('should send notification with null variation key when activate returns null', function() {
+            bucketStub.returns(null);
+            var variation = optlyInstance.activate('testExperiment', 'testUser');
+            assert.isNull(variation);
+            sinon.assert.calledWith(decisionListener, {
+              type: DECISION_INFO_TYPES.EXPERIMENT,
+              userId: 'testUser',
+              attributes: {},
+              decisionInfo: {
+                experimentKey: 'testExperiment',
+                variationKey: null
+              }
+            });
+          });
+        });
+
+        describe('getVariation', function() {
+          it('should send notification with actual variation key when getVariation returns variation', function() {
+            bucketStub.returns('111129');
+            var variation = optlyInstance.getVariation('testExperiment', 'testUser');
+            assert.strictEqual(variation, 'variation');
+            sinon.assert.calledWith(decisionListener, {
+              type: DECISION_INFO_TYPES.EXPERIMENT,
+              userId: 'testUser',
+              attributes: {},
+              decisionInfo: {
+                experimentKey: 'testExperiment',
+                variationKey: variation
+              }
+            });
+          });
+  
+          it('should send notification with null variation key when getVariation returns null', function() {
+            var variation = optlyInstance.getVariation('testExperimentWithAudiences', 'testUser', {});
+            assert.isNull(variation);
+            sinon.assert.calledWith(decisionListener, {
+              type: DECISION_INFO_TYPES.EXPERIMENT,
+              userId: 'testUser',
+              attributes: {},
+              decisionInfo: {
+                experimentKey: 'testExperimentWithAudiences',
+                variationKey: null
+              }
+            });
+          });
+        });
       });
     });
   });
