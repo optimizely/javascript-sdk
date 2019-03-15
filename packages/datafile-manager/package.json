@@ -1,0 +1,46 @@
+{
+  "name": "datafile-manager",
+  "version": "0.1.0",
+  "description": "Optimizely Full Stack Datafile Manager",
+  "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/datafile-manager",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "__test__"
+  },
+  "files": [
+    "lib",
+    "LICENSE",
+    "CHANGELOG",
+    "README.md",
+    "package.json"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/optimizely/javascript-sdk.git"
+  },
+  "keywords": [
+    "optimizely"
+  ],
+  "bugs": {
+    "url": "https://github.com/optimizely/javascript-sdk/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.9",
+    "jest": "^24.1.0",
+    "ts-jest": "^24.0.0",
+    "typescript": "^3.3.3333"
+  },
+  "dependencies": {
+    "@optimizely/js-sdk-logging": "^0.1.0",
+    "@types/node": "^11.10.5"
+  },
+  "scripts": {
+    "test": "jest"
+  }
+}
