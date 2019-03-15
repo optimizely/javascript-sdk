@@ -358,7 +358,6 @@ describe('lib/optimizely', function() {
     var optlyInstance;
     var bucketStub;
     var clock;
-
     var createdLogger = logger.createLogger({
       logLevel: LOG_LEVEL.INFO,
       logToConsole: false,
@@ -396,8 +395,8 @@ describe('lib/optimizely', function() {
     describe('#activate', function() {
       it('should call bucketer and dispatchEvent with proper args and return variation key', function() {
         bucketStub.returns('111129');
-        var activate = optlyInstance.activate('testExperiment', 'testUser');
-        assert.strictEqual(activate, 'variation');
+        var variation = optlyInstance.activate('testExperiment', 'testUser');
+        assert.strictEqual(variation, 'variation');
 
         sinon.assert.calledOnce(bucketer.bucket);
         sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
@@ -1624,9 +1623,9 @@ describe('lib/optimizely', function() {
     describe('#getVariation', function() {
       it('should call bucketer and return variation key', function() {
         bucketStub.returns('111129');
-        var getVariation = optlyInstance.getVariation('testExperiment', 'testUser');
+        var variation = optlyInstance.getVariation('testExperiment', 'testUser');
 
-        assert.strictEqual(getVariation, 'variation');
+        assert.strictEqual(variation, 'variation');
 
         sinon.assert.calledOnce(bucketer.bucket);
         sinon.assert.called(createdLogger.log);
@@ -2526,6 +2525,105 @@ describe('lib/optimizely', function() {
         var decisionListener;
         beforeEach(function() {
           decisionListener = sinon.spy();
+        });
+
+        describe('activate', function() {
+          beforeEach(function() {
+            optlyInstance = new Optimizely({
+              clientEngine: 'node-sdk',
+              datafile: testData.getTestProjectConfig(),
+              eventBuilder: eventBuilder,
+              errorHandler: errorHandler,
+              eventDispatcher: eventDispatcher,
+              jsonSchemaValidator: jsonSchemaValidator,
+              logger: createdLogger,
+              isValidInstance: true,
+            });
+
+            optlyInstance.notificationCenter.addNotificationListener(
+              enums.NOTIFICATION_TYPES.DECISION,
+              decisionListener
+            );
+          });
+
+          it('should send notification with actual variation key when activate returns variation', function() {
+            bucketStub.returns('111129');
+            var variation = optlyInstance.activate('testExperiment', 'testUser');
+            assert.strictEqual(variation, 'variation');
+            sinon.assert.calledWith(decisionListener, {
+              type: DECISION_INFO_TYPES.EXPERIMENT,
+              userId: 'testUser',
+              attributes: {},
+              decisionInfo: {
+                experimentKey: 'testExperiment',
+                variationKey: variation
+              }
+            });
+          });
+
+          it('should send notification with null variation key when activate returns null', function() {
+            bucketStub.returns(null);
+            var variation = optlyInstance.activate('testExperiment', 'testUser');
+            assert.isNull(variation);
+            sinon.assert.calledWith(decisionListener, {
+              type: DECISION_INFO_TYPES.EXPERIMENT,
+              userId: 'testUser',
+              attributes: {},
+              decisionInfo: {
+                experimentKey: 'testExperiment',
+                variationKey: null
+              }
+            });
+          });
+        });
+
+        describe('getVariation', function() {
+          beforeEach(function() {
+            optlyInstance = new Optimizely({
+              clientEngine: 'node-sdk',
+              datafile: testData.getTestProjectConfig(),
+              eventBuilder: eventBuilder,
+              errorHandler: errorHandler,
+              eventDispatcher: eventDispatcher,
+              jsonSchemaValidator: jsonSchemaValidator,
+              logger: createdLogger,
+              isValidInstance: true,
+            });
+
+            optlyInstance.notificationCenter.addNotificationListener(
+              enums.NOTIFICATION_TYPES.DECISION,
+              decisionListener
+            );
+          });
+
+          it('should send notification with actual variation key when getVariation returns variation', function() {
+            bucketStub.returns('111129');
+            var variation = optlyInstance.getVariation('testExperiment', 'testUser');
+            assert.strictEqual(variation, 'variation');
+            sinon.assert.calledWith(decisionListener, {
+              type: DECISION_INFO_TYPES.EXPERIMENT,
+              userId: 'testUser',
+              attributes: {},
+              decisionInfo: {
+                experimentKey: 'testExperiment',
+                variationKey: variation
+              }
+            });
+          });
+  
+          it('should send notification with null variation key when getVariation returns null', function() {
+            var variation = optlyInstance.getVariation('testExperimentWithAudiences', 'testUser', {});
+            assert.isNull(variation);
+            sinon.assert.calledWith(decisionListener, {
+              type: DECISION_INFO_TYPES.EXPERIMENT,
+              userId: 'testUser',
+              attributes: {},
+              decisionInfo: {
+                experimentKey: 'testExperimentWithAudiences',
+                variationKey: null
+              }
+            });
+          });
         });
 
         describe('feature management', function() {
