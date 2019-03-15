@@ -37,6 +37,8 @@ var LOG_MESSAGES = enums.LOG_MESSAGES;
 var MODULE_NAME = 'OPTIMIZELY';
 var DECISION_SOURCES = enums.DECISION_SOURCES;
 var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
+var DECISION_INFO_TYPES = enums.DECISION_INFO_TYPES;
+var NOTIFICATION_TYPES = enums.NOTIFICATION_TYPES;
 
 var DEFAULT_EVENT_MAX_QUEUE_SIZE = 1;
 var DEFAULT_EVENT_FLUSH_INTERVAL = 5000;
@@ -227,13 +229,16 @@ Optimizely.prototype.__emitNotificationCenterActivate = function(experimentKey, 
   if (experiment && experiment.variationKeyMap) {
     variation = experiment.variationKeyMap[variationKey];
   }
-  this.notificationCenter.sendNotifications(enums.NOTIFICATION_TYPES.ACTIVATE, {
-    experiment: experiment,
-    userId: userId,
-    attributes: attributes,
-    variation: variation,
-    logEvent: impressionEvent,
-  });
+  this.notificationCenter.sendNotifications(
+    NOTIFICATION_TYPES.ACTIVATE,
+    {
+      experiment: experiment,
+      userId: userId,
+      attributes: attributes,
+      variation: variation,
+      logEvent: impressionEvent
+    }
+  );
 };
 
 /**
@@ -301,7 +306,7 @@ Optimizely.prototype.__emitNotificationCenterTrack = function(eventKey, userId, 
     };
     var conversionEvent = eventBuilder.getConversionEvent(conversionEventOptions);
 
-    this.notificationCenter.sendNotifications(enums.NOTIFICATION_TYPES.TRACK, {
+    this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.TRACK, {
       eventKey: eventKey,
       userId: userId,
       attributes: attributes,
@@ -339,7 +344,21 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
         return null;
       }
 
-      return this.decisionService.getVariation(experimentKey, userId, attributes);
+      var variationKey = this.decisionService.getVariation(experimentKey, userId, attributes);
+      this.notificationCenter.sendNotifications(
+        NOTIFICATION_TYPES.DECISION,
+        {
+          type: DECISION_INFO_TYPES.EXPERIMENT,
+          userId: userId,
+          attributes: attributes || {},
+          decisionInfo: {
+            experimentKey: experimentKey,
+            variationKey: variationKey,
+          }
+        }
+      );
+
+      return variationKey;
     } catch (ex) {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       this.errorHandler.handleError(ex);

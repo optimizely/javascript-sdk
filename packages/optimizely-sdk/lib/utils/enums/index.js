@@ -173,10 +173,23 @@ exports.NODE_CLIENT_VERSION = '3.1.0-beta1';
  *    - attributes {Object|undefined}
  *    - eventTags {Object|undefined}
  *    - logEvent {Object}
+ * 
+ *  DECISION: A decision is made in the system. i.e. user activation, 
+ *  feature access or feature-variable value retrieval
+ *  Callbacks will receive an object argument with the following properties:
+ *    - type {string}
+ *    - userId {string}
+ *    - attributes {Object|undefined}
+ *    - decisionInfo {Object|undefined}
  */
 exports.NOTIFICATION_TYPES = {
   ACTIVATE: 'ACTIVATE:experiment, user_id,attributes, variation, event',
   TRACK: 'TRACK:event_key, user_id, attributes, event_tags, event',
+  DECISION: 'DECISION:type, userId, attributes, decisionInfo',
+};
+
+exports.DECISION_INFO_TYPES = {
+  EXPERIMENT: 'experiment',
 };
 
 /*
