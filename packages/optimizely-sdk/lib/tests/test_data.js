@@ -553,9 +553,9 @@ var configWithFeatures = {
             },
             {
               id: '6199684360044544',
-              value: '50.55'
-            }
-          ]
+              value: '50.55',
+            },
+          ],
         },
         {
           key: 'variation2',
@@ -564,22 +564,22 @@ var configWithFeatures = {
           variables: [
             {
               id: '4792309476491264',
-              value: '40'
+              value: '40',
             },
             {
               id: '5073784453201920',
-              value: 'true'
+              value: 'true',
             },
             {
               id: '5636734406623232',
-              value: 'Buy me Later'
+              value: 'Buy me Later',
             },
             {
               id: '6199684360044544',
-              value: '99.99'
-            }
-          ]
-        }
+              value: '99.99',
+            },
+          ],
+        },
       ],
       status: 'Running',
       key: 'testing_my_feature',
