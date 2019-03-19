@@ -2746,7 +2746,7 @@ describe('lib/optimizely', function() {
               describe('when the variation is toggled OFF', function() {
                 beforeEach(function() {
                   var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, 'testing_my_feature');
-                  var variation = experiment.variations[1];
+                  var variation = experiment.variations[2];
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
                     variation: variation,
@@ -2769,7 +2769,7 @@ describe('lib/optimizely', function() {
                       variableType: FEATURE_VARIABLE_TYPES.BOOLEAN,
                       source: DECISION_SOURCES.EXPERIMENT,
                       sourceExperimentKey: 'testing_my_feature',
-                      sourceVariationKey: 'control'
+                      sourceVariationKey: 'variation2'
                     }
                   });
                 });
@@ -2789,7 +2789,7 @@ describe('lib/optimizely', function() {
                       variableType: FEATURE_VARIABLE_TYPES.DOUBLE,
                       source: DECISION_SOURCES.EXPERIMENT,
                       sourceExperimentKey: 'testing_my_feature',
-                      sourceVariationKey: 'control'
+                      sourceVariationKey: 'variation2'
                     }
                   });
                 });
@@ -2809,7 +2809,7 @@ describe('lib/optimizely', function() {
                       variableType: FEATURE_VARIABLE_TYPES.INTEGER,
                       source: DECISION_SOURCES.EXPERIMENT,
                       sourceExperimentKey: 'testing_my_feature',
-                      sourceVariationKey: 'control'
+                      sourceVariationKey: 'variation2'
                     }
                   });
                 });
@@ -2829,7 +2829,7 @@ describe('lib/optimizely', function() {
                       variableType: FEATURE_VARIABLE_TYPES.STRING,
                       source: DECISION_SOURCES.EXPERIMENT,
                       sourceExperimentKey: 'testing_my_feature',
-                      sourceVariationKey: 'control'
+                      sourceVariationKey: 'variation2'
                     }
                   });
                 });

@@ -729,34 +729,26 @@ describe('lib/core/decision_service', function() {
                     'variables': [
                       {
                         'id': '4792309476491264',
-                        'value': '40'
+                        'value': '10'
                       },
                       {
                         'id': '5073784453201920',
-                        'value': 'true'
+                        'value': 'false'
                       },
                       {
                         'id': '5636734406623232',
-                        'value': 'Buy me Later'
+                        'value': 'Buy me'
                       },
                       {
                         'id': '6199684360044544',
-                        'value': '99.99'
+                        'value': '50.55'
                       }
                     ],
-                    'featureEnabled': false,
+                    'featureEnabled': true,
                     'key': 'control'
-                  }
-                ],
-                'audienceIds': [],
-                'trafficAllocation': [
-                  { 'endOfRange': 5000, 'entityId': '594096' },
-                  { 'endOfRange': 10000, 'entityId': '594097' }
-                ],
-                'layerId': '594093',
-                variationKeyMap: {
-                  control: {
-                    'id': '594097',
+                  },
+                  {
+                    'id': '594099',
                     'variables': [
                       {
                         'id': '4792309476491264',
@@ -776,6 +768,37 @@ describe('lib/core/decision_service', function() {
                       }
                     ],
                     'featureEnabled': false,
+                    'key': 'variation2'
+                  }
+                ],
+                'audienceIds': [],
+                'trafficAllocation': [
+                  { 'endOfRange': 5000, 'entityId': '594096' },
+                  { 'endOfRange': 10000, 'entityId': '594097' }
+                ],
+                'layerId': '594093',
+                variationKeyMap: {
+                  control: {
+                    'id': '594097',
+                    'variables': [
+                      {
+                        'id': '4792309476491264',
+                        'value': '10'
+                      },
+                      {
+                        'id': '5073784453201920',
+                        'value': 'false'
+                      },
+                      {
+                        'id': '5636734406623232',
+                        'value': 'Buy me'
+                      },
+                      {
+                        'id': '6199684360044544',
+                        'value': '50.55'
+                      }
+                    ],
+                    'featureEnabled': true,
                     'key': 'control'
                   },
                   variation: {
@@ -801,6 +824,29 @@ describe('lib/core/decision_service', function() {
                     'featureEnabled': true,
                     'key': 'variation'
                   },
+                  variation2: {
+                    'id': '594099',
+                    'variables': [
+                      {
+                        'id': '4792309476491264',
+                        'value': '40'
+                      },
+                      {
+                        'id': '5073784453201920',
+                        'value': 'true'
+                      },
+                      {
+                        'id': '5636734406623232',
+                        'value': 'Buy me Later'
+                      },
+                      {
+                        'id': '6199684360044544',
+                        'value': '99.99'
+                      }
+                    ],
+                    'featureEnabled': false,
+                    'key': 'variation2'
+                  }
                 },
               },
               variation: {
