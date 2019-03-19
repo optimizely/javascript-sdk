@@ -51,7 +51,7 @@ describe('nodeDatafileManager', () => {
     expect(makeGetRequestSpy.mock.calls[0][0]).toBe('https://cdn.optimizely.com/datafiles/1234.json')
     expect(makeGetRequestSpy.mock.calls[0][1]).toEqual({})
 
-    await manager.onReady
+    await manager.onReady()
     await manager.stop()
   })
 
@@ -72,7 +72,7 @@ describe('nodeDatafileManager', () => {
       timeoutFactory: testTimeoutFactory,
     })
     manager.start()
-    await manager.onReady
+    await manager.onReady()
     testTimeoutFactory.timeoutFns[0]()
     expect(makeGetRequestSpy).toBeCalledTimes(2)
     expect(makeGetRequestSpy.mock.calls[1][0]).toBe('https://cdn.optimizely.com/datafiles/1234.json')

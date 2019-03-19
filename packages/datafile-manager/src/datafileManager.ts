@@ -34,7 +34,7 @@ interface Managed {
 export interface DatafileManager extends Managed {
   get: () => string | null
   on: (eventName: string, listener: DatafileUpdateListener) => () => void
-  onReady: Promise<void>
+  onReady: () => Promise<void>
 }
 
 export enum CacheDirective {

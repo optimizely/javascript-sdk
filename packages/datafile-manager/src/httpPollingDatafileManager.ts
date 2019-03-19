@@ -36,17 +36,17 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
   // The request will be aborted if the manager is stopped while the request is in flight.
   protected abstract makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest
 
-  public readonly onReady: Promise<void>
-
   private currentDatafile: string | null
 
   private readonly sdkKey: string
 
-  private isOnReadySettled: boolean
+  private readonly readyPromise: Promise<void>
 
-  private onReadyResolver: () => void
+  private isReadyPromiseSettled: boolean
 
-  private onReadyRejecter: (err: Error) => void
+  private readyPromiseResolver: () => void
+
+  private readyPromiseRejecter: (err: Error) => void
 
   private readonly emitter: EventEmitter
 
@@ -84,12 +84,12 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       this.currentDatafile = null
     }
 
-    this.isOnReadySettled = false
-    this.onReadyResolver = () => {}
-    this.onReadyRejecter = () => {}
-    this.onReady = new Promise((resolve, reject) => {
-      this.onReadyResolver = resolve
-      this.onReadyRejecter = reject
+    this.isReadyPromiseSettled = false
+    this.readyPromiseResolver = () => {}
+    this.readyPromiseRejecter = () => {}
+    this.readyPromise = new Promise((resolve, reject) => {
+      this.readyPromiseResolver = resolve
+      this.readyPromiseRejecter = reject
     })
 
     this.isStarted = false
@@ -140,6 +140,10 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     return Promise.resolve()
   }
 
+  onReady(): Promise<void> {
+    return this.readyPromise
+  }
+
   on(eventName: string, listener: (datafileUpdate: DatafileUpdate) => void) {
     return this.emitter.on(eventName, listener)
   }
@@ -173,8 +177,8 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     if (datafile !== null) {
       logger.info('Updating datafile from response')
       this.currentDatafile = datafile
-      if (!this.isOnReadySettled) {
-        this.resolveOnReady()
+      if (!this.isReadyPromiseSettled) {
+        this.resolveReadyPromise()
       } else if (this.liveUpdates) {
         const datafileUpdate: DatafileUpdate = {
           datafile,
@@ -194,9 +198,9 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     if (this.liveUpdates) {
       this.scheduleNextUpdate()
     }
-    if (!this.isOnReadySettled && !this.liveUpdates) {
+    if (!this.isReadyPromiseSettled && !this.liveUpdates) {
       // We will never resolve ready, so reject it
-      this.rejectOnReady(new Error('Failed to become ready'))
+      this.rejectReadyPromise(new Error('Failed to become ready'))
     }
   }
 
@@ -225,14 +229,14 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       .then(onFetchComplete, onFetchComplete)
   }
 
-  private resolveOnReady(): void {
-    this.onReadyResolver()
-    this.isOnReadySettled = true
+  private resolveReadyPromise(): void {
+    this.readyPromiseResolver()
+    this.isReadyPromiseSettled = true
   }
 
-  private rejectOnReady(err: Error): void {
-    this.onReadyRejecter(err)
-    this.isOnReadySettled = true
+  private rejectReadyPromise(err: Error): void {
+    this.readyPromiseRejecter(err)
+    this.isReadyPromiseSettled = true
   }
 
   private scheduleNextUpdate(): void {
