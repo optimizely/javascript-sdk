@@ -16,28 +16,8 @@
 
 import HTTPPollingDatafileManager from '../src/httpPollingDatafileManager'
 import { Headers, AbortableRequest, Response } from '../src/http'
-import { TimeoutFactory } from '../src/timeoutFactory'
 import { DatafileManagerConfig } from '../src/datafileManager';
-
-class TestTimeoutFactory implements TimeoutFactory {
-  timeoutFns: Array<() => void> = []
-
-  cancelFns: Array<() => void> = []
-
-  setTimeout(onTimeout: () => void, timeout: number): () => void {
-    const cancelFn = jest.fn()
-    this.timeoutFns.push(() => {
-      onTimeout()
-    })
-    this.cancelFns.push(cancelFn)
-    return cancelFn
-  }
-
-  cleanup() {
-    this.timeoutFns = []
-    this.cancelFns = []
-  }
-}
+import TestTimeoutFactory from './testTimeoutFactory'
 
 // Test implementation:
 //   - Does not make any real requests: just resolves with queued responses (tests push onto queuedResponses)
