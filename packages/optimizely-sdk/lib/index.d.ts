@@ -16,9 +16,9 @@
 
 declare module '@optimizely/optimizely-sdk' {
     import enums = require('@optimizely/optimizely-sdk/lib/utils/enums');
-  
+
     export function createInstance(config: Config): Client;
-  
+
     // The options object given to Optimizely.createInstance.
     export interface Config {
         datafile: object;
@@ -29,8 +29,10 @@ declare module '@optimizely/optimizely-sdk' {
         skipJSONValidation?: boolean;
         jsonSchemaValidator?: object;
         userProfileService?: UserProfileService | null;
+        eventBatchSize?: number
+        eventFlushInterval?: number
     }
-  
+
     export interface Client {
         notificationCenter: NotificationCenter;
         activate(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
@@ -45,7 +47,7 @@ declare module '@optimizely/optimizely-sdk' {
         getFeatureVariableInteger(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): number | null;
         getFeatureVariableString(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): string | null;
     }
-  
+
     // An event to be submitted to Optimizely, enabling tracking the reach and impact of
     // tests and feature rollouts.
     export interface Event {
@@ -56,7 +58,7 @@ declare module '@optimizely/optimizely-sdk' {
         // Value to send in the request body, JSON-serialized.
         params: any,
     }
-  
+
     export interface EventDispatcher {
         /**
          * @param event
@@ -67,12 +69,12 @@ declare module '@optimizely/optimizely-sdk' {
          */
         dispatchEvent: (event: Event, callback: () => void) => void,
     }
-  
+
     export interface UserProfileService {
         lookup: (userId: string) => UserProfile,
         save: (profile: UserProfile) => void,
     }
-  
+
     // NotificationCenter-related types
     export interface NotificationCenter {
         addNotificationListener<T extends ListenerPayload>(notificationType: string, callback: NotificationListener<T>): number;
@@ -80,34 +82,34 @@ declare module '@optimizely/optimizely-sdk' {
         clearAllNotificationListeners(): void;
         clearNotificationListeners(notificationType: enums.NOTIFICATION_TYPES): void;
     }
-  
+
     export type NotificationListener<T extends ListenerPayload> = (notificationData: T) => void;
-  
+
     export interface ListenerPayload {
         userId: string;
         attributes: UserAttributes;
     }
-  
+
     export interface ActivateListenerPayload extends ListenerPayload {
         experiment: Experiment;
         variation: Variation;
         logEvent: Event;
     }
-  
+
     export type UserAttributes = {
         [name: string]: string
     };
-  
+
     export type EventTags = {
         [key: string]: string | number | boolean,
     };
-  
+
     export interface TrackListenerPayload extends ListenerPayload {
         eventKey: string;
         eventTags: EventTags;
         logEvent: Event;
     }
-  
+
     interface Experiment {
         id: string,
         key: string,
@@ -121,16 +123,16 @@ declare module '@optimizely/optimizely-sdk' {
         audienceIds: string[],
         forcedVariations: object,
     }
-  
+
     interface Variation {
         id: string,
         key: string,
     }
-  
+
     export interface Logger {
         log: (logLevel: enums.LOG_LEVEL, message: string) => void,
     }
-  
+
     // Information about past bucketing decisions for a user.
     export interface UserProfile {
         user_id: string,
@@ -141,7 +143,7 @@ declare module '@optimizely/optimizely-sdk' {
         },
     }
   }
-  
+
   declare module '@optimizely/optimizely-sdk/lib/utils/enums'{
     export enum LOG_LEVEL{
         NOTSET = 0,
@@ -150,27 +152,27 @@ declare module '@optimizely/optimizely-sdk' {
         WARNING =  3,
         ERROR = 4,
     }
-    export enum NOTIFICATION_TYPES { 
+    export enum NOTIFICATION_TYPES {
         ACTIVATE = 'ACTIVATE:experiment, user_id, attributes, variation, events',
         TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
     }
   }
-  
+
   declare module '@optimizely/optimizely-sdk/lib/plugins/event_dispatcher/index.node.js' {
-  
+
   }
-  
+
   declare module '@optimizely/optimizely-sdk/lib/utils/json_schema_validator' {
-  
+
   }
-  
+
   declare module '@optimizely/optimizely-sdk/lib/plugins/error_handler' {
   }
-  
+
   declare module '@optimizely/optimizely-sdk/lib/plugins/logger' {
     import * as Optimizely from '@optimizely/optimizely-sdk';
     import * as enums from '@optimizely/optimizely-sdk/lib/utils/enums';
-  
+
     export interface Config {
         logLevel?: enums.LOG_LEVEL,
         logToConsole?: boolean,
