@@ -17,7 +17,7 @@
 import { getLogger } from '@optimizely/js-sdk-logging'
 import { DatafileManager, DatafileManagerConfig, DatafileUpdate } from './datafileManager';
 import EventEmitter from './eventEmitter'
-import { Response, Headers } from './http';
+import { AbortableRequest, Response, Headers } from './http';
 import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE, SDK_KEY_TOKEN } from './config'
 import { TimeoutFactory, DEFAULT_TIMEOUT_FACTORY } from './timeoutFactory'
 
@@ -31,8 +31,10 @@ function isValidUpdateInterval(updateInterval: number): boolean {
 
 export default abstract class HTTPPollingDatafileManager implements DatafileManager {
   // Make an HTTP get request to the given URL with the given headers
-  // Return a promise for a Response. If we can't get a response, the promise is rejected
-  protected abstract makeGetRequest(reqUrl: string, headers: Headers): Promise<Response>
+  // Return an AbortableRequest, which has a promise for a Response.
+  // If we can't get a response, the promise is rejected.
+  // The request will be aborted if the manager is stopped while the request is in flight.
+  protected abstract makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest
 
   public readonly onReady: Promise<void>
 
@@ -61,6 +63,8 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
   private urlTemplate: string
 
   private timeoutFactory: TimeoutFactory
+
+  private currentRequest?: AbortableRequest
 
   constructor(config: DatafileManagerConfig) {
     const {
@@ -125,7 +129,14 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       this.cancelTimeout()
       this.cancelTimeout = undefined
     }
+
     this.emitter.removeAllListeners()
+
+    if (this.currentRequest) {
+      this.currentRequest.abort()
+      this.currentRequest = undefined
+    }
+
     return Promise.resolve()
   }
 
@@ -178,6 +189,8 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       return
     }
 
+    this.currentRequest = undefined
+
     if (this.liveUpdates) {
       this.scheduleNextUpdate()
     }
@@ -196,7 +209,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     const datafileUrl = this.getUrl(this.sdkKey)
 
     logger.debug('Making datafile request to url %s with headers: %s', datafileUrl, () => JSON.stringify(headers))
-    const datafileFetch = this.makeGetRequest(datafileUrl, headers)
+    this.currentRequest = this.makeGetRequest(datafileUrl, headers)
 
     const onFetchComplete = () => {
       this.onFetchComplete()
@@ -207,7 +220,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     const logMakeGetRequestError = (err: any) => {
       this.logMakeGetRequestError(err)
     }
-    datafileFetch
+    this.currentRequest.responsePromise
       .then(tryUpdatingDatafile, logMakeGetRequestError)
       .then(onFetchComplete, onFetchComplete)
   }

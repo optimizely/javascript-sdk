@@ -23,3 +23,8 @@ export interface Response {
   body: string
   headers: Headers
 }
+
+export interface AbortableRequest {
+  abort(): void
+  responsePromise: Promise<Response>
+}

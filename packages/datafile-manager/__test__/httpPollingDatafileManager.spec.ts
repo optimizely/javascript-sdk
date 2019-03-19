@@ -15,7 +15,7 @@
  */
 
 import HTTPPollingDatafileManager from '../src/httpPollingDatafileManager'
-import { Headers, Response } from '../src/http'
+import { Headers, AbortableRequest, Response } from '../src/http'
 import { TimeoutFactory } from '../src/timeoutFactory'
 import { DatafileManagerConfig } from '../src/datafileManager';
 
@@ -46,14 +46,16 @@ class TestDatafileManager extends HTTPPollingDatafileManager {
 
   responsePromises: Promise<Response>[] = []
 
-  makeGetRequest(url: string, headers: Headers): Promise<Response> {
+  makeGetRequest(url: string, headers: Headers): AbortableRequest {
     const nextResponse: Response | undefined = this.queuedResponses.pop()
+    let responsePromise: Promise<Response>
     if (nextResponse === undefined) {
-      return Promise.reject('No responses queued')
+      responsePromise = Promise.reject('No responses queued')
+    } else {
+      responsePromise = Promise.resolve(nextResponse)
     }
-    const respPromise = Promise.resolve(nextResponse)
-    this.responsePromises.push(respPromise)
-    return respPromise
+    this.responsePromises.push(responsePromise)
+    return  { responsePromise, abort: jest.fn() }
   }
 }
 
@@ -101,10 +103,6 @@ describe('httpPollingDatafileManager', () => {
   describe('when constructed with sdkKey only', () => {
     beforeEach(() => {
       manager = createTestManager({ sdkKey: '123', updateInterval: 10 })
-    })
-
-    afterEach(() => {
-      manager.stop()
     })
 
     describe('initial state', () => {
@@ -239,6 +237,23 @@ describe('httpPollingDatafileManager', () => {
           expect(manager.get()).toBe('{"foo": "bar"}')
         })
 
+        it('calls abort on the current request if there is a current request when stop is called', async () => {
+          manager.queuedResponses.push(
+            {
+              statusCode: 200,
+              body: '{"foo2": "bar2"}',
+              headers: {},
+            }
+          )
+          const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest')
+          manager.start()
+          const currentRequest = makeGetRequestSpy.mock.results[0]
+          expect(currentRequest.type).toBe('return')
+          expect(currentRequest.value.abort).toBeCalledTimes(0)
+          manager.stop()
+          expect(currentRequest.value.abort).toBeCalledTimes(1)
+        })
+
         it('can fail to become ready on the initial request, but succeed after a later polling update', async () => {
           manager.queuedResponses.push(
             {
@@ -366,7 +381,7 @@ describe('httpPollingDatafileManager', () => {
         body: '{"foo": "bar"}',
         headers: {},
       })
-      manager.makeGetRequest = () => Promise.reject(new Error('Could not connect'))
+      manager.makeGetRequest = () => ({ abort() {}, responsePromise: Promise.reject(new Error('Could not connect')) })
       manager.start()
       let didReject = false
       try {
