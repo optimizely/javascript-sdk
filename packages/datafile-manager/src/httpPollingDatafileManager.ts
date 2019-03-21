@@ -262,15 +262,9 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
 
   private trySavingLastModified(headers: Headers): void {
     const lastModifiedHeader = headers['last-modified'] || headers['Last-Modified']
-    if (typeof lastModifiedHeader === 'string') {
+    if (typeof lastModifiedHeader !== 'undefined') {
       this.lastResponseLastModified = lastModifiedHeader
       logger.debug('Saved last modified header value from response: %s', this.lastResponseLastModified)
-    } else if (typeof lastModifiedHeader === 'undefined') {
-    } else { // array
-      if (lastModifiedHeader.length === 1) {
-        this.lastResponseLastModified = lastModifiedHeader[0]
-        logger.debug('Saved last modified header value from response: %s', this.lastResponseLastModified)
-      }
     }
   }
 }

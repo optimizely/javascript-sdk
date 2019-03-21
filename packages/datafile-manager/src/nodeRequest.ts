@@ -30,6 +30,35 @@ function getRequestOptionsFromUrl(url: url.UrlWithStringQuery): http.RequestOpti
   }
 }
 
+/**
+ * Convert incomingMessage.headers (which has type http.IncomingHttpHeaders) into our Headers type defined in src/http.ts.
+ *
+ * Our Headers type is simplified and can't represent mutliple values for the same header name.
+ *
+ * We don't currently need multiple values support, and the consumer code becomes simpler if it can assume at-most 1 value
+ * per header name.
+ *
+ */
+function createHeadersFromNodeIncomingMessage(
+  incomingMessage: http.IncomingMessage,
+): Headers {
+  const headers: Headers = {}
+  Object.keys(incomingMessage.headers).forEach(headerName => {
+    const headerValue = incomingMessage.headers[headerName]
+    if (typeof headerValue === 'string') {
+      headers[headerName] = headerValue
+    } else if (typeof headerValue === 'undefined') {
+    } else {
+      // array
+      if (headerValue.length > 0) {
+        // We don't care about multiple values - just take the first one
+        headers[headerName] = headerValue[0]
+      }
+    }
+  })
+  return headers
+}
+
 function getResponseFromRequest(request: http.ClientRequest): Promise<Response> {
   // TODO: When we drop support for Node 6, consider using util.promisify instead of
   // constructing own Promise
@@ -56,7 +85,7 @@ function getResponseFromRequest(request: http.ClientRequest): Promise<Response> 
         resolve({
           statusCode: incomingMessage.statusCode,
           body: responseData,
-          headers: incomingMessage.headers,
+          headers: createHeadersFromNodeIncomingMessage(incomingMessage),
         })
       })
     })
