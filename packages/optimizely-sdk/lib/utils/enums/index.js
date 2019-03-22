@@ -200,8 +200,8 @@ exports.DECISION_INFO_TYPES = {
  * Optimizely.
  */
 exports.DECISION_SOURCES = {
-  EXPERIMENT: 'experiment',
-  ROLLOUT: 'rollout',
+  EXPERIMENT: 'EXPERIMENT',
+  ROLLOUT: 'ROLLOUT',
 };
 
 /*
