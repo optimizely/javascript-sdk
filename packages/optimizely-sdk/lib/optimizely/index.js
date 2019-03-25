@@ -614,8 +614,8 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     return null;
   }
 
+  var variableValue;
   var featureEnabled = false;
-  var variableValue = variable.defaultValue;
   var decision = this.decisionService.getVariationForFeature(featureFlag, userId, attributes);
   
   if (decision.variation !== null) {
@@ -623,6 +623,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     variableValue = projectConfig.getVariableValueForVariation(this.configObj, variable, decision.variation, this.logger);
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE, MODULE_NAME, variableKey, featureFlag.key, variableValue, userId));
   } else {
+  	variableValue = variable.defaultValue;
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE, MODULE_NAME, userId, variableKey, featureFlag.key));
   }
 
