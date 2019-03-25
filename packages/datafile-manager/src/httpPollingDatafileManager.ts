@@ -20,6 +20,7 @@ import EventEmitter from './eventEmitter'
 import { AbortableRequest, Response, Headers } from './http';
 import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE, SDK_KEY_TOKEN } from './config'
 import { TimeoutFactory, DEFAULT_TIMEOUT_FACTORY } from './timeoutFactory'
+import BackoffController from './backoffController';
 
 const logger = getLogger('DatafileManager')
 
@@ -27,6 +28,10 @@ const UPDATE_EVT = 'update'
 
 function isValidUpdateInterval(updateInterval: number): boolean {
   return updateInterval >= MIN_UPDATE_INTERVAL
+}
+
+function isSuccessStatusCode(statusCode: number): boolean {
+  return statusCode >= 200 && statusCode < 400
 }
 
 export default abstract class HTTPPollingDatafileManager implements DatafileManager {
@@ -65,6 +70,8 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
   private timeoutFactory: TimeoutFactory
 
   private currentRequest?: AbortableRequest
+
+  private backoffController: BackoffController
 
   constructor(config: DatafileManagerConfig) {
     const {
@@ -108,6 +115,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       logger.warn('Invalid updateInterval %s, defaulting to %s', updateInterval, DEFAULT_UPDATE_INTERVAL)
       this.updateInterval = DEFAULT_UPDATE_INTERVAL
     }
+    this.backoffController = new BackoffController()
   }
 
   get(): string | null {
@@ -118,6 +126,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     if (!this.isStarted) {
       logger.debug('Datafile manager started')
       this.isStarted = true
+      this.backoffController.reset()
       this.syncDatafile()
     }
   }
@@ -152,10 +161,12 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     return this.urlTemplate.replace(SDK_KEY_TOKEN, sdkKey)
   }
 
-  private logMakeGetRequestError(err: any): void {
+  private onRequestRejected(err: any): void {
     if (!this.isStarted) {
       return
     }
+
+    this.backoffController.countError()
 
     if (err instanceof Error) {
       logger.error('Error fetching datafile: %s', err.message, err)
@@ -166,9 +177,16 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     }
   }
 
-  private tryUpdatingDatafile(response: Response): void {
+  private onRequestResolved(response: Response): void {
     if (!this.isStarted) {
       return
+    }
+
+    if (typeof response.statusCode !== 'undefined' &&
+        isSuccessStatusCode(response.statusCode)) {
+      this.backoffController.reset()
+    } else {
+      this.backoffController.countError()
     }
 
     this.trySavingLastModified(response.headers)
@@ -188,7 +206,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     }
   }
 
-  private onFetchComplete(this: HTTPPollingDatafileManager): void {
+  private onRequestComplete(this: HTTPPollingDatafileManager): void {
     if (!this.isStarted) {
       return
     }
@@ -215,18 +233,18 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     logger.debug('Making datafile request to url %s with headers: %s', datafileUrl, () => JSON.stringify(headers))
     this.currentRequest = this.makeGetRequest(datafileUrl, headers)
 
-    const onFetchComplete = () => {
-      this.onFetchComplete()
+    const onRequestComplete = () => {
+      this.onRequestComplete()
     }
-    const tryUpdatingDatafile = (response: Response) => {
-      this.tryUpdatingDatafile(response)
+    const onRequestResolved = (response: Response) => {
+      this.onRequestResolved(response)
     }
-    const logMakeGetRequestError = (err: any) => {
-      this.logMakeGetRequestError(err)
+    const onRequestRejected = (err: any) => {
+      this.onRequestRejected(err)
     }
     this.currentRequest.responsePromise
-      .then(tryUpdatingDatafile, logMakeGetRequestError)
-      .then(onFetchComplete, onFetchComplete)
+      .then(onRequestResolved, onRequestRejected)
+      .then(onRequestComplete, onRequestComplete)
   }
 
   private resolveReadyPromise(): void {
@@ -240,10 +258,12 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
   }
 
   private scheduleNextUpdate(): void {
-    logger.debug('Scheduling sync in %s ms', this.updateInterval)
+    const currentBackoffDelay = this.backoffController.getDelay()
+    const nextUpdateDelay = Math.max(currentBackoffDelay, this.updateInterval)
+    logger.debug('Scheduling sync in %s ms', nextUpdateDelay)
     this.cancelTimeout = this.timeoutFactory.setTimeout(() => {
       this.syncDatafile()
-    }, this.updateInterval)
+    }, nextUpdateDelay)
   }
 
   private getNextDatafileFromResponse(response: Response): string | null {
@@ -254,7 +274,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     if (response.statusCode === 304) {
       return null
     }
-    if (response.statusCode >= 200 && response.statusCode < 400) {
+    if (isSuccessStatusCode(response.statusCode)) {
       return response.body
     }
     return null

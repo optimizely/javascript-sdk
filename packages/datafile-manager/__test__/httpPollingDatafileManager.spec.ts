@@ -19,18 +19,33 @@ import { Headers, AbortableRequest, Response } from '../src/http'
 import { DatafileManagerConfig } from '../src/datafileManager';
 import TestTimeoutFactory from './testTimeoutFactory'
 
+jest.mock('../src/backoffController', () => {
+  return jest.fn().mockImplementation(() => {
+    const getDelayMock = jest.fn().mockImplementation(() => 0)
+    return {
+      getDelay: getDelayMock,
+      countError: jest.fn(),
+      reset: jest.fn(),
+    }
+  })
+});
+
+import BackoffController from '../src/backoffController'
+
 // Test implementation:
 //   - Does not make any real requests: just resolves with queued responses (tests push onto queuedResponses)
 class TestDatafileManager extends HTTPPollingDatafileManager {
-  queuedResponses: Response[] = []
+  queuedResponses: (Response | Error)[] = []
 
   responsePromises: Promise<Response>[] = []
 
   makeGetRequest(url: string, headers: Headers): AbortableRequest {
-    const nextResponse: Response | undefined = this.queuedResponses.pop()
+    const nextResponse: Error | Response | undefined = this.queuedResponses.pop()
     let responsePromise: Promise<Response>
     if (nextResponse === undefined) {
       responsePromise = Promise.reject('No responses queued')
+    } else if (nextResponse instanceof Error) {
+      responsePromise = Promise.reject(nextResponse)
     } else {
       responsePromise = Promise.resolve(nextResponse)
     }
@@ -56,6 +71,7 @@ describe('httpPollingDatafileManager', () => {
     if (manager) {
       manager.stop()
     }
+    jest.clearAllMocks()
     jest.restoreAllMocks()
   })
 
@@ -319,6 +335,79 @@ describe('httpPollingDatafileManager', () => {
             expect(headers).toEqual({
               'if-modified-since': 'Fri, 08 Mar 2019 18:57:17 GMT',
             })
+          })
+        })
+
+        describe('backoff', () => {
+          it('uses the delay from the backoff controller getDelay method when greater than updateInterval', async () => {
+            const BackoffControllerMock = (BackoffController as unknown) as jest.Mock<BackoffController, []>
+            const getDelayMock = BackoffControllerMock.mock.results[0].value.getDelay
+            getDelayMock.mockImplementationOnce(() => 5432)
+            const setTimeoutSpy = jest.spyOn(testTimeoutFactory, 'setTimeout')
+            manager.queuedResponses.push(
+              {
+                statusCode: 404,
+                body: '',
+                headers: {}
+              }
+            )
+            manager.start()
+            await manager.responsePromises[0]
+            expect(setTimeoutSpy).toBeCalledTimes(1)
+            expect(setTimeoutSpy.mock.calls[0][1]).toBe(5432)
+          })
+
+          it('calls countError on the backoff controller when a non-success status code response is received', async () => {
+            manager.queuedResponses.push(
+              {
+                statusCode: 404,
+                body: '',
+                headers: {}
+              }
+            )
+            manager.start()
+            await manager.responsePromises[0]
+            const BackoffControllerMock = (BackoffController as unknown) as jest.Mock<BackoffController, []>
+            expect(BackoffControllerMock.mock.results[0].value.countError).toBeCalledTimes(1)
+          })
+
+          it('calls countError on the backoff controller when the response promise rejects', async () => {
+            manager.queuedResponses.push(new Error('Connection failed'))
+            manager.start()
+            try {
+              await manager.responsePromises[0]
+            } catch (e) {
+            }
+            const BackoffControllerMock = (BackoffController as unknown) as jest.Mock<BackoffController, []>
+            expect(BackoffControllerMock.mock.results[0].value.countError).toBeCalledTimes(1)
+          })
+
+          it('calls reset on the backoff controller when a success status code response is received', async () => {
+            manager.queuedResponses.push(
+              {
+                statusCode: 200,
+                body: '{"foo": "bar"}',
+                headers: {
+                  'Last-Modified': 'Fri, 08 Mar 2019 18:57:17 GMT',
+                },
+              }
+            )
+            manager.start()
+            const BackoffControllerMock = (BackoffController as unknown) as jest.Mock<BackoffController, []>
+            // Reset is called in start - we want to check that it is also called after the response, so reset the mock here
+            BackoffControllerMock.mock.results[0].value.reset.mockReset()
+            await manager.onReady()
+            expect(BackoffControllerMock.mock.results[0].value.reset).toBeCalledTimes(1)
+          })
+
+          it('resets the backoff controller when start is called', async () => {
+            const BackoffControllerMock = (BackoffController as unknown) as jest.Mock<BackoffController, []>
+            manager.start()
+            expect(BackoffControllerMock.mock.results[0].value.reset).toBeCalledTimes(1)
+            try {
+              await manager.responsePromises[0]
+            } catch (e) {
+            }
           })
         })
       })
