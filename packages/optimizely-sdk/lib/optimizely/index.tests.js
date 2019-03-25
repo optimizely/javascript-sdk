@@ -2478,7 +2478,7 @@ describe('lib/optimizely', function() {
                   });
                 });
       
-                it('returns the right value from getFeatureVariableBoolean and send notification', function() {
+                it('returns the right value from getFeatureVariableBoolean and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, true);
                   sinon.assert.calledWith(decisionListener, {
@@ -2498,7 +2498,7 @@ describe('lib/optimizely', function() {
                   });
                 });
       
-                it('returns the right value from getFeatureVariableDouble and send notification', function() {
+                it('returns the right value from getFeatureVariableDouble and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 20.25);
                   sinon.assert.calledWith(decisionListener, {
@@ -2518,7 +2518,7 @@ describe('lib/optimizely', function() {
                   });
                 });
       
-                it('returns the right value from getFeatureVariableInteger and send notification', function() {
+                it('returns the right value from getFeatureVariableInteger and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 2);
                   sinon.assert.calledWith(decisionListener, {
@@ -2538,7 +2538,7 @@ describe('lib/optimizely', function() {
                   });
                 });
       
-                it('returns the right value from getFeatureVariableString and send notification', function() {
+                it('returns the right value from getFeatureVariableString and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 'Buy me NOW');
                   sinon.assert.calledWith(decisionListener, {
@@ -2570,9 +2570,9 @@ describe('lib/optimizely', function() {
                   });
                 });
       
-                it('returns the default value from getFeatureVariableBoolean and send notification', function() {
+                it('returns the right value from getFeatureVariableBoolean and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
-                  assert.strictEqual(result, false);
+                  assert.strictEqual(result, true);
                   sinon.assert.calledWith(decisionListener, {
                     type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
@@ -2581,7 +2581,7 @@ describe('lib/optimizely', function() {
                       featureKey: 'test_feature_for_experiment',
                       featureEnabled: false,
                       variableKey: 'is_button_animated',
-                      variableValue: false,
+                      variableValue: true,
                       variableType: FEATURE_VARIABLE_TYPES.BOOLEAN,
                       source: DECISION_SOURCES.EXPERIMENT,
                       sourceExperimentKey: 'testing_my_feature',
@@ -2590,9 +2590,9 @@ describe('lib/optimizely', function() {
                   });
                 });
       
-                it('returns the default value from getFeatureVariableDouble and send notification', function() {
+                it('returns the right value from getFeatureVariableDouble and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
-                  assert.strictEqual(result, 50.55);
+                  assert.strictEqual(result, 99.99);
                   sinon.assert.calledWith(decisionListener, {
                     type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
@@ -2601,7 +2601,7 @@ describe('lib/optimizely', function() {
                       featureKey: 'test_feature_for_experiment',
                       featureEnabled: false,
                       variableKey: 'button_width',
-                      variableValue: 50.55,
+                      variableValue: 99.99,
                       variableType: FEATURE_VARIABLE_TYPES.DOUBLE,
                       source: DECISION_SOURCES.EXPERIMENT,
                       sourceExperimentKey: 'testing_my_feature',
@@ -2610,9 +2610,9 @@ describe('lib/optimizely', function() {
                   });
                 });
       
-                it('returns the default value from getFeatureVariableInteger and send notification', function() {
+                it('returns the right value from getFeatureVariableInteger and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
-                  assert.strictEqual(result, 10);
+                  assert.strictEqual(result, 40);
                   sinon.assert.calledWith(decisionListener, {
                     type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
@@ -2621,7 +2621,7 @@ describe('lib/optimizely', function() {
                       featureKey: 'test_feature_for_experiment',
                       featureEnabled: false,
                       variableKey: 'num_buttons',
-                      variableValue: 10,
+                      variableValue: 40,
                       variableType: FEATURE_VARIABLE_TYPES.INTEGER,
                       source: DECISION_SOURCES.EXPERIMENT,
                       sourceExperimentKey: 'testing_my_feature',
@@ -2630,9 +2630,9 @@ describe('lib/optimizely', function() {
                   });
                 });
       
-                it('returns the default value from getFeatureVariableString and send notification', function() {
+                it('returns the right value from getFeatureVariableString and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
-                  assert.strictEqual(result, 'Buy me');
+                  assert.strictEqual(result, 'Buy me Later');
                   sinon.assert.calledWith(decisionListener, {
                     type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
@@ -2641,7 +2641,7 @@ describe('lib/optimizely', function() {
                       featureKey: 'test_feature_for_experiment',
                       featureEnabled: false,
                       variableKey: 'button_txt',
-                      variableValue: 'Buy me',
+                      variableValue: 'Buy me Later',
                       variableType: FEATURE_VARIABLE_TYPES.STRING,
                       source: DECISION_SOURCES.EXPERIMENT,
                       sourceExperimentKey: 'testing_my_feature',
@@ -2664,7 +2664,7 @@ describe('lib/optimizely', function() {
                   });
                 });
       
-                it('should return the right value from getFeatureVariableBoolean and send notification', function() {
+                it('should return the right value from getFeatureVariableBoolean and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, true);
                   sinon.assert.calledWith(decisionListener, {
@@ -2684,7 +2684,7 @@ describe('lib/optimizely', function() {
                   });
                 });
       
-                it('should return the right value from getFeatureVariableDouble and send notification', function() {
+                it('should return the right value from getFeatureVariableDouble and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariableDouble('test_feature', 'price', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 4.99);
                   sinon.assert.calledWith(decisionListener, {
@@ -2704,7 +2704,7 @@ describe('lib/optimizely', function() {
                   });
                 });
       
-                it('should return the right value from getFeatureVariableInteger and send notification', function() {
+                it('should return the right value from getFeatureVariableInteger and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariableInteger('test_feature', 'lasers', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 395);
                   sinon.assert.calledWith(decisionListener, {
@@ -2724,7 +2724,7 @@ describe('lib/optimizely', function() {
                   });
                 });
       
-                it('should return the right value from getFeatureVariableString and send notification', function() {
+                it('should return the right value from getFeatureVariableString and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariableString('test_feature', 'message', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 'Hello audience');
                   sinon.assert.calledWith(decisionListener, {
@@ -2756,7 +2756,7 @@ describe('lib/optimizely', function() {
                   });
                 });
       
-                it('should return the default value from getFeatureVariableBoolean and send notification', function() {
+                it('should return the right value from getFeatureVariableBoolean and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, false);
                   sinon.assert.calledWith(decisionListener, {
@@ -2776,7 +2776,7 @@ describe('lib/optimizely', function() {
                   });
                 });
       
-                it('should return the default value from getFeatureVariableDouble and send notification', function() {
+                it('should return the right value from getFeatureVariableDouble and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariableDouble('test_feature', 'price', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 14.99);
                   sinon.assert.calledWith(decisionListener, {
@@ -2796,7 +2796,7 @@ describe('lib/optimizely', function() {
                   });
                 });
       
-                it('should return the default value from getFeatureVariableInteger and send notification', function() {
+                it('should return the default value from getFeatureVariableInteger and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariableInteger('test_feature', 'lasers', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 400);
                   sinon.assert.calledWith(decisionListener, {
@@ -2816,7 +2816,7 @@ describe('lib/optimizely', function() {
                   });
                 });
       
-                it('should return the default value from getFeatureVariableString and send notification', function() {
+                it('should return the default value from getFeatureVariableString and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariableString('test_feature', 'message', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 'Hello');
                   sinon.assert.calledWith(decisionListener, {
@@ -2847,7 +2847,7 @@ describe('lib/optimizely', function() {
                 });
               });
       
-              it('returns the variable default value from getFeatureVariableBoolean and send notification', function() {
+              it('returns the variable default value from getFeatureVariableBoolean and send notification with featureEnabled false', function() {
                 var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
                 assert.strictEqual(result, false);
                 sinon.assert.calledWith(decisionListener, {
@@ -2867,7 +2867,7 @@ describe('lib/optimizely', function() {
                 });
               });
       
-              it('returns the variable default value from getFeatureVariableDouble and send notification', function() {
+              it('returns the variable default value from getFeatureVariableDouble and send notification with featureEnabled false', function() {
                 var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
                 assert.strictEqual(result, 50.55);
                 sinon.assert.calledWith(decisionListener, {
@@ -2887,10 +2887,9 @@ describe('lib/optimizely', function() {
                 });
               });
       
-              it('returns the variable default value from getFeatureVariableInteger and send notification', function() {
+              it('returns the variable default value from getFeatureVariableInteger and send notification with featureEnabled false', function() {
                 var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
                 assert.strictEqual(result, 10);
-                sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "num_buttons" of feature flag "test_feature_for_experiment".');
                 sinon.assert.calledWith(decisionListener, {
                   type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
                   userId: 'user1',
@@ -2908,7 +2907,7 @@ describe('lib/optimizely', function() {
                 });
               });
       
-              it('returns the variable default value from getFeatureVariableString', function() {
+              it('returns the variable default value from getFeatureVariableString and send notification with featureEnabled false', function() {
                 var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
                 assert.strictEqual(result, 'Buy me');
                 sinon.assert.calledWith(decisionListener, {
