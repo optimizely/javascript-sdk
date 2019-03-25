@@ -746,6 +746,29 @@ describe('lib/core/decision_service', function() {
                     ],
                     'featureEnabled': true,
                     'key': 'control'
+                  },
+                  {
+                    'id': '594099',
+                    'variables': [
+                      {
+                        'id': '4792309476491264',
+                        'value': '40'
+                      },
+                      {
+                        'id': '5073784453201920',
+                        'value': 'true'
+                      },
+                      {
+                        'id': '5636734406623232',
+                        'value': 'Buy me Later'
+                      },
+                      {
+                        'id': '6199684360044544',
+                        'value': '99.99'
+                      }
+                    ],
+                    'featureEnabled': false,
+                    'key': 'variation2'
                   }
                 ],
                 'audienceIds': [],
@@ -800,6 +823,29 @@ describe('lib/core/decision_service', function() {
                     ],
                     'featureEnabled': true,
                     'key': 'variation'
+                  },
+                  variation2: {
+                    'id': '594099',
+                    'variables': [
+                      {
+                        'id': '4792309476491264',
+                        'value': '40'
+                      },
+                      {
+                        'id': '5073784453201920',
+                        'value': 'true'
+                      },
+                      {
+                        'id': '5636734406623232',
+                        'value': 'Buy me Later'
+                      },
+                      {
+                        'id': '6199684360044544',
+                        'value': '99.99'
+                      }
+                    ],
+                    'featureEnabled': false,
+                    'key': 'variation2'
                   },
                 },
               },

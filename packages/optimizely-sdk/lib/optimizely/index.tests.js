@@ -2999,25 +2999,25 @@ describe('lib/optimizely', function() {
             });
           });
 
-          it('returns the default variable value from getFeatureVariableBoolean', function() {
+          it('returns the variable default value from getFeatureVariableBoolean', function() {
             var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, false);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "is_button_animated".');
           });
 
-          it('returns the default variable value from getFeatureVariableDouble', function() {
+          it('returns the variable default value from getFeatureVariableDouble', function() {
             var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, 50.55);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "button_width".');
           });
 
-          it('returns the default variable value from getFeatureVariableInteger', function() {
+          it('returns the variable default value from getFeatureVariableInteger', function() {
             var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, 10);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "num_buttons".');
           });
 
-          it('returns the default variable value from getFeatureVariableString', function() {
+          it('returns the variable default value from getFeatureVariableString', function() {
             var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, 'Buy me');
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "button_txt".');
@@ -3038,64 +3038,98 @@ describe('lib/optimizely', function() {
           });
 
           it('returns the right value from getFeatureVariableBoolean', function() {
-            var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
+            var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, true);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "is_button_animated" of feature flag "test_feature_for_experiment" is true for user "user1"');
+            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "new_content" of feature flag "test_feature" is true for user "user1"');
           });
 
           it('returns the right value from getFeatureVariableDouble', function() {
-            var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
-            assert.strictEqual(result, 20.25);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "button_width" of feature flag "test_feature_for_experiment" is 20.25 for user "user1"');
+            var result = optlyInstance.getFeatureVariableDouble('test_feature', 'price', 'user1', { test_attribute: 'test_value' });
+            assert.strictEqual(result, 4.99);
+            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "price" of feature flag "test_feature" is 4.99 for user "user1"');
           });
 
           it('returns the right value from getFeatureVariableInteger', function() {
-            var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
-            assert.strictEqual(result, 2);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "num_buttons" of feature flag "test_feature_for_experiment" is 2 for user "user1"');
+            var result = optlyInstance.getFeatureVariableInteger('test_feature', 'lasers', 'user1', { test_attribute: 'test_value' });
+            assert.strictEqual(result, 395);
+            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "lasers" of feature flag "test_feature" is 395 for user "user1"');
           });
 
           it('returns the right value from getFeatureVariableString', function() {
-            var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
-            assert.strictEqual(result, 'Buy me NOW');
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "button_txt" of feature flag "test_feature_for_experiment" is Buy me NOW for user "user1"');
+            var result = optlyInstance.getFeatureVariableString('test_feature', 'message', 'user1', { test_attribute: 'test_value' });
+            assert.strictEqual(result, 'Hello audience');
+            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Value for variable "message" of feature flag "test_feature" is Hello audience for user "user1"');
           });
         });
 
         describe('when the variation is toggled OFF', function() {
           beforeEach(function() {
-            var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, 'testing_my_feature');
-            var variation = experiment.variations[2];
+            var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, '594037');
+            var variation = experiment.variations[0];
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
               experiment: experiment,
               variation: variation,
-              decisionSource: DECISION_SOURCES.EXPERIMENT,
+              decisionSource: DECISION_SOURCES.ROLLOUT,
             });
           });
 
-          it('returns the default variable value from getFeatureVariableBoolean', function() {
-            var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
+          it('returns the variable default value from getFeatureVariableBoolean', function() {
+            var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', { test_attribute: 'test_value' });
             assert.strictEqual(result, false);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "is_button_animated".');
+            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "new_content".');
           });
 
-          it('returns the default variable value from getFeatureVariableDouble', function() {
-            var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
-            assert.strictEqual(result, 50.55);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "button_width".');
+          it('returns the variable default value from getFeatureVariableDouble', function() {
+            var result = optlyInstance.getFeatureVariableDouble('test_feature', 'price', 'user1', { test_attribute: 'test_value' });
+            assert.strictEqual(result, 14.99);
+            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "price".');
           });
 
-          it('returns the default variable value from getFeatureVariableInteger', function() {
-            var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
-            assert.strictEqual(result, 10);
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "num_buttons".');
+          it('returns the variable default value from getFeatureVariableInteger', function() {
+            var result = optlyInstance.getFeatureVariableInteger('test_feature', 'lasers', 'user1', { test_attribute: 'test_value' });
+            assert.strictEqual(result, 400);
+            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "lasers".');
           });
 
-          it('returns the default variable value from getFeatureVariableString', function() {
-            var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
-            assert.strictEqual(result, 'Buy me');
-            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "button_txt".');
+          it('returns the variable default value from getFeatureVariableString', function() {
+            var result = optlyInstance.getFeatureVariableString('test_feature', 'message', 'user1', { test_attribute: 'test_value' });
+            assert.strictEqual(result, 'Hello');
+            sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "message".');
           });
+        });
+      });
+
+      describe('not bucketed into an experiment or a rollout ', function() {
+        beforeEach(function() {
+          sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+            experiment: null,
+            variation: null,
+            decisionSource: null,
+          });
+        });
+
+        it('returns the variable default value from getFeatureVariableBoolean', function() {
+          var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, false);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "is_button_animated" of feature flag "test_feature_for_experiment".');
+        });
+
+        it('returns the variable default value from getFeatureVariableDouble', function() {
+          var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, 50.55);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_width" of feature flag "test_feature_for_experiment".');
+        });
+
+        it('returns the variable default value from getFeatureVariableInteger', function() {
+          var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, 10);
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "num_buttons" of feature flag "test_feature_for_experiment".');
+        });
+
+        it('returns the variable default value from getFeatureVariableString', function() {
+          var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
+          assert.strictEqual(result, 'Buy me');
+          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_txt" of feature flag "test_feature_for_experiment".');
         });
       });
 
@@ -3230,40 +3264,6 @@ describe('lib/optimizely', function() {
             assert.strictEqual(result, null);
             sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Unable to cast value zzz44.55 to type double, returning null.');
           });
-        });
-      });
-
-      describe('not bucketed into a variation', function() {
-        beforeEach(function() {
-          sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
-            experiment: null,
-            variation: null,
-            decisionSource: null,
-          });
-        });
-
-        it('returns the variable default value from getFeatureVariableBoolean', function() {
-          var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
-          assert.strictEqual(result, false);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "is_button_animated" of feature flag "test_feature_for_experiment".');
-        });
-
-        it('returns the variable default value from getFeatureVariableDouble', function() {
-          var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
-          assert.strictEqual(result, 50.55);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_width" of feature flag "test_feature_for_experiment".');
-        });
-
-        it('returns the variable default value from getFeatureVariableInteger', function() {
-          var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
-          assert.strictEqual(result, 10);
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "num_buttons" of feature flag "test_feature_for_experiment".');
-        });
-
-        it('returns the variable default value from getFeatureVariableString', function() {
-          var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
-          assert.strictEqual(result, 'Buy me');
-          sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_txt" of feature flag "test_feature_for_experiment".');
         });
       });
 
