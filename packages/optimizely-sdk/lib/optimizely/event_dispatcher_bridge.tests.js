@@ -22,15 +22,13 @@ describe('lib/optimizely/event_dispatcher_bridge', function() {
   var legacyDispatcher;
   var eventSpy;
 
-  describe('when the legacy eventDispatcher uses a callback', function() {
+  describe("when the legacy eventDispatcher uses a callback, and callback's success=true", function() {
     beforeEach(function() {
       eventSpy = sinon.spy();
       legacyDispatcher = {
         dispatchEvent: function(event, callback) {
           eventSpy(event);
-          callback({
-            statusCode: 200,
-          });
+          callback(true);
         },
       };
     });
@@ -59,6 +57,41 @@ describe('lib/optimizely/event_dispatcher_bridge', function() {
     });
   });
 
+  describe("when the legacy eventDispatcher uses a callback, and callback's success=false", function() {
+    beforeEach(function() {
+      eventSpy = sinon.spy();
+      legacyDispatcher = {
+        dispatchEvent: function(event, callback) {
+          eventSpy(event);
+          callback(false);
+        },
+      };
+    });
+
+    it('should invoke the legacy dispatcher with the correct parameters', function(done) {
+      var bridge = new EventDispatcherBridge(legacyDispatcher);
+      var params = { foo: 'bar' };
+      var request = {
+        method: 'POST',
+        url: 'http://test.com',
+        headers: {},
+        event: params,
+      };
+
+      bridge.dispatch(request, function(success) {
+        assert.isFalse(success);
+        sinon.assert.calledOnce(eventSpy);
+
+        sinon.assert.calledWithExactly(eventSpy, {
+          httpVerb: 'POST',
+          url: 'http://test.com',
+          params: params,
+        });
+        done();
+      });
+    });
+  });
+
   describe('when the legacy dispatcher returns a promise', function() {
     beforeEach(function() {
       eventSpy = sinon.spy();
@@ -66,9 +99,7 @@ describe('lib/optimizely/event_dispatcher_bridge', function() {
         dispatchEvent: function(event, callback) {
           eventSpy(event);
           return new Promise(function(resolve) {
-            resolve({
-              statusCode: 200,
-            });
+            resolve(true);
           });
         },
       };

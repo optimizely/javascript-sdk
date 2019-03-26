@@ -36,7 +36,8 @@ module.exports = {
       req.onreadystatechange = function() {
         if (req.readyState === READYSTATE_COMPLETE && callback && typeof callback === 'function') {
           try {
-            callback(params);
+            var success = req.status >= 200 && req.status < 400;
+            callback(success);
           } catch (e) {
             // TODO: Log this somehow (consider adding a logger to the EventDispatcher interface)
           }
@@ -55,7 +56,8 @@ module.exports = {
       req.onreadystatechange = function() {
         if (req.readyState === READYSTATE_COMPLETE && callback && typeof callback === 'function') {
           try {
-            callback();
+            var success = req.status >= 200 && req.status < 400;
+            callback(success);
           } catch (e) {
             // TODO: Log this somehow (consider adding a logger to the EventDispatcher interface)
           }

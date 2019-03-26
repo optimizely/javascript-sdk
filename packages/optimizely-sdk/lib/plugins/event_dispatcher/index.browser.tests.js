@@ -27,8 +27,8 @@ describe('lib/plugins/event_dispatcher/browser', function() {
         xhr = sinon.useFakeXMLHttpRequest();
         global.XMLHttpRequest = xhr;
         requests = [];
-        xhr.onCreate = function (req) {
-            requests.push(req);
+        xhr.onCreate = function(req) {
+          requests.push(req);
         };
       });
 
@@ -36,15 +36,15 @@ describe('lib/plugins/event_dispatcher/browser', function() {
         xhr.restore();
       });
 
-      it('should send a POST request with the specified params', function(done) {
-        var eventParams = {'testParam': 'testParamValue'};
+      it('should send a POST request with the specified params', function() {
+        var eventParams = { testParam: 'testParamValue' };
         var eventObj = {
           url: 'https://cdn.com/event',
           body: {
             id: 123,
           },
           httpVerb: 'POST',
-          params: eventParams
+          params: eventParams,
         };
 
         var callback = sinon.spy();
@@ -52,40 +52,112 @@ describe('lib/plugins/event_dispatcher/browser', function() {
         assert.strictEqual(1, requests.length);
         assert.strictEqual(requests[0].method, 'POST');
         assert.strictEqual(requests[0].requestBody, JSON.stringify(eventParams));
-        done();
       });
 
-      it('should execute the callback passed to event dispatcher with a post', function(done) {
-        var eventParams = {'testParam': 'testParamValue'};
-        var eventObj = {
-          url: 'https://cdn.com/event',
-          body: {
-            id: 123,
-          },
-          httpVerb: 'POST',
-          params: eventParams
-        };
+      describe('when response code = 200', function() {
+        it('should execute the callback passed to event dispatcher with a post', function() {
+          var eventParams = { testParam: 'testParamValue' };
+          var eventObj = {
+            url: 'https://cdn.com/event',
+            body: {
+              id: 123,
+            },
+            httpVerb: 'POST',
+            params: eventParams,
+          };
 
-        var callback = sinon.spy();
-        eventDispatcher.dispatchEvent(eventObj, callback);
-        requests[ 0 ].respond([ 200, {}, '{"url":"https://cdn.com/event","body":{"id":123},"httpVerb":"POST","params":{"testParam":"testParamValue"}}' ]);
-        sinon.assert.calledOnce(callback);
-        done();
+          var callback = sinon.spy();
+          eventDispatcher.dispatchEvent(eventObj, callback);
+          assert.strictEqual(1, requests.length);
+          requests[0].respond(200, {});
+          sinon.assert.calledOnce(callback);
+          sinon.assert.calledWithExactly(callback, true);
+        });
+
+        it('should execute the callback passed to event dispatcher with a get', function() {
+          var eventObj = {
+            url: 'https://cdn.com/event',
+            httpVerb: 'GET',
+          };
+
+          var callback = sinon.spy();
+          eventDispatcher.dispatchEvent(eventObj, callback);
+          assert.strictEqual(1, requests.length);
+          requests[0].respond(200, {});
+          sinon.assert.calledOnce(callback);
+          sinon.assert.calledWithExactly(callback, true);
+        });
       });
 
-      it('should execute the callback passed to event dispatcher with a get', function(done) {
-        var eventObj = {
-          url: 'https://cdn.com/event',
-          httpVerb: 'GET'
-        };
+      describe('when response code = 204', function() {
+        it('should execute the callback passed to event dispatcher with a post', function() {
+          var eventParams = { testParam: 'testParamValue' };
+          var eventObj = {
+            url: 'https://cdn.com/event',
+            body: {
+              id: 123,
+            },
+            httpVerb: 'POST',
+            params: eventParams,
+          };
 
-        var callback = sinon.spy();
-        eventDispatcher.dispatchEvent(eventObj, callback);
-        requests[ 0 ].respond([ 200, {}, '{"url":"https://cdn.com/event","httpVerb":"GET"' ]);
-        sinon.assert.calledOnce(callback);
-        done();
+          var callback = sinon.spy();
+          eventDispatcher.dispatchEvent(eventObj, callback);
+          assert.strictEqual(1, requests.length);
+          requests[0].respond(204, {});
+          sinon.assert.calledOnce(callback);
+          sinon.assert.calledWithExactly(callback, true);
+        });
+
+        it('should execute the callback passed to event dispatcher with a get', function() {
+          var eventObj = {
+            url: 'https://cdn.com/event',
+            httpVerb: 'GET',
+          };
+
+          var callback = sinon.spy();
+          eventDispatcher.dispatchEvent(eventObj, callback);
+          assert.strictEqual(1, requests.length);
+          requests[0].respond(204, {});
+          sinon.assert.calledOnce(callback);
+          sinon.assert.calledWithExactly(callback, true);
+        });
       });
 
+      describe('when response code = 400', function() {
+        it('should execute the callback passed to event dispatcher with a post', function() {
+          var eventParams = { testParam: 'testParamValue' };
+          var eventObj = {
+            url: 'https://cdn.com/event',
+            body: {
+              id: 123,
+            },
+            httpVerb: 'POST',
+            params: eventParams,
+          };
+
+          var callback = sinon.spy();
+          eventDispatcher.dispatchEvent(eventObj, callback);
+          requests[0].respond(400, {});
+          assert.strictEqual(1, requests.length);
+          sinon.assert.calledOnce(callback);
+          sinon.assert.calledWithExactly(callback, false);
+        });
+
+        it('should execute the callback passed to event dispatcher with a get', function() {
+          var eventObj = {
+            url: 'https://cdn.com/event',
+            httpVerb: 'GET',
+          };
+
+          var callback = sinon.spy();
+          eventDispatcher.dispatchEvent(eventObj, callback);
+          assert.strictEqual(1, requests.length);
+          requests[0].respond(400, {});
+          sinon.assert.calledOnce(callback);
+          sinon.assert.calledWithExactly(callback, false);
+        });
+      });
     });
   });
 });

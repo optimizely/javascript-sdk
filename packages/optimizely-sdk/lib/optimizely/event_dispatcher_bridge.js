@@ -14,24 +14,21 @@
  * limitations under the License.
  */
 /**
- * Bridges the existing event dispatcher interface with the one in the eventProcessor
+ * Bridges the existing event dispatcher interface with the HttpClient defined
+ * in the eventProcessor package
  *
  * new EventDispatcher interface
-interface EventDispatcher {
-  dispatch(event: object, callback: (success: boolean) => void): void
+export interface HttpClient {
+  dispatch(event: EventV1Request, callback: (success: boolean) => void): void
 }
 
-interface HttpRequest {
+export interface EventV1Request {
   url: string
   method: 'POST' | 'PUT' | 'GET' | 'PATCH'
   headers: {
     [key: string]: string[]
   }
-  body: string
-}
-
-interface HttpEventDispatcher extends EventDispatcher {
-  dispatch(request: HttpRequest, callback: (success: boolean) => void): void
+  event: EventV1,
 }
  */
 
@@ -46,9 +43,9 @@ EventDispatcherBridge.prototype.dispatch = function(request, callback) {
       url: request.url,
       params: request.event,
     },
-    function(response) {
+    function(success) {
       // right now callbacks only happen if statusCode >= 200 && < 400
-      callback(true);
+      callback(success);
     }
   );
 
