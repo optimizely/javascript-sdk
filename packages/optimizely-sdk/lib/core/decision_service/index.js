@@ -303,12 +303,7 @@ DecisionService.prototype.getVariationForFeature = function(feature, userId, att
   }
 
   this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_NOT_IN_ROLLOUT, MODULE_NAME, userId, feature.key));
-
-  return {
-    experiment: null,
-    variation: null,
-    decisionSource: null,
-  };
+  return rolloutDecision;
 };
 
 DecisionService.prototype._getVariationForFeatureExperiment = function(feature, userId, attributes) {
