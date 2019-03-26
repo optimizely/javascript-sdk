@@ -10,6 +10,11 @@ module.exports = [
       libraryTarget: 'umd',
     },
     mode: 'none',
+    node: {
+      // set to not polyfill setImmediate in promise polyfill
+      // it is already wrapped in a typeof check
+      setImmediate: false
+    },
   },
   {
     entry: path.resolve(__dirname, 'lib/index.browser.js'),
@@ -20,5 +25,10 @@ module.exports = [
       libraryTarget: 'umd',
     },
     mode: 'production',
+    node: {
+      // set to not polyfill setImmediate in promise polyfill
+      // it is already wrapped in a typeof check
+      setImmediate: false
+    },
   },
 ];

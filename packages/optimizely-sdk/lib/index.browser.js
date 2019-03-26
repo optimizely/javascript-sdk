@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+require('promise-polyfill/dist/polyfill');
 var logging = require('@optimizely/js-sdk-logging');
 var fns = require('./utils/fns');
 var configValidator = require('./utils/config_validator');
@@ -47,6 +48,8 @@ module.exports = {
    * @param  {Object} config.logger
    * @param  {Object} config.logLevel
    * @param  {Object} config.userProfileService
+   * @param {Object} config.eventBatchSize
+   * @param {Object} config.eventFlushInterval
    * @return {Object} the Optimizely object
    */
   createInstance: function(config) {
