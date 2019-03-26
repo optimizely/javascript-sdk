@@ -44,7 +44,7 @@ describe('browserDatafileManager', () => {
 
     const manager = new BrowserDatafileManager({
       sdkKey: '1234',
-      liveUpdates: false,
+      autoUpdate: false,
     })
     manager.start()
     expect(makeGetRequestSpy).toBeCalledTimes(1)
@@ -68,7 +68,7 @@ describe('browserDatafileManager', () => {
     })
     const manager = new BrowserDatafileManager({
       sdkKey: '1234',
-      liveUpdates: true,
+      autoUpdate: true,
       timeoutFactory: testTimeoutFactory,
     })
     manager.start()
@@ -79,6 +79,29 @@ describe('browserDatafileManager', () => {
     expect(makeGetRequestSpy.mock.calls[1][1]).toEqual({
       'if-modified-since': 'Fri, 08 Mar 2019 18:57:17 GMT'
     })
+
+    await manager.stop()
+  })
+
+  it('defaults to false for autoUpdate', async () => {
+    makeGetRequestSpy.mockReturnValue({
+      abort: jest.fn(),
+      responsePromise: Promise.resolve({
+        statusCode: 200,
+        body: '{"foo":"bar"}',
+        headers: {
+          'last-modified': 'Fri, 08 Mar 2019 18:57:17 GMT',
+        },
+      })
+    })
+    const manager = new BrowserDatafileManager({
+      sdkKey: '1234',
+      timeoutFactory: testTimeoutFactory,
+    })
+    manager.start()
+    await manager.onReady()
+    // Should not set a timeout for a later update
+    expect(testTimeoutFactory.timeoutFns.length).toBe(0)
 
     await manager.stop()
   })

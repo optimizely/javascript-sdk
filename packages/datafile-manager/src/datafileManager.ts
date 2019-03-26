@@ -45,10 +45,8 @@ export enum CacheDirective {
 }
 
 export interface DatafileManagerConfig {
-  cacheDirective?: CacheDirective
+  autoUpdate?: boolean
   datafile?: string
-  liveUpdates?: boolean
-  maxCacheAge?: number
   sdkKey: string
   timeoutFactory?: TimeoutFactory,
   updateInterval?: number

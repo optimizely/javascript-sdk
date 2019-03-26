@@ -41,6 +41,9 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
   // The request will be aborted if the manager is stopped while the request is in flight.
   protected abstract makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest
 
+  // Return any default configuration options that should be applied
+  protected abstract getConfigDefaults(): Partial<DatafileManagerConfig>
+
   private currentDatafile: string | null
 
   private readonly sdkKey: string
@@ -55,7 +58,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
 
   private readonly emitter: EventEmitter
 
-  private readonly liveUpdates: boolean
+  private readonly autoUpdate: boolean
 
   private readonly updateInterval: number
 
@@ -74,14 +77,18 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
   private backoffController: BackoffController
 
   constructor(config: DatafileManagerConfig) {
+    const configWithDefaultsApplied: DatafileManagerConfig = {
+      ...this.getConfigDefaults(),
+      ...config
+    }
     const {
       datafile,
-      liveUpdates = true,
+      autoUpdate = false,
       sdkKey,
       timeoutFactory = DEFAULT_TIMEOUT_FACTORY,
       updateInterval = DEFAULT_UPDATE_INTERVAL,
       urlTemplate = DEFAULT_URL_TEMPLATE,
-    } = config
+    } = configWithDefaultsApplied
 
     this.sdkKey = sdkKey
 
@@ -108,7 +115,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
 
     this.timeoutFactory = timeoutFactory
     this.emitter = new EventEmitter()
-    this.liveUpdates = liveUpdates
+    this.autoUpdate = autoUpdate
     if (isValidUpdateInterval(updateInterval)) {
       this.updateInterval = updateInterval
     } else {
@@ -197,7 +204,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       this.currentDatafile = datafile
       if (!this.isReadyPromiseSettled) {
         this.resolveReadyPromise()
-      } else if (this.liveUpdates) {
+      } else if (this.autoUpdate) {
         const datafileUpdate: DatafileUpdate = {
           datafile,
         }
@@ -213,10 +220,10 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
 
     this.currentRequest = undefined
 
-    if (this.liveUpdates) {
+    if (this.autoUpdate) {
       this.scheduleNextUpdate()
     }
-    if (!this.isReadyPromiseSettled && !this.liveUpdates) {
+    if (!this.isReadyPromiseSettled && !this.autoUpdate) {
       // We will never resolve ready, so reject it
       this.rejectReadyPromise(new Error('Failed to become ready'))
     }

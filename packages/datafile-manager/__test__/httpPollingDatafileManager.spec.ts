@@ -52,6 +52,10 @@ class TestDatafileManager extends HTTPPollingDatafileManager {
     this.responsePromises.push(responsePromise)
     return  { responsePromise, abort: jest.fn() }
   }
+
+  getConfigDefaults(): Partial<DatafileManagerConfig> {
+    return {}
+  }
 }
 
 describe('httpPollingDatafileManager', () => {
@@ -96,9 +100,9 @@ describe('httpPollingDatafileManager', () => {
     })
   })
 
-  describe('when constructed with sdkKey only', () => {
+  describe('when constructed with sdkKey and autoUpdate: true', () => {
     beforeEach(() => {
-      manager = createTestManager({ sdkKey: '123', updateInterval: 10 })
+      manager = createTestManager({ sdkKey: '123', updateInterval: 1000, autoUpdate: true })
     })
 
     describe('initial state', () => {
@@ -145,7 +149,7 @@ describe('httpPollingDatafileManager', () => {
           manager.start()
           await manager.onReady()
           expect(setTimeoutSpy).toBeCalledTimes(1)
-          expect(setTimeoutSpy.mock.calls[0][1]).toBe(10)
+          expect(setTimeoutSpy.mock.calls[0][1]).toBe(1000)
         })
 
         it('emits update events after live updates', async () => {
@@ -414,9 +418,9 @@ describe('httpPollingDatafileManager', () => {
     })
   })
 
-  describe('when constructed with sdkKey and liveUpdates: false', () => {
+  describe('when constructed with sdkKey and autoUpdate: false', () => {
     beforeEach(() => {
-      manager = createTestManager({ sdkKey: '123', liveUpdates: false })
+      manager = createTestManager({ sdkKey: '123', autoUpdate: false })
     })
 
     it('after being started, fetches the datafile and resolves onReady', async () => {
@@ -466,7 +470,7 @@ describe('httpPollingDatafileManager', () => {
     beforeEach(() => {
       manager = createTestManager({
         sdkKey: '456',
-        updateInterval: 10,
+        updateInterval: 1000,
         urlTemplate: 'https://localhost:5556/datafiles/$SDK_KEY',
       })
     })

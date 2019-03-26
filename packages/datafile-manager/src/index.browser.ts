@@ -14,14 +14,5 @@
  * limitations under the License.
  */
 
-export const DEFAULT_UPDATE_INTERVAL = 5 * 60 * 1000 // 5 minutes
-
-export const MIN_UPDATE_INTERVAL = 1000
-
-export const SDK_KEY_TOKEN = '$SDK_KEY'
-
-export const DEFAULT_URL_TEMPLATE = `https://cdn.optimizely.com/datafiles/${SDK_KEY_TOKEN}.json`
-
-export const BACKOFF_BASE_WAIT_SECONDS_BY_ERROR_COUNT = [0, 2, 4, 8, 16, 32]
-
-export const BACKOFF_MAX_ERROR_COUNT = 10
+export * from './datafileManager'
+export { default as DatafileManager } from './browserDatafileManager'
