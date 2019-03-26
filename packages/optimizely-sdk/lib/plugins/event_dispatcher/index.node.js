@@ -53,13 +53,17 @@ module.exports = {
 
     var requestCallback = function(response) {
       if (response && response.statusCode && response.statusCode >= 200 && response.statusCode < 400) {
-        callback(response);
+        callback(true);
+      } else {
+        callback(false);
       }
     };
 
     var req = (parsedUrl.protocol === 'http:' ? http : https).request(requestOptions, requestCallback);
     // Add no-op error listener to prevent this from throwing
-    req.on('error', function() {});
+    req.on('error', function() {
+      callback(false);
+    });
     req.write(dataString);
     req.end();
     return req;

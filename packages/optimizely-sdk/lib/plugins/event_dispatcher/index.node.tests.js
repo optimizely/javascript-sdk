@@ -20,14 +20,13 @@ var nock = require('nock');
 var sinon = require('sinon');
 
 describe('lib/plugins/event_dispatcher/node', function() {
-  describe('APIs', function() {
-    describe('dispatchEvent', function() {
-      var stubCallback = {
-        callback: function() {}
-      };
+  describe('dispatchEvent', function() {
+    afterEach(function() {
+      nock.cleanAll();
+    });
 
+    describe('when POST returns 200', function() {
       beforeEach(function() {
-        sinon.stub(stubCallback, 'callback');
         nock('https://cdn.com')
           .post('/event')
           .reply(200, {
@@ -35,12 +34,7 @@ describe('lib/plugins/event_dispatcher/node', function() {
           });
       });
 
-      afterEach(function() {
-        stubCallback.callback.restore();
-        nock.cleanAll();
-      });
-
-      it('should send a POST request with the specified params', function(done) {
+      it('should send a POST and callback invoked with success=true', function(done) {
         var eventObj = {
           url: 'https://cdn.com/event',
           params: {
@@ -49,13 +43,23 @@ describe('lib/plugins/event_dispatcher/node', function() {
           httpVerb: 'POST',
         };
 
-        eventDispatcher.dispatchEvent(eventObj, function(resp) {
-          assert.equal(200, resp.statusCode);
+        eventDispatcher.dispatchEvent(eventObj, function(success) {
+          assert.isTrue(success);
           done();
         });
       });
+    });
 
-      it('should execute the callback passed to event dispatcher', function(done) {
+    describe('when POST returns 204', function() {
+      beforeEach(function() {
+        nock('https://cdn.com')
+          .post('/event')
+          .reply(204, {
+            ok: true,
+          });
+      });
+
+      it('should send a POST and callback invoked with success=true', function(done) {
         var eventObj = {
           url: 'https://cdn.com/event',
           params: {
@@ -64,29 +68,50 @@ describe('lib/plugins/event_dispatcher/node', function() {
           httpVerb: 'POST',
         };
 
-        eventDispatcher.dispatchEvent(eventObj, stubCallback.callback)
-        .on('response', function(response) {
-          sinon.assert.calledOnce(stubCallback.callback);
+        eventDispatcher.dispatchEvent(eventObj, function(success) {
+          assert.isTrue(success);
           done();
-        })
-        .on('error', function(error) {
-          assert.fail('status code okay', 'status code not okay', '');
         });
       });
+    });
 
-      it('rejects GET httpVerb', function() {
+    describe('when POST returns 400', function() {
+      beforeEach(function() {
+        nock('https://cdn.com')
+          .post('/event')
+          .reply(400, {
+            ok: false,
+          });
+      });
+
+      it('should send a POST and callback invoked with success=false', function(done) {
         var eventObj = {
           url: 'https://cdn.com/event',
           params: {
             id: 123,
           },
-          httpVerb: 'GET',
+          httpVerb: 'POST',
         };
 
-        var callback = sinon.spy();
-        eventDispatcher.dispatchEvent(eventObj, callback);
-        sinon.assert.notCalled(callback);
+        eventDispatcher.dispatchEvent(eventObj, function(success) {
+          assert.isFalse(success);
+          done();
+        });
       });
+    });
+
+    it('rejects GET httpVerb', function() {
+      var eventObj = {
+        url: 'https://cdn.com/event',
+        params: {
+          id: 123,
+        },
+        httpVerb: 'GET',
+      };
+
+      var callback = sinon.spy();
+      eventDispatcher.dispatchEvent(eventObj, callback);
+      sinon.assert.notCalled(callback);
     });
 
     it('does not throw in the event of an error', function() {
