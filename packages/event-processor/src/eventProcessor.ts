@@ -149,7 +149,12 @@ export abstract class AbstractEventProcessor implements EventProcessor {
   stop(): Promise<any> {
     try {
       // swallow, an error stopping this queue should prevent this from stopping
-      return Promise.all([this.queue.stop(), this.dispatcher.stop()])
+      return Promise
+        .all([this.queue.stop(), this.dispatcher.stop()])
+        // use ['catch'] here to support IE9
+        ['catch'](err => {
+          logger.error('Error stopping EventProcessor: "%s"', err.message, err)
+        })
     } catch (e) {
       logger.error('Error stopping EventProcessor: "%s"', e.message, e)
     }
