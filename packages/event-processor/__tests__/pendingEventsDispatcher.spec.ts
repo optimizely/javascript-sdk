@@ -276,13 +276,12 @@ describe('PendingEventsDispatcher', () => {
         expect(originalEventDispatcher.dispatch).toHaveBeenCalledTimes(2)
 
         // manually invoke original eventDispatcher callback
-        const internalDispatchCalls = ((originalEventDispatcher.dispatch as unknown) as jest.Mock).mock.calls
+        const internalDispatchCalls = ((originalEventDispatcher.dispatch as unknown) as jest.Mock)
+          .mock.calls
         internalDispatchCalls[0][1](true)
         internalDispatchCalls[1][1](true)
 
         expect(store.values()).toHaveLength(0)
-
-
       })
     })
   })
