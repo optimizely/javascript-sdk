@@ -16,7 +16,7 @@
 // TODO change this to use Managed from js-sdk-models when available
 import { Managed } from './managed'
 import { ConversionEvent, ImpressionEvent } from './events'
-import { EventDispatcher } from './eventDispatcher'
+import { EventDispatcher, EventV1Request } from './eventDispatcher'
 import { EventQueue, DefaultEventQueue, SingleEventQueue } from './eventQueue'
 import { getLogger } from '@optimizely/js-sdk-logging'
 
@@ -149,7 +149,7 @@ export abstract class AbstractEventProcessor implements EventProcessor {
   stop(): Promise<any> {
     try {
       // swallow, an error stopping this queue should prevent this from stopping
-      return this.queue.stop()
+      return Promise.all([this.queue.stop(), this.dispatcher.stop()])
     } catch (e) {
       logger.error('Error stopping EventProcessor: "%s"', e.message, e)
     }
@@ -158,9 +158,10 @@ export abstract class AbstractEventProcessor implements EventProcessor {
 
   start(): void {
     this.queue.start()
+    this.dispatcher.start()
   }
 
   protected abstract groupEvents(events: ProcessableEvents[]): ProcessableEvents[][]
 
-  protected abstract formatEvents(events: ProcessableEvents[]): object
+  protected abstract formatEvents(events: ProcessableEvents[]): EventV1Request
 }

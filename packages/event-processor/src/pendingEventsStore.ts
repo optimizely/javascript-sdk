@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 import { objectValues } from '@optimizely/js-sdk-utils'
+import { getLogger } from '@optimizely/js-sdk-logging';
+
+const logger = getLogger('EventProcessor')
 
 export interface PendingEventsStore<K> {
   get(key: string): K | null
@@ -38,7 +41,7 @@ export class LocalStorageStore<K extends StoreEntry> implements PendingEventsSto
   protected LS_KEY: string
   protected maxValues: number
 
-  constructor({ key, maxValues = 1000 }: { key: string; maxValues: number }) {
+  constructor({ key, maxValues = 1000 }: { key: string; maxValues?: number }) {
     this.LS_KEY = key
     this.maxValues = maxValues
   }
@@ -72,7 +75,7 @@ export class LocalStorageStore<K extends StoreEntry> implements PendingEventsSto
       localStorage.setItem(this.LS_KEY, JSON.stringify(map))
       this.clean()
     } catch (e) {
-      // swallow
+      logger.error(e)
     }
   }
 
@@ -105,7 +108,7 @@ export class LocalStorageStore<K extends StoreEntry> implements PendingEventsSto
         return (JSON.parse(data) as { [key: string]: K }) || {}
       }
     } catch (e) {
-      // swallow
+      logger.error(e)
     }
     return {}
   }
