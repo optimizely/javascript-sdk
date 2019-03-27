@@ -117,6 +117,7 @@ exports.LOG_MESSAGES = {
   USER_NOT_IN_EXPERIMENT: '%s: User %s does not meet conditions to be in experiment %s.',
   USER_RECEIVED_DEFAULT_VARIABLE_VALUE: '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
   FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE: '%s: Feature "%s" is not enabled for user %s. Returning default value for variable "%s".',
+  VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE: '%s: Variable "%s" is not used in variation "%s". Returning default value.',
   USER_RECEIVED_VARIABLE_VALUE: '%s: Value for variable "%s" of feature flag "%s" is %s for user "%s"',
   VALID_DATAFILE: '%s: Datafile is valid.',
   VALID_USER_PROFILE_SERVICE: '%s: Valid user profile service provided.',
