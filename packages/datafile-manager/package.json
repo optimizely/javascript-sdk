@@ -1,5 +1,5 @@
 {
-  "name": "datafile-manager",
+  "name": "@optimizely/js-sdk-datafile-manager",
   "version": "0.1.0",
   "description": "Optimizely Full Stack Datafile Manager",
   "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/datafile-manager",
@@ -50,6 +50,6 @@
   },
   "scripts": {
     "test": "jest",
-    "build": "rm -r lib && tsc"
+    "tsc": "rm -rf lib && tsc"
   }
 }

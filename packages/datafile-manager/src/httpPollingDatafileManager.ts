@@ -44,7 +44,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
   // Return any default configuration options that should be applied
   protected abstract getConfigDefaults(): Partial<DatafileManagerConfig>
 
-  private currentDatafile: string | null
+  private currentDatafile: object | null
 
   private readonly sdkKey: string
 
@@ -125,7 +125,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     this.backoffController = new BackoffController()
   }
 
-  get(): string | null {
+  get(): object | null {
     return this.currentDatafile
   }
 
@@ -273,7 +273,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     }, nextUpdateDelay)
   }
 
-  private getNextDatafileFromResponse(response: Response): string | null {
+  private getNextDatafileFromResponse(response: Response): object | null {
     logger.debug('Response status code: %s', response.statusCode)
     if (typeof response.statusCode === 'undefined') {
       return null
@@ -282,9 +282,26 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       return null
     }
     if (isSuccessStatusCode(response.statusCode)) {
-      return response.body
+      return this.tryParsingBodyAsJSON(response.body);
     }
     return null
+  }
+
+  private tryParsingBodyAsJSON(body: string): object | null {
+    let parseResult: any
+    try {
+      parseResult = JSON.parse(body)
+    } catch (err) {
+      logger.error('Error parsing response body: %s', err.message, err)
+      return null
+    }
+    let datafileObj: object | null = null
+    if (typeof parseResult === 'object' && parseResult !== null) {
+      datafileObj = parseResult
+    } else {
+      logger.error('Error parsing response body: was not an object')
+    }
+    return datafileObj
   }
 
   private trySavingLastModified(headers: Headers): void {

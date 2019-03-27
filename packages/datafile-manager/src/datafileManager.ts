@@ -17,7 +17,7 @@ import { TimeoutFactory } from "./timeoutFactory";
  */
 
  export interface DatafileUpdate {
-   datafile: string
+   datafile: object
  }
 
 export interface DatafileUpdateListener {
@@ -32,7 +32,7 @@ interface Managed {
 }
 
 export interface DatafileManager extends Managed {
-  get: () => string | null
+  get: () => object | null
   on: (eventName: string, listener: DatafileUpdateListener) => () => void
   onReady: () => Promise<void>
 }
@@ -46,7 +46,7 @@ export enum CacheDirective {
 
 export interface DatafileManagerConfig {
   autoUpdate?: boolean
-  datafile?: string
+  datafile?: object
   sdkKey: string
   timeoutFactory?: TimeoutFactory,
   updateInterval?: number
