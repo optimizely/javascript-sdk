@@ -16,7 +16,7 @@
 /// <reference types="jest" />
 
 import { LogTierV1EventProcessor } from '../src/v1/v1EventProcessor'
-import { HttpEventDispatcher, EventV1Request } from '../src/eventDispatcher'
+import { EventDispatcher, EventV1Request } from '../src/eventDispatcher'
 import { EventProcessor } from '../src/eventProcessor'
 import { buildImpressionEventV1, makeBatchedEventV1 } from '../src/v1/buildEventV1'
 
@@ -103,7 +103,7 @@ function createConversionEvent() {
 }
 
 describe('LogTierV1EventProcessor', () => {
-  let stubDispatcher: HttpEventDispatcher
+  let stubDispatcher: EventDispatcher
   let dispatchStub: jest.Mock
   // TODO change this to ProjectConfig when js-sdk-models is available
   let testProjectConfig: any
@@ -119,6 +119,10 @@ describe('LogTierV1EventProcessor', () => {
         dispatchStub(event)
         callback(true)
       },
+      stop() {
+        return Promise.resolve()
+      },
+      start() {},
     }
   })
 
@@ -134,11 +138,14 @@ describe('LogTierV1EventProcessor', () => {
           dispatchStub(event)
           localCallback = callback
         },
+        stop() {
+          return Promise.resolve()
+        },
+        start() {},
       }
     })
 
-
-    it('should return a resolved promise when there is nothing in queue', (done) => {
+    it('should return a resolved promise when there is nothing in queue', done => {
       const processor = new LogTierV1EventProcessor({
         dispatcher: stubDispatcher,
         flushInterval: 100,
@@ -176,6 +183,10 @@ describe('LogTierV1EventProcessor', () => {
           dispatchStub(event)
           localCallback = callback
         },
+        stop() {
+          return Promise.resolve()
+        },
+        start() {},
       }
 
       const processor = new LogTierV1EventProcessor({
@@ -200,6 +211,10 @@ describe('LogTierV1EventProcessor', () => {
           dispatchStub(event)
           callback(true)
         },
+        stop() {
+          return Promise.resolve()
+        },
+        start() {},
       }
 
       const processor = new LogTierV1EventProcessor({
@@ -576,6 +591,10 @@ describe('LogTierV1EventProcessor', () => {
             dispatchStub(event)
             callback(false)
           },
+          stop() {
+            return Promise.resolve()
+          },
+          start() { },
         }
 
         processor = new LogTierV1EventProcessor({
