@@ -889,12 +889,12 @@ describe('lib/core/decision_service', function() {
             getVariationStub.returns(null);
           });
 
-          it('returns a decision with no variation', function() {
+          it('returns a decision with no variation and source rollout', function() {
             var decision = decisionServiceInstance.getVariationForFeature(feature, 'user1');
             var expectedDecision = {
               experiment: null,
               variation: null,
-              decisionSource: null,
+              decisionSource: DECISION_SOURCES.ROLLOUT,
             };
             assert.deepEqual(decision, expectedDecision);
             sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG, 'DECISION_SERVICE: User user1 is not in any experiment on the feature test_feature_for_experiment.');
@@ -961,12 +961,12 @@ describe('lib/core/decision_service', function() {
             getVariationStub.returns(null);
           });
 
-          it('returns a decision with no experiment and no variation', function() {
+          it('returns a decision with no experiment, no variation and source rollout', function() {
             var decision = decisionServiceInstance.getVariationForFeature(feature, 'user1');
             var expectedDecision = {
               experiment: null,
               variation: null,
-              decisionSource: null,
+              decisionSource: DECISION_SOURCES.ROLLOUT,
             };
             assert.deepEqual(decision, expectedDecision);
             sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG, 'DECISION_SERVICE: User user1 is not in any experiment on the feature feature_with_group.');
@@ -978,7 +978,7 @@ describe('lib/core/decision_service', function() {
             var expectedDecision = {
               experiment: null,
               variation: null,
-              decisionSource: null,
+              decisionSource: DECISION_SOURCES.ROLLOUT,
             };
             assert.deepEqual(decision, expectedDecision);
             sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG, 'DECISION_SERVICE: User user1 is not in any experiment on the feature feature_exp_no_traffic.');
@@ -992,12 +992,12 @@ describe('lib/core/decision_service', function() {
             bucketUserIntoExperimentStub.returns(null);
           });
 
-          it('returns a decision with no experiment and no variation', function() {
+          it('returns a decision with no experiment, no variation and source rollout', function() {
             var decision = decisionServiceInstance.getVariationForFeature(feature, 'user1');
             var expectedDecision = {
               experiment: null,
               variation: null,
-              decisionSource: null,
+              decisionSource: DECISION_SOURCES.ROLLOUT,
             };
             assert.deepEqual(decision, expectedDecision);
             sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG, 'DECISION_SERVICE: User user1 is not in any experiment on the feature feature_with_group.');
@@ -1214,12 +1214,12 @@ describe('lib/core/decision_service', function() {
             bucketStub.returns(null);
           });
 
-          it('returns a decision with no variation and no experiment', function() {
+          it('returns a decision with no variation, no experiment and source rollout', function() {
             var decision = decisionServiceInstance.getVariationForFeature(feature, 'user1');
             var expectedDecision = {
               experiment: null,
               variation: null,
-              decisionSource: null,
+              decisionSource: DECISION_SOURCES.ROLLOUT,
             };
             assert.deepEqual(decision, expectedDecision);
             sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG, 'DECISION_SERVICE: User user1 does not meet conditions for targeting rule 1.');
@@ -1424,12 +1424,12 @@ describe('lib/core/decision_service', function() {
           feature = configObj.featureKeyMap.unused_flag;
         });
 
-        it('returns a decision with no variation and no experiment', function() {
+        it('returns a decision with no variation, no experiment and source rollout', function() {
           var decision = decisionServiceInstance.getVariationForFeature(feature, 'user1');
           var expectedDecision = {
             experiment: null,
             variation: null,
-            decisionSource: null,
+            decisionSource: DECISION_SOURCES.ROLLOUT,
           };
           var expectedDecision = assert.deepEqual(decision, expectedDecision);
           sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG, 'DECISION_SERVICE: Feature unused_flag is not attached to any experiments.');

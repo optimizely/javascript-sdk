@@ -453,11 +453,11 @@ describe('lib/core/project_config', function() {
           assert.strictEqual(result, null);
         });
 
-        it('returns the variable default value if the variation does not have a value for this variable', function() {
+        it('returns null if the variation does not have a value for this variable', function() {
           var variation = configObj.variationIdMap['595008']; // This variation has no variable values associated with it
           var variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
           var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
-          assert.strictEqual(result, '10');
+          assert.isNull(result);
         });
       });
 

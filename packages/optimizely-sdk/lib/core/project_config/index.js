@@ -519,7 +519,8 @@ module.exports = {
 
     var variableUsages = projectConfig.variationVariableUsageMap[variation.id];
     var variableUsage = variableUsages[variable.id];
-    return variableUsage ? variableUsage.value : variable.defaultValue;
+
+    return variableUsage ? variableUsage.value : null;
   },
 
   /**
