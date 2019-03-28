@@ -20,6 +20,7 @@ var configValidator = require('./utils/config_validator');
 var defaultErrorHandler = require('./plugins/error_handler');
 var defaultEventDispatcher = require('./plugins/event_dispatcher/index.browser');
 var enums = require('./utils/enums');
+var eventProcessor = require('@optimizely/js-sdk-event-processor');
 var loggerPlugin = require('./plugins/logger');
 var Optimizely = require('./optimizely');
 
@@ -27,6 +28,7 @@ var logger = logging.getLogger();
 logging.setLogHandler(loggerPlugin.createLogger());
 logging.setLogLevel(logging.LogLevel.INFO);
 
+var hasRetriedEvents = false;
 /**
  * Entry point into the Optimizely Browser SDK
  */
@@ -83,23 +85,30 @@ module.exports = {
         config.skipJSONValidation = true;
       }
 
-      config = fns.assignIn(
-        {
-          eventDispatcher: defaultEventDispatcher,
-        },
-        config,
-        {
-          clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
-          // always get the OptimizelyLogger facade from logging
-          logger: logger,
-          errorHandler: logging.getErrorHandler(),
-        }
-      );
+      var wrappedEventDispatcher = new eventProcessor.LocalStoragePendingEventsDispatcher({
+        eventDispatcher: config.eventDispatcher || defaultEventDispatcher,
+      });
+      if (!hasRetriedEvents) {
+        wrappedEventDispatcher.sendPendingEvents();
+        hasRetriedEvents = true;
+      }
+
+      config = fns.assignIn(config, {
+        eventDispatcher: wrappedEventDispatcher,
+        clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
+        // always get the OptimizelyLogger facade from logging
+        logger: logger,
+        errorHandler: logging.getErrorHandler(),
+      });
 
       return new Optimizely(config);
     } catch (e) {
       logger.error(e);
       return null;
     }
+  },
+
+  __internalResetRetryState: function() {
+    hasRetriedEvents = false;
   },
 };

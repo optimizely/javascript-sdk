@@ -2393,7 +2393,7 @@ describe('lib/optimizely', function() {
               }
             });
           });
-  
+
           it('should send notification with null variation key when getVariation returns null', function() {
             var variation = optlyInstance.getVariation('testExperimentWithAudiences', 'testUser', {});
             assert.isNull(variation);
