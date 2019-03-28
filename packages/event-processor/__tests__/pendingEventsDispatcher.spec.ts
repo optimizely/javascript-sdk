@@ -51,12 +51,11 @@ describe('LocalStoragePendingEventsDispatcher', () => {
     localStorage.clear()
   })
 
-  it('should properly send the events to the passed in eventDispatcher, when callback was successful', () => {
+  it('should properly send the events to the passed in eventDispatcher, when callback statusCode=200', () => {
     const callback = jest.fn()
     const eventV1Request: EventV1Request = {
       url: 'http://cdn.com',
       httpVerb: 'POST',
-      headers: {},
       params: ({ id: 'event' } as unknown) as EventV1,
     }
 
@@ -66,7 +65,7 @@ describe('LocalStoragePendingEventsDispatcher', () => {
     // manually invoke original eventDispatcher callback
     const internalDispatchCall = ((originalEventDispatcher.dispatchEvent as unknown) as jest.Mock)
       .mock.calls[0]
-    internalDispatchCall[1](true)
+    internalDispatchCall[1]({ statusCode: 200 })
 
     // assert that the original dispatch function was called with the request
     expect((originalEventDispatcher.dispatchEvent as unknown) as jest.Mock).toBeCalledTimes(1)
@@ -74,15 +73,14 @@ describe('LocalStoragePendingEventsDispatcher', () => {
 
     // assert that the passed in callback to pendingEventsDispatcher was called
     expect(callback).toHaveBeenCalledTimes(1)
-    expect(callback).toHaveBeenCalledWith(true)
+    expect(callback).toHaveBeenCalledWith({ statusCode: 200 })
   })
 
-  it('should properly send the events to the passed in eventDispatcher, when callback was unsuccessful', () => {
+  it('should properly send the events to the passed in eventDispatcher, when callback statusCode=400', () => {
     const callback = jest.fn()
     const eventV1Request: EventV1Request = {
       url: 'http://cdn.com',
       httpVerb: 'POST',
-      headers: {},
       params: ({ id: 'event' } as unknown) as EventV1,
     }
 
@@ -92,7 +90,7 @@ describe('LocalStoragePendingEventsDispatcher', () => {
     // manually invoke original eventDispatcher callback
     const internalDispatchCall = ((originalEventDispatcher.dispatchEvent as unknown) as jest.Mock)
       .mock.calls[0]
-    internalDispatchCall[1](false)
+    internalDispatchCall[1]({ statusCode: 400 })
 
     // assert that the original dispatch function was called with the request
     expect((originalEventDispatcher.dispatchEvent as unknown) as jest.Mock).toBeCalledTimes(1)
@@ -100,7 +98,7 @@ describe('LocalStoragePendingEventsDispatcher', () => {
 
     // assert that the passed in callback to pendingEventsDispatcher was called
     expect(callback).toHaveBeenCalledTimes(1)
-    expect(callback).toHaveBeenCalledWith(false)
+    expect(callback).toHaveBeenCalledWith({ statusCode: 400})
   })
 })
 
@@ -136,7 +134,6 @@ describe('PendingEventsDispatcher', () => {
         const eventV1Request: EventV1Request = {
           url: 'http://cdn.com',
           httpVerb: 'POST',
-          headers: {},
           params: ({ id: 'event' } as unknown) as EventV1,
         }
 
@@ -153,7 +150,7 @@ describe('PendingEventsDispatcher', () => {
         // manually invoke original eventDispatcher callback
         const internalDispatchCall = ((originalEventDispatcher.dispatchEvent as unknown) as jest.Mock)
           .mock.calls[0]
-        const internalCallback = internalDispatchCall[1]({ responseCode: 200 })
+        const internalCallback = internalDispatchCall[1]({ statusCode: 200 })
 
         // assert that the original dispatch function was called with the request
         expect(
@@ -163,7 +160,7 @@ describe('PendingEventsDispatcher', () => {
 
         // assert that the passed in callback to pendingEventsDispatcher was called
         expect(callback).toHaveBeenCalledTimes(1)
-        expect(callback).toHaveBeenCalledWith({ responseCode: 200 })
+        expect(callback).toHaveBeenCalledWith({ statusCode: 200 })
 
         expect(store.values()).toHaveLength(0)
       })
@@ -175,7 +172,6 @@ describe('PendingEventsDispatcher', () => {
         const eventV1Request: EventV1Request = {
           url: 'http://cdn.com',
           httpVerb: 'POST',
-          headers: {},
           params: ({ id: 'event' } as unknown) as EventV1,
         }
 
@@ -192,7 +188,7 @@ describe('PendingEventsDispatcher', () => {
         // manually invoke original eventDispatcher callback
         const internalDispatchCall = ((originalEventDispatcher.dispatchEvent as unknown) as jest.Mock)
           .mock.calls[0]
-        internalDispatchCall[1]({ responseCode: 400 })
+        internalDispatchCall[1]({ statusCode: 400 })
 
         // assert that the original dispatch function was called with the request
         expect(
@@ -202,7 +198,7 @@ describe('PendingEventsDispatcher', () => {
 
         // assert that the passed in callback to pendingEventsDispatcher was called
         expect(callback).toHaveBeenCalledTimes(1)
-        expect(callback).toHaveBeenCalledWith({ responseCode: 400 })
+        expect(callback).toHaveBeenCalledWith({ statusCode: 400 })
 
         expect(store.values()).toHaveLength(0)
       })
@@ -227,14 +223,12 @@ describe('PendingEventsDispatcher', () => {
         const eventV1Request1: EventV1Request = {
           url: 'http://cdn.com',
           httpVerb: 'POST',
-          headers: {},
           params: ({ id: 'event1' } as unknown) as EventV1,
         }
 
         const eventV1Request2: EventV1Request = {
           url: 'http://cdn.com',
           httpVerb: 'POST',
-          headers: {},
           params: ({ id: 'event2' } as unknown) as EventV1,
         }
 
@@ -257,8 +251,8 @@ describe('PendingEventsDispatcher', () => {
         // manually invoke original eventDispatcher callback
         const internalDispatchCalls = ((originalEventDispatcher.dispatchEvent as unknown) as jest.Mock)
           .mock.calls
-        internalDispatchCalls[0][1]({ responseCode: 200 })
-        internalDispatchCalls[1][1]({ responseCode: 200 })
+        internalDispatchCalls[0][1]({ statusCode: 200 })
+        internalDispatchCalls[1][1]({ statusCode: 200 })
 
         expect(store.values()).toHaveLength(0)
       })
