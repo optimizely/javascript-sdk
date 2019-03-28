@@ -251,7 +251,6 @@ describe('LogTierV1EventProcessor', () => {
       expect(dispatchStub).toHaveBeenCalledWith({
         url: 'https://logx.optimizely.com/v1/events',
         httpVerb: 'POST',
-        headers: {},
         params: buildImpressionEventV1(impressionEvent),
       })
     })
@@ -288,7 +287,6 @@ describe('LogTierV1EventProcessor', () => {
       expect(dispatchStub).toHaveBeenCalledWith({
         url: 'https://logx.optimizely.com/v1/events',
         httpVerb: 'POST',
-        headers: {},
         params: makeBatchedEventV1([
           impressionEvent1,
           impressionEvent2,
@@ -315,14 +313,12 @@ describe('LogTierV1EventProcessor', () => {
       expect(dispatchStub).toHaveBeenCalledWith({
         url: 'https://logx.optimizely.com/v1/events',
         httpVerb: 'POST',
-        headers: {},
         params: makeBatchedEventV1([impressionEvent1, conversionEvent]),
       })
 
       expect(dispatchStub).toHaveBeenCalledWith({
         url: 'https://logx.optimizely.com/v1/events',
         httpVerb: 'POST',
-        headers: {},
         params: makeBatchedEventV1([impressionEvent2]),
       })
     })
@@ -340,7 +336,6 @@ describe('LogTierV1EventProcessor', () => {
       expect(dispatchStub).toHaveBeenCalledWith({
         url: 'https://logx.optimizely.com/v1/events',
         httpVerb: 'POST',
-        headers: {},
         params: makeBatchedEventV1([impressionEvent1]),
       })
 
@@ -418,7 +413,6 @@ describe('LogTierV1EventProcessor', () => {
         expect(dispatchStub).toHaveBeenCalledWith({
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
-          headers: {},
           params: makeBatchedEventV1([modifiedEvent]),
         })
       })
@@ -445,7 +439,6 @@ describe('LogTierV1EventProcessor', () => {
         expect(dispatchStub).toHaveBeenCalledWith({
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
-          headers: {},
           params: makeBatchedEventV1([impressionEvent]),
         })
       })
@@ -506,7 +499,6 @@ describe('LogTierV1EventProcessor', () => {
         expect(dispatchStub).toHaveBeenCalledWith({
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
-          headers: {},
           params: makeBatchedEventV1([impressionEvent]),
         })
       })

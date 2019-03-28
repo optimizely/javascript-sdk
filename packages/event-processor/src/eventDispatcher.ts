@@ -28,8 +28,5 @@ export interface EventDispatcher {
 export interface EventV1Request {
   url: string
   httpVerb: 'POST' | 'PUT' | 'GET' | 'PATCH'
-  headers: {
-    [key: string]: string[]
-  }
   params: EventV1,
 }
