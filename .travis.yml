@@ -4,44 +4,9 @@ node_js:
 - '8'
 - '9'
 - '10'
-branches:
-  only:
-  - master
-  - /^\d+\.\d+\.(\d|[x])
-env:
-  global:
-  # BROWSER_STACK_USERNAME
-  - secure: WnyM4gMsi2n69O/YZUD/pYwHJXdKDcBv3Hwft2cCw52yYc+z75uuRgdaLKs4BPisckBtnR17dH7hKlPX3HWwjCoqQm1q5qNpbJrArWaEcbotWGF2YFy21ZZ4rKNQmJqdgRj6XFZhLHbncA8v2gQPK7F6GUJ0vsJF/kiTfxAUjefR23oorcKSQrh9BfOxNAYu2Ma92qlaaMmHYbBdlNDM45/EQE+LnPCfboCiJD/5zTYq4Q+XhKLPV01vUDU60pj9ckDNXyLj9X2BwMbAzGAPGE4qTAB/IrMndVsUXblsahtwKQ6yrsUrsdTASz8/3oNkImtY7fqU874jSeG3d7PNBfZs47zkXEVy73ZWNBgM9rzVS5cPaIU3wqpuBoXFntDJcdHQhNTWEYdxmtcTUmxKt5TdUzDhrrkcti2WVLabU3N52aOBeOM0XBpfLkbV+HT6oWi3bNUb+EDMHvCxOxsP4IoEDfFs9HMzNIO3mmC3+2DFbI7s2Mb2oacAut38MbJDYSDTOLL4smG8scA3E0RQO4r8+TNk4aRIMQc7vCKqz7PpbO7Aj9dXSpeHrDmIszSmEoQqmaaGsRBwbXRom2P8fB9FcTbd/wbsfgoFNEPz5DlbtCtCmt0pQMa+3myWveKH52WC5KlFijBSDjYOMUnXbLnj5fK5eKaWp+z6/qcNwU8=
-  # BROWSER_STACK_ACCESS_KEY
-  - secure: U0GGZw46rJowBtH9gVluIrerB40u2b3uZpH0HsOdLlsXCCaTVk4JXX/JPVPashWAFLC7Enk3UOE4ofeEpVd0wbG6CxtG9/gklc2U2tvkqsdPpFZKaRrXoUzCyyPOmHEC2mXDXctbrncmttM4APaceRfbdTBEZIIfyLJadomjWylA61szFE9IZjvJpiwJO2xa5HI9GVRu3yXJci+riJux+JsDmfJ1hNwv3waMeeg/scddUH0hfgq69ftGs8cpMlYiO20eh32S7uPF7/IJTH1fDJjVKYQZwpypkF6AeI+od5CFTY1ajb25eaBNXThLS0Bo9ZJE/8Sogvon21dEJkt/ClY6R341InbAFXZvz7jyQAisvh0I4zxcu0VUCfh7bEUl6GXMO8VJnyxHEfqB+AIT2RoMXckkhulwiNUsJYH1yJ8mjnLvZq85mWBCp4n4jg0K6Wf46lHpjnHOVpLyLyoFGfiPf90AQVL02AJ3/ia8RkMuj0Ax+AGtiTC/+wy7dsDQOif/VpBNJcx/RciQ24mYOGzAMh4GsUWnXaZ9vXSxliogVNrmIefK5invJ0omv9pIx8NZHTHYGaulh4w6JsliiEq2kH78SlyvSrcsFGTwCY97LLaxiLm/75/Zf+F7LajKC23Fbtnj/LQizitFZqGMJ09DnR52krBAeultqRq8QLM=
 before_install: cd packages/optimizely-sdk
 install: npm install
 addons:
   srcclr: true
 script: npm test
 after_success: npm run coveralls
-
-# Integration tests need to run first to reset the PR build status to pending
-stages:
-  - 'Integration tests'
-  - 'Cross-browser and umd unit tests'
-  - 'Test'
-
-jobs:
-  include:
-    - stage: 'Integration tests'
-      merge_mode: replace
-      env: SDK=javascript
-      cache: false
-      language: python
-      before_install: skip
-      install:
-        - "pip install awscli"
-      before_script:
-        - "aws s3 cp s3://optimizely-travisci-artifacts/ci/trigger_fullstack-sdk-compat.sh ci/ && chmod u+x ci/trigger_fullstack-sdk-compat.sh"
-      script:
-        - "ci/trigger_fullstack-sdk-compat.sh"
-      after_success: travis_terminate 0
-    - stage: Cross-browser and umd unit tests
-      node_js: '8'
-      script: npm run test-ci
