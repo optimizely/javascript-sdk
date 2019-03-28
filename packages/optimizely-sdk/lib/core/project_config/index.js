@@ -496,16 +496,15 @@ module.exports = {
 
   /**
    * Get the value of the given variable for the given variation. If the given
-   * variable has no value for the given variation, return the variable's
-   * default value. Log an error message if the variation is invalid. If the
+   * variable has no value for the given variation, return null. Log an error message if the variation is invalid. If the
    * variable or variation are invalid, return null.
    * @param {Object} projectConfig
    * @param {Object} variable
    * @param {Object} variation
    * @param {Object} logger
    * @return {string|null} The value of the given variable for the given
-   * variation, or the variable default value if the given variable has no value
-   * for the given variation, or null if the variation or variable are invalid
+   * variation, or null if the given variable has no value
+   * for the given variation or if the variation or variable are invalid
    */
   getVariableValueForVariation: function(projectConfig, variable, variation, logger) {
     if (!variable || !variation) {

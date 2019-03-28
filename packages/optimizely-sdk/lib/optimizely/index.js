@@ -639,7 +639,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
 
   if (decision.variation !== null) {
     var value = projectConfig.getVariableValueForVariation(this.configObj, variable, decision.variation, this.logger);
-    if (value) {
+    if (value !== null) {
       if (decision.variation.featureEnabled === true) {
         variableValue = value;
         this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE, MODULE_NAME, variableKey, featureFlag.key, variableValue, userId));
