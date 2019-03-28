@@ -16,7 +16,7 @@
 /// <reference types="jest" />
 
 import { LogTierV1EventProcessor } from '../src/v1/v1EventProcessor'
-import { EventDispatcher, EventV1Request } from '../src/eventDispatcher'
+import { EventDispatcher, EventV1Request, EventDispatcherCallback } from '../src/eventDispatcher'
 import { EventProcessor } from '../src/eventProcessor'
 import { buildImpressionEventV1, makeBatchedEventV1 } from '../src/v1/buildEventV1'
 
@@ -115,14 +115,12 @@ describe('LogTierV1EventProcessor', () => {
     dispatchStub = jest.fn()
 
     stubDispatcher = {
-      dispatch(event: EventV1Request, callback: (success: boolean) => void): void {
+      dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
         dispatchStub(event)
-        callback(true)
+        callback({
+          statusCode: 200
+        })
       },
-      stop() {
-        return Promise.resolve()
-      },
-      start() {},
     }
   })
 
@@ -131,17 +129,13 @@ describe('LogTierV1EventProcessor', () => {
   })
 
   describe('stop()', () => {
-    let localCallback: (result: boolean) => void
+    let localCallback: EventDispatcherCallback
     beforeEach(() => {
       stubDispatcher = {
-        dispatch(event: EventV1Request, callback: (success: boolean) => void): void {
+        dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
           dispatchStub(event)
           localCallback = callback
         },
-        stop() {
-          return Promise.resolve()
-        },
-        start() {},
       }
     })
 
@@ -157,7 +151,7 @@ describe('LogTierV1EventProcessor', () => {
       })
     })
 
-    it('should return a promise that is resolved when the dispatcher callback fires true', done => {
+    it('should return a promise that is resolved when the dispatcher callback returns a 200 response', done => {
       const processor = new LogTierV1EventProcessor({
         dispatcher: stubDispatcher,
         flushInterval: 100,
@@ -171,22 +165,20 @@ describe('LogTierV1EventProcessor', () => {
         done()
       })
 
-      localCallback(true)
+      localCallback({
+        statusCode: 200
+      })
     })
 
-    it('should return a promise that is resolved when the dispatcher callback fires false', done => {
+    it('should return a promise that is resolved when the dispatcher callback returns a 400 response', done => {
       // This test is saying that even if the request fails to send but
       // the `dispatcher` yielded control back, then the `.stop()` promise should be resolved
       let localCallback: any
       stubDispatcher = {
-        dispatch(event: EventV1Request, callback: (success: boolean) => void): void {
+        dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
           dispatchStub(event)
           localCallback = callback
         },
-        stop() {
-          return Promise.resolve()
-        },
-        start() {},
       }
 
       const processor = new LogTierV1EventProcessor({
@@ -202,19 +194,19 @@ describe('LogTierV1EventProcessor', () => {
         done()
       })
 
-      localCallback(false)
+      localCallback({
+        statusCode: 400
+      })
     })
 
     it('should return a promise when multiple event batches are sent', done => {
       stubDispatcher = {
-        dispatch(event: EventV1Request, callback: (success: boolean) => void): void {
+        dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
           dispatchStub(event)
-          callback(true)
+          callback({
+            statusCode: 200
+          })
         },
-        stop() {
-          return Promise.resolve()
-        },
-        start() {},
       }
 
       const processor = new LogTierV1EventProcessor({
@@ -258,9 +250,9 @@ describe('LogTierV1EventProcessor', () => {
       expect(dispatchStub).toHaveBeenCalledTimes(1)
       expect(dispatchStub).toHaveBeenCalledWith({
         url: 'https://logx.optimizely.com/v1/events',
-        method: 'POST',
+        httpVerb: 'POST',
         headers: {},
-        event: buildImpressionEventV1(impressionEvent),
+        params: buildImpressionEventV1(impressionEvent),
       })
     })
   })
@@ -295,9 +287,9 @@ describe('LogTierV1EventProcessor', () => {
       expect(dispatchStub).toHaveBeenCalledTimes(1)
       expect(dispatchStub).toHaveBeenCalledWith({
         url: 'https://logx.optimizely.com/v1/events',
-        method: 'POST',
+        httpVerb: 'POST',
         headers: {},
-        event: makeBatchedEventV1([
+        params: makeBatchedEventV1([
           impressionEvent1,
           impressionEvent2,
           impressionEvent3,
@@ -322,16 +314,16 @@ describe('LogTierV1EventProcessor', () => {
       expect(dispatchStub).toHaveBeenCalledTimes(2)
       expect(dispatchStub).toHaveBeenCalledWith({
         url: 'https://logx.optimizely.com/v1/events',
-        method: 'POST',
+        httpVerb: 'POST',
         headers: {},
-        event: makeBatchedEventV1([impressionEvent1, conversionEvent]),
+        params: makeBatchedEventV1([impressionEvent1, conversionEvent]),
       })
 
       expect(dispatchStub).toHaveBeenCalledWith({
         url: 'https://logx.optimizely.com/v1/events',
-        method: 'POST',
+        httpVerb: 'POST',
         headers: {},
-        event: makeBatchedEventV1([impressionEvent2]),
+        params: makeBatchedEventV1([impressionEvent2]),
       })
     })
 
@@ -347,9 +339,9 @@ describe('LogTierV1EventProcessor', () => {
       expect(dispatchStub).toHaveBeenCalledTimes(1)
       expect(dispatchStub).toHaveBeenCalledWith({
         url: 'https://logx.optimizely.com/v1/events',
-        method: 'POST',
+        httpVerb: 'POST',
         headers: {},
-        event: makeBatchedEventV1([impressionEvent1]),
+        params: makeBatchedEventV1([impressionEvent1]),
       })
 
       processor.process(createImpressionEvent(), testProjectConfig)
@@ -425,9 +417,9 @@ describe('LogTierV1EventProcessor', () => {
         expect(dispatchStub).toHaveBeenCalledTimes(1)
         expect(dispatchStub).toHaveBeenCalledWith({
           url: 'https://logx.optimizely.com/v1/events',
-          method: 'POST',
+          httpVerb: 'POST',
           headers: {},
-          event: makeBatchedEventV1([modifiedEvent]),
+          params: makeBatchedEventV1([modifiedEvent]),
         })
       })
 
@@ -452,9 +444,9 @@ describe('LogTierV1EventProcessor', () => {
         expect(dispatchStub).toHaveBeenCalledTimes(1)
         expect(dispatchStub).toHaveBeenCalledWith({
           url: 'https://logx.optimizely.com/v1/events',
-          method: 'POST',
+          httpVerb: 'POST',
           headers: {},
-          event: makeBatchedEventV1([impressionEvent]),
+          params: makeBatchedEventV1([impressionEvent]),
         })
       })
     })
@@ -513,9 +505,9 @@ describe('LogTierV1EventProcessor', () => {
         expect(dispatchStub).toHaveBeenCalledTimes(1)
         expect(dispatchStub).toHaveBeenCalledWith({
           url: 'https://logx.optimizely.com/v1/events',
-          method: 'POST',
+          httpVerb: 'POST',
           headers: {},
-          event: makeBatchedEventV1([impressionEvent]),
+          params: makeBatchedEventV1([impressionEvent]),
         })
       })
 
@@ -584,17 +576,15 @@ describe('LogTierV1EventProcessor', () => {
         })
       })
 
-      it('should return result == false when the dispatcher fails', async () => {
+      it('should return result == false when the dispatcher returns a non 200 response', async () => {
         const callback = jest.fn()
-        const dispatcher = {
-          dispatch(event: EventV1Request, callback: (success: boolean) => void): void {
+        const dispatcher: EventDispatcher = {
+          dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
             dispatchStub(event)
-            callback(false)
+            callback({
+              statusCode: 400
+            })
           },
-          stop() {
-            return Promise.resolve()
-          },
-          start() { },
         }
 
         processor = new LogTierV1EventProcessor({

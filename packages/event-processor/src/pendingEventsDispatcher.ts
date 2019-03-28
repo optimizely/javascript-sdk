@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 import { getLogger } from '@optimizely/js-sdk-logging'
-import { EventDispatcher, EventV1Request } from './eventDispatcher'
+import { EventDispatcher, EventV1Request, EventDispatcherCallback } from './eventDispatcher'
 import { PendingEventsStore, LocalStorageStore } from './pendingEventsStore'
 import { generateUUID, getTimestamp } from '@optimizely/js-sdk-utils'
 
 const logger = getLogger('EventProcessor')
-
-type DispatchCallback = (success: boolean) => void
 
 export type DispatcherEntry = {
   uuid: string
@@ -43,15 +41,7 @@ export class PendingEventsDispatcher implements EventDispatcher {
     this.store = store
   }
 
-  start(): void {}
-
-  stop(): Promise<any> {
-    const pendingEvents = this.store.values()
-    logger.debug('Stopping with %s pending events', pendingEvents.length)
-    return Promise.resolve()
-  }
-
-  dispatch(request: EventV1Request, callback: DispatchCallback): void {
+  dispatchEvent(request: EventV1Request, callback: EventDispatcherCallback): void {
     this.send(
       {
         uuid: generateUUID(),
@@ -74,12 +64,12 @@ export class PendingEventsDispatcher implements EventDispatcher {
     })
   }
 
-  protected send(entry: DispatcherEntry, callback: DispatchCallback): void {
+  protected send(entry: DispatcherEntry, callback: EventDispatcherCallback): void {
     this.store.set(entry.uuid, entry)
 
-    this.dispatcher.dispatch(entry.request, success => {
+    this.dispatcher.dispatchEvent(entry.request, response => {
       this.store.remove(entry.uuid)
-      callback(success)
+      callback(response)
     })
   }
 }

@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 import { EventV1 } from "./v1/buildEventV1";
-import { Managed } from "./managed";
 
-export interface EventDispatcher extends Managed {
-  dispatch(event: EventV1Request, callback: (success: boolean) => void): void
+export type EventDispatcherResponse = {
+  statusCode: number
+}
+
+export type EventDispatcherCallback = (response: EventDispatcherResponse) => void
+
+export interface EventDispatcher {
+  dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void
 }
 
 export interface EventV1Request {
   url: string
-  method: 'POST' | 'PUT' | 'GET' | 'PATCH'
+  httpVerb: 'POST' | 'PUT' | 'GET' | 'PATCH'
   headers: {
     [key: string]: string[]
   }
-  event: EventV1,
+  params: EventV1,
 }
