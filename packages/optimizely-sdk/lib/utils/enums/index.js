@@ -189,6 +189,7 @@ exports.NOTIFICATION_TYPES = {
 
 exports.DECISION_INFO_TYPES = {
   EXPERIMENT: 'experiment',
+  FEATURE: 'feature',
   FEATURE_VARIABLE: 'feature_variable',
 };
 
