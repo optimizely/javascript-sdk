@@ -237,7 +237,6 @@ describe('lib/optimizely', function() {
           });
 
           sinon.assert.calledWith(decisionService.createDecisionService, {
-            configObj: optlyInstance.configObj,
             userProfileService: userProfileServiceInstance,
             logger: createdLogger,
           });
@@ -261,7 +260,6 @@ describe('lib/optimizely', function() {
           });
 
           sinon.assert.calledWith(decisionService.createDecisionService, {
-            configObj: optlyInstance.configObj,
             userProfileService: null,
             logger: createdLogger,
           });
@@ -2426,7 +2424,7 @@ describe('lib/optimizely', function() {
               }
             });
           });
-  
+
           it('should send notification with null variation key when getVariation returns null', function() {
             var variation = optlyInstance.getVariation('testExperimentWithAudiences', 'testUser', {});
             assert.isNull(variation);
@@ -3233,6 +3231,7 @@ describe('lib/optimizely', function() {
             var feature = optlyInstance.configObj.featureKeyMap.test_feature_for_experiment;
             sinon.assert.calledWithExactly(
               optlyInstance.decisionService.getVariationForFeature,
+              optlyInstance.configObj,
               feature,
               'user1',
               attributes
@@ -3402,6 +3401,7 @@ describe('lib/optimizely', function() {
             var feature = optlyInstance.configObj.featureKeyMap.shared_feature;
             sinon.assert.calledWithExactly(
               optlyInstance.decisionService.getVariationForFeature,
+              optlyInstance.configObj,
               feature,
               'user1',
               attributes
@@ -3485,6 +3485,7 @@ describe('lib/optimizely', function() {
             var feature = optlyInstance.configObj.featureKeyMap.shared_feature;
             sinon.assert.calledWithExactly(
               optlyInstance.decisionService.getVariationForFeature,
+              optlyInstance.configObj,
               feature,
               'user1',
               attributes
