@@ -1,5 +1,3 @@
-import { TimeoutFactory } from "./timeoutFactory";
-
 /**
  * Copyright 2019, Optimizely
  *
@@ -15,6 +13,8 @@ import { TimeoutFactory } from "./timeoutFactory";
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import { TimeoutFactory } from "./timeoutFactory";
 
  export interface DatafileUpdate {
    datafile: object
