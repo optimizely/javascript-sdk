@@ -2,7 +2,6 @@
   "name": "@optimizely/js-sdk-datafile-manager",
   "version": "0.1.0",
   "description": "Optimizely Full Stack Datafile Manager",
-  "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/datafile-manager",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=4.0.0"
@@ -21,16 +20,6 @@
     "README.md",
     "package.json"
   ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/optimizely/javascript-sdk.git"
-  },
-  "keywords": [
-    "optimizely"
-  ],
-  "bugs": {
-    "url": "https://github.com/optimizely/javascript-sdk/issues"
-  },
   "publishConfig": {
     "access": "public"
   },
@@ -50,6 +39,7 @@
   },
   "scripts": {
     "test": "jest",
-    "tsc": "rm -rf lib && tsc"
+    "tsc": "rm -rf lib && tsc",
+    "prepublishOnly": "yarn test && yarn tsc"
   }
 }
