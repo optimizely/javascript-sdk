@@ -632,35 +632,46 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     return null;
   }
 
-  var decision = this.decisionService.getVariationForFeature(this.configObj, featureFlag, userId, attributes);
   var variableValue;
+  var featureEnabled = false;
+  var decision = this.decisionService.getVariationForFeature(this.configObj, featureFlag, userId, attributes);
+  
   if (decision.variation !== null) {
-    variableValue = projectConfig.getVariableValueForVariation(
-      this.configObj,
-      variable,
-      decision.variation,
-      this.logger
-    );
-    this.logger.log(
-      LOG_LEVEL.INFO,
-      sprintf(
-        LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE,
-        MODULE_NAME,
-        variableKey,
-        featureFlag.key,
-        variableValue,
-        userId
-      )
-    );
+    featureEnabled = decision.variation.featureEnabled;
+    variableValue = projectConfig.getVariableValueForVariation(this.configObj, variable, decision.variation, this.logger);
+    this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE, MODULE_NAME, variableKey, featureFlag.key, variableValue, userId));
   } else {
     variableValue = variable.defaultValue;
-    this.logger.log(
-      LOG_LEVEL.INFO,
-      sprintf(LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE, MODULE_NAME, userId, variableKey, featureFlag.key)
-    );
+    this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE, MODULE_NAME, userId, variableKey, featureFlag.key));
   }
 
-  return projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
+  var experimentKey = null;
+  var variationKey = null;
+  if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
+    experimentKey = decision.experiment.key;
+    variationKey = decision.variation.key;
+  }
+
+  var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
+  this.notificationCenter.sendNotifications(
+    enums.NOTIFICATION_TYPES.DECISION,
+    {
+      type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+      userId: userId,
+      attributes: attributes || {},
+      decisionInfo: {
+        featureKey: featureKey,
+        featureEnabled: featureEnabled,
+        variableKey: variableKey,
+        variableValue: typeCastedValue,
+        variableType: variableType,
+        source: decision.decisionSource,
+        sourceExperimentKey: experimentKey,
+        sourceVariationKey: variationKey
+      }
+    }
+  );
+  return typeCastedValue;
 };
 
 /**

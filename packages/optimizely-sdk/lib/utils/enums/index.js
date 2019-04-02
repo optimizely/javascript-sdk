@@ -173,7 +173,6 @@ exports.NODE_CLIENT_VERSION = '3.1.0-beta1';
  *    - attributes {Object|undefined}
  *    - eventTags {Object|undefined}
  *    - logEvent {Object}
- * 
  *  DECISION: A decision is made in the system. i.e. user activation, 
  *  feature access or feature-variable value retrieval
  *  Callbacks will receive an object argument with the following properties:
@@ -191,6 +190,7 @@ exports.NOTIFICATION_TYPES = {
 exports.DECISION_INFO_TYPES = {
   EXPERIMENT: 'experiment',
   FEATURE: 'feature',
+  FEATURE_VARIABLE: 'feature_variable',
 };
 
 /*
