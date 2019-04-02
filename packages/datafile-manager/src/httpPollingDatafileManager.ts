@@ -92,12 +92,6 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
 
     this.sdkKey = sdkKey
 
-    if (typeof datafile !== 'undefined') {
-      this.currentDatafile = datafile
-    } else {
-      this.currentDatafile = null
-    }
-
     this.isReadyPromiseSettled = false
     this.readyPromiseResolver = () => {}
     this.readyPromiseRejecter = () => {}
@@ -105,6 +99,13 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       this.readyPromiseResolver = resolve
       this.readyPromiseRejecter = reject
     })
+
+    if (typeof datafile !== 'undefined') {
+      this.currentDatafile = datafile
+      this.resolveReadyPromise()
+    } else {
+      this.currentDatafile = null
+    }
 
     this.isStarted = false
 
@@ -204,7 +205,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       this.currentDatafile = datafile
       if (!this.isReadyPromiseSettled) {
         this.resolveReadyPromise()
-      } else if (this.autoUpdate) {
+      } else {
         const datafileUpdate: DatafileUpdate = {
           datafile,
         }

@@ -79,24 +79,88 @@ describe('httpPollingDatafileManager', () => {
     jest.restoreAllMocks()
   })
 
-  describe('when constructed with sdkKey and datafile', () => {
+  describe('when constructed with sdkKey and datafile and autoUpdate: true,', () => {
     beforeEach(() => {
-      manager = createTestManager({ datafile: { foo: 'abcd' }, sdkKey: '123' })
+      manager = createTestManager({ datafile: { foo: 'abcd' }, sdkKey: '123', autoUpdate: true })
     })
 
     it('returns the passed datafile from get', () => {
       expect(manager.get()).toEqual({ foo: 'abcd' })
     })
 
-    it('after being started, fetches the datafile and resolves onReady', async () => {
+    it('resolves onReady immediately', async () => {
+      manager.start()
+      await manager.onReady()
+      expect(manager.get()).toEqual({ foo: 'abcd' })
+    })
+
+    it('after being started, fetches the datafile, updates itself, emits an update event, and updates itself again after a timeout', async () => {
+      manager.queuedResponses.push(
+        {
+          statusCode: 200,
+          body: '{"fooz": "barz"}',
+          headers: {}
+        },
+        {
+          statusCode: 200,
+          body: '{"foo": "bar"}',
+          headers: {}
+        }
+      )
+      const updateFn = jest.fn()
+      manager.on('update', updateFn)
+      manager.start()
+      expect(manager.responsePromises.length).toBe(1)
+      await manager.responsePromises[0]
+      expect(updateFn).toBeCalledTimes(1)
+      expect(updateFn).toBeCalledWith({
+        datafile: { foo: 'bar' }
+      })
+      expect(manager.get()).toEqual({ foo: 'bar' })
+      updateFn.mockReset()
+      testTimeoutFactory.timeoutFns[0]()
+      expect(manager.responsePromises.length).toBe(2)
+      await manager.responsePromises[1]
+      expect(updateFn).toBeCalledTimes(1)
+      expect(updateFn).toBeCalledWith({
+        datafile: { fooz: 'barz' }
+      })
+      expect(manager.get()).toEqual({ fooz: 'barz' })
+    })
+  })
+
+  describe('when constructed with sdkKey and datafile and autoUpdate: false,', () => {
+    beforeEach(() => {
+      manager = createTestManager({ datafile: { foo: 'abcd' }, sdkKey: '123', autoUpdate: false })
+    })
+
+    it('returns the passed datafile from get', () => {
+      expect(manager.get()).toEqual({ foo: 'abcd' })
+    })
+
+    it('after being started, resolves onReady immediately', async () => {
+      manager.start()
+      await manager.onReady()
+      expect(manager.get()).toEqual({ foo: 'abcd' })
+    })
+
+    it('after being started, fetches the datafile, updates itself once, and emits an update event, but does not schedule a future update', async () => {
       manager.queuedResponses.push({
         statusCode: 200,
         body: '{"foo": "bar"}',
         headers: {}
       })
+      const updateFn = jest.fn()
+      manager.on('update', updateFn)
       manager.start()
-      await manager.onReady()
+      expect(manager.responsePromises.length).toBe(1)
+      await manager.responsePromises[0]
+      expect(updateFn).toBeCalledTimes(1)
+      expect(updateFn).toBeCalledWith({
+        datafile: { foo: 'bar' }
+      })
       expect(manager.get()).toEqual({ foo: 'bar' })
+      expect(testTimeoutFactory.timeoutFns.length).toBe(0)
     })
   })
 
