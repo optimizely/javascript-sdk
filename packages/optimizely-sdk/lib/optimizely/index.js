@@ -19,7 +19,6 @@ var attributesValidator = require('../utils/attributes_validator');
 var decisionService = require('../core/decision_service');
 var enums = require('../utils/enums');
 var eventBuilder = require('../core/event_builder/index.js');
-var EventDispatcherBridge = require('./event_dispatcher_bridge');
 var eventHelpers = require('../core/event_builder/event_helpers');
 var eventProcessor = require('@optimizely/js-sdk-event-processor');
 var eventTagsValidator = require('../utils/event_tags_validator');
@@ -67,7 +66,7 @@ function Optimizely(config) {
   this.clientEngine = clientEngine;
   this.clientVersion = config.clientVersion || enums.NODE_CLIENT_VERSION;
   this.errorHandler = config.errorHandler;
-  this.eventDispatcher = new EventDispatcherBridge(config.eventDispatcher);
+  this.eventDispatcher = config.eventDispatcher;
   this.isValidInstance = config.isValidInstance;
   this.logger = config.logger;
 

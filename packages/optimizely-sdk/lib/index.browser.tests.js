@@ -15,6 +15,7 @@
  */
 var logging = require('@optimizely/js-sdk-logging');
 var configValidator = require('./utils/config_validator');
+var eventProcessor = require('@optimizely/js-sdk-event-processor');
 var Optimizely = require('./optimizely');
 var optimizelyFactory = require('./index.browser');
 var packageJSON = require('../package.json');
@@ -24,6 +25,8 @@ var chai = require('chai');
 var assert = chai.assert;
 var find = require('lodash/find');
 var sinon = require('sinon');
+
+var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
 
 describe('javascript-sdk', function() {
   describe('APIs', function() {
@@ -40,8 +43,8 @@ describe('javascript-sdk', function() {
     });
 
     describe('createInstance', function() {
-      var fakeErrorHandler = { handleError: function() {}};
-      var fakeEventDispatcher = { dispatchEvent: function() {}};
+      var fakeErrorHandler = { handleError: function() {} };
+      var fakeEventDispatcher = { dispatchEvent: function() {} };
       var silentLogger;
 
       beforeEach(function() {
@@ -55,15 +58,39 @@ describe('javascript-sdk', function() {
         xhr = sinon.useFakeXMLHttpRequest();
         global.XMLHttpRequest = xhr;
         requests = [];
-        xhr.onCreate = function (req) {
-            requests.push(req);
+        xhr.onCreate = function(req) {
+          requests.push(req);
         };
+
+        sinon.spy(LocalStoragePendingEventsDispatcher.prototype, 'sendPendingEvents');
       });
 
       afterEach(function() {
+        LocalStoragePendingEventsDispatcher.prototype.sendPendingEvents.restore();
+        optimizelyFactory.__internalResetRetryState();
         console.error.restore();
         configValidator.validate.restore();
         xhr.restore();
+      });
+
+      it('should invoke resendPendingEvents at most once', function() {
+        optimizelyFactory.createInstance({
+          datafile: {},
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          logger: silentLogger,
+        });
+
+        sinon.assert.calledOnce(LocalStoragePendingEventsDispatcher.prototype.sendPendingEvents);
+
+        optimizelyFactory.createInstance({
+          datafile: {},
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          logger: silentLogger,
+        });
+
+        sinon.assert.calledOnce(LocalStoragePendingEventsDispatcher.prototype.sendPendingEvents);
       });
 
       it('should not throw if the provided config is not valid', function() {
@@ -157,9 +184,12 @@ describe('javascript-sdk', function() {
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
         assert.strictEqual(didSetVariation, true);
 
-        var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', 'controlLaunched');
+        var didSetVariation2 = optlyInstance.setForcedVariation(
+          'testExperimentLaunched',
+          'testUser',
+          'controlLaunched'
+        );
         assert.strictEqual(didSetVariation2, true);
-
 
         var variation = optlyInstance.getForcedVariation('testExperiment', 'testUser');
         assert.strictEqual(variation, 'control');
@@ -179,7 +209,11 @@ describe('javascript-sdk', function() {
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
         assert.strictEqual(didSetVariation, true);
 
-        var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', 'controlLaunched');
+        var didSetVariation2 = optlyInstance.setForcedVariation(
+          'testExperimentLaunched',
+          'testUser',
+          'controlLaunched'
+        );
         assert.strictEqual(didSetVariation2, true);
 
         var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', null);
@@ -203,10 +237,18 @@ describe('javascript-sdk', function() {
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
         assert.strictEqual(didSetVariation, true);
 
-        var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', 'controlLaunched');
+        var didSetVariation2 = optlyInstance.setForcedVariation(
+          'testExperimentLaunched',
+          'testUser',
+          'controlLaunched'
+        );
         assert.strictEqual(didSetVariation2, true);
 
-        var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', 'variationLaunched');
+        var didSetVariation2 = optlyInstance.setForcedVariation(
+          'testExperimentLaunched',
+          'testUser',
+          'variationLaunched'
+        );
         assert.strictEqual(didSetVariation2, true);
 
         var variation = optlyInstance.getForcedVariation('testExperiment', 'testUser');
@@ -245,7 +287,11 @@ describe('javascript-sdk', function() {
           logger: silentLogger,
         });
 
-        var didSetVariation = optlyInstance.setForcedVariation('testExperimentNotRunning', 'testUser', 'controlNotRunning');
+        var didSetVariation = optlyInstance.setForcedVariation(
+          'testExperimentNotRunning',
+          'testUser',
+          'controlNotRunning'
+        );
         assert.strictEqual(didSetVariation, true);
 
         var variation = optlyInstance.getVariation('testExperimentNotRunning', 'testUser');
