@@ -105,7 +105,6 @@ function Optimizely(config) {
   }
 
   this.decisionService = decisionService.createDecisionService({
-    configObj: this.configObj,
     userProfileService: userProfileService,
     logger: this.logger,
   });
@@ -344,7 +343,7 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
         return null;
       }
 
-      var variationKey = this.decisionService.getVariation(experimentKey, userId, attributes);
+      var variationKey = this.decisionService.getVariation(this.configObj, experimentKey, userId, attributes);
       this.notificationCenter.sendNotifications(
         NOTIFICATION_TYPES.DECISION,
         {
@@ -505,7 +504,7 @@ Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes)
     var featureEnabled = false;
     var experimentKey = null;
     var variationKey = null;
-    var decision = this.decisionService.getVariationForFeature(feature, userId, attributes);
+    var decision = this.decisionService.getVariationForFeature(this.configObj, feature, userId, attributes);
     var variation = decision.variation;
     
     if (!!variation) {
@@ -635,11 +634,11 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
   }
 
   var variableValue = variable.defaultValue;
-  var decision = this.decisionService.getVariationForFeature(featureFlag, userId, attributes);
+  var decision = this.decisionService.getVariationForFeature(this.configObj, featureFlag, userId, attributes);
 
   if (decision.variation !== null) {
     var value = projectConfig.getVariableValueForVariation(this.configObj, variable, decision.variation, this.logger);
-    if (value) {
+    if (value !== null) {
       if (decision.variation.featureEnabled === true) {
         variableValue = value;
         this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE, MODULE_NAME, variableKey, featureFlag.key, variableValue, userId));
