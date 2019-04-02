@@ -11,4 +11,5 @@ module.exports = {
     "json",
     "node"
   ],
+  "setupFiles": ["jest-localstorage-mock"]
 }

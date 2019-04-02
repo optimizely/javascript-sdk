@@ -16,7 +16,11 @@
 // TODO change this to use Managed from js-sdk-models when available
 import { Managed } from './managed'
 import { ConversionEvent, ImpressionEvent } from './events'
-import { EventDispatcher } from './eventDispatcher'
+import {
+  EventDispatcher,
+  EventV1Request,
+  EventDispatcherResponse,
+} from './eventDispatcher'
 import { EventQueue, DefaultEventQueue, SingleEventQueue } from './eventQueue'
 import { getLogger } from '@optimizely/js-sdk-logging'
 
@@ -96,13 +100,13 @@ export abstract class AbstractEventProcessor implements EventProcessor {
       const formattedEvent = this.formatEvents(eventGroup)
 
       return new Promise((resolve, reject) => {
-        this.dispatcher.dispatch(formattedEvent, result => {
+        this.dispatcher.dispatchEvent(formattedEvent, response => {
           // loop through every event in the group and run the callback handler
           // with result
           eventGroup.forEach(event => {
             this.callbacks.forEach(handler => {
               handler({
-                result,
+                result: isResponseSuccess(response),
                 event,
               })
             })
@@ -162,5 +166,12 @@ export abstract class AbstractEventProcessor implements EventProcessor {
 
   protected abstract groupEvents(events: ProcessableEvents[]): ProcessableEvents[][]
 
-  protected abstract formatEvents(events: ProcessableEvents[]): object
+  protected abstract formatEvents(events: ProcessableEvents[]): EventV1Request
+}
+
+function isResponseSuccess(response: EventDispatcherResponse): boolean {
+  if (!response.statusCode) {
+    return false
+  }
+  return response.statusCode >= 200 && response.statusCode < 300
 }
