@@ -632,13 +632,15 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     return null;
   }
 
+  var featureEnabled = false;
   var variableValue = variable.defaultValue;
   var decision = this.decisionService.getVariationForFeature(this.configObj, featureFlag, userId, attributes);
-
+  
   if (decision.variation !== null) {
+    featureEnabled = decision.variation.featureEnabled;
     var value = projectConfig.getVariableValueForVariation(this.configObj, variable, decision.variation, this.logger);
     if (value !== null) {
-      if (decision.variation.featureEnabled === true) {
+      if (featureEnabled === true) {
         variableValue = value;
         this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE, MODULE_NAME, variableKey, featureFlag.key, variableValue, userId));
       } else {
@@ -653,7 +655,33 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
       variableKey, featureFlag.key));
   }
 
-  return projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
+  var experimentKey = null;
+  var variationKey = null;
+  if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
+    experimentKey = decision.experiment.key;
+    variationKey = decision.variation.key;
+  }
+
+  var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
+  this.notificationCenter.sendNotifications(
+    enums.NOTIFICATION_TYPES.DECISION,
+    {
+      type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+      userId: userId,
+      attributes: attributes || {},
+      decisionInfo: {
+        featureKey: featureKey,
+        featureEnabled: featureEnabled,
+        variableKey: variableKey,
+        variableValue: typeCastedValue,
+        variableType: variableType,
+        source: decision.decisionSource,
+        sourceExperimentKey: experimentKey,
+        sourceVariationKey: variationKey
+      }
+    }
+  );
+  return typeCastedValue;
 };
 
 /**

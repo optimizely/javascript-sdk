@@ -41,6 +41,7 @@ var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
 var DECISION_SOURCES = enums.DECISION_SOURCES;
 var DECISION_INFO_TYPES = enums.DECISION_INFO_TYPES;
+var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
 
 describe('lib/optimizely', function() {
   describe('constructor', function() {
@@ -2438,7 +2439,7 @@ describe('lib/optimizely', function() {
             });
           });
         });
-    
+
         describe('feature management', function() {
           var sandbox = sinon.sandbox.create();
 
@@ -2446,9 +2447,7 @@ describe('lib/optimizely', function() {
             optlyInstance = new Optimizely({
               clientEngine: 'node-sdk',
               datafile: testData.getTestProjectConfigWithFeatures(),
-              eventBuilder: eventBuilder,
               errorHandler: errorHandler,
-              eventDispatcher: eventDispatcher,
               jsonSchemaValidator: jsonSchemaValidator,
               logger: createdLogger,
               isValidInstance: true,
@@ -2572,7 +2571,7 @@ describe('lib/optimizely', function() {
                   });
                 });
       
-                it('returns false and send notification', function() {
+                it('should return false and send notification', function() {
                   var result = optlyInstance.isFeatureEnabled('test_feature', 'user1', {
                     test_attribute: 'test_value',
                   });
@@ -2605,7 +2604,7 @@ describe('lib/optimizely', function() {
                 });
               });
       
-              it('returns false and send notification', function() {
+              it('should return false and send notification', function() {
                 var result = optlyInstance.isFeatureEnabled('test_feature', 'user1');
                 assert.strictEqual(result, false);
                 sinon.assert.calledWith(decisionListener, {
@@ -2615,6 +2614,470 @@ describe('lib/optimizely', function() {
                   decisionInfo: {
                     featureKey: 'test_feature',
                     featureEnabled: false,
+                    source: DECISION_SOURCES.ROLLOUT,
+                    sourceExperimentKey: null,
+                    sourceVariationKey: null
+                  }
+                });
+              });
+            });
+          });
+
+          describe('feature variable APIs', function() {
+            describe('bucketed into variation of an experiment with variable values', function() {
+              describe('when the variation is toggled ON', function() {
+                beforeEach(function() {
+                  var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, 'testing_my_feature');
+                  var variation = experiment.variations[0];
+                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+                    experiment: experiment,
+                    variation: variation,
+                    decisionSource: DECISION_SOURCES.EXPERIMENT,
+                  });
+                });
+      
+                it('returns the right value from getFeatureVariableBoolean and send notification with featureEnabled true', function() {
+                  var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
+                  assert.strictEqual(result, true);
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature_for_experiment',
+                      featureEnabled: true,
+                      variableKey: 'is_button_animated',
+                      variableValue: true,
+                      variableType: FEATURE_VARIABLE_TYPES.BOOLEAN,
+                      source: DECISION_SOURCES.EXPERIMENT,
+                      sourceExperimentKey: 'testing_my_feature',
+                      sourceVariationKey: 'variation'
+                    }
+                  });
+                });
+      
+                it('returns the right value from getFeatureVariableDouble and send notification with featureEnabled true', function() {
+                  var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
+                  assert.strictEqual(result, 20.25);
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature_for_experiment',
+                      featureEnabled: true,
+                      variableKey: 'button_width',
+                      variableValue: 20.25,
+                      variableType: FEATURE_VARIABLE_TYPES.DOUBLE,
+                      source: DECISION_SOURCES.EXPERIMENT,
+                      sourceExperimentKey: 'testing_my_feature',
+                      sourceVariationKey: 'variation'
+                    }
+                  });
+                });
+      
+                it('returns the right value from getFeatureVariableInteger and send notification with featureEnabled true', function() {
+                  var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
+                  assert.strictEqual(result, 2);
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature_for_experiment',
+                      featureEnabled: true,
+                      variableKey: 'num_buttons',
+                      variableValue: 2,
+                      variableType: FEATURE_VARIABLE_TYPES.INTEGER,
+                      source: DECISION_SOURCES.EXPERIMENT,
+                      sourceExperimentKey: 'testing_my_feature',
+                      sourceVariationKey: 'variation'
+                    }
+                  });
+                });
+      
+                it('returns the right value from getFeatureVariableString and send notification with featureEnabled true', function() {
+                  var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
+                  assert.strictEqual(result, 'Buy me NOW');
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature_for_experiment',
+                      featureEnabled: true,
+                      variableKey: 'button_txt',
+                      variableValue: 'Buy me NOW',
+                      variableType: FEATURE_VARIABLE_TYPES.STRING,
+                      source: DECISION_SOURCES.EXPERIMENT,
+                      sourceExperimentKey: 'testing_my_feature',
+                      sourceVariationKey: 'variation'
+                    }
+                  });
+                });
+              });
+      
+              describe('when the variation is toggled OFF', function() {
+                beforeEach(function() {
+                  var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, 'testing_my_feature');
+                  var variation = experiment.variations[2];
+                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+                    experiment: experiment,
+                    variation: variation,
+                    decisionSource: DECISION_SOURCES.EXPERIMENT,
+                  });
+                });
+      
+                it('returns the default value from getFeatureVariableBoolean and send notification with featureEnabled false', function() {
+                  var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
+                  assert.strictEqual(result, false);
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature_for_experiment',
+                      featureEnabled: false,
+                      variableKey: 'is_button_animated',
+                      variableValue: false,
+                      variableType: FEATURE_VARIABLE_TYPES.BOOLEAN,
+                      source: DECISION_SOURCES.EXPERIMENT,
+                      sourceExperimentKey: 'testing_my_feature',
+                      sourceVariationKey: 'variation2'
+                    }
+                  });
+                });
+      
+                it('returns the default value from getFeatureVariableDouble and send notification with featureEnabled false', function() {
+                  var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
+                  assert.strictEqual(result, 50.55);
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature_for_experiment',
+                      featureEnabled: false,
+                      variableKey: 'button_width',
+                      variableValue: 50.55,
+                      variableType: FEATURE_VARIABLE_TYPES.DOUBLE,
+                      source: DECISION_SOURCES.EXPERIMENT,
+                      sourceExperimentKey: 'testing_my_feature',
+                      sourceVariationKey: 'variation2'
+                    }
+                  });
+                });
+      
+                it('returns the default value from getFeatureVariableInteger and send notification with featureEnabled false', function() {
+                  var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
+                  assert.strictEqual(result, 10);
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature_for_experiment',
+                      featureEnabled: false,
+                      variableKey: 'num_buttons',
+                      variableValue: 10,
+                      variableType: FEATURE_VARIABLE_TYPES.INTEGER,
+                      source: DECISION_SOURCES.EXPERIMENT,
+                      sourceExperimentKey: 'testing_my_feature',
+                      sourceVariationKey: 'variation2'
+                    }
+                  });
+                });
+      
+                it('returns the default value from getFeatureVariableString and send notification with featureEnabled false', function() {
+                  var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
+                  assert.strictEqual(result, 'Buy me');
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature_for_experiment',
+                      featureEnabled: false,
+                      variableKey: 'button_txt',
+                      variableValue: 'Buy me',
+                      variableType: FEATURE_VARIABLE_TYPES.STRING,
+                      source: DECISION_SOURCES.EXPERIMENT,
+                      sourceExperimentKey: 'testing_my_feature',
+                      sourceVariationKey: 'variation2'
+                    }
+                  });
+                });
+              });
+            });
+
+            describe('bucketed into variation of a rollout with variable values', function() {
+              describe('when the variation is toggled ON', function() {
+                beforeEach(function() {
+                  var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, '594031');
+                  var variation = experiment.variations[0];
+                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+                    experiment: experiment,
+                    variation: variation,
+                    decisionSource: DECISION_SOURCES.ROLLOUT,
+                  });
+                });
+      
+                it('should return the right value from getFeatureVariableBoolean and send notification with featureEnabled true', function() {
+                  var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', { test_attribute: 'test_value' });
+                  assert.strictEqual(result, true);
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature',
+                      featureEnabled: true,
+                      variableKey: 'new_content',
+                      variableValue: true,
+                      variableType: FEATURE_VARIABLE_TYPES.BOOLEAN,
+                      source: DECISION_SOURCES.ROLLOUT,
+                      sourceExperimentKey: null,
+                      sourceVariationKey: null
+                    }
+                  });
+                });
+      
+                it('should return the right value from getFeatureVariableDouble and send notification with featureEnabled true', function() {
+                  var result = optlyInstance.getFeatureVariableDouble('test_feature', 'price', 'user1', { test_attribute: 'test_value' });
+                  assert.strictEqual(result, 4.99);
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature',
+                      featureEnabled: true,
+                      variableKey: 'price',
+                      variableValue: 4.99,
+                      variableType: FEATURE_VARIABLE_TYPES.DOUBLE,
+                      source: DECISION_SOURCES.ROLLOUT,
+                      sourceExperimentKey: null,
+                      sourceVariationKey: null
+                    }
+                  });
+                });
+      
+                it('should return the right value from getFeatureVariableInteger and send notification with featureEnabled true', function() {
+                  var result = optlyInstance.getFeatureVariableInteger('test_feature', 'lasers', 'user1', { test_attribute: 'test_value' });
+                  assert.strictEqual(result, 395);
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature',
+                      featureEnabled: true,
+                      variableKey: 'lasers',
+                      variableValue: 395,
+                      variableType: FEATURE_VARIABLE_TYPES.INTEGER,
+                      source: DECISION_SOURCES.ROLLOUT,
+                      sourceExperimentKey: null,
+                      sourceVariationKey: null
+                    }
+                  });
+                });
+      
+                it('should return the right value from getFeatureVariableString and send notification with featureEnabled true', function() {
+                  var result = optlyInstance.getFeatureVariableString('test_feature', 'message', 'user1', { test_attribute: 'test_value' });
+                  assert.strictEqual(result, 'Hello audience');
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature',
+                      featureEnabled: true,
+                      variableKey: 'message',
+                      variableValue: 'Hello audience',
+                      variableType: FEATURE_VARIABLE_TYPES.STRING,
+                      source: DECISION_SOURCES.ROLLOUT,
+                      sourceExperimentKey: null,
+                      sourceVariationKey: null
+                    }
+                  });
+                });
+              });
+      
+              describe('when the variation is toggled OFF', function() {
+                beforeEach(function() {
+                  var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, '594037');
+                  var variation = experiment.variations[0];
+                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+                    experiment: experiment,
+                    variation: variation,
+                    decisionSource: DECISION_SOURCES.ROLLOUT,
+                  });
+                });
+      
+                it('should return the default value from getFeatureVariableBoolean and send notification with featureEnabled false', function() {
+                  var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', { test_attribute: 'test_value' });
+                  assert.strictEqual(result, false);
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature',
+                      featureEnabled: false,
+                      variableKey: 'new_content',
+                      variableValue: false,
+                      variableType: FEATURE_VARIABLE_TYPES.BOOLEAN,
+                      source: DECISION_SOURCES.ROLLOUT,
+                      sourceExperimentKey: null,
+                      sourceVariationKey: null
+                    }
+                  });
+                });
+      
+                it('should return the default value from getFeatureVariableDouble and send notification with featureEnabled false', function() {
+                  var result = optlyInstance.getFeatureVariableDouble('test_feature', 'price', 'user1', { test_attribute: 'test_value' });
+                  assert.strictEqual(result, 14.99);
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature',
+                      featureEnabled: false,
+                      variableKey: 'price',
+                      variableValue: 14.99,
+                      variableType: FEATURE_VARIABLE_TYPES.DOUBLE,
+                      source: DECISION_SOURCES.ROLLOUT,
+                      sourceExperimentKey: null,
+                      sourceVariationKey: null
+                    }
+                  });
+                });
+      
+                it('should return the default value from getFeatureVariableInteger and send notification with featureEnabled false', function() {
+                  var result = optlyInstance.getFeatureVariableInteger('test_feature', 'lasers', 'user1', { test_attribute: 'test_value' });
+                  assert.strictEqual(result, 400);
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature',
+                      featureEnabled: false,
+                      variableKey: 'lasers',
+                      variableValue: 400,
+                      variableType: FEATURE_VARIABLE_TYPES.INTEGER,
+                      source: DECISION_SOURCES.ROLLOUT,
+                      sourceExperimentKey: null,
+                      sourceVariationKey: null
+                    }
+                  });
+                });
+      
+                it('should return the default value from getFeatureVariableString and send notification with featureEnabled false', function() {
+                  var result = optlyInstance.getFeatureVariableString('test_feature', 'message', 'user1', { test_attribute: 'test_value' });
+                  assert.strictEqual(result, 'Hello');
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature',
+                      featureEnabled: false,
+                      variableKey: 'message',
+                      variableValue: 'Hello',
+                      variableType: FEATURE_VARIABLE_TYPES.STRING,
+                      source: DECISION_SOURCES.ROLLOUT,
+                      sourceExperimentKey: null,
+                      sourceVariationKey: null
+                    }
+                  });
+                });
+              });
+            });
+
+            describe('not bucketed into an experiment or a rollout', function() {
+              beforeEach(function() {
+                sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+                  experiment: null,
+                  variation: null,
+                  decisionSource: DECISION_SOURCES.ROLLOUT,
+                });
+              });
+      
+              it('returns the variable default value from getFeatureVariableBoolean and send notification with featureEnabled false', function() {
+                var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
+                assert.strictEqual(result, false);
+                sinon.assert.calledWith(decisionListener, {
+                  type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                  userId: 'user1',
+                  attributes: { test_attribute: 'test_value' },
+                  decisionInfo: {
+                    featureKey: 'test_feature_for_experiment',
+                    featureEnabled: false,
+                    variableKey: 'is_button_animated',
+                    variableValue: false,
+                    variableType: FEATURE_VARIABLE_TYPES.BOOLEAN,
+                    source: DECISION_SOURCES.ROLLOUT,
+                    sourceExperimentKey: null,
+                    sourceVariationKey: null
+                  }
+                });
+              });
+      
+              it('returns the variable default value from getFeatureVariableDouble and send notification with featureEnabled false', function() {
+                var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
+                assert.strictEqual(result, 50.55);
+                sinon.assert.calledWith(decisionListener, {
+                  type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                  userId: 'user1',
+                  attributes: { test_attribute: 'test_value' },
+                  decisionInfo: {
+                    featureKey: 'test_feature_for_experiment',
+                    featureEnabled: false,
+                    variableKey: 'button_width',
+                    variableValue: 50.55,
+                    variableType: FEATURE_VARIABLE_TYPES.DOUBLE,
+                    source: DECISION_SOURCES.ROLLOUT,
+                    sourceExperimentKey: null,
+                    sourceVariationKey: null
+                  }
+                });
+              });
+      
+              it('returns the variable default value from getFeatureVariableInteger and send notification with featureEnabled false', function() {
+                var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
+                assert.strictEqual(result, 10);
+                sinon.assert.calledWith(decisionListener, {
+                  type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                  userId: 'user1',
+                  attributes: { test_attribute: 'test_value' },
+                  decisionInfo: {
+                    featureKey: 'test_feature_for_experiment',
+                    featureEnabled: false,
+                    variableKey: 'num_buttons',
+                    variableValue: 10,
+                    variableType: FEATURE_VARIABLE_TYPES.INTEGER,
+                    source: DECISION_SOURCES.ROLLOUT,
+                    sourceExperimentKey: null,
+                    sourceVariationKey: null
+                  }
+                });
+              });
+      
+              it('returns the variable default value from getFeatureVariableString and send notification with featureEnabled false', function() {
+                var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
+                assert.strictEqual(result, 'Buy me');
+                sinon.assert.calledWith(decisionListener, {
+                  type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                  userId: 'user1',
+                  attributes: { test_attribute: 'test_value' },
+                  decisionInfo: {
+                    featureKey: 'test_feature_for_experiment',
+                    featureEnabled: false,
+                    variableKey: 'button_txt',
+                    variableValue: 'Buy me',
+                    variableType: FEATURE_VARIABLE_TYPES.STRING,
                     source: DECISION_SOURCES.ROLLOUT,
                     sourceExperimentKey: null,
                     sourceVariationKey: null
