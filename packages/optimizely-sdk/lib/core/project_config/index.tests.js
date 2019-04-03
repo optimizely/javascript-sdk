@@ -16,6 +16,7 @@
 var projectConfig = require('./');
 var enums = require('../../utils/enums');
 var testDatafile = require('../../tests/test_data');
+var configValidator = require('../../utils/config_validator');
 
 var _ = require('lodash/core');
 var fns = require('../../utils/fns');
@@ -725,6 +726,122 @@ describe('lib/core/project_config', function() {
 
       var didSetVariation = projectConfig.setForcedVariation(configObj, 'testExperiment', 'user1', '', createdLogger);
       assert.strictEqual(didSetVariation, false);
+    });
+  });
+
+  describe('#tryCreatingProjectConfig', function() {
+    var stubErrorHandler;
+    var stubJsonSchemaValidator;
+    var stubLogger;
+    beforeEach(function() {
+      stubErrorHandler = {
+        handleError: sinon.stub(),
+      };
+      stubJsonSchemaValidator = {
+        validate: sinon.stub().returns(true),
+      };
+      stubLogger = {
+        log: sinon.stub(),
+      };
+      sinon.stub(projectConfig, 'createProjectConfig').returns({});
+      sinon.stub(configValidator, 'validateDatafile').returns(true);
+    });
+
+    afterEach(function() {
+      projectConfig.createProjectConfig.restore();
+      configValidator.validateDatafile.restore();
+    });
+
+    it('returns a project config object created by createProjectConfig when all validation is applied and there are no errors', function() {
+      configValidator.validateDatafile.returns(true);
+      stubJsonSchemaValidator.validate.returns(true);
+      var configObj = {
+        foo: 'bar',
+        experimentKeyMap: {
+          a: { key: 'a' },
+          b: { key: 'b' },
+        }
+      };
+      projectConfig.createProjectConfig.returns(configObj);
+      var result = projectConfig.tryCreatingProjectConfig({
+        datafile: { foo: 'bar' },
+        errorHandler: stubErrorHandler,
+        jsonSchemaValidator: stubJsonSchemaValidator,
+        logger: stubLogger,
+        skipJSONValidation: false,
+      });
+      assert.deepEqual(result, configObj);
+    });
+
+    it('returns null and calls handleError when validateDatafile throws', function() {
+      configValidator.validateDatafile.throws();
+      stubJsonSchemaValidator.validate.returns(true);
+      var result = projectConfig.tryCreatingProjectConfig({
+        datafile: { foo: 'bar' },
+        errorHandler: stubErrorHandler,
+        jsonSchemaValidator: stubJsonSchemaValidator,
+        logger: stubLogger,
+        skipJSONValidation: false,
+      });
+      assert.strictEqual(result, null);
+      sinon.assert.calledOnce(stubErrorHandler.handleError);
+    });
+
+    it('returns null and calls handleError when jsonSchemaValidator.validate throws', function() {
+      configValidator.validateDatafile.returns(true);
+      stubJsonSchemaValidator.validate.throws();
+      var result = projectConfig.tryCreatingProjectConfig({
+        datafile: { foo: 'bar' },
+        errorHandler: stubErrorHandler,
+        jsonSchemaValidator: stubJsonSchemaValidator,
+        logger: stubLogger,
+        skipJSONValidation: false,
+      });
+      assert.strictEqual(result, null);
+      sinon.assert.calledOnce(stubErrorHandler.handleError);
+    });
+
+    it('returns null when jsonSchemaValidator.validate returns false', function() {
+      configValidator.validateDatafile.returns(true);
+      stubJsonSchemaValidator.validate.returns(false);
+      var result = projectConfig.tryCreatingProjectConfig({
+        datafile: { foo: 'bar' },
+        errorHandler: stubErrorHandler,
+        jsonSchemaValidator: stubJsonSchemaValidator,
+        logger: stubLogger,
+        skipJSONValidation: false,
+      });
+      assert.strictEqual(result, null);
+    });
+
+    it('does not call jsonSchemaValidator.validate when skipJSONValidation is true', function() {
+      projectConfig.tryCreatingProjectConfig({
+        datafile: { foo: 'bar' },
+        errorHandler: stubErrorHandler,
+        jsonSchemaValidator: stubJsonSchemaValidator,
+        logger: stubLogger,
+        skipJSONValidation: true,
+      });
+      sinon.assert.notCalled(stubJsonSchemaValidator.validate);
+    });
+
+    it('skips json validation when jsonSchemaValidator is not provided', function() {
+      configValidator.validateDatafile.returns(true);
+      var configObj = {
+        foo: 'bar',
+        experimentKeyMap: {
+          a: { key: 'a' },
+          b: { key: 'b' },
+        }
+      };
+      projectConfig.createProjectConfig.returns(configObj);
+      var result = projectConfig.tryCreatingProjectConfig({
+        datafile: { foo: 'bar' },
+        errorHandler: stubErrorHandler,
+        logger: stubLogger,
+      });
+      assert.deepEqual(result, configObj);
+      sinon.assert.notCalled(stubErrorHandler.handleError);
     });
   });
 });

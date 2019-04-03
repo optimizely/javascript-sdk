@@ -26,6 +26,7 @@ exports.LOG_LEVEL = {
 };
 
 exports.ERROR_MESSAGES = {
+  DATAFILE_AND_SDK_KEY_MISSING: '%s: You must provide at least one of sdkKey or datafile. Cannot start Optimizely',
   EXPERIMENT_KEY_NOT_IN_DATAFILE: '%s: Experiment key %s is not in datafile.',
   FEATURE_NOT_IN_DATAFILE: '%s: Feature key %s is not in datafile.',
   IMPROPERLY_FORMATTED_EXPERIMENT: '%s: Experiment key %s is improperly formatted.',
@@ -133,6 +134,7 @@ exports.LOG_MESSAGES = {
   UNEXPECTED_TYPE_NULL: '%s: Audience condition %s evaluated to UNKNOWN because a null value was passed for user attribute "%s".',
   UNKNOWN_CONDITION_TYPE: '%s: Audience condition %s has an unknown condition type. You may need to upgrade to a newer release of the Optimizely SDK.',
   UNKNOWN_MATCH_TYPE: '%s: Audience condition %s uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.',
+  UPDATED_PROJECT_CONFIG: '%s: Updated project config to revision %s',
   OUT_OF_BOUNDS: '%s: Audience condition %s evaluated to UNKNOWN because the number value for user attribute "%s" is not in the range [-2^53, +2^53].',
 };
 
@@ -173,8 +175,8 @@ exports.NODE_CLIENT_VERSION = '3.1.0-beta1';
  *    - attributes {Object|undefined}
  *    - eventTags {Object|undefined}
  *    - logEvent {Object}
- * 
- *  DECISION: A decision is made in the system. i.e. user activation, 
+ *
+ *  DECISION: A decision is made in the system. i.e. user activation,
  *  feature access or feature-variable value retrieval
  *  Callbacks will receive an object argument with the following properties:
  *    - type {string}

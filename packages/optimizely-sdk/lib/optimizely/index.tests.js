@@ -18,6 +18,7 @@ var Optimizely = require('./');
 var audienceEvaluator = require('../core/audience_evaluator');
 var bluebird = require('bluebird');
 var bucketer = require('../core/bucketer');
+var datafileManager = require('@optimizely/js-sdk-datafile-manager');
 var enums = require('../utils/enums');
 var eventBuilder = require('../core/event_builder/index.js');
 var eventDispatcher = require('../plugins/event_dispatcher/index.node');
@@ -43,6 +44,23 @@ var DECISION_SOURCES = enums.DECISION_SOURCES;
 var DECISION_INFO_TYPES = enums.DECISION_INFO_TYPES;
 
 describe('lib/optimizely', function() {
+  var DatafileManagerStub;
+  beforeEach(function() {
+    DatafileManagerStub = sinon.stub(datafileManager, 'DatafileManager').callsFake(function() {
+      return {
+        start: sinon.stub(),
+        stop: sinon.stub(),
+        get: sinon.stub().returns(null),
+        on: sinon.stub().returns(function() {}),
+        onReady: sinon.stub().returns({ then: function() {} })
+      };
+    });
+  });
+
+  afterEach(function() {
+    DatafileManagerStub.restore();
+  });
+
   describe('constructor', function() {
     var stubErrorHandler = { handleError: function() {}};
     var stubEventDispatcher = { dispatchEvent: function() { return bluebird.resolve(null); } };
@@ -70,7 +88,7 @@ describe('lib/optimizely', function() {
         assert.instanceOf(optlyInstance, Optimizely);
         sinon.assert.called(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.VALID_DATAFILE, 'OPTIMIZELY'));
+        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.VALID_DATAFILE, 'PROJECT_CONFIG'));
       });
 
       it('should construct an instance of the Optimizely class when datafile is JSON string', function() {
@@ -85,7 +103,7 @@ describe('lib/optimizely', function() {
         assert.instanceOf(optlyInstance, Optimizely);
         sinon.assert.called(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.VALID_DATAFILE, 'OPTIMIZELY'));
+        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.VALID_DATAFILE, 'PROJECT_CONFIG'));
       });
 
       it('should log if the client engine passed in is invalid', function() {
@@ -101,7 +119,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, 'OPTIMIZELY', 'undefined'));
       });
 
-      it('should throw an error if a datafile is not passed into the constructor', function() {
+      it('should throw an error if neither datafile nor sdkKey are passed into the constructor', function() {
         var optly = new Optimizely({
           clientEngine: 'node-sdk',
           errorHandler: stubErrorHandler,
@@ -109,13 +127,13 @@ describe('lib/optimizely', function() {
         });
         sinon.assert.calledOnce(stubErrorHandler.handleError);
         var errorMessage = stubErrorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, 'CONFIG_VALIDATOR'));
+        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.DATAFILE_AND_SDK_KEY_MISSING, 'OPTIMIZELY'));
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, 'CONFIG_VALIDATOR'));
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.DATAFILE_AND_SDK_KEY_MISSING, 'OPTIMIZELY'));
 
-        assert.isFalse(optly.isValidInstance);
+        assert.isFalse(!!optly.__isValidInstance());
       });
 
       it('should throw an error if the datafile JSON is malformed', function() {
@@ -208,7 +226,7 @@ describe('lib/optimizely', function() {
           sinon.assert.calledOnce(jsonSchemaValidator.validate);
           sinon.assert.calledOnce(createdLogger.log);
           var logMessage = createdLogger.log.args[0][1];
-          assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.VALID_DATAFILE, 'OPTIMIZELY'));
+          assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.VALID_DATAFILE, 'PROJECT_CONFIG'));
         });
       });
 
@@ -266,6 +284,123 @@ describe('lib/optimizely', function() {
           // Checking the second log message as the first one just says "Datafile is valid"
           var logMessage = createdLogger.log.args[1][1];
           assert.strictEqual(logMessage, 'USER_PROFILE_SERVICE_VALIDATOR: Provided user profile service instance is in an invalid format: Missing function \'lookup\'.');
+        });
+      });
+
+      describe('when an sdkKey is provided', function() {
+        it('should not log an error when sdkKey is provided and datafile is not provided', function() {
+          new Optimizely({
+            clientEngine: 'node-sdk',
+            eventBuilder: eventBuilder,
+            errorHandler: stubErrorHandler,
+            eventDispatcher: eventDispatcher,
+            isValidInstance: true,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            sdkKey: '12345',
+            skipJSONValidation: false,
+          });
+          sinon.assert.notCalled(stubErrorHandler.handleError);
+        });
+
+        it('creates and starts a datafile manager', function() {
+          new Optimizely({
+            clientEngine: 'node-sdk',
+            eventBuilder: eventBuilder,
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            isValidInstance: true,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            sdkKey: '12345',
+            skipJSONValidation: false,
+          });
+          sinon.assert.calledOnce(datafileManager.DatafileManager);
+          sinon.assert.calledOnce(datafileManager.DatafileManager.getCall(0).returnValue.start);
+        });
+
+        it('passes the sdkKey and the datafile to the datafile manager', function() {
+          new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestProjectConfig(),
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            isValidInstance: true,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            sdkKey: '12345',
+            skipJSONValidation: false,
+          });
+          sinon.assert.calledOnce(datafileManager.DatafileManager);
+          sinon.assert.calledWithExactly(datafileManager.DatafileManager, {
+            datafile: testData.getTestProjectConfig(),
+            sdkKey: '12345',
+          });
+        });
+
+        it('passes only sdkKey to the datafile manager when no datafile was provided', function() {
+          new Optimizely({
+            clientEngine: 'node-sdk',
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            isValidInstance: true,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            sdkKey: '12345',
+            skipJSONValidation: false,
+          });
+          sinon.assert.calledOnce(datafileManager.DatafileManager);
+          sinon.assert.calledWithExactly(datafileManager.DatafileManager, {
+            sdkKey: '12345',
+          });
+        });
+
+        it('uses the datafile returned from the datafile manager get() for the immediately-available project config object', function() {
+          var differentDatafile = testData.getTestProjectConfig();
+          differentDatafile.experiments.push({
+            key: 'myOtherExperiment',
+            status: 'Running',
+            forcedVariations: {
+            },
+            audienceIds: [],
+            layerId: '5',
+            trafficAllocation: [
+              {
+                entityId: '99999999',
+                endOfRange: 10000,
+              },
+            ],
+            id: '999998888777776',
+            variations: [
+              {
+                key: 'control',
+                id: '99999999',
+              },
+            ],
+          });
+          differentDatafile.revision = '44';
+          datafileManager.DatafileManager.callsFake(function() {
+            return {
+              start: sinon.stub(),
+              stop: sinon.stub(),
+              // Return different datafile from get method -- this should be used immediately by Optimizely
+              get: sinon.stub().returns(differentDatafile),
+              on: sinon.stub().returns(function() {}),
+              onReady: sinon.stub().returns({ then: function() {} })
+            };
+          });
+          var optlyInstance = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestProjectConfig(),
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            isValidInstance: true,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            sdkKey: '12345',
+            skipJSONValidation: false,
+          });
+          assert.strictEqual(optlyInstance.activate('myOtherExperiment', 'user12345'), 'control');
         });
       });
     });
@@ -2438,7 +2573,7 @@ describe('lib/optimizely', function() {
             });
           });
         });
-    
+
         describe('feature management', function() {
           var sandbox = sinon.sandbox.create();
 
@@ -2459,15 +2594,15 @@ describe('lib/optimizely', function() {
               decisionListener
             );
           });
-      
+
           afterEach(function() {
             sandbox.restore();
           });
-      
+
           describe('isFeatureEnabled', function() {
             describe('when the user bucketed into a variation of an experiment of the feature', function() {
               var attributes = { test_attribute: 'test_value' };
-      
+
               describe('when the variation is toggled ON', function() {
                 beforeEach(function() {
                   var experiment = optlyInstance.configObj.experimentKeyMap.testing_my_feature;
@@ -2478,7 +2613,7 @@ describe('lib/optimizely', function() {
                     decisionSource: DECISION_SOURCES.EXPERIMENT,
                   });
                 });
-      
+
                 it('should return true and send notification', function() {
                   var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user1', attributes);
                   assert.strictEqual(result, true);
@@ -2539,7 +2674,7 @@ describe('lib/optimizely', function() {
                     decisionSource: DECISION_SOURCES.ROLLOUT,
                   });
                 });
-      
+
                 it('should return true and send notification', function() {
                   var result = optlyInstance.isFeatureEnabled('test_feature', 'user1', {
                     test_attribute: 'test_value',
@@ -2559,7 +2694,7 @@ describe('lib/optimizely', function() {
                   });
                 });
               });
-      
+
               describe('when the variation is toggled OFF', function() {
                 beforeEach(function() {
                   // This experiment is the second audience targeting rule in the rollout of feature 'test_feature'
@@ -2571,14 +2706,14 @@ describe('lib/optimizely', function() {
                     decisionSource: DECISION_SOURCES.ROLLOUT,
                   });
                 });
-      
+
                 it('returns false and send notification', function() {
                   var result = optlyInstance.isFeatureEnabled('test_feature', 'user1', {
                     test_attribute: 'test_value',
                   });
                   assert.strictEqual(result, false);
                   sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature is not enabled for user user1.');
-      
+
                   var expectedArguments = {
                     type: DECISION_INFO_TYPES.FEATURE,
                     userId: 'user1',
@@ -2604,7 +2739,7 @@ describe('lib/optimizely', function() {
                   decisionSource: DECISION_SOURCES.ROLLOUT,
                 });
               });
-      
+
               it('returns false and send notification', function() {
                 var result = optlyInstance.isFeatureEnabled('test_feature', 'user1');
                 assert.strictEqual(result, false);
@@ -3181,7 +3316,7 @@ describe('lib/optimizely', function() {
           logger: createdLogger,
           isValidInstance: true,
         });
-        
+
         var decisionListener = sinon.spy();
         var attributes = { test_attribute: 'test_value' };
         optlyInstance.notificationCenter.addNotificationListener(enums.NOTIFICATION_TYPES.DECISION, decisionListener);
@@ -4124,6 +4259,163 @@ describe('lib/optimizely', function() {
         };
         var eventDispatcherCall = eventDispatcher.dispatchEvent.args[0];
         assert.deepEqual(eventDispatcherCall[0], expectedObj);
+      });
+    });
+  });
+
+  describe('datafile management', function() {
+    var createdLogger = logger.createLogger({
+      logLevel: LOG_LEVEL.INFO,
+      logToConsole: false,
+    });
+
+    beforeEach(function() {
+      sinon.stub(eventDispatcher, 'dispatchEvent');
+      sinon.stub(errorHandler, 'handleError');
+      sinon.stub(createdLogger, 'log');
+    });
+
+    afterEach(function() {
+      eventDispatcher.dispatchEvent.restore();
+      errorHandler.handleError.restore();
+      createdLogger.log.restore();
+    });
+
+    var optlyInstance;
+
+    describe('when no datafile is available yet ', function() {
+      beforeEach(function() {
+        optlyInstance = new Optimizely({
+          clientEngine: 'node-sdk',
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+          sdkKey: '12345',
+          isValidInstance: true,
+        });
+      });
+
+      it('returns fallback values from API methods that return meaningful values', function() {
+        assert.isNull(optlyInstance.activate('my_experiment', 'user1'));
+        assert.isNull(optlyInstance.getVariation('my_experiment', 'user1'));
+        assert.isNull(optlyInstance.setForcedVariation('my_experiment', 'user1', 'variation_1'));
+        assert.isNull(optlyInstance.getForcedVariation('my_experiment', 'user1'));
+        assert.isFalse(optlyInstance.isFeatureEnabled('my_feature', 'user1'));
+        assert.deepEqual(optlyInstance.getEnabledFeatures('user1'), []);
+        assert.isNull(optlyInstance.getFeatureVariableBoolean('my_feature', 'my_bool_var', 'user1'));
+        assert.isNull(optlyInstance.getFeatureVariableDouble('my_feature', 'my_double_var', 'user1'));
+        assert.isNull(optlyInstance.getFeatureVariableInteger('my_feature', 'my_int_var', 'user1'));
+        assert.isNull(optlyInstance.getFeatureVariableString('my_feature', 'my_str_var', 'user1'));
+      });
+
+      it('does not dispatch any events in API methods that dispatch events', function() {
+        optlyInstance.activate('my_experiment', 'user1');
+        optlyInstance.track('my_event', 'user1');
+        optlyInstance.isFeatureEnabled('my_feature', 'user1');
+        optlyInstance.getEnabledFeatures('user1');
+        sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+      });
+    });
+
+    describe('onReady method', function() {
+      var datafileManagerOnReady;
+      var fulfillDatafileManagerOnReady;
+      beforeEach(function() {
+        var fakeDatafileManager = {
+          start: sinon.stub(),
+          stop: sinon.stub(),
+          get: sinon.stub().returns(null),
+          on: sinon.stub().returns(function() {}),
+          onReady: sinon.stub()
+        };
+        datafileManagerOnReady = new Promise(function(fulfill) {
+          fulfillDatafileManagerOnReady = function(updatedConfig) {
+            fakeDatafileManager.get.returns(updatedConfig);
+            fulfill();
+          };
+        });
+        fakeDatafileManager.onReady.returns(datafileManagerOnReady);
+        datafileManager.DatafileManager.returns(fakeDatafileManager);
+
+        optlyInstance = new Optimizely({
+          clientEngine: 'node-sdk',
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+          sdkKey: '12345',
+          isValidInstance: true,
+        });
+      });
+
+      afterEach(function() {
+        fulfillDatafileManagerOnReady(null);
+        return datafileManagerOnReady;
+      });
+
+      describe('feature management methods', function() {
+        var configWithFeatures = testData.getTestProjectConfigWithFeatures();
+        beforeEach(function() {
+          var experiment = configWithFeatures.experiments[0];
+          var variation = experiment.variations[0];
+          sinon.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+            experiment: experiment,
+            variation: variation,
+            decisionSource: DECISION_SOURCES.EXPERIMENT,
+          });
+        });
+
+        it('updates the datafile it uses from the datafile manager get method after the datafile manager onReady promise fulfills', function() {
+          fulfillDatafileManagerOnReady(configWithFeatures);
+          return optlyInstance.onReady().then(function() {
+            assert.isTrue(optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user1'));
+            assert.strictEqual(
+              optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1'),
+              true
+            );
+            eventDispatcher.dispatchEvent.reset();
+            optlyInstance.track('item_bought', 'user');
+            sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
+          });
+        });
+      });
+
+      describe('experimentation methods', function() {
+        var configObj = testData.getTestProjectConfig();
+        beforeEach(function() {
+          sinon.stub(optlyInstance.decisionService, 'getVariation').returns('control');
+        });
+
+        it('updates the datafile it uses from the datafile manager get method after the datafile manager onReady promise fulfills', function() {
+          fulfillDatafileManagerOnReady(configObj);
+          return optlyInstance.onReady().then(function() {
+            assert.strictEqual(
+              optlyInstance.activate('testExperiment', 'user_123'),
+              'control'
+            );
+            eventDispatcher.dispatchEvent.reset();
+            optlyInstance.track('testEvent', 'user_123');
+            sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
+          });
+        });
+      });
+
+      describe('timeout', function() {
+        var clock;
+        beforeEach(function() {
+          clock = sinon.useFakeTimers(new Date().getTime());
+        });
+
+        afterEach(function() {
+          clock.restore();
+        });
+
+        it('fulfills the promise after the timeout has expired when the datafile manager promise still has not fulfilled', function() {
+          var readyPromise = optlyInstance.onReady(500);
+          clock.tick(501);
+          return readyPromise;
+        });
       });
     });
   });

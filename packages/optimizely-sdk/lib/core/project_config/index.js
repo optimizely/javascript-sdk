@@ -17,6 +17,8 @@ var fns = require('../../utils/fns');
 var enums = require('../../utils/enums');
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var stringValidator = require('../../utils/string_value_validator');
+var configValidator = require('../../utils/config_validator');
+var projectConfigSchema = require('./project_config_schema');
 
 var EXPERIMENT_LAUNCHED_STATUS = 'Launched';
 var EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -594,4 +596,36 @@ module.exports = {
   eventWithKeyExists: function(projectConfig, eventKey) {
     return projectConfig.eventKeyMap.hasOwnProperty(eventKey);
   },
+
+  /**
+   * Try to create a project config object from the given datafile and
+   * configuration properties.
+   * If successful, return the project config object, otherwise return null.
+   * @param  {Object} config
+   * @param  {Object} config.datafile
+   * @param  {Object} config.errorHandler
+   * @param  {Object} config.jsonSchemaValidator
+   * @param  {Object} config.logger
+   * @param  {Object} config.skipJSONValidation
+   * @return {Object|null} Project config object if datafile was valid, otherwise null
+   */
+  tryCreatingProjectConfig: function(config) {
+    var configObj = null;
+    try {
+      configValidator.validateDatafile(config.datafile);
+      if (config.skipJSONValidation === true) {
+        configObj = module.exports.createProjectConfig(config.datafile);
+        config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
+      } else if (!config.jsonSchemaValidator) {
+        configObj = module.exports.createProjectConfig(config.datafile);
+      } else if (config.jsonSchemaValidator.validate(projectConfigSchema, config.datafile)) {
+        configObj = module.exports.createProjectConfig(config.datafile);
+        config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
+      }
+    } catch (ex) {
+      config.logger.log(LOG_LEVEL.ERROR, ex.message);
+      config.errorHandler.handleError(ex);
+    }
+    return configObj;
+  }
 };
