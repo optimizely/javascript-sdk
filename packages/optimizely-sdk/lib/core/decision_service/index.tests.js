@@ -843,7 +843,7 @@ describe('lib/core/decision_service', function() {
                     ],
                     'featureEnabled': false,
                     'key': 'variation2'
-                  }
+                  },
                 },
               },
               variation: {
