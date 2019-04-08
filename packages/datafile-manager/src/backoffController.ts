@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  BACKOFF_BASE_WAIT_SECONDS_BY_ERROR_COUNT,
-  BACKOFF_MAX_ERROR_COUNT,
-} from './config'
+import { BACKOFF_BASE_WAIT_SECONDS_BY_ERROR_COUNT } from './config'
 
 function randomMilliseconds() {
   return Math.round(Math.random() * 1000)
@@ -38,7 +35,7 @@ export default class BackoffController {
   }
 
   countError(): void {
-    if (this.errorCount < BACKOFF_MAX_ERROR_COUNT) {
+    if (this.errorCount < BACKOFF_BASE_WAIT_SECONDS_BY_ERROR_COUNT.length - 1) {
       this.errorCount++
     }
   }

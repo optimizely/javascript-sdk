@@ -35,7 +35,8 @@
     "typescript": "^3.3.3333"
   },
   "dependencies": {
-    "@optimizely/js-sdk-logging": "^0.1.0"
+    "@optimizely/js-sdk-logging": "^0.1.0",
+    "@optimizely/js-sdk-utils": "^0.1.0"
   },
   "scripts": {
     "test": "jest",

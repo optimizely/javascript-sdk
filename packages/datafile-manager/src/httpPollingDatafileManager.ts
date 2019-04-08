@@ -15,10 +15,11 @@
  */
 
 import { getLogger } from '@optimizely/js-sdk-logging'
+import { sprintf } from '@optimizely/js-sdk-utils';
 import { DatafileManager, DatafileManagerConfig, DatafileUpdate } from './datafileManager';
 import EventEmitter from './eventEmitter'
 import { AbortableRequest, Response, Headers } from './http';
-import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE, SDK_KEY_TOKEN } from './config'
+import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE } from './config'
 import { TimeoutFactory, DEFAULT_TIMEOUT_FACTORY } from './timeoutFactory'
 import BackoffController from './backoffController';
 
@@ -46,8 +47,6 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
 
   private currentDatafile: object | null
 
-  private readonly sdkKey: string
-
   private readonly readyPromise: Promise<void>
 
   private isReadyPromiseSettled: boolean
@@ -68,7 +67,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
 
   private lastResponseLastModified?: string
 
-  private urlTemplate: string
+  private datafileUrl: string
 
   private timeoutFactory: TimeoutFactory
 
@@ -90,8 +89,6 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       urlTemplate = DEFAULT_URL_TEMPLATE,
     } = configWithDefaultsApplied
 
-    this.sdkKey = sdkKey
-
     this.isReadyPromiseSettled = false
     this.readyPromiseResolver = () => {}
     this.readyPromiseRejecter = () => {}
@@ -100,7 +97,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       this.readyPromiseRejecter = reject
     })
 
-    if (typeof datafile !== 'undefined') {
+    if (datafile) {
       this.currentDatafile = datafile
       this.resolveReadyPromise()
     } else {
@@ -109,10 +106,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
 
     this.isStarted = false
 
-    this.urlTemplate = urlTemplate
-    if (this.urlTemplate.indexOf(SDK_KEY_TOKEN) === -1) {
-      logger.debug(`urlTemplate does not contain replacement token ${SDK_KEY_TOKEN}`)
-    }
+    this.datafileUrl = sprintf(urlTemplate, sdkKey)
 
     this.timeoutFactory = timeoutFactory
     this.emitter = new EventEmitter()
@@ -163,10 +157,6 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
 
   on(eventName: string, listener: (datafileUpdate: DatafileUpdate) => void) {
     return this.emitter.on(eventName, listener)
-  }
-
-  private getUrl(sdkKey: string) {
-    return this.urlTemplate.replace(SDK_KEY_TOKEN, sdkKey)
   }
 
   private onRequestRejected(err: any): void {
@@ -236,10 +226,8 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       headers['if-modified-since'] = this.lastResponseLastModified
     }
 
-    const datafileUrl = this.getUrl(this.sdkKey)
-
-    logger.debug('Making datafile request to url %s with headers: %s', datafileUrl, () => JSON.stringify(headers))
-    this.currentRequest = this.makeGetRequest(datafileUrl, headers)
+    logger.debug('Making datafile request to url %s with headers: %s', this.datafileUrl, () => JSON.stringify(headers))
+    this.currentRequest = this.makeGetRequest(this.datafileUrl, headers)
 
     const onRequestComplete = () => {
       this.onRequestComplete()

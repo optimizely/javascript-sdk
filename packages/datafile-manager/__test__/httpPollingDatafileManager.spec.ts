@@ -555,7 +555,7 @@ describe('httpPollingDatafileManager', () => {
       manager = createTestManager({
         sdkKey: '456',
         updateInterval: 1000,
-        urlTemplate: 'https://localhost:5556/datafiles/$SDK_KEY',
+        urlTemplate: 'https://localhost:5556/datafiles/%s',
       })
     })
 
@@ -570,6 +570,27 @@ describe('httpPollingDatafileManager', () => {
       expect(makeGetRequestSpy).toBeCalledTimes(1)
       expect(makeGetRequestSpy.mock.calls[0][0]).toBe('https://localhost:5556/datafiles/456')
       await manager.onReady()
+    })
+  })
+
+  describe('when constructed with an update interval below the minimum', () => {
+    beforeEach(() => {
+      manager = createTestManager({ sdkKey: '123', updateInterval: 500, autoUpdate: true })
+    })
+
+    it('uses the default update interval', async () => {
+      manager.queuedResponses.push({
+        statusCode: 200,
+        body: '{"foo3": "bar3"}',
+        headers: {},
+      })
+
+      const setTimeoutSpy: jest.SpyInstance<() => void, [() => void, number]> = jest.spyOn(testTimeoutFactory, 'setTimeout')
+
+      manager.start()
+      await manager.onReady()
+      expect(setTimeoutSpy).toBeCalledTimes(1)
+      expect(setTimeoutSpy.mock.calls[0][1]).toBe(300000)
     })
   })
 })
