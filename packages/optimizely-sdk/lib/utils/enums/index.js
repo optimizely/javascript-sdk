@@ -184,11 +184,18 @@ exports.NODE_CLIENT_VERSION = '3.1.0-beta1';
  *    - userId {string}
  *    - attributes {Object|undefined}
  *    - decisionInfo {Object|undefined}
+ *
+ * PROJECT_CONFIG_UPDATE: This Optimizely instance has been updated with a new
+ * project config
+ * Callbacks will receive an object argument with the following properties:
+ *   - oldProjectConfig {Object}
+ *   - newProjectConfig {Object|null}
  */
 exports.NOTIFICATION_TYPES = {
   ACTIVATE: 'ACTIVATE:experiment, user_id,attributes, variation, event',
   TRACK: 'TRACK:event_key, user_id, attributes, event_tags, event',
   DECISION: 'DECISION:type, userId, attributes, decisionInfo',
+  PROJECT_CONFIG_UPDATE: 'PROJECT_CONFIG_UPDATE',
 };
 
 exports.DECISION_INFO_TYPES = {

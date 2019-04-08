@@ -600,32 +600,22 @@ module.exports = {
   /**
    * Try to create a project config object from the given datafile and
    * configuration properties.
-   * If successful, return the project config object, otherwise return null.
+   * If successful, return the project config object, otherwise throws an error
    * @param  {Object} config
    * @param  {Object} config.datafile
-   * @param  {Object} config.errorHandler
    * @param  {Object} config.jsonSchemaValidator
    * @param  {Object} config.logger
    * @param  {Object} config.skipJSONValidation
-   * @return {Object|null} Project config object if datafile was valid, otherwise null
+   * @return {Object} Project config object
    */
   tryCreatingProjectConfig: function(config) {
-    var configObj = null;
-    try {
-      configValidator.validateDatafile(config.datafile);
-      if (config.skipJSONValidation === true) {
-        configObj = module.exports.createProjectConfig(config.datafile);
-        config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
-      } else if (!config.jsonSchemaValidator) {
-        configObj = module.exports.createProjectConfig(config.datafile);
-      } else if (config.jsonSchemaValidator.validate(projectConfigSchema, config.datafile)) {
-        configObj = module.exports.createProjectConfig(config.datafile);
-        config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
-      }
-    } catch (ex) {
-      config.logger.log(LOG_LEVEL.ERROR, ex.message);
-      config.errorHandler.handleError(ex);
+    configValidator.validateDatafile(config.datafile);
+    if (config.skipJSONValidation === true) {
+      config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
+    } else if (config.jsonSchemaValidator) {
+      config.jsonSchemaValidator.validate(projectConfigSchema, config.datafile);
+      config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
     }
-    return configObj;
-  }
+    return module.exports.createProjectConfig(config.datafile);
+  },
 };

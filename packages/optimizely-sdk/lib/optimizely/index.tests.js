@@ -18,7 +18,7 @@ var Optimizely = require('./');
 var audienceEvaluator = require('../core/audience_evaluator');
 var bluebird = require('bluebird');
 var bucketer = require('../core/bucketer');
-var datafileManager = require('@optimizely/js-sdk-datafile-manager');
+var projectConfigManager = require('../core/project_config/project_config_manager');
 var enums = require('../utils/enums');
 var eventBuilder = require('../core/event_builder/index.js');
 var eventDispatcher = require('../plugins/event_dispatcher/index.node');
@@ -30,6 +30,7 @@ var decisionService = require('../core/decision_service');
 var testData = require('../tests/test_data');
 var jsonSchemaValidator = require('../utils/json_schema_validator');
 var projectConfig = require('../core/project_config');
+var logging = require('@optimizely/js-sdk-logging');
 
 var chai = require('chai');
 var assert = chai.assert;
@@ -45,21 +46,34 @@ var DECISION_INFO_TYPES = enums.DECISION_INFO_TYPES;
 var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
 
 describe('lib/optimizely', function() {
-  var DatafileManagerStub;
+  var ProjectConfigManagerStub;
+  var globalStubErrorHandler;
+  var stubLogHandler;
   beforeEach(function() {
-    DatafileManagerStub = sinon.stub(datafileManager, 'DatafileManager').callsFake(function() {
+    logging.setLogLevel('notset');
+    stubLogHandler = {
+      log: sinon.stub(),
+    };
+    logging.setLogHandler(stubLogHandler);
+    globalStubErrorHandler = {
+      handleError: sinon.stub(),
+    };
+    logging.setErrorHandler(globalStubErrorHandler);
+    ProjectConfigManagerStub = sinon.stub(projectConfigManager, 'ProjectConfigManager').callsFake(function(config) {
+      var currentConfig = config.datafile ? projectConfig.createProjectConfig(config.datafile) : null;
       return {
-        start: sinon.stub(),
         stop: sinon.stub(),
-        get: sinon.stub().returns(null),
-        on: sinon.stub().returns(function() {}),
+        getConfig: sinon.stub().returns(currentConfig),
+        onUpdate: sinon.stub().returns(function() {}),
         onReady: sinon.stub().returns({ then: function() {} })
       };
     });
   });
 
   afterEach(function() {
-    DatafileManagerStub.restore();
+    ProjectConfigManagerStub.restore();
+    logging.resetErrorHandler();
+    logging.resetLogger();
   });
 
   describe('constructor', function() {
@@ -87,9 +101,6 @@ describe('lib/optimizely', function() {
           logger: createdLogger,
         });
         assert.instanceOf(optlyInstance, Optimizely);
-        sinon.assert.called(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.VALID_DATAFILE, 'PROJECT_CONFIG'));
       });
 
       it('should construct an instance of the Optimizely class when datafile is JSON string', function() {
@@ -102,9 +113,6 @@ describe('lib/optimizely', function() {
           logger: createdLogger,
         });
         assert.instanceOf(optlyInstance, Optimizely);
-        sinon.assert.called(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.VALID_DATAFILE, 'PROJECT_CONFIG'));
       });
 
       it('should log if the client engine passed in is invalid', function() {
@@ -118,117 +126,6 @@ describe('lib/optimizely', function() {
         sinon.assert.called(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, 'OPTIMIZELY', 'undefined'));
-      });
-
-      it('should throw an error if neither datafile nor sdkKey are passed into the constructor', function() {
-        var optly = new Optimizely({
-          clientEngine: 'node-sdk',
-          errorHandler: stubErrorHandler,
-          logger: createdLogger,
-        });
-        sinon.assert.calledOnce(stubErrorHandler.handleError);
-        var errorMessage = stubErrorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.DATAFILE_AND_SDK_KEY_MISSING, 'OPTIMIZELY'));
-
-        sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.DATAFILE_AND_SDK_KEY_MISSING, 'OPTIMIZELY'));
-
-        assert.isFalse(!!optly.__isValidInstance());
-      });
-
-      it('should throw an error if the datafile JSON is malformed', function() {
-        var invalidDatafileJSON = 'abc';
-
-        new Optimizely({
-          clientEngine: 'node-sdk',
-          errorHandler: stubErrorHandler,
-          datafile: invalidDatafileJSON,
-          jsonSchemaValidator: jsonSchemaValidator,
-          logger: createdLogger,
-        });
-
-        sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_MALFORMED, 'CONFIG_VALIDATOR'));
-      });
-
-      it('should throw an error if the datafile is not valid', function() {
-        var invalidDatafile = testData.getTestProjectConfig();
-        delete invalidDatafile['projectId'];
-
-        new Optimizely({
-          clientEngine: 'node-sdk',
-          errorHandler: stubErrorHandler,
-          datafile: invalidDatafile,
-          jsonSchemaValidator: jsonSchemaValidator,
-          logger: createdLogger,
-        });
-        sinon.assert.calledOnce(stubErrorHandler.handleError);
-        var errorMessage = stubErrorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE, 'JSON_SCHEMA_VALIDATOR', 'projectId', 'is missing and it is required'));
-
-        sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE, 'JSON_SCHEMA_VALIDATOR', 'projectId', 'is missing and it is required'));
-      });
-
-      it('should log an error if the datafile version is not supported', function() {
-        new Optimizely({
-          clientEngine: 'node-sdk',
-          errorHandler: stubErrorHandler,
-          datafile: testData.getUnsupportedVersionConfig(),
-          jsonSchemaValidator: jsonSchemaValidator,
-          logger: createdLogger,
-        });
-
-        sinon.assert.calledOnce(stubErrorHandler.handleError);
-        var errorMessage = stubErrorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, 'CONFIG_VALIDATOR', '5'));
-
-        sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, 'CONFIG_VALIDATOR', '5'));
-      });
-
-      describe('skipping JSON schema validation', function() {
-        beforeEach(function() {
-          sinon.spy(jsonSchemaValidator, 'validate');
-        });
-
-        afterEach(function() {
-          jsonSchemaValidator.validate.restore();
-        });
-
-        it('should skip JSON schema validation if skipJSONValidation is passed into instance args with `true` value', function() {
-          new Optimizely({
-            clientEngine: 'node-sdk',
-            datafile: testData.getTestProjectConfig(),
-            errorHandler: stubErrorHandler,
-            eventDispatcher: stubEventDispatcher,
-            logger: logger.createLogger({ logToConsole: false }),
-            skipJSONValidation: true,
-          });
-
-          sinon.assert.notCalled(jsonSchemaValidator.validate);
-        });
-
-        it('should not skip JSON schema validation if skipJSONValidation is passed into instance args with any value other than true', function() {
-          new Optimizely({
-            clientEngine: 'node-sdk',
-            datafile: testData.getTestProjectConfig(),
-            errorHandler: stubErrorHandler,
-            eventDispatcher: stubEventDispatcher,
-            jsonSchemaValidator: jsonSchemaValidator,
-            logger: createdLogger,
-            skipJSONValidation: 'hi',
-          });
-
-          sinon.assert.calledOnce(jsonSchemaValidator.validate);
-          sinon.assert.calledOnce(createdLogger.log);
-          var logMessage = createdLogger.log.args[0][1];
-          assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.VALID_DATAFILE, 'PROJECT_CONFIG'));
-        });
       });
 
       describe('when a user profile service is provided', function() {
@@ -259,8 +156,7 @@ describe('lib/optimizely', function() {
             logger: createdLogger,
           });
 
-          // Checking the second log message as the first one just says "Datafile is valid"
-          var logMessage = createdLogger.log.args[1][1];
+          var logMessage = createdLogger.log.args[0][1];
           assert.strictEqual(logMessage, 'OPTIMIZELY: Valid user profile service provided.');
         });
 
@@ -282,8 +178,7 @@ describe('lib/optimizely', function() {
             logger: createdLogger,
           });
 
-          // Checking the second log message as the first one just says "Datafile is valid"
-          var logMessage = createdLogger.log.args[1][1];
+          var logMessage = createdLogger.log.args[0][1];
           assert.strictEqual(logMessage, 'USER_PROFILE_SERVICE_VALIDATOR: Provided user profile service instance is in an invalid format: Missing function \'lookup\'.');
         });
       });
@@ -304,95 +199,14 @@ describe('lib/optimizely', function() {
           sinon.assert.notCalled(stubErrorHandler.handleError);
         });
 
-        it('creates and starts a datafile manager', function() {
-          new Optimizely({
-            clientEngine: 'node-sdk',
-            eventBuilder: eventBuilder,
-            errorHandler: errorHandler,
-            eventDispatcher: eventDispatcher,
-            isValidInstance: true,
-            jsonSchemaValidator: jsonSchemaValidator,
-            logger: createdLogger,
-            sdkKey: '12345',
-            skipJSONValidation: false,
-          });
-          sinon.assert.calledOnce(datafileManager.DatafileManager);
-          sinon.assert.calledOnce(datafileManager.DatafileManager.getCall(0).returnValue.start);
-        });
-
-        it('passes the sdkKey and the datafile to the datafile manager', function() {
+        it('passes datafile, datafileOptions, sdkKey, and other options to the project config manager', function() {
           new Optimizely({
             clientEngine: 'node-sdk',
             datafile: testData.getTestProjectConfig(),
-            errorHandler: errorHandler,
-            eventDispatcher: eventDispatcher,
-            isValidInstance: true,
-            jsonSchemaValidator: jsonSchemaValidator,
-            logger: createdLogger,
-            sdkKey: '12345',
-            skipJSONValidation: false,
-          });
-          sinon.assert.calledOnce(datafileManager.DatafileManager);
-          sinon.assert.calledWithExactly(datafileManager.DatafileManager, {
-            datafile: testData.getTestProjectConfig(),
-            sdkKey: '12345',
-          });
-        });
-
-        it('passes only sdkKey to the datafile manager when no datafile was provided', function() {
-          new Optimizely({
-            clientEngine: 'node-sdk',
-            errorHandler: errorHandler,
-            eventDispatcher: eventDispatcher,
-            isValidInstance: true,
-            jsonSchemaValidator: jsonSchemaValidator,
-            logger: createdLogger,
-            sdkKey: '12345',
-            skipJSONValidation: false,
-          });
-          sinon.assert.calledOnce(datafileManager.DatafileManager);
-          sinon.assert.calledWithExactly(datafileManager.DatafileManager, {
-            sdkKey: '12345',
-          });
-        });
-
-        it('uses the datafile returned from the datafile manager get() for the immediately-available project config object', function() {
-          var differentDatafile = testData.getTestProjectConfig();
-          differentDatafile.experiments.push({
-            key: 'myOtherExperiment',
-            status: 'Running',
-            forcedVariations: {
+            datafileOptions: {
+              autoUpdate: true,
+              updateInterval: 2 * 60 * 1000,
             },
-            audienceIds: [],
-            layerId: '5',
-            trafficAllocation: [
-              {
-                entityId: '99999999',
-                endOfRange: 10000,
-              },
-            ],
-            id: '999998888777776',
-            variations: [
-              {
-                key: 'control',
-                id: '99999999',
-              },
-            ],
-          });
-          differentDatafile.revision = '44';
-          datafileManager.DatafileManager.callsFake(function() {
-            return {
-              start: sinon.stub(),
-              stop: sinon.stub(),
-              // Return different datafile from get method -- this should be used immediately by Optimizely
-              get: sinon.stub().returns(differentDatafile),
-              on: sinon.stub().returns(function() {}),
-              onReady: sinon.stub().returns({ then: function() {} })
-            };
-          });
-          var optlyInstance = new Optimizely({
-            clientEngine: 'node-sdk',
-            datafile: testData.getTestProjectConfig(),
             errorHandler: errorHandler,
             eventDispatcher: eventDispatcher,
             isValidInstance: true,
@@ -401,7 +215,17 @@ describe('lib/optimizely', function() {
             sdkKey: '12345',
             skipJSONValidation: false,
           });
-          assert.strictEqual(optlyInstance.activate('myOtherExperiment', 'user12345'), 'control');
+          sinon.assert.calledOnce(projectConfigManager.ProjectConfigManager);
+          sinon.assert.calledWithExactly(projectConfigManager.ProjectConfigManager, {
+            datafile: testData.getTestProjectConfig(),
+            datafileOptions: {
+              autoUpdate: true,
+              updateInterval: 2 * 60 * 1000,
+            },
+            jsonSchemaValidator: jsonSchemaValidator,
+            sdkKey: '12345',
+            skipJSONValidation: false,
+          });
         });
       });
     });
@@ -2221,7 +2045,7 @@ describe('lib/optimizely', function() {
             enrich_decisions: true,
           },
         };
-        var instanceExperiments = optlyInstance.configObj.experiments;
+        var instanceExperiments = optlyInstance.projectConfigManager.getConfig().experiments;
         var expectedArgument = {
           experiment: instanceExperiments[0],
           userId: 'testUser',
@@ -2286,7 +2110,7 @@ describe('lib/optimizely', function() {
             enrich_decisions: true,
           },
         };
-        var instanceExperiments = optlyInstance.configObj.experiments;
+        var instanceExperiments = optlyInstance.projectConfigManager.getConfig().experiments;
         var expectedArgument = {
           experiment: instanceExperiments[0],
           userId: 'testUser',
@@ -2604,7 +2428,7 @@ describe('lib/optimizely', function() {
 
               describe('when the variation is toggled ON', function() {
                 beforeEach(function() {
-                  var experiment = optlyInstance.configObj.experimentKeyMap.testing_my_feature;
+                  var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.testing_my_feature;
                   var variation = experiment.variations[0];
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
@@ -2633,7 +2457,7 @@ describe('lib/optimizely', function() {
 
               describe('when the variation is toggled OFF', function() {
                 beforeEach(function() {
-                  var experiment = optlyInstance.configObj.experimentKeyMap.test_shared_feature;
+                  var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.test_shared_feature;
                   var variation = experiment.variations[1];
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
@@ -2665,7 +2489,7 @@ describe('lib/optimizely', function() {
               describe('when the variation is toggled ON', function() {
                 beforeEach(function() {
                   // This experiment is the first audience targeting rule in the rollout of feature 'test_feature'
-                  var experiment = optlyInstance.configObj.experimentKeyMap['594031'];
+                  var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap['594031'];
                   var variation = experiment.variations[0];
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
@@ -2697,7 +2521,7 @@ describe('lib/optimizely', function() {
               describe('when the variation is toggled OFF', function() {
                 beforeEach(function() {
                   // This experiment is the second audience targeting rule in the rollout of feature 'test_feature'
-                  var experiment = optlyInstance.configObj.experimentKeyMap['594037'];
+                  var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap['594037'];
                   var variation = experiment.variations[0];
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
@@ -2705,7 +2529,7 @@ describe('lib/optimizely', function() {
                     decisionSource: DECISION_SOURCES.ROLLOUT,
                   });
                 });
-      
+
                 it('should return false and send notification', function() {
                   var result = optlyInstance.isFeatureEnabled('test_feature', 'user1', {
                     test_attribute: 'test_value',
@@ -2738,7 +2562,7 @@ describe('lib/optimizely', function() {
                   decisionSource: DECISION_SOURCES.ROLLOUT,
                 });
               });
-      
+
               it('should return false and send notification', function() {
                 var result = optlyInstance.isFeatureEnabled('test_feature', 'user1');
                 assert.strictEqual(result, false);
@@ -2762,7 +2586,7 @@ describe('lib/optimizely', function() {
             describe('bucketed into variation of an experiment with variable values', function() {
               describe('when the variation is toggled ON', function() {
                 beforeEach(function() {
-                  var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, 'testing_my_feature');
+                  var experiment = projectConfig.getExperimentFromKey(optlyInstance.projectConfigManager.getConfig(), 'testing_my_feature');
                   var variation = experiment.variations[0];
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
@@ -2770,7 +2594,7 @@ describe('lib/optimizely', function() {
                     decisionSource: DECISION_SOURCES.EXPERIMENT,
                   });
                 });
-      
+
                 it('returns the right value from getFeatureVariableBoolean and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, true);
@@ -2790,7 +2614,7 @@ describe('lib/optimizely', function() {
                     }
                   });
                 });
-      
+
                 it('returns the right value from getFeatureVariableDouble and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 20.25);
@@ -2810,7 +2634,7 @@ describe('lib/optimizely', function() {
                     }
                   });
                 });
-      
+
                 it('returns the right value from getFeatureVariableInteger and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 2);
@@ -2830,7 +2654,7 @@ describe('lib/optimizely', function() {
                     }
                   });
                 });
-      
+
                 it('returns the right value from getFeatureVariableString and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 'Buy me NOW');
@@ -2851,10 +2675,10 @@ describe('lib/optimizely', function() {
                   });
                 });
               });
-      
+
               describe('when the variation is toggled OFF', function() {
                 beforeEach(function() {
-                  var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, 'testing_my_feature');
+                  var experiment = projectConfig.getExperimentFromKey(optlyInstance.projectConfigManager.getConfig(), 'testing_my_feature');
                   var variation = experiment.variations[2];
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
@@ -2862,7 +2686,7 @@ describe('lib/optimizely', function() {
                     decisionSource: DECISION_SOURCES.EXPERIMENT,
                   });
                 });
-      
+
                 it('returns the default value from getFeatureVariableBoolean and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, false);
@@ -2882,7 +2706,7 @@ describe('lib/optimizely', function() {
                     }
                   });
                 });
-      
+
                 it('returns the default value from getFeatureVariableDouble and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 50.55);
@@ -2902,7 +2726,7 @@ describe('lib/optimizely', function() {
                     }
                   });
                 });
-      
+
                 it('returns the default value from getFeatureVariableInteger and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 10);
@@ -2922,7 +2746,7 @@ describe('lib/optimizely', function() {
                     }
                   });
                 });
-      
+
                 it('returns the default value from getFeatureVariableString and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 'Buy me');
@@ -2948,7 +2772,7 @@ describe('lib/optimizely', function() {
             describe('bucketed into variation of a rollout with variable values', function() {
               describe('when the variation is toggled ON', function() {
                 beforeEach(function() {
-                  var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, '594031');
+                  var experiment = projectConfig.getExperimentFromKey(optlyInstance.projectConfigManager.getConfig(), '594031');
                   var variation = experiment.variations[0];
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
@@ -2956,7 +2780,7 @@ describe('lib/optimizely', function() {
                     decisionSource: DECISION_SOURCES.ROLLOUT,
                   });
                 });
-      
+
                 it('should return the right value from getFeatureVariableBoolean and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, true);
@@ -2976,7 +2800,7 @@ describe('lib/optimizely', function() {
                     }
                   });
                 });
-      
+
                 it('should return the right value from getFeatureVariableDouble and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariableDouble('test_feature', 'price', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 4.99);
@@ -2996,7 +2820,7 @@ describe('lib/optimizely', function() {
                     }
                   });
                 });
-      
+
                 it('should return the right value from getFeatureVariableInteger and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariableInteger('test_feature', 'lasers', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 395);
@@ -3016,7 +2840,7 @@ describe('lib/optimizely', function() {
                     }
                   });
                 });
-      
+
                 it('should return the right value from getFeatureVariableString and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariableString('test_feature', 'message', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 'Hello audience');
@@ -3037,10 +2861,10 @@ describe('lib/optimizely', function() {
                   });
                 });
               });
-      
+
               describe('when the variation is toggled OFF', function() {
                 beforeEach(function() {
-                  var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, '594037');
+                  var experiment = projectConfig.getExperimentFromKey(optlyInstance.projectConfigManager.getConfig(), '594037');
                   var variation = experiment.variations[0];
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
@@ -3048,7 +2872,7 @@ describe('lib/optimizely', function() {
                     decisionSource: DECISION_SOURCES.ROLLOUT,
                   });
                 });
-      
+
                 it('should return the default value from getFeatureVariableBoolean and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, false);
@@ -3068,7 +2892,7 @@ describe('lib/optimizely', function() {
                     }
                   });
                 });
-      
+
                 it('should return the default value from getFeatureVariableDouble and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariableDouble('test_feature', 'price', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 14.99);
@@ -3088,7 +2912,7 @@ describe('lib/optimizely', function() {
                     }
                   });
                 });
-      
+
                 it('should return the default value from getFeatureVariableInteger and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariableInteger('test_feature', 'lasers', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 400);
@@ -3108,7 +2932,7 @@ describe('lib/optimizely', function() {
                     }
                   });
                 });
-      
+
                 it('should return the default value from getFeatureVariableString and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariableString('test_feature', 'message', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 'Hello');
@@ -3139,7 +2963,7 @@ describe('lib/optimizely', function() {
                   decisionSource: DECISION_SOURCES.ROLLOUT,
                 });
               });
-      
+
               it('returns the variable default value from getFeatureVariableBoolean and send notification with featureEnabled false', function() {
                 var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
                 assert.strictEqual(result, false);
@@ -3159,7 +2983,7 @@ describe('lib/optimizely', function() {
                   }
                 });
               });
-      
+
               it('returns the variable default value from getFeatureVariableDouble and send notification with featureEnabled false', function() {
                 var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
                 assert.strictEqual(result, 50.55);
@@ -3179,7 +3003,7 @@ describe('lib/optimizely', function() {
                   }
                 });
               });
-      
+
               it('returns the variable default value from getFeatureVariableInteger and send notification with featureEnabled false', function() {
                 var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
                 assert.strictEqual(result, 10);
@@ -3199,7 +3023,7 @@ describe('lib/optimizely', function() {
                   }
                 });
               });
-      
+
               it('returns the variable default value from getFeatureVariableString and send notification with featureEnabled false', function() {
                 var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
                 assert.strictEqual(result, 'Buy me');
@@ -3350,7 +3174,7 @@ describe('lib/optimizely', function() {
 
         describe('when the variation is toggled ON', function() {
           beforeEach(function() {
-            var experiment = optlyInstance.configObj.experimentKeyMap.testing_my_feature;
+            var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.testing_my_feature;
             var variation = experiment.variations[0];
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
               experiment: experiment,
@@ -3363,10 +3187,10 @@ describe('lib/optimizely', function() {
             var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user1', attributes);
             assert.strictEqual(result, true);
             sinon.assert.calledOnce(optlyInstance.decisionService.getVariationForFeature);
-            var feature = optlyInstance.configObj.featureKeyMap.test_feature_for_experiment;
+            var feature = optlyInstance.projectConfigManager.getConfig().featureKeyMap.test_feature_for_experiment;
             sinon.assert.calledWithExactly(
               optlyInstance.decisionService.getVariationForFeature,
-              optlyInstance.configObj,
+              optlyInstance.projectConfigManager.getConfig(),
               feature,
               'user1',
               attributes
@@ -3520,7 +3344,7 @@ describe('lib/optimizely', function() {
         describe('when the variation is toggled OFF', function() {
           var result;
           beforeEach(function() {
-            var experiment = optlyInstance.configObj.experimentKeyMap.test_shared_feature;
+            var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.test_shared_feature;
             var variation = experiment.variations[1];
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
               experiment: experiment,
@@ -3533,10 +3357,10 @@ describe('lib/optimizely', function() {
           it('should return false', function() {
             assert.strictEqual(result, false);
             sinon.assert.calledOnce(optlyInstance.decisionService.getVariationForFeature);
-            var feature = optlyInstance.configObj.featureKeyMap.shared_feature;
+            var feature = optlyInstance.projectConfigManager.getConfig().featureKeyMap.shared_feature;
             sinon.assert.calledWithExactly(
               optlyInstance.decisionService.getVariationForFeature,
-              optlyInstance.configObj,
+              optlyInstance.projectConfigManager.getConfig(),
               feature,
               'user1',
               attributes
@@ -3603,7 +3427,7 @@ describe('lib/optimizely', function() {
 
         describe('when the variation is missing the toggle', function() {
           beforeEach(function() {
-            var experiment = optlyInstance.configObj.experimentKeyMap.test_shared_feature;
+            var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.test_shared_feature;
             var variation = fns.cloneDeep(experiment.variations[0]);
             delete variation['featureEnabled'];
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
@@ -3617,10 +3441,10 @@ describe('lib/optimizely', function() {
             var result = optlyInstance.isFeatureEnabled('shared_feature', 'user1', attributes);
             assert.strictEqual(result, false);
             sinon.assert.calledOnce(optlyInstance.decisionService.getVariationForFeature);
-            var feature = optlyInstance.configObj.featureKeyMap.shared_feature;
+            var feature = optlyInstance.projectConfigManager.getConfig().featureKeyMap.shared_feature;
             sinon.assert.calledWithExactly(
               optlyInstance.decisionService.getVariationForFeature,
-              optlyInstance.configObj,
+              optlyInstance.projectConfigManager.getConfig(),
               feature,
               'user1',
               attributes
@@ -3633,7 +3457,7 @@ describe('lib/optimizely', function() {
         describe('when the variation is toggled ON', function() {
           beforeEach(function() {
             // This experiment is the first audience targeting rule in the rollout of feature 'test_feature'
-            var experiment = optlyInstance.configObj.experimentKeyMap['594031'];
+            var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap['594031'];
             var variation = experiment.variations[0];
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
               experiment: experiment,
@@ -3655,7 +3479,7 @@ describe('lib/optimizely', function() {
         describe('when the variation is toggled OFF', function() {
           beforeEach(function() {
             // This experiment is the second audience targeting rule in the rollout of feature 'test_feature'
-            var experiment = optlyInstance.configObj.experimentKeyMap['594037'];
+            var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap['594037'];
             var variation = experiment.variations[0];
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
               experiment: experiment,
@@ -3878,7 +3702,7 @@ describe('lib/optimizely', function() {
       describe('bucketed into variation in an experiment with variable values', function() {
         describe('when the variation is toggled ON', function() {
           beforeEach(function() {
-            var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, 'testing_my_feature');
+            var experiment = projectConfig.getExperimentFromKey(optlyInstance.projectConfigManager.getConfig(), 'testing_my_feature');
             var variation = experiment.variations[0];
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
               experiment: experiment,
@@ -3915,25 +3739,25 @@ describe('lib/optimizely', function() {
             beforeEach(function() {
               sandbox.stub(projectConfig, 'getVariableValueForVariation').returns(null);
             });
-    
+
             it('returns the variable default value from getFeatureVariableBoolean', function() {
               var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
               assert.strictEqual(result, false);
               sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Variable "is_button_animated" is not used in variation "variation". Returning default value.');
             });
-    
+
             it('returns the variable default value from getFeatureVariableDouble', function() {
               var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
               assert.strictEqual(result, 50.55);
               sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Variable "button_width" is not used in variation "variation". Returning default value.');
             });
-    
+
             it('returns the variable default value from getFeatureVariableInteger', function() {
               var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
               assert.strictEqual(result, 10);
               sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Variable "num_buttons" is not used in variation "variation". Returning default value.');
             });
-    
+
             it('returns the variable default value from getFeatureVariableString', function() {
               var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
               assert.strictEqual(result, 'Buy me');
@@ -3944,7 +3768,7 @@ describe('lib/optimizely', function() {
 
         describe('when the variation is toggled OFF', function() {
           beforeEach(function() {
-            var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, 'testing_my_feature');
+            var experiment = projectConfig.getExperimentFromKey(optlyInstance.projectConfigManager.getConfig(), 'testing_my_feature');
             var variation = experiment.variations[2];
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
               experiment: experiment,
@@ -3982,7 +3806,7 @@ describe('lib/optimizely', function() {
       describe('bucketed into variation of a rollout with variable values', function() {
         describe('when the variation is toggled ON', function() {
           beforeEach(function() {
-            var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, '594031');
+            var experiment = projectConfig.getExperimentFromKey(optlyInstance.projectConfigManager.getConfig(), '594031');
             var variation = experiment.variations[0];
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
               experiment: experiment,
@@ -4019,25 +3843,25 @@ describe('lib/optimizely', function() {
             beforeEach(function() {
               sandbox.stub(projectConfig, 'getVariableValueForVariation').returns(null);
             });
-    
+
             it('returns the variable default value from getFeatureVariableBoolean', function() {
               var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', { test_attribute: 'test_value' });
               assert.strictEqual(result, false);
               sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Variable "new_content" is not used in variation "594032". Returning default value.');
             });
-    
+
             it('returns the variable default value from getFeatureVariableDouble', function() {
               var result = optlyInstance.getFeatureVariableDouble('test_feature', 'price', 'user1', { test_attribute: 'test_value' });
               assert.strictEqual(result, 14.99);
               sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Variable "price" is not used in variation "594032". Returning default value.');
             });
-    
+
             it('returns the variable default value from getFeatureVariableInteger', function() {
               var result = optlyInstance.getFeatureVariableInteger('test_feature', 'lasers', 'user1', { test_attribute: 'test_value' });
               assert.strictEqual(result, 400);
               sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Variable "lasers" is not used in variation "594032". Returning default value.');
             });
-    
+
             it('returns the variable default value from getFeatureVariableString', function() {
               var result = optlyInstance.getFeatureVariableString('test_feature', 'message', 'user1', { test_attribute: 'test_value' });
               assert.strictEqual(result, 'Hello');
@@ -4048,7 +3872,7 @@ describe('lib/optimizely', function() {
 
         describe('when the variation is toggled OFF', function() {
           beforeEach(function() {
-            var experiment = projectConfig.getExperimentFromKey(optlyInstance.configObj, '594037');
+            var experiment = projectConfig.getExperimentFromKey(optlyInstance.projectConfigManager.getConfig(), '594037');
             var variation = experiment.variations[0];
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
               experiment: experiment,
@@ -4529,8 +4353,8 @@ describe('lib/optimizely', function() {
       );
       sinon.assert.calledWithExactly(
         audienceEvaluator.evaluate,
-        optlyInstance.configObj.experiments[2].audienceConditions,
-        optlyInstance.configObj.audiencesById,
+        optlyInstance.projectConfigManager.getConfig().experiments[2].audienceConditions,
+        optlyInstance.projectConfigManager.getConfig().audiencesById,
         { house: 'Welcome to Slytherin!', lasers: 45.5 },
         createdLogger
       );
@@ -4547,8 +4371,8 @@ describe('lib/optimizely', function() {
       sinon.assert.notCalled(eventDispatcher.dispatchEvent);
       sinon.assert.calledWithExactly(
         audienceEvaluator.evaluate,
-        optlyInstance.configObj.experiments[2].audienceConditions,
-        optlyInstance.configObj.audiencesById,
+        optlyInstance.projectConfigManager.getConfig().experiments[2].audienceConditions,
+        optlyInstance.projectConfigManager.getConfig().audiencesById,
         { house: 'Hufflepuff', lasers: 45.5 },
         createdLogger
       );
@@ -4581,8 +4405,8 @@ describe('lib/optimizely', function() {
       assert.isTrue(featureEnabled);
       sinon.assert.calledWithExactly(
         audienceEvaluator.evaluate,
-        optlyInstance.configObj.rollouts[2].experiments[0].audienceConditions,
-        optlyInstance.configObj.audiencesById,
+        optlyInstance.projectConfigManager.getConfig().rollouts[2].experiments[0].audienceConditions,
+        optlyInstance.projectConfigManager.getConfig().audiencesById,
         { house: '...Slytherinnn...sss.', favorite_ice_cream: 'matcha' },
         createdLogger
       );
@@ -4597,8 +4421,8 @@ describe('lib/optimizely', function() {
       assert.isFalse(featureEnabled);
       sinon.assert.calledWithExactly(
         audienceEvaluator.evaluate,
-        optlyInstance.configObj.rollouts[2].experiments[0].audienceConditions,
-        optlyInstance.configObj.audiencesById,
+        optlyInstance.projectConfigManager.getConfig().rollouts[2].experiments[0].audienceConditions,
+        optlyInstance.projectConfigManager.getConfig().audiencesById,
         { house: 'Lannister' },
         createdLogger
       );
@@ -4614,8 +4438,8 @@ describe('lib/optimizely', function() {
       assert.strictEqual(variableValue, 150);
       sinon.assert.calledWithExactly(
         audienceEvaluator.evaluate,
-        optlyInstance.configObj.experiments[3].audienceConditions,
-        optlyInstance.configObj.audiencesById,
+        optlyInstance.projectConfigManager.getConfig().experiments[3].audienceConditions,
+        optlyInstance.projectConfigManager.getConfig().audiencesById,
         { house: 'Gryffindor', lasers: 700 },
         createdLogger
       );
@@ -4628,8 +4452,8 @@ describe('lib/optimizely', function() {
       assert.strictEqual(variableValue, 10);
       sinon.assert.calledWithExactly(
         audienceEvaluator.evaluate,
-        optlyInstance.configObj.experiments[3].audienceConditions,
-        optlyInstance.configObj.audiencesById,
+        optlyInstance.projectConfigManager.getConfig().experiments[3].audienceConditions,
+        optlyInstance.projectConfigManager.getConfig().audiencesById,
         {},
         createdLogger
       );
@@ -4898,7 +4722,7 @@ describe('lib/optimizely', function() {
     });
   });
 
-  describe('datafile management', function() {
+  describe('project config management', function() {
     var createdLogger = logger.createLogger({
       logLevel: LOG_LEVEL.INFO,
       logToConsole: false,
@@ -4917,6 +4741,21 @@ describe('lib/optimizely', function() {
     });
 
     var optlyInstance;
+
+    it('should call the project config manager stop method when the close method is called', function() {
+      optlyInstance = new Optimizely({
+        clientEngine: 'node-sdk',
+        errorHandler: errorHandler,
+        eventDispatcher: eventDispatcher,
+        jsonSchemaValidator: jsonSchemaValidator,
+        logger: createdLogger,
+        sdkKey: '12345',
+        isValidInstance: true,
+      });
+      optlyInstance.close();
+      var fakeManager = projectConfigManager.ProjectConfigManager.getCall(0).returnValue;
+      sinon.assert.calledOnce(fakeManager.stop);
+    });
 
     describe('when no datafile is available yet ', function() {
       beforeEach(function() {
@@ -4954,24 +4793,56 @@ describe('lib/optimizely', function() {
     });
 
     describe('onReady method', function() {
-      var datafileManagerOnReady;
-      var fulfillDatafileManagerOnReady;
+      var clock;
       beforeEach(function() {
-        var fakeDatafileManager = {
-          start: sinon.stub(),
-          stop: sinon.stub(),
-          get: sinon.stub().returns(null),
-          on: sinon.stub().returns(function() {}),
-          onReady: sinon.stub()
-        };
-        datafileManagerOnReady = new Promise(function(fulfill) {
-          fulfillDatafileManagerOnReady = function(updatedConfig) {
-            fakeDatafileManager.get.returns(updatedConfig);
-            fulfill();
-          };
+        clock = sinon.useFakeTimers(new Date().getTime());
+      });
+
+      afterEach(function() {
+        clock.restore();
+      });
+
+      it('fulfills the promise after the timeout has expired when the project config manager onReady promise still has not resolved', function() {
+        optlyInstance = new Optimizely({
+          clientEngine: 'node-sdk',
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+          sdkKey: '12345',
+          isValidInstance: true,
         });
-        fakeDatafileManager.onReady.returns(datafileManagerOnReady);
-        datafileManager.DatafileManager.returns(fakeDatafileManager);
+        var readyPromise = optlyInstance.onReady({ timeout: 500 });
+        clock.tick(501);
+        return readyPromise;
+      });
+
+      it('fulfills the promise after 30 seconds when no timeout argument is provided and the project config manager onReady promise still has not resolved', function() {
+        optlyInstance = new Optimizely({
+          clientEngine: 'node-sdk',
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+          sdkKey: '12345',
+          isValidInstance: true,
+        });
+        var readyPromise = optlyInstance.onReady();
+        clock.tick(300001);
+        return readyPromise;
+      });
+    });
+
+    describe('project config updates', function() {
+      var fakeProjectConfigManager;
+      beforeEach(function() {
+        fakeProjectConfigManager = {
+          stop: sinon.stub(),
+          getConfig: sinon.stub().returns(null),
+          onUpdate: sinon.stub().returns(function() {}),
+          onReady: sinon.stub().returns({ then: function() {} }),
+        };
+        projectConfigManager.ProjectConfigManager.returns(fakeProjectConfigManager);
 
         optlyInstance = new Optimizely({
           clientEngine: 'node-sdk',
@@ -4984,73 +4855,63 @@ describe('lib/optimizely', function() {
         });
       });
 
-      afterEach(function() {
-        fulfillDatafileManagerOnReady(null);
-        return datafileManagerOnReady;
+      // it('updates its project config object when the project config manager emits a new project config object', function() {
+      it('uses the newest project config object from project config manager', function() {
+        // Should start off returning false/null - no project config available
+        assert.isFalse(optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user45678'));
+        assert.isNull(optlyInstance.activate('myOtherExperiment', 'user98765'));
+
+        // Project config manager receives new project config object - should use this now
+        var newConfig = projectConfig.createProjectConfig(testData.getTestProjectConfigWithFeatures());
+        fakeProjectConfigManager.getConfig.returns(newConfig);
+        var updateListener = fakeProjectConfigManager.onUpdate.getCall(0).args[0];
+        updateListener(newConfig);
+
+        // With the new project config containing this feature, should return true
+        assert.isTrue(optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user45678'));
+
+        // Update to another project config containing a new experiment
+        var differentDatafile = testData.getTestProjectConfigWithFeatures();
+        differentDatafile.experiments.push({
+          key: 'myOtherExperiment',
+          status: 'Running',
+          forcedVariations: {
+          },
+          audienceIds: [],
+          layerId: '5',
+          trafficAllocation: [
+            {
+              entityId: '99999999',
+              endOfRange: 10000,
+            },
+          ],
+          id: '999998888777776',
+          variations: [
+            {
+              key: 'control',
+              id: '99999999',
+            },
+          ],
+        });
+        differentDatafile.revision = '44';
+        var differentConfig = projectConfig.createProjectConfig(differentDatafile);
+        fakeProjectConfigManager.getConfig.returns(differentConfig);
+        updateListener(differentConfig);
+
+        // activate should return a variation for the new experiment
+        assert.strictEqual(optlyInstance.activate('myOtherExperiment', 'user98765'), 'control');
       });
 
-      describe('feature management methods', function() {
-        var configWithFeatures = testData.getTestProjectConfigWithFeatures();
-        beforeEach(function() {
-          var experiment = configWithFeatures.experiments[0];
-          var variation = experiment.variations[0];
-          sinon.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
-            experiment: experiment,
-            variation: variation,
-            decisionSource: DECISION_SOURCES.EXPERIMENT,
-          });
-        });
-
-        it('updates the datafile it uses from the datafile manager get method after the datafile manager onReady promise fulfills', function() {
-          fulfillDatafileManagerOnReady(configWithFeatures);
-          return optlyInstance.onReady().then(function() {
-            assert.isTrue(optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user1'));
-            assert.strictEqual(
-              optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1'),
-              true
-            );
-            eventDispatcher.dispatchEvent.reset();
-            optlyInstance.track('item_bought', 'user');
-            sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
-          });
-        });
-      });
-
-      describe('experimentation methods', function() {
-        var configObj = testData.getTestProjectConfig();
-        beforeEach(function() {
-          sinon.stub(optlyInstance.decisionService, 'getVariation').returns('control');
-        });
-
-        it('updates the datafile it uses from the datafile manager get method after the datafile manager onReady promise fulfills', function() {
-          fulfillDatafileManagerOnReady(configObj);
-          return optlyInstance.onReady().then(function() {
-            assert.strictEqual(
-              optlyInstance.activate('testExperiment', 'user_123'),
-              'control'
-            );
-            eventDispatcher.dispatchEvent.reset();
-            optlyInstance.track('testEvent', 'user_123');
-            sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
-          });
-        });
-      });
-
-      describe('timeout', function() {
-        var clock;
-        beforeEach(function() {
-          clock = sinon.useFakeTimers(new Date().getTime());
-        });
-
-        afterEach(function() {
-          clock.restore();
-        });
-
-        it('fulfills the promise after the timeout has expired when the datafile manager promise still has not fulfilled', function() {
-          var readyPromise = optlyInstance.onReady(500);
-          clock.tick(501);
-          return readyPromise;
-        });
+      it('emits a notification when the project config manager emits a new project config object', function() {
+        var listener = sinon.spy();
+        optlyInstance.notificationCenter.addNotificationListener(
+          enums.NOTIFICATION_TYPES.PROJECT_CONFIG_UPDATE,
+          listener
+        );
+        var newConfig = projectConfig.createProjectConfig(testData.getTestProjectConfigWithFeatures());
+        var updateListener = fakeProjectConfigManager.onUpdate.getCall(0).args[0];
+        updateListener(newConfig);
+        sinon.assert.calledOnce(listener);
       });
     });
   });

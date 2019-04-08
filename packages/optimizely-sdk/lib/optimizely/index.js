@@ -16,7 +16,6 @@
 
 var fns = require('../utils/fns');
 var attributesValidator = require('../utils/attributes_validator');
-var datafileManager = require('@optimizely/js-sdk-datafile-manager');
 var decisionService = require('../core/decision_service');
 var enums = require('../utils/enums');
 var eventBuilder = require('../core/event_builder/index.js');
@@ -28,7 +27,7 @@ var projectConfig = require('../core/project_config');
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var userProfileServiceValidator = require('../utils/user_profile_service_validator');
 var stringValidator = require('../utils/string_value_validator');
-var configValidator = require('../utils/config_validator');
+var projectConfigManager = require('../core/project_config/project_config_manager');
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
@@ -41,6 +40,7 @@ var NOTIFICATION_TYPES = enums.NOTIFICATION_TYPES;
 
 var DEFAULT_EVENT_MAX_QUEUE_SIZE = 1;
 var DEFAULT_EVENT_FLUSH_INTERVAL = 5000;
+var DEFAULT_ONREADY_TIMEOUT = 30000;
 
 /**
  * The Optimizely class
@@ -70,7 +70,20 @@ function Optimizely(config) {
   this.__isOptimizelyConfigValid = config.isValidInstance;
   this.logger = config.logger;
 
-  this.__initializeProjectConfigProperties(config);
+  this.projectConfigManager = new projectConfigManager.ProjectConfigManager({
+    datafile: config.datafile,
+    datafileOptions: config.datafileOptions,
+    jsonSchemaValidator: config.jsonSchemaValidator,
+    sdkKey: config.sdkKey,
+    skipJSONValidation: config.skipJSONValidation,
+  });
+
+  this.__disposeOnUpdate = this.projectConfigManager.onUpdate(function(configObj) {
+    this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.UPDATED_PROJECT_CONFIG, MODULE_NAME, configObj.revision));
+    this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.PROJECT_CONFIG_UPDATE);
+  }.bind(this));
+
+  this.__readyPromise = this.projectConfigManager.onReady();
 
   var userProfileService = null;
   if (config.userProfileService) {
@@ -103,117 +116,13 @@ function Optimizely(config) {
 }
 
 /**
- * Initialize several properties, based on the argument config:
- * - this.configObj: The project config object
- * - this.datafileManager: A datafile manager that provides a ready promise
- *   and a stream of datafile update events
- * - this.__readyPromise: Promise that will be fulfilled when this instance
- *   has a valid project config object for the first time
- * The datafile and sdkKey provided in the argument config are used to
- * initialize configObj, datafileManager, and __readyPromise.
- * @param {Object} config
- * @param {Object} config.datafile
- * @param {Object} config.sdkKey
- * @param  {Object} config.jsonSchemaValidator
- * @param  {Object} config.skipJSONValidation
- */
-Optimizely.prototype.__initializeProjectConfigProperties = function(config) {
-  try {
-    if (!config.datafile && !config.sdkKey) {
-      this.configObj = null;
-      this.__readyPromise = Promise.resolve();
-      var datafileAndSdkKeyMissingError = new Error(sprintf(ERROR_MESSAGES.DATAFILE_AND_SDK_KEY_MISSING, MODULE_NAME));
-      this.logger.log(LOG_LEVEL.ERROR, datafileAndSdkKeyMissingError.message);
-      this.errorHandler.handleError(datafileAndSdkKeyMissingError);
-      return;
-    }
-
-    var initialDatafile = this.__getDatafileFromConfig(config);
-
-    if (config.sdkKey) {
-      var datafileManagerConfig = {
-        sdkKey: config.sdkKey,
-      };
-      if (initialDatafile) {
-        datafileManagerConfig.datafile = initialDatafile;
-      }
-      this.datafileManager = new datafileManager.DatafileManager(datafileManagerConfig);
-      this.datafileManager.start();
-      initialDatafile = this.datafileManager.get();
-    }
-
-    if (initialDatafile) {
-      this.configObj = projectConfig.tryCreatingProjectConfig({
-        datafile: initialDatafile,
-        errorHandler: this.errorHandler,
-        jsonSchemaValidator: config.jsonSchemaValidator,
-        logger: this.logger,
-        skipJSONValidation: config.skipJSONValidation,
-      });
-    } else {
-      this.configObj = null;
-    }
-
-    if (this.datafileManager) {
-      this.__readyPromise = this.datafileManager.onReady().then(function() {
-        var newDatafile = this.datafileManager.get();
-        var newConfigObj = projectConfig.tryCreatingProjectConfig({
-          datafile: newDatafile,
-          errorHandler: this.errorHandler,
-          jsonSchemaValidator: config.jsonSchemaValidator,
-          logger: this.logger,
-          skipJSONValidation: config.skipJSONValidation,
-        });
-        if (newConfigObj) {
-          this.configObj = newConfigObj;
-          this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.UPDATED_PROJECT_CONFIG, MODULE_NAME, this.configObj.revision));
-        }
-      }.bind(this));
-    } else {
-      this.__readyPromise = Promise.resolve();
-    }
-  } catch (ex) {
-    this.configObj = null;
-    this.__readyPromise = Promise.resolve();
-    this.logger.log(LOG_LEVEL.ERROR, ex.message);
-    this.errorHandler.handleError(ex);
-  }
-};
-
-/**
- * If the argument config contains a valid datafile object or string,
- * return a datafile object based on that provided datafile, otherwise
- * return null.
- * @param {Object} config
- * @param {Object} config.datafile
- * @return {Object|null}
- */
-Optimizely.prototype.__getDatafileFromConfig = function(config) {
-  var initialDatafile = null;
-  try {
-    if (config.datafile) {
-      configValidator.validateDatafile(config.datafile);
-      if (typeof config.datafile === 'string' || config.datafile instanceof String) {
-        initialDatafile = JSON.parse(config.datafile);
-      } else {
-        initialDatafile = config.datafile;
-      }
-    }
-  } catch (ex) {
-    this.logger.log(LOG_LEVEL.ERROR, ex.message);
-    this.errorHandler.handleError(ex);
-  }
-  return initialDatafile;
-};
-
-/**
  * Returns a truthy value if this instance currently has a valid project config
  * object, and the initial configuration object that was passed into the
  * constructor was also valid.
  * @return {*}
  */
 Optimizely.prototype.__isValidInstance = function() {
-  return this.__isOptimizelyConfigValid && this.configObj;
+  return this.__isOptimizelyConfigValid && this.projectConfigManager.getConfig();
 };
 
 /**
@@ -234,7 +143,7 @@ Optimizely.prototype.activate = function(experimentKey, userId, attributes) {
       return this.__notActivatingExperiment(experimentKey, userId);
     }
 
-    var configObj = this.configObj;
+    var configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return null;
     }
@@ -283,7 +192,7 @@ Optimizely.prototype.activate = function(experimentKey, userId, attributes) {
  * @param {Object} attributes     Optional user attributes
  */
 Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey, userId, attributes) {
-  var configObj = this.configObj;
+  var configObj = this.projectConfigManager.getConfig();
   if (!configObj) {
     return;
   }
@@ -310,7 +219,7 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
  * @param {Object} attributes     Optional user attributes
  */
 Optimizely.prototype.__emitNotificationCenterActivate = function(experimentKey, variationKey, userId, attributes) {
-  var configObj = this.configObj;
+  var configObj = this.projectConfigManager.getConfig();
   if (!configObj) {
     return;
   }
@@ -367,7 +276,7 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
       return;
     }
 
-    var configObj = this.configObj;
+    var configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return;
     }
@@ -407,7 +316,7 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
  */
 Optimizely.prototype.__emitNotificationCenterTrack = function(eventKey, userId, attributes, eventTags) {
   try {
-    var configObj = this.configObj;
+    var configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return;
     }
@@ -456,7 +365,7 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
         return null;
       }
 
-      var configObj = this.configObj;
+      var configObj = this.projectConfigManager.getConfig();
       if (!configObj) {
         return null;
       }
@@ -506,7 +415,7 @@ Optimizely.prototype.setForcedVariation = function(experimentKey, userId, variat
     return false;
   }
 
-  var configObj = this.configObj;
+  var configObj = this.projectConfigManager.getConfig();
   if (!configObj) {
     return null;
   }
@@ -531,7 +440,7 @@ Optimizely.prototype.getForcedVariation = function(experimentKey, userId) {
     return null;
   }
 
-  var configObj = this.configObj;
+  var configObj = this.projectConfigManager.getConfig();
   if (!configObj) {
     return null;
   }
@@ -630,7 +539,7 @@ Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes)
       return false;
     }
 
-    var configObj = this.configObj;
+    var configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return false;
     }
@@ -706,7 +615,7 @@ Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
       return enabledFeatures;
     }
 
-    var configObj = this.configObj;
+    var configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return enabledFeatures;
     }
@@ -759,7 +668,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     return null;
   }
 
-  var configObj = this.configObj;
+  var configObj = this.projectConfigManager.getConfig();
   if (!configObj) {
     return null;
   }
@@ -936,6 +845,13 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
 Optimizely.prototype.close = function() {
   try {
     this.eventProcessor.stop();
+    if (this.__disposeOnUpdate) {
+      this.__disposeOnUpdate();
+      this.__disposeOnUpdate = null;
+    }
+    if (this.projectConfigManager) {
+      this.projectConfigManager.stop();
+    }
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
@@ -943,48 +859,30 @@ Optimizely.prototype.close = function() {
 };
 
 /**
- * Returns a Promise representing the readiness of this instance.
- *
- * Currently, readiness is based on the initial datafile fetch process, as well
- * as the argument timeoutMs (if timeoutMs is provided).
- *
- * If no sdkKey was provided when the instance was created, then no datafile
- * fetch will take place. This method will return an immediately fulfilled
- * Promise.
- *
- * If timeoutMs is not provided, returns a Promise that fulfills immediately
- * after the initial datafile fetch, parse, and project config object creation
- * has completed. At this point, if the datafile provided by the datafile
- * manager is valid and was successfully parsed into a project config object,
- * this instance is ready to be used, and all entities from the datafile
- * manager's datafile will be present in its project config object.
- *
- * If the initial datafile fetch failed, this promise will be rejected.
- *
- * If the initial datafile fetch succeeded, but the datafile was invalid or
- * project config creation failed, this promise will be fulfilled, but this
- * instance will continue to use whatever previous project config it had. If no
- * previous project config was available, this instance will remain invalid.
- *
- * TODO: Mention autoUpdate after we implement it
- *
- * If a number timeoutMs argument is provided, the returned Promise will
- * fullfill or reject as soon as one of the following happens:
- * 1) Datafile fetch succeeds as described above (fulfills)
- * 2) Datafile fetch fails as described above (rejects)
- * 3) timeoutMs milliseconds have elapsed (fulfills)
- *
- * @param  {number|undefined} timeoutMs
+ * Returns a Promise that resolves when this instance is ready to use (meaning
+ * it has a valid datafile), or has failed to become ready within a period of
+ * time (configurable by the timeout property of the options argument). If a
+ * valid datafile was provided in the constructor, the instance is immediately
+ * ready. If an sdkKey was provided, a manager will be used to fetch a datafile,
+ * and the returned promise will resolve if that fetch succeeds or fails before
+ * the timeout. The default timeout is 30 seconds, which will be used if no
+ * timeout is provided in the argument options object.
+ * @param  {Object=}          options
+ * @param  {number|undefined} options.timeout
  * @return {Promise}
  */
-Optimizely.prototype.onReady = function(timeoutMs) {
-  if (!fns.isFinite(timeoutMs)) {
-    return this.__readyPromise;
+Optimizely.prototype.onReady = function(options) {
+  var timeout;
+  if (typeof options === 'object' && options !== null) {
+    timeout = options.timeout;
+  }
+  if (!fns.isFinite(timeout)) {
+    timeout = DEFAULT_ONREADY_TIMEOUT;
   }
   var timeoutPromise = new Promise(function(resolve) {
     setTimeout(function() {
       resolve();
-    }, timeoutMs);
+    }, timeout);
   });
   return Promise.race([this.__readyPromise, timeoutPromise]);
 };

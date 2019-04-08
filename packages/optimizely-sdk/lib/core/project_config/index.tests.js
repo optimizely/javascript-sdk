@@ -17,12 +17,15 @@ var projectConfig = require('./');
 var enums = require('../../utils/enums');
 var testDatafile = require('../../tests/test_data');
 var configValidator = require('../../utils/config_validator');
+var logging = require('@optimizely/js-sdk-logging');
+
+var logger = logging.getLogger();
 
 var _ = require('lodash/core');
 var fns = require('../../utils/fns');
 var chai = require('chai');
 var assert = chai.assert;
-var logger = require('../../plugins/logger');
+var loggerPlugin = require('../../plugins/logger');
 var sinon = require('sinon');
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 
@@ -224,7 +227,7 @@ describe('lib/core/project_config', function() {
   describe('projectConfig helper methods', function() {
     var testData = testDatafile.getTestProjectConfig();
     var configObj;
-    var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+    var createdLogger = loggerPlugin.createLogger({logLevel: LOG_LEVEL.INFO});
 
     beforeEach(function() {
       configObj = projectConfig.createProjectConfig(testData);
@@ -351,7 +354,7 @@ describe('lib/core/project_config', function() {
     });
 
     describe('feature management', function() {
-      var featureManagementLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+      var featureManagementLogger = loggerPlugin.createLogger({logLevel: LOG_LEVEL.INFO});
       beforeEach(function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
         sinon.stub(featureManagementLogger, 'log');
@@ -559,7 +562,7 @@ describe('lib/core/project_config', function() {
   });
 
   describe('#getForcedVariation', function() {
-    var createdLogger = logger.createLogger({
+    var createdLogger = loggerPlugin.createLogger({
       logLevel: LOG_LEVEL.INFO,
       logToConsole: false,
     });
@@ -582,7 +585,7 @@ describe('lib/core/project_config', function() {
   });
 
   describe('#setForcedVariation', function() {
-    var createdLogger = logger.createLogger({
+    var createdLogger = loggerPlugin.createLogger({
       logLevel: LOG_LEVEL.INFO,
       logToConsole: false,
     });
@@ -730,26 +733,20 @@ describe('lib/core/project_config', function() {
   });
 
   describe('#tryCreatingProjectConfig', function() {
-    var stubErrorHandler;
     var stubJsonSchemaValidator;
-    var stubLogger;
     beforeEach(function() {
-      stubErrorHandler = {
-        handleError: sinon.stub(),
-      };
       stubJsonSchemaValidator = {
         validate: sinon.stub().returns(true),
       };
-      stubLogger = {
-        log: sinon.stub(),
-      };
       sinon.stub(projectConfig, 'createProjectConfig').returns({});
       sinon.stub(configValidator, 'validateDatafile').returns(true);
+      sinon.spy(logger, 'error');
     });
 
     afterEach(function() {
       projectConfig.createProjectConfig.restore();
       configValidator.validateDatafile.restore();
+      logger.error.restore();
     });
 
     it('returns a project config object created by createProjectConfig when all validation is applied and there are no errors', function() {
@@ -765,61 +762,44 @@ describe('lib/core/project_config', function() {
       projectConfig.createProjectConfig.returns(configObj);
       var result = projectConfig.tryCreatingProjectConfig({
         datafile: { foo: 'bar' },
-        errorHandler: stubErrorHandler,
         jsonSchemaValidator: stubJsonSchemaValidator,
-        logger: stubLogger,
+        logger: logger,
         skipJSONValidation: false,
       });
       assert.deepEqual(result, configObj);
     });
 
-    it('returns null and calls handleError when validateDatafile throws', function() {
+    it('throws an error when validateDatafile throws', function() {
       configValidator.validateDatafile.throws();
       stubJsonSchemaValidator.validate.returns(true);
-      var result = projectConfig.tryCreatingProjectConfig({
-        datafile: { foo: 'bar' },
-        errorHandler: stubErrorHandler,
-        jsonSchemaValidator: stubJsonSchemaValidator,
-        logger: stubLogger,
-        skipJSONValidation: false,
+      assert.throws(function() {
+        projectConfig.tryCreatingProjectConfig({
+          datafile: { foo: 'bar' },
+          jsonSchemaValidator: stubJsonSchemaValidator,
+          logger: logger,
+          skipJSONValidation: false,
+        });
       });
-      assert.strictEqual(result, null);
-      sinon.assert.calledOnce(stubErrorHandler.handleError);
     });
 
-    it('returns null and calls handleError when jsonSchemaValidator.validate throws', function() {
+    it('throws an error when jsonSchemaValidator.validate throws', function() {
       configValidator.validateDatafile.returns(true);
       stubJsonSchemaValidator.validate.throws();
-      var result = projectConfig.tryCreatingProjectConfig({
-        datafile: { foo: 'bar' },
-        errorHandler: stubErrorHandler,
-        jsonSchemaValidator: stubJsonSchemaValidator,
-        logger: stubLogger,
-        skipJSONValidation: false,
+      assert.throws(function() {
+        var result = projectConfig.tryCreatingProjectConfig({
+          datafile: { foo: 'bar' },
+          jsonSchemaValidator: stubJsonSchemaValidator,
+          logger: logger,
+          skipJSONValidation: false,
+        });
       });
-      assert.strictEqual(result, null);
-      sinon.assert.calledOnce(stubErrorHandler.handleError);
-    });
-
-    it('returns null when jsonSchemaValidator.validate returns false', function() {
-      configValidator.validateDatafile.returns(true);
-      stubJsonSchemaValidator.validate.returns(false);
-      var result = projectConfig.tryCreatingProjectConfig({
-        datafile: { foo: 'bar' },
-        errorHandler: stubErrorHandler,
-        jsonSchemaValidator: stubJsonSchemaValidator,
-        logger: stubLogger,
-        skipJSONValidation: false,
-      });
-      assert.strictEqual(result, null);
     });
 
     it('does not call jsonSchemaValidator.validate when skipJSONValidation is true', function() {
       projectConfig.tryCreatingProjectConfig({
         datafile: { foo: 'bar' },
-        errorHandler: stubErrorHandler,
         jsonSchemaValidator: stubJsonSchemaValidator,
-        logger: stubLogger,
+        logger: logger,
         skipJSONValidation: true,
       });
       sinon.assert.notCalled(stubJsonSchemaValidator.validate);
@@ -837,11 +817,10 @@ describe('lib/core/project_config', function() {
       projectConfig.createProjectConfig.returns(configObj);
       var result = projectConfig.tryCreatingProjectConfig({
         datafile: { foo: 'bar' },
-        errorHandler: stubErrorHandler,
-        logger: stubLogger,
+        logger: logger,
       });
       assert.deepEqual(result, configObj);
-      sinon.assert.notCalled(stubErrorHandler.handleError);
+      sinon.assert.notCalled(logger.error);
     });
   });
 });
