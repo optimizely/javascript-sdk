@@ -1,4 +1,4 @@
-process.on("unhandledRejection", function(err) {
+process.on('unhandledRejection', function(err) {
   console.error('Unhandled promise rejection');
   if (err) {
     console.error(err);
