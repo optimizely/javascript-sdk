@@ -2410,6 +2410,7 @@ describe('lib/optimizely', function() {
               jsonSchemaValidator: jsonSchemaValidator,
               logger: createdLogger,
               isValidInstance: true,
+              eventDispatcher: eventDispatcher,
             });
 
             optlyInstance.notificationCenter.addNotificationListener(
