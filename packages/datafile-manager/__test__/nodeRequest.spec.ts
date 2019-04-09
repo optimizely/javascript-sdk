@@ -140,5 +140,21 @@ describe('nodeEnvironment', () => {
       await expect(req.responsePromise).rejects.toThrow()
       scope.done()
     })
+
+    it('handles a url with a host and a port', async () => {
+      const hostWithPort = 'http://datafiles:3000'
+      const path = '/12/345.json'
+      const scope = nock(hostWithPort)
+        .get(path)
+        .reply(200, '{"foo":"bar"}')
+      const req = makeGetRequest(`${hostWithPort}${path}`, {})
+      const resp = await req.responsePromise
+      expect(resp).toEqual({
+        statusCode: 200,
+        body: '{"foo":"bar"}',
+        headers: {}
+      })
+      scope.done()
+    })
   })
 })

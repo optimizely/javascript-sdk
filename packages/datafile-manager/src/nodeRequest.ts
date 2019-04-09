@@ -24,9 +24,10 @@ type ClientRequestCreator = (options: http.RequestOptions) => http.ClientRequest
 
 function getRequestOptionsFromUrl(url: url.UrlWithStringQuery): http.RequestOptions {
   return {
-    protocol: url.protocol,
-    host: url.host,
+    hostname: url.hostname,
     path: url.path,
+    port: url.port,
+    protocol: url.protocol,
   }
 }
 
