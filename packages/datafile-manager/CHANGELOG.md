@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.2.0] - April 9, 2019
+
+### Changed
+- Increase max error count in backoff controller (can now delay requests for up to 512 seconds) [(#17)](https://github.com/optimizely/javascript-sdk-dev/pull/17)
+- Change expected format of `urlTemplate` to be sprintf-compatible (`%s` is replaced with `sdkKey`) [(#17)](https://github.com/optimizely/javascript-sdk-dev/pull/17)
+- Promise returned from `onReady` is resolved immediately when `datafile` provided in constructor [(#14)](https://github.com/optimizely/javascript-sdk-dev/pull/14)
+- Emit update event whenever datafile changes, not only if `autoUpdate` is true [(#14)](https://github.com/optimizely/javascript-sdk-dev/pull/14)
+
+### Fixed
+
+- Fix for Node.js requests when `urlTemplate` contains a port [(#18)](https://github.com/optimizely/javascript-sdk-dev/pull/18)
+
 ## [0.1.0] - March 4, 2019
 
 Initial release
