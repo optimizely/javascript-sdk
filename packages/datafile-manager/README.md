@@ -5,7 +5,7 @@ This package provides a datafile manager implementations for Node.js and the bro
 ## Installation
 
 ```sh
-npm install @optimizely/datafile-manager
+npm install @optimizely/js-sdk-datafile-manager
 ```
 
 ## Usage

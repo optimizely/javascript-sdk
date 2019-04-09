@@ -37,13 +37,6 @@ export interface DatafileManager extends Managed {
   onReady: () => Promise<void>
 }
 
-export enum CacheDirective {
-  // Use cache entry as fallback, but wait for CDN sync before onReady
-  AWAIT = 'await',
-  // Use cache entry for onReady, and do CDN sync in the background
-  DONT_AWAIT = 'dontawait',
-}
-
 export interface DatafileManagerConfig {
   autoUpdate?: boolean
   datafile?: object
