@@ -252,7 +252,7 @@ ProjectConfigManager.prototype.onUpdate = function(listener) {
     if (index > -1) {
       this.__updateListeners.splice(index, 1);
     }
-  };
+  }.bind(this);
 };
 
 /**

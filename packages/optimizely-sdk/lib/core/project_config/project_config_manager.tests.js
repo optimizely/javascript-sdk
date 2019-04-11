@@ -254,6 +254,42 @@ describe('lib/core/project_config/project_config_manager', function() {
         });
       });
 
+      it('can remove onUpdate listeners using the function returned from onUpdate', function() {
+        datafileManager.DatafileManager.returns({
+          start: sinon.stub(),
+          stop: sinon.stub(),
+          get: sinon.stub().returns(testData.getTestProjectConfigWithFeatures()),
+          on: sinon.stub().returns(function() {}),
+          onReady: sinon.stub().returns(Promise.resolve())
+        });
+        var manager = new projectConfigManager.ProjectConfigManager({
+          sdkKey: '12345',
+        });
+        return manager.onReady().then(function() {
+          var onUpdateSpy = sinon.spy();
+          var unsubscribe = manager.onUpdate(onUpdateSpy);
+
+          var fakeDatafileManager = datafileManager.DatafileManager.getCall(0).returnValue;
+          var updateListener = fakeDatafileManager.on.getCall(0).args[1];
+          var newDatafile = testData.getTestProjectConfigWithFeatures();
+          newDatafile.revision = '36';
+          fakeDatafileManager.get.returns(newDatafile);
+          updateListener({ datafile: newDatafile });
+
+          sinon.assert.calledOnce(onUpdateSpy);
+
+          unsubscribe();
+
+          newDatafile = testData.getTestProjectConfigWithFeatures();
+          newDatafile.revision = '37';
+          fakeDatafileManager.get.returns(newDatafile);
+          updateListener({ datafile: newDatafile });
+          // // Should not call onUpdateSpy again since we unsubscribed
+          updateListener({ datafile: testData.getTestProjectConfigWithFeatures() });
+          sinon.assert.calledOnce(onUpdateSpy);
+        });
+      });
+
       it('rejects its ready promise when the datafile manager emits an invalid datafile', function(done) {
         var invalidDatafile = testData.getTestProjectConfig();
         delete invalidDatafile['projectId'];
