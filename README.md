@@ -3,10 +3,13 @@
 </h3>
 
 <p align="center">
-  This repository houses the official JavaScript SDK for use with Optimizely X Full Stack.
+  This repository houses the official JavaScript SDK for use with Optimizely Full Stack and Optimizely Rollouts.
 </p>
 
-Optimizely X Full Stack is A/B testing and feature management for product development teams. Experiment in any application. Make every feature on your roadmap an opportunity to learn. Learn more at https://www.optimizely.com/products/full-stack/, or see the [documentation](https://developers.optimizely.com/x/solutions/sdks/reference/index.html?language=node).
+Optimizely Full Stack is A/B testing and feature flag management for product development teams. Experiment in any application. Make every feature on your roadmap an opportunity to learn. Learn more at https://www.optimizely.com/platform/full-stack/, or see the [documentation](https://docs.developers.optimizely.com/full-stack/docs).
+
+Optimizely Rollouts is free feature flags for development teams. Easily roll out and roll back features in any application without code deploys. Mitigate risk for every feature on your roadmap. Learn more at https://www.optimizely.com/rollouts/, or see the [documentation](https://docs.developers.optimizely.com/rollouts/docs).
+
 
 ## Packages
 
