@@ -131,10 +131,7 @@ ProjectConfigManager.prototype.__onDatafileManagerReady = function() {
     logger: logger,
     skipJSONValidation: this.skipJSONValidation,
   });
-  this.__configObj = newConfigObj;
-  this.__updateListeners.forEach(function(listener) {
-    listener(newConfigObj);
-  });
+  this.__handleNewConfigObj(newConfigObj);
 };
 
 /**
@@ -156,10 +153,7 @@ ProjectConfigManager.prototype.__onDatafileManagerUpdate = function() {
     logger.error(ex);
   }
   if (newConfigObj) {
-    this.__configObj = newConfigObj;
-    this.__updateListeners.forEach(function(listener) {
-      listener(newConfigObj);
-    });
+    this.__handleNewConfigObj(newConfigObj);
   }
 };
 
@@ -203,6 +197,27 @@ ProjectConfigManager.prototype.__validateDatafileOptions = function(datafileOpti
   }
 
   return false;
+};
+
+/**
+ * Update internal project config object to be argument object when the argument
+ * object has a different revision than the current internal project config
+ * object. If the internal object is updated, call update listeners.
+ * @param {Object} newConfigObj
+ */
+ProjectConfigManager.prototype.__handleNewConfigObj = function(newConfigObj) {
+  var oldConfigObj = this.__configObj;
+
+  var oldRevision = oldConfigObj ? oldConfigObj.revision : 'null';
+  if (oldRevision === newConfigObj.revision) {
+    return;
+  }
+
+  this.__configObj = newConfigObj;
+
+  this.__updateListeners.forEach(function(listener) {
+    listener(newConfigObj);
+  });
 };
 
 /**

@@ -153,6 +153,18 @@ describe('lib/core/project_config/project_config_manager', function() {
     return manager.onReady();
   });
 
+  it('does not call onUpdate listeners after becoming ready when constructed with a valid datafile and without sdkKey', function() {
+    var configWithFeatures = testData.getTestProjectConfigWithFeatures();
+    var manager = new projectConfigManager.ProjectConfigManager({
+      datafile: configWithFeatures,
+    });
+    var onUpdateSpy = sinon.spy();
+    manager.onUpdate(onUpdateSpy);
+    return manager.onReady().then(function() {
+      sinon.assert.notCalled(onUpdateSpy);
+    });
+  });
+
   describe('with a datafile manager', function() {
     it('passes the correct options to datafile manager', function() {
       new projectConfigManager.ProjectConfigManager({
@@ -172,94 +184,126 @@ describe('lib/core/project_config/project_config_manager', function() {
       }));
     });
 
-    it('updates itself when the datafile manager is ready and then emits updates', function() {
-      var configWithFeatures = testData.getTestProjectConfigWithFeatures();
-      datafileManager.DatafileManager.returns({
-        start: sinon.stub(),
-        stop: sinon.stub(),
-        get: sinon.stub().returns(configWithFeatures),
-        on: sinon.stub().returns(function() {}),
-        onReady: sinon.stub().returns(Promise.resolve())
-      });
-      var manager = new projectConfigManager.ProjectConfigManager({
-        sdkKey: '12345',
-      });
-      assert.isNull(manager.getConfig());
-      return manager.onReady().then(function() {
-        assert.deepEqual(
-          manager.getConfig(),
-          projectConfig.createProjectConfig(configWithFeatures)
-        );
-
-        var nextDatafile = testData.getTestProjectConfigWithFeatures();
-        nextDatafile.experiments.push({
-          key: 'anotherTestExp',
-          status: 'Running',
-          forcedVariations: {},
-          audienceIds: [],
-          layerId: '253442',
-          trafficAllocation: [{ entityId: '99977477477747747', endOfRange: 10000 }],
-          id: '1237847778',
-          variations: [{ key: 'variation', id: '99977477477747747' }],
+    describe('when constructed with sdkKey and without datafile', function() {
+      it('updates itself when the datafile manager is ready and then emits updates', function() {
+        var configWithFeatures = testData.getTestProjectConfigWithFeatures();
+        datafileManager.DatafileManager.returns({
+          start: sinon.stub(),
+          stop: sinon.stub(),
+          get: sinon.stub().returns(configWithFeatures),
+          on: sinon.stub().returns(function() {}),
+          onReady: sinon.stub().returns(Promise.resolve())
         });
-        var fakeDatafileManager = datafileManager.DatafileManager.getCall(0).returnValue;
-        fakeDatafileManager.get.returns(nextDatafile);
-        var updateListener = fakeDatafileManager.on.getCall(0).args[1];
-        updateListener({ datafile: nextDatafile });
-        assert.deepEqual(
-          manager.getConfig(),
-          projectConfig.createProjectConfig(nextDatafile)
-        );
+        var manager = new projectConfigManager.ProjectConfigManager({
+          sdkKey: '12345',
+        });
+        assert.isNull(manager.getConfig());
+        return manager.onReady().then(function() {
+          assert.deepEqual(
+            manager.getConfig(),
+            projectConfig.createProjectConfig(configWithFeatures)
+          );
+
+          var nextDatafile = testData.getTestProjectConfigWithFeatures();
+          nextDatafile.experiments.push({
+            key: 'anotherTestExp',
+            status: 'Running',
+            forcedVariations: {},
+            audienceIds: [],
+            layerId: '253442',
+            trafficAllocation: [{ entityId: '99977477477747747', endOfRange: 10000 }],
+            id: '1237847778',
+            variations: [{ key: 'variation', id: '99977477477747747' }],
+          });
+          nextDatafile.revision = '36';
+          var fakeDatafileManager = datafileManager.DatafileManager.getCall(0).returnValue;
+          fakeDatafileManager.get.returns(nextDatafile);
+          var updateListener = fakeDatafileManager.on.getCall(0).args[1];
+          updateListener({ datafile: nextDatafile });
+          assert.deepEqual(
+            manager.getConfig(),
+            projectConfig.createProjectConfig(nextDatafile)
+          );
+        });
+      });
+
+      it('calls onUpdate listeners after becoming ready, and after the datafile manager emits updates', function() {
+        datafileManager.DatafileManager.returns({
+          start: sinon.stub(),
+          stop: sinon.stub(),
+          get: sinon.stub().returns(testData.getTestProjectConfigWithFeatures()),
+          on: sinon.stub().returns(function() {}),
+          onReady: sinon.stub().returns(Promise.resolve())
+        });
+        var manager = new projectConfigManager.ProjectConfigManager({
+          sdkKey: '12345',
+        });
+        var onUpdateSpy = sinon.spy();
+        manager.onUpdate(onUpdateSpy);
+        return manager.onReady().then(function() {
+          sinon.assert.calledOnce(onUpdateSpy);
+
+          var fakeDatafileManager = datafileManager.DatafileManager.getCall(0).returnValue;
+          var updateListener = fakeDatafileManager.on.getCall(0).args[1];
+          var newDatafile = testData.getTestProjectConfigWithFeatures();
+          newDatafile.revision = '36';
+          fakeDatafileManager.get.returns(newDatafile);
+
+          updateListener({ datafile: newDatafile });
+          sinon.assert.calledTwice(onUpdateSpy);
+        });
+      });
+
+      it('rejects its ready promise when the datafile manager emits an invalid datafile', function(done) {
+        var invalidDatafile = testData.getTestProjectConfig();
+        delete invalidDatafile['projectId'];
+        datafileManager.DatafileManager.returns({
+          start: sinon.stub(),
+          stop: sinon.stub(),
+          get: sinon.stub().returns(invalidDatafile),
+          on: sinon.stub().returns(function() {}),
+          onReady: sinon.stub().returns(Promise.resolve())
+        });
+        var manager = new projectConfigManager.ProjectConfigManager({
+          jsonSchemaValidator: jsonSchemaValidator,
+          sdkKey: '12345',
+        });
+        manager.onReady().catch(function() {
+          done();
+        });
+      });
+
+      it('calls stop on its datafile manager when its stop method is called', function() {
+        var manager = new projectConfigManager.ProjectConfigManager({
+          sdkKey: '12345',
+        });
+        manager.stop();
+        sinon.assert.calledOnce(datafileManager.DatafileManager.getCall(0).returnValue.stop);
       });
     });
 
-    it('calls onUpdate listeners when the datafile manager is ready and emits updates', function() {
-      datafileManager.DatafileManager.returns({
-        start: sinon.stub(),
-        stop: sinon.stub(),
-        get: sinon.stub().returns(testData.getTestProjectConfigWithFeatures()),
-        on: sinon.stub().returns(function() {}),
-        onReady: sinon.stub().returns(Promise.resolve())
+    describe('when constructed with sdkKey and with a valid datafile', function() {
+      it('does not call onUpdate listeners after becoming ready', function() {
+        datafileManager.DatafileManager.returns({
+          start: sinon.stub(),
+          stop: sinon.stub(),
+          get: sinon.stub().returns(testData.getTestProjectConfigWithFeatures()),
+          on: sinon.stub().returns(function() {}),
+          onReady: sinon.stub().returns(Promise.resolve())
+        });
+        var configWithFeatures = testData.getTestProjectConfigWithFeatures();
+        var manager = new projectConfigManager.ProjectConfigManager({
+          datafile: configWithFeatures,
+          sdkKey: '12345',
+        });
+        var onUpdateSpy = sinon.spy();
+        manager.onUpdate(onUpdateSpy);
+        return manager.onReady().then(function() {
+          // Datafile is the same as what it was constructed with, so should
+          // not have called update listener
+          sinon.assert.notCalled(onUpdateSpy);
+        });
       });
-      var manager = new projectConfigManager.ProjectConfigManager({
-        sdkKey: '12345',
-      });
-      var onUpdateSpy = sinon.spy();
-      manager.onUpdate(onUpdateSpy);
-      return manager.onReady().then(function() {
-        sinon.assert.calledOnce(onUpdateSpy);
-        var fakeDatafileManager = datafileManager.DatafileManager.getCall(0).returnValue;
-        var updateListener = fakeDatafileManager.on.getCall(0).args[1];
-        updateListener({ datafile: testData.getTestProjectConfigWithFeatures() });
-        sinon.assert.calledTwice(onUpdateSpy);
-      });
-    });
-
-    it('rejects its ready promise when the datafile manager emits an invalid datafile', function(done) {
-      var invalidDatafile = testData.getTestProjectConfig();
-      delete invalidDatafile['projectId'];
-      datafileManager.DatafileManager.returns({
-        start: sinon.stub(),
-        stop: sinon.stub(),
-        get: sinon.stub().returns(invalidDatafile),
-        on: sinon.stub().returns(function() {}),
-        onReady: sinon.stub().returns(Promise.resolve())
-      });
-      var manager = new projectConfigManager.ProjectConfigManager({
-        jsonSchemaValidator: jsonSchemaValidator,
-        sdkKey: '12345',
-      });
-      manager.onReady().catch(function() {
-        done();
-      });
-    });
-
-    it('calls stop on its datafile manager when its stop method is called', function() {
-      var manager = new projectConfigManager.ProjectConfigManager({
-        sdkKey: '12345',
-      });
-      manager.stop();
-      sinon.assert.calledOnce(datafileManager.DatafileManager.getCall(0).returnValue.stop);
     });
   });
 });
