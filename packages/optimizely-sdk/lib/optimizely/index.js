@@ -79,8 +79,8 @@ function Optimizely(config) {
   });
 
   this.__disposeOnUpdate = this.projectConfigManager.onUpdate(function(configObj) {
-    this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.UPDATED_PROJECT_CONFIG, MODULE_NAME, configObj.revision));
-    this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.PROJECT_CONFIG_UPDATE);
+    this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.UPDATED_OPTIMIZELY_CONFIG, MODULE_NAME, configObj.revision, configObj.projectId));
+    this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE);
   }.bind(this));
 
   this.__readyPromise = this.projectConfigManager.onReady();
@@ -694,7 +694,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
   var featureEnabled = false;
   var variableValue = variable.defaultValue;
   var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
-  
+
   if (decision.variation !== null) {
     featureEnabled = decision.variation.featureEnabled;
     var value = projectConfig.getVariableValueForVariation(configObj, variable, decision.variation, this.logger);

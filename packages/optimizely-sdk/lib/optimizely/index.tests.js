@@ -4906,7 +4906,7 @@ describe('lib/optimizely', function() {
       it('emits a notification when the project config manager emits a new project config object', function() {
         var listener = sinon.spy();
         optlyInstance.notificationCenter.addNotificationListener(
-          enums.NOTIFICATION_TYPES.PROJECT_CONFIG_UPDATE,
+          enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE,
           listener
         );
         var newConfig = projectConfig.createProjectConfig(testData.getTestProjectConfigWithFeatures());
