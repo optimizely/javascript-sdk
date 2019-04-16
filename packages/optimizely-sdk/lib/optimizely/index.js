@@ -343,10 +343,13 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
       }
 
       var variationKey = this.decisionService.getVariation(this.configObj, experimentKey, userId, attributes);
+      var decisionInfoType = projectConfig.isFeatureExperiment(this.configObj, experimentKey) ? DECISION_INFO_TYPES.FEATURE :
+        DECISION_INFO_TYPES.AB_TEST;
+
       this.notificationCenter.sendNotifications(
         NOTIFICATION_TYPES.DECISION,
         {
-          type: DECISION_INFO_TYPES.EXPERIMENT,
+          type: decisionInfoType,
           userId: userId,
           attributes: attributes || {},
           decisionInfo: {
@@ -501,16 +504,17 @@ Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes)
     }
 
     var featureEnabled = false;
-    var experimentKey = null;
-    var variationKey = null;
     var decision = this.decisionService.getVariationForFeature(this.configObj, feature, userId, attributes);
     var variation = decision.variation;
-    
+    var sourceInfo = {};
+
     if (!!variation) {
       featureEnabled = variation.featureEnabled;
-      if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
-        experimentKey = decision.experiment.key;
-        variationKey = decision.variation.key;
+      if (decision.decisionSource === DECISION_SOURCES.FEATURE_TEST) {
+        sourceInfo = {
+          experimentKey: decision.experiment.key,
+          variationKey: decision.variation.key,
+        }
         // got a variation from the exp, so we track the impression
         this._sendImpressionEvent(decision.experiment.key, decision.variation.key, userId, attributes);
       }
@@ -523,19 +527,20 @@ Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes)
       featureEnabled = false;
     }
 
+    var featureInfo = {
+      featureKey: featureKey,
+      featureEnabled: featureEnabled,
+      source: decision.decisionSource,
+      sourceInfo: sourceInfo
+    };
+    
     this.notificationCenter.sendNotifications(
-      enums.NOTIFICATION_TYPES.DECISION,
+      NOTIFICATION_TYPES.DECISION,
       {
         type: DECISION_INFO_TYPES.FEATURE,
         userId: userId,
         attributes: attributes || {},
-        decisionInfo: {
-          featureKey: featureKey,
-          featureEnabled: featureEnabled,
-          source: decision.decisionSource,
-          sourceExperimentKey: experimentKey,
-          sourceVariationKey: variationKey,
-        }
+        decisionInfo: featureInfo,
       }
     );
 
@@ -655,16 +660,17 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
       variableKey, featureFlag.key));
   }
 
-  var experimentKey = null;
-  var variationKey = null;
-  if (decision.decisionSource === DECISION_SOURCES.EXPERIMENT) {
-    experimentKey = decision.experiment.key;
-    variationKey = decision.variation.key;
+  var sourceInfo = {};
+  if (decision.decisionSource === DECISION_SOURCES.FEATURE_TEST) {
+    sourceInfo = {
+      experimentKey: decision.experiment.key,
+      variationKey: decision.variation.key,
+    }
   }
 
   var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
   this.notificationCenter.sendNotifications(
-    enums.NOTIFICATION_TYPES.DECISION,
+    NOTIFICATION_TYPES.DECISION,
     {
       type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
       userId: userId,
@@ -672,12 +678,11 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
       decisionInfo: {
         featureKey: featureKey,
         featureEnabled: featureEnabled,
+        source: decision.decisionSource,
         variableKey: variableKey,
         variableValue: typeCastedValue,
         variableType: variableType,
-        source: decision.decisionSource,
-        sourceExperimentKey: experimentKey,
-        sourceVariationKey: variationKey
+        sourceInfo: sourceInfo,
       }
     }
   );

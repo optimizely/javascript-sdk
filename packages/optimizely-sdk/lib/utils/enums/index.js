@@ -190,7 +190,7 @@ exports.NOTIFICATION_TYPES = {
 };
 
 exports.DECISION_INFO_TYPES = {
-  EXPERIMENT: 'experiment',
+  AB_TEST: 'ab-test',
   FEATURE: 'feature',
   FEATURE_VARIABLE: 'feature_variable',
 };
@@ -202,8 +202,8 @@ exports.DECISION_INFO_TYPES = {
  * Optimizely.
  */
 exports.DECISION_SOURCES = {
-  EXPERIMENT: 'EXPERIMENT',
-  ROLLOUT: 'ROLLOUT',
+  FEATURE_TEST: 'feature-test',
+  ROLLOUT: 'rollout',
 };
 
 /*

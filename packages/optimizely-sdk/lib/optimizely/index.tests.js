@@ -2365,7 +2365,7 @@ describe('lib/optimizely', function() {
             var variation = optlyInstance.activate('testExperiment', 'testUser');
             assert.strictEqual(variation, 'variation');
             sinon.assert.calledWith(decisionListener, {
-              type: DECISION_INFO_TYPES.EXPERIMENT,
+              type: DECISION_INFO_TYPES.AB_TEST,
               userId: 'testUser',
               attributes: {},
               decisionInfo: {
@@ -2380,7 +2380,7 @@ describe('lib/optimizely', function() {
             var variation = optlyInstance.activate('testExperiment', 'testUser');
             assert.isNull(variation);
             sinon.assert.calledWith(decisionListener, {
-              type: DECISION_INFO_TYPES.EXPERIMENT,
+              type: DECISION_INFO_TYPES.AB_TEST,
               userId: 'testUser',
               attributes: {},
               decisionInfo: {
@@ -2415,7 +2415,7 @@ describe('lib/optimizely', function() {
             var variation = optlyInstance.getVariation('testExperiment', 'testUser');
             assert.strictEqual(variation, 'variation');
             sinon.assert.calledWith(decisionListener, {
-              type: DECISION_INFO_TYPES.EXPERIMENT,
+              type: DECISION_INFO_TYPES.AB_TEST,
               userId: 'testUser',
               attributes: {},
               decisionInfo: {
@@ -2429,7 +2429,7 @@ describe('lib/optimizely', function() {
             var variation = optlyInstance.getVariation('testExperimentWithAudiences', 'testUser', {});
             assert.isNull(variation);
             sinon.assert.calledWith(decisionListener, {
-              type: DECISION_INFO_TYPES.EXPERIMENT,
+              type: DECISION_INFO_TYPES.AB_TEST,
               userId: 'testUser',
               attributes: {},
               decisionInfo: {
@@ -2475,7 +2475,7 @@ describe('lib/optimizely', function() {
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
                     variation: variation,
-                    decisionSource: DECISION_SOURCES.EXPERIMENT,
+                    decisionSource: DECISION_SOURCES.FEATURE_TEST,
                   });
                 });
       
@@ -2489,9 +2489,11 @@ describe('lib/optimizely', function() {
                     decisionInfo: {
                       featureKey: 'test_feature_for_experiment',
                       featureEnabled: true,
-                      source: DECISION_SOURCES.EXPERIMENT,
-                      sourceExperimentKey: 'testing_my_feature',
-                      sourceVariationKey: 'variation'
+                      source: DECISION_SOURCES.FEATURE_TEST,
+                      sourceInfo: {
+                        experimentKey: 'testing_my_feature',
+                        variationKey: 'variation'
+                      }
                     }
                   });
                 });
@@ -2504,7 +2506,7 @@ describe('lib/optimizely', function() {
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
                     variation: variation,
-                    decisionSource: DECISION_SOURCES.EXPERIMENT,
+                    decisionSource: DECISION_SOURCES.FEATURE_TEST,
                   });
                 });
 
@@ -2518,9 +2520,11 @@ describe('lib/optimizely', function() {
                     decisionInfo: {
                       featureKey: 'shared_feature',
                       featureEnabled: false,
-                      source: DECISION_SOURCES.EXPERIMENT,
-                      sourceExperimentKey: 'test_shared_feature',
-                      sourceVariationKey: 'control'
+                      source: DECISION_SOURCES.FEATURE_TEST,
+                      sourceInfo: {
+                        experimentKey: 'test_shared_feature',
+                        variationKey: 'control'
+                      }
                     }
                   });
                 });
@@ -2553,8 +2557,7 @@ describe('lib/optimizely', function() {
                       featureKey: 'test_feature',
                       featureEnabled: true,
                       source: DECISION_SOURCES.ROLLOUT,
-                      sourceExperimentKey: null,
-                      sourceVariationKey: null
+                      sourceInfo: {}
                     }
                   });
                 });
@@ -2587,8 +2590,8 @@ describe('lib/optimizely', function() {
                       featureKey: 'test_feature',
                       featureEnabled: false,
                       source: DECISION_SOURCES.ROLLOUT,
-                      sourceExperimentKey: null,
-                      sourceVariationKey: null
+                      sourceInfo: {
+                      }
                     }
                   };
                   sinon.assert.calledWith(decisionListener, expectedArguments);
@@ -2616,8 +2619,7 @@ describe('lib/optimizely', function() {
                     featureKey: 'test_feature',
                     featureEnabled: false,
                     source: DECISION_SOURCES.ROLLOUT,
-                    sourceExperimentKey: null,
-                    sourceVariationKey: null
+                    sourceInfo: {}
                   }
                 });
               });
@@ -2633,7 +2635,7 @@ describe('lib/optimizely', function() {
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
                     variation: variation,
-                    decisionSource: DECISION_SOURCES.EXPERIMENT,
+                    decisionSource: DECISION_SOURCES.FEATURE_TEST,
                   });
                 });
       
@@ -2650,9 +2652,11 @@ describe('lib/optimizely', function() {
                       variableKey: 'is_button_animated',
                       variableValue: true,
                       variableType: FEATURE_VARIABLE_TYPES.BOOLEAN,
-                      source: DECISION_SOURCES.EXPERIMENT,
-                      sourceExperimentKey: 'testing_my_feature',
-                      sourceVariationKey: 'variation'
+                      source: DECISION_SOURCES.FEATURE_TEST,
+                      sourceInfo: {
+                        experimentKey: 'testing_my_feature',
+                        variationKey: 'variation'
+                      }
                     }
                   });
                 });
@@ -2670,9 +2674,11 @@ describe('lib/optimizely', function() {
                       variableKey: 'button_width',
                       variableValue: 20.25,
                       variableType: FEATURE_VARIABLE_TYPES.DOUBLE,
-                      source: DECISION_SOURCES.EXPERIMENT,
-                      sourceExperimentKey: 'testing_my_feature',
-                      sourceVariationKey: 'variation'
+                      source: DECISION_SOURCES.FEATURE_TEST,
+                      sourceInfo: {
+                        experimentKey: 'testing_my_feature',
+                        variationKey: 'variation'
+                      }
                     }
                   });
                 });
@@ -2690,9 +2696,11 @@ describe('lib/optimizely', function() {
                       variableKey: 'num_buttons',
                       variableValue: 2,
                       variableType: FEATURE_VARIABLE_TYPES.INTEGER,
-                      source: DECISION_SOURCES.EXPERIMENT,
-                      sourceExperimentKey: 'testing_my_feature',
-                      sourceVariationKey: 'variation'
+                      source: DECISION_SOURCES.FEATURE_TEST,
+                      sourceInfo: {
+                        experimentKey: 'testing_my_feature',
+                        variationKey: 'variation'
+                      }
                     }
                   });
                 });
@@ -2710,9 +2718,11 @@ describe('lib/optimizely', function() {
                       variableKey: 'button_txt',
                       variableValue: 'Buy me NOW',
                       variableType: FEATURE_VARIABLE_TYPES.STRING,
-                      source: DECISION_SOURCES.EXPERIMENT,
-                      sourceExperimentKey: 'testing_my_feature',
-                      sourceVariationKey: 'variation'
+                      source: DECISION_SOURCES.FEATURE_TEST,
+                      sourceInfo: {
+                        experimentKey: 'testing_my_feature',
+                        variationKey: 'variation'
+                      }
                     }
                   });
                 });
@@ -2725,7 +2735,7 @@ describe('lib/optimizely', function() {
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
                     experiment: experiment,
                     variation: variation,
-                    decisionSource: DECISION_SOURCES.EXPERIMENT,
+                    decisionSource: DECISION_SOURCES.FEATURE_TEST,
                   });
                 });
       
@@ -2742,9 +2752,11 @@ describe('lib/optimizely', function() {
                       variableKey: 'is_button_animated',
                       variableValue: false,
                       variableType: FEATURE_VARIABLE_TYPES.BOOLEAN,
-                      source: DECISION_SOURCES.EXPERIMENT,
-                      sourceExperimentKey: 'testing_my_feature',
-                      sourceVariationKey: 'variation2'
+                      source: DECISION_SOURCES.FEATURE_TEST,
+                      sourceInfo: {
+                        experimentKey: 'testing_my_feature',
+                        variationKey: 'variation2'
+                      }
                     }
                   });
                 });
@@ -2762,9 +2774,11 @@ describe('lib/optimizely', function() {
                       variableKey: 'button_width',
                       variableValue: 50.55,
                       variableType: FEATURE_VARIABLE_TYPES.DOUBLE,
-                      source: DECISION_SOURCES.EXPERIMENT,
-                      sourceExperimentKey: 'testing_my_feature',
-                      sourceVariationKey: 'variation2'
+                      source: DECISION_SOURCES.FEATURE_TEST,
+                      sourceInfo: {
+                        experimentKey: 'testing_my_feature',
+                        variationKey: 'variation2'
+                      }
                     }
                   });
                 });
@@ -2782,9 +2796,11 @@ describe('lib/optimizely', function() {
                       variableKey: 'num_buttons',
                       variableValue: 10,
                       variableType: FEATURE_VARIABLE_TYPES.INTEGER,
-                      source: DECISION_SOURCES.EXPERIMENT,
-                      sourceExperimentKey: 'testing_my_feature',
-                      sourceVariationKey: 'variation2'
+                      source: DECISION_SOURCES.FEATURE_TEST,
+                      sourceInfo: {
+                        experimentKey: 'testing_my_feature',
+                        variationKey: 'variation2'
+                      }
                     }
                   });
                 });
@@ -2802,9 +2818,11 @@ describe('lib/optimizely', function() {
                       variableKey: 'button_txt',
                       variableValue: 'Buy me',
                       variableType: FEATURE_VARIABLE_TYPES.STRING,
-                      source: DECISION_SOURCES.EXPERIMENT,
-                      sourceExperimentKey: 'testing_my_feature',
-                      sourceVariationKey: 'variation2'
+                      source: DECISION_SOURCES.FEATURE_TEST,
+                      sourceInfo: {
+                        experimentKey: 'testing_my_feature',
+                        variationKey: 'variation2'
+                      }
                     }
                   });
                 });
@@ -2837,8 +2855,7 @@ describe('lib/optimizely', function() {
                       variableValue: true,
                       variableType: FEATURE_VARIABLE_TYPES.BOOLEAN,
                       source: DECISION_SOURCES.ROLLOUT,
-                      sourceExperimentKey: null,
-                      sourceVariationKey: null
+                      sourceInfo: {}
                     }
                   });
                 });
@@ -2857,8 +2874,7 @@ describe('lib/optimizely', function() {
                       variableValue: 4.99,
                       variableType: FEATURE_VARIABLE_TYPES.DOUBLE,
                       source: DECISION_SOURCES.ROLLOUT,
-                      sourceExperimentKey: null,
-                      sourceVariationKey: null
+                      sourceInfo: {}
                     }
                   });
                 });
@@ -2877,8 +2893,7 @@ describe('lib/optimizely', function() {
                       variableValue: 395,
                       variableType: FEATURE_VARIABLE_TYPES.INTEGER,
                       source: DECISION_SOURCES.ROLLOUT,
-                      sourceExperimentKey: null,
-                      sourceVariationKey: null
+                      sourceInfo: {}
                     }
                   });
                 });
@@ -2897,8 +2912,7 @@ describe('lib/optimizely', function() {
                       variableValue: 'Hello audience',
                       variableType: FEATURE_VARIABLE_TYPES.STRING,
                       source: DECISION_SOURCES.ROLLOUT,
-                      sourceExperimentKey: null,
-                      sourceVariationKey: null
+                      sourceInfo: {}
                     }
                   });
                 });
@@ -2929,8 +2943,7 @@ describe('lib/optimizely', function() {
                       variableValue: false,
                       variableType: FEATURE_VARIABLE_TYPES.BOOLEAN,
                       source: DECISION_SOURCES.ROLLOUT,
-                      sourceExperimentKey: null,
-                      sourceVariationKey: null
+                      sourceInfo: {}
                     }
                   });
                 });
@@ -2949,8 +2962,7 @@ describe('lib/optimizely', function() {
                       variableValue: 14.99,
                       variableType: FEATURE_VARIABLE_TYPES.DOUBLE,
                       source: DECISION_SOURCES.ROLLOUT,
-                      sourceExperimentKey: null,
-                      sourceVariationKey: null
+                      sourceInfo: {}
                     }
                   });
                 });
@@ -2969,8 +2981,7 @@ describe('lib/optimizely', function() {
                       variableValue: 400,
                       variableType: FEATURE_VARIABLE_TYPES.INTEGER,
                       source: DECISION_SOURCES.ROLLOUT,
-                      sourceExperimentKey: null,
-                      sourceVariationKey: null
+                      sourceInfo: {}
                     }
                   });
                 });
@@ -2989,8 +3000,7 @@ describe('lib/optimizely', function() {
                       variableValue: 'Hello',
                       variableType: FEATURE_VARIABLE_TYPES.STRING,
                       source: DECISION_SOURCES.ROLLOUT,
-                      sourceExperimentKey: null,
-                      sourceVariationKey: null
+                      sourceInfo: {}
                     }
                   });
                 });
@@ -3020,8 +3030,7 @@ describe('lib/optimizely', function() {
                     variableValue: false,
                     variableType: FEATURE_VARIABLE_TYPES.BOOLEAN,
                     source: DECISION_SOURCES.ROLLOUT,
-                    sourceExperimentKey: null,
-                    sourceVariationKey: null
+                    sourceInfo: {}
                   }
                 });
               });
@@ -3040,8 +3049,7 @@ describe('lib/optimizely', function() {
                     variableValue: 50.55,
                     variableType: FEATURE_VARIABLE_TYPES.DOUBLE,
                     source: DECISION_SOURCES.ROLLOUT,
-                    sourceExperimentKey: null,
-                    sourceVariationKey: null
+                    sourceInfo: {}
                   }
                 });
               });
@@ -3060,8 +3068,7 @@ describe('lib/optimizely', function() {
                     variableValue: 10,
                     variableType: FEATURE_VARIABLE_TYPES.INTEGER,
                     source: DECISION_SOURCES.ROLLOUT,
-                    sourceExperimentKey: null,
-                    sourceVariationKey: null
+                    sourceInfo: {}
                   }
                 });
               });
@@ -3080,8 +3087,7 @@ describe('lib/optimizely', function() {
                     variableValue: 'Buy me',
                     variableType: FEATURE_VARIABLE_TYPES.STRING,
                     source: DECISION_SOURCES.ROLLOUT,
-                    sourceExperimentKey: null,
-                    sourceVariationKey: null
+                    sourceInfo: {}
                   }
                 });
               });
@@ -3221,7 +3227,7 @@ describe('lib/optimizely', function() {
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
               experiment: experiment,
               variation: variation,
-              decisionSource: DECISION_SOURCES.EXPERIMENT,
+              decisionSource: DECISION_SOURCES.FEATURE_TEST,
             });
           });
 
@@ -3391,7 +3397,7 @@ describe('lib/optimizely', function() {
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
               experiment: experiment,
               variation: variation,
-              decisionSource: DECISION_SOURCES.EXPERIMENT,
+              decisionSource: DECISION_SOURCES.FEATURE_TEST,
             });
             result = optlyInstance.isFeatureEnabled('shared_feature', 'user1', attributes);
           });
@@ -3475,7 +3481,7 @@ describe('lib/optimizely', function() {
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
               experiment: experiment,
               variation: variation,
-              decisionSource: DECISION_SOURCES.EXPERIMENT,
+              decisionSource: DECISION_SOURCES.FEATURE_TEST,
             });
           });
 
@@ -3661,8 +3667,7 @@ describe('lib/optimizely', function() {
             featureKey: 'test_feature',
             featureEnabled: false,
             source: DECISION_SOURCES.ROLLOUT,
-            sourceExperimentKey: null,
-            sourceVariationKey: null
+            sourceInfo: {}
           }
         });
         sinon.assert.calledWithExactly(decisionListener.getCall(1), {
@@ -3673,8 +3678,7 @@ describe('lib/optimizely', function() {
             featureKey: 'test_feature_2',
             featureEnabled: true,
             source: DECISION_SOURCES.ROLLOUT,
-            sourceExperimentKey: null,
-            sourceVariationKey: null
+            sourceInfo: {}
           }
         });
         sinon.assert.calledWithExactly(decisionListener.getCall(2), {
@@ -3684,9 +3688,11 @@ describe('lib/optimizely', function() {
           decisionInfo: {
             featureKey: 'test_feature_for_experiment',
             featureEnabled: true,
-            source: DECISION_SOURCES.EXPERIMENT,
-            sourceExperimentKey: 'testing_my_feature',
-            sourceVariationKey: 'variation'
+            source: DECISION_SOURCES.FEATURE_TEST,
+            sourceInfo: {
+              experimentKey: 'testing_my_feature',
+              variationKey: 'variation'
+            }
           }
         });
         sinon.assert.calledWithExactly(decisionListener.getCall(3), {
@@ -3697,8 +3703,7 @@ describe('lib/optimizely', function() {
             featureKey: 'feature_with_group',
             featureEnabled: false,
             source: DECISION_SOURCES.ROLLOUT,
-            sourceExperimentKey: null,
-            sourceVariationKey: null
+            sourceInfo: {}
           }
         });
         sinon.assert.calledWithExactly(decisionListener.getCall(4), {
@@ -3708,9 +3713,11 @@ describe('lib/optimizely', function() {
           decisionInfo: {
             featureKey: 'shared_feature',
             featureEnabled: true,
-            source: DECISION_SOURCES.EXPERIMENT,
-            sourceExperimentKey: 'test_shared_feature',
-            sourceVariationKey: 'treatment'
+            source: DECISION_SOURCES.FEATURE_TEST,
+            sourceInfo: {
+              experimentKey: 'test_shared_feature',
+              variationKey: 'treatment'
+            }
           }
         });
         sinon.assert.calledWithExactly(decisionListener.getCall(5), {
@@ -3721,8 +3728,7 @@ describe('lib/optimizely', function() {
             featureKey: 'unused_flag',
             featureEnabled: false,
             source: DECISION_SOURCES.ROLLOUT,
-            sourceExperimentKey: null,
-            sourceVariationKey: null
+            sourceInfo: {}
           }
         });
         sinon.assert.calledWithExactly(decisionListener.getCall(6), {
@@ -3733,8 +3739,7 @@ describe('lib/optimizely', function() {
             featureKey: 'feature_exp_no_traffic',
             featureEnabled: false,
             source: DECISION_SOURCES.ROLLOUT,
-            sourceExperimentKey: null,
-            sourceVariationKey: null
+            sourceInfo: {}
           }
         });
       });
@@ -3749,7 +3754,7 @@ describe('lib/optimizely', function() {
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
               experiment: experiment,
               variation: variation,
-              decisionSource: DECISION_SOURCES.EXPERIMENT,
+              decisionSource: DECISION_SOURCES.FEATURE_TEST,
             });
           });
 
@@ -3815,7 +3820,7 @@ describe('lib/optimizely', function() {
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
               experiment: experiment,
               variation: variation,
-              decisionSource: DECISION_SOURCES.EXPERIMENT,
+              decisionSource: DECISION_SOURCES.FEATURE_TEST,
             });
           });
 

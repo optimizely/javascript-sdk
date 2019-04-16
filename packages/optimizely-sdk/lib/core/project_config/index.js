@@ -594,4 +594,21 @@ module.exports = {
   eventWithKeyExists: function(projectConfig, eventKey) {
     return projectConfig.eventKeyMap.hasOwnProperty(eventKey);
   },
+
+  /**
+   * 
+   * @param {Object} projectConfig
+   * @param {string} experimentKey
+   * @returns {boolean} Returns true if experiment belongs to
+   * any feature, false otherwise.
+   */
+  isFeatureExperiment: function(projectConfig, experimentKey) {
+    fns.forOwn(projectConfig.featureKeyMap, function(feature) {
+      if (feature.experimentIds && feature.experimentIds.indexOf(experimentKey)) {
+        return true;
+      }
+    });
+
+    return false;
+  }
 };

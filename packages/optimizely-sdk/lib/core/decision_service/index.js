@@ -340,7 +340,7 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(configObj
   return {
     experiment: experiment,
     variation: variation,
-    decisionSource: DECISION_SOURCES.EXPERIMENT,
+    decisionSource: DECISION_SOURCES.FEATURE_TEST,
   };
 };
 
