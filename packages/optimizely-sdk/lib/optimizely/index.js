@@ -343,7 +343,7 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
       }
 
       var variationKey = this.decisionService.getVariation(this.configObj, experimentKey, userId, attributes);
-      var decisionInfoType = projectConfig.isFeatureExperiment(this.configObj, experimentKey) ? DECISION_INFO_TYPES.FEATURE :
+      var decisionInfoType = projectConfig.isFeatureExperiment(this.configObj, experiment.id) ? DECISION_INFO_TYPES.FEATURE_TEST :
         DECISION_INFO_TYPES.AB_TEST;
 
       this.notificationCenter.sendNotifications(

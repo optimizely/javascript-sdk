@@ -2438,6 +2438,37 @@ describe('lib/optimizely', function() {
               }
             });
           });
+
+          it('should send notification with variation key and type feature-test when getVariation returns feature experiment variation', function() {
+            var optly = new Optimizely({
+              clientEngine: 'node-sdk',
+              datafile: testData.getTestProjectConfigWithFeatures(),
+              eventBuilder: eventBuilder,
+              errorHandler: errorHandler,
+              eventDispatcher: eventDispatcher,
+              jsonSchemaValidator: jsonSchemaValidator,
+              logger: createdLogger,
+              isValidInstance: true,
+            });
+
+            optly.notificationCenter.addNotificationListener(
+              enums.NOTIFICATION_TYPES.DECISION,
+              decisionListener
+            );
+
+            bucketStub.returns('594099');
+            var variation = optly.getVariation('testing_my_feature', 'testUser');
+            assert.strictEqual(variation, 'variation2');
+            sinon.assert.calledWith(decisionListener, {
+              type: DECISION_INFO_TYPES.FEATURE_TEST,
+              userId: 'testUser',
+              attributes: {},
+              decisionInfo: {
+                experimentKey: 'testing_my_feature',
+                variationKey: variation
+              }
+            });
+          });
         });
 
         describe('feature management', function() {

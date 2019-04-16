@@ -192,6 +192,7 @@ exports.NOTIFICATION_TYPES = {
 exports.DECISION_INFO_TYPES = {
   AB_TEST: 'ab-test',
   FEATURE: 'feature',
+  FEATURE_TEST: 'feature-test',
   FEATURE_VARIABLE: 'feature_variable',
 };
 
