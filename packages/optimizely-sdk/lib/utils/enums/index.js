@@ -193,7 +193,7 @@ exports.DECISION_INFO_TYPES = {
   AB_TEST: 'ab-test',
   FEATURE: 'feature',
   FEATURE_TEST: 'feature-test',
-  FEATURE_VARIABLE: 'feature_variable',
+  FEATURE_VARIABLE: 'feature-variable',
 };
 
 /*
