@@ -189,7 +189,7 @@ exports.NOTIFICATION_TYPES = {
   DECISION: 'DECISION:type, userId, attributes, decisionInfo',
 };
 
-exports.DECISION_INFO_TYPES = {
+exports.DECISION_NOTIFICATION_TYPES = {
   AB_TEST: 'ab-test',
   FEATURE: 'feature',
   FEATURE_TEST: 'feature-test',

@@ -36,7 +36,7 @@ var LOG_MESSAGES = enums.LOG_MESSAGES;
 var MODULE_NAME = 'OPTIMIZELY';
 var DECISION_SOURCES = enums.DECISION_SOURCES;
 var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
-var DECISION_INFO_TYPES = enums.DECISION_INFO_TYPES;
+var DECISION_NOTIFICATION_TYPES = enums.DECISION_NOTIFICATION_TYPES;
 var NOTIFICATION_TYPES = enums.NOTIFICATION_TYPES;
 
 var DEFAULT_EVENT_MAX_QUEUE_SIZE = 1;
@@ -343,13 +343,13 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
       }
 
       var variationKey = this.decisionService.getVariation(this.configObj, experimentKey, userId, attributes);
-      var decisionInfoType = projectConfig.isFeatureExperiment(this.configObj, experiment.id) ? DECISION_INFO_TYPES.FEATURE_TEST :
-        DECISION_INFO_TYPES.AB_TEST;
+      var decisionNotificationType = projectConfig.isFeatureExperiment(this.configObj, experiment.id) ? DECISION_NOTIFICATION_TYPES.FEATURE_TEST :
+        DECISION_NOTIFICATION_TYPES.AB_TEST;
 
       this.notificationCenter.sendNotifications(
         NOTIFICATION_TYPES.DECISION,
         {
-          type: decisionInfoType,
+          type: decisionNotificationType,
           userId: userId,
           attributes: attributes || {},
           decisionInfo: {
@@ -537,7 +537,7 @@ Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes)
     this.notificationCenter.sendNotifications(
       NOTIFICATION_TYPES.DECISION,
       {
-        type: DECISION_INFO_TYPES.FEATURE,
+        type: DECISION_NOTIFICATION_TYPES.FEATURE,
         userId: userId,
         attributes: attributes || {},
         decisionInfo: featureInfo,
@@ -672,7 +672,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
   this.notificationCenter.sendNotifications(
     NOTIFICATION_TYPES.DECISION,
     {
-      type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+      type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
       userId: userId,
       attributes: attributes || {},
       decisionInfo: {

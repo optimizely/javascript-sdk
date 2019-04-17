@@ -40,7 +40,7 @@ var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
 var DECISION_SOURCES = enums.DECISION_SOURCES;
-var DECISION_INFO_TYPES = enums.DECISION_INFO_TYPES;
+var DECISION_NOTIFICATION_TYPES = enums.DECISION_NOTIFICATION_TYPES;
 var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
 
 describe('lib/optimizely', function() {
@@ -2365,7 +2365,7 @@ describe('lib/optimizely', function() {
             var variation = optlyInstance.activate('testExperiment', 'testUser');
             assert.strictEqual(variation, 'variation');
             sinon.assert.calledWith(decisionListener, {
-              type: DECISION_INFO_TYPES.AB_TEST,
+              type: DECISION_NOTIFICATION_TYPES.AB_TEST,
               userId: 'testUser',
               attributes: {},
               decisionInfo: {
@@ -2380,7 +2380,7 @@ describe('lib/optimizely', function() {
             var variation = optlyInstance.activate('testExperiment', 'testUser');
             assert.isNull(variation);
             sinon.assert.calledWith(decisionListener, {
-              type: DECISION_INFO_TYPES.AB_TEST,
+              type: DECISION_NOTIFICATION_TYPES.AB_TEST,
               userId: 'testUser',
               attributes: {},
               decisionInfo: {
@@ -2415,7 +2415,7 @@ describe('lib/optimizely', function() {
             var variation = optlyInstance.getVariation('testExperiment', 'testUser');
             assert.strictEqual(variation, 'variation');
             sinon.assert.calledWith(decisionListener, {
-              type: DECISION_INFO_TYPES.AB_TEST,
+              type: DECISION_NOTIFICATION_TYPES.AB_TEST,
               userId: 'testUser',
               attributes: {},
               decisionInfo: {
@@ -2429,7 +2429,7 @@ describe('lib/optimizely', function() {
             var variation = optlyInstance.getVariation('testExperimentWithAudiences', 'testUser', {});
             assert.isNull(variation);
             sinon.assert.calledWith(decisionListener, {
-              type: DECISION_INFO_TYPES.AB_TEST,
+              type: DECISION_NOTIFICATION_TYPES.AB_TEST,
               userId: 'testUser',
               attributes: {},
               decisionInfo: {
@@ -2460,7 +2460,7 @@ describe('lib/optimizely', function() {
             var variation = optly.getVariation('testing_my_feature', 'testUser');
             assert.strictEqual(variation, 'variation2');
             sinon.assert.calledWith(decisionListener, {
-              type: DECISION_INFO_TYPES.FEATURE_TEST,
+              type: DECISION_NOTIFICATION_TYPES.FEATURE_TEST,
               userId: 'testUser',
               attributes: {},
               decisionInfo: {
@@ -2514,7 +2514,7 @@ describe('lib/optimizely', function() {
                   var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user1', attributes);
                   assert.strictEqual(result, true);
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE,
                     userId: 'user1',
                     attributes: attributes,
                     decisionInfo: {
@@ -2545,7 +2545,7 @@ describe('lib/optimizely', function() {
                   var result = optlyInstance.isFeatureEnabled('shared_feature', 'user1', attributes);
                   assert.strictEqual(result, false);
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE,
                     userId: 'user1',
                     attributes: attributes,
                     decisionInfo: {
@@ -2581,7 +2581,7 @@ describe('lib/optimizely', function() {
                   });
                   assert.strictEqual(result, true);
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE,
                     userId: 'user1',
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
@@ -2614,7 +2614,7 @@ describe('lib/optimizely', function() {
                   sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, 'OPTIMIZELY: Feature test_feature is not enabled for user user1.');
       
                   var expectedArguments = {
-                    type: DECISION_INFO_TYPES.FEATURE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE,
                     userId: 'user1',
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
@@ -2643,7 +2643,7 @@ describe('lib/optimizely', function() {
                 var result = optlyInstance.isFeatureEnabled('test_feature', 'user1');
                 assert.strictEqual(result, false);
                 sinon.assert.calledWith(decisionListener, {
-                  type: DECISION_INFO_TYPES.FEATURE,
+                  type: DECISION_NOTIFICATION_TYPES.FEATURE,
                   userId: 'user1',
                   attributes: {},
                   decisionInfo: {
@@ -2674,7 +2674,7 @@ describe('lib/optimizely', function() {
                   var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, true);
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
@@ -2696,7 +2696,7 @@ describe('lib/optimizely', function() {
                   var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 20.25);
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
@@ -2718,7 +2718,7 @@ describe('lib/optimizely', function() {
                   var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 2);
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
@@ -2740,7 +2740,7 @@ describe('lib/optimizely', function() {
                   var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 'Buy me NOW');
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
@@ -2774,7 +2774,7 @@ describe('lib/optimizely', function() {
                   var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, false);
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
@@ -2796,7 +2796,7 @@ describe('lib/optimizely', function() {
                   var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 50.55);
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
@@ -2818,7 +2818,7 @@ describe('lib/optimizely', function() {
                   var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 10);
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
@@ -2840,7 +2840,7 @@ describe('lib/optimizely', function() {
                   var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 'Buy me');
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
@@ -2876,7 +2876,7 @@ describe('lib/optimizely', function() {
                   var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, true);
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
@@ -2895,7 +2895,7 @@ describe('lib/optimizely', function() {
                   var result = optlyInstance.getFeatureVariableDouble('test_feature', 'price', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 4.99);
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
@@ -2914,7 +2914,7 @@ describe('lib/optimizely', function() {
                   var result = optlyInstance.getFeatureVariableInteger('test_feature', 'lasers', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 395);
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
@@ -2933,7 +2933,7 @@ describe('lib/optimizely', function() {
                   var result = optlyInstance.getFeatureVariableString('test_feature', 'message', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 'Hello audience');
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
@@ -2964,7 +2964,7 @@ describe('lib/optimizely', function() {
                   var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, false);
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
@@ -2983,7 +2983,7 @@ describe('lib/optimizely', function() {
                   var result = optlyInstance.getFeatureVariableDouble('test_feature', 'price', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 14.99);
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
@@ -3002,7 +3002,7 @@ describe('lib/optimizely', function() {
                   var result = optlyInstance.getFeatureVariableInteger('test_feature', 'lasers', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 400);
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
@@ -3021,7 +3021,7 @@ describe('lib/optimizely', function() {
                   var result = optlyInstance.getFeatureVariableString('test_feature', 'message', 'user1', { test_attribute: 'test_value' });
                   assert.strictEqual(result, 'Hello');
                   sinon.assert.calledWith(decisionListener, {
-                    type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                     userId: 'user1',
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
@@ -3051,7 +3051,7 @@ describe('lib/optimizely', function() {
                 var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated', 'user1', { test_attribute: 'test_value' });
                 assert.strictEqual(result, false);
                 sinon.assert.calledWith(decisionListener, {
-                  type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                  type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                   userId: 'user1',
                   attributes: { test_attribute: 'test_value' },
                   decisionInfo: {
@@ -3070,7 +3070,7 @@ describe('lib/optimizely', function() {
                 var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1', { test_attribute: 'test_value' });
                 assert.strictEqual(result, 50.55);
                 sinon.assert.calledWith(decisionListener, {
-                  type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                  type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                   userId: 'user1',
                   attributes: { test_attribute: 'test_value' },
                   decisionInfo: {
@@ -3089,7 +3089,7 @@ describe('lib/optimizely', function() {
                 var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1', { test_attribute: 'test_value' });
                 assert.strictEqual(result, 10);
                 sinon.assert.calledWith(decisionListener, {
-                  type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                  type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                   userId: 'user1',
                   attributes: { test_attribute: 'test_value' },
                   decisionInfo: {
@@ -3108,7 +3108,7 @@ describe('lib/optimizely', function() {
                 var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt', 'user1', { test_attribute: 'test_value' });
                 assert.strictEqual(result, 'Buy me');
                 sinon.assert.calledWith(decisionListener, {
-                  type: DECISION_INFO_TYPES.FEATURE_VARIABLE,
+                  type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
                   userId: 'user1',
                   attributes: { test_attribute: 'test_value' },
                   decisionInfo: {
@@ -3691,7 +3691,7 @@ describe('lib/optimizely', function() {
         assert.deepEqual(result, ['test_feature_2', 'test_feature_for_experiment', 'shared_feature']);
 
         sinon.assert.calledWithExactly(decisionListener.getCall(0), {
-          type: DECISION_INFO_TYPES.FEATURE,
+          type: DECISION_NOTIFICATION_TYPES.FEATURE,
           userId: 'test_user',
           attributes: attributes,
           decisionInfo: {
@@ -3702,7 +3702,7 @@ describe('lib/optimizely', function() {
           }
         });
         sinon.assert.calledWithExactly(decisionListener.getCall(1), {
-          type: DECISION_INFO_TYPES.FEATURE,
+          type: DECISION_NOTIFICATION_TYPES.FEATURE,
           userId: 'test_user',
           attributes: attributes,
           decisionInfo: {
@@ -3713,7 +3713,7 @@ describe('lib/optimizely', function() {
           }
         });
         sinon.assert.calledWithExactly(decisionListener.getCall(2), {
-          type: DECISION_INFO_TYPES.FEATURE,
+          type: DECISION_NOTIFICATION_TYPES.FEATURE,
           userId: 'test_user',
           attributes: attributes,
           decisionInfo: {
@@ -3727,7 +3727,7 @@ describe('lib/optimizely', function() {
           }
         });
         sinon.assert.calledWithExactly(decisionListener.getCall(3), {
-          type: DECISION_INFO_TYPES.FEATURE,
+          type: DECISION_NOTIFICATION_TYPES.FEATURE,
           userId: 'test_user',
           attributes: attributes,
           decisionInfo: {
@@ -3738,7 +3738,7 @@ describe('lib/optimizely', function() {
           }
         });
         sinon.assert.calledWithExactly(decisionListener.getCall(4), {
-          type: DECISION_INFO_TYPES.FEATURE,
+          type: DECISION_NOTIFICATION_TYPES.FEATURE,
           userId: 'test_user',
           attributes: attributes,
           decisionInfo: {
@@ -3752,7 +3752,7 @@ describe('lib/optimizely', function() {
           }
         });
         sinon.assert.calledWithExactly(decisionListener.getCall(5), {
-          type: DECISION_INFO_TYPES.FEATURE,
+          type: DECISION_NOTIFICATION_TYPES.FEATURE,
           userId: 'test_user',
           attributes: attributes,
           decisionInfo: {
@@ -3763,7 +3763,7 @@ describe('lib/optimizely', function() {
           }
         });
         sinon.assert.calledWithExactly(decisionListener.getCall(6), {
-          type: DECISION_INFO_TYPES.FEATURE,
+          type: DECISION_NOTIFICATION_TYPES.FEATURE,
           userId: 'test_user',
           attributes: attributes,
           decisionInfo: {
