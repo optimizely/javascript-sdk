@@ -4803,7 +4803,7 @@ describe('lib/optimizely', function() {
         clock.restore();
       });
 
-      it('fulfills the promise after the timeout has expired when the project config manager onReady promise still has not resolved', function() {
+      it('fulfills the promise with an unsuccessful result after the timeout has expired when the project config manager onReady promise still has not resolved', function() {
         optlyInstance = new Optimizely({
           clientEngine: 'node-sdk',
           errorHandler: errorHandler,
@@ -4815,10 +4815,14 @@ describe('lib/optimizely', function() {
         });
         var readyPromise = optlyInstance.onReady({ timeout: 500 });
         clock.tick(501);
-        return readyPromise;
+        return readyPromise.then(function(result) {
+          assert.include(result, {
+            success: false,
+          });
+        });
       });
 
-      it('fulfills the promise after 30 seconds when no timeout argument is provided and the project config manager onReady promise still has not resolved', function() {
+      it('fulfills the promise with an unsuccessful result after 30 seconds when no timeout argument is provided and the project config manager onReady promise still has not resolved', function() {
         optlyInstance = new Optimizely({
           clientEngine: 'node-sdk',
           errorHandler: errorHandler,
@@ -4830,7 +4834,11 @@ describe('lib/optimizely', function() {
         });
         var readyPromise = optlyInstance.onReady();
         clock.tick(300001);
-        return readyPromise;
+        return readyPromise.then(function(result) {
+          assert.include(result, {
+            success: false,
+          });
+        });
       });
     });
 
@@ -4856,7 +4864,6 @@ describe('lib/optimizely', function() {
         });
       });
 
-      // it('updates its project config object when the project config manager emits a new project config object', function() {
       it('uses the newest project config object from project config manager', function() {
         // Should start off returning false/null - no project config available
         assert.isFalse(optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user45678'));

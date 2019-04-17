@@ -29,6 +29,21 @@ var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var MODULE_NAME = 'PROJECT_CONFIG_MANAGER';
 
 /**
+ * Return an error message derived from a thrown value. If the thrown value is
+ * an error, return the error's message property. Otherwise, return a default
+ * provided by the second argument.
+ * @param {*} maybeError
+ * @param {String=} defaultMessage
+ * @return {String}
+ */
+function getErrorMessage(maybeError, defaultMessage) {
+  if (maybeError instanceof Error) {
+    return maybeError.message;
+  }
+  return defaultMessage || 'Unknown error';
+}
+
+/**
  * ProjectConfigManager provides project config objects via its methods
  * getConfig and onUpdate. It uses a DatafileManager to fetch datafiles. It is
  * responsible for parsing and validating datafiles, and converting datafile
@@ -47,7 +62,10 @@ function ProjectConfigManager(config) {
     logger.error(ex);
     this.__updateListeners = [];
     this.__configObj = null;
-    this.__readyPromise = Promise.reject(ex);
+    this.__readyPromise = Promise.resolve({
+      success: false,
+      reason: getErrorMessage(ex, 'Error in initialize'),
+    });
   }
 }
 
@@ -70,7 +88,10 @@ ProjectConfigManager.prototype.__initialize = function(config) {
   if (!config.datafile && !config.sdkKey) {
     this.__configObj = null;
     var datafileAndSdkKeyMissingError = new Error(sprintf(ERROR_MESSAGES.DATAFILE_AND_SDK_KEY_MISSING, MODULE_NAME));
-    this.__readyPromise = Promise.reject(datafileAndSdkKeyMissingError);
+    this.__readyPromise = Promise.resolve({
+      success: false,
+      reason: getErrorMessage(datafileAndSdkKeyMissingError),
+    });
     logger.error(datafileAndSdkKeyMissingError);
     return;
   }
@@ -101,37 +122,71 @@ ProjectConfigManager.prototype.__initialize = function(config) {
     if (this.__validateDatafileOptions(config.datafileOptions)) {
       fns.assign(datafileManagerConfig, config.datafileOptions);
     }
-    if (initialDatafile) {
+    if (initialDatafile && this.__configObj) {
       datafileManagerConfig.datafile = initialDatafile;
     }
     this.datafileManager = new datafileManager.DatafileManager(datafileManagerConfig);
     this.datafileManager.start();
-    this.__readyPromise = this.datafileManager.onReady().then(this.__onDatafileManagerReady.bind(this));
+    this.__readyPromise = this.datafileManager.onReady().then(
+      this.__onDatafileManagerReadyFulfill.bind(this),
+      this.__onDatafileManagerReadyReject.bind(this)
+    );
     this.datafileManager.on('update', this.__onDatafileManagerUpdate.bind(this));
   } else if (this.__configObj) {
-    this.__readyPromise = Promise.resolve();
+    this.__readyPromise = Promise.resolve({
+      success: true,
+    });
   } else {
-    this.__readyPromise = Promise.reject(projectConfigCreationEx);
+    this.__readyPromise = Promise.resolve({
+      success: false,
+      reason: getErrorMessage(projectConfigCreationEx, 'Invalid datafile'),
+    });
   }
 };
 
 /**
- * Respond to datafile manager's onReady promise. When using a datafile manager,
- * ProjectConfigManager's ready promise is based on DatafileManager's ready
- * promise, and this function is used as a then callback. If this function
- * throws (from validation failures), ProjectConfigManager's ready promise is
- * rejected. Otherwise, ProjectConfigManager updates its own project config
- * object from the new datafile, and calls its own registered update listeners.
+ * Respond to datafile manager's onReady promise becoming fulfilled.
+ * If there are validation or parse failures using the datafile provided by
+ * DatafileManager, ProjectConfigManager's ready promise is resolved with an
+ * unsuccessful result. Otherwise, ProjectConfigManager updates its own project
+ * config object from the new datafile, and its ready promise is resolved with a
+ * successful result.
  */
-ProjectConfigManager.prototype.__onDatafileManagerReady = function() {
+ProjectConfigManager.prototype.__onDatafileManagerReadyFulfill = function() {
   var newDatafile = this.datafileManager.get();
-  var newConfigObj = projectConfig.tryCreatingProjectConfig({
-    datafile: newDatafile,
-    jsonSchemaValidator: this.jsonSchemaValidator,
-    logger: logger,
-    skipJSONValidation: this.skipJSONValidation,
-  });
+  var newConfigObj;
+  try {
+    newConfigObj = projectConfig.tryCreatingProjectConfig({
+      datafile: newDatafile,
+      jsonSchemaValidator: this.jsonSchemaValidator,
+      logger: logger,
+      skipJSONValidation: this.skipJSONValidation,
+    });
+  } catch (ex) {
+    logger.error(ex);
+    return {
+      success: false,
+      reason: getErrorMessage(ex),
+    };
+  }
   this.__handleNewConfigObj(newConfigObj);
+  return {
+    success: true,
+  };
+};
+
+/**
+ * Respond to datafile manager's onReady promise becoming rejected.
+ * When DatafileManager's onReady promise is rejected, there is no possibility
+ * of obtaining a datafile. In this case, ProjectConfigManager's ready promise
+ * is fulfilled with an unsuccessful result.
+ * @param {Error} err
+ */
+ProjectConfigManager.prototype.__onDatafileManagerReadyReject = function(err) {
+  return {
+    success: false,
+    reason: getErrorMessage(err, 'Failed to become ready'),
+  };
 };
 
 /**

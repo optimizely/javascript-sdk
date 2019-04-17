@@ -859,7 +859,7 @@ Optimizely.prototype.close = function() {
 };
 
 /**
- * Returns a Promise that resolves when this instance is ready to use (meaning
+ * Returns a Promise that fulfills when this instance is ready to use (meaning
  * it has a valid datafile), or has failed to become ready within a period of
  * time (configurable by the timeout property of the options argument). If a
  * valid datafile was provided in the constructor, the instance is immediately
@@ -867,6 +867,16 @@ Optimizely.prototype.close = function() {
  * and the returned promise will resolve if that fetch succeeds or fails before
  * the timeout. The default timeout is 30 seconds, which will be used if no
  * timeout is provided in the argument options object.
+ * The returned Promise is fulfilled with a result object containing these
+ * properties:
+ *    - success (boolean): True if this instance is ready to use with a valid
+ *                         datafile, or false if this instance failed to become
+ *                         ready.
+ *    - reason (string=):  If success is false, this is a string property with
+ *                         an explanatory message. Failure could be due to
+ *                         expiration of the timeout, network errors,
+ *                         unsuccessful responses, datafile parse errors, or
+ *                         datafile validation errors.
  * @param  {Object=}          options
  * @param  {number|undefined} options.timeout
  * @return {Promise}
@@ -881,7 +891,10 @@ Optimizely.prototype.onReady = function(options) {
   }
   var timeoutPromise = new Promise(function(resolve) {
     setTimeout(function() {
-      resolve();
+      resolve({
+        success: false,
+        reason: sprintf('onReady timeout expired after %s ms', timeout),
+      });
     }, timeout);
   });
   return Promise.race([this.__readyPromise, timeoutPromise]);

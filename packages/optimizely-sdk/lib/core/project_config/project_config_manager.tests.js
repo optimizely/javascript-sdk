@@ -55,19 +55,21 @@ describe('lib/core/project_config/project_config_manager', function() {
     logging.resetLogger();
   });
 
-  it('should throw an error if neither datafile nor sdkKey are passed into the constructor', function(done) {
+  it('should call the error handler and fulfill onReady with an unsuccessful result if neither datafile nor sdkKey are passed into the constructor', function() {
     var manager = new projectConfigManager.ProjectConfigManager({
       skipJSONValidation: true,
     });
     sinon.assert.calledOnce(globalStubErrorHandler.handleError);
     var errorMessage = globalStubErrorHandler.handleError.lastCall.args[0].message;
     assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.DATAFILE_AND_SDK_KEY_MISSING, 'PROJECT_CONFIG_MANAGER'));
-    manager.onReady().catch(function() {
-      done();
+    return manager.onReady().then(function(result) {
+      assert.include(result, {
+        success: false,
+      });
     });
   });
 
-  it('should throw an error if the datafile JSON is malformed', function(done) {
+  it('should call the error handler and fulfill onReady with an unsuccessful result if the datafile JSON is malformed', function() {
     var invalidDatafileJSON = 'abc';
     var manager = new projectConfigManager.ProjectConfigManager({
       datafile: invalidDatafileJSON,
@@ -76,12 +78,14 @@ describe('lib/core/project_config/project_config_manager', function() {
     sinon.assert.calledOnce(globalStubErrorHandler.handleError);
     var errorMessage = globalStubErrorHandler.handleError.lastCall.args[0].message;
     assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_MALFORMED, 'CONFIG_VALIDATOR'));
-    manager.onReady().catch(function() {
-      done();
+    return manager.onReady().then(function(result) {
+      assert.include(result, {
+        success: false,
+      });
     });
   });
 
-  it('should throw an error if the datafile is not valid', function(done) {
+  it('should call the error handler and fulfill onReady with an unsuccessful result if the datafile is not valid', function() {
     var invalidDatafile = testData.getTestProjectConfig();
     delete invalidDatafile['projectId'];
     var manager = new projectConfigManager.ProjectConfigManager({
@@ -91,12 +95,14 @@ describe('lib/core/project_config/project_config_manager', function() {
     sinon.assert.calledOnce(globalStubErrorHandler.handleError);
     var errorMessage = globalStubErrorHandler.handleError.lastCall.args[0].message;
     assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE, 'JSON_SCHEMA_VALIDATOR', 'projectId', 'is missing and it is required'));
-    manager.onReady().catch(function() {
-      done();
+    return manager.onReady().then(function(result) {
+      assert.include(result, {
+        success: false,
+      });
     });
   });
 
-  it('should throw an error if the datafile version is not supported', function(done) {
+  it('should call the error handler and fulfill onReady with an unsuccessful result if the datafile version is not supported', function() {
     var manager = new projectConfigManager.ProjectConfigManager({
       datafile: testData.getUnsupportedVersionConfig(),
       jsonSchemaValidator: jsonSchemaValidator,
@@ -104,8 +110,10 @@ describe('lib/core/project_config/project_config_manager', function() {
     sinon.assert.calledOnce(globalStubErrorHandler.handleError);
     var errorMessage = globalStubErrorHandler.handleError.lastCall.args[0].message;
     assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, 'CONFIG_VALIDATOR', '5'));
-    manager.onReady().catch(function() {
-      done();
+    return manager.onReady().then(function(result) {
+      assert.include(result, {
+        success: false,
+      });
     });
   });
 
@@ -141,7 +149,7 @@ describe('lib/core/project_config/project_config_manager', function() {
     });
   });
 
-  it('should return a valid datafile from getConfig and resolve onReady', function() {
+  it('should return a valid datafile from getConfig and resolve onReady with a successful result', function() {
     var configWithFeatures = testData.getTestProjectConfigWithFeatures();
     var manager = new projectConfigManager.ProjectConfigManager({
       datafile: configWithFeatures,
@@ -150,7 +158,11 @@ describe('lib/core/project_config/project_config_manager', function() {
       manager.getConfig(),
       projectConfig.createProjectConfig(configWithFeatures)
     );
-    return manager.onReady();
+    return manager.onReady().then(function(result) {
+      assert.include(result, {
+        success: true,
+      });
+    });
   });
 
   it('does not call onUpdate listeners after becoming ready when constructed with a valid datafile and without sdkKey', function() {
@@ -185,7 +197,7 @@ describe('lib/core/project_config/project_config_manager', function() {
     });
 
     describe('when constructed with sdkKey and without datafile', function() {
-      it('updates itself when the datafile manager is ready and then emits updates', function() {
+      it('updates itself when the datafile manager is ready, fulfills its onReady promise with a successful result, and then emits updates', function() {
         var configWithFeatures = testData.getTestProjectConfigWithFeatures();
         datafileManager.DatafileManager.returns({
           start: sinon.stub(),
@@ -198,7 +210,10 @@ describe('lib/core/project_config/project_config_manager', function() {
           sdkKey: '12345',
         });
         assert.isNull(manager.getConfig());
-        return manager.onReady().then(function() {
+        return manager.onReady().then(function(result) {
+          assert.include(result, {
+            success: true,
+          });
           assert.deepEqual(
             manager.getConfig(),
             projectConfig.createProjectConfig(configWithFeatures)
@@ -290,7 +305,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         });
       });
 
-      it('rejects its ready promise when the datafile manager emits an invalid datafile', function(done) {
+      it('fulfills its ready promise with an unsuccessful result when the datafile manager emits an invalid datafile', function() {
         var invalidDatafile = testData.getTestProjectConfig();
         delete invalidDatafile['projectId'];
         datafileManager.DatafileManager.returns({
@@ -304,8 +319,29 @@ describe('lib/core/project_config/project_config_manager', function() {
           jsonSchemaValidator: jsonSchemaValidator,
           sdkKey: '12345',
         });
-        manager.onReady().catch(function() {
-          done();
+        return manager.onReady().then(function(result) {
+          assert.include(result, {
+            success: false,
+          });
+        });
+      });
+
+      it('fullfils its ready promise with an unsuccessful result when the datafile manager onReady promise rejects', function() {
+        datafileManager.DatafileManager.returns({
+          start: sinon.stub(),
+          stop: sinon.stub(),
+          get: sinon.stub().returns(null),
+          on: sinon.stub().returns(function() {}),
+          onReady: sinon.stub().returns(Promise.reject(new Error('Failed to become ready')))
+        });
+        var manager = new projectConfigManager.ProjectConfigManager({
+          jsonSchemaValidator: jsonSchemaValidator,
+          sdkKey: '12345',
+        });
+        return manager.onReady().then(function(result) {
+          assert.include(result, {
+            success: false,
+          });
         });
       });
 
@@ -318,8 +354,8 @@ describe('lib/core/project_config/project_config_manager', function() {
       });
     });
 
-    describe('when constructed with sdkKey and with a valid datafile', function() {
-      it('does not call onUpdate listeners after becoming ready', function() {
+    describe('when constructed with sdkKey and with a valid datafile object', function() {
+      it('fulfills its onReady promise with a successful result, and does not call onUpdate listeners after becoming ready', function() {
         datafileManager.DatafileManager.returns({
           start: sinon.stub(),
           stop: sinon.stub(),
@@ -334,7 +370,37 @@ describe('lib/core/project_config/project_config_manager', function() {
         });
         var onUpdateSpy = sinon.spy();
         manager.onUpdate(onUpdateSpy);
-        return manager.onReady().then(function() {
+        return manager.onReady().then(function(result) {
+          assert.include(result, {
+            success: true,
+          });
+          // Datafile is the same as what it was constructed with, so should
+          // not have called update listener
+          sinon.assert.notCalled(onUpdateSpy);
+        });
+      });
+    });
+
+    describe('when constructed with sdkKey and with a valid datafile string', function() {
+      it('fulfills its onReady promise with a successful result, and does not call onUpdate listeners after becoming ready', function() {
+        datafileManager.DatafileManager.returns({
+          start: sinon.stub(),
+          stop: sinon.stub(),
+          get: sinon.stub().returns(testData.getTestProjectConfigWithFeatures()),
+          on: sinon.stub().returns(function() {}),
+          onReady: sinon.stub().returns(Promise.resolve())
+        });
+        var configWithFeatures = testData.getTestProjectConfigWithFeatures();
+        var manager = new projectConfigManager.ProjectConfigManager({
+          datafile: JSON.stringify(configWithFeatures),
+          sdkKey: '12345',
+        });
+        var onUpdateSpy = sinon.spy();
+        manager.onUpdate(onUpdateSpy);
+        return manager.onReady().then(function(result) {
+          assert.include(result, {
+            success: true,
+          });
           // Datafile is the same as what it was constructed with, so should
           // not have called update listener
           sinon.assert.notCalled(onUpdateSpy);
