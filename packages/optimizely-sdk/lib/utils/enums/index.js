@@ -189,10 +189,11 @@ exports.NOTIFICATION_TYPES = {
   DECISION: 'DECISION:type, userId, attributes, decisionInfo',
 };
 
-exports.DECISION_INFO_TYPES = {
-  EXPERIMENT: 'experiment',
+exports.DECISION_NOTIFICATION_TYPES = {
+  AB_TEST: 'ab-test',
   FEATURE: 'feature',
-  FEATURE_VARIABLE: 'feature_variable',
+  FEATURE_TEST: 'feature-test',
+  FEATURE_VARIABLE: 'feature-variable',
 };
 
 /*
@@ -202,8 +203,8 @@ exports.DECISION_INFO_TYPES = {
  * Optimizely.
  */
 exports.DECISION_SOURCES = {
-  EXPERIMENT: 'EXPERIMENT',
-  ROLLOUT: 'ROLLOUT',
+  FEATURE_TEST: 'feature-test',
+  ROLLOUT: 'rollout',
 };
 
 /*

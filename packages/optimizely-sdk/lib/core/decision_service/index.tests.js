@@ -869,7 +869,7 @@ describe('lib/core/decision_service', function() {
                 'featureEnabled': true,
                 'key': 'variation'
               },
-              decisionSource: DECISION_SOURCES.EXPERIMENT,
+              decisionSource: DECISION_SOURCES.FEATURE_TEST,
             };
             assert.deepEqual(decision, expectedDecision);
             sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG, 'DECISION_SERVICE: User user1 is in variation variation of experiment testing_my_feature on the feature test_feature_for_experiment.');
@@ -944,7 +944,7 @@ describe('lib/core/decision_service', function() {
                 'variables': [],
                 'key': 'var',
               },
-              decisionSource: DECISION_SOURCES.EXPERIMENT,
+              decisionSource: DECISION_SOURCES.FEATURE_TEST,
             };
             assert.deepEqual(decision, expectedDecision);
             sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG, 'DECISION_SERVICE: User user1 is in variation var of experiment exp_with_group on the feature feature_with_group.');

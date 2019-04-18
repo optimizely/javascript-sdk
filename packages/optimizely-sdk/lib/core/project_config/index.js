@@ -89,10 +89,21 @@ module.exports = {
 
     projectConfig.forcedVariationMap = {};
 
+    // Object containing experiment Ids that exist in any feature
+    // for checking that experiment is a feature experiment or not.
+    projectConfig.experimentFeatureMap = {};
+
     projectConfig.featureKeyMap = fns.keyBy(projectConfig.featureFlags || [], 'key');
     fns.forOwn(projectConfig.featureKeyMap, function(feature) {
       feature.variableKeyMap = fns.keyBy(feature.variables, 'key');
       fns.forEach(feature.experimentIds || [], function(experimentId) {
+        // Add this experiment in experiment-feature map.
+        if (projectConfig.experimentFeatureMap[experimentId]) {
+          projectConfig.experimentFeatureMap[experimentId].push(feature.id);  
+        } else {
+          projectConfig.experimentFeatureMap[experimentId] = [feature.id];
+        }
+        
         var experimentInFeature = projectConfig.experimentIdMap[experimentId];
         if (experimentInFeature.groupId) {
           feature.groupId = experimentInFeature.groupId;
@@ -594,4 +605,15 @@ module.exports = {
   eventWithKeyExists: function(projectConfig, eventKey) {
     return projectConfig.eventKeyMap.hasOwnProperty(eventKey);
   },
+
+  /**
+   * 
+   * @param {Object} projectConfig
+   * @param {string} experimentId
+   * @returns {boolean} Returns true if experiment belongs to
+   * any feature, false otherwise.
+   */
+  isFeatureExperiment: function(projectConfig, experimentId) {
+    return projectConfig.experimentFeatureMap.hasOwnProperty(experimentId);
+  }
 };
