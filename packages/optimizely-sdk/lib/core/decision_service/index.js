@@ -19,6 +19,7 @@ var bucketer = require('../bucketer');
 var enums = require('../../utils/enums');
 var fns = require('../../utils/fns');
 var projectConfig = require('../project_config');
+var stringValidator = require('../../utils/string_value_validator');
 
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 
@@ -50,6 +51,7 @@ var DECISION_SOURCES = enums.DECISION_SOURCES;
 function DecisionService(options) {
   this.userProfileService = options.userProfileService || null;
   this.logger = options.logger;
+  this.forcedVariationMap = {};
 }
 
 /**
@@ -68,7 +70,7 @@ DecisionService.prototype.getVariation = function(configObj, experimentKey, user
     return null;
   }
   var experiment = configObj.experimentKeyMap[experimentKey];
-  var forcedVariationKey = projectConfig.getForcedVariation(configObj, experimentKey, userId, this.logger);
+  var forcedVariationKey = this.getForcedVariation(configObj, experimentKey, userId);
   if (!!forcedVariationKey) {
     return forcedVariationKey;
   }
@@ -466,6 +468,146 @@ DecisionService.prototype._getBucketingId = function(userId, attributes) {
   }
 
   return bucketingId;
+};
+
+/**
+ * Removes forced variation for given userId and experimentKey
+ * @param  {string} userId         String representing the user id
+ * @param  {number} experimentId   Number representing the experiment id
+ * @param  {string} experimentKey  Key representing the experiment id
+ * @throws If the user id is not valid or not in the forced variation map
+ */
+DecisionService.prototype.removeForcedVariation = function(userId, experimentId, experimentKey) {
+  if (!userId) {
+    throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_ID, MODULE_NAME));
+  }
+
+  if (this.forcedVariationMap.hasOwnProperty(userId)) {
+    delete this.forcedVariationMap[userId][experimentId];
+    this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.VARIATION_REMOVED_FOR_USER, MODULE_NAME, experimentKey, userId));
+  } else {
+    throw new Error(sprintf(ERROR_MESSAGES.USER_NOT_IN_FORCED_VARIATION, MODULE_NAME, userId));
+  }
+};
+
+/**
+ * Sets forced variation for given userId and experimentKey
+ * @param  {string} userId        String representing the user id
+ * @param  {number} experimentId  Number representing the experiment id
+ * @param  {number} variationId   Number representing the variation id
+ * @throws If the user id is not valid
+ */
+DecisionService.prototype.__setInForcedVariationMap = function(userId, experimentId, variationId) {
+  if (this.forcedVariationMap.hasOwnProperty(userId)) {
+    this.forcedVariationMap[userId][experimentId] = variationId;
+  } else {
+    this.forcedVariationMap[userId] = {};
+    this.forcedVariationMap[userId][experimentId] = variationId;
+  }
+
+  this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, MODULE_NAME, variationId, experimentId, userId));
+};
+
+/**
+ * Gets the forced variation key for the given user and experiment.
+ * @param  {Object} configObj        Object representing project configuration
+ * @param  {string} experimentKey    Key for experiment.
+ * @param  {string} userId           The user Id.
+ * @return {string|null} Variation   The variation which the given user and experiment should be forced into.
+ */
+DecisionService.prototype.getForcedVariation = function(configObj, experimentKey, userId) {
+  var experimentToVariationMap = this.forcedVariationMap[userId];
+  if (!experimentToVariationMap) {
+    this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, MODULE_NAME, userId));
+    return null;
+  }
+
+  var experimentId;
+  try {
+    var experiment = projectConfig.getExperimentFromKey(configObj, experimentKey);
+    if (experiment.hasOwnProperty('id')) {
+      experimentId = experiment['id'];
+    } else {
+      // catching improperly formatted experiments
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT, MODULE_NAME, experimentKey));
+      return null;
+    }
+  } catch (ex) {
+    // catching experiment not in datafile
+    this.logger.log(LOG_LEVEL.ERROR, ex.message);
+    return null;
+  }
+
+  var variationId = experimentToVariationMap[experimentId];
+  if (!variationId) {
+    this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT, MODULE_NAME, experimentKey, userId));
+    return null;
+  }
+
+  var variationKey = projectConfig.getVariationKeyFromId(configObj, variationId);
+  if (variationKey) {
+    this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_HAS_FORCED_VARIATION, MODULE_NAME, variationKey, experimentKey, userId));
+  } else {
+    this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT, MODULE_NAME, experimentKey, userId));
+  }
+
+  return variationKey;
+};
+
+/**
+ * Sets the forced variation for a user in a given experiment
+ * @param  {Object} configObj      Object representing project configuration
+ * @param  {string} experimentKey  Key for experiment.
+ * @param  {string} userId         The user Id.
+ * @param  {string} variationKey   Key for variation. If null, then clear the existing experiment-to-variation mapping
+ * @return {boolean}               A boolean value that indicates if the set completed successfully.
+ */
+DecisionService.prototype.setForcedVariation = function(configObj, experimentKey, userId, variationKey) {
+  if (variationKey != null && !stringValidator.validate(variationKey)) {
+    this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.INVALID_VARIATION_KEY, MODULE_NAME));
+    return false;
+  }
+
+  var experimentId;
+  try {
+    var experiment = projectConfig.getExperimentFromKey(configObj, experimentKey);
+    if (experiment.hasOwnProperty('id')) {
+      experimentId = experiment['id'];
+    } else {
+      // catching improperly formatted experiments
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT, MODULE_NAME, experimentKey));
+      return false;
+    }
+  } catch (ex) {
+    // catching experiment not in datafile
+    this.logger.log(LOG_LEVEL.ERROR, ex.message);
+    return false;
+  }
+
+  if (variationKey == null) {
+    try {
+      this.removeForcedVariation(userId, experimentId, experimentKey, this.logger);
+      return true;
+    } catch (ex) {
+      this.logger.log(LOG_LEVEL.ERROR, ex.message);
+      return false;
+    }
+  }
+
+  var variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
+
+  if (!variationId) {
+    this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.NO_VARIATION_FOR_EXPERIMENT_KEY, MODULE_NAME, variationKey, experimentKey));
+    return false;
+  }
+
+  try {
+    this.__setInForcedVariationMap(userId, experimentId, variationId);
+    return true;
+  } catch (ex) {
+    this.logger.log(LOG_LEVEL.ERROR, ex.message);
+    return false;
+  }
 };
 
 module.exports = {

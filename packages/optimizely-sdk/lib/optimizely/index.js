@@ -424,7 +424,7 @@ Optimizely.prototype.setForcedVariation = function(experimentKey, userId, variat
   }
 
   try {
-    return projectConfig.setForcedVariation(configObj, experimentKey, userId, variationKey, this.logger);
+    return this.decisionService.setForcedVariation(configObj, experimentKey, userId, variationKey);
   } catch (ex) {
     this.logger.log(LOG_LEVEL.ERROR, ex.message);
     this.errorHandler.handleError(ex);
@@ -449,7 +449,7 @@ Optimizely.prototype.getForcedVariation = function(experimentKey, userId) {
   }
 
   try {
-    return projectConfig.getForcedVariation(configObj, experimentKey, userId, this.logger);
+    return this.decisionService.getForcedVariation(configObj, experimentKey, userId);
   } catch (ex) {
     this.logger.log(LOG_LEVEL.ERROR, ex.message);
     this.errorHandler.handleError(ex);

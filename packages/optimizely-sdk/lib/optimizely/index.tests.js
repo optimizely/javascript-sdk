@@ -589,7 +589,7 @@ describe('lib/optimizely', function() {
         sinon.assert.called(createdLogger.log);
 
         sinon.assert.calledWithExactly(createdLogger.log, LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,
-            'PROJECT_CONFIG',
+            'DECISION_SERVICE',
             'testUser'));
 
 
@@ -605,7 +605,7 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
             createdLogger.log,
             LOG_LEVEL.DEBUG,
-            sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'testUser')
+            sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
         );
 
         sinon.assert.calledWithExactly(
@@ -627,7 +627,7 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
             createdLogger.log,
             LOG_LEVEL.DEBUG,
-            sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'testUser')
+            sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
         );
 
         sinon.assert.calledWithExactly(
@@ -732,7 +732,7 @@ describe('lib/optimizely', function() {
           sinon.assert.calledTwice(Optimizely.prototype.__validateInputs);
 
           var logMessage0 = createdLogger.log.args[0][1];
-          assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'user1'));
+          assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'user1'));
           var logMessage1 = createdLogger.log.args[1][1];
           assert.strictEqual(logMessage1, sprintf(LOG_MESSAGES.USER_FORCED_IN_VARIATION, 'DECISION_SERVICE', 'user1', 'control'));
 
@@ -1406,7 +1406,7 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
             createdLogger.log,
             LOG_LEVEL.DEBUG,
-            sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'testUser')
+            sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
         );
       });
 
@@ -1435,7 +1435,7 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
             createdLogger.log,
             LOG_LEVEL.DEBUG,
-            sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'testUser')
+            sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
         );
 
         sinon.assert.calledWithExactly(
@@ -1506,7 +1506,7 @@ describe('lib/optimizely', function() {
           sinon.assert.calledTwice(createdLogger.log);
 
           var logMessage0 = createdLogger.log.args[0][1];
-          assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'user1'));
+          assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'user1'));
           var logMessage = createdLogger.log.args[1][1];
           assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.USER_FORCED_IN_VARIATION, 'DECISION_SERVICE', 'user1', 'control'));
         });
@@ -1565,7 +1565,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(forcedVariation, null);
 
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'PROJECT_CONFIG', 'user1'));
+        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'user1'));
       });
 
       it('should return null with a null experimentKey', function() {
@@ -1607,7 +1607,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(didSetVariation, true);
 
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'PROJECT_CONFIG', 111128, 111127, 'user1'));
+        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'DECISION_SERVICE', 111128, 111127, 'user1'));
       });
 
       it('should override bucketing in optlyInstance.getVariation', function() {
@@ -1643,11 +1643,11 @@ describe('lib/optimizely', function() {
         var variationIsMappedLogMessage = createdLogger.log.args[1][1];
         var variationMappingRemovedLogMessage = createdLogger.log.args[2][1];
 
-        assert.strictEqual(setVariationLogMessage, sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'PROJECT_CONFIG', 111128, 111127, 'user1'));
+        assert.strictEqual(setVariationLogMessage, sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'DECISION_SERVICE', 111128, 111127, 'user1'));
 
-        assert.strictEqual(variationIsMappedLogMessage, sprintf(LOG_MESSAGES.USER_HAS_FORCED_VARIATION, 'PROJECT_CONFIG', 'control', 'testExperiment', 'user1'));
+        assert.strictEqual(variationIsMappedLogMessage, sprintf(LOG_MESSAGES.USER_HAS_FORCED_VARIATION, 'DECISION_SERVICE', 'control', 'testExperiment', 'user1'));
 
-        assert.strictEqual(variationMappingRemovedLogMessage, sprintf(LOG_MESSAGES.VARIATION_REMOVED_FOR_USER, 'PROJECT_CONFIG', 'testExperiment', 'user1'));
+        assert.strictEqual(variationMappingRemovedLogMessage, sprintf(LOG_MESSAGES.VARIATION_REMOVED_FOR_USER, 'DECISION_SERVICE', 'testExperiment', 'user1'));
       });
 
       it('should be able to set multiple experiments for one user', function() {
@@ -1669,7 +1669,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(didSetVariation, false);
 
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.NO_VARIATION_FOR_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'definitely_not_valid_variation_key', 'testExperiment'));
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.NO_VARIATION_FOR_EXPERIMENT_KEY, 'DECISION_SERVICE', 'definitely_not_valid_variation_key', 'testExperiment'));
       });
 
       it('should not set an invalid experiment', function() {
@@ -1688,10 +1688,10 @@ describe('lib/optimizely', function() {
         assert.strictEqual(forcedVariation, null);
 
         var setVariationLogMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(setVariationLogMessage, sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'PROJECT_CONFIG', 111128, 111127, 'user1'));
+        assert.strictEqual(setVariationLogMessage, sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'DECISION_SERVICE', 111128, 111127, 'user1'));
 
         var noVariationToGetLogMessage = createdLogger.log.args[1][1];
-        assert.strictEqual(noVariationToGetLogMessage, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT, 'PROJECT_CONFIG', 'testExperimentLaunched', 'user1'));
+        assert.strictEqual(noVariationToGetLogMessage, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT, 'DECISION_SERVICE', 'testExperimentLaunched', 'user1'));
       });
 
       it('should return false for a null experimentKey', function() {
@@ -1744,7 +1744,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(didSetVariation, false);
 
         var setVariationLogMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(setVariationLogMessage, sprintf(ERROR_MESSAGES.USER_NOT_IN_FORCED_VARIATION, 'PROJECT_CONFIG', 'user1'));
+        assert.strictEqual(setVariationLogMessage, sprintf(ERROR_MESSAGES.USER_NOT_IN_FORCED_VARIATION, 'DECISION_SERVICE', 'user1'));
       });
 
       it('should return false for an undefined variationKey', function() {
@@ -1752,7 +1752,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(didSetVariation, false);
 
         var setVariationLogMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(setVariationLogMessage, sprintf(ERROR_MESSAGES.USER_NOT_IN_FORCED_VARIATION, 'PROJECT_CONFIG', 'user1'));
+        assert.strictEqual(setVariationLogMessage, sprintf(ERROR_MESSAGES.USER_NOT_IN_FORCED_VARIATION, 'DECISION_SERVICE', 'user1'));
       });
 
       it('should not override check for not running experiments in getVariation', function() {
@@ -1763,7 +1763,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(variation, null);
 
         var logMessage0 = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'PROJECT_CONFIG', 133338, 133337, 'user1'));
+        assert.strictEqual(logMessage0, sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'DECISION_SERVICE', 133338, 133337, 'user1'));
 
         var logMessage1 = createdLogger.log.args[1][1];
         assert.strictEqual(logMessage1, sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning'));
