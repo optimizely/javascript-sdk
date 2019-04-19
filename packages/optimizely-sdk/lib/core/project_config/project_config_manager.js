@@ -285,8 +285,23 @@ ProjectConfigManager.prototype.getConfig = function() {
 };
 
 /**
- * Returns a Promise that resolves when this ProjectConfigManager has a non-null
- * project config object available for the first time.
+ * Returns a Promise that fulfills when this ProjectConfigManager is ready to
+ * use (meaning it has a valid project config object), or has failed to become
+ * ready.
+ *
+ * Failure can be caused by the following:
+ * - At least one of sdkKey or datafile is not provided in the constructor argument
+ * - The provided datafile was invalid
+ * - The datafile provided by the datafile manager was invalid
+ * - The datafile manager failed to fetch a datafile
+ *
+ * The returned Promise is fulfilled with a result object containing these
+ * properties:
+ *    - success (boolean): True if this instance is ready to use with a valid
+ *                         project config object, or false if it failed to
+ *                         become ready
+ *    - reason (string=):  If success is false, this is a string property with
+ *                         an explanatory message.
  * @return {Promise}
  */
 ProjectConfigManager.prototype.onReady = function() {

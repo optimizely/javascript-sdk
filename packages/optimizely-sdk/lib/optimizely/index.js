@@ -113,6 +113,9 @@ function Optimizely(config) {
     maxQueueSize: config.eventBatchSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
   });
   this.eventProcessor.start();
+
+  this.__readyTimeouts = {};
+  this.__nextReadyTimeoutId = 0;
 }
 
 /**
@@ -420,7 +423,7 @@ Optimizely.prototype.setForcedVariation = function(experimentKey, userId, variat
 
   var configObj = this.projectConfigManager.getConfig();
   if (!configObj) {
-    return null;
+    return false;
   }
 
   try {
@@ -582,7 +585,7 @@ Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes)
       source: decision.decisionSource,
       sourceInfo: sourceInfo
     };
-    
+
     this.notificationCenter.sendNotifications(
       NOTIFICATION_TYPES.DECISION,
       {
@@ -857,6 +860,12 @@ Optimizely.prototype.close = function() {
     if (this.projectConfigManager) {
       this.projectConfigManager.stop();
     }
+    Object.keys(this.__readyTimeouts).forEach(function(readyTimeoutId) {
+      var readyTimeoutRecord = this.__readyTimeouts[readyTimeoutId];
+      clearTimeout(readyTimeoutRecord.readyTimeout);
+      readyTimeoutRecord.onClose();
+    }.bind(this));
+    this.__readyTimeouts = {};
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
@@ -866,22 +875,26 @@ Optimizely.prototype.close = function() {
 /**
  * Returns a Promise that fulfills when this instance is ready to use (meaning
  * it has a valid datafile), or has failed to become ready within a period of
- * time (configurable by the timeout property of the options argument). If a
- * valid datafile was provided in the constructor, the instance is immediately
- * ready. If an sdkKey was provided, a manager will be used to fetch a datafile,
- * and the returned promise will resolve if that fetch succeeds or fails before
- * the timeout. The default timeout is 30 seconds, which will be used if no
- * timeout is provided in the argument options object.
+ * time (configurable by the timeout property of the options argument), or when
+ * this instance is closed via the close method.
+ *
+ * If a valid datafile was provided in the constructor, the returned Promise is
+ * immediately fulfilled. If an sdkKey was provided, a manager will be used to
+ * fetch  a datafile, and the returned promise will fulfill if that fetch
+ * succeeds or fails before the timeout. The default timeout is 30 seconds,
+ * which will be used if no timeout is provided in the argument options object.
+ *
  * The returned Promise is fulfilled with a result object containing these
  * properties:
  *    - success (boolean): True if this instance is ready to use with a valid
  *                         datafile, or false if this instance failed to become
- *                         ready.
+ *                         ready or was closed prior to becoming ready.
  *    - reason (string=):  If success is false, this is a string property with
  *                         an explanatory message. Failure could be due to
  *                         expiration of the timeout, network errors,
- *                         unsuccessful responses, datafile parse errors, or
- *                         datafile validation errors.
+ *                         unsuccessful responses, datafile parse errors,
+ *                         datafile validation errors, or the instance being
+ *                         closed
  * @param  {Object=}          options
  * @param  {number|undefined} options.timeout
  * @return {Promise}
@@ -894,14 +907,35 @@ Optimizely.prototype.onReady = function(options) {
   if (!fns.isFinite(timeout)) {
     timeout = DEFAULT_ONREADY_TIMEOUT;
   }
+
+  var resolveTimeoutPromise;
   var timeoutPromise = new Promise(function(resolve) {
-    setTimeout(function() {
-      resolve({
-        success: false,
-        reason: sprintf('onReady timeout expired after %s ms', timeout),
-      });
-    }, timeout);
+    resolveTimeoutPromise = resolve;
   });
+
+  var timeoutId = this.__nextReadyTimeoutId;
+  this.__nextReadyTimeoutId++;
+
+  var onReadyTimeout = function() {
+    delete this.__readyTimeouts[timeoutId];
+    resolveTimeoutPromise({
+      success: false,
+      reason: sprintf('onReady timeout expired after %s ms', timeout),
+    });
+  }.bind(this);
+  var readyTimeout = setTimeout(onReadyTimeout, timeout);
+  var onClose = function() {
+    resolveTimeoutPromise({
+      success: false,
+      reason: 'Instance closed',
+    });
+  };
+
+  this.__readyTimeouts[timeoutId] = {
+    readyTimeout: readyTimeout,
+    onClose: onClose,
+  };
+
   return Promise.race([this.__readyPromise, timeoutPromise]);
 };
 

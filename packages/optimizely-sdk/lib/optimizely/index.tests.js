@@ -4810,7 +4810,7 @@ describe('lib/optimizely', function() {
       it('returns fallback values from API methods that return meaningful values', function() {
         assert.isNull(optlyInstance.activate('my_experiment', 'user1'));
         assert.isNull(optlyInstance.getVariation('my_experiment', 'user1'));
-        assert.isNull(optlyInstance.setForcedVariation('my_experiment', 'user1', 'variation_1'));
+        assert.isFalse(optlyInstance.setForcedVariation('my_experiment', 'user1', 'variation_1'));
         assert.isNull(optlyInstance.getForcedVariation('my_experiment', 'user1'));
         assert.isFalse(optlyInstance.isFeatureEnabled('my_feature', 'user1'));
         assert.deepEqual(optlyInstance.getEnabledFeatures('user1'), []);
@@ -4837,6 +4837,30 @@ describe('lib/optimizely', function() {
 
       afterEach(function() {
         clock.restore();
+      });
+
+      it('fulfills the promise with the value from the project config manager ready promise after the project config manager ready promise is fulfilled', function() {
+        projectConfigManager.ProjectConfigManager.callsFake(function(config) {
+          var currentConfig = config.datafile ? projectConfig.createProjectConfig(config.datafile) : null;
+          return {
+            stop: sinon.stub(),
+            getConfig: sinon.stub().returns(currentConfig),
+            onUpdate: sinon.stub().returns(function() {}),
+            onReady: sinon.stub().returns(Promise.resolve({ success: true })),
+          };
+        });
+        optlyInstance = new Optimizely({
+          clientEngine: 'node-sdk',
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+          sdkKey: '12345',
+          isValidInstance: true,
+        });
+        return optlyInstance.onReady().then(function(result) {
+          assert.deepEqual(result, { success: true });
+        });
       });
 
       it('fulfills the promise with an unsuccessful result after the timeout has expired when the project config manager onReady promise still has not resolved', function() {
@@ -4874,6 +4898,50 @@ describe('lib/optimizely', function() {
           assert.include(result, {
             success: false,
           });
+        });
+      });
+
+      it('fulfills the promise with an unsuccessful result after the instance is closed', function() {
+        optlyInstance = new Optimizely({
+          clientEngine: 'node-sdk',
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+          sdkKey: '12345',
+          isValidInstance: true,
+        });
+        var readyPromise = optlyInstance.onReady({ timeout: 100 });
+        optlyInstance.close();
+        return readyPromise.then(function(result) {
+          assert.include(result, {
+            success: false,
+          });
+        });
+      });
+
+      it('can be called several times with different timeout values and the returned promises behave correctly', function() {
+        optlyInstance = new Optimizely({
+          clientEngine: 'node-sdk',
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+          sdkKey: '12345',
+          isValidInstance: true,
+        });
+        var readyPromise1 = optlyInstance.onReady({ timeout: 100 });
+        var readyPromise2 = optlyInstance.onReady({ timeout: 200 });
+        var readyPromise3 = optlyInstance.onReady({ timeout: 300 });
+        clock.tick(101);
+        return readyPromise1.then(function() {
+          clock.tick(100);
+          return readyPromise2;
+        }).then(function() {
+          // readyPromise3 has not resolved yet because only 201 ms have elapsed.
+          // Calling close on the instance should resolve readyPromise3
+          optlyInstance.close();
+          return readyPromise3;
         });
       });
     });
