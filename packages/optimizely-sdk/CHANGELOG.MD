@@ -33,7 +33,7 @@ optimizelySDK.setLogger(optimizelySDK.logging.createLogger())
 // valid levels: 'DEBUG', 'INFO', 'WARN', 'ERROR'
 optimizelySDK.setLogLevel('WARN')
 // enums can also be used
-optimizelySDK.setLogLevel(optimizely.enums.LOG_LEVEL.ERROR)
+optimizelySDK.setLogLevel(optimizelySDK.enums.LOG_LEVEL.ERROR)
 ```
 
 #### Disable logging
