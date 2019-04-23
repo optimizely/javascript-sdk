@@ -10,3 +10,18 @@ addons:
   srcclr: true
 script: npm test
 after_success: npm run coveralls
+
+stages:
+  - 'Integration tests'
+  - 'Test'
+
+jobs:
+  include:
+    - stage: 'Integration tests'
+      env: SDK=javascript
+      cache: false
+      language: minimal
+      install:
+        - mkdir $HOME/travisci-tools && pushd $HOME/travisci-tools && git init && git pull https://$CI_USER_TOKEN@github.com/optimizely/travisci-tools.git && popd
+      script:
+        - "$HOME/travisci-tools/fsc-trigger/trigger_fullstack-sdk-compat.sh"
