@@ -154,7 +154,7 @@ exports.CONTROL_ATTRIBUTES = {
 
 exports.JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 exports.NODE_CLIENT_ENGINE = 'node-sdk';
-exports.NODE_CLIENT_VERSION = '3.1.0-beta1';
+exports.NODE_CLIENT_VERSION = '3.1.0';
 
 /*
  * Notification types for use with NotificationCenter
@@ -162,6 +162,7 @@ exports.NODE_CLIENT_VERSION = '3.1.0-beta1';
  *
  * SDK consumers can use these to register callbacks with the notification center.
  *
+ *  @deprecated since 3.1.0
  *  ACTIVATE: An impression event will be sent to Optimizely
  *  Callbacks will receive an object argument with the following properties:
  *    - experiment {Object}
@@ -170,13 +171,6 @@ exports.NODE_CLIENT_VERSION = '3.1.0-beta1';
  *    - variation {Object}
  *    - logEvent {Object}
  *
- *  TRACK: A conversion event will be sent to Optimizely
- *  Callbacks will receive the an object argument with the following properties:
- *    - eventKey {string}
- *    - userId {string}
- *    - attributes {Object|undefined}
- *    - eventTags {Object|undefined}
- *    - logEvent {Object}
  *  DECISION: A decision is made in the system. i.e. user activation,
  *  feature access or feature-variable value retrieval
  *  Callbacks will receive an object argument with the following properties:
@@ -185,14 +179,23 @@ exports.NODE_CLIENT_VERSION = '3.1.0-beta1';
  *    - attributes {Object|undefined}
  *    - decisionInfo {Object|undefined}
  *
- * OPTIMIZELY_CONFIG_UPDATE: This Optimizely instance has been updated with a new
- * config
+ *  OPTIMIZELY_CONFIG_UPDATE: This Optimizely instance has been updated with a new
+ *  config
+ *
+ *  TRACK: A conversion event will be sent to Optimizely
+ *  Callbacks will receive the an object argument with the following properties:
+ *    - eventKey {string}
+ *    - userId {string}
+ *    - attributes {Object|undefined}
+ *    - eventTags {Object|undefined}
+ *    - logEvent {Object}
+ *
  */
 exports.NOTIFICATION_TYPES = {
   ACTIVATE: 'ACTIVATE:experiment, user_id,attributes, variation, event',
-  TRACK: 'TRACK:event_key, user_id, attributes, event_tags, event',
   DECISION: 'DECISION:type, userId, attributes, decisionInfo',
   OPTIMIZELY_CONFIG_UPDATE: 'OPTIMIZELY_CONFIG_UPDATE',
+  TRACK: 'TRACK:event_key, user_id, attributes, event_tags, event',
 };
 
 exports.DECISION_NOTIFICATION_TYPES = {
