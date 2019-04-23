@@ -1,10 +1,6 @@
 /**
  * @jest-environment jsdom
  */
-
-// TODO: It doesn't work unless the jest-enviroment comment is at the top...
-// ...so if we need the license header at the top, we have to fix this
-
 /**
  * Copyright 2019, Optimizely
  *
