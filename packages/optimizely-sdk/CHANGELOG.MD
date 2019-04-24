@@ -15,6 +15,7 @@ Changes that have landed but are not yet released.
   - Use the `onReady` method to wait until the download is complete and the SDK is ready to use.
   - Customize datafile management behavior by passing a `datafileOptions` object within the options you pass to `createInstance`.
     - Enable automatic updates by passing `autoUpdate: true`. Periodically (on the provided update interval), the SDK instance will download the datafile and update itself. Use this to ensure that the SDK instance is using a fresh datafile reflecting changes recently made to your experiment or feature configuration.
+  - Add a notification listener for the `OPTIMIZELY_CONFIG_UPDATE` notification type to be notified when an instance updates its Optimizely config after obtaining a new datafile.
   - Stop active downloads and cancel pending downloads by calling the `close` method
 
 
@@ -37,7 +38,7 @@ Changes that have landed but are not yet released.
   });
   ```
 
-  #### Enable automatic updates, and stop automatic updates
+  #### Enable automatic updates, add notification listener for OPTIMIZELY_CONFIG_UPDATE notification type, and stop automatic updates
   ```js
   const optimizely = require('@optimizely/optimizely-sdk');
   const instance = optimizely.createInstance({
@@ -47,6 +48,12 @@ Changes that have landed but are not yet released.
       updateInterval: 600000 // 10 minutes in milliseconds
     },
   });
+  instance.notificationCenter.addNotificationListener(
+    optimizely.enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE,
+    () => {
+      // instance has updated its Optimizely config
+    },
+  );
   // Stop automatic updates - instance will use whatever datafile it currently has from now on
   instance.close();
   ```
