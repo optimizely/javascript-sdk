@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+### New Features
+
+- Added support for automatic datafile management
+  - To use automatic datafile management, include `sdkKey` as a string property in the options object you pass to `createInstance`.
+  - When sdkKey is provided, the SDK instance will download the datafile associated with that sdkKey immediately upon construction. When the download completes, the SDK instance will update itself to use the downloaded datafile.
+  - Use the `onReady` method to wait until the download is complete and the SDK is ready to use.
+  - Customize datafile management behavior by passing a `datafileOptions` object within the options you pass to `createInstance`.
+    - Enable automatic updates by passing `autoUpdate: true`. Periodically (on the provided update interval), the SDK instance will download the datafile and update itself. Use this to ensure that the SDK instance is using a fresh datafile reflecting changes recently made to your experiment or feature configuration.
+  - Stop active downloads and cancel pending downloads by calling the `close` method
+
+
+  #### Create an instance with datafile management enabled
+  ```js
+  const optimizely = require('@optimizely/optimizely-sdk');
+  const instance = optimizely.createInstance({
+    sdkKey: ‘12345’, // Provide the sdkKey of your desired environment here
+  });
+  ```
+
+  #### Use `onReady` to wait until the instance has a datafile
+  ```js
+  const optimizely = require('@optimizely/optimizely-sdk');
+  const instance = optimizely.createInstance({
+    sdkKey: ‘12345’,
+  });
+  instance.onReady().then(() => {
+    // instance is ready to use, with datafile downloaded from Optimizely CDN
+  });
+  ```
+
+  #### Enable automatic updates, and stop automatic updates
+  ```js
+  const optimizely = require('@optimizely/optimizely-sdk');
+  let instance = optimizely.createInstance({
+    sdkKey: ‘12345’,
+    datafileOptions: {
+      autoUpdate: true,
+      updateInterval: 600000 // 10 minutes in milliseconds
+    },
+  });
+  // Stop automatic updates - instance will use whatever datafile it currently has from now on
+  instance.close();
+  ```
+
 ## [3.1.0] - April 22nd, 2019
 
 ### New Features:
