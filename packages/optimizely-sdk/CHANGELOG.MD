@@ -22,40 +22,40 @@ Changes that have landed but are not yet released.
   #### Create an instance with datafile management enabled
   ```js
   const optimizely = require('@optimizely/optimizely-sdk');
-  const instance = optimizely.createInstance({
+  const optimizelyClientInstance = optimizely.createInstance({
     sdkKey: ‘12345’, // Provide the sdkKey of your desired environment here
   });
   ```
 
-  #### Use `onReady` to wait until the instance has a datafile
+  #### Use `onReady` to wait until optimizelyClientInstance has a datafile
   ```js
   const optimizely = require('@optimizely/optimizely-sdk');
-  const instance = optimizely.createInstance({
+  const optimizelyClientInstance = optimizely.createInstance({
     sdkKey: ‘12345’,
   });
-  instance.onReady().then(() => {
-    // instance is ready to use, with datafile downloaded from Optimizely CDN
+  optimizelyClientInstance.onReady().then(() => {
+    // optimizelyClientInstance is ready to use, with datafile downloaded from the Optimizely CDN
   });
   ```
 
   #### Enable automatic updates, add notification listener for OPTIMIZELY_CONFIG_UPDATE notification type, and stop automatic updates
   ```js
   const optimizely = require('@optimizely/optimizely-sdk');
-  const instance = optimizely.createInstance({
+  const optimizelyClientInstance = optimizely.createInstance({
     sdkKey: ‘12345’,
     datafileOptions: {
       autoUpdate: true,
       updateInterval: 600000 // 10 minutes in milliseconds
     },
   });
-  instance.notificationCenter.addNotificationListener(
+  optimizelyClientInstance.notificationCenter.addNotificationListener(
     optimizely.enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE,
     () => {
-      // instance has updated its Optimizely config
+      // optimizelyClientInstance has updated its Optimizely config
     },
   );
-  // Stop automatic updates - instance will use whatever datafile it currently has from now on
-  instance.close();
+  // Stop automatic updates - optimizelyClientInstance will use whatever datafile it currently has from now on
+  optimizelyClientInstance.close();
   ```
 
 ## [3.1.0] - April 22nd, 2019
