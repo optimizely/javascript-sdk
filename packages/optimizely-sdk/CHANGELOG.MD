@@ -40,7 +40,7 @@ Changes that have landed but are not yet released.
   #### Enable automatic updates, and stop automatic updates
   ```js
   const optimizely = require('@optimizely/optimizely-sdk');
-  let instance = optimizely.createInstance({
+  const instance = optimizely.createInstance({
     sdkKey: ‘12345’,
     datafileOptions: {
       autoUpdate: true,
