@@ -23,7 +23,7 @@ Changes that have landed but are not yet released.
   ```js
   const optimizely = require('@optimizely/optimizely-sdk');
   const optimizelyClientInstance = optimizely.createInstance({
-    sdkKey: ‘12345’, // Provide the sdkKey of your desired environment here
+    sdkKey: '12345', // Provide the sdkKey of your desired environment here
   });
   ```
 
@@ -31,7 +31,7 @@ Changes that have landed but are not yet released.
   ```js
   const optimizely = require('@optimizely/optimizely-sdk');
   const optimizelyClientInstance = optimizely.createInstance({
-    sdkKey: ‘12345’,
+    sdkKey: '12345',
   });
   optimizelyClientInstance.onReady().then(() => {
     // optimizelyClientInstance is ready to use, with datafile downloaded from the Optimizely CDN
@@ -42,7 +42,7 @@ Changes that have landed but are not yet released.
   ```js
   const optimizely = require('@optimizely/optimizely-sdk');
   const optimizelyClientInstance = optimizely.createInstance({
-    sdkKey: ‘12345’,
+    sdkKey: '12345',
     datafileOptions: {
       autoUpdate: true,
       updateInterval: 600000 // 10 minutes in milliseconds
