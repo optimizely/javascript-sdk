@@ -11,7 +11,7 @@ npm install @optimizely/js-sdk-datafile-manager
 ## Usage
 
 ```js
-const { DatafileManager } = require('@optimizely/datafile-manager')
+const { DatafileManager } = require('@optimizely/js-sdk-datafile-manager')
 
 const manager = new DatafileManager({
   sdkKey: '9LCprAQyd1bs1BBXZ3nVji',
