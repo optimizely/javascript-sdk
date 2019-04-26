@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [3.2.0-alpha] - April 26nd, 2019
+
 ### New Features
 
 - Added support for automatic datafile management
