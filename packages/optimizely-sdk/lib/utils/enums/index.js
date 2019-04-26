@@ -26,6 +26,7 @@ exports.LOG_LEVEL = {
 };
 
 exports.ERROR_MESSAGES = {
+  DATAFILE_AND_SDK_KEY_MISSING: '%s: You must provide at least one of sdkKey or datafile. Cannot start Optimizely',
   EXPERIMENT_KEY_NOT_IN_DATAFILE: '%s: Experiment key %s is not in datafile.',
   FEATURE_NOT_IN_DATAFILE: '%s: Feature key %s is not in datafile.',
   IMPROPERLY_FORMATTED_EXPERIMENT: '%s: Experiment key %s is improperly formatted.',
@@ -135,6 +136,7 @@ exports.LOG_MESSAGES = {
   UNEXPECTED_TYPE_NULL: '%s: Audience condition %s evaluated to UNKNOWN because a null value was passed for user attribute "%s".',
   UNKNOWN_CONDITION_TYPE: '%s: Audience condition %s has an unknown condition type. You may need to upgrade to a newer release of the Optimizely SDK.',
   UNKNOWN_MATCH_TYPE: '%s: Audience condition %s uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.',
+  UPDATED_OPTIMIZELY_CONFIG: '%s: Updated Optimizely config to revision %s (project id %s)',
   OUT_OF_BOUNDS: '%s: Audience condition %s evaluated to UNKNOWN because the number value for user attribute "%s" is not in the range [-2^53, +2^53].',
 };
 
@@ -177,6 +179,9 @@ exports.NODE_CLIENT_VERSION = '3.1.0';
  *    - attributes {Object|undefined}
  *    - decisionInfo {Object|undefined}
  *
+ *  OPTIMIZELY_CONFIG_UPDATE: This Optimizely instance has been updated with a new
+ *  config
+ *
  *  TRACK: A conversion event will be sent to Optimizely
  *  Callbacks will receive the an object argument with the following properties:
  *    - eventKey {string}
@@ -184,10 +189,12 @@ exports.NODE_CLIENT_VERSION = '3.1.0';
  *    - attributes {Object|undefined}
  *    - eventTags {Object|undefined}
  *    - logEvent {Object}
+ *
  */
 exports.NOTIFICATION_TYPES = {
   ACTIVATE: 'ACTIVATE:experiment, user_id,attributes, variation, event',
   DECISION: 'DECISION:type, userId, attributes, decisionInfo',
+  OPTIMIZELY_CONFIG_UPDATE: 'OPTIMIZELY_CONFIG_UPDATE',
   TRACK: 'TRACK:event_key, user_id, attributes, event_tags, event',
 };
 

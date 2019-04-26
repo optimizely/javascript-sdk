@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2016-2019, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,21 +74,24 @@ describe('javascript-sdk', function() {
       });
 
       it('should invoke resendPendingEvents at most once', function() {
-        optimizelyFactory.createInstance({
+        var optlyInstance = optimizelyFactory.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
           logger: silentLogger,
         });
+        // Invalid datafile causes onReady Promise rejection - catch this error
+        optlyInstance.onReady().catch(function() {});
 
         sinon.assert.calledOnce(LocalStoragePendingEventsDispatcher.prototype.sendPendingEvents);
 
-        optimizelyFactory.createInstance({
+        optlyInstance = optimizelyFactory.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
           logger: silentLogger,
         });
+        optlyInstance.onReady().catch(function() {});
 
         sinon.assert.calledOnce(LocalStoragePendingEventsDispatcher.prototype.sendPendingEvents);
       });
@@ -96,10 +99,12 @@ describe('javascript-sdk', function() {
       it('should not throw if the provided config is not valid', function() {
         configValidator.validate.throws(new Error('Invalid config or something'));
         assert.doesNotThrow(function() {
-          optimizelyFactory.createInstance({
+          var optlyInstance = optimizelyFactory.createInstance({
             datafile: {},
             logger: silentLogger,
           });
+          // Invalid datafile causes onReady Promise rejection - catch this error
+          optlyInstance.onReady().catch(function() {});
         });
       });
 
@@ -110,6 +115,8 @@ describe('javascript-sdk', function() {
           eventDispatcher: fakeEventDispatcher,
           logger: silentLogger,
         });
+        // Invalid datafile causes onReady Promise rejection - catch this error
+        optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
         assert.equal(optlyInstance.clientVersion, '3.1.0');
@@ -122,6 +129,8 @@ describe('javascript-sdk', function() {
           eventDispatcher: fakeEventDispatcher,
           logger: silentLogger,
         });
+        // Invalid datafile causes onReady Promise rejection - catch this error
+        optlyInstance.onReady().catch(function() {});
         assert.equal('javascript-sdk', optlyInstance.clientEngine);
         assert.equal(packageJSON.version, optlyInstance.clientVersion);
       });

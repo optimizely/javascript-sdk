@@ -21,6 +21,7 @@ var errorHandler = require('../../plugins/error_handler');
 var bucketer = require('../bucketer');
 var DecisionService = require('./');
 var enums = require('../../utils/enums');
+var fns = require('../../utils/fns');
 var logger = require('../../plugins/logger');
 var projectConfig = require('../project_config');
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
@@ -68,14 +69,14 @@ describe('lib/core/decision_service', function() {
         assert.strictEqual('variationWithAudience', decisionServiceInstance.getVariation(configObj, 'testExperimentWithAudiences', 'user2'));
         sinon.assert.notCalled(bucketerStub);
         assert.strictEqual(2, mockLogger.log.callCount);
-        assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User user2 is not in the forced variation map.');
+        assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: User user2 is not in the forced variation map.');
         assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: User user2 is forced in variation variationWithAudience.');
       });
 
       it('should return null if the user does not meet audience conditions', function () {
         assert.isNull(decisionServiceInstance.getVariation(configObj, 'testExperimentWithAudiences', 'user3', {foo: 'bar'}));
         assert.strictEqual(7, mockLogger.log.callCount);
-        assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User user3 is not in the forced variation map.');
+        assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: User user3 is not in the forced variation map.');
         assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Evaluating audiences for experiment "testExperimentWithAudiences": ["11154"].');
         assert.strictEqual(mockLogger.log.args[5][1], 'DECISION_SERVICE: Audiences for experiment testExperimentWithAudiences collectively evaluated to FALSE.');
         assert.strictEqual(mockLogger.log.args[6][1], 'DECISION_SERVICE: User user3 does not meet conditions to be in experiment testExperimentWithAudiences.');
@@ -144,7 +145,7 @@ describe('lib/core/decision_service', function() {
           assert.strictEqual('control', decisionServiceInstance.getVariation(configObj, 'testExperiment', 'decision_service_user'));
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
           sinon.assert.notCalled(bucketerStub);
-          assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User decision_service_user is not in the forced variation map.');
+          assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: User decision_service_user is not in the forced variation map.');
           assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Returning previously activated variation \"control\" of experiment \"testExperiment\" for user \"decision_service_user\" from user profile.');
         });
 
@@ -201,7 +202,7 @@ describe('lib/core/decision_service', function() {
           assert.strictEqual('control', decisionServiceInstance.getVariation(configObj, 'testExperiment', 'decision_service_user'));
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
           sinon.assert.calledOnce(bucketerStub);
-          assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User decision_service_user is not in the forced variation map.');
+          assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: User decision_service_user is not in the forced variation map.');
           assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: User decision_service_user was previously bucketed into variation with ID not valid variation for experiment testExperiment, but no matching variation was found.');
           // make sure we save the decision
           sinon.assert.calledWith(userProfileSaveStub, {
@@ -233,7 +234,7 @@ describe('lib/core/decision_service', function() {
               },
             },
           });
-          assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User decision_service_user is not in the forced variation map.');
+          assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: User decision_service_user is not in the forced variation map.');
           assert.strictEqual(mockLogger.log.args[3][1], 'DECISION_SERVICE: Saved variation "control" of experiment "testExperiment" for user "decision_service_user".');
         });
 
@@ -244,7 +245,7 @@ describe('lib/core/decision_service', function() {
           assert.strictEqual('control', decisionServiceInstance.getVariation(configObj, 'testExperiment', 'decision_service_user'));
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
           sinon.assert.calledOnce(bucketerStub); // should still go through with bucketing
-          assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User decision_service_user is not in the forced variation map.');
+          assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: User decision_service_user is not in the forced variation map.');
           assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Error while looking up user profile for user ID "decision_service_user": I am an error.');
         });
 
@@ -258,7 +259,7 @@ describe('lib/core/decision_service', function() {
           sinon.assert.calledOnce(bucketerStub); // should still go through with bucketing
 
           assert.strictEqual(4, mockLogger.log.callCount);
-          assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User decision_service_user is not in the forced variation map.');
+          assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: User decision_service_user is not in the forced variation map.');
           assert.strictEqual(mockLogger.log.args[3][1], 'DECISION_SERVICE: Error while saving user profile for user ID "decision_service_user": I am an error.');
 
           // make sure that we save the decision
@@ -295,7 +296,7 @@ describe('lib/core/decision_service', function() {
             assert.strictEqual('variation', decisionServiceInstance.getVariation(configObj, 'testExperiment', 'decision_service_user', attributes));
             sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
             sinon.assert.notCalled(bucketerStub);
-            assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User decision_service_user is not in the forced variation map.');
+            assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: User decision_service_user is not in the forced variation map.');
             assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Returning previously activated variation \"variation\" of experiment \"testExperiment\" for user \"decision_service_user\" from user profile.');
           });
 
@@ -320,7 +321,7 @@ describe('lib/core/decision_service', function() {
             assert.strictEqual('control', decisionServiceInstance.getVariation(configObj, 'testExperiment', 'decision_service_user', attributes));
             sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
             sinon.assert.notCalled(bucketerStub);
-            assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User decision_service_user is not in the forced variation map.');
+            assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: User decision_service_user is not in the forced variation map.');
             assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Returning previously activated variation \"control\" of experiment \"testExperiment\" for user \"decision_service_user\" from user profile.');
           });
 
@@ -345,7 +346,7 @@ describe('lib/core/decision_service', function() {
             assert.strictEqual('variation', decisionServiceInstance.getVariation(configObj, 'testExperiment', 'decision_service_user', attributes));
             sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
             sinon.assert.notCalled(bucketerStub);
-            assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User decision_service_user is not in the forced variation map.');
+            assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: User decision_service_user is not in the forced variation map.');
             assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Returning previously activated variation \"variation\" of experiment \"testExperiment\" for user \"decision_service_user\" from user profile.');
           });
 
@@ -363,7 +364,7 @@ describe('lib/core/decision_service', function() {
             assert.strictEqual('variation', decisionServiceInstance.getVariation(configObj, 'testExperiment', 'decision_service_user', attributes));
             sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
             sinon.assert.notCalled(bucketerStub);
-            assert.strictEqual(mockLogger.log.args[0][1], 'PROJECT_CONFIG: User decision_service_user is not in the forced variation map.');
+            assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: User decision_service_user is not in the forced variation map.');
             assert.strictEqual(mockLogger.log.args[1][1], 'DECISION_SERVICE: Returning previously activated variation \"variation\" of experiment \"testExperiment\" for user \"decision_service_user\" from user profile.');
           });
         });
@@ -473,6 +474,184 @@ describe('lib/core/decision_service', function() {
       it('should return null if forced variation is not provided for the user ID', function () {
         var testExperiment = configObj.experimentKeyMap['testExperiment'];
         assert.isNull(decisionServiceInstance.__getWhitelistedVariation(testExperiment, 'notInForcedVariations'));
+      });
+    });
+
+    describe('getForcedVariation', function() {
+      it('should return null for valid experimentKey, not set', function() {
+        var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1');
+        assert.strictEqual(variation, null);
+      });
+
+      it('should return null for invalid experimentKey, not set', function() {
+        var variation = decisionServiceInstance.getForcedVariation(configObj, 'definitely_not_valid_exp_key', 'user1');
+        assert.strictEqual(variation, null);
+      });
+
+      it('should return null for invalid experimentKey when a variation was previously successfully forced on another experiment for the same user', function() {
+        decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', 'control');
+        var variation = decisionServiceInstance.getForcedVariation(configObj, 'definitely_not_valid_exp_key', 'user1');
+        assert.strictEqual(variation, null);
+      });
+
+      it('should return null for valid experiment key, not set on this experiment key, but set on another experiment key', function() {
+        decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', 'control');
+        var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1');
+        assert.strictEqual(variation, null);
+      });
+    });
+
+    describe('#setForcedVariation', function() {
+      it('should return true for a valid forcedVariation in setForcedVariation', function() {
+        var didSetVariation = decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', 'control');
+        assert.strictEqual(didSetVariation, true);
+      });
+
+      it('should return the same variation from getVariation as was set in setVariation', function() {
+        decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', 'control');
+        var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1');
+        assert.strictEqual(variation, 'control');
+      });
+
+      it('should not set for an invalid variation key', function() {
+        decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', 'definitely_not_valid_variation_key');
+        var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1');
+        assert.strictEqual(variation, null);
+      });
+
+      it('should reset the forcedVariation if passed null', function() {
+        var didSetVariation = decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', 'control');
+        assert.strictEqual(didSetVariation, true);
+
+        var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1');
+        assert.strictEqual(variation, 'control');
+
+        var didSetVariationAgain = decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', null);
+        assert.strictEqual(didSetVariationAgain, true);
+
+        var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1');
+        assert.strictEqual(variation, null);
+      });
+
+      it('should be able to add variations for multiple experiments for one user', function() {
+        var didSetVariation = decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', 'control');
+        assert.strictEqual(didSetVariation, true);
+
+        var didSetVariation2 = decisionServiceInstance.setForcedVariation(configObj, 'testExperimentLaunched', 'user1', 'controlLaunched');
+        assert.strictEqual(didSetVariation2, true);
+
+        var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1');
+        var variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1');
+
+        assert.strictEqual(variation, 'control');
+        assert.strictEqual(variation2, 'controlLaunched');
+      });
+
+      it('should be able to add experiments for multiple users', function() {
+        var didSetVariation = decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', 'control');
+        assert.strictEqual(didSetVariation, true);
+
+        var didSetVariation = decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user2', 'variation');
+        assert.strictEqual(didSetVariation, true);
+
+        var variationControl = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1');
+        var variationVariation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user2');
+
+        assert.strictEqual(variationControl, 'control');
+        assert.strictEqual(variationVariation, 'variation');
+      });
+
+      it('should be able to reset a variation for a user with multiple experiments', function() {
+        //set the first time
+        var didSetVariation = decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', 'control');
+        assert.strictEqual(didSetVariation, true);
+
+        var didSetVariation2 = decisionServiceInstance.setForcedVariation(configObj, 'testExperimentLaunched', 'user1', 'controlLaunched');
+        assert.strictEqual(didSetVariation2, true);
+
+        var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1');
+        var variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1');
+
+        assert.strictEqual(variation, 'control');
+        assert.strictEqual(variation2, 'controlLaunched');
+
+        //reset for one of the experiments
+        var didSetVariationAgain = decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', 'variation');
+        assert.strictEqual(didSetVariationAgain, true);
+
+        var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1');
+        var variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1');
+
+        assert.strictEqual(variation, 'variation');
+        assert.strictEqual(variation2, 'controlLaunched');
+      });
+
+      it('should be able to unset a variation for a user with multiple experiments', function() {
+        //set the first time
+        var didSetVariation = decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', 'control');
+        assert.strictEqual(didSetVariation, true);
+
+        var didSetVariation2 = decisionServiceInstance.setForcedVariation(configObj, 'testExperimentLaunched', 'user1', 'controlLaunched');
+        assert.strictEqual(didSetVariation2, true);
+
+        var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1');
+        var variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1');
+
+        assert.strictEqual(variation, 'control');
+        assert.strictEqual(variation2, 'controlLaunched');
+
+        //reset for one of the experiments
+        decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', null);
+        assert.strictEqual(didSetVariation, true);
+
+        var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1');
+        var variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1');
+
+        assert.strictEqual(variation, null);
+        assert.strictEqual(variation2, 'controlLaunched');
+      });
+
+      it('should return false for an empty variation key', function() {
+        var didSetVariation = decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', '');
+        assert.strictEqual(didSetVariation, false);
+      });
+
+      it('should return null when a variation was previously set, and that variation no longer exists on the config object', function() {
+        var didSetVariation = decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', 'control');
+        assert.strictEqual(didSetVariation, true);
+        var newDatafile = fns.cloneDeep(testData);
+        // Remove 'control' variation from variations, traffic allocation, and datafile forcedVariations.
+        newDatafile.experiments[0].variations = [{
+          key: 'variation',
+          id: '111129',
+        }];
+        newDatafile.experiments[0].trafficAllocation = [{
+          entityId: '111129',
+          endOfRange: 9000,
+        }];
+        newDatafile.experiments[0].forcedVariations = {
+          user1: 'variation',
+          user2: 'variation',
+        };
+        // Now the only variation in testExperiment is 'variation'
+        var newConfigObj = projectConfig.createProjectConfig(newDatafile);
+        var forcedVar = decisionServiceInstance.getForcedVariation(newConfigObj, 'testExperiment', 'user1');
+        assert.strictEqual(forcedVar, null);
+      });
+
+      it('should return null when a variation was previously set, and that variation\'s experiment no longer exists on the config object', function() {
+        var didSetVariation = decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', 'control');
+        assert.strictEqual(didSetVariation, true);
+        var newConfigObj = projectConfig.createProjectConfig(testDataWithFeatures);
+        var forcedVar = decisionServiceInstance.getForcedVariation(newConfigObj, 'testExperiment', 'user1');
+        assert.strictEqual(forcedVar, null);
+      });
+
+      it('should return false from setForcedVariation and not set for invalid experiment key', function() {
+        var didSetVariation = decisionServiceInstance.setForcedVariation(configObj, 'definitelyNotAValidExperimentKey', 'user1', 'definitely_not_valid_variation_key');
+        assert.strictEqual(didSetVariation, false);
+        var variation = decisionServiceInstance.getForcedVariation(configObj, 'definitelyNotAValidExperimentKey', 'user1');
+        assert.strictEqual(variation, null);
       });
     });
   });

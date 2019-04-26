@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2016-2019, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,10 +57,12 @@ describe('optimizelyFactory', function() {
         configValidator.validate.throws(new Error('Invalid config or something'));
         var localLogger = loggerPlugin.createLogger({ logLevel: enums.LOG_LEVEL.INFO });
         assert.doesNotThrow(function() {
-          optimizelyFactory.createInstance({
+          var optlyInstance = optimizelyFactory.createInstance({
             datafile: {},
             logger: localLogger,
           });
+          // Invalid datafile causes onReady Promise rejection - catch this
+          optlyInstance.onReady().catch(function() {});
         });
         sinon.assert.calledWith(localLogger.log, enums.LOG_LEVEL.ERROR);
       });
@@ -68,9 +70,11 @@ describe('optimizelyFactory', function() {
       it('should not throw if the provided config is not valid and log an error if no logger is provided', function() {
         configValidator.validate.throws(new Error('Invalid config or something'));
         assert.doesNotThrow(function() {
-          optimizelyFactory.createInstance({
+          var optlyInstance = optimizelyFactory.createInstance({
             datafile: {},
           });
+          // Invalid datafile causes onReady Promise rejection - catch this
+          optlyInstance.onReady().catch(function() {});
         });
         sinon.assert.calledOnce(console.error);
       });
@@ -82,6 +86,8 @@ describe('optimizelyFactory', function() {
           eventDispatcher: fakeEventDispatcher,
           logger: fakeLogger,
         });
+        // Invalid datafile causes onReady Promise rejection - catch this
+        optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
         assert.equal(optlyInstance.clientVersion, '3.1.0');

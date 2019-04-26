@@ -24,11 +24,10 @@ var eventProcessor = require('@optimizely/js-sdk-event-processor');
 var eventTagsValidator = require('../utils/event_tags_validator');
 var notificationCenter = require('../core/notification_center');
 var projectConfig = require('../core/project_config');
-var projectConfigSchema = require('./project_config_schema');
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var userProfileServiceValidator = require('../utils/user_profile_service_validator');
 var stringValidator = require('../utils/string_value_validator');
-var configValidator = require('../utils/config_validator');
+var projectConfigManager = require('../core/project_config/project_config_manager');
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
@@ -41,6 +40,7 @@ var NOTIFICATION_TYPES = enums.NOTIFICATION_TYPES;
 
 var DEFAULT_EVENT_MAX_QUEUE_SIZE = 1;
 var DEFAULT_EVENT_FLUSH_INTERVAL = 5000;
+var DEFAULT_ONREADY_TIMEOUT = 30000;
 
 /**
  * The Optimizely class
@@ -67,29 +67,23 @@ function Optimizely(config) {
   this.clientVersion = config.clientVersion || enums.NODE_CLIENT_VERSION;
   this.errorHandler = config.errorHandler;
   this.eventDispatcher = config.eventDispatcher;
-  this.isValidInstance = config.isValidInstance;
+  this.__isOptimizelyConfigValid = config.isValidInstance;
   this.logger = config.logger;
 
-  try {
-    configValidator.validateDatafile(config.datafile);
-    if (typeof config.datafile === 'string' || config.datafile instanceof String) {
-      config.datafile = JSON.parse(config.datafile);
-    }
+  this.projectConfigManager = new projectConfigManager.ProjectConfigManager({
+    datafile: config.datafile,
+    datafileOptions: config.datafileOptions,
+    jsonSchemaValidator: config.jsonSchemaValidator,
+    sdkKey: config.sdkKey,
+    skipJSONValidation: config.skipJSONValidation,
+  });
 
-    if (config.skipJSONValidation === true) {
-      this.configObj = projectConfig.createProjectConfig(config.datafile);
-      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
-    } else {
-      if (config.jsonSchemaValidator.validate(projectConfigSchema, config.datafile)) {
-        this.configObj = projectConfig.createProjectConfig(config.datafile);
-        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
-      }
-    }
-  } catch (ex) {
-    this.isValidInstance = false;
-    this.logger.log(LOG_LEVEL.ERROR, ex.message);
-    this.errorHandler.handleError(ex);
-  }
+  this.__disposeOnUpdate = this.projectConfigManager.onUpdate(function(configObj) {
+    this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.UPDATED_OPTIMIZELY_CONFIG, MODULE_NAME, configObj.revision, configObj.projectId));
+    this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE);
+  }.bind(this));
+
+  this.__readyPromise = this.projectConfigManager.onReady();
 
   var userProfileService = null;
   if (config.userProfileService) {
@@ -119,7 +113,20 @@ function Optimizely(config) {
     maxQueueSize: config.eventBatchSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
   });
   this.eventProcessor.start();
+
+  this.__readyTimeouts = {};
+  this.__nextReadyTimeoutId = 0;
 }
+
+/**
+ * Returns a truthy value if this instance currently has a valid project config
+ * object, and the initial configuration object that was passed into the
+ * constructor was also valid.
+ * @return {*}
+ */
+Optimizely.prototype.__isValidInstance = function() {
+  return this.__isOptimizelyConfigValid && this.projectConfigManager.getConfig();
+};
 
 /**
  * Buckets visitor and sends impression event to Optimizely.
@@ -130,13 +137,18 @@ function Optimizely(config) {
  */
 Optimizely.prototype.activate = function(experimentKey, userId, attributes) {
   try {
-    if (!this.isValidInstance) {
+    if (!this.__isValidInstance()) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'activate'));
       return null;
     }
 
     if (!this.__validateInputs({ experiment_key: experimentKey, user_id: userId }, attributes)) {
       return this.__notActivatingExperiment(experimentKey, userId);
+    }
+
+    var configObj = this.projectConfigManager.getConfig();
+    if (!configObj) {
+      return null;
     }
 
     try {
@@ -146,7 +158,7 @@ Optimizely.prototype.activate = function(experimentKey, userId, attributes) {
       }
 
       // If experiment is not set to 'Running' status, log accordingly and return variation key
-      if (!projectConfig.isRunning(this.configObj, experimentKey)) {
+      if (!projectConfig.isRunning(configObj, experimentKey)) {
         var shouldNotDispatchActivateLogMessage = sprintf(
           LOG_MESSAGES.SHOULD_NOT_DISPATCH_ACTIVATE,
           MODULE_NAME,
@@ -183,6 +195,11 @@ Optimizely.prototype.activate = function(experimentKey, userId, attributes) {
  * @param {Object} attributes     Optional user attributes
  */
 Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey, userId, attributes) {
+  var configObj = this.projectConfigManager.getConfig();
+  if (!configObj) {
+    return;
+  }
+
   var impressionEvent = eventHelpers.buildImpressionEvent({
     experimentKey: experimentKey,
     variationKey: variationKey,
@@ -190,7 +207,7 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
     userAttributes: attributes,
     clientEngine: this.clientEngine,
     clientVersion: this.clientVersion,
-    configObj: this.configObj,
+    configObj: configObj,
   });
   // TODO is it okay to not pass a projectConfig as second argument
   this.eventProcessor.process(impressionEvent);
@@ -205,24 +222,29 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
  * @param {Object} attributes     Optional user attributes
  */
 Optimizely.prototype.__emitNotificationCenterActivate = function(experimentKey, variationKey, userId, attributes) {
+  var configObj = this.projectConfigManager.getConfig();
+  if (!configObj) {
+    return;
+  }
+
   var variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(
-    this.configObj,
+    configObj,
     experimentKey,
     variationKey
   );
-  var experimentId = projectConfig.getExperimentId(this.configObj, experimentKey);
+  var experimentId = projectConfig.getExperimentId(configObj, experimentKey);
   var impressionEventOptions = {
     attributes: attributes,
     clientEngine: this.clientEngine,
     clientVersion: this.clientVersion,
-    configObj: this.configObj,
+    configObj: configObj,
     experimentId: experimentId,
     userId: userId,
     variationId: variationId,
     logger: this.logger,
   };
   var impressionEvent = eventBuilder.getImpressionEvent(impressionEventOptions);
-  var experiment = this.configObj.experimentKeyMap[experimentKey];
+  var experiment = configObj.experimentKeyMap[experimentKey];
   var variation;
   if (experiment && experiment.variationKeyMap) {
     variation = experiment.variationKeyMap[variationKey];
@@ -248,7 +270,7 @@ Optimizely.prototype.__emitNotificationCenterActivate = function(experimentKey, 
  */
 Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
   try {
-    if (!this.isValidInstance) {
+    if (!this.__isValidInstance()) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'track'));
       return;
     }
@@ -257,7 +279,12 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
       return;
     }
 
-    if (!projectConfig.eventWithKeyExists(this.configObj, eventKey)) {
+    var configObj = this.projectConfigManager.getConfig();
+    if (!configObj) {
+      return;
+    }
+
+    if (!projectConfig.eventWithKeyExists(configObj, eventKey)) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_KEY, MODULE_NAME, eventKey));
     }
 
@@ -270,7 +297,7 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
       userAttributes: attributes,
       clientEngine: this.clientEngine,
       clientVersion: this.clientVersion,
-      configObj: this.configObj,
+      configObj: configObj,
     });
     // TODO is it okay to not pass a projectConfig as second argument
     this.eventProcessor.process(conversionEvent);
@@ -292,11 +319,16 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
  */
 Optimizely.prototype.__emitNotificationCenterTrack = function(eventKey, userId, attributes, eventTags) {
   try {
+    var configObj = this.projectConfigManager.getConfig();
+    if (!configObj) {
+      return;
+    }
+
     var conversionEventOptions = {
       attributes: attributes,
       clientEngine: this.clientEngine,
       clientVersion: this.clientVersion,
-      configObj: this.configObj,
+      configObj: configObj,
       eventKey: eventKey,
       eventTags: eventTags,
       logger: this.logger,
@@ -326,7 +358,7 @@ Optimizely.prototype.__emitNotificationCenterTrack = function(eventKey, userId, 
  */
 Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) {
   try {
-    if (!this.isValidInstance) {
+    if (!this.__isValidInstance()) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getVariation'));
       return null;
     }
@@ -336,14 +368,19 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
         return null;
       }
 
-      var experiment = this.configObj.experimentKeyMap[experimentKey];
+      var configObj = this.projectConfigManager.getConfig();
+      if (!configObj) {
+        return null;
+      }
+
+      var experiment = configObj.experimentKeyMap[experimentKey];
       if (fns.isEmpty(experiment)) {
         this.logger.log(LOG_LEVEL.DEBUG, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
         return null;
       }
 
-      var variationKey = this.decisionService.getVariation(this.configObj, experimentKey, userId, attributes);
-      var decisionNotificationType = projectConfig.isFeatureExperiment(this.configObj, experiment.id) ? DECISION_NOTIFICATION_TYPES.FEATURE_TEST :
+      var variationKey = this.decisionService.getVariation(configObj, experimentKey, userId, attributes);
+      var decisionNotificationType = projectConfig.isFeatureExperiment(configObj, experiment.id) ? DECISION_NOTIFICATION_TYPES.FEATURE_TEST :
         DECISION_NOTIFICATION_TYPES.AB_TEST;
 
       this.notificationCenter.sendNotifications(
@@ -384,8 +421,13 @@ Optimizely.prototype.setForcedVariation = function(experimentKey, userId, variat
     return false;
   }
 
+  var configObj = this.projectConfigManager.getConfig();
+  if (!configObj) {
+    return false;
+  }
+
   try {
-    return projectConfig.setForcedVariation(this.configObj, experimentKey, userId, variationKey, this.logger);
+    return this.decisionService.setForcedVariation(configObj, experimentKey, userId, variationKey);
   } catch (ex) {
     this.logger.log(LOG_LEVEL.ERROR, ex.message);
     this.errorHandler.handleError(ex);
@@ -404,8 +446,13 @@ Optimizely.prototype.getForcedVariation = function(experimentKey, userId) {
     return null;
   }
 
+  var configObj = this.projectConfigManager.getConfig();
+  if (!configObj) {
+    return null;
+  }
+
   try {
-    return projectConfig.getForcedVariation(this.configObj, experimentKey, userId, this.logger);
+    return this.decisionService.getForcedVariation(configObj, experimentKey, userId);
   } catch (ex) {
     this.logger.log(LOG_LEVEL.ERROR, ex.message);
     this.errorHandler.handleError(ex);
@@ -489,7 +536,7 @@ Optimizely.prototype.__filterEmptyValues = function(map) {
  */
 Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes) {
   try {
-    if (!this.isValidInstance) {
+    if (!this.__isValidInstance()) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'isFeatureEnabled'));
       return false;
     }
@@ -498,13 +545,18 @@ Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes)
       return false;
     }
 
-    var feature = projectConfig.getFeatureFromKey(this.configObj, featureKey, this.logger);
+    var configObj = this.projectConfigManager.getConfig();
+    if (!configObj) {
+      return false;
+    }
+
+    var feature = projectConfig.getFeatureFromKey(configObj, featureKey, this.logger);
     if (!feature) {
       return false;
     }
 
     var featureEnabled = false;
-    var decision = this.decisionService.getVariationForFeature(this.configObj, feature, userId, attributes);
+    var decision = this.decisionService.getVariationForFeature(configObj, feature, userId, attributes);
     var variation = decision.variation;
     var sourceInfo = {};
 
@@ -519,7 +571,7 @@ Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes)
         this._sendImpressionEvent(decision.experiment.key, decision.variation.key, userId, attributes);
       }
     }
-    
+
     if (featureEnabled === true) {
       this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
     } else {
@@ -533,7 +585,7 @@ Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes)
       source: decision.decisionSource,
       sourceInfo: sourceInfo
     };
-    
+
     this.notificationCenter.sendNotifications(
       NOTIFICATION_TYPES.DECISION,
       {
@@ -562,7 +614,7 @@ Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes)
 Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
   try {
     var enabledFeatures = [];
-    if (!this.isValidInstance) {
+    if (!this.__isValidInstance()) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getEnabledFeatures'));
       return enabledFeatures;
     }
@@ -571,8 +623,13 @@ Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
       return enabledFeatures;
     }
 
+    var configObj = this.projectConfigManager.getConfig();
+    if (!configObj) {
+      return enabledFeatures;
+    }
+
     fns.forOwn(
-      this.configObj.featureKeyMap,
+      configObj.featureKeyMap,
       function(feature) {
         if (this.isFeatureEnabled(feature.key, userId, attributes)) {
           enabledFeatures.push(feature.key);
@@ -609,7 +666,7 @@ Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
  *                              with the type of the variable
  */
 Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableKey, variableType, userId, attributes) {
-  if (!this.isValidInstance) {
+  if (!this.__isValidInstance()) {
     var apiName = 'getFeatureVariable' + variableType.charAt(0).toUpperCase() + variableType.slice(1);
     this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, apiName));
     return null;
@@ -619,12 +676,17 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     return null;
   }
 
-  var featureFlag = projectConfig.getFeatureFromKey(this.configObj, featureKey, this.logger);
+  var configObj = this.projectConfigManager.getConfig();
+  if (!configObj) {
+    return null;
+  }
+
+  var featureFlag = projectConfig.getFeatureFromKey(configObj, featureKey, this.logger);
   if (!featureFlag) {
     return null;
   }
 
-  var variable = projectConfig.getVariableForFeature(this.configObj, featureKey, variableKey, this.logger);
+  var variable = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, this.logger);
   if (!variable) {
     return null;
   }
@@ -639,11 +701,11 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
 
   var featureEnabled = false;
   var variableValue = variable.defaultValue;
-  var decision = this.decisionService.getVariationForFeature(this.configObj, featureFlag, userId, attributes);
-  
+  var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
+
   if (decision.variation !== null) {
     featureEnabled = decision.variation.featureEnabled;
-    var value = projectConfig.getVariableValueForVariation(this.configObj, variable, decision.variation, this.logger);
+    var value = projectConfig.getVariableValueForVariation(configObj, variable, decision.variation, this.logger);
     if (value !== null) {
       if (featureEnabled === true) {
         variableValue = value;
@@ -791,10 +853,90 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
 Optimizely.prototype.close = function() {
   try {
     this.eventProcessor.stop();
+    if (this.__disposeOnUpdate) {
+      this.__disposeOnUpdate();
+      this.__disposeOnUpdate = null;
+    }
+    if (this.projectConfigManager) {
+      this.projectConfigManager.stop();
+    }
+    Object.keys(this.__readyTimeouts).forEach(function(readyTimeoutId) {
+      var readyTimeoutRecord = this.__readyTimeouts[readyTimeoutId];
+      clearTimeout(readyTimeoutRecord.readyTimeout);
+      readyTimeoutRecord.onClose();
+    }.bind(this));
+    this.__readyTimeouts = {};
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
   }
+};
+
+/**
+ * Returns a Promise that fulfills when this instance is ready to use (meaning
+ * it has a valid datafile), or has failed to become ready within a period of
+ * time (configurable by the timeout property of the options argument), or when
+ * this instance is closed via the close method.
+ *
+ * If a valid datafile was provided in the constructor, the returned Promise is
+ * immediately fulfilled. If an sdkKey was provided, a manager will be used to
+ * fetch  a datafile, and the returned promise will fulfill if that fetch
+ * succeeds or fails before the timeout. The default timeout is 30 seconds,
+ * which will be used if no timeout is provided in the argument options object.
+ *
+ * The returned Promise is fulfilled with a result object containing these
+ * properties:
+ *    - success (boolean): True if this instance is ready to use with a valid
+ *                         datafile, or false if this instance failed to become
+ *                         ready or was closed prior to becoming ready.
+ *    - reason (string=):  If success is false, this is a string property with
+ *                         an explanatory message. Failure could be due to
+ *                         expiration of the timeout, network errors,
+ *                         unsuccessful responses, datafile parse errors,
+ *                         datafile validation errors, or the instance being
+ *                         closed
+ * @param  {Object=}          options
+ * @param  {number|undefined} options.timeout
+ * @return {Promise}
+ */
+Optimizely.prototype.onReady = function(options) {
+  var timeout;
+  if (typeof options === 'object' && options !== null) {
+    timeout = options.timeout;
+  }
+  if (!fns.isFinite(timeout)) {
+    timeout = DEFAULT_ONREADY_TIMEOUT;
+  }
+
+  var resolveTimeoutPromise;
+  var timeoutPromise = new Promise(function(resolve) {
+    resolveTimeoutPromise = resolve;
+  });
+
+  var timeoutId = this.__nextReadyTimeoutId;
+  this.__nextReadyTimeoutId++;
+
+  var onReadyTimeout = function() {
+    delete this.__readyTimeouts[timeoutId];
+    resolveTimeoutPromise({
+      success: false,
+      reason: sprintf('onReady timeout expired after %s ms', timeout),
+    });
+  }.bind(this);
+  var readyTimeout = setTimeout(onReadyTimeout, timeout);
+  var onClose = function() {
+    resolveTimeoutPromise({
+      success: false,
+      reason: 'Instance closed',
+    });
+  };
+
+  this.__readyTimeouts[timeoutId] = {
+    readyTimeout: readyTimeout,
+    onClose: onClose,
+  };
+
+  return Promise.race([this.__readyPromise, timeoutPromise]);
 };
 
 module.exports = Optimizely;

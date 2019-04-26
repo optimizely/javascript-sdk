@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, Optimizely
+ * Copyright 2018-2019, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ describe('javascript-sdk', function() {
         assert.strictEqual(console.info.getCalls().length, 1);
         call = console.info.getCalls()[0];
         assert.strictEqual(call.args.length, 1);
-        assert(call.args[0].indexOf('OPTIMIZELY: Skipping JSON schema validation.') > -1);
+        assert(call.args[0].indexOf('PROJECT_CONFIG: Skipping JSON schema validation.') > -1);
       });
 
       it('should instantiate the logger with a custom logLevel when provided', function() {
@@ -92,15 +92,19 @@ describe('javascript-sdk', function() {
         });
         optlyInstance.activate('testExperiment', 'testUser');
         assert.strictEqual(console.error.getCalls().length, 1);
+        // Invalid datafile causes onReady Promise rejection - catch this error
+        optlyInstanceInvalid.onReady().catch(function() {});
       });
 
       it('should not throw if the provided config is not valid', function() {
         configValidator.validate.throws(new Error('Invalid config or something'));
         assert.doesNotThrow(function() {
-          window.optimizelySdk.createInstance({
+          var optlyInstance = window.optimizelySdk.createInstance({
             datafile: {},
             logger: silentLogger,
           });
+          // Invalid datafile causes onReady Promise rejection - catch this error
+          optlyInstance.onReady().catch(function() {});
         });
       });
 
@@ -113,6 +117,8 @@ describe('javascript-sdk', function() {
         });
         assert.equal('javascript-sdk', optlyInstance.clientEngine);
         assert.equal(packageJSON.version, optlyInstance.clientVersion);
+        // Invalid datafile causes onReady Promise rejection - catch this error
+        optlyInstance.onReady().catch(function() {});
       });
 
       it('should activate with provided event dispatcher', function() {

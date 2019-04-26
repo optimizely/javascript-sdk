@@ -16,7 +16,8 @@
 var fns = require('../../utils/fns');
 var enums = require('../../utils/enums');
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
-var stringValidator = require('../../utils/string_value_validator');
+var configValidator = require('../../utils/config_validator');
+var projectConfigSchema = require('./project_config_schema');
 
 var EXPERIMENT_LAUNCHED_STATUS = 'Launched';
 var EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -86,8 +87,6 @@ module.exports = {
         }
       });
     });
-
-    projectConfig.forcedVariationMap = {};
 
     // Object containing experiment Ids that exist in any feature
     // for checking that experiment is a feature experiment or not.
@@ -297,148 +296,6 @@ module.exports = {
   },
 
   /**
-   * Removes forced variation for given userId and experimentKey
-   * @param  {Object} projectConfig  Object representing project configuration
-   * @param  {string} userId         String representing the user id
-   * @param  {number} experimentId   Number representing the experiment id
-   * @param  {string} experimentKey  Key representing the experiment id
-   * @param  {Object} logger
-   * @throws If the user id is not valid or not in the forced variation map
-   */
-  removeForcedVariation: function(projectConfig, userId, experimentId, experimentKey, logger) {
-    if (!userId) {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_ID, MODULE_NAME));
-    }
-
-    if (projectConfig.forcedVariationMap.hasOwnProperty(userId)) {
-      delete projectConfig.forcedVariationMap[userId][experimentId];
-      logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.VARIATION_REMOVED_FOR_USER, MODULE_NAME, experimentKey, userId));
-    } else {
-      throw new Error(sprintf(ERROR_MESSAGES.USER_NOT_IN_FORCED_VARIATION, MODULE_NAME, userId));
-    }
-  },
-
-  /**
-   * Sets forced variation for given userId and experimentKey
-   * @param  {Object} projectConfig Object representing project configuration
-   * @param  {string} userId        String representing the user id
-   * @param  {number} experimentId  Number representing the experiment id
-   * @param  {number} variationId   Number representing the variation id
-   * @param  {Object} logger
-   * @throws If the user id is not valid
-   */
-  setInForcedVariationMap: function(projectConfig, userId, experimentId, variationId, logger) {
-    if (projectConfig.forcedVariationMap.hasOwnProperty(userId)) {
-      projectConfig.forcedVariationMap[userId][experimentId] = variationId;
-    } else {
-      projectConfig.forcedVariationMap[userId] = {};
-      projectConfig.forcedVariationMap[userId][experimentId] = variationId;
-    }
-
-    logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, MODULE_NAME, variationId, experimentId, userId));
-  },
-
-  /**
-   * Gets the forced variation key for the given user and experiment.
-   * @param  {Object} projectConfig    Object representing project configuration
-   * @param  {string} experimentKey    Key for experiment.
-   * @param  {string} userId           The user Id.
-   * @param  {Object} logger
-   * @return {string|null} Variation   The variation which the given user and experiment should be forced into.
-   */
-  getForcedVariation: function(projectConfig, experimentKey, userId, logger) {
-    var experimentToVariationMap = projectConfig.forcedVariationMap[userId];
-    if (!experimentToVariationMap) {
-      logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, MODULE_NAME, userId));
-      return null;
-    }
-
-    var experimentId;
-    try {
-      var experiment = this.getExperimentFromKey(projectConfig, experimentKey);
-      if (experiment.hasOwnProperty('id')) {
-        experimentId = experiment['id'];
-      } else {
-        // catching improperly formatted experiments
-        logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT, MODULE_NAME, experimentKey));
-        return null;
-      }
-    } catch (ex) {
-      // catching experiment not in datafile
-      logger.log(LOG_LEVEL.ERROR, ex.message);
-      return null;
-    }
-
-    var variationId = experimentToVariationMap[experimentId];
-    if (!variationId) {
-      logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT, MODULE_NAME, experimentKey, userId));
-      return null;
-    }
-
-    var variationKey = this.getVariationKeyFromId(projectConfig, variationId);
-    logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.USER_HAS_FORCED_VARIATION, MODULE_NAME, variationKey, experimentKey, userId));
-
-    return variationKey;
-  },
-
-  /**
-   * Sets the forced variation for a user in a given experiment
-   * @param  {Object} projectConfig    Object representing project configuration
-   * @param {string} experimentKey  Key for experiment.
-   * @param {string} userId         The user Id.
-   * @param {string} variationKey   Key for variation. If null, then clear the existing experiment-to-variation mapping
-   * @param  {Object} logger
-   * @return {boolean} A boolean value that indicates if the set completed successfully.
-   */
-  setForcedVariation: function(projectConfig, experimentKey, userId, variationKey, logger) {
-    if (variationKey != null && !stringValidator.validate(variationKey)) {
-      logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.INVALID_VARIATION_KEY, MODULE_NAME));
-      return false;
-    }
-
-    var experimentId;
-    try {
-      var experiment = this.getExperimentFromKey(projectConfig, experimentKey);
-      if (experiment.hasOwnProperty('id')) {
-        experimentId = experiment['id'];
-      } else {
-        // catching improperly formatted experiments
-        logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT, MODULE_NAME, experimentKey));
-        return false;
-      }
-    } catch (ex) {
-      // catching experiment not in datafile
-      logger.log(LOG_LEVEL.ERROR, ex.message);
-      return false;
-    }
-
-    if (variationKey == null) {
-      try {
-        this.removeForcedVariation(projectConfig, userId, experimentId, experimentKey, logger);
-        return true;
-      } catch (ex) {
-        logger.log(LOG_LEVEL.ERROR, ex.message);
-        return false;
-      }
-    }
-
-    var variationId = this.getVariationIdFromExperimentAndVariationKey(projectConfig, experimentKey, variationKey);
-
-    if (!variationId) {
-      logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.NO_VARIATION_FOR_EXPERIMENT_KEY, MODULE_NAME, variationKey, experimentKey));
-      return false;
-    }
-
-    try {
-      this.setInForcedVariationMap(projectConfig, userId, experimentId, variationId, logger);
-      return true;
-    } catch (ex) {
-      logger.log(LOG_LEVEL.ERROR, ex.message);
-      return false;
-    }
-  },
-
-  /**
    * Get experiment from provided experiment id. Log an error if no experiment
    * exists in the project config with the given ID.
    * @param  {Object} projectConfig  Object representing project configuration
@@ -607,7 +464,7 @@ module.exports = {
   },
 
   /**
-   * 
+   *
    * @param {Object} projectConfig
    * @param {string} experimentId
    * @returns {boolean} Returns true if experiment belongs to
@@ -615,5 +472,27 @@ module.exports = {
    */
   isFeatureExperiment: function(projectConfig, experimentId) {
     return projectConfig.experimentFeatureMap.hasOwnProperty(experimentId);
-  }
+  },
+
+  /**
+   * Try to create a project config object from the given datafile and
+   * configuration properties.
+   * If successful, return the project config object, otherwise throws an error
+   * @param  {Object} config
+   * @param  {Object} config.datafile
+   * @param  {Object} config.jsonSchemaValidator
+   * @param  {Object} config.logger
+   * @param  {Object} config.skipJSONValidation
+   * @return {Object} Project config object
+   */
+  tryCreatingProjectConfig: function(config) {
+    configValidator.validateDatafile(config.datafile);
+    if (config.skipJSONValidation === true) {
+      config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
+    } else if (config.jsonSchemaValidator) {
+      config.jsonSchemaValidator.validate(projectConfigSchema, config.datafile);
+      config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
+    }
+    return module.exports.createProjectConfig(config.datafile);
+  },
 };
