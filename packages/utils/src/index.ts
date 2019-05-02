@@ -98,3 +98,5 @@ export function sprintf(format: string, ...args: any[]): string {
     }
   })
 }
+
+export { default as EventEmitter } from './eventEmitter';
