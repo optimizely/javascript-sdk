@@ -178,8 +178,10 @@ declare module '@optimizely/optimizely-sdk' {
         ERROR = 4,
     }
 
-    export enum NOTIFICATION_TYPES {
-        ACTIVATE = 'ACTIVATE:experiment, user_id, attributes, variation, events',
+    enum NOTIFICATION_TYPES {
+        ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
+        DECISION = 'DECISION:type, userId, attributes, decisionInfo',
+        OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
         TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
     }
   }
