@@ -15,13 +15,35 @@
  */
 
 declare module '@optimizely/optimizely-sdk' {
-    import enums = require('@optimizely/optimizely-sdk/lib/utils/enums');
+    export namespace enums {
+        enum LOG_LEVEL {
+            NOTSET = 0,
+            DEBUG = 1,
+            INFO = 2,
+            WARNING = 3,
+            ERROR = 4,
+        }
+
+        enum NOTIFICATION_TYPES {
+            ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
+            DECISION = 'DECISION:type, userId, attributes, decisionInfo',
+            OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
+            TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
+        }
+    }
 
     export function createInstance(config: Config): Client;
 
+    interface DatafileOptions {
+        autoUpdate?: boolean;
+        updateInterval?: number;
+        urlTemplate?: string;
+    }
+
     // The options object given to Optimizely.createInstance.
     export interface Config {
-        datafile: object;
+        datafile?: object | string;
+        datafileOptions?: DatafileOptions,
         errorHandler?: object;
         eventDispatcher?: object;
         logger?: object;
@@ -31,6 +53,7 @@ declare module '@optimizely/optimizely-sdk' {
         userProfileService?: UserProfileService | null;
         eventBatchSize?: number
         eventFlushInterval?: number
+        sdkKey?: string;
     }
 
     export interface Client {
@@ -46,6 +69,8 @@ declare module '@optimizely/optimizely-sdk' {
         getFeatureVariableDouble(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): number | null;
         getFeatureVariableInteger(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): number | null;
         getFeatureVariableString(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): string | null;
+        onReady(options?: { timeout?: number }): Promise<void>
+        close(): void
     }
 
     // An event to be submitted to Optimizely, enabling tracking the reach and impact of
@@ -145,13 +170,14 @@ declare module '@optimizely/optimizely-sdk' {
   }
 
   declare module '@optimizely/optimizely-sdk/lib/utils/enums'{
-    export enum LOG_LEVEL{
+    export enum LOG_LEVEL {
         NOTSET = 0,
         DEBUG = 1,
         INFO = 2,
         WARNING =  3,
         ERROR = 4,
     }
+
     export enum NOTIFICATION_TYPES {
         ACTIVATE = 'ACTIVATE:experiment, user_id, attributes, variation, events',
         TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
