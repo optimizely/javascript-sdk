@@ -178,7 +178,7 @@ declare module '@optimizely/optimizely-sdk' {
         ERROR = 4,
     }
 
-    enum NOTIFICATION_TYPES {
+    export enum NOTIFICATION_TYPES {
         ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
         DECISION = 'DECISION:type, userId, attributes, decisionInfo',
         OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
