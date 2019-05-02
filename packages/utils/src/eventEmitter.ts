@@ -19,7 +19,7 @@ export type Disposer = () => void
 export type Listener = (arg?: any) => void
 
 interface Listeners {
-  [index: string]: Listener[]
+  [index: string]: Listener[] | undefined
 }
 
 export default class EventEmitter {
@@ -29,11 +29,14 @@ export default class EventEmitter {
     if (!this.listeners[eventName]) {
       this.listeners[eventName] = []
     }
-    this.listeners[eventName].push(listener)
+    this.listeners[eventName]!.push(listener)
     return () => {
-      const index = this.listeners[eventName].indexOf(listener);
-      if (index > -1) {
-        this.listeners[eventName].splice(index, 1);
+      const listenersForEvent = this.listeners[eventName];
+      if (listenersForEvent) {
+        const index = listenersForEvent.indexOf(listener);
+        if (index > -1) {
+          listenersForEvent.splice(index, 1);
+        }
       }
     }
   }
