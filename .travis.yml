@@ -39,7 +39,7 @@ jobs:
       before_script:
         - mkdir $HOME/travisci-tools && pushd $HOME/travisci-tools && git init && git pull https://$CI_USER_TOKEN@github.com/optimizely/travisci-tools.git && popd
       script:
-        - "$HOME/travisci-tools/fsc-trigger/trigger_fullstack-sdk-compat.sh"
+        - "$HOME/travisci-tools/fsc-trigger/trigger_fullstack-sdk-compat.sh sohail/debugderefissue"
       after_success: travis_terminate 0
     - stage: Cross-browser and umd unit tests
       node_js: '8'
