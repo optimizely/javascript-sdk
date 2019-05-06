@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2017-2018, Optimizely, Inc. and contributors                        *
+ * Copyright 2017-2019, Optimizely, Inc. and contributors                        *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -888,6 +888,18 @@ describe('lib/core/decision_service', function() {
             assert.deepEqual(decision, expectedDecision);
             sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG, 'DECISION_SERVICE: User user1 is not in any experiment on the feature feature_with_group.');
           });
+
+          it('returns null decision for group experiment not referenced by the feature', function() {
+            var noTrafficExpFeature = configObj.featureKeyMap.feature_exp_no_traffic;
+            var decision = decisionServiceInstance.getVariationForFeature(noTrafficExpFeature, 'user1');
+            var expectedDecision = {
+              experiment: null,
+              variation: null,
+              decisionSource: null,
+            };
+            assert.deepEqual(decision, expectedDecision);
+            sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG, 'DECISION_SERVICE: User user1 is not in any experiment on the feature feature_exp_no_traffic.');
+          });
         });
 
         describe('user not bucketed into the group', function() {
@@ -1341,6 +1353,48 @@ describe('lib/core/decision_service', function() {
           sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG, 'DECISION_SERVICE: User user1 is not in any experiment on the feature unused_flag.');
           sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG, 'DECISION_SERVICE: There is no rollout of feature unused_flag.');
         });
+      });
+    });
+
+    describe('_getVariationForRollout', function() {
+      var feature;
+      var configObj;
+      var decisionService;
+      var __buildBucketerParamsSpy;
+
+      beforeEach(function() {
+        configObj = projectConfig.createProjectConfig(testDataWithFeatures);
+        feature = configObj.featureKeyMap.test_feature;
+        decisionService = DecisionService.createDecisionService({
+          configObj: configObj,
+          logger: logger.createLogger({logLevel: LOG_LEVEL.INFO}),
+        });
+        __buildBucketerParamsSpy = sinon.spy(decisionService, '__buildBucketerParams');
+      });
+      
+      afterEach(function() {
+        __buildBucketerParamsSpy.restore();
+      });
+
+      it('should call __buildBucketerParams with user Id when bucketing Id is not provided in the attributes', function () {
+        var attributes = { test_attribute: 'test_value' };
+        decisionService._getVariationForRollout(feature, 'testUser', attributes);
+
+        sinon.assert.callCount(__buildBucketerParamsSpy, 2);
+        sinon.assert.calledWithExactly(__buildBucketerParamsSpy, '594031', 'testUser', 'testUser');
+        sinon.assert.calledWithExactly(__buildBucketerParamsSpy, '594037', 'testUser', 'testUser');
+      });
+
+      it('should call __buildBucketerParams with bucketing Id when bucketing Id is provided in the attributes', function () {
+        var attributes = {
+          test_attribute: 'test_value',
+          $opt_bucketing_id: 'abcdefg' 
+        };
+        decisionService._getVariationForRollout(feature, 'testUser', attributes);
+        
+        sinon.assert.callCount(__buildBucketerParamsSpy, 2);
+        sinon.assert.calledWithExactly(__buildBucketerParamsSpy, '594031', 'abcdefg', 'testUser');
+        sinon.assert.calledWithExactly(__buildBucketerParamsSpy, '594037', 'abcdefg', 'testUser');
       });
     });
   });

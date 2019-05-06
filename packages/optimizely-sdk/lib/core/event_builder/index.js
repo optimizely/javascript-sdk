@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018, Optimizely
+ * Copyright 2016-2019, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,12 +144,12 @@ function getVisitorSnapshot(configObj, eventKey, eventTags, experimentsToVariati
 
   if (eventTags) {
     var revenue = eventTagUtils.getRevenueValue(eventTags, logger);
-    if (revenue) {
+    if (revenue !== null) {
       eventDict[enums.RESERVED_EVENT_KEYWORDS.REVENUE] = revenue;
     }
 
     var eventValue = eventTagUtils.getEventValue(eventTags, logger);
-    if (eventValue) {
+    if (eventValue !== null) {
       eventDict[enums.RESERVED_EVENT_KEYWORDS.VALUE] = eventValue;
     }
 

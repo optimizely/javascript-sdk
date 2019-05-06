@@ -5,7 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-Changes that have landed but are not yet released.
+- Decision service: Return null variation if experiment key does not exist in feature's experimentIds array. ([#206](https://github.com/optimizely/javascript-sdk/pull/206))
+- Decision service: Added bucketing id in getVariationForRollout method ([#200](https://github.com/optimizely/javascript-sdk/pull/200))
+- Event tags: Do not exclude falsy revenue and event values in the event payload. ([#213](https://github.com/optimizely/javascript-sdk/pull/213))
 
 ## [2.3.1] - November 14, 2018
 
