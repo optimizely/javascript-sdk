@@ -75,6 +75,12 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
 
   private backoffController: BackoffController
 
+  // When true, this means the update interval timeout fired before the current
+  // sync completed. In that case, we should sync again immediately upon
+  // completion of the current request, instead of waiting another update
+  // interval.
+  private syncOnCurrentRequestComplete: boolean
+
   constructor(config: DatafileManagerConfig) {
     const configWithDefaultsApplied: DatafileManagerConfig = {
       ...this.getConfigDefaults(),
@@ -118,6 +124,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       this.updateInterval = DEFAULT_UPDATE_INTERVAL
     }
     this.backoffController = new BackoffController()
+    this.syncOnCurrentRequestComplete = false
   }
 
   get(): object | null {
@@ -211,13 +218,15 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
 
     this.currentRequest = undefined
 
-    if (this.autoUpdate) {
-      this.scheduleNextUpdate()
-    }
     if (!this.isReadyPromiseSettled && !this.autoUpdate) {
       // We will never resolve ready, so reject it
       this.rejectReadyPromise(new Error('Failed to become ready'))
     }
+
+    if (this.autoUpdate && this.syncOnCurrentRequestComplete) {
+      this.syncDatafile()
+    }
+    this.syncOnCurrentRequestComplete = false
   }
 
   private syncDatafile(): void {
@@ -241,6 +250,10 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     this.currentRequest.responsePromise
       .then(onRequestResolved, onRequestRejected)
       .then(onRequestComplete, onRequestComplete)
+
+    if (this.autoUpdate) {
+      this.scheduleNextUpdate()
+    }
   }
 
   private resolveReadyPromise(): void {
@@ -258,7 +271,11 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     const nextUpdateDelay = Math.max(currentBackoffDelay, this.updateInterval)
     logger.debug('Scheduling sync in %s ms', nextUpdateDelay)
     this.cancelTimeout = this.timeoutFactory.setTimeout(() => {
-      this.syncDatafile()
+      if (this.currentRequest) {
+        this.syncOnCurrentRequestComplete = true
+      } else {
+        this.syncDatafile()
+      }
     }, nextUpdateDelay)
   }
 
