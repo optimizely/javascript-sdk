@@ -9,6 +9,9 @@ Changes that have landed but are not yet released.
 
 ### Changed
 - Changed value for node in engines in package.json from >=4.0.0 to >=6.0.0
+- Updated polling behavior:
+  - Start update interval timer immediately after request
+  - When update interval timer fires during request, wait until request completes, then immediately start next request
 
 ## [0.2.0] - April 9, 2019
 
