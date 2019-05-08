@@ -61,7 +61,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
 
   private readonly updateInterval: number
 
-  private cancelTimeout?: () => void
+  private cancelTimeout: (() => void) | null
 
   private isStarted: boolean
 
@@ -71,7 +71,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
 
   private timeoutFactory: TimeoutFactory
 
-  private currentRequest?: AbortableRequest
+  private currentRequest: AbortableRequest | null
 
   private backoffController: BackoffController
 
@@ -123,6 +123,8 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       logger.warn('Invalid updateInterval %s, defaulting to %s', updateInterval, DEFAULT_UPDATE_INTERVAL)
       this.updateInterval = DEFAULT_UPDATE_INTERVAL
     }
+    this.cancelTimeout = null
+    this.currentRequest = null
     this.backoffController = new BackoffController()
     this.syncOnCurrentRequestComplete = false
   }
@@ -145,14 +147,14 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     this.isStarted = false
     if (this.cancelTimeout) {
       this.cancelTimeout()
-      this.cancelTimeout = undefined
+      this.cancelTimeout = null
     }
 
     this.emitter.removeAllListeners()
 
     if (this.currentRequest) {
       this.currentRequest.abort()
-      this.currentRequest = undefined
+      this.currentRequest = null
     }
 
     return Promise.resolve()
@@ -216,7 +218,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       return
     }
 
-    this.currentRequest = undefined
+    this.currentRequest = null
 
     if (!this.isReadyPromiseSettled && !this.autoUpdate) {
       // We will never resolve ready, so reject it
