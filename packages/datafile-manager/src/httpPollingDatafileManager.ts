@@ -61,7 +61,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
 
   private readonly updateInterval: number
 
-  private cancelTimeout?: () => void
+  private cancelTimeout: (() => void) | null
 
   private isStarted: boolean
 
@@ -71,9 +71,15 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
 
   private timeoutFactory: TimeoutFactory
 
-  private currentRequest?: AbortableRequest
+  private currentRequest: AbortableRequest | null
 
   private backoffController: BackoffController
+
+  // When true, this means the update interval timeout fired before the current
+  // sync completed. In that case, we should sync again immediately upon
+  // completion of the current request, instead of waiting another update
+  // interval.
+  private syncOnCurrentRequestComplete: boolean
 
   constructor(config: DatafileManagerConfig) {
     const configWithDefaultsApplied: DatafileManagerConfig = {
@@ -117,7 +123,10 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       logger.warn('Invalid updateInterval %s, defaulting to %s', updateInterval, DEFAULT_UPDATE_INTERVAL)
       this.updateInterval = DEFAULT_UPDATE_INTERVAL
     }
+    this.cancelTimeout = null
+    this.currentRequest = null
     this.backoffController = new BackoffController()
+    this.syncOnCurrentRequestComplete = false
   }
 
   get(): object | null {
@@ -138,14 +147,14 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     this.isStarted = false
     if (this.cancelTimeout) {
       this.cancelTimeout()
-      this.cancelTimeout = undefined
+      this.cancelTimeout = null
     }
 
     this.emitter.removeAllListeners()
 
     if (this.currentRequest) {
       this.currentRequest.abort()
-      this.currentRequest = undefined
+      this.currentRequest = null
     }
 
     return Promise.resolve()
@@ -209,15 +218,17 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       return
     }
 
-    this.currentRequest = undefined
+    this.currentRequest = null
 
-    if (this.autoUpdate) {
-      this.scheduleNextUpdate()
-    }
     if (!this.isReadyPromiseSettled && !this.autoUpdate) {
       // We will never resolve ready, so reject it
       this.rejectReadyPromise(new Error('Failed to become ready'))
     }
+
+    if (this.autoUpdate && this.syncOnCurrentRequestComplete) {
+      this.syncDatafile()
+    }
+    this.syncOnCurrentRequestComplete = false
   }
 
   private syncDatafile(): void {
@@ -241,6 +252,10 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     this.currentRequest.responsePromise
       .then(onRequestResolved, onRequestRejected)
       .then(onRequestComplete, onRequestComplete)
+
+    if (this.autoUpdate) {
+      this.scheduleNextUpdate()
+    }
   }
 
   private resolveReadyPromise(): void {
@@ -258,7 +273,11 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     const nextUpdateDelay = Math.max(currentBackoffDelay, this.updateInterval)
     logger.debug('Scheduling sync in %s ms', nextUpdateDelay)
     this.cancelTimeout = this.timeoutFactory.setTimeout(() => {
-      this.syncDatafile()
+      if (this.currentRequest) {
+        this.syncOnCurrentRequestComplete = true
+      } else {
+        this.syncDatafile()
+      }
     }, nextUpdateDelay)
   }
 
