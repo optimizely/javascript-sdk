@@ -275,32 +275,34 @@ describe('httpPollingDatafileManager', () => {
           expect(manager.get()).toEqual({ foo3: 'bar3' })
         })
 
-        it('waits until the request is complete before making the next request when the update interval time fires before the request is complete', async () => {
-          let resolveResponsePromise: (resp: Response) => void
-          const responsePromise: Promise<Response> = new Promise(res => {
-            resolveResponsePromise = res
-          })
-          const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest').mockReturnValueOnce({
-            abort() {},
-            responsePromise,
-          })
-          const setTimeoutSpy = jest.spyOn(testTimeoutFactory, 'setTimeout')
+        describe('when the update interval time fires before the request is complete', () => {
+          it('waits until the request is complete before making the next request', async () => {
+            let resolveResponsePromise: (resp: Response) => void
+            const responsePromise: Promise<Response> = new Promise(res => {
+              resolveResponsePromise = res
+            })
+            const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest').mockReturnValueOnce({
+              abort() {},
+              responsePromise,
+            })
+            const setTimeoutSpy = jest.spyOn(testTimeoutFactory, 'setTimeout')
 
-          manager.start()
-          expect(setTimeoutSpy).toBeCalledTimes(1)
-          expect(makeGetRequestSpy).toBeCalledTimes(1)
+            manager.start()
+            expect(setTimeoutSpy).toBeCalledTimes(1)
+            expect(makeGetRequestSpy).toBeCalledTimes(1)
 
-          testTimeoutFactory.timeoutFns[0]()
-          expect(makeGetRequestSpy).toBeCalledTimes(1)
+            testTimeoutFactory.timeoutFns[0]()
+            expect(makeGetRequestSpy).toBeCalledTimes(1)
 
-          resolveResponsePromise!({
-            statusCode: 200,
-            body: '{"foo": "bar"}',
-            headers: {},
+            resolveResponsePromise!({
+              statusCode: 200,
+              body: '{"foo": "bar"}',
+              headers: {},
+            })
+            await responsePromise
+            expect(makeGetRequestSpy).toBeCalledTimes(2)
+            expect(setTimeoutSpy).toBeCalledTimes(2)
           })
-          await responsePromise
-          expect(makeGetRequestSpy).toBeCalledTimes(2)
-          expect(setTimeoutSpy).toBeCalledTimes(2)
         })
 
         it('cancels a pending timeout when stop is called', async () => {
