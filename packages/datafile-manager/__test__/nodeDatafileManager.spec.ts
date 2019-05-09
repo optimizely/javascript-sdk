@@ -27,7 +27,6 @@ describe('nodeDatafileManager', () => {
   })
 
   afterEach(() => {
-    jest.clearAllMocks()
     jest.restoreAllMocks()
     jest.clearAllTimers()
   })
