@@ -17,19 +17,19 @@
 import NodeDatafileManager from '../src/nodeDatafileManager'
 import * as nodeRequest from '../src/nodeRequest'
 import { Headers, AbortableRequest } from '../src/http'
-import TestTimeoutFactory from './testTimeoutFactory'
+import { advanceTimersByTime, getTimerCount } from './testUtils';
 
 describe('nodeDatafileManager', () => {
-  const testTimeoutFactory: TestTimeoutFactory = new TestTimeoutFactory()
-
   let makeGetRequestSpy: jest.SpyInstance<AbortableRequest, [string, Headers]>
   beforeEach(() => {
+    jest.useFakeTimers()
     makeGetRequestSpy = jest.spyOn(nodeRequest, 'makeGetRequest')
   })
 
   afterEach(() => {
+    jest.clearAllMocks()
     jest.restoreAllMocks()
-    testTimeoutFactory.cleanup()
+    jest.clearAllTimers()
   })
 
   it('calls nodeEnvironment.makeGetRequest when started', async () => {
@@ -69,11 +69,10 @@ describe('nodeDatafileManager', () => {
     const manager = new NodeDatafileManager({
       sdkKey: '1234',
       autoUpdate: true,
-      timeoutFactory: testTimeoutFactory,
     })
     manager.start()
     await manager.onReady()
-    testTimeoutFactory.timeoutFns[0]()
+    await advanceTimersByTime(300000)
     expect(makeGetRequestSpy).toBeCalledTimes(2)
     expect(makeGetRequestSpy.mock.calls[1][0]).toBe('https://cdn.optimizely.com/datafiles/1234.json')
     expect(makeGetRequestSpy.mock.calls[1][1]).toEqual({
@@ -96,13 +95,12 @@ describe('nodeDatafileManager', () => {
     })
     const manager = new NodeDatafileManager({
       sdkKey: '1234',
-      timeoutFactory: testTimeoutFactory,
     })
     manager.start()
     await manager.onReady()
     // Should set a timeout for a later update
-    expect(testTimeoutFactory.timeoutFns.length).toBe(1)
-    testTimeoutFactory.timeoutFns[0]()
+    expect(getTimerCount()).toBe(1)
+    await advanceTimersByTime(300000)
     expect(makeGetRequestSpy).toBeCalledTimes(2)
 
     await manager.stop()

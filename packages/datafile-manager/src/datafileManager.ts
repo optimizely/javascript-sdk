@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { TimeoutFactory } from "./timeoutFactory";
-
  export interface DatafileUpdate {
    datafile: object
  }
@@ -41,7 +39,6 @@ export interface DatafileManagerConfig {
   autoUpdate?: boolean
   datafile?: object
   sdkKey: string
-  timeoutFactory?: TimeoutFactory,
   updateInterval?: number
   urlTemplate?: string
 }

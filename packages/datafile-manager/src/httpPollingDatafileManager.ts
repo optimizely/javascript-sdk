@@ -20,7 +20,6 @@ import { DatafileManager, DatafileManagerConfig, DatafileUpdate } from './datafi
 import EventEmitter from './eventEmitter'
 import { AbortableRequest, Response, Headers } from './http';
 import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE } from './config'
-import { TimeoutFactory, DEFAULT_TIMEOUT_FACTORY } from './timeoutFactory'
 import BackoffController from './backoffController';
 
 const logger = getLogger('DatafileManager')
@@ -61,15 +60,13 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
 
   private readonly updateInterval: number
 
-  private cancelTimeout: (() => void) | null
+  private currentTimeout: any
 
   private isStarted: boolean
 
   private lastResponseLastModified?: string
 
   private datafileUrl: string
-
-  private timeoutFactory: TimeoutFactory
 
   private currentRequest: AbortableRequest | null
 
@@ -90,7 +87,6 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       datafile,
       autoUpdate = false,
       sdkKey,
-      timeoutFactory = DEFAULT_TIMEOUT_FACTORY,
       updateInterval = DEFAULT_UPDATE_INTERVAL,
       urlTemplate = DEFAULT_URL_TEMPLATE,
     } = configWithDefaultsApplied
@@ -114,7 +110,6 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
 
     this.datafileUrl = sprintf(urlTemplate, sdkKey)
 
-    this.timeoutFactory = timeoutFactory
     this.emitter = new EventEmitter()
     this.autoUpdate = autoUpdate
     if (isValidUpdateInterval(updateInterval)) {
@@ -123,7 +118,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
       logger.warn('Invalid updateInterval %s, defaulting to %s', updateInterval, DEFAULT_UPDATE_INTERVAL)
       this.updateInterval = DEFAULT_UPDATE_INTERVAL
     }
-    this.cancelTimeout = null
+    this.currentTimeout = null
     this.currentRequest = null
     this.backoffController = new BackoffController()
     this.syncOnCurrentRequestComplete = false
@@ -145,9 +140,9 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
   stop(): Promise<void> {
     logger.debug('Datafile manager stopped')
     this.isStarted = false
-    if (this.cancelTimeout) {
-      this.cancelTimeout()
-      this.cancelTimeout = null
+    if (this.currentTimeout) {
+      clearTimeout(this.currentTimeout)
+      this.currentTimeout = null
     }
 
     this.emitter.removeAllListeners()
@@ -272,7 +267,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     const currentBackoffDelay = this.backoffController.getDelay()
     const nextUpdateDelay = Math.max(currentBackoffDelay, this.updateInterval)
     logger.debug('Scheduling sync in %s ms', nextUpdateDelay)
-    this.cancelTimeout = this.timeoutFactory.setTimeout(() => {
+    this.currentTimeout = setTimeout(() => {
       if (this.currentRequest) {
         this.syncOnCurrentRequestComplete = true
       } else {
