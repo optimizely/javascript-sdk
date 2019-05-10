@@ -193,6 +193,5 @@ describe('nodeEnvironment', () => {
         scope.off('request', requestListener)
       })
     })
-
   })
 })
