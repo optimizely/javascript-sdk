@@ -18,19 +18,19 @@
  */
 
 import {
-  SinonFakeXMLHttpRequest,
-  SinonFakeXMLHttpRequestStatic,
-  useFakeXMLHttpRequest,
-} from 'sinon'
+  FakeXMLHttpRequest,
+  FakeXMLHttpRequestStatic,
+  fakeXhr
+} from 'nise'
 import { makeGetRequest } from '../src/browserRequest'
 
 describe('browserRequest', () => {
   describe('makeGetRequest', () => {
-    let mockXHR: SinonFakeXMLHttpRequestStatic
-    let xhrs: SinonFakeXMLHttpRequest[]
+    let mockXHR: FakeXMLHttpRequestStatic
+    let xhrs: FakeXMLHttpRequest[]
     beforeEach(() => {
       xhrs = []
-      mockXHR = useFakeXMLHttpRequest()
+      mockXHR = fakeXhr.useFakeXMLHttpRequest()
       mockXHR.onCreate = req => xhrs.push(req)
     })
 
@@ -125,6 +125,14 @@ describe('browserRequest', () => {
       const req = makeGetRequest('https://cdn.optimizely.com/datafiles/123.json', {})
       xhrs[0].error()
       await expect(req.responsePromise).rejects.toThrow()
+    })
+
+    it('sets a timeout on the request object', () => {
+      const onCreateMock = jest.fn()
+      mockXHR.onCreate = onCreateMock
+      makeGetRequest('https://cdn.optimizely.com/datafiles/123.json', {})
+      expect(onCreateMock).toBeCalledTimes(1)
+      expect(onCreateMock.mock.calls[0][0].timeout).toBe(60000)
     })
   })
 })
