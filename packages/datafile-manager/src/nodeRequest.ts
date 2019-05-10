@@ -101,6 +101,7 @@ function getResponseFromRequest(request: http.ClientRequest): Promise<Response> 
 
     request.on('error', (err: any) => {
       clearTimeout(timeout)
+
       if (err instanceof Error) {
         reject(err)
       } else if (typeof err === 'string') {

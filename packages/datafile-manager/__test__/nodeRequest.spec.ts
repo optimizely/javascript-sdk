@@ -167,7 +167,7 @@ describe('nodeEnvironment', () => {
         jest.clearAllTimers()
       })
 
-      it('rejects the response promise when the timeout fires', async () => {
+      it('rejects the response promise and aborts the request when the response is not received before the timeout', async () => {
         const scope = nock(host)
           .get(path)
           .delay(61000)
