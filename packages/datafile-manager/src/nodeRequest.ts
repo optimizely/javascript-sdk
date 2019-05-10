@@ -61,12 +61,11 @@ function createHeadersFromNodeIncomingMessage(
   return headers
 }
 
-function getResponseFromRequest(request: http.ClientRequest): [Promise<Response>, NodeJS.Timeout] {
-  let timeout!: NodeJS.Timeout
+function getResponseFromRequest(request: http.ClientRequest): Promise<Response> {
   // TODO: When we drop support for Node 6, consider using util.promisify instead of
   // constructing own Promise
-  const promise: Promise<Response> = new Promise((resolve, reject) => {
-    timeout = setTimeout(() => {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
       request.abort()
       reject(new Error('Request timed out'))
     }, REQUEST_TIMEOUT_MS)
@@ -112,7 +111,6 @@ function getResponseFromRequest(request: http.ClientRequest): [Promise<Response>
       }
     })
   })
-  return [promise, timeout]
 }
 
 export function makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest {
@@ -140,13 +138,12 @@ export function makeGetRequest(reqUrl: string, headers: Headers): AbortableReque
   }
 
   const request = requester(requestOptions)
-  const [responsePromise, timeout] = getResponseFromRequest(request)
+  const responsePromise = getResponseFromRequest(request)
 
   request.end()
 
   return {
     abort() {
-      clearTimeout(timeout)
       request.abort()
     },
     responsePromise,
