@@ -12,6 +12,7 @@ Changes that have landed but are not yet released.
 - Updated polling behavior:
   - Start update interval timer immediately after request
   - When update interval timer fires during request, wait until request completes, then immediately start next request
+- Remove `timeoutFactory` property from `HTTPPollingDatafileManager` constructor argument object
 
 ## [0.2.0] - April 9, 2019
 
