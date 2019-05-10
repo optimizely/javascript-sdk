@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+### New Features
+- Added 60 second timeout for all requests
+
 ### Changed
 - Changed value for node in engines in package.json from >=4.0.0 to >=6.0.0
 - Updated polling behavior:
