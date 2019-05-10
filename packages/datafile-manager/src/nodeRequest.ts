@@ -18,6 +18,7 @@ import http from 'http'
 import https from 'https'
 import url from 'url'
 import { Headers, AbortableRequest, Response } from './http'
+import { REQUEST_TIMEOUT_MS } from './config';
 
 // Shared signature between http.request and https.request
 type ClientRequestCreator = (options: http.RequestOptions) => http.ClientRequest
@@ -64,6 +65,11 @@ function getResponseFromRequest(request: http.ClientRequest): Promise<Response> 
   // TODO: When we drop support for Node 6, consider using util.promisify instead of
   // constructing own Promise
   return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      request.abort()
+      reject(new Error('Request timed out'))
+    }, REQUEST_TIMEOUT_MS)
+
     request.once('response', (incomingMessage: http.IncomingMessage) => {
       if (request.aborted) {
         return
@@ -83,6 +89,8 @@ function getResponseFromRequest(request: http.ClientRequest): Promise<Response> 
           return
         }
 
+        clearTimeout(timeout)
+
         resolve({
           statusCode: incomingMessage.statusCode,
           body: responseData,
@@ -92,6 +100,7 @@ function getResponseFromRequest(request: http.ClientRequest): Promise<Response> 
     })
 
     request.on('error', (err: any) => {
+      clearTimeout(timeout)
       if (err instanceof Error) {
         reject(err)
       } else if (typeof err === 'string') {
