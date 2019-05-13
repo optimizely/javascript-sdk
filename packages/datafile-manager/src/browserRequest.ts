@@ -15,6 +15,10 @@
  */
 
 import { AbortableRequest, Response, Headers } from './http'
+import { REQUEST_TIMEOUT_MS } from './config'
+import { getLogger } from '@optimizely/js-sdk-logging'
+
+const logger = getLogger('DatafileManager')
 
 const GET_METHOD = 'GET'
 const READY_STATE_DONE = 4
@@ -72,6 +76,12 @@ export function makeGetRequest(reqUrl: string, headers: Headers): AbortableReque
         }
         resolve(resp)
       }
+    }
+
+    req.timeout = REQUEST_TIMEOUT_MS
+
+    req.ontimeout = () => {
+      logger.error('Request timed out')
     }
 
     req.send()

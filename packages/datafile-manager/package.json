@@ -25,12 +25,12 @@
   },
   "devDependencies": {
     "@types/jest": "^24.0.9",
+    "@types/nise": "^1.4.0",
     "@types/nock": "^9.3.1",
     "@types/node": "^11.11.7",
-    "@types/sinon": "^7.0.10",
     "jest": "^24.1.0",
+    "nise": "^1.4.10",
     "nock": "^10.0.6",
-    "sinon": "^7.2.7",
     "ts-jest": "^24.0.0",
     "typescript": "^3.3.3333"
   },
