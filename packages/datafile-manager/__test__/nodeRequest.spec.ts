@@ -16,6 +16,7 @@
 
 import nock from 'nock'
 import { makeGetRequest } from '../src/nodeRequest'
+import { advanceTimersByTime } from './testUtils'
 
 beforeAll(() => {
   nock.disableNetConnect()
@@ -155,6 +156,42 @@ describe('nodeEnvironment', () => {
         headers: {}
       })
       scope.done()
+    })
+
+    describe('timeout', () => {
+      beforeEach(() => {
+        jest.useFakeTimers()
+      })
+
+      afterEach(() => {
+        jest.clearAllTimers()
+      })
+
+      it('rejects the response promise and aborts the request when the response is not received before the timeout', async () => {
+        const scope = nock(host)
+          .get(path)
+          .delay(61000)
+          .reply(200, '{"foo":"bar"}')
+
+        const abortEventListener = jest.fn()
+        let emittedReq: any
+        const requestListener = (request: any) => {
+          emittedReq = request
+          emittedReq.once('abort', abortEventListener)
+        }
+        scope.on('request', requestListener)
+
+        const req = makeGetRequest(`${host}${path}`, {})
+        await advanceTimersByTime(60000)
+        await expect(req.responsePromise).rejects.toThrow()
+        expect(abortEventListener).toBeCalledTimes(1)
+
+        scope.done()
+        if (emittedReq) {
+          emittedReq.off('abort', abortEventListener)
+        }
+        scope.off('request', requestListener)
+      })
     })
   })
 })

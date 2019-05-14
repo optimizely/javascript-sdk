@@ -17,7 +17,7 @@
 import HTTPPollingDatafileManager from '../src/httpPollingDatafileManager'
 import { Headers, AbortableRequest, Response } from '../src/http'
 import { DatafileManagerConfig } from '../src/datafileManager';
-import TestTimeoutFactory from './testTimeoutFactory'
+import { advanceTimersByTime, getTimerCount } from './testUtils'
 
 jest.mock('../src/backoffController', () => {
   return jest.fn().mockImplementation(() => {
@@ -59,29 +59,23 @@ class TestDatafileManager extends HTTPPollingDatafileManager {
 }
 
 describe('httpPollingDatafileManager', () => {
-  const testTimeoutFactory: TestTimeoutFactory = new TestTimeoutFactory()
-
-  function createTestManager(config: DatafileManagerConfig): TestDatafileManager {
-    return new TestDatafileManager({
-      ...config,
-      timeoutFactory: testTimeoutFactory
-    })
-  }
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
 
   let manager: TestDatafileManager
   afterEach(async () => {
-    testTimeoutFactory.cleanup()
-
     if (manager) {
       manager.stop()
     }
     jest.clearAllMocks()
     jest.restoreAllMocks()
+    jest.clearAllTimers()
   })
 
   describe('when constructed with sdkKey and datafile and autoUpdate: true,', () => {
     beforeEach(() => {
-      manager = createTestManager({ datafile: { foo: 'abcd' }, sdkKey: '123', autoUpdate: true })
+      manager = new TestDatafileManager({ datafile: { foo: 'abcd' }, sdkKey: '123', autoUpdate: true })
     })
 
     it('returns the passed datafile from get', () => {
@@ -118,7 +112,9 @@ describe('httpPollingDatafileManager', () => {
       })
       expect(manager.get()).toEqual({ foo: 'bar' })
       updateFn.mockReset()
-      testTimeoutFactory.timeoutFns[0]()
+
+      await advanceTimersByTime(300000)
+
       expect(manager.responsePromises.length).toBe(2)
       await manager.responsePromises[1]
       expect(updateFn).toBeCalledTimes(1)
@@ -131,7 +127,7 @@ describe('httpPollingDatafileManager', () => {
 
   describe('when constructed with sdkKey and datafile and autoUpdate: false,', () => {
     beforeEach(() => {
-      manager = createTestManager({ datafile: { foo: 'abcd' }, sdkKey: '123', autoUpdate: false })
+      manager = new TestDatafileManager({ datafile: { foo: 'abcd' }, sdkKey: '123', autoUpdate: false })
     })
 
     it('returns the passed datafile from get', () => {
@@ -160,13 +156,13 @@ describe('httpPollingDatafileManager', () => {
         datafile: { foo: 'bar' }
       })
       expect(manager.get()).toEqual({ foo: 'bar' })
-      expect(testTimeoutFactory.timeoutFns.length).toBe(0)
+      expect(getTimerCount()).toBe(0)
     })
   })
 
   describe('when constructed with sdkKey and autoUpdate: true', () => {
     beforeEach(() => {
-      manager = createTestManager({ sdkKey: '123', updateInterval: 1000, autoUpdate: true })
+      manager = new TestDatafileManager({ sdkKey: '123', updateInterval: 1000, autoUpdate: true })
     })
 
     describe('initial state', () => {
@@ -215,25 +211,32 @@ describe('httpPollingDatafileManager', () => {
         )
         manager.start()
         await manager.onReady()
-        testTimeoutFactory.timeoutFns[0]()
+        await advanceTimersByTime(1000)
+        expect(manager.responsePromises.length).toBe(2)
         await manager.responsePromises[1]
         expect(manager.get()).toEqual({ foo: 'bar' })
       })
 
       describe('live updates', () => {
-        it('passes the update interval to its timeoutFactory setTimeout method', async () => {
-          manager.queuedResponses.push({
-            statusCode: 200,
-            body: '{"foo3": "bar3"}',
-            headers: {},
-          })
-
-          const setTimeoutSpy: jest.SpyInstance<() => void, [() => void, number]> = jest.spyOn(testTimeoutFactory, 'setTimeout')
-
+        it('sets a timeout to update again after the update interval', async () => {
+          manager.queuedResponses.push(
+            {
+              statusCode: 200,
+              body: '{"foo3": "bar3"}',
+              headers: {},
+            },
+            {
+              statusCode: 200,
+              body: '{"foo4": "bar4"}',
+              headers: {},
+            },
+           )
+          const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest')
           manager.start()
-          await manager.onReady()
-          expect(setTimeoutSpy).toBeCalledTimes(1)
-          expect(setTimeoutSpy.mock.calls[0][1]).toBe(1000)
+          expect(makeGetRequestSpy).toBeCalledTimes(1)
+          await manager.responsePromises[0]
+          await advanceTimersByTime(1000)
+          expect(makeGetRequestSpy).toBeCalledTimes(2)
         })
 
         it('emits update events after live updates', async () => {
@@ -263,7 +266,7 @@ describe('httpPollingDatafileManager', () => {
           expect(manager.get()).toEqual({ foo: 'bar' })
           expect(updateFn).toBeCalledTimes(0)
 
-          testTimeoutFactory.timeoutFns[0]()
+          await advanceTimersByTime(1000)
           await manager.responsePromises[1]
           expect(updateFn).toBeCalledTimes(1)
           expect(updateFn.mock.calls[0][0]).toEqual({ datafile: { foo2: 'bar2' } })
@@ -271,11 +274,38 @@ describe('httpPollingDatafileManager', () => {
 
           updateFn.mockReset()
 
-          testTimeoutFactory.timeoutFns[1]()
+          await advanceTimersByTime(1000)
           await manager.responsePromises[2]
           expect(updateFn).toBeCalledTimes(1)
           expect(updateFn.mock.calls[0][0]).toEqual({ datafile: { foo3: 'bar3' } })
           expect(manager.get()).toEqual({ foo3: 'bar3' })
+        })
+
+        describe('when the update interval time fires before the request is complete', () => {
+          it('waits until the request is complete before making the next request', async () => {
+            let resolveResponsePromise: (resp: Response) => void
+            const responsePromise: Promise<Response> = new Promise(res => {
+              resolveResponsePromise = res
+            })
+            const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest').mockReturnValueOnce({
+              abort() {},
+              responsePromise,
+            })
+
+            manager.start()
+            expect(makeGetRequestSpy).toBeCalledTimes(1)
+
+            await advanceTimersByTime(1000)
+            expect(makeGetRequestSpy).toBeCalledTimes(1)
+
+            resolveResponsePromise!({
+              statusCode: 200,
+              body: '{"foo": "bar"}',
+              headers: {},
+            })
+            await responsePromise
+            expect(makeGetRequestSpy).toBeCalledTimes(2)
+          })
         })
 
         it('cancels a pending timeout when stop is called', async () => {
@@ -290,10 +320,9 @@ describe('httpPollingDatafileManager', () => {
           manager.start()
           await manager.onReady()
 
-          expect(testTimeoutFactory.timeoutFns.length).toBe(1)
-          expect(testTimeoutFactory.cancelFns.length).toBe(1)
+          expect(getTimerCount()).toBe(1)
           manager.stop()
-          expect(testTimeoutFactory.cancelFns[0]).toBeCalledTimes(1)
+          expect(getTimerCount()).toBe(0)
         })
 
         it('cancels reactions to a pending fetch when stop is called', async () => {
@@ -313,7 +342,9 @@ describe('httpPollingDatafileManager', () => {
           manager.start()
           await manager.onReady()
           expect(manager.get()).toEqual({ foo: 'bar' })
-          testTimeoutFactory.timeoutFns[0]()
+
+          advanceTimersByTime(1000)
+
           expect(manager.responsePromises.length).toBe(2)
           manager.stop()
           await manager.responsePromises[1]
@@ -356,9 +387,9 @@ describe('httpPollingDatafileManager', () => {
           expect(manager.responsePromises.length).toBe(1)
           await manager.responsePromises[0]
           // Not ready yet due to first request failed, but should have queued a live update
-          expect(testTimeoutFactory.timeoutFns.length).toBe(1)
+          expect(getTimerCount()).toBe(1)
           // Trigger the update, should fetch the next response which should succeed, then we get ready
-          testTimeoutFactory.timeoutFns[0]()
+          advanceTimersByTime(1000)
           await manager.onReady()
           expect(manager.get()).toEqual({ foo: 'bar' })
         })
@@ -389,7 +420,7 @@ describe('httpPollingDatafileManager', () => {
             // First response promise was for the initial 200 response
             expect(manager.responsePromises.length).toBe(1)
             // Trigger the queued update
-            testTimeoutFactory.timeoutFns[0]()
+            advanceTimersByTime(1000)
             // Second response promise is for the 304 response
             expect(manager.responsePromises.length).toBe(2)
             await manager.responsePromises[1]
@@ -416,7 +447,7 @@ describe('httpPollingDatafileManager', () => {
             manager.start()
             await manager.onReady()
             const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest')
-            testTimeoutFactory.timeoutFns[0]()
+            advanceTimersByTime(1000)
             expect(makeGetRequestSpy).toBeCalledTimes(1)
             const firstCall = makeGetRequestSpy.mock.calls[0]
             const headers = firstCall[1]
@@ -431,7 +462,9 @@ describe('httpPollingDatafileManager', () => {
             const BackoffControllerMock = (BackoffController as unknown) as jest.Mock<BackoffController, []>
             const getDelayMock = BackoffControllerMock.mock.results[0].value.getDelay
             getDelayMock.mockImplementationOnce(() => 5432)
-            const setTimeoutSpy = jest.spyOn(testTimeoutFactory, 'setTimeout')
+
+            const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest')
+
             manager.queuedResponses.push(
               {
                 statusCode: 404,
@@ -441,8 +474,15 @@ describe('httpPollingDatafileManager', () => {
             )
             manager.start()
             await manager.responsePromises[0]
-            expect(setTimeoutSpy).toBeCalledTimes(1)
-            expect(setTimeoutSpy.mock.calls[0][1]).toBe(5432)
+            expect(makeGetRequestSpy).toBeCalledTimes(1)
+
+            // Should not make another request after 1 second because the error should have triggered backoff
+            advanceTimersByTime(1000)
+            expect(makeGetRequestSpy).toBeCalledTimes(1)
+
+            // But after another 5 seconds, another request should be made
+            advanceTimersByTime(5000)
+            expect(makeGetRequestSpy).toBeCalledTimes(2)
           })
 
           it('calls countError on the backoff controller when a non-success status code response is received', async () => {
@@ -504,7 +544,7 @@ describe('httpPollingDatafileManager', () => {
 
   describe('when constructed with sdkKey and autoUpdate: false', () => {
     beforeEach(() => {
-      manager = createTestManager({ sdkKey: '123', autoUpdate: false })
+      manager = new TestDatafileManager({ sdkKey: '123', autoUpdate: false })
     })
 
     it('after being started, fetches the datafile and resolves onReady', async () => {
@@ -528,7 +568,7 @@ describe('httpPollingDatafileManager', () => {
       manager.on('update', updateFn)
       manager.start()
       await manager.onReady()
-      expect(testTimeoutFactory.timeoutFns.length).toBe(0)
+      expect(getTimerCount()).toBe(0)
     })
 
     // TODO: figure out what's wrong with this test
@@ -552,7 +592,7 @@ describe('httpPollingDatafileManager', () => {
 
   describe('when constructed with sdkKey and a valid urlTemplate', () => {
     beforeEach(() => {
-      manager = createTestManager({
+      manager = new TestDatafileManager({
         sdkKey: '456',
         updateInterval: 1000,
         urlTemplate: 'https://localhost:5556/datafiles/%s',
@@ -575,22 +615,23 @@ describe('httpPollingDatafileManager', () => {
 
   describe('when constructed with an update interval below the minimum', () => {
     beforeEach(() => {
-      manager = createTestManager({ sdkKey: '123', updateInterval: 500, autoUpdate: true })
+      manager = new TestDatafileManager({ sdkKey: '123', updateInterval: 500, autoUpdate: true })
     })
 
     it('uses the default update interval', async () => {
+      const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest')
+
       manager.queuedResponses.push({
         statusCode: 200,
         body: '{"foo3": "bar3"}',
         headers: {},
       })
 
-      const setTimeoutSpy: jest.SpyInstance<() => void, [() => void, number]> = jest.spyOn(testTimeoutFactory, 'setTimeout')
-
       manager.start()
       await manager.onReady()
-      expect(setTimeoutSpy).toBeCalledTimes(1)
-      expect(setTimeoutSpy.mock.calls[0][1]).toBe(300000)
+      expect(makeGetRequestSpy).toBeCalledTimes(1)
+      await advanceTimersByTime(300000)
+      expect(makeGetRequestSpy).toBeCalledTimes(2)
     })
   })
 })

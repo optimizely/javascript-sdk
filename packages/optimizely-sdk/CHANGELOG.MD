@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+### New Features
+- Added 60 second timeout for all datafile requests
+
+### Changed
+- Updated datafile request polling behavior:
+  - Start update interval timer immediately after request
+  - When update interval timer fires during request, wait until request completes, then immediately start next request
 - Update TypeScript definitions to account for new methods (`onReady`, `close`) and new properties on object accepted by createInstance (`datafileOptions`, `sdkKey`)
 
 ## [3.2.0-alpha] - April 26nd, 2019

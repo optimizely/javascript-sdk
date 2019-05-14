@@ -7,8 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.3.0] - May 13, 2019
+
+### New Features
+- Added 60 second timeout for all requests
+
 ### Changed
 - Changed value for node in engines in package.json from >=4.0.0 to >=6.0.0
+- Updated polling behavior:
+  - Start update interval timer immediately after request
+  - When update interval timer fires during request, wait until request completes, then immediately start next request
+- Remove `timeoutFactory` property from `HTTPPollingDatafileManager` constructor argument object
 
 ## [0.2.0] - April 9, 2019
 

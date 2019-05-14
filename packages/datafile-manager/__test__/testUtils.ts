@@ -14,24 +14,14 @@
  * limitations under the License.
  */
 
-import { TimeoutFactory } from '../src/timeoutFactory'
+export function advanceTimersByTime(waitMs: number): Promise<void> {
+  const timeoutPromise: Promise<void> = new Promise(res => setTimeout(res, waitMs))
+  jest.advanceTimersByTime(waitMs)
+  return timeoutPromise
+}
 
-export default class TestTimeoutFactory implements TimeoutFactory {
-  timeoutFns: Array<() => void> = []
-
-  cancelFns: Array<() => void> = []
-
-  setTimeout(onTimeout: () => void, timeout: number): () => void {
-    const cancelFn = jest.fn()
-    this.timeoutFns.push(() => {
-      onTimeout()
-    })
-    this.cancelFns.push(cancelFn)
-    return cancelFn
-  }
-
-  cleanup() {
-    this.timeoutFns = []
-    this.cancelFns = []
-  }
+export function getTimerCount(): number {
+  // Type definition for jest doesn't include this, but it exists
+  // https://jestjs.io/docs/en/jest-object#jestgettimercount
+  return (jest as any).getTimerCount()
 }
