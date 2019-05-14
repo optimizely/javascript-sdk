@@ -1,5 +1,5 @@
 /// <reference types="jest" />
-import { isValidEnum, groupBy, objectValues, find, keyBy, sprintf } from '../src'
+import { isValidEnum, groupBy, objectEntries, objectValues, find, keyBy, sprintf } from '../src'
 
 describe('utils', () => {
   describe('isValidEnum', () => {
@@ -34,6 +34,12 @@ describe('utils', () => {
         ],
         [{ firstName: 'james', lastName: 'foxy' }],
       ])
+    })
+  })
+
+  describe('objectEntries', () => {
+    it('should return object entries', () => {
+      expect(objectEntries({ foo: 'bar', bar: 123 })).toEqual([['foo', 'bar'], ['bar', 123]])
     })
   })
 
