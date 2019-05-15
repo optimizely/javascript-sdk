@@ -936,6 +936,11 @@ Optimizely.prototype.onReady = function(options) {
     onClose: onClose,
   };
 
+  this.__readyPromise.then(function() {
+    clearTimeout(readyTimeout);
+    delete this.__readyTimeouts[timeoutId];
+  }.bind(this));
+
   return Promise.race([this.__readyPromise, timeoutPromise]);
 };
 
