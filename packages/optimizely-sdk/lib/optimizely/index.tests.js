@@ -4831,11 +4831,17 @@ describe('lib/optimizely', function() {
 
     describe('onReady method', function() {
       var clock;
+      var setTimeoutSpy;
+      var clearTimeoutSpy;
       beforeEach(function() {
         clock = sinon.useFakeTimers(new Date().getTime());
+        setTimeoutSpy = sinon.spy(clock, 'setTimeout');
+        clearTimeoutSpy = sinon.spy(clock, 'clearTimeout');
       });
 
       afterEach(function() {
+        setTimeoutSpy.restore();
+        clearTimeoutSpy.restore();
         clock.restore();
       });
 
@@ -4942,6 +4948,32 @@ describe('lib/optimizely', function() {
           // Calling close on the instance should resolve readyPromise3
           optlyInstance.close();
           return readyPromise3;
+        });
+      });
+
+      it('clears the timeout when the project config manager ready promise fulfills', function() {
+        projectConfigManager.ProjectConfigManager.callsFake(function(config) {
+          return {
+            stop: sinon.stub(),
+            getConfig: sinon.stub().returns(null),
+            onUpdate: sinon.stub().returns(function() {}),
+            onReady: sinon.stub().returns(Promise.resolve({ success: true })),
+          };
+        });
+        optlyInstance = new Optimizely({
+          clientEngine: 'node-sdk',
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+          sdkKey: '12345',
+          isValidInstance: true,
+        });
+        return optlyInstance.onReady().then(function() {
+          sinon.assert.calledOnce(clock.setTimeout);
+          var timeout = clock.setTimeout.getCall(0).returnValue;
+          sinon.assert.calledOnce(clock.clearTimeout);
+          sinon.assert.calledWithExactly(clock.clearTimeout, timeout);
         });
       });
     });
