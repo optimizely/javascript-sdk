@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+### Bug Fixes:
+- Clear timeout created in onReady call for timeout promise as soon as project config manager's ready promise fulfills
+
 ### New Features
 - Added 60 second timeout for all datafile requests
 
