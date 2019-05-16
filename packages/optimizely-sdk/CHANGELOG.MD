@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [3.2.0-beta] - May 16nd, 2019
+
 ### Bug Fixes:
 - Clear timeout created in onReady call for timeout promise as soon as project config manager's ready promise fulfills
 
