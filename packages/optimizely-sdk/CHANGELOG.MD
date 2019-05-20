@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-Changes that have landed but are not yet released.
+Changes that have  landed but are not yet released.
 
 ## [3.2.0-beta] - May 16th, 2019
 
