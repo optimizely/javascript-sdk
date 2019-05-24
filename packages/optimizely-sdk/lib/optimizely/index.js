@@ -58,7 +58,7 @@ var DEFAULT_ONREADY_TIMEOUT = 30000;
  */
 function Optimizely(config) {
   var clientEngine = config.clientEngine;
-  if (clientEngine !== enums.NODE_CLIENT_ENGINE && clientEngine !== enums.JAVASCRIPT_CLIENT_ENGINE) {
+  if (enums.VALID_CLIENT_ENGINES.indexOf(clientEngine) === -1) {
     config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, MODULE_NAME, clientEngine));
     clientEngine = enums.NODE_CLIENT_ENGINE;
   }
