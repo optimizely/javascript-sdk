@@ -128,6 +128,18 @@ describe('lib/optimizely', function() {
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, 'OPTIMIZELY', 'undefined'));
       });
 
+      it('should allow passing `react-sdk` as the clientEngine', function() {
+        var instance = new Optimizely({
+          clientEngine: 'react-sdk',
+          datafile: testData.getTestProjectConfig(),
+          errorHandler: stubErrorHandler,
+          eventDispatcher: stubEventDispatcher,
+          logger: createdLogger,
+        });
+
+        assert.strictEqual(instance.clientEngine, 'react-sdk');
+      });
+
       describe('when a user profile service is provided', function() {
         beforeEach(function() {
           sinon.stub(decisionService, 'createDecisionService');

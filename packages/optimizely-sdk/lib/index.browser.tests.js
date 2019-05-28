@@ -135,6 +135,32 @@ describe('javascript-sdk', function() {
         assert.equal(packageJSON.version, optlyInstance.clientVersion);
       });
 
+      it('should allow passing of "react-sdk" as the clientEngine', function() {
+        var optlyInstance = optimizelyFactory.createInstance({
+          clientEngine: 'react-sdk',
+          datafile: {},
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          logger: silentLogger,
+        });
+        // Invalid datafile causes onReady Promise rejection - catch this error
+        optlyInstance.onReady().catch(function() {});
+        assert.equal('react-sdk', optlyInstance.clientEngine);
+      });
+
+      it('should allow passing of "react-sdk" as the clientEngine', function() {
+        var optlyInstance = optimizelyFactory.createInstance({
+          clientEngine: 'react-sdk',
+          datafile: {},
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          logger: silentLogger,
+        });
+        // Invalid datafile causes onReady Promise rejection - catch this error
+        optlyInstance.onReady().catch(function() {});
+        assert.equal('react-sdk', optlyInstance.clientEngine);
+      });
+
       it('should activate with provided event dispatcher', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfig(),
