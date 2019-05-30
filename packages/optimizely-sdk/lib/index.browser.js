@@ -93,9 +93,10 @@ module.exports = {
         hasRetriedEvents = true;
       }
 
-      config = fns.assignIn({}, config, {
-        eventDispatcher: wrappedEventDispatcher,
+      config = fns.assignIn({
         clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
+      }, config, {
+        eventDispatcher: wrappedEventDispatcher,
         // always get the OptimizelyLogger facade from logging
         logger: logger,
         errorHandler: logging.getErrorHandler(),

@@ -58,7 +58,7 @@ var DEFAULT_ONREADY_TIMEOUT = 30000;
  */
 function Optimizely(config) {
   var clientEngine = config.clientEngine;
-  if (clientEngine !== enums.NODE_CLIENT_ENGINE && clientEngine !== enums.JAVASCRIPT_CLIENT_ENGINE) {
+  if (enums.VALID_CLIENT_ENGINES.indexOf(clientEngine) === -1) {
     config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, MODULE_NAME, clientEngine));
     clientEngine = enums.NODE_CLIENT_ENGINE;
   }
@@ -299,6 +299,7 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
       clientVersion: this.clientVersion,
       configObj: configObj,
     });
+    this.logger.log(LOG_LEVEL.INFO, sprintf(enums.LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId));
     // TODO is it okay to not pass a projectConfig as second argument
     this.eventProcessor.process(conversionEvent);
     this.__emitNotificationCenterTrack(eventKey, userId, attributes, eventTags);
@@ -935,6 +936,14 @@ Optimizely.prototype.onReady = function(options) {
     readyTimeout: readyTimeout,
     onClose: onClose,
   };
+
+  this.__readyPromise.then(function() {
+    clearTimeout(readyTimeout);
+    delete this.__readyTimeouts[timeoutId];
+    resolveTimeoutPromise({
+      success: true,
+    });
+  }.bind(this));
 
   return Promise.race([this.__readyPromise, timeoutPromise]);
 };
