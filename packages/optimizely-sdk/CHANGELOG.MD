@@ -61,8 +61,11 @@ Changes that have landed but are not yet released.
 
 ### Changed
 - Forced variation logic has been moved from the project config module to the decision service. Prefixes for forced-variation-related log messages will reflect this change ([#261](https://github.com/optimizely/javascript-sdk/pull/261)).
-- Update TypeScript definitions to account for new methods (`onReady`, `close`) and new properties on object accepted by createInstance (`datafileOptions`, `sdkKey`), ([#263](https://github.com/optimizely/javascript-sdk/pull/263))
+- Update TypeScript definitions to account for new methods (`onReady`, `close`) and new properties on object accepted by createInstance (`datafileOptions`, `sdkKey`), ([#263](https://github.com/optimizely/javascript-sdk/pull/263)), ([#278](https://github.com/optimizely/javascript-sdk/pull/278))
 - Allow react-sdk to be passed in as `clientEngine` ([#279](https://github.com/optimizely/javascript-sdk/pull/279))
+
+### Bug Fixes:
+- Add logging message for `optimizely.track()` ([#281](https://github.com/optimizely/javascript-sdk/pull/281))
 
 ## [3.2.0-beta] - May 16th, 2019
 
