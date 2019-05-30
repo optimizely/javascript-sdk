@@ -299,6 +299,7 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
       clientVersion: this.clientVersion,
       configObj: configObj,
     });
+    this.logger.log(LOG_LEVEL.INFO, sprintf(enums.LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId));
     // TODO is it okay to not pass a projectConfig as second argument
     this.eventProcessor.process(conversionEvent);
     this.__emitNotificationCenterTrack(eventKey, userId, attributes, eventTags);
