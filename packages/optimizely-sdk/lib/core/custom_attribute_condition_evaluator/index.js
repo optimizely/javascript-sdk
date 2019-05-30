@@ -16,7 +16,7 @@
 
 var fns = require('../../utils/fns');
 var enums = require('../../utils/enums');
-var sprintf = require('sprintf-js').sprintf;
+var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;

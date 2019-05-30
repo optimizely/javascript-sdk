@@ -13,20 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+require('promise-polyfill/dist/polyfill');
+var logging = require('@optimizely/js-sdk-logging');
 var fns = require('./utils/fns');
 var configValidator = require('./utils/config_validator');
 var defaultErrorHandler = require('./plugins/error_handler');
 var defaultEventDispatcher = require('./plugins/event_dispatcher/index.browser');
 var enums = require('./utils/enums');
-var logger = require('./plugins/logger');
+var eventProcessor = require('@optimizely/js-sdk-event-processor');
+var loggerPlugin = require('./plugins/logger');
 var Optimizely = require('./optimizely');
 
-var MODULE_NAME = 'INDEX';
+var logger = logging.getLogger();
+logging.setLogHandler(loggerPlugin.createLogger());
+logging.setLogLevel(logging.LogLevel.INFO);
 
+var hasRetriedEvents = false;
 /**
- * Entry point into the Optimizely Node testing SDK
+ * Entry point into the Optimizely Browser SDK
  */
 module.exports = {
+  logging: loggerPlugin,
+  errorHandler: defaultErrorHandler,
+  eventDispatcher: defaultEventDispatcher,
+  enums: enums,
+
+  setLogger: logging.setLogHandler,
+  setLogLevel: logging.setLogLevel,
+
   /**
    * Creates an instance of the Optimizely class
    * @param  {Object} config
@@ -36,45 +50,66 @@ module.exports = {
    * @param  {Object} config.logger
    * @param  {Object} config.logLevel
    * @param  {Object} config.userProfileService
+   * @param {Object} config.eventBatchSize
+   * @param {Object} config.eventFlushInterval
    * @return {Object} the Optimizely object
    */
   createInstance: function(config) {
     try {
-      var logLevel = 'logLevel' in config ? config.logLevel : enums.LOG_LEVEL.INFO;
-      var defaultLogger = logger.createLogger({logLevel: enums.LOG_LEVEL.INFO});
-      if (config) {
-        try {
-          configValidator.validate(config);
-          config.isValidInstance = true;
-        } catch (ex) {
-          var errorMessage = MODULE_NAME + ':' + ex.message;
-          if (config.logger) {
-            config.logger.log(enums.LOG_LEVEL.ERROR, errorMessage);
-          } else {
-            defaultLogger.log(enums.LOG_LEVEL.ERROR, errorMessage);
-          }
-          config.isValidInstance = false;
-        }
+      config = config || {};
+
+      // TODO warn about setting per instance errorHandler / logger / logLevel
+      if (config.errorHandler) {
+        logging.setErrorHandler(config.errorHandler);
+      }
+      if (config.logger) {
+        logging.setLogHandler(config.logger);
+        // respect the logger's shouldLog functionality
+        logging.setLogLevel(logging.LogLevel.NOTSET);
+      }
+      if (config.logLevel !== undefined) {
+        logging.setLogLevel(config.logLevel);
+      }
+
+      try {
+        configValidator.validate(config);
+        config.isValidInstance = true;
+      } catch (ex) {
+        logger.error(ex);
+        config.isValidInstance = false;
       }
 
       // Explicitly check for null or undefined
+      // prettier-ignore
       if (config.skipJSONValidation == null) { // eslint-disable-line eqeqeq
         config.skipJSONValidation = true;
       }
 
+      var wrappedEventDispatcher = new eventProcessor.LocalStoragePendingEventsDispatcher({
+        eventDispatcher: config.eventDispatcher || defaultEventDispatcher,
+      });
+      if (!hasRetriedEvents) {
+        wrappedEventDispatcher.sendPendingEvents();
+        hasRetriedEvents = true;
+      }
+
       config = fns.assignIn({
         clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
-        clientVersion: enums.CLIENT_VERSION,
-        errorHandler: defaultErrorHandler,
-        eventDispatcher: defaultEventDispatcher,
-        logger: logger.createLogger({logLevel: logLevel})
-      }, config);
+      }, config, {
+        eventDispatcher: wrappedEventDispatcher,
+        // always get the OptimizelyLogger facade from logging
+        logger: logger,
+        errorHandler: logging.getErrorHandler(),
+      });
 
       return new Optimizely(config);
     } catch (e) {
-      config.logger.log(enums.LOG_LEVEL.ERROR, e.message);
-      config.errorHandler.handleError(e);
+      logger.error(e);
       return null;
     }
-  }
+  },
+
+  __internalResetRetryState: function() {
+    hasRetriedEvents = false;
+  },
 };

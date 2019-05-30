@@ -7,61 +7,207 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
-## [3.0.0-rc2] - November 16, 2018
+## [3.2.0-beta] - May 16th, 2019
 
-### Breaking Changes
-
-* Drops `window.optimizelyClient` from the bundled build ([#189](https://github.com/optimizely/javascript-sdk/pull/189)).
+### Bug Fixes:
+- Clear timeout created in onReady call for timeout promise as soon as project config manager's ready promise fulfills
 
 ### New Features
-* Allow sticky bucketing via passing in `attributes.$opt_experiment_bucket_map`, this more easily allows customers to do some async data fetching and ensure a user gets a specific variation ([#179](https://github.com/optimizely/javascript-sdk/pull/179)).
+- Added 60 second timeout for all datafile requests
 
+### Changed
+- Updated datafile request polling behavior:
+  - Start update interval timer immediately after request
+  - When update interval timer fires during request, wait until request completes, then immediately start next request
+- Update TypeScript definitions to account for new methods (`onReady`, `close`) and new properties on object accepted by createInstance (`datafileOptions`, `sdkKey`)
+
+## [3.2.0-alpha] - April 26nd, 2019
+
+### New Features
+
+- Added support for automatic datafile management
+  - To use automatic datafile management, include `sdkKey` as a string property in the options object you pass to `createInstance`.
+  - When sdkKey is provided, the SDK instance will download the datafile associated with that sdkKey immediately upon construction. When the download completes, the SDK instance will update itself to use the downloaded datafile.
+  - Use the `onReady` method to wait until the download is complete and the SDK is ready to use.
+  - Customize datafile management behavior by passing a `datafileOptions` object within the options you pass to `createInstance`.
+    - Enable automatic updates by passing `autoUpdate: true`. Periodically (on the provided update interval), the SDK instance will download the datafile and update itself. Use this to ensure that the SDK instance is using a fresh datafile reflecting changes recently made to your experiment or feature configuration.
+  - Add a notification listener for the `OPTIMIZELY_CONFIG_UPDATE` notification type to be notified when an instance updates its Optimizely config after obtaining a new datafile.
+  - Stop active downloads and cancel pending downloads by calling the `close` method
+
+
+  #### Create an instance with datafile management enabled
+  ```js
+  const optimizely = require('@optimizely/optimizely-sdk');
+  const optimizelyClientInstance = optimizely.createInstance({
+    sdkKey: '12345', // Provide the sdkKey of your desired environment here
+  });
+  ```
+
+  #### Use `onReady` to wait until optimizelyClientInstance has a datafile
+  ```js
+  const optimizely = require('@optimizely/optimizely-sdk');
+  const optimizelyClientInstance = optimizely.createInstance({
+    sdkKey: '12345',
+  });
+  optimizelyClientInstance.onReady().then(() => {
+    // optimizelyClientInstance is ready to use, with datafile downloaded from the Optimizely CDN
+  });
+  ```
+
+  #### Enable automatic updates, add notification listener for OPTIMIZELY_CONFIG_UPDATE notification type, and stop automatic updates
+  ```js
+  const optimizely = require('@optimizely/optimizely-sdk');
+  const optimizelyClientInstance = optimizely.createInstance({
+    sdkKey: '12345',
+    datafileOptions: {
+      autoUpdate: true,
+      updateInterval: 600000 // 10 minutes in milliseconds
+    },
+  });
+  optimizelyClientInstance.notificationCenter.addNotificationListener(
+    optimizely.enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE,
+    () => {
+      // optimizelyClientInstance has updated its Optimizely config
+    },
+  );
+  // Stop automatic updates - optimizelyClientInstance will use whatever datafile it currently has from now on
+  optimizelyClientInstance.close();
+  ```
+
+### Changed
+- Forced variation logic has been moved from the project config module to the decision service. Prefixes for forced-variation-related log messages will reflect this change.
+
+## [3.1.0] - April 22nd, 2019
+
+### New Features:
+
+- Introduced Decision notification listener to be able to record:
+    - Variation assignments for users activated in an experiment.
+    - Feature access for users.
+    - Feature variable value for users.
+
+### Changed
+
+* New APIs for setting `logger` and `logLevel` on the optimizelySDK singleton ([#232](https://github.com/optimizely/javascript-sdk/pull/232))
+* `logger` and `logLevel` are now set globally for all instances of Optimizely.  If you were passing
+different loggers to individual instances of Optimizely, logging behavior may now be different.
+
+#### Setting a ConsoleLogger
+
+```js
+var optimizelySDK = require('@optimizely/optimizely-sdk')
+
+// logger and logLevel are now set on the optimizelySDK singleton
+optimizelySDK.setLogger(optimizelySDK.logging.createLogger())
+
+// valid levels: 'DEBUG', 'INFO', 'WARN', 'ERROR'
+optimizelySDK.setLogLevel('WARN')
+// enums can also be used
+optimizelySDK.setLogLevel(optimizelySDK.enums.LOG_LEVEL.ERROR)
 ```
-const userId = '123'
-const expId = '456'
-const variationId = '678'
-const userAttributes = {
-  $opt_experiment_bucket_map: {
-    [expId]: {
-      variation_id: variationId
-    }
-  }
-}
 
-var selectedVariationKey = optimizelyClient.activate('experiment-1', userId, userAttributes);
+#### Disable logging
+
+```js
+var optimizelySDK = require('@optimizely/optimizely-sdk')
+
+optimizelySDK.setLogger(null)
 ```
 
-### Fixes
-* `setForcedVariation` treats empty variation key as invalid and does not reset variation. ([#185](https://github.com/optimizely/javascript-sdk/pull/185))
-* Publish the unminified UMD bundle along with the minified one. ([#187](https://github.com/optimizely/javascript-sdk/pull/187))
+### Bug Fixes
 
-## [3.0.0-rc] - November 6, 2018
+* Feature variable APIs now return default variable value when featureEnabled property is false. ([#249](https://github.com/optimizely/javascript-sdk/pull/249))
 
-This is the release candidate version of the 3.0 SDK:
+### Deprecated
 
-### New Features
+* Activate notification listener is deprecated as of this release. Recommendation is to use the new Decision notification listener. Activate notification listener will be removed in the next major release.
 
-- Support for boolean combinations of audiences on experiments ([#175](https://github.com/optimizely/javascript-sdk/pull/175))
-- Added PR template and commit message guidelines ([#183](https://github.com/optimizely/javascript-sdk/pull/183))
 
-### Fixes
+## [3.1.0-beta1] - March 5th, 2019
 
-- Updated dependency versions ([#180](https://github.com/optimizely/javascript-sdk/pull/180))
-- Suppressed unwanted console output in tests ([#181](https://github.com/optimizely/javascript-sdk/pull/181))
-- Update project config to handle latest 3.0 datafile format ([#182](https://github.com/optimizely/javascript-sdk/pull/182))
+### Changed
 
-## [3.0.0-alpha] - October 22, 2018
+- New APIs for setting `logger` and `logLevel` on the optimizelySDK singleton ([#232](https://github.com/optimizely/javascript-sdk/pull/232))
+- `logger` and `logLevel` are now set globally for all instances of Optimizely.  If you were passing
+different loggers to individual instances of Optimizely, logging behavior may now be different.
 
-This is the alpha release of the 3.0 SDK, which includes a number of improvements to audience targeting:
+#### Setting a ConsoleLogger
 
-### New Features
+```js
+var optimizelySDK = require('@optimizely/optimizely-sdk')
 
-- Support for number-valued and boolean-valued attributes ([#174](https://github.com/optimizely/javascript-sdk/pull/174)).
-- Support for audiences with new match conditions for attribute values, including 'substring' and 'exists' matches for strings; 'greater than', 'less than', 'exact, and 'exists' matches for numbers; and "exact" and 'exists' matches for booleans ([#174](https://github.com/optimizely/javascript-sdk/pull/174)).
+// logger and logLevel are now set on the optimizelySDK singleton
+optimizelySDK.setLogger(optimizelySDK.logging.createLogger())
 
-### Breaking Changes
+// valid levels: 'DEBUG', 'INFO', 'WARN', 'ERROR'
+optimizelySDK.setLogLevel('WARN')
+// enums can also be used
+optimizelySDK.setLogLevel(optimizely.enums.LOG_LEVEL.ERROR)
+```
 
-- Previously, when a 'not' audience condition was applied to a malformed attribute, it was possible for the condition to evaluate to `true`.  We’ve corrected this behavior, so that malformed attributes always evaluate to `null` and are ignored ([#174](https://github.com/optimizely/javascript-sdk/pull/174)).
+#### Disable logging
+
+```js
+var optimizelySDK = require('@optimizely/optimizely-sdk')
+
+optimizelySDK.setLogger(null)
+```
+
+## [3.0.1] - February 21, 2019
+
+### Changed
+- Expose default `loggers`, `errorHandlers`, `eventDispatcher` and `enums` on top level require.
+- `createLogger` and `createNoOpLogger` are available as methods on `optimizelySdk.logging`
+- Added `optimizelySdk.errorHandler`
+- Added `optimizelySdk.eventDispatcher`
+- Added `optimizelySdk.enums`
+
+## [3.0.0] - February 13, 2019
+
+The 3.0 release improves event tracking and supports additional audience targeting functionality.
+
+### New Features:
+
+- Event tracking ([#207](https://github.com/optimizely/javascript-sdk/pull/207)):
+  - The `track` method now dispatches its conversion event _unconditionally_, without first determining whether the user is targeted by a known experiment that uses the event. This may increase outbound network traffic.
+  - In Optimizely results, conversion events sent by 3.0 SDKs don't explicitly name the experiments and variations that are currently targeted to the user. Instead, conversions are automatically attributed to variations that the user has previously seen, as long as those variations were served via 3.0 SDKs or by other clients capable of automatic attribution, and as long as our backend actually received the impression events for those variations.
+  - Altogether, this allows you to track conversion events and attribute them to variations even when you don't know all of a user's attribute values, and even if the user's attribute values or the experiment's configuration have changed such that the user is no longer affected by the experiment. As a result, **you may observe an increase in the conversion rate for previously-instrumented events.** If that is undesirable, you can reset the results of previously-running experiments after upgrading to the 3.0 SDK.
+  - This will also allow you to attribute events to variations from other Optimizely projects in your account, even though those experiments don't appear in the same datafile.
+  - Note that for results segmentation in Optimizely results, the user attribute values from one event are automatically applied to all other events in the same session, as long as the events in question were actually received by our backend. This behavior was already in place and is not affected by the 3.0 release.
+- Support for all types of attribute values, not just strings ([#174](https://github.com/optimizely/javascript-sdk/pull/174), [#204](https://github.com/optimizely/javascript-sdk/pull/204)).
+  - All values are passed through to notification listeners.
+  - Strings, booleans, and valid numbers are passed to the event dispatcher and can be used for Optimizely results segmentation. A valid number is a finite number in the inclusive range [-2⁵³, 2⁵³].
+  - Strings, booleans, and valid numbers are relevant for audience conditions.
+- Support for additional matchers in audience conditions ([#174](https://github.com/optimizely/javascript-sdk/pull/174)):
+  - An `exists` matcher that passes if the user has a non-null value for the targeted user attribute and fails otherwise.
+  - A `substring` matcher that resolves if the user has a string value for the targeted attribute.
+  - `gt` (greater than) and `lt` (less than) matchers that resolve if the user has a valid number value for the targeted attribute. A valid number is a finite number in the inclusive range [-2⁵³, 2⁵³].
+  - The original (`exact`) matcher can now be used to target booleans and valid numbers, not just strings.
+- Support for A/B tests, feature tests, and feature rollouts whose audiences are combined using `"and"` and `"not"` operators, not just the `"or"` operator ([#175](https://github.com/optimizely/javascript-sdk/pull/175))
+- Updated Pull Request template and commit message guidelines ([#183](https://github.com/optimizely/javascript-sdk/pull/183)).
+- Support for sticky bucketing. You can pass an `$opt_experiment_bucket_map` attribute to ensure that the user gets a specific variation ([#179](https://github.com/optimizely/javascript-sdk/pull/179)).
+- Support for bucketing IDs when evaluating feature rollouts, not just when evaluating A/B tests and feature tests ([#200](https://github.com/optimizely/javascript-sdk/pull/200)).
+- TypeScript declarations ([#199](https://github.com/optimizely/javascript-sdk/pull/199)).
+
+### Breaking Changes:
+
+- Conversion events sent by 3.0 SDKs don't explicitly name the experiments and variations that are currently targeted to the user, so these events are unattributed in raw events data export. You must use the new _results_ export to determine the variations to which events have been attributed.
+- Previously, notification listeners were only given string-valued user attributes because only strings could be passed into various method calls. That is no longer the case. You may pass non-string attribute values, and if you do, you must update your notification listeners to be able to receive whatever values you pass in ([#174](https://github.com/optimizely/javascript-sdk/pull/174), [#204](https://github.com/optimizely/javascript-sdk/pull/204)).
+- Drops `window.optimizelyClient` from the bundled build. Now, `window.optimizelySdk` can be used instead. ([#189](https://github.com/optimizely/javascript-sdk/pull/189)).
+
+### Bug Fixes:
+
+- Experiments and features can no longer activate when a negatively targeted attribute has a missing, null, or malformed value ([#174](https://github.com/optimizely/javascript-sdk/pull/174)).
+  - Audience conditions (except for the new `exists` matcher) no longer resolve to `false` when they fail to find an legitimate value for the targeted user attribute. The result remains `null` (unknown). Therefore, an audience that negates such a condition (using the `"not"` operator) can no longer resolve to `true` unless there is an unrelated branch in the condition tree that itself resolves to `true`.
+- `setForcedVariation` now treats an empty variation key as invalid and does not reset the variation ([#185](https://github.com/optimizely/javascript-sdk/pull/185)).
+- You can now specify `0` as the `revenue` or `value` for a conversion event when using the `track` method. Previously, `0` was withheld and would not appear in your data export ([#213](https://github.com/optimizely/javascript-sdk/pull/213)).
+- The existence of a feature test in an experimentation group no longer causes A/B tests in the same group to activate the same feature ([#194](https://github.com/optimizely/fullstack-sdk-compatibility-suite/pull/194)).
+
+## [2.3.1] - November 14, 2018
+
+### Fixed
+
+- fix(bundling): Publish the unminified UMD bundle along with the minified one. ([#187](https://github.com/optimizely/javascript-sdk/pull/187))
 
 ## [2.3.0] - November 14, 2018
 

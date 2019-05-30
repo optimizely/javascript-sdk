@@ -16,14 +16,18 @@
 var projectConfig = require('./');
 var enums = require('../../utils/enums');
 var testDatafile = require('../../tests/test_data');
+var configValidator = require('../../utils/config_validator');
+var logging = require('@optimizely/js-sdk-logging');
+
+var logger = logging.getLogger();
 
 var _ = require('lodash/core');
 var fns = require('../../utils/fns');
 var chai = require('chai');
 var assert = chai.assert;
-var logger = require('../../plugins/logger');
+var loggerPlugin = require('../../plugins/logger');
 var sinon = require('sinon');
-var sprintf = require('sprintf-js').sprintf;
+var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
@@ -223,7 +227,7 @@ describe('lib/core/project_config', function() {
   describe('projectConfig helper methods', function() {
     var testData = testDatafile.getTestProjectConfig();
     var configObj;
-    var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+    var createdLogger = loggerPlugin.createLogger({logLevel: LOG_LEVEL.INFO});
 
     beforeEach(function() {
       configObj = projectConfig.createProjectConfig(testData);
@@ -350,7 +354,7 @@ describe('lib/core/project_config', function() {
     });
 
     describe('feature management', function() {
-      var featureManagementLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+      var featureManagementLogger = loggerPlugin.createLogger({logLevel: LOG_LEVEL.INFO});
       beforeEach(function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
         sinon.stub(featureManagementLogger, 'log');
@@ -453,11 +457,11 @@ describe('lib/core/project_config', function() {
           assert.strictEqual(result, null);
         });
 
-        it('returns the variable default value if the variation does not have a value for this variable', function() {
+        it('returns null if the variation does not have a value for this variable', function() {
           var variation = configObj.variationIdMap['595008']; // This variation has no variable values associated with it
           var variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
           var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
-          assert.strictEqual(result, '10');
+          assert.isNull(result);
         });
       });
 
@@ -557,174 +561,95 @@ describe('lib/core/project_config', function() {
     });
   });
 
-  describe('#getForcedVariation', function() {
-    var createdLogger = logger.createLogger({
-      logLevel: LOG_LEVEL.INFO,
-      logToConsole: false,
+  describe('#tryCreatingProjectConfig', function() {
+    var stubJsonSchemaValidator;
+    beforeEach(function() {
+      stubJsonSchemaValidator = {
+        validate: sinon.stub().returns(true),
+      };
+      sinon.stub(projectConfig, 'createProjectConfig').returns({});
+      sinon.stub(configValidator, 'validateDatafile').returns(true);
+      sinon.spy(logger, 'error');
     });
 
-    it('should return null for valid experimentKey, not set', function() {
-      var testData = testDatafile.getTestProjectConfig();
-      var configObj = projectConfig.createProjectConfig(testData);
-
-      var variation = projectConfig.getForcedVariation(configObj, 'testExperiment', 'user1', createdLogger);
-      assert.strictEqual(variation, null);
+    afterEach(function() {
+      projectConfig.createProjectConfig.restore();
+      configValidator.validateDatafile.restore();
+      logger.error.restore();
     });
 
-    it('should return null for invalid experimentKey, not set', function() {
-      var testData = testDatafile.getTestProjectConfig();
-      var configObj = projectConfig.createProjectConfig(testData);
-
-      var variation = projectConfig.getForcedVariation(configObj, 'definitely_not_valid_exp_key', 'user1', createdLogger);
-      assert.strictEqual(variation, null);
-    });
-  });
-
-  describe('#setForcedVariation', function() {
-    var createdLogger = logger.createLogger({
-      logLevel: LOG_LEVEL.INFO,
-      logToConsole: false,
-    });
-
-    it('should return true for a valid forcedVariation in setForcedVariation', function() {
-      var testData = testDatafile.getTestProjectConfig();
-      var configObj = projectConfig.createProjectConfig(testData);
-
-      var didSetVariation = projectConfig.setForcedVariation(configObj, 'testExperiment', 'user1', 'control', createdLogger);
-      assert.strictEqual(didSetVariation, true);
+    it('returns a project config object created by createProjectConfig when all validation is applied and there are no errors', function() {
+      configValidator.validateDatafile.returns(true);
+      stubJsonSchemaValidator.validate.returns(true);
+      var configObj = {
+        foo: 'bar',
+        experimentKeyMap: {
+          a: { key: 'a' },
+          b: { key: 'b' },
+        }
+      };
+      projectConfig.createProjectConfig.returns(configObj);
+      var result = projectConfig.tryCreatingProjectConfig({
+        datafile: { foo: 'bar' },
+        jsonSchemaValidator: stubJsonSchemaValidator,
+        logger: logger,
+        skipJSONValidation: false,
+      });
+      assert.deepEqual(result, configObj);
     });
 
-    it('should return the same variation from getVariation as was set in setVariation', function() {
-      var testData = testDatafile.getTestProjectConfig();
-      var configObj = projectConfig.createProjectConfig(testData);
-
-      projectConfig.setForcedVariation(configObj, 'testExperiment', 'user1', 'control', createdLogger);
-      var variation = projectConfig.getForcedVariation(configObj, 'testExperiment', 'user1', createdLogger);
-      assert.strictEqual(variation, 'control');
+    it('throws an error when validateDatafile throws', function() {
+      configValidator.validateDatafile.throws();
+      stubJsonSchemaValidator.validate.returns(true);
+      assert.throws(function() {
+        projectConfig.tryCreatingProjectConfig({
+          datafile: { foo: 'bar' },
+          jsonSchemaValidator: stubJsonSchemaValidator,
+          logger: logger,
+          skipJSONValidation: false,
+        });
+      });
     });
 
-    it('should not set for an invalid variation key', function() {
-      var testData = testDatafile.getTestProjectConfig();
-      var configObj = projectConfig.createProjectConfig(testData);
-
-      projectConfig.setForcedVariation(configObj, 'testExperiment', 'user1', 'definitely_not_valid_variation_key', createdLogger);
-      var variation = projectConfig.getForcedVariation(configObj, 'testExperiment', 'user1', createdLogger);
-      assert.strictEqual(variation, null);
+    it('throws an error when jsonSchemaValidator.validate throws', function() {
+      configValidator.validateDatafile.returns(true);
+      stubJsonSchemaValidator.validate.throws();
+      assert.throws(function() {
+        var result = projectConfig.tryCreatingProjectConfig({
+          datafile: { foo: 'bar' },
+          jsonSchemaValidator: stubJsonSchemaValidator,
+          logger: logger,
+          skipJSONValidation: false,
+        });
+      });
     });
 
-    it('should reset the forcedVariation if passed null', function() {
-      var testData = testDatafile.getTestProjectConfig();
-      var configObj = projectConfig.createProjectConfig(testData);
-
-      var didSetVariation = projectConfig.setForcedVariation(configObj, 'testExperiment', 'user1', 'control', createdLogger);
-      assert.strictEqual(didSetVariation, true);
-
-      var variation = projectConfig.getForcedVariation(configObj, 'testExperiment', 'user1', createdLogger);
-      assert.strictEqual(variation, 'control');
-
-      var didSetVariationAgain = projectConfig.setForcedVariation(configObj, 'testExperiment', 'user1', null, createdLogger);
-      assert.strictEqual(didSetVariationAgain, true);
-
-      var variation = projectConfig.getForcedVariation(configObj, 'testExperiment', 'user1', createdLogger);
-      assert.strictEqual(variation, null);
+    it('does not call jsonSchemaValidator.validate when skipJSONValidation is true', function() {
+      projectConfig.tryCreatingProjectConfig({
+        datafile: { foo: 'bar' },
+        jsonSchemaValidator: stubJsonSchemaValidator,
+        logger: logger,
+        skipJSONValidation: true,
+      });
+      sinon.assert.notCalled(stubJsonSchemaValidator.validate);
     });
 
-    it('should be able to add variations for multiple experiments for one user', function() {
-      var testData = testDatafile.getTestProjectConfig();
-      var configObj = projectConfig.createProjectConfig(testData);
-
-      var didSetVariation = projectConfig.setForcedVariation(configObj, 'testExperiment', 'user1', 'control', createdLogger);
-      assert.strictEqual(didSetVariation, true);
-
-      var didSetVariation2 = projectConfig.setForcedVariation(configObj, 'testExperimentLaunched', 'user1', 'controlLaunched', createdLogger);
-      assert.strictEqual(didSetVariation2, true);
-
-      var variation = projectConfig.getForcedVariation(configObj, 'testExperiment', 'user1', createdLogger);
-      var variation2 = projectConfig.getForcedVariation(configObj, 'testExperimentLaunched', 'user1', createdLogger);
-
-      assert.strictEqual(variation, 'control');
-      assert.strictEqual(variation2, 'controlLaunched');
-    });
-
-    it('should be able to add experiments for multiple users', function() {
-      var testData = testDatafile.getTestProjectConfig();
-      var configObj = projectConfig.createProjectConfig(testData);
-
-      var didSetVariation = projectConfig.setForcedVariation(configObj, 'testExperiment', 'user1', 'control', createdLogger);
-      assert.strictEqual(didSetVariation, true);
-
-      var didSetVariation = projectConfig.setForcedVariation(configObj, 'testExperiment', 'user2', 'variation', createdLogger);
-      assert.strictEqual(didSetVariation, true);
-
-      var variationControl = projectConfig.getForcedVariation(configObj, 'testExperiment', 'user1', createdLogger);
-      var variationVariation = projectConfig.getForcedVariation(configObj, 'testExperiment', 'user2', createdLogger);
-
-      assert.strictEqual(variationControl, 'control');
-      assert.strictEqual(variationVariation, 'variation');
-    });
-
-    it('should be able to reset a variation for a user with multiple experiments', function() {
-      var testData = testDatafile.getTestProjectConfig();
-      var configObj = projectConfig.createProjectConfig(testData);
-
-      //set the first time
-      var didSetVariation = projectConfig.setForcedVariation(configObj, 'testExperiment', 'user1', 'control', createdLogger);
-      assert.strictEqual(didSetVariation, true);
-
-      var didSetVariation2 = projectConfig.setForcedVariation(configObj, 'testExperimentLaunched', 'user1', 'controlLaunched', createdLogger);
-      assert.strictEqual(didSetVariation2, true);
-
-      var variation = projectConfig.getForcedVariation(configObj, 'testExperiment', 'user1', createdLogger);
-      var variation2 = projectConfig.getForcedVariation(configObj, 'testExperimentLaunched', 'user1', createdLogger);
-
-      assert.strictEqual(variation, 'control');
-      assert.strictEqual(variation2, 'controlLaunched');
-
-      //reset for one of the experiments
-      var didSetVariationAgain = projectConfig.setForcedVariation(configObj, 'testExperiment', 'user1', 'variation', createdLogger);
-      assert.strictEqual(didSetVariationAgain, true);
-
-      var variation = projectConfig.getForcedVariation(configObj, 'testExperiment', 'user1', createdLogger);
-      var variation2 = projectConfig.getForcedVariation(configObj, 'testExperimentLaunched', 'user1', createdLogger);
-
-      assert.strictEqual(variation, 'variation');
-      assert.strictEqual(variation2, 'controlLaunched');
-    });
-
-    it('should be able to unset a variation for a user with multiple experiments', function() {
-      var testData = testDatafile.getTestProjectConfig();
-      var configObj = projectConfig.createProjectConfig(testData);
-
-      //set the first time
-      var didSetVariation = projectConfig.setForcedVariation(configObj, 'testExperiment', 'user1', 'control', createdLogger);
-      assert.strictEqual(didSetVariation, true);
-
-      var didSetVariation2 = projectConfig.setForcedVariation(configObj, 'testExperimentLaunched', 'user1', 'controlLaunched', createdLogger);
-      assert.strictEqual(didSetVariation2, true);
-
-      var variation = projectConfig.getForcedVariation(configObj, 'testExperiment', 'user1', createdLogger);
-      var variation2 = projectConfig.getForcedVariation(configObj, 'testExperimentLaunched', 'user1', createdLogger);
-
-      assert.strictEqual(variation, 'control');
-      assert.strictEqual(variation2, 'controlLaunched');
-
-      //reset for one of the experiments
-      projectConfig.setForcedVariation(configObj, 'testExperiment', 'user1', null, createdLogger);
-      assert.strictEqual(didSetVariation, true);
-
-      var variation = projectConfig.getForcedVariation(configObj, 'testExperiment', 'user1', createdLogger);
-      var variation2 = projectConfig.getForcedVariation(configObj, 'testExperimentLaunched', 'user1', createdLogger);
-
-      assert.strictEqual(variation, null);
-      assert.strictEqual(variation2, 'controlLaunched');
-    });
-
-    it('should return false for an empty variation key', function() {
-      var testData = testDatafile.getTestProjectConfig();
-      var configObj = projectConfig.createProjectConfig(testData);
-
-      var didSetVariation = projectConfig.setForcedVariation(configObj, 'testExperiment', 'user1', '', createdLogger);
-      assert.strictEqual(didSetVariation, false);
+    it('skips json validation when jsonSchemaValidator is not provided', function() {
+      configValidator.validateDatafile.returns(true);
+      var configObj = {
+        foo: 'bar',
+        experimentKeyMap: {
+          a: { key: 'a' },
+          b: { key: 'b' },
+        }
+      };
+      projectConfig.createProjectConfig.returns(configObj);
+      var result = projectConfig.tryCreatingProjectConfig({
+        datafile: { foo: 'bar' },
+        logger: logger,
+      });
+      assert.deepEqual(result, configObj);
+      sinon.assert.notCalled(logger.error);
     });
   });
 });

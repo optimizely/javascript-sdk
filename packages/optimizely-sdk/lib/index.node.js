@@ -13,24 +13,32 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-
+var logging = require('@optimizely/js-sdk-logging');
 var configValidator = require('./utils/config_validator');
 var defaultErrorHandler = require('./plugins/error_handler');
 var defaultEventDispatcher = require('./plugins/event_dispatcher/index.node');
 var enums = require('./utils/enums');
 var fns = require('./utils/fns');
 var jsonSchemaValidator = require('./utils/json_schema_validator');
-var logger = require('./plugins/logger');
-var sprintf = require('sprintf-js').sprintf;
+var loggerPlugin = require('./plugins/logger');
 
 var Optimizely = require('./optimizely');
 
-var MODULE_NAME = 'INDEX';
+var logger = logging.getLogger();
+logging.setLogLevel(logging.LogLevel.ERROR);
 
 /**
  * Entry point into the Optimizely Node testing SDK
  */
 module.exports = {
+  logging: loggerPlugin,
+  errorHandler: defaultErrorHandler,
+  eventDispatcher: defaultEventDispatcher,
+  enums: enums,
+
+  setLogger: logging.setLogHandler,
+  setLogLevel: logging.setLogLevel,
+
   /**
    * Creates an instance of the Optimizely class
    * @param  {Object} config
@@ -40,35 +48,61 @@ module.exports = {
    * @param  {Object} config.jsonSchemaValidator
    * @param  {Object} config.logger
    * @param  {Object} config.userProfileService
+   * @param {Object} config.eventBatchSize
+   * @param {Object} config.eventFlushInterval
    * @return {Object} the Optimizely object
    */
   createInstance: function(config) {
-    var defaultLogger = logger.createNoOpLogger();
-    if (config) {
+    try {
+      var hasLogger = false;
+      config = config || {};
+
+      // TODO warn about setting per instance errorHandler / logger / logLevel
+      if (config.errorHandler) {
+        logging.setErrorHandler(config.errorHandler);
+      }
+      if (config.logger) {
+        // only set a logger in node if one is provided, by not setting we are noop-ing
+        hasLogger = true;
+        logging.setLogHandler(config.logger);
+        // respect the logger's shouldLog functionality
+        logging.setLogLevel(logging.LogLevel.NOTSET);
+      }
+      if (config.logLevel !== undefined) {
+        logging.setLogLevel(config.logLevel);
+      }
+
       try {
         configValidator.validate(config);
         config.isValidInstance = true;
       } catch (ex) {
-        if (config.logger) {
-          config.logger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
+        if (hasLogger) {
+          logger.error(ex);
         } else {
-          var simpleLogger = logger.createLogger({logLevel: 4});
-          simpleLogger.log(enums.LOG_LEVEL.ERROR, sprintf('%s: %s', MODULE_NAME, ex.message));
+          console.error(ex.message);
         }
         config.isValidInstance = false;
       }
+
+      config = fns.assign(
+        {
+          clientEngine: enums.NODE_CLIENT_ENGINE,
+          eventDispatcher: defaultEventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          skipJSONValidation: false,
+        },
+        config,
+        {
+          // always get the OptimizelyLogger facade from logging
+          logger: logger,
+          errorHandler: logging.getErrorHandler(),
+        }
+      );
+
+      return new Optimizely(config);
+    } catch (e) {
+      logger.error(e);
+      return null;
     }
-
-    config = fns.assign({
-      clientEngine: enums.NODE_CLIENT_ENGINE,
-      clientVersion: enums.CLIENT_VERSION,
-      errorHandler: defaultErrorHandler,
-      eventDispatcher: defaultEventDispatcher,
-      jsonSchemaValidator: jsonSchemaValidator,
-      logger: defaultLogger,
-      skipJSONValidation: false
-    }, config);
-
-    return new Optimizely(config);
-  }
+  },
 };

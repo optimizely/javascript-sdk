@@ -27,6 +27,7 @@ exports.LOG_LEVEL = {
 
 exports.ERROR_MESSAGES = {
   CONDITION_EVALUATOR_ERROR: '%s: Error evaluating condition type %s: %s',
+  DATAFILE_AND_SDK_KEY_MISSING: '%s: You must provide at least one of sdkKey or datafile. Cannot start Optimizely',
   EXPERIMENT_KEY_NOT_IN_DATAFILE: '%s: Experiment key %s is not in datafile.',
   FEATURE_NOT_IN_DATAFILE: '%s: Feature key %s is not in datafile.',
   IMPROPERLY_FORMATTED_EXPERIMENT: '%s: Experiment key %s is improperly formatted.',
@@ -89,7 +90,6 @@ exports.LOG_MESSAGES = {
   ROLLOUT_HAS_NO_EXPERIMENTS: '%s: Rollout of feature %s has no experiments',
   SAVED_VARIATION: '%s: Saved variation "%s" of experiment "%s" for user "%s".',
   SAVED_VARIATION_NOT_FOUND: '%s: User %s was previously bucketed into variation with ID %s for experiment %s, but no matching variation was found.',
-  SET_LOG_LEVEL: '%s: Setting log level to "%s"',
   SHOULD_NOT_DISPATCH_ACTIVATE: '%s: Experiment %s is in "Launched" state. Not activating user.',
   SKIPPING_JSON_VALIDATION: '%s: Skipping JSON schema validation.',
   TRACK_EVENT: '%s: Tracking event %s for user %s.',
@@ -118,6 +118,8 @@ exports.LOG_MESSAGES = {
   USER_NOT_IN_ANY_EXPERIMENT: '%s: User %s is not in any experiment of group %s.',
   USER_NOT_IN_EXPERIMENT: '%s: User %s does not meet conditions to be in experiment %s.',
   USER_RECEIVED_DEFAULT_VARIABLE_VALUE: '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
+  FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE: '%s: Feature "%s" is not enabled for user %s. Returning default value for variable "%s".',
+  VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE: '%s: Variable "%s" is not used in variation "%s". Returning default value.',
   USER_RECEIVED_VARIABLE_VALUE: '%s: Value for variable "%s" of feature flag "%s" is %s for user "%s"',
   VALID_DATAFILE: '%s: Datafile is valid.',
   VALID_USER_PROFILE_SERVICE: '%s: Valid user profile service provided.',
@@ -135,10 +137,9 @@ exports.LOG_MESSAGES = {
   UNEXPECTED_TYPE_NULL: '%s: Audience condition %s evaluated to UNKNOWN because a null value was passed for user attribute "%s".',
   UNKNOWN_CONDITION_TYPE: '%s: Audience condition %s has an unknown condition type. You may need to upgrade to a newer release of the Optimizely SDK.',
   UNKNOWN_MATCH_TYPE: '%s: Audience condition %s uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.',
+  UPDATED_OPTIMIZELY_CONFIG: '%s: Updated Optimizely config to revision %s (project id %s)',
   OUT_OF_BOUNDS: '%s: Audience condition %s evaluated to UNKNOWN because the number value for user attribute "%s" is not in the range [-2^53, +2^53].',
 };
-
-exports.DEFAULT_LOGGER_MESSAGE_TEMPLATE = '%s - %s %s %s';
 
 exports.RESERVED_EVENT_KEYWORDS = {
   REVENUE: 'revenue',
@@ -154,7 +155,14 @@ exports.CONTROL_ATTRIBUTES = {
 
 exports.JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 exports.NODE_CLIENT_ENGINE = 'node-sdk';
-exports.NODE_CLIENT_VERSION = '3.0.0-rc2';
+exports.REACT_CLIENT_ENGINE = 'react-sdk';
+exports.NODE_CLIENT_VERSION = '3.2.0-beta';
+
+exports.VALID_CLIENT_ENGINES = [
+  exports.NODE_CLIENT_ENGINE,
+  exports.REACT_CLIENT_ENGINE,
+  exports.JAVASCRIPT_CLIENT_ENGINE,
+];
 
 /*
  * Notification types for use with NotificationCenter
@@ -162,6 +170,7 @@ exports.NODE_CLIENT_VERSION = '3.0.0-rc2';
  *
  * SDK consumers can use these to register callbacks with the notification center.
  *
+ *  @deprecated since 3.1.0
  *  ACTIVATE: An impression event will be sent to Optimizely
  *  Callbacks will receive an object argument with the following properties:
  *    - experiment {Object}
@@ -170,6 +179,17 @@ exports.NODE_CLIENT_VERSION = '3.0.0-rc2';
  *    - variation {Object}
  *    - logEvent {Object}
  *
+ *  DECISION: A decision is made in the system. i.e. user activation,
+ *  feature access or feature-variable value retrieval
+ *  Callbacks will receive an object argument with the following properties:
+ *    - type {string}
+ *    - userId {string}
+ *    - attributes {Object|undefined}
+ *    - decisionInfo {Object|undefined}
+ *
+ *  OPTIMIZELY_CONFIG_UPDATE: This Optimizely instance has been updated with a new
+ *  config
+ *
  *  TRACK: A conversion event will be sent to Optimizely
  *  Callbacks will receive the an object argument with the following properties:
  *    - eventKey {string}
@@ -177,10 +197,20 @@ exports.NODE_CLIENT_VERSION = '3.0.0-rc2';
  *    - attributes {Object|undefined}
  *    - eventTags {Object|undefined}
  *    - logEvent {Object}
+ *
  */
 exports.NOTIFICATION_TYPES = {
   ACTIVATE: 'ACTIVATE:experiment, user_id,attributes, variation, event',
+  DECISION: 'DECISION:type, userId, attributes, decisionInfo',
+  OPTIMIZELY_CONFIG_UPDATE: 'OPTIMIZELY_CONFIG_UPDATE',
   TRACK: 'TRACK:event_key, user_id, attributes, event_tags, event',
+};
+
+exports.DECISION_NOTIFICATION_TYPES = {
+  AB_TEST: 'ab-test',
+  FEATURE: 'feature',
+  FEATURE_TEST: 'feature-test',
+  FEATURE_VARIABLE: 'feature-variable',
 };
 
 /*
@@ -190,7 +220,7 @@ exports.NOTIFICATION_TYPES = {
  * Optimizely.
  */
 exports.DECISION_SOURCES = {
-  EXPERIMENT: 'experiment',
+  FEATURE_TEST: 'feature-test',
   ROLLOUT: 'rollout',
 };
 

@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2016-2019, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+var logging = require('@optimizely/js-sdk-logging');
 var configValidator = require('./utils/config_validator');
-var enums = require('./utils/enums');
-var logger = require('./plugins/logger');
+var eventProcessor = require('@optimizely/js-sdk-event-processor');
 var Optimizely = require('./optimizely');
 var optimizelyFactory = require('./index.browser');
 var packageJSON = require('../package.json');
-var eventDispatcher = require('./plugins/event_dispatcher/index.browser');
 var testData = require('./tests/test_data');
 
 var chai = require('chai');
@@ -27,18 +26,30 @@ var assert = chai.assert;
 var find = require('lodash/find');
 var sinon = require('sinon');
 
+var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
+
 describe('javascript-sdk', function() {
   describe('APIs', function() {
     var xhr;
     var requests;
+
+    it('should expose logger, errorHandler, eventDispatcher and enums', function() {
+      assert.isDefined(optimizelyFactory.logging);
+      assert.isDefined(optimizelyFactory.logging.createLogger);
+      assert.isDefined(optimizelyFactory.logging.createNoOpLogger);
+      assert.isDefined(optimizelyFactory.errorHandler);
+      assert.isDefined(optimizelyFactory.eventDispatcher);
+      assert.isDefined(optimizelyFactory.enums);
+    });
+
     describe('createInstance', function() {
-      var fakeErrorHandler = { handleError: function() {}};
-      var fakeEventDispatcher = { dispatchEvent: function() {}};
+      var fakeErrorHandler = { handleError: function() {} };
+      var fakeEventDispatcher = { dispatchEvent: function() {} };
       var silentLogger;
 
       beforeEach(function() {
-        silentLogger = logger.createLogger({
-          logLevel: enums.LOG_LEVEL.INFO,
+        silentLogger = optimizelyFactory.logging.createLogger({
+          logLevel: optimizelyFactory.enums.LOG_LEVEL.INFO,
           logToConsole: false,
         });
         sinon.spy(console, 'error');
@@ -47,24 +58,53 @@ describe('javascript-sdk', function() {
         xhr = sinon.useFakeXMLHttpRequest();
         global.XMLHttpRequest = xhr;
         requests = [];
-        xhr.onCreate = function (req) {
-            requests.push(req);
+        xhr.onCreate = function(req) {
+          requests.push(req);
         };
+
+        sinon.spy(LocalStoragePendingEventsDispatcher.prototype, 'sendPendingEvents');
       });
 
       afterEach(function() {
+        LocalStoragePendingEventsDispatcher.prototype.sendPendingEvents.restore();
+        optimizelyFactory.__internalResetRetryState();
         console.error.restore();
         configValidator.validate.restore();
         xhr.restore();
       });
 
+      it('should invoke resendPendingEvents at most once', function() {
+        var optlyInstance = optimizelyFactory.createInstance({
+          datafile: {},
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          logger: silentLogger,
+        });
+        // Invalid datafile causes onReady Promise rejection - catch this error
+        optlyInstance.onReady().catch(function() {});
+
+        sinon.assert.calledOnce(LocalStoragePendingEventsDispatcher.prototype.sendPendingEvents);
+
+        optlyInstance = optimizelyFactory.createInstance({
+          datafile: {},
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          logger: silentLogger,
+        });
+        optlyInstance.onReady().catch(function() {});
+
+        sinon.assert.calledOnce(LocalStoragePendingEventsDispatcher.prototype.sendPendingEvents);
+      });
+
       it('should not throw if the provided config is not valid', function() {
         configValidator.validate.throws(new Error('Invalid config or something'));
         assert.doesNotThrow(function() {
-          optimizelyFactory.createInstance({
+          var optlyInstance = optimizelyFactory.createInstance({
             datafile: {},
             logger: silentLogger,
           });
+          // Invalid datafile causes onReady Promise rejection - catch this error
+          optlyInstance.onReady().catch(function() {});
         });
       });
 
@@ -75,8 +115,11 @@ describe('javascript-sdk', function() {
           eventDispatcher: fakeEventDispatcher,
           logger: silentLogger,
         });
+        // Invalid datafile causes onReady Promise rejection - catch this error
+        optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
+        assert.equal(optlyInstance.clientVersion, '3.2.0-beta');
       });
 
       it('should set the JavaScript client engine and version', function() {
@@ -86,15 +129,43 @@ describe('javascript-sdk', function() {
           eventDispatcher: fakeEventDispatcher,
           logger: silentLogger,
         });
+        // Invalid datafile causes onReady Promise rejection - catch this error
+        optlyInstance.onReady().catch(function() {});
         assert.equal('javascript-sdk', optlyInstance.clientEngine);
         assert.equal(packageJSON.version, optlyInstance.clientVersion);
+      });
+
+      it('should allow passing of "react-sdk" as the clientEngine', function() {
+        var optlyInstance = optimizelyFactory.createInstance({
+          clientEngine: 'react-sdk',
+          datafile: {},
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          logger: silentLogger,
+        });
+        // Invalid datafile causes onReady Promise rejection - catch this error
+        optlyInstance.onReady().catch(function() {});
+        assert.equal('react-sdk', optlyInstance.clientEngine);
+      });
+
+      it('should allow passing of "react-sdk" as the clientEngine', function() {
+        var optlyInstance = optimizelyFactory.createInstance({
+          clientEngine: 'react-sdk',
+          datafile: {},
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          logger: silentLogger,
+        });
+        // Invalid datafile causes onReady Promise rejection - catch this error
+        optlyInstance.onReady().catch(function() {});
+        assert.equal('react-sdk', optlyInstance.clientEngine);
       });
 
       it('should activate with provided event dispatcher', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
-          eventDispatcher: eventDispatcher,
+          eventDispatcher: optimizelyFactory.eventDispatcher,
           logger: silentLogger,
         });
         var activate = optlyInstance.activate('testExperiment', 'testUser');
@@ -105,7 +176,7 @@ describe('javascript-sdk', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
-          eventDispatcher: eventDispatcher,
+          eventDispatcher: optimizelyFactory.eventDispatcher,
           logger: silentLogger,
         });
 
@@ -120,7 +191,7 @@ describe('javascript-sdk', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
-          eventDispatcher: eventDispatcher,
+          eventDispatcher: optimizelyFactory.eventDispatcher,
           logger: silentLogger,
         });
 
@@ -141,16 +212,19 @@ describe('javascript-sdk', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
-          eventDispatcher: eventDispatcher,
+          eventDispatcher: optimizelyFactory.eventDispatcher,
           logger: silentLogger,
         });
 
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
         assert.strictEqual(didSetVariation, true);
 
-        var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', 'controlLaunched');
+        var didSetVariation2 = optlyInstance.setForcedVariation(
+          'testExperimentLaunched',
+          'testUser',
+          'controlLaunched'
+        );
         assert.strictEqual(didSetVariation2, true);
-
 
         var variation = optlyInstance.getForcedVariation('testExperiment', 'testUser');
         assert.strictEqual(variation, 'control');
@@ -163,14 +237,18 @@ describe('javascript-sdk', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
-          eventDispatcher: eventDispatcher,
+          eventDispatcher: optimizelyFactory.eventDispatcher,
           logger: silentLogger,
         });
 
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
         assert.strictEqual(didSetVariation, true);
 
-        var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', 'controlLaunched');
+        var didSetVariation2 = optlyInstance.setForcedVariation(
+          'testExperimentLaunched',
+          'testUser',
+          'controlLaunched'
+        );
         assert.strictEqual(didSetVariation2, true);
 
         var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', null);
@@ -187,17 +265,25 @@ describe('javascript-sdk', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
-          eventDispatcher: eventDispatcher,
+          eventDispatcher: optimizelyFactory.eventDispatcher,
           logger: silentLogger,
         });
 
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'testUser', 'control');
         assert.strictEqual(didSetVariation, true);
 
-        var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', 'controlLaunched');
+        var didSetVariation2 = optlyInstance.setForcedVariation(
+          'testExperimentLaunched',
+          'testUser',
+          'controlLaunched'
+        );
         assert.strictEqual(didSetVariation2, true);
 
-        var didSetVariation2 = optlyInstance.setForcedVariation('testExperimentLaunched', 'testUser', 'variationLaunched');
+        var didSetVariation2 = optlyInstance.setForcedVariation(
+          'testExperimentLaunched',
+          'testUser',
+          'variationLaunched'
+        );
         assert.strictEqual(didSetVariation2, true);
 
         var variation = optlyInstance.getForcedVariation('testExperiment', 'testUser');
@@ -211,7 +297,7 @@ describe('javascript-sdk', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
-          eventDispatcher: eventDispatcher,
+          eventDispatcher: optimizelyFactory.eventDispatcher,
           logger: silentLogger,
         });
 
@@ -232,49 +318,57 @@ describe('javascript-sdk', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
-          eventDispatcher: eventDispatcher,
+          eventDispatcher: optimizelyFactory.eventDispatcher,
           logger: silentLogger,
         });
 
-        var didSetVariation = optlyInstance.setForcedVariation('testExperimentNotRunning', 'testUser', 'controlNotRunning');
+        var didSetVariation = optlyInstance.setForcedVariation(
+          'testExperimentNotRunning',
+          'testUser',
+          'controlNotRunning'
+        );
         assert.strictEqual(didSetVariation, true);
 
         var variation = optlyInstance.getVariation('testExperimentNotRunning', 'testUser');
         assert.strictEqual(variation, null);
       });
 
-      describe('automatically created logger instances', function() {
+      describe('when passing in logLevel', function() {
         beforeEach(function() {
-          sinon.stub(logger, 'createLogger').callsFake(function() {
-            return {
-              log: function() {},
-            };
-          });
+          sinon.stub(logging, 'setLogLevel');
         });
 
         afterEach(function() {
-          logger.createLogger.restore();
+          logging.setLogLevel.restore();
         });
 
-        it('should instantiate the logger with a custom logLevel when provided', function() {
-          var optlyInstance = optimizelyFactory.createInstance({
+        it('should call logging.setLogLevel', function() {
+          optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
-            logLevel: enums.LOG_LEVEL.ERROR,
+            logLevel: optimizelyFactory.enums.LOG_LEVEL.ERROR,
           });
-          var foundCall = find(logger.createLogger.getCalls(), function(call) {
-            return call.returned(sinon.match.same(optlyInstance.logger));
-          });
-          assert.strictEqual(foundCall.args[0].logLevel, enums.LOG_LEVEL.ERROR);
+          sinon.assert.calledOnce(logging.setLogLevel);
+          sinon.assert.calledWithExactly(logging.setLogLevel, optimizelyFactory.enums.LOG_LEVEL.ERROR);
+        });
+      });
+
+      describe('when passing in logger', function() {
+        beforeEach(function() {
+          sinon.stub(logging, 'setLogHandler');
         });
 
-        it('should default to INFO when no logLevel is provided', function() {
-          var optlyInstance = optimizelyFactory.createInstance({
+        afterEach(function() {
+          logging.setLogHandler.restore();
+        });
+
+        it('should call logging.setLogHandler with the supplied logger', function() {
+          var fakeLogger = { log: function() {} };
+          optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
+            logger: fakeLogger,
           });
-          var foundCall = find(logger.createLogger.getCalls(), function(call) {
-            return call.returned(sinon.match.same(optlyInstance.logger));
-          });
-          assert.strictEqual(foundCall.args[0].logLevel, enums.LOG_LEVEL.INFO);
+          sinon.assert.calledOnce(logging.setLogHandler);
+          sinon.assert.calledWithExactly(logging.setLogHandler, fakeLogger);
         });
       });
     });
