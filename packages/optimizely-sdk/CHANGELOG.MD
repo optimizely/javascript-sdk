@@ -18,7 +18,7 @@ Changes that have landed but are not yet released.
   - Customize datafile management behavior by passing a `datafileOptions` object within the options you pass to `createInstance`.
     - Enable automatic updates by passing `autoUpdate: true`. Periodically (on the provided update interval), the SDK instance will download the datafile and update itself. Use this to ensure that the SDK instance is using a fresh datafile reflecting changes recently made to your experiment or feature configuration.
   - Add a notification listener for the `OPTIMIZELY_CONFIG_UPDATE` notification type to be notified when an instance updates its Optimizely config after obtaining a new datafile.
-  - Stop active downloads and cancel pending downloads by calling the `close` method
+  - Stop active downloads and cancel recurring downloads by calling the `close` method
 
   #### Create an instance with datafile management enabled
   ```js
@@ -92,7 +92,7 @@ Changes that have landed but are not yet released.
   - Customize datafile management behavior by passing a `datafileOptions` object within the options you pass to `createInstance`.
     - Enable automatic updates by passing `autoUpdate: true`. Periodically (on the provided update interval), the SDK instance will download the datafile and update itself. Use this to ensure that the SDK instance is using a fresh datafile reflecting changes recently made to your experiment or feature configuration.
   - Add a notification listener for the `OPTIMIZELY_CONFIG_UPDATE` notification type to be notified when an instance updates its Optimizely config after obtaining a new datafile.
-  - Stop active downloads and cancel recurring downloads by calling the `close` method
+  - Stop active downloads and cancel pending downloads by calling the `close` method
 
 
   #### Create an instance with datafile management enabled
