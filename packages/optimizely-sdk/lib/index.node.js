@@ -86,13 +86,13 @@ module.exports = {
 
       config = fns.assign(
         {
+          clientEngine: enums.NODE_CLIENT_ENGINE,
           eventDispatcher: defaultEventDispatcher,
           jsonSchemaValidator: jsonSchemaValidator,
           skipJSONValidation: false,
         },
         config,
         {
-          clientEngine: enums.NODE_CLIENT_ENGINE,
           // always get the OptimizelyLogger facade from logging
           logger: logger,
           errorHandler: logging.getErrorHandler(),

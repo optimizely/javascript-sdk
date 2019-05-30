@@ -119,7 +119,7 @@ describe('javascript-sdk', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '3.2.0-alpha');
+        assert.equal(optlyInstance.clientVersion, '3.2.0');
       });
 
       it('should set the JavaScript client engine and version', function() {
@@ -133,6 +133,32 @@ describe('javascript-sdk', function() {
         optlyInstance.onReady().catch(function() {});
         assert.equal('javascript-sdk', optlyInstance.clientEngine);
         assert.equal(packageJSON.version, optlyInstance.clientVersion);
+      });
+
+      it('should allow passing of "react-sdk" as the clientEngine', function() {
+        var optlyInstance = optimizelyFactory.createInstance({
+          clientEngine: 'react-sdk',
+          datafile: {},
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          logger: silentLogger,
+        });
+        // Invalid datafile causes onReady Promise rejection - catch this error
+        optlyInstance.onReady().catch(function() {});
+        assert.equal('react-sdk', optlyInstance.clientEngine);
+      });
+
+      it('should allow passing of "react-sdk" as the clientEngine', function() {
+        var optlyInstance = optimizelyFactory.createInstance({
+          clientEngine: 'react-sdk',
+          datafile: {},
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          logger: silentLogger,
+        });
+        // Invalid datafile causes onReady Promise rejection - catch this error
+        optlyInstance.onReady().catch(function() {});
+        assert.equal('react-sdk', optlyInstance.clientEngine);
       });
 
       it('should activate with provided event dispatcher', function() {
