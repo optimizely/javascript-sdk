@@ -49,9 +49,8 @@ export interface EventProcessor extends Managed {
   process(event: ProcessableEvents, projectConfig: any): void
 }
 
+const MIN_FLUSH_INTERVAL = 100
 export abstract class AbstractEventProcessor implements EventProcessor {
-  static DEFAULT_FLUSH_INTERVAL = 30000
-
   protected transformers: EventTransformer[]
   protected interceptors: EventInterceptor[]
   protected callbacks: EventCallback[]
@@ -78,7 +77,7 @@ export abstract class AbstractEventProcessor implements EventProcessor {
     maxQueueSize = Math.max(1, maxQueueSize)
     if (maxQueueSize > 1) {
       this.queue = new DefaultEventQueue({
-        flushInterval,
+        flushInterval: Math.max(flushInterval, MIN_FLUSH_INTERVAL),
         maxQueueSize,
         sink: buffer => this.drainQueue(buffer),
       })
