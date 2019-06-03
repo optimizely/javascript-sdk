@@ -35,7 +35,7 @@ class Timer {
   private timeoutId?: number
 
   constructor({ timeout, callback }: { timeout: number; callback: () => void }) {
-    this.timeout = timeout
+    this.timeout = Math.max(timeout, 0)
     this.callback = callback
   }
 
