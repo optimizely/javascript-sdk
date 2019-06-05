@@ -28,14 +28,14 @@ var MODULE_NAME = 'AUDIENCE_EVALUATOR';
 /**
  * Construct an instance of AudienceEvaluator with a given logger and options
  * @param {Logger}  logger                           The Logger instance
- * @param {Object=} __exploratoryConditionEvaluators A map of condition evaluators provided by the consumer. This enables matching
+ * @param {Object=} UNSTABLE_conditionEvaluators A map of condition evaluators provided by the consumer. This enables matching
  *                                                   condition types which are not supported natively by the SDK. Note that built in
  *                                                   Optimizely evaluators cannot be overridden.
  * @constructor
  */
-function AudienceEvaluator(logger, __exploratoryConditionEvaluators) {
+function AudienceEvaluator(logger, UNSTABLE_conditionEvaluators) {
   this.logger = logger;
-  this.typeToEvaluatorMap = fns.assignIn({}, __exploratoryConditionEvaluators, {
+  this.typeToEvaluatorMap = fns.assignIn({}, UNSTABLE_conditionEvaluators, {
     'custom_attribute': customAttributeConditionEvaluator
   });
 }

@@ -51,7 +51,7 @@ var DECISION_SOURCES = enums.DECISION_SOURCES;
 function DecisionService(options) {
   this.userProfileService = options.userProfileService || null;
   this.logger = options.logger;
-  this.audienceEvaluator = new AudienceEvaluator(options.logger, options.__exploratoryConditionEvaluators);
+  this.audienceEvaluator = new AudienceEvaluator(options.logger, options.UNSTABLE_conditionEvaluators);
   this.forcedVariationMap = {};
 }
 

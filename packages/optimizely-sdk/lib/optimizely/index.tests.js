@@ -166,7 +166,7 @@ describe('lib/optimizely', function() {
           sinon.assert.calledWith(decisionService.createDecisionService, {
             userProfileService: userProfileServiceInstance,
             logger: createdLogger,
-            __exploratoryConditionEvaluators: undefined
+            UNSTABLE_conditionEvaluators: undefined
           });
 
           var logMessage = createdLogger.log.args[0][1];
@@ -189,7 +189,7 @@ describe('lib/optimizely', function() {
           sinon.assert.calledWith(decisionService.createDecisionService, {
             userProfileService: null,
             logger: createdLogger,
-            __exploratoryConditionEvaluators: undefined
+            UNSTABLE_conditionEvaluators: undefined
           });
 
           var logMessage = createdLogger.log.args[0][1];
@@ -4404,6 +4404,7 @@ describe('lib/optimizely', function() {
           { entity_id: '594016', key: 'lasers', type: 'custom', value: 45.5 },
         ]
       );
+      console.log('ARGS ARE: ', audienceEvaluator.evaluate.firstCall.args);
       sinon.assert.calledWithExactly(
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().experiments[2].audienceConditions,
