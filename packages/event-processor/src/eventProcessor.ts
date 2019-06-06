@@ -169,8 +169,18 @@ export abstract class AbstractEventProcessor implements EventProcessor {
 }
 
 function isResponseSuccess(response: EventDispatcherResponse): boolean {
-  if (!response.statusCode) {
+  try {
+    let statusCode: number
+    if ('statusCode' in response) {
+      statusCode = response.statusCode
+    } else if ('status' in response) {
+      statusCode = response.status
+    } else {
+      return false
+    }
+
+    return statusCode >= 200 && statusCode < 300
+  } catch (e) {
     return false
   }
-  return response.statusCode >= 200 && response.statusCode < 300
 }

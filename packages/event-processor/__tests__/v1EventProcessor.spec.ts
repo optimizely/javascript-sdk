@@ -16,7 +16,11 @@
 /// <reference types="jest" />
 
 import { LogTierV1EventProcessor } from '../src/v1/v1EventProcessor'
-import { EventDispatcher, EventV1Request, EventDispatcherCallback } from '../src/eventDispatcher'
+import {
+  EventDispatcher,
+  EventV1Request,
+  EventDispatcherCallback,
+} from '../src/eventDispatcher'
 import { EventProcessor } from '../src/eventProcessor'
 import { buildImpressionEventV1, makeBatchedEventV1 } from '../src/v1/buildEventV1'
 
@@ -118,7 +122,7 @@ describe('LogTierV1EventProcessor', () => {
       dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
         dispatchStub(event)
         callback({
-          statusCode: 200
+          statusCode: 200,
         })
       },
     }
@@ -166,7 +170,7 @@ describe('LogTierV1EventProcessor', () => {
       })
 
       localCallback({
-        statusCode: 200
+        statusCode: 200,
       })
     })
 
@@ -195,7 +199,7 @@ describe('LogTierV1EventProcessor', () => {
       })
 
       localCallback({
-        statusCode: 400
+        statusCode: 400,
       })
     })
 
@@ -204,7 +208,7 @@ describe('LogTierV1EventProcessor', () => {
         dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
           dispatchStub(event)
           callback({
-            statusCode: 200
+            statusCode: 200,
           })
         },
       }
@@ -568,13 +572,55 @@ describe('LogTierV1EventProcessor', () => {
         })
       })
 
+      it('should invoke the callback with result = false event if the dispatcher doesnt provide statusCode', async () => {
+        const callback = jest.fn()
+
+        stubDispatcher = {
+          dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
+            dispatchStub(event)
+            // @ts-ignore
+            callback()
+          },
+        }
+        processor = new LogTierV1EventProcessor({
+          callbacks: [callback],
+          dispatcher: stubDispatcher,
+          maxQueueSize: 3,
+        })
+        processor.start()
+
+        const impressionEvent1 = createImpressionEvent()
+        const impressionEvent2 = createImpressionEvent()
+        const impressionEvent3 = createImpressionEvent()
+        processor.process(impressionEvent1, testProjectConfig)
+        processor.process(impressionEvent2, testProjectConfig)
+        processor.process(impressionEvent3, testProjectConfig)
+
+        // sleep to let async functions run
+        await sleep(0)
+
+        expect(callback).toHaveBeenCalledTimes(3)
+        expect(callback).toHaveBeenCalledWith({
+          event: impressionEvent1,
+          result: false,
+        })
+        expect(callback).toHaveBeenCalledWith({
+          event: impressionEvent2,
+          result: false,
+        })
+        expect(callback).toHaveBeenCalledWith({
+          event: impressionEvent3,
+          result: false,
+        })
+      })
+
       it('should return result == false when the dispatcher returns a non 200 response', async () => {
         const callback = jest.fn()
         const dispatcher: EventDispatcher = {
           dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
             dispatchStub(event)
             callback({
-              statusCode: 400
+              statusCode: 400,
             })
           },
         }
