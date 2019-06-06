@@ -22,6 +22,7 @@ var projectConfigManager = require('../core/project_config/project_config_manage
 var enums = require('../utils/enums');
 var eventBuilder = require('../core/event_builder/index.js');
 var eventDispatcher = require('../plugins/event_dispatcher/index.node');
+var eventProcessor = require('@optimizely/js-sdk-event-processor');
 var errorHandler = require('../plugins/error_handler');
 var fns = require('../utils/fns');
 var jsonSchemaValidator = require('../utils/json_schema_validator');
@@ -4790,8 +4791,6 @@ describe('lib/optimizely', function() {
       createdLogger.log.restore();
       eventProcessor.LogTierV1EventProcessor.restore();
     });
-
-    var optlyInstance;
 
     describe('when eventFlushInterval and maxQueueSize is not defined', function() {
       it('should not instantiate the eventProcessor with the default event flush interval', function() {
