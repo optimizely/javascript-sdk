@@ -4771,6 +4771,71 @@ describe('lib/optimizely', function() {
     });
   });
 
+  describe('event processor defaults', function() {
+    var createdLogger = logger.createLogger({
+      logLevel: LOG_LEVEL.INFO,
+      logToConsole: false,
+    });
+
+    beforeEach(function() {
+      sinon.stub(eventDispatcher, 'dispatchEvent');
+      sinon.stub(errorHandler, 'handleError');
+      sinon.stub(createdLogger, 'log');
+      sinon.spy(eventProcessor, 'LogTierV1EventProcessor');
+    });
+
+    afterEach(function() {
+      eventDispatcher.dispatchEvent.restore();
+      errorHandler.handleError.restore();
+      createdLogger.log.restore();
+      eventProcessor.LogTierV1EventProcessor.restore();
+    });
+
+    var optlyInstance;
+
+    describe('when eventFlushInterval and maxQueueSize is not defined', function() {
+      it('should not instantiate the eventProcessor with the default event flush interval', function() {
+        optlyInstance = new Optimizely({
+          clientEngine: 'node-sdk',
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+          sdkKey: '12345',
+          isValidInstance: true,
+        });
+
+        sinon.assert.calledWithExactly(eventProcessor.LogTierV1EventProcessor, {
+          dispatcher: eventDispatcher,
+          flushInterval: 5000,
+          maxQueueSize: 1,
+        });
+      });
+    });
+
+    describe('when eventFlushInterval and maxQueueSize are both defined', function() {
+      it('should not instantiate the eventProcessor with the default event flush interval', function() {
+        optlyInstance = new Optimizely({
+          clientEngine: 'node-sdk',
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+          sdkKey: '12345',
+          isValidInstance: true,
+          eventFlushInterval: 50,
+          eventBatchSize: 100,
+        });
+
+        sinon.assert.calledWithExactly(eventProcessor.LogTierV1EventProcessor, {
+          dispatcher: eventDispatcher,
+          flushInterval: 50,
+          maxQueueSize: 100,
+        });
+      });
+    });
+  });
+
   describe('project config management', function() {
     var createdLogger = logger.createLogger({
       logLevel: LOG_LEVEL.INFO,

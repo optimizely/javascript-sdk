@@ -109,8 +109,8 @@ function Optimizely(config) {
 
   this.eventProcessor = new eventProcessor.LogTierV1EventProcessor({
     dispatcher: this.eventDispatcher,
-    flushInterval: config.eventFlushInterval || DEFAULT_EVENT_FLUSH_INTERVAL,
-    maxQueueSize: config.eventBatchSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
+    flushInterval: config.eventFlushInterval !== undefined ? config.eventFlushInterval : DEFAULT_EVENT_FLUSH_INTERVAL,
+    maxQueueSize: config.eventBatchSize !== undefined ? config.eventBatchSize : DEFAULT_EVENT_MAX_QUEUE_SIZE,
   });
   this.eventProcessor.start();
 
