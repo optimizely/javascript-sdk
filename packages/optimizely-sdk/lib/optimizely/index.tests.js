@@ -4404,13 +4404,11 @@ describe('lib/optimizely', function() {
           { entity_id: '594016', key: 'lasers', type: 'custom', value: 45.5 },
         ]
       );
-      console.log('ARGS ARE: ', audienceEvaluator.evaluate.firstCall.args);
       sinon.assert.calledWithExactly(
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().experiments[2].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
         { house: 'Welcome to Slytherin!', lasers: 45.5 },
-        createdLogger
       );
     });
 
@@ -4428,7 +4426,6 @@ describe('lib/optimizely', function() {
         optlyInstance.projectConfigManager.getConfig().experiments[2].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
         { house: 'Hufflepuff', lasers: 45.5 },
-        createdLogger
       );
     });
 
@@ -4462,7 +4459,6 @@ describe('lib/optimizely', function() {
         optlyInstance.projectConfigManager.getConfig().rollouts[2].experiments[0].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
         { house: '...Slytherinnn...sss.', favorite_ice_cream: 'matcha' },
-        createdLogger
       );
     });
 
@@ -4478,7 +4474,6 @@ describe('lib/optimizely', function() {
         optlyInstance.projectConfigManager.getConfig().rollouts[2].experiments[0].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
         { house: 'Lannister' },
-        createdLogger
       );
     });
 
@@ -4495,7 +4490,6 @@ describe('lib/optimizely', function() {
         optlyInstance.projectConfigManager.getConfig().experiments[3].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
         { house: 'Gryffindor', lasers: 700 },
-        createdLogger
       );
     });
 
@@ -4509,7 +4503,6 @@ describe('lib/optimizely', function() {
         optlyInstance.projectConfigManager.getConfig().experiments[3].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
         {},
-        createdLogger
       );
     });
   });
