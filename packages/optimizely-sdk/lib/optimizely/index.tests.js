@@ -4409,8 +4409,7 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().experiments[2].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        { house: 'Welcome to Slytherin!', lasers: 45.5 },
-        createdLogger
+        { house: 'Welcome to Slytherin!', lasers: 45.5 }
       );
     });
 
@@ -4427,8 +4426,7 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().experiments[2].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        { house: 'Hufflepuff', lasers: 45.5 },
-        createdLogger
+        { house: 'Hufflepuff', lasers: 45.5 }
       );
     });
 
@@ -4461,8 +4459,7 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().rollouts[2].experiments[0].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        { house: '...Slytherinnn...sss.', favorite_ice_cream: 'matcha' },
-        createdLogger
+        { house: '...Slytherinnn...sss.', favorite_ice_cream: 'matcha' }
       );
     });
 
@@ -4477,8 +4474,7 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().rollouts[2].experiments[0].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        { house: 'Lannister' },
-        createdLogger
+        { house: 'Lannister' }
       );
     });
 
@@ -4494,8 +4490,7 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().experiments[3].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        { house: 'Gryffindor', lasers: 700 },
-        createdLogger
+        { house: 'Gryffindor', lasers: 700 }
       );
     });
 
@@ -4508,8 +4503,7 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().experiments[3].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        {},
-        createdLogger
+        {}
       );
     });
   });

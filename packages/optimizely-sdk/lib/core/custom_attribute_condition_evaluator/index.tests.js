@@ -85,42 +85,6 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
     assert.isTrue(customAttributeEvaluator.evaluate(doubleCondition, userAttributes, mockLogger));
   });
 
-  it('should log and return null when condition has an invalid type property', function() {
-    var result = customAttributeEvaluator.evaluate(
-      { match: 'exact', name: 'weird_condition', type: 'weird', value: 'hi' },
-      { weird_condition: 'bye' },
-      mockLogger
-    );
-    assert.isNull(result);
-    sinon.assert.calledOnce(mockLogger.log);
-    sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
-      'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"exact","name":"weird_condition","type":"weird","value":"hi"} has an unknown condition type. You may need to upgrade to a newer release of the Optimizely SDK.');
-  });
-
-  it('should log and return null when condition has no type property', function() {
-    var result = customAttributeEvaluator.evaluate(
-      { match: 'exact', name: 'weird_condition', value: 'hi' },
-      { weird_condition: 'bye' },
-      mockLogger
-    );
-    assert.isNull(result);
-    sinon.assert.calledOnce(mockLogger.log);
-    sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
-      'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"exact","name":"weird_condition","value":"hi"} has an unknown condition type. You may need to upgrade to a newer release of the Optimizely SDK.');
-  });
-
-  it('should log and return null when condition has an invalid match property', function() {
-    var result = customAttributeEvaluator.evaluate(
-      { match: 'weird', name: 'weird_condition', type: 'custom_attribute', value: 'hi' },
-      { weird_condition: 'bye' },
-      mockLogger
-    );
-    assert.isNull(result);
-    sinon.assert.calledOnce(mockLogger.log);
-    sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
-      'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"weird","name":"weird_condition","type":"custom_attribute","value":"hi"} uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.');
-  });
-
   describe('exists match type', function() {
     var existsCondition = {
       match: 'exists',
