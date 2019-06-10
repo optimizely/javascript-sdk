@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+### Changed
+- Changed name of top-level exports in index.node.ts and index.browser.ts from DatafileManager to HttpPollingDatafileManager, to avoid name conflict with DatafileManager interface
+
 ## [0.3.0] - May 13, 2019
 
 ### New Features
