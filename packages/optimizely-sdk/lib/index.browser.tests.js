@@ -62,7 +62,7 @@ describe('javascript-sdk', function() {
           requests.push(req);
         };
 
-        sinon.spy(LocalStoragePendingEventsDispatcher.prototype, 'sendPendingEvents');
+        sinon.stub(LocalStoragePendingEventsDispatcher.prototype, 'sendPendingEvents');
       });
 
       afterEach(function() {
@@ -73,11 +73,39 @@ describe('javascript-sdk', function() {
         xhr.restore();
       });
 
+      describe('when an eventDispatcher is not passed in', function() {
+        it('should wrap the default eventDispatcher and invoke sendPendingEvents', function() {
+          var optlyInstance = optimizelyFactory.createInstance({
+            datafile: {},
+            errorHandler: fakeErrorHandler,
+            logger: silentLogger,
+          });
+          // Invalid datafile causes onReady Promise rejection - catch this error
+          optlyInstance.onReady().catch(function() {});
+
+          sinon.assert.calledOnce(LocalStoragePendingEventsDispatcher.prototype.sendPendingEvents);
+        });
+      });
+
+      describe('when an eventDispatcher is passed in', function() {
+        it('should wrap the default eventDispatcher and invoke sendPendingEvents', function() {
+          var optlyInstance = optimizelyFactory.createInstance({
+            datafile: {},
+            errorHandler: fakeErrorHandler,
+            eventDispatcher: fakeEventDispatcher,
+            logger: silentLogger,
+          });
+          // Invalid datafile causes onReady Promise rejection - catch this error
+          optlyInstance.onReady().catch(function() {});
+
+          sinon.assert.notCalled(LocalStoragePendingEventsDispatcher.prototype.sendPendingEvents);
+        });
+      });
+
       it('should invoke resendPendingEvents at most once', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
-          eventDispatcher: fakeEventDispatcher,
           logger: silentLogger,
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
@@ -88,7 +116,6 @@ describe('javascript-sdk', function() {
         optlyInstance = optimizelyFactory.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
-          eventDispatcher: fakeEventDispatcher,
           logger: silentLogger,
         });
         optlyInstance.onReady().catch(function() {});
