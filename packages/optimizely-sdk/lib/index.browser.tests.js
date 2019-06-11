@@ -88,7 +88,7 @@ describe('javascript-sdk', function() {
       });
 
       describe('when an eventDispatcher is passed in', function() {
-        it('should wrap the default eventDispatcher and invoke sendPendingEvents', function() {
+        it('should NOT wrap the default eventDispatcher and invoke sendPendingEvents', function() {
           var optlyInstance = optimizelyFactory.createInstance({
             datafile: {},
             errorHandler: fakeErrorHandler,
