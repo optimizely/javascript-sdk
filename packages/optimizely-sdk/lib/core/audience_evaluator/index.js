@@ -18,6 +18,8 @@ var customAttributeConditionEvaluator = require('../custom_attribute_condition_e
 var enums = require('../../utils/enums');
 var fns = require('../../utils/fns');
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
+var logging = require('@optimizely/js-sdk-logging');
+var logger = logging.getLogger();
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
@@ -26,15 +28,13 @@ var MODULE_NAME = 'AUDIENCE_EVALUATOR';
 
 
 /**
- * Construct an instance of AudienceEvaluator with a given logger and options
- * @param {Logger}  logger                           The Logger instance
+ * Construct an instance of AudienceEvaluator with given options
  * @param {Object=} UNSTABLE_conditionEvaluators A map of condition evaluators provided by the consumer. This enables matching
  *                                                   condition types which are not supported natively by the SDK. Note that built in
  *                                                   Optimizely evaluators cannot be overridden.
  * @constructor
  */
-function AudienceEvaluator(logger, UNSTABLE_conditionEvaluators) {
-  this.logger = logger;
+function AudienceEvaluator(UNSTABLE_conditionEvaluators) {
   this.typeToEvaluatorMap = fns.assignIn({}, UNSTABLE_conditionEvaluators, {
     'custom_attribute': customAttributeConditionEvaluator
   });
@@ -66,10 +66,10 @@ AudienceEvaluator.prototype.evaluate = function(audienceConditions, audiencesByI
   var evaluateAudience = function(audienceId) {
     var audience = audiencesById[audienceId];
     if (audience) {
-      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.EVALUATING_AUDIENCE, MODULE_NAME, audienceId, JSON.stringify(audience.conditions)));
+      logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.EVALUATING_AUDIENCE, MODULE_NAME, audienceId, JSON.stringify(audience.conditions)));
       var result = conditionTreeEvaluator.evaluate(audience.conditions, this.evaluateConditionWithUserAttributes.bind(this, userAttributes));
       var resultText = result === null ? 'UNKNOWN' : result.toString().toUpperCase();
-      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText));
+      logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText));
       return result;
     }
 
@@ -89,13 +89,13 @@ AudienceEvaluator.prototype.evaluate = function(audienceConditions, audiencesByI
 AudienceEvaluator.prototype.evaluateConditionWithUserAttributes = function(userAttributes, condition) {
   var evaluator = this.typeToEvaluatorMap[condition.type];
   if (!evaluator) {
-    this.logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNKNOWN_CONDITION_TYPE, MODULE_NAME, JSON.stringify(condition)));
+    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNKNOWN_CONDITION_TYPE, MODULE_NAME, JSON.stringify(condition)));
     return null;
   }
   try {
-    return evaluator.evaluate(condition, userAttributes, this.logger);
+    return evaluator.evaluate(condition, userAttributes, logger);
   } catch (err) {
-    this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.CONDITION_EVALUATOR_ERROR, MODULE_NAME, condition.type, err.message));
+    logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.CONDITION_EVALUATOR_ERROR, MODULE_NAME, condition.type, err.message));
   }
   return null;
 };

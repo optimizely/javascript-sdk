@@ -45,11 +45,10 @@ var DECISION_SOURCES = enums.DECISION_SOURCES;
  * @constructor
  * @param   {Object} options
  * @param   {Object} options.userProfileService An instance of the user profile service for sticky bucketing.
- * @param   {Object} options.logger             An instance of a logger to log messages with.
  * @returns {Object}
  */
 function DecisionService(options) {
-  this.audienceEvaluator = new AudienceEvaluator(options.logger, options.UNSTABLE_conditionEvaluators);
+  this.audienceEvaluator = new AudienceEvaluator(options.UNSTABLE_conditionEvaluators);
   this.forcedVariationMap = {};
   this.logger = options.logger;
   this.userProfileService = options.userProfileService || null;

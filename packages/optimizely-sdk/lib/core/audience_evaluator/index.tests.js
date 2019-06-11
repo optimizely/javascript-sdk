@@ -20,6 +20,8 @@ var customAttributeConditionEvaluator = require('../custom_attribute_condition_e
 var sinon = require('sinon');
 var assert = chai.assert;
 var logger = require('../../plugins/logger');
+// var logging = require('@optimizely/js-sdk-logging');
+// var logger = logging.getLogger();
 var enums = require('../../utils/enums');
 var LOG_LEVEL = enums.LOG_LEVEL;
 
@@ -55,19 +57,11 @@ describe('lib/core/audience_evaluator', function() {
   var audienceEvaluator;
   var mockLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
   beforeEach(function() {
-    audienceEvaluator = new AudienceEvaluator(mockLogger);
+    audienceEvaluator = new AudienceEvaluator();
   });
 
   describe('APIs', function() {
     describe('evaluate', function() {
-      beforeEach(function () {
-        sinon.stub(mockLogger, 'log');
-      });
-
-      afterEach(function() {
-        mockLogger.log.restore();
-      });
-
       it('should return true if there are no audiences', function() {
         assert.isTrue(audienceEvaluator.evaluate([], audiencesById, {}));
       });
@@ -124,7 +118,6 @@ describe('lib/core/audience_evaluator', function() {
             ['or', '0', '1'],
             audiencesById,
             { browser_type: 'chrome' },
-            mockLogger
           );
           assert.isTrue(result);
         });
@@ -134,7 +127,6 @@ describe('lib/core/audience_evaluator', function() {
             ['and', '0', '1'],
             audiencesById,
             { browser_type: 'chrome', device_model: 'iphone' },
-            mockLogger
           );
           assert.isTrue(result);
         });
@@ -144,7 +136,6 @@ describe('lib/core/audience_evaluator', function() {
             ['not', '1'],
             audiencesById,
             { device_model: 'android' },
-            mockLogger
           );
           assert.isTrue(result);
         });
@@ -169,7 +160,6 @@ describe('lib/core/audience_evaluator', function() {
             ['or', '0', '1'],
             audiencesById,
             { browser_type: 'chrome' },
-            mockLogger
           );
           assert.isTrue(result);
         });
@@ -180,7 +170,6 @@ describe('lib/core/audience_evaluator', function() {
             ['or', '0', '1'],
             audiencesById,
             { browser_type: 'safari' },
-            mockLogger
           );
           assert.isFalse(result);
         });
@@ -191,7 +180,6 @@ describe('lib/core/audience_evaluator', function() {
             ['or', '0', '1'],
             audiencesById,
             { state: 'California' },
-            mockLogger
           );
           assert.isFalse(result);
         });
@@ -204,7 +192,8 @@ describe('lib/core/audience_evaluator', function() {
           var userAttributes = { device_model: 'android' };
           var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
           sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
-          sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes, mockLogger);
+          console.log('args: ', customAttributeConditionEvaluator.evaluate.firstCall.args)
+          sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes);
           assert.isFalse(result);
         });
       });
@@ -229,7 +218,7 @@ describe('lib/core/audience_evaluator', function() {
           var userAttributes = { device_model: 5.5 };
           var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
           sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
-          sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes, mockLogger);
+          sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes);
           assert.isFalse(result);
           assert.strictEqual(2, mockLogger.log.callCount);
           assert.strictEqual(mockLogger.log.args[0][1], 'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: ["and",{"name":"device_model","value":"iphone","type":"custom_attribute"}].');
@@ -244,7 +233,7 @@ describe('lib/core/audience_evaluator', function() {
           var userAttributes = { device_model: 'iphone' };
           var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
           sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
-          sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes, mockLogger);
+          sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes);
           assert.isTrue(result);
           assert.strictEqual(2, mockLogger.log.callCount);
           assert.strictEqual(mockLogger.log.args[0][1], 'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: ["and",{"name":"device_model","value":"iphone","type":"custom_attribute"}].');
@@ -259,7 +248,8 @@ describe('lib/core/audience_evaluator', function() {
           var userAttributes = { device_model: 'android' };
           var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
           sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
-          sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes, mockLogger);
+          console.log('args: ', customAttributeConditionEvaluator.evaluate.firstCall.args)
+          sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes);
           assert.isFalse(result);
           assert.strictEqual(2, mockLogger.log.callCount);
           assert.strictEqual(mockLogger.log.args[0][1], 'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: ["and",{"name":"device_model","value":"iphone","type":"custom_attribute"}].');
