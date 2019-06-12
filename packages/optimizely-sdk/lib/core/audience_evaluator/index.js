@@ -93,7 +93,7 @@ AudienceEvaluator.prototype.evaluateConditionWithUserAttributes = function(userA
     return null;
   }
   try {
-    return evaluator.evaluate(condition, userAttributes, logger);
+    return evaluator.evaluate(condition, userAttributes);
   } catch (err) {
     logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.CONDITION_EVALUATOR_ERROR, MODULE_NAME, condition.type, err.message));
   }

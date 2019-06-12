@@ -19,9 +19,8 @@ var conditionTreeEvaluator = require('../condition_tree_evaluator');
 var customAttributeConditionEvaluator = require('../custom_attribute_condition_evaluator');
 var sinon = require('sinon');
 var assert = chai.assert;
-var logger = require('../../plugins/logger');
-// var logging = require('@optimizely/js-sdk-logging');
-// var logger = logging.getLogger();
+var logging = require('@optimizely/js-sdk-logging');
+var mockLogger = logging.getLogger();
 var enums = require('../../utils/enums');
 var LOG_LEVEL = enums.LOG_LEVEL;
 
@@ -55,13 +54,20 @@ var audiencesById = {
 
 describe('lib/core/audience_evaluator', function() {
   var audienceEvaluator;
-  var mockLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
   beforeEach(function() {
     audienceEvaluator = new AudienceEvaluator();
   });
 
   describe('APIs', function() {
     describe('evaluate', function() {
+      beforeEach(function() {
+        sinon.stub(mockLogger, 'log');
+      });
+
+      afterEach(function() {
+        mockLogger.log.restore();
+      });
+
       it('should return true if there are no audiences', function() {
         assert.isTrue(audienceEvaluator.evaluate([], audiencesById, {}));
       });
