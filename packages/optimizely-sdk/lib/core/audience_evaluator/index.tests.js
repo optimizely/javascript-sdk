@@ -123,7 +123,7 @@ describe('lib/core/audience_evaluator', function() {
           var result = audienceEvaluator.evaluate(
             ['or', '0', '1'],
             audiencesById,
-            { browser_type: 'chrome' },
+            { browser_type: 'chrome' }
           );
           assert.isTrue(result);
         });
@@ -132,7 +132,7 @@ describe('lib/core/audience_evaluator', function() {
           var result = audienceEvaluator.evaluate(
             ['and', '0', '1'],
             audiencesById,
-            { browser_type: 'chrome', device_model: 'iphone' },
+            { browser_type: 'chrome', device_model: 'iphone' }
           );
           assert.isTrue(result);
         });
@@ -141,7 +141,7 @@ describe('lib/core/audience_evaluator', function() {
           var result = audienceEvaluator.evaluate(
             ['not', '1'],
             audiencesById,
-            { device_model: 'android' },
+            { device_model: 'android' }
           );
           assert.isTrue(result);
         });
@@ -165,7 +165,7 @@ describe('lib/core/audience_evaluator', function() {
           var result = audienceEvaluator.evaluate(
             ['or', '0', '1'],
             audiencesById,
-            { browser_type: 'chrome' },
+            { browser_type: 'chrome' }
           );
           assert.isTrue(result);
         });
@@ -175,7 +175,7 @@ describe('lib/core/audience_evaluator', function() {
           var result = audienceEvaluator.evaluate(
             ['or', '0', '1'],
             audiencesById,
-            { browser_type: 'safari' },
+            { browser_type: 'safari' }
           );
           assert.isFalse(result);
         });
@@ -185,7 +185,7 @@ describe('lib/core/audience_evaluator', function() {
           var result = audienceEvaluator.evaluate(
             ['or', '0', '1'],
             audiencesById,
-            { state: 'California' },
+            { state: 'California' }
           );
           assert.isFalse(result);
         });
