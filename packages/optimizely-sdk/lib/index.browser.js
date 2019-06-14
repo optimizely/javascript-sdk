@@ -28,6 +28,7 @@ var logger = logging.getLogger();
 logging.setLogHandler(loggerPlugin.createLogger());
 logging.setLogLevel(logging.LogLevel.INFO);
 
+var MODULE_NAME = 'INDEX_BROWSER';
 var hasRetriedEvents = false;
 /**
  * Entry point into the Optimizely Browser SDK
@@ -101,16 +102,35 @@ module.exports = {
         eventDispatcher = config.eventDispatcher;
       }
 
-      config = fns.assignIn({
-        clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
-      }, config, {
-        eventDispatcher: eventDispatcher,
-        // always get the OptimizelyLogger facade from logging
-        logger: logger,
-        errorHandler: logging.getErrorHandler(),
-      });
+      config = fns.assignIn(
+        {
+          clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
+        },
+        config,
+        {
+          eventDispatcher: eventDispatcher,
+          // always get the OptimizelyLogger facade from logging
+          logger: logger,
+          errorHandler: logging.getErrorHandler(),
+        }
+      );
 
-      return new Optimizely(config);
+      var optimizely = new Optimizely(config);
+
+      try {
+        var unloadEvent = 'onpagehide' in window ? 'pagehide' : 'unload';
+        window.addEventListener(
+          unloadEvent,
+          function() {
+            optimizely.close();
+          },
+          false
+        );
+      } catch (e) {
+        logger.error(enums.LOG_MESSAGES.UNABLE_TO_ATTACH_UNLOAD, MODULE_NAME, e.message);
+      }
+
+      return optimizely;
     } catch (e) {
       logger.error(e);
       return null;

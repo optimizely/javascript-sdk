@@ -16,6 +16,7 @@
 var configValidator = require('./utils/config_validator');
 var enums = require('./utils/enums');
 var logger = require('./plugins/logger');
+var Optimizely = require('./optimizely');
 
 var packageJSON = require('../package.json');
 var eventDispatcher = require('./plugins/event_dispatcher/index.browser');
@@ -40,6 +41,7 @@ describe('javascript-sdk', function() {
           logToConsole: false,
         });
         sinon.stub(configValidator, 'validate');
+        sinon.stub(Optimizely.prototype, 'close');
 
         xhr = sinon.useFakeXMLHttpRequest();
         global.XMLHttpRequest = xhr;
@@ -52,6 +54,8 @@ describe('javascript-sdk', function() {
         sinon.spy(console, 'info');
         sinon.spy(console, 'warn');
         sinon.spy(console, 'error');
+
+        sinon.spy(window, 'addEventListener');
       });
 
       afterEach(function() {
@@ -59,7 +63,9 @@ describe('javascript-sdk', function() {
         console.info.restore();
         console.warn.restore();
         console.error.restore();
+        window.addEventListener.restore();
         configValidator.validate.restore();
+        Optimizely.prototype.close.restore();
         xhr.restore();
       });
 
@@ -291,6 +297,18 @@ describe('javascript-sdk', function() {
 
         var variation = optlyInstance.getVariation('testExperimentNotRunning', 'testUser');
         assert.strictEqual(variation, null);
+      });
+
+      it('should hook into window `pagehide` event', function() {
+        var optlyInstance = window.optimizelySdk.createInstance({
+          datafile: testData.getTestProjectConfig(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: eventDispatcher,
+          logger: silentLogger,
+        });
+
+        sinon.assert.calledOnce(window.addEventListener);
+        sinon.assert.calledWith(window.addEventListener, sinon.match('pagehide').or(sinon.match('unload')));
       });
     });
   });
