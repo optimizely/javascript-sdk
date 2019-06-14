@@ -125,7 +125,7 @@ ProjectConfigManager.prototype.__initialize = function(config) {
     if (initialDatafile && this.__configObj) {
       datafileManagerConfig.datafile = initialDatafile;
     }
-    this.datafileManager = new datafileManager.DatafileManager(datafileManagerConfig);
+    this.datafileManager = new datafileManager.HttpPollingDatafileManager(datafileManagerConfig);
     this.datafileManager.start();
     this.__readyPromise = this.datafileManager.onReady().then(
       this.__onDatafileManagerReadyFulfill.bind(this),

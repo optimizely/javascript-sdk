@@ -34,7 +34,7 @@ function isSuccessStatusCode(statusCode: number): boolean {
   return statusCode >= 200 && statusCode < 400
 }
 
-export default abstract class HTTPPollingDatafileManager implements DatafileManager {
+export default abstract class HttpPollingDatafileManager implements DatafileManager {
   // Make an HTTP get request to the given URL with the given headers
   // Return an AbortableRequest, which has a promise for a Response.
   // If we can't get a response, the promise is rejected.
@@ -208,7 +208,7 @@ export default abstract class HTTPPollingDatafileManager implements DatafileMana
     }
   }
 
-  private onRequestComplete(this: HTTPPollingDatafileManager): void {
+  private onRequestComplete(this: HttpPollingDatafileManager): void {
     if (!this.isStarted) {
       return
     }

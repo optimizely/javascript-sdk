@@ -22,6 +22,7 @@ var projectConfigManager = require('../core/project_config/project_config_manage
 var enums = require('../utils/enums');
 var eventBuilder = require('../core/event_builder/index.js');
 var eventDispatcher = require('../plugins/event_dispatcher/index.node');
+var eventProcessor = require('@optimizely/js-sdk-event-processor');
 var errorHandler = require('../plugins/error_handler');
 var fns = require('../utils/fns');
 var jsonSchemaValidator = require('../utils/json_schema_validator');
@@ -4767,6 +4768,69 @@ describe('lib/optimizely', function() {
         };
         var eventDispatcherCall = eventDispatcher.dispatchEvent.args[0];
         assert.deepEqual(eventDispatcherCall[0], expectedObj);
+      });
+    });
+  });
+
+  describe('event processor defaults', function() {
+    var createdLogger = logger.createLogger({
+      logLevel: LOG_LEVEL.INFO,
+      logToConsole: false,
+    });
+
+    beforeEach(function() {
+      sinon.stub(eventDispatcher, 'dispatchEvent');
+      sinon.stub(errorHandler, 'handleError');
+      sinon.stub(createdLogger, 'log');
+      sinon.spy(eventProcessor, 'LogTierV1EventProcessor');
+    });
+
+    afterEach(function() {
+      eventDispatcher.dispatchEvent.restore();
+      errorHandler.handleError.restore();
+      createdLogger.log.restore();
+      eventProcessor.LogTierV1EventProcessor.restore();
+    });
+
+    describe('when eventFlushInterval and maxQueueSize is not defined', function() {
+      it('should not instantiate the eventProcessor with the default event flush interval', function() {
+        optlyInstance = new Optimizely({
+          clientEngine: 'node-sdk',
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+          sdkKey: '12345',
+          isValidInstance: true,
+        });
+
+        sinon.assert.calledWithExactly(eventProcessor.LogTierV1EventProcessor, {
+          dispatcher: eventDispatcher,
+          flushInterval: 5000,
+          maxQueueSize: 1,
+        });
+      });
+    });
+
+    describe('when eventFlushInterval and maxQueueSize are both defined', function() {
+      it('should not instantiate the eventProcessor with the default event flush interval', function() {
+        optlyInstance = new Optimizely({
+          clientEngine: 'node-sdk',
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+          sdkKey: '12345',
+          isValidInstance: true,
+          eventFlushInterval: 50,
+          eventBatchSize: 100,
+        });
+
+        sinon.assert.calledWithExactly(eventProcessor.LogTierV1EventProcessor, {
+          dispatcher: eventDispatcher,
+          flushInterval: 50,
+          maxQueueSize: 100,
+        });
       });
     });
   });
