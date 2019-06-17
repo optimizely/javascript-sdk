@@ -167,7 +167,7 @@ describe('lib/optimizely', function() {
           sinon.assert.calledWith(decisionService.createDecisionService, {
             userProfileService: userProfileServiceInstance,
             logger: createdLogger,
-            UNSTABLE_conditionEvaluators: undefined
+            UNSTABLE_conditionEvaluators: undefined,
           });
 
           var logMessage = createdLogger.log.args[0][1];
@@ -190,7 +190,7 @@ describe('lib/optimizely', function() {
           sinon.assert.calledWith(decisionService.createDecisionService, {
             userProfileService: null,
             logger: createdLogger,
-            UNSTABLE_conditionEvaluators: undefined
+            UNSTABLE_conditionEvaluators: undefined,
           });
 
           var logMessage = createdLogger.log.args[0][1];
