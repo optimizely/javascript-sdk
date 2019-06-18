@@ -199,7 +199,7 @@ describe('lib/core/audience_evaluator', function() {
           var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
           sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
           console.log('args: ', customAttributeConditionEvaluator.evaluate.firstCall.args)
-          sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes);
+          sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes, mockLogger);
           assert.isFalse(result);
         });
       });
@@ -224,7 +224,7 @@ describe('lib/core/audience_evaluator', function() {
           var userAttributes = { device_model: 5.5 };
           var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
           sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
-          sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes);
+          sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes, mockLogger);
           assert.isFalse(result);
           assert.strictEqual(2, mockLogger.log.callCount);
           assert.strictEqual(mockLogger.log.args[0][1], 'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: ["and",{"name":"device_model","value":"iphone","type":"custom_attribute"}].');
@@ -239,7 +239,7 @@ describe('lib/core/audience_evaluator', function() {
           var userAttributes = { device_model: 'iphone' };
           var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
           sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
-          sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes);
+          sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes, mockLogger);
           assert.isTrue(result);
           assert.strictEqual(2, mockLogger.log.callCount);
           assert.strictEqual(mockLogger.log.args[0][1], 'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: ["and",{"name":"device_model","value":"iphone","type":"custom_attribute"}].');
@@ -255,7 +255,7 @@ describe('lib/core/audience_evaluator', function() {
           var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
           sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
           console.log('args: ', customAttributeConditionEvaluator.evaluate.firstCall.args)
-          sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes);
+          sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes, mockLogger);
           assert.isFalse(result);
           assert.strictEqual(2, mockLogger.log.callCount);
           assert.strictEqual(mockLogger.log.args[0][1], 'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: ["and",{"name":"device_model","value":"iphone","type":"custom_attribute"}].');
