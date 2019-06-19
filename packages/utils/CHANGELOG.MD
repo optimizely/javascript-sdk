@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+### New Features
+- Added `objectEntries`
+
 ## [0.1.0] - March 1, 2019
 
 Initial release

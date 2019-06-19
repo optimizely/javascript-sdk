@@ -62,6 +62,10 @@ export function objectValues<K>(obj: { [key: string]: K }): K[] {
   return Object.keys(obj).map(key => obj[key])
 }
 
+export function objectEntries<K>(obj: { [key: string]: K }): [string, K][] {
+  return Object.keys(obj).map(key => [key, obj[key]])
+}
+
 export function find<K>(arr: K[], cond: (arg: K) => boolean): K | undefined {
   let found
 
