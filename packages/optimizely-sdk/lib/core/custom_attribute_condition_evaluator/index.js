@@ -53,6 +53,7 @@ EVALUATORS_BY_MATCH_TYPE[SUBSTRING_MATCH_TYPE] = substringEvaluator;
  * @param  {Object}     logger
  * @return {?Boolean}   true/false if the given user attributes match/don't match the given condition,
  *                                      null if the given user attributes and condition can't be evaluated
+ * TODO: Change to accept and object with named properties
  */
 function evaluate(condition, userAttributes, logger) {
   var conditionMatch = condition.match;
