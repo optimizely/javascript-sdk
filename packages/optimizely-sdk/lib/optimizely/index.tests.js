@@ -15,7 +15,7 @@
  ***************************************************************************/
 
 var Optimizely = require('./');
-var audienceEvaluator = require('../core/audience_evaluator');
+var AudienceEvaluator = require('../core/audience_evaluator');
 var bluebird = require('bluebird');
 var bucketer = require('../core/bucketer');
 var projectConfigManager = require('../core/project_config/project_config_manager');
@@ -167,6 +167,7 @@ describe('lib/optimizely', function() {
           sinon.assert.calledWith(decisionService.createDecisionService, {
             userProfileService: userProfileServiceInstance,
             logger: createdLogger,
+            UNSTABLE_conditionEvaluators: undefined,
           });
 
           var logMessage = createdLogger.log.args[0][1];
@@ -189,6 +190,7 @@ describe('lib/optimizely', function() {
           sinon.assert.calledWith(decisionService.createDecisionService, {
             userProfileService: null,
             logger: createdLogger,
+            UNSTABLE_conditionEvaluators: undefined,
           });
 
           var logMessage = createdLogger.log.args[0][1];
@@ -4363,6 +4365,7 @@ describe('lib/optimizely', function() {
       logToConsole: false,
     });
     var optlyInstance;
+    var audienceEvaluator;
     beforeEach(function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
@@ -4374,6 +4377,7 @@ describe('lib/optimizely', function() {
         logger: createdLogger,
         isValidInstance: true,
       });
+      audienceEvaluator = AudienceEvaluator.prototype;
 
       sandbox.stub(eventDispatcher, 'dispatchEvent');
       sandbox.stub(errorHandler, 'handleError');
@@ -4405,8 +4409,7 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().experiments[2].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        { house: 'Welcome to Slytherin!', lasers: 45.5 },
-        createdLogger
+        { house: 'Welcome to Slytherin!', lasers: 45.5 }
       );
     });
 
@@ -4423,8 +4426,7 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().experiments[2].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        { house: 'Hufflepuff', lasers: 45.5 },
-        createdLogger
+        { house: 'Hufflepuff', lasers: 45.5 }
       );
     });
 
@@ -4457,8 +4459,7 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().rollouts[2].experiments[0].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        { house: '...Slytherinnn...sss.', favorite_ice_cream: 'matcha' },
-        createdLogger
+        { house: '...Slytherinnn...sss.', favorite_ice_cream: 'matcha' }
       );
     });
 
@@ -4473,8 +4474,7 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().rollouts[2].experiments[0].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        { house: 'Lannister' },
-        createdLogger
+        { house: 'Lannister' }
       );
     });
 
@@ -4490,8 +4490,7 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().experiments[3].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        { house: 'Gryffindor', lasers: 700 },
-        createdLogger
+        { house: 'Gryffindor', lasers: 700 }
       );
     });
 
@@ -4504,8 +4503,7 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().experiments[3].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        {},
-        createdLogger
+        {}
       );
     });
   });
