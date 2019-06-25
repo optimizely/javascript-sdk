@@ -850,7 +850,31 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
 };
 
 /**
- * Cleanup method for killing an running timers and flushing eventQueue
+ * Stop background processes belonging to this instance, including:
+ *
+ * - Active datafile requests
+ * - Pending datafile requests
+ * - Pending event queue flushes
+ *
+ * In-flight datafile requests will be aborted. Any events waiting to be sent
+ * as part of a batched event request will be immediately batched and sent.
+ *
+ * Returns a Promise that fulfills after the response is received from the final
+ * batched event request (if any)
+ *
+ * The returned Promise is fulfilled with a result object containing these
+ * properties:
+ *    - success (boolean): True if all events in the queue at the time close was
+ *                         called were combined into requests, sent to the
+ *                         event dispatcher, and the event dispatcher called the
+ *                         callbacks for each request.
+ *    - reason (string=):  If success is false, this is a string property with
+ *                         an explanatory message.
+ *
+ * NOTE: After close is called, this instance is no longer usable. Any events
+ * generated will not be sent.
+ *
+ * @return {Promise}
  */
 Optimizely.prototype.close = function() {
   try {
