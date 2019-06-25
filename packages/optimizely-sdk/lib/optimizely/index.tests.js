@@ -4519,7 +4519,14 @@ describe('lib/optimizely', function() {
 
     beforeEach(function() {
       bucketStub = sinon.stub(bucketer, 'bucket');
-      sinon.stub(eventDispatcher, 'dispatchEvent');
+
+      // Every dispatched event responds with 200 on the next tick
+      sinon.stub(eventDispatcher, 'dispatchEvent').callsFake(function(evt, cb) {
+        setTimeout(function() {
+          cb({ statusCode: 200 });
+        }, 0);
+      });
+
       sinon.stub(errorHandler, 'handleError');
       sinon.stub(createdLogger, 'log');
       sinon.stub(uuid, 'v4').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
@@ -4555,7 +4562,10 @@ describe('lib/optimizely', function() {
       });
 
       afterEach(function() {
-        optlyInstance.close();
+        var closedPromise = optlyInstance.close();
+        // Allow dispatched events to respond on the next tick, which should fulfill the close promise
+        clock.tick(1);
+        return closedPromise;
       });
 
       it('should send batched events when the maxQueueSize is reached', function() {
@@ -4712,7 +4722,7 @@ describe('lib/optimizely', function() {
 
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
 
-        optlyInstance.close();
+        var closedPromise = optlyInstance.close();
 
         sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
 
@@ -4766,6 +4776,10 @@ describe('lib/optimizely', function() {
         };
         var eventDispatcherCall = eventDispatcher.dispatchEvent.args[0];
         assert.deepEqual(eventDispatcherCall[0], expectedObj);
+
+        // Allow dispatched events to respond, which should fulfill the close promise
+        clock.tick(1);
+        return closedPromise;
       });
     });
 
@@ -4946,9 +4960,11 @@ describe('lib/optimizely', function() {
         sdkKey: '12345',
         isValidInstance: true,
       });
-      optlyInstance.close();
+      var closedPromise = optlyInstance.close();
       var fakeManager = projectConfigManager.ProjectConfigManager.getCall(0).returnValue;
       sinon.assert.calledOnce(fakeManager.stop);
+
+      return closedPromise;
     });
 
     describe('when no datafile is available yet ', function() {
@@ -5075,11 +5091,12 @@ describe('lib/optimizely', function() {
           isValidInstance: true,
         });
         var readyPromise = optlyInstance.onReady({ timeout: 100 });
-        optlyInstance.close();
+        var closedPromise = optlyInstance.close();
         return readyPromise.then(function(result) {
           assert.include(result, {
             success: false,
           });
+          return closedPromise;
         });
       });
 
@@ -5103,8 +5120,8 @@ describe('lib/optimizely', function() {
         }).then(function() {
           // readyPromise3 has not resolved yet because only 201 ms have elapsed.
           // Calling close on the instance should resolve readyPromise3
-          optlyInstance.close();
-          return readyPromise3;
+          var closedPromise = optlyInstance.close();
+          return Promise.all([readyPromise3, closedPromise]);
         });
       });
 
