@@ -854,7 +854,7 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
  */
 Optimizely.prototype.close = function() {
   try {
-    this.eventProcessor.stop();
+    var eventProcessorStoppedPromise = this.eventProcessor.stop();
     if (this.__disposeOnUpdate) {
       this.__disposeOnUpdate();
       this.__disposeOnUpdate = null;
@@ -868,9 +868,23 @@ Optimizely.prototype.close = function() {
       readyTimeoutRecord.onClose();
     }.bind(this));
     this.__readyTimeouts = {};
-  } catch (e) {
-    this.logger.log(LOG_LEVEL.ERROR, e.message);
-    this.errorHandler.handleError(e);
+    return eventProcessorStoppedPromise.then(function() {
+      return {
+        success: true,
+      };
+    }).catch(function(err) {
+      return {
+        success: false,
+        reason: String(err),
+      };
+    });
+  } catch (err) {
+    this.logger.log(LOG_LEVEL.ERROR, err.message);
+    this.errorHandler.handleError(err);
+    return Promise.resolve({
+      success: false,
+      reason: String(err),
+    });
   }
 };
 
