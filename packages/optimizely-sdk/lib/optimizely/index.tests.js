@@ -4519,18 +4519,10 @@ describe('lib/optimizely', function() {
 
     beforeEach(function() {
       bucketStub = sinon.stub(bucketer, 'bucket');
-
-      // Every dispatched event responds with 200 on the next tick
-      sinon.stub(eventDispatcher, 'dispatchEvent').callsFake(function(evt, cb) {
-        setTimeout(function() {
-          cb({ statusCode: 200 });
-        }, 0);
-      });
-
+      sinon.stub(eventDispatcher, 'dispatchEvent');
       sinon.stub(errorHandler, 'handleError');
       sinon.stub(createdLogger, 'log');
       sinon.stub(uuid, 'v4').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
-
       clock = sinon.useFakeTimers(new Date().getTime());
     });
 
@@ -4562,10 +4554,7 @@ describe('lib/optimizely', function() {
       });
 
       afterEach(function() {
-        var closedPromise = optlyInstance.close();
-        // Allow dispatched events to respond on the next tick, which should fulfill the close promise
-        clock.tick(1);
-        return closedPromise;
+        optlyInstance.close();
       });
 
       it('should send batched events when the maxQueueSize is reached', function() {
@@ -4712,13 +4701,12 @@ describe('lib/optimizely', function() {
         assert.deepEqual(eventDispatcherCall[0], expectedObj);
       });
 
-      it('should flush the queue when optimizely.close() is called', function() {
+      it('should flush the queue when optimizely.close() is called', function(done) {
         bucketStub.returns('111129');
         var activate = optlyInstance.activate('testExperiment', 'testUser');
         assert.strictEqual(activate, 'variation');
 
         optlyInstance.track('testEvent', 'testUser');
-
 
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
 
@@ -4777,9 +4765,14 @@ describe('lib/optimizely', function() {
         var eventDispatcherCall = eventDispatcher.dispatchEvent.args[0];
         assert.deepEqual(eventDispatcherCall[0], expectedObj);
 
-        // Allow dispatched events to respond, which should fulfill the close promise
+        // Responding to the dispatched event request should fulfill the close promise
+        eventDispatcherCall[1]({ statusCode: 200 });
+        setTimeout(function() {
+          closedPromise.then(function() {
+            done();
+          });
+        });
         clock.tick(1);
-        return closedPromise;
       });
     });
 
