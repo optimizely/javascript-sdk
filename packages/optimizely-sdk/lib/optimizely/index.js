@@ -857,12 +857,14 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
  * - Pending event queue flushes
  *
  * In-flight datafile requests will be aborted. Any events waiting to be sent
- * as part of a batched event request will be immediately batched and sent.
+ * as part of a batched event request will be immediately batched and sent to
+ * the event dispatcher.
  *
- * Returns a Promise that fulfills after the response is received from the final
- * batched event request (if any)
+ * If any such requests were sent to the event dispatcher, returns a Promise
+ * that fulfills after the event dispatcher calls the response callback for each
+ * request. Otherwise, returns an immediately-fulfilled Promise.
  *
- * The returned Promise is fulfilled with a result object containing these
+ * Returned Promises are fulfilled with result objects containing these
  * properties:
  *    - success (boolean): True if all events in the queue at the time close was
  *                         called were combined into requests, sent to the
@@ -873,6 +875,8 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
  *
  * NOTE: After close is called, this instance is no longer usable. Any events
  * generated will not be sent.
+ *
+ * TODO: Implement a configurable timeout, so that the returned promise can't remain pending forever
  *
  * @return {Promise}
  */
