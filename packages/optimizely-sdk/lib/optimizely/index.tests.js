@@ -4523,6 +4523,7 @@ describe('lib/optimizely', function() {
       sinon.stub(errorHandler, 'handleError');
       sinon.stub(createdLogger, 'log');
       sinon.stub(uuid, 'v4').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
+
       clock = sinon.useFakeTimers(new Date().getTime());
     });
 
@@ -4701,7 +4702,7 @@ describe('lib/optimizely', function() {
         assert.deepEqual(eventDispatcherCall[0], expectedObj);
       });
 
-      it('should flush the queue when optimizely.close() is called', function(done) {
+      it('should flush the queue when optimizely.close() is called', function() {
         bucketStub.returns('111129');
         var activate = optlyInstance.activate('testExperiment', 'testUser');
         assert.strictEqual(activate, 'variation');
@@ -4710,7 +4711,7 @@ describe('lib/optimizely', function() {
 
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
 
-        var closedPromise = optlyInstance.close();
+        optlyInstance.close();
 
         sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
 
@@ -4764,15 +4765,6 @@ describe('lib/optimizely', function() {
         };
         var eventDispatcherCall = eventDispatcher.dispatchEvent.args[0];
         assert.deepEqual(eventDispatcherCall[0], expectedObj);
-
-        // Responding to the dispatched event request should fulfill the close promise
-        eventDispatcherCall[1]({ statusCode: 200 });
-        setTimeout(function() {
-          closedPromise.then(function() {
-            done();
-          });
-        });
-        clock.tick(1);
       });
     });
 
@@ -4953,11 +4945,9 @@ describe('lib/optimizely', function() {
         sdkKey: '12345',
         isValidInstance: true,
       });
-      var closedPromise = optlyInstance.close();
+      optlyInstance.close();
       var fakeManager = projectConfigManager.ProjectConfigManager.getCall(0).returnValue;
       sinon.assert.calledOnce(fakeManager.stop);
-
-      return closedPromise;
     });
 
     describe('when no datafile is available yet ', function() {
@@ -5084,12 +5074,11 @@ describe('lib/optimizely', function() {
           isValidInstance: true,
         });
         var readyPromise = optlyInstance.onReady({ timeout: 100 });
-        var closedPromise = optlyInstance.close();
+        optlyInstance.close();
         return readyPromise.then(function(result) {
           assert.include(result, {
             success: false,
           });
-          return closedPromise;
         });
       });
 
@@ -5113,8 +5102,8 @@ describe('lib/optimizely', function() {
         }).then(function() {
           // readyPromise3 has not resolved yet because only 201 ms have elapsed.
           // Calling close on the instance should resolve readyPromise3
-          var closedPromise = optlyInstance.close();
-          return Promise.all([readyPromise3, closedPromise]);
+          optlyInstance.close();
+          return readyPromise3;
         });
       });
 
