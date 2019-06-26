@@ -894,16 +894,19 @@ Optimizely.prototype.close = function() {
       readyTimeoutRecord.onClose();
     }.bind(this));
     this.__readyTimeouts = {};
-    return eventProcessorStoppedPromise.then(function() {
-      return {
-        success: true,
-      };
-    }).catch(function(err) {
-      return {
-        success: false,
-        reason: String(err),
-      };
-    });
+    return eventProcessorStoppedPromise.then(
+      function() {
+        return {
+          success: true,
+        };
+      },
+      function(err) {
+        return {
+          success: false,
+          reason: String(err),
+        };
+      }
+    );
   } catch (err) {
     this.logger.log(LOG_LEVEL.ERROR, err.message);
     this.errorHandler.handleError(err);
