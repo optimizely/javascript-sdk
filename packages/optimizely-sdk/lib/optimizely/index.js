@@ -873,8 +873,8 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
  *    - reason (string=):  If success is false, this is a string property with
  *                         an explanatory message.
  *
- * NOTE: After close is called, this instance is no longer usable. Any events
- * generated will not be sent.
+ * NOTE: After close is called, this instance is no longer usable - any events
+ * generated will no longer be sent to the event dispatcher.
  *
  * @return {Promise}
  */
