@@ -4709,6 +4709,7 @@ describe('lib/optimizely', function() {
 
         optlyInstance.track('testEvent', 'testUser');
 
+
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
 
         optlyInstance.close();

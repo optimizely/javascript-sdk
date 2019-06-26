@@ -876,8 +876,6 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
  * NOTE: After close is called, this instance is no longer usable. Any events
  * generated will not be sent.
  *
- * TODO: Implement a configurable timeout, so that the returned promise can't remain pending forever
- *
  * @return {Promise}
  */
 Optimizely.prototype.close = function() {
