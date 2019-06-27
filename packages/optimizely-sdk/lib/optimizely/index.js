@@ -734,7 +734,7 @@ Optimizely.prototype.getFeatureVariable = function(featureKey, variableKey, user
     }
   }
 
-  var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
+  // var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
   this.notificationCenter.sendNotifications(
     NOTIFICATION_TYPES.DECISION,
     {
@@ -746,100 +746,101 @@ Optimizely.prototype.getFeatureVariable = function(featureKey, variableKey, user
         featureEnabled: featureEnabled,
         source: decision.decisionSource,
         variableKey: variableKey,
-        variableValue: typeCastedValue,
-        variableType: variableType,
+        variableValue: variableValue,
+        variableType: variable.type,
         sourceInfo: sourceInfo,
       }
     }
   );
-  return typeCastedValue;
+  return variableValue;
+  // return typeCastedValue;
 };
 
-Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableKey, variableType, userId, attributes) {
-  if (!this.__isValidInstance()) {
-    var apiName = 'getFeatureVariable' + variableType.charAt(0).toUpperCase() + variableType.slice(1);
-    this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, apiName));
-    return null;
-  }
+// Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableKey, variableType, userId, attributes) {
+//   if (!this.__isValidInstance()) {
+//     var apiName = 'getFeatureVariable' + variableType.charAt(0).toUpperCase() + variableType.slice(1);
+//     this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, apiName));
+//     return null;
+//   }
 
-  if (!this.__validateInputs({ feature_key: featureKey, variable_key: variableKey, user_id: userId }, attributes)) {
-    return null;
-  }
+//   if (!this.__validateInputs({ feature_key: featureKey, variable_key: variableKey, user_id: userId }, attributes)) {
+//     return null;
+//   }
 
-  var configObj = this.projectConfigManager.getConfig();
-  if (!configObj) {
-    return null;
-  }
+//   var configObj = this.projectConfigManager.getConfig();
+//   if (!configObj) {
+//     return null;
+//   }
 
-  var featureFlag = projectConfig.getFeatureFromKey(configObj, featureKey, this.logger);
-  if (!featureFlag) {
-    return null;
-  }
+//   var featureFlag = projectConfig.getFeatureFromKey(configObj, featureKey, this.logger);
+//   if (!featureFlag) {
+//     return null;
+//   }
 
-  var variable = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, this.logger);
-  if (!variable) {
-    return null;
-  }
+//   var variable = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, this.logger);
+//   if (!variable) {
+//     return null;
+//   }
 
-  if (variable.type !== variableType) {
-    this.logger.log(
-      LOG_LEVEL.WARNING,
-      sprintf(LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE, MODULE_NAME, variableType, variable.type)
-    );
-    return null;
-  }
+//   if (variable.type !== variableType) {
+//     this.logger.log(
+//       LOG_LEVEL.WARNING,
+//       sprintf(LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE, MODULE_NAME, variableType, variable.type)
+//     );
+//     return null;
+//   }
 
-  var featureEnabled = false;
-  var variableValue = variable.defaultValue;
-  var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
+//   var featureEnabled = false;
+//   var variableValue = variable.defaultValue;
+//   var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
 
-  if (decision.variation !== null) {
-    featureEnabled = decision.variation.featureEnabled;
-    var value = projectConfig.getVariableValueForVariation(configObj, variable, decision.variation, this.logger);
-    if (value !== null) {
-      if (featureEnabled === true) {
-        variableValue = value;
-        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE, MODULE_NAME, variableKey, featureFlag.key, variableValue, userId));
-      } else {
-        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE, MODULE_NAME,
-          featureFlag.key, userId, variableKey));
-      }
-    } else {
-      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE, MODULE_NAME, variableKey, decision.variation.key));
-    }
-  } else {
-    this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE, MODULE_NAME, userId,
-      variableKey, featureFlag.key));
-  }
+//   if (decision.variation !== null) {
+//     featureEnabled = decision.variation.featureEnabled;
+//     var value = projectConfig.getVariableValueForVariation(configObj, variable, decision.variation, this.logger);
+//     if (value !== null) {
+//       if (featureEnabled === true) {
+//         variableValue = value;
+//         this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE, MODULE_NAME, variableKey, featureFlag.key, variableValue, userId));
+//       } else {
+//         this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE, MODULE_NAME,
+//           featureFlag.key, userId, variableKey));
+//       }
+//     } else {
+//       this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE, MODULE_NAME, variableKey, decision.variation.key));
+//     }
+//   } else {
+//     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE, MODULE_NAME, userId,
+//       variableKey, featureFlag.key));
+//   }
 
-  var sourceInfo = {};
-  if (decision.decisionSource === DECISION_SOURCES.FEATURE_TEST) {
-    sourceInfo = {
-      experimentKey: decision.experiment.key,
-      variationKey: decision.variation.key,
-    }
-  }
+//   var sourceInfo = {};
+//   if (decision.decisionSource === DECISION_SOURCES.FEATURE_TEST) {
+//     sourceInfo = {
+//       experimentKey: decision.experiment.key,
+//       variationKey: decision.variation.key,
+//     }
+//   }
 
-  var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
-  this.notificationCenter.sendNotifications(
-    NOTIFICATION_TYPES.DECISION,
-    {
-      type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
-      userId: userId,
-      attributes: attributes || {},
-      decisionInfo: {
-        featureKey: featureKey,
-        featureEnabled: featureEnabled,
-        source: decision.decisionSource,
-        variableKey: variableKey,
-        variableValue: typeCastedValue,
-        variableType: variableType,
-        sourceInfo: sourceInfo,
-      }
-    }
-  );
-  return typeCastedValue;
-};
+//   var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
+//   this.notificationCenter.sendNotifications(
+//     NOTIFICATION_TYPES.DECISION,
+//     {
+//       type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+//       userId: userId,
+//       attributes: attributes || {},
+//       decisionInfo: {
+//         featureKey: featureKey,
+//         featureEnabled: featureEnabled,
+//         source: decision.decisionSource,
+//         variableKey: variableKey,
+//         variableValue: typeCastedValue,
+//         variableType: variableType,
+//         sourceInfo: sourceInfo,
+//       }
+//     }
+//   );
+//   return typeCastedValue;
+// };
 
 /**
  * Returns value for the given boolean variable attached to the given feature
