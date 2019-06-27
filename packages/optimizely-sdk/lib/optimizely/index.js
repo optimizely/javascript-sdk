@@ -734,7 +734,7 @@ Optimizely.prototype.getFeatureVariable = function(featureKey, variableKey, user
     }
   }
 
-  // var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
+  var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variable.type, this.logger);
   this.notificationCenter.sendNotifications(
     NOTIFICATION_TYPES.DECISION,
     {
@@ -746,14 +746,14 @@ Optimizely.prototype.getFeatureVariable = function(featureKey, variableKey, user
         featureEnabled: featureEnabled,
         source: decision.decisionSource,
         variableKey: variableKey,
-        variableValue: variableValue,
+        variableValue: typeCastedValue,
         variableType: variable.type,
         sourceInfo: sourceInfo,
       }
     }
   );
-  return variableValue;
-  // return typeCastedValue;
+  // return variableValue;
+  return typeCastedValue;
 };
 
 // Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableKey, variableType, userId, attributes) {
