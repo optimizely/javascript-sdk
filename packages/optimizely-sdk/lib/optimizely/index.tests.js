@@ -3993,29 +3993,29 @@ describe('lib/optimizely', function() {
         });
       });
 
-      it('returns null from getFeatureVariable when called with a non-boolean variable', function() {
-        var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_width', 'user1');
-        assert.strictEqual(result, null);
-        sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.WARNING, 'OPTIMIZELY: Requested variable type "boolean", but variable is of type "double". Use correct API to retrieve value. Returning None.');
-      });
+      // it('returns null from getFeatureVariable when called with a non-boolean variable', function() {
+      //   var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_width', 'user1');
+      //   assert.strictEqual(result, null);
+      //   sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.WARNING, 'OPTIMIZELY: Requested variable type "boolean", but variable is of type "double". Use correct API to retrieve value. Returning None.');
+      // });
 
-      it('returns null from getFeatureVariable when called with a non-double variable', function() {
-        var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'is_button_animated', 'user1');
-        assert.strictEqual(result, null);
-        sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.WARNING, 'OPTIMIZELY: Requested variable type "double", but variable is of type "boolean". Use correct API to retrieve value. Returning None.');
-      });
+      // it('returns null from getFeatureVariable when called with a non-double variable', function() {
+      //   var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'is_button_animated', 'user1');
+      //   assert.strictEqual(result, null);
+      //   sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.WARNING, 'OPTIMIZELY: Requested variable type "double", but variable is of type "boolean". Use correct API to retrieve value. Returning None.');
+      // });
 
-      it('returns null from getFeatureVariable when called with a non-integer variable', function() {
-        var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_width', 'user1');
-        assert.strictEqual(result, null);
-        sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.WARNING, 'OPTIMIZELY: Requested variable type "integer", but variable is of type "double". Use correct API to retrieve value. Returning None.');
-      });
+      // it('returns null from getFeatureVariable when called with a non-integer variable', function() {
+      //   var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_width', 'user1');
+      //   assert.strictEqual(result, null);
+      //   sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.WARNING, 'OPTIMIZELY: Requested variable type "integer", but variable is of type "double". Use correct API to retrieve value. Returning None.');
+      // });
 
-      it('returns null from getFeatureVariable when called with a non-string variable', function() {
-        var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'num_buttons', 'user1');
-        assert.strictEqual(result, null);
-        sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.WARNING, 'OPTIMIZELY: Requested variable type "string", but variable is of type "integer". Use correct API to retrieve value. Returning None.');
-      });
+      // it('returns null from getFeatureVariable when called with a non-string variable', function() {
+      //   var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'num_buttons', 'user1');
+      //   assert.strictEqual(result, null);
+      //   sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.WARNING, 'OPTIMIZELY: Requested variable type "string", but variable is of type "integer". Use correct API to retrieve value. Returning None.');
+      // });
 
       it('returns null from getFeatureVariable if user id is null', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'is_button_animated', null, { test_attribute: 'test_value' });
