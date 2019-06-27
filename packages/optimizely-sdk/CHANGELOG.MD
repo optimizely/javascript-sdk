@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+- Updated lodash dependency to ^4.17.11 to address security vulnerabilities ([#296](https://github.com/optimizely/javascript-sdk/issues/296))
+
 ## [3.2.0] - May 30th, 2019
 
 ### New Features
