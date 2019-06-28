@@ -659,7 +659,7 @@ Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
  * @param {Object} attributes   Optional user attributes
  * @return {*}                  Value of the variable cast to the appropriate
  *                              type, or null if the feature key is invalid or
- *                              the variable key is invalid.
+ *                              the variable key is invalid
  */
 
 Optimizely.prototype.getFeatureVariable = function(featureKey, variableKey, userId, attributes) {
