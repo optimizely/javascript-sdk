@@ -648,23 +648,49 @@ Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
 };
 
 /**
- * Returns value of the variable attached to the given feature flag.
- * Returns null if the feature key or variable key is invalid.
+ * Returns dynamically-typed value of the variable attached to the given
+ * feature flag. Returns null if the feature key or variable key is invalid.
  *
- * @param {string} featureKey   Key of the feature whose variable's value is
- *                              being accessed
- * @param {string} variableKey  Key of the variable whose value is being
- *                              accessed
- * @param {string} userId       ID for the user
- * @param {Object} attributes   Optional user attributes
- * @return {*}                  Value of the variable cast to the appropriate
- *                              type, or null if the feature key is invalid or
- *                              the variable key is invalid
+ * @param {string} featureKey           Key of the feature whose variable's
+ *                                      value is being accessed
+ * @param {string} variableKey          Key of the variable whose value is
+ *                                      being accessed
+ * @param {string} userId               ID for the user
+ * @param {Object} attributes           Optional user attributes
+ * @return {string|boolean|number|null} Value of the variable cast to the appropriate
+ *                                      type, or null if the feature key is invalid or
+ *                                      the variable key is invalid
  */
 
 Optimizely.prototype.getFeatureVariable = function(featureKey, variableKey, userId, attributes) {
+  return this._getFeatureVariableForType(featureKey, variableKey, null, userId, attributes);
+};
+
+/**
+ * Helper method to get the value for a variable of a certain type attached to a
+ * feature flag. Returns null if the feature key is invalid, the variable key is
+ * invalid, the given variable type does not match the variable's actual type,
+ * or the variable value cannot be cast to the required type. If the given variable
+ * type is null, the value of the variable cast to the appropriate type is returned.
+ *
+ * @param {string} featureKey           Key of the feature whose variable's value is
+ *                                      being accessed
+ * @param {string} variableKey          Key of the variable whose value is being
+ *                                      accessed
+ * @param {string|null} variableType    Type of the variable whose value is being
+ *                                      accessed (must be one of FEATURE_VARIABLE_TYPES
+ *                                      in lib/utils/enums/index.js), or null to return the
+ *                                      value of the variable cast to the appropriate type
+ * @param {string} userId               ID for the user
+ * @param {Object} attributes           Optional user attributes
+ * @return {string|boolean|number|null} Value of the variable cast to the appropriate
+ *                                      type, or null if the feature key is invalid, the
+ *                                      variable key is invalid, or there is a mismatch
+ *                                      with the type of the variable
+ */
+Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableKey, variableType, userId, attributes) {
   if (!this.__isValidInstance()) {
-    var apiName = 'getFeatureVariable';
+    var apiName = (variableType) ? 'getFeatureVariable' + variableType.charAt(0).toUpperCase() + variableType.slice(1) : 'getFeatureVariable';
     this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, apiName));
     return null;
   }
@@ -686,6 +712,16 @@ Optimizely.prototype.getFeatureVariable = function(featureKey, variableKey, user
   var variable = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, this.logger);
   if (!variable) {
     return null;
+  }
+  
+  if (variableType) {
+    if (variable.type !== variableType) {
+      this.logger.log(
+        LOG_LEVEL.WARNING,
+        sprintf(LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE, MODULE_NAME, variableType, variable.type)
+      );
+      return null;
+    }
   }
 
   var featureEnabled = false;
@@ -733,112 +769,6 @@ Optimizely.prototype.getFeatureVariable = function(featureKey, variableKey, user
         variableKey: variableKey,
         variableValue: typeCastedValue,
         variableType: variable.type,
-        sourceInfo: sourceInfo,
-      }
-    }
-  );
-  return typeCastedValue;
-};
-
-/**
- * Helper method to get the value for a variable of a certain type attached to a
- * feature flag. Returns null if the feature key is invalid, the variable key is
- * invalid, the given variable type does not match the variable's actual type,
- * or the variable value cannot be cast to the required type.
- *
- * @param {string} featureKey   Key of the feature whose variable's value is
- *                              being accessed
- * @param {string} variableKey  Key of the variable whose value is being
- *                              accessed
- * @param {string} variableType Type of the variable whose value is being
- *                              accessed (must be one of FEATURE_VARIABLE_TYPES
- *                              in lib/utils/enums/index.js)
- * @param {string} userId       ID for the user
- * @param {Object} attributes   Optional user attributes
- * @return {*}                  Value of the variable cast to the appropriate
- *                              type, or null if the feature key is invalid, the
- *                              variable key is invalid, or there is a mismatch
- *                              with the type of the variable
- */
-Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableKey, variableType, userId, attributes) {
-  if (!this.__isValidInstance()) {
-    var apiName = 'getFeatureVariable' + variableType.charAt(0).toUpperCase() + variableType.slice(1);
-    this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, apiName));
-    return null;
-  }
-
-  if (!this.__validateInputs({ feature_key: featureKey, variable_key: variableKey, user_id: userId }, attributes)) {
-    return null;
-  }
-
-  var configObj = this.projectConfigManager.getConfig();
-  if (!configObj) {
-    return null;
-  }
-
-  var featureFlag = projectConfig.getFeatureFromKey(configObj, featureKey, this.logger);
-  if (!featureFlag) {
-    return null;
-  }
-
-  var variable = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, this.logger);
-  if (!variable) {
-    return null;
-  }
-
-  if (variable.type !== variableType) {
-    this.logger.log(
-      LOG_LEVEL.WARNING,
-      sprintf(LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE, MODULE_NAME, variableType, variable.type)
-    );
-    return null;
-  }
-
-  var featureEnabled = false;
-  var variableValue = variable.defaultValue;
-  var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
-
-  if (decision.variation !== null) {
-    featureEnabled = decision.variation.featureEnabled;
-    var value = projectConfig.getVariableValueForVariation(configObj, variable, decision.variation, this.logger);
-    if (value !== null) {
-      if (featureEnabled === true) {
-        variableValue = value;
-        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE, MODULE_NAME, variableKey, featureFlag.key, variableValue, userId));
-      } else {
-        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE, MODULE_NAME,
-          featureFlag.key, userId, variableKey));
-      }
-    } else {
-      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE, MODULE_NAME, variableKey, decision.variation.key));
-    }
-  } else {
-    this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE, MODULE_NAME, userId,
-      variableKey, featureFlag.key));
-  }
-
-  var sourceInfo = {};
-  if (decision.decisionSource === DECISION_SOURCES.FEATURE_TEST) {
-    sourceInfo = {
-      experimentKey: decision.experiment.key,
-      variationKey: decision.variation.key,
-    }
-  }
-
-  var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
-  this.notificationCenter.sendNotifications(
-    NOTIFICATION_TYPES.DECISION,
-    {
-      type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
-      userId: userId,
-      attributes: attributes || {},
-      decisionInfo: {
-        featureKey: featureKey,
-        featureEnabled: featureEnabled,
-        source: decision.decisionSource,
-        variableKey: variableKey,
-        variableValue: typeCastedValue,
-        variableType: variableType,
         sourceInfo: sourceInfo,
       }
     }
