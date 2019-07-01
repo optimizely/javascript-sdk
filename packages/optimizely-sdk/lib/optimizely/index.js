@@ -663,7 +663,13 @@ Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
  */
 
 Optimizely.prototype.getFeatureVariable = function(featureKey, variableKey, userId, attributes) {
-  return this._getFeatureVariableForType(featureKey, variableKey, null, userId, attributes);
+  try {
+    return this._getFeatureVariableForType(featureKey, variableKey, null, userId, attributes);
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
+    return null;
+  }
 };
 
 /**
@@ -714,14 +720,12 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     return null;
   }
   
-  if (variableType) {
-    if (variable.type !== variableType) {
-      this.logger.log(
-        LOG_LEVEL.WARNING,
-        sprintf(LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE, MODULE_NAME, variableType, variable.type)
-      );
-      return null;
-    }
+  if (variableType && variable.type !== variableType) {
+    this.logger.log(
+      LOG_LEVEL.WARNING,
+      sprintf(LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE, MODULE_NAME, variableType, variable.type)
+    );
+    return null;
   }
 
   var featureEnabled = false;
