@@ -719,8 +719,10 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
   if (!variable) {
     return null;
   }
-  
-  if (variableType && variable.type !== variableType) {
+
+  if (!variableType) {
+    variableType = variable.type;
+  } else if (variable.type !== variableType) {
     this.logger.log(
       LOG_LEVEL.WARNING,
       sprintf(LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE, MODULE_NAME, variableType, variable.type)
@@ -759,7 +761,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     }
   }
 
-  var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variable.type, this.logger);
+  var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
   this.notificationCenter.sendNotifications(
     NOTIFICATION_TYPES.DECISION,
     {
@@ -772,7 +774,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
         source: decision.decisionSource,
         variableKey: variableKey,
         variableValue: typeCastedValue,
-        variableType: variable.type,
+        variableType: variableType,
         sourceInfo: sourceInfo,
       }
     }
