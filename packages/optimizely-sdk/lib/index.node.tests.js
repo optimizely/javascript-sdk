@@ -90,7 +90,7 @@ describe('optimizelyFactory', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '3.2.0');
+        assert.equal(optlyInstance.clientVersion, '3.2.1');
       });
     });
   });
