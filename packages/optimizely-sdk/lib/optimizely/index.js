@@ -866,10 +866,11 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
  *
  * Returned Promises are fulfilled with result objects containing these
  * properties:
- *    - success (boolean): True if all events in the queue at the time close was
+ *    - success (boolean): true if all events in the queue at the time close was
  *                         called were combined into requests, sent to the
  *                         event dispatcher, and the event dispatcher called the
- *                         callbacks for each request.
+ *                         callbacks for each request. false if an unexpected
+ *                         error was encountered during the close process.
  *    - reason (string=):  If success is false, this is a string property with
  *                         an explanatory message.
  *
