@@ -6,7 +6,7 @@
 [![license](https://img.shields.io/github/license/optimizely/javascript-sdk.svg)](https://choosealicense.com/licenses/apache-2.0/)
 
 
-Optimizely X Full Stack is A/B testing and feature management for product development teams. Experiment in any application. Make every feature on your roadmap an opportunity to learn. Learn more at the [landing page](https://www.optimizely.com/products/full-stack/), or see the [documentation](https://developers.optimizely.com/x/solutions/sdks/reference/index.html?language=node).
+Optimizely X Full Stack is A/B testing and feature management for product development teams. Experiment in any application. Make every feature on your roadmap an opportunity to learn. Learn more at the [landing page](https://www.optimizely.com/products/full-stack/), or see the [documentation](https://docs.developers.optimizely.com/full-stack/docs).
 
 This directory contains the source code for the JavaScript SDK, which is usable in Node.js, browsers, and beyond.
 
