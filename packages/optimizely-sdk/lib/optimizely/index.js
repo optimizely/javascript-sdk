@@ -879,11 +879,38 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
 };
 
 /**
- * Cleanup method for killing an running timers and flushing eventQueue
+ * Stop background processes belonging to this instance, including:
+ *
+ * - Active datafile requests
+ * - Pending datafile requests
+ * - Pending event queue flushes
+ *
+ * In-flight datafile requests will be aborted. Any events waiting to be sent
+ * as part of a batched event request will be immediately batched and sent to
+ * the event dispatcher.
+ *
+ * If any such requests were sent to the event dispatcher, returns a Promise
+ * that fulfills after the event dispatcher calls the response callback for each
+ * request. Otherwise, returns an immediately-fulfilled Promise.
+ *
+ * Returned Promises are fulfilled with result objects containing these
+ * properties:
+ *    - success (boolean): true if all events in the queue at the time close was
+ *                         called were combined into requests, sent to the
+ *                         event dispatcher, and the event dispatcher called the
+ *                         callbacks for each request. false if an unexpected
+ *                         error was encountered during the close process.
+ *    - reason (string=):  If success is false, this is a string property with
+ *                         an explanatory message.
+ *
+ * NOTE: After close is called, this instance is no longer usable - any events
+ * generated will no longer be sent to the event dispatcher.
+ *
+ * @return {Promise}
  */
 Optimizely.prototype.close = function() {
   try {
-    this.eventProcessor.stop();
+    var eventProcessorStoppedPromise = this.eventProcessor.stop();
     if (this.__disposeOnUpdate) {
       this.__disposeOnUpdate();
       this.__disposeOnUpdate = null;
@@ -897,9 +924,26 @@ Optimizely.prototype.close = function() {
       readyTimeoutRecord.onClose();
     }.bind(this));
     this.__readyTimeouts = {};
-  } catch (e) {
-    this.logger.log(LOG_LEVEL.ERROR, e.message);
-    this.errorHandler.handleError(e);
+    return eventProcessorStoppedPromise.then(
+      function() {
+        return {
+          success: true,
+        };
+      },
+      function(err) {
+        return {
+          success: false,
+          reason: String(err),
+        };
+      }
+    );
+  } catch (err) {
+    this.logger.log(LOG_LEVEL.ERROR, err.message);
+    this.errorHandler.handleError(err);
+    return Promise.resolve({
+      success: false,
+      reason: String(err),
+    });
   }
 };
 
