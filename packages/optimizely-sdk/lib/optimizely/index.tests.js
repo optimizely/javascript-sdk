@@ -4768,6 +4768,89 @@ describe('lib/optimizely', function() {
         assert.deepEqual(eventDispatcherCall[0], expectedObj);
       });
     });
+
+    describe('close method', function() {
+      var eventProcessorStopPromise;
+      var optlyInstance;
+      var mockEventProcessor;
+      beforeEach(function() {
+        mockEventProcessor = {
+            process: sinon.stub(),
+            start: sinon.stub(),
+            stop: sinon.stub(),
+        };
+        sinon.stub(eventProcessor, 'LogTierV1EventProcessor').returns(mockEventProcessor);
+      });
+
+      afterEach(function() {
+        eventProcessor.LogTierV1EventProcessor.restore();
+      });
+
+      describe('when the event processor stop method returns a promise that fulfills', function() {
+        beforeEach(function() {
+          eventProcessorStopPromise = Promise.resolve();
+          mockEventProcessor.stop.returns(eventProcessorStopPromise);
+          optlyInstance = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestProjectConfig(),
+            eventBuilder: eventBuilder,
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            isValidInstance: true,
+            eventBatchSize: 3,
+            eventFlushInterval: 100,
+          });
+        });
+
+        afterEach(function() {
+          return eventProcessorStopPromise.catch(function() {
+            // Handle rejected promise - don't want test to fail
+          });
+        });
+
+        it('returns a promise that fulfills with a successful result object', function() {
+          return optlyInstance.close().then(function(result) {
+            assert.deepEqual(result, { success: true });
+          });
+        });
+      });
+
+      describe('when the event processor stop method returns a promise that rejects', function() {
+        beforeEach(function() {
+          eventProcessorStopPromise = Promise.reject(new Error('Failed to stop'));
+          mockEventProcessor.stop.returns(eventProcessorStopPromise);
+          optlyInstance = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestProjectConfig(),
+            eventBuilder: eventBuilder,
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            isValidInstance: true,
+            eventBatchSize: 3,
+            eventFlushInterval: 100,
+          });
+        });
+
+        afterEach(function() {
+          return eventProcessorStopPromise.catch(function() {
+            // Handle rejected promise - don't want test to fail
+          });
+        });
+
+        it('returns a promise that fulfills with an unsuccessful result object', function() {
+          return optlyInstance.close().then(function(result) {
+            assert.deepEqual(result, {
+              success: false,
+              reason: 'Error: Failed to stop',
+            });
+          });
+        });
+      });
+    });
   });
 
   describe('event processor defaults', function() {
