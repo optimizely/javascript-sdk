@@ -648,28 +648,55 @@ Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
 };
 
 /**
+ * Returns dynamically-typed value of the variable attached to the given
+ * feature flag. Returns null if the feature key or variable key is invalid.
+ *
+ * @param {string} featureKey           Key of the feature whose variable's
+ *                                      value is being accessed
+ * @param {string} variableKey          Key of the variable whose value is
+ *                                      being accessed
+ * @param {string} userId               ID for the user
+ * @param {Object} attributes           Optional user attributes
+ * @return {string|boolean|number|null} Value of the variable cast to the appropriate
+ *                                      type, or null if the feature key is invalid or
+ *                                      the variable key is invalid
+ */
+
+Optimizely.prototype.getFeatureVariable = function(featureKey, variableKey, userId, attributes) {
+  try {
+    return this._getFeatureVariableForType(featureKey, variableKey, null, userId, attributes);
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
+    return null;
+  }
+};
+
+/**
  * Helper method to get the value for a variable of a certain type attached to a
  * feature flag. Returns null if the feature key is invalid, the variable key is
  * invalid, the given variable type does not match the variable's actual type,
- * or the variable value cannot be cast to the required type.
+ * or the variable value cannot be cast to the required type. If the given variable
+ * type is null, the value of the variable cast to the appropriate type is returned.
  *
- * @param {string} featureKey   Key of the feature whose variable's value is
- *                              being accessed
- * @param {string} variableKey  Key of the variable whose value is being
- *                              accessed
- * @param {string} variableType Type of the variable whose value is being
- *                              accessed (must be one of FEATURE_VARIABLE_TYPES
- *                              in lib/utils/enums/index.js)
- * @param {string} userId       ID for the user
- * @param {Object} attributes   Optional user attributes
- * @return {*}                  Value of the variable cast to the appropriate
- *                              type, or null if the feature key is invalid, the
- *                              variable key is invalid, or there is a mismatch
- *                              with the type of the variable
+ * @param {string} featureKey           Key of the feature whose variable's value is
+ *                                      being accessed
+ * @param {string} variableKey          Key of the variable whose value is being
+ *                                      accessed
+ * @param {string|null} variableType    Type of the variable whose value is being
+ *                                      accessed (must be one of FEATURE_VARIABLE_TYPES
+ *                                      in lib/utils/enums/index.js), or null to return the
+ *                                      value of the variable cast to the appropriate type
+ * @param {string} userId               ID for the user
+ * @param {Object} attributes           Optional user attributes
+ * @return {string|boolean|number|null} Value of the variable cast to the appropriate
+ *                                      type, or null if the feature key is invalid, the
+ *                                      variable key is invalid, or there is a mismatch
+ *                                      with the type of the variable
  */
 Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableKey, variableType, userId, attributes) {
   if (!this.__isValidInstance()) {
-    var apiName = 'getFeatureVariable' + variableType.charAt(0).toUpperCase() + variableType.slice(1);
+    var apiName = (variableType) ? 'getFeatureVariable' + variableType.charAt(0).toUpperCase() + variableType.slice(1) : 'getFeatureVariable';
     this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, apiName));
     return null;
   }
@@ -693,7 +720,9 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     return null;
   }
 
-  if (variable.type !== variableType) {
+  if (!variableType) {
+    variableType = variable.type;
+  } else if (variable.type !== variableType) {
     this.logger.log(
       LOG_LEVEL.WARNING,
       sprintf(LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE, MODULE_NAME, variableType, variable.type)
