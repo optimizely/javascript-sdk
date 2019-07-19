@@ -41,13 +41,11 @@ jobs:
       before_script:
         - mkdir $HOME/travisci-tools && pushd $HOME/travisci-tools && git init && git pull https://$CI_USER_TOKEN@github.com/optimizely/travisci-tools.git && popd
       script:
-        - "$HOME/travisci-tools/trigger-script-with-status-update.sh"
+        - $HOME/travisci-tools/trigger-script-with-status-update.sh
       after_success: travis_terminate 0
     - <<: *integrationtest
       stage: 'Benchmarking tests'
       env: SDK=javascript FULLSTACK_TEST_REPO=Benchmarking
-      script:
-        - "$HOME/travisci-tools/trigger-script-with-status-update.sh yasir/bench-exp-support"
     - stage: Cross-browser and umd unit tests
       node_js: '8'
       script: npm run test-ci
