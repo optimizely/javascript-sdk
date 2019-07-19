@@ -24,12 +24,14 @@ after_success: npm run coveralls
 # Integration tests need to run first to reset the PR build status to pending
 stages:
   - 'Integration tests'
+  - 'Benchmarking tests'
   - 'Cross-browser and umd unit tests'
   - 'Test'
 
 jobs:
   include:
-    - stage: 'Integration tests'
+    - &integrationtest
+      stage: 'Integration tests'
       merge_mode: replace
       env: SDK=javascript
       cache: false
@@ -39,8 +41,11 @@ jobs:
       before_script:
         - mkdir $HOME/travisci-tools && pushd $HOME/travisci-tools && git init && git pull https://$CI_USER_TOKEN@github.com/optimizely/travisci-tools.git && popd
       script:
-        - "$HOME/travisci-tools/fsc-trigger/trigger_fullstack-sdk-compat.sh"
+        - $HOME/travisci-tools/trigger-script-with-status-update.sh
       after_success: travis_terminate 0
+    - <<: *integrationtest
+      stage: 'Benchmarking tests'
+      env: SDK=javascript FULLSTACK_TEST_REPO=Benchmarking
     - stage: Cross-browser and umd unit tests
       node_js: '8'
       script: npm run test-ci
