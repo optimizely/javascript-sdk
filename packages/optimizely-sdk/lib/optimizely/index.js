@@ -429,32 +429,12 @@ Optimizely.prototype.getAllVariations = function(userId, attributes) {
       }
 
       var variationKeys = {};
-      var experimentMap = configObj.experimentKeyMap;
-      for (i = 0; i < experimentMap.length; i++) {
-        var experiment = experimentMap[i];
+      var experiments = Object.values(configObj.experimentKeyMap);
+      for (i = 0; i < experiments.length; i++) {
+        var experiment = experiments[i];
         var experimentKey = experiment.key;
-        // if (fns.isEmpty(experiment)) {
-        //   this.logger.log(LOG_LEVEL.DEBUG, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentMap[i]));
-        //   return null;
-        // }
         var variationKey = this.decisionService.getVariation(configObj, experimentKey, userId, attributes);
         variationKeys[experimentKey] = variationKey;
-
-        var decisionNotificationType = projectConfig.isFeatureExperiment(configObj, experiment.id) ? DECISION_NOTIFICATION_TYPES.FEATURE_TEST :
-        DECISION_NOTIFICATION_TYPES.AB_TEST;
-
-        this.notificationCenter.sendNotifications(
-          NOTIFICATION_TYPES.DECISION,
-          {
-            type: decisionNotificationType,
-            userId: userId,
-            attributes: attributes || {},
-            decisionInfo: {
-              experimentKey: experimentKey,
-              variationKey: variationKey,
-            }
-          }
-        );
       }
       return variationKeys;
     } catch (ex) {
