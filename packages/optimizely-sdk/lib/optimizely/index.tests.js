@@ -3580,11 +3580,19 @@ describe('lib/optimizely', function() {
       ));
     });
 
-    it('confirm that a valid variation is bucketed with the bucketing ID', function() {
-      assert.strictEqual('variationWithAudience', optlyInstance.getVariation(
-          'testExperimentWithAudiences',
-          'testUser',
-          userAttributesWithBucketingId
+    it('returns all variations1', function() {
+      var variations = {
+        testExperiment: 'variation',
+        testExperimentWithAudiences: 'variationWithAudience',
+        testExperimentNotRunning: null,
+        testExperimentLaunched: 'variationLaunched',
+        groupExperiment1: null,
+        groupExperiment2: 'var1exp2',
+        overlappingGroupExperiment1: null
+      };
+      assert.deepStrictEqual(variations, optlyInstance.getAllVariations(
+        'testUser',
+        userAttributesWithBucketingId
       ));
     });
 

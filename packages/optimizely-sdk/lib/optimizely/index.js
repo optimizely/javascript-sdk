@@ -449,64 +449,6 @@ Optimizely.prototype.getAllVariations = function(userId, attributes) {
   }
 };
 
-Optimizely.prototype.getAllVariations = function(userId, attributes) {
-  try {
-    if (!this.__isValidInstance()) {
-      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getAllVariations'));
-      return null;
-    }
-
-    try {
-      if (!this.__validateInputs({ user_id: userId }, attributes)) {
-        return null;
-      }
-
-      var configObj = this.projectConfigManager.getConfig();
-      if (!configObj) {
-        return null;
-      }
-
-      var variationKeys = {};
-      var experimentMap = configObj.experimentKeyMap;
-      for (i = 0; i < experimentMap.length; i++) {
-        var experiment = experimentMap[i];
-        var experimentKey = experiment.key;
-        // if (fns.isEmpty(experiment)) {
-        //   this.logger.log(LOG_LEVEL.DEBUG, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentMap[i]));
-        //   return null;
-        // }
-        var variationKey = this.decisionService.getVariation(configObj, experimentKey, userId, attributes);
-        variationKeys[experimentKey] = variationKey;
-
-        var decisionNotificationType = projectConfig.isFeatureExperiment(configObj, experiment.id) ? DECISION_NOTIFICATION_TYPES.FEATURE_TEST :
-        DECISION_NOTIFICATION_TYPES.AB_TEST;
-
-        this.notificationCenter.sendNotifications(
-          NOTIFICATION_TYPES.DECISION,
-          {
-            type: decisionNotificationType,
-            userId: userId,
-            attributes: attributes || {},
-            decisionInfo: {
-              experimentKey: experimentKey,
-              variationKey: variationKey,
-            }
-          }
-        );
-      }
-      return variationKeys;
-    } catch (ex) {
-      this.logger.log(LOG_LEVEL.ERROR, ex.message);
-      this.errorHandler.handleError(ex);
-      return null;
-    }
-  } catch (e) {
-    this.logger.log(LOG_LEVEL.ERROR, e.message);
-    this.errorHandler.handleError(e);
-    return null;
-  }
-};
-
 /**
  * Force a user into a variation for a given experiment.
  * @param {string} experimentKey
