@@ -1574,6 +1574,132 @@ describe('lib/optimizely', function() {
       });
     });
 
+    describe('#getAllVariations', function() {
+      it('should call bucketer multiple times and return map of variation keys', function() {
+        bucketStub.callsFake(function(bucketerParams) {
+          var bucketStubs = {
+            testExperiment: '111129',
+            testExperimentWithAudiences: '122229',
+            testExperimentNotRunning: '133339',
+            testExperimentLaunched: '144449',
+            groupExperiment1: '552',
+            groupExperiment2: '662',
+            overlappingGroupExperiment1: '554'
+          };
+          return bucketStubs[bucketerParams.experimentKey];
+        });
+
+        var allVariations = optlyInstance.getAllVariations('testUser');
+        
+        sinon.assert.callCount(bucketer.bucket, 4);
+        sinon.assert.calledWithExactly(
+            createdLogger.log,
+            LOG_LEVEL.INFO,
+            sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'testExperimentWithAudiences')
+        );
+        sinon.assert.calledWithExactly(
+          createdLogger.log,
+          LOG_LEVEL.INFO,
+          sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning')
+        );
+
+        assert.deepStrictEqual(
+          allVariations,
+          {
+            testExperiment: 'variation',
+            testExperimentWithAudiences: null,
+            testExperimentNotRunning: null,
+            testExperimentLaunched: 'variationLaunched',
+            groupExperiment1: null,
+            groupExperiment2: 'var2exp2',
+            overlappingGroupExperiment1: 'overlappingvar2'
+          }
+        );
+      });
+
+      it('should call bucketer multiple times and return map of variation keys with attributes', function() {
+        bucketStub.callsFake(function(bucketerParams) {
+          var bucketStubs = {
+            testExperiment: '111129',
+            testExperimentWithAudiences: '122229',
+            testExperimentNotRunning: '133339',
+            testExperimentLaunched: '144449',
+            groupExperiment1: '552',
+            groupExperiment2: '662',
+            overlappingGroupExperiment1: '554'
+          };
+          return bucketStubs[bucketerParams.experimentKey];
+        });
+
+        var allVariations = optlyInstance.getAllVariations('testUser', {browser_type: 'firefox'});
+        
+        sinon.assert.callCount(bucketer.bucket, 6);
+        sinon.assert.calledWithExactly(
+          createdLogger.log,
+          LOG_LEVEL.INFO,
+          sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning')
+        );
+
+        assert.deepStrictEqual(
+          allVariations,
+          {
+            testExperiment: 'variation',
+            testExperimentWithAudiences: 'variationWithAudience',
+            testExperimentNotRunning: null,
+            testExperimentLaunched: 'variationLaunched',
+            groupExperiment1: 'var2exp1',
+            groupExperiment2: 'var2exp2',
+            overlappingGroupExperiment1: 'overlappingvar2'
+          }
+        );
+      });
+
+      it('should throw an error for invalid user ID', function() {
+        var getAllVariationsWithError = optlyInstance.getAllVariations(null);
+
+        assert.isNull(getAllVariationsWithError);
+
+        sinon.assert.calledOnce(errorHandler.handleError);
+        var errorMessage = errorHandler.handleError.lastCall.args[0].message;
+        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
+
+        sinon.assert.calledOnce(createdLogger.log);
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
+      });
+      
+      it('should throw an error for invalid attributes', function() {
+        var getAllVariationsWithError = optlyInstance.getAllVariations('testUser', []);
+
+        assert.isNull(getAllVariationsWithError);
+
+        sinon.assert.calledOnce(errorHandler.handleError);
+        var errorMessage = errorHandler.handleError.lastCall.args[0].message;
+        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
+
+        sinon.assert.calledOnce(createdLogger.log);
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
+      });
+
+      it('should return empty object when optimizely object is not a valid instance', function() {
+        var instance = new Optimizely({
+          datafile: {},
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          logger: createdLogger,
+        });
+
+        createdLogger.log.reset();
+        assert.isNull(instance.getAllVariations('testUser'));
+
+        sinon.assert.calledOnce(createdLogger.log);
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getAllVariations'));
+        sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+      });
+    })
+
     describe('#getForcedVariation', function() {
       it('should return null when set has not been called', function() {
         var forcedVariation = optlyInstance.getForcedVariation('testExperiment', 'user1');
@@ -4983,6 +5109,7 @@ describe('lib/optimizely', function() {
       it('returns fallback values from API methods that return meaningful values', function() {
         assert.isNull(optlyInstance.activate('my_experiment', 'user1'));
         assert.isNull(optlyInstance.getVariation('my_experiment', 'user1'));
+        assert.isNull(optlyInstance.getAllVariations('user1'));
         assert.isFalse(optlyInstance.setForcedVariation('my_experiment', 'user1', 'variation_1'));
         assert.isNull(optlyInstance.getForcedVariation('my_experiment', 'user1'));
         assert.isFalse(optlyInstance.isFeatureEnabled('my_feature', 'user1'));
