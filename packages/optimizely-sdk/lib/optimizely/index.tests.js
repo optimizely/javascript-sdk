@@ -1575,18 +1575,19 @@ describe('lib/optimizely', function() {
     });
 
     describe('#getAllVariations', function() {
+      var experimentBucketStubs = {
+        testExperiment: '111129',
+        testExperimentWithAudiences: '122229',
+        testExperimentNotRunning: '133339',
+        testExperimentLaunched: '144449',
+        groupExperiment1: '552',
+        groupExperiment2: '662',
+        overlappingGroupExperiment1: '554'
+      };
+
       it('should call bucketer multiple times and return map of variation keys', function() {
         bucketStub.callsFake(function(bucketerParams) {
-          var bucketStubs = {
-            testExperiment: '111129',
-            testExperimentWithAudiences: '122229',
-            testExperimentNotRunning: '133339',
-            testExperimentLaunched: '144449',
-            groupExperiment1: '552',
-            groupExperiment2: '662',
-            overlappingGroupExperiment1: '554'
-          };
-          return bucketStubs[bucketerParams.experimentKey];
+          return experimentBucketStubs[bucketerParams.experimentKey];
         });
 
         var allVariations = optlyInstance.getAllVariations('testUser');
@@ -1619,16 +1620,7 @@ describe('lib/optimizely', function() {
 
       it('should call bucketer multiple times and return map of variation keys with attributes', function() {
         bucketStub.callsFake(function(bucketerParams) {
-          var bucketStubs = {
-            testExperiment: '111129',
-            testExperimentWithAudiences: '122229',
-            testExperimentNotRunning: '133339',
-            testExperimentLaunched: '144449',
-            groupExperiment1: '552',
-            groupExperiment2: '662',
-            overlappingGroupExperiment1: '554'
-          };
-          return bucketStubs[bucketerParams.experimentKey];
+          return experimentBucketStubs[bucketerParams.experimentKey];
         });
 
         var allVariations = optlyInstance.getAllVariations('testUser', {browser_type: 'firefox'});
