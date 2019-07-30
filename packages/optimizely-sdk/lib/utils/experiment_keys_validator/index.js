@@ -27,8 +27,8 @@ var MODULE_NAME = 'EXPERIMENT_KEYS_VALIDATOR';
 module.exports = {
     /**
      * Validates user's provided experiment keys
-     * @param  {Object}  experimentKeys
-     * @return {boolean} True if experimentKeys provided in valid format
+     * @param  {Array}   experimentKeys
+     * @return {boolean} True if experimentKeys provided as an array
      * @throws If experimentKeys is not valid
      */
     validate: function(experimentKeys) {
