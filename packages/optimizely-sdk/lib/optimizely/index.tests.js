@@ -33,6 +33,8 @@ var jsonSchemaValidator = require('../utils/json_schema_validator');
 var projectConfig = require('../core/project_config');
 var logging = require('@optimizely/js-sdk-logging');
 
+var experimentKeysValidator = require("../utils/experiment_keys_validator");
+
 var chai = require('chai');
 var assert = chai.assert;
 var sinon = require('sinon');
@@ -1574,7 +1576,7 @@ describe('lib/optimizely', function() {
       });
     });
 
-    describe('#getAllVariations', function() {
+    describe('#getVariations', function() {
       var experimentBucketStubs = {
         testExperiment: '111129',
         testExperimentWithAudiences: '122229',
@@ -1585,25 +1587,24 @@ describe('lib/optimizely', function() {
         overlappingGroupExperiment1: '554'
       };
 
-      it('should call bucketer multiple times and return map of variation keys', function() {
+      it('should call bucketer multiple times and return map of all variation keys', function() {
         bucketStub.callsFake(function(bucketerParams) {
           return experimentBucketStubs[bucketerParams.experimentKey];
         });
 
-        var allVariations = optlyInstance.getAllVariations('testUser');
-        
+        var allVariations = optlyInstance.getVariations('testUser', {}, []);
+
         sinon.assert.callCount(bucketer.bucket, 4);
         sinon.assert.calledWithExactly(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
-            sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'testExperimentWithAudiences')
+          createdLogger.log,
+          LOG_LEVEL.INFO,
+          sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'testExperimentWithAudiences')
         );
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
           sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning')
         );
-
         assert.deepStrictEqual(
           allVariations,
           {
@@ -1618,13 +1619,29 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('should call bucketer multiple times and return map of variation keys with attributes', function() {
+      it('should call bucketer multiple times and return map of specified variation keys', function() {
         bucketStub.callsFake(function(bucketerParams) {
           return experimentBucketStubs[bucketerParams.experimentKey];
         });
 
-        var allVariations = optlyInstance.getAllVariations('testUser', {browser_type: 'firefox'});
-        
+        var allVariations = optlyInstance.getVariations('testUser', {}, ['testExperiment', 'testExperimentLaunched']);
+
+        sinon.assert.callCount(bucketer.bucket, 2);
+        assert.deepStrictEqual(
+          allVariations,
+          {
+            testExperiment: 'variation',
+            testExperimentLaunched: 'variationLaunched'
+          }
+        );
+      });
+
+      it('should call bucketer multiple times and return map of variation keys with attributes', function() {
+        bucketStub.callsFake(function(bucketerParams) {
+          return experimentBucketStubs[bucketerParams.experimentKey];
+        });
+        var allVariations = optlyInstance.getVariations('testUser', {browser_type: 'firefox'}, []);
+
         sinon.assert.callCount(bucketer.bucket, 6);
         sinon.assert.calledWithExactly(
           createdLogger.log,
@@ -1646,10 +1663,26 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('should throw an error for invalid user ID', function() {
-        var getAllVariationsWithError = optlyInstance.getAllVariations(null);
+      it('should return null for invalid experiment keys', function() {
+        bucketStub.callsFake(function(bucketerParams) {
+          return experimentBucketStubs[bucketerParams.experimentKey];
+        });
+        var allVariations = optlyInstance.getVariations('testUser', {}, ['testExperiment', 'invalidKey']);
 
-        assert.isNull(getAllVariationsWithError);
+        sinon.assert.callCount(bucketer.bucket, 1);
+        sinon.assert.calledWithExactly(
+          createdLogger.log,
+          LOG_LEVEL.ERROR,
+          sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'invalidKey')
+        );
+
+        assert.deepEqual(allVariations, {});
+      });
+
+      it('should throw an error for invalid user ID', function() {
+        var getAllVariationsWithError = optlyInstance.getVariations(null, {}, []);
+
+        assert.deepEqual(getAllVariationsWithError, {});
 
         sinon.assert.calledOnce(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
@@ -1661,9 +1694,9 @@ describe('lib/optimizely', function() {
       });
       
       it('should throw an error for invalid attributes', function() {
-        var getAllVariationsWithError = optlyInstance.getAllVariations('testUser', []);
+        var getAllVariationsWithError = optlyInstance.getVariations('testUser', [], []);
 
-        assert.isNull(getAllVariationsWithError);
+        assert.deepEqual(getAllVariationsWithError, {});
 
         sinon.assert.calledOnce(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
@@ -1683,11 +1716,11 @@ describe('lib/optimizely', function() {
         });
 
         createdLogger.log.reset();
-        assert.isNull(instance.getAllVariations('testUser'));
+        assert.deepEqual(instance.getVariations('testUser', {}, []), {});
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getAllVariations'));
+        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getVariations'));
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
       });
     })
@@ -3598,14 +3631,15 @@ describe('lib/optimizely', function() {
         groupExperiment2: 'var1exp2',
         overlappingGroupExperiment1: null
       };
-      assert.deepStrictEqual(variations, optlyInstance.getAllVariations(
+      assert.deepStrictEqual(variations, optlyInstance.getVariations(
         'testUser',
-        userAttributesWithBucketingId
+        userAttributesWithBucketingId,
+        []
       ));
     });
 
     it('confirm that invalid experiment with the bucketing ID returns null', function() {
-      assert.equal(null, optlyInstance.getVariation(
+      assert.strictEqual(null, optlyInstance.getVariation(
           'invalidExperimentKey',
           'testUser',
           userAttributesWithBucketingId
@@ -5823,7 +5857,7 @@ describe('lib/optimizely', function() {
       it('returns fallback values from API methods that return meaningful values', function() {
         assert.isNull(optlyInstance.activate('my_experiment', 'user1'));
         assert.isNull(optlyInstance.getVariation('my_experiment', 'user1'));
-        assert.isNull(optlyInstance.getAllVariations('user1'));
+        assert.deepEqual(optlyInstance.getVariations('user1'), {});
         assert.isFalse(optlyInstance.setForcedVariation('my_experiment', 'user1', 'variation_1'));
         assert.isNull(optlyInstance.getForcedVariation('my_experiment', 'user1'));
         assert.isFalse(optlyInstance.isFeatureEnabled('my_feature', 'user1'));
