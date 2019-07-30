@@ -1707,6 +1707,20 @@ describe('lib/optimizely', function() {
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
       });
 
+      it('should throw an error for invalid experiment key array', function() {
+        var getAllVariationsWithError = optlyInstance.getVariations('testUser', {}, {});
+
+        assert.deepEqual(getAllVariationsWithError, {});
+
+        sinon.assert.calledOnce(errorHandler.handleError);
+        var errorMessage = errorHandler.handleError.lastCall.args[0].message;
+        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEYS, 'EXPERIMENT_KEYS_VALIDATOR'));
+
+        sinon.assert.calledOnce(createdLogger.log);
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEYS, 'EXPERIMENT_KEYS_VALIDATOR'));
+      });
+
       it('should return empty object when optimizely object is not a valid instance', function() {
         var instance = new Optimizely({
           datafile: {},
