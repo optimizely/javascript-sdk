@@ -443,7 +443,7 @@ Optimizely.prototype.getVariations = function(userId, attributes, experimentKeys
     experimentKeysValidator.validate(experimentKeys);
     // if experimentKeys is an empty array, return the bucketed variations for all experiments.
     if (experimentKeys.length === 0) {
-      experimentKeys = getExperimentKeys(projectConfig);
+      experimentKeys = projectConfig.getExperimentKeys(configObj);
     }
     var experimentsToVariations = {};
     for (i = 0; i < experimentKeys.length; i++) {
