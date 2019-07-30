@@ -1667,16 +1667,17 @@ describe('lib/optimizely', function() {
         bucketStub.callsFake(function(bucketerParams) {
           return experimentBucketStubs[bucketerParams.experimentKey];
         });
-        var allVariations = optlyInstance.getVariations('testUser', {}, ['testExperiment', 'invalidKey']);
-
-        sinon.assert.callCount(bucketer.bucket, 1);
-        sinon.assert.calledWithExactly(
+        var allVariations = optlyInstance.getVariations('testUser', {}, ['invalidKey']);
+        sinon.assert.calledWith(
           createdLogger.log,
-          LOG_LEVEL.ERROR,
-          sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'invalidKey')
+          LOG_LEVEL.INFO,
+          sprintf(LOG_MESSAGES.EXPERIMENT_KEY_NOT_FOUND, 'OPTIMIZELY', 'invalidKey')
         );
 
-        assert.deepEqual(allVariations, {});
+        assert.deepStrictEqual({
+          'invalidKey': ''
+        },
+          allVariations);
       });
 
       it('should throw an error for invalid user ID', function() {

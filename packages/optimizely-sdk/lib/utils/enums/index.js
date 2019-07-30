@@ -72,6 +72,7 @@ exports.LOG_MESSAGES = {
   DISPATCH_IMPRESSION_EVENT: '%s: Dispatching impression event to URL %s with params %s.',
   DEPRECATED_EVENT_VALUE: '%s: Event value is deprecated in %s call.',
   EXPERIMENT_NOT_RUNNING: '%s: Experiment %s is not running.',
+  EXPERIMENT_KEY_NOT_FOUND: '%s: Could not find experiment key %s. Mapping to empty string.',
   FEATURE_ENABLED_FOR_USER: '%s: Feature %s is enabled for user %s.',
   FEATURE_NOT_ENABLED_FOR_USER: '%s: Feature %s is not enabled for user %s.',
   FEATURE_HAS_NO_EXPERIMENTS: '%s: Feature %s is not attached to any experiments.',

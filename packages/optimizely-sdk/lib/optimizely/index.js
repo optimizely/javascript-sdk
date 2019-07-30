@@ -442,21 +442,22 @@ Optimizely.prototype.getVariations = function(userId, attributes, experimentKeys
     // Ensure that experimentKeys is an array.
     experimentKeysValidator.validate(experimentKeys);
     // if experimentKeys is an empty array, return the bucketed variations for all experiments.
+    var allExperimentKeys = projectConfig.getExperimentKeys(configObj);
     if (experimentKeys.length === 0) {
-      experimentKeys = projectConfig.getExperimentKeys(configObj);
+      experimentKeys = allExperimentKeys;
     }
     var experimentsToVariations = {};
     for (i = 0; i < experimentKeys.length; i++) {
       var experimentKey = experimentKeys[i];
       // check if experimentKey is in project config
-      if (!experimentKeysValidator.validateKey(configObj, experimentKey)) {
-        experimentsToVariations[experimentKey] = null;
-        var invalidExperimentKeyLogMessage = sprintf(
-          ERROR_MESSAGES.INVALID_EXPERIMENT_KEY,
+      if (!allExperimentKeys.includes(experimentKey)) {
+        experimentsToVariations[experimentKey] = '';
+        var experimentKeyNotFoundLogMessage = sprintf(
+          LOG_MESSAGES.EXPERIMENT_KEY_NOT_FOUND,
           MODULE_NAME,
           experimentKey
         );
-        this.logger.log(LOG_LEVEL.INFO, invalidExperimentKeyLogMessage);
+        this.logger.log(LOG_LEVEL.INFO, experimentKeyNotFoundLogMessage);
         continue;
       }
       var variationKey = this.decisionService.getVariation(configObj, experimentKey, userId, attributes);

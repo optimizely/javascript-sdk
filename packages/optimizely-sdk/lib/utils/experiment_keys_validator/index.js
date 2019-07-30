@@ -36,8 +36,5 @@ module.exports = {
             throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEYS, MODULE_NAME));
         }
         return true;
-    },
-    validateKey: function(projectConfig, experimentKey) {
-        return projectConfig.experimentKeyMap.includes(experimentKey);
     }
 };
