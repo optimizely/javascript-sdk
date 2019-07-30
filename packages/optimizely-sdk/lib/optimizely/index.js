@@ -412,44 +412,6 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
   }
 };
 
-Optimizely.prototype.getAllVariations = function(userId, attributes) {
-  try {
-    if (!this.__isValidInstance()) {
-      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getAllVariations'));
-      return null;
-    }
-
-    try {
-      if (!this.__validateInputs({ user_id: userId }, attributes)) {
-        return null;
-      }
-
-      var configObj = this.projectConfigManager.getConfig();
-      if (!configObj) {
-        return null;
-      }
-
-      var variationKeys = {};
-      var experiments = Object.values(configObj.experimentKeyMap);
-      for (i = 0; i < experiments.length; i++) {
-        var experiment = experiments[i];
-        var experimentKey = experiment.key;
-        var variationKey = this.decisionService.getVariation(configObj, experimentKey, userId, attributes);
-        variationKeys[experimentKey] = variationKey;
-      }
-      return variationKeys;
-    } catch (ex) {
-      this.logger.log(LOG_LEVEL.ERROR, ex.message);
-      this.errorHandler.handleError(ex);
-      return null;
-    }
-  } catch (e) {
-    this.logger.log(LOG_LEVEL.ERROR, e.message);
-    this.errorHandler.handleError(e);
-    return null;
-  }
-};
-
 /**
  * Returns an object mapping experiment keys to the respective
  * variation that the user was bucketed into. If an empty array
