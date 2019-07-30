@@ -415,13 +415,13 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
 /**
  * Returns an object mapping experiment keys to the respective
  * variation that the user was bucketed into. If an empty array
- * is provided for experimentKeys, return the bucketed variations
+ * is provided for experimentKeys, returns the bucketed variations
  * for all experiment keys. If a bucketing ID is provided in the
  * attributes parameter, all experiments will use the bucketing ID.
  * @param  {string}      userId
  * @param  {Object}      attributes
  * @param  {Array}       experimentKeys
- * @return {Object}      experimentsToVariations
+ * @return {Object}      Map of experiment key to variation key
  */
 Optimizely.prototype.getVariations = function(userId, attributes, experimentKeys) {
   try {
@@ -448,6 +448,17 @@ Optimizely.prototype.getVariations = function(userId, attributes, experimentKeys
     var experimentsToVariations = {};
     for (i = 0; i < experimentKeys.length; i++) {
       var experimentKey = experimentKeys[i];
+      // check if experimentKey is in project config
+      if (!experimentKeysValidator.validateKey(configObj, experimentKey)) {
+        experimentsToVariations[experimentKey] = null;
+        var invalidExperimentKeyLogMessage = sprintf(
+          ERROR_MESSAGES.INVALID_EXPERIMENT_KEY,
+          MODULE_NAME,
+          experimentKey
+        );
+        this.logger.log(LOG_LEVEL.INFO, invalidExperimentKeyLogMessage);
+        continue;
+      }
       var variationKey = this.decisionService.getVariation(configObj, experimentKey, userId, attributes);
       experimentsToVariations[experimentKey] = variationKey;
     }

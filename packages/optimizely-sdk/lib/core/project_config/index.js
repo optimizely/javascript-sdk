@@ -131,7 +131,9 @@ module.exports = {
   },
 
   /**
-   * TODO: Add doctest
+   * Get all experiment keys in the project config
+   * @param  {Object} projectConfig Object representing project configuration
+   * @return {Array}  Array of all experiment keys
    */
   getExperimentKeys: function(projectConfig) {
     var experimentKeys = [];

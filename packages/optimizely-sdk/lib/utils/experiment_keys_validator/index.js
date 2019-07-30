@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2018-2019, Optimizely
+ * Copyright 2019, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ var MODULE_NAME = 'EXPERIMENT_KEYS_VALIDATOR';
 
 /**
  * Provides utility method for validating that the experiment keys are given in a valid format.
+ * TODO: add unit tests to check `validate` and `validateKey` functionality
  */
 
 module.exports = {
@@ -35,5 +36,8 @@ module.exports = {
             throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEYS, MODULE_NAME));
         }
         return true;
+    },
+    validateKey: function(projectConfig, experimentKey) {
+        return projectConfig.experimentKeyMap.includes(experimentKey);
     }
 };
