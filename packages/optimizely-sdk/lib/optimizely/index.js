@@ -22,6 +22,7 @@ var eventBuilder = require('../core/event_builder/index.js');
 var eventHelpers = require('../core/event_builder/event_helpers');
 var eventProcessor = require('@optimizely/js-sdk-event-processor');
 var eventTagsValidator = require('../utils/event_tags_validator');
+var experimentKeysValidator = require('../utils/experiment_keys_validator');
 var notificationCenter = require('../core/notification_center');
 var projectConfig = require('../core/project_config');
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
@@ -411,41 +412,50 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
   }
 };
 
-Optimizely.prototype.getAllVariations = function(userId, attributes) {
+/**
+ * Returns an object mapping experiment keys to the respective
+ * variation that the user was bucketed into. If an empty array
+ * is provided for experimentKeys, return the bucketed variations
+ * for all experiment keys. If a bucketing ID is provided in the
+ * attributes parameter, all experiments will use the bucketing ID.
+ * @param  {string}      userId
+ * @param  {Object}      attributes
+ * @param  {Array}       experimentKeys
+ * @return {Object}      experimentsToVariations
+ */
+Optimizely.prototype.getVariations = function(userId, attributes, experimentKeys) {
   try {
     if (!this.__isValidInstance()) {
-      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getAllVariations'));
-      return null;
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getVariations'));
+      return {};
     }
 
-    try {
-      if (!this.__validateInputs({ user_id: userId }, attributes)) {
-        return null;
-      }
-
-      var configObj = this.projectConfigManager.getConfig();
-      if (!configObj) {
-        return null;
-      }
-
-      var variationKeys = {};
-      var experiments = Object.values(configObj.experimentKeyMap);
-      for (i = 0; i < experiments.length; i++) {
-        var experiment = experiments[i];
-        var experimentKey = experiment.key;
-        var variationKey = this.decisionService.getVariation(configObj, experimentKey, userId, attributes);
-        variationKeys[experimentKey] = variationKey;
-      }
-      return variationKeys;
-    } catch (ex) {
-      this.logger.log(LOG_LEVEL.ERROR, ex.message);
-      this.errorHandler.handleError(ex);
-      return null;
+    if (!this.__validateInputs({ user_id: userId }, attributes)) {
+      return {};
     }
+
+    var configObj = this.projectConfigManager.getConfig();
+    if (!configObj) {
+      return {};
+    }
+
+    // Ensure that experimentKeys is an array.
+    experimentKeysValidator.validate(experimentKeys);
+    // if experimentKeys is an empty array, return the bucketed variations for all experiments.
+    if (experimentKeys.length === 0) {
+      experimentKeys = getExperimentKeys(projectConfig);
+    }
+    var experimentsToVariations = {};
+    for (i = 0; i < experimentKeys.length; i++) {
+      var experimentKey = experimentKeys[i];
+      var variationKey = this.decisionService.getVariation(configObj, experimentKey, userId, attributes);
+      experimentsToVariations[experimentKey] = variationKey;
+    }
+    return experimentsToVariations;
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
-    return null;
+    return {};
   }
 };
 

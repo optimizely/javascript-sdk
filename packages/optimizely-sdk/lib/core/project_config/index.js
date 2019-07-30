@@ -98,11 +98,11 @@ module.exports = {
       fns.forEach(feature.experimentIds || [], function(experimentId) {
         // Add this experiment in experiment-feature map.
         if (projectConfig.experimentFeatureMap[experimentId]) {
-          projectConfig.experimentFeatureMap[experimentId].push(feature.id);  
+          projectConfig.experimentFeatureMap[experimentId].push(feature.id);
         } else {
           projectConfig.experimentFeatureMap[experimentId] = [feature.id];
         }
-        
+
         var experimentInFeature = projectConfig.experimentIdMap[experimentId];
         if (experimentInFeature.groupId) {
           feature.groupId = experimentInFeature.groupId;
@@ -128,6 +128,20 @@ module.exports = {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
     }
     return experiment.id;
+  },
+
+  /**
+   * TODO: Add doctest
+   */
+  getExperimentKeys: function(projectConfig) {
+    var experimentKeys = [];
+    var experiments = Object.values(projectConfig.experimentKeyMap);
+    for (i = 0; i < experiments.length; i++) {
+      var experiment = experiments[i];
+      var experimentKey = experiment.key;
+      experimentKeys.push(experimentKey);
+    }
+    return experimentKeys;
   },
 
   /**
