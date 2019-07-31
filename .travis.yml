@@ -33,7 +33,7 @@ jobs:
     - &integrationtest
       stage: 'Integration tests'
       merge_mode: replace
-      env: SDK=javascript
+      env: SDK=javascript SDK_BRANCH=$TRAVIS_PULL_REQUEST_BRANCH
       cache: false
       language: minimal
       before_install: skip
@@ -45,7 +45,7 @@ jobs:
       after_success: travis_terminate 0
     - <<: *integrationtest
       stage: 'Benchmarking tests'
-      env: SDK=javascript FULLSTACK_TEST_REPO=Benchmarking
+      env: SDK=javascript FULLSTACK_TEST_REPO=Benchmarking SDK_BRANCH=$TRAVIS_PULL_REQUEST_BRANCH
     - stage: Cross-browser and umd unit tests
       node_js: '8'
       script: npm run test-ci
