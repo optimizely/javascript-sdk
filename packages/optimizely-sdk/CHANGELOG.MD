@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+- Added non-typed `getFeatureVariable` method ([#298](https://github.com/optimizely/javascript-sdk/pull/298)) as a more idiomatic approach to getting values of feature variables.
+  - Typed `getFeatureVariable` methods will still be available for use.
+
 ### New Features
 - Updated the `close` method to return a `Promise` representing the process of closing the instance. When `close` is called, any events waiting to be sent as part of a batched event request will be immediately batched and sent to the event dispatcher.
   - If any such requests were sent to the event dispatcher, `close` returns a `Promise` that fulfills after the event dispatcher calls the response callback for each request. Otherwise, `close` returns an immediately-fulfilled `Promise`.
