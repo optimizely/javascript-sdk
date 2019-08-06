@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import HTTPPollingDatafileManager from '../src/httpPollingDatafileManager'
+import HttpPollingDatafileManager from '../src/httpPollingDatafileManager'
 import { Headers, AbortableRequest, Response } from '../src/http'
 import { DatafileManagerConfig } from '../src/datafileManager';
 import { advanceTimersByTime, getTimerCount } from './testUtils'
@@ -34,7 +34,7 @@ import BackoffController from '../src/backoffController'
 
 // Test implementation:
 //   - Does not make any real requests: just resolves with queued responses (tests push onto queuedResponses)
-class TestDatafileManager extends HTTPPollingDatafileManager {
+class TestDatafileManager extends HttpPollingDatafileManager {
   queuedResponses: (Response | Error)[] = []
 
   responsePromises: Promise<Response>[] = []

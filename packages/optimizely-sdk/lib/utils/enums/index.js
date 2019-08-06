@@ -26,6 +26,7 @@ exports.LOG_LEVEL = {
 };
 
 exports.ERROR_MESSAGES = {
+  CONDITION_EVALUATOR_ERROR: '%s: Error evaluating audience condition of type %s: %s',
   DATAFILE_AND_SDK_KEY_MISSING: '%s: You must provide at least one of sdkKey or datafile. Cannot start Optimizely',
   EXPERIMENT_KEY_NOT_IN_DATAFILE: '%s: Experiment key %s is not in datafile.',
   FEATURE_NOT_IN_DATAFILE: '%s: Feature key %s is not in datafile.',
@@ -155,7 +156,7 @@ exports.CONTROL_ATTRIBUTES = {
 exports.JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 exports.NODE_CLIENT_ENGINE = 'node-sdk';
 exports.REACT_CLIENT_ENGINE = 'react-sdk';
-exports.NODE_CLIENT_VERSION = '3.2.0';
+exports.NODE_CLIENT_VERSION = '3.2.1';
 
 exports.VALID_CLIENT_ENGINES = [
   exports.NODE_CLIENT_ENGINE,

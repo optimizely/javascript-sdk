@@ -15,5 +15,5 @@
  */
 
 export * from './datafileManager'
-export { default as DatafileManager } from './nodeDatafileManager'
+export { default as HttpPollingDatafileManager } from './nodeDatafileManager'
 export { default as StaticDatafileManager } from './staticDatafileManager';

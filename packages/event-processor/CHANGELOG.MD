@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.2.1] - June 6, 2019
+
+- Wrap the `callback` in `try/catch` when implementing a custom `eventDispatcher`.  This ensures invoking the `callback` will always cleanup any pending retry tasks.
+
 ## [0.2.0] - March 27, 2019
 
 - Add `PendingEventsDispatcher` to wrap another EventDispatcher with retry support for

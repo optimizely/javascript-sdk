@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 Changes that have landed but are not yet released.
 
 ### New Features
+- Added `objectEntries`
 - Added EventEmitter
 
 ## [0.1.0] - March 1, 2019
