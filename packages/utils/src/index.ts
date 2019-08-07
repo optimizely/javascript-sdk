@@ -151,3 +151,7 @@ export enum NOTIFICATION_TYPES {
   OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
   TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
 }
+
+export interface NotificationCenter {
+  sendNotifications(notificationType: NOTIFICATION_TYPES, notificationData?: any): void
+}
