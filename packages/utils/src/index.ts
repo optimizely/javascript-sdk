@@ -130,7 +130,7 @@ export function sprintf(format: string, ...args: any[]): string {
  *  Callbacks will receive an object argument with the following properties:
  *    - url {string}
  *    - httpVerb {string}
- *    - params {object}
+ *    - params {Object}
  *
  *  OPTIMIZELY_CONFIG_UPDATE: This Optimizely instance has been updated with a new
  *  config
