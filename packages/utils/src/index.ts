@@ -126,7 +126,7 @@ export function sprintf(format: string, ...args: any[]): string {
  *    - decisionInfo {Object|undefined}
  *
  *  LOG_EVENT: A batch of events, which could contain impressions and/or conversions,
- *  was sent to Optimizely
+ *  will be sent to Optimizely
  *  Callbacks will receive an object argument with the following properties:
  *    - url {string}
  *    - httpVerb {string}
