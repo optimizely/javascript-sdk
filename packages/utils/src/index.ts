@@ -138,8 +138,9 @@ export function sprintf(format: string, ...args: any[]): string {
  *
  */
 export enum NOTIFICATION_TYPES {
-  ACTIVATE = "ACTIVATE:experiment, user_id,attributes, variation, event",
-  DECISION = "DECISION:type, userId, attributes, decisionInfo",
-  OPTIMIZELY_CONFIG_UPDATE = "OPTIMIZELY_CONFIG_UPDATE",
-  TRACK = "TRACK:event_key, user_id, attributes, event_tags, event"
+  ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
+  DECISION = 'DECISION:type, userId, attributes, decisionInfo',
+  LOG_EVENT = 'LOG_EVENT:logEvent',
+  OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
+  TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
 }
