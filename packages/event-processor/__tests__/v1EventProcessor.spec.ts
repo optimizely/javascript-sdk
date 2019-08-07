@@ -23,6 +23,7 @@ import {
 } from '../src/eventDispatcher'
 import { EventProcessor } from '../src/eventProcessor'
 import { buildImpressionEventV1, makeBatchedEventV1 } from '../src/v1/buildEventV1'
+import { NotificationCenter, NOTIFICATION_TYPES } from '@optimizely/js-sdk-utils';
 
 function sleep(time = 0): Promise<any> {
   return new Promise(resolve => {
@@ -643,6 +644,30 @@ describe('LogTierV1EventProcessor', () => {
           event: impressionEvent1,
           result: false,
         })
+      })
+
+      it('should trigger a notification when the event dispatcher dispatches an event', () => {
+        const dispatcher: EventDispatcher = {
+          dispatchEvent: jest.fn()
+        }
+
+        const notificationCenter: NotificationCenter = {
+          sendNotifications: jest.fn()
+        }
+
+        processor = new LogTierV1EventProcessor({
+          dispatcher,
+          notificationCenter,
+          maxQueueSize: 1,
+        })
+        processor.start()
+
+        const impressionEvent1 = createImpressionEvent()
+        processor.process(impressionEvent1, testProjectConfig)
+
+        expect(notificationCenter.sendNotifications).toBeCalledTimes(1)
+        const event = (dispatcher.dispatchEvent as jest.Mock).mock.calls[0][0]
+        expect(notificationCenter.sendNotifications).toBeCalledWith(NOTIFICATION_TYPES.LOG_EVENT, event)
       })
     })
   })
