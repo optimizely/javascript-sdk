@@ -9,6 +9,7 @@ Changes that have landed but are not yet released.
 
 ### New Features
 - Added `objectEntries`
+- Added `NOTIFICATION_TYPES` and `NotificationCenter`
 
 ## [0.1.0] - March 1, 2019
 
