@@ -25,14 +25,6 @@ import { EventProcessor } from '../src/eventProcessor'
 import { buildImpressionEventV1, makeBatchedEventV1 } from '../src/v1/buildEventV1'
 import { NotificationCenter, NOTIFICATION_TYPES } from '@optimizely/js-sdk-utils';
 
-function sleep(time = 0): Promise<any> {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve()
-    }, time)
-  })
-}
-
 function createImpressionEvent() {
   return {
     type: 'impression' as 'impression',
@@ -164,7 +156,7 @@ describe('LogTierV1EventProcessor', () => {
       })
 
       const impressionEvent = createImpressionEvent()
-      processor.process(impressionEvent, testProjectConfig)
+      processor.process(impressionEvent)
 
       processor.stop().then(() => {
         done()
@@ -193,7 +185,7 @@ describe('LogTierV1EventProcessor', () => {
       })
 
       const impressionEvent = createImpressionEvent()
-      processor.process(impressionEvent, testProjectConfig)
+      processor.process(impressionEvent)
 
       processor.stop().then(() => {
         done()
@@ -223,8 +215,8 @@ describe('LogTierV1EventProcessor', () => {
       const impressionEvent1 = createImpressionEvent()
       const impressionEvent2 = createImpressionEvent()
       impressionEvent2.context.revision = '2'
-      processor.process(impressionEvent1, testProjectConfig)
-      processor.process(impressionEvent2, testProjectConfig)
+      processor.process(impressionEvent1)
+      processor.process(impressionEvent2)
 
       processor.stop().then(() => {
         expect(dispatchStub).toBeCalledTimes(2)
@@ -250,7 +242,7 @@ describe('LogTierV1EventProcessor', () => {
 
     it('should immediately flush events as they are processed', () => {
       const impressionEvent = createImpressionEvent()
-      processor.process(impressionEvent, testProjectConfig)
+      processor.process(impressionEvent)
 
       expect(dispatchStub).toHaveBeenCalledTimes(1)
       expect(dispatchStub).toHaveBeenCalledWith({
@@ -281,12 +273,12 @@ describe('LogTierV1EventProcessor', () => {
       const impressionEvent2 = createImpressionEvent()
       const impressionEvent3 = createImpressionEvent()
 
-      processor.process(impressionEvent1, testProjectConfig)
-      processor.process(impressionEvent2, testProjectConfig)
+      processor.process(impressionEvent1)
+      processor.process(impressionEvent2)
 
       expect(dispatchStub).toHaveBeenCalledTimes(0)
 
-      processor.process(impressionEvent3, testProjectConfig)
+      processor.process(impressionEvent3)
 
       expect(dispatchStub).toHaveBeenCalledTimes(1)
       expect(dispatchStub).toHaveBeenCalledWith({
@@ -307,12 +299,12 @@ describe('LogTierV1EventProcessor', () => {
 
       impressionEvent2.context.revision = '2'
 
-      processor.process(impressionEvent1, testProjectConfig)
-      processor.process(impressionEvent2, testProjectConfig)
+      processor.process(impressionEvent1)
+      processor.process(impressionEvent2)
 
       expect(dispatchStub).toHaveBeenCalledTimes(0)
 
-      processor.process(conversionEvent, testProjectConfig)
+      processor.process(conversionEvent)
 
       expect(dispatchStub).toHaveBeenCalledTimes(2)
       expect(dispatchStub).toHaveBeenCalledWith({
@@ -331,7 +323,7 @@ describe('LogTierV1EventProcessor', () => {
     it('should flush the queue when the flush interval happens', () => {
       const impressionEvent1 = createImpressionEvent()
 
-      processor.process(impressionEvent1, testProjectConfig)
+      processor.process(impressionEvent1)
 
       expect(dispatchStub).toHaveBeenCalledTimes(0)
 
@@ -344,331 +336,34 @@ describe('LogTierV1EventProcessor', () => {
         params: makeBatchedEventV1([impressionEvent1]),
       })
 
-      processor.process(createImpressionEvent(), testProjectConfig)
-      processor.process(createImpressionEvent(), testProjectConfig)
+      processor.process(createImpressionEvent())
+      processor.process(createImpressionEvent())
       // flushing should reset queue, at this point only has two events
       expect(dispatchStub).toHaveBeenCalledTimes(1)
     })
-  })
 
-  describe('plugins', () => {
-    let processor: EventProcessor
+    it('should trigger a notification when the event dispatcher dispatches an event', () => {
+      const dispatcher: EventDispatcher = {
+        dispatchEvent: jest.fn()
+      }
 
-    describe('transformers', () => {
-      beforeEach(() => {
-        jest.useRealTimers()
+      const notificationCenter: NotificationCenter = {
+        sendNotifications: jest.fn()
+      }
+
+      processor = new LogTierV1EventProcessor({
+        dispatcher,
+        notificationCenter,
+        maxQueueSize: 1,
       })
+      processor.start()
 
-      afterEach(() => {
-        processor.stop()
-      })
+      const impressionEvent1 = createImpressionEvent()
+      processor.process(impressionEvent1, testProjectConfig)
 
-      it('should should invoke the transformer with the event and projectConfig', async () => {
-        const transformer = jest.fn()
-        processor = new LogTierV1EventProcessor({
-          transformers: [
-            async (event, projectConfig) => {
-              transformer(event, projectConfig)
-            },
-          ],
-          dispatcher: stubDispatcher,
-          maxQueueSize: 1,
-        })
-        processor.start()
-
-        const impressionEvent = createImpressionEvent()
-        processor.process(impressionEvent, testProjectConfig)
-
-        // sleep to let async functions run
-        await sleep(0)
-
-        expect(transformer).toHaveBeenCalledTimes(1)
-        expect(transformer).toHaveBeenCalledWith(impressionEvent, testProjectConfig)
-      })
-
-      it('should allow augmentation of the Event', async () => {
-        processor = new LogTierV1EventProcessor({
-          transformers: [
-            async (event, projectConfig) => {
-              event.uuid = 'new uuid'
-            },
-          ],
-          dispatcher: stubDispatcher,
-          maxQueueSize: 1,
-        })
-        processor.start()
-
-        const impressionEvent = createImpressionEvent()
-        processor.process(
-          // spread here for dereference
-          {
-            ...impressionEvent,
-          },
-          testProjectConfig,
-        )
-
-        // sleep to let async functions run
-        await sleep(0)
-
-        const modifiedEvent = {
-          ...impressionEvent,
-          uuid: 'new uuid',
-        }
-        expect(dispatchStub).toHaveBeenCalledTimes(1)
-        expect(dispatchStub).toHaveBeenCalledWith({
-          url: 'https://logx.optimizely.com/v1/events',
-          httpVerb: 'POST',
-          params: makeBatchedEventV1([modifiedEvent]),
-        })
-      })
-
-      it('should continue with the event if a transformer throws an error', async () => {
-        processor = new LogTierV1EventProcessor({
-          transformers: [
-            async (event, projectConfig) => {
-              throw new Error('transformer error')
-            },
-          ],
-          dispatcher: stubDispatcher,
-          maxQueueSize: 1,
-        })
-        processor.start()
-
-        const impressionEvent = createImpressionEvent()
-        processor.process(impressionEvent, testProjectConfig)
-
-        // sleep to let async functions run
-        await sleep(0)
-
-        expect(dispatchStub).toHaveBeenCalledTimes(1)
-        expect(dispatchStub).toHaveBeenCalledWith({
-          url: 'https://logx.optimizely.com/v1/events',
-          httpVerb: 'POST',
-          params: makeBatchedEventV1([impressionEvent]),
-        })
-      })
-    })
-
-    describe('interceptors', () => {
-      beforeEach(() => {
-        jest.useRealTimers()
-      })
-
-      afterEach(() => {
-        processor.stop()
-      })
-
-      it('should should invoke the interceptor with the event and projectConfig', async () => {
-        const interceptor = jest.fn()
-        processor = new LogTierV1EventProcessor({
-          interceptors: [
-            async (event, projectConfig) => {
-              interceptor(event, projectConfig)
-              return true
-            },
-          ],
-          dispatcher: stubDispatcher,
-          maxQueueSize: 1,
-        })
-        processor.start()
-
-        const impressionEvent = createImpressionEvent()
-        processor.process(impressionEvent, testProjectConfig)
-
-        // sleep to let async functions run
-        await sleep(0)
-
-        expect(interceptor).toHaveBeenCalledTimes(1)
-        expect(interceptor).toHaveBeenCalledWith(impressionEvent, testProjectConfig)
-      })
-
-      it('should continue with the event if a interceptor throws an error', async () => {
-        processor = new LogTierV1EventProcessor({
-          interceptors: [
-            async (event, projectConfig) => {
-              throw new Error('interceptor error')
-            },
-          ],
-          dispatcher: stubDispatcher,
-          maxQueueSize: 1,
-        })
-        processor.start()
-
-        const impressionEvent = createImpressionEvent()
-        processor.process(impressionEvent, testProjectConfig)
-
-        // sleep to let async functions run
-        await sleep(0)
-
-        expect(dispatchStub).toHaveBeenCalledTimes(1)
-        expect(dispatchStub).toHaveBeenCalledWith({
-          url: 'https://logx.optimizely.com/v1/events',
-          httpVerb: 'POST',
-          params: makeBatchedEventV1([impressionEvent]),
-        })
-      })
-
-      it('should drop the event if a interceptor returns false', async () => {
-        processor = new LogTierV1EventProcessor({
-          interceptors: [
-            async (event, projectConfig) => {
-              return false
-            },
-          ],
-          dispatcher: stubDispatcher,
-          maxQueueSize: 1,
-        })
-        processor.start()
-
-        const impressionEvent = createImpressionEvent()
-        processor.process(impressionEvent, testProjectConfig)
-
-        // sleep to let async functions run
-        await sleep(0)
-
-        expect(dispatchStub).toHaveBeenCalledTimes(0)
-      })
-    })
-
-    describe('callbacks', () => {
-      beforeEach(() => {
-        jest.useRealTimers()
-      })
-
-      afterEach(() => {
-        processor.stop()
-      })
-
-      it('should invoke the callback with the result of dispatcher and the event', async () => {
-        const callback = jest.fn()
-        processor = new LogTierV1EventProcessor({
-          callbacks: [callback],
-          dispatcher: stubDispatcher,
-          maxQueueSize: 3,
-        })
-        processor.start()
-
-        const impressionEvent1 = createImpressionEvent()
-        const impressionEvent2 = createImpressionEvent()
-        const impressionEvent3 = createImpressionEvent()
-        processor.process(impressionEvent1, testProjectConfig)
-        processor.process(impressionEvent2, testProjectConfig)
-        processor.process(impressionEvent3, testProjectConfig)
-
-        // sleep to let async functions run
-        await sleep(0)
-
-        expect(callback).toHaveBeenCalledTimes(3)
-        expect(callback).toHaveBeenCalledWith({
-          event: impressionEvent1,
-          result: true,
-        })
-        expect(callback).toHaveBeenCalledWith({
-          event: impressionEvent2,
-          result: true,
-        })
-        expect(callback).toHaveBeenCalledWith({
-          event: impressionEvent3,
-          result: true,
-        })
-      })
-
-      it('should invoke the callback with result = false event if the dispatcher doesnt provide statusCode', async () => {
-        const callback = jest.fn()
-
-        stubDispatcher = {
-          dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
-            dispatchStub(event)
-            // @ts-ignore
-            callback()
-          },
-        }
-        processor = new LogTierV1EventProcessor({
-          callbacks: [callback],
-          dispatcher: stubDispatcher,
-          maxQueueSize: 3,
-        })
-        processor.start()
-
-        const impressionEvent1 = createImpressionEvent()
-        const impressionEvent2 = createImpressionEvent()
-        const impressionEvent3 = createImpressionEvent()
-        processor.process(impressionEvent1, testProjectConfig)
-        processor.process(impressionEvent2, testProjectConfig)
-        processor.process(impressionEvent3, testProjectConfig)
-
-        // sleep to let async functions run
-        await sleep(0)
-
-        expect(callback).toHaveBeenCalledTimes(3)
-        expect(callback).toHaveBeenCalledWith({
-          event: impressionEvent1,
-          result: false,
-        })
-        expect(callback).toHaveBeenCalledWith({
-          event: impressionEvent2,
-          result: false,
-        })
-        expect(callback).toHaveBeenCalledWith({
-          event: impressionEvent3,
-          result: false,
-        })
-      })
-
-      it('should return result == false when the dispatcher returns a non 200 response', async () => {
-        const callback = jest.fn()
-        const dispatcher: EventDispatcher = {
-          dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
-            dispatchStub(event)
-            callback({
-              statusCode: 400,
-            })
-          },
-        }
-
-        processor = new LogTierV1EventProcessor({
-          callbacks: [callback],
-          dispatcher,
-          maxQueueSize: 1,
-        })
-        processor.start()
-
-        const impressionEvent1 = createImpressionEvent()
-        processor.process(impressionEvent1, testProjectConfig)
-
-        // sleep to let async functions run
-        await sleep(0)
-
-        expect(callback).toHaveBeenCalledTimes(1)
-        expect(callback).toHaveBeenCalledWith({
-          event: impressionEvent1,
-          result: false,
-        })
-      })
-
-      it('should trigger a notification when the event dispatcher dispatches an event', () => {
-        const dispatcher: EventDispatcher = {
-          dispatchEvent: jest.fn()
-        }
-
-        const notificationCenter: NotificationCenter = {
-          sendNotifications: jest.fn()
-        }
-
-        processor = new LogTierV1EventProcessor({
-          dispatcher,
-          notificationCenter,
-          maxQueueSize: 1,
-        })
-        processor.start()
-
-        const impressionEvent1 = createImpressionEvent()
-        processor.process(impressionEvent1, testProjectConfig)
-
-        expect(notificationCenter.sendNotifications).toBeCalledTimes(1)
-        const event = (dispatcher.dispatchEvent as jest.Mock).mock.calls[0][0]
-        expect(notificationCenter.sendNotifications).toBeCalledWith(NOTIFICATION_TYPES.LOG_EVENT, event)
-      })
+      expect(notificationCenter.sendNotifications).toBeCalledTimes(1)
+      const event = (dispatcher.dispatchEvent as jest.Mock).mock.calls[0][0]
+      expect(notificationCenter.sendNotifications).toBeCalledWith(NOTIFICATION_TYPES.LOG_EVENT, event)
     })
   })
 })

@@ -19,7 +19,6 @@ import { ConversionEvent, ImpressionEvent } from './events'
 import {
   EventDispatcher,
   EventV1Request,
-  EventDispatcherResponse,
 } from './eventDispatcher'
 import { EventQueue, DefaultEventQueue, SingleEventQueue } from './eventQueue'
 import { getLogger } from '@optimizely/js-sdk-logging'
@@ -31,47 +30,23 @@ export type ProcessableEvents = ConversionEvent | ImpressionEvent
 
 export type EventDispatchResult = { result: boolean; event: ProcessableEvents }
 
-export type EventCallback = (result: EventDispatchResult) => void
-
-export type EventTransformer = (
-  event: ProcessableEvents,
-  // TODO change this to ProjectConfig when js-sdk-models is available
-  projectConfig: any,
-) => Promise<void>
-
-export type EventInterceptor = (
-  event: ProcessableEvents,
-  // TODO change this to ProjectConfig when js-sdk-models is available
-  projectConfig: any,
-) => Promise<boolean>
-
 export interface EventProcessor extends Managed {
-  // TODO change this to ProjectConfig when js-sdk-models is available
-  process(event: ProcessableEvents, projectConfig: any): void
+  process(event: ProcessableEvents): void
 }
 
 const MIN_FLUSH_INTERVAL = 100
 export abstract class AbstractEventProcessor implements EventProcessor {
-  protected transformers: EventTransformer[]
-  protected interceptors: EventInterceptor[]
-  protected callbacks: EventCallback[]
   protected dispatcher: EventDispatcher
   protected queue: EventQueue<ProcessableEvents>
   private notificationCenter?: NotificationCenter
 
   constructor({
     dispatcher,
-    transformers = [],
-    interceptors = [],
-    callbacks = [],
     flushInterval = 30000,
     maxQueueSize = 3000,
     notificationCenter,
   }: {
     dispatcher: EventDispatcher
-    transformers?: EventTransformer[]
-    interceptors?: EventInterceptor[]
-    callbacks?: EventCallback[]
     flushInterval?: number
     maxQueueSize?: number
     notificationCenter?: NotificationCenter
@@ -90,10 +65,6 @@ export abstract class AbstractEventProcessor implements EventProcessor {
         sink: buffer => this.drainQueue(buffer),
       })
     }
-
-    this.transformers = transformers
-    this.interceptors = interceptors
-    this.callbacks = callbacks
     this.notificationCenter = notificationCenter
   }
 
@@ -103,19 +74,8 @@ export abstract class AbstractEventProcessor implements EventProcessor {
     const promises = this.groupEvents(buffer).map(eventGroup => {
       const formattedEvent = this.formatEvents(eventGroup)
 
-      return new Promise((resolve, reject) => {
-        this.dispatcher.dispatchEvent(formattedEvent, response => {
-          // loop through every event in the group and run the callback handler
-          // with result
-          eventGroup.forEach(event => {
-            this.callbacks.forEach(handler => {
-              handler({
-                result: isResponseSuccess(response),
-                event,
-              })
-            })
-          })
-
+      return new Promise((resolve) => {
+        this.dispatcher.dispatchEvent(formattedEvent, () => {
           resolve()
         })
 
@@ -131,33 +91,7 @@ export abstract class AbstractEventProcessor implements EventProcessor {
     return Promise.all(promises)
   }
 
-  // TODO change this to ProjectConfig when js-sdk-models is available
-  async process(event: ProcessableEvents, projectConfig: any): Promise<void> {
-    // loop and apply all transformers
-    for (let transformer of this.transformers) {
-      try {
-        await transformer(event, projectConfig)
-      } catch (ex) {
-        // swallow error and move on
-        logger.error('eventTransformer threw error', ex.message, ex)
-      }
-    }
-    Object.freeze(event)
-
-    // loop and apply all interceptors
-    for (let interceptor of this.interceptors) {
-      let result
-      try {
-        result = await interceptor(event, projectConfig)
-      } catch (ex) {
-        // swallow and continue
-        logger.error('eventInterceptor threw error', ex.message, ex)
-      }
-      if (result === false) {
-        return
-      }
-    }
-
+  process(event: ProcessableEvents): void {
     this.queue.enqueue(event)
   }
 
@@ -178,21 +112,4 @@ export abstract class AbstractEventProcessor implements EventProcessor {
   protected abstract groupEvents(events: ProcessableEvents[]): ProcessableEvents[][]
 
   protected abstract formatEvents(events: ProcessableEvents[]): EventV1Request
-}
-
-function isResponseSuccess(response: EventDispatcherResponse): boolean {
-  try {
-    let statusCode: number
-    if ('statusCode' in response) {
-      statusCode = response.statusCode
-    } else if ('status' in response) {
-      statusCode = response.status
-    } else {
-      return false
-    }
-
-    return statusCode >= 200 && statusCode < 300
-  } catch (e) {
-    return false
-  }
 }
