@@ -342,6 +342,9 @@ describe('LogTierV1EventProcessor', () => {
       expect(dispatchStub).toHaveBeenCalledTimes(1)
     })
 
+  })
+
+  describe('when a notification center is provided', () => {
     it('should trigger a notification when the event dispatcher dispatches an event', () => {
       const dispatcher: EventDispatcher = {
         dispatchEvent: jest.fn()
@@ -351,7 +354,7 @@ describe('LogTierV1EventProcessor', () => {
         sendNotifications: jest.fn()
       }
 
-      processor = new LogTierV1EventProcessor({
+      const processor = new LogTierV1EventProcessor({
         dispatcher,
         notificationCenter,
         maxQueueSize: 1,
@@ -359,7 +362,7 @@ describe('LogTierV1EventProcessor', () => {
       processor.start()
 
       const impressionEvent1 = createImpressionEvent()
-      processor.process(impressionEvent1, testProjectConfig)
+      processor.process(impressionEvent1)
 
       expect(notificationCenter.sendNotifications).toBeCalledTimes(1)
       const event = (dispatcher.dispatchEvent as jest.Mock).mock.calls[0][0]
