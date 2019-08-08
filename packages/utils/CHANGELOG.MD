@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.2.0] - August 7, 2019
+
 ### New Features
 - Added `objectEntries`
 - Added `NOTIFICATION_TYPES` and `NotificationCenter`
