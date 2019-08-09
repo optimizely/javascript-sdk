@@ -56,6 +56,7 @@ describe('eventQueue', () => {
         flushInterval: 100,
         maxQueueSize: -1,
         sink: sinkFn,
+        batchComparator: () => true
       })
 
       queue.start()
@@ -76,6 +77,7 @@ describe('eventQueue', () => {
         flushInterval: 100,
         maxQueueSize: 0,
         sink: sinkFn,
+        batchComparator: () => true
       })
 
       queue.start()
@@ -96,6 +98,7 @@ describe('eventQueue', () => {
         flushInterval: 100,
         maxQueueSize: 3,
         sink: sinkFn,
+        batchComparator: () => true
       })
 
       queue.start()
@@ -123,6 +126,7 @@ describe('eventQueue', () => {
         flushInterval: 100,
         maxQueueSize: 100,
         sink: sinkFn,
+        batchComparator: () => true
       })
 
       queue.start()
@@ -145,12 +149,33 @@ describe('eventQueue', () => {
       queue.stop()
     })
 
+    it('should invoke the sink function when an event incompatable with the current batch (according to batchComparator) is received', () => {
+      const sinkFn = jest.fn()
+      const queue = new DefaultEventQueue<number>({
+        flushInterval: 100,
+        maxQueueSize: 100,
+        sink: sinkFn,
+        batchComparator: (n1, n2) => (n1 % 2) === (n2 % 2)
+      })
+
+      queue.start()
+
+      queue.enqueue(2)
+      queue.enqueue(4)
+      expect(sinkFn).not.toHaveBeenCalled()
+
+      queue.enqueue(3)
+      expect(sinkFn).toHaveBeenCalledTimes(1)
+      expect(sinkFn).toHaveBeenCalledWith([2, 4])
+    })
+
     it('stop() should flush the existing queue and call timer.stop()', () => {
       const sinkFn = jest.fn()
       const queue = new DefaultEventQueue<number>({
         flushInterval: 100,
         maxQueueSize: 100,
         sink: sinkFn,
+        batchComparator: () => true
       })
 
       jest.spyOn(queue.timer, 'stop')
@@ -174,6 +199,7 @@ describe('eventQueue', () => {
         flushInterval: 100,
         maxQueueSize: 100,
         sink: sinkFn,
+        batchComparator: () => true
       })
 
       jest.spyOn(queue.timer, 'refresh')
@@ -196,6 +222,7 @@ describe('eventQueue', () => {
         flushInterval: 100,
         maxQueueSize: 100,
         sink: sinkFn,
+        batchComparator: () => true
       })
 
       expect(queue.stop()).toBe(promise)
@@ -207,6 +234,7 @@ describe('eventQueue', () => {
         flushInterval: 100,
         maxQueueSize: 100,
         sink: sinkFn,
+        batchComparator: () => true
       })
 
       queue.start()
