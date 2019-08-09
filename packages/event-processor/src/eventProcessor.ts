@@ -15,7 +15,7 @@
  */
 // TODO change this to use Managed from js-sdk-models when available
 import { Managed } from './managed'
-import { ConversionEvent, ImpressionEvent } from './events'
+import { ConversionEvent, ImpressionEvent, areEventContextsEqual } from './events'
 import {
   EventDispatcher,
   EventV1Request,
@@ -51,10 +51,11 @@ export abstract class AbstractEventProcessor implements EventProcessor {
 
     maxQueueSize = Math.max(1, maxQueueSize)
     if (maxQueueSize > 1) {
-      this.queue = new DefaultEventQueue({
+      this.queue = new DefaultEventQueue<ProcessableEvents>({
         flushInterval: Math.max(flushInterval, MIN_FLUSH_INTERVAL),
         maxQueueSize,
         sink: buffer => this.drainQueue(buffer),
+        batchComparator: areEventContextsEqual,
       })
     } else {
       this.queue = new SingleEventQueue({
@@ -63,20 +64,13 @@ export abstract class AbstractEventProcessor implements EventProcessor {
     }
   }
 
-  drainQueue(buffer: ProcessableEvents[]): Promise<any> {
-    logger.debug('draining queue with %s events', buffer.length)
-
-    const promises = this.groupEvents(buffer).map(eventGroup => {
-      const formattedEvent = this.formatEvents(eventGroup)
-
-      return new Promise((resolve) => {
-        this.dispatcher.dispatchEvent(formattedEvent, () => {
-          resolve()
-        })
+  drainQueue(buffer: ProcessableEvents[]): Promise<void> {
+    return new Promise(resolve => {
+      logger.debug('draining queue with %s events', buffer.length)
+      this.dispatcher.dispatchEvent(this.formatEvents(buffer), () => {
+        resolve()
       })
     })
-
-    return Promise.all(promises)
   }
 
   process(event: ProcessableEvents): void {
@@ -96,8 +90,6 @@ export abstract class AbstractEventProcessor implements EventProcessor {
   start(): void {
     this.queue.start()
   }
-
-  protected abstract groupEvents(events: ProcessableEvents[]): ProcessableEvents[][]
 
   protected abstract formatEvents(events: ProcessableEvents[]): EventV1Request
 }

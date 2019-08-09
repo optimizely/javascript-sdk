@@ -80,3 +80,9 @@ export interface ConversionEvent extends BaseEvent {
 export type EventTags = {
   [key: string]: string | number | null
 }
+
+export function areEventContextsEqual(eventA: BaseEvent, eventB: BaseEvent): boolean {
+  return Object.keys(eventA.context).every(
+    contextKey => eventA.context[contextKey] === eventB.context[contextKey],
+  )
+}
