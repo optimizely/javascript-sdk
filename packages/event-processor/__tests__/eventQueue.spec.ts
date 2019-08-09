@@ -149,7 +149,7 @@ describe('eventQueue', () => {
       queue.stop()
     })
 
-    it('should invoke the sink function when an event incompatable with the current batch (according to batchComparator) is received', () => {
+    it('should invoke the sink function when an item incompatable with the current batch (according to batchComparator) is received', () => {
       const sinkFn = jest.fn()
       const queue = new DefaultEventQueue<number>({
         flushInterval: 100,

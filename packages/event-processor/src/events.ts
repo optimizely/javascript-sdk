@@ -82,7 +82,12 @@ export type EventTags = {
 }
 
 export function areEventContextsEqual(eventA: BaseEvent, eventB: BaseEvent): boolean {
-  return Object.keys(eventA.context).every(
+  const eventAContextKeys = Object.keys(eventA.context)
+  const eventBContextKeys = Object.keys(eventB.context)
+  if (eventAContextKeys.length !== eventBContextKeys.length) {
+    return false
+  }
+  return eventAContextKeys.every(
     contextKey => eventA.context[contextKey] === eventB.context[contextKey],
   )
 }
