@@ -353,7 +353,6 @@ describe('LogTierV1EventProcessor', () => {
         httpVerb: 'POST',
         params: makeBatchedEventV1([impressionEvent2]),
       })
-
     })
 
     it('should flush the queue when the flush interval happens', () => {
