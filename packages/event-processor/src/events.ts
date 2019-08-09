@@ -82,12 +82,15 @@ export type EventTags = {
 }
 
 export function areEventContextsEqual(eventA: BaseEvent, eventB: BaseEvent): boolean {
-  const eventAContextKeys = Object.keys(eventA.context)
-  const eventBContextKeys = Object.keys(eventB.context)
-  if (eventAContextKeys.length !== eventBContextKeys.length) {
-    return false
-  }
-  return eventAContextKeys.every(
-    contextKey => eventA.context[contextKey] === eventB.context[contextKey],
+  const contextA = eventA.context
+  const contextB = eventB.context
+  return (
+    contextA.accountId === contextB.accountId &&
+    contextA.projectId === contextB.projectId &&
+    contextA.clientName === contextB.clientName &&
+    contextA.clientVersion === contextB.clientVersion &&
+    contextA.revision === contextB.revision &&
+    contextA.anonymizeIP === contextB.anonymizeIP &&
+    contextA.botFiltering === contextB.botFiltering
   )
 }
