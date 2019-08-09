@@ -67,6 +67,12 @@ export abstract class AbstractEventProcessor implements EventProcessor {
   drainQueue(buffer: ProcessableEvents[]): Promise<void> {
     return new Promise(resolve => {
       logger.debug('draining queue with %s events', buffer.length)
+
+      if (buffer.length === 0) {
+        resolve()
+        return
+      }
+
       this.dispatcher.dispatchEvent(this.formatEvents(buffer), () => {
         resolve()
       })
