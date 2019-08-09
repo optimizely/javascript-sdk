@@ -33,15 +33,17 @@ export interface EventProcessor extends Managed {
   process(event: ProcessableEvents): void
 }
 
-const MIN_FLUSH_INTERVAL = 100
+const DEFAULT_FLUSH_INTERVAL = 30000
+const DEFAULT_MAX_QUEUE_SIZE = 10
+
 export abstract class AbstractEventProcessor implements EventProcessor {
   protected dispatcher: EventDispatcher
   protected queue: EventQueue<ProcessableEvents>
 
   constructor({
     dispatcher,
-    flushInterval = 30000,
-    maxQueueSize = 3000,
+    flushInterval = DEFAULT_FLUSH_INTERVAL,
+    maxQueueSize = DEFAULT_MAX_QUEUE_SIZE,
   }: {
     dispatcher: EventDispatcher
     flushInterval?: number
@@ -49,10 +51,21 @@ export abstract class AbstractEventProcessor implements EventProcessor {
   }) {
     this.dispatcher = dispatcher
 
+    if (flushInterval <= 0) {
+      logger.warn(`Invalid flushInterval ${flushInterval}, defaulting to ${DEFAULT_FLUSH_INTERVAL}`)
+      flushInterval = DEFAULT_FLUSH_INTERVAL
+    }
+
+    maxQueueSize = Math.floor(maxQueueSize)
+    if (maxQueueSize < 1) {
+      logger.warn(`Invalid maxQueueSize, defaulting to ${DEFAULT_MAX_QUEUE_SIZE}`)
+      maxQueueSize = DEFAULT_MAX_QUEUE_SIZE
+    }
+
     maxQueueSize = Math.max(1, maxQueueSize)
     if (maxQueueSize > 1) {
       this.queue = new DefaultEventQueue({
-        flushInterval: Math.max(flushInterval, MIN_FLUSH_INTERVAL),
+        flushInterval,
         maxQueueSize,
         sink: buffer => this.drainQueue(buffer),
       })

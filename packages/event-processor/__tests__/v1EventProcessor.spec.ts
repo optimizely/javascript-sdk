@@ -340,5 +340,53 @@ describe('LogTierV1EventProcessor', () => {
       // flushing should reset queue, at this point only has two events
       expect(dispatchStub).toHaveBeenCalledTimes(1)
     })
+
+  })
+
+  describe('invalid flushInterval or maxQueueSize', () => {
+    it('should ignore a flushInterval of 0 and use the default', () => {
+      const processor = new LogTierV1EventProcessor({
+        dispatcher: stubDispatcher,
+        flushInterval: 0,
+        maxQueueSize: 10,
+      })
+      processor.start()
+
+      const impressionEvent1 = createImpressionEvent()
+      processor.process(impressionEvent1)
+      expect(dispatchStub).toHaveBeenCalledTimes(0)
+      jest.advanceTimersByTime(30000)
+      expect(dispatchStub).toHaveBeenCalledTimes(1)
+      expect(dispatchStub).toHaveBeenCalledWith({
+        url: 'https://logx.optimizely.com/v1/events',
+        httpVerb: 'POST',
+        params: makeBatchedEventV1([impressionEvent1]),
+      })
+    })
+
+    it('should ignore a maxQueueSize of 0 and use the default', () => {
+      const processor = new LogTierV1EventProcessor({
+        dispatcher: stubDispatcher,
+        flushInterval: 30000,
+        maxQueueSize: 0,
+      })
+      processor.start()
+
+      const impressionEvent1 = createImpressionEvent()
+      processor.process(impressionEvent1)
+      expect(dispatchStub).toHaveBeenCalledTimes(0)
+      const impressionEvents = [impressionEvent1]
+      for (let i = 0; i < 9; i++) {
+        const evt = createImpressionEvent()
+        processor.process(evt)
+        impressionEvents.push(evt)
+      }
+      expect(dispatchStub).toHaveBeenCalledTimes(1)
+      expect(dispatchStub).toHaveBeenCalledWith({
+        url: 'https://logx.optimizely.com/v1/events',
+        httpVerb: 'POST',
+        params: makeBatchedEventV1(impressionEvents),
+      })
+    })
   })
 })
