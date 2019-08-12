@@ -16,12 +16,10 @@
 // TODO change this to use Managed from js-sdk-models when available
 import { Managed } from './managed'
 import { ConversionEvent, ImpressionEvent } from './events'
-import {
-  EventDispatcher,
-  EventV1Request,
-} from './eventDispatcher'
+import { EventDispatcher, EventV1Request } from './eventDispatcher'
 import { EventQueue, DefaultEventQueue, SingleEventQueue } from './eventQueue'
 import { getLogger } from '@optimizely/js-sdk-logging'
+import { NOTIFICATION_TYPES, NotificationCenter } from '@optimizely/js-sdk-utils'
 
 const logger = getLogger('EventProcessor')
 
@@ -33,26 +31,46 @@ export interface EventProcessor extends Managed {
   process(event: ProcessableEvents): void
 }
 
-const MIN_FLUSH_INTERVAL = 100
+const DEFAULT_FLUSH_INTERVAL = 30000 // Unit is ms - default flush interval is 30s
+const DEFAULT_MAX_QUEUE_SIZE = 10
+
 export abstract class AbstractEventProcessor implements EventProcessor {
   protected dispatcher: EventDispatcher
   protected queue: EventQueue<ProcessableEvents>
+  private notificationCenter?: NotificationCenter
 
   constructor({
     dispatcher,
     flushInterval = 30000,
     maxQueueSize = 3000,
+    notificationCenter,
   }: {
     dispatcher: EventDispatcher
     flushInterval?: number
     maxQueueSize?: number
+    notificationCenter?: NotificationCenter
   }) {
     this.dispatcher = dispatcher
+
+    if (flushInterval <= 0) {
+      logger.warn(
+        `Invalid flushInterval ${flushInterval}, defaulting to ${DEFAULT_FLUSH_INTERVAL}`,
+      )
+      flushInterval = DEFAULT_FLUSH_INTERVAL
+    }
+
+    maxQueueSize = Math.floor(maxQueueSize)
+    if (maxQueueSize < 1) {
+      logger.warn(
+        `Invalid maxQueueSize ${maxQueueSize}, defaulting to ${DEFAULT_MAX_QUEUE_SIZE}`,
+      )
+      maxQueueSize = DEFAULT_MAX_QUEUE_SIZE
+    }
 
     maxQueueSize = Math.max(1, maxQueueSize)
     if (maxQueueSize > 1) {
       this.queue = new DefaultEventQueue({
-        flushInterval: Math.max(flushInterval, MIN_FLUSH_INTERVAL),
+        flushInterval,
         maxQueueSize,
         sink: buffer => this.drainQueue(buffer),
       })
@@ -61,6 +79,7 @@ export abstract class AbstractEventProcessor implements EventProcessor {
         sink: buffer => this.drainQueue(buffer),
       })
     }
+    this.notificationCenter = notificationCenter
   }
 
   drainQueue(buffer: ProcessableEvents[]): Promise<any> {
@@ -69,10 +88,17 @@ export abstract class AbstractEventProcessor implements EventProcessor {
     const promises = this.groupEvents(buffer).map(eventGroup => {
       const formattedEvent = this.formatEvents(eventGroup)
 
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         this.dispatcher.dispatchEvent(formattedEvent, () => {
           resolve()
         })
+
+        if (this.notificationCenter) {
+          this.notificationCenter.sendNotifications(
+            NOTIFICATION_TYPES.LOG_EVENT,
+            formattedEvent,
+          )
+        }
       })
     })
 
