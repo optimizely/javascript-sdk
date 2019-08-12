@@ -34,7 +34,7 @@ export interface EventProcessor extends Managed {
   process(event: ProcessableEvents): void
 }
 
-const DEFAULT_FLUSH_INTERVAL = 30000
+const DEFAULT_FLUSH_INTERVAL = 30000 // Unit is ms - default flush interval is 30s
 const DEFAULT_MAX_QUEUE_SIZE = 10
 
 export abstract class AbstractEventProcessor implements EventProcessor {
@@ -62,7 +62,7 @@ export abstract class AbstractEventProcessor implements EventProcessor {
 
     maxQueueSize = Math.floor(maxQueueSize)
     if (maxQueueSize < 1) {
-      logger.warn(`Invalid maxQueueSize, defaulting to ${DEFAULT_MAX_QUEUE_SIZE}`)
+      logger.warn(`Invalid maxQueueSize ${maxQueueSize}, defaulting to ${DEFAULT_MAX_QUEUE_SIZE}`)
       maxQueueSize = DEFAULT_MAX_QUEUE_SIZE
     }
 
