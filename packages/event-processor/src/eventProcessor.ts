@@ -93,7 +93,7 @@ export abstract class AbstractEventProcessor implements EventProcessor {
       }
 
       const formattedEvent = this.formatEvents(buffer)
-      this.dispatcher.dispatchEvent(this.formatEvents(buffer), () => {
+      this.dispatcher.dispatchEvent(formattedEvent, () => {
         resolve()
       })
       if (this.notificationCenter) {
