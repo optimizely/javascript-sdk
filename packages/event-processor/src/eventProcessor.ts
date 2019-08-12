@@ -22,6 +22,7 @@ import {
 } from './eventDispatcher'
 import { EventQueue, DefaultEventQueue, SingleEventQueue } from './eventQueue'
 import { getLogger } from '@optimizely/js-sdk-logging'
+import { NOTIFICATION_TYPES, NotificationCenter } from '@optimizely/js-sdk-utils'
 
 const logger = getLogger('EventProcessor')
 
@@ -39,15 +40,18 @@ const DEFAULT_MAX_QUEUE_SIZE = 10
 export abstract class AbstractEventProcessor implements EventProcessor {
   protected dispatcher: EventDispatcher
   protected queue: EventQueue<ProcessableEvents>
+  private notificationCenter?: NotificationCenter
 
   constructor({
     dispatcher,
-    flushInterval = DEFAULT_FLUSH_INTERVAL,
-    maxQueueSize = DEFAULT_MAX_QUEUE_SIZE,
+    flushInterval = 30000,
+    maxQueueSize = 3000,
+    notificationCenter,
   }: {
     dispatcher: EventDispatcher
     flushInterval?: number
     maxQueueSize?: number
+    notificationCenter?: NotificationCenter
   }) {
     this.dispatcher = dispatcher
 
@@ -74,6 +78,7 @@ export abstract class AbstractEventProcessor implements EventProcessor {
         sink: buffer => this.drainQueue(buffer),
       })
     }
+    this.notificationCenter = notificationCenter
   }
 
   drainQueue(buffer: ProcessableEvents[]): Promise<any> {
@@ -86,6 +91,13 @@ export abstract class AbstractEventProcessor implements EventProcessor {
         this.dispatcher.dispatchEvent(formattedEvent, () => {
           resolve()
         })
+
+        if (this.notificationCenter) {
+          this.notificationCenter.sendNotifications(
+            NOTIFICATION_TYPES.LOG_EVENT,
+            formattedEvent
+          )
+        }
       })
     })
 
