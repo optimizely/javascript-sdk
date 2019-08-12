@@ -9,6 +9,7 @@ Changes that have landed but are not yet released.
 
 ### New Features
 - In `AbstractEventProcessor`, validate maxQueueSize and flushInterval; ignore & use default values when invalid
+- `AbstractEventProcessor` can be constructed with a `notificationCenter`. When `notificationCenter` is provided, it triggers a log event notification after the event is sent to the event dispatcher
 
 ### Changed
 - Removed transformers, interceptors, and callbacks from `AbstractEventProcessor`
