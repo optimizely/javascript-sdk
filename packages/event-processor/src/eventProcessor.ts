@@ -16,10 +16,7 @@
 // TODO change this to use Managed from js-sdk-models when available
 import { Managed } from './managed'
 import { ConversionEvent, ImpressionEvent } from './events'
-import {
-  EventDispatcher,
-  EventV1Request,
-} from './eventDispatcher'
+import { EventDispatcher, EventV1Request } from './eventDispatcher'
 import { EventQueue, DefaultEventQueue, SingleEventQueue } from './eventQueue'
 import { getLogger } from '@optimizely/js-sdk-logging'
 import { NOTIFICATION_TYPES, NotificationCenter } from '@optimizely/js-sdk-utils'
@@ -56,13 +53,17 @@ export abstract class AbstractEventProcessor implements EventProcessor {
     this.dispatcher = dispatcher
 
     if (flushInterval <= 0) {
-      logger.warn(`Invalid flushInterval ${flushInterval}, defaulting to ${DEFAULT_FLUSH_INTERVAL}`)
+      logger.warn(
+        `Invalid flushInterval ${flushInterval}, defaulting to ${DEFAULT_FLUSH_INTERVAL}`,
+      )
       flushInterval = DEFAULT_FLUSH_INTERVAL
     }
 
     maxQueueSize = Math.floor(maxQueueSize)
     if (maxQueueSize < 1) {
-      logger.warn(`Invalid maxQueueSize ${maxQueueSize}, defaulting to ${DEFAULT_MAX_QUEUE_SIZE}`)
+      logger.warn(
+        `Invalid maxQueueSize ${maxQueueSize}, defaulting to ${DEFAULT_MAX_QUEUE_SIZE}`,
+      )
       maxQueueSize = DEFAULT_MAX_QUEUE_SIZE
     }
 
@@ -87,7 +88,7 @@ export abstract class AbstractEventProcessor implements EventProcessor {
     const promises = this.groupEvents(buffer).map(eventGroup => {
       const formattedEvent = this.formatEvents(eventGroup)
 
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         this.dispatcher.dispatchEvent(formattedEvent, () => {
           resolve()
         })
@@ -95,7 +96,7 @@ export abstract class AbstractEventProcessor implements EventProcessor {
         if (this.notificationCenter) {
           this.notificationCenter.sendNotifications(
             NOTIFICATION_TYPES.LOG_EVENT,
-            formattedEvent
+            formattedEvent,
           )
         }
       })
