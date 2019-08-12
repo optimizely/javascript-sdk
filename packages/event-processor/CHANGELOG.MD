@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+### New Features
+- In `AbstractEventProcessor`, validate maxQueueSize and flushInterval; ignore & use default values when invalid
+- `AbstractEventProcessor` can be constructed with a `notificationCenter`. When `notificationCenter` is provided, it triggers a log event notification after the event is sent to the event dispatcher
+
+### Changed
+- Removed transformers, interceptors, and callbacks from `AbstractEventProcessor`
+
 ## [0.2.1] - June 6, 2019
 
 - Wrap the `callback` in `try/catch` when implementing a custom `eventDispatcher`.  This ensures invoking the `callback` will always cleanup any pending retry tasks.

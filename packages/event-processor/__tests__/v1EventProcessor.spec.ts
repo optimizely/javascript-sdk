@@ -23,6 +23,7 @@ import {
 } from '../src/eventDispatcher'
 import { EventProcessor } from '../src/eventProcessor'
 import { buildImpressionEventV1, makeBatchedEventV1 } from '../src/v1/buildEventV1'
+import { NotificationCenter, NOTIFICATION_TYPES } from '@optimizely/js-sdk-utils';
 
 function createImpressionEvent() {
   return {
@@ -375,6 +376,80 @@ describe('LogTierV1EventProcessor', () => {
       processor.process(createImpressionEvent())
       // flushing should reset queue, at this point only has two events
       expect(dispatchStub).toHaveBeenCalledTimes(1)
+    })
+
+  })
+
+  describe('when a notification center is provided', () => {
+    it('should trigger a notification when the event dispatcher dispatches an event', () => {
+      const dispatcher: EventDispatcher = {
+        dispatchEvent: jest.fn()
+      }
+
+      const notificationCenter: NotificationCenter = {
+        sendNotifications: jest.fn()
+      }
+
+      const processor = new LogTierV1EventProcessor({
+        dispatcher,
+        notificationCenter,
+        maxQueueSize: 1,
+      })
+      processor.start()
+
+      const impressionEvent1 = createImpressionEvent()
+      processor.process(impressionEvent1)
+
+      expect(notificationCenter.sendNotifications).toBeCalledTimes(1)
+      const event = (dispatcher.dispatchEvent as jest.Mock).mock.calls[0][0]
+      expect(notificationCenter.sendNotifications).toBeCalledWith(NOTIFICATION_TYPES.LOG_EVENT, event)
+    })
+  })
+
+  describe('invalid flushInterval or maxQueueSize', () => {
+    it('should ignore a flushInterval of 0 and use the default', () => {
+      const processor = new LogTierV1EventProcessor({
+        dispatcher: stubDispatcher,
+        flushInterval: 0,
+        maxQueueSize: 10,
+      })
+      processor.start()
+
+      const impressionEvent1 = createImpressionEvent()
+      processor.process(impressionEvent1)
+      expect(dispatchStub).toHaveBeenCalledTimes(0)
+      jest.advanceTimersByTime(30000)
+      expect(dispatchStub).toHaveBeenCalledTimes(1)
+      expect(dispatchStub).toHaveBeenCalledWith({
+        url: 'https://logx.optimizely.com/v1/events',
+        httpVerb: 'POST',
+        params: makeBatchedEventV1([impressionEvent1]),
+      })
+    })
+
+    it('should ignore a maxQueueSize of 0 and use the default', () => {
+      const processor = new LogTierV1EventProcessor({
+        dispatcher: stubDispatcher,
+        flushInterval: 30000,
+        maxQueueSize: 0,
+      })
+      processor.start()
+
+      const impressionEvent1 = createImpressionEvent()
+      processor.process(impressionEvent1)
+      expect(dispatchStub).toHaveBeenCalledTimes(0)
+      const impressionEvents = [impressionEvent1]
+      for (let i = 0; i < 9; i++) {
+        const evt = createImpressionEvent()
+        processor.process(evt)
+        impressionEvents.push(evt)
+      }
+      expect(dispatchStub).toHaveBeenCalledTimes(1)
+      expect(dispatchStub).toHaveBeenCalledWith({
+        url: 'https://logx.optimizely.com/v1/events',
+        httpVerb: 'POST',
+        params: makeBatchedEventV1(impressionEvents),
+      })
     })
   })
 })
