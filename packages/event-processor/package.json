@@ -1,10 +1,10 @@
 {
   "name": "@optimizely/js-sdk-event-processor",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Optimizely Full Stack Event Processor",
   "author": "jordangarcia <jordan@optimizely.com>",
   "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/event-processor",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "directories": {

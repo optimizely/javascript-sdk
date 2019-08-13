@@ -82,19 +82,25 @@ export class DefaultEventQueue<K> implements EventQueue<K> {
   private buffer: K[]
   private maxQueueSize: number
   private sink: EventQueueSink<K>
+  // batchComparator is called to determine whether two events can be included
+  // together in the same batch
+  private batchComparator: (eventA: K, eventB: K) => boolean
 
   constructor({
     flushInterval,
     maxQueueSize,
     sink,
+    batchComparator,
   }: {
     flushInterval: number
     maxQueueSize: number
     sink: EventQueueSink<K>
+    batchComparator: (eventA: K, eventB: K) => boolean
   }) {
     this.buffer = []
     this.maxQueueSize = Math.max(maxQueueSize, 1)
     this.sink = sink
+    this.batchComparator = batchComparator
     this.timer = new Timer({
       callback: this.flush.bind(this),
       timeout: flushInterval,
@@ -112,6 +118,13 @@ export class DefaultEventQueue<K> implements EventQueue<K> {
   }
 
   enqueue(event: K): void {
+    // If new event cannot be included into the current batch, flush so it can
+    // be in its own new batch.
+    const bufferedEvent: K | undefined = this.buffer[0]
+    if (bufferedEvent && !this.batchComparator(bufferedEvent, event)) {
+      this.flush()
+    }
+
     // start the timer when the first event is put in
     if (this.buffer.length === 0) {
       this.timer.refresh()

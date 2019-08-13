@@ -15,7 +15,7 @@
  */
 // TODO change this to use Managed from js-sdk-models when available
 import { Managed } from './managed'
-import { ConversionEvent, ImpressionEvent } from './events'
+import { ConversionEvent, ImpressionEvent, areEventContextsEqual } from './events'
 import { EventDispatcher, EventV1Request } from './eventDispatcher'
 import { EventQueue, DefaultEventQueue, SingleEventQueue } from './eventQueue'
 import { getLogger } from '@optimizely/js-sdk-logging'
@@ -69,10 +69,11 @@ export abstract class AbstractEventProcessor implements EventProcessor {
 
     maxQueueSize = Math.max(1, maxQueueSize)
     if (maxQueueSize > 1) {
-      this.queue = new DefaultEventQueue({
+      this.queue = new DefaultEventQueue<ProcessableEvents>({
         flushInterval,
         maxQueueSize,
         sink: buffer => this.drainQueue(buffer),
+        batchComparator: areEventContextsEqual,
       })
     } else {
       this.queue = new SingleEventQueue({
@@ -82,27 +83,26 @@ export abstract class AbstractEventProcessor implements EventProcessor {
     this.notificationCenter = notificationCenter
   }
 
-  drainQueue(buffer: ProcessableEvents[]): Promise<any> {
-    logger.debug('draining queue with %s events', buffer.length)
+  drainQueue(buffer: ProcessableEvents[]): Promise<void> {
+    return new Promise(resolve => {
+      logger.debug('draining queue with %s events', buffer.length)
 
-    const promises = this.groupEvents(buffer).map(eventGroup => {
-      const formattedEvent = this.formatEvents(eventGroup)
+      if (buffer.length === 0) {
+        resolve()
+        return
+      }
 
-      return new Promise(resolve => {
-        this.dispatcher.dispatchEvent(formattedEvent, () => {
-          resolve()
-        })
-
-        if (this.notificationCenter) {
-          this.notificationCenter.sendNotifications(
-            NOTIFICATION_TYPES.LOG_EVENT,
-            formattedEvent,
-          )
-        }
+      const formattedEvent = this.formatEvents(buffer)
+      this.dispatcher.dispatchEvent(formattedEvent, () => {
+        resolve()
       })
+      if (this.notificationCenter) {
+        this.notificationCenter.sendNotifications(
+          NOTIFICATION_TYPES.LOG_EVENT,
+          formattedEvent,
+        )
+      }
     })
-
-    return Promise.all(promises)
   }
 
   process(event: ProcessableEvents): void {
@@ -122,8 +122,6 @@ export abstract class AbstractEventProcessor implements EventProcessor {
   start(): void {
     this.queue.start()
   }
-
-  protected abstract groupEvents(events: ProcessableEvents[]): ProcessableEvents[][]
 
   protected abstract formatEvents(events: ProcessableEvents[]): EventV1Request
 }

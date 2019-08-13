@@ -292,26 +292,65 @@ describe('LogTierV1EventProcessor', () => {
       })
     })
 
-    it("should flush two batches if the event context isn't the same", () => {
+    it('should flush the current batch when it receives an event with a different context revision than the current batch', async () => {
       const impressionEvent1 = createImpressionEvent()
-      const impressionEvent2 = createImpressionEvent()
       const conversionEvent = createConversionEvent()
+      const impressionEvent2 = createImpressionEvent()
 
+      // createImpressionEvent and createConversionEvent create events with revision '1'
+      // We modify this one's revision to '2' in order to test that the queue is flushed
+      // when an event with a different revision is processed.
       impressionEvent2.context.revision = '2'
 
       processor.process(impressionEvent1)
-      processor.process(impressionEvent2)
+      processor.process(conversionEvent)
 
       expect(dispatchStub).toHaveBeenCalledTimes(0)
 
-      processor.process(conversionEvent)
+      processor.process(impressionEvent2)
 
-      expect(dispatchStub).toHaveBeenCalledTimes(2)
+      expect(dispatchStub).toHaveBeenCalledTimes(1)
       expect(dispatchStub).toHaveBeenCalledWith({
         url: 'https://logx.optimizely.com/v1/events',
         httpVerb: 'POST',
         params: makeBatchedEventV1([impressionEvent1, conversionEvent]),
       })
+
+      await processor.stop()
+
+      expect(dispatchStub).toHaveBeenCalledTimes(2)
+
+      expect(dispatchStub).toHaveBeenCalledWith({
+        url: 'https://logx.optimizely.com/v1/events',
+        httpVerb: 'POST',
+        params: makeBatchedEventV1([impressionEvent2]),
+      })
+    })
+
+    it('should flush the current batch when it receives an event with a different context projectId than the current batch', async () => {
+      const impressionEvent1 = createImpressionEvent()
+      const conversionEvent = createConversionEvent()
+      const impressionEvent2 = createImpressionEvent()
+
+      impressionEvent2.context.projectId = 'projectId2'
+
+      processor.process(impressionEvent1)
+      processor.process(conversionEvent)
+
+      expect(dispatchStub).toHaveBeenCalledTimes(0)
+
+      processor.process(impressionEvent2)
+
+      expect(dispatchStub).toHaveBeenCalledTimes(1)
+      expect(dispatchStub).toHaveBeenCalledWith({
+        url: 'https://logx.optimizely.com/v1/events',
+        httpVerb: 'POST',
+        params: makeBatchedEventV1([impressionEvent1, conversionEvent]),
+      })
+
+      await processor.stop()
+
+      expect(dispatchStub).toHaveBeenCalledTimes(2)
 
       expect(dispatchStub).toHaveBeenCalledWith({
         url: 'https://logx.optimizely.com/v1/events',
