@@ -5607,11 +5607,11 @@ describe('lib/optimizely', function() {
           isValidInstance: true,
         });
 
-        sinon.assert.calledWithExactly(eventProcessor.LogTierV1EventProcessor, {
+        sinon.assert.calledWithExactly(eventProcessor.LogTierV1EventProcessor, sinon.match({
           dispatcher: eventDispatcher,
           flushInterval: 5000,
           maxQueueSize: 1,
-        });
+        }));
       });
     });
 
@@ -5629,11 +5629,11 @@ describe('lib/optimizely', function() {
           eventBatchSize: 100,
         });
 
-        sinon.assert.calledWithExactly(eventProcessor.LogTierV1EventProcessor, {
+        sinon.assert.calledWithExactly(eventProcessor.LogTierV1EventProcessor, sinon.match({
           dispatcher: eventDispatcher,
           flushInterval: 50,
           maxQueueSize: 100,
-        });
+        }));
       });
     });
   });
@@ -5937,6 +5937,51 @@ describe('lib/optimizely', function() {
         updateListener(newConfig);
         sinon.assert.calledOnce(listener);
       });
+    });
+  });
+
+  describe('log event notification', function() {
+    var optlyInstance;
+    var bucketStub;
+    var eventDispatcherSpy;
+    beforeEach(function() {
+      bucketStub = sinon.stub(bucketer, 'bucket');
+      eventDispatcherSpy = sinon.spy();
+      optlyInstance = new Optimizely({
+        clientEngine: 'node-sdk',
+        datafile: testData.getTestProjectConfig(),
+        eventBuilder: eventBuilder,
+        errorHandler: {
+          handleError: function() {},
+        },
+        eventDispatcher: {
+          dispatchEvent: eventDispatcherSpy,
+        },
+        logger: {
+          log: function() {},
+        },
+        isValidInstance: true,
+        eventBatchSize: 1,
+      });
+    });
+
+    afterEach(function() {
+      bucketer.bucket.restore();
+      optlyInstance.close();
+    });
+
+    it('should trigger a log event notification when an event is dispatched', function() {
+      var notificationListener = sinon.spy();
+      optlyInstance.notificationCenter.addNotificationListener(
+        enums.NOTIFICATION_TYPES.LOG_EVENT,
+        notificationListener
+      );
+      bucketStub.returns('111129');
+      var activate = optlyInstance.activate('testExperiment', 'testUser');
+      assert.strictEqual(activate, 'variation');
+      sinon.assert.calledOnce(eventDispatcherSpy);
+      sinon.assert.calledOnce(notificationListener);
+      sinon.assert.calledWithExactly(notificationListener, eventDispatcherSpy.getCall(0).args[0]);
     });
   });
 });
