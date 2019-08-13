@@ -5970,7 +5970,7 @@ describe('lib/optimizely', function() {
       optlyInstance.close();
     });
 
-    it('should trigger a log event notification when an event is dispatched', function() {
+    it('should trigger a log event notification when an impression event is dispatched', function() {
       var notificationListener = sinon.spy();
       optlyInstance.notificationCenter.addNotificationListener(
         enums.NOTIFICATION_TYPES.LOG_EVENT,
@@ -5979,6 +5979,18 @@ describe('lib/optimizely', function() {
       bucketStub.returns('111129');
       var activate = optlyInstance.activate('testExperiment', 'testUser');
       assert.strictEqual(activate, 'variation');
+      sinon.assert.calledOnce(eventDispatcherSpy);
+      sinon.assert.calledOnce(notificationListener);
+      sinon.assert.calledWithExactly(notificationListener, eventDispatcherSpy.getCall(0).args[0]);
+    });
+
+    it('should trigger a log event notification when a conversion event is dispatched', function() {
+      var notificationListener = sinon.spy();
+      optlyInstance.notificationCenter.addNotificationListener(
+        enums.NOTIFICATION_TYPES.LOG_EVENT,
+        notificationListener
+      );
+      optlyInstance.track('testEvent', 'testUser');
       sinon.assert.calledOnce(eventDispatcherSpy);
       sinon.assert.calledOnce(notificationListener);
       sinon.assert.calledWithExactly(notificationListener, eventDispatcherSpy.getCall(0).args[0]);
