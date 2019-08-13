@@ -13,6 +13,7 @@ Changes that have landed but are not yet released.
 
 ### Changed
 - Removed transformers, interceptors, and callbacks from `AbstractEventProcessor`
+- Removed grouping events by context and dispatching one event per group at flush time. Instead, only maintain one group and flush immediately when an incompatible event is processed.
 
 ## [0.2.1] - June 6, 2019
 
