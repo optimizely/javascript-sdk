@@ -23,6 +23,7 @@ import {
 } from '../src/eventDispatcher'
 import { EventProcessor } from '../src/eventProcessor'
 import { buildImpressionEventV1, makeBatchedEventV1 } from '../src/v1/buildEventV1'
+import { NotificationCenter, NOTIFICATION_TYPES } from '@optimizely/js-sdk-utils';
 
 function createImpressionEvent() {
   return {
@@ -291,26 +292,65 @@ describe('LogTierV1EventProcessor', () => {
       })
     })
 
-    it("should flush two batches if the event context isn't the same", () => {
+    it('should flush the current batch when it receives an event with a different context revision than the current batch', async () => {
       const impressionEvent1 = createImpressionEvent()
-      const impressionEvent2 = createImpressionEvent()
       const conversionEvent = createConversionEvent()
+      const impressionEvent2 = createImpressionEvent()
 
+      // createImpressionEvent and createConversionEvent create events with revision '1'
+      // We modify this one's revision to '2' in order to test that the queue is flushed
+      // when an event with a different revision is processed.
       impressionEvent2.context.revision = '2'
 
       processor.process(impressionEvent1)
-      processor.process(impressionEvent2)
+      processor.process(conversionEvent)
 
       expect(dispatchStub).toHaveBeenCalledTimes(0)
 
-      processor.process(conversionEvent)
+      processor.process(impressionEvent2)
 
-      expect(dispatchStub).toHaveBeenCalledTimes(2)
+      expect(dispatchStub).toHaveBeenCalledTimes(1)
       expect(dispatchStub).toHaveBeenCalledWith({
         url: 'https://logx.optimizely.com/v1/events',
         httpVerb: 'POST',
         params: makeBatchedEventV1([impressionEvent1, conversionEvent]),
       })
+
+      await processor.stop()
+
+      expect(dispatchStub).toHaveBeenCalledTimes(2)
+
+      expect(dispatchStub).toHaveBeenCalledWith({
+        url: 'https://logx.optimizely.com/v1/events',
+        httpVerb: 'POST',
+        params: makeBatchedEventV1([impressionEvent2]),
+      })
+    })
+
+    it('should flush the current batch when it receives an event with a different context projectId than the current batch', async () => {
+      const impressionEvent1 = createImpressionEvent()
+      const conversionEvent = createConversionEvent()
+      const impressionEvent2 = createImpressionEvent()
+
+      impressionEvent2.context.projectId = 'projectId2'
+
+      processor.process(impressionEvent1)
+      processor.process(conversionEvent)
+
+      expect(dispatchStub).toHaveBeenCalledTimes(0)
+
+      processor.process(impressionEvent2)
+
+      expect(dispatchStub).toHaveBeenCalledTimes(1)
+      expect(dispatchStub).toHaveBeenCalledWith({
+        url: 'https://logx.optimizely.com/v1/events',
+        httpVerb: 'POST',
+        params: makeBatchedEventV1([impressionEvent1, conversionEvent]),
+      })
+
+      await processor.stop()
+
+      expect(dispatchStub).toHaveBeenCalledTimes(2)
 
       expect(dispatchStub).toHaveBeenCalledWith({
         url: 'https://logx.optimizely.com/v1/events',
@@ -339,6 +379,80 @@ describe('LogTierV1EventProcessor', () => {
       processor.process(createImpressionEvent())
       // flushing should reset queue, at this point only has two events
       expect(dispatchStub).toHaveBeenCalledTimes(1)
+    })
+
+  })
+
+  describe('when a notification center is provided', () => {
+    it('should trigger a notification when the event dispatcher dispatches an event', () => {
+      const dispatcher: EventDispatcher = {
+        dispatchEvent: jest.fn()
+      }
+
+      const notificationCenter: NotificationCenter = {
+        sendNotifications: jest.fn()
+      }
+
+      const processor = new LogTierV1EventProcessor({
+        dispatcher,
+        notificationCenter,
+        maxQueueSize: 1,
+      })
+      processor.start()
+
+      const impressionEvent1 = createImpressionEvent()
+      processor.process(impressionEvent1)
+
+      expect(notificationCenter.sendNotifications).toBeCalledTimes(1)
+      const event = (dispatcher.dispatchEvent as jest.Mock).mock.calls[0][0]
+      expect(notificationCenter.sendNotifications).toBeCalledWith(NOTIFICATION_TYPES.LOG_EVENT, event)
+    })
+  })
+
+  describe('invalid flushInterval or maxQueueSize', () => {
+    it('should ignore a flushInterval of 0 and use the default', () => {
+      const processor = new LogTierV1EventProcessor({
+        dispatcher: stubDispatcher,
+        flushInterval: 0,
+        maxQueueSize: 10,
+      })
+      processor.start()
+
+      const impressionEvent1 = createImpressionEvent()
+      processor.process(impressionEvent1)
+      expect(dispatchStub).toHaveBeenCalledTimes(0)
+      jest.advanceTimersByTime(30000)
+      expect(dispatchStub).toHaveBeenCalledTimes(1)
+      expect(dispatchStub).toHaveBeenCalledWith({
+        url: 'https://logx.optimizely.com/v1/events',
+        httpVerb: 'POST',
+        params: makeBatchedEventV1([impressionEvent1]),
+      })
+    })
+
+    it('should ignore a maxQueueSize of 0 and use the default', () => {
+      const processor = new LogTierV1EventProcessor({
+        dispatcher: stubDispatcher,
+        flushInterval: 30000,
+        maxQueueSize: 0,
+      })
+      processor.start()
+
+      const impressionEvent1 = createImpressionEvent()
+      processor.process(impressionEvent1)
+      expect(dispatchStub).toHaveBeenCalledTimes(0)
+      const impressionEvents = [impressionEvent1]
+      for (let i = 0; i < 9; i++) {
+        const evt = createImpressionEvent()
+        processor.process(evt)
+        impressionEvents.push(evt)
+      }
+      expect(dispatchStub).toHaveBeenCalledTimes(1)
+      expect(dispatchStub).toHaveBeenCalledWith({
+        url: 'https://logx.optimizely.com/v1/events',
+        httpVerb: 'POST',
+        params: makeBatchedEventV1(impressionEvents),
+      })
     })
   })
 })
