@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.3.0] - August 13, 2019
+
 ### New Features
-- In `AbstractEventProcessor`, validate maxQueueSize and flushInterval; ignore & use default values when invalid
+- In `AbstractEventProcessor`, validate `maxQueueSize` and `flushInterval`; ignore & use default values when invalid
 - `AbstractEventProcessor` can be constructed with a `notificationCenter`. When `notificationCenter` is provided, it triggers a log event notification after the event is sent to the event dispatcher
 
 ### Changed
