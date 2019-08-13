@@ -56,6 +56,7 @@ describe('eventQueue', () => {
         flushInterval: 100,
         maxQueueSize: -1,
         sink: sinkFn,
+        batchComparator: () => true
       })
 
       queue.start()
@@ -76,6 +77,7 @@ describe('eventQueue', () => {
         flushInterval: 100,
         maxQueueSize: 0,
         sink: sinkFn,
+        batchComparator: () => true
       })
 
       queue.start()
@@ -96,6 +98,7 @@ describe('eventQueue', () => {
         flushInterval: 100,
         maxQueueSize: 3,
         sink: sinkFn,
+        batchComparator: () => true
       })
 
       queue.start()
@@ -123,6 +126,7 @@ describe('eventQueue', () => {
         flushInterval: 100,
         maxQueueSize: 100,
         sink: sinkFn,
+        batchComparator: () => true
       })
 
       queue.start()
@@ -145,12 +149,37 @@ describe('eventQueue', () => {
       queue.stop()
     })
 
+    it('should invoke the sink function when an item incompatable with the current batch (according to batchComparator) is received', () => {
+      const sinkFn = jest.fn()
+      const queue = new DefaultEventQueue<string>({
+        flushInterval: 100,
+        maxQueueSize: 100,
+        sink: sinkFn,
+        // This batchComparator returns true when the argument strings start with the same letter
+        batchComparator: (s1, s2) => s1[0] === s2[0]
+      })
+
+      queue.start()
+
+      queue.enqueue('a1')
+      queue.enqueue('a2')
+      // After enqueuing these strings, both starting with 'a', the sinkFn should not yet be called. Thus far all the items enqueued are
+      // compatible according to the batchComparator.
+      expect(sinkFn).not.toHaveBeenCalled()
+
+      // Enqueuing a string starting with 'b' should cause the sinkFn to be called
+      queue.enqueue('b1')
+      expect(sinkFn).toHaveBeenCalledTimes(1)
+      expect(sinkFn).toHaveBeenCalledWith(['a1', 'a2'])
+    })
+
     it('stop() should flush the existing queue and call timer.stop()', () => {
       const sinkFn = jest.fn()
       const queue = new DefaultEventQueue<number>({
         flushInterval: 100,
         maxQueueSize: 100,
         sink: sinkFn,
+        batchComparator: () => true
       })
 
       jest.spyOn(queue.timer, 'stop')
@@ -174,6 +203,7 @@ describe('eventQueue', () => {
         flushInterval: 100,
         maxQueueSize: 100,
         sink: sinkFn,
+        batchComparator: () => true
       })
 
       jest.spyOn(queue.timer, 'refresh')
@@ -196,6 +226,7 @@ describe('eventQueue', () => {
         flushInterval: 100,
         maxQueueSize: 100,
         sink: sinkFn,
+        batchComparator: () => true
       })
 
       expect(queue.stop()).toBe(promise)
@@ -207,6 +238,7 @@ describe('eventQueue', () => {
         flushInterval: 100,
         maxQueueSize: 100,
         sink: sinkFn,
+        batchComparator: () => true
       })
 
       queue.start()
