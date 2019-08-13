@@ -4,7 +4,7 @@
   "description": "Optimizely Full Stack Core Logging",
   "author": "jordangarcia <jordan@optimizely.com>",
   "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/logging",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "directories": {
