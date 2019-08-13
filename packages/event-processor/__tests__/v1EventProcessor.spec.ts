@@ -297,6 +297,9 @@ describe('LogTierV1EventProcessor', () => {
       const conversionEvent = createConversionEvent()
       const impressionEvent2 = createImpressionEvent()
 
+      // createImpressionEvent and createConversionEvent create events with revision '1'
+      // We modify this one's revision to '2' in order to test that the queue is flushed
+      // when an event with a different revision is processed.
       impressionEvent2.context.revision = '2'
 
       processor.process(impressionEvent1)
