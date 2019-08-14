@@ -28,6 +28,9 @@ var logger = logging.getLogger();
 logging.setLogHandler(loggerPlugin.createLogger());
 logging.setLogLevel(logging.LogLevel.INFO);
 
+var DEFAULT_EVENT_BATCH_SIZE = 10;
+var DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
+
 var hasRetriedEvents = false;
 /**
  * Entry point into the Optimizely Browser SDK
@@ -103,12 +106,23 @@ module.exports = {
 
       config = fns.assignIn({
         clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
+        eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
+        eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
       }, config, {
         eventDispatcher: eventDispatcher,
         // always get the OptimizelyLogger facade from logging
         logger: logger,
         errorHandler: logging.getErrorHandler(),
       });
+
+      if (!fns.isFinite(config.eventBatchSize)) {
+        logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
+        config.eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
+      }
+      if (!fns.isFinite(config.eventFlushInterval)) {
+        logger.warn('Invalid eventFlushInterval %s, defaulting to %s', config.eventFlushInterval, DEFAULT_EVENT_FLUSH_INTERVAL);
+        config.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
+      }
 
       return new Optimizely(config);
     } catch (e) {

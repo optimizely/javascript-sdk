@@ -27,6 +27,9 @@ var Optimizely = require('./optimizely');
 var logger = logging.getLogger();
 logging.setLogLevel(logging.LogLevel.ERROR);
 
+var DEFAULT_EVENT_BATCH_SIZE = 10;
+var DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
+
 /**
  * Entry point into the Optimizely Node testing SDK
  */
@@ -87,7 +90,9 @@ module.exports = {
       config = fns.assign(
         {
           clientEngine: enums.NODE_CLIENT_ENGINE,
+          eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
           eventDispatcher: defaultEventDispatcher,
+          eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
           jsonSchemaValidator: jsonSchemaValidator,
           skipJSONValidation: false,
         },
@@ -98,6 +103,15 @@ module.exports = {
           errorHandler: logging.getErrorHandler(),
         }
       );
+
+      if (!fns.isFinite(config.eventBatchSize)) {
+        logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
+        config.eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
+      }
+      if (!fns.isFinite(config.eventFlushInterval)) {
+        logger.warn('Invalid eventFlushInterval %s, defaulting to %s', config.eventFlushInterval, DEFAULT_EVENT_FLUSH_INTERVAL);
+        config.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
+      }
 
       return new Optimizely(config);
     } catch (e) {

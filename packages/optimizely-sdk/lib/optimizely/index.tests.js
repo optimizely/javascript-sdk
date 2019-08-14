@@ -263,6 +263,7 @@ describe('lib/optimizely', function() {
         jsonSchemaValidator: jsonSchemaValidator,
         logger: createdLogger,
         isValidInstance: true,
+        eventBatchSize: 1,
       });
 
       bucketStub = sinon.stub(bucketer, 'bucket');
@@ -724,6 +725,7 @@ describe('lib/optimizely', function() {
             logToConsole: false,
           }),
           isValidInstance: true,
+          eventBatchSize: 1,
         });
 
         var variation = instance.activate('testExperiment', 'testUser');
@@ -1382,6 +1384,7 @@ describe('lib/optimizely', function() {
             logToConsole: false,
           }),
           isValidInstance: true,
+          eventBatchSize: 1,
         });
 
         instance.track('testEvent', 'testUser');
@@ -3498,6 +3501,7 @@ describe('lib/optimizely', function() {
         jsonSchemaValidator: jsonSchemaValidator,
         logger: createdLogger,
         isValidInstance: true,
+        eventBatchSize: 1,
       });
 
       sandbox.stub(eventDispatcher, 'dispatchEvent');
@@ -4934,6 +4938,7 @@ describe('lib/optimizely', function() {
         jsonSchemaValidator: jsonSchemaValidator,
         logger: createdLogger,
         isValidInstance: true,
+        eventBatchSize: 1,
       });
 
       sandbox.stub(eventDispatcher, 'dispatchEvent');
@@ -5069,6 +5074,7 @@ describe('lib/optimizely', function() {
         jsonSchemaValidator: jsonSchemaValidator,
         logger: createdLogger,
         isValidInstance: true,
+        eventBatchSize: 1,
       });
       audienceEvaluator = AudienceEvaluator.prototype;
 
@@ -5575,7 +5581,7 @@ describe('lib/optimizely', function() {
     });
   });
 
-  describe('event processor defaults', function() {
+  describe('event processor configuration', function() {
     var createdLogger = logger.createLogger({
       logLevel: LOG_LEVEL.INFO,
       logToConsole: false,
@@ -5595,46 +5601,24 @@ describe('lib/optimizely', function() {
       eventProcessor.LogTierV1EventProcessor.restore();
     });
 
-    describe('when eventFlushInterval and maxQueueSize is not defined', function() {
-      it('should not instantiate the eventProcessor with the default event flush interval', function() {
-        optlyInstance = new Optimizely({
-          clientEngine: 'node-sdk',
-          errorHandler: errorHandler,
-          eventDispatcher: eventDispatcher,
-          jsonSchemaValidator: jsonSchemaValidator,
-          logger: createdLogger,
-          sdkKey: '12345',
-          isValidInstance: true,
-        });
-
-        sinon.assert.calledWithExactly(eventProcessor.LogTierV1EventProcessor, sinon.match({
-          dispatcher: eventDispatcher,
-          flushInterval: 5000,
-          maxQueueSize: 1,
-        }));
+    it('should instantiate the eventProcessor with the provided event flush interval and event batch size', function() {
+      optlyInstance = new Optimizely({
+        clientEngine: 'node-sdk',
+        errorHandler: errorHandler,
+        eventDispatcher: eventDispatcher,
+        jsonSchemaValidator: jsonSchemaValidator,
+        logger: createdLogger,
+        sdkKey: '12345',
+        isValidInstance: true,
+        eventBatchSize: 100,
+        eventFlushInterval: 20000,
       });
-    });
 
-    describe('when eventFlushInterval and maxQueueSize are both defined', function() {
-      it('should not instantiate the eventProcessor with the default event flush interval', function() {
-        optlyInstance = new Optimizely({
-          clientEngine: 'node-sdk',
-          errorHandler: errorHandler,
-          eventDispatcher: eventDispatcher,
-          jsonSchemaValidator: jsonSchemaValidator,
-          logger: createdLogger,
-          sdkKey: '12345',
-          isValidInstance: true,
-          eventFlushInterval: 50,
-          eventBatchSize: 100,
-        });
-
-        sinon.assert.calledWithExactly(eventProcessor.LogTierV1EventProcessor, sinon.match({
-          dispatcher: eventDispatcher,
-          flushInterval: 50,
-          maxQueueSize: 100,
-        }));
-      });
+      sinon.assert.calledWithExactly(eventProcessor.LogTierV1EventProcessor, sinon.match({
+        dispatcher: eventDispatcher,
+        flushInterval: 20000,
+        maxQueueSize: 100,
+      }));
     });
   });
 
