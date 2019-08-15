@@ -29,7 +29,7 @@ var logger = logging.getLogger();
 logging.setLogHandler(loggerPlugin.createLogger());
 logging.setLogLevel(logging.LogLevel.INFO);
 
-var DEFAULT_EVENT_BATCH_SIZE = 10;
+var DEFAULT_EVENT_BATCH_SIZE = 1;
 var DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
 
 var hasRetriedEvents = false;
