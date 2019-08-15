@@ -112,6 +112,7 @@ function Optimizely(config) {
     dispatcher: this.eventDispatcher,
     flushInterval: config.eventFlushInterval !== undefined ? config.eventFlushInterval : DEFAULT_EVENT_FLUSH_INTERVAL,
     maxQueueSize: config.eventBatchSize !== undefined ? config.eventBatchSize : DEFAULT_EVENT_MAX_QUEUE_SIZE,
+    notificationCenter: this.notificationCenter,
   });
   this.eventProcessor.start();
 
