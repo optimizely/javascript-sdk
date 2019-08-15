@@ -21,6 +21,7 @@ var optimizelyFactory = require('./index.browser');
 var packageJSON = require('../package.json');
 var testData = require('./tests/test_data');
 var eventProcessor = require('@optimizely/js-sdk-event-processor');
+var eventProcessorConfigValidator = require('./utils/event_processor_config_validator');
 
 var chai = require('chai');
 var assert = chai.assert;
@@ -410,19 +411,6 @@ describe('javascript-sdk', function() {
           eventProcessor.LogTierV1EventProcessor.restore();
         });
 
-        it('should ignore invalid event flush interval and use default instead', function() {
-          optimizelyFactory.createInstance({
-            datafile: testData.getTestProjectConfigWithFeatures(),
-            errorHandler: fakeErrorHandler,
-            eventDispatcher: fakeEventDispatcher,
-            logger: silentLogger,
-            eventFlushInterval: ['invalid', 'flush', 'interval'],
-          });
-          sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-            flushInterval: 1000,
-          }));
-        });
-
         it('should use default event flush interval when none is provided', function() {
           optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfigWithFeatures(),
@@ -435,30 +423,50 @@ describe('javascript-sdk', function() {
           }));
         });
 
-        it('should use provided event flush interval when valid', function() {
-          optimizelyFactory.createInstance({
-            datafile: testData.getTestProjectConfigWithFeatures(),
-            errorHandler: fakeErrorHandler,
-            eventDispatcher: fakeEventDispatcher,
-            logger: silentLogger,
-            eventFlushInterval: 9000,
+        describe('with an invalid flush interval', function() {
+          beforeEach(function() {
+            sinon.stub(eventProcessorConfigValidator, 'validateEventFlushInterval').returns(false);
           });
-          sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-            flushInterval: 9000,
-          }));
+
+          afterEach(function() {
+            eventProcessorConfigValidator.validateEventFlushInterval.restore();
+          });
+
+          it('should ignore the event flush interval and use the default instead', function() {
+            optimizelyFactory.createInstance({
+              datafile: testData.getTestProjectConfigWithFeatures(),
+              errorHandler: fakeErrorHandler,
+              eventDispatcher: fakeEventDispatcher,
+              logger: silentLogger,
+              eventFlushInterval: ['invalid', 'flush', 'interval'],
+            });
+            sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
+              flushInterval: 1000,
+            }));
+          });
         });
 
-        it('should ignore invalid event batch size and use default instead', function() {
-          optimizelyFactory.createInstance({
-            datafile: testData.getTestProjectConfigWithFeatures(),
-            errorHandler: fakeErrorHandler,
-            eventDispatcher: fakeEventDispatcher,
-            logger: silentLogger,
-            eventBatchSize: null,
+        describe('with a valid flush interval', function() {
+          beforeEach(function() {
+            sinon.stub(eventProcessorConfigValidator, 'validateEventFlushInterval').returns(true);
           });
-          sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-            maxQueueSize: 10,
-          }));
+
+          afterEach(function() {
+            eventProcessorConfigValidator.validateEventFlushInterval.restore();
+          });
+
+          it('should use the provided event flush interval', function() {
+            optimizelyFactory.createInstance({
+              datafile: testData.getTestProjectConfigWithFeatures(),
+              errorHandler: fakeErrorHandler,
+              eventDispatcher: fakeEventDispatcher,
+              logger: silentLogger,
+              eventFlushInterval: 9000,
+            });
+            sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
+              flushInterval: 9000,
+            }));
+          });
         });
 
         it('should use default event batch size when none is provided', function() {
@@ -473,17 +481,50 @@ describe('javascript-sdk', function() {
           }));
         });
 
-        it('should use provided event batch size when valid', function() {
-          optimizelyFactory.createInstance({
-            datafile: testData.getTestProjectConfigWithFeatures(),
-            errorHandler: fakeErrorHandler,
-            eventDispatcher: fakeEventDispatcher,
-            logger: silentLogger,
-            eventBatchSize: 300,
+        describe('with an invalid event batch size', function() {
+          beforeEach(function() {
+            sinon.stub(eventProcessorConfigValidator, 'validateEventBatchSize').returns(false);
           });
-          sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-            maxQueueSize: 300,
-          }));
+
+          afterEach(function() {
+            eventProcessorConfigValidator.validateEventBatchSize.restore();
+          });
+
+          it('should ignore the event batch size and use the default instead', function() {
+            optimizelyFactory.createInstance({
+              datafile: testData.getTestProjectConfigWithFeatures(),
+              errorHandler: fakeErrorHandler,
+              eventDispatcher: fakeEventDispatcher,
+              logger: silentLogger,
+              eventBatchSize: null,
+            });
+            sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
+              maxQueueSize: 10,
+            }));
+          });
+        });
+
+        describe('with a valid event batch size', function() {
+          beforeEach(function() {
+            sinon.stub(eventProcessorConfigValidator, 'validateEventBatchSize').returns(true);
+          });
+
+          afterEach(function() {
+            eventProcessorConfigValidator.validateEventBatchSize.restore();
+          });
+
+          it('should use the provided event batch size', function() {
+            optimizelyFactory.createInstance({
+              datafile: testData.getTestProjectConfigWithFeatures(),
+              errorHandler: fakeErrorHandler,
+              eventDispatcher: fakeEventDispatcher,
+              logger: silentLogger,
+              eventBatchSize: 300,
+            });
+            sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
+              maxQueueSize: 300,
+            }));
+          });
         });
       });
     });

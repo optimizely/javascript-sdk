@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2016-2017, 2019, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ var enums = require('./utils/enums');
 var eventProcessor = require('@optimizely/js-sdk-event-processor');
 var loggerPlugin = require('./plugins/logger');
 var Optimizely = require('./optimizely');
+var eventProcessorConfigValidator = require('./utils/event_processor_config_validator');
 
 var logger = logging.getLogger();
 logging.setLogHandler(loggerPlugin.createLogger());
@@ -115,11 +116,11 @@ module.exports = {
         errorHandler: logging.getErrorHandler(),
       });
 
-      if (!fns.isFinite(config.eventBatchSize)) {
+      if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
         logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
         config.eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
       }
-      if (!fns.isFinite(config.eventFlushInterval)) {
+      if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
         logger.warn('Invalid eventFlushInterval %s, defaulting to %s', config.eventFlushInterval, DEFAULT_EVENT_FLUSH_INTERVAL);
         config.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
       }
