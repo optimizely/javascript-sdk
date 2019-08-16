@@ -27,7 +27,7 @@ var eventProcessorConfigValidator = require('./utils/event_processor_config_vali
 var logger = logging.getLogger();
 logging.setLogLevel(logging.LogLevel.ERROR);
 
-var DEFAULT_EVENT_BATCH_SIZE = 1;
+var DEFAULT_EVENT_BATCH_SIZE = 10;
 var DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
 
 /**
