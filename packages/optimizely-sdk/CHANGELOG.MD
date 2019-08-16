@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+### New Features
+- Updated the `close` method to return a `Promise` representing the process of closing the instance. When `close` is called, any events waiting to be sent as part of a batched event request will be immediately batched and sent to the event dispatcher.
+  - If any such requests were sent to the event dispatcher, `close` returns a `Promise` that fulfills after the event dispatcher calls the response callback for each request. Otherwise, `close` returns an immediately-fulfilled `Promise`.
+  - The `Promise` returned from `close` is fulfilled with a result object containing `success` (boolean) and `reason` (string, only when success is `false`) properties. In the result object, `success` is `true` if all events in the queue at the time close was called were combined into requests, sent to the event dispatcher, and the event dispatcher called the callbacks for each request. `success` is false if an unexpected error was encountered during the close process.
+- Added non-typed `getFeatureVariable` method ([#298](https://github.com/optimizely/javascript-sdk/pull/298)) as a more idiomatic approach to getting values of feature variables.
+  - Typed `getFeatureVariable` methods will still be available for use.
+
+## [3.2.1] - July 1st, 2019
+
+### Changed
+- Updated lodash dependency to ^4.17.11 to address security vulnerabilities ([#296](https://github.com/optimizely/javascript-sdk/issues/296))
+
 ## [3.2.0] - May 30th, 2019
 
 ### New Features

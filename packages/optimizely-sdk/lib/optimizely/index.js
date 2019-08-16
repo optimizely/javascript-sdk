@@ -100,6 +100,7 @@ function Optimizely(config) {
   this.decisionService = decisionService.createDecisionService({
     userProfileService: userProfileService,
     logger: this.logger,
+    UNSTABLE_conditionEvaluators: config.UNSTABLE_conditionEvaluators
   });
 
   this.notificationCenter = notificationCenter.createNotificationCenter({
@@ -111,6 +112,7 @@ function Optimizely(config) {
     dispatcher: this.eventDispatcher,
     flushInterval: config.eventFlushInterval !== undefined ? config.eventFlushInterval : DEFAULT_EVENT_FLUSH_INTERVAL,
     maxQueueSize: config.eventBatchSize !== undefined ? config.eventBatchSize : DEFAULT_EVENT_MAX_QUEUE_SIZE,
+    notificationCenter: this.notificationCenter,
   });
   this.eventProcessor.start();
 
@@ -647,28 +649,55 @@ Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
 };
 
 /**
+ * Returns dynamically-typed value of the variable attached to the given
+ * feature flag. Returns null if the feature key or variable key is invalid.
+ *
+ * @param {string} featureKey           Key of the feature whose variable's
+ *                                      value is being accessed
+ * @param {string} variableKey          Key of the variable whose value is
+ *                                      being accessed
+ * @param {string} userId               ID for the user
+ * @param {Object} attributes           Optional user attributes
+ * @return {string|boolean|number|null} Value of the variable cast to the appropriate
+ *                                      type, or null if the feature key is invalid or
+ *                                      the variable key is invalid
+ */
+
+Optimizely.prototype.getFeatureVariable = function(featureKey, variableKey, userId, attributes) {
+  try {
+    return this._getFeatureVariableForType(featureKey, variableKey, null, userId, attributes);
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
+    return null;
+  }
+};
+
+/**
  * Helper method to get the value for a variable of a certain type attached to a
  * feature flag. Returns null if the feature key is invalid, the variable key is
  * invalid, the given variable type does not match the variable's actual type,
- * or the variable value cannot be cast to the required type.
+ * or the variable value cannot be cast to the required type. If the given variable
+ * type is null, the value of the variable cast to the appropriate type is returned.
  *
- * @param {string} featureKey   Key of the feature whose variable's value is
- *                              being accessed
- * @param {string} variableKey  Key of the variable whose value is being
- *                              accessed
- * @param {string} variableType Type of the variable whose value is being
- *                              accessed (must be one of FEATURE_VARIABLE_TYPES
- *                              in lib/utils/enums/index.js)
- * @param {string} userId       ID for the user
- * @param {Object} attributes   Optional user attributes
- * @return {*}                  Value of the variable cast to the appropriate
- *                              type, or null if the feature key is invalid, the
- *                              variable key is invalid, or there is a mismatch
- *                              with the type of the variable
+ * @param {string} featureKey           Key of the feature whose variable's value is
+ *                                      being accessed
+ * @param {string} variableKey          Key of the variable whose value is being
+ *                                      accessed
+ * @param {string|null} variableType    Type of the variable whose value is being
+ *                                      accessed (must be one of FEATURE_VARIABLE_TYPES
+ *                                      in lib/utils/enums/index.js), or null to return the
+ *                                      value of the variable cast to the appropriate type
+ * @param {string} userId               ID for the user
+ * @param {Object} attributes           Optional user attributes
+ * @return {string|boolean|number|null} Value of the variable cast to the appropriate
+ *                                      type, or null if the feature key is invalid, the
+ *                                      variable key is invalid, or there is a mismatch
+ *                                      with the type of the variable
  */
 Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableKey, variableType, userId, attributes) {
   if (!this.__isValidInstance()) {
-    var apiName = 'getFeatureVariable' + variableType.charAt(0).toUpperCase() + variableType.slice(1);
+    var apiName = (variableType) ? 'getFeatureVariable' + variableType.charAt(0).toUpperCase() + variableType.slice(1) : 'getFeatureVariable';
     this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, apiName));
     return null;
   }
@@ -692,7 +721,9 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     return null;
   }
 
-  if (variable.type !== variableType) {
+  if (!variableType) {
+    variableType = variable.type;
+  } else if (variable.type !== variableType) {
     this.logger.log(
       LOG_LEVEL.WARNING,
       sprintf(LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE, MODULE_NAME, variableType, variable.type)
@@ -849,11 +880,38 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
 };
 
 /**
- * Cleanup method for killing an running timers and flushing eventQueue
+ * Stop background processes belonging to this instance, including:
+ *
+ * - Active datafile requests
+ * - Pending datafile requests
+ * - Pending event queue flushes
+ *
+ * In-flight datafile requests will be aborted. Any events waiting to be sent
+ * as part of a batched event request will be immediately batched and sent to
+ * the event dispatcher.
+ *
+ * If any such requests were sent to the event dispatcher, returns a Promise
+ * that fulfills after the event dispatcher calls the response callback for each
+ * request. Otherwise, returns an immediately-fulfilled Promise.
+ *
+ * Returned Promises are fulfilled with result objects containing these
+ * properties:
+ *    - success (boolean): true if all events in the queue at the time close was
+ *                         called were combined into requests, sent to the
+ *                         event dispatcher, and the event dispatcher called the
+ *                         callbacks for each request. false if an unexpected
+ *                         error was encountered during the close process.
+ *    - reason (string=):  If success is false, this is a string property with
+ *                         an explanatory message.
+ *
+ * NOTE: After close is called, this instance is no longer usable - any events
+ * generated will no longer be sent to the event dispatcher.
+ *
+ * @return {Promise}
  */
 Optimizely.prototype.close = function() {
   try {
-    this.eventProcessor.stop();
+    var eventProcessorStoppedPromise = this.eventProcessor.stop();
     if (this.__disposeOnUpdate) {
       this.__disposeOnUpdate();
       this.__disposeOnUpdate = null;
@@ -867,9 +925,26 @@ Optimizely.prototype.close = function() {
       readyTimeoutRecord.onClose();
     }.bind(this));
     this.__readyTimeouts = {};
-  } catch (e) {
-    this.logger.log(LOG_LEVEL.ERROR, e.message);
-    this.errorHandler.handleError(e);
+    return eventProcessorStoppedPromise.then(
+      function() {
+        return {
+          success: true,
+        };
+      },
+      function(err) {
+        return {
+          success: false,
+          reason: String(err),
+        };
+      }
+    );
+  } catch (err) {
+    this.logger.log(LOG_LEVEL.ERROR, err.message);
+    this.errorHandler.handleError(err);
+    return Promise.resolve({
+      success: false,
+      reason: String(err),
+    });
   }
 };
 

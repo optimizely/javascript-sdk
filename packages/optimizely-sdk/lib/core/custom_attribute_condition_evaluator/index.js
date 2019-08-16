@@ -53,13 +53,9 @@ EVALUATORS_BY_MATCH_TYPE[SUBSTRING_MATCH_TYPE] = substringEvaluator;
  * @param  {Object}     logger
  * @return {?Boolean}   true/false if the given user attributes match/don't match the given condition,
  *                                      null if the given user attributes and condition can't be evaluated
+ * TODO: Change to accept and object with named properties
  */
 function evaluate(condition, userAttributes, logger) {
-  if (condition.type !== CUSTOM_ATTRIBUTE_CONDITION_TYPE) {
-    logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNKNOWN_CONDITION_TYPE, MODULE_NAME, JSON.stringify(condition)));
-    return null;
-  }
-
   var conditionMatch = condition.match;
   if (typeof conditionMatch !== 'undefined' && MATCH_TYPES.indexOf(conditionMatch) === -1) {
     logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, JSON.stringify(condition)));

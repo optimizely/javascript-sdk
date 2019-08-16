@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var audienceEvaluator = require('./');
+var AudienceEvaluator = require('./');
 var chai = require('chai');
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var conditionTreeEvaluator = require('../condition_tree_evaluator');
 var customAttributeConditionEvaluator = require('../custom_attribute_condition_evaluator');
 var sinon = require('sinon');
 var assert = chai.assert;
-var logger = require('../../plugins/logger');
+var logging = require('@optimizely/js-sdk-logging');
+var mockLogger = logging.getLogger();
 var enums = require('../../utils/enums');
 var LOG_LEVEL = enums.LOG_LEVEL;
 
@@ -53,11 +53,14 @@ var audiencesById = {
 };
 
 describe('lib/core/audience_evaluator', function() {
+  var audienceEvaluator;
+  beforeEach(function() {
+    audienceEvaluator = new AudienceEvaluator();
+  });
+
   describe('APIs', function() {
     describe('evaluate', function() {
-      var mockLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
-
-      beforeEach(function () {
+      beforeEach(function() {
         sinon.stub(mockLogger, 'log');
       });
 
@@ -66,11 +69,11 @@ describe('lib/core/audience_evaluator', function() {
       });
 
       it('should return true if there are no audiences', function() {
-        assert.isTrue(audienceEvaluator.evaluate([], audiencesById, {}, mockLogger));
+        assert.isTrue(audienceEvaluator.evaluate([], audiencesById, {}));
       });
 
       it('should return false if there are audiences but no attributes', function() {
-        assert.isFalse(audienceEvaluator.evaluate(['0'], audiencesById, {}, mockLogger));
+        assert.isFalse(audienceEvaluator.evaluate(['0'], audiencesById, {}));
       });
 
       it('should return true if any of the audience conditions are met', function() {
@@ -87,9 +90,9 @@ describe('lib/core/audience_evaluator', function() {
           'device_model': 'iphone',
         };
 
-        assert.isTrue(audienceEvaluator.evaluate(['0', '1'], audiencesById, iphoneUsers, mockLogger));
-        assert.isTrue(audienceEvaluator.evaluate(['0', '1'], audiencesById, chromeUsers, mockLogger));
-        assert.isTrue(audienceEvaluator.evaluate(['0', '1'], audiencesById, iphoneChromeUsers, mockLogger));
+        assert.isTrue(audienceEvaluator.evaluate(['0', '1'], audiencesById, iphoneUsers));
+        assert.isTrue(audienceEvaluator.evaluate(['0', '1'], audiencesById, chromeUsers));
+        assert.isTrue(audienceEvaluator.evaluate(['0', '1'], audiencesById, iphoneChromeUsers));
       });
 
       it('should return false if none of the audience conditions are met', function() {
@@ -106,13 +109,13 @@ describe('lib/core/audience_evaluator', function() {
           'device_model': 'nexus5',
         };
 
-        assert.isFalse(audienceEvaluator.evaluate(['0', '1'], audiencesById, nexusUsers, mockLogger));
-        assert.isFalse(audienceEvaluator.evaluate(['0', '1'], audiencesById, safariUsers, mockLogger));
-        assert.isFalse(audienceEvaluator.evaluate(['0', '1'], audiencesById, nexusSafariUsers, mockLogger));
+        assert.isFalse(audienceEvaluator.evaluate(['0', '1'], audiencesById, nexusUsers));
+        assert.isFalse(audienceEvaluator.evaluate(['0', '1'], audiencesById, safariUsers));
+        assert.isFalse(audienceEvaluator.evaluate(['0', '1'], audiencesById, nexusSafariUsers));
       });
 
       it('should return true if no attributes are passed and the audience conditions evaluate to true in the absence of attributes', function() {
-        assert.isTrue(audienceEvaluator.evaluate(['2'], audiencesById, null, mockLogger));
+        assert.isTrue(audienceEvaluator.evaluate(['2'], audiencesById, null));
       });
 
       describe('complex audience conditions', function() {
@@ -120,8 +123,7 @@ describe('lib/core/audience_evaluator', function() {
           var result = audienceEvaluator.evaluate(
             ['or', '0', '1'],
             audiencesById,
-            { browser_type: 'chrome' },
-            mockLogger
+            { browser_type: 'chrome' }
           );
           assert.isTrue(result);
         });
@@ -130,8 +132,7 @@ describe('lib/core/audience_evaluator', function() {
           var result = audienceEvaluator.evaluate(
             ['and', '0', '1'],
             audiencesById,
-            { browser_type: 'chrome', device_model: 'iphone' },
-            mockLogger
+            { browser_type: 'chrome', device_model: 'iphone' }
           );
           assert.isTrue(result);
         });
@@ -140,8 +141,7 @@ describe('lib/core/audience_evaluator', function() {
           var result = audienceEvaluator.evaluate(
             ['not', '1'],
             audiencesById,
-            { device_model: 'android' },
-            mockLogger
+            { device_model: 'android' }
           );
           assert.isTrue(result);
         });
@@ -165,8 +165,7 @@ describe('lib/core/audience_evaluator', function() {
           var result = audienceEvaluator.evaluate(
             ['or', '0', '1'],
             audiencesById,
-            { browser_type: 'chrome' },
-            mockLogger
+            { browser_type: 'chrome' }
           );
           assert.isTrue(result);
         });
@@ -176,8 +175,7 @@ describe('lib/core/audience_evaluator', function() {
           var result = audienceEvaluator.evaluate(
             ['or', '0', '1'],
             audiencesById,
-            { browser_type: 'safari' },
-            mockLogger
+            { browser_type: 'safari' }
           );
           assert.isFalse(result);
         });
@@ -187,8 +185,7 @@ describe('lib/core/audience_evaluator', function() {
           var result = audienceEvaluator.evaluate(
             ['or', '0', '1'],
             audiencesById,
-            { state: 'California' },
-            mockLogger
+            { state: 'California' }
           );
           assert.isFalse(result);
         });
@@ -199,8 +196,9 @@ describe('lib/core/audience_evaluator', function() {
           });
           customAttributeConditionEvaluator.evaluate.returns(false);
           var userAttributes = { device_model: 'android' };
-          var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes, mockLogger);
+          var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
           sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
+          console.log('args: ', customAttributeConditionEvaluator.evaluate.firstCall.args)
           sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes, mockLogger);
           assert.isFalse(result);
         });
@@ -224,7 +222,7 @@ describe('lib/core/audience_evaluator', function() {
           });
           customAttributeConditionEvaluator.evaluate.returns(null);
           var userAttributes = { device_model: 5.5 };
-          var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes, mockLogger);
+          var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
           sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
           sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes, mockLogger);
           assert.isFalse(result);
@@ -239,7 +237,7 @@ describe('lib/core/audience_evaluator', function() {
           });
           customAttributeConditionEvaluator.evaluate.returns(true);
           var userAttributes = { device_model: 'iphone' };
-          var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes, mockLogger);
+          var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
           sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
           sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes, mockLogger);
           assert.isTrue(result);
@@ -254,8 +252,9 @@ describe('lib/core/audience_evaluator', function() {
           });
           customAttributeConditionEvaluator.evaluate.returns(false);
           var userAttributes = { device_model: 'android' };
-          var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes, mockLogger);
+          var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
           sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
+          console.log('args: ', customAttributeConditionEvaluator.evaluate.firstCall.args)
           sinon.assert.calledWithExactly(customAttributeConditionEvaluator.evaluate, iphoneUserAudience.conditions[1], userAttributes, mockLogger);
           assert.isFalse(result);
           assert.strictEqual(2, mockLogger.log.callCount);

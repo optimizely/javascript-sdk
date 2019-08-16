@@ -80,3 +80,17 @@ export interface ConversionEvent extends BaseEvent {
 export type EventTags = {
   [key: string]: string | number | null
 }
+
+export function areEventContextsEqual(eventA: BaseEvent, eventB: BaseEvent): boolean {
+  const contextA = eventA.context
+  const contextB = eventB.context
+  return (
+    contextA.accountId === contextB.accountId &&
+    contextA.projectId === contextB.projectId &&
+    contextA.clientName === contextB.clientName &&
+    contextA.clientVersion === contextB.clientVersion &&
+    contextA.revision === contextB.revision &&
+    contextA.anonymizeIP === contextB.anonymizeIP &&
+    contextA.botFiltering === contextB.botFiltering
+  )
+}

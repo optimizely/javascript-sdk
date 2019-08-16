@@ -15,14 +15,11 @@
  */
 // TODO change this to use Managed from js-sdk-models when available
 import { Managed } from './managed'
-import { ConversionEvent, ImpressionEvent } from './events'
-import {
-  EventDispatcher,
-  EventV1Request,
-  EventDispatcherResponse,
-} from './eventDispatcher'
+import { ConversionEvent, ImpressionEvent, areEventContextsEqual } from './events'
+import { EventDispatcher, EventV1Request } from './eventDispatcher'
 import { EventQueue, DefaultEventQueue, SingleEventQueue } from './eventQueue'
 import { getLogger } from '@optimizely/js-sdk-logging'
+import { NOTIFICATION_TYPES, NotificationCenter } from '@optimizely/js-sdk-utils'
 
 const logger = getLogger('EventProcessor')
 
@@ -30,122 +27,85 @@ export type ProcessableEvents = ConversionEvent | ImpressionEvent
 
 export type EventDispatchResult = { result: boolean; event: ProcessableEvents }
 
-export type EventCallback = (result: EventDispatchResult) => void
-
-export type EventTransformer = (
-  event: ProcessableEvents,
-  // TODO change this to ProjectConfig when js-sdk-models is available
-  projectConfig: any,
-) => Promise<void>
-
-export type EventInterceptor = (
-  event: ProcessableEvents,
-  // TODO change this to ProjectConfig when js-sdk-models is available
-  projectConfig: any,
-) => Promise<boolean>
-
 export interface EventProcessor extends Managed {
-  // TODO change this to ProjectConfig when js-sdk-models is available
-  process(event: ProcessableEvents, projectConfig: any): void
+  process(event: ProcessableEvents): void
 }
 
-const MIN_FLUSH_INTERVAL = 100
+const DEFAULT_FLUSH_INTERVAL = 30000 // Unit is ms - default flush interval is 30s
+const DEFAULT_MAX_QUEUE_SIZE = 10
+
 export abstract class AbstractEventProcessor implements EventProcessor {
-  protected transformers: EventTransformer[]
-  protected interceptors: EventInterceptor[]
-  protected callbacks: EventCallback[]
   protected dispatcher: EventDispatcher
   protected queue: EventQueue<ProcessableEvents>
+  private notificationCenter?: NotificationCenter
 
   constructor({
     dispatcher,
-    transformers = [],
-    interceptors = [],
-    callbacks = [],
     flushInterval = 30000,
     maxQueueSize = 3000,
+    notificationCenter,
   }: {
     dispatcher: EventDispatcher
-    transformers?: EventTransformer[]
-    interceptors?: EventInterceptor[]
-    callbacks?: EventCallback[]
     flushInterval?: number
     maxQueueSize?: number
+    notificationCenter?: NotificationCenter
   }) {
     this.dispatcher = dispatcher
 
+    if (flushInterval <= 0) {
+      logger.warn(
+        `Invalid flushInterval ${flushInterval}, defaulting to ${DEFAULT_FLUSH_INTERVAL}`,
+      )
+      flushInterval = DEFAULT_FLUSH_INTERVAL
+    }
+
+    maxQueueSize = Math.floor(maxQueueSize)
+    if (maxQueueSize < 1) {
+      logger.warn(
+        `Invalid maxQueueSize ${maxQueueSize}, defaulting to ${DEFAULT_MAX_QUEUE_SIZE}`,
+      )
+      maxQueueSize = DEFAULT_MAX_QUEUE_SIZE
+    }
+
     maxQueueSize = Math.max(1, maxQueueSize)
     if (maxQueueSize > 1) {
-      this.queue = new DefaultEventQueue({
-        flushInterval: Math.max(flushInterval, MIN_FLUSH_INTERVAL),
+      this.queue = new DefaultEventQueue<ProcessableEvents>({
+        flushInterval,
         maxQueueSize,
         sink: buffer => this.drainQueue(buffer),
+        batchComparator: areEventContextsEqual,
       })
     } else {
       this.queue = new SingleEventQueue({
         sink: buffer => this.drainQueue(buffer),
       })
     }
-
-    this.transformers = transformers
-    this.interceptors = interceptors
-    this.callbacks = callbacks
+    this.notificationCenter = notificationCenter
   }
 
-  drainQueue(buffer: ProcessableEvents[]): Promise<any> {
-    logger.debug('draining queue with %s events', buffer.length)
+  drainQueue(buffer: ProcessableEvents[]): Promise<void> {
+    return new Promise(resolve => {
+      logger.debug('draining queue with %s events', buffer.length)
 
-    const promises = this.groupEvents(buffer).map(eventGroup => {
-      const formattedEvent = this.formatEvents(eventGroup)
-
-      return new Promise((resolve, reject) => {
-        this.dispatcher.dispatchEvent(formattedEvent, response => {
-          // loop through every event in the group and run the callback handler
-          // with result
-          eventGroup.forEach(event => {
-            this.callbacks.forEach(handler => {
-              handler({
-                result: isResponseSuccess(response),
-                event,
-              })
-            })
-          })
-
-          resolve()
-        })
-      })
-    })
-
-    return Promise.all(promises)
-  }
-
-  // TODO change this to ProjectConfig when js-sdk-models is available
-  async process(event: ProcessableEvents, projectConfig: any): Promise<void> {
-    // loop and apply all transformers
-    for (let transformer of this.transformers) {
-      try {
-        await transformer(event, projectConfig)
-      } catch (ex) {
-        // swallow error and move on
-        logger.error('eventTransformer threw error', ex.message, ex)
-      }
-    }
-    Object.freeze(event)
-
-    // loop and apply all interceptors
-    for (let interceptor of this.interceptors) {
-      let result
-      try {
-        result = await interceptor(event, projectConfig)
-      } catch (ex) {
-        // swallow and continue
-        logger.error('eventInterceptor threw error', ex.message, ex)
-      }
-      if (result === false) {
+      if (buffer.length === 0) {
+        resolve()
         return
       }
-    }
 
+      const formattedEvent = this.formatEvents(buffer)
+      this.dispatcher.dispatchEvent(formattedEvent, () => {
+        resolve()
+      })
+      if (this.notificationCenter) {
+        this.notificationCenter.sendNotifications(
+          NOTIFICATION_TYPES.LOG_EVENT,
+          formattedEvent,
+        )
+      }
+    })
+  }
+
+  process(event: ProcessableEvents): void {
     this.queue.enqueue(event)
   }
 
@@ -163,24 +123,5 @@ export abstract class AbstractEventProcessor implements EventProcessor {
     this.queue.start()
   }
 
-  protected abstract groupEvents(events: ProcessableEvents[]): ProcessableEvents[][]
-
   protected abstract formatEvents(events: ProcessableEvents[]): EventV1Request
-}
-
-function isResponseSuccess(response: EventDispatcherResponse): boolean {
-  try {
-    let statusCode: number
-    if ('statusCode' in response) {
-      statusCode = response.statusCode
-    } else if ('status' in response) {
-      statusCode = response.status
-    } else {
-      return false
-    }
-
-    return statusCode >= 200 && statusCode < 300
-  } catch (e) {
-    return false
-  }
 }

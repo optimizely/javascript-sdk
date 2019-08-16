@@ -14,6 +14,8 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
+var jsSdkUtils = require('@optimizely/js-sdk-utils');
+
 /**
  * Contains global enums used throughout the library
  */
@@ -26,6 +28,7 @@ exports.LOG_LEVEL = {
 };
 
 exports.ERROR_MESSAGES = {
+  CONDITION_EVALUATOR_ERROR: '%s: Error evaluating audience condition of type %s: %s',
   DATAFILE_AND_SDK_KEY_MISSING: '%s: You must provide at least one of sdkKey or datafile. Cannot start Optimizely',
   EXPERIMENT_KEY_NOT_IN_DATAFILE: '%s: Experiment key %s is not in datafile.',
   FEATURE_NOT_IN_DATAFILE: '%s: Feature key %s is not in datafile.',
@@ -156,7 +159,7 @@ exports.CONTROL_ATTRIBUTES = {
 exports.JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 exports.NODE_CLIENT_ENGINE = 'node-sdk';
 exports.REACT_CLIENT_ENGINE = 'react-sdk';
-exports.NODE_CLIENT_VERSION = '3.2.0';
+exports.NODE_CLIENT_VERSION = '3.2.1';
 
 exports.VALID_CLIENT_ENGINES = [
   exports.NODE_CLIENT_ENGINE,
@@ -164,47 +167,7 @@ exports.VALID_CLIENT_ENGINES = [
   exports.JAVASCRIPT_CLIENT_ENGINE,
 ];
 
-/*
- * Notification types for use with NotificationCenter
- * Format is EVENT: <list of parameters to callback>
- *
- * SDK consumers can use these to register callbacks with the notification center.
- *
- *  @deprecated since 3.1.0
- *  ACTIVATE: An impression event will be sent to Optimizely
- *  Callbacks will receive an object argument with the following properties:
- *    - experiment {Object}
- *    - userId {string}
- *    - attributes {Object|undefined}
- *    - variation {Object}
- *    - logEvent {Object}
- *
- *  DECISION: A decision is made in the system. i.e. user activation,
- *  feature access or feature-variable value retrieval
- *  Callbacks will receive an object argument with the following properties:
- *    - type {string}
- *    - userId {string}
- *    - attributes {Object|undefined}
- *    - decisionInfo {Object|undefined}
- *
- *  OPTIMIZELY_CONFIG_UPDATE: This Optimizely instance has been updated with a new
- *  config
- *
- *  TRACK: A conversion event will be sent to Optimizely
- *  Callbacks will receive the an object argument with the following properties:
- *    - eventKey {string}
- *    - userId {string}
- *    - attributes {Object|undefined}
- *    - eventTags {Object|undefined}
- *    - logEvent {Object}
- *
- */
-exports.NOTIFICATION_TYPES = {
-  ACTIVATE: 'ACTIVATE:experiment, user_id,attributes, variation, event',
-  DECISION: 'DECISION:type, userId, attributes, decisionInfo',
-  OPTIMIZELY_CONFIG_UPDATE: 'OPTIMIZELY_CONFIG_UPDATE',
-  TRACK: 'TRACK:event_key, user_id, attributes, event_tags, event',
-};
+exports.NOTIFICATION_TYPES = jsSdkUtils.NOTIFICATION_TYPES;
 
 exports.DECISION_NOTIFICATION_TYPES = {
   AB_TEST: 'ab-test',

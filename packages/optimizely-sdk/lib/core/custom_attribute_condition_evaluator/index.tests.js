@@ -85,30 +85,6 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
     assert.isTrue(customAttributeEvaluator.evaluate(doubleCondition, userAttributes, mockLogger));
   });
 
-  it('should log and return null when condition has an invalid type property', function() {
-    var result = customAttributeEvaluator.evaluate(
-      { match: 'exact', name: 'weird_condition', type: 'weird', value: 'hi' },
-      { weird_condition: 'bye' },
-      mockLogger
-    );
-    assert.isNull(result);
-    sinon.assert.calledOnce(mockLogger.log);
-    sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
-      'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"exact","name":"weird_condition","type":"weird","value":"hi"} has an unknown condition type. You may need to upgrade to a newer release of the Optimizely SDK.');
-  });
-
-  it('should log and return null when condition has no type property', function() {
-    var result = customAttributeEvaluator.evaluate(
-      { match: 'exact', name: 'weird_condition', value: 'hi' },
-      { weird_condition: 'bye' },
-      mockLogger
-    );
-    assert.isNull(result);
-    sinon.assert.calledOnce(mockLogger.log);
-    sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.WARNING,
-      'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"exact","name":"weird_condition","value":"hi"} has an unknown condition type. You may need to upgrade to a newer release of the Optimizely SDK.');
-  });
-
   it('should log and return null when condition has an invalid match property', function() {
     var result = customAttributeEvaluator.evaluate(
       { match: 'weird', name: 'weird_condition', type: 'custom_attribute', value: 'hi' },
@@ -213,7 +189,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         var result = customAttributeEvaluator.evaluate(exactStringCondition, {}, mockLogger);
         assert.isNull(result);
         sinon.assert.calledOnce(mockLogger.log);
-        sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG, 
+        sinon.assert.calledWithExactly(mockLogger.log, LOG_LEVEL.DEBUG,
           'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"exact","name":"favorite_constellation","type":"custom_attribute","value":"Lacerta"} evaluated to UNKNOWN because no value was passed for user attribute "favorite_constellation".');
       });
 
@@ -247,10 +223,10 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       it('should log and return null if the user-provided value is of a different type than the condition value', function() {
         var result = customAttributeEvaluator.evaluate(exactNumberCondition, { lasers_count: 'yes' }, mockLogger);
         assert.isNull(result);
-  
+
         result = customAttributeEvaluator.evaluate(exactNumberCondition, { lasers_count: '1000' }, mockLogger);
         assert.isNull(result);
-  
+
         assert.strictEqual(2, mockLogger.log.callCount);
         assert.strictEqual(mockLogger.log.args[0][0], LOG_LEVEL.WARNING);
         assert.strictEqual(mockLogger.log.args[0][1],
@@ -263,10 +239,10 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       it('should log and return null if the user-provided number value is out of bounds', function() {
         var result = customAttributeEvaluator.evaluate(exactNumberCondition, { lasers_count: -Infinity }, mockLogger);
         assert.isNull(result);
-  
+
         result = customAttributeEvaluator.evaluate(exactNumberCondition, { lasers_count: -Math.pow(2, 53) - 2 }, mockLogger);
         assert.isNull(result);
-  
+
         assert.strictEqual(2, mockLogger.log.callCount);
         assert.strictEqual(mockLogger.log.args[0][0], LOG_LEVEL.WARNING);
         assert.strictEqual(mockLogger.log.args[0][1],
@@ -537,7 +513,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         meters_travelled: Math.pow(2, 53) + 2,
       }, mockLogger);
       assert.isNull(result);
-      
+
       assert.strictEqual(2, mockLogger.log.callCount);
       assert.strictEqual(mockLogger.log.args[0][0], LOG_LEVEL.WARNING);
       assert.strictEqual(mockLogger.log.args[0][1],
@@ -581,7 +557,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
 
       sinon.assert.calledThrice(mockLogger.log);
       var logMessage = mockLogger.log.args[2][1];
-      assert.strictEqual(logMessage, 
+      assert.strictEqual(logMessage,
         'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"lt","name":"meters_travelled","type":"custom_attribute","value":9007199254740994} evaluated to UNKNOWN because the condition value is not supported.');
     });
   });

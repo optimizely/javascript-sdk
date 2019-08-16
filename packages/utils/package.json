@@ -1,10 +1,10 @@
 {
   "name": "@optimizely/js-sdk-utils",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Optimizely Full Stack Utils",
   "author": "jordangarcia <jordan@optimizely.com>",
   "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/utils",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "directories": {
