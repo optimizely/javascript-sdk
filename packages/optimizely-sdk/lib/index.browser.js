@@ -117,17 +117,19 @@ module.exports = {
 
       var optimizely = new Optimizely(config);
 
-      try {
-        var unloadEvent = 'onpagehide' in window ? 'pagehide' : 'unload';
-        window.addEventListener(
-          unloadEvent,
-          function() {
-            optimizely.close();
-          },
-          false
-        );
-      } catch (e) {
-        logger.error(enums.LOG_MESSAGES.UNABLE_TO_ATTACH_UNLOAD, MODULE_NAME, e.message);
+      if (typeof window.addEventListener === 'function') {
+        try {
+          var unloadEvent = 'onpagehide' in window ? 'pagehide' : 'unload';
+          window.addEventListener(
+            unloadEvent,
+            function() {
+              optimizely.close();
+            },
+            false
+          );
+        } catch (e) {
+          logger.error(enums.LOG_MESSAGES.UNABLE_TO_ATTACH_UNLOAD, MODULE_NAME, e.message);
+        }
       }
 
       return optimizely;
