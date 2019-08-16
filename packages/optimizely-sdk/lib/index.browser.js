@@ -117,20 +117,20 @@ module.exports = {
 
       var optimizely = new Optimizely(config);
 
-        try {
-          if (typeof window.addEventListener === 'function') {
-            var unloadEvent = 'onpagehide' in window ? 'pagehide' : 'unload';
-            window.addEventListener(
-              unloadEvent,
-              function() {
-                optimizely.close();
-              },
-              false
-            );
-          }
-        } catch (e) {
-          logger.error(enums.LOG_MESSAGES.UNABLE_TO_ATTACH_UNLOAD, MODULE_NAME, e.message);
+      try {
+        if (typeof window.addEventListener === 'function') {
+          var unloadEvent = 'onpagehide' in window ? 'pagehide' : 'unload';
+          window.addEventListener(
+            unloadEvent,
+            function() {
+              optimizely.close();
+            },
+            false
+          );
         }
+      } catch (e) {
+        logger.error(enums.LOG_MESSAGES.UNABLE_TO_ATTACH_UNLOAD, MODULE_NAME, e.message);
+      }
 
       return optimizely;
     } catch (e) {
