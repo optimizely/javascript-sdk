@@ -29,7 +29,6 @@ var logger = logging.getLogger();
 logging.setLogHandler(loggerPlugin.createLogger());
 logging.setLogLevel(logging.LogLevel.INFO);
 
-
 var MODULE_NAME = 'INDEX_BROWSER';
 
 var DEFAULT_EVENT_BATCH_SIZE = 10;
