@@ -38,8 +38,6 @@ var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
 var DECISION_NOTIFICATION_TYPES = enums.DECISION_NOTIFICATION_TYPES;
 var NOTIFICATION_TYPES = enums.NOTIFICATION_TYPES;
 
-var DEFAULT_EVENT_MAX_QUEUE_SIZE = 1;
-var DEFAULT_EVENT_FLUSH_INTERVAL = 5000;
 var DEFAULT_ONREADY_TIMEOUT = 30000;
 
 /**
@@ -110,8 +108,8 @@ function Optimizely(config) {
 
   this.eventProcessor = new eventProcessor.LogTierV1EventProcessor({
     dispatcher: this.eventDispatcher,
-    flushInterval: config.eventFlushInterval !== undefined ? config.eventFlushInterval : DEFAULT_EVENT_FLUSH_INTERVAL,
-    maxQueueSize: config.eventBatchSize !== undefined ? config.eventBatchSize : DEFAULT_EVENT_MAX_QUEUE_SIZE,
+    flushInterval: config.eventFlushInterval,
+    maxQueueSize: config.eventBatchSize,
     notificationCenter: this.notificationCenter,
   });
   this.eventProcessor.start();
