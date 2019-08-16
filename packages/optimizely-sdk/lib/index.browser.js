@@ -29,6 +29,8 @@ var logger = logging.getLogger();
 logging.setLogHandler(loggerPlugin.createLogger());
 logging.setLogLevel(logging.LogLevel.INFO);
 
+var MODULE_NAME = 'INDEX_BROWSER';
+
 var DEFAULT_EVENT_BATCH_SIZE = 10;
 var DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
 
@@ -105,16 +107,20 @@ module.exports = {
         eventDispatcher = config.eventDispatcher;
       }
 
-      config = fns.assignIn({
-        clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
-        eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
-        eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
-      }, config, {
-        eventDispatcher: eventDispatcher,
-        // always get the OptimizelyLogger facade from logging
-        logger: logger,
-        errorHandler: logging.getErrorHandler(),
-      });
+      config = fns.assignIn(
+        {
+          clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
+          eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
+          eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
+        },
+        config,
+        {
+          eventDispatcher: eventDispatcher,
+          // always get the OptimizelyLogger facade from logging
+          logger: logger,
+          errorHandler: logging.getErrorHandler(),
+        }
+      );
 
       if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
         logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
@@ -125,7 +131,24 @@ module.exports = {
         config.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
       }
 
-      return new Optimizely(config);
+      var optimizely = new Optimizely(config);
+
+      try {
+        if (typeof window.addEventListener === 'function') {
+          var unloadEvent = 'onpagehide' in window ? 'pagehide' : 'unload';
+          window.addEventListener(
+            unloadEvent,
+            function() {
+              optimizely.close();
+            },
+            false
+          );
+        }
+      } catch (e) {
+        logger.error(enums.LOG_MESSAGES.UNABLE_TO_ATTACH_UNLOAD, MODULE_NAME, e.message);
+      }
+
+      return optimizely;
     } catch (e) {
       logger.error(e);
       return null;
