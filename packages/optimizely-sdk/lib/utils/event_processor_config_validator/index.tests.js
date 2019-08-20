@@ -38,6 +38,10 @@ describe('utils/event_processor_config_validator', function() {
       assert.isFalse(eventProcessorConfigValidator.validateEventFlushInterval(-1000));
     });
 
+    it('returns false for 0', function() {
+      assert.isFalse(eventProcessorConfigValidator.validateEventFlushInterval(0));
+    });
+
     it('returns true for a positive integer', function() {
       assert.isTrue(eventProcessorConfigValidator.validateEventFlushInterval(30000));
     });
