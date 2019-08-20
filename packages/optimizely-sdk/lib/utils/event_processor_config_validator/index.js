@@ -31,7 +31,7 @@ function validateEventBatchSize(eventBatchSize) {
  * @returns boolean
  */
 function validateEventFlushInterval(eventFlushInterval) {
-  return fns.isFinite(eventFlushInterval) && eventFlushInterval >= 0;
+  return fns.isFinite(eventFlushInterval) && eventFlushInterval > 0;
 }
 
 module.exports = {
