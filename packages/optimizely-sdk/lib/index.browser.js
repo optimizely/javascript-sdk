@@ -85,18 +85,26 @@ module.exports = {
         config.skipJSONValidation = true;
       }
 
-      var wrappedEventDispatcher = new eventProcessor.LocalStoragePendingEventsDispatcher({
-        eventDispatcher: config.eventDispatcher || defaultEventDispatcher,
-      });
-      if (!hasRetriedEvents) {
-        wrappedEventDispatcher.sendPendingEvents();
-        hasRetriedEvents = true;
+      var eventDispatcher;
+      // prettier-ignore
+      if (config.eventDispatcher == null) { // eslint-disable-line eqeqeq
+        // only wrap the event dispatcher with pending events retry if the user didnt override
+        eventDispatcher = new eventProcessor.LocalStoragePendingEventsDispatcher({
+          eventDispatcher: defaultEventDispatcher,
+        });
+
+        if (!hasRetriedEvents) {
+          eventDispatcher.sendPendingEvents();
+          hasRetriedEvents = true;
+        }
+      } else {
+        eventDispatcher = config.eventDispatcher;
       }
 
       config = fns.assignIn({
         clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       }, config, {
-        eventDispatcher: wrappedEventDispatcher,
+        eventDispatcher: eventDispatcher,
         // always get the OptimizelyLogger facade from logging
         logger: logger,
         errorHandler: logging.getErrorHandler(),
