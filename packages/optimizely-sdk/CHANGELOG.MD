@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [3.2.2] - August 20th, 2019
+
+### Bug fixes
+- Dont use pendingEventsDispatcher with user defined eventDispatcher ([#289](https://github.com/optimizely/javascript-sdk/issues/289))
+Note: This was supposed to be released in 3.2.1 but did not make it into the release.
+- Updated lodash dependency to ^4.17.11 to address security vulnerabilities ([#296](https://github.com/optimizely/javascript-sdk/issues/296))
+
 ## [3.2.1] - July 1st, 2019
 
 ### Changed
