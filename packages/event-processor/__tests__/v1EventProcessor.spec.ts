@@ -154,6 +154,7 @@ describe('LogTierV1EventProcessor', () => {
         flushInterval: 100,
         maxQueueSize: 100,
       })
+      processor.start()
 
       const impressionEvent = createImpressionEvent()
       processor.process(impressionEvent)
@@ -183,6 +184,7 @@ describe('LogTierV1EventProcessor', () => {
         flushInterval: 100,
         maxQueueSize: 100,
       })
+      processor.start()
 
       const impressionEvent = createImpressionEvent()
       processor.process(impressionEvent)
@@ -211,6 +213,7 @@ describe('LogTierV1EventProcessor', () => {
         flushInterval: 100,
         maxQueueSize: 100,
       })
+      processor.start()
 
       const impressionEvent1 = createImpressionEvent()
       const impressionEvent2 = createImpressionEvent()
@@ -222,6 +225,41 @@ describe('LogTierV1EventProcessor', () => {
         expect(dispatchStub).toBeCalledTimes(2)
         done()
       })
+    })
+
+    it('should stop accepting events after stop is called', () => {
+      const dispatcher = {
+        dispatchEvent: jest.fn((event: EventV1Request, callback: EventDispatcherCallback) => {
+          setTimeout(() => callback({ statusCode: 204 }), 0)
+        })
+      }
+      const processor = new LogTierV1EventProcessor({
+        dispatcher,
+        flushInterval: 100,
+        maxQueueSize: 3,
+      })
+      processor.start()
+
+      const impressionEvent1 = createImpressionEvent()
+      processor.process(impressionEvent1)
+      processor.stop()
+      // calling stop should haver flushed the current batch of size 1
+      expect(dispatcher.dispatchEvent).toBeCalledTimes(1)
+
+      dispatcher.dispatchEvent.mockClear();
+
+      // From now on, subsequent events should be ignored.
+      // Process 3 more, which ordinarily would have triggered
+      // a flush due to the batch size.
+      const impressionEvent2 = createImpressionEvent()
+      processor.process(impressionEvent2)
+      const impressionEvent3 = createImpressionEvent()
+      processor.process(impressionEvent3)
+      const impressionEvent4 = createImpressionEvent()
+      processor.process(impressionEvent4)
+      // Since we already stopped the processor, the dispatcher should
+      // not have been called again.
+      expect(dispatcher.dispatchEvent).toBeCalledTimes(0)
     })
   })
 
