@@ -266,5 +266,25 @@ describe('eventQueue', () => {
       queue.stop()
 
     })
+
+    it('should not enqueue additional events after stop() is called', () => {
+      const sinkFn = jest.fn()
+      const queue = new DefaultEventQueue<number>({
+        flushInterval: 30000,
+        maxQueueSize: 3,
+        sink: sinkFn,
+        batchComparator: () => true
+      })
+      queue.start()
+      queue.enqueue(1)
+      queue.stop()
+      expect(sinkFn).toHaveBeenCalledTimes(1)
+      expect(sinkFn).toHaveBeenCalledWith([1])
+      sinkFn.mockClear()
+      queue.enqueue(2)
+      queue.enqueue(3)
+      queue.enqueue(4)
+      expect(sinkFn).toBeCalledTimes(0)
+    })
   })
 })
