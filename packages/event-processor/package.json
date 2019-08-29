@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/js-sdk-event-processor",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Optimizely Full Stack Event Processor",
   "author": "jordangarcia <jordan@optimizely.com>",
   "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/event-processor",
