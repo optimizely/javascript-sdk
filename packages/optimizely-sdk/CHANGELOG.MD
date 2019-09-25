@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
-## [3.3.0] - September 23, 2019
+## [3.3.0] - September 25th, 2019
 
 ### New Features
 
