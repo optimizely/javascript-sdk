@@ -32,7 +32,7 @@ describe('lib/utils/json_schema_validator', function() {
       it('should throw an error if the object is not valid', function() {
         assert.throws(function() {
           jsonSchemaValidator.validate({'type': 'number'}, 'not a number');
-        }, sprintf(ERROR_MESSAGES.INVALID_DATAFILE, 'JSON_SCHEMA_VALIDATOR', '', 'string value found, but a number is required'));
+        }, 'string value found, but a number is required');
       });
 
       it('should throw an error if no schema is passed in', function() {
