@@ -4,6 +4,7 @@
   "description": "JavaScript SDK for Optimizely X Full Stack",
   "main": "lib/index.node.js",
   "browser": "lib/index.browser.js",
+  "react-native": "lib/index.react_native.js",
   "typings": "lib/index.d.ts",
   "scripts": {
     "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive --exit --require lib/tests/exit_on_unhandled_rejection.js",

@@ -173,7 +173,7 @@ export class ConsoleLogHandler implements LogHandler {
    * @param {string[]} logArguments
    * @memberof ConsoleLogger
    */
-  private consoleLog(logLevel: LogLevel, logArguments: [string, ...string[]]) {
+  protected consoleLog(logLevel: LogLevel, logArguments: [string, ...string[]]) {
     switch (logLevel) {
       case LogLevel.DEBUG:
         console.log.apply(console, logArguments)
@@ -189,6 +189,22 @@ export class ConsoleLogHandler implements LogHandler {
         break
       default:
         console.log.apply(console, logArguments)
+    }
+  }
+}
+
+export class ReactNativeConsoleLogHandler extends ConsoleLogHandler {
+  /**
+   * @private
+   * @param {LogLevel} logLevel
+   * @param {string[]} logArguments
+   * @memberof ConsoleLogger
+   */
+  protected consoleLog(logLevel: LogLevel, logArguments: [string, ...string[]]) {
+    if (logLevel === LogLevel.ERROR) {
+      console.warn.apply(console, logArguments);
+    } else { 
+      super.consoleLog(logLevel, logArguments);
     }
   }
 }
