@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var logging = require('@optimizely/js-sdk-logging');
+var Logger = require('./plugins/logger/index.react_native');
 var browserIndex = require('./index.browser');
 
 /**
@@ -37,7 +37,7 @@ module.exports = {
    */
   createInstance: function(config) {
     return browserIndex.createInstance({
-      logger: new logging.ReactNativeConsoleLogHandler(), 
+      logger: new Logger(), 
       ...config,
     })
   }
