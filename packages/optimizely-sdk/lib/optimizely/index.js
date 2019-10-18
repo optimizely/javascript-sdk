@@ -24,6 +24,7 @@ var eventProcessor = require('@optimizely/js-sdk-event-processor');
 var eventTagsValidator = require('../utils/event_tags_validator');
 var notificationCenter = require('../core/notification_center');
 var projectConfig = require('../core/project_config');
+var optimizelyConfig = require('../core/optimizely_config');
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var userProfileServiceValidator = require('../utils/user_profile_service_validator');
 var stringValidator = require('../utils/string_value_validator');
@@ -876,6 +877,56 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
     return null;
   }
 };
+
+/**
+ * Returns OptimizelyConfig object containing experiments and features data
+ * @return {Object} 
+ * 
+ * OptimizelyConfig Object Schema
+ * {
+ *   'experimentsMap': {
+ *     '111111': {
+ *       'id': '111111',
+ *       'key': 'my-fist-experiment'
+ *       'variationsMap': {
+ *         '121212': {
+ *           'id': '121212',
+ *           'key': 'variation_1',
+ *           'variablesMap': {
+ *             '222222': {
+ *               'id': '222222',
+ *               'key': 'age',
+ *               'type': 'integer',
+ *               'value': '0',
+ *             }
+ *           }
+ *         }
+ *       } 
+ *     }
+ *   },
+ *   'featuresMap': {
+ *     '333333': {
+ *       'id': '333333',
+ *       'key': 'awesome-feature',
+ *       'experimentsMap': Object,
+ *       'variationsMap': Object, 
+ *     } 
+ *   }
+ * }      
+ */
+Optimizely.prototype.getOptimizelyConfig = function() {
+  try {
+    var configObj = this.projectConfigManager.getConfig();
+    if (!configObj) {
+      return null;
+    }
+    return optimizelyConfig.getOptimizelyConfig(configObj);
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
+    return null;
+  }
+}
 
 /**
  * Stop background processes belonging to this instance, including:
