@@ -15,21 +15,17 @@
  */
  
 function isRollout(configObj, experimentId) {
-  var hasExperiment = false;
-  configObj.rollouts.forEach(function(rollout) {
-    rollout.experiments.forEach(function(experiment) {
-      if (experiment.id === experimentId) {
-        hasExperiment = true;
-      }
-    })
-  })
-  return hasExperiment;
+  return configObj.rollouts.some(function(rollout) {
+    return rollout.experiments.some(function(experiment) {
+      return experiment.id === experimentId;
+    });
+  });
 }
 
 function getExperimentsMap(configObj, experimentIds) {
   var experimentsMap = {};
-  configObj.experiments.filter(function(e) {
-    return experimentIds.includes(e.id);
+  configObj.experiments.filter(function(experiment) {
+    return experimentIds.includes(experiment.id);
   }).forEach(function(experiment) {
     var variationsMap = {};
     experiment.variations.forEach(function(variation) {
@@ -59,10 +55,10 @@ function getExperimentsMap(configObj, experimentIds) {
 
 // All experiments except rollouts
 function getAllExperimentsMap(configObj) {
-  var allExperimentIds = configObj.experiments.filter(function(e) {
-    return !isRollout(configObj, e.id);
-  }).map(function(e) { 
-    return e.id; 
+  var allExperimentIds = configObj.experiments.filter(function(experiment) {
+    return !isRollout(configObj, experiment.id);
+  }).map(function(experiment) { 
+    return experiment.id; 
   });
   return getExperimentsMap(configObj, allExperimentIds);
 }
