@@ -16,8 +16,8 @@
  
 function isRollout(configObj, experimentId) {
   var hasExperiment = false;
-  configObj.rollouts.forEach(rollout => {
-    rollout.experiments.forEach(experiment => {
+  configObj.rollouts.forEach(function(rollout) {
+    rollout.experiments.forEach(function(experiment) {
       if (experiment.id === experimentId) {
         hasExperiment = true;
       }
@@ -28,11 +28,13 @@ function isRollout(configObj, experimentId) {
 
 function getExperimentsMap(configObj, experimentIds) {
   var experimentsMap = {};
-  configObj.experiments.filter(e => experimentIds.includes(e.id)).forEach(experiment => {
+  configObj.experiments.filter(function(e) {
+    return experimentIds.includes(e.id);
+  }).forEach(function(experiment) {
     var variationsMap = {};
-    experiment.variations.forEach(variation => {
+    experiment.variations.forEach(function(variation) {
       var variablesMap = {};
-      variation.variables.forEach(variable => {
+      variation.variables.forEach(function(variable) {
         variablesMap[variable.id] = {
           id: variable.id,
           key: variable.key,
@@ -57,15 +59,19 @@ function getExperimentsMap(configObj, experimentIds) {
 
 // All experiments except rollouts
 function getAllExperimentsMap(configObj) {
-  var allExperimentIds = configObj.experiments.filter(e => !isRollout(configObj, e.id)).map(e => e.id);
+  var allExperimentIds = configObj.experiments.filter(function(e) {
+    return !isRollout(configObj, e.id);
+  }).map(function(e) { 
+    return e.id; 
+  });
   return getExperimentsMap(configObj, allExperimentIds);
 }
 
 function getFeaturesMap(configObj) {
   var featuresMap = {};
-  configObj.featureFlags.forEach(feature => {
+  configObj.featureFlags.forEach(function(feature) {
     var variablesMap = {};
-    feature.variables.forEach(variable => {
+    feature.variables.forEach(function(variable) {
       variablesMap[variable.id] = {
         id: variable.id,
         key: variable.key,
