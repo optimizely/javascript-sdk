@@ -13,7 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+var fns = require('../../utils/fns');
+
+// Returns feature variables from all the featureFlags
+function getFeatureVariables(featureFlags) {
+  var featureVariables = {};
+  featureFlags.forEach(function(feature) {
+    feature.variables.forEach(function(variable) {
+      featureVariables[variable.id] = {
+        id: variable.id,
+        key: variable.key,
+        type: variable.type,
+      };
+    });
+  });
+  return featureVariables;
+}
+
+// Checks if an experiment is part of a rollout
 function isRollout(configObj, experimentId) {
   return configObj.rollouts.some(function(rollout) {
     return rollout.experiments.some(function(experiment) {
@@ -22,74 +39,65 @@ function isRollout(configObj, experimentId) {
   });
 }
 
-function getExperimentsMap(configObj, experimentIds) {
-  var experimentsMap = {};
-  configObj.experiments.filter(function(experiment) {
-    return experimentIds.includes(experiment.id);
-  }).forEach(function(experiment) {
-    var variationsMap = {};
-    experiment.variations.forEach(function(variation) {
-      var variablesMap = {};
-      variation.variables.forEach(function(variable) {
-        variablesMap[variable.id] = {
+// Gets Map of all experiments except rollouts
+function getExperimentsMap(configObj, mergeVariables) {
+  return configObj.experiments.filter(function(experiment) {
+    return !isRollout(configObj, experiment.id);
+  }).reduce(function(experiments, experiment) {
+    experiments[experiment.id] = {
+      id: experiment.id,
+      key: experiment.key,
+      variationsMap: experiment.variations.reduce(function(variations, variation) {
+        variations[variation.id] = {
+          id: variation.id,
+          key: variation.key,
+          variablesMap: variation.variables.reduce(function(variables, variable) {
+            variables[variable.id] = fns.assign({}, {
+              id: variable.id,
+              value: variable.value,
+            }, mergeVariables[variable.id]);
+            return variables;                
+          }, {}),
+        };
+        return variations;
+      }, {}),
+    };
+    return experiments;
+  }, {});
+}
+
+// Gets map of all experiments
+function getFeaturesMap(configObj, allExperiments) {
+  return configObj.featureFlags.reduce(function(features, feature) {
+    features[feature.id] = {
+      id: feature.id,
+      key: feature.key,
+      experimentsMap: feature.experimentIds.reduce(function(experiments, experimentId) {
+        experiments[experimentId] = allExperiments[experimentId];
+        return experiments;
+      }, {}),
+      variablesMap: feature.variables.reduce(function(variables, variable) {
+        variables[variable.id] = {
           id: variable.id,
           key: variable.key,
           type: variable.type,
           value: variable.value,
-        };
-      });
-      variationsMap[variation.id] = {
-        id: variation.id,
-        key: variation.key,
-        variablesMap,
-      };
-    });
-    experimentsMap[experiment.id] = {
-      id: experiment.id,
-      key: experiment.key,
-      variationsMap,
+        }
+        return variables;
+      }, {}),
     };
-  });
-  return experimentsMap;
-}
-
-// All experiments except rollouts
-function getAllExperimentsMap(configObj) {
-  var allExperimentIds = configObj.experiments.filter(function(experiment) {
-    return !isRollout(configObj, experiment.id);
-  }).map(function(experiment) { 
-    return experiment.id; 
-  });
-  return getExperimentsMap(configObj, allExperimentIds);
-}
-
-function getFeaturesMap(configObj) {
-  var featuresMap = {};
-  configObj.featureFlags.forEach(function(feature) {
-    var variablesMap = {};
-    feature.variables.forEach(function(variable) {
-      variablesMap[variable.id] = {
-        id: variable.id,
-        key: variable.key,
-        type: variable.type,
-        value: variable.value,
-      };
-    });
-    featuresMap[feature.id] = {
-      id: feature.id,
-      key: feature.key,
-      experimentsMap: getExperimentsMap(configObj, feature.experimentIds),
-      variablesMap,
-    }
-  })
-  return featuresMap;
+    return features;
+  }, {});
 }
 
 module.exports = {
   getOptimizelyConfig: function(configObj) {
+    // Fetch all feature variables from feature flags to merge them with variation variables
+    var featureVariables = getFeatureVariables(configObj.featureFlags);
+    var experimentsMap = getExperimentsMap(configObj, featureVariables);
     return {
-      experimentsMap: getAllExperimentsMap(configObj),
-      featuresMap: getFeaturesMap(configObj),
+      experimentsMap,
+      featuresMap: getFeaturesMap(configObj, experimentsMap),
     }
   },
 };
