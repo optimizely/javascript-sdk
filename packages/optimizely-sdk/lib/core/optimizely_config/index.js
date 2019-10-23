@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+var fns = require('../../utils/fns');
 
 // Get Experiment Ids which are part of rollouts
 function getRolloutExperimentIds(rollouts) {
@@ -37,6 +38,10 @@ function getExperimentsMap(configObj) {
             id: variation.id,
             key: variation.key,
             variablesMap: variation.variables.reduce(function(variables, variable) {
+              // return empty variable map when feature is disabled
+              if (!variation.featureEnabled) {
+                return {};
+              }
               variables[variable.id] = {
                 id: variable.id,
                 value: variable.value,
@@ -55,7 +60,7 @@ function getExperimentsMap(configObj) {
 // Merges feature varibles in variations of passed in experiment
 // Modifies experiment object.
 function mergeFeatureVariables(experiment, featureVariables) {
-  var variations = Object.values(experiment.variationsMap);
+  var variations = fns.values(experiment.variationsMap);
   variations.forEach(function(variation) {
     featureVariables.forEach(function(featureVariable) {
       var variable = variation.variablesMap[featureVariable.id];
