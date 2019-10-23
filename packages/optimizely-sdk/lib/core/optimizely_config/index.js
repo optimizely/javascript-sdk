@@ -13,58 +13,69 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var fns = require('../../utils/fns');
 
-// Returns feature variables from all the featureFlags
-function getFeatureVariables(featureFlags) {
-  var featureVariables = {};
-  featureFlags.forEach(function(feature) {
-    feature.variables.forEach(function(variable) {
-      featureVariables[variable.id] = {
-        id: variable.id,
-        key: variable.key,
-        type: variable.type,
-      };
-    });
-  });
-  return featureVariables;
-}
-
-// Checks if an experiment is part of a rollout
-function isRollout(configObj, experimentId) {
-  return configObj.rollouts.some(function(rollout) {
-    return rollout.experiments.some(function(experiment) {
-      return experiment.id === experimentId;
-    });
-  });
+// Get Experiment Ids which are part of rollouts
+function getRolloutExperimentIds(rollouts) {
+  return rollouts.reduce(function(experimentIds, rollout) {
+    return experimentIds.concat(rollout.experiments.map(function(e) {
+      return e.id;
+    }));
+  }, []);
 }
 
 // Gets Map of all experiments except rollouts
-function getExperimentsMap(configObj, mergeVariables) {
-  return configObj.experiments.filter(function(experiment) {
-    return !isRollout(configObj, experiment.id);
-  }).reduce(function(experiments, experiment) {
-    experiments[experiment.id] = {
-      id: experiment.id,
-      key: experiment.key,
-      variationsMap: experiment.variations.reduce(function(variations, variation) {
-        variations[variation.id] = {
-          id: variation.id,
-          key: variation.key,
-          variablesMap: variation.variables.reduce(function(variables, variable) {
-            variables[variable.id] = fns.assign({}, {
-              id: variable.id,
-              value: variable.value,
-            }, mergeVariables[variable.id]);
-            return variables;                
-          }, {}),
-        };
-        return variations;
-      }, {}),
-    };
+function getExperimentsMap(configObj) {
+  var rolloutExperimentsIds = getRolloutExperimentIds(configObj.rollouts);
+  return configObj.experiments.reduce(function(experiments, experiment) {
+    // skip experiments that are part of a rollout
+    if (!rolloutExperimentsIds.includes(experiment.id)) {
+      experiments[experiment.id] = {
+        id: experiment.id,
+        key: experiment.key,
+        variationsMap: experiment.variations.reduce(function(variations, variation) {
+          variations[variation.id] = {
+            id: variation.id,
+            key: variation.key,
+            variablesMap: variation.variables.reduce(function(variables, variable) {
+              variables[variable.id] = {
+                id: variable.id,
+                value: variable.value,
+              };
+              return variables;                
+            }, {}),
+          };
+          return variations;
+        }, {}),
+      };
+    }
     return experiments;
   }, {});
 }
+
+// Merges feature varibles in variations of passed in experiment
+// Modifies experiment object.
+function mergeFeatureVariables(experiment, featureVariables) {
+  var variations = Object.values(experiment.variationsMap);
+  variations.forEach(function(variation) {
+    featureVariables.forEach(function(featureVariable) {
+      var variable = variation.variablesMap[featureVariable.id];
+      if (!variable) {
+        // varible does not exist in variation when feature is disabled
+        // Adding a new variable with default value from feature flag.
+        variation.variablesMap[featureVariable.id] = {
+          id: featureVariable.id,
+          key: featureVariable.key,
+          type: featureVariable.type,
+          value: featureVariable.defaultValue,
+        };
+      } else {
+        // Merge key and type from featureVariable when variation already has the variable.
+        variable.key = featureVariable.key;
+        variable.type = featureVariable.type;
+      }
+    })
+  });
+};
 
 // Gets map of all experiments
 function getFeaturesMap(configObj, allExperiments) {
@@ -73,6 +84,8 @@ function getFeaturesMap(configObj, allExperiments) {
       id: feature.id,
       key: feature.key,
       experimentsMap: feature.experimentIds.reduce(function(experiments, experimentId) {
+        // Update experiment object with merged feature variables
+        mergeFeatureVariables(allExperiments[experimentId], feature.variables);
         experiments[experimentId] = allExperiments[experimentId];
         return experiments;
       }, {}),
@@ -81,7 +94,7 @@ function getFeaturesMap(configObj, allExperiments) {
           id: variable.id,
           key: variable.key,
           type: variable.type,
-          value: variable.value,
+          value: variable.defaultValue,
         }
         return variables;
       }, {}),
@@ -93,11 +106,11 @@ function getFeaturesMap(configObj, allExperiments) {
 module.exports = {
   getOptimizelyConfig: function(configObj) {
     // Fetch all feature variables from feature flags to merge them with variation variables
-    var featureVariables = getFeatureVariables(configObj.featureFlags);
-    var experimentsMap = getExperimentsMap(configObj, featureVariables);
+    var experimentsMap = getExperimentsMap(configObj);
     return {
       experimentsMap,
       featuresMap: getFeaturesMap(configObj, experimentsMap),
+      revision: configObj.revision,
     }
   },
 };
