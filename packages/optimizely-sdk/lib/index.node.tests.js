@@ -92,7 +92,7 @@ describe('optimizelyFactory', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '3.3.0');
+        assert.equal(optlyInstance.clientVersion, '3.3.1');
       });
 
       describe('event processor configuration', function() {

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+
+## [3.3.1] - October 25th, 2019
+
+### Bug fixes
+- Fixed full screen error dialog appearing in local development for React Native apps when using the default logger. We now provide a default logger for React Native that does not call `console.error`.
+
 ## [3.3.0] - September 25th, 2019
 
 ### New Features
