@@ -15,7 +15,6 @@
  */
 var assert = require('chai').assert;
 
-var fns = require('../../utils/fns');
 var datafile = require('../../tests/test_data').getTestProjectConfigWithFeatures();
 var projectConfig = require('../project_config');
 var optimizelyConfig = require('./index');
@@ -43,7 +42,7 @@ describe('lib/core/optimizely_config', function() {
 
     it('should return all experiments except rollouts', function() {
       var experimentsMap = optimizelyConfigObject.experimentsMap;
-      var experimentsCount = fns.values(optimizelyConfigObject.experimentsMap).length;
+      var experimentsCount = Object.keys(optimizelyConfigObject.experimentsMap).length;
       assert.equal(experimentsCount, 6);
       
       var allExperiments = getAllExperimentsFromDatafile(datafile);
@@ -63,7 +62,7 @@ describe('lib/core/optimizely_config', function() {
     });
     
     it('should return all the feature flags', function() {
-      var featureFlagsCount = fns.values(optimizelyConfigObject.featuresMap).length;
+      var featureFlagsCount = Object.keys(optimizelyConfigObject.featuresMap).length;
       assert.equal(featureFlagsCount, 7);
       
       var featuresMap = optimizelyConfigObject.featuresMap;
@@ -88,7 +87,7 @@ describe('lib/core/optimizely_config', function() {
     });
     
     it('should correctly merge all feature variables', function() {
-      var featureFlags = fns.values(datafile.featureFlags);
+      var featureFlags = datafile.featureFlags;
       var datafileExperimentsMap = getAllExperimentsFromDatafile(datafile)
         .reduce(function(experiments, experiment) {
           experiments[experiment.id] = experiment;
