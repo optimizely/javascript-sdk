@@ -349,7 +349,7 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(configObj
 
 DecisionService.prototype._getExperimentInGroup = function(configObj, group, userId) {
   var experimentId = bucketer.bucketUserIntoExperiment(group, userId, userId, this.logger);
-  if (experimentId !== null && experimentId !== '') {
+  if (experimentId) {
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP, MODULE_NAME, userId, experimentId, group.id));
     var experiment = projectConfig.getExperimentFromId(configObj, experimentId, this.logger);
     if (experiment) {

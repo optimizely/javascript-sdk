@@ -87,7 +87,7 @@ module.exports = {
     bucketerParams.logger.log(LOG_LEVEL.DEBUG, bucketedUserLogMessage);
 
     var entityId = module.exports._findBucket(bucketValue, bucketerParams.trafficAllocationConfig);
-    if (entityId === null || entityId === '') {
+    if (!entityId) {
       var userHasNoVariationLogMessage = sprintf(LOG_MESSAGES.USER_HAS_NO_VARIATION, MODULE_NAME, bucketerParams.userId, bucketerParams.experimentKey);
       bucketerParams.logger.log(LOG_LEVEL.DEBUG, userHasNoVariationLogMessage);
     } else if (!bucketerParams.variationIdMap.hasOwnProperty(entityId)) {
