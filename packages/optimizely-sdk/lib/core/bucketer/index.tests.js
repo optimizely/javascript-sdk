@@ -258,7 +258,7 @@ describe('lib/core/bucketer', function() {
         it('should return null', function() {
           var bucketerParamsTest1 = cloneDeep(bucketerParams);
           bucketerParamsTest1.userId = 'ppid1';
-          expect(bucketer.bucket(bucketerParamsTest1)).to.equal(null);
+          expect(bucketer.bucket(bucketerParamsTest1)).to.equal('');
         });
       });
 
