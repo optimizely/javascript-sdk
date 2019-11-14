@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [3.3.2] - November 14th, 2019
+### Bug fixes
+- Fixed error message that was being logged when a user was bucketed into empty space in an experiment or a mutual exclusion group. This is not an error. With the fix, the message indicates that the user was not included in any experiment ([#366](https://github.com/optimizely/javascript-sdk/pull/366)).
 
 ## [3.3.1] - October 25th, 2019
 
