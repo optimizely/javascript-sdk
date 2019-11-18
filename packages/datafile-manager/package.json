@@ -41,6 +41,6 @@
   "scripts": {
     "test": "jest",
     "tsc": "rm -rf lib && tsc",
-    "prepublishOnly": "yarn test && yarn tsc"
+    "prepublishOnly": "npm test && npm run tsc"
   }
 }
