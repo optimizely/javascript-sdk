@@ -35,7 +35,6 @@ jobs:
     - &integrationtest
       stage: 'Integration tests'
       merge_mode: replace
-      env: CLIENT=node
       cache: false
       language: minimal
       before_install: skip
@@ -45,17 +44,12 @@ jobs:
         - mkdir $HOME/travisci-tools && pushd $HOME/travisci-tools && git init && git pull https://$CI_USER_TOKEN@github.com/optimizely/travisci-tools.git zeeshan/report-multiple-statuses && popd
       script:
         # using a related branch from dependent PR to make it work. will remove it after review before merging
-        - $HOME/travisci-tools/trigger-script-with-status-update.sh zeeshan/report-multiple-statuses
+        - CLIENT=node $HOME/travisci-tools/trigger-script-with-status-update.sh zeeshan/report-multiple-statuses
+        - CLIENT=browser $HOME/travisci-tools/trigger-script-with-status-update.sh zeeshan/report-multiple-statuses
       after_success: travis_terminate 0
     - <<: *integrationtest
-      stage: 'Integration tests'
-      env: CLIENT=browser
-    - <<: *integrationtest
       stage: 'Benchmarking tests'
-      env: CLIENT=node FULLSTACK_TEST_REPO=Benchmarking
-    - <<: *integrationtest
-      stage: 'Benchmarking tests'
-      env: CLIENT=browser FULLSTACK_TEST_REPO=Benchmarking
+      env: FULLSTACK_TEST_REPO=Benchmarking
     - stage: Cross-browser and umd unit tests
       node_js: '8'
       script: npm run test-ci
