@@ -87,10 +87,10 @@ module.exports = {
     bucketerParams.logger.log(LOG_LEVEL.DEBUG, bucketedUserLogMessage);
 
     var entityId = module.exports._findBucket(bucketValue, bucketerParams.trafficAllocationConfig);
-    if (entityId === null) {
+    if (!entityId) {
       var userHasNoVariationLogMessage = sprintf(LOG_MESSAGES.USER_HAS_NO_VARIATION, MODULE_NAME, bucketerParams.userId, bucketerParams.experimentKey);
       bucketerParams.logger.log(LOG_LEVEL.DEBUG, userHasNoVariationLogMessage);
-    } else if (entityId === '' || !bucketerParams.variationIdMap.hasOwnProperty(entityId)) {
+    } else if (!bucketerParams.variationIdMap.hasOwnProperty(entityId)) {
       var invalidVariationIdLogMessage = sprintf(LOG_MESSAGES.INVALID_VARIATION_ID, MODULE_NAME);
       bucketerParams.logger.log(LOG_LEVEL.WARNING, invalidVariationIdLogMessage);
       return null;
