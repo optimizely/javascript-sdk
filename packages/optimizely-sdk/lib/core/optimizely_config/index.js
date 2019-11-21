@@ -34,13 +34,14 @@ function getExperimentsMap(configObj) {
   return configObj.experiments.reduce(function(experiments, experiment) {
     // skip experiments that are part of a rollout
     if (!rolloutExperimentIds[experiment.id]) {
-      experiments[experiment.id] = {
+      experiments[experiment.key] = {
         id: experiment.id,
         key: experiment.key,
         variationsMap: experiment.variations.reduce(function(variations, variation) {
           var variablesMap = {};
           if (variation.featureEnabled) {
             variablesMap = variation.variables.reduce(function(variables, variable) {
+              // developing a temporary map using variable ids. the entry with ids will be deleted after merging with featurevaribles
               variables[variable.id] = {
                 id: variable.id,
                 value: variable.value,
@@ -48,9 +49,10 @@ function getExperimentsMap(configObj) {
               return variables;
             }, {});
           }
-          variations[variation.id] = {
+          variations[variation.key] = {
             id: variation.id,
             key: variation.key,
+            featureEnabled: variation.featureEnabled,
             variablesMap,
           };
           return variations;
@@ -58,7 +60,7 @@ function getExperimentsMap(configObj) {
       };
       var featureId = configObj.experimentFeatureMap[experiment.id];
       if (featureId) {
-        mergeFeatureVariables(experiments[experiment.id], featureVariablesMap[featureId]);
+        mergeFeatureVariables(experiments[experiment.key], featureVariablesMap[featureId]);
       }
     }
     return experiments;
@@ -76,7 +78,7 @@ function mergeFeatureVariables(experiment, featureVariables) {
       if (!variationVariable) {
         // varible does not exist in variation when feature is disabled
         // Adding a new variable with default value from feature flag.
-        variation.variablesMap[featureVariable.id] = {
+        variation.variablesMap[featureVariable.key] = {
           id: featureVariable.id,
           key: featureVariable.key,
           type: featureVariable.type,
@@ -84,8 +86,14 @@ function mergeFeatureVariables(experiment, featureVariables) {
         };
       } else {
         // Merge key and type from featureVariable when variation already has the variable.
-        variationVariable.key = featureVariable.key;
-        variationVariable.type = featureVariable.type;
+        variation.variablesMap[featureVariable.key] = {
+          id: featureVariable.id,
+          key: featureVariable.key,
+          type: featureVariable.type,
+          value: variationVariable.value,
+        };
+        // deleting the temporary entry
+        delete variation.variablesMap[featureVariable.id];
       }
     })
   });
@@ -94,15 +102,16 @@ function mergeFeatureVariables(experiment, featureVariables) {
 // Gets map of all experiments
 function getFeaturesMap(configObj, allExperiments) {
   return configObj.featureFlags.reduce(function(features, feature) {
-    features[feature.id] = {
+    features[feature.key] = {
       id: feature.id,
       key: feature.key,
       experimentsMap: feature.experimentIds.reduce(function(experiments, experimentId) {
-        experiments[experimentId] = allExperiments[experimentId];
+        var experimentKey = configObj.experimentIdMap[experimentId].key;
+        experiments[experimentKey] = allExperiments[experimentKey];
         return experiments;
       }, {}),
       variablesMap: feature.variables.reduce(function(variables, variable) {
-        variables[variable.id] = {
+        variables[variable.key] = {
           id: variable.id,
           key: variable.key,
           type: variable.type,

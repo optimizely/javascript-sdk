@@ -35,9 +35,10 @@ var getAllExperimentsFromDatafile = function(datafile) {
 describe('lib/core/optimizely_config', function() {
   describe('Optimizely Config', function() {
     var optimizelyConfigObject;
+    var projectConfigObject;
     beforeEach(function() {
-      var configObject = projectConfig.createProjectConfig(datafile);
-      optimizelyConfigObject = optimizelyConfig.getOptimizelyConfig(configObject);
+      projectConfigObject = projectConfig.createProjectConfig(datafile);
+      optimizelyConfigObject = optimizelyConfig.getOptimizelyConfig(projectConfigObject);
     });
 
     it('should return all experiments except rollouts', function() {
@@ -47,13 +48,13 @@ describe('lib/core/optimizely_config', function() {
       
       var allExperiments = getAllExperimentsFromDatafile(datafile);
       allExperiments.forEach(function(experiment) {
-        assert.include(experimentsMap[experiment.id], {
+        assert.include(experimentsMap[experiment.key], {
           id: experiment.id,
           key: experiment.key,
         });
-        var variationsMap = experimentsMap[experiment.id].variationsMap;
+        var variationsMap = experimentsMap[experiment.key].variationsMap;
         experiment.variations.forEach(function(variation) {
-          assert.include(variationsMap[variation.id], {
+          assert.include(variationsMap[variation.key], {
             id: variation.id,
             key: variation.key,
           })
@@ -67,16 +68,17 @@ describe('lib/core/optimizely_config', function() {
       
       var featuresMap = optimizelyConfigObject.featuresMap;
       datafile.featureFlags.forEach(function(featureFlag) {
-        assert.include(featuresMap[featureFlag.id], {
+        assert.include(featuresMap[featureFlag.key], {
           id: featureFlag.id,
           key: featureFlag.key,
         });
         featureFlag.experimentIds.forEach(function(experimentId) {
-          assert.isTrue(!!featuresMap[featureFlag.id].experimentsMap[experimentId]);
+          var experimentKey = projectConfigObject.experimentIdMap[experimentId].key;
+          assert.isTrue(!!featuresMap[featureFlag.key].experimentsMap[experimentKey]);
         });
-        var variablesMap = featuresMap[featureFlag.id].variablesMap;
+        var variablesMap = featuresMap[featureFlag.key].variablesMap;
         featureFlag.variables.forEach(function(variable) {
-          assert.include(variablesMap[variable.id], {
+          assert.include(variablesMap[variable.key], {
             id: variable.id,
             key: variable.key,
             type: variable.type,
@@ -90,18 +92,19 @@ describe('lib/core/optimizely_config', function() {
       var featureFlags = datafile.featureFlags;
       var datafileExperimentsMap = getAllExperimentsFromDatafile(datafile)
         .reduce(function(experiments, experiment) {
-          experiments[experiment.id] = experiment;
+          experiments[experiment.key] = experiment;
           return experiments;
         }, {});
       featureFlags.forEach(function(featureFlag) {
         var experimentIds = featureFlag.experimentIds;
         experimentIds.forEach(function(experimentId) {
-          var experiment = optimizelyConfigObject.experimentsMap[experimentId];
-          var variations = datafileExperimentsMap[experimentId].variations;
+          var experimentKey = projectConfigObject.experimentIdMap[experimentId].key;
+          var experiment = optimizelyConfigObject.experimentsMap[experimentKey];
+          var variations = datafileExperimentsMap[experimentKey].variations;
           var variationsMap = experiment.variationsMap;
           variations.forEach(function(variation) {
             featureFlag.variables.forEach(function(variable) {
-              var variableToAssert = variationsMap[variation.id].variablesMap[variable.id];
+              var variableToAssert = variationsMap[variation.key].variablesMap[variable.key];
               assert.include(variable, {
                 id: variableToAssert.id,
                 key: variableToAssert.key,
