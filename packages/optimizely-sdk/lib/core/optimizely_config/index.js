@@ -75,26 +75,15 @@ function mergeFeatureVariables(experiment, featureVariables) {
     var variation = experiment.variationsMap[variationKey];
     featureVariables.forEach(function(featureVariable) {
       var variationVariable = variation.variablesMap[featureVariable.id];
-      if (!variationVariable) {
-        // varible does not exist in variation when feature is disabled
-        // Adding a new variable with default value from feature flag.
-        variation.variablesMap[featureVariable.key] = {
-          id: featureVariable.id,
-          key: featureVariable.key,
-          type: featureVariable.type,
-          value: featureVariable.defaultValue,
-        };
-      } else {
-        // Merge key and type from featureVariable when variation already has the variable.
-        variation.variablesMap[featureVariable.key] = {
-          id: featureVariable.id,
-          key: featureVariable.key,
-          type: featureVariable.type,
-          value: variationVariable.value,
-        };
-        // deleting the temporary entry
-        delete variation.variablesMap[featureVariable.id];
-      }
+      var variableValue = variationVariable ? variationVariable.value : featureVariable.defaultValue;
+      variation.variablesMap[featureVariable.key] = {
+        id: featureVariable.id,
+        key: featureVariable.key,
+        type: featureVariable.type,
+        value: variableValue,
+      };
+      // deleting the temporary entry
+      variationVariable && delete variation.variablesMap[featureVariable.id];
     })
   });
 };
