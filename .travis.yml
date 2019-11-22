@@ -40,12 +40,10 @@ jobs:
       before_install: skip
       install: skip
       before_script:
-        # using a related branch from dependent PR to make it work. will remove it after review before merging
-        - mkdir $HOME/travisci-tools && pushd $HOME/travisci-tools && git init && git pull https://$CI_USER_TOKEN@github.com/optimizely/travisci-tools.git zeeshan/report-multiple-statuses && popd
+        - mkdir $HOME/travisci-tools && pushd $HOME/travisci-tools && git init && git pull https://$CI_USER_TOKEN@github.com/optimizely/travisci-tools.git && popd
       script:
-        # using a related branch from dependent PR to make it work. will remove it after review before merging
-        - CLIENT=node $HOME/travisci-tools/trigger-script-with-status-update.sh zeeshan/report-multiple-statuses
-        - CLIENT=browser $HOME/travisci-tools/trigger-script-with-status-update.sh zeeshan/report-multiple-statuses
+        - CLIENT=node $HOME/travisci-tools/trigger-script-with-status-update.sh
+        - CLIENT=browser $HOME/travisci-tools/trigger-script-with-status-update.sh
       after_success: travis_terminate 0
     - <<: *integrationtest
       stage: 'Benchmarking tests'
