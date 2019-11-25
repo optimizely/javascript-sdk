@@ -45,10 +45,15 @@ jobs:
       script:
         - CLIENT=node $HOME/travisci-tools/trigger-script-with-status-update.sh
         - CLIENT=browser $HOME/travisci-tools/trigger-script-with-status-update.sh
+        - CLIENT=react-native-android $HOME/travisci-tools/trigger-script-with-status-update.sh
+        - CLIENT=react-native-ios $HOME/travisci-tools/trigger-script-with-status-update.sh
       after_success: travis_terminate 0
     - <<: *integrationtest
       stage: 'Benchmarking tests'
       env: FULLSTACK_TEST_REPO=Benchmarking
+      script:
+        - CLIENT=node $HOME/travisci-tools/trigger-script-with-status-update.sh
+        - CLIENT=browser $HOME/travisci-tools/trigger-script-with-status-update.sh
     - stage: Cross-browser and umd unit tests
       node_js: '8'
       script: npm run test-ci
