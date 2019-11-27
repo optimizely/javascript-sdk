@@ -43,10 +43,10 @@ jobs:
       before_script:
         - mkdir $HOME/travisci-tools && pushd $HOME/travisci-tools && git init && git pull https://$CI_USER_TOKEN@github.com/optimizely/travisci-tools.git && popd
       script:
-        - CLIENT=node $HOME/travisci-tools/trigger-script-with-status-update.sh
-        - CLIENT=browser $HOME/travisci-tools/trigger-script-with-status-update.sh
-        - CLIENT=react-native-android $HOME/travisci-tools/trigger-script-with-status-update.sh
-        - CLIENT=react-native-ios $HOME/travisci-tools/trigger-script-with-status-update.sh
+        - CLIENT=node $HOME/travisci-tools/trigger-script-with-status-update.sh zeeshan/exclude-rn-builds-from-fsc-pr-tests
+        - CLIENT=browser $HOME/travisci-tools/trigger-script-with-status-update.sh zeeshan/exclude-rn-builds-from-fsc-pr-tests
+        - CLIENT=react-native-android $HOME/travisci-tools/trigger-script-with-status-update.sh zeeshan/exclude-rn-builds-from-fsc-pr-tests
+        - CLIENT=react-native-ios $HOME/travisci-tools/trigger-script-with-status-update.sh zeeshan/exclude-rn-builds-from-fsc-pr-tests
       after_success: travis_terminate 0
     - <<: *integrationtest
       stage: 'Benchmarking tests'
