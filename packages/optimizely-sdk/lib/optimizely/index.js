@@ -885,15 +885,15 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
  * OptimizelyConfig Object Schema
  * {
  *   'experimentsMap': {
- *     '111111': {
+ *     'my-fist-experiment': {
  *       'id': '111111',
  *       'key': 'my-fist-experiment'
  *       'variationsMap': {
- *         '121212': {
+ *         'variation_1': {
  *           'id': '121212',
  *           'key': 'variation_1',
  *           'variablesMap': {
- *             '222222': {
+ *             'age': {
  *               'id': '222222',
  *               'key': 'age',
  *               'type': 'integer',
@@ -905,7 +905,7 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
  *     }
  *   },
  *   'featuresMap': {
- *     '333333': {
+ *     'awesome-feature': {
  *       'id': '333333',
  *       'key': 'awesome-feature',
  *       'experimentsMap': Object,
