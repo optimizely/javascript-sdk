@@ -28,6 +28,9 @@ after_success: npm run coveralls
 
 # Integration tests need to run first to reset the PR build status to pending
 stages:
+  - 'Integration tests'
+  - 'Benchmarking tests'
+  - 'Cross-browser and umd unit tests'
   - 'Test'
 
 jobs:
