@@ -16,8 +16,7 @@ env:
     # BROWSER_STACK_ACCESS_KEY
     - secure: U0GGZw46rJowBtH9gVluIrerB40u2b3uZpH0HsOdLlsXCCaTVk4JXX/JPVPashWAFLC7Enk3UOE4ofeEpVd0wbG6CxtG9/gklc2U2tvkqsdPpFZKaRrXoUzCyyPOmHEC2mXDXctbrncmttM4APaceRfbdTBEZIIfyLJadomjWylA61szFE9IZjvJpiwJO2xa5HI9GVRu3yXJci+riJux+JsDmfJ1hNwv3waMeeg/scddUH0hfgq69ftGs8cpMlYiO20eh32S7uPF7/IJTH1fDJjVKYQZwpypkF6AeI+od5CFTY1ajb25eaBNXThLS0Bo9ZJE/8Sogvon21dEJkt/ClY6R341InbAFXZvz7jyQAisvh0I4zxcu0VUCfh7bEUl6GXMO8VJnyxHEfqB+AIT2RoMXckkhulwiNUsJYH1yJ8mjnLvZq85mWBCp4n4jg0K6Wf46lHpjnHOVpLyLyoFGfiPf90AQVL02AJ3/ia8RkMuj0Ax+AGtiTC/+wy7dsDQOif/VpBNJcx/RciQ24mYOGzAMh4GsUWnXaZ9vXSxliogVNrmIefK5invJ0omv9pIx8NZHTHYGaulh4w6JsliiEq2kH78SlyvSrcsFGTwCY97LLaxiLm/75/Zf+F7LajKC23Fbtnj/LQizitFZqGMJ09DnR52krBAeultqRq8QLM=
     - SDK=javascript
-    - SDK_BRANCH=$TRAVIS_PULL_REQUEST_BRANCH
-before_install: cd packages/optimizely-sdk
+    - SDK_BRANCH=$TRAVIS_PULL_REQUEST_BRANCH  
 install: 
   - npm install
   - npm run install-packages
@@ -29,9 +28,6 @@ after_success: npm run coveralls
 
 # Integration tests need to run first to reset the PR build status to pending
 stages:
-  - 'Integration tests'
-  - 'Benchmarking tests'
-  - 'Cross-browser and umd unit tests'
   - 'Test'
 
 jobs:
@@ -54,4 +50,6 @@ jobs:
       env: FULLSTACK_TEST_REPO=Benchmarking
     - stage: Cross-browser and umd unit tests
       node_js: '8'
-      script: npm run test-ci
+      before_install: cd packages/optimizely-sdk 
+      install: npm install
+      script: npm run test-ci        
