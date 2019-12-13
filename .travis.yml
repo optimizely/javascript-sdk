@@ -18,7 +18,10 @@ env:
     - SDK=javascript
     - SDK_BRANCH=$TRAVIS_PULL_REQUEST_BRANCH
 before_install: cd packages/optimizely-sdk
-install: npm install
+install: 
+  - npm install
+  - npm run install-packages
+  - npm run tsc
 addons:
   srcclr: true
 script: npm test
