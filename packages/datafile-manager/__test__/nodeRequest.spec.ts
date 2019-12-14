@@ -187,10 +187,10 @@ describe('nodeEnvironment', () => {
         expect(abortEventListener).toBeCalledTimes(1)
 
         scope.done()
-        if (emittedReq && !!emittedReq.off) {
+        if (emittedReq) {
           emittedReq.off('abort', abortEventListener)
         }
-        !!scope.off && scope.off('request', requestListener)
+        scope.off('request', requestListener)
       })
     })
   })

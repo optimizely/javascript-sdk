@@ -3,13 +3,11 @@
   "version": "1.0.0",
   "name": "optimizely-sdk-packages",
   "scripts": {
-    "install-packages": "lerna bootstrap",
     "build": "lerna run build",
     "clean": "lerna run clean",
     "publish": "npm run build && lerna publish",
     "test": "lerna run test --stream",
-    "test-xbrowser": "lerna run test-xbrowser --stream",
-    "tsc": "lerna run tsc"
+    "test-xbrowser": "lerna run test-xbrowser --stream"
   },
   "dependencies": {
     "lerna": "^3.2.1",
