@@ -57,10 +57,7 @@ jobs:
       stage: 'Test sub packages'
       node_js: '12'
       before_install: cd packages/datafile-manager
-      install:
-        - npm install
-        - tsc
-      script: npm test
+      before_script: tsc
     - <<: *packagetest
       before_install: cd packages/event-processor
     - <<: *packagetest
