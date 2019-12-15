@@ -30,7 +30,7 @@ stages:
   - 'Benchmarking tests'
   - 'Cross-browser and umd unit tests'
   - 'Test'
-  - 'Test Packages'
+  - 'Test sub packages'
 
 jobs:
   include:
@@ -54,7 +54,7 @@ jobs:
       node_js: '8'
       script: npm run test-ci
     - &packagetest
-      stage: 'Test Packages'
+      stage: 'Test sub packages'
       node_js: '12'
       before_install: cd packages/datafile-manager
       install:
