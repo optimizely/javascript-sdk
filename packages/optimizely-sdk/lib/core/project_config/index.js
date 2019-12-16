@@ -98,16 +98,15 @@ module.exports = {
       fns.forEach(feature.experimentIds || [], function(experimentId) {
         // Add this experiment in experiment-feature map.
         if (projectConfig.experimentFeatureMap[experimentId]) {
-          projectConfig.experimentFeatureMap[experimentId].push(feature.id);  
+          projectConfig.experimentFeatureMap[experimentId].push(feature.id);
         } else {
           projectConfig.experimentFeatureMap[experimentId] = [feature.id];
         }
-        
+
         var experimentInFeature = projectConfig.experimentIdMap[experimentId];
-        if (experimentInFeature.groupId) {
+        // Experiments in feature can only belong to one mutex group.
+        if (experimentInFeature.groupId && !feature.groupId) {
           feature.groupId = experimentInFeature.groupId;
-          // Experiments in feature can only belong to one mutex group.
-          return false;
         }
       });
     });
