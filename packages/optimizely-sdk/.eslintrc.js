@@ -16,12 +16,4 @@ module.exports = {
   rules: {
     'no-prototype-builtins': 'off',
   },
-  overrides: [
-    {
-      files: ['*.tests.js'],
-      env: {
-        mocha: true,
-      },
-    },
-  ],
 };
