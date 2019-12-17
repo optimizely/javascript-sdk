@@ -562,7 +562,7 @@ Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes)
     var variation = decision.variation;
     var sourceInfo = {};
 
-    if (!!variation) {
+    if (variation) {
       featureEnabled = variation.featureEnabled;
       if (decision.decisionSource === DECISION_SOURCES.FEATURE_TEST) {
         sourceInfo = {

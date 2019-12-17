@@ -1,0 +1,3 @@
+*.tests.js
+*.umdtests.js
+test_data.js

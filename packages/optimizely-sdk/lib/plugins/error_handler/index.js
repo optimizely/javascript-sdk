@@ -22,7 +22,7 @@ module.exports = {
    * Handle given exception
    * @param  {Object} exception An exception object
    */
-  handleError: function(exception) {
+  handleError: function() {
     // no-op
   }
 };

@@ -29,8 +29,9 @@ module.exports = {
   dispatchEvent: function(eventObj, callback) {
     var url = eventObj.url;
     var params = eventObj.params;
+    var req;
     if (eventObj.httpVerb === POST_METHOD) {
-      var req = new XMLHttpRequest();
+      req = new XMLHttpRequest();
       req.open(POST_METHOD, url, true);
       req.setRequestHeader('Content-Type', 'application/json');
       req.onreadystatechange = function() {
@@ -50,7 +51,7 @@ module.exports = {
         url += '&' + toQueryString(params);
       }
 
-      var req = new XMLHttpRequest();
+      req = new XMLHttpRequest();
       req.open(GET_METHOD, url, true);
       req.onreadystatechange = function() {
         if (req.readyState === READYSTATE_COMPLETE && callback && typeof callback === 'function') {

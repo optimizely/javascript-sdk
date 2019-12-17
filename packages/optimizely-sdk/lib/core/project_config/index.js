@@ -271,7 +271,7 @@ module.exports = {
   getExperimentFromKey: function(projectConfig, experimentKey) {
     if (projectConfig.experimentKeyMap.hasOwnProperty(experimentKey)) {
       var experiment = projectConfig.experimentKeyMap[experimentKey];
-      if (!!experiment) {
+      if (experiment) {
         return experiment;
       }
     }
@@ -304,7 +304,7 @@ module.exports = {
   getExperimentFromId: function(projectConfig, experimentId, logger) {
     if (projectConfig.experimentIdMap.hasOwnProperty(experimentId)) {
       var experiment = projectConfig.experimentIdMap[experimentId];
-      if (!!experiment) {
+      if (experiment) {
         return experiment;
       }
     }
@@ -325,7 +325,7 @@ module.exports = {
   getFeatureFromKey: function(projectConfig, featureKey, logger) {
     if (projectConfig.featureKeyMap.hasOwnProperty(featureKey)) {
       var feature = projectConfig.featureKeyMap[featureKey];
-      if (!!feature) {
+      if (feature) {
         return feature;
       }
     }
