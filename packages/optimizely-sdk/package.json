@@ -47,7 +47,6 @@
     "bluebird": "^3.4.6",
     "chai": "^4.2.0",
     "coveralls": "^3.0.2",
-    "eslint": "^4.18.2",
     "istanbul": "^0.4.5",
     "json-loader": "^0.5.4",
     "karma": "^3.1.4",
