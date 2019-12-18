@@ -57,7 +57,7 @@ function getMergedVariablesMap(configObj, variation, experimentId, featureVariab
   var featureId = configObj.experimentFeatureMap[experimentId];
   var variablesObject = {};
   if (featureId) {
-    experimentFeatureVariables = featureVariablesMap[featureId];
+    var experimentFeatureVariables = featureVariablesMap[featureId];
     // Temporary variation variables map to get values to merge.
     var tempVariablesIdMap = variation.variables.reduce(function(variablesMap, variable) {
       variablesMap[variable.id] = {
@@ -67,8 +67,8 @@ function getMergedVariablesMap(configObj, variation, experimentId, featureVariab
       return variablesMap;
     }, {});
     variablesObject = experimentFeatureVariables.reduce(function(variablesMap, featureVariable) {
-      variationVariable = tempVariablesIdMap[featureVariable.id];
-      variableValue = variation.featureEnabled && variationVariable ? variationVariable.value : featureVariable.defaultValue;
+      var variationVariable = tempVariablesIdMap[featureVariable.id];
+      var variableValue = variation.featureEnabled && variationVariable ? variationVariable.value : featureVariable.defaultValue;
       variablesMap[featureVariable.key] = {
         id: featureVariable.id,
         key: featureVariable.key,
