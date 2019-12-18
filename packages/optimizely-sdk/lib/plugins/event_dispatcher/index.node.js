@@ -34,10 +34,6 @@ module.exports = {
     }
 
     var parsedUrl = url.parse(eventObj.url);
-    var path = parsedUrl.path;
-    if (parsedUrl.query) {
-      path += '?' + parsedUrl.query;
-    }
 
     var dataString = JSON.stringify(eventObj.params);
 

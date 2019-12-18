@@ -67,24 +67,24 @@ DecisionService.prototype.getVariation = function(configObj, experimentKey, user
   // by default, the bucketing ID should be the user ID
   var bucketingId = this._getBucketingId(userId, attributes);
 
-  if (!this.__checkIfExperimentIsActive(configObj, experimentKey, userId)) {
+  if (!this.__checkIfExperimentIsActive(configObj, experimentKey)) {
     return null;
   }
   var experiment = configObj.experimentKeyMap[experimentKey];
   var forcedVariationKey = this.getForcedVariation(configObj, experimentKey, userId);
-  if (!!forcedVariationKey) {
+  if (forcedVariationKey) {
     return forcedVariationKey;
   }
 
   var variation = this.__getWhitelistedVariation(experiment, userId);
-  if (!!variation) {
+  if (variation) {
     return variation.key;
   }
 
   // check for sticky bucketing
   var experimentBucketMap = this.__resolveExperimentBucketMap(userId, attributes);
   variation = this.__getStoredVariation(configObj, experiment, userId, experimentBucketMap);
-  if (!!variation) {
+  if (variation) {
     this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.RETURNING_STORED_VARIATION, MODULE_NAME, variation.key, experimentKey, userId));
     return variation.key;
   }
@@ -127,7 +127,7 @@ DecisionService.prototype.__resolveExperimentBucketMap = function(userId, attrib
  * @param  {string}  userId        ID of user
  * @return {boolean} True if experiment is running
  */
-DecisionService.prototype.__checkIfExperimentIsActive = function(configObj, experimentKey, userId) {
+DecisionService.prototype.__checkIfExperimentIsActive = function(configObj, experimentKey) {
   if (!projectConfig.isActive(configObj, experimentKey)) {
     var experimentNotRunningLogMessage = sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey);
     this.logger.log(LOG_LEVEL.INFO, experimentNotRunningLogMessage);

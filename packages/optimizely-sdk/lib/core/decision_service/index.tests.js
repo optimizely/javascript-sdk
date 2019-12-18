@@ -404,12 +404,12 @@ describe('lib/core/decision_service', function() {
 
     describe('__checkIfExperimentIsActive', function () {
       it('should return true if experiment is running', function () {
-        assert.isTrue(decisionServiceInstance.__checkIfExperimentIsActive(configObj, 'testExperiment', 'testUser'));
+        assert.isTrue(decisionServiceInstance.__checkIfExperimentIsActive(configObj, 'testExperiment'));
         sinon.assert.notCalled(mockLogger.log);
       });
 
       it('should return false when experiment is not running', function () {
-        assert.isFalse(decisionServiceInstance.__checkIfExperimentIsActive(configObj, 'testExperimentNotRunning', 'testUser'));
+        assert.isFalse(decisionServiceInstance.__checkIfExperimentIsActive(configObj, 'testExperimentNotRunning'));
         sinon.assert.calledOnce(mockLogger.log);
         var logMessage = mockLogger.log.args[0][1];
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning'));
