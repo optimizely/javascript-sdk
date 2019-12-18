@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
-## [3.4.0-beta] - December 17th, 2019
+## [3.4.0-beta] - December 18th, 2019
 ### Bug fixes
 - Fixed incorrect payload for decision notification triggered by calling getVariation on a feature test in a mutex group([#375](https://github.com/optimizely/javascript-sdk/pull/375))
 
