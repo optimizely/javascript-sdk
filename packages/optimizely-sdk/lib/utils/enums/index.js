@@ -159,7 +159,7 @@ exports.CONTROL_ATTRIBUTES = {
 exports.JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 exports.NODE_CLIENT_ENGINE = 'node-sdk';
 exports.REACT_CLIENT_ENGINE = 'react-sdk';
-exports.NODE_CLIENT_VERSION = '3.3.2';
+exports.NODE_CLIENT_VERSION = '3.4.0-beta';
 
 exports.VALID_CLIENT_ENGINES = [
   exports.NODE_CLIENT_ENGINE,

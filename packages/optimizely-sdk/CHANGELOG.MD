@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [3.4.0-beta] - December 18th, 2019
+### Bug fixes
+- Fixed incorrect payload for decision notification triggered by calling getVariation on a feature test in a mutex group([#375](https://github.com/optimizely/javascript-sdk/pull/375))
+
+### New Features
+
+- Added a new API to get a project configuration static data.
+  - Call `getOptimizelyConfig()` to get a snapshot copy of project configuration static data. 
+  - It returns an `OptimizelyConfig` instance which includes a datafile revision number, all experiments, and feature flags mapped by their key values.
+  - For details, refer to a documention page: https://docs.developers.optimizely.com/full-stack/docs/optimizelyconfig-javascript-node
+
 ## [3.3.2] - November 14th, 2019
 ### Bug fixes
 - Fixed error message that was being logged when a user was bucketed into empty space in an experiment or a mutual exclusion group. This is not an error. With the fix, the message indicates that the user was not included in any experiment ([#366](https://github.com/optimizely/javascript-sdk/pull/366)).
