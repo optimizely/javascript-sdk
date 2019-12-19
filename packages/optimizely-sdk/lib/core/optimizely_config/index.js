@@ -55,9 +55,9 @@ function getExperimentsMap(configObj) {
 // Merges feature key and type from feature variables to variation variables.
 function getMergedVariablesMap(configObj, variation, experimentId, featureVariablesMap) {
   var featureId = configObj.experimentFeatureMap[experimentId];
-  variablesObject = {};
+  var variablesObject = {};
   if (featureId) {
-    experimentFeatureVariables = featureVariablesMap[featureId];
+    var experimentFeatureVariables = featureVariablesMap[featureId];
     // Temporary variation variables map to get values to merge.
     var tempVariablesIdMap = variation.variables.reduce(function(variablesMap, variable) {
       variablesMap[variable.id] = {
@@ -67,8 +67,8 @@ function getMergedVariablesMap(configObj, variation, experimentId, featureVariab
       return variablesMap;
     }, {});
     variablesObject = experimentFeatureVariables.reduce(function(variablesMap, featureVariable) {
-      variationVariable = tempVariablesIdMap[featureVariable.id];
-      variableValue = variation.featureEnabled && variationVariable ? variationVariable.value : featureVariable.defaultValue;
+      var variationVariable = tempVariablesIdMap[featureVariable.id];
+      var variableValue = variation.featureEnabled && variationVariable ? variationVariable.value : featureVariable.defaultValue;
       variablesMap[featureVariable.key] = {
         id: featureVariable.id,
         key: featureVariable.key,
@@ -76,7 +76,7 @@ function getMergedVariablesMap(configObj, variation, experimentId, featureVariab
         value: variableValue,
       };
       return variablesMap;
-    }, {})
+    }, {});
   }
   return variablesObject;
 }
@@ -98,7 +98,7 @@ function getFeaturesMap(configObj, allExperiments) {
           key: variable.key,
           type: variable.type,
           value: variable.defaultValue,
-        }
+        };
         return variables;
       }, {}),
     };
@@ -111,9 +111,9 @@ module.exports = {
     // Fetch all feature variables from feature flags to merge them with variation variables
     var experimentsMap = getExperimentsMap(configObj);
     return {
-      experimentsMap,
+      experimentsMap: experimentsMap,
       featuresMap: getFeaturesMap(configObj, experimentsMap),
       revision: configObj.revision,
-    }
+    };
   },
 };

@@ -2489,6 +2489,95 @@ var typedAudiencesById = {
   },
 };
 
+var mutexFeatureTestsConfig = {
+  version: '4',
+  rollouts: [
+    {
+      experiments: [
+        {
+          status: 'Not started',
+          audienceIds: [],
+          variations: [{ variables: [], id: '17138530965', key: '17138530965', featureEnabled: false }],
+          id: '17138130490',
+          key: '17138130490',
+          layerId: '17151011617',
+          trafficAllocation: [{ entityId: '17138530965', endOfRange: 0 }],
+          forcedVariations: {},
+        }
+      ],
+      id: '17151011617',
+    }
+  ],
+  typedAudiences: [],
+  anonymizeIP: false,
+  projectId: '1715448053799999',
+  variables: [],
+  featureFlags: [
+    {
+      experimentIds: ['17128410791', '17139931304'],
+      rolloutId: '17151011617',
+      variables: [],
+      id: '17146211047',
+      key: 'f',
+    },
+  ],
+  experiments: [],
+  audiences: [],
+  groups: [
+    {
+      policy: 'random',
+      trafficAllocation: [
+        { entityId: '17139931304', endOfRange: 9900 },
+        { entityId: '17128410791', endOfRange: 10000 }
+      ],
+      experiments: [
+        {
+          status: 'Running',
+          audienceIds: [],
+          variations: [
+            { variables: [], id: 17155031309, key: 'variation_1', featureEnabled: false },
+            { variables: [], id: 17124610952, key: 'variation_2', featureEnabled: true }
+          ],
+          id: '17139931304',
+          key: 'f_test2',
+          layerId: '17149391594',
+          trafficAllocation: [
+            { entityId: '17155031309', endOfRange: 5000 },
+            { entityId: '17124610952', endOfRange: 10000 }
+          ],
+          forcedVariations: {}
+        },
+        {
+          status: 'Running',
+          audienceIds: [],
+          variations: [
+            { variables: [], id: '17175820099', key: 'variation_1', featureEnabled: false },
+            { variables: [], id: '17144050391', key: 'variation_2', featureEnabled: true }
+          ],
+          id: '17128410791',
+          key: 'f_test1',
+          layerId: '17145581153',
+          trafficAllocation: [
+            { entityId: '17175820099', endOfRange: 5000 },
+            { entityId: '17144050391', endOfRange: 10000 }
+          ],
+          forcedVariations: {}
+        }
+      ],
+      id: '17142090293'
+    }
+  ],
+  attributes: [],
+  botFiltering: false,
+  accountId: '4879520872999',
+  events: [{ experimentIds: ['17128410791', '17139931304'], id: '17140380990', key: 'e' }],
+  revision: '12',
+};
+
+var getMutexFeatureTestsConfig = function() {
+  return cloneDeep(mutexFeatureTestsConfig);
+};
+
 module.exports = {
   getTestProjectConfig: getTestProjectConfig,
   getParsedAudiences: getParsedAudiences,
@@ -2497,4 +2586,5 @@ module.exports = {
   getUnsupportedVersionConfig: getUnsupportedVersionConfig,
   getTypedAudiencesConfig: getTypedAudiencesConfig,
   typedAudiencesById: typedAudiencesById,
+  getMutexFeatureTestsConfig: getMutexFeatureTestsConfig,
 };

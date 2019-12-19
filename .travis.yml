@@ -26,6 +26,7 @@ after_success: npm run coveralls
 
 # Integration tests need to run first to reset the PR build status to pending
 stages:
+  - 'Lint'
   - 'Integration tests'
   - 'Benchmarking tests'
   - 'Cross-browser and umd unit tests'
@@ -34,6 +35,9 @@ stages:
 
 jobs:
   include:
+    - stage: 'Lint'
+      node_js: '12'
+      script: npm run lint
     - &integrationtest
       stage: 'Integration tests'
       merge_mode: replace

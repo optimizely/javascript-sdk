@@ -559,6 +559,28 @@ describe('lib/core/project_config', function() {
         assert.deepEqual(result, ['and', ['or', '3468206642', '3988293898'], ['or', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643']]);
       });
     });
+
+    describe('#isFeatureExperiment', function() {
+      it('returns true for a feature test', function() {
+        var config = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
+        var result = projectConfig.isFeatureExperiment(config, '594098'); // id of 'testing_my_feature'
+        assert.isTrue(result);
+      });
+
+      it('returns false for an A/B test', function() {
+        var config = projectConfig.createProjectConfig(testDatafile.getTestProjectConfig());
+        var result = projectConfig.isFeatureExperiment(config, '111127'); // id of 'testExperiment'
+        assert.isFalse(result);
+      });
+
+      it('returns true for a feature test in a mutex group', function() {
+        var config = projectConfig.createProjectConfig(testDatafile.getMutexFeatureTestsConfig());
+        var result = projectConfig.isFeatureExperiment(config, '17128410791'); // id of 'f_test1'
+        assert.isTrue(result);
+        result = projectConfig.isFeatureExperiment(config, '17139931304'); // id of 'f_test2'
+        assert.isTrue(result);
+      });
+    });
   });
 
   describe('#tryCreatingProjectConfig', function() {

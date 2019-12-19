@@ -98,16 +98,15 @@ module.exports = {
       fns.forEach(feature.experimentIds || [], function(experimentId) {
         // Add this experiment in experiment-feature map.
         if (projectConfig.experimentFeatureMap[experimentId]) {
-          projectConfig.experimentFeatureMap[experimentId].push(feature.id);  
+          projectConfig.experimentFeatureMap[experimentId].push(feature.id);
         } else {
           projectConfig.experimentFeatureMap[experimentId] = [feature.id];
         }
-        
+
         var experimentInFeature = projectConfig.experimentIdMap[experimentId];
-        if (experimentInFeature.groupId) {
+        // Experiments in feature can only belong to one mutex group.
+        if (experimentInFeature.groupId && !feature.groupId) {
           feature.groupId = experimentInFeature.groupId;
-          // Experiments in feature can only belong to one mutex group.
-          return false;
         }
       });
     });
@@ -272,7 +271,7 @@ module.exports = {
   getExperimentFromKey: function(projectConfig, experimentKey) {
     if (projectConfig.experimentKeyMap.hasOwnProperty(experimentKey)) {
       var experiment = projectConfig.experimentKeyMap[experimentKey];
-      if (!!experiment) {
+      if (experiment) {
         return experiment;
       }
     }
@@ -305,7 +304,7 @@ module.exports = {
   getExperimentFromId: function(projectConfig, experimentId, logger) {
     if (projectConfig.experimentIdMap.hasOwnProperty(experimentId)) {
       var experiment = projectConfig.experimentIdMap[experimentId];
-      if (!!experiment) {
+      if (experiment) {
         return experiment;
       }
     }
@@ -326,7 +325,7 @@ module.exports = {
   getFeatureFromKey: function(projectConfig, featureKey, logger) {
     if (projectConfig.featureKeyMap.hasOwnProperty(featureKey)) {
       var feature = projectConfig.featureKeyMap[featureKey];
-      if (!!feature) {
+      if (feature) {
         return feature;
       }
     }
