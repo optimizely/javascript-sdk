@@ -44,6 +44,6 @@
     "@types/uuid": "^3.4.4",
     "jest": "^23.6.0",
     "ts-jest": "^23.10.5",
-    "typescript": "^3.7.3"
+    "typescript": "^3.3.3333"
   }
 }
