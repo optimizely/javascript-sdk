@@ -24,7 +24,6 @@ var eventProcessor = require('@optimizely/js-sdk-event-processor');
 var eventTagsValidator = require('../utils/event_tags_validator');
 var notificationCenter = require('../core/notification_center');
 var projectConfig = require('../core/project_config');
-var optimizelyConfig = require('../core/optimizely_config');
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var userProfileServiceValidator = require('../utils/user_profile_service_validator');
 var stringValidator = require('../utils/string_value_validator');
@@ -880,8 +879,8 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
 
 /**
  * Returns OptimizelyConfig object containing experiments and features data
- * @return {Object} 
- * 
+ * @return {Object}
+ *
  * OptimizelyConfig Object Schema
  * {
  *   'experimentsMap': {
@@ -901,7 +900,7 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
  *             }
  *           }
  *         }
- *       } 
+ *       }
  *     }
  *   },
  *   'featuresMap': {
@@ -909,10 +908,10 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
  *       'id': '333333',
  *       'key': 'awesome-feature',
  *       'experimentsMap': Object,
- *       'variationsMap': Object, 
- *     } 
+ *       'variationsMap': Object,
+ *     }
  *   }
- * }      
+ * }
  */
 Optimizely.prototype.getOptimizelyConfig = function() {
   try {
@@ -920,7 +919,7 @@ Optimizely.prototype.getOptimizelyConfig = function() {
     if (!configObj) {
       return null;
     }
-    return optimizelyConfig.getOptimizelyConfig(configObj);
+    return this.projectConfigManager.getOptimizelyConfig();
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);

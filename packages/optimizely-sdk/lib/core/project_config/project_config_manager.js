@@ -21,6 +21,7 @@ var configValidator = require('../../utils/config_validator');
 var datafileManager = require('@optimizely/js-sdk-datafile-manager');
 var enums = require('../../utils/enums');
 var projectConfig = require('../../core/project_config');
+var optimizelyConfig = require('../optimizely_config');
 
 var logger = logging.getLogger();
 
@@ -269,6 +270,7 @@ ProjectConfigManager.prototype.__handleNewConfigObj = function(newConfigObj) {
   }
 
   this.__configObj = newConfigObj;
+  this.__optimizleyConfig = optimizelyConfig.getOptimizelyConfig(this.__configObj);
 
   this.__updateListeners.forEach(function(listener) {
     listener(newConfigObj);
@@ -282,6 +284,14 @@ ProjectConfigManager.prototype.__handleNewConfigObj = function(newConfigObj) {
  */
 ProjectConfigManager.prototype.getConfig = function() {
   return this.__configObj;
+}
+
+/**
+ * Returns the optimizely config object
+ * @return {Object}
+ */
+ProjectConfigManager.prototype.getOptimizelyConfig = function() {
+  return this.__optimizleyConfig;
 };
 
 /**
