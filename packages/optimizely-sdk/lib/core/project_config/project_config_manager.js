@@ -63,6 +63,7 @@ function ProjectConfigManager(config) {
     logger.error(ex);
     this.__updateListeners = [];
     this.__configObj = null;
+    this.__optimizelyConfigObj = null;
     this.__readyPromise = Promise.resolve({
       success: false,
       reason: getErrorMessage(ex, 'Error in initialize'),
@@ -107,6 +108,7 @@ ProjectConfigManager.prototype.__initialize = function(config) {
         logger: logger,
         skipJSONValidation: this.skipJSONValidation,
       });
+      this.__optimizelyConfigObj = optimizelyConfig.getOptimizelyConfig(this.__configObj);
     } catch (ex) {
       logger.error(ex);
       projectConfigCreationEx = ex;
@@ -270,7 +272,7 @@ ProjectConfigManager.prototype.__handleNewConfigObj = function(newConfigObj) {
   }
 
   this.__configObj = newConfigObj;
-  this.__optimizleyConfig = optimizelyConfig.getOptimizelyConfig(this.__configObj);
+  this.__optimizelyConfigObj = optimizelyConfig.getOptimizelyConfig(newConfigObj);
 
   this.__updateListeners.forEach(function(listener) {
     listener(newConfigObj);
@@ -291,7 +293,7 @@ ProjectConfigManager.prototype.getConfig = function() {
  * @return {Object}
  */
 ProjectConfigManager.prototype.getOptimizelyConfig = function() {
-  return this.__optimizleyConfig;
+  return this.__optimizelyConfigObj;
 };
 
 /**
