@@ -5,7 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-Changes that have landed but are not yet released.
+### Bug fixes
+- Fixed default event dispatcher not used in React Native entry point ([#383](https://github.com/optimizely/javascript-sdk/pull/383))
 
 ## [3.4.0-beta] - December 18th, 2019
 ### Bug fixes
@@ -14,7 +15,7 @@ Changes that have landed but are not yet released.
 ### New Features
 
 - Added a new API to get a project configuration static data.
-  - Call `getOptimizelyConfig()` to get a snapshot copy of project configuration static data. 
+  - Call `getOptimizelyConfig()` to get a snapshot copy of project configuration static data.
   - It returns an `OptimizelyConfig` instance which includes a datafile revision number, all experiments, and feature flags mapped by their key values.
   - For details, refer to a documention page: https://docs.developers.optimizely.com/full-stack/docs/optimizelyconfig-javascript-node
 
