@@ -22,6 +22,7 @@ var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var enums = require('../../utils/enums');
 var jsonSchemaValidator = require('../../utils/json_schema_validator');
 var projectConfig = require('./index');
+var optimizelyConfig = require('../optimizely_config/index');
 var projectConfigManager = require('./project_config_manager');
 var testData = require('../../tests/test_data');
 
@@ -405,6 +406,28 @@ describe('lib/core/project_config/project_config_manager', function() {
           // not have called update listener
           sinon.assert.notCalled(onUpdateSpy);
         });
+      });
+    });
+
+    describe('test caching of optimizely config', function() {
+      it('should return the same config until revision is changed', function() {
+        sinon.stub(optimizelyConfig, "getOptimizelyConfig");
+        var manager = new projectConfigManager.ProjectConfigManager({
+          datafile: testData.getTestProjectConfig(),
+          jsonSchemaValidator: jsonSchemaValidator,
+          skipJSONValidation: 'hi',
+          sdkKey: '12345',
+        });
+        sinon.assert.calledOnce(optimizelyConfig.getOptimizelyConfig);
+        manager.getOptimizelyConfig();
+        sinon.assert.calledOnce(optimizelyConfig.getOptimizelyConfig);
+        manager = new projectConfigManager.ProjectConfigManager({
+          datafile: { ...testData.getTestProjectConfig(), revision: '43' },
+          jsonSchemaValidator: jsonSchemaValidator,
+          skipJSONValidation: 'hi',
+        });
+        sinon.assert.calledTwice(optimizelyConfig.getOptimizelyConfig);
+        optimizelyConfig.getOptimizelyConfig.restore();
       });
     });
   });
