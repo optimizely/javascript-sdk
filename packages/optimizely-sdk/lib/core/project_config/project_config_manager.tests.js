@@ -414,18 +414,18 @@ describe('lib/core/project_config/project_config_manager', function() {
         sinon.stub(optimizelyConfig, "getOptimizelyConfig");
         var manager = new projectConfigManager.ProjectConfigManager({
           datafile: testData.getTestProjectConfig(),
-          jsonSchemaValidator: jsonSchemaValidator,
-          skipJSONValidation: 'hi',
-          sdkKey: '12345',
         });
+        // creating optimizely config once project config manager for the first time
         sinon.assert.calledOnce(optimizelyConfig.getOptimizelyConfig);
+        // validate it should return the existing optimizely config
         manager.getOptimizelyConfig();
         sinon.assert.calledOnce(optimizelyConfig.getOptimizelyConfig);
-        manager = new projectConfigManager.ProjectConfigManager({
-          datafile: { ...testData.getTestProjectConfig(), revision: '43' },
-          jsonSchemaValidator: jsonSchemaValidator,
-          skipJSONValidation: 'hi',
-        });
+
+        // create config with new revision
+        var newConfig = testData.getTestProjectConfig();
+        newConfig.revision = "43";
+        // verify the optimizely config is updated
+        manager.__handleNewConfigObj(newConfig);
         sinon.assert.calledTwice(optimizelyConfig.getOptimizelyConfig);
         optimizelyConfig.getOptimizelyConfig.restore();
       });
