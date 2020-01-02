@@ -19,13 +19,12 @@ env:
     - SDK_BRANCH=$TRAVIS_PULL_REQUEST_BRANCH
 before_install: cd packages/optimizely-sdk
 install: npm install
-addons:
-  srcclr: true
 script: npm test
 after_success: npm run coveralls
 
 # Integration tests need to run first to reset the PR build status to pending
 stages:
+  - name: 'Lint markdown files'
   - 'Lint'
   - 'Integration tests'
   - 'Benchmarking tests'
@@ -35,11 +34,23 @@ stages:
 
 jobs:
   include:
+    - stage: 'Lint markdown files'
+      language: ruby
+      rvm: 2.4.1
+      os: linux
+      install: gem install awesome_bot
+      script:
+        - find . -type f -name '*.md' -exec awesome_bot {} \;
+      notifications:
+        email: false
+
     - stage: 'Lint'
       node_js: '12'
       script: npm run lint
     - &integrationtest
       stage: 'Integration tests'
+      addons:
+        srcclr: true
       merge_mode: replace
       cache: false
       language: minimal
