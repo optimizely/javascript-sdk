@@ -420,7 +420,6 @@ describe('lib/core/project_config/project_config_manager', function() {
         // validate it should return the existing optimizely config
         manager.getOptimizelyConfig();
         sinon.assert.calledOnce(optimizelyConfig.getOptimizelyConfig);
-
         // create config with new revision
         var newConfig = testData.getTestProjectConfig();
         newConfig.revision = "43";
