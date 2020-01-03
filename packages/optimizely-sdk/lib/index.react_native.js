@@ -90,11 +90,11 @@ module.exports = {
         {
           clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
           eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
+          eventDispatcher: defaultEventDispatcher,
           eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
         },
         config,
         {
-          eventDispatcher: config.eventDispatcher,
           // always get the OptimizelyLogger facade from logging
           logger: logger,
           errorHandler: logging.getErrorHandler(),
