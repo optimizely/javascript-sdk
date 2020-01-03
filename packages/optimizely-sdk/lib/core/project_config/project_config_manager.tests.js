@@ -410,10 +410,18 @@ describe('lib/core/project_config/project_config_manager', function() {
     });
 
     describe('test caching of optimizely config', function() {
-      it('should return the same config until revision is changed', function() {
+      beforeEach(function() {
         sinon.stub(optimizelyConfig, "getOptimizelyConfig");
+      });
+
+      afterEach(function() {
+        optimizelyConfig.getOptimizelyConfig.restore();
+      });
+
+      it('should return the same config until revision is changed', function() {
         var manager = new projectConfigManager.ProjectConfigManager({
           datafile: testData.getTestProjectConfig(),
+          sdkKey: '12345',
         });
         // creating optimizely config once project config manager for the first time
         sinon.assert.calledOnce(optimizelyConfig.getOptimizelyConfig);
@@ -421,12 +429,17 @@ describe('lib/core/project_config/project_config_manager', function() {
         manager.getOptimizelyConfig();
         sinon.assert.calledOnce(optimizelyConfig.getOptimizelyConfig);
         // create config with new revision
+        var fakeDatafileManager = datafileManager.HttpPollingDatafileManager.getCall(0).returnValue;
+        var updateListener = fakeDatafileManager.on.getCall(0).args[1];
+        var newDatafile = testData.getTestProjectConfigWithFeatures();
+        newDatafile.revision = '36';
+        fakeDatafileManager.get.returns(newDatafile);
+        updateListener({ datafile: newDatafile });
+
         var newConfig = testData.getTestProjectConfig();
         newConfig.revision = "43";
         // verify the optimizely config is updated
-        manager.__handleNewConfigObj(newConfig);
         sinon.assert.calledTwice(optimizelyConfig.getOptimizelyConfig);
-        optimizelyConfig.getOptimizelyConfig.restore();
       });
     });
   });
