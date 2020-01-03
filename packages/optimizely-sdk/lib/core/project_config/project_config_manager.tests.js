@@ -435,9 +435,6 @@ describe('lib/core/project_config/project_config_manager', function() {
         newDatafile.revision = '36';
         fakeDatafileManager.get.returns(newDatafile);
         updateListener({ datafile: newDatafile });
-
-        var newConfig = testData.getTestProjectConfig();
-        newConfig.revision = "43";
         // verify the optimizely config is updated
         sinon.assert.calledTwice(optimizelyConfig.getOptimizelyConfig);
       });
