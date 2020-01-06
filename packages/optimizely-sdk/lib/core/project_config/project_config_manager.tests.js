@@ -22,6 +22,7 @@ var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var enums = require('../../utils/enums');
 var jsonSchemaValidator = require('../../utils/json_schema_validator');
 var projectConfig = require('./index');
+var optimizelyConfig = require('../optimizely_config/index');
 var projectConfigManager = require('./project_config_manager');
 var testData = require('../../tests/test_data');
 
@@ -405,6 +406,37 @@ describe('lib/core/project_config/project_config_manager', function() {
           // not have called update listener
           sinon.assert.notCalled(onUpdateSpy);
         });
+      });
+    });
+
+    describe('test caching of optimizely config', function() {
+      beforeEach(function() {
+        sinon.stub(optimizelyConfig, "getOptimizelyConfig");
+      });
+
+      afterEach(function() {
+        optimizelyConfig.getOptimizelyConfig.restore();
+      });
+
+      it('should return the same config until revision is changed', function() {
+        var manager = new projectConfigManager.ProjectConfigManager({
+          datafile: testData.getTestProjectConfig(),
+          sdkKey: '12345',
+        });
+        // creating optimizely config once project config manager for the first time
+        sinon.assert.calledOnce(optimizelyConfig.getOptimizelyConfig);
+        // validate it should return the existing optimizely config
+        manager.getOptimizelyConfig();
+        sinon.assert.calledOnce(optimizelyConfig.getOptimizelyConfig);
+        // create config with new revision
+        var fakeDatafileManager = datafileManager.HttpPollingDatafileManager.getCall(0).returnValue;
+        var updateListener = fakeDatafileManager.on.getCall(0).args[1];
+        var newDatafile = testData.getTestProjectConfigWithFeatures();
+        newDatafile.revision = '36';
+        fakeDatafileManager.get.returns(newDatafile);
+        updateListener({ datafile: newDatafile });
+        // verify the optimizely config is updated
+        sinon.assert.calledTwice(optimizelyConfig.getOptimizelyConfig);
       });
     });
   });
