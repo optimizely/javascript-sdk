@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+var projectConfig = require('../project_config');
 
 // Get Experiment Ids which are part of rollouts
 function getRolloutExperimentIds(rollouts) {
@@ -41,9 +42,11 @@ function getExperimentsMap(configObj) {
           variations[variation.key] = {
             id: variation.id,
             key: variation.key,
-            featureEnabled: variation.featureEnabled,
             variablesMap: getMergedVariablesMap(configObj, variation, experiment.id, featureVariablesMap)
           };
+          if (projectConfig.isFeatureExperiment(configObj, experiment.id)) {
+            variations[variation.key].featureEnabled = variation.featureEnabled;
+          }
           return variations;
         }, {}),
       };
