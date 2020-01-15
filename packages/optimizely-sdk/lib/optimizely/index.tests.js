@@ -786,15 +786,6 @@ describe('lib/optimizely', function() {
         });
       });
 
-      it('returns the variation key but does not dispatch the event if user is in experiment and experiment is set to Launched', function() {
-        bucketStub.returns('144448');
-
-        var bucketedVariation = optlyInstance.activate('testExperimentLaunched', 'testUser');
-        assert.strictEqual(bucketedVariation, 'controlLaunched');
-
-        sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-      });
-
       it('should not activate when optimizely object is not a valid instance', function() {
         var instance = new Optimizely({
           datafile: {},
