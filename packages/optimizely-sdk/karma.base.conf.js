@@ -70,12 +70,6 @@ module.exports = {
       device: null,
       browser_version: '10.0'
     },
-    bs_iphone6: {
-      base: 'BrowserStack',
-      device: 'iPhone 6',
-      os: 'ios',
-      os_version: '8.3'
-    },
     bs_opera_mac: {
       base: 'BrowserStack',
       browser: 'opera',
@@ -93,7 +87,7 @@ module.exports = {
     }
   },
 
-  browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox_mac', 'bs_ie', 'bs_iphone6', 'bs_opera_mac', 'bs_safari'],
+  browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox_mac', 'bs_ie', 'bs_opera_mac', 'bs_safari'],
 
   // frameworks to use
   // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
