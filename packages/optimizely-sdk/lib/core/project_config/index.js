@@ -19,7 +19,6 @@ var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var configValidator = require('../../utils/config_validator');
 var projectConfigSchema = require('./project_config_schema');
 
-var EXPERIMENT_LAUNCHED_STATUS = 'Launched';
 var EXPERIMENT_RUNNING_STATUS = 'Running';
 var RESERVED_ATTRIBUTE_PREFIX = '$opt_';
 var MODULE_NAME = 'PROJECT_CONFIG';
@@ -198,14 +197,13 @@ module.exports = {
   },
 
   /**
-   * Returns whether experiment has a status of 'Running' or 'Launched'
+   * Returns whether experiment has a status of 'Running'
    * @param  {Object}  projectConfig Object representing project configuration
    * @param  {string}  experimentKey Experiment key for which status is to be compared with 'Running'
    * @return {Boolean}               true if experiment status is set to 'Running', false otherwise
    */
   isActive: function(projectConfig, experimentKey) {
-    return module.exports.getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_RUNNING_STATUS ||
-      module.exports.getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_LAUNCHED_STATUS;
+    return module.exports.getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_RUNNING_STATUS;
   },
 
   /**

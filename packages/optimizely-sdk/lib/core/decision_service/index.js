@@ -121,7 +121,7 @@ DecisionService.prototype.__resolveExperimentBucketMap = function(userId, attrib
 
 
 /**
- * Checks whether the experiment is running or launched
+ * Checks whether the experiment is running
  * @param  {Object}  configObj     The parsed project configuration object
  * @param  {string}  experimentKey Key of experiment being validated
  * @param  {string}  userId        ID of user

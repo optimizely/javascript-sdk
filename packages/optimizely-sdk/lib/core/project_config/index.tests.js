@@ -305,13 +305,11 @@ describe('lib/core/project_config', function() {
       }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'invalidExperimentKey'));
     });
 
-    it('should return true if experiment status is set to Running or Launch in isActive', function() {
+    it('should return true if experiment status is set to Running in isActive', function() {
       assert.isTrue(projectConfig.isActive(configObj, 'testExperiment'));
-
-      assert.isTrue(projectConfig.isActive(configObj, 'testExperimentLaunched'));
     });
 
-    it('should return true if experiment status is set to Running or Launch in isActive', function() {
+    it('should return false if experiment status is not set to Running in isActive', function() {
       assert.isFalse(projectConfig.isActive(configObj, 'testExperimentNotRunning'));
     });
 
