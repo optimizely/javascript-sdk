@@ -70,12 +70,6 @@ module.exports = {
       device: null,
       browser_version: '10.0'
     },
-    bs_iphone6: {
-      base: 'BrowserStack',
-      device: 'iPhone 6',
-      os: 'ios',
-      os_version: '8.3'
-    },
     bs_opera_mac: {
       base: 'BrowserStack',
       browser: 'opera',
