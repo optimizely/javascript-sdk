@@ -12,7 +12,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Bug fixes
 - Fixed incorrect payload for decision notification triggered by calling getVariation on a feature test in a mutex group([#375](https://github.com/optimizely/javascript-sdk/pull/375))
-- Removed `featureEnabled` property from variation in `OptimizelyConfig` when the experiment isn't a feature experiment
 
 ### New Features
 - Added a new API to get a project configuration static data.
