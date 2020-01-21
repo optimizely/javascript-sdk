@@ -8,6 +8,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Bug fixes
 - Fixed default event dispatcher not used in React Native entry point ([#383](https://github.com/optimizely/javascript-sdk/pull/383))
 
+## [3.4.0] - January 21th, 2020
+
+### Bug fixes
+- Fixed incorrect payload for decision notification triggered by calling getVariation on a feature test in a mutex group([#375](https://github.com/optimizely/javascript-sdk/pull/375))
+- Removed `featureEnabled` property from variation in `OptimizelyConfig` when the experiment isn't a feature experiment
+
+### New Features
+- Added a new API to get a project configuration static data.
+  - Call `getOptimizelyConfig()` to get a snapshot copy of project configuration static data.
+  - It returns an `OptimizelyConfig` instance which includes a datafile revision number, all experiments, and feature flags mapped by their key values.
+  - Added caching for `getOptimizelyConfig` - `OptimizelyConfig` object will be cached and reused for the lifetime of the datafile
+  - For details, refer to a documention page: https://docs.developers.optimizely.com/full-stack/docs/optimizelyconfig-javascript-node
+
+### Removed Features
+- Removed support for `'launched'` experiment status
+  - Previously, experiments with status `'running'` or `'launched'` would return non-`null` variations from `activate` and `getVariation`, and generate impression events from `activate`
+  - Now, only `'running'` experiments will return non-`null` variations and generate impressions
+
+
 ## [3.4.0-beta] - December 18th, 2019
 ### Bug fixes
 - Fixed incorrect payload for decision notification triggered by calling getVariation on a feature test in a mutex group([#375](https://github.com/optimizely/javascript-sdk/pull/375))
