@@ -63,20 +63,20 @@ var audiencesById = {
 describe('lib/core/audience_evaluator', function() {
   var audienceEvaluator;
 
+  beforeEach(function() {
+    sinon.stub(mockLogger, 'log');
+  });
+
+  afterEach(function() {
+    mockLogger.log.restore();
+  });
+
   describe('APIs', function() {
     context('with default condition evaluator', function() {
       beforeEach(function() {
         audienceEvaluator = new AudienceEvaluator();
       });
-      describe('evaluate', function() {
-        beforeEach(function() {
-          sinon.stub(mockLogger, 'log');
-        });
-  
-        afterEach(function() {
-          mockLogger.log.restore();
-        });
-  
+      describe('evaluate', function() {  
         it('should return true if there are no audiences', function() {
           assert.isTrue(audienceEvaluator.evaluate([], audiencesById, {}));
         });
@@ -282,8 +282,10 @@ describe('lib/core/audience_evaluator', function() {
           };
           audienceEvaluator = new AudienceEvaluator({
             special_condition_type: {
-              evaluate: function(condition, userAttributes) {
-                return mockEnvironment[condition.value] && userAttributes[condition.match] > 0;
+              evaluate: function(condition, userAttributes, logger) {
+                const result = mockEnvironment[condition.value] && userAttributes[condition.match] > 0;
+                logger.log(`special_condition_type: ${result} for ${condition.value}:${condition.match}`)
+                return result;
               }
             },
           });
@@ -292,6 +294,13 @@ describe('lib/core/audience_evaluator', function() {
         it('should evaluate an audience properly using the custom condition evaluator', function() {
           assert.isFalse(audienceEvaluator.evaluate(['3'], audiencesById, {interest_level: 0}));
           assert.isTrue(audienceEvaluator.evaluate(['3'], audiencesById, {interest_level: 1}));
+        })
+
+        it('should pass the logger instance to the custom condition evaluator', function() {
+          assert.isFalse(audienceEvaluator.evaluate(['3'], audiencesById, {interest_level: 0}));
+          assert.isTrue(audienceEvaluator.evaluate(['3'], audiencesById, {interest_level: 1}));
+          sinon.assert.calledWithExactly(mockLogger.log, 'special_condition_type: false for special:interest_level');
+          sinon.assert.calledWithExactly(mockLogger.log, 'special_condition_type: true for special:interest_level');
         })
       })
 
