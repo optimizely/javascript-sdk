@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { OptimizelyVariable } from "@optimizely/optimizely-sdk"
 
 declare module "@optimizely/optimizely-sdk" {
   import { LogHandler, ErrorHandler } from "@optimizely/js-sdk-logging";
