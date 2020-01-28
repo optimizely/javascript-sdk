@@ -1,7 +1,5 @@
-import { OptimizelyVariable } from "@optimizely/optimizely-sdk"
-
 /**
- * Copyright 2018-2019, Optimizely
+ * Copyright 2018-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +13,7 @@ import { OptimizelyVariable } from "@optimizely/optimizely-sdk"
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { OptimizelyVariable } from "@optimizely/optimizely-sdk"
 
 declare module "@optimizely/optimizely-sdk" {
   import { LogHandler, ErrorHandler } from "@optimizely/js-sdk-logging";
@@ -231,6 +230,7 @@ declare module "@optimizely/optimizely-sdk" {
   export interface OptimizelyVariation {
     id: string;
     key: string;
+    featureEnabled?: boolean;
     variablesMap: {
       [variableKey: string]: {
         variable: OptimizelyVariable;
