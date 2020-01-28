@@ -111,11 +111,11 @@ declare module "@optimizely/optimizely-sdk" {
       userId: string,
       attributes?: UserAttributes
     ): string | null;
+    getOptimizelyConfig(): OptimizelyConfig;
     onReady(options?: {
       timeout?: number;
     }): Promise<{ success: boolean; reason?: string }>;
-    close(): void;
-    getOptimizelyConfig(): OptimizelyConfig;
+    close(): void;    
   }
 
   // An event to be submitted to Optimizely, enabling tracking the reach and impact of
