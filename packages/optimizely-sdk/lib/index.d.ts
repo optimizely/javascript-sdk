@@ -111,7 +111,7 @@ declare module "@optimizely/optimizely-sdk" {
       userId: string,
       attributes?: UserAttributes
     ): string | null;
-    getOptimizelyConfig(): OptimizelyConfig;
+    getOptimizelyConfig(): OptimizelyConfig | null;
     onReady(options?: {
       timeout?: number;
     }): Promise<{ success: boolean; reason?: string }>;
