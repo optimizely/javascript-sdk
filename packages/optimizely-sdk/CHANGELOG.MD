@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [3.4.1] - January 28th, 2020
 
 ### Bug fixes
-- Added OptimizelyConfig in Typescript([#390](https://github.com/optimizely/javascript-sdk/pull/390)).
+- Added `getOptimizelyConfig` and related types to TypeScript type definitions([#390](https://github.com/optimizely/javascript-sdk/pull/390)).
 
 ## [3.4.0] - January 21th, 2020
 
