@@ -1,3 +1,5 @@
+import { OptimizelyVariable } from "@optimizely/optimizely-sdk"
+
 /**
  * Copyright 2018-2019, Optimizely
  *
@@ -115,6 +117,7 @@ declare module "@optimizely/optimizely-sdk" {
       timeout?: number;
     }): Promise<{ success: boolean; reason?: string }>;
     close(): void;
+    getOptimizelyConfig(): OptimizelyConfig;
   }
 
   // An event to be submitted to Optimizely, enabling tracking the reach and impact of
@@ -213,6 +216,65 @@ declare module "@optimizely/optimizely-sdk" {
         variation_id: string;
       };
     };
+  }
+
+  /**
+   * Optimizely Config Entities
+   */
+  export interface OptimizelyVariable {
+    id: string;
+    key: string;
+    type: string;
+    value: string;
+  }
+  
+  export interface OptimizelyVariation {
+    id: string;
+    key: string;
+    variablesMap: {
+      [variableKey: string]: {
+        variable: OptimizelyVariable;
+      };
+    };
+  }
+
+  export interface OptimizelyExperiment {
+    id: string;
+    key: string;
+    variationsMap: {
+      [variationKey: string]: {
+        variation: OptimizelyVariation;
+      };
+    };
+  }
+
+  export interface OptimizelyFeature {
+    id: string;
+    key: string;
+    experimentsMap: {
+      [experimentKey: string]: {
+        experiment: OptimizelyExperiment;
+      };
+    };
+    variablesMap: {
+      [variableKey: string]: {
+        variable: OptimizelyVariable;
+      };
+    };
+  }
+
+  export interface OptimizelyConfig {
+    experimentsMap: {
+      [experimentKey: string]: {
+        experiment: OptimizelyExperiment;
+      };
+    };
+    featuresMap: {
+      [featureKey: string]: {
+        feature: OptimizelyFeature;
+      };
+    };
+    revision: string;
   }
 }
 
