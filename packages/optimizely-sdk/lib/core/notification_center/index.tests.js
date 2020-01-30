@@ -114,12 +114,6 @@ describe('lib/core/notification_center', function() {
                 });
             });
 
-            context('an error is caught', function(){
-                it('should return -1 if an error is caught')
-                it('should thrown an error if an error is caught');
-                it('should log an error message if an error is caught');
-            });
-            
             context('add notification listener for type ACTIVATE', function(){
                 var listenerId2;
                 it('should return -1 if that same ACTIVATE callback is already added', function(){
@@ -264,7 +258,25 @@ describe('lib/core/notification_center', function() {
                     listenerRemoved = notificationCenterInstance.removeNotificationListener(listenerId);
                     assert.strictEqual(listenerRemoved, true);
                 });
-                it('should not remove any other listeners except for the one belonging to the listenerId');
+                it('should not remove any other listeners except for the one belonging to the listenerId', function(){
+                    // register first ACTIVATE notification listener (to be removed)
+                    listenerId = notificationCenterInstance.addNotificationListener(
+                        enums.NOTIFICATION_TYPES.ACTIVATE,
+                        activateCallbackSpy1
+                    );
+                    // register second ACTIVATE notification listener (not to be removed)
+                    notificationCenterInstance.addNotificationListener(
+                        enums.NOTIFICATION_TYPES.ACTIVATE,
+                        activateCallbackSpy2
+                    );
+                    // remove first ACTIVATE listener
+                    listenerRemoved = notificationCenterInstance.removeNotificationListener(listenerId);
+                    notificationCenterInstance.sendNotifications(enums.NOTIFICATION_TYPES.ACTIVATE, {});
+                    // check assertions that first listener is removed, callback1 not called, but second callback2 is called.
+                    assert.strictEqual(listenerRemoved, true);
+                    sinon.assert.notCalled(activateCallbackSpy1);
+                    sinon.assert.calledOnce(activateCallbackSpy2);
+                });
             });
             context('remove notification listener for type DECISION', function(){
                 it('should return true when valid listenerId of DECISION type has been supplied and the listener is removed', function(){
@@ -274,6 +286,25 @@ describe('lib/core/notification_center', function() {
                     );
                     listenerRemoved = notificationCenterInstance.removeNotificationListener(listenerId);
                     assert.strictEqual(listenerRemoved, true);
+                });
+                it('should not remove any other listeners except for the one belonging to the listenerId', function(){
+                    // register first DECISION notification listener (to be removed)
+                    listenerId = notificationCenterInstance.addNotificationListener(
+                        enums.NOTIFICATION_TYPES.DECISION,
+                        decisionCallbackSpy1
+                    );
+                    // register second DECISION notification listener (not to be removed)
+                    notificationCenterInstance.addNotificationListener(
+                        enums.NOTIFICATION_TYPES.DECISION,
+                        decisionCallbackSpy2
+                    );
+                    // remove first DECISION listener
+                    listenerRemoved = notificationCenterInstance.removeNotificationListener(listenerId);
+                    notificationCenterInstance.sendNotifications(enums.NOTIFICATION_TYPES.DECISION, {});
+                    // check assertions that first listener is removed, callback1 not called, but second callback2 is called.
+                    assert.strictEqual(listenerRemoved, true);
+                    sinon.assert.notCalled(decisionCallbackSpy1);
+                    sinon.assert.calledOnce(decisionCallbackSpy2);
                 });
             });
             context('remove notification listener for type LOG_EVENT', function(){
@@ -285,6 +316,25 @@ describe('lib/core/notification_center', function() {
                     listenerRemoved = notificationCenterInstance.removeNotificationListener(listenerId);
                     assert.strictEqual(listenerRemoved, true);
                 });
+                it('should not remove any other listeners except for the one belonging to the listenerId', function(){
+                    // register first LOG_EVENT notification listener (to be removed)
+                    listenerId = notificationCenterInstance.addNotificationListener(
+                        enums.NOTIFICATION_TYPES.LOG_EVENT,
+                        logEventCallbackSpy1
+                    );
+                    // register second LOG_EVENT notification listener (not to be removed)
+                    notificationCenterInstance.addNotificationListener(
+                        enums.NOTIFICATION_TYPES.LOG_EVENT,
+                        logEventCallbackSpy2
+                    );
+                    // remove first LOG_EVENT listener
+                    listenerRemoved = notificationCenterInstance.removeNotificationListener(listenerId);
+                    notificationCenterInstance.sendNotifications(enums.NOTIFICATION_TYPES.LOG_EVENT, {});
+                    // check assertions that first listener is removed, callback1 not called, but second callback2 is called.
+                    assert.strictEqual(listenerRemoved, true);
+                    sinon.assert.notCalled(logEventCallbackSpy1);
+                    sinon.assert.calledOnce(logEventCallbackSpy2);
+                });
             });
             context('remove notification listener for type OPTIMIZELY_CONFIG_UPDATE', function(){
                 it('should return true when valid listenerId of OPTIMIZELY_CONFIG_UPDATE type has been supplied and the listener is removed', function(){
@@ -295,6 +345,25 @@ describe('lib/core/notification_center', function() {
                     listenerRemoved = notificationCenterInstance.removeNotificationListener(listenerId);
                     assert.strictEqual(listenerRemoved, true);
                 });
+                it('should not remove any other listeners except for the one belonging to the listenerId', function(){
+                    // register first OPTIMIZELY_CONFIG_UPDATE notification listener (to be removed)
+                    listenerId = notificationCenterInstance.addNotificationListener(
+                        enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE,
+                        configUpdateCallbackSpy1
+                    );
+                    // register second OPTIMIZELY_CONFIG_UPDATE notification listener (not to be removed)
+                    notificationCenterInstance.addNotificationListener(
+                        enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE,
+                        configUpdateCallbackSpy2
+                    );
+                    // remove first OPTIMIZELY_CONFIG_UPDATE listener
+                    listenerRemoved = notificationCenterInstance.removeNotificationListener(listenerId);
+                    notificationCenterInstance.sendNotifications(enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, {});
+                    // check assertions that first listener is removed, callback1 not called, but second callback2 is called.
+                    assert.strictEqual(listenerRemoved, true);
+                    sinon.assert.notCalled(configUpdateCallbackSpy1);
+                    sinon.assert.calledOnce(configUpdateCallbackSpy2);
+                });
             });
             context('remove notification listener for type TRACK', function(){
                 it('should return true when valid listenerId of TRACK type has been supplied and the listener is removed', function(){
@@ -304,6 +373,25 @@ describe('lib/core/notification_center', function() {
                     );
                     listenerRemoved = notificationCenterInstance.removeNotificationListener(listenerId);
                     assert.strictEqual(listenerRemoved, true);
+                });
+                it('should not remove any other listeners except for the one belonging to the listenerId', function(){
+                    // register first TRACK notification listener (to be removed)
+                    listenerId = notificationCenterInstance.addNotificationListener(
+                        enums.NOTIFICATION_TYPES.TRACK,
+                        trackCallbackSpy1
+                    );
+                    // register second TRACK notification listener (not to be removed)
+                    notificationCenterInstance.addNotificationListener(
+                        enums.NOTIFICATION_TYPES.TRACK,
+                        trackCallbackSpy2
+                    );
+                    // remove first TRACK listener
+                    listenerRemoved = notificationCenterInstance.removeNotificationListener(listenerId);
+                    notificationCenterInstance.sendNotifications(enums.NOTIFICATION_TYPES.TRACK, {});
+                    // check assertions that first listener is removed, callback1 not called, but second callback2 is called.
+                    assert.strictEqual(listenerRemoved, true);
+                    sinon.assert.notCalled(trackCallbackSpy1);
+                    sinon.assert.calledOnce(trackCallbackSpy2);
                 });
             });
 
@@ -377,7 +465,7 @@ describe('lib/core/notification_center', function() {
                         activateCallbackSpy2
                     );
                     // remove ACTIVATE listeners
-                    notificationCenterInstance.clearAllNotificationListeners(enums.NOTIFICATION_TYPES.ACTIVATE);
+                    notificationCenterInstance.clearNotificationListeners(enums.NOTIFICATION_TYPES.ACTIVATE);
                     // trigger send notifications
                     notificationCenterInstance.sendNotifications(
                         enums.NOTIFICATION_TYPES.ACTIVATE, 
