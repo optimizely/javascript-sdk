@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2017-2020, Optimizely, Inc. and contributors                        *
+ * Copyright 2020, Optimizely, Inc. and contributors                        *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -14,7 +14,6 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
-// MODULES FOR OBJECTS TO BE USED BY TESTS
 var NotificationCenter = require('./')
 var errorHandler = require('../../plugins/error_handler');
 var logger = require('../../plugins/logger');
@@ -128,8 +127,6 @@ describe('lib/core/notification_center', function() {
                     ), -1);
 
                 });
-
-                // should return an id of notification listener (listenerId) if ACTIVATE listener is not already added 
                 it('should return an id (listenerId) > 0 of the notification listener if ACTIVATE callback is not already added', function(){
                     listenerId = notificationCenterInstance.addNotificationListener(
                         enums.NOTIFICATION_TYPES.ACTIVATE,
@@ -152,8 +149,6 @@ describe('lib/core/notification_center', function() {
                         decisionCallbackSpy1
                     ), -1);
                 });
-
-                // should return an id of notification listener (listenerId) if DECISION listener is not already added
                 it('should return an id (listenerId) > 0 of the notification listener if DECISION callback is not already added', function(){
                     listenerId = notificationCenterInstance.addNotificationListener(
                         enums.NOTIFICATION_TYPES.DECISION,
@@ -176,8 +171,6 @@ describe('lib/core/notification_center', function() {
                         logEventCallbackSpy1
                     ), -1);
                 });
-
-                // should return an id of notification listener (listenerId) if LOG_EVENT listener is not already added
                 it('should return an id (listenerId) > 0 of the notification listener if LOG_EVENT callback is not already added', function(){
                     listenerId = notificationCenterInstance.addNotificationListener(
                         enums.NOTIFICATION_TYPES.LOG_EVENT,
@@ -186,8 +179,6 @@ describe('lib/core/notification_center', function() {
 
                     assert.isAbove(listenerId, 0);
                 });
-
-                // LOG_EVENT: should return callback with object argument properties of: url {str}, httpVerb {str}, params {obj} when an impression or conversion is sent
             });
             
             context('add notification listener for type OPTIMIZELY_CONFIG_UPDATE', function(){
@@ -202,8 +193,6 @@ describe('lib/core/notification_center', function() {
                         configUpdateCallbackSpy1
                     ), -1);
                 });
-
-                // should return an id of notification listener (listenerId) if OPTIMIZELY_CONFIG_UPDATE listener is not already added
                 it('should return an id (listenerId) > 0 of the notification listener if OPTIMIZELY_CONFIG_UPDATE callback is not already added', function(){
                     listenerId = notificationCenterInstance.addNotificationListener(
                         enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE,
@@ -226,8 +215,6 @@ describe('lib/core/notification_center', function() {
                         trackCallbackSpy1
                     ), -1);
                 });
-                
-                // should return an id of notification listener (listenerId) if TRACK listener is not already added
                 it('should return an id (listenerId) > 0 of the notification listener if TRACK callback is not already added', function(){
                     listenerId = notificationCenterInstance.addNotificationListener(
                         enums.NOTIFICATION_TYPES.TRACK,
@@ -236,8 +223,6 @@ describe('lib/core/notification_center', function() {
 
                     assert.isAbove(listenerId, 0);
                 });
-
-                // TRACK: should return a callback with object argument properties of: eventKey {str}, userId {str}, attributes {obj|undef}, eventTags {obj|undef}, logEvent {obj} when a conversion event is sent to Optimizely
             });
         });
 
@@ -873,8 +858,7 @@ describe('lib/core/notification_center', function() {
         });
 
         describe('#sendNotifications', function() {
-            context('send notification for type ACTIVATE', function(){
-                // ACTIVATE: should return callback with object argument properties of: experiment {obj}, user_id {str}, attributes{obj|undef}, variation{obj}, logEvent {obj} when an impression is sent           
+            context('send notification for type ACTIVATE', function(){         
                 it('the ACTIVATE callback should be called with exact options arguments', function(){
                     var activateData = {
                         experiment: {},
@@ -893,7 +877,6 @@ describe('lib/core/notification_center', function() {
             });
 
             context('send notification for type DECISION', function(){
-                // DECISION: should return callback with object argument properties of: type {str}, userId {str}, attributes {obj|undef}, decisionInfo {obj|undef} when a decision is made in the system; type {str} (DECISION_TYPES): feature, ab-test, feature-test, feature-variable decisionInfo {obj|undef}: decisionInfo k-v map determined by type {str}
                 it('the DECISION callback should be ccalled with exact arguments', function(){
                     var decisionData = {
                         type: '',
@@ -911,7 +894,6 @@ describe('lib/core/notification_center', function() {
             });
 
             context('send notification for type LOG_EVENT', function(){
-                // LOG_EVENT: should return callback with object argument properties of: url {str}, httpVerb {str}, params {obj} when an impression or conversion is sent
                 it('the LOG_EVENT callback should be called with exact arguments', function(){
                     var logEventData = {
                         url: '',
@@ -928,7 +910,6 @@ describe('lib/core/notification_center', function() {
             });
 
             context('send notification for type OPTIMIZELY_CONFIG_UPDATE', function(){
-                // OPTIMIZELY_CONFIG_UPDATE: should return 'OPTIMIZELY_CONFIG_UPDATE'
                 it('the OPTIMIZELY_CONFIG_UPDATE callback should be called with exact arguments', function(){
                     var configUpdateData = {};
                     notificationCenterInstance.addNotificationListener(
@@ -941,7 +922,6 @@ describe('lib/core/notification_center', function() {
             });
 
             context('send notification for type TRACK', function(){
-                // TRACK: should return a callback with object argument properties of: eventKey {str}, userId {str}, attributes {obj|undef}, eventTags {obj|undef}, logEvent {obj} when a conversion event is sent to Optimizely
                 it('the TRACK callback should be called with exact arguments', function(){
                     var trackData = {
                         eventKey: '',
