@@ -35,10 +35,79 @@ declare module "@optimizely/optimizely-sdk" {
     updateInterval?: number;
     urlTemplate?: string;
   }
+  
+  /**
+   * The shape of `window.optimizelyDatafile`
+   * @todo array objects need typing.
+   */
+  export interface Datafile {
+    version: string;
+    /**
+     * rollouts: Rollout[];
+     */
+    rollouts: { experiments: any[] }[];
+    typedAudiences: any[];
+    anonymizeIP: boolean;
+    projectId: string;
+    variables: any[];
+    /**
+     * featureFlags: FeatureFlag[];
+     */
+    featureFlags: {
+      experimentIds: string[];
+      rolloutId: string;
+      variables: any[];
+      id: string;
+      key: string;
+    }[];
+    /**
+     * experiments: Experiment[];
+     */
+    experiments: {
+      status: string;
+      audienceIds: string[];
+      variations: {
+        variables: any[];
+        id: string;
+        key: string;
+      }[];
+      id: string;
+      key: string;
+      layerId: string;
+      trafficAllocation: {
+        entityId: string;
+        endOfRange: number;
+      }[];
+      forcedVariations: {
+        [key: string]: string;
+      };
+    }[];
+    /**
+     * audiences: Audience[];
+     */
+    audiences: any[];
+    groups: any[];
+    attributes: {
+      id: string;
+      key: string;
+    }[];
+    botFiltering: boolean;
+    accountId: string;
+    /**
+     * events: Event[]; 
+     * - note namespace conflits
+     */
+    events: {
+      experimentIds: string[];
+      id: string;
+      key: string;
+    }[];
+    revision: string;
+  }
 
   // The options object given to Optimizely.createInstance.
   export interface Config {
-    datafile?: object | string;
+    datafile?: Datafile | object | string;
     datafileOptions?: DatafileOptions;
     errorHandler?: ErrorHandler;
     eventDispatcher?: EventDispatcher;
