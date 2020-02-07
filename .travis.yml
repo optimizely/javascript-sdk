@@ -44,6 +44,19 @@ jobs:
       notifications:
         email: false
 
+    - stage: 'Lint markdown files'
+      language: node_js
+      node_js: 12
+      os: linux
+      before_install: skip
+      install:
+        - npm i -g markdown-spellcheck
+      before_script:
+        - wget --quiet https://gist.githubusercontent.com/juancarlostong/dad02feeebc8763af35b4fdc717cf7a2/raw/29e085302a9418edbefba15d8f790fa76e0a89d5/.spelling
+      script:
+        - mdspell -a -n -r --en-us '**/*.md'
+      after_success: skip
+
     - stage: 'Lint'
       node_js: '12'
       script: npm run lint
