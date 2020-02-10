@@ -52,7 +52,7 @@ jobs:
       install:
         - npm i -g markdown-spellcheck
       before_script:
-        - wget --quiet https://gist.githubusercontent.com/juancarlostong/dad02feeebc8763af35b4fdc717cf7a2/raw/.spelling
+        - wget --quiet https://raw.githubusercontent.com/optimizely/mdspell-config/master/.spelling
       script:
         - mdspell -a -n -r --en-us '**/*.md'
       after_success: skip
