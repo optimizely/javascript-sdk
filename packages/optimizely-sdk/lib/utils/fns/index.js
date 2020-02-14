@@ -18,7 +18,10 @@ var _isFinite = require('lodash/isFinite');
 var MAX_NUMBER_LIMIT = Math.pow(2, 53);
 
 module.exports = {
-  assign: require('lodash/assign'),
+  assign: function (target) {
+    // Object.assign crashes if target object is undefined or null
+    return !!target ? Object.assign.apply(Object, arguments) : {};
+  },
   assignIn: require('lodash/assignIn'),
   cloneDeep: require('lodash/cloneDeep'),
   currentTimestamp: function() {
