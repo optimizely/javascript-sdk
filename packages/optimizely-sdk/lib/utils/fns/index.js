@@ -20,7 +20,7 @@ var MAX_NUMBER_LIMIT = Math.pow(2, 53);
 module.exports = {
   assign: function (target) {
     // Object.assign crashes if target object is undefined or null
-    return !!target ? Object.assign.apply(Object, arguments) : {};
+    return target ? Object.assign.apply(Object, arguments) : {};
   },
   assignIn: require('lodash/assignIn'),
   cloneDeep: require('lodash/cloneDeep'),
