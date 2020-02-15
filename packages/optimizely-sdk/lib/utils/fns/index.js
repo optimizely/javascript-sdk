@@ -17,7 +17,7 @@ var uuid = require('uuid');
 var _isFinite = require('lodash/isFinite');
 var MAX_NUMBER_LIMIT = Math.pow(2, 53);
 
-// Polyfill Object.assign for older browsers
+// Polyfills for older browsers
 var applyPolyfills = function() {
   if (typeof Object.assign !== 'function') {
     // Must be writable: true, enumerable: false, configurable: true
