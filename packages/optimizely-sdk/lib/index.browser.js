@@ -14,37 +14,6 @@
  * limitations under the License.
  */
 require('promise-polyfill/dist/polyfill');
-
-// Temporary adding code here to test polyfill for Object.assign
-if (typeof Object.assign !== 'function') {
-  // Must be writable: true, enumerable: false, configurable: true
-  Object.defineProperty(Object, "assign", {
-    value: function assign(target) {
-      'use strict';
-      if (target === null || target === undefined) {
-        throw new TypeError('Cannot convert undefined or null to object');
-      }
-
-      var to = Object(target);
-
-      for (var index = 1; index < arguments.length; index++) {
-        var nextSource = arguments[index];
-
-        if (nextSource !== null && nextSource !== undefined) { 
-          for (var nextKey in nextSource) {
-            // Avoid bugs when hasOwnProperty is shadowed
-            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-              to[nextKey] = nextSource[nextKey];
-            }
-          }
-        }
-      }
-      return to;
-    },
-    writable: true,
-    configurable: true
-  });
-}
 var logging = require('@optimizely/js-sdk-logging');
 var fns = require('./utils/fns');
 var configValidator = require('./utils/config_validator');
@@ -55,6 +24,8 @@ var eventProcessor = require('@optimizely/js-sdk-event-processor');
 var loggerPlugin = require('./plugins/logger');
 var Optimizely = require('./optimizely');
 var eventProcessorConfigValidator = require('./utils/event_processor_config_validator');
+
+fns.applyAssignPolyfill();
 
 var logger = logging.getLogger();
 logging.setLogHandler(loggerPlugin.createLogger());
