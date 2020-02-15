@@ -18,7 +18,7 @@ var _isFinite = require('lodash/isFinite');
 var MAX_NUMBER_LIMIT = Math.pow(2, 53);
 
 // Polyfill Object.assign for older browsers
-var applyAssignPolyfill = function() {
+var applyPolyfills = function() {
   if (typeof Object.assign !== 'function') {
     // Must be writable: true, enumerable: false, configurable: true
     Object.defineProperty(Object, "assign", {
@@ -73,5 +73,5 @@ module.exports = {
   },
   values: require('lodash/values'),
   isNumber: require('lodash/isNumber'),
-  applyAssignPolyfill: applyAssignPolyfill,
+  applyPolyfills: applyPolyfills,
 };
