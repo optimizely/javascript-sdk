@@ -37,6 +37,6 @@ module.exports = {
   uuid: function() {
     return uuid.v4();
   },
-  values: require('lodash/values'),
+  values: Object.values,
   isNumber: require('lodash/isNumber'),
 };
