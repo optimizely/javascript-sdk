@@ -38,6 +38,8 @@ export abstract class AbstractEventProcessor implements EventProcessor {
   protected dispatcher: EventDispatcher
   protected queue: EventQueue<ProcessableEvents>
   private notificationCenter?: NotificationCenter
+  private reqsInFlightCount: number
+  private reqsCompleteResolvers: Array<() => void>
 
   constructor({
     dispatcher,
@@ -81,10 +83,15 @@ export abstract class AbstractEventProcessor implements EventProcessor {
       })
     }
     this.notificationCenter = notificationCenter
+
+    this.reqsInFlightCount = 0
+    this.reqsCompleteResolvers = []
   }
 
   drainQueue(buffer: ProcessableEvents[]): Promise<void> {
     return new Promise(resolve => {
+      this.reqsInFlightCount++
+
       logger.debug('draining queue with %s events', buffer.length)
 
       if (buffer.length === 0) {
@@ -102,6 +109,27 @@ export abstract class AbstractEventProcessor implements EventProcessor {
           formattedEvent,
         )
       }
+    }).then(
+      () => this.onReqComplete(),
+      () => this.onReqComplete(),
+    )
+  }
+
+  private onReqComplete(): void {
+    this.reqsInFlightCount--
+    if (this.reqsInFlightCount === 0) {
+      this.reqsCompleteResolvers.forEach(resolver => resolver())
+      this.reqsCompleteResolvers = []
+    }
+  }
+
+  private onInFlightReqsComplete(): Promise<void> {
+    return new Promise(resolve => {
+      if (this.reqsInFlightCount === 0) {
+        resolve();
+      } else {
+        this.reqsCompleteResolvers.push(resolve)
+      }
     })
   }
 
@@ -110,9 +138,12 @@ export abstract class AbstractEventProcessor implements EventProcessor {
   }
 
   stop(): Promise<any> {
+    // swallow - an error stopping this queue shouldn't prevent this from stopping
     try {
-      // swallow, an error stopping this queue should prevent this from stopping
-      return this.queue.stop()
+      return Promise.all([
+        this.queue.stop(),
+        this.onInFlightReqsComplete(),
+      ])
     } catch (e) {
       logger.error('Error stopping EventProcessor: "%s"', e.message, e)
     }

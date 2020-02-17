@@ -261,6 +261,40 @@ describe('LogTierV1EventProcessor', () => {
       // not have been called again.
       expect(dispatcher.dispatchEvent).toBeCalledTimes(0)
     })
+
+    it('should resolve the stop promise after all dispatcher requests are done', async () => {
+      const dispatchCbs: Array<EventDispatcherCallback> = []
+      const dispatcher = {
+        dispatchEvent: jest.fn((event: EventV1Request, callback: EventDispatcherCallback) => {
+          dispatchCbs.push(callback)
+        })
+      }
+
+      const processor = new LogTierV1EventProcessor({
+        dispatcher,
+        flushInterval: 100,
+        maxQueueSize: 2,
+      })
+      processor.start()
+
+      for (let i = 0; i < 4; i++) {
+        processor.process(createImpressionEvent())
+      }
+      expect(dispatchCbs.length).toBe(2)
+
+      let stopPromiseResolved = false
+      const stopPromise = processor.stop().then(() => {
+        stopPromiseResolved = true
+      })
+      expect(stopPromiseResolved).toBe(false)
+
+      dispatchCbs[0]({ statusCode: 204 })
+      jest.advanceTimersByTime(100)
+      expect(stopPromiseResolved).toBe(false)
+      dispatchCbs[1]({ statusCode: 204 })
+      await stopPromise
+      expect(stopPromiseResolved).toBe(true)
+    })
   })
 
   describe('when maxQueueSize = 1', () => {
