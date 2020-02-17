@@ -89,7 +89,7 @@ export abstract class AbstractEventProcessor implements EventProcessor {
   }
 
   drainQueue(buffer: ProcessableEvents[]): Promise<void> {
-    return new Promise(resolve => {
+    return (new Promise(resolve => {
       this.reqsInFlightCount++
 
       logger.debug('draining queue with %s events', buffer.length)
@@ -109,7 +109,7 @@ export abstract class AbstractEventProcessor implements EventProcessor {
           formattedEvent,
         )
       }
-    }).then(
+    })).then(
       () => this.onReqComplete(),
       () => this.onReqComplete(),
     )
