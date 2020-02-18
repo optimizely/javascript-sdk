@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import { EventDispatcher, EventV1Request } from './eventDispatcher'
 import { EventQueue, DefaultEventQueue, SingleEventQueue } from './eventQueue'
 import { getLogger } from '@optimizely/js-sdk-logging'
 import { NOTIFICATION_TYPES, NotificationCenter } from '@optimizely/js-sdk-utils'
+import RequestTracker from './requestTracker';
 
 const logger = getLogger('EventProcessor')
 
@@ -38,8 +39,7 @@ export abstract class AbstractEventProcessor implements EventProcessor {
   protected dispatcher: EventDispatcher
   protected queue: EventQueue<ProcessableEvents>
   private notificationCenter?: NotificationCenter
-  private reqsInFlightCount: number
-  private reqsCompleteResolvers: Array<() => void>
+  private requestTracker: RequestTracker
 
   constructor({
     dispatcher,
@@ -84,14 +84,11 @@ export abstract class AbstractEventProcessor implements EventProcessor {
     }
     this.notificationCenter = notificationCenter
 
-    this.reqsInFlightCount = 0
-    this.reqsCompleteResolvers = []
+    this.requestTracker = new RequestTracker()
   }
 
   drainQueue(buffer: ProcessableEvents[]): Promise<void> {
-    return (new Promise(resolve => {
-      this.reqsInFlightCount++
-
+    const reqPromise = new Promise<void>(resolve => {
       logger.debug('draining queue with %s events', buffer.length)
 
       if (buffer.length === 0) {
@@ -109,28 +106,9 @@ export abstract class AbstractEventProcessor implements EventProcessor {
           formattedEvent,
         )
       }
-    })).then(
-      () => this.onReqComplete(),
-      () => this.onReqComplete(),
-    )
-  }
-
-  private onReqComplete(): void {
-    this.reqsInFlightCount--
-    if (this.reqsInFlightCount === 0) {
-      this.reqsCompleteResolvers.forEach(resolver => resolver())
-      this.reqsCompleteResolvers = []
-    }
-  }
-
-  private onInFlightReqsComplete(): Promise<void> {
-    return new Promise(resolve => {
-      if (this.reqsInFlightCount === 0) {
-        resolve();
-      } else {
-        this.reqsCompleteResolvers.push(resolve)
-      }
     })
+    this.requestTracker.trackRequest(reqPromise)
+    return reqPromise
   }
 
   process(event: ProcessableEvents): void {
@@ -142,7 +120,7 @@ export abstract class AbstractEventProcessor implements EventProcessor {
     try {
       return Promise.all([
         this.queue.stop(),
-        this.onInFlightReqsComplete(),
+        this.requestTracker.onRequestsComplete(),
       ])
     } catch (e) {
       logger.error('Error stopping EventProcessor: "%s"', e.message, e)
