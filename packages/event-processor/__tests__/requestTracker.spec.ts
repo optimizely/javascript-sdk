@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import RequestTracker from "../src/requestTracker";
+import RequestTracker from '../src/requestTracker'
 
 describe('requestTracker', () => {
   describe('onRequestsComplete', () => {

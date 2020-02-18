@@ -33,7 +33,7 @@ class RequestTracker {
   public onRequestsComplete(): Promise<void> {
     return new Promise(resolve => {
       if (this.reqsInFlightCount === 0) {
-        resolve();
+        resolve()
       } else {
         this.reqsCompleteResolvers.push(resolve)
       }
