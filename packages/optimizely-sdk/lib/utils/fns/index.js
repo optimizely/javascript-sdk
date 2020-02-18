@@ -24,7 +24,9 @@ module.exports = {
   currentTimestamp: function() {
     return Math.round(new Date().getTime());
   },
-  isArray: Array.isArray,
+  isArray: function(value) {
+    return Array.isArray(value);
+  },
   isEmpty: require('lodash/isEmpty'),
   isFinite: function(number) {
     return _isFinite(number) && Math.abs(number) <= MAX_NUMBER_LIMIT;
