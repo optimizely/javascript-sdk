@@ -15,6 +15,7 @@
  */
 var uuid = require('uuid');
 var _isFinite = require('lodash/isFinite');
+var { objectValues } = require('@optimizely/js-sdk-utils');
 var MAX_NUMBER_LIMIT = Math.pow(2, 53);
 
 module.exports = {
@@ -37,10 +38,6 @@ module.exports = {
   uuid: function() {
     return uuid.v4();
   },
-  values: function(obj) {
-    return Object.keys(obj).map(function(key) {
-      return obj[key];
-    });
-  },
+  values: objectValues,
   isNumber: require('lodash/isNumber'),
 };
