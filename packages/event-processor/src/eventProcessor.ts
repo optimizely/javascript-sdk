@@ -118,10 +118,8 @@ export abstract class AbstractEventProcessor implements EventProcessor {
   stop(): Promise<any> {
     // swallow - an error stopping this queue shouldn't prevent this from stopping
     try {
-      return Promise.all([
-        this.queue.stop(),
-        this.requestTracker.onRequestsComplete(),
-      ])
+      this.queue.stop()
+      return this.requestTracker.onRequestsComplete()
     } catch (e) {
       logger.error('Error stopping EventProcessor: "%s"', e.message, e)
     }
