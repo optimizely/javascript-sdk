@@ -15,7 +15,7 @@
  */
 var uuid = require('uuid');
 var _isFinite = require('lodash/isFinite');
-var { objectValues } = require('@optimizely/js-sdk-utils');
+var objectValues = require('@optimizely/js-sdk-utils').objectValues;
 var MAX_NUMBER_LIMIT = Math.pow(2, 53);
 
 module.exports = {
