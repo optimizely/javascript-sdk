@@ -15,7 +15,7 @@
  */
 var uuid = require('uuid');
 var _isFinite = require('lodash/isFinite');
-var { keyBy } = require('@optimizely/js-sdk-utils');
+var keyBy = require('@optimizely/js-sdk-utils').keyBy;
 var MAX_NUMBER_LIMIT = Math.pow(2, 53);
 
 module.exports = {
