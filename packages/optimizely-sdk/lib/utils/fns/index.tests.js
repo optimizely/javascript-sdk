@@ -37,5 +37,29 @@ describe('lib/utils/fns', function() {
         assert.isTrue(fns.isFinite(-Math.pow(2, 53)));
       });
     });
+    
+    describe('forOwn', function() {
+      it('should return early if false is returned', function() {
+        var obj = {
+          prop1: 'prop1',
+          prop2: 'prop2',
+          prop3: 'prop3',
+          prop4: 'prop4'
+        }
+        var calledCount = 0;
+        fns.forOwn(obj, function(val) {
+          calledCount ++;
+          if (val === 'prop3') {
+            return false;
+          }
+        });
+        assert.equal(calledCount, 3);
+      });
+
+      it('should not crash when first argument is null or undefined', function() {
+        fns.forOwn(null, function() {});
+        fns.forOwn(undefined, function() {});
+      });
+    });
   });
 });
