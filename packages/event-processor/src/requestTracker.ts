@@ -26,7 +26,7 @@ class RequestTracker {
 
   /**
    * Track the argument request (represented by a Promise). reqPromise will feed
-   * into the state of Promises returned by `onRequestsComplete`.
+   * into the state of Promises returned by onRequestsComplete.
    * @param {Promise<void>} reqPromise
    */
   public trackRequest(reqPromise: Promise<void>): void {
@@ -42,7 +42,7 @@ class RequestTracker {
   }
 
   /**
-   * Return a `Promise` that fulfills after all currently-tracked request promises
+   * Return a Promise that fulfills after all currently-tracked request promises
    * are resolved.
    * @return {Promise<void>}
    */
