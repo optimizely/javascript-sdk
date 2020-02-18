@@ -14,10 +14,21 @@
  * limitations under the License.
  */
 
+/**
+ * RequestTracker keeps track of in-flight requests for EventProcessor using
+ * an internal counter. It exposes methods for adding a new request to be
+ * tracked, and getting a Promise representing the completion of currently
+ * tracked requests.
+ */
 class RequestTracker {
   private reqsInFlightCount: number = 0
   private reqsCompleteResolvers: Array<() => void> = []
 
+  /**
+   * Track the argument request (represented by a Promise). reqPromise will feed
+   * into the state of Promises returned by `onRequestsComplete`.
+   * @param {Promise<void>} reqPromise
+   */
   public trackRequest(reqPromise: Promise<void>): void {
     this.reqsInFlightCount++
     const onReqComplete = () => {
@@ -30,6 +41,11 @@ class RequestTracker {
     reqPromise.then(onReqComplete, onReqComplete)
   }
 
+  /**
+   * Return a `Promise` that fulfills after all currently-tracked request promises
+   * are resolved.
+   * @return {Promise<void>}
+   */
   public onRequestsComplete(): Promise<void> {
     return new Promise(resolve => {
       if (this.reqsInFlightCount === 0) {
