@@ -15,6 +15,7 @@
  */
 var uuid = require('uuid');
 var _isFinite = require('lodash/isFinite');
+var { keyBy } = require('@optimizely/js-sdk-utils');
 var MAX_NUMBER_LIMIT = Math.pow(2, 53);
 
 module.exports = {
@@ -29,7 +30,15 @@ module.exports = {
   isFinite: function(number) {
     return _isFinite(number) && Math.abs(number) <= MAX_NUMBER_LIMIT;
   },
-  keyBy: require('lodash/keyBy'),
+  keyBy: function(arr, callback) {
+    if (!arr) return {};
+    if (typeof callback === 'string' || callback instanceof String) {
+      return keyBy(arr, function(item) {
+        return item[callback];
+      });
+    }
+    return keyBy(arr, callback);
+  },
   filter: require('lodash/filter'),
   forEach: require('lodash/forEach'),
   forOwn: require('lodash/forOwn'),
