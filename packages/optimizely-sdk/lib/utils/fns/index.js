@@ -33,9 +33,9 @@ module.exports = {
   filter: require('lodash/filter'),
   forEach: require('lodash/forEach'),
   forOwn: function(obj, callback) {
-    for(key in obj) {
+    for(var key in obj) {
       if(obj.hasOwnProperty(key)){
-        val = obj[key];
+        var val = obj[key];
         callback(val, key, obj);
       }
     }
