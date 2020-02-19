@@ -38,19 +38,15 @@ describe('lib/utils/fns', function() {
       });
     });
     describe('isEmpty', function() {
-      it('should return true in case of null', function() {
+      it('should return true when object is null', function() {
         assert.isTrue(fns.isEmpty(null));
       });
-      it('should return True in case of empty {}', function() {
+      it('should return true when object is empty {}', function() {
         assert.isTrue(fns.isEmpty({}));
       });
-      it('should return false in case of value object', function() {
+      it('should return false when object has attributes', function() {
         var obj = { "key": "value" };
         assert.isFalse(fns.isEmpty(obj));
-      });
-      it('should return true if anything else than an object', function() {
-        var obj = { "key": "value" };
-        assert.isTrue(fns.isEmpty(1));
       });
     });
   });

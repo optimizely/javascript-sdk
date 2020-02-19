@@ -27,25 +27,9 @@ module.exports = {
     return Math.round(new Date().getTime());
   },
   isArray: require('lodash/isArray'),
-  isEmpty: function isEmpty(value) {
-    if (value == null) {
-      return true;
-    }
-    var length = value.length;
-    if (typeof length == 'number' && length > -1 && length % 1 === 0 && length <= MAX_SAFE_INTEGER) {
-      var type = typeof value;
-      if (type === 'object') {
-        return !value.length;
-      }
-    }
-    for (var key in value) {
-      if (hasOwnProperty.call(value, key)) {
-        return false;
-      }
-    }
-    return true;
-  }
-  ,
+  isEmpty: function(obj) {
+    return !obj || Object.keys(obj).length === 0;
+  },
   isFinite: function(number) {
     return _isFinite(number) && Math.abs(number) <= MAX_NUMBER_LIMIT;
   },
