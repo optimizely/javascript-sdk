@@ -68,7 +68,7 @@ jobs:
       before_install: skip
       install: skip
       before_script:
-        - mkdir $HOME/travisci-tools && pushd $HOME/travisci-tools && git init && git pull https://$CI_USER_TOKEN@github.com/optimizely/travisci-tools.git && popd
+        - mkdir $HOME/travisci-tools && pushd $HOME/travisci-tools && git init && git pull https://$CI_USER_TOKEN@github.com/optimizely/travisci-tools.git mng/trigger-with-buildevent && popd
       script:
         - CLIENT=node $HOME/travisci-tools/trigger-script-with-status-update.sh
         - CLIENT=browser $HOME/travisci-tools/trigger-script-with-status-update.sh
