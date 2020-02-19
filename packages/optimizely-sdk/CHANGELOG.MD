@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Bug fixes
 - Fixed default event dispatcher not used in React Native entry point ([#383](https://github.com/optimizely/javascript-sdk/pull/383))
 
+### New Features
+- Promise returned from `close` tracks the state of in-flight event dispatcher requests ([#404](https://github.com/optimizely/javascript-sdk/pull/404))
+
 ## [3.4.1] - January 28th, 2020
 
 ### Bug fixes

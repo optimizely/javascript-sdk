@@ -935,20 +935,21 @@ Optimizely.prototype.getOptimizelyConfig = function() {
  * - Pending event queue flushes
  *
  * In-flight datafile requests will be aborted. Any events waiting to be sent
- * as part of a batched event request will be immediately batched and sent to
- * the event dispatcher.
+ * as part of a batched event request will be immediately flushed to the event
+ * dispatcher.
  *
- * If any such requests were sent to the event dispatcher, returns a Promise
- * that fulfills after the event dispatcher calls the response callback for each
- * request. Otherwise, returns an immediately-fulfilled Promise.
+ * Returns a Promise that fulfills after all in-flight event dispatcher requests
+ * (including any final request resulting from flushing the queue as described
+ * above) are complete. If there are no in-flight event dispatcher requests and
+ * no queued events waiting to be sent, returns an immediately-fulfilled Promise.
  *
  * Returned Promises are fulfilled with result objects containing these
  * properties:
- *    - success (boolean): true if all events in the queue at the time close was
- *                         called were combined into requests, sent to the
- *                         event dispatcher, and the event dispatcher called the
- *                         callbacks for each request. false if an unexpected
- *                         error was encountered during the close process.
+ *    - success (boolean): true if the event dispatcher signaled completion of
+ *                         all in-flight and final requests, or if there were no
+ *                         queued events and no in-flight requests. false if an
+ *                         unexpected error was encountered during the close
+ *                         process.
  *    - reason (string=):  If success is false, this is a string property with
  *                         an explanatory message.
  *
