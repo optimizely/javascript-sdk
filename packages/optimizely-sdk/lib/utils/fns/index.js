@@ -46,7 +46,7 @@ module.exports = {
     return Math.round(new Date().getTime());
   },
   isFinite: function(number) {
-    return _isFinite(number) && Math.abs(number) <= MAX_NUMBER_LIMIT;
+    return typeof number == 'number' && Math.abs(number) <= MAX_NUMBER_LIMIT;
   },
   keyBy: function(arr, key) {
     if (!arr) return {};

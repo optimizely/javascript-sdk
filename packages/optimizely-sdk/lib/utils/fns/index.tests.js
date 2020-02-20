@@ -25,6 +25,8 @@ describe('lib/utils/fns', function() {
         assert.isFalse(fns.isFinite(Infinity));
         assert.isFalse(fns.isFinite(-Infinity));
         assert.isFalse(fns.isFinite(NaN));
+        assert.isFalse(fns.isFinite(undefined));
+        assert.isFalse(fns.isFinite('3'));
         assert.isFalse(fns.isFinite(Math.pow(2, 53) + 2));
         assert.isFalse(fns.isFinite(-Math.pow(2, 53) - 2));
       });
