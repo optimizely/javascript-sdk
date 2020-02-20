@@ -70,8 +70,8 @@ jobs:
       before_script:
         - mkdir $HOME/travisci-tools && pushd $HOME/travisci-tools && git init && git pull https://$CI_USER_TOKEN@github.com/optimizely/travisci-tools.git mng/trigger-with-buildevent && popd
       script:
-        - CLIENT=node $HOME/travisci-tools/trigger-script-with-status-update.sh
-        - CLIENT=browser $HOME/travisci-tools/trigger-script-with-status-update.sh
+        - CLIENT=node $HOME/travisci-tools/trigger-script-with-status-update.sh mng/buildevents-2
+        - CLIENT=browser $HOME/travisci-tools/trigger-script-with-status-update.sh mng/buildevents-2
       after_success: travis_terminate 0
     - <<: *integrationtest
       stage: 'Benchmarking tests'
