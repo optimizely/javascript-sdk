@@ -1,5 +1,5 @@
 <h3 align="center">
-  Optimizely JavaScript  SDK
+  Optimizely JavaScript   SDK
 </h3>
 
 <p align="center">
