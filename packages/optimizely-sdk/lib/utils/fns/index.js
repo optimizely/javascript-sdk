@@ -16,8 +16,6 @@
 var uuid = require('uuid');
 var _isFinite = require('lodash/isFinite');
 var MAX_NUMBER_LIMIT = Math.pow(2, 53);
-var MAX_SAFE_INTEGER = 9007199254740991;
-var hasOwnProperty = Object.prototype.hasOwnProperty;
 
 module.exports = {
   assign: require('lodash/assign'),

@@ -37,6 +37,7 @@ describe('lib/utils/fns', function() {
         assert.isTrue(fns.isFinite(-Math.pow(2, 53)));
       });
     });
+    
     describe('isEmpty', function() {
       it('should return true when object is null', function() {
         assert.isTrue(fns.isEmpty(null));
