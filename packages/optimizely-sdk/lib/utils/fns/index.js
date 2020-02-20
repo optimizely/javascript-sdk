@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 var uuid = require('uuid');
-var _isFinite = require('lodash/isFinite');
-var keyBy = require('@optimizely/js-sdk-utils').keyBy;
 var MAX_NUMBER_LIMIT = Math.pow(2, 53);
-
+var keyBy = require('@optimizely/js-sdk-utils').keyBy;
 module.exports = {
   assign: function (target) {
     if (!target) {
@@ -29,7 +27,7 @@ module.exports = {
       var to = Object(target);
       for (var index = 1; index < arguments.length; index++) {
         var nextSource = arguments[index];
-        if (nextSource !== null && nextSource !== undefined) { 
+        if (nextSource !== null && nextSource !== undefined) {
           for (var nextKey in nextSource) {
             // Avoid bugs when hasOwnProperty is shadowed
             if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
