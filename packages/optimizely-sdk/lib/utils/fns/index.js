@@ -33,7 +33,17 @@ module.exports = {
   filter: require('lodash/filter'),
   forEach: require('lodash/forEach'),
   forOwn: require('lodash/forOwn'),
-  map: require('lodash/map'),
+  map: function(obj, callback) {
+    if (Array.isArray(obj)) {
+      // Use available map method for array
+      return obj.map(callback)
+    } else {
+      // custom implementation for Object type
+      return Object.keys(obj).map(function(k) {
+        return callback(obj[k], k);
+      });
+    }
+  },
   uuid: function() {
     return uuid.v4();
   },

@@ -37,5 +37,26 @@ describe('lib/utils/fns', function() {
         assert.isTrue(fns.isFinite(-Math.pow(2, 53)));
       });
     });
+
+    describe('map', function() {
+      it('should work correctly with object', function() {
+        var obj = {
+          prop1: 'p1',
+          prop2: 'p2'
+        }
+        var result = fns.map(obj, function(v, k) {
+          return k + '=' + v;
+        }).join('&');
+        assert.equal('prop1=p1&prop2=p2', result);
+      });
+
+      it('should work correctly with array', function() {
+        var obj = ['item1', 'item2'];
+        var result = fns.map(obj, function(v) {
+          return v;
+        }).join('&');
+        assert.equal('item1&item2', result);
+      });
+    });
   });
 });
