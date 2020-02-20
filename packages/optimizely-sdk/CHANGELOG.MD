@@ -5,8 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.5.0] - February 20th, 2020
+
 ### Bug fixes
 - Fixed default event dispatcher not used in React Native entry point ([#383](https://github.com/optimizely/javascript-sdk/pull/383))
+- Fixed errors in `getOptimizelyConfig` TypeScript type definitions ([#406](https://github.com/optimizely/javascript-sdk/pull/406))
 
 ### New Features
 - Promise returned from `close` tracks the state of in-flight event dispatcher requests ([#404](https://github.com/optimizely/javascript-sdk/pull/404))
