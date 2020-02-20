@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.4.0] - February 19, 2020
+
+### New Features
+- Promise returned from `stop` method of `EventProcessor` now tracks the state of all in-flight dispatcher requests, not just the final request that was triggered at the time `stop` was called
+
 ## [0.3.2] - October 21, 2019
 
 - Fixed a runtime error when accessing localstorage in `PendingEventsStore` when SDK is used in a React Native application. Pending events will still not be stored when SDK is used in React Native but no error will be thrown anymore.
