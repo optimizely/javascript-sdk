@@ -39,4 +39,3 @@ describe('lib/utils/fns', function() {
     });
   });
 });
-
