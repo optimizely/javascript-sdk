@@ -39,7 +39,6 @@ module.exports = {
     }
     return keyBy(arr, callback);
   },
-  filter: require('lodash/filter'),
   forEach: require('lodash/forEach'),
   forOwn: require('lodash/forOwn'),
   map: require('lodash/map'),
