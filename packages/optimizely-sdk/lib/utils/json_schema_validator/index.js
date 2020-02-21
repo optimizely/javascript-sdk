@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var fns = require('../fns');
 var validate = require('json-schema').validate;
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 
