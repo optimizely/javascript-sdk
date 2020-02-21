@@ -25,9 +25,6 @@ module.exports = {
     return Math.round(new Date().getTime());
   },
   isArray: require('lodash/isArray'),
-  isEmpty: function(obj) {
-    return !obj || Object.keys(obj).length === 0;
-  },
   isFinite: function(number) {
     return _isFinite(number) && Math.abs(number) <= MAX_NUMBER_LIMIT;
   },
