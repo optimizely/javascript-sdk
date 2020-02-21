@@ -28,7 +28,25 @@ module.exports = {
     return _isFinite(number) && Math.abs(number) <= MAX_NUMBER_LIMIT;
   },
   keyBy: require('lodash/keyBy'),
-  forEach: require('lodash/forEach'),
+  filter: require('lodash/filter'),
+  forEach: function(collection, iteratee) {
+    // checking iteratee is a function otherwise return identity
+    iteratee = typeof iteratee == 'function' ? iteratee : function(value, index, collection) {
+      return value;
+    };
+    if (Array.isArray(collection)) {
+      var index = -1, length = collection == null ? 0 : collection.length;
+
+      while (++index < length) {
+        if (iteratee(collection[index], index, collection) === false) {
+          break;
+        }
+      }
+      return collection;
+    } else {
+
+    }
+  },
   forOwn: require('lodash/forOwn'),
   uuid: function() {
     return uuid.v4();
