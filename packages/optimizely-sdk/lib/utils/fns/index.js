@@ -31,17 +31,6 @@ module.exports = {
   },
   keyBy: require('lodash/keyBy'),
   forEach: require('lodash/forEach'),
-  forOwn: function(obj, callback) {
-    for (var key in obj) {
-      if (obj.hasOwnProperty(key)){
-        var val = obj[key];
-        // Breaking early when callback returns false
-        if (callback(val, key, obj) === false) {
-          break;
-        }
-      }
-    }
-  },
   map: require('lodash/map'),
   uuid: function() {
     return uuid.v4();

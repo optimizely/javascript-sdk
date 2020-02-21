@@ -629,14 +629,12 @@ Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
       return enabledFeatures;
     }
 
-    fns.forOwn(
-      configObj.featureKeyMap,
-      function(feature) {
-        if (this.isFeatureEnabled(feature.key, userId, attributes)) {
-          enabledFeatures.push(feature.key);
-        }
-      }.bind(this)
-    );
+    Object.keys(configObj.featureKeyMap).forEach(function (featureKey) {
+      var feature = configObj.featureKeyMap[featureKey];
+      if (this.isFeatureEnabled(feature.key, userId, attributes)) {
+        enabledFeatures.push(feature.key);
+      }
+    }.bind(this));
 
     return enabledFeatures;
   } catch (e) {
