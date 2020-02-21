@@ -35,6 +35,6 @@ module.exports = {
   },
   values: require('lodash/values'),
   isNumber: function(value) {
-    return typeof value == 'number';
+    return typeof value === 'number';
   },
 };
