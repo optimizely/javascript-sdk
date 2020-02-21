@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var fns = require('../../utils/fns');
-
 var POST_METHOD = 'POST';
 var GET_METHOD = 'GET';
 var READYSTATE_COMPLETE = 4;
@@ -68,7 +66,7 @@ module.exports = {
 };
 
 var toQueryString = function(obj) {
-  return fns.map(obj, function(v, k) {
-    return encodeURIComponent(k) + '=' + encodeURIComponent(v);
+  return Object.keys(obj).map(function(k) {
+    return encodeURIComponent(k) + '=' + encodeURIComponent(obj[k]);
   }).join('&');
 };
