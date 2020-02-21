@@ -37,9 +37,9 @@ describe('lib/utils/fns', function() {
         assert.isTrue(fns.isFinite(-Math.pow(2, 53)));
       });
     });
-    
+
     describe('keyBy', function() {
-      it('should return correct object if callback is a string key', function() {
+      it('should return correct object when a key is provided', function() {
         var arr = [
           { key1: 'row1', key2: 'key2row1' },
           { key1: 'row2', key2: 'key2row2' },
