@@ -37,17 +37,5 @@ describe('lib/utils/fns', function() {
         assert.isTrue(fns.isFinite(-Math.pow(2, 53)));
       });
     });
-    describe('isEmpty', function() {
-      it('should return true when object is null', function() {
-        assert.isTrue(fns.isEmpty(null));
-      });
-      it('should return true when object is empty {}', function() {
-        assert.isTrue(fns.isEmpty({}));
-      });
-      it('should return false when object has attributes', function() {
-        var obj = { "key": "value" };
-        assert.isFalse(fns.isEmpty(obj));
-      });
-    });
   });
 });
