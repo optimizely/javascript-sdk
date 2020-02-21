@@ -28,7 +28,6 @@ describe('lib/utils/fns', function() {
         assert.isFalse(fns.isFinite(Math.pow(2, 53) + 2));
         assert.isFalse(fns.isFinite(-Math.pow(2, 53) - 2));
       });
-
       it('should return true for valid numbers', function() {
         assert.isTrue(fns.isFinite(0));
         assert.isTrue(fns.isFinite(10));
@@ -39,3 +38,4 @@ describe('lib/utils/fns', function() {
     });
   });
 });
+
