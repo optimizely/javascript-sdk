@@ -1,5 +1,5 @@
 /**
- * Copyright 2017, 2019, Optimizely
+ * Copyright 2017, 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,14 +30,11 @@ module.exports = {
   isFinite: function(number) {
     return _isFinite(number) && Math.abs(number) <= MAX_NUMBER_LIMIT;
   },
-  keyBy: function(arr, callback) {
+  keyBy: function(arr, key) {
     if (!arr) return {};
-    if (typeof callback === 'string' || callback instanceof String) {
-      return keyBy(arr, function(item) {
-        return item[callback];
-      });
-    }
-    return keyBy(arr, callback);
+    return keyBy(arr, function(item) {
+      return item[key];
+    });
   },
   forEach: require('lodash/forEach'),
   forOwn: require('lodash/forOwn'),

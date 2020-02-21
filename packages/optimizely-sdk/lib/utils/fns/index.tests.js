@@ -37,27 +37,8 @@ describe('lib/utils/fns', function() {
         assert.isTrue(fns.isFinite(-Math.pow(2, 53)));
       });
     });
+    
     describe('keyBy', function() {
-      it('should return correct object if callback is a function', function() {
-        var arr = [
-          { key1: 'row1', key2: 'key2row1' },
-          { key1: 'row2', key2: 'key2row2' },
-          { key1: 'row3', key2: 'key2row3' },
-          { key1: 'row4', key2: 'key2row4' },
-        ];
-
-        var obj = fns.keyBy(arr, function(item) {
-          return item['key1'];
-        });
-
-        assert.deepEqual(obj, {
-          row1: { key1: 'row1', key2: 'key2row1' },
-          row2: { key1: 'row2', key2: 'key2row2' },
-          row3: { key1: 'row3', key2: 'key2row3' },
-          row4: { key1: 'row4', key2: 'key2row4' }
-        });
-      });
-
       it('should return correct object if callback is a string key', function() {
         var arr = [
           { key1: 'row1', key2: 'key2row1' },
@@ -75,7 +56,7 @@ describe('lib/utils/fns', function() {
           row4: { key1: 'row4', key2: 'key2row4' }
         });
       });
-
+      
       it('should return empty object when first argument is null or undefined', function() {
         var obj = fns.keyBy(null, 'key1');
         assert.isEmpty(obj);
