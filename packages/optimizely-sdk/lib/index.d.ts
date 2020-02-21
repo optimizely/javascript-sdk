@@ -115,7 +115,7 @@ declare module "@optimizely/optimizely-sdk" {
     onReady(options?: {
       timeout?: number;
     }): Promise<{ success: boolean; reason?: string }>;
-    close(): void;
+    close(): Promise<{ success: boolean; reason?: string }>;
   }
 
   // An event to be submitted to Optimizely, enabling tracking the reach and impact of
