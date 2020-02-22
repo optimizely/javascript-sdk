@@ -66,7 +66,7 @@ NotificationCenter.prototype.addNotificationListener = function (notificationTyp
     }
 
     var callbackAlreadyAdded = false;
-    fns.forEach(this.__notificationListeners[notificationType], function (listenerEntry) {
+    (this.__notificationListeners[notificationType] || []).forEach(function(listenerEntry) {
       if (listenerEntry.callback === callback) {
         callbackAlreadyAdded = true;
         return false;
@@ -102,7 +102,7 @@ NotificationCenter.prototype.removeNotificationListener = function (listenerId) 
     var indexToRemove;
     var typeToRemove;
     fns.forOwn(this.__notificationListeners, function (listenersForType, notificationType) {
-      fns.forEach(listenersForType, function (listenerEntry, i) {
+      (listenersForType || []).forEach(function(listenerEntry, i) {
         if (listenerEntry.id === listenerId) {
           indexToRemove = i;
           typeToRemove = notificationType;
@@ -160,7 +160,7 @@ NotificationCenter.prototype.clearNotificationListeners = function (notification
  */
 NotificationCenter.prototype.sendNotifications = function (notificationType, notificationData) {
   try {
-    fns.forEach(this.__notificationListeners[notificationType], function (listenerEntry) {
+    (this.__notificationListeners[notificationType] || []).forEach(function(listenerEntry) {
       var callback = listenerEntry.callback;
       try {
         callback(notificationData);
