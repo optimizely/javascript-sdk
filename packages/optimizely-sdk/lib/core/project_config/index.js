@@ -122,7 +122,7 @@ module.exports = {
    */
   getExperimentId: function(projectConfig, experimentKey) {
     var experiment = projectConfig.experimentKeyMap[experimentKey];
-    if (fns.isEmpty(experiment)) {
+    if (!experiment) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
     }
     return experiment.id;
@@ -137,7 +137,7 @@ module.exports = {
    */
   getLayerId: function(projectConfig, experimentId) {
     var experiment = projectConfig.experimentIdMap[experimentId];
-    if (fns.isEmpty(experiment)) {
+    if (!experiment) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
     }
     return experiment.layerId;
@@ -190,7 +190,7 @@ module.exports = {
    */
   getExperimentStatus: function(projectConfig, experimentKey) {
     var experiment = projectConfig.experimentKeyMap[experimentKey];
-    if (fns.isEmpty(experiment)) {
+    if (!experiment) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
     }
     return experiment.status;
@@ -224,7 +224,7 @@ module.exports = {
    */
   getExperimentAudienceConditions: function(projectConfig, experimentKey) {
     var experiment = projectConfig.experimentKeyMap[experimentKey];
-    if (fns.isEmpty(experiment)) {
+    if (!experiment) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
     }
 
@@ -286,7 +286,7 @@ module.exports = {
    */
   getTrafficAllocation: function(projectConfig, experimentKey) {
     var experiment = projectConfig.experimentKeyMap[experimentKey];
-    if (fns.isEmpty(experiment)) {
+    if (!experiment) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
     }
     return experiment.trafficAllocation;
