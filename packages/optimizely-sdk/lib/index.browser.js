@@ -25,7 +25,6 @@ var loggerPlugin = require('./plugins/logger');
 var Optimizely = require('./optimizely');
 var eventProcessorConfigValidator = require('./utils/event_processor_config_validator');
 
-fns.applyPolyfills();
 var logger = logging.getLogger();
 logging.setLogHandler(loggerPlugin.createLogger());
 logging.setLogLevel(logging.LogLevel.INFO);
