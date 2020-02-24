@@ -40,7 +40,6 @@ module.exports = {
       return to;
     }
   },
-  assignIn: require('lodash/assignIn'),
   cloneDeep: require('lodash/cloneDeep'),
   currentTimestamp: function() {
     return Math.round(new Date().getTime());
