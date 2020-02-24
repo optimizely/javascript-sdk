@@ -16,7 +16,7 @@
 
 var enums = require('../../utils/enums');
 var fns = require('../../utils/fns');
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
+var jsSdkUtils = require('@optimizely/js-sdk-utils');
 
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
@@ -38,8 +38,7 @@ function NotificationCenter(options) {
   this.errorHandler = options.errorHandler;
   this.__notificationListeners = {};
 
-  Object.keys(enums.NOTIFICATION_TYPES).forEach(function(key) {
-    var notificationTypeEnum = enums.NOTIFICATION_TYPES[key];
+  jsSdkUtils.objectValues(enums.NOTIFICATION_TYPES).forEach(function(notificationTypeEnum) {
     this.__notificationListeners[notificationTypeEnum] = [];
   }.bind(this));
   this.__listenerId = 1;
@@ -104,7 +103,7 @@ NotificationCenter.prototype.removeNotificationListener = function (listenerId) 
     var indexToRemove;
     var typeToRemove;
 
-    Object.keys(this.__notificationListeners).forEach(function(notificationType) {
+    Object.keys(this.__notificationListeners).some(function(notificationType) {
       var listenersForType = this.__notificationListeners[notificationType];      
       fns.forEach(listenersForType, function (listenerEntry, i) {
         if (listenerEntry.id === listenerId) {
@@ -113,6 +112,9 @@ NotificationCenter.prototype.removeNotificationListener = function (listenerId) 
           return false;
         }
       });
+      if (indexToRemove !== undefined && typeToRemove !== undefined) {
+        return true;
+      }
     }.bind(this));
     
     if (indexToRemove !== undefined && typeToRemove !== undefined) {
@@ -131,8 +133,7 @@ NotificationCenter.prototype.removeNotificationListener = function (listenerId) 
  */
 NotificationCenter.prototype.clearAllNotificationListeners = function () {
   try{
-    Object.keys(enums.NOTIFICATION_TYPES).forEach(function (key) {
-      var notificationTypeEnum = enums.NOTIFICATION_TYPES[key];
+    jsSdkUtils.objectValues(enums.NOTIFICATION_TYPES).forEach(function (notificationTypeEnum) {
       this.__notificationListeners[notificationTypeEnum] = [];
     }.bind(this));
   } catch (e) {
@@ -167,7 +168,7 @@ NotificationCenter.prototype.sendNotifications = function (notificationType, not
       try {
         callback(notificationData);
       } catch (ex) {
-        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION, MODULE_NAME, notificationType, ex.message));
+        this.logger.log(LOG_LEVEL.ERROR, jsSdkUtils.sprintf(LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION, MODULE_NAME, notificationType, ex.message));
       }
     }.bind(this));
   } catch (e) {
