@@ -40,5 +40,7 @@ module.exports = {
     return uuid.v4();
   },
   values: require('lodash/values'),
-  isNumber: require('lodash/isNumber'),
+  isNumber: function(value) {
+    return typeof value === 'number';
+  },
 };
