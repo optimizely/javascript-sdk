@@ -37,5 +37,22 @@ describe('lib/utils/fns', function() {
         assert.isTrue(fns.isFinite(-Math.pow(2, 53)));
       });
     });
+    describe('isNumber', function() {
+      it('should return true in case of number', function() {
+        assert.isTrue(fns.isNumber(3));
+      });
+      it('should return true in case of value from Number object ', function() {
+        assert.isTrue(fns.isNumber(Number.MIN_VALUE));
+      });
+      it('should return true in case of Infinity ', function() {
+        assert.isTrue(fns.isNumber(Infinity));
+      });
+      it('should return false in case of string', function() {
+        assert.isFalse(fns.isNumber('3'));
+      });
+      it('should return false in case of null', function() {
+        assert.isFalse(fns.isNumber(null));
+      });
+    });
   });
 });
