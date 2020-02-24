@@ -24,17 +24,16 @@ module.exports = {
   currentTimestamp: function() {
     return Math.round(new Date().getTime());
   },
-  isArray: require('lodash/isArray'),
-  isEmpty: require('lodash/isEmpty'),
   isFinite: function(number) {
     return _isFinite(number) && Math.abs(number) <= MAX_NUMBER_LIMIT;
   },
   keyBy: require('lodash/keyBy'),
   forEach: require('lodash/forEach'),
-  map: require('lodash/map'),
   uuid: function() {
     return uuid.v4();
   },
   values: require('lodash/values'),
-  isNumber: require('lodash/isNumber'),
+  isNumber: function(value) {
+    return typeof value === 'number';
+  },
 };
