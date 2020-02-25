@@ -16,7 +16,7 @@
 
 var enums = require('../../utils/enums');
 var fns = require('../../utils/fns');
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
+var jsSdkUtils = require('@optimizely/js-sdk-utils');
 
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
@@ -55,7 +55,7 @@ function NotificationCenter(options) {
  */
 NotificationCenter.prototype.addNotificationListener = function (notificationType, callback) {
   try {
-    var isNotificationTypeValid = fns.values(enums.NOTIFICATION_TYPES)
+    var isNotificationTypeValid = jsSdkUtils.objectValues(enums.NOTIFICATION_TYPES)
       .indexOf(notificationType) > -1;
     if (!isNotificationTypeValid) {
       return -1;
@@ -166,7 +166,7 @@ NotificationCenter.prototype.sendNotifications = function (notificationType, not
       try {
         callback(notificationData);
       } catch (ex) {
-        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION, MODULE_NAME, notificationType, ex.message));
+        this.logger.log(LOG_LEVEL.ERROR, jsSdkUtils.sprintf(LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION, MODULE_NAME, notificationType, ex.message));
       }
     }.bind(this));
   } catch (e) {
