@@ -19,8 +19,28 @@ var keyBy = require('@optimizely/js-sdk-utils').keyBy;
 var MAX_NUMBER_LIMIT = Math.pow(2, 53);
 
 module.exports = {
-  assign: require('lodash/assign'),
-  assignIn: require('lodash/assignIn'),
+  assign: function (target) {
+    if (!target) {
+      return {};
+    }
+    if (typeof Object.assign === 'function') {
+      return Object.assign.apply(Object, arguments);
+    } else {
+      var to = Object(target);
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+        if (nextSource !== null && nextSource !== undefined) { 
+          for (var nextKey in nextSource) {
+            // Avoid bugs when hasOwnProperty is shadowed
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    }
+  },
   cloneDeep: require('lodash/cloneDeep'),
   currentTimestamp: function() {
     return Math.round(new Date().getTime());
