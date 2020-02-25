@@ -35,7 +35,7 @@ var MODULE_NAME = 'AUDIENCE_EVALUATOR';
  * @constructor
  */
 function AudienceEvaluator(UNSTABLE_conditionEvaluators) {
-  this.typeToEvaluatorMap = fns.assignIn({}, UNSTABLE_conditionEvaluators, {
+  this.typeToEvaluatorMap = fns.assign({}, UNSTABLE_conditionEvaluators, {
     'custom_attribute': customAttributeConditionEvaluator
   });
 }
