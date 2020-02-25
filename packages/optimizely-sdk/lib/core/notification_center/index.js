@@ -56,7 +56,7 @@ function NotificationCenter(options) {
  */
 NotificationCenter.prototype.addNotificationListener = function (notificationType, callback) {
   try {
-    var isNotificationTypeValid = fns.values(enums.NOTIFICATION_TYPES)
+    var isNotificationTypeValid = jsSdkUtils.objectValues(enums.NOTIFICATION_TYPES)
       .indexOf(notificationType) > -1;
     if (!isNotificationTypeValid) {
       return -1;
