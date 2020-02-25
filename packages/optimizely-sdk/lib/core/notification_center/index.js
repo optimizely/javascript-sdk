@@ -108,6 +108,7 @@ NotificationCenter.prototype.removeNotificationListener = function (listenerId) 
           typeToRemove = notificationType;
           return false;
         }
+        return true
       });
       if (indexToRemove !== undefined && typeToRemove !== undefined) {
         return false;
