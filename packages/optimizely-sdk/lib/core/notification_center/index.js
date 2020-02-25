@@ -102,7 +102,7 @@ NotificationCenter.prototype.removeNotificationListener = function (listenerId) 
     var indexToRemove;
     var typeToRemove;
     fns.forOwn(this.__notificationListeners, function (listenersForType, notificationType) {
-      (listenersForType || []).forEach(function(listenerEntry, i) {
+      (listenersForType || []).every(function(listenerEntry, i) {
         if (listenerEntry.id === listenerId) {
           indexToRemove = i;
           typeToRemove = notificationType;
