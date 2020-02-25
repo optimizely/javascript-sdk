@@ -1,5 +1,5 @@
 /**
- * Copyright 2017, 2019, Optimizely
+ * Copyright 2017, 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 var uuid = require('uuid');
 var _isFinite = require('lodash/isFinite');
+var keyBy = require('@optimizely/js-sdk-utils').keyBy;
 var MAX_NUMBER_LIMIT = Math.pow(2, 53);
 
 module.exports = {
@@ -27,8 +28,12 @@ module.exports = {
   isFinite: function(number) {
     return _isFinite(number) && Math.abs(number) <= MAX_NUMBER_LIMIT;
   },
-  keyBy: require('lodash/keyBy'),
-  filter: require('lodash/filter'),
+  keyBy: function(arr, key) {
+    if (!arr) return {};
+    return keyBy(arr, function(item) {
+      return item[key];
+    });
+  },
   forOwn: require('lodash/forOwn'),
   uuid: function() {
     return uuid.v4();
