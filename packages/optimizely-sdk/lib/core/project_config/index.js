@@ -55,7 +55,7 @@ module.exports = {
     fns.forEach(projectConfig.groupIdMap, function(group, Id) {
       experiments = fns.cloneDeep(group.experiments);
       fns.forEach(experiments, function(experiment) {
-        projectConfig.experiments.push(fns.assignIn(experiment, {groupId: Id}));
+        projectConfig.experiments.push(fns.assign(experiment, {groupId: Id}));
       });
     });
 
@@ -78,7 +78,7 @@ module.exports = {
       experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
 
       // Creates { <variationId>: { key: <variationKey>, id: <variationId> } } mapping for quick lookup
-      fns.assignIn(projectConfig.variationIdMap, fns.keyBy(experiment.variations, 'id'));
+      fns.assign(projectConfig.variationIdMap, fns.keyBy(experiment.variations, 'id'));
       jsSdkUtils.objectValues(experiment.variationKeyMap || {}).forEach(function (variation) {
         if (variation.variables) {
           projectConfig.variationVariableUsageMap[variation.id] = fns.keyBy(variation.variables, 'id');

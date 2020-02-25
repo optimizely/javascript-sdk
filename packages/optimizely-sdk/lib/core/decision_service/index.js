@@ -116,7 +116,7 @@ DecisionService.prototype.__resolveExperimentBucketMap = function(userId, attrib
   attributes = attributes || {}
   var userProfile = this.__getUserProfile(userId) || {};
   var attributeExperimentBucketMap = attributes[enums.CONTROL_ATTRIBUTES.STICKY_BUCKETING_KEY];
-  return fns.assignIn({}, userProfile.experiment_bucket_map, attributeExperimentBucketMap);
+  return fns.assign({}, userProfile.experiment_bucket_map, attributeExperimentBucketMap);
 };
 
 
