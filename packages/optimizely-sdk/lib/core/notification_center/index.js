@@ -15,7 +15,6 @@
  */
 
 var enums = require('../../utils/enums');
-var fns = require('../../utils/fns');
 var jsSdkUtils = require('@optimizely/js-sdk-utils');
 
 var LOG_LEVEL = enums.LOG_LEVEL;
