@@ -62,14 +62,6 @@ module.exports = {
       os: 'OS X',
       os_version: 'Mountain Lion'
     },
-    bs_ie: {
-      base: 'BrowserStack',
-      os: 'Windows',
-      os_version: '7',
-      browser: 'ie',
-      device: null,
-      browser_version: '10.0'
-    },
     bs_opera_mac: {
       base: 'BrowserStack',
       browser: 'opera',
