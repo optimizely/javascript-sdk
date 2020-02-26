@@ -62,6 +62,14 @@ module.exports = {
       os: 'OS X',
       os_version: 'Mountain Lion'
     },
+    bs_ie: {
+      base: 'BrowserStack',
+      os: 'Windows',
+      os_version: '7',
+      browser: 'ie',
+      device: null,
+      browser_version: '10.0'
+    },
     bs_opera_mac: {
       base: 'BrowserStack',
       browser: 'opera',
@@ -79,7 +87,7 @@ module.exports = {
     }
   },
 
-  browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox_mac', 'bs_opera_mac', 'bs_safari'],
+  browsers: ['bs_edge', 'bs_opera_mac', 'bs_safari'],
 
   // frameworks to use
   // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
