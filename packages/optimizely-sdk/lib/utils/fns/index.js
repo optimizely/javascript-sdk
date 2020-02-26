@@ -54,7 +54,6 @@ module.exports = {
       return item[key];
     });
   },
-  forEach: require('lodash/forEach'),
   forOwn: require('lodash/forOwn'),
   uuid: function() {
     return uuid.v4();
