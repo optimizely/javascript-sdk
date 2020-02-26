@@ -40,13 +40,6 @@ module.exports = {
 
   // define browsers
   customLaunchers: {
-    bs_chrome_mac: {
-      base: 'BrowserStack',
-      browser: 'chrome',
-      browser_version: '21.0',
-      os: 'OS X',
-      os_version: 'Mountain Lion'
-    },
     bs_edge: {
       base: 'BrowserStack',
       os: 'Windows',
@@ -54,21 +47,6 @@ module.exports = {
       browser: 'edge',
       device: null,
       browser_version: '15.0'
-    },
-    bs_firefox_mac: {
-      base: 'BrowserStack',
-      browser: 'firefox',
-      browser_version: '21.0',
-      os: 'OS X',
-      os_version: 'Mountain Lion'
-    },
-    bs_ie: {
-      base: 'BrowserStack',
-      os: 'Windows',
-      os_version: '7',
-      browser: 'ie',
-      device: null,
-      browser_version: '10.0'
     },
     bs_opera_mac: {
       base: 'BrowserStack',
