@@ -1026,7 +1026,7 @@ Optimizely.prototype.onReady = function(options) {
   if (typeof options === 'object' && options !== null) {
     timeout = options.timeout;
   }
-  if (!fns.isFinite(timeout)) {
+  if (!fns.isSafeInteger(timeout)) {
     timeout = DEFAULT_ONREADY_TIMEOUT;
   }
 
