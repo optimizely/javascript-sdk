@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 var uuid = require('uuid');
-var MAX_NUMBER_LIMIT = Math.pow(2, 53);
+var MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 var keyBy = require('@optimizely/js-sdk-utils').keyBy;
 module.exports = {
   assign: function (target) {
@@ -43,8 +43,8 @@ module.exports = {
   currentTimestamp: function() {
     return Math.round(new Date().getTime());
   },
-  isFinite: function(number) {
-    return typeof number == 'number' && Math.abs(number) <= MAX_NUMBER_LIMIT;
+  isSafeInteger: function(number) {
+    return typeof number == 'number' && Math.abs(number) <= MAX_SAFE_INTEGER_LIMIT;
   },
   keyBy: function(arr, key) {
     if (!arr) return {};

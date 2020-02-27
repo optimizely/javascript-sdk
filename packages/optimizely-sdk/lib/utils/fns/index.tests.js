@@ -22,21 +22,21 @@ describe('lib/utils/fns', function() {
   describe('APIs', function() {
     describe('isFinite', function() {
       it('should return false for invalid numbers', function() {
-        assert.isFalse(fns.isFinite(Infinity));
-        assert.isFalse(fns.isFinite(-Infinity));
-        assert.isFalse(fns.isFinite(NaN));
-        assert.isFalse(fns.isFinite(undefined));
-        assert.isFalse(fns.isFinite('3'));
-        assert.isFalse(fns.isFinite(Math.pow(2, 53) + 2));
-        assert.isFalse(fns.isFinite(-Math.pow(2, 53) - 2));
+        assert.isFalse(fns.isSafeInteger(Infinity));
+        assert.isFalse(fns.isSafeInteger(-Infinity));
+        assert.isFalse(fns.isSafeInteger(NaN));
+        assert.isFalse(fns.isSafeInteger(undefined));
+        assert.isFalse(fns.isSafeInteger('3'));
+        assert.isFalse(fns.isSafeInteger(Math.pow(2, 53) + 2));
+        assert.isFalse(fns.isSafeInteger(-Math.pow(2, 53) - 2));
       });
 
       it('should return true for valid numbers', function() {
-        assert.isTrue(fns.isFinite(0));
-        assert.isTrue(fns.isFinite(10));
-        assert.isTrue(fns.isFinite(10.5));
-        assert.isTrue(fns.isFinite(Math.pow(2, 53)));
-        assert.isTrue(fns.isFinite(-Math.pow(2, 53)));
+        assert.isTrue(fns.isSafeInteger(0));
+        assert.isTrue(fns.isSafeInteger(10));
+        assert.isTrue(fns.isSafeInteger(10.5));
+        assert.isTrue(fns.isSafeInteger(Math.pow(2, 53)));
+        assert.isTrue(fns.isSafeInteger(-Math.pow(2, 53)));
       });
     });
 
@@ -58,7 +58,7 @@ describe('lib/utils/fns', function() {
           row4: { key1: 'row4', key2: 'key2row4' }
         });
       });
-      
+
       it('should return empty object when first argument is null or undefined', function() {
         var obj = fns.keyBy(null, 'key1');
         assert.isEmpty(obj);
@@ -67,7 +67,7 @@ describe('lib/utils/fns', function() {
         assert.isEmpty(obj);
         });
     });
-    
+
     describe('isNumber', function() {
       it('should return true in case of number', function() {
         assert.isTrue(fns.isNumber(3));

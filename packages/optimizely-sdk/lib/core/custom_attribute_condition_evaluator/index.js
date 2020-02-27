@@ -99,7 +99,7 @@ function exactEvaluator(condition, userAttributes, logger) {
   var userValue = userAttributes[conditionName];
   var userValueType = typeof userValue;
 
-  if (!isValueTypeValidForExactConditions(conditionValue) || (fns.isNumber(conditionValue) && !fns.isFinite(conditionValue))) {
+  if (!isValueTypeValidForExactConditions(conditionValue) || (fns.isNumber(conditionValue) && !fns.isSafeInteger(conditionValue))) {
     logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)));
     return null;
   }
@@ -114,7 +114,7 @@ function exactEvaluator(condition, userAttributes, logger) {
     return null;
   }
 
-  if (fns.isNumber(userValue) && !fns.isFinite(userValue)) {
+  if (fns.isNumber(userValue) && !fns.isSafeInteger(userValue)) {
     logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName));
     return null;
   }
@@ -152,7 +152,7 @@ function greaterThanEvaluator(condition, userAttributes, logger) {
   var userValueType = typeof userValue;
   var conditionValue = condition.value;
 
-  if (!fns.isFinite(conditionValue)) {
+  if (!fns.isSafeInteger(conditionValue)) {
     logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)));
     return null;
   }
@@ -167,7 +167,7 @@ function greaterThanEvaluator(condition, userAttributes, logger) {
     return null;
   }
 
-  if (!fns.isFinite(userValue)) {
+  if (!fns.isSafeInteger(userValue)) {
     logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName));
     return null;
   }
@@ -191,7 +191,7 @@ function lessThanEvaluator(condition, userAttributes, logger) {
   var userValueType = typeof userValue;
   var conditionValue = condition.value;
 
-  if (!fns.isFinite(conditionValue)) {
+  if (!fns.isSafeInteger(conditionValue)) {
     logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)));
     return null;
   }
@@ -206,7 +206,7 @@ function lessThanEvaluator(condition, userAttributes, logger) {
     return null;
   }
 
-  if (!fns.isFinite(userValue)) {
+  if (!fns.isSafeInteger(userValue)) {
     logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName));
     return null;
   }
