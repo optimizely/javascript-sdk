@@ -27,6 +27,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+      './node_modules/promise-polyfill/dist/polyfill.min.js',
       './dist/optimizely.browser.umd.min.js',
       './lib/index.browser.umdtests.js'
     ],
