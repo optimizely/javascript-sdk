@@ -115,7 +115,7 @@ declare module "@optimizely/optimizely-sdk" {
     onReady(options?: {
       timeout?: number;
     }): Promise<{ success: boolean; reason?: string }>;
-    close(): void;    
+    close(): Promise<{ success: boolean; reason?: string }>;
   }
 
   // An event to be submitted to Optimizely, enabling tracking the reach and impact of
@@ -225,15 +225,13 @@ declare module "@optimizely/optimizely-sdk" {
     type: string;
     value: string;
   }
-  
+
   export interface OptimizelyVariation {
     id: string;
     key: string;
     featureEnabled?: boolean;
     variablesMap: {
-      [variableKey: string]: {
-        variable: OptimizelyVariable;
-      };
+      [variableKey: string]: OptimizelyVariable;
     };
   }
 
@@ -241,9 +239,7 @@ declare module "@optimizely/optimizely-sdk" {
     id: string;
     key: string;
     variationsMap: {
-      [variationKey: string]: {
-        variation: OptimizelyVariation;
-      };
+      [variationKey: string]: OptimizelyVariation;
     };
   }
 
@@ -251,27 +247,19 @@ declare module "@optimizely/optimizely-sdk" {
     id: string;
     key: string;
     experimentsMap: {
-      [experimentKey: string]: {
-        experiment: OptimizelyExperiment;
-      };
+      [experimentKey: string]: OptimizelyExperiment;
     };
     variablesMap: {
-      [variableKey: string]: {
-        variable: OptimizelyVariable;
-      };
+      [variableKey: string]: OptimizelyVariable;
     };
   }
 
   export interface OptimizelyConfig {
     experimentsMap: {
-      [experimentKey: string]: {
-        experiment: OptimizelyExperiment;
-      };
+      [experimentKey: string]: OptimizelyExperiment;
     };
     featuresMap: {
-      [featureKey: string]: {
-        feature: OptimizelyFeature;
-      };
+      [featureKey: string]: OptimizelyFeature;
     };
     revision: string;
   }

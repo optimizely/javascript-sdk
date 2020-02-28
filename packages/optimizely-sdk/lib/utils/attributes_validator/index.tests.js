@@ -72,7 +72,8 @@ describe('lib/utils/attributes_validator', function() {
           '': 'javascript',
         };
 
-        fns.forOwn(userAttributes, function(value, key) {
+        Object.keys(userAttributes).forEach(function (key) {
+          var value = userAttributes[key];  
           assert.isTrue(attributesValidator.isAttributeValid(key, value));
         });
       });
@@ -88,7 +89,8 @@ describe('lib/utils/attributes_validator', function() {
           'outOfBound': Math.pow(2, 53) + 2,
         };
 
-        fns.forOwn(userAttributes, function(value, key) {
+        Object.keys(userAttributes).forEach(function (key) {
+          var value = userAttributes[key];
           assert.isFalse(attributesValidator.isAttributeValid(key, value));
         });
       });

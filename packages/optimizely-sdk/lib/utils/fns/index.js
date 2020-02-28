@@ -1,5 +1,5 @@
 /**
- * Copyright 2017, 2019, Optimizely
+ * Copyright 2017, 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,29 +14,48 @@
  * limitations under the License.
  */
 var uuid = require('uuid');
-var _isFinite = require('lodash/isFinite');
-var MAX_NUMBER_LIMIT = Math.pow(2, 53);
-
+var MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
+var keyBy = require('@optimizely/js-sdk-utils').keyBy;
 module.exports = {
-  assign: require('lodash/assign'),
-  assignIn: require('lodash/assignIn'),
+  assign: function (target) {
+    if (!target) {
+      return {};
+    }
+    if (typeof Object.assign === 'function') {
+      return Object.assign.apply(Object, arguments);
+    } else {
+      var to = Object(target);
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+        if (nextSource !== null && nextSource !== undefined) {
+          for (var nextKey in nextSource) {
+            // Avoid bugs when hasOwnProperty is shadowed
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    }
+  },
   cloneDeep: require('lodash/cloneDeep'),
   currentTimestamp: function() {
     return Math.round(new Date().getTime());
   },
-  isArray: require('lodash/isArray'),
-  isEmpty: require('lodash/isEmpty'),
-  isFinite: function(number) {
-    return _isFinite(number) && Math.abs(number) <= MAX_NUMBER_LIMIT;
+  isSafeInteger: function(number) {
+    return typeof number == 'number' && Math.abs(number) <= MAX_SAFE_INTEGER_LIMIT;
   },
-  keyBy: require('lodash/keyBy'),
-  filter: require('lodash/filter'),
-  forEach: require('lodash/forEach'),
-  forOwn: require('lodash/forOwn'),
-  map: require('lodash/map'),
+  keyBy: function(arr, key) {
+    if (!arr) return {};
+    return keyBy(arr, function(item) {
+      return item[key];
+    });
+  },
   uuid: function() {
     return uuid.v4();
   },
-  values: require('lodash/values'),
-  isNumber: require('lodash/isNumber'),
+  isNumber: function(value) {
+    return typeof value === 'number';
+  },
 };

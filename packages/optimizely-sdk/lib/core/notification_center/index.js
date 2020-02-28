@@ -15,8 +15,7 @@
  */
 
 var enums = require('../../utils/enums');
-var fns = require('../../utils/fns');
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
+var jsSdkUtils = require('@optimizely/js-sdk-utils');
 
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
@@ -37,7 +36,8 @@ function NotificationCenter(options) {
   this.logger = options.logger;
   this.errorHandler = options.errorHandler;
   this.__notificationListeners = {};
-  fns.forOwn(enums.NOTIFICATION_TYPES, function(notificationTypeEnum) {
+
+  jsSdkUtils.objectValues(enums.NOTIFICATION_TYPES).forEach(function(notificationTypeEnum) {
     this.__notificationListeners[notificationTypeEnum] = [];
   }.bind(this));
   this.__listenerId = 1;
@@ -55,7 +55,7 @@ function NotificationCenter(options) {
  */
 NotificationCenter.prototype.addNotificationListener = function (notificationType, callback) {
   try {
-    var isNotificationTypeValid = fns.values(enums.NOTIFICATION_TYPES)
+    var isNotificationTypeValid = jsSdkUtils.objectValues(enums.NOTIFICATION_TYPES)
       .indexOf(notificationType) > -1;
     if (!isNotificationTypeValid) {
       return -1;
@@ -66,7 +66,7 @@ NotificationCenter.prototype.addNotificationListener = function (notificationTyp
     }
 
     var callbackAlreadyAdded = false;
-    fns.forEach(this.__notificationListeners[notificationType], function (listenerEntry) {
+    (this.__notificationListeners[notificationType] || []).forEach(function(listenerEntry) {
       if (listenerEntry.callback === callback) {
         callbackAlreadyAdded = true;
         return false;
@@ -101,19 +101,22 @@ NotificationCenter.prototype.removeNotificationListener = function (listenerId) 
   try {
     var indexToRemove;
     var typeToRemove;
-    fns.forOwn(this.__notificationListeners, function (listenersForType, notificationType) {
-      fns.forEach(listenersForType, function (listenerEntry, i) {
+    
+    Object.keys(this.__notificationListeners).some(function(notificationType) {
+      var listenersForType = this.__notificationListeners[notificationType];
+      (listenersForType || []).every(function(listenerEntry, i) {
         if (listenerEntry.id === listenerId) {
           indexToRemove = i;
           typeToRemove = notificationType;
           return false;
         }
+        return true
       });
       if (indexToRemove !== undefined && typeToRemove !== undefined) {
-        return false;
+        return true;
       }
-    });
-
+    }.bind(this));
+    
     if (indexToRemove !== undefined && typeToRemove !== undefined) {
       this.__notificationListeners[typeToRemove].splice(indexToRemove, 1);
       return true;
@@ -130,7 +133,7 @@ NotificationCenter.prototype.removeNotificationListener = function (listenerId) 
  */
 NotificationCenter.prototype.clearAllNotificationListeners = function () {
   try{
-    fns.forOwn(enums.NOTIFICATION_TYPES, function (notificationTypeEnum) {
+    jsSdkUtils.objectValues(enums.NOTIFICATION_TYPES).forEach(function (notificationTypeEnum) {
       this.__notificationListeners[notificationTypeEnum] = [];
     }.bind(this));
   } catch (e) {
@@ -160,12 +163,12 @@ NotificationCenter.prototype.clearNotificationListeners = function (notification
  */
 NotificationCenter.prototype.sendNotifications = function (notificationType, notificationData) {
   try {
-    fns.forEach(this.__notificationListeners[notificationType], function (listenerEntry) {
+    (this.__notificationListeners[notificationType] || []).forEach(function(listenerEntry) {
       var callback = listenerEntry.callback;
       try {
         callback(notificationData);
       } catch (ex) {
-        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION, MODULE_NAME, notificationType, ex.message));
+        this.logger.log(LOG_LEVEL.ERROR, jsSdkUtils.sprintf(LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION, MODULE_NAME, notificationType, ex.message));
       }
     }.bind(this));
   } catch (e) {
