@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+var projectConfig = require('../project_config');
 
 // Get Experiment Ids which are part of rollouts
 function getRolloutExperimentIds(rollouts) {
-  return rollouts.reduce(function(experimentIds, rollout) {
+  return (rollouts || []).reduce(function(experimentIds, rollout) {
     rollout.experiments.forEach(function(e) {
       experimentIds[e.id] = true;
     });
@@ -27,23 +28,25 @@ function getRolloutExperimentIds(rollouts) {
 // Gets Map of all experiments except rollouts
 function getExperimentsMap(configObj) {
   var rolloutExperimentIds = getRolloutExperimentIds(configObj.rollouts);
-  var featureVariablesMap = configObj.featureFlags.reduce(function(resultMap, feature){
+  var featureVariablesMap = (configObj.featureFlags || []).reduce(function(resultMap, feature){
     resultMap[feature.id] = feature.variables;
     return resultMap;
   }, {});
-  return configObj.experiments.reduce(function(experiments, experiment) {
+  return (configObj.experiments || []).reduce(function(experiments, experiment) {
     // skip experiments that are part of a rollout
     if (!rolloutExperimentIds[experiment.id]) {
       experiments[experiment.key] = {
         id: experiment.id,
         key: experiment.key,
-        variationsMap: experiment.variations.reduce(function(variations, variation) {
+        variationsMap: (experiment.variations || []).reduce(function(variations, variation) {
           variations[variation.key] = {
             id: variation.id,
             key: variation.key,
-            featureEnabled: variation.featureEnabled,
             variablesMap: getMergedVariablesMap(configObj, variation, experiment.id, featureVariablesMap)
           };
+          if (projectConfig.isFeatureExperiment(configObj, experiment.id)) {
+            variations[variation.key].featureEnabled = variation.featureEnabled;
+          }
           return variations;
         }, {}),
       };
@@ -59,14 +62,14 @@ function getMergedVariablesMap(configObj, variation, experimentId, featureVariab
   if (featureId) {
     var experimentFeatureVariables = featureVariablesMap[featureId];
     // Temporary variation variables map to get values to merge.
-    var tempVariablesIdMap = variation.variables.reduce(function(variablesMap, variable) {
+    var tempVariablesIdMap = (variation.variables || []).reduce(function(variablesMap, variable) {
       variablesMap[variable.id] = {
         id: variable.id,
         value: variable.value,
       };
       return variablesMap;
     }, {});
-    variablesObject = experimentFeatureVariables.reduce(function(variablesMap, featureVariable) {
+    variablesObject = (experimentFeatureVariables || []).reduce(function(variablesMap, featureVariable) {
       var variationVariable = tempVariablesIdMap[featureVariable.id];
       var variableValue = variation.featureEnabled && variationVariable ? variationVariable.value : featureVariable.defaultValue;
       variablesMap[featureVariable.key] = {
@@ -83,16 +86,16 @@ function getMergedVariablesMap(configObj, variation, experimentId, featureVariab
 
 // Gets map of all experiments
 function getFeaturesMap(configObj, allExperiments) {
-  return configObj.featureFlags.reduce(function(features, feature) {
+  return (configObj.featureFlags || []).reduce(function(features, feature) {
     features[feature.key] = {
       id: feature.id,
       key: feature.key,
-      experimentsMap: feature.experimentIds.reduce(function(experiments, experimentId) {
+      experimentsMap: (feature.experimentIds || []).reduce(function(experiments, experimentId) {
         var experimentKey = configObj.experimentIdMap[experimentId].key;
         experiments[experimentKey] = allExperiments[experimentKey];
         return experiments;
       }, {}),
-      variablesMap: feature.variables.reduce(function(variables, variable) {
+      variablesMap: (feature.variables || []).reduce(function(variables, variable) {
         variables[variable.key] = {
           id: variable.id,
           key: variable.key,

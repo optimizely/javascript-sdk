@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/optimizely-sdk",
-  "version": "3.4.0-beta",
+  "version": "3.5.0",
   "description": "JavaScript SDK for Optimizely X Full Stack",
   "main": "lib/index.node.js",
   "browser": "lib/index.browser.js",
@@ -34,7 +34,7 @@
   "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/optimizely-sdk",
   "dependencies": {
     "@optimizely/js-sdk-datafile-manager": "^0.4.0",
-    "@optimizely/js-sdk-event-processor": "^0.3.0",
+    "@optimizely/js-sdk-event-processor": "^0.4.0",
     "@optimizely/js-sdk-logging": "^0.1.0",
     "@optimizely/js-sdk-utils": "^0.2.0",
     "json-schema": "^0.2.3",

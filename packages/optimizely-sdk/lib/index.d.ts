@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2019, Optimizely
+ * Copyright 2018-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,10 +111,11 @@ declare module "@optimizely/optimizely-sdk" {
       userId: string,
       attributes?: UserAttributes
     ): string | null;
+    getOptimizelyConfig(): OptimizelyConfig | null;
     onReady(options?: {
       timeout?: number;
     }): Promise<{ success: boolean; reason?: string }>;
-    close(): void;
+    close(): Promise<{ success: boolean; reason?: string }>;
   }
 
   // An event to be submitted to Optimizely, enabling tracking the reach and impact of
@@ -213,6 +214,54 @@ declare module "@optimizely/optimizely-sdk" {
         variation_id: string;
       };
     };
+  }
+
+  /**
+   * Optimizely Config Entities
+   */
+  export interface OptimizelyVariable {
+    id: string;
+    key: string;
+    type: string;
+    value: string;
+  }
+
+  export interface OptimizelyVariation {
+    id: string;
+    key: string;
+    featureEnabled?: boolean;
+    variablesMap: {
+      [variableKey: string]: OptimizelyVariable;
+    };
+  }
+
+  export interface OptimizelyExperiment {
+    id: string;
+    key: string;
+    variationsMap: {
+      [variationKey: string]: OptimizelyVariation;
+    };
+  }
+
+  export interface OptimizelyFeature {
+    id: string;
+    key: string;
+    experimentsMap: {
+      [experimentKey: string]: OptimizelyExperiment;
+    };
+    variablesMap: {
+      [variableKey: string]: OptimizelyVariable;
+    };
+  }
+
+  export interface OptimizelyConfig {
+    experimentsMap: {
+      [experimentKey: string]: OptimizelyExperiment;
+    };
+    featuresMap: {
+      [featureKey: string]: OptimizelyFeature;
+    };
+    revision: string;
   }
 }
 

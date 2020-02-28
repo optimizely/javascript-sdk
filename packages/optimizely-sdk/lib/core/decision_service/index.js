@@ -116,12 +116,12 @@ DecisionService.prototype.__resolveExperimentBucketMap = function(userId, attrib
   attributes = attributes || {}
   var userProfile = this.__getUserProfile(userId) || {};
   var attributeExperimentBucketMap = attributes[enums.CONTROL_ATTRIBUTES.STICKY_BUCKETING_KEY];
-  return fns.assignIn({}, userProfile.experiment_bucket_map, attributeExperimentBucketMap);
+  return fns.assign({}, userProfile.experiment_bucket_map, attributeExperimentBucketMap);
 };
 
 
 /**
- * Checks whether the experiment is running or launched
+ * Checks whether the experiment is running
  * @param  {Object}  configObj     The parsed project configuration object
  * @param  {string}  experimentKey Key of experiment being validated
  * @param  {string}  userId        ID of user
@@ -144,7 +144,7 @@ DecisionService.prototype.__checkIfExperimentIsActive = function(configObj, expe
  * @return {string|null} Forced variation if it exists for user ID, otherwise null
  */
 DecisionService.prototype.__getWhitelistedVariation = function(experiment, userId) {
-  if (!fns.isEmpty(experiment.forcedVariations) && experiment.forcedVariations.hasOwnProperty(userId)) {
+  if (experiment.forcedVariations && experiment.forcedVariations.hasOwnProperty(userId)) {
     var forcedVariationKey = experiment.forcedVariations[userId];
     if (experiment.variationKeyMap.hasOwnProperty(forcedVariationKey)) {
       var forcedBucketingSucceededMessageLog = sprintf(LOG_MESSAGES.USER_FORCED_IN_VARIATION, MODULE_NAME, userId, forcedVariationKey);

@@ -22,7 +22,7 @@ var fns = require('../fns');
  * @returns boolean
  */
 function validateEventBatchSize(eventBatchSize) {
-  return fns.isFinite(eventBatchSize) && eventBatchSize >= 1;
+  return fns.isSafeInteger(eventBatchSize) && eventBatchSize >= 1;
 }
 
 /**
@@ -31,7 +31,7 @@ function validateEventBatchSize(eventBatchSize) {
  * @returns boolean
  */
 function validateEventFlushInterval(eventFlushInterval) {
-  return fns.isFinite(eventFlushInterval) && eventFlushInterval > 0;
+  return fns.isSafeInteger(eventFlushInterval) && eventFlushInterval > 0;
 }
 
 module.exports = {
