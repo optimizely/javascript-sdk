@@ -47,6 +47,6 @@ module.exports = {
 
   isAttributeValid: function(attributeKey, attributeValue) {
     return (typeof attributeKey === 'string') &&
-    (typeof attributeValue === 'string' || typeof attributeValue === 'boolean' || (fns.isNumber(attributeValue) && fns.isFinite(attributeValue)));
+    (typeof attributeValue === 'string' || typeof attributeValue === 'boolean' || (fns.isNumber(attributeValue) && fns.isSafeInteger(attributeValue)));
   },
 };
