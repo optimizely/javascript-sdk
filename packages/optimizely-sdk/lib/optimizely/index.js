@@ -57,7 +57,10 @@ var DEFAULT_ONREADY_TIMEOUT = 30000;
 function Optimizely(config) {
   var clientEngine = config.clientEngine;
   if (enums.VALID_CLIENT_ENGINES.indexOf(clientEngine) === -1) {
-    config.logger.log(LOG_LEVEL.INFO, jsSdkUtils.sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, MODULE_NAME, clientEngine));
+    config.logger.log(
+      LOG_LEVEL.INFO,
+      jsSdkUtils.sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, MODULE_NAME, clientEngine)
+    );
     clientEngine = enums.NODE_CLIENT_ENGINE;
   }
 
@@ -76,10 +79,15 @@ function Optimizely(config) {
     skipJSONValidation: config.skipJSONValidation,
   });
 
-  this.__disposeOnUpdate = this.projectConfigManager.onUpdate(function (configObj) {
-    this.logger.log(LOG_LEVEL.INFO, jsSdkUtils.sprintf(LOG_MESSAGES.UPDATED_OPTIMIZELY_CONFIG, MODULE_NAME, configObj.revision, configObj.projectId));
-    this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE);
-  }.bind(this));
+  this.__disposeOnUpdate = this.projectConfigManager.onUpdate(
+    function(configObj) {
+      this.logger.log(
+        LOG_LEVEL.INFO,
+        jsSdkUtils.sprintf(LOG_MESSAGES.UPDATED_OPTIMIZELY_CONFIG, MODULE_NAME, configObj.revision, configObj.projectId)
+      );
+      this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE);
+    }.bind(this)
+  );
 
   this.__readyPromise = this.projectConfigManager.onReady();
 
@@ -98,7 +106,7 @@ function Optimizely(config) {
   this.decisionService = decisionService.createDecisionService({
     userProfileService: userProfileService,
     logger: this.logger,
-    UNSTABLE_conditionEvaluators: config.UNSTABLE_conditionEvaluators
+    UNSTABLE_conditionEvaluators: config.UNSTABLE_conditionEvaluators,
   });
 
   this.notificationCenter = notificationCenter.createNotificationCenter({
@@ -124,7 +132,7 @@ function Optimizely(config) {
  * constructor was also valid.
  * @return {*}
  */
-Optimizely.prototype.__isValidInstance = function () {
+Optimizely.prototype.__isValidInstance = function() {
   return this.__isOptimizelyConfigValid && this.projectConfigManager.getConfig();
 };
 
@@ -135,7 +143,7 @@ Optimizely.prototype.__isValidInstance = function () {
  * @param  {Object}      attributes
  * @return {string|null} variation key
  */
-Optimizely.prototype.activate = function (experimentKey, userId, attributes) {
+Optimizely.prototype.activate = function(experimentKey, userId, attributes) {
   try {
     if (!this.__isValidInstance()) {
       this.logger.log(LOG_LEVEL.ERROR, jsSdkUtils.sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'activate'));
@@ -173,7 +181,12 @@ Optimizely.prototype.activate = function (experimentKey, userId, attributes) {
       return variationKey;
     } catch (ex) {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
-      var failedActivationLogMessage = jsSdkUtils.sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, MODULE_NAME, userId, experimentKey);
+      var failedActivationLogMessage = jsSdkUtils.sprintf(
+        LOG_MESSAGES.NOT_ACTIVATING_USER,
+        MODULE_NAME,
+        userId,
+        experimentKey
+      );
       this.logger.log(LOG_LEVEL.INFO, failedActivationLogMessage);
       this.errorHandler.handleError(ex);
       return null;
@@ -194,7 +207,7 @@ Optimizely.prototype.activate = function (experimentKey, userId, attributes) {
  * @param {string} userId         ID of user to whom the variation was shown
  * @param {Object} attributes     Optional user attributes
  */
-Optimizely.prototype._sendImpressionEvent = function (experimentKey, variationKey, userId, attributes) {
+Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey, userId, attributes) {
   var configObj = this.projectConfigManager.getConfig();
   if (!configObj) {
     return;
@@ -221,17 +234,13 @@ Optimizely.prototype._sendImpressionEvent = function (experimentKey, variationKe
  * @param {string} userId         ID of user to whom the variation was shown
  * @param {Object} attributes     Optional user attributes
  */
-Optimizely.prototype.__emitNotificationCenterActivate = function (experimentKey, variationKey, userId, attributes) {
+Optimizely.prototype.__emitNotificationCenterActivate = function(experimentKey, variationKey, userId, attributes) {
   var configObj = this.projectConfigManager.getConfig();
   if (!configObj) {
     return;
   }
 
-  var variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(
-    configObj,
-    experimentKey,
-    variationKey
-  );
+  var variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
   var experimentId = projectConfig.getExperimentId(configObj, experimentKey);
   var impressionEventOptions = {
     attributes: attributes,
@@ -249,16 +258,13 @@ Optimizely.prototype.__emitNotificationCenterActivate = function (experimentKey,
   if (experiment && experiment.variationKeyMap) {
     variation = experiment.variationKeyMap[variationKey];
   }
-  this.notificationCenter.sendNotifications(
-    NOTIFICATION_TYPES.ACTIVATE,
-    {
-      experiment: experiment,
-      userId: userId,
-      attributes: attributes,
-      variation: variation,
-      logEvent: impressionEvent
-    }
-  );
+  this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.ACTIVATE, {
+    experiment: experiment,
+    userId: userId,
+    attributes: attributes,
+    variation: variation,
+    logEvent: impressionEvent,
+  });
 };
 
 /**
@@ -268,7 +274,7 @@ Optimizely.prototype.__emitNotificationCenterActivate = function (experimentKey,
  * @param  {string} attributes
  * @param  {Object} eventTags Values associated with the event.
  */
-Optimizely.prototype.track = function (eventKey, userId, attributes, eventTags) {
+Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
   try {
     if (!this.__isValidInstance()) {
       this.logger.log(LOG_LEVEL.ERROR, jsSdkUtils.sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'track'));
@@ -318,7 +324,7 @@ Optimizely.prototype.track = function (eventKey, userId, attributes, eventTags) 
  * @param  {string} attributes
  * @param  {Object} eventTags Values associated with the event.
  */
-Optimizely.prototype.__emitNotificationCenterTrack = function (eventKey, userId, attributes, eventTags) {
+Optimizely.prototype.__emitNotificationCenterTrack = function(eventKey, userId, attributes, eventTags) {
   try {
     var configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
@@ -357,7 +363,7 @@ Optimizely.prototype.__emitNotificationCenterTrack = function (eventKey, userId,
  * @param  {Object}      attributes
  * @return {string|null} variation key
  */
-Optimizely.prototype.getVariation = function (experimentKey, userId, attributes) {
+Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) {
   try {
     if (!this.__isValidInstance()) {
       this.logger.log(LOG_LEVEL.ERROR, jsSdkUtils.sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getVariation'));
@@ -376,26 +382,27 @@ Optimizely.prototype.getVariation = function (experimentKey, userId, attributes)
 
       var experiment = configObj.experimentKeyMap[experimentKey];
       if (!experiment) {
-        this.logger.log(LOG_LEVEL.DEBUG, jsSdkUtils.sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
+        this.logger.log(
+          LOG_LEVEL.DEBUG,
+          jsSdkUtils.sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey)
+        );
         return null;
       }
 
       var variationKey = this.decisionService.getVariation(configObj, experimentKey, userId, attributes);
-      var decisionNotificationType = projectConfig.isFeatureExperiment(configObj, experiment.id) ? DECISION_NOTIFICATION_TYPES.FEATURE_TEST :
-        DECISION_NOTIFICATION_TYPES.AB_TEST;
+      var decisionNotificationType = projectConfig.isFeatureExperiment(configObj, experiment.id)
+        ? DECISION_NOTIFICATION_TYPES.FEATURE_TEST
+        : DECISION_NOTIFICATION_TYPES.AB_TEST;
 
-      this.notificationCenter.sendNotifications(
-        NOTIFICATION_TYPES.DECISION,
-        {
-          type: decisionNotificationType,
-          userId: userId,
-          attributes: attributes || {},
-          decisionInfo: {
-            experimentKey: experimentKey,
-            variationKey: variationKey,
-          }
-        }
-      );
+      this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.DECISION, {
+        type: decisionNotificationType,
+        userId: userId,
+        attributes: attributes || {},
+        decisionInfo: {
+          experimentKey: experimentKey,
+          variationKey: variationKey,
+        },
+      });
 
       return variationKey;
     } catch (ex) {
@@ -417,7 +424,7 @@ Optimizely.prototype.getVariation = function (experimentKey, userId, attributes)
  * @param {string|null} variationKey user will be forced into. If null, then clear the existing experiment-to-variation mapping.
  * @return boolean A boolean value that indicates if the set completed successfully.
  */
-Optimizely.prototype.setForcedVariation = function (experimentKey, userId, variationKey) {
+Optimizely.prototype.setForcedVariation = function(experimentKey, userId, variationKey) {
   if (!this.__validateInputs({ experiment_key: experimentKey, user_id: userId })) {
     return false;
   }
@@ -442,7 +449,7 @@ Optimizely.prototype.setForcedVariation = function (experimentKey, userId, varia
  * @param  {string} userId
  * @return {string|null} The forced variation key.
  */
-Optimizely.prototype.getForcedVariation = function (experimentKey, userId) {
+Optimizely.prototype.getForcedVariation = function(experimentKey, userId) {
   if (!this.__validateInputs({ experiment_key: experimentKey, user_id: userId })) {
     return null;
   }
@@ -469,7 +476,7 @@ Optimizely.prototype.getForcedVariation = function (experimentKey, userId) {
  * @return {boolean} True if inputs are valid
  *
  */
-Optimizely.prototype.__validateInputs = function (stringInputs, userAttributes, eventTags) {
+Optimizely.prototype.__validateInputs = function(stringInputs, userAttributes, eventTags) {
   try {
     // Null, undefined or non-string user Id is invalid.
     if (stringInputs.hasOwnProperty('user_id')) {
@@ -508,8 +515,13 @@ Optimizely.prototype.__validateInputs = function (stringInputs, userAttributes, 
  * @param  userId
  * @return {null}
  */
-Optimizely.prototype.__notActivatingExperiment = function (experimentKey, userId) {
-  var failedActivationLogMessage = jsSdkUtils.sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, MODULE_NAME, userId, experimentKey);
+Optimizely.prototype.__notActivatingExperiment = function(experimentKey, userId) {
+  var failedActivationLogMessage = jsSdkUtils.sprintf(
+    LOG_MESSAGES.NOT_ACTIVATING_USER,
+    MODULE_NAME,
+    userId,
+    experimentKey
+  );
   this.logger.log(LOG_LEVEL.INFO, failedActivationLogMessage);
   return null;
 };
@@ -519,7 +531,7 @@ Optimizely.prototype.__notActivatingExperiment = function (experimentKey, userId
  * @param  map
  * @returns {Object} map
  */
-Optimizely.prototype.__filterEmptyValues = function (map) {
+Optimizely.prototype.__filterEmptyValues = function(map) {
   for (var key in map) {
     if (map.hasOwnProperty(key) && (map[key] === null || map[key] === undefined)) {
       delete map[key];
@@ -535,10 +547,13 @@ Optimizely.prototype.__filterEmptyValues = function (map) {
  * @param {Object} attributes   Optional user attributes
  * @return {boolean}            True if the feature is enabled for the user, false otherwise
  */
-Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes) {
+Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes) {
   try {
     if (!this.__isValidInstance()) {
-      this.logger.log(LOG_LEVEL.ERROR, jsSdkUtils.sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'isFeatureEnabled'));
+      this.logger.log(
+        LOG_LEVEL.ERROR,
+        jsSdkUtils.sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'isFeatureEnabled')
+      );
       return false;
     }
 
@@ -567,16 +582,22 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
         sourceInfo = {
           experimentKey: decision.experiment.key,
           variationKey: decision.variation.key,
-        }
+        };
         // got a variation from the exp, so we track the impression
         this._sendImpressionEvent(decision.experiment.key, decision.variation.key, userId, attributes);
       }
     }
 
     if (featureEnabled === true) {
-      this.logger.log(LOG_LEVEL.INFO, jsSdkUtils.sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
+      this.logger.log(
+        LOG_LEVEL.INFO,
+        jsSdkUtils.sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId)
+      );
     } else {
-      this.logger.log(LOG_LEVEL.INFO, jsSdkUtils.sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId));
+      this.logger.log(
+        LOG_LEVEL.INFO,
+        jsSdkUtils.sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId)
+      );
       featureEnabled = false;
     }
 
@@ -584,18 +605,15 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
       featureKey: featureKey,
       featureEnabled: featureEnabled,
       source: decision.decisionSource,
-      sourceInfo: sourceInfo
+      sourceInfo: sourceInfo,
     };
 
-    this.notificationCenter.sendNotifications(
-      NOTIFICATION_TYPES.DECISION,
-      {
-        type: DECISION_NOTIFICATION_TYPES.FEATURE,
-        userId: userId,
-        attributes: attributes || {},
-        decisionInfo: featureInfo,
-      }
-    );
+    this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.DECISION, {
+      type: DECISION_NOTIFICATION_TYPES.FEATURE,
+      userId: userId,
+      attributes: attributes || {},
+      decisionInfo: featureInfo,
+    });
 
     return featureEnabled;
   } catch (e) {
@@ -612,11 +630,14 @@ Optimizely.prototype.isFeatureEnabled = function (featureKey, userId, attributes
  * @param {Object} attributes
  * @return {Array} Array of feature keys (strings)
  */
-Optimizely.prototype.getEnabledFeatures = function (userId, attributes) {
+Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
   try {
     var enabledFeatures = [];
     if (!this.__isValidInstance()) {
-      this.logger.log(LOG_LEVEL.ERROR, jsSdkUtils.sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getEnabledFeatures'));
+      this.logger.log(
+        LOG_LEVEL.ERROR,
+        jsSdkUtils.sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getEnabledFeatures')
+      );
       return enabledFeatures;
     }
 
@@ -629,11 +650,13 @@ Optimizely.prototype.getEnabledFeatures = function (userId, attributes) {
       return enabledFeatures;
     }
 
-    jsSdkUtils.objectValues(configObj.featureKeyMap).forEach(function (feature) {
-      if (this.isFeatureEnabled(feature.key, userId, attributes)) {
-        enabledFeatures.push(feature.key);
-      }
-    }.bind(this));
+    jsSdkUtils.objectValues(configObj.featureKeyMap).forEach(
+      function(feature) {
+        if (this.isFeatureEnabled(feature.key, userId, attributes)) {
+          enabledFeatures.push(feature.key);
+        }
+      }.bind(this)
+    );
 
     return enabledFeatures;
   } catch (e) {
@@ -658,7 +681,7 @@ Optimizely.prototype.getEnabledFeatures = function (userId, attributes) {
  *                                      the variable key is invalid
  */
 
-Optimizely.prototype.getFeatureVariable = function (featureKey, variableKey, userId, attributes) {
+Optimizely.prototype.getFeatureVariable = function(featureKey, variableKey, userId, attributes) {
   try {
     return this._getFeatureVariableForType(featureKey, variableKey, null, userId, attributes);
   } catch (e) {
@@ -690,9 +713,11 @@ Optimizely.prototype.getFeatureVariable = function (featureKey, variableKey, use
  *                                      variable key is invalid, or there is a mismatch
  *                                      with the type of the variable
  */
-Optimizely.prototype._getFeatureVariableForType = function (featureKey, variableKey, variableType, userId, attributes) {
+Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableKey, variableType, userId, attributes) {
   if (!this.__isValidInstance()) {
-    var apiName = (variableType) ? 'getFeatureVariable' + variableType.charAt(0).toUpperCase() + variableType.slice(1) : 'getFeatureVariable';
+    var apiName = variableType
+      ? 'getFeatureVariable' + variableType.charAt(0).toUpperCase() + variableType.slice(1)
+      : 'getFeatureVariable';
     this.logger.log(LOG_LEVEL.ERROR, jsSdkUtils.sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, apiName));
     return null;
   }
@@ -736,17 +761,51 @@ Optimizely.prototype._getFeatureVariableForType = function (featureKey, variable
     if (value !== null) {
       if (featureEnabled === true) {
         variableValue = value;
-        this.logger.log(LOG_LEVEL.INFO, jsSdkUtils.sprintf(LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE, MODULE_NAME, variableKey, featureFlag.key, variableValue, userId));
+        this.logger.log(
+          LOG_LEVEL.INFO,
+          jsSdkUtils.sprintf(
+            LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE,
+            MODULE_NAME,
+            variableKey,
+            featureFlag.key,
+            variableValue,
+            userId
+          )
+        );
       } else {
-        this.logger.log(LOG_LEVEL.INFO, jsSdkUtils.sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE, MODULE_NAME,
-          featureFlag.key, userId, variableKey));
+        this.logger.log(
+          LOG_LEVEL.INFO,
+          jsSdkUtils.sprintf(
+            LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE,
+            MODULE_NAME,
+            featureFlag.key,
+            userId,
+            variableKey
+          )
+        );
       }
     } else {
-      this.logger.log(LOG_LEVEL.INFO, jsSdkUtils.sprintf(LOG_MESSAGES.VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE, MODULE_NAME, variableKey, decision.variation.key));
+      this.logger.log(
+        LOG_LEVEL.INFO,
+        jsSdkUtils.sprintf(
+          LOG_MESSAGES.VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
+          MODULE_NAME,
+          variableKey,
+          decision.variation.key
+        )
+      );
     }
   } else {
-    this.logger.log(LOG_LEVEL.INFO, jsSdkUtils.sprintf(LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE, MODULE_NAME, userId,
-      variableKey, featureFlag.key));
+    this.logger.log(
+      LOG_LEVEL.INFO,
+      jsSdkUtils.sprintf(
+        LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE,
+        MODULE_NAME,
+        userId,
+        variableKey,
+        featureFlag.key
+      )
+    );
   }
 
   var sourceInfo = {};
@@ -754,27 +813,24 @@ Optimizely.prototype._getFeatureVariableForType = function (featureKey, variable
     sourceInfo = {
       experimentKey: decision.experiment.key,
       variationKey: decision.variation.key,
-    }
+    };
   }
 
   var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
-  this.notificationCenter.sendNotifications(
-    NOTIFICATION_TYPES.DECISION,
-    {
-      type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
-      userId: userId,
-      attributes: attributes || {},
-      decisionInfo: {
-        featureKey: featureKey,
-        featureEnabled: featureEnabled,
-        source: decision.decisionSource,
-        variableKey: variableKey,
-        variableValue: typeCastedValue,
-        variableType: variableType,
-        sourceInfo: sourceInfo,
-      }
-    }
-  );
+  this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.DECISION, {
+    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+    userId: userId,
+    attributes: attributes || {},
+    decisionInfo: {
+      featureKey: featureKey,
+      featureEnabled: featureEnabled,
+      source: decision.decisionSource,
+      variableKey: variableKey,
+      variableValue: typeCastedValue,
+      variableType: variableType,
+      sourceInfo: sourceInfo,
+    },
+  });
   return typeCastedValue;
 };
 
@@ -792,7 +848,7 @@ Optimizely.prototype._getFeatureVariableForType = function (featureKey, variable
  *                              invalid, or there is a mismatch with the type
  *                              of the variable
  */
-Optimizely.prototype.getFeatureVariableBoolean = function (featureKey, variableKey, userId, attributes) {
+Optimizely.prototype.getFeatureVariableBoolean = function(featureKey, variableKey, userId, attributes) {
   try {
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.BOOLEAN, userId, attributes);
   } catch (e) {
@@ -816,7 +872,7 @@ Optimizely.prototype.getFeatureVariableBoolean = function (featureKey, variableK
  *                              invalid, or there is a mismatch with the type
  *                              of the variable
  */
-Optimizely.prototype.getFeatureVariableDouble = function (featureKey, variableKey, userId, attributes) {
+Optimizely.prototype.getFeatureVariableDouble = function(featureKey, variableKey, userId, attributes) {
   try {
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.DOUBLE, userId, attributes);
   } catch (e) {
@@ -840,7 +896,7 @@ Optimizely.prototype.getFeatureVariableDouble = function (featureKey, variableKe
  *                              invalid, or there is a mismatch with the type
  *                              of the variable
  */
-Optimizely.prototype.getFeatureVariableInteger = function (featureKey, variableKey, userId, attributes) {
+Optimizely.prototype.getFeatureVariableInteger = function(featureKey, variableKey, userId, attributes) {
   try {
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.INTEGER, userId, attributes);
   } catch (e) {
@@ -864,7 +920,7 @@ Optimizely.prototype.getFeatureVariableInteger = function (featureKey, variableK
  *                              invalid, or there is a mismatch with the type
  *                              of the variable
  */
-Optimizely.prototype.getFeatureVariableString = function (featureKey, variableKey, userId, attributes) {
+Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey, userId, attributes) {
   try {
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.STRING, userId, attributes);
   } catch (e) {
@@ -910,7 +966,7 @@ Optimizely.prototype.getFeatureVariableString = function (featureKey, variableKe
  *   }
  * }
  */
-Optimizely.prototype.getOptimizelyConfig = function () {
+Optimizely.prototype.getOptimizelyConfig = function() {
   try {
     var configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
@@ -922,7 +978,7 @@ Optimizely.prototype.getOptimizelyConfig = function () {
     this.errorHandler.handleError(e);
     return null;
   }
-}
+};
 
 /**
  * Stop background processes belonging to this instance, including:
@@ -955,7 +1011,7 @@ Optimizely.prototype.getOptimizelyConfig = function () {
  *
  * @return {Promise}
  */
-Optimizely.prototype.close = function () {
+Optimizely.prototype.close = function() {
   try {
     var eventProcessorStoppedPromise = this.eventProcessor.stop();
     if (this.__disposeOnUpdate) {
@@ -965,19 +1021,21 @@ Optimizely.prototype.close = function () {
     if (this.projectConfigManager) {
       this.projectConfigManager.stop();
     }
-    Object.keys(this.__readyTimeouts).forEach(function (readyTimeoutId) {
-      var readyTimeoutRecord = this.__readyTimeouts[readyTimeoutId];
-      clearTimeout(readyTimeoutRecord.readyTimeout);
-      readyTimeoutRecord.onClose();
-    }.bind(this));
+    Object.keys(this.__readyTimeouts).forEach(
+      function(readyTimeoutId) {
+        var readyTimeoutRecord = this.__readyTimeouts[readyTimeoutId];
+        clearTimeout(readyTimeoutRecord.readyTimeout);
+        readyTimeoutRecord.onClose();
+      }.bind(this)
+    );
     this.__readyTimeouts = {};
     return eventProcessorStoppedPromise.then(
-      function () {
+      function() {
         return {
           success: true,
         };
       },
-      function (err) {
+      function(err) {
         return {
           success: false,
           reason: String(err),
@@ -1021,7 +1079,7 @@ Optimizely.prototype.close = function () {
  * @param  {number|undefined} options.timeout
  * @return {Promise}
  */
-Optimizely.prototype.onReady = function (options) {
+Optimizely.prototype.onReady = function(options) {
   var timeout;
   if (typeof options === 'object' && options !== null) {
     timeout = options.timeout;
@@ -1031,14 +1089,14 @@ Optimizely.prototype.onReady = function (options) {
   }
 
   var resolveTimeoutPromise;
-  var timeoutPromise = new Promise(function (resolve) {
+  var timeoutPromise = new Promise(function(resolve) {
     resolveTimeoutPromise = resolve;
   });
 
   var timeoutId = this.__nextReadyTimeoutId;
   this.__nextReadyTimeoutId++;
 
-  var onReadyTimeout = function () {
+  var onReadyTimeout = function() {
     delete this.__readyTimeouts[timeoutId];
     resolveTimeoutPromise({
       success: false,
@@ -1046,7 +1104,7 @@ Optimizely.prototype.onReady = function (options) {
     });
   }.bind(this);
   var readyTimeout = setTimeout(onReadyTimeout, timeout);
-  var onClose = function () {
+  var onClose = function() {
     resolveTimeoutPromise({
       success: false,
       reason: 'Instance closed',
@@ -1058,13 +1116,15 @@ Optimizely.prototype.onReady = function (options) {
     onClose: onClose,
   };
 
-  this.__readyPromise.then(function () {
-    clearTimeout(readyTimeout);
-    delete this.__readyTimeouts[timeoutId];
-    resolveTimeoutPromise({
-      success: true,
-    });
-  }.bind(this));
+  this.__readyPromise.then(
+    function() {
+      clearTimeout(readyTimeout);
+      delete this.__readyTimeouts[timeoutId];
+      resolveTimeoutPromise({
+        success: true,
+      });
+    }.bind(this)
+  );
 
   return Promise.race([this.__readyPromise, timeoutPromise]);
 };
