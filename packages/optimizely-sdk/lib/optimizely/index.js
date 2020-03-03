@@ -291,7 +291,12 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
     }
 
     if (!projectConfig.eventWithKeyExists(configObj, eventKey)) {
-      throw new Error(jsSdkUtils.sprintf(ERROR_MESSAGES.INVALID_EVENT_KEY, MODULE_NAME, eventKey));
+      this.logger.log(
+        LOG_LEVEL.WARNING,
+        jsSdkUtils.sprintf(enums.LOG_MESSAGES.EVENT_KEY_NOT_FOUND, MODULE_NAME, eventKey)
+      );
+      this.logger.log(LOG_LEVEL.WARNING, jsSdkUtils.sprintf(LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId));
+      return;
     }
 
     // remove null values from eventTags
@@ -313,7 +318,7 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
     var failedTrackLogMessage = jsSdkUtils.sprintf(LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId);
-    this.logger.log(LOG_LEVEL.INFO, failedTrackLogMessage);
+    this.logger.log(LOG_LEVEL.ERROR, failedTrackLogMessage);
   }
 };
 

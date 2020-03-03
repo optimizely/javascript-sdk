@@ -1530,21 +1530,26 @@ describe('lib/optimizely', function() {
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
 
-      it('should throw an error for invalid event key', function() {
+      it('should log a warning for an event key that is not in the datafile and a warning for not tracking user', function() {
         optlyInstance.track('invalidEventKey', 'testUser');
 
-        sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-
-        sinon.assert.calledOnce(errorHandler.handleError);
-        var errorMessage = errorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_EVENT_KEY, 'OPTIMIZELY', 'invalidEventKey'));
-
         sinon.assert.calledTwice(createdLogger.log);
-        var logMessage1 = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage1, sprintf(ERROR_MESSAGES.INVALID_EVENT_KEY, 'OPTIMIZELY', 'invalidEventKey'));
 
-        var logMessage2 = createdLogger.log.args[1][1];
-        assert.strictEqual(logMessage2, sprintf(LOG_MESSAGES.NOT_TRACKING_USER, 'OPTIMIZELY', 'testUser'));
+        var logCall1 = createdLogger.log.getCall(0);
+        sinon.assert.calledWithExactly(
+          logCall1,
+          LOG_LEVEL.WARNING,
+          sprintf(LOG_MESSAGES.EVENT_KEY_NOT_FOUND, 'OPTIMIZELY', 'invalidEventKey')
+        );
+
+        var logCall2 = createdLogger.log.getCall(1);
+        sinon.assert.calledWithExactly(
+          logCall2,
+          LOG_LEVEL.WARNING,
+          sprintf(LOG_MESSAGES.NOT_TRACKING_USER, 'OPTIMIZELY', 'testUser')
+        );
+
+        sinon.assert.notCalled(errorHandler.handleError);
       });
 
       it('should throw an error for invalid attributes', function() {
