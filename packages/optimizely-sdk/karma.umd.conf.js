@@ -15,7 +15,7 @@
  */
 
 // Karma configuration for UMD bundle testing
-const baseConfig = require('./karma.base.conf.js')
+const baseConfig = require('./karma.base.conf.js');
 
 module.exports = function(config) {
   config.set({
@@ -26,9 +26,6 @@ module.exports = function(config) {
     logLevel: config.LOG_INFO,
 
     // list of files / patterns to load in the browser
-    files: [
-      './dist/optimizely.browser.umd.min.js',
-      './lib/index.browser.umdtests.js'
-    ],
+    files: ['./dist/optimizely.browser.umd.min.js', './lib/index.browser.umdtests.js'],
   });
 };

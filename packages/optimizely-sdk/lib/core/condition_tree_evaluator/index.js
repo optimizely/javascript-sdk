@@ -48,7 +48,8 @@ function evaluate(conditions, leafEvaluator) {
         return andEvaluator(restOfConditions, leafEvaluator);
       case NOT_CONDITION:
         return notEvaluator(restOfConditions, leafEvaluator);
-      default: // firstOperator is OR_CONDITION
+      default:
+        // firstOperator is OR_CONDITION
         return orEvaluator(restOfConditions, leafEvaluator);
     }
   }

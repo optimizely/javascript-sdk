@@ -109,7 +109,11 @@ module.exports = {
         config.eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
       }
       if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
-        logger.warn('Invalid eventFlushInterval %s, defaulting to %s', config.eventFlushInterval, DEFAULT_EVENT_FLUSH_INTERVAL);
+        logger.warn(
+          'Invalid eventFlushInterval %s, defaulting to %s',
+          config.eventFlushInterval,
+          DEFAULT_EVENT_FLUSH_INTERVAL
+        );
         config.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
       }
 

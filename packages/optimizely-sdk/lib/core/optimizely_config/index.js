@@ -28,7 +28,7 @@ function getRolloutExperimentIds(rollouts) {
 // Gets Map of all experiments except rollouts
 function getExperimentsMap(configObj) {
   var rolloutExperimentIds = getRolloutExperimentIds(configObj.rollouts);
-  var featureVariablesMap = (configObj.featureFlags || []).reduce(function(resultMap, feature){
+  var featureVariablesMap = (configObj.featureFlags || []).reduce(function(resultMap, feature) {
     resultMap[feature.id] = feature.variables;
     return resultMap;
   }, {});
@@ -42,7 +42,7 @@ function getExperimentsMap(configObj) {
           variations[variation.key] = {
             id: variation.id,
             key: variation.key,
-            variablesMap: getMergedVariablesMap(configObj, variation, experiment.id, featureVariablesMap)
+            variablesMap: getMergedVariablesMap(configObj, variation, experiment.id, featureVariablesMap),
           };
           if (projectConfig.isFeatureExperiment(configObj, experiment.id)) {
             variations[variation.key].featureEnabled = variation.featureEnabled;
@@ -71,7 +71,8 @@ function getMergedVariablesMap(configObj, variation, experimentId, featureVariab
     }, {});
     variablesObject = (experimentFeatureVariables || []).reduce(function(variablesMap, featureVariable) {
       var variationVariable = tempVariablesIdMap[featureVariable.id];
-      var variableValue = variation.featureEnabled && variationVariable ? variationVariable.value : featureVariable.defaultValue;
+      var variableValue =
+        variation.featureEnabled && variationVariable ? variationVariable.value : featureVariable.defaultValue;
       variablesMap[featureVariable.key] = {
         id: featureVariable.id,
         key: featureVariable.key,

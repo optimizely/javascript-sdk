@@ -45,7 +45,7 @@ describe('lib/core/optimizely_config', function() {
       var experimentsMap = optimizelyConfigObject.experimentsMap;
       var experimentsCount = Object.keys(optimizelyConfigObject.experimentsMap).length;
       assert.equal(experimentsCount, 6);
-      
+
       var allExperiments = getAllExperimentsFromDatafile(datafile);
       allExperiments.forEach(function(experiment) {
         assert.include(experimentsMap[experiment.key], {
@@ -57,15 +57,15 @@ describe('lib/core/optimizely_config', function() {
           assert.include(variationsMap[variation.key], {
             id: variation.id,
             key: variation.key,
-          })
+          });
         });
       });
     });
-    
+
     it('should return all the feature flags', function() {
       var featureFlagsCount = Object.keys(optimizelyConfigObject.featuresMap).length;
       assert.equal(featureFlagsCount, 7);
-      
+
       var featuresMap = optimizelyConfigObject.featuresMap;
       datafile.featureFlags.forEach(function(featureFlag) {
         assert.include(featuresMap[featureFlag.key], {
@@ -83,18 +83,17 @@ describe('lib/core/optimizely_config', function() {
             key: variable.key,
             type: variable.type,
             value: variable.defaultValue,
-          })
+          });
         });
       });
     });
-    
+
     it('should correctly merge all feature variables', function() {
       var featureFlags = datafile.featureFlags;
-      var datafileExperimentsMap = getAllExperimentsFromDatafile(datafile)
-        .reduce(function(experiments, experiment) {
-          experiments[experiment.key] = experiment;
-          return experiments;
-        }, {});
+      var datafileExperimentsMap = getAllExperimentsFromDatafile(datafile).reduce(function(experiments, experiment) {
+        experiments[experiment.key] = experiment;
+        return experiments;
+      }, {});
       featureFlags.forEach(function(featureFlag) {
         var experimentIds = featureFlag.experimentIds;
         experimentIds.forEach(function(experimentId) {
@@ -111,10 +110,10 @@ describe('lib/core/optimizely_config', function() {
                 type: variableToAssert.type,
               });
               if (!variation.featureEnabled) {
-                assert.equal(variable.defaultValue, variableToAssert.value);  
+                assert.equal(variable.defaultValue, variableToAssert.value);
               }
-            });  
-          })
+            });
+          });
         });
       });
     });

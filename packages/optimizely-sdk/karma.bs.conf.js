@@ -15,7 +15,7 @@
  */
 
 // Karma configuration for cross-browser testing
-const baseConfig = require('./karma.base.conf.js')
+const baseConfig = require('./karma.base.conf.js');
 
 module.exports = function(config) {
   config.set({
@@ -26,8 +26,6 @@ module.exports = function(config) {
     logLevel: config.LOG_INFO,
 
     // list of files / patterns to load in the browser
-    files: [
-      './lib/index.browser.tests.js'
-    ],
+    files: ['./lib/index.browser.tests.js'],
   });
 };

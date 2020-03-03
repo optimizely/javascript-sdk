@@ -25,7 +25,7 @@ describe('lib/utils/attributes_validator', function() {
   describe('APIs', function() {
     describe('validate', function() {
       it('should validate the given attributes if attributes is an object', function() {
-        assert.isTrue(attributesValidator.validate({testAttribute: 'testValue'}));
+        assert.isTrue(attributesValidator.validate({ testAttribute: 'testValue' }));
       });
 
       it('should throw an error if attributes is an array', function() {
@@ -50,7 +50,6 @@ describe('lib/utils/attributes_validator', function() {
         }, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
       });
 
-
       it('should throw an error if attributes contains a key with an undefined value', function() {
         var attributeKey = 'testAttribute';
         var attributes = {};
@@ -65,31 +64,31 @@ describe('lib/utils/attributes_validator', function() {
     describe('isAttributeValid', function() {
       it('isAttributeValid returns true for valid values', function() {
         var userAttributes = {
-          'browser_type': 'Chrome',
-          'is_firefox': false,
-          'num_users': 10,
-          'pi_value': 3.14,
+          browser_type: 'Chrome',
+          is_firefox: false,
+          num_users: 10,
+          pi_value: 3.14,
           '': 'javascript',
         };
 
-        Object.keys(userAttributes).forEach(function (key) {
-          var value = userAttributes[key];  
+        Object.keys(userAttributes).forEach(function(key) {
+          var value = userAttributes[key];
           assert.isTrue(attributesValidator.isAttributeValid(key, value));
         });
       });
 
       it('isAttributeValid returns false for invalid values', function() {
         var userAttributes = {
-          'null': null,
-          'objects': {a: 'b'},
-          'array': [1, 2, 3],
-          'infinity': Infinity,
-          'negativeInfinity': -Infinity,
-          'NaN': NaN,
-          'outOfBound': Math.pow(2, 53) + 2,
+          null: null,
+          objects: { a: 'b' },
+          array: [1, 2, 3],
+          infinity: Infinity,
+          negativeInfinity: -Infinity,
+          NaN: NaN,
+          outOfBound: Math.pow(2, 53) + 2,
         };
 
-        Object.keys(userAttributes).forEach(function (key) {
+        Object.keys(userAttributes).forEach(function(key) {
           var value = userAttributes[key];
           assert.isFalse(attributesValidator.isAttributeValid(key, value));
         });

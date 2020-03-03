@@ -130,10 +130,9 @@ ProjectConfigManager.prototype.__initialize = function(config) {
     }
     this.datafileManager = new datafileManager.HttpPollingDatafileManager(datafileManagerConfig);
     this.datafileManager.start();
-    this.__readyPromise = this.datafileManager.onReady().then(
-      this.__onDatafileManagerReadyFulfill.bind(this),
-      this.__onDatafileManagerReadyReject.bind(this)
-    );
+    this.__readyPromise = this.datafileManager
+      .onReady()
+      .then(this.__onDatafileManagerReadyFulfill.bind(this), this.__onDatafileManagerReadyReject.bind(this));
     this.datafileManager.on('update', this.__onDatafileManagerUpdate.bind(this));
   } else if (this.__configObj) {
     this.__readyPromise = Promise.resolve({
@@ -286,7 +285,7 @@ ProjectConfigManager.prototype.__handleNewConfigObj = function(newConfigObj) {
  */
 ProjectConfigManager.prototype.getConfig = function() {
   return this.__configObj;
-}
+};
 
 /**
  * Returns the optimizely config object

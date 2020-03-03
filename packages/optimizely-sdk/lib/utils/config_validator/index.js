@@ -19,11 +19,7 @@ var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'CONFIG_VALIDATOR';
 var DATAFILE_VERSIONS = require('../enums').DATAFILE_VERSIONS;
 
-var SUPPORTED_VERSIONS = [
-  DATAFILE_VERSIONS.V2,
-  DATAFILE_VERSIONS.V3,
-  DATAFILE_VERSIONS.V4
-];
+var SUPPORTED_VERSIONS = [DATAFILE_VERSIONS.V2, DATAFILE_VERSIONS.V3, DATAFILE_VERSIONS.V4];
 
 /**
  * Provides utility methods for validating that the configuration options are valid
@@ -39,15 +35,15 @@ module.exports = {
    * @throws If any of the config options are not valid
    */
   validate: function(config) {
-    if (config.errorHandler && (typeof config.errorHandler.handleError !== 'function')) {
+    if (config.errorHandler && typeof config.errorHandler.handleError !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_ERROR_HANDLER, MODULE_NAME));
     }
 
-    if (config.eventDispatcher && (typeof config.eventDispatcher.dispatchEvent !== 'function')) {
+    if (config.eventDispatcher && typeof config.eventDispatcher.dispatchEvent !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_DISPATCHER, MODULE_NAME));
     }
 
-    if (config.logger && (typeof config.logger.log !== 'function')) {
+    if (config.logger && typeof config.logger.log !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_LOGGER, MODULE_NAME));
     }
 
@@ -82,5 +78,5 @@ module.exports = {
     }
 
     return true;
-  }
+  },
 };

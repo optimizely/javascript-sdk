@@ -23,7 +23,7 @@ describe('lib/plugins/event_dispatcher/node', function() {
   describe('APIs', function() {
     describe('dispatchEvent', function() {
       var stubCallback = {
-        callback: function() {}
+        callback: function() {},
       };
 
       beforeEach(function() {
@@ -64,14 +64,15 @@ describe('lib/plugins/event_dispatcher/node', function() {
           httpVerb: 'POST',
         };
 
-        eventDispatcher.dispatchEvent(eventObj, stubCallback.callback)
-        .on('response', function(response) {
-          sinon.assert.calledOnce(stubCallback.callback);
-          done();
-        })
-        .on('error', function(error) {
-          assert.fail('status code okay', 'status code not okay', '');
-        });
+        eventDispatcher
+          .dispatchEvent(eventObj, stubCallback.callback)
+          .on('response', function(response) {
+            sinon.assert.calledOnce(stubCallback.callback);
+            done();
+          })
+          .on('error', function(error) {
+            assert.fail('status code okay', 'status code not okay', '');
+          });
       });
 
       it('rejects GET httpVerb', function() {

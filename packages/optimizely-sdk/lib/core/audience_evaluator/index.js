@@ -26,7 +26,6 @@ var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
 var MODULE_NAME = 'AUDIENCE_EVALUATOR';
 
-
 /**
  * Construct an instance of AudienceEvaluator with given options
  * @param {Object=} UNSTABLE_conditionEvaluators A map of condition evaluators provided by the consumer. This enables matching
@@ -36,7 +35,7 @@ var MODULE_NAME = 'AUDIENCE_EVALUATOR';
  */
 function AudienceEvaluator(UNSTABLE_conditionEvaluators) {
   this.typeToEvaluatorMap = fns.assign({}, UNSTABLE_conditionEvaluators, {
-    'custom_attribute': customAttributeConditionEvaluator
+    custom_attribute: customAttributeConditionEvaluator,
   });
 }
 
@@ -66,8 +65,14 @@ AudienceEvaluator.prototype.evaluate = function(audienceConditions, audiencesByI
   var evaluateAudience = function(audienceId) {
     var audience = audiencesById[audienceId];
     if (audience) {
-      logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.EVALUATING_AUDIENCE, MODULE_NAME, audienceId, JSON.stringify(audience.conditions)));
-      var result = conditionTreeEvaluator.evaluate(audience.conditions, this.evaluateConditionWithUserAttributes.bind(this, userAttributes));
+      logger.log(
+        LOG_LEVEL.DEBUG,
+        sprintf(LOG_MESSAGES.EVALUATING_AUDIENCE, MODULE_NAME, audienceId, JSON.stringify(audience.conditions))
+      );
+      var result = conditionTreeEvaluator.evaluate(
+        audience.conditions,
+        this.evaluateConditionWithUserAttributes.bind(this, userAttributes)
+      );
       var resultText = result === null ? 'UNKNOWN' : result.toString().toUpperCase();
       logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText));
       return result;
@@ -95,7 +100,10 @@ AudienceEvaluator.prototype.evaluateConditionWithUserAttributes = function(userA
   try {
     return evaluator.evaluate(condition, userAttributes, logger);
   } catch (err) {
-    logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.CONDITION_EVALUATOR_ERROR, MODULE_NAME, condition.type, err.message));
+    logger.log(
+      LOG_LEVEL.ERROR,
+      sprintf(ERROR_MESSAGES.CONDITION_EVALUATOR_ERROR, MODULE_NAME, condition.type, err.message)
+    );
   }
   return null;
 };

@@ -24,42 +24,58 @@ var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 describe('lib/utils/user_profile_service_validator', function() {
   describe('APIs', function() {
     describe('validate', function() {
-      it('should throw if the instance does not provide a \'lookup\' function', function() {
+      it("should throw if the instance does not provide a 'lookup' function", function() {
         var missingLookupFunction = {
-          save: function() {}
+          save: function() {},
         };
         assert.throws(function() {
           userProfileServiceValidator.validate(missingLookupFunction);
-        }, sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, 'USER_PROFILE_SERVICE_VALIDATOR', 'Missing function \'lookup\''));
+        }, sprintf(
+          ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE,
+          'USER_PROFILE_SERVICE_VALIDATOR',
+          "Missing function 'lookup'"
+        ));
       });
 
-      it('should throw if \'lookup\' is not a function', function() {
+      it("should throw if 'lookup' is not a function", function() {
         var lookupNotFunction = {
           save: function() {},
           lookup: 'notGonnaWork',
         };
         assert.throws(function() {
           userProfileServiceValidator.validate(lookupNotFunction);
-        }, sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, 'USER_PROFILE_SERVICE_VALIDATOR', 'Missing function \'lookup\''));
+        }, sprintf(
+          ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE,
+          'USER_PROFILE_SERVICE_VALIDATOR',
+          "Missing function 'lookup'"
+        ));
       });
 
-      it('should throw if the instance does not provide a \'save\' function', function() {
+      it("should throw if the instance does not provide a 'save' function", function() {
         var missingSaveFunction = {
-          lookup: function() {}
+          lookup: function() {},
         };
         assert.throws(function() {
           userProfileServiceValidator.validate(missingSaveFunction);
-        }, sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, 'USER_PROFILE_SERVICE_VALIDATOR', 'Missing function \'save\''));
+        }, sprintf(
+          ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE,
+          'USER_PROFILE_SERVICE_VALIDATOR',
+          "Missing function 'save'"
+        ));
       });
 
-      it('should throw if \'save\' is not a function', function() {
+      it("should throw if 'save' is not a function", function() {
         var saveNotFunction = {
           lookup: function() {},
           save: 'notGonnaWork',
         };
         assert.throws(function() {
           userProfileServiceValidator.validate(saveNotFunction);
-        }, sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, 'USER_PROFILE_SERVICE_VALIDATOR', 'Missing function \'save\''));
+        }, sprintf(
+          ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE,
+          'USER_PROFILE_SERVICE_VALIDATOR',
+          "Missing function 'save'"
+        ));
       });
 
       it('should return true if the instance is valid', function() {

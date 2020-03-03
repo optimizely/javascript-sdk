@@ -40,66 +40,63 @@ describe('lib/core/condition_tree_evaluator', function() {
   describe('APIs', function() {
     describe('evaluate', function() {
       it('should return true for a leaf condition when the leaf condition evaluator returns true', function() {
-        assert.isTrue(conditionTreeEvaluator.evaluate(conditionA, function() { return true; }));
+        assert.isTrue(
+          conditionTreeEvaluator.evaluate(conditionA, function() {
+            return true;
+          })
+        );
       });
 
       it('should return false for a leaf condition when the leaf condition evaluator returns false', function() {
-        assert.isFalse(conditionTreeEvaluator.evaluate(conditionA, function() { return false; }));
+        assert.isFalse(
+          conditionTreeEvaluator.evaluate(conditionA, function() {
+            return false;
+          })
+        );
       });
 
       describe('and evaluation', function() {
         it('should return true when ALL conditions evaluate to true', function() {
-          assert.isTrue(conditionTreeEvaluator.evaluate(
-            ['and', conditionA, conditionB],
-            function() { return true; }
-          ));
+          assert.isTrue(
+            conditionTreeEvaluator.evaluate(['and', conditionA, conditionB], function() {
+              return true;
+            })
+          );
         });
 
         it('should return false if one condition evaluates to false', function() {
           var leafEvaluator = sinon.stub();
           leafEvaluator.onCall(0).returns(true);
           leafEvaluator.onCall(1).returns(false);
-          assert.isFalse(conditionTreeEvaluator.evaluate(
-            ['and', conditionA, conditionB],
-            leafEvaluator
-          ));
+          assert.isFalse(conditionTreeEvaluator.evaluate(['and', conditionA, conditionB], leafEvaluator));
         });
 
         describe('null handling', function() {
           it('should return null when all operands evaluate to null', function() {
-            assert.isNull(conditionTreeEvaluator.evaluate(
-              ['and', conditionA, conditionB],
-              function() { return null; }
-            ));
+            assert.isNull(
+              conditionTreeEvaluator.evaluate(['and', conditionA, conditionB], function() {
+                return null;
+              })
+            );
           });
 
           it('should return null when operands evaluate to trues and nulls', function() {
             var leafEvaluator = sinon.stub();
             leafEvaluator.onCall(0).returns(true);
             leafEvaluator.onCall(1).returns(null);
-            assert.isNull(conditionTreeEvaluator.evaluate(
-              ['and', conditionA, conditionB],
-              leafEvaluator
-            ));
+            assert.isNull(conditionTreeEvaluator.evaluate(['and', conditionA, conditionB], leafEvaluator));
           });
 
           it('should return false when operands evaluate to falses and nulls', function() {
             var leafEvaluator = sinon.stub();
             leafEvaluator.onCall(0).returns(false);
             leafEvaluator.onCall(1).returns(null);
-            assert.isFalse(conditionTreeEvaluator.evaluate(
-              ['and', conditionA, conditionB],
-              leafEvaluator
-            ));
+            assert.isFalse(conditionTreeEvaluator.evaluate(['and', conditionA, conditionB], leafEvaluator));
 
             leafEvaluator.reset();
             leafEvaluator.onCall(0).returns(null);
             leafEvaluator.onCall(1).returns(false);
-            assert.isFalse(conditionTreeEvaluator.evaluate(
-              ['and', conditionA, conditionB],
-              leafEvaluator
-            ));
-
+            assert.isFalse(conditionTreeEvaluator.evaluate(['and', conditionA, conditionB], leafEvaluator));
           });
 
           it('should return false when operands evaluate to trues, falses, and nulls', function() {
@@ -107,10 +104,7 @@ describe('lib/core/condition_tree_evaluator', function() {
             leafEvaluator.onCall(0).returns(true);
             leafEvaluator.onCall(1).returns(false);
             leafEvaluator.onCall(2).returns(null);
-            assert.isFalse(conditionTreeEvaluator.evaluate(
-              ['and', conditionA, conditionB, conditionC],
-              leafEvaluator
-            ));
+            assert.isFalse(conditionTreeEvaluator.evaluate(['and', conditionA, conditionB, conditionC], leafEvaluator));
           });
         });
       });
@@ -120,53 +114,43 @@ describe('lib/core/condition_tree_evaluator', function() {
           var leafEvaluator = sinon.stub();
           leafEvaluator.onCall(0).returns(false);
           leafEvaluator.onCall(1).returns(true);
-          assert.isTrue(conditionTreeEvaluator.evaluate(
-            ['or', conditionA, conditionB],
-            leafEvaluator
-          ));
+          assert.isTrue(conditionTreeEvaluator.evaluate(['or', conditionA, conditionB], leafEvaluator));
         });
 
         it('should return false if all conditions evaluate to false', function() {
-          assert.isFalse(conditionTreeEvaluator.evaluate(
-            ['or', conditionA, conditionB],
-            function() { return false; }
-          ));
+          assert.isFalse(
+            conditionTreeEvaluator.evaluate(['or', conditionA, conditionB], function() {
+              return false;
+            })
+          );
         });
 
         describe('null handling', function() {
           it('should return null when all operands evaluate to null', function() {
-            assert.isNull(conditionTreeEvaluator.evaluate(
-              ['or', conditionA, conditionB],
-              function() { return null; }
-            ));
+            assert.isNull(
+              conditionTreeEvaluator.evaluate(['or', conditionA, conditionB], function() {
+                return null;
+              })
+            );
           });
 
           it('should return true when operands evaluate to trues and nulls', function() {
             var leafEvaluator = sinon.stub();
             leafEvaluator.onCall(0).returns(true);
             leafEvaluator.onCall(1).returns(null);
-            assert.isTrue(conditionTreeEvaluator.evaluate(
-              ['or', conditionA, conditionB],
-              leafEvaluator
-            ));
+            assert.isTrue(conditionTreeEvaluator.evaluate(['or', conditionA, conditionB], leafEvaluator));
           });
 
           it('should return null when operands evaluate to falses and nulls', function() {
             var leafEvaluator = sinon.stub();
             leafEvaluator.onCall(0).returns(null);
             leafEvaluator.onCall(1).returns(false);
-            assert.isNull(conditionTreeEvaluator.evaluate(
-              ['or', conditionA, conditionB],
-              leafEvaluator
-            ));
+            assert.isNull(conditionTreeEvaluator.evaluate(['or', conditionA, conditionB], leafEvaluator));
 
             leafEvaluator.reset();
             leafEvaluator.onCall(0).returns(false);
             leafEvaluator.onCall(1).returns(null);
-            assert.isNull(conditionTreeEvaluator.evaluate(
-              ['or', conditionA, conditionB],
-              leafEvaluator
-            ));
+            assert.isNull(conditionTreeEvaluator.evaluate(['or', conditionA, conditionB], leafEvaluator));
           });
 
           it('should return true when operands evaluate to trues, falses, and nulls', function() {
@@ -174,48 +158,58 @@ describe('lib/core/condition_tree_evaluator', function() {
             leafEvaluator.onCall(0).returns(true);
             leafEvaluator.onCall(1).returns(null);
             leafEvaluator.onCall(2).returns(false);
-            assert.isTrue(conditionTreeEvaluator.evaluate(
-              ['or', conditionA, conditionB, conditionC],
-              leafEvaluator
-            ));
+            assert.isTrue(conditionTreeEvaluator.evaluate(['or', conditionA, conditionB, conditionC], leafEvaluator));
           });
         });
       });
 
       describe('not evaluation', function() {
         it('should return true if the condition evaluates to false', function() {
-          assert.isTrue(conditionTreeEvaluator.evaluate(['not', conditionA], function() { return false; }));
+          assert.isTrue(
+            conditionTreeEvaluator.evaluate(['not', conditionA], function() {
+              return false;
+            })
+          );
         });
 
         it('should return false if the condition evaluates to true', function() {
-          assert.isFalse(conditionTreeEvaluator.evaluate(['not', conditionB], function() { return true; }));
+          assert.isFalse(
+            conditionTreeEvaluator.evaluate(['not', conditionB], function() {
+              return true;
+            })
+          );
         });
 
         it('should return the result of negating the first condition, and ignore any additional conditions', function() {
-          var result = conditionTreeEvaluator.evaluate(
-            ['not', '1', '2', '1'],
-            function(id) { return id === '1'; }
-          );
+          var result = conditionTreeEvaluator.evaluate(['not', '1', '2', '1'], function(id) {
+            return id === '1';
+          });
           assert.isFalse(result);
-          result = conditionTreeEvaluator.evaluate(
-            ['not', '1', '2', '1'],
-            function(id) { return id === '2'; }
-          );
+          result = conditionTreeEvaluator.evaluate(['not', '1', '2', '1'], function(id) {
+            return id === '2';
+          });
           assert.isTrue(result);
-          result = conditionTreeEvaluator.evaluate(
-            ['not', '1', '2', '3'],
-            function(id) { return id === '1' ? null : id === '3'; }
-          );
+          result = conditionTreeEvaluator.evaluate(['not', '1', '2', '3'], function(id) {
+            return id === '1' ? null : id === '3';
+          });
           assert.isNull(result);
         });
 
         describe('null handling', function() {
           it('should return null when operand evaluates to null', function() {
-            assert.isNull(conditionTreeEvaluator.evaluate(['not', conditionA], function() { return null; }));
+            assert.isNull(
+              conditionTreeEvaluator.evaluate(['not', conditionA], function() {
+                return null;
+              })
+            );
           });
 
           it('should return null when there are no operands', function() {
-            assert.isNull(conditionTreeEvaluator.evaluate(['not'], function() { return null; }));
+            assert.isNull(
+              conditionTreeEvaluator.evaluate(['not'], function() {
+                return null;
+              })
+            );
           });
         });
       });
@@ -225,14 +219,12 @@ describe('lib/core/condition_tree_evaluator', function() {
           var leafEvaluator = sinon.stub();
           leafEvaluator.onCall(0).returns(true);
           leafEvaluator.onCall(1).returns(false);
-          assert.isTrue(conditionTreeEvaluator.evaluate(
-            [conditionA, conditionB],
-            leafEvaluator
-          ));
-          assert.isFalse(conditionTreeEvaluator.evaluate(
-            [conditionA, conditionB],
-            function() { return false; }
-          ));
+          assert.isTrue(conditionTreeEvaluator.evaluate([conditionA, conditionB], leafEvaluator));
+          assert.isFalse(
+            conditionTreeEvaluator.evaluate([conditionA, conditionB], function() {
+              return false;
+            })
+          );
         });
       });
     });

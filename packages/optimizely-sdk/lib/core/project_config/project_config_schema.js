@@ -19,260 +19,260 @@
  * Project Config JSON Schema file used to validate the project json datafile
  */
 module.exports = {
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "properties": {
-    "projectId": {
-      "type": "string",
-      "required": true
+  $schema: 'http://json-schema.org/draft-04/schema#',
+  type: 'object',
+  properties: {
+    projectId: {
+      type: 'string',
+      required: true,
     },
-    "accountId": {
-      "type": "string",
-      "required": true
+    accountId: {
+      type: 'string',
+      required: true,
     },
-    "groups": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "required": true
+    groups: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            required: true,
           },
-          "policy": {
-            "type": "string",
-            "required": true
+          policy: {
+            type: 'string',
+            required: true,
           },
-          "trafficAllocation": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "entityId": {
-                  "type": "string",
-                  "required": true
+          trafficAllocation: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                entityId: {
+                  type: 'string',
+                  required: true,
                 },
-                "endOfRange": {
-                  "type": "integer",
-                  "required": true
-                }
-              }
+                endOfRange: {
+                  type: 'integer',
+                  required: true,
+                },
+              },
             },
-            "required": true
+            required: true,
           },
-          "experiments": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string",
-                  "required": true
+          experiments: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  required: true,
                 },
-                "key": {
-                  "type": "string",
-                  "required": true
+                key: {
+                  type: 'string',
+                  required: true,
                 },
-                "status": {
-                  "type": "string",
-                  "required": true
+                status: {
+                  type: 'string',
+                  required: true,
                 },
-                "layerId": {
-                  "type": "string",
-                  "required": true
+                layerId: {
+                  type: 'string',
+                  required: true,
                 },
-                "variations": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string",
-                        "required": true
+                variations: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      id: {
+                        type: 'string',
+                        required: true,
                       },
-                      "key": {
-                        "type": "string",
-                        "required": true
-                      }
-                    }
-                  },
-                  "required": true
-                },
-                "trafficAllocation": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "entityId": {
-                        "type": "string",
-                        "required": true
+                      key: {
+                        type: 'string',
+                        required: true,
                       },
-                      "endOfRange": {
-                        "type": "integer",
-                        "required": true
-                      }
-                    }
+                    },
                   },
-                  "required": true
+                  required: true,
                 },
-                "audienceIds": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
+                trafficAllocation: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      entityId: {
+                        type: 'string',
+                        required: true,
+                      },
+                      endOfRange: {
+                        type: 'integer',
+                        required: true,
+                      },
+                    },
                   },
-                  "required": true
+                  required: true,
                 },
-                "forcedVariations": {
-                  "type": "object",
-                  "required": true
-                }
-              }
-            },
-            "required": true
-          }
-        }
-      },
-      "required": true
-    },
-    "experiments": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "required": true
-          },
-          "key": {
-            "type": "string",
-            "required": true
-          },
-          "status": {
-            "type": "string",
-            "required": true
-          },
-          "layerId": {
-            "type": "string",
-            "required": true
-          },
-          "variations": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string",
-                  "required": true
+                audienceIds: {
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                  },
+                  required: true,
                 },
-                "key": {
-                  "type": "string",
-                  "required": true
-                }
-              }
-            },
-            "required": true
-          },
-          "trafficAllocation": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "entityId": {
-                  "type": "string",
-                  "required": true
+                forcedVariations: {
+                  type: 'object',
+                  required: true,
                 },
-                "endOfRange": {
-                  "type": "integer",
-                  "required": true
-                }
-              }
+              },
             },
-            "required": true
+            required: true,
           },
-          "audienceIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
+        },
+      },
+      required: true,
+    },
+    experiments: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            required: true,
+          },
+          key: {
+            type: 'string',
+            required: true,
+          },
+          status: {
+            type: 'string',
+            required: true,
+          },
+          layerId: {
+            type: 'string',
+            required: true,
+          },
+          variations: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  required: true,
+                },
+                key: {
+                  type: 'string',
+                  required: true,
+                },
+              },
             },
-            "required": true
+            required: true,
           },
-          "forcedVariations": {
-            "type": "object",
-            "required": true
-          }
-        }
+          trafficAllocation: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                entityId: {
+                  type: 'string',
+                  required: true,
+                },
+                endOfRange: {
+                  type: 'integer',
+                  required: true,
+                },
+              },
+            },
+            required: true,
+          },
+          audienceIds: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+            required: true,
+          },
+          forcedVariations: {
+            type: 'object',
+            required: true,
+          },
+        },
       },
-      "required": true
+      required: true,
     },
-    "events": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "key": {
-            "type": "string",
-            "required": true
+    events: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          key: {
+            type: 'string',
+            required: true,
           },
-          "experimentIds": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "required": true
-            }
+          experimentIds: {
+            type: 'array',
+            items: {
+              type: 'string',
+              required: true,
+            },
           },
-          "id": {
-            "type": "string",
-            "required": true
-          }
-        }
+          id: {
+            type: 'string',
+            required: true,
+          },
+        },
       },
-      "required": true
+      required: true,
     },
-    "audiences": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "required": true
+    audiences: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            required: true,
           },
-          "name": {
-            "type": "string",
-            "required": true
+          name: {
+            type: 'string',
+            required: true,
           },
-          "conditions": {
-            "type": "string",
-            "required": true
-          }
-        }
+          conditions: {
+            type: 'string',
+            required: true,
+          },
+        },
       },
-      "required": true
+      required: true,
     },
-    "attributes": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "required": true
+    attributes: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            required: true,
           },
-          "key": {
-            "type": "string",
-            "required": true
+          key: {
+            type: 'string',
+            required: true,
           },
-        }
+        },
       },
-      "required": true
+      required: true,
     },
-    "version": {
-      "type": "string",
-      "required": true
+    version: {
+      type: 'string',
+      required: true,
     },
-    "revision": {
-      "type": "string",
-      "required": true
+    revision: {
+      type: 'string',
+      required: true,
     },
-  }
+  },
 };

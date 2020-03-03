@@ -40,9 +40,11 @@ module.exports = {
       return true;
     } else {
       if (Array.isArray(result.errors)) {
-        throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE, MODULE_NAME, result.errors[0].property, result.errors[0].message));
+        throw new Error(
+          sprintf(ERROR_MESSAGES.INVALID_DATAFILE, MODULE_NAME, result.errors[0].property, result.errors[0].message)
+        );
       }
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_JSON, MODULE_NAME));
     }
-  }
+  },
 };
