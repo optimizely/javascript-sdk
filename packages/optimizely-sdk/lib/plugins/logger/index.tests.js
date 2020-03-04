@@ -26,7 +26,7 @@ describe('lib/plugins/logger', function() {
     var defaultLogger;
     describe('createLogger', function() {
       it('should return an instance of the default logger', function() {
-        defaultLogger = logger.createLogger({logLevel: LOG_LEVEL.NOTSET});
+        defaultLogger = logger.createLogger({ logLevel: LOG_LEVEL.NOTSET });
         assert.isObject(defaultLogger);
         expect(defaultLogger.logLevel).to.equal(LOG_LEVEL.NOTSET);
       });
@@ -34,7 +34,7 @@ describe('lib/plugins/logger', function() {
 
     describe('log', function() {
       beforeEach(function() {
-        defaultLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+        defaultLogger = logger.createLogger({ logLevel: LOG_LEVEL.INFO });
 
         sinon.stub(console, 'log');
         sinon.stub(console, 'info');
@@ -81,7 +81,7 @@ describe('lib/plugins/logger', function() {
 
     describe('setLogLevel', function() {
       beforeEach(function() {
-        defaultLogger = logger.createLogger({logLevel: LOG_LEVEL.NOTSET});
+        defaultLogger = logger.createLogger({ logLevel: LOG_LEVEL.NOTSET });
       });
 
       it('should set the log level to the specified log level', function() {

@@ -1448,19 +1448,19 @@ var datafileWithFeaturesExpectedData = {
     594099: {
       4792309476491264: {
         value: '40',
-        id: '4792309476491264'
+        id: '4792309476491264',
       },
       5073784453201920: {
         value: 'true',
-        id: '5073784453201920'
+        id: '5073784453201920',
       },
       5636734406623232: {
         value: 'Buy me Later',
-        id: '5636734406623232'
+        id: '5636734406623232',
       },
       6199684360044544: {
         value: '99.99',
-        id: '6199684360044544'
+        id: '6199684360044544',
       },
     },
     595008: {},
@@ -2503,10 +2503,10 @@ var mutexFeatureTestsConfig = {
           layerId: '17151011617',
           trafficAllocation: [{ entityId: '17138530965', endOfRange: 0 }],
           forcedVariations: {},
-        }
+        },
       ],
       id: '17151011617',
-    }
+    },
   ],
   typedAudiences: [],
   anonymizeIP: false,
@@ -2528,7 +2528,7 @@ var mutexFeatureTestsConfig = {
       policy: 'random',
       trafficAllocation: [
         { entityId: '17139931304', endOfRange: 9900 },
-        { entityId: '17128410791', endOfRange: 10000 }
+        { entityId: '17128410791', endOfRange: 10000 },
       ],
       experiments: [
         {
@@ -2536,36 +2536,36 @@ var mutexFeatureTestsConfig = {
           audienceIds: [],
           variations: [
             { variables: [], id: 17155031309, key: 'variation_1', featureEnabled: false },
-            { variables: [], id: 17124610952, key: 'variation_2', featureEnabled: true }
+            { variables: [], id: 17124610952, key: 'variation_2', featureEnabled: true },
           ],
           id: '17139931304',
           key: 'f_test2',
           layerId: '17149391594',
           trafficAllocation: [
             { entityId: '17155031309', endOfRange: 5000 },
-            { entityId: '17124610952', endOfRange: 10000 }
+            { entityId: '17124610952', endOfRange: 10000 },
           ],
-          forcedVariations: {}
+          forcedVariations: {},
         },
         {
           status: 'Running',
           audienceIds: [],
           variations: [
             { variables: [], id: '17175820099', key: 'variation_1', featureEnabled: false },
-            { variables: [], id: '17144050391', key: 'variation_2', featureEnabled: true }
+            { variables: [], id: '17144050391', key: 'variation_2', featureEnabled: true },
           ],
           id: '17128410791',
           key: 'f_test1',
           layerId: '17145581153',
           trafficAllocation: [
             { entityId: '17175820099', endOfRange: 5000 },
-            { entityId: '17144050391', endOfRange: 10000 }
+            { entityId: '17144050391', endOfRange: 10000 },
           ],
-          forcedVariations: {}
-        }
+          forcedVariations: {},
+        },
       ],
-      id: '17142090293'
-    }
+      id: '17142090293',
+    },
   ],
   attributes: [],
   botFiltering: false,

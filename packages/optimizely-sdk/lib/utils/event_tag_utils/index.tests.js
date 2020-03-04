@@ -30,18 +30,24 @@ describe('lib/utils/event_tag_utils', function() {
     describe('getRevenueValue', function() {
       describe('the revenue value is a valid number', function() {
         it('should return the parsed integer for the revenue value', function() {
-          var parsedRevenueValue = eventTagUtils.getRevenueValue({
-            revenue: '1337',
-          }, mockLogger);
+          var parsedRevenueValue = eventTagUtils.getRevenueValue(
+            {
+              revenue: '1337',
+            },
+            mockLogger
+          );
 
           assert.strictEqual(parsedRevenueValue, 1337);
           var logMessage = mockLogger.log.args[0][1];
           assert.strictEqual(logMessage, 'EVENT_TAG_UTILS: Parsed revenue value "1337" from event tags.');
 
           // test out a float
-          parsedRevenueValue = eventTagUtils.getRevenueValue({
-            revenue: '13.37',
-          }, mockLogger);
+          parsedRevenueValue = eventTagUtils.getRevenueValue(
+            {
+              revenue: '13.37',
+            },
+            mockLogger
+          );
 
           assert.strictEqual(parsedRevenueValue, 13);
         });
@@ -49,9 +55,12 @@ describe('lib/utils/event_tag_utils', function() {
 
       describe('the revenue value is not a valid number', function() {
         it('should return null and log a message', function() {
-          var parsedRevenueValue = eventTagUtils.getRevenueValue({
-            revenue: 'invalid',
-          }, mockLogger);
+          var parsedRevenueValue = eventTagUtils.getRevenueValue(
+            {
+              revenue: 'invalid',
+            },
+            mockLogger
+          );
 
           assert.strictEqual(parsedRevenueValue, null);
 
@@ -62,9 +71,12 @@ describe('lib/utils/event_tag_utils', function() {
 
       describe('the revenue value is not present in the event tags', function() {
         it('should return null', function() {
-          var parsedRevenueValue = eventTagUtils.getRevenueValue({
-            not_revenue: '1337',
-          }, mockLogger);
+          var parsedRevenueValue = eventTagUtils.getRevenueValue(
+            {
+              not_revenue: '1337',
+            },
+            mockLogger
+          );
 
           assert.strictEqual(parsedRevenueValue, null);
         });
@@ -74,18 +86,24 @@ describe('lib/utils/event_tag_utils', function() {
     describe('getNumericValue', function() {
       describe('the event value is a valid number', function() {
         it('should return the parsed integer for the event value', function() {
-          var parsedEventValue = eventTagUtils.getEventValue({
-            value: '1337',
-          }, mockLogger);
+          var parsedEventValue = eventTagUtils.getEventValue(
+            {
+              value: '1337',
+            },
+            mockLogger
+          );
 
           assert.strictEqual(parsedEventValue, 1337);
           var logMessage = mockLogger.log.args[0][1];
           assert.strictEqual(logMessage, 'EVENT_TAG_UTILS: Parsed event value "1337" from event tags.');
 
           // test out a float
-          parsedEventValue = eventTagUtils.getEventValue({
-            value: '13.37',
-          }, mockLogger);
+          parsedEventValue = eventTagUtils.getEventValue(
+            {
+              value: '13.37',
+            },
+            mockLogger
+          );
 
           assert.strictEqual(parsedEventValue, 13.37);
         });
@@ -93,9 +111,12 @@ describe('lib/utils/event_tag_utils', function() {
 
       describe('the event value is not a valid number', function() {
         it('should return null and log a message', function() {
-          var parsedEventValue = eventTagUtils.getEventValue({
-            value: 'invalid',
-          }, mockLogger);
+          var parsedEventValue = eventTagUtils.getEventValue(
+            {
+              value: 'invalid',
+            },
+            mockLogger
+          );
 
           assert.strictEqual(parsedEventValue, null);
 
@@ -106,9 +127,12 @@ describe('lib/utils/event_tag_utils', function() {
 
       describe('the event value is not present in the event tags', function() {
         it('should return null', function() {
-          var parsedEventValue = eventTagUtils.getEventValue({
-            not_value: '13.37',
-          }, mockLogger);
+          var parsedEventValue = eventTagUtils.getEventValue(
+            {
+              not_value: '13.37',
+            },
+            mockLogger
+          );
 
           assert.strictEqual(parsedEventValue, null);
         });

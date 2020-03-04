@@ -55,12 +55,12 @@ module.exports = {
     Object.keys(projectConfig.groupIdMap || {}).forEach(function(Id) {
       experiments = fns.cloneDeep(projectConfig.groupIdMap[Id].experiments);
       (experiments || []).forEach(function(experiment) {
-        projectConfig.experiments.push(fns.assign(experiment, {groupId: Id}));
+        projectConfig.experiments.push(fns.assign(experiment, { groupId: Id }));
       });
     });
 
     projectConfig.rolloutIdMap = fns.keyBy(projectConfig.rollouts || [], 'id');
-    jsSdkUtils.objectValues(projectConfig.rolloutIdMap || {}).forEach(function (rollout) {      
+    jsSdkUtils.objectValues(projectConfig.rolloutIdMap || {}).forEach(function(rollout) {
       (rollout.experiments || []).forEach(function(experiment) {
         projectConfig.experiments.push(fns.cloneDeep(experiment));
         // Creates { <variationKey>: <variation> } map inside of the experiment
@@ -79,7 +79,7 @@ module.exports = {
 
       // Creates { <variationId>: { key: <variationKey>, id: <variationId> } } mapping for quick lookup
       fns.assign(projectConfig.variationIdMap, fns.keyBy(experiment.variations, 'id'));
-      jsSdkUtils.objectValues(experiment.variationKeyMap || {}).forEach(function (variation) {
+      jsSdkUtils.objectValues(experiment.variationKeyMap || {}).forEach(function(variation) {
         if (variation.variables) {
           projectConfig.variationVariableUsageMap[variation.id] = fns.keyBy(variation.variables, 'id');
         }
@@ -91,7 +91,7 @@ module.exports = {
     projectConfig.experimentFeatureMap = {};
 
     projectConfig.featureKeyMap = fns.keyBy(projectConfig.featureFlags || [], 'key');
-    jsSdkUtils.objectValues(projectConfig.featureKeyMap || {}).forEach(function (feature) {
+    jsSdkUtils.objectValues(projectConfig.featureKeyMap || {}).forEach(function(feature) {
       feature.variableKeyMap = fns.keyBy(feature.variables, 'key');
       (feature.experimentIds || []).forEach(function(experimentId) {
         // Add this experiment in experiment-feature map.
@@ -154,8 +154,14 @@ module.exports = {
     var hasReservedPrefix = attributeKey.indexOf(RESERVED_ATTRIBUTE_PREFIX) === 0;
     if (attribute) {
       if (hasReservedPrefix) {
-        logger.log(LOG_LEVEL.WARN,
-                   jsSdkUtils.sprintf('Attribute %s unexpectedly has reserved prefix %s; using attribute ID instead of reserved attribute name.', attributeKey, RESERVED_ATTRIBUTE_PREFIX));
+        logger.log(
+          LOG_LEVEL.WARN,
+          jsSdkUtils.sprintf(
+            'Attribute %s unexpectedly has reserved prefix %s; using attribute ID instead of reserved attribute name.',
+            attributeKey,
+            RESERVED_ATTRIBUTE_PREFIX
+          )
+        );
       }
       return attribute.id;
     } else if (hasReservedPrefix) {
@@ -351,7 +357,10 @@ module.exports = {
 
     var variable = feature.variableKeyMap[variableKey];
     if (!variable) {
-      logger.log(LOG_LEVEL.ERROR, jsSdkUtils.sprintf(ERROR_MESSAGES.VARIABLE_KEY_NOT_IN_DATAFILE, MODULE_NAME, variableKey, featureKey));
+      logger.log(
+        LOG_LEVEL.ERROR,
+        jsSdkUtils.sprintf(ERROR_MESSAGES.VARIABLE_KEY_NOT_IN_DATAFILE, MODULE_NAME, variableKey, featureKey)
+      );
       return null;
     }
 
@@ -376,7 +385,10 @@ module.exports = {
     }
 
     if (!projectConfig.variationVariableUsageMap.hasOwnProperty(variation.id)) {
-      logger.log(LOG_LEVEL.ERROR, jsSdkUtils.sprintf(ERROR_MESSAGES.VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT, MODULE_NAME, variation.id));
+      logger.log(
+        LOG_LEVEL.ERROR,
+        jsSdkUtils.sprintf(ERROR_MESSAGES.VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT, MODULE_NAME, variation.id)
+      );
       return null;
     }
 
@@ -408,7 +420,10 @@ module.exports = {
     switch (variableType) {
       case FEATURE_VARIABLE_TYPES.BOOLEAN:
         if (variableValue !== 'true' && variableValue !== 'false') {
-          logger.log(LOG_LEVEL.ERROR, jsSdkUtils.sprintf(ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType));
+          logger.log(
+            LOG_LEVEL.ERROR,
+            jsSdkUtils.sprintf(ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType)
+          );
           castValue = null;
         } else {
           castValue = variableValue === 'true';
@@ -418,7 +433,10 @@ module.exports = {
       case FEATURE_VARIABLE_TYPES.INTEGER:
         castValue = parseInt(variableValue, 10);
         if (isNaN(castValue)) {
-          logger.log(LOG_LEVEL.ERROR, jsSdkUtils.sprintf(ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType));
+          logger.log(
+            LOG_LEVEL.ERROR,
+            jsSdkUtils.sprintf(ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType)
+          );
           castValue = null;
         }
         break;
@@ -426,12 +444,16 @@ module.exports = {
       case FEATURE_VARIABLE_TYPES.DOUBLE:
         castValue = parseFloat(variableValue);
         if (isNaN(castValue)) {
-          logger.log(LOG_LEVEL.ERROR, jsSdkUtils.sprintf(ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType));
+          logger.log(
+            LOG_LEVEL.ERROR,
+            jsSdkUtils.sprintf(ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType)
+          );
           castValue = null;
         }
         break;
 
-      default: // type is STRING
+      default:
+        // type is STRING
         castValue = variableValue;
         break;
     }

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-declare module "@optimizely/optimizely-sdk" {
-  import { LogHandler, ErrorHandler } from "@optimizely/js-sdk-logging";
-  import * as enums from "@optimizely/optimizely-sdk/lib/utils/enums";
-  import * as logging from "@optimizely/optimizely-sdk/lib/plugins/logger";
+declare module '@optimizely/optimizely-sdk' {
+  import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
+  import * as enums from '@optimizely/optimizely-sdk/lib/utils/enums';
+  import * as logging from '@optimizely/optimizely-sdk/lib/plugins/logger';
   export { enums, logging };
 
   export function setLogger(logger: LogHandler | null): void;
@@ -59,33 +59,12 @@ declare module "@optimizely/optimizely-sdk" {
 
   export interface Client {
     notificationCenter: NotificationCenter;
-    activate(
-      experimentKey: string,
-      userId: string,
-      attributes?: UserAttributes
-    ): string | null;
-    track(
-      eventKey: string,
-      userId: string,
-      attributes?: UserAttributes,
-      eventTags?: EventTags
-    ): void;
-    getVariation(
-      experimentKey: string,
-      userId: string,
-      attributes?: UserAttributes
-    ): string | null;
-    setForcedVariation(
-      experimentKey: string,
-      userId: string,
-      variationKey: string | null
-    ): boolean;
+    activate(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
+    track(eventKey: string, userId: string, attributes?: UserAttributes, eventTags?: EventTags): void;
+    getVariation(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
+    setForcedVariation(experimentKey: string, userId: string, variationKey: string | null): boolean;
     getForcedVariation(experimentKey: string, userId: string): string | null;
-    isFeatureEnabled(
-      featureKey: string,
-      userId: string,
-      attributes?: UserAttributes
-    ): boolean;
+    isFeatureEnabled(featureKey: string, userId: string, attributes?: UserAttributes): boolean;
     getEnabledFeatures(userId: string, attributes?: UserAttributes): string[];
     getFeatureVariableBoolean(
       featureKey: string,
@@ -112,9 +91,7 @@ declare module "@optimizely/optimizely-sdk" {
       attributes?: UserAttributes
     ): string | null;
     getOptimizelyConfig(): OptimizelyConfig | null;
-    onReady(options?: {
-      timeout?: number;
-    }): Promise<{ success: boolean; reason?: string }>;
+    onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
     close(): Promise<{ success: boolean; reason?: string }>;
   }
 
@@ -124,7 +101,7 @@ declare module "@optimizely/optimizely-sdk" {
     // URL to which to send the HTTP request.
     url: string;
     // HTTP method with which to send the event.
-    httpVerb: "POST";
+    httpVerb: 'POST';
     // Value to send in the request body, JSON-serialized.
     params: any;
   }
@@ -153,14 +130,10 @@ declare module "@optimizely/optimizely-sdk" {
     ): number;
     removeNotificationListener(listenerId: number): boolean;
     clearAllNotificationListeners(): void;
-    clearNotificationListeners(
-      notificationType: enums.NOTIFICATION_TYPES
-    ): void;
+    clearNotificationListeners(notificationType: enums.NOTIFICATION_TYPES): void;
   }
 
-  export type NotificationListener<T extends ListenerPayload> = (
-    notificationData: T
-  ) => void;
+  export type NotificationListener<T extends ListenerPayload> = (notificationData: T) => void;
 
   export interface ListenerPayload {
     userId: string;
@@ -265,22 +238,22 @@ declare module "@optimizely/optimizely-sdk" {
   }
 }
 
-declare module "@optimizely/optimizely-sdk/lib/utils/enums" {
-  import { LogLevel } from "@optimizely/js-sdk-logging";
+declare module '@optimizely/optimizely-sdk/lib/utils/enums' {
+  import { LogLevel } from '@optimizely/js-sdk-logging';
 
   export { LogLevel as LOG_LEVEL };
 
   export enum NOTIFICATION_TYPES {
-    ACTIVATE = "ACTIVATE:experiment, user_id,attributes, variation, event",
-    DECISION = "DECISION:type, userId, attributes, decisionInfo",
-    OPTIMIZELY_CONFIG_UPDATE = "OPTIMIZELY_CONFIG_UPDATE",
-    TRACK = "TRACK:event_key, user_id, attributes, event_tags, event"
+    ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
+    DECISION = 'DECISION:type, userId, attributes, decisionInfo',
+    OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
+    TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
   }
 }
 
-declare module "@optimizely/optimizely-sdk/lib/plugins/logger" {
-  import * as enums from "@optimizely/optimizely-sdk/lib/utils/enums";
-  import { LogHandler } from "@optimizely/js-sdk-logging";
+declare module '@optimizely/optimizely-sdk/lib/plugins/logger' {
+  import * as enums from '@optimizely/optimizely-sdk/lib/utils/enums';
+  import { LogHandler } from '@optimizely/js-sdk-logging';
 
   export interface LoggerConfig {
     logLevel?: enums.LOG_LEVEL;
@@ -291,8 +264,8 @@ declare module "@optimizely/optimizely-sdk/lib/plugins/logger" {
   export function createNoOpLogger(): LogHandler;
 }
 
-declare module "@optimizely/optimizely-sdk/lib/plugins/event_dispatcher" {}
+declare module '@optimizely/optimizely-sdk/lib/plugins/event_dispatcher' {}
 
-declare module "@optimizely/optimizely-sdk/lib/utils/json_schema_validator" {}
+declare module '@optimizely/optimizely-sdk/lib/utils/json_schema_validator' {}
 
-declare module "@optimizely/optimizely-sdk/lib/plugins/error_handler" {}
+declare module '@optimizely/optimizely-sdk/lib/plugins/error_handler' {}

@@ -27,8 +27,8 @@ describe('lib/plugins/event_dispatcher/browser', function() {
         xhr = sinon.useFakeXMLHttpRequest();
         global.XMLHttpRequest = xhr;
         requests = [];
-        xhr.onCreate = function (req) {
-            requests.push(req);
+        xhr.onCreate = function(req) {
+          requests.push(req);
         };
       });
 
@@ -37,14 +37,14 @@ describe('lib/plugins/event_dispatcher/browser', function() {
       });
 
       it('should send a POST request with the specified params', function(done) {
-        var eventParams = {'testParam': 'testParamValue'};
+        var eventParams = { testParam: 'testParamValue' };
         var eventObj = {
           url: 'https://cdn.com/event',
           body: {
             id: 123,
           },
           httpVerb: 'POST',
-          params: eventParams
+          params: eventParams,
         };
 
         var callback = sinon.spy();
@@ -56,19 +56,23 @@ describe('lib/plugins/event_dispatcher/browser', function() {
       });
 
       it('should execute the callback passed to event dispatcher with a post', function(done) {
-        var eventParams = {'testParam': 'testParamValue'};
+        var eventParams = { testParam: 'testParamValue' };
         var eventObj = {
           url: 'https://cdn.com/event',
           body: {
             id: 123,
           },
           httpVerb: 'POST',
-          params: eventParams
+          params: eventParams,
         };
 
         var callback = sinon.spy();
         eventDispatcher.dispatchEvent(eventObj, callback);
-        requests[ 0 ].respond([ 200, {}, '{"url":"https://cdn.com/event","body":{"id":123},"httpVerb":"POST","params":{"testParam":"testParamValue"}}' ]);
+        requests[0].respond([
+          200,
+          {},
+          '{"url":"https://cdn.com/event","body":{"id":123},"httpVerb":"POST","params":{"testParam":"testParamValue"}}',
+        ]);
         sinon.assert.calledOnce(callback);
         done();
       });
@@ -76,16 +80,15 @@ describe('lib/plugins/event_dispatcher/browser', function() {
       it('should execute the callback passed to event dispatcher with a get', function(done) {
         var eventObj = {
           url: 'https://cdn.com/event',
-          httpVerb: 'GET'
+          httpVerb: 'GET',
         };
 
         var callback = sinon.spy();
         eventDispatcher.dispatchEvent(eventObj, callback);
-        requests[ 0 ].respond([ 200, {}, '{"url":"https://cdn.com/event","httpVerb":"GET"' ]);
+        requests[0].respond([200, {}, '{"url":"https://cdn.com/event","httpVerb":"GET"']);
         sinon.assert.calledOnce(callback);
         done();
       });
-
     });
   });
 });

@@ -24,5 +24,5 @@ module.exports = {
    */
   handleError: function() {
     // no-op
-  }
+  },
 };

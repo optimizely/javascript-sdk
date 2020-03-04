@@ -17,7 +17,7 @@ var uuid = require('uuid');
 var MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 var keyBy = require('@optimizely/js-sdk-utils').keyBy;
 module.exports = {
-  assign: function (target) {
+  assign: function(target) {
     if (!target) {
       return {};
     }

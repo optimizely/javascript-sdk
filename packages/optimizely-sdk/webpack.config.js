@@ -13,7 +13,7 @@ module.exports = [
     node: {
       // set to not polyfill setImmediate in promise polyfill
       // it is already wrapped in a typeof check
-      setImmediate: false
+      setImmediate: false,
     },
   },
   {
@@ -28,7 +28,7 @@ module.exports = [
     node: {
       // set to not polyfill setImmediate in promise polyfill
       // it is already wrapped in a typeof check
-      setImmediate: false
+      setImmediate: false,
     },
   },
 ];

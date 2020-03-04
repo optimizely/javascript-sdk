@@ -122,20 +122,34 @@ describe('lib/core/project_config', function() {
       assert.deepEqual(configObj.experimentIdMap, expectedExperimentIdMap);
 
       var expectedVariationKeyMap = {};
-      expectedVariationKeyMap[testData.experiments[0].key + testData.experiments[0].variations[0].key] = testData.experiments[0].variations[0];
-      expectedVariationKeyMap[testData.experiments[0].key + testData.experiments[0].variations[1].key] = testData.experiments[0].variations[1];
-      expectedVariationKeyMap[testData.experiments[1].key + testData.experiments[1].variations[0].key] = testData.experiments[1].variations[0];
-      expectedVariationKeyMap[testData.experiments[1].key + testData.experiments[1].variations[1].key] = testData.experiments[1].variations[1];
-      expectedVariationKeyMap[testData.experiments[2].key + testData.experiments[2].variations[0].key] = testData.experiments[2].variations[0];
-      expectedVariationKeyMap[testData.experiments[2].key + testData.experiments[2].variations[1].key] = testData.experiments[2].variations[1];
-      expectedVariationKeyMap[configObj.experiments[3].key + configObj.experiments[3].variations[0].key] = configObj.experiments[3].variations[0];
-      expectedVariationKeyMap[configObj.experiments[3].key + configObj.experiments[3].variations[1].key] = configObj.experiments[3].variations[1];
-      expectedVariationKeyMap[configObj.experiments[4].key + configObj.experiments[4].variations[0].key] = configObj.experiments[4].variations[0];
-      expectedVariationKeyMap[configObj.experiments[4].key + configObj.experiments[4].variations[1].key] = configObj.experiments[4].variations[1];
-      expectedVariationKeyMap[configObj.experiments[5].key + configObj.experiments[5].variations[0].key] = configObj.experiments[5].variations[0];
-      expectedVariationKeyMap[configObj.experiments[5].key + configObj.experiments[5].variations[1].key] = configObj.experiments[5].variations[1];
-      expectedVariationKeyMap[configObj.experiments[6].key + configObj.experiments[6].variations[0].key] = configObj.experiments[6].variations[0];
-      expectedVariationKeyMap[configObj.experiments[6].key + configObj.experiments[6].variations[1].key] = configObj.experiments[6].variations[1];
+      expectedVariationKeyMap[testData.experiments[0].key + testData.experiments[0].variations[0].key] =
+        testData.experiments[0].variations[0];
+      expectedVariationKeyMap[testData.experiments[0].key + testData.experiments[0].variations[1].key] =
+        testData.experiments[0].variations[1];
+      expectedVariationKeyMap[testData.experiments[1].key + testData.experiments[1].variations[0].key] =
+        testData.experiments[1].variations[0];
+      expectedVariationKeyMap[testData.experiments[1].key + testData.experiments[1].variations[1].key] =
+        testData.experiments[1].variations[1];
+      expectedVariationKeyMap[testData.experiments[2].key + testData.experiments[2].variations[0].key] =
+        testData.experiments[2].variations[0];
+      expectedVariationKeyMap[testData.experiments[2].key + testData.experiments[2].variations[1].key] =
+        testData.experiments[2].variations[1];
+      expectedVariationKeyMap[configObj.experiments[3].key + configObj.experiments[3].variations[0].key] =
+        configObj.experiments[3].variations[0];
+      expectedVariationKeyMap[configObj.experiments[3].key + configObj.experiments[3].variations[1].key] =
+        configObj.experiments[3].variations[1];
+      expectedVariationKeyMap[configObj.experiments[4].key + configObj.experiments[4].variations[0].key] =
+        configObj.experiments[4].variations[0];
+      expectedVariationKeyMap[configObj.experiments[4].key + configObj.experiments[4].variations[1].key] =
+        configObj.experiments[4].variations[1];
+      expectedVariationKeyMap[configObj.experiments[5].key + configObj.experiments[5].variations[0].key] =
+        configObj.experiments[5].variations[0];
+      expectedVariationKeyMap[configObj.experiments[5].key + configObj.experiments[5].variations[1].key] =
+        configObj.experiments[5].variations[1];
+      expectedVariationKeyMap[configObj.experiments[6].key + configObj.experiments[6].variations[0].key] =
+        configObj.experiments[6].variations[0];
+      expectedVariationKeyMap[configObj.experiments[6].key + configObj.experiments[6].variations[1].key] =
+        configObj.experiments[6].variations[1];
 
       var expectedVariationIdMap = {
         '111128': testData.experiments[0].variations[0],
@@ -168,7 +182,10 @@ describe('lib/core/project_config', function() {
       });
 
       it('creates a variationVariableUsageMap from rollouts and experiments with features in the datafile', function() {
-        assert.deepEqual(configObj.variationVariableUsageMap, testDatafile.datafileWithFeaturesExpectedData.variationVariableUsageMap);
+        assert.deepEqual(
+          configObj.variationVariableUsageMap,
+          testDatafile.datafileWithFeaturesExpectedData.variationVariableUsageMap
+        );
       });
 
       it('creates a featureKeyMap from feature flags in the datafile', function() {
@@ -177,48 +194,48 @@ describe('lib/core/project_config', function() {
 
       it('adds variations from rollout experiments to variationIdMap', function() {
         assert.deepEqual(configObj.variationIdMap['594032'], {
-          'variables': [
-            { 'value': 'true', 'id': '4919852825313280' },
-            { 'value': '395', 'id': '5482802778734592' },
-            { 'value': '4.99', 'id': '6045752732155904' },
-            { 'value': 'Hello audience', 'id': '6327227708866560' }
+          variables: [
+            { value: 'true', id: '4919852825313280' },
+            { value: '395', id: '5482802778734592' },
+            { value: '4.99', id: '6045752732155904' },
+            { value: 'Hello audience', id: '6327227708866560' },
           ],
-          'featureEnabled': true,
-          'key': '594032',
-          'id': '594032'
+          featureEnabled: true,
+          key: '594032',
+          id: '594032',
         });
         assert.deepEqual(configObj.variationIdMap['594038'], {
-          'variables': [
-            { 'value': 'false', 'id': '4919852825313280' },
-            { 'value': '400', 'id': '5482802778734592' },
-            { 'value': '14.99', 'id': '6045752732155904' },
-            { 'value': 'Hello', 'id': '6327227708866560' },
+          variables: [
+            { value: 'false', id: '4919852825313280' },
+            { value: '400', id: '5482802778734592' },
+            { value: '14.99', id: '6045752732155904' },
+            { value: 'Hello', id: '6327227708866560' },
           ],
-          'featureEnabled': false,
-          'key': '594038',
-          'id': '594038'
+          featureEnabled: false,
+          key: '594038',
+          id: '594038',
         });
         assert.deepEqual(configObj.variationIdMap['594061'], {
-          'variables': [
-            { 'value': '27.34', 'id': '5060590313668608' },
-            { 'value': 'Winter is NOT coming', 'id': '5342065290379264' },
-            { 'value': '10003', 'id': '6186490220511232' },
-            { 'value': 'false', 'id': '6467965197221888' },
+          variables: [
+            { value: '27.34', id: '5060590313668608' },
+            { value: 'Winter is NOT coming', id: '5342065290379264' },
+            { value: '10003', id: '6186490220511232' },
+            { value: 'false', id: '6467965197221888' },
           ],
-          'featureEnabled': true,
-          'key': '594061',
-          'id': '594061'
+          featureEnabled: true,
+          key: '594061',
+          id: '594061',
         });
         assert.deepEqual(configObj.variationIdMap['594067'], {
-          'variables': [
-            { 'value': '30.34', 'id': '5060590313668608' },
-            { 'value': 'Winter is coming definitely', 'id': '5342065290379264' },
-            { 'value': '500', 'id': '6186490220511232' },
-            { 'value': 'true', 'id': '6467965197221888' }
+          variables: [
+            { value: '30.34', id: '5060590313668608' },
+            { value: 'Winter is coming definitely', id: '5342065290379264' },
+            { value: '500', id: '6186490220511232' },
+            { value: 'true', id: '6467965197221888' },
           ],
-          'featureEnabled': true,
-          'key': '594067',
-          'id': '594067',
+          featureEnabled: true,
+          key: '594067',
+          id: '594067',
         });
       });
     });
@@ -227,7 +244,7 @@ describe('lib/core/project_config', function() {
   describe('projectConfig helper methods', function() {
     var testData = testDatafile.getTestProjectConfig();
     var configObj;
-    var createdLogger = loggerPlugin.createLogger({logLevel: LOG_LEVEL.INFO});
+    var createdLogger = loggerPlugin.createLogger({ logLevel: LOG_LEVEL.INFO });
 
     beforeEach(function() {
       configObj = projectConfig.createProjectConfig(testData);
@@ -239,8 +256,10 @@ describe('lib/core/project_config', function() {
     });
 
     it('should retrieve experiment ID for valid experiment key in getExperimentId', function() {
-      assert.strictEqual(projectConfig.getExperimentId(configObj, testData.experiments[0].key),
-                         testData.experiments[0].id);
+      assert.strictEqual(
+        projectConfig.getExperimentId(configObj, testData.experiments[0].key),
+        testData.experiments[0].id
+      );
     });
 
     it('should throw error for invalid experiment key in getExperimentId', function() {
@@ -269,21 +288,25 @@ describe('lib/core/project_config', function() {
 
     it('should return null for invalid attribute key in getAttributeId', function() {
       assert.isNull(projectConfig.getAttributeId(configObj, 'invalidAttributeKey', createdLogger));
-      sinon.assert.calledWithExactly(createdLogger.log,
-                                     LOG_LEVEL.DEBUG,
-                                     'PROJECT_CONFIG: Unrecognized attribute invalidAttributeKey provided. Pruning before sending event to Optimizely.');
+      sinon.assert.calledWithExactly(
+        createdLogger.log,
+        LOG_LEVEL.DEBUG,
+        'PROJECT_CONFIG: Unrecognized attribute invalidAttributeKey provided. Pruning before sending event to Optimizely.'
+      );
     });
 
     it('should return null for invalid attribute key in getAttributeId', function() {
       // Adding attribute in key map with reserved prefix
       configObj.attributeKeyMap['$opt_some_reserved_attribute'] = {
         id: '42',
-        key: '$opt_some_reserved_attribute'
+        key: '$opt_some_reserved_attribute',
       };
       assert.strictEqual(projectConfig.getAttributeId(configObj, '$opt_some_reserved_attribute', createdLogger), '42');
-      sinon.assert.calledWithExactly(createdLogger.log,
-                                     LOG_LEVEL.WARN,
-                                     'Attribute $opt_some_reserved_attribute unexpectedly has reserved prefix $opt_; using attribute ID instead of reserved attribute name.');
+      sinon.assert.calledWithExactly(
+        createdLogger.log,
+        LOG_LEVEL.WARN,
+        'Attribute $opt_some_reserved_attribute unexpectedly has reserved prefix $opt_; using attribute ID instead of reserved attribute name.'
+      );
     });
 
     it('should retrieve event ID for valid event key in getEventId', function() {
@@ -295,8 +318,10 @@ describe('lib/core/project_config', function() {
     });
 
     it('should retrieve experiment status for valid experiment key in getExperimentStatus', function() {
-      assert.strictEqual(projectConfig.getExperimentStatus(configObj, testData.experiments[0].key),
-                         testData.experiments[0].status);
+      assert.strictEqual(
+        projectConfig.getExperimentStatus(configObj, testData.experiments[0].key),
+        testData.experiments[0].status
+      );
     });
 
     it('should throw error for invalid experiment key in getExperimentStatus', function() {
@@ -322,14 +347,17 @@ describe('lib/core/project_config', function() {
     });
 
     it('should retrieve variation key for valid experiment key and variation ID in getVariationKeyFromId', function() {
-      assert.deepEqual(projectConfig.getVariationKeyFromId(configObj,
-                                                           testData.experiments[0].variations[0].id),
-                       testData.experiments[0].variations[0].key);
+      assert.deepEqual(
+        projectConfig.getVariationKeyFromId(configObj, testData.experiments[0].variations[0].id),
+        testData.experiments[0].variations[0].key
+      );
     });
 
     it('should retrieve traffic allocation given valid experiment key in getTrafficAllocation', function() {
-      assert.deepEqual(projectConfig.getTrafficAllocation(configObj, testData.experiments[0].key),
-                       testData.experiments[0].trafficAllocation);
+      assert.deepEqual(
+        projectConfig.getTrafficAllocation(configObj, testData.experiments[0].key),
+        testData.experiments[0].trafficAllocation
+      );
     });
 
     it('should throw error for invalid experient key in getTrafficAllocation', function() {
@@ -352,7 +380,7 @@ describe('lib/core/project_config', function() {
     });
 
     describe('feature management', function() {
-      var featureManagementLogger = loggerPlugin.createLogger({logLevel: LOG_LEVEL.INFO});
+      var featureManagementLogger = loggerPlugin.createLogger({ logLevel: LOG_LEVEL.INFO });
       beforeEach(function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
         sinon.stub(featureManagementLogger, 'log');
@@ -381,7 +409,11 @@ describe('lib/core/project_config', function() {
           var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
           assert.strictEqual(result, null);
           sinon.assert.calledOnce(featureManagementLogger.log);
-          sinon.assert.calledWithExactly(featureManagementLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Variable with key "notARealVariable____" associated with feature with key "test_feature_for_experiment" is not in datafile.');
+          sinon.assert.calledWithExactly(
+            featureManagementLogger.log,
+            LOG_LEVEL.ERROR,
+            'PROJECT_CONFIG: Variable with key "notARealVariable____" associated with feature with key "test_feature_for_experiment" is not in datafile.'
+          );
         });
 
         it('should return null for an invalid feature key', function() {
@@ -390,7 +422,11 @@ describe('lib/core/project_config', function() {
           var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
           assert.strictEqual(result, null);
           sinon.assert.calledOnce(featureManagementLogger.log);
-          sinon.assert.calledWithExactly(featureManagementLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key notARealFeature_____ is not in datafile.');
+          sinon.assert.calledWithExactly(
+            featureManagementLogger.log,
+            LOG_LEVEL.ERROR,
+            'PROJECT_CONFIG: Feature key notARealFeature_____ is not in datafile.'
+          );
         });
 
         it('should return null for an invalid variable key and an invalid feature key', function() {
@@ -399,7 +435,11 @@ describe('lib/core/project_config', function() {
           var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
           assert.strictEqual(result, null);
           sinon.assert.calledOnce(featureManagementLogger.log);
-          sinon.assert.calledWithExactly(featureManagementLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Feature key notARealFeature_____ is not in datafile.');
+          sinon.assert.calledWithExactly(
+            featureManagementLogger.log,
+            LOG_LEVEL.ERROR,
+            'PROJECT_CONFIG: Feature key notARealFeature_____ is not in datafile.'
+          );
         });
       });
 
@@ -407,7 +447,12 @@ describe('lib/core/project_config', function() {
         it('returns a value for a valid variation and variable', function() {
           var variation = configObj.variationIdMap['594096'];
           var variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
-          var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
+          var result = projectConfig.getVariableValueForVariation(
+            configObj,
+            variable,
+            variation,
+            featureManagementLogger
+          );
           assert.strictEqual(result, '2');
 
           variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.is_button_animated;
@@ -426,21 +471,36 @@ describe('lib/core/project_config', function() {
         it('returns null for a null variation', function() {
           var variation = null;
           var variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
-          var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
+          var result = projectConfig.getVariableValueForVariation(
+            configObj,
+            variable,
+            variation,
+            featureManagementLogger
+          );
           assert.strictEqual(result, null);
         });
 
         it('returns null for a null variable', function() {
           var variation = configObj.variationIdMap['594096'];
           var variable = null;
-          var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
+          var result = projectConfig.getVariableValueForVariation(
+            configObj,
+            variable,
+            variation,
+            featureManagementLogger
+          );
           assert.strictEqual(result, null);
         });
 
         it('returns null for a null variation and null variable', function() {
           var variation = null;
           var variable = null;
-          var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
+          var result = projectConfig.getVariableValueForVariation(
+            configObj,
+            variable,
+            variation,
+            featureManagementLogger
+          );
           assert.strictEqual(result, null);
         });
 
@@ -451,14 +511,24 @@ describe('lib/core/project_config', function() {
             variables: [],
           };
           var variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
-          var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
+          var result = projectConfig.getVariableValueForVariation(
+            configObj,
+            variable,
+            variation,
+            featureManagementLogger
+          );
           assert.strictEqual(result, null);
         });
 
         it('returns null if the variation does not have a value for this variable', function() {
           var variation = configObj.variationIdMap['595008']; // This variation has no variable values associated with it
           var variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
-          var result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
+          var result = projectConfig.getVariableValueForVariation(
+            configObj,
+            variable,
+            variation,
+            featureManagementLogger
+          );
           assert.isNull(result);
         });
       });
@@ -483,7 +553,11 @@ describe('lib/core/project_config', function() {
         it('can cast a double', function() {
           var result = projectConfig.getTypeCastValue('89.99', FEATURE_VARIABLE_TYPES.DOUBLE, featureManagementLogger);
           assert.strictEqual(result, 89.99);
-          var result = projectConfig.getTypeCastValue('-257.21', FEATURE_VARIABLE_TYPES.DOUBLE, featureManagementLogger);
+          var result = projectConfig.getTypeCastValue(
+            '-257.21',
+            FEATURE_VARIABLE_TYPES.DOUBLE,
+            featureManagementLogger
+          );
           assert.strictEqual(result, -257.21);
           var result = projectConfig.getTypeCastValue('0', FEATURE_VARIABLE_TYPES.DOUBLE, featureManagementLogger);
           assert.strictEqual(result, 0);
@@ -492,26 +566,54 @@ describe('lib/core/project_config', function() {
         });
 
         it('can return a string unmodified', function() {
-          var result = projectConfig.getTypeCastValue('message', FEATURE_VARIABLE_TYPES.STRING, featureManagementLogger);
+          var result = projectConfig.getTypeCastValue(
+            'message',
+            FEATURE_VARIABLE_TYPES.STRING,
+            featureManagementLogger
+          );
           assert.strictEqual(result, 'message');
         });
 
         it('returns null and logs an error for an invalid boolean', function() {
-          var result = projectConfig.getTypeCastValue('notabool', FEATURE_VARIABLE_TYPES.BOOLEAN, featureManagementLogger);
+          var result = projectConfig.getTypeCastValue(
+            'notabool',
+            FEATURE_VARIABLE_TYPES.BOOLEAN,
+            featureManagementLogger
+          );
           assert.strictEqual(result, null);
-          sinon.assert.calledWithExactly(featureManagementLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Unable to cast value notabool to type boolean, returning null.');
+          sinon.assert.calledWithExactly(
+            featureManagementLogger.log,
+            LOG_LEVEL.ERROR,
+            'PROJECT_CONFIG: Unable to cast value notabool to type boolean, returning null.'
+          );
         });
 
         it('returns null and logs an error for an invalid integer', function() {
-          var result = projectConfig.getTypeCastValue('notanint', FEATURE_VARIABLE_TYPES.INTEGER, featureManagementLogger);
+          var result = projectConfig.getTypeCastValue(
+            'notanint',
+            FEATURE_VARIABLE_TYPES.INTEGER,
+            featureManagementLogger
+          );
           assert.strictEqual(result, null);
-          sinon.assert.calledWithExactly(featureManagementLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Unable to cast value notanint to type integer, returning null.');
+          sinon.assert.calledWithExactly(
+            featureManagementLogger.log,
+            LOG_LEVEL.ERROR,
+            'PROJECT_CONFIG: Unable to cast value notanint to type integer, returning null.'
+          );
         });
 
         it('returns null and logs an error for an invalid double', function() {
-          var result = projectConfig.getTypeCastValue('notadouble', FEATURE_VARIABLE_TYPES.DOUBLE, featureManagementLogger);
+          var result = projectConfig.getTypeCastValue(
+            'notadouble',
+            FEATURE_VARIABLE_TYPES.DOUBLE,
+            featureManagementLogger
+          );
           assert.strictEqual(result, null);
-          sinon.assert.calledWithExactly(featureManagementLogger.log, LOG_LEVEL.ERROR, 'PROJECT_CONFIG: Unable to cast value notadouble to type double, returning null.');
+          sinon.assert.calledWithExactly(
+            featureManagementLogger.log,
+            LOG_LEVEL.ERROR,
+            'PROJECT_CONFIG: Unable to cast value notadouble to type double, returning null.'
+          );
         });
       });
     });
@@ -522,18 +624,16 @@ describe('lib/core/project_config', function() {
       });
 
       it('should retrieve audiences by checking first in typedAudiences, and then second in audiences', function() {
-        assert.deepEqual(
-          projectConfig.getAudiencesById(configObj),
-          testDatafile.typedAudiencesById
-        );
+        assert.deepEqual(projectConfig.getAudiencesById(configObj), testDatafile.typedAudiencesById);
       });
     });
 
     describe('#getExperimentAudienceConditions', function() {
       it('should retrieve audiences for valid experiment key', function() {
         configObj = projectConfig.createProjectConfig(testData);
-        assert.deepEqual(projectConfig.getExperimentAudienceConditions(configObj, testData.experiments[1].key),
-                         ['11154']);
+        assert.deepEqual(projectConfig.getExperimentAudienceConditions(configObj, testData.experiments[1].key), [
+          '11154',
+        ]);
       });
 
       it('should throw error for invalid experiment key', function() {
@@ -546,7 +646,15 @@ describe('lib/core/project_config', function() {
       it('should return experiment audienceIds if experiment has no audienceConditions', function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
         var result = projectConfig.getExperimentAudienceConditions(configObj, 'feat_with_var_test');
-        assert.deepEqual(result, ['3468206642', '3988293898', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643']);
+        assert.deepEqual(result, [
+          '3468206642',
+          '3988293898',
+          '3988293899',
+          '3468206646',
+          '3468206647',
+          '3468206644',
+          '3468206643',
+        ]);
       });
 
       it('should return experiment audienceConditions if experiment has audienceConditions', function() {
@@ -554,7 +662,11 @@ describe('lib/core/project_config', function() {
         // audience_combinations_experiment has both audienceConditions and audienceIds
         // audienceConditions should be preferred over audienceIds
         var result = projectConfig.getExperimentAudienceConditions(configObj, 'audience_combinations_experiment');
-        assert.deepEqual(result, ['and', ['or', '3468206642', '3988293898'], ['or', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643']]);
+        assert.deepEqual(result, [
+          'and',
+          ['or', '3468206642', '3988293898'],
+          ['or', '3988293899', '3468206646', '3468206647', '3468206644', '3468206643'],
+        ]);
       });
     });
 
@@ -606,7 +718,7 @@ describe('lib/core/project_config', function() {
         experimentKeyMap: {
           a: { key: 'a' },
           b: { key: 'b' },
-        }
+        },
       };
       projectConfig.createProjectConfig.returns(configObj);
       var result = projectConfig.tryCreatingProjectConfig({
@@ -661,7 +773,7 @@ describe('lib/core/project_config', function() {
         experimentKeyMap: {
           a: { key: 'a' },
           b: { key: 'b' },
-        }
+        },
       };
       projectConfig.createProjectConfig.returns(configObj);
       var result = projectConfig.tryCreatingProjectConfig({

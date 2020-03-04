@@ -55,7 +55,7 @@ describe('lib/utils/fns', function() {
           row1: { key1: 'row1', key2: 'key2row1' },
           row2: { key1: 'row2', key2: 'key2row2' },
           row3: { key1: 'row3', key2: 'key2row3' },
-          row4: { key1: 'row4', key2: 'key2row4' }
+          row4: { key1: 'row4', key2: 'key2row4' },
         });
       });
 
@@ -65,7 +65,7 @@ describe('lib/utils/fns', function() {
 
         obj = fns.keyBy(undefined, 'key1');
         assert.isEmpty(obj);
-        });
+      });
     });
 
     describe('isNumber', function() {

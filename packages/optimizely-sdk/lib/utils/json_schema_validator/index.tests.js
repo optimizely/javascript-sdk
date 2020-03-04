@@ -26,12 +26,12 @@ describe('lib/utils/json_schema_validator', function() {
   describe('APIs', function() {
     describe('validate', function() {
       it('should validate the given object against the specified schema', function() {
-        assert.isTrue(jsonSchemaValidator.validate({'type': 'number'}, 4));
+        assert.isTrue(jsonSchemaValidator.validate({ type: 'number' }, 4));
       });
 
       it('should throw an error if the object is not valid', function() {
         assert.throws(function() {
-          jsonSchemaValidator.validate({'type': 'number'}, 'not a number');
+          jsonSchemaValidator.validate({ type: 'number' }, 'not a number');
         }, 'string value found, but a number is required');
       });
 
@@ -43,7 +43,7 @@ describe('lib/utils/json_schema_validator', function() {
 
       it('should throw an error if no json object is passed in', function() {
         assert.throws(function() {
-          jsonSchemaValidator.validate({'type': 'number'});
+          jsonSchemaValidator.validate({ type: 'number' });
         }, sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, 'JSON_SCHEMA_VALIDATOR'));
       });
 

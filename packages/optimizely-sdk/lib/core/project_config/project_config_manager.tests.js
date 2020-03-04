@@ -95,7 +95,10 @@ describe('lib/core/project_config/project_config_manager', function() {
     });
     sinon.assert.calledOnce(globalStubErrorHandler.handleError);
     var errorMessage = globalStubErrorHandler.handleError.lastCall.args[0].message;
-    assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_DATAFILE, 'JSON_SCHEMA_VALIDATOR', 'projectId', 'is missing and it is required'));
+    assert.strictEqual(
+      errorMessage,
+      sprintf(ERROR_MESSAGES.INVALID_DATAFILE, 'JSON_SCHEMA_VALIDATOR', 'projectId', 'is missing and it is required')
+    );
     return manager.onReady().then(function(result) {
       assert.include(result, {
         success: false,
@@ -155,10 +158,7 @@ describe('lib/core/project_config/project_config_manager', function() {
     var manager = new projectConfigManager.ProjectConfigManager({
       datafile: configWithFeatures,
     });
-    assert.deepEqual(
-      manager.getConfig(),
-      projectConfig.createProjectConfig(configWithFeatures)
-    );
+    assert.deepEqual(manager.getConfig(), projectConfig.createProjectConfig(configWithFeatures));
     return manager.onReady().then(function(result) {
       assert.include(result, {
         success: true,
@@ -189,12 +189,15 @@ describe('lib/core/project_config/project_config_manager', function() {
         },
       });
       sinon.assert.calledOnce(datafileManager.HttpPollingDatafileManager);
-      sinon.assert.calledWithExactly(datafileManager.HttpPollingDatafileManager, sinon.match({
-        datafile: testData.getTestProjectConfig(),
-        sdkKey: '12345',
-        autoUpdate: true,
-        updateInterval: 10000,
-      }));
+      sinon.assert.calledWithExactly(
+        datafileManager.HttpPollingDatafileManager,
+        sinon.match({
+          datafile: testData.getTestProjectConfig(),
+          sdkKey: '12345',
+          autoUpdate: true,
+          updateInterval: 10000,
+        })
+      );
     });
 
     describe('when constructed with sdkKey and without datafile', function() {
@@ -205,7 +208,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           stop: sinon.stub(),
           get: sinon.stub().returns(configWithFeatures),
           on: sinon.stub().returns(function() {}),
-          onReady: sinon.stub().returns(Promise.resolve())
+          onReady: sinon.stub().returns(Promise.resolve()),
         });
         var manager = new projectConfigManager.ProjectConfigManager({
           sdkKey: '12345',
@@ -215,10 +218,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           assert.include(result, {
             success: true,
           });
-          assert.deepEqual(
-            manager.getConfig(),
-            projectConfig.createProjectConfig(configWithFeatures)
-          );
+          assert.deepEqual(manager.getConfig(), projectConfig.createProjectConfig(configWithFeatures));
 
           var nextDatafile = testData.getTestProjectConfigWithFeatures();
           nextDatafile.experiments.push({
@@ -236,10 +236,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           fakeDatafileManager.get.returns(nextDatafile);
           var updateListener = fakeDatafileManager.on.getCall(0).args[1];
           updateListener({ datafile: nextDatafile });
-          assert.deepEqual(
-            manager.getConfig(),
-            projectConfig.createProjectConfig(nextDatafile)
-          );
+          assert.deepEqual(manager.getConfig(), projectConfig.createProjectConfig(nextDatafile));
         });
       });
 
@@ -249,7 +246,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           stop: sinon.stub(),
           get: sinon.stub().returns(testData.getTestProjectConfigWithFeatures()),
           on: sinon.stub().returns(function() {}),
-          onReady: sinon.stub().returns(Promise.resolve())
+          onReady: sinon.stub().returns(Promise.resolve()),
         });
         var manager = new projectConfigManager.ProjectConfigManager({
           sdkKey: '12345',
@@ -276,7 +273,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           stop: sinon.stub(),
           get: sinon.stub().returns(testData.getTestProjectConfigWithFeatures()),
           on: sinon.stub().returns(function() {}),
-          onReady: sinon.stub().returns(Promise.resolve())
+          onReady: sinon.stub().returns(Promise.resolve()),
         });
         var manager = new projectConfigManager.ProjectConfigManager({
           sdkKey: '12345',
@@ -314,7 +311,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           stop: sinon.stub(),
           get: sinon.stub().returns(invalidDatafile),
           on: sinon.stub().returns(function() {}),
-          onReady: sinon.stub().returns(Promise.resolve())
+          onReady: sinon.stub().returns(Promise.resolve()),
         });
         var manager = new projectConfigManager.ProjectConfigManager({
           jsonSchemaValidator: jsonSchemaValidator,
@@ -333,7 +330,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           stop: sinon.stub(),
           get: sinon.stub().returns(null),
           on: sinon.stub().returns(function() {}),
-          onReady: sinon.stub().returns(Promise.reject(new Error('Failed to become ready')))
+          onReady: sinon.stub().returns(Promise.reject(new Error('Failed to become ready'))),
         });
         var manager = new projectConfigManager.ProjectConfigManager({
           jsonSchemaValidator: jsonSchemaValidator,
@@ -362,7 +359,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           stop: sinon.stub(),
           get: sinon.stub().returns(testData.getTestProjectConfigWithFeatures()),
           on: sinon.stub().returns(function() {}),
-          onReady: sinon.stub().returns(Promise.resolve())
+          onReady: sinon.stub().returns(Promise.resolve()),
         });
         var configWithFeatures = testData.getTestProjectConfigWithFeatures();
         var manager = new projectConfigManager.ProjectConfigManager({
@@ -389,7 +386,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           stop: sinon.stub(),
           get: sinon.stub().returns(testData.getTestProjectConfigWithFeatures()),
           on: sinon.stub().returns(function() {}),
-          onReady: sinon.stub().returns(Promise.resolve())
+          onReady: sinon.stub().returns(Promise.resolve()),
         });
         var configWithFeatures = testData.getTestProjectConfigWithFeatures();
         var manager = new projectConfigManager.ProjectConfigManager({
@@ -411,7 +408,7 @@ describe('lib/core/project_config/project_config_manager', function() {
 
     describe('test caching of optimizely config', function() {
       beforeEach(function() {
-        sinon.stub(optimizelyConfig, "getOptimizelyConfig");
+        sinon.stub(optimizelyConfig, 'getOptimizelyConfig');
       });
 
       afterEach(function() {

@@ -46,7 +46,7 @@ function getCommonEventParams(options) {
   var visitor = {
     snapshots: [],
     visitor_id: options.userId,
-    attributes: []
+    attributes: [],
   };
 
   var commonParams = {
@@ -96,19 +96,22 @@ function getCommonEventParams(options) {
  */
 function getImpressionEventParams(configObj, experimentId, variationId) {
   var impressionEventParams = {
-      decisions: [{
+    decisions: [
+      {
         campaign_id: projectConfig.getLayerId(configObj, experimentId),
         experiment_id: experimentId,
         variation_id: variationId,
-      }],
-      events: [{
+      },
+    ],
+    events: [
+      {
         entity_id: projectConfig.getLayerId(configObj, experimentId),
         timestamp: fns.currentTimestamp(),
         key: ACTIVATE_EVENT_KEY,
         uuid: fns.uuid(),
-      }]
-
-    };
+      },
+    ],
+  };
   return impressionEventParams;
 }
 
@@ -122,7 +125,7 @@ function getImpressionEventParams(configObj, experimentId, variationId) {
  */
 function getVisitorSnapshot(configObj, eventKey, eventTags, logger) {
   var snapshot = {
-    events: []
+    events: [],
   };
 
   var eventDict = {
@@ -165,7 +168,7 @@ module.exports = {
    */
   getImpressionEvent: function(options) {
     var impressionEvent = {
-      httpVerb: HTTP_VERB
+      httpVerb: HTTP_VERB,
     };
 
     var commonParams = getCommonEventParams(options);
@@ -201,10 +204,7 @@ module.exports = {
     var commonParams = getCommonEventParams(options);
     conversionEvent.url = ENDPOINT;
 
-    var snapshot = getVisitorSnapshot(options.configObj,
-                                            options.eventKey,
-                                            options.eventTags,
-                                            options.logger);
+    var snapshot = getVisitorSnapshot(options.configObj, options.eventKey, options.eventTags, options.logger);
 
     commonParams.visitors[0].snapshots = [snapshot];
     conversionEvent.params = commonParams;

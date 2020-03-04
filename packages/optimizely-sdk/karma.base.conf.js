@@ -29,7 +29,7 @@ module.exports = {
   //browserStack setup
   browserStack: {
     username: process.env.BROWSER_STACK_USERNAME,
-    accessKey: process.env.BROWSER_STACK_ACCESS_KEY
+    accessKey: process.env.BROWSER_STACK_ACCESS_KEY,
   },
 
   // to avoid DISCONNECTED messages when connecting to BrowserStack
@@ -45,7 +45,7 @@ module.exports = {
       browser: 'chrome',
       browser_version: '21.0',
       os: 'OS X',
-      os_version: 'Mountain Lion'
+      os_version: 'Mountain Lion',
     },
     bs_edge: {
       base: 'BrowserStack',
@@ -53,14 +53,14 @@ module.exports = {
       os_version: '10',
       browser: 'edge',
       device: null,
-      browser_version: '15.0'
+      browser_version: '15.0',
     },
     bs_firefox_mac: {
       base: 'BrowserStack',
       browser: 'firefox',
       browser_version: '21.0',
       os: 'OS X',
-      os_version: 'Mountain Lion'
+      os_version: 'Mountain Lion',
     },
     bs_ie: {
       base: 'BrowserStack',
@@ -68,14 +68,14 @@ module.exports = {
       os_version: '7',
       browser: 'ie',
       device: null,
-      browser_version: '10.0'
+      browser_version: '10.0',
     },
     bs_opera_mac: {
       base: 'BrowserStack',
       browser: 'opera',
       browser_version: '37',
       os: 'OS X',
-      os_version: 'Mountain Lion'
+      os_version: 'Mountain Lion',
     },
     bs_safari: {
       base: 'BrowserStack',
@@ -83,8 +83,8 @@ module.exports = {
       os_version: 'Mountain Lion',
       browser: 'safari',
       device: null,
-      browser_version: '6.2'
-    }
+      browser_version: '6.2',
+    },
   },
 
   browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox_mac', 'bs_ie', 'bs_opera_mac', 'bs_safari'],
@@ -94,30 +94,24 @@ module.exports = {
   frameworks: ['mocha'],
 
   // list of files to exclude
-  exclude: [
-  ],
-
+  exclude: [],
 
   // preprocess matching files before serving them to the browser
   // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
   preprocessors: {
-    './lib/**/*tests.js': ['webpack']
+    './lib/**/*tests.js': ['webpack'],
   },
-
 
   // test results reporter to use
   // possible values: 'dots', 'progress'
   // available reporters: https://npmjs.org/browse/keyword/karma-reporter
   reporters: ['progress'],
 
-
   // web server port
   port: 9876,
 
-
   // enable / disable colors in the output (reporters and logs)
   colors: true,
-
 
   // enable / disable watching file and executing tests whenever any file changes
   autoWatch: false,
@@ -128,5 +122,5 @@ module.exports = {
 
   // Concurrency level
   // how many browser should be started simultaneous
-  concurrency: Infinity
-}
+  concurrency: Infinity,
+};
