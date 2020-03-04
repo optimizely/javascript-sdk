@@ -1,4 +1,5 @@
 # Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
@@ -6,26 +7,33 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+- Changed `track()` to log a warning instead of an error when the event isn't in the datafile ([#418](https://github.com/optimizely/javascript-sdk/pull/418))
+
 ## [3.5.0] - February 20th, 2020
 
 ### Bug fixes
+
 - Fixed default event dispatcher not used in React Native entry point ([#383](https://github.com/optimizely/javascript-sdk/pull/383))
 - Fixed errors in `getOptimizelyConfig` TypeScript type definitions ([#406](https://github.com/optimizely/javascript-sdk/pull/406))
 
 ### New Features
+
 - Promise returned from `close` tracks the state of in-flight event dispatcher requests ([#404](https://github.com/optimizely/javascript-sdk/pull/404))
 
 ## [3.4.1] - January 28th, 2020
 
 ### Bug fixes
+
 - Added `getOptimizelyConfig` and related types to TypeScript type definitions([#390](https://github.com/optimizely/javascript-sdk/pull/390)).
 
 ## [3.4.0] - January 21th, 2020
 
 ### Bug fixes
+
 - Fixed incorrect payload for decision notification triggered by calling getVariation on a feature test in a mutex group([#375](https://github.com/optimizely/javascript-sdk/pull/375)).
 
 ### New Features
+
 - Added a new API to get project configuration static data.
   - Call `getOptimizelyConfig()` to get a snapshot of project configuration static data.
   - It returns an `OptimizelyConfig` instance which includes a datafile revision number, all experiments, and feature flags mapped by their key values.
@@ -33,13 +41,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - For details, refer to our documentation page: [https://docs.developers.optimizely.com/full-stack/docs/optimizelyconfig-javascript-node](https://docs.developers.optimizely.com/full-stack/docs/optimizelyconfig-javascript-node).
 
 ### Removed Features
+
 - Removed support for `'launched'` experiment status
   - Previously, experiments with status `'running'` or `'launched'` would return non-`null` variations from `activate` and `getVariation`, and generate impression events from `activate`
   - Now, only `'running'` experiments will return non-`null` variations and generate impressions
 
-
 ## [3.4.0-beta] - December 18th, 2019
+
 ### Bug fixes
+
 - Fixed incorrect payload for decision notification triggered by calling getVariation on a feature test in a mutex group([#375](https://github.com/optimizely/javascript-sdk/pull/375))
 
 ### New Features
@@ -50,12 +60,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - For details, refer to a documention page: https://docs.developers.optimizely.com/full-stack/docs/optimizelyconfig-javascript-node
 
 ## [3.3.2] - November 14th, 2019
+
 ### Bug fixes
+
 - Fixed error message that was being logged when a user was bucketed into empty space in an experiment or a mutual exclusion group. This is not an error. With the fix, the message indicates that the user was not included in any experiment ([#366](https://github.com/optimizely/javascript-sdk/pull/366)).
 
 ## [3.3.1] - October 25th, 2019
 
 ### Bug fixes
+
 - Fixed full screen error dialog appearing in local development for React Native apps when using the default logger. We now provide a default logger for React Native that does not call `console.error`.
 
 ## [3.3.0] - September 25th, 2019
@@ -95,13 +108,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [3.2.2] - August 20th, 2019
 
 ### Bug fixes
+
 - Dont use pendingEventsDispatcher with user defined eventDispatcher ([#289](https://github.com/optimizely/javascript-sdk/issues/289))
-Note: This was supposed to be released in 3.2.1 but did not make it into the release.
+  Note: This was supposed to be released in 3.2.1 but did not make it into the release.
 - Updated lodash dependency to ^4.17.11 to address security vulnerabilities ([#296](https://github.com/optimizely/javascript-sdk/issues/296))
 
 ## [3.2.1] - July 1st, 2019
 
 ### Changed
+
 - Updated lodash dependency to ^4.17.11 to address security vulnerabilities ([#296](https://github.com/optimizely/javascript-sdk/issues/296))
 
 ## [3.2.0] - May 30th, 2019
@@ -109,6 +124,7 @@ Note: This was supposed to be released in 3.2.1 but did not make it into the rel
 ### New Features
 
 - Added support for automatic datafile management ([#261](https://github.com/optimizely/javascript-sdk/pull/261)), ([#266](https://github.com/optimizely/javascript-sdk/pull/266)), ([#267](https://github.com/optimizely/javascript-sdk/pull/267)), ([#268](https://github.com/optimizely/javascript-sdk/pull/268)), ([#270](https://github.com/optimizely/javascript-sdk/pull/270)), ([#272](https://github.com/optimizely/javascript-sdk/pull/272))
+
   - To use automatic datafile management, include `sdkKey` as a string property in the options object you pass to `createInstance`.
   - When sdkKey is provided, the SDK instance will download the datafile associated with that sdkKey immediately upon construction. When the download completes, the SDK instance will update itself to use the downloaded datafile.
   - Use the `onReady` method to wait until the download is complete and the SDK is ready to use.
@@ -118,6 +134,7 @@ Note: This was supposed to be released in 3.2.1 but did not make it into the rel
   - Stop active downloads and cancel recurring downloads by calling the `close` method
 
   #### Create an instance with datafile management enabled
+
   ```js
   const optimizely = require('@optimizely/optimizely-sdk');
   const optimizelyClientInstance = optimizely.createInstance({
@@ -126,6 +143,7 @@ Note: This was supposed to be released in 3.2.1 but did not make it into the rel
   ```
 
   #### Use `onReady` to wait until optimizelyClientInstance has a datafile
+
   ```js
   const optimizely = require('@optimizely/optimizely-sdk');
   const optimizelyClientInstance = optimizely.createInstance({
@@ -137,42 +155,48 @@ Note: This was supposed to be released in 3.2.1 but did not make it into the rel
   ```
 
   #### Enable automatic updates, add notification listener for OPTIMIZELY_CONFIG_UPDATE notification type, and stop automatic updates
+
   ```js
   const optimizely = require('@optimizely/optimizely-sdk');
   const optimizelyClientInstance = optimizely.createInstance({
     sdkKey: '12345',
     datafileOptions: {
       autoUpdate: true,
-      updateInterval: 600000 // 10 minutes in milliseconds
+      updateInterval: 600000, // 10 minutes in milliseconds
     },
   });
   optimizelyClientInstance.notificationCenter.addNotificationListener(
     optimizely.enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE,
     () => {
       // optimizelyClientInstance has updated its Optimizely config
-    },
+    }
   );
   // Stop automatic updates - optimizelyClientInstance will use whatever datafile it currently has from now on
   optimizelyClientInstance.close();
   ```
 
 ### Changed
+
 - Forced variation logic has been moved from the project config module to the decision service. Prefixes for forced-variation-related log messages will reflect this change ([#261](https://github.com/optimizely/javascript-sdk/pull/261)).
 - Update TypeScript definitions to account for new methods (`onReady`, `close`) and new properties on object accepted by createInstance (`datafileOptions`, `sdkKey`), ([#263](https://github.com/optimizely/javascript-sdk/pull/263)), ([#278](https://github.com/optimizely/javascript-sdk/pull/278))
 - Allow react-sdk to be passed in as `clientEngine` ([#279](https://github.com/optimizely/javascript-sdk/pull/279))
 
 ### Bug Fixes:
+
 - Add logging message for `optimizely.track()` ([#281](https://github.com/optimizely/javascript-sdk/pull/281))
 
 ## [3.2.0-beta] - May 16th, 2019
 
 ### Bug Fixes:
+
 - Clear timeout created in onReady call for timeout promise as soon as project config manager's ready promise fulfills
 
 ### New Features
+
 - Added 60 second timeout for all datafile requests
 
 ### Changed
+
 - Updated datafile request polling behavior:
   - Start update interval timer immediately after request
   - When update interval timer fires during request, wait until request completes, then immediately start next request
@@ -191,47 +215,50 @@ Note: This was supposed to be released in 3.2.1 but did not make it into the rel
   - Add a notification listener for the `OPTIMIZELY_CONFIG_UPDATE` notification type to be notified when an instance updates its Optimizely config after obtaining a new datafile.
   - Stop active downloads and cancel pending downloads by calling the `close` method
 
+#### Create an instance with datafile management enabled
 
-  #### Create an instance with datafile management enabled
-  ```js
-  const optimizely = require('@optimizely/optimizely-sdk');
-  const optimizelyClientInstance = optimizely.createInstance({
-    sdkKey: '12345', // Provide the sdkKey of your desired environment here
-  });
-  ```
+```js
+const optimizely = require('@optimizely/optimizely-sdk');
+const optimizelyClientInstance = optimizely.createInstance({
+  sdkKey: '12345', // Provide the sdkKey of your desired environment here
+});
+```
 
-  #### Use `onReady` to wait until optimizelyClientInstance has a datafile
-  ```js
-  const optimizely = require('@optimizely/optimizely-sdk');
-  const optimizelyClientInstance = optimizely.createInstance({
-    sdkKey: '12345',
-  });
-  optimizelyClientInstance.onReady().then(() => {
-    // optimizelyClientInstance is ready to use, with datafile downloaded from the Optimizely CDN
-  });
-  ```
+#### Use `onReady` to wait until optimizelyClientInstance has a datafile
 
-  #### Enable automatic updates, add notification listener for OPTIMIZELY_CONFIG_UPDATE notification type, and stop automatic updates
-  ```js
-  const optimizely = require('@optimizely/optimizely-sdk');
-  const optimizelyClientInstance = optimizely.createInstance({
-    sdkKey: '12345',
-    datafileOptions: {
-      autoUpdate: true,
-      updateInterval: 600000 // 10 minutes in milliseconds
-    },
-  });
-  optimizelyClientInstance.notificationCenter.addNotificationListener(
-    optimizely.enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE,
-    () => {
-      // optimizelyClientInstance has updated its Optimizely config
-    },
-  );
-  // Stop automatic updates - optimizelyClientInstance will use whatever datafile it currently has from now on
-  optimizelyClientInstance.close();
-  ```
+```js
+const optimizely = require('@optimizely/optimizely-sdk');
+const optimizelyClientInstance = optimizely.createInstance({
+  sdkKey: '12345',
+});
+optimizelyClientInstance.onReady().then(() => {
+  // optimizelyClientInstance is ready to use, with datafile downloaded from the Optimizely CDN
+});
+```
+
+#### Enable automatic updates, add notification listener for OPTIMIZELY_CONFIG_UPDATE notification type, and stop automatic updates
+
+```js
+const optimizely = require('@optimizely/optimizely-sdk');
+const optimizelyClientInstance = optimizely.createInstance({
+  sdkKey: '12345',
+  datafileOptions: {
+    autoUpdate: true,
+    updateInterval: 600000, // 10 minutes in milliseconds
+  },
+});
+optimizelyClientInstance.notificationCenter.addNotificationListener(
+  optimizely.enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE,
+  () => {
+    // optimizelyClientInstance has updated its Optimizely config
+  }
+);
+// Stop automatic updates - optimizelyClientInstance will use whatever datafile it currently has from now on
+optimizelyClientInstance.close();
+```
 
 ### Changed
+
 - Forced variation logic has been moved from the project config module to the decision service. Prefixes for forced-variation-related log messages will reflect this change.
 
 ## [3.1.0] - April 22nd, 2019
@@ -239,80 +266,80 @@ Note: This was supposed to be released in 3.2.1 but did not make it into the rel
 ### New Features:
 
 - Introduced Decision notification listener to be able to record:
-    - Variation assignments for users activated in an experiment.
-    - Feature access for users.
-    - Feature variable value for users.
+  - Variation assignments for users activated in an experiment.
+  - Feature access for users.
+  - Feature variable value for users.
 
 ### Changed
 
-* New APIs for setting `logger` and `logLevel` on the optimizelySDK singleton ([#232](https://github.com/optimizely/javascript-sdk/pull/232))
-* `logger` and `logLevel` are now set globally for all instances of Optimizely.  If you were passing
-different loggers to individual instances of Optimizely, logging behavior may now be different.
+- New APIs for setting `logger` and `logLevel` on the optimizelySDK singleton ([#232](https://github.com/optimizely/javascript-sdk/pull/232))
+- `logger` and `logLevel` are now set globally for all instances of Optimizely. If you were passing
+  different loggers to individual instances of Optimizely, logging behavior may now be different.
 
 #### Setting a ConsoleLogger
 
 ```js
-var optimizelySDK = require('@optimizely/optimizely-sdk')
+var optimizelySDK = require('@optimizely/optimizely-sdk');
 
 // logger and logLevel are now set on the optimizelySDK singleton
-optimizelySDK.setLogger(optimizelySDK.logging.createLogger())
+optimizelySDK.setLogger(optimizelySDK.logging.createLogger());
 
 // valid levels: 'DEBUG', 'INFO', 'WARN', 'ERROR'
-optimizelySDK.setLogLevel('WARN')
+optimizelySDK.setLogLevel('WARN');
 // enums can also be used
-optimizelySDK.setLogLevel(optimizelySDK.enums.LOG_LEVEL.ERROR)
+optimizelySDK.setLogLevel(optimizelySDK.enums.LOG_LEVEL.ERROR);
 ```
 
 #### Disable logging
 
 ```js
-var optimizelySDK = require('@optimizely/optimizely-sdk')
+var optimizelySDK = require('@optimizely/optimizely-sdk');
 
-optimizelySDK.setLogger(null)
+optimizelySDK.setLogger(null);
 ```
 
 ### Bug Fixes
 
-* Feature variable APIs now return default variable value when featureEnabled property is false. ([#249](https://github.com/optimizely/javascript-sdk/pull/249))
+- Feature variable APIs now return default variable value when featureEnabled property is false. ([#249](https://github.com/optimizely/javascript-sdk/pull/249))
 
 ### Deprecated
 
-* Activate notification listener is deprecated as of this release. Recommendation is to use the new Decision notification listener. Activate notification listener will be removed in the next major release.
-
+- Activate notification listener is deprecated as of this release. Recommendation is to use the new Decision notification listener. Activate notification listener will be removed in the next major release.
 
 ## [3.1.0-beta1] - March 5th, 2019
 
 ### Changed
 
 - New APIs for setting `logger` and `logLevel` on the optimizelySDK singleton ([#232](https://github.com/optimizely/javascript-sdk/pull/232))
-- `logger` and `logLevel` are now set globally for all instances of Optimizely.  If you were passing
-different loggers to individual instances of Optimizely, logging behavior may now be different.
+- `logger` and `logLevel` are now set globally for all instances of Optimizely. If you were passing
+  different loggers to individual instances of Optimizely, logging behavior may now be different.
 
 #### Setting a ConsoleLogger
 
 ```js
-var optimizelySDK = require('@optimizely/optimizely-sdk')
+var optimizelySDK = require('@optimizely/optimizely-sdk');
 
 // logger and logLevel are now set on the optimizelySDK singleton
-optimizelySDK.setLogger(optimizelySDK.logging.createLogger())
+optimizelySDK.setLogger(optimizelySDK.logging.createLogger());
 
 // valid levels: 'DEBUG', 'INFO', 'WARN', 'ERROR'
-optimizelySDK.setLogLevel('WARN')
+optimizelySDK.setLogLevel('WARN');
 // enums can also be used
-optimizelySDK.setLogLevel(optimizely.enums.LOG_LEVEL.ERROR)
+optimizelySDK.setLogLevel(optimizely.enums.LOG_LEVEL.ERROR);
 ```
 
 #### Disable logging
 
 ```js
-var optimizelySDK = require('@optimizely/optimizely-sdk')
+var optimizelySDK = require('@optimizely/optimizely-sdk');
 
-optimizelySDK.setLogger(null)
+optimizelySDK.setLogger(null);
 ```
 
 ## [3.0.1] - February 21, 2019
 
 ### Changed
+
 - Expose default `loggers`, `errorHandlers`, `eventDispatcher` and `enums` on top level require.
 - `createLogger` and `createNoOpLogger` are available as methods on `optimizelySdk.logging`
 - Added `optimizelySdk.errorHandler`
@@ -369,7 +396,8 @@ The 3.0 release improves event tracking and supports additional audience targeti
 ## [2.3.0] - November 14, 2018
 
 ### New Features
-* Allow sticky bucketing via passing in `attributes.$opt_experiment_bucket_map`, this more easily allows customers to do some async data fetching and ensure a user gets a specific variation.
+
+- Allow sticky bucketing via passing in `attributes.$opt_experiment_bucket_map`, this more easily allows customers to do some async data fetching and ensure a user gets a specific variation.
 
 ```
 const userId = '123'
@@ -389,79 +417,95 @@ var selectedVariationKey = optimizelyClient.activate('experiment-1', userId, use
 ## [2.2.0] - September 26, 2018
 
 ### Fixed
+
 - Track and activate should not remove null attributes ([#168](https://github.com/optimizely/javascript-sdk/pull/168))
 - Track attributes with valid attribute types ([#166](https://github.com/optimizely/javascript-sdk/pull/166))
 - Prevent SDK from initializing if the datafile version in invalid ([#161](https://github.com/optimizely/javascript-sdk/pull/161))
 - Updating lerna to latest version ([#160](https://github.com/optimizely/javascript-sdk/pull/160))
 
 ### Changed
+
 - Change invalid experiment key to debug level ([#165](https://github.com/optimizely/javascript-sdk/pull/165))
 
 ## [2.1.3] - August 21, 2018
 
 ### Fixed
+
 - Send all decisions for the same event in one snapshot. ([#155](https://github.com/optimizely/javascript-sdk/pull/155))
 - Give Node.js consumers the unbundled package ([#133](https://github.com/optimizely/javascript-sdk/pull/133))
 
 ### Deprecated
+
 - The UMD build of the SDK now assigns the SDK namespace object to `window.optimizelySdk` rather than to `window.optimizelyClient`. The old name still works, but on its first access a deprecation warning is logged to the console. The alias will be removed in the 3.0.0 release. ([#152](https://github.com/optimizely/javascript-sdk/pull/152))
 
 ## [2.1.2] - June 25, 2018
 
 ### Fixed
+
 - Failure to log success message when event dispatched ([#123](https://github.com/optimizely/javascript-sdk/pull/123))
 - Fix: Don't call success message when event fails to send ([#123](https://github.com/optimizely/javascript-sdk/pull/123))
 
 ## [2.0.5] - June 25, 2018
 
 ### Fixed
+
 - Failure to log success message when event dispatched ([#123](https://github.com/optimizely/javascript-sdk/pull/123))
 - Fix: Don't call success message when event fails to send ([#123](https://github.com/optimizely/javascript-sdk/pull/123))
 
 ## 2.1.1
+
 June 19, 2018
 
-* Fix: send impression event for Feature Test with Feature disabled ([#117](https://github.com/optimizely/javascript-sdk/pull/117))
+- Fix: send impression event for Feature Test with Feature disabled ([#117](https://github.com/optimizely/javascript-sdk/pull/117))
 
 ## 2.0.4
+
 June 19, 2018
 
-* Fix: send impression event for Feature Test with Feature disabled ([#117](https://github.com/optimizely/javascript-sdk/pull/117))
+- Fix: send impression event for Feature Test with Feature disabled ([#117](https://github.com/optimizely/javascript-sdk/pull/117))
 
 ## 2.1.0
+
 May 24, 2018
 
-* Introduces support for bot filtering.
+- Introduces support for bot filtering.
 
 ## 2.0.3
+
 May 24, 2018
 
-* Remove [`request`](https://www.npmjs.com/package/request) dependency ([#98](https://github.com/optimizely/javascript-sdk/pull/98))
-* Add package-lock.json ([#100](https://github.com/optimizely/javascript-sdk/pull/100))
-* Input validation in Activate, Track, and GetVariation methods ([#91](https://github.com/optimizely/javascript-sdk/pull/91) by [@mfahadahmed](https://github.com/mfahadahmed))
+- Remove [`request`](https://www.npmjs.com/package/request) dependency ([#98](https://github.com/optimizely/javascript-sdk/pull/98))
+- Add package-lock.json ([#100](https://github.com/optimizely/javascript-sdk/pull/100))
+- Input validation in Activate, Track, and GetVariation methods ([#91](https://github.com/optimizely/javascript-sdk/pull/91) by [@mfahadahmed](https://github.com/mfahadahmed))
 
 ## 2.0.1
+
 April 16th, 2018
 
-* Improve browser entry point by pointing to the browser index file instead of the webpack-compiled bundle. ([@DullReferenceException](https://github.com/DullReferenceException) in [#88](https://github.com/optimizely/javascript-sdk/pull/88))
+- Improve browser entry point by pointing to the browser index file instead of the webpack-compiled bundle. ([@DullReferenceException](https://github.com/DullReferenceException) in [#88](https://github.com/optimizely/javascript-sdk/pull/88))
 
 ## 2.0.0
+
 April 11th, 2018
 
 This major release of the Optimizely SDK introduces APIs for Feature Management. It also introduces some breaking changes listed below.
 
 ### New Features
-* Introduces the `isFeatureEnabled` API to determine whether to show a feature to a user or not.
+
+- Introduces the `isFeatureEnabled` API to determine whether to show a feature to a user or not.
+
 ```
 var enabled = optimizelyClient.isFeatureEnabled('my_feature_key', 'user_1', userAttributes);
 ```
 
-* You can also get all the enabled features for the user by calling the following method which returns a list of strings representing the feature keys:
+- You can also get all the enabled features for the user by calling the following method which returns a list of strings representing the feature keys:
+
 ```
 var enabledFeatures = optimizelyClient.getEnabledFeatures('user_1', userAttributes);
 ```
 
-* Introduces Feature Variables to configure or parameterize your feature. There are four variable types: `Integer`, `String`, `Double`, `Boolean`.
+- Introduces Feature Variables to configure or parameterize your feature. There are four variable types: `Integer`, `String`, `Double`, `Boolean`.
+
 ```
 var stringVariable = optimizelyClient.getFeatureVariableString('my_feature_key', 'string_variable_key', 'user_1');
 var integerVariable = optimizelyClient.getFeatureVariableInteger('my_feature_key', 'integer_variable_key', 'user_1');
@@ -470,7 +514,9 @@ var booleanVariable = optimizelyClient.getFeatureVariableBoolean('my_feature_key
 ```
 
 ### Breaking changes
-* The `track` API with revenue value as a stand-alone parameter has been removed. The revenue value should be passed in as an entry of the event tags map. The key for the revenue tag is `revenue` and will be treated by Optimizely as the key for analyzing revenue data in results.
+
+- The `track` API with revenue value as a stand-alone parameter has been removed. The revenue value should be passed in as an entry of the event tags map. The key for the revenue tag is `revenue` and will be treated by Optimizely as the key for analyzing revenue data in results.
+
 ```
 var eventTags = {
   'revenue': 1200
@@ -478,25 +524,31 @@ var eventTags = {
 
 optimizelyClient.track('event_key', 'user_id', userAttributes, eventTags);
 ```
-* The package name has changed from `optimizely-client-sdk` to `optimizely-sdk` as we have consolidated both Node and JavaScript SDKs into one.
+
+- The package name has changed from `optimizely-client-sdk` to `optimizely-sdk` as we have consolidated both Node and JavaScript SDKs into one.
 
 ## 2.0.0-beta1
+
 March 29th, 2018
 
 This major release of the Optimizely SDK introduces APIs for Feature Management. It also introduces some breaking changes listed below.
 
 ### New Features
-* Introduces the `isFeatureEnabled` API to determine whether to show a feature to a user or not.
+
+- Introduces the `isFeatureEnabled` API to determine whether to show a feature to a user or not.
+
 ```
 var enabled = optimizelyClient.isFeatureEnabled('my_feature_key', 'user_1', userAttributes);
 ```
 
-* You can also get all the enabled features for the user by calling the following method which returns a list of strings representing the feature keys:
+- You can also get all the enabled features for the user by calling the following method which returns a list of strings representing the feature keys:
+
 ```
 var enabledFeatures = optimizelyClient.getEnabledFeatures('user_1', userAttributes);
 ```
 
-* Introduces Feature Variables to configure or parameterize your feature. There are four variable types: `Integer`, `String`, `Double`, `Boolean`.
+- Introduces Feature Variables to configure or parameterize your feature. There are four variable types: `Integer`, `String`, `Double`, `Boolean`.
+
 ```
 var stringVariable = optimizelyClient.getFeatureVariableString('my_feature_key', 'string_variable_key', 'user_1');
 var integerVariable = optimizelyClient.getFeatureVariableInteger('my_feature_key', 'integer_variable_key', 'user_1');
@@ -505,7 +557,9 @@ var booleanVariable = optimizelyClient.getFeatureVariableBoolean('my_feature_key
 ```
 
 ### Breaking changes
-* The `track` API with revenue value as a stand-alone parameter has been removed. The revenue value should be passed in as an entry of the event tags map. The key for the revenue tag is `revenue` and will be treated by Optimizely as the key for analyzing revenue data in results.
+
+- The `track` API with revenue value as a stand-alone parameter has been removed. The revenue value should be passed in as an entry of the event tags map. The key for the revenue tag is `revenue` and will be treated by Optimizely as the key for analyzing revenue data in results.
+
 ```
 var eventTags = {
   'revenue': 1200
@@ -513,71 +567,84 @@ var eventTags = {
 
 optimizelyClient.track('event_key', 'user_id', userAttributes, eventTags);
 ```
-* The package name has changed from `optimizely-client-sdk` to `optimizely-sdk` as we have consolidated both Node and JavaScript SDKs into one.
+
+- The package name has changed from `optimizely-client-sdk` to `optimizely-sdk` as we have consolidated both Node and JavaScript SDKs into one.
 
 ## 1.6.0
 
-* Bump optimizely-server-sdk to version 1.5.0, which includes:
+- Bump optimizely-server-sdk to version 1.5.0, which includes:
   - Implemented IP anonymization.
   - Implemented bucketing IDs.
   - Implemented notification listeners.
 
 ## 1.5.1
-* Bump optimizely-server-sdk to version 1.4.2, which includes:
+
+- Bump optimizely-server-sdk to version 1.4.2, which includes:
   - Bug fix to filter out undefined values in attributes and event tags
   - Remove a duplicated test
 
 ## 1.5.0
-* Bump optimizely-server-sdk to version 1.4.0, which includes:
+
+- Bump optimizely-server-sdk to version 1.4.0, which includes:
   - Add support for numeric metrics.
   - Add getForcedVariation and setForcedVariation methods for client-side variation setting
   - Bug fix for filtering out null attribute and event tag values
 
 ## 1.4.3
-* Default skipJSONValidation to true
-* Bump optimizely-server-sdk to version 1.3.3, which includes:
+
+- Default skipJSONValidation to true
+- Bump optimizely-server-sdk to version 1.3.3, which includes:
   - Removed JSON Schema Validator from Optimizely constructor
   - Updated SDK to use new event endpoint
   - Minor bug fixes
 
 ## 1.4.2
-* Minor performance improvements.
+
+- Minor performance improvements.
 
 ## 1.4.1
-* Switched to karma/browserstack for cross-browser testing
-* Removed es6-promise
-* Bump optimizely-server-sdk to version 1.3.1, which includes:
+
+- Switched to karma/browserstack for cross-browser testing
+- Removed es6-promise
+- Bump optimizely-server-sdk to version 1.3.1, which includes:
   - Minor performance improvements.
 
 ## 1.4.0
-* Reduce lodash footprint.
-* Bump optimizely-server-sdk to version 1.3.0, which includes:
+
+- Reduce lodash footprint.
+- Bump optimizely-server-sdk to version 1.3.0, which includes:
   - Introduced user profile service.
   - Minor performance and readibility improvements.
 
 ## 1.3.5
-* Bump optimizely-server-sdk to version 1.2.3, which includes:
+
+- Bump optimizely-server-sdk to version 1.2.3, which includes:
   - Switched to json-schema library which has a smaller footprint.
   - Refactored order of bucketing logic.
   - Refactor lodash dependencies.
   - Fixed error on validation for objects with undefined values for attributes.
 
 ## 1.3.4
-* Bump optimizely-server-sdk to version 1.2.2, which includes:
+
+- Bump optimizely-server-sdk to version 1.2.2, which includes:
   - Use the 'name' field for tracking event tags instead of 'id'.
 
 ## 1.3.3
-* Include index.js in package.json files to make sure it gets published regardless of node environment.
+
+- Include index.js in package.json files to make sure it gets published regardless of node environment.
 
 ## 1.3.2
-* Bump to 1.3.2 to re-publish to npm
+
+- Bump to 1.3.2 to re-publish to npm
 
 ## 1.3.1
-* Bump optimizely-server-sdk to version 1.2.1, which includes:
+
+- Bump optimizely-server-sdk to version 1.2.1, which includes:
   - Gracefully handle empty traffic allocation ranges.
 
 ## 1.3.0
-* Bump optimizely-server-sdk to version 1.2.0, which includes:
+
+- Bump optimizely-server-sdk to version 1.2.0, which includes:
   - Introduce support for event tags.
   - Add optional eventTags argument to track method signature.
   - Removed optional eventValue argument from track method signature.
@@ -585,45 +652,56 @@ optimizelyClient.track('event_key', 'user_id', userAttributes, eventTags);
   - Allow log level config on createInstance method.
 
 ## 1.2.2
-* Remove .npmignore to consolidate with .gitignore.
-* Add dist and lib directories to "files" in package.json.
+
+- Remove .npmignore to consolidate with .gitignore.
+- Add dist and lib directories to "files" in package.json.
 
 ## 1.2.1
-* Fix webpack build error.
+
+- Fix webpack build error.
 
 ## 1.2.0
-* Bump optimizely-server-sdk to version 1.1.0, which includes:
+
+- Bump optimizely-server-sdk to version 1.1.0, which includes:
   - Add optional sessionId argument to activate and track method signatures.
   - Add sessionId and revision to event ticket.
   - Add 'Launched' status where user gets bucketed but event is not sent to Optimizely.
 
 ## 1.1.1
-* Bump to optimizely-server-sdk to version 1.0.1, which includes:
+
+- Bump to optimizely-server-sdk to version 1.0.1, which includes:
   - Fix bug so conversion event is not sent if user is not bucketed into any experiment.
   - Bump bluebird version from 3.3.5 to 3.4.6.
   - Update event endpoint from p13nlog.dz.optimizely to logx.optimizely.
 
 ## 1.1.0
-* Add global variable name export for use in non-CommonJS environments
-* Remove redundant lodash core dependency to reduce bundle bloat
+
+- Add global variable name export for use in non-CommonJS environments
+- Remove redundant lodash core dependency to reduce bundle bloat
 
 ## 1.0.0
-* Introduce support for Full Stack projects in Optimizely X with no breaking changes from previous version.
-* Introduce more graceful exception handling in instantiation and core methods.
-* Update whitelisting to take precedence over audience condition evaluation.
-* Fix bug activating/tracking with attributes not in the datafile.
+
+- Introduce support for Full Stack projects in Optimizely X with no breaking changes from previous version.
+- Introduce more graceful exception handling in instantiation and core methods.
+- Update whitelisting to take precedence over audience condition evaluation.
+- Fix bug activating/tracking with attributes not in the datafile.
 
 ## 0.1.4
-* Add functionality for New Optimizely endpoint.
+
+- Add functionality for New Optimizely endpoint.
 
 ## 0.1.3
-* Add environment detection to event builder so it can distinguish between events sent from node or the browser.
+
+- Add environment detection to event builder so it can distinguish between events sent from node or the browser.
 
 ## 0.1.2
-* Add CORS param to prevent browsers from logging cors errors in the console when dispatching events.
+
+- Add CORS param to prevent browsers from logging cors errors in the console when dispatching events.
 
 ## 0.1.1
-* Remove percentageIncluded field from JSON schema, which is not needed.
+
+- Remove percentageIncluded field from JSON schema, which is not needed.
 
 ## 0.1.0
-* Beta release of the Javascript SDK for our Optimizely testing solution
+
+- Beta release of the Javascript SDK for our Optimizely testing solution
