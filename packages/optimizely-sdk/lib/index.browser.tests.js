@@ -25,7 +25,6 @@ var eventProcessorConfigValidator = require('./utils/event_processor_config_vali
 
 var chai = require('chai');
 var assert = chai.assert;
-var find = require('lodash/find');
 var sinon = require('sinon');
 
 var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;

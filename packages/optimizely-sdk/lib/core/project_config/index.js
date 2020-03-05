@@ -35,7 +35,7 @@ module.exports = {
    * @return {Object} Object representing project configuration
    */
   createProjectConfig: function(datafile) {
-    var projectConfig = fns.cloneDeep(datafile);
+    var projectConfig = fns.assign({}, datafile);
 
     /*
      * Conditions of audiences in projectConfig.typedAudiences are not
@@ -53,16 +53,16 @@ module.exports = {
 
     var experiments;
     Object.keys(projectConfig.groupIdMap || {}).forEach(function(Id) {
-      experiments = fns.cloneDeep(projectConfig.groupIdMap[Id].experiments);
+      experiments = projectConfig.groupIdMap[Id].experiments;
       (experiments || []).forEach(function(experiment) {
         projectConfig.experiments.push(fns.assign(experiment, { groupId: Id }));
       });
     });
 
     projectConfig.rolloutIdMap = fns.keyBy(projectConfig.rollouts || [], 'id');
-    jsSdkUtils.objectValues(projectConfig.rolloutIdMap || {}).forEach(function(rollout) {
+    jsSdkUtils.objectValues(projectConfig.rolloutIdMap || {}).forEach(function (rollout) {
       (rollout.experiments || []).forEach(function(experiment) {
-        projectConfig.experiments.push(fns.cloneDeep(experiment));
+        projectConfig.experiments.push(experiment);
         // Creates { <variationKey>: <variation> } map inside of the experiment
         experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
       });
