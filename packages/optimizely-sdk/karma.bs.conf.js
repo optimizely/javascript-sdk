@@ -15,7 +15,7 @@
  */
 
 // Karma configuration for cross-browser testing
-const baseConfig = require('./karma.base.conf.js')
+const baseConfig = require('./karma.base.conf.js');
 
 module.exports = function(config) {
   config.set({

@@ -21,6 +21,6 @@ module.exports = {
    * @return {boolean} True for non-empty string, false otherwise
    */
   validate: function(input) {
-      return typeof input === 'string' && input !== '';
-  }
+    return typeof input === 'string' && input !== '';
+  },
 };

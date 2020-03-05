@@ -92,7 +92,7 @@ describe('optimizelyFactory', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '3.5.0');
+        assert.equal(optlyInstance.clientVersion, '3.6.0-alpha.1');
       });
 
       describe('event processor configuration', function() {
@@ -113,9 +113,12 @@ describe('optimizelyFactory', function() {
             logger: fakeLogger,
             eventFlushInterval: ['invalid', 'flush', 'interval'],
           });
-          sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-            flushInterval: 30000,
-          }));
+          sinon.assert.calledWithExactly(
+            eventProcessorSpy,
+            sinon.match({
+              flushInterval: 30000,
+            })
+          );
         });
 
         it('should use default event flush interval when none is provided', function() {
@@ -125,9 +128,12 @@ describe('optimizelyFactory', function() {
             eventDispatcher: fakeEventDispatcher,
             logger: fakeLogger,
           });
-          sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-            flushInterval: 30000,
-          }));
+          sinon.assert.calledWithExactly(
+            eventProcessorSpy,
+            sinon.match({
+              flushInterval: 30000,
+            })
+          );
         });
 
         it('should use provided event flush interval when valid', function() {
@@ -138,9 +144,12 @@ describe('optimizelyFactory', function() {
             logger: fakeLogger,
             eventFlushInterval: 10000,
           });
-          sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-            flushInterval: 10000,
-          }));
+          sinon.assert.calledWithExactly(
+            eventProcessorSpy,
+            sinon.match({
+              flushInterval: 10000,
+            })
+          );
         });
 
         it('should ignore invalid event batch size and use default instead', function() {
@@ -151,9 +160,12 @@ describe('optimizelyFactory', function() {
             logger: fakeLogger,
             eventBatchSize: null,
           });
-          sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-            maxQueueSize: 10,
-          }));
+          sinon.assert.calledWithExactly(
+            eventProcessorSpy,
+            sinon.match({
+              maxQueueSize: 10,
+            })
+          );
         });
 
         it('should use default event batch size when none is provided', function() {
@@ -163,9 +175,12 @@ describe('optimizelyFactory', function() {
             eventDispatcher: fakeEventDispatcher,
             logger: fakeLogger,
           });
-          sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-            maxQueueSize: 10,
-          }));
+          sinon.assert.calledWithExactly(
+            eventProcessorSpy,
+            sinon.match({
+              maxQueueSize: 10,
+            })
+          );
         });
 
         it('should use provided event batch size when valid', function() {
@@ -176,9 +191,12 @@ describe('optimizelyFactory', function() {
             logger: fakeLogger,
             eventBatchSize: 300,
           });
-          sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-            maxQueueSize: 300,
-          }));
+          sinon.assert.calledWithExactly(
+            eventProcessorSpy,
+            sinon.match({
+              maxQueueSize: 300,
+            })
+          );
         });
       });
     });

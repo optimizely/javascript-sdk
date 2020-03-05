@@ -24,7 +24,7 @@ describe('lib/utils/event_tags_validator', function() {
   describe('APIs', function() {
     describe('validate', function() {
       it('should validate the given event tags if event tags is an object', function() {
-        assert.isTrue(eventTagsValidator.validate({testAttribute: 'testValue'}));
+        assert.isTrue(eventTagsValidator.validate({ testAttribute: 'testValue' }));
       });
 
       it('should throw an error if event tags is an array', function() {

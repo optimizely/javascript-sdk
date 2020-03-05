@@ -92,7 +92,7 @@ describe('javascript-sdk/react-native', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '3.5.0');
+        assert.equal(optlyInstance.clientVersion, '3.6.0-alpha.1');
       });
 
       it('should set the JavaScript client engine and version', function() {
@@ -137,7 +137,7 @@ describe('javascript-sdk/react-native', function() {
           sinon.stub(defaultEventDispatcher, 'dispatchEvent', function(evt, cb) {
             cb();
           });
-        })
+        });
 
         afterEach(function() {
           defaultEventDispatcher.dispatchEvent.restore();
@@ -212,9 +212,12 @@ describe('javascript-sdk/react-native', function() {
             eventDispatcher: fakeEventDispatcher,
             logger: silentLogger,
           });
-          sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-            flushInterval: 1000,
-          }));
+          sinon.assert.calledWithExactly(
+            eventProcessorSpy,
+            sinon.match({
+              flushInterval: 1000,
+            })
+          );
         });
 
         describe('with an invalid flush interval', function() {
@@ -234,9 +237,12 @@ describe('javascript-sdk/react-native', function() {
               logger: silentLogger,
               eventFlushInterval: ['invalid', 'flush', 'interval'],
             });
-            sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-              flushInterval: 1000,
-            }));
+            sinon.assert.calledWithExactly(
+              eventProcessorSpy,
+              sinon.match({
+                flushInterval: 1000,
+              })
+            );
           });
         });
 
@@ -257,9 +263,12 @@ describe('javascript-sdk/react-native', function() {
               logger: silentLogger,
               eventFlushInterval: 9000,
             });
-            sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-              flushInterval: 9000,
-            }));
+            sinon.assert.calledWithExactly(
+              eventProcessorSpy,
+              sinon.match({
+                flushInterval: 9000,
+              })
+            );
           });
         });
 
@@ -270,9 +279,12 @@ describe('javascript-sdk/react-native', function() {
             eventDispatcher: fakeEventDispatcher,
             logger: silentLogger,
           });
-          sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-            maxQueueSize: 10,
-          }));
+          sinon.assert.calledWithExactly(
+            eventProcessorSpy,
+            sinon.match({
+              maxQueueSize: 10,
+            })
+          );
         });
 
         describe('with an invalid event batch size', function() {
@@ -292,9 +304,12 @@ describe('javascript-sdk/react-native', function() {
               logger: silentLogger,
               eventBatchSize: null,
             });
-            sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-              maxQueueSize: 10,
-            }));
+            sinon.assert.calledWithExactly(
+              eventProcessorSpy,
+              sinon.match({
+                maxQueueSize: 10,
+              })
+            );
           });
         });
 
@@ -315,9 +330,12 @@ describe('javascript-sdk/react-native', function() {
               logger: silentLogger,
               eventBatchSize: 300,
             });
-            sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-              maxQueueSize: 300,
-            }));
+            sinon.assert.calledWithExactly(
+              eventProcessorSpy,
+              sinon.match({
+                maxQueueSize: 300,
+              })
+            );
           });
         });
       });

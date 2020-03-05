@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [3.6.0-alpha.1] - March 4, 2020
+
+### New Features
+
 - Changed `track()` to log a warning instead of an error when the event isn't in the datafile ([#418](https://github.com/optimizely/javascript-sdk/pull/418))
 
 ## [3.5.0] - February 20th, 2020

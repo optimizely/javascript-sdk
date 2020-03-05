@@ -44,7 +44,7 @@ module.exports = {
       headers: {
         'content-type': 'application/json',
         'content-length': dataString.length.toString(),
-      }
+      },
     };
 
     var requestCallback = function(response) {
@@ -59,5 +59,5 @@ module.exports = {
     req.write(dataString);
     req.end();
     return req;
-  }
+  },
 };

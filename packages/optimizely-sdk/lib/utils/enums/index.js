@@ -88,10 +88,12 @@ exports.LOG_MESSAGES = {
   NOT_TRACKING_USER: '%s: Not tracking user %s.',
   PARSED_REVENUE_VALUE: '%s: Parsed revenue value "%s" from event tags.',
   PARSED_NUMERIC_VALUE: '%s: Parsed event value "%s" from event tags.',
-  RETURNING_STORED_VARIATION: '%s: Returning previously activated variation "%s" of experiment "%s" for user "%s" from user profile.',
+  RETURNING_STORED_VARIATION:
+    '%s: Returning previously activated variation "%s" of experiment "%s" for user "%s" from user profile.',
   ROLLOUT_HAS_NO_EXPERIMENTS: '%s: Rollout of feature %s has no experiments',
   SAVED_VARIATION: '%s: Saved variation "%s" of experiment "%s" for user "%s".',
-  SAVED_VARIATION_NOT_FOUND: '%s: User %s was previously bucketed into variation with ID %s for experiment %s, but no matching variation was found.',
+  SAVED_VARIATION_NOT_FOUND:
+    '%s: User %s was previously bucketed into variation with ID %s for experiment %s, but no matching variation was found.',
   SHOULD_NOT_DISPATCH_ACTIVATE: '%s: Experiment %s is not in "Running" state. Not activating user.',
   SKIPPING_JSON_VALIDATION: '%s: Skipping JSON schema validation.',
   TRACK_EVENT: '%s: Tracking event %s for user %s.',
@@ -102,10 +104,12 @@ exports.LOG_MESSAGES = {
   USER_IN_FEATURE_EXPERIMENT: '%s: User %s is in variation %s of experiment %s on the feature %s.',
   USER_IN_ROLLOUT: '%s: User %s is in rollout of feature %s.',
   USER_BUCKETED_INTO_EVERYONE_TARGETING_RULE: '%s: User %s bucketed into everyone targeting rule.',
-  USER_NOT_BUCKETED_INTO_EVERYONE_TARGETING_RULE: '%s: User %s not bucketed into everyone targeting rule due to traffic allocation.',
+  USER_NOT_BUCKETED_INTO_EVERYONE_TARGETING_RULE:
+    '%s: User %s not bucketed into everyone targeting rule due to traffic allocation.',
   USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP: '%s: User %s is not in experiment %s of group %s.',
   USER_NOT_BUCKETED_INTO_ANY_EXPERIMENT_IN_GROUP: '%s: User %s is not in any experiment of group %s.',
-  USER_NOT_BUCKETED_INTO_TARGETING_RULE: '%s User %s not bucketed into targeting rule %s due to traffic allocation. Trying everyone rule.',
+  USER_NOT_BUCKETED_INTO_TARGETING_RULE:
+    '%s User %s not bucketed into targeting rule %s due to traffic allocation. Trying everyone rule.',
   USER_NOT_IN_FEATURE_EXPERIMENT: '%s: User %s is not in any experiment on the feature %s.',
   USER_NOT_IN_ROLLOUT: '%s: User %s is not in rollout of feature %s.',
   USER_FORCED_IN_VARIATION: '%s: User %s is forced in variation %s.',
@@ -119,28 +123,39 @@ exports.LOG_MESSAGES = {
   USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT: '%s: No experiment %s mapped to user %s in the forced variation map.',
   USER_NOT_IN_ANY_EXPERIMENT: '%s: User %s is not in any experiment of group %s.',
   USER_NOT_IN_EXPERIMENT: '%s: User %s does not meet conditions to be in experiment %s.',
-  USER_RECEIVED_DEFAULT_VARIABLE_VALUE: '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
-  FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE: '%s: Feature "%s" is not enabled for user %s. Returning default value for variable "%s".',
-  VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE: '%s: Variable "%s" is not used in variation "%s". Returning default value.',
+  USER_RECEIVED_DEFAULT_VARIABLE_VALUE:
+    '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
+  FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE:
+    '%s: Feature "%s" is not enabled for user %s. Returning default value for variable "%s".',
+  VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE:
+    '%s: Variable "%s" is not used in variation "%s". Returning default value.',
   USER_RECEIVED_VARIABLE_VALUE: '%s: Value for variable "%s" of feature flag "%s" is %s for user "%s"',
   VALID_DATAFILE: '%s: Datafile is valid.',
   VALID_USER_PROFILE_SERVICE: '%s: Valid user profile service provided.',
   VARIATION_REMOVED_FOR_USER: '%s: Variation mapped to experiment %s has been removed for user %s.',
-  VARIABLE_REQUESTED_WITH_WRONG_TYPE: '%s: Requested variable type "%s", but variable is of type "%s". Use correct API to retrieve value. Returning None.',
+  VARIABLE_REQUESTED_WITH_WRONG_TYPE:
+    '%s: Requested variable type "%s", but variable is of type "%s". Use correct API to retrieve value. Returning None.',
   VALID_BUCKETING_ID: '%s: BucketingId is valid: "%s"',
   BUCKETING_ID_NOT_STRING: '%s: BucketingID attribute is not a string. Defaulted to userId',
   EVALUATING_AUDIENCE: '%s: Starting to evaluate audience "%s" with conditions: %s.',
   EVALUATING_AUDIENCES_COMBINED: '%s: Evaluating audiences for experiment "%s": %s.',
   AUDIENCE_EVALUATION_RESULT: '%s: Audience "%s" evaluated to %s.',
   AUDIENCE_EVALUATION_RESULT_COMBINED: '%s: Audiences for experiment %s collectively evaluated to %s.',
-  MISSING_ATTRIBUTE_VALUE: '%s: Audience condition %s evaluated to UNKNOWN because no value was passed for user attribute "%s".',
-  UNEXPECTED_CONDITION_VALUE: '%s: Audience condition %s evaluated to UNKNOWN because the condition value is not supported.',
-  UNEXPECTED_TYPE: '%s: Audience condition %s evaluated to UNKNOWN because a value of type "%s" was passed for user attribute "%s".',
-  UNEXPECTED_TYPE_NULL: '%s: Audience condition %s evaluated to UNKNOWN because a null value was passed for user attribute "%s".',
-  UNKNOWN_CONDITION_TYPE: '%s: Audience condition %s has an unknown condition type. You may need to upgrade to a newer release of the Optimizely SDK.',
-  UNKNOWN_MATCH_TYPE: '%s: Audience condition %s uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.',
+  MISSING_ATTRIBUTE_VALUE:
+    '%s: Audience condition %s evaluated to UNKNOWN because no value was passed for user attribute "%s".',
+  UNEXPECTED_CONDITION_VALUE:
+    '%s: Audience condition %s evaluated to UNKNOWN because the condition value is not supported.',
+  UNEXPECTED_TYPE:
+    '%s: Audience condition %s evaluated to UNKNOWN because a value of type "%s" was passed for user attribute "%s".',
+  UNEXPECTED_TYPE_NULL:
+    '%s: Audience condition %s evaluated to UNKNOWN because a null value was passed for user attribute "%s".',
+  UNKNOWN_CONDITION_TYPE:
+    '%s: Audience condition %s has an unknown condition type. You may need to upgrade to a newer release of the Optimizely SDK.',
+  UNKNOWN_MATCH_TYPE:
+    '%s: Audience condition %s uses an unknown match type. You may need to upgrade to a newer release of the Optimizely SDK.',
   UPDATED_OPTIMIZELY_CONFIG: '%s: Updated Optimizely config to revision %s (project id %s)',
-  OUT_OF_BOUNDS: '%s: Audience condition %s evaluated to UNKNOWN because the number value for user attribute "%s" is not in the range [-2^53, +2^53].',
+  OUT_OF_BOUNDS:
+    '%s: Audience condition %s evaluated to UNKNOWN because the number value for user attribute "%s" is not in the range [-2^53, +2^53].',
   UNABLE_TO_ATTACH_UNLOAD: '%s: unable to bind optimizely.close() to page unload event: "%s"',
 };
 
@@ -159,7 +174,7 @@ exports.CONTROL_ATTRIBUTES = {
 exports.JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 exports.NODE_CLIENT_ENGINE = 'node-sdk';
 exports.REACT_CLIENT_ENGINE = 'react-sdk';
-exports.NODE_CLIENT_VERSION = '3.5.0';
+exports.NODE_CLIENT_VERSION = '3.6.0-alpha.1';
 
 exports.VALID_CLIENT_ENGINES = [
   exports.NODE_CLIENT_ENGINE,
