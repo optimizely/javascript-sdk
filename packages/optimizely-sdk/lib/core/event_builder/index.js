@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 var enums = require('../../utils/enums');
-var fns = require('../../utils/fns');
+var fns = require('../../utils/fns').default;
 var eventTagUtils = require('../../utils/event_tag_utils');
 var projectConfig = require('../project_config');
 var attributeValidator = require('../../utils/attributes_validator');

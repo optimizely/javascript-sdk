@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var fns = require('../fns');
+var fns = require('../fns').default;
 
 /**
  * Return true if the argument is a valid event batch size, false otherwise

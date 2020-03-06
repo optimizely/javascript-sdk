@@ -16,7 +16,7 @@
 var logging = require('@optimizely/js-sdk-logging');
 
 var attributesValidator = require('../../utils/attributes_validator');
-var fns = require('../../utils/fns');
+var fns = require('../../utils/fns').default;
 var eventTagUtils = require('../../utils/event_tag_utils');
 var projectConfig = require('../project_config');
 

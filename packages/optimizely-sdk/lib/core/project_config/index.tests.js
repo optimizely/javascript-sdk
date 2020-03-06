@@ -22,7 +22,7 @@ var logging = require('@optimizely/js-sdk-logging');
 var logger = logging.getLogger();
 
 var _ = require('lodash/core');
-var fns = require('../../utils/fns');
+var fns = require('../../utils/fns').default;
 var chai = require('chai');
 var assert = chai.assert;
 var loggerPlugin = require('../../plugins/logger');

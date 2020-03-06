@@ -7,7 +7,7 @@
   "react-native": "lib/index.react_native.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive --exit --require lib/tests/exit_on_unhandled_rejection.js",
+    "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive --exit --require esm --require lib/tests/exit_on_unhandled_rejection.js",
     "test-xbrowser": "karma start karma.bs.conf.js --single-run",
     "test-umdbrowser": "npm run build-browser-umd && karma start karma.umd.conf.js --single-run",
     "build-browser-umd": "rm -rf dist && webpack",
@@ -51,6 +51,7 @@
     "istanbul": "^0.4.5",
     "json-loader": "^0.5.4",
     "karma": "^3.1.4",
+    "esm": "^3.2.25",
     "karma-browserstack-launcher": "^1.5.1",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.1.1",

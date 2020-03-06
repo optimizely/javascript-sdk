@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var fns = require('../../utils/fns');
+var fns = require('../../utils/fns').default;
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var logging = require('@optimizely/js-sdk-logging');
 var configValidator = require('../../utils/config_validator');

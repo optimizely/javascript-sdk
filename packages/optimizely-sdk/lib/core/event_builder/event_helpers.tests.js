@@ -15,7 +15,7 @@
  */
 var projectConfig = require('../project_config');
 var eventHelpers = require('./event_helpers');
-var fns = require('../../utils/fns');
+var fns = require('../../utils/fns').default;
 
 var chai = require('chai');
 var assert = chai.assert;

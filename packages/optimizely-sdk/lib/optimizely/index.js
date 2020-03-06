@@ -14,7 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
-var fns = require('../utils/fns');
+var fns = require('../utils/fns').default;
 var attributesValidator = require('../utils/attributes_validator');
 var decisionService = require('../core/decision_service');
 var enums = require('../utils/enums');
