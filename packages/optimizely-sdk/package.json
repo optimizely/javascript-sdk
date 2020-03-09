@@ -44,7 +44,6 @@
     "uuid": "^3.3.2"
   },
   "devDependencies": {
-    "@open-wc/karma-esm": "^2.13.14",
     "bluebird": "^3.4.6",
     "chai": "^4.2.0",
     "coveralls": "^3.0.2",
