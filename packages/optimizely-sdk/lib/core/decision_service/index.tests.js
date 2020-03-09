@@ -21,7 +21,7 @@ var errorHandler = require('../../plugins/error_handler');
 var bucketer = require('../bucketer');
 var DecisionService = require('./');
 var enums = require('../../utils/enums');
-var fns = require('../../utils/fns');
+var cloneDeep = require('lodash/cloneDeep');
 var logger = require('../../plugins/logger');
 var projectConfig = require('../project_config');
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
@@ -40,7 +40,7 @@ var DECISION_SOURCES = enums.DECISION_SOURCES;
 
 describe('lib/core/decision_service', function() {
   describe('APIs', function() {
-    var configObj = projectConfig.createProjectConfig(testData);
+    var configObj = projectConfig.createProjectConfig(cloneDeep(testData));
     var decisionServiceInstance;
     var mockLogger = logger.createLogger({ logLevel: LOG_LEVEL.INFO });
     var bucketerStub;
@@ -860,7 +860,7 @@ describe('lib/core/decision_service', function() {
           'control'
         );
         assert.strictEqual(didSetVariation, true);
-        var newDatafile = fns.cloneDeep(testData);
+        var newDatafile = cloneDeep(testData);
         // Remove 'control' variation from variations, traffic allocation, and datafile forcedVariations.
         newDatafile.experiments[0].variations = [
           {
@@ -892,7 +892,7 @@ describe('lib/core/decision_service', function() {
           'control'
         );
         assert.strictEqual(didSetVariation, true);
-        var newConfigObj = projectConfig.createProjectConfig(testDataWithFeatures);
+        var newConfigObj = projectConfig.createProjectConfig(cloneDeep(testDataWithFeatures));
         var forcedVar = decisionServiceInstance.getForcedVariation(newConfigObj, 'testExperiment', 'user1');
         assert.strictEqual(forcedVar, null);
       });
@@ -917,7 +917,7 @@ describe('lib/core/decision_service', function() {
 
   // TODO: Move tests that test methods of Optimizely to lib/optimizely/index.tests.js
   describe('when a bucketingID is provided', function() {
-    var configObj = projectConfig.createProjectConfig(testData);
+    var configObj = projectConfig.createProjectConfig(cloneDeep(testData));
     var createdLogger = logger.createLogger({
       logLevel: LOG_LEVEL.DEBUG,
       logToConsole: false,
@@ -926,7 +926,7 @@ describe('lib/core/decision_service', function() {
     beforeEach(function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
-        datafile: testData,
+        datafile: cloneDeep(testData),
         jsonSchemaValidator: jsonSchemaValidator,
         isValidInstance: true,
         logger: createdLogger,
@@ -1050,7 +1050,7 @@ describe('lib/core/decision_service', function() {
 
     beforeEach(function() {
       sinon.stub(mockLogger, 'log');
-      configObj = projectConfig.createProjectConfig(testData);
+      configObj = projectConfig.createProjectConfig(cloneDeep(testData));
       decisionService = DecisionService.createDecisionService({
         logger: mockLogger,
       });
@@ -1088,7 +1088,7 @@ describe('lib/core/decision_service', function() {
       var sandbox;
       var mockLogger = logger.createLogger({ logLevel: LOG_LEVEL.INFO });
       beforeEach(function() {
-        configObj = projectConfig.createProjectConfig(testDataWithFeatures);
+        configObj = projectConfig.createProjectConfig(cloneDeep(testDataWithFeatures));
         sandbox = sinon.sandbox.create();
         sandbox.stub(mockLogger, 'log');
         decisionServiceInstance = DecisionService.createDecisionService({
@@ -1978,7 +1978,7 @@ describe('lib/core/decision_service', function() {
       var __buildBucketerParamsSpy;
 
       beforeEach(function() {
-        configObj = projectConfig.createProjectConfig(testDataWithFeatures);
+        configObj = projectConfig.createProjectConfig(cloneDeep(testDataWithFeatures));
         feature = configObj.featureKeyMap.test_feature;
         decisionService = DecisionService.createDecisionService({
           logger: logger.createLogger({ logLevel: LOG_LEVEL.INFO }),

@@ -222,9 +222,10 @@ describe('lib/optimizely', function() {
         });
 
         it('passes datafile, datafileOptions, sdkKey, and other options to the project config manager', function() {
+          var config = testData.getTestProjectConfig();
           new Optimizely({
             clientEngine: 'node-sdk',
-            datafile: testData.getTestProjectConfig(),
+            datafile: config,
             datafileOptions: {
               autoUpdate: true,
               updateInterval: 2 * 60 * 1000,
@@ -239,7 +240,7 @@ describe('lib/optimizely', function() {
           });
           sinon.assert.calledOnce(projectConfigManager.ProjectConfigManager);
           sinon.assert.calledWithExactly(projectConfigManager.ProjectConfigManager, {
-            datafile: testData.getTestProjectConfig(),
+            datafile: config,
             datafileOptions: {
               autoUpdate: true,
               updateInterval: 2 * 60 * 1000,
@@ -4201,7 +4202,7 @@ describe('lib/optimizely', function() {
         describe('when the variation is missing the toggle', function() {
           beforeEach(function() {
             var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.test_shared_feature;
-            var variation = fns.cloneDeep(experiment.variations[0]);
+            var variation = experiment.variations[0];
             delete variation['featureEnabled'];
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
               experiment: experiment,

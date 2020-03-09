@@ -21,7 +21,8 @@ var logging = require('@optimizely/js-sdk-logging');
 
 var logger = logging.getLogger();
 
-var _ = require('lodash/core');
+var forEach = require('lodash/forEach');
+var cloneDeep = require('lodash/cloneDeep');
 var fns = require('../../utils/fns');
 var chai = require('chai');
 var assert = chai.assert;
@@ -40,8 +41,8 @@ describe('lib/core/project_config', function() {
       var testData = testDatafile.getTestProjectConfig();
       var configObj = projectConfig.createProjectConfig(testData);
 
-      _.forEach(testData.audiences, function(audience) {
-        audience.conditions = JSON.parse(audience.conditions);
+      forEach(testData.audiences, function(audience) {
+        audience.conditions = audience.conditions;
       });
 
       assert.strictEqual(configObj.accountId, testData.accountId);
@@ -59,14 +60,14 @@ describe('lib/core/project_config', function() {
       assert.deepEqual(configObj.groupIdMap, expectedGroupIdMap);
 
       var expectedExperiments = testData.experiments;
-      _.forEach(configObj.groupIdMap, function(group, Id) {
-        _.forEach(group.experiments, function(experiment) {
+      forEach(configObj.groupIdMap, function(group, Id) {
+        forEach(group.experiments, function(experiment) {
           experiment.groupId = Id;
           expectedExperiments.push(experiment);
         });
       });
 
-      _.forEach(expectedExperiments, function(experiment) {
+      forEach(expectedExperiments, function(experiment) {
         experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
       });
 
@@ -242,12 +243,12 @@ describe('lib/core/project_config', function() {
   });
 
   describe('projectConfig helper methods', function() {
-    var testData = testDatafile.getTestProjectConfig();
+    var testData = cloneDeep(testDatafile.getTestProjectConfig());
     var configObj;
     var createdLogger = loggerPlugin.createLogger({ logLevel: LOG_LEVEL.INFO });
 
     beforeEach(function() {
-      configObj = projectConfig.createProjectConfig(testData);
+      configObj = projectConfig.createProjectConfig(cloneDeep(testData));
       sinon.stub(createdLogger, 'log');
     });
 
@@ -630,14 +631,14 @@ describe('lib/core/project_config', function() {
 
     describe('#getExperimentAudienceConditions', function() {
       it('should retrieve audiences for valid experiment key', function() {
-        configObj = projectConfig.createProjectConfig(testData);
+        configObj = projectConfig.createProjectConfig(cloneDeep(testData));
         assert.deepEqual(projectConfig.getExperimentAudienceConditions(configObj, testData.experiments[1].key), [
           '11154',
         ]);
       });
 
       it('should throw error for invalid experiment key', function() {
-        configObj = projectConfig.createProjectConfig(testData);
+        configObj = projectConfig.createProjectConfig(cloneDeep(testData));
         assert.throws(function() {
           projectConfig.getExperimentAudienceConditions(configObj, 'invalidExperimentKey');
         }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'invalidExperimentKey'));

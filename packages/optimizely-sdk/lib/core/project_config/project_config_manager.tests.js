@@ -18,6 +18,7 @@ var assert = require('chai').assert;
 var datafileManager = require('@optimizely/js-sdk-datafile-manager');
 var logging = require('@optimizely/js-sdk-logging');
 var sinon = require('sinon');
+var cloneDeep = require('lodash/cloneDeep');
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var enums = require('../../utils/enums');
 var jsonSchemaValidator = require('../../utils/json_schema_validator');
@@ -156,7 +157,7 @@ describe('lib/core/project_config/project_config_manager', function() {
   it('should return a valid datafile from getConfig and resolve onReady with a successful result', function() {
     var configWithFeatures = testData.getTestProjectConfigWithFeatures();
     var manager = new projectConfigManager.ProjectConfigManager({
-      datafile: configWithFeatures,
+      datafile: cloneDeep(configWithFeatures),
     });
     assert.deepEqual(manager.getConfig(), projectConfig.createProjectConfig(configWithFeatures));
     return manager.onReady().then(function(result) {
@@ -180,8 +181,9 @@ describe('lib/core/project_config/project_config_manager', function() {
 
   describe('with a datafile manager', function() {
     it('passes the correct options to datafile manager', function() {
+      var config = testData.getTestProjectConfig()
       new projectConfigManager.ProjectConfigManager({
-        datafile: testData.getTestProjectConfig(),
+        datafile: config,
         sdkKey: '12345',
         datafileOptions: {
           autoUpdate: true,
@@ -192,7 +194,7 @@ describe('lib/core/project_config/project_config_manager', function() {
       sinon.assert.calledWithExactly(
         datafileManager.HttpPollingDatafileManager,
         sinon.match({
-          datafile: testData.getTestProjectConfig(),
+          datafile: config,
           sdkKey: '12345',
           autoUpdate: true,
           updateInterval: 10000,
@@ -206,7 +208,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         datafileManager.HttpPollingDatafileManager.returns({
           start: sinon.stub(),
           stop: sinon.stub(),
-          get: sinon.stub().returns(configWithFeatures),
+          get: sinon.stub().returns(cloneDeep(configWithFeatures)),
           on: sinon.stub().returns(function() {}),
           onReady: sinon.stub().returns(Promise.resolve()),
         });
@@ -233,7 +235,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           });
           nextDatafile.revision = '36';
           var fakeDatafileManager = datafileManager.HttpPollingDatafileManager.getCall(0).returnValue;
-          fakeDatafileManager.get.returns(nextDatafile);
+          fakeDatafileManager.get.returns(cloneDeep(nextDatafile));
           var updateListener = fakeDatafileManager.on.getCall(0).args[1];
           updateListener({ datafile: nextDatafile });
           assert.deepEqual(manager.getConfig(), projectConfig.createProjectConfig(nextDatafile));
