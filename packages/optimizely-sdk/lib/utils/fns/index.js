@@ -39,7 +39,6 @@ module.exports = {
       return to;
     }
   },
-  cloneDeep: require('lodash/cloneDeep'),
   currentTimestamp: function() {
     return Math.round(new Date().getTime());
   },

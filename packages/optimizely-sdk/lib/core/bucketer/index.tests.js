@@ -47,7 +47,7 @@ describe('lib/core/bucketer', function() {
 
       describe('return values for bucketing (excluding groups)', function() {
         beforeEach(function() {
-          configObj = projectConfig.createProjectConfig(testData);
+          configObj = projectConfig.createProjectConfig(cloneDeep(testData));
           bucketerParams = {
             experimentId: configObj.experiments[0].id,
             experimentKey: configObj.experiments[0].key,
@@ -103,7 +103,7 @@ describe('lib/core/bucketer', function() {
       describe('return values for bucketing (including groups)', function() {
         var bucketerStub;
         beforeEach(function() {
-          configObj = projectConfig.createProjectConfig(testData);
+          configObj = projectConfig.createProjectConfig(cloneDeep(testData));
           bucketerParams = {
             experimentId: configObj.experiments[0].id,
             experimentKey: configObj.experiments[0].key,
@@ -284,7 +284,7 @@ describe('lib/core/bucketer', function() {
 
       describe('when the bucket value falls into empty traffic allocation ranges', function() {
         beforeEach(function() {
-          configObj = projectConfig.createProjectConfig(testData);
+          configObj = projectConfig.createProjectConfig(cloneDeep(testData));
           bucketerParams = {
             experimentId: configObj.experiments[0].id,
             experimentKey: configObj.experiments[0].key,
@@ -314,7 +314,7 @@ describe('lib/core/bucketer', function() {
 
       describe('when the traffic allocation has invalid variation ids', function() {
         beforeEach(function() {
-          configObj = projectConfig.createProjectConfig(testData);
+          configObj = projectConfig.createProjectConfig(cloneDeep(testData));
           bucketerParams = {
             experimentId: configObj.experiments[0].id,
             experimentKey: configObj.experiments[0].key,
@@ -371,7 +371,7 @@ describe('lib/core/bucketer', function() {
       });
 
       beforeEach(function() {
-        configObj = projectConfig.createProjectConfig(testData);
+        configObj = projectConfig.createProjectConfig(cloneDeep(testData));
         bucketerParams = {
           trafficAllocationConfig: configObj.experiments[0].trafficAllocation,
           variationIdMap: configObj.variationIdMap,

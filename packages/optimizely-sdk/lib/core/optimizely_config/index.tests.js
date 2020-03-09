@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 var assert = require('chai').assert;
-
+var cloneDeep = require('lodash/cloneDeep');
 var datafile = require('../../tests/test_data').getTestProjectConfigWithFeatures();
 var projectConfig = require('../project_config');
 var optimizelyConfig = require('./index');
@@ -37,7 +37,7 @@ describe('lib/core/optimizely_config', function() {
     var optimizelyConfigObject;
     var projectConfigObject;
     beforeEach(function() {
-      projectConfigObject = projectConfig.createProjectConfig(datafile);
+      projectConfigObject = projectConfig.createProjectConfig(cloneDeep(datafile));
       optimizelyConfigObject = optimizelyConfig.getOptimizelyConfig(projectConfigObject);
     });
 
