@@ -17,7 +17,7 @@
 var AudienceEvaluator = require('../audience_evaluator');
 var bucketer = require('../bucketer');
 var enums = require('../../utils/enums');
-var fns = require('../../utils/fns');
+var fns = require('../../utils/fns').default;
 var projectConfig = require('../project_config');
 var stringValidator = require('../../utils/string_value_validator');
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var fns = require('../../utils/fns');
+var fns = require('../../utils/fns').default;
 var enums = require('../../utils/enums');
 var jsSdkUtils = require('@optimizely/js-sdk-utils');
 var configValidator = require('../../utils/config_validator');

@@ -13,22 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var uuid = require('uuid');
-var MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
-var keyBy = require('@optimizely/js-sdk-utils').keyBy;
-module.exports = {
-  assign: function(target) {
+import uuid from 'uuid';
+import { keyBy } from '@optimizely/js-sdk-utils';
+const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
+
+export default {
+  assign: function (target) {
     if (!target) {
       return {};
     }
     if (typeof Object.assign === 'function') {
       return Object.assign.apply(Object, arguments);
     } else {
-      var to = Object(target);
-      for (var index = 1; index < arguments.length; index++) {
-        var nextSource = arguments[index];
+      let to = Object(target);
+      for (let index = 1; index < arguments.length; index++) {
+        let nextSource = arguments[index];
         if (nextSource !== null && nextSource !== undefined) {
-          for (var nextKey in nextSource) {
+          for (let nextKey in nextSource) {
             // Avoid bugs when hasOwnProperty is shadowed
             if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
               to[nextKey] = nextSource[nextKey];
@@ -39,6 +40,7 @@ module.exports = {
       return to;
     }
   },
+  cloneDeep: require('lodash/cloneDeep'),
   currentTimestamp: function() {
     return Math.round(new Date().getTime());
   },

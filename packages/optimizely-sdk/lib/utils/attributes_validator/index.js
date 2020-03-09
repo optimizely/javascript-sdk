@@ -19,7 +19,7 @@
  */
 
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
-var fns = require('../../utils/fns');
+var fns = require('../../utils/fns').default;
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'ATTRIBUTES_VALIDATOR';

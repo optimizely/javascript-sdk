@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 var logging = require('@optimizely/js-sdk-logging');
-var fns = require('./utils/fns');
+var fns = require('./utils/fns').default;
 var configValidator = require('./utils/config_validator');
 var defaultErrorHandler = require('./plugins/error_handler');
 var defaultEventDispatcher = require('./plugins/event_dispatcher/index.browser');

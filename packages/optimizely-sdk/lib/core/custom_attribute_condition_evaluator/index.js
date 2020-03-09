@@ -14,7 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
-var fns = require('../../utils/fns');
+var fns = require('../../utils/fns').default;
 var enums = require('../../utils/enums');
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 

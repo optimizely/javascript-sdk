@@ -23,7 +23,7 @@ var logger = logging.getLogger();
 
 var forEach = require('lodash/forEach');
 var cloneDeep = require('lodash/cloneDeep');
-var fns = require('../../utils/fns');
+var fns = require('../../utils/fns').default;
 var chai = require('chai');
 var assert = chai.assert;
 var loggerPlugin = require('../../plugins/logger');

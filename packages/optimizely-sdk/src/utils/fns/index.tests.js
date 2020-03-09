@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-var chai = require('chai');
-var assert = chai.assert;
-var fns = require('./');
+import chai from 'chai';
+
+let assert = chai.assert;
+import fns from './index';
 
 describe('lib/utils/fns', function() {
   describe('APIs', function() {
@@ -42,14 +43,14 @@ describe('lib/utils/fns', function() {
 
     describe('keyBy', function() {
       it('should return correct object when a key is provided', function() {
-        var arr = [
+        let arr = [
           { key1: 'row1', key2: 'key2row1' },
           { key1: 'row2', key2: 'key2row2' },
           { key1: 'row3', key2: 'key2row3' },
           { key1: 'row4', key2: 'key2row4' },
         ];
 
-        var obj = fns.keyBy(arr, 'key1');
+        let obj = fns.keyBy(arr, 'key1');
 
         assert.deepEqual(obj, {
           row1: { key1: 'row1', key2: 'key2row1' },
@@ -60,7 +61,7 @@ describe('lib/utils/fns', function() {
       });
 
       it('should return empty object when first argument is null or undefined', function() {
-        var obj = fns.keyBy(null, 'key1');
+        let obj = fns.keyBy(null, 'key1');
         assert.isEmpty(obj);
 
         obj = fns.keyBy(undefined, 'key1');
