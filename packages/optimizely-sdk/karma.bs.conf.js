@@ -26,6 +26,9 @@ module.exports = function(config) {
     logLevel: config.LOG_INFO,
 
     // list of files / patterns to load in the browser
-    files: ['./lib/index.browser.tests.js'],
+    files: [
+      './node_modules/promise-polyfill/dist/polyfill.min.js',
+      './lib/index.browser.tests.js'
+    ],
   });
 };
