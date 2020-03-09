@@ -76,9 +76,6 @@ jobs:
     - <<: *integrationtest
       stage: 'Benchmarking tests'
       env: FULLSTACK_TEST_REPO=Benchmarking
-    - stage: Cross-browser and umd unit tests
-      node_js: '8'
-      script: npm run test-ci
     - &packagetest
       stage: 'Test sub packages'
       node_js: '12'
