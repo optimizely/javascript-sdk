@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 import uuid from 'uuid';
+
+var MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 import { keyBy } from '@optimizely/js-sdk-utils';
-const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
 export default {
-  assign: function (target) {
+  assign: function(target) {
     if (!target) {
       return {};
     }
     if (typeof Object.assign === 'function') {
       return Object.assign.apply(Object, arguments);
     } else {
-      let to = Object(target);
-      for (let index = 1; index < arguments.length; index++) {
-        let nextSource = arguments[index];
+      var to = Object(target);
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
         if (nextSource !== null && nextSource !== undefined) {
-          for (let nextKey in nextSource) {
+          for (var nextKey in nextSource) {
             // Avoid bugs when hasOwnProperty is shadowed
             if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
               to[nextKey] = nextSource[nextKey];
