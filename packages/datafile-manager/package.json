@@ -36,7 +36,8 @@
   },
   "dependencies": {
     "@optimizely/js-sdk-logging": "^0.1.0",
-    "@optimizely/js-sdk-utils": "^0.1.0"
+    "@optimizely/js-sdk-utils": "^0.1.0",
+    "@react-native-community/async-storage": "^1.8.1"
   },
   "scripts": {
     "test": "jest",
