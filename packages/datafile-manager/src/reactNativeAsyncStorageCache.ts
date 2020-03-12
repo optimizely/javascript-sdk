@@ -20,7 +20,7 @@ import PersistentKeyValueCache from './persistentKeyValueCache';
 export default class ReactNativeAsyncStorageCache implements PersistentKeyValueCache {
   // If value is a valid JSON string, it converts it to object before returning
   get(key: string): Promise<Object | string | null> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       AsyncStorage.getItem(key).then((val: String | null) => {
         let finalVal = val;
         if (val) {
@@ -31,22 +31,31 @@ export default class ReactNativeAsyncStorageCache implements PersistentKeyValueC
           }       
         }
         resolve(finalVal);
-      });
+      })
+      .catch(reject);
     });
   }
   
   // If value is an Object, it stringifies it before storing.
-  set(key: string, val: string | Object): void {
-    AsyncStorage.setItem(key, typeof val === 'object' ? JSON.stringify(val) : val);
+  set(key: string, val: string | Object): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        AsyncStorage.setItem(key, typeof val === 'object' ? JSON.stringify(val) : val)
+          .then(resolve).catch(reject);
+      } catch (e) {
+        // JSON.stringify might through exception on some inputs.
+        reject(e);
+      }
+    }); 
   }
   
   contains(key: string): Promise<Boolean> {
-    return new Promise(resolve =>
-      AsyncStorage.getItem(key).then((val: String | null) => resolve(val !== null))
+    return new Promise((resolve, reject) =>
+      AsyncStorage.getItem(key).then((val: String | null) => resolve(val !== null)).catch(reject)
     )
   }
   
-  remove(key: string): void {
-    AsyncStorage.removeItem(key);
+  remove(key: string): Promise<void> {
+    return AsyncStorage.removeItem(key);
   }
 }

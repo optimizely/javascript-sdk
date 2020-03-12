@@ -35,7 +35,7 @@ export default interface PersistentKeyValueCache {
    * @param key 
    * @param val 
    */
-  set(key: string, val: string | Object): void
+  set(key: string, val: string | Object): Promise<void>
 
   /**
    * Checks if a key exists in the cache
@@ -47,5 +47,5 @@ export default interface PersistentKeyValueCache {
    * Removed the key value pair from cache.
    * @param key 
    */
-  remove(key: string): void
+  remove(key: string): Promise<void>
 }
