@@ -117,6 +117,9 @@ module.exports = {
     return {
       experimentsMap: experimentsMap,
       featuresMap: getFeaturesMap(configObj, experimentsMap),
+      projectId: configObj.projectId,
+      events: configObj.events,
+      attributes: configObj.attributes,
       revision: configObj.revision,
     };
   },
