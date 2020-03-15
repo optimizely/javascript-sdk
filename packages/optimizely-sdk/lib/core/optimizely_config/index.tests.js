@@ -121,5 +121,9 @@ describe('lib/core/optimizely_config', function() {
     it('should return correct config revision', function() {
       assert.equal(optimizelyConfigObject.revision, datafile.revision);
     });
+
+    it('should return correct config projectId', function() {
+      assert.equal(optimizelyConfigObject.projectId, datafile.projectId);
+    });
   });
 });

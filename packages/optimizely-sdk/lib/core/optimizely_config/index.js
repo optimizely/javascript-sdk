@@ -117,8 +117,8 @@ module.exports = {
     return {
       experimentsMap: experimentsMap,
       featuresMap: getFeaturesMap(configObj, experimentsMap),
-      projectId: configObj.projectId,
       revision: configObj.revision,
+      projectId: configObj.projectId,
     };
   },
 };
