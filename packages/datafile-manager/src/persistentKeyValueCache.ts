@@ -16,7 +16,7 @@
 
 /**
  * An Interface to implement a persistent key value cache which supports strings as keys
- * and string or JSON Object as value.
+ * and JSON Object as value.
  */
 export default interface PersistentKeyValueCache {
   
@@ -24,14 +24,13 @@ export default interface PersistentKeyValueCache {
    * Returns value stored against a key or null if not found.
    * @param key 
    * @returns Promise which resolves with a
-   * 1. String if the value found is a string.
-   * 2. Object if value found was stored as a JSON Object.
-   * 3. null if the key does not exist in the cache.
+   * 1. Object if value found was stored as a JSON Object.
+   * 2. null if the key does not exist in the cache.
    */
   get(key: string): Promise<Object | null>
 
   /**
-   * Stores value in the persistent cache against a key
+   * Stores Object in the persistent cache against a key
    * @param key 
    * @param val 
    */
