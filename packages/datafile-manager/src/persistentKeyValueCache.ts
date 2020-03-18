@@ -28,14 +28,14 @@ export default interface PersistentKeyValueCache {
    * 2. Object if value found was stored as a JSON Object.
    * 3. null if the key does not exist in the cache.
    */
-  get(key: string): Promise<string | Object | null>
+  get(key: string): Promise<Object | null>
 
   /**
    * Stores value in the persistent cache against a key
    * @param key 
    * @param val 
    */
-  set(key: string, val: string | Object): Promise<void>
+  set(key: string, val: Object): Promise<void>
 
   /**
    * Checks if a key exists in the cache
