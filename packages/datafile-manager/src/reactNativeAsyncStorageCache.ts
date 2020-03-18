@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { getLogger } from '@optimizely/js-sdk-logging';
-import AsyncStorage from '@react-native-community/async-storage';
+import { getLogger } from '@optimizely/js-sdk-logging'
+import AsyncStorage from '@react-native-community/async-storage'
 
-import PersistentKeyValueCache from './persistentKeyValueCache';
+import PersistentKeyValueCache from './persistentKeyValueCache'
 
 const logger = getLogger('DatafileManager')
 
@@ -25,32 +25,39 @@ export default class ReactNativeAsyncStorageCache implements PersistentKeyValueC
 
   get(key: string): Promise<Object | null> {
     return new Promise((resolve, reject) => {
-      AsyncStorage.getItem(key).then((val: String | null) => {
+      AsyncStorage.getItem(key).then((val: string | null) => {
         if (val) {
           try {
-            resolve(JSON.parse(val.valueOf()));
+            resolve(JSON.parse(val))
           } catch (ex) {
-            logger.error('Error Parsing Object from cache');
-            reject(ex);
+            logger.error('Error Parsing Object from cache - %s', ex)
+            reject(ex)
           }
         } else {
-          resolve(null);
+          resolve(null)
         }
-      }).catch(reject);
-    });
+      }).catch(reject)
+    })
   }
   
   set(key: string, val: Object): Promise<void> {
-    return AsyncStorage.setItem(key, typeof val === 'object' ? JSON.stringify(val) : val);
+    return new Promise((resolve, reject) => {
+      try {
+        AsyncStorage.setItem(key, JSON.stringify(val)).then(resolve).catch(reject)
+      } catch (e) {
+        logger.error('Error stringifying Object to Json - %s', e)
+        reject(e)
+      }
+    })
   }
   
   contains(key: string): Promise<Boolean> {
     return new Promise((resolve, reject) =>
-      AsyncStorage.getItem(key).then((val: String | null) => resolve(val !== null)).catch(reject)
+      AsyncStorage.getItem(key).then((val: string | null) => resolve(val !== null)).catch(reject)
     )
   }
   
   remove(key: string): Promise<void> {
-    return AsyncStorage.removeItem(key);
+    return AsyncStorage.removeItem(key)
   }
 }
