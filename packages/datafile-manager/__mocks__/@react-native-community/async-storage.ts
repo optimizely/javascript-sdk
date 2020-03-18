@@ -25,7 +25,7 @@ export default class AsyncStorage {
           resolve(null)
           break;
         case 'keyWithInvalidJsonObject':
-          resolve('asdfa }')
+          resolve('bad json }')
           break;
       }
     })
