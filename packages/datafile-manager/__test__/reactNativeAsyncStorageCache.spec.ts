@@ -23,57 +23,41 @@ describe('reactNativeAsyncStorageCache', () => {
     cacheInstance = new ReactNativeAsyncStorageCache()
   })
 
-  describe('get', function() { 
-    it('should return correct object when item is found in cache', function(done) {
-      cacheInstance.get('keyThatExists')
-        .then(v => { 
-          expect(v).toEqual({ name: "Awesome Object" })
-          done()
-        })
+  describe('get', function() {
+    it('should return correct object when item is found in cache', function() {
+      return cacheInstance.get('keyThatExists')
+        .then(v => expect(v).toEqual({ name: "Awesome Object" }))
     })
 
-    it('should return null if item is not found in cache', function(done) {
-      cacheInstance.get('keyThatDoesNotExist')
-        .then(v => { 
-          expect(v).toBeNull()
-          done()
-        })
+    it('should return null if item is not found in cache', function() {
+      return cacheInstance.get('keyThatDoesNotExist').then(v => expect(v).toBeNull())
     })
 
-    it('should reject promise error if string has an incorrect JSON format', function(done) {
-      cacheInstance.get('keyWithInvalidJsonObject')
-        .catch(e => {
-          done()
-        })
+    it('should reject promise error if string has an incorrect JSON format', function() {
+      return cacheInstance.get('keyWithInvalidJsonObject').catch(() => {})
     })
   })
 
   describe('set', function() { 
-    it('should resolve promise if item was successfully set in the cache', function(done) {
+    it('should resolve promise if item was successfully set in the cache', function() {
       const testObj = { name: "Awesome Object" }
-      cacheInstance.set('testKey', testObj).then(() => done())
+      return cacheInstance.set('testKey', testObj)
     })
 
-    it('should reject promise if item was not set in the cache because of json stringifying error', function(done) {
+    it('should reject promise if item was not set in the cache because of json stringifying error', function() {
       const testObj: any = { name: "Awesome Object" }
       testObj.myOwnReference = testObj
-      cacheInstance.set('testKey', testObj).catch(() => done())
+      return cacheInstance.set('testKey', testObj).catch(() => {})
     })
   })
 
-  describe('contains', function() { 
-    it('should return true if object with key exists', function(done) {
-      cacheInstance.contains('keyThatExists').then(v => {
-        expect(v).toBeTruthy()
-        done()
-      })
+  describe('contains', function() {
+    it('should return true if object with key exists', function() {
+      return cacheInstance.contains('keyThatExists').then(v => expect(v).toBeTruthy())
     })
 
-    it('should return false if object with key does not exist', function(done) {
-      cacheInstance.contains('keyThatDoesNotExist').then(v => {
-        expect(v).toBeFalsy()
-        done()
-      })
+    it('should return false if object with key does not exist', function() {
+      return cacheInstance.contains('keyThatDoesNotExist').then(v => expect(v).toBeFalsy())
     })
   })
 })

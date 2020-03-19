@@ -24,37 +24,26 @@ const logger = getLogger('DatafileManager')
 export default class ReactNativeAsyncStorageCache implements PersistentKeyValueCache {
 
   get(key: string): Promise<Object | null> {
-    return new Promise((resolve, reject) => {
-      AsyncStorage.getItem(key).then((val: string | null) => {
-        if (val) {
-          try {
-            resolve(JSON.parse(val))
-          } catch (ex) {
-            logger.error('Error Parsing Object from cache - %s', ex)
-            reject(ex)
-          }
-        } else {
-          resolve(null)
-        }
-      }).catch(reject)
-    })
+    try {
+      return AsyncStorage.getItem(key)
+        .then((val: string | null) => val ? JSON.parse(val) : null)
+    } catch (ex) {
+      logger.error('Error Parsing Object from cache - %s', ex)
+      return Promise.resolve(ex);
+    }
   }
-  
-  set(key: string, val: Object): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        AsyncStorage.setItem(key, JSON.stringify(val)).then(resolve).catch(reject)
-      } catch (e) {
-        logger.error('Error stringifying Object to Json - %s', e)
-        reject(e)
-      }
-    })
+
+  set(key: string, val: Object): Promise<void> {    
+    try {
+      return AsyncStorage.setItem(key, JSON.stringify(val))
+    } catch (e) {
+      logger.error('Error stringifying Object to Json - %s', e)
+      return Promise.reject(e)
+    }
   }
   
   contains(key: string): Promise<Boolean> {
-    return new Promise((resolve, reject) =>
-      AsyncStorage.getItem(key).then((val: string | null) => resolve(val !== null)).catch(reject)
-    )
+    return AsyncStorage.getItem(key).then((val: string | null) => (val !== null))
   }
   
   remove(key: string): Promise<void> {
