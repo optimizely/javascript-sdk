@@ -82,10 +82,11 @@ jobs:
     - &packagetest
       stage: 'Test sub packages'
       node_js: '12'
-      before_install: cd packages/datafile-manager
+      before_install: cd packages/utils
     - <<: *packagetest
       before_install: cd packages/event-processor
     - <<: *packagetest
       before_install: cd packages/logging
     - <<: *packagetest
-      before_install: cd packages/utils
+      before_script: npm install "@react-native-community/async-storage"
+      before_install: cd packages/datafile-manager
