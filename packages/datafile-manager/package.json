@@ -38,6 +38,9 @@
     "@optimizely/js-sdk-logging": "^0.1.0",
     "@optimizely/js-sdk-utils": "^0.1.0"
   },
+  "peerDependencies": {
+    "@react-native-community/async-storage": "^1.2.0"
+  },
   "scripts": {
     "test": "jest",
     "tsc": "rm -rf lib && tsc",
