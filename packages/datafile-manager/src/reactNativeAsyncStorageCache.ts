@@ -22,23 +22,27 @@ import PersistentKeyValueCache from './persistentKeyValueCache'
 const logger = getLogger('DatafileManager')
 
 export default class ReactNativeAsyncStorageCache implements PersistentKeyValueCache {
-
   get(key: string): Promise<any | null> {
-    try {
-      return AsyncStorage.getItem(key)
-        .then((val: string | null) => val ? JSON.parse(val) : null)
-    } catch (ex) {
-      logger.error('Error Parsing Object from cache - %s', ex)
-      return Promise.resolve(ex);
-    }
+    return AsyncStorage.getItem(key)
+      .then((val: string | null) => {
+        if (!val) {
+          return null
+        }
+        try {
+          return JSON.parse(val);
+        } catch (ex) {
+          logger.error('Error Parsing Object from cache - %s', ex)
+          throw ex
+        }  
+      })
   }
 
   set(key: string, val: any): Promise<void> {    
     try {
       return AsyncStorage.setItem(key, JSON.stringify(val))
-    } catch (e) {
-      logger.error('Error stringifying Object to Json - %s', e)
-      return Promise.reject(e)
+    } catch (ex) {
+      logger.error('Error stringifying Object to Json - %s', ex)
+      return Promise.reject(ex)
     }
   }
   

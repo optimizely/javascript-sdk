@@ -34,7 +34,8 @@ describe('reactNativeAsyncStorageCache', () => {
     })
 
     it('should reject promise error if string has an incorrect JSON format', function() {
-      return cacheInstance.get('keyWithInvalidJsonObject').catch(() => {})
+      return cacheInstance.get('keyWithInvalidJsonObject')
+        .catch(() => 'exception caught').then(v => { expect(v).toEqual('exception caught') })
     })
   })
 
@@ -47,7 +48,8 @@ describe('reactNativeAsyncStorageCache', () => {
     it('should reject promise if item was not set in the cache because of json stringifying error', function() {
       const testObj: any = { name: "Awesome Object" }
       testObj.myOwnReference = testObj
-      return cacheInstance.set('testKey', testObj).catch(() => {})
+      return cacheInstance.set('testKey', testObj)
+        .catch(() => 'exception caught').then(v => expect(v).toEqual('exception caught'))
     })
   })
 
