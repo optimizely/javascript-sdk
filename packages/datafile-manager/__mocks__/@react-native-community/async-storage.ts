@@ -18,20 +18,20 @@ export default class AsyncStorage {
   static getItem(key: string, callback?: (error?: Error, result?: string) => void): Promise<string | null> {
     return new Promise((resolve, reject) => {
       switch (key) {
-        case 'keyThatExists': 
+        case 'keyThatExists':
           resolve('{ "name": "Awesome Object" }')
-          break;
+          break
         case 'keyThatDoesNotExist':
           resolve(null)
-          break;
+          break
         case 'keyWithInvalidJsonObject':
           resolve('bad json }')
-          break;
+          break
       }
     })
   }
 
   static setItem(key: string, value: string, callback?: (error?: Error) => void): Promise<void> {
-    return new Promise(resolve => resolve())
+    return Promise.resolve()
   }
 }

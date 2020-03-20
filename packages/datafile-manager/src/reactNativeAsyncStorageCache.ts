@@ -23,7 +23,7 @@ const logger = getLogger('DatafileManager')
 
 export default class ReactNativeAsyncStorageCache implements PersistentKeyValueCache {
 
-  get(key: string): Promise<Object | null> {
+  get(key: string): Promise<any | null> {
     try {
       return AsyncStorage.getItem(key)
         .then((val: string | null) => val ? JSON.parse(val) : null)
@@ -33,7 +33,7 @@ export default class ReactNativeAsyncStorageCache implements PersistentKeyValueC
     }
   }
 
-  set(key: string, val: Object): Promise<void> {    
+  set(key: string, val: any): Promise<void> {    
     try {
       return AsyncStorage.setItem(key, JSON.stringify(val))
     } catch (e) {

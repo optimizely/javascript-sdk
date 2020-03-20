@@ -23,28 +23,39 @@ export default interface PersistentKeyValueCache {
   /**
    * Returns value stored against a key or null if not found.
    * @param key 
-   * @returns Promise which resolves with a
+   * @returns 
+   * Resolves promise with
    * 1. Object if value found was stored as a JSON Object.
    * 2. null if the key does not exist in the cache.
+   * Rejects the promise in case of an error
    */
-  get(key: string): Promise<Object | null>
+  get(key: string): Promise<any | null>
 
   /**
    * Stores Object in the persistent cache against a key
    * @param key 
    * @param val 
+   * @returns 
+   * Resolves promise without a value if successful
+   * Rejects the promise in case of an error
    */
-  set(key: string, val: Object): Promise<void>
+  set(key: string, val: any): Promise<void>
 
   /**
    * Checks if a key exists in the cache
-   * @param key 
+   * @param key
+   * Resolves promise with 
+   * 1. true if the key exists
+   * 2. false if the key does not exist
+   * Rejects the promise in case of an error
    */
   contains(key: string): Promise<Boolean>
 
   /**
-   * Removed the key value pair from cache.
-   * @param key 
+   * Removes the key value pair from cache.
+   * @param key
+   * Resolves promise without a value if successful
+   * Rejects the promise in case of an error
    */
   remove(key: string): Promise<void>
 }
