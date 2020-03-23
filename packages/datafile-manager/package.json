@@ -8,6 +8,7 @@
   },
   "main": "lib/index.node.js",
   "browser": "lib/index.browser.js",
+  "react-native": "lib/index.react_native.js",
   "types": "lib/index.d.ts",
   "directories": {
     "lib": "lib",

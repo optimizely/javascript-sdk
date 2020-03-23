@@ -44,7 +44,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
   // Return any default configuration options that should be applied
   protected abstract getConfigDefaults(): Partial<DatafileManagerConfig>
 
-  private currentDatafile: object | null
+  private currentDatafile: object | null = null
 
   private readonly readyPromise: Promise<void>
 
@@ -72,6 +72,8 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
 
   private backoffController: BackoffController
 
+  protected sdkKey: string
+
   // When true, this means the update interval timeout fired before the current
   // sync completed. In that case, we should sync again immediately upon
   // completion of the current request, instead of waiting another update
@@ -91,6 +93,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
       urlTemplate = DEFAULT_URL_TEMPLATE,
     } = configWithDefaultsApplied
 
+    this.sdkKey = sdkKey
     this.isReadyPromiseSettled = false
     this.readyPromiseResolver = () => {}
     this.readyPromiseRejecter = () => {}
@@ -103,7 +106,17 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
       this.currentDatafile = datafile
       this.resolveReadyPromise()
     } else {
-      this.currentDatafile = null
+      this.hasCachedDatafile()
+        .then((hasCachedDatafile: Boolean) => {
+          if (hasCachedDatafile) {
+            logger.debug('Found datafile in cache')
+            this.getCachedDatafile().then((datafile: any) => {
+              logger.debug('Using datafile from cache')
+              this.currentDatafile = datafile
+              this.resolveReadyPromise()
+            })
+          }
+        })
     }
 
     this.isStarted = false
@@ -197,6 +210,8 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     if (datafile !== null) {
       logger.info('Updating datafile from response')
       this.currentDatafile = datafile
+      logger.debug('Adding Datafile to Cache')
+      this.addToCache(datafile)
       if (!this.isReadyPromiseSettled) {
         this.resolveReadyPromise()
       } else {
@@ -289,7 +304,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     }
     return null
   }
-
+  
   private tryParsingBodyAsJSON(body: string): object | null {
     let parseResult: any
     try {
@@ -313,5 +328,20 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
       this.lastResponseLastModified = lastModifiedHeader
       logger.debug('Saved last modified header value from response: %s', this.lastResponseLastModified)
     }
+  }
+
+  // Override in the child class to add cache implementation
+  protected addToCache(datafile: any): Promise<void> {
+    return Promise.resolve()
+  }
+
+  // Override in the child class to add cache implementation
+  protected hasCachedDatafile(): Promise<Boolean> {
+    return Promise.resolve(false)
+  }
+
+  // Override in the child class to add cache implementation
+  protected getCachedDatafile(): Promise<any> {
+    return Promise.resolve()
   }
 }
