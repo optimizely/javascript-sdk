@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import PersistentKeyValueCache from './persistentKeyValueCache'
 
- export interface DatafileUpdate {
-   datafile: object
- }
+export interface DatafileUpdate {
+  datafile: object
+}
 
 export interface DatafileUpdateListener {
   (datafileUpdate: DatafileUpdate): void
@@ -24,7 +25,7 @@ export interface DatafileUpdateListener {
 
 // TODO: Replace this with the one from js-sdk-models
 interface Managed {
-  start(): void
+  start(): Promise<void>
 
   stop(): Promise<any>
 }
@@ -41,4 +42,5 @@ export interface DatafileManagerConfig {
   sdkKey: string
   updateInterval?: number
   urlTemplate?: string
+  cache?: PersistentKeyValueCache
 }

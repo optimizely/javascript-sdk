@@ -18,10 +18,7 @@ import { makeGetRequest } from './browserRequest'
 import HttpPollingDatafileManager from './httpPollingDatafileManager'
 import { Headers, AbortableRequest } from './http'
 import { DatafileManagerConfig } from './datafileManager'
-import PersistentKeyValueCache from './persistentKeyValueCache'
 import ReactNativeAsyncStorageCache from './reactNativeAsyncStorageCache'
-
-const cacheInstance: PersistentKeyValueCache = new ReactNativeAsyncStorageCache()
 
 export default class ReactNativeDatafileManager extends HttpPollingDatafileManager {
 
@@ -32,22 +29,7 @@ export default class ReactNativeDatafileManager extends HttpPollingDatafileManag
   protected getConfigDefaults(): Partial<DatafileManagerConfig> {
     return {
       autoUpdate: true,
+      cache: new ReactNativeAsyncStorageCache(),
     }
-  }
-
-  private getCacheKey() {
-    return 'opt-datafile-' + this.sdkKey;
-  }
-
-  protected addToCache(datafile:any): Promise<void> {
-    return cacheInstance.set(this.getCacheKey(), datafile)
-  }
-
-  protected hasCachedDatafile(): Promise<Boolean> {
-    return cacheInstance.contains(this.getCacheKey())
-  }
-
-  protected getCachedDatafile(): Promise<any> {
-    return cacheInstance.get(this.getCacheKey())
   }
 }

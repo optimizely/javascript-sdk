@@ -45,7 +45,7 @@ describe('nodeDatafileManager', () => {
       sdkKey: '1234',
       autoUpdate: false,
     })
-    manager.start()
+    await manager.start()
     expect(makeGetRequestSpy).toBeCalledTimes(1)
     expect(makeGetRequestSpy.mock.calls[0][0]).toBe('https://cdn.optimizely.com/datafiles/1234.json')
     expect(makeGetRequestSpy.mock.calls[0][1]).toEqual({})
@@ -69,7 +69,7 @@ describe('nodeDatafileManager', () => {
       sdkKey: '1234',
       autoUpdate: true,
     })
-    manager.start()
+    await manager.start()
     await manager.onReady()
     await advanceTimersByTime(300000)
     expect(makeGetRequestSpy).toBeCalledTimes(2)
@@ -95,7 +95,7 @@ describe('nodeDatafileManager', () => {
     const manager = new NodeDatafileManager({
       sdkKey: '1234',
     })
-    manager.start()
+    await manager.start()
     await manager.onReady()
     // Should set a timeout for a later update
     expect(getTimerCount()).toBe(1)

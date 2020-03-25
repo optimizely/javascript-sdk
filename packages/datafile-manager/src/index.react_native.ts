@@ -16,4 +16,3 @@
 
 export * from './datafileManager'
 export { default as HttpPollingDatafileManager } from './reactNativeDatafileManager'
-export { default as StaticDatafileManager } from './staticDatafileManager'

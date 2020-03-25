@@ -37,6 +37,7 @@ export default class StaticDatafileManager implements DatafileManager {
   }
 
   start() {
+    return Promise.resolve();
   }
 
   stop() {

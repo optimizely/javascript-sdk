@@ -45,7 +45,8 @@ describe('browserDatafileManager', () => {
       sdkKey: '1234',
       autoUpdate: false,
     })
-    manager.start()
+    await manager.start()
+    
     expect(makeGetRequestSpy).toBeCalledTimes(1)
     expect(makeGetRequestSpy.mock.calls[0][0]).toBe('https://cdn.optimizely.com/datafiles/1234.json')
     expect(makeGetRequestSpy.mock.calls[0][1]).toEqual({})

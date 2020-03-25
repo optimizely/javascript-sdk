@@ -16,11 +16,12 @@
 
 import { getLogger } from '@optimizely/js-sdk-logging'
 import { sprintf } from '@optimizely/js-sdk-utils';
-import { DatafileManager, DatafileManagerConfig, DatafileUpdate } from './datafileManager';
+import { DatafileManager, DatafileManagerConfig, DatafileUpdate } from './datafileManager'
 import EventEmitter from './eventEmitter'
-import { AbortableRequest, Response, Headers } from './http';
+import { AbortableRequest, Response, Headers } from './http'
 import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE } from './config'
-import BackoffController from './backoffController';
+import BackoffController from './backoffController'
+import PersistentKeyValueCache from './persistentKeyValueCache'
 
 const logger = getLogger('DatafileManager')
 
@@ -34,6 +35,24 @@ function isSuccessStatusCode(statusCode: number): boolean {
   return statusCode >= 200 && statusCode < 400
 }
 
+class NoOpKeyValueCache implements PersistentKeyValueCache {
+  get(key: string): Promise<any | null> {
+    return Promise.resolve(null)
+  }
+
+  set(key: string, val: any): Promise<void> {
+    return Promise.resolve()
+  }
+
+  contains(key: string): Promise<Boolean> {
+    return Promise.resolve(false)
+  }
+
+  remove(key: string): Promise<void> {
+    return Promise.resolve()
+  }
+}
+
 export default abstract class HttpPollingDatafileManager implements DatafileManager {
   // Make an HTTP get request to the given URL with the given headers
   // Return an AbortableRequest, which has a promise for a Response.
@@ -44,7 +63,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
   // Return any default configuration options that should be applied
   protected abstract getConfigDefaults(): Partial<DatafileManagerConfig>
 
-  private currentDatafile: object | null = null
+  private currentDatafile: object | null
 
   private readonly readyPromise: Promise<void>
 
@@ -72,7 +91,9 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
 
   private backoffController: BackoffController
 
-  protected sdkKey: string
+  private cacheKey: string
+
+  private cache: PersistentKeyValueCache
 
   // When true, this means the update interval timeout fired before the current
   // sync completed. In that case, we should sync again immediately upon
@@ -91,9 +112,11 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
       sdkKey,
       updateInterval = DEFAULT_UPDATE_INTERVAL,
       urlTemplate = DEFAULT_URL_TEMPLATE,
+      cache,
     } = configWithDefaultsApplied
 
-    this.sdkKey = sdkKey
+    this.cache = cache || new NoOpKeyValueCache()
+    this.cacheKey = 'opt-datafile-' + sdkKey
     this.isReadyPromiseSettled = false
     this.readyPromiseResolver = () => {}
     this.readyPromiseRejecter = () => {}
@@ -106,17 +129,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
       this.currentDatafile = datafile
       this.resolveReadyPromise()
     } else {
-      this.hasCachedDatafile()
-        .then((hasCachedDatafile: Boolean) => {
-          if (hasCachedDatafile) {
-            logger.debug('Found datafile in cache')
-            this.getCachedDatafile().then((datafile: any) => {
-              logger.debug('Using datafile from cache')
-              this.currentDatafile = datafile
-              this.resolveReadyPromise()
-            })
-          }
-        })
+      this.currentDatafile = null      
     }
 
     this.isStarted = false
@@ -140,14 +153,16 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
   get(): object | null {
     return this.currentDatafile
   }
-
-  start(): void {
+  
+  start(): Promise<void> {
     if (!this.isStarted) {
       logger.debug('Datafile manager started')
       this.isStarted = true
       this.backoffController.reset()
-      this.syncDatafile()
+      return this.setDatafileFromCacheIfAvailable()
+        .then(() => this.syncDatafile())
     }
+    return Promise.resolve()
   }
 
   stop(): Promise<void> {
@@ -211,7 +226,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
       logger.info('Updating datafile from response')
       this.currentDatafile = datafile
       logger.debug('Adding Datafile to Cache')
-      this.addToCache(datafile)
+      this.cache.set(this.cacheKey, datafile)
       if (!this.isReadyPromiseSettled) {
         this.resolveReadyPromise()
       } else {
@@ -304,7 +319,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     }
     return null
   }
-  
+
   private tryParsingBodyAsJSON(body: string): object | null {
     let parseResult: any
     try {
@@ -330,18 +345,14 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     }
   }
 
-  // Override in the child class to add cache implementation
-  protected addToCache(datafile: any): Promise<void> {
-    return Promise.resolve()
-  }
-
-  // Override in the child class to add cache implementation
-  protected hasCachedDatafile(): Promise<Boolean> {
-    return Promise.resolve(false)
-  }
-
-  // Override in the child class to add cache implementation
-  protected getCachedDatafile(): Promise<any> {
-    return Promise.resolve()
+  setDatafileFromCacheIfAvailable(): Promise<void> {
+    return this.cache.get(this.cacheKey)
+      .then(datafile => {
+        if (datafile) {
+          logger.debug('Using datafile from cache')
+          this.currentDatafile = datafile
+          this.resolveReadyPromise()
+        }
+      })
   }
 }
