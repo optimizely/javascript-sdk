@@ -26,11 +26,11 @@ function exec(command, extraEnv) {
   });
 }
 
-const packageName = "javascript_bundle";
+const packageName = "index.node";
 const umdName = "optimizelySdk";
 
 console.log("\nBuilding CommonJS modules...");
-exec(`rollup -c scripts/config.js -i lib/index.node.js -f cjs -o dist/${packageName}.js`);
+exec(`rollup -c scripts/config.js -i lib/index.node.js -f cjs -o lib/${packageName}.js`);
 
 console.log("\nBuilding UMD modules...");
 
