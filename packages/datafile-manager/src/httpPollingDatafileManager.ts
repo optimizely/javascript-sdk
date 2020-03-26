@@ -127,9 +127,11 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
 
     if (datafile) {
       this.currentDatafile = datafile
-      this.resolveReadyPromise()
+      if (!sdkKey) {
+        this.resolveReadyPromise()
+      }
     } else {
-      this.currentDatafile = null      
+      this.currentDatafile = null
     }
 
     this.isStarted = false
@@ -154,15 +156,14 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     return this.currentDatafile
   }
   
-  start(): Promise<void> {
+  start(): void {
     if (!this.isStarted) {
       logger.debug('Datafile manager started')
       this.isStarted = true
       this.backoffController.reset()
-      return this.setDatafileFromCacheIfAvailable()
-        .then(() => this.syncDatafile())
+      this.setDatafileFromCacheIfAvailable()
+      this.syncDatafile()
     }
-    return Promise.resolve()
   }
 
   stop(): Promise<void> {
@@ -345,10 +346,10 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     }
   }
 
-  setDatafileFromCacheIfAvailable(): Promise<void> {
-    return this.cache.get(this.cacheKey)
+  setDatafileFromCacheIfAvailable(): void {
+    this.cache.get(this.cacheKey)
       .then(datafile => {
-        if (datafile) {
+        if (!this.isReadyPromiseSettled && datafile) {
           logger.debug('Using datafile from cache')
           this.currentDatafile = datafile
           this.resolveReadyPromise()

@@ -25,7 +25,7 @@ export interface DatafileUpdateListener {
 
 // TODO: Replace this with the one from js-sdk-models
 interface Managed {
-  start(): Promise<void>
+  start(): void
 
   stop(): Promise<any>
 }
