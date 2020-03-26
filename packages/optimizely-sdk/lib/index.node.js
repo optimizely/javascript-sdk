@@ -13,17 +13,16 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import * as logging from '@optimizely/js-sdk-logging';
-
-import configValidator from './utils/config_validator';
-import defaultErrorHandler from './plugins/error_handler';
-import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
-import enums from './utils/enums';
-import fns from './utils/fns';
-import jsonSchemaValidator from './utils/json_schema_validator';
-import loggerPlugin from './plugins/logger';
-import Optimizely from './optimizely';
-import eventProcessorConfigValidator from './utils/event_processor_config_validator';
+var logging = require('@optimizely/js-sdk-logging');
+var configValidator = require('./utils/config_validator');
+var defaultErrorHandler = require('./plugins/error_handler');
+var defaultEventDispatcher = require('./plugins/event_dispatcher/index.node');
+var enums = require('./utils/enums');
+var fns = require('./utils/fns');
+var jsonSchemaValidator = require('./utils/json_schema_validator');
+var loggerPlugin = require('./plugins/logger');
+var Optimizely = require('./optimizely');
+var eventProcessorConfigValidator = require('./utils/event_processor_config_validator');
 
 var logger = logging.getLogger();
 logging.setLogLevel(logging.LogLevel.ERROR);
@@ -34,7 +33,7 @@ var DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
 /**
  * Entry point into the Optimizely Node testing SDK
  */
-export default {
+module.exports = {
   logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
