@@ -155,7 +155,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
   get(): object | null {
     return this.currentDatafile
   }
-  
+
   start(): void {
     if (!this.isStarted) {
       logger.debug('Datafile manager started')
