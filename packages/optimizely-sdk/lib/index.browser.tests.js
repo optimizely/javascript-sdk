@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2019, 2020 Optimizely
+ * Copyright 2016-2019, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as logging from '@optimizely/js-sdk-logging';
-import configValidator from './utils/config_validator';
-import Optimizely from './optimizely';
-import optimizelyFactory from './index.browser';
-import packageJSON from '../package.json';
-import testData from './tests/test_data';
-import * as eventProcessor from '@optimizely/js-sdk-event-processor';
-import eventProcessorConfigValidator from './utils/event_processor_config_validator';
-import chai from 'chai';
-import sinon from 'sinon';
+var logging = require('@optimizely/js-sdk-logging');
+var configValidator = require('./utils/config_validator');
+var eventProcessor = require('@optimizely/js-sdk-event-processor');
+var Optimizely = require('./optimizely');
+var optimizelyFactory = require('./index.browser');
+var packageJSON = require('../package.json');
+var testData = require('./tests/test_data');
+var eventProcessor = require('@optimizely/js-sdk-event-processor');
+var eventProcessorConfigValidator = require('./utils/event_processor_config_validator');
+
+var chai = require('chai');
 var assert = chai.assert;
+var sinon = require('sinon');
+
 var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
 
 describe('javascript-sdk', function() {
