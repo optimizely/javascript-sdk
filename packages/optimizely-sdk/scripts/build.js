@@ -30,20 +30,20 @@ const packageName = "optimizely.node";
 const umdName = "optimizelySdk";
 
 console.log("\nBuilding CommonJS modules...");
-exec(`rollup -c scripts/config.js -i lib/index.node.js -f cjs -o dist/${packageName}.js --exports named`);
+exec(`rollup -c scripts/config.js -i lib/index.node.js -f cjs -o dist/${packageName}.js`);
 
 console.log("\nBuilding UMD modules...");
 
 
 exec(
-  `rollup -c scripts/config.js -f umd -i lib/index.browser.js -n ${umdName} -o dist/optimizely.browser.umd.js --exports named`,
+  `rollup -c scripts/config.js -f umd -i lib/index.browser.js -n ${umdName} -o dist/optimizely.browser.umd.js`,
   {
     BUILD_ENV: "development"
   }
 );
 
 exec(
-  `rollup -c scripts/config.js -f umd lib/index.browser.js -n ${umdName} -o dist/optimizely.browser.umd.min.js --exports named`,
+  `rollup -c scripts/config.js -f umd lib/index.browser.js -n ${umdName} -o dist/optimizely.browser.umd.min.js`,
   {
     BUILD_ENV: "production"
   }
