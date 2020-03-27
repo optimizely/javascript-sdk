@@ -18,8 +18,10 @@ const commonjs = require('rollup-plugin-commonjs');
 const resolve = require('rollup-plugin-node-resolve');
 const packageDeps = require('../package.json').dependencies || {};
 
-function getExternals() {
-  return ['https', 'http', 'url'].concat(Object.keys(packageDeps));
+function getExternals(platform) {
+  return platform === 'node'
+    ? ['https', 'http', 'url'].concat(Object.keys(packageDeps))
+    : null;
 }
 
 function getPlugins (env){
@@ -50,7 +52,7 @@ function getPlugins (env){
 
 module.exports = {
   plugins: getPlugins(process.env.BUILD_ENV),
-  external: getExternals(),
+  external: getExternals(process.env.PLATFORM),
   output: {
     globals: {
       '@optimizely/js-sdk-logging': 'logging',

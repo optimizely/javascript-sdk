@@ -30,7 +30,11 @@ const packageName = "optimizely.node";
 const umdName = "optimizelySdk";
 
 console.log("\nBuilding CommonJS modules...");
-exec(`rollup -c scripts/config.js -i lib/index.node.js -f cjs -o dist/${packageName}.js`);
+exec(`rollup -c scripts/config.js -i lib/index.node.js -f cjs -o dist/${packageName}.js`,
+  {
+    PLATFORM: "node"
+  }
+);
 
 console.log("\nBuilding UMD modules...");
 
