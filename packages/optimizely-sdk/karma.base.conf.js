@@ -22,6 +22,10 @@ module.exports = {
   //plugins
   plugins: ['karma-mocha', 'karma-webpack', require('karma-browserstack-launcher')],
 
+  webpack: {
+    mode: 'production',
+  },
+
   //browserStack setup
   browserStack: {
     username: process.env.BROWSER_STACK_USERNAME,
@@ -91,6 +95,12 @@ module.exports = {
 
   // list of files to exclude
   exclude: [],
+
+  // preprocess matching files before serving them to the browser
+  // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
+  preprocessors: {
+    './lib/**/*tests.js': ['webpack'],
+  },
 
   // test results reporter to use
   // possible values: 'dots', 'progress'
