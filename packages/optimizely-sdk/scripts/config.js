@@ -15,7 +15,12 @@
  */
 const { terser } = require('rollup-plugin-terser');
 const commonjs = require('rollup-plugin-commonjs');
-const resolve = require('rollup-plugin-node-resolve')
+const resolve = require('rollup-plugin-node-resolve');
+const packageDeps = require('../package.json').dependencies || {};
+
+function getExternals() {
+  return ['https', 'http', 'url'].concat(Object.keys(packageDeps));
+}
 
 function getPlugins (env){
   const plugins = [
@@ -45,5 +50,5 @@ function getPlugins (env){
 
 module.exports = {
   plugins: getPlugins(process.env.BUILD_ENV),
-  external: ['https', 'http', 'url', 'crypto'],
+  external: getExternals(),
 }
