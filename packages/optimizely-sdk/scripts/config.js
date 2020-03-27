@@ -40,7 +40,9 @@ function getPlugins (env){
             'setErrorHandler',
             'getErrorHandler'
           ],
-          '@optimizely/js-sdk-event-processor': 'LocalStoragePendingEventsDispatcher'
+          '@optimizely/js-sdk-event-processor': [
+            'LocalStoragePendingEventsDispatcher'
+          ]
         },
     }),
   ];
