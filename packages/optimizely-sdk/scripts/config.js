@@ -46,7 +46,4 @@ function getPlugins (env){
 module.exports = {
   plugins: getPlugins(process.env.BUILD_ENV),
   external: ['https', 'http', 'url', 'crypto'],
-  output: {
-    exports: 'named',
-  }
 }

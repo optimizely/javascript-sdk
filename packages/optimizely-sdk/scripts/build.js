@@ -26,24 +26,24 @@ function exec(command, extraEnv) {
   });
 }
 
-const packageName = "index.node";
+const packageName = "optimizely.node";
 const umdName = "optimizelySdk";
 
 console.log("\nBuilding CommonJS modules...");
-exec(`rollup -c scripts/config.js -i lib/index.node.js -f cjs -o lib/${packageName}.js`);
+exec(`rollup -c scripts/config.js -i lib/index.node.js -f cjs -o dist/${packageName}.js --exports named`);
 
 console.log("\nBuilding UMD modules...");
 
 
 exec(
-  `rollup -c scripts/config.js -f umd -i lib/index.browser.js -n ${umdName} -o dist/optimizely.browser.umd.js`,
+  `rollup -c scripts/config.js -f umd -i lib/index.browser.js -n ${umdName} -o dist/optimizely.browser.umd.js --exports named`,
   {
     BUILD_ENV: "development"
   }
 );
 
 exec(
-  `rollup -c scripts/config.js -f umd lib/index.browser.js -n ${umdName} -o dist/optimizely.browser.umd.min.js`,
+  `rollup -c scripts/config.js -f umd lib/index.browser.js -n ${umdName} -o dist/optimizely.browser.umd.min.js --exports named`,
   {
     BUILD_ENV: "production"
   }
