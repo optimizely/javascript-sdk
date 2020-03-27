@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import configValidator from './utils/config_validator';
+var configValidator = require('./utils/config_validator');
+var enums = require('./utils/enums');
+var logger = require('./plugins/logger');
+var Optimizely = require('./optimizely');
 
-import enums from './utils/enums';
-import logger from './plugins/logger';
-import Optimizely from './optimizely';
-import packageJSON from '../package.json';
-import eventDispatcher from './plugins/event_dispatcher/index.browser';
-import testData from './tests/test_data';
-import chai from 'chai';
+var packageJSON = require('../package.json');
+var eventDispatcher = require('./plugins/event_dispatcher/index.browser');
+var testData = require('./tests/test_data');
+
+var chai = require('chai');
 var assert = chai.assert;
-import sinon from 'sinon';
+var sinon = require('sinon');
 
 describe('javascript-sdk', function() {
   describe('APIs', function() {
