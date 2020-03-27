@@ -35,18 +35,18 @@ function isSuccessStatusCode(statusCode: number): boolean {
   return statusCode >= 200 && statusCode < 400
 }
 
-class NoOpKeyValueCache implements PersistentKeyValueCache {
+const noOpKeyValueCache: PersistentKeyValueCache = {
   get(key: string): Promise<any | null> {
     return Promise.resolve(null)
-  }
+  },
 
   set(key: string, val: any): Promise<void> {
     return Promise.resolve()
-  }
+  },
 
   contains(key: string): Promise<Boolean> {
     return Promise.resolve(false)
-  }
+  },
 
   remove(key: string): Promise<void> {
     return Promise.resolve()
@@ -112,10 +112,10 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
       sdkKey,
       updateInterval = DEFAULT_UPDATE_INTERVAL,
       urlTemplate = DEFAULT_URL_TEMPLATE,
-      cache,
+      cache = noOpKeyValueCache,
     } = configWithDefaultsApplied
 
-    this.cache = cache || new NoOpKeyValueCache()
+    this.cache = cache
     this.cacheKey = 'opt-datafile-' + sdkKey
     this.isReadyPromiseSettled = false
     this.readyPromiseResolver = () => {}
@@ -349,7 +349,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
   setDatafileFromCacheIfAvailable(): void {
     this.cache.get(this.cacheKey)
       .then(datafile => {
-        if (!this.isReadyPromiseSettled && datafile) {
+        if (this.isStarted && !this.isReadyPromiseSettled && datafile) {
           logger.debug('Using datafile from cache')
           this.currentDatafile = datafile
           this.resolveReadyPromise()
