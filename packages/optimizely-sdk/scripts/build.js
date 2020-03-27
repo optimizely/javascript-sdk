@@ -26,29 +26,27 @@ function exec(command, extraEnv) {
   });
 }
 
-const packageName = "optimizely.node";
 const umdName = "optimizelySdk";
 
 console.log("\nBuilding CommonJS modules...");
-exec(`rollup -c scripts/config.js -i lib/index.node.js -f cjs -o dist/${packageName}.js`,
-  {
-    PLATFORM: "node"
-  }
-);
+exec(`rollup -c scripts/config.js -i lib/index.node.js -f cjs -o dist/optimizely.node.js`);
+
+exec(`rollup -c scripts/config.js -i lib/index.browser.js -f cjs -o dist/optimizely.browser.js`);
 
 console.log("\nBuilding UMD modules...");
-
 
 exec(
   `rollup -c scripts/config.js -f umd -i lib/index.browser.js -n ${umdName} -o dist/optimizely.browser.umd.js`,
   {
-    BUILD_ENV: "development"
+    BUILD_ENV: "development",
+    TARGET: "umd"
   }
 );
 
 exec(
   `rollup -c scripts/config.js -f umd lib/index.browser.js -n ${umdName} -o dist/optimizely.browser.umd.min.js`,
   {
-    BUILD_ENV: "production"
+    BUILD_ENV: "production",
+    TARGET: "umd"
   }
 );

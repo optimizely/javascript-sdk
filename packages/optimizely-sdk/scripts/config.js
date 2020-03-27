@@ -18,10 +18,10 @@ const commonjs = require('rollup-plugin-commonjs');
 const resolve = require('rollup-plugin-node-resolve');
 const packageDeps = require('../package.json').dependencies || {};
 
-function getExternals(platform) {
-  return platform === 'node'
+function getExternals(target) {
+  return target !== 'umd'
     ? ['https', 'http', 'url'].concat(Object.keys(packageDeps))
-    : null;
+    : '';
 }
 
 function getPlugins (env){
@@ -30,16 +30,18 @@ function getPlugins (env){
       browser: true,
     }),
     commonjs({
-      namedExports: { '@optimizely/js-sdk-logging':
-          [
+      namedExports:
+        {
+          '@optimizely/js-sdk-logging': [
             'getLogger',
             'setLogLevel',
             'LogLevel',
             'setLogHandler',
             'setErrorHandler',
             'getErrorHandler'
-          ]
-      },
+          ],
+          '@optimizely/js-sdk-event-processor': 'LocalStoragePendingEventsDispatcher'
+        },
     }),
   ];
 
@@ -52,7 +54,7 @@ function getPlugins (env){
 
 module.exports = {
   plugins: getPlugins(process.env.BUILD_ENV),
-  external: getExternals(process.env.PLATFORM),
+  external: getExternals(process.env.TARGET),
   output: {
     globals: {
       '@optimizely/js-sdk-logging': 'logging',
