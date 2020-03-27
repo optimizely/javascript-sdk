@@ -2,7 +2,7 @@
   "name": "@optimizely/optimizely-sdk",
   "version": "3.6.0-alpha.1",
   "description": "JavaScript SDK for Optimizely X Full Stack",
-  "main": "dist/optimizely.node.js",
+  "main": "lib/index.node.js",
   "browser": "lib/index.browser.js",
   "react-native": "lib/index.react_native.js",
   "typings": "lib/index.d.ts",
