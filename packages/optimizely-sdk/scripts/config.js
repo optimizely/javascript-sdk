@@ -51,4 +51,14 @@ function getPlugins (env){
 module.exports = {
   plugins: getPlugins(process.env.BUILD_ENV),
   external: getExternals(),
+  output: {
+    globals: {
+      '@optimizely/js-sdk-logging': 'logging',
+      '@optimizely/js-sdk-event-processor': 'eventProcessor',
+      '@optimizely/js-sdk-datafile-manager': 'datafileManager',
+      '@optimizely/js-sdk-utils': 'jsSdkUtils',
+      murmurhash: 'murmurhash',
+      uuid: 'v4',
+    },
+  }
 }
