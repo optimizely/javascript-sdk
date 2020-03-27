@@ -20,7 +20,7 @@ module.exports = {
   basePath: '',
 
   //plugins
-  plugins: ['karma-mocha', 'karma-webpack', require('karma-browserstack-launcher'), require.resolve('@open-wc/karma-esm')],
+  plugins: [require.resolve('@open-wc/karma-esm'), 'karma-mocha', 'karma-webpack', require('karma-browserstack-launcher')],
 
   webpack: {
     mode: 'production',
