@@ -60,5 +60,6 @@ module.exports = {
       murmurhash: 'murmurhash',
       uuid: 'v4',
     },
+    exports: 'named',
   }
 }
