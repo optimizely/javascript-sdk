@@ -20,7 +20,7 @@ module.exports = {
   basePath: '',
 
   //plugins
-  plugins: ['karma-mocha', require('karma-browserstack-launcher')],
+  plugins: ['karma-mocha', require('karma-browserstack-launcher'), require('@open-wc/karma-esm')],
 
   //browserStack setup
   browserStack: {
@@ -87,7 +87,7 @@ module.exports = {
 
   // frameworks to use
   // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-  frameworks: ['mocha'],
+  frameworks: ['esm'],
 
   // list of files to exclude
   exclude: [],

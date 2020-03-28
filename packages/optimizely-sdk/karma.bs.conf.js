@@ -29,7 +29,6 @@ module.exports = function(config) {
     files: [
       './node_modules/promise-polyfill/dist/polyfill.min.js',
       { pattern: './lib/*.browser.tests.js', type: 'module' },
-      { pattern: './lib/*.browser.js', type: 'module' },
     ],
   });
 };
