@@ -20,7 +20,7 @@ module.exports = {
   basePath: '',
 
   //plugins
-  plugins: ['karma-mocha', 'karma-webpack', require('karma-browserstack-launcher')],
+  plugins: ['karma-mocha', require('karma-browserstack-launcher')],
 
   //browserStack setup
   browserStack: {
