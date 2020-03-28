@@ -82,6 +82,10 @@ module.exports = {
       browser_version: '6.2',
     },
   },
+  esm: {
+    // if you are using 'bare module imports' you will need this option
+    nodeResolve: true,
+  },
 
   browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox_mac', 'bs_ie', 'bs_opera_mac', 'bs_safari'],
 
