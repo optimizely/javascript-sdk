@@ -10,7 +10,7 @@
     "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive --exit --require esm --require lib/tests/exit_on_unhandled_rejection.js",
     "test-xbrowser": "karma start karma.bs.conf.js --single-run",
     "test-umdbrowser": "karma start karma.umd.conf.js --single-run",
-    "build": "node ./scripts/build.js && babel lib/index.browser.js,lib/index.browser.*.js --out-dir lib --presets=@babel/env",
+    "build": "node ./scripts/build.js && babel lib/index.browser.js lib/index.browser.*.js --out-dir lib --presets=@babel/env",
     "test-ci": "npm run build && npm run test-xbrowser && npm run test-umdbrowser",
     "lint": "eslint 'lib/**/*.js'",
     "cover": "istanbul cover _mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js",
