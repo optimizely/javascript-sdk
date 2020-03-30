@@ -9,13 +9,14 @@
   "scripts": {
     "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive --exit --require esm --require lib/tests/exit_on_unhandled_rejection.js",
     "test-xbrowser": "karma start karma.bs.conf.js --single-run",
-    "test-umdbrowser": "karma start karma.umd.conf.js --single-run",
+    "test-umdbrowser": "npm run build-browser-umd && karma start karma.umd.conf.js --single-run",
     "build": "node ./scripts/build.js && babel lib/index.browser.js lib/index.browser.*.js --out-dir lib --presets=@babel/env",
-    "test-ci": "npm run build && npm run test-xbrowser && npm run test-umdbrowser",
+    "build-browser-umd": "npm run build && rm -rf dist && webpack",
+    "test-ci": "npm run test-xbrowser && npm run test-umdbrowser",
     "lint": "eslint 'lib/**/*.js'",
     "cover": "istanbul cover _mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js",
     "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls",
-    "prepublishOnly": "npm run build && npm test && npm run test-xbrowser && npm run test-umdbrowser"
+    "prepublishOnly": "npm run build-browser-umd && npm test && npm run test-xbrowser && npm run test-umdbrowser"
   },
   "repository": {
     "type": "git",
@@ -69,6 +70,7 @@
     "rollup-plugin-terser": "^5.3.0",
     "sinon": "^2.3.1",
     "webpack": "^4.25.1",
+    "webpack-cli": "^3.1.2",
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.8.7",
     "@babel/preset-env": "^7.8.7"

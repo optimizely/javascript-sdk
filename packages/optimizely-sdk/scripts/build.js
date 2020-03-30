@@ -35,6 +35,7 @@ exec(`rollup -c scripts/config.js -i lib/index.browser.js -f cjs -o dist/optimiz
 
 console.log("\nBuilding UMD modules...");
 
+/*
 exec(
   `rollup -c scripts/config.js -f umd -i lib/index.browser.js -n ${umdName} -o dist/optimizely.browser.umd.js`,
   {
@@ -50,3 +51,4 @@ exec(
     TARGET: "umd"
   }
 );
+*/

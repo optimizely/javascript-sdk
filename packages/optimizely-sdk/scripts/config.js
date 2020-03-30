@@ -13,18 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const { terser } = require('rollup-plugin-terser');
 const commonjs = require('rollup-plugin-commonjs');
 const resolve = require('rollup-plugin-node-resolve');
 const packageDeps = require('../package.json').dependencies || {};
 
-function getExternals(target) {
-  return target !== 'umd'
-    ? ['https', 'http', 'url'].concat(Object.keys(packageDeps))
-    : '';
+function getExternals() {
+  return ['https', 'http', 'url'].concat(Object.keys(packageDeps));
 }
 
-function getPlugins (env){
+function getPlugins (){
   const plugins = [
     resolve({
       browser: true,
@@ -47,16 +44,12 @@ function getPlugins (env){
     }),
   ];
 
-  if (env === 'production') {
-    plugins.push(terser())
-  }
-
   return plugins;
 }
 
 module.exports = {
-  plugins: getPlugins(process.env.BUILD_ENV),
-  external: getExternals(process.env.TARGET),
+  plugins: getPlugins(),
+  external: getExternals(),
   output: {
     globals: {
       '@optimizely/js-sdk-logging': 'logging',
