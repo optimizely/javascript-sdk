@@ -12,7 +12,7 @@
     "test-umdbrowser": "npm run build-browser-umd && karma start karma.umd.conf.js --single-run",
     "build": "node ./scripts/build.js && babel lib/index.browser.js lib/index.browser.*.js --out-dir lib --presets=@babel/env",
     "build-browser-umd": "npm run build && rm -rf dist && webpack",
-    "test-ci": "npm run test-xbrowser && npm run test-umdbrowser",
+    "test-ci": "npm run build && npm run test-xbrowser && npm run test-umdbrowser",
     "lint": "eslint 'lib/**/*.js'",
     "cover": "istanbul cover _mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js",
     "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls",
