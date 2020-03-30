@@ -666,7 +666,6 @@ describe('httpPollingDatafileManager', () => {
       await advanceTimersByTime(50)
       expect(manager.get()).toEqual({name: 'keyThatExists'})
       expect(updateFn).toBeCalledTimes(0)
-      updateFn.mockReset()
     })
 
     it('uses cached datafile, resolves ready promise, fetches new datafile from network and triggers update event', async() => {
@@ -685,7 +684,6 @@ describe('httpPollingDatafileManager', () => {
       await advanceTimersByTime(50)
       expect(manager.get()).toEqual({ foo: 'bar' })
       expect(updateFn).toBeCalledTimes(1)
-      updateFn.mockReset()
     })
 
     it('sets newly recieved datafile in to cache', async() => {
@@ -728,7 +726,6 @@ describe('httpPollingDatafileManager', () => {
       await manager.onReady()
       expect(manager.get()).toEqual({ foo: 'bar' })
       expect(updateFn).toBeCalledTimes(0)
-      updateFn.mockReset()
     })
   })
 })

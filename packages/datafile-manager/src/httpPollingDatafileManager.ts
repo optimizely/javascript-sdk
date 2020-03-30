@@ -226,7 +226,6 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     if (datafile !== null) {
       logger.info('Updating datafile from response')
       this.currentDatafile = datafile
-      logger.debug('Adding Datafile to Cache')
       this.cache.set(this.cacheKey, datafile)
       if (!this.isReadyPromiseSettled) {
         this.resolveReadyPromise()
