@@ -20,7 +20,7 @@ module.exports = {
   basePath: '',
 
   //plugins
-  plugins: ['karma-mocha', require('karma-browserstack-launcher'), require('@open-wc/karma-esm')],
+  plugins: ['karma-mocha', require('karma-browserstack-launcher')],
 
   //browserStack setup
   browserStack: {
@@ -82,16 +82,12 @@ module.exports = {
       browser_version: '6.2',
     },
   },
-  esm: {
-    // if you are using 'bare module imports' you will need this option
-    nodeResolve: true,
-  },
 
   browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox_mac', 'bs_ie', 'bs_opera_mac', 'bs_safari'],
 
   // frameworks to use
   // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-  frameworks: ['esm'],
+  frameworks: ['mocha'],
 
   // list of files to exclude
   exclude: [],
