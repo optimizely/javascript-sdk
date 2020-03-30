@@ -20,7 +20,7 @@ module.exports = {
   basePath: '',
 
   //plugins
-  plugins: ['karma-mocha', 'karma-webpack', require('karma-browserstack-launcher'), require('@open-wc/karma-esm')],
+  plugins: ['karma-mocha', 'karma-webpack', require('karma-browserstack-launcher')],
 
   webpack: {
     mode: 'production',
@@ -91,14 +91,16 @@ module.exports = {
 
   // frameworks to use
   // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-  frameworks: ['mocha', 'esm'],
+  frameworks: ['mocha'],
 
-  esm: {
-    nodeResolve: true,
-    babel: true
-  },
   // list of files to exclude
   exclude: [],
+
+  // preprocess matching files before serving them to the browser
+  // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
+  preprocessors: {
+    './lib/**/*tests.js': ['webpack'],
+  },
 
   // test results reporter to use
   // possible values: 'dots', 'progress'
