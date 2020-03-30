@@ -19,9 +19,6 @@ module.exports = {
   // base path that will be used to resolve all patterns (eg. files, exclude)
   basePath: '',
 
-  //plugins
-  plugins: ['karma-mocha', require('karma-browserstack-launcher')],
-
   //browserStack setup
   browserStack: {
     username: process.env.BROWSER_STACK_USERNAME,
