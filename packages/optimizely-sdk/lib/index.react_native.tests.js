@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var logging = require('@optimizely/js-sdk-logging');
-var configValidator = require('./utils/config_validator');
-var eventProcessor = require('@optimizely/js-sdk-event-processor');
-var Optimizely = require('./optimizely');
-var optimizelyFactory = require('./index.react_native');
-var packageJSON = require('../package.json');
-var testData = require('./tests/test_data');
-var eventProcessor = require('@optimizely/js-sdk-event-processor');
-var eventProcessorConfigValidator = require('./utils/event_processor_config_validator');
-var defaultEventDispatcher = require('./plugins/event_dispatcher/index.browser');
+import * as logging from '@optimizely/js-sdk-logging';
+import configValidator from './utils/config_validator';
+import Optimizely from './optimizely';
+import optimizelyFactory from './index.react_native';
+import packageJSON from '../package.json';
+import testData from './tests/test_data';
+import * as eventProcessor from '@optimizely/js-sdk-event-processor';
+import eventProcessorConfigValidator from './utils/event_processor_config_validator';
+import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
+import chai from 'chai';
+import sinon from 'sinon';
 
-var chai = require('chai');
 var assert = chai.assert;
-var sinon = require('sinon');
 
 describe('javascript-sdk/react-native', function() {
   describe('APIs', function() {

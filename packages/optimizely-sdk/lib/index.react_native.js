@@ -13,113 +13,118 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var logging = require('@optimizely/js-sdk-logging');
-var fns = require('./utils/fns');
-var configValidator = require('./utils/config_validator');
-var defaultErrorHandler = require('./plugins/error_handler');
-var defaultEventDispatcher = require('./plugins/event_dispatcher/index.browser');
-var enums = require('./utils/enums');
-var loggerPlugin = require('./plugins/logger/index.react_native');
-var Optimizely = require('./optimizely');
-var eventProcessorConfigValidator = require('./utils/event_processor_config_validator');
+import * as sdkLogging from '@optimizely/js-sdk-logging';
+import fns from './utils/fns';
+import configValidator from './utils/config_validator';
+import defaultErrorHandler from './plugins/error_handler';
+import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
+import utilEnums from './utils/enums';
+import loggerPlugin from './plugins/logger/index.react_native';
+import Optimizely from './optimizely';
+import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
-var logger = logging.getLogger();
-logging.setLogHandler(loggerPlugin.createLogger());
-logging.setLogLevel(logging.LogLevel.INFO);
+var logger = sdkLogging.getLogger();
+sdkLogging.setLogHandler(loggerPlugin.createLogger());
+sdkLogging.setLogLevel(sdkLogging.LogLevel.INFO);
 
 var DEFAULT_EVENT_BATCH_SIZE = 10;
 var DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
 
+export const logging = loggerPlugin;
+export const errorHandler = defaultErrorHandler;
+export const eventDispatcher = defaultEventDispatcher;
+export const enums = utilEnums;
+export const setLogger = sdkLogging.setLogHandler;
+export const setLogLevel = sdkLogging.setLogLevel;
+
+/**
+ * Creates an instance of the Optimizely class
+ * @param  {Object} config
+ * @param  {Object} config.datafile
+ * @param  {Object} config.errorHandler
+ * @param  {Object} config.eventDispatcher
+ * @param  {Object} config.logger
+ * @param  {Object} config.logLevel
+ * @param  {Object} config.userProfileService
+ * @param {Object} config.eventBatchSize
+ * @param {Object} config.eventFlushInterval
+ * @return {Object} the Optimizely object
+ */
+export const createInstance = function(config) {
+  try {
+    config = config || {};
+
+    // TODO warn about setting per instance errorHandler / logger / logLevel
+    if (config.errorHandler) {
+      sdkLogging.setErrorHandler(config.errorHandler);
+    }
+    if (config.logger) {
+      sdkLogging.setLogHandler(config.logger);
+      // respect the logger's shouldLog functionality
+      sdkLogging.setLogLevel(sdkLogging.LogLevel.NOTSET);
+    }
+    if (config.logLevel !== undefined) {
+      sdkLogging.setLogLevel(config.logLevel);
+    }
+
+    try {
+      configValidator.validate(config);
+      config.isValidInstance = true;
+    } catch (ex) {
+      logger.error(ex);
+      config.isValidInstance = false;
+    }
+
+    // Explicitly check for null or undefined
+    // prettier-ignore
+    if (config.skipJSONValidation == null) { // eslint-disable-line eqeqeq
+      config.skipJSONValidation = true;
+    }
+
+    config = fns.assign(
+      {
+        clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
+        eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
+        eventDispatcher: defaultEventDispatcher,
+        eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
+      },
+      config,
+      {
+        // always get the OptimizelyLogger facade from logging
+        logger: logger,
+        errorHandler: sdkLogging.getErrorHandler(),
+      }
+    );
+
+    if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
+      logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
+      config.eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
+    }
+    if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
+      logger.warn(
+        'Invalid eventFlushInterval %s, defaulting to %s',
+        config.eventFlushInterval,
+        DEFAULT_EVENT_FLUSH_INTERVAL
+      );
+      config.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
+    }
+
+    return new Optimizely(config);
+  } catch (e) {
+    logger.error(e);
+    return null;
+  }
+}
+
 /**
  * Entry point into the Optimizely Javascript SDK for React Native
  */
-module.exports = {
-  logging: loggerPlugin,
-  errorHandler: defaultErrorHandler,
-  eventDispatcher: defaultEventDispatcher,
-  enums: enums,
-
-  setLogger: logging.setLogHandler,
-  setLogLevel: logging.setLogLevel,
-
-  /**
-   * Creates an instance of the Optimizely class
-   * @param  {Object} config
-   * @param  {Object} config.datafile
-   * @param  {Object} config.errorHandler
-   * @param  {Object} config.eventDispatcher
-   * @param  {Object} config.logger
-   * @param  {Object} config.logLevel
-   * @param  {Object} config.userProfileService
-   * @param {Object} config.eventBatchSize
-   * @param {Object} config.eventFlushInterval
-   * @return {Object} the Optimizely object
-   */
-  createInstance: function(config) {
-    try {
-      config = config || {};
-
-      // TODO warn about setting per instance errorHandler / logger / logLevel
-      if (config.errorHandler) {
-        logging.setErrorHandler(config.errorHandler);
-      }
-      if (config.logger) {
-        logging.setLogHandler(config.logger);
-        // respect the logger's shouldLog functionality
-        logging.setLogLevel(logging.LogLevel.NOTSET);
-      }
-      if (config.logLevel !== undefined) {
-        logging.setLogLevel(config.logLevel);
-      }
-
-      try {
-        configValidator.validate(config);
-        config.isValidInstance = true;
-      } catch (ex) {
-        logger.error(ex);
-        config.isValidInstance = false;
-      }
-
-      // Explicitly check for null or undefined
-      // prettier-ignore
-      if (config.skipJSONValidation == null) { // eslint-disable-line eqeqeq
-        config.skipJSONValidation = true;
-      }
-
-      config = fns.assign(
-        {
-          clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
-          eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
-          eventDispatcher: defaultEventDispatcher,
-          eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
-        },
-        config,
-        {
-          // always get the OptimizelyLogger facade from logging
-          logger: logger,
-          errorHandler: logging.getErrorHandler(),
-        }
-      );
-
-      if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
-        logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
-        config.eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
-      }
-      if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
-        logger.warn(
-          'Invalid eventFlushInterval %s, defaulting to %s',
-          config.eventFlushInterval,
-          DEFAULT_EVENT_FLUSH_INTERVAL
-        );
-        config.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
-      }
-
-      var optimizely = new Optimizely(config);
-
-      return optimizely;
-    } catch (e) {
-      logger.error(e);
-      return null;
-    }
-  },
+export default {
+  logging,
+  errorHandler,
+  eventDispatcher,
+  enums,
+  setLogger,
+  setLogLevel,
+  createInstance,
 };
