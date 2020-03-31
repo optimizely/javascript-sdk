@@ -18,6 +18,7 @@ import HttpPollingDatafileManager from '../src/httpPollingDatafileManager'
 import { Headers, AbortableRequest, Response } from '../src/http'
 import { DatafileManagerConfig } from '../src/datafileManager';
 import { advanceTimersByTime, getTimerCount } from './testUtils'
+import PersistentKeyValueCache from '../src/persistentKeyValueCache'
 
 jest.mock('../src/backoffController', () => {
   return jest.fn().mockImplementation(() => {
@@ -39,6 +40,8 @@ class TestDatafileManager extends HttpPollingDatafileManager {
 
   responsePromises: Promise<Response>[] = []
 
+  simulateResponseDelay: boolean = false
+
   makeGetRequest(url: string, headers: Headers): AbortableRequest {
     const nextResponse: Error | Response | undefined = this.queuedResponses.pop()
     let responsePromise: Promise<Response>
@@ -47,7 +50,12 @@ class TestDatafileManager extends HttpPollingDatafileManager {
     } else if (nextResponse instanceof Error) {
       responsePromise = Promise.reject(nextResponse)
     } else {
-      responsePromise = Promise.resolve(nextResponse)
+      if (this.simulateResponseDelay) {
+        // Actual response will have some delay. This is required to get expected behavior for caching.
+        responsePromise = new Promise((resolve) => setTimeout(() => resolve(nextResponse), 50))
+      } else {
+        responsePromise = Promise.resolve(nextResponse)
+      }
     }
     this.responsePromises.push(responsePromise)
     return  { responsePromise, abort: jest.fn() }
@@ -55,6 +63,30 @@ class TestDatafileManager extends HttpPollingDatafileManager {
 
   getConfigDefaults(): Partial<DatafileManagerConfig> {
     return {}
+  }
+}
+
+const testCache : PersistentKeyValueCache = {
+  get(key: string): Promise<any | null> {
+    let val = null
+    switch(key) {
+      case 'opt-datafile-keyThatExists':
+        val = { name: 'keyThatExists' }
+        break
+    }
+    return Promise.resolve(val)
+  },
+
+  set(key: string, val: any): Promise<void> {
+    return Promise.resolve()
+  },
+
+  contains(key: string): Promise<Boolean> {
+    return Promise.resolve(false)
+  },
+
+  remove(key: string): Promise<void> {
+    return Promise.resolve()
   }
 }
 
@@ -82,13 +114,7 @@ describe('httpPollingDatafileManager', () => {
       expect(manager.get()).toEqual({ foo: 'abcd' })
     })
 
-    it('resolves onReady immediately', async () => {
-      manager.start()
-      await manager.onReady()
-      expect(manager.get()).toEqual({ foo: 'abcd' })
-    })
-
-    it('after being started, fetches the datafile, updates itself, emits an update event, and updates itself again after a timeout', async () => {
+    it('after being started, fetches the datafile, updates itself, and updates itself again after a timeout', async () => {
       manager.queuedResponses.push(
         {
           statusCode: 200,
@@ -106,10 +132,6 @@ describe('httpPollingDatafileManager', () => {
       manager.start()
       expect(manager.responsePromises.length).toBe(1)
       await manager.responsePromises[0]
-      expect(updateFn).toBeCalledTimes(1)
-      expect(updateFn).toBeCalledWith({
-        datafile: { foo: 'bar' }
-      })
       expect(manager.get()).toEqual({ foo: 'bar' })
       updateFn.mockReset()
 
@@ -134,27 +156,15 @@ describe('httpPollingDatafileManager', () => {
       expect(manager.get()).toEqual({ foo: 'abcd' })
     })
 
-    it('after being started, resolves onReady immediately', async () => {
-      manager.start()
-      await manager.onReady()
-      expect(manager.get()).toEqual({ foo: 'abcd' })
-    })
-
-    it('after being started, fetches the datafile, updates itself once, and emits an update event, but does not schedule a future update', async () => {
+    it('after being started, fetches the datafile, updates itself once, but does not schedule a future update', async () => {
       manager.queuedResponses.push({
         statusCode: 200,
         body: '{"foo": "bar"}',
         headers: {}
       })
-      const updateFn = jest.fn()
-      manager.on('update', updateFn)
       manager.start()
       expect(manager.responsePromises.length).toBe(1)
       await manager.responsePromises[0]
-      expect(updateFn).toBeCalledTimes(1)
-      expect(updateFn).toBeCalledWith({
-        datafile: { foo: 'bar' }
-      })
       expect(manager.get()).toEqual({ foo: 'bar' })
       expect(getTimerCount()).toBe(0)
     })
@@ -632,6 +642,90 @@ describe('httpPollingDatafileManager', () => {
       expect(makeGetRequestSpy).toBeCalledTimes(1)
       await advanceTimersByTime(300000)
       expect(makeGetRequestSpy).toBeCalledTimes(2)
+    })
+  })
+
+  describe('when constructed with a cache implementation having an already cached datafile', () => {
+    beforeEach(() => {
+      manager = new TestDatafileManager({ 
+        sdkKey: 'keyThatExists',
+        updateInterval: 500,
+        autoUpdate: true,
+        cache: testCache,
+      })
+      manager.simulateResponseDelay = true
+    })
+
+    it('uses cached version of datafile first and resolves the promise while network throws error and no update event is triggered', async () => {
+      manager.queuedResponses.push(new Error('Connection Error'))
+      const updateFn = jest.fn()
+      manager.on('update', updateFn)
+      manager.start()
+      await manager.onReady()
+      expect(manager.get()).toEqual({name: 'keyThatExists'})
+      await advanceTimersByTime(50)
+      expect(manager.get()).toEqual({name: 'keyThatExists'})
+      expect(updateFn).toBeCalledTimes(0)
+    })
+
+    it('uses cached datafile, resolves ready promise, fetches new datafile from network and triggers update event', async() => {
+      manager.queuedResponses.push({
+        statusCode: 200,
+        body: '{"foo": "bar"}',
+        headers: {}
+      })
+      
+      const updateFn = jest.fn()
+      manager.on('update', updateFn)
+      manager.start()
+      await manager.onReady()
+      expect(manager.get()).toEqual({ name: 'keyThatExists' })
+      expect(updateFn).toBeCalledTimes(0)
+      await advanceTimersByTime(50)
+      expect(manager.get()).toEqual({ foo: 'bar' })
+      expect(updateFn).toBeCalledTimes(1)
+    })
+
+    it('sets newly recieved datafile in to cache', async() => {
+      const cacheSetSpy = jest.spyOn(testCache, 'set')
+      manager.queuedResponses.push({
+        statusCode: 200,
+        body: '{"foo": "bar"}',
+        headers: {}
+      })
+      manager.start()
+      await manager.onReady()
+      await advanceTimersByTime(50)
+      expect(manager.get()).toEqual({ foo: 'bar' })
+      expect(cacheSetSpy).toBeCalledWith('opt-datafile-keyThatExists', {"foo": "bar"})
+    })
+  })
+
+  describe('when constructed with a cache implementation without an already cached datafile', () => {
+    beforeEach(() => {
+      manager = new TestDatafileManager({ 
+        sdkKey: 'keyThatDoesExists',
+        updateInterval: 500,
+        autoUpdate: true,
+        cache: testCache,
+      })
+      manager.simulateResponseDelay = true
+    })
+
+    it('does not find cached datafile, fetches new datafile from network, resolves promise and does not trigger update event', async() => {
+      manager.queuedResponses.push({
+        statusCode: 200,
+        body: '{"foo": "bar"}',
+        headers: {}
+      })
+      
+      const updateFn = jest.fn()
+      manager.on('update', updateFn)
+      manager.start()
+      await advanceTimersByTime(50)
+      await manager.onReady()
+      expect(manager.get()).toEqual({ foo: 'bar' })
+      expect(updateFn).toBeCalledTimes(0)
     })
   })
 })

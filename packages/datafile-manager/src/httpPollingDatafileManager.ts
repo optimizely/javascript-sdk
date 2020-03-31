@@ -16,11 +16,12 @@
 
 import { getLogger } from '@optimizely/js-sdk-logging'
 import { sprintf } from '@optimizely/js-sdk-utils';
-import { DatafileManager, DatafileManagerConfig, DatafileUpdate } from './datafileManager';
+import { DatafileManager, DatafileManagerConfig, DatafileUpdate } from './datafileManager'
 import EventEmitter from './eventEmitter'
-import { AbortableRequest, Response, Headers } from './http';
+import { AbortableRequest, Response, Headers } from './http'
 import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE } from './config'
-import BackoffController from './backoffController';
+import BackoffController from './backoffController'
+import PersistentKeyValueCache from './persistentKeyValueCache'
 
 const logger = getLogger('DatafileManager')
 
@@ -32,6 +33,24 @@ function isValidUpdateInterval(updateInterval: number): boolean {
 
 function isSuccessStatusCode(statusCode: number): boolean {
   return statusCode >= 200 && statusCode < 400
+}
+
+const noOpKeyValueCache: PersistentKeyValueCache = {
+  get(key: string): Promise<any | null> {
+    return Promise.resolve(null)
+  },
+
+  set(key: string, val: any): Promise<void> {
+    return Promise.resolve()
+  },
+
+  contains(key: string): Promise<Boolean> {
+    return Promise.resolve(false)
+  },
+
+  remove(key: string): Promise<void> {
+    return Promise.resolve()
+  }
 }
 
 export default abstract class HttpPollingDatafileManager implements DatafileManager {
@@ -72,6 +91,10 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
 
   private backoffController: BackoffController
 
+  private cacheKey: string
+
+  private cache: PersistentKeyValueCache
+
   // When true, this means the update interval timeout fired before the current
   // sync completed. In that case, we should sync again immediately upon
   // completion of the current request, instead of waiting another update
@@ -89,8 +112,11 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
       sdkKey,
       updateInterval = DEFAULT_UPDATE_INTERVAL,
       urlTemplate = DEFAULT_URL_TEMPLATE,
+      cache = noOpKeyValueCache,
     } = configWithDefaultsApplied
 
+    this.cache = cache
+    this.cacheKey = 'opt-datafile-' + sdkKey
     this.isReadyPromiseSettled = false
     this.readyPromiseResolver = () => {}
     this.readyPromiseRejecter = () => {}
@@ -101,7 +127,9 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
 
     if (datafile) {
       this.currentDatafile = datafile
-      this.resolveReadyPromise()
+      if (!sdkKey) {
+        this.resolveReadyPromise()
+      }
     } else {
       this.currentDatafile = null
     }
@@ -133,6 +161,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
       logger.debug('Datafile manager started')
       this.isStarted = true
       this.backoffController.reset()
+      this.setDatafileFromCacheIfAvailable()
       this.syncDatafile()
     }
   }
@@ -197,6 +226,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     if (datafile !== null) {
       logger.info('Updating datafile from response')
       this.currentDatafile = datafile
+      this.cache.set(this.cacheKey, datafile)
       if (!this.isReadyPromiseSettled) {
         this.resolveReadyPromise()
       } else {
@@ -313,5 +343,16 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
       this.lastResponseLastModified = lastModifiedHeader
       logger.debug('Saved last modified header value from response: %s', this.lastResponseLastModified)
     }
+  }
+
+  setDatafileFromCacheIfAvailable(): void {
+    this.cache.get(this.cacheKey)
+      .then(datafile => {
+        if (this.isStarted && !this.isReadyPromiseSettled && datafile) {
+          logger.debug('Using datafile from cache')
+          this.currentDatafile = datafile
+          this.resolveReadyPromise()
+        }
+      })
   }
 }
