@@ -42,5 +42,5 @@ npm i --no-save @react-native-community/async-storage
 ```
 
 - The `lint` package.json script runs ESLint and Prettier. This applies formatting and lint fixes to all `.ts` files in the `src/` directory.
-- The `test` package.json script runs our Jest-based unit test suite.
+- The `test` package.json script runs our Jest-based test suite.
 - The `tsc` package.json script runs the TypeScript compiler to build the final scripts for publishing (into the `lib/` directory).
