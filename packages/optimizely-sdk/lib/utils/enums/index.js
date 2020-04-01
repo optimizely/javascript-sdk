@@ -174,12 +174,16 @@ exports.CONTROL_ATTRIBUTES = {
 exports.JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 exports.NODE_CLIENT_ENGINE = 'node-sdk';
 exports.REACT_CLIENT_ENGINE = 'react-sdk';
+exports.REACT_NATIVE_CLIENT_ENGINE = 'react-native';
+exports.REACT_NATIVE_JS_CLIENT_ENGINE = 'react-native-js';
 exports.NODE_CLIENT_VERSION = '3.6.0-alpha.1';
 
 exports.VALID_CLIENT_ENGINES = [
   exports.NODE_CLIENT_ENGINE,
   exports.REACT_CLIENT_ENGINE,
   exports.JAVASCRIPT_CLIENT_ENGINE,
+  exports.REACT_NATIVE_CLIENT_ENGINE,
+  exports.REACT_NATIVE_JS_CLIENT_ENGINE,
 ];
 
 exports.NOTIFICATION_TYPES = jsSdkUtils.NOTIFICATION_TYPES;
