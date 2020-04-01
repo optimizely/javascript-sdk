@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 var chai = require('chai');
+var sinon = require('sinon');
 var assert = chai.assert;
 var jsonSchemaValidator = require('./');
 var projectConfigSchema = require('../../core/project_config/project_config_schema');
@@ -26,29 +27,29 @@ describe('lib/utils/json_schema_validator', function() {
   describe('APIs', function() {
     describe('validate', function() {
       it('should validate the given object against the specified schema', function() {
-        assert.isTrue(jsonSchemaValidator.validate({ type: 'number' }, 4));
+        sinon.stub(projectConfigSchema, 'getSchema').returns({ type: 'number' });
+        assert.isTrue(jsonSchemaValidator.validate(4));
+        projectConfigSchema.getSchema.restore();
       });
 
       it('should throw an error if the object is not valid', function() {
         assert.throws(function() {
-          jsonSchemaValidator.validate({ type: 'number' }, 'not a number');
+          sinon.stub(projectConfigSchema, 'getSchema').returns({ type: 'number' });
+          jsonSchemaValidator.validate('not a number');
         }, 'string value found, but a number is required');
-      });
-
-      it('should throw an error if no schema is passed in', function() {
-        assert.throws(function() {
-          jsonSchemaValidator.validate();
-        }, sprintf(ERROR_MESSAGES.JSON_SCHEMA_EXPECTED, 'JSON_SCHEMA_VALIDATOR'));
+          projectConfigSchema.getSchema.restore();
       });
 
       it('should throw an error if no json object is passed in', function() {
         assert.throws(function() {
-          jsonSchemaValidator.validate({ type: 'number' });
+          sinon.stub(projectConfigSchema, 'getSchema').returns({ type: 'number' });
+          jsonSchemaValidator.validate();
         }, sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, 'JSON_SCHEMA_VALIDATOR'));
+          projectConfigSchema.getSchema.restore();
       });
 
       it('should validate specified Optimizely datafile with the Optimizely datafile schema', function() {
-        assert.isTrue(jsonSchemaValidator.validate(projectConfigSchema, testData.getTestProjectConfig()));
+        assert.isTrue(jsonSchemaValidator.validate(testData.getTestProjectConfig()));
       });
     });
   });
