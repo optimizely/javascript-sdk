@@ -104,11 +104,11 @@ describe('javascript-sdk/react-native', function() {
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
         optlyInstance.onReady().catch(function() {});
-        assert.equal('react-native-js', optlyInstance.clientEngine);
+        assert.equal('react-native-js-sdk', optlyInstance.clientEngine);
         assert.equal(packageJSON.version, optlyInstance.clientVersion);
       });
 
-      it('should allow passing of "react-sdk" as the clientEngine and convert it to "react-native"', function() {
+      it('should allow passing of "react-sdk" as the clientEngine and convert it to "react-native-sdk"', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           clientEngine: 'react-sdk',
           datafile: {},
@@ -118,7 +118,7 @@ describe('javascript-sdk/react-native', function() {
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
         optlyInstance.onReady().catch(function() {});
-        assert.equal('react-native', optlyInstance.clientEngine);
+        assert.equal('react-native-sdk', optlyInstance.clientEngine);
       });
 
       it('should activate with provided event dispatcher', function() {
