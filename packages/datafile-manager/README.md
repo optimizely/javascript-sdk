@@ -5,7 +5,12 @@ This package provides datafile manager implementations for Node.js, browsers, an
 ## Installation
 
 ```sh
-npm install @optimizely/js-sdk-datafile-manager
+npm i @optimizely/js-sdk-datafile-manager
+```
+
+For React Native, installation of peer dependency `@react-native-community/async-storage` is also required:
+```sh
+npm i @react-native-community/async-storage
 ```
 
 ## Usage
