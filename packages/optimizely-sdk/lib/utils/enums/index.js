@@ -48,7 +48,6 @@ exports.ERROR_MESSAGES = {
   INVALID_ROLLOUT_ID: '%s: Invalid rollout ID %s attached to feature %s',
   INVALID_USER_ID: '%s: Provided user ID is in an invalid format.',
   INVALID_USER_PROFILE_SERVICE: '%s: Provided user profile service instance is in an invalid format: %s.',
-  JSON_SCHEMA_EXPECTED: '%s: JSON schema expected.',
   NO_DATAFILE_SPECIFIED: '%s: No datafile specified. Cannot start optimizely.',
   NO_JSON_PROVIDED: '%s: No JSON object to validate against schema.',
   NO_VARIATION_FOR_EXPERIMENT_KEY: '%s: No variation key %s defined in datafile for experiment %s.',

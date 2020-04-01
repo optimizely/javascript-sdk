@@ -28,15 +28,11 @@ module.exports = {
    * @return {Boolean}           True if the given object is valid
    */
   validate: function(jsonObject) {
-    if (!projectConfigSchema.getSchema()) {
-      throw new Error(sprintf(ERROR_MESSAGES.JSON_SCHEMA_EXPECTED, MODULE_NAME));
-    }
-
     if (!jsonObject) {
       throw new Error(sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, MODULE_NAME));
     }
     
-    var result = validate(jsonObject, projectConfigSchema.getSchema());
+    var result = validate(jsonObject, projectConfigSchema);
     if (result.valid) {
       return true;
     } else {

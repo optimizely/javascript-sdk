@@ -26,29 +26,19 @@ var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 describe('lib/utils/json_schema_validator', function() {
   describe('APIs', function() {
     describe('validate', function() {
-      it('should validate the given object against the specified schema', function() {
-        sinon.stub(projectConfigSchema, 'getSchema').returns({ type: 'number' });
-        assert.isTrue(jsonSchemaValidator.validate(4));
-        projectConfigSchema.getSchema.restore();
-      });
-
       it('should throw an error if the object is not valid', function() {
         assert.throws(function() {
-          sinon.stub(projectConfigSchema, 'getSchema').returns({ type: 'number' });
-          jsonSchemaValidator.validate('not a number');
-        }, 'string value found, but a number is required');
-          projectConfigSchema.getSchema.restore();
+          jsonSchemaValidator.validate(testData.getMutexFeatureTestsConfig());
+        });
       });
 
       it('should throw an error if no json object is passed in', function() {
         assert.throws(function() {
-          sinon.stub(projectConfigSchema, 'getSchema').returns({ type: 'number' });
           jsonSchemaValidator.validate();
         }, sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, 'JSON_SCHEMA_VALIDATOR'));
-          projectConfigSchema.getSchema.restore();
       });
 
-      it('should validate specified Optimizely datafile with the Optimizely datafile schema', function() {
+      it('should validate specified Optimizely datafile', function() {
         assert.isTrue(jsonSchemaValidator.validate(testData.getTestProjectConfig()));
       });
     });
