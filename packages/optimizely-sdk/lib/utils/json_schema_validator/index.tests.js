@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 var chai = require('chai');
-var sinon = require('sinon');
 var assert = chai.assert;
 var jsonSchemaValidator = require('./');
-var projectConfigSchema = require('../../core/project_config/project_config_schema');
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
 var testData = require('../../tests/test_data.js');
 
