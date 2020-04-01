@@ -15,6 +15,7 @@
  */
 var validate = require('json-schema').validate;
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
+var projectConfigSchema = require('../../core/project_config/project_config_schema');
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';
@@ -26,16 +27,16 @@ module.exports = {
    * @param  {Object} jsonObject The object to validate against the schema
    * @return {Boolean}           True if the given object is valid
    */
-  validate: function(jsonSchema, jsonObject) {
-    if (!jsonSchema) {
+  validate: function(jsonObject) {
+    if (!projectConfigSchema.getSchema()) {
       throw new Error(sprintf(ERROR_MESSAGES.JSON_SCHEMA_EXPECTED, MODULE_NAME));
     }
 
     if (!jsonObject) {
       throw new Error(sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, MODULE_NAME));
     }
-
-    var result = validate(jsonObject, jsonSchema);
+    
+    var result = validate(jsonObject, projectConfigSchema.getSchema());
     if (result.valid) {
       return true;
     } else {

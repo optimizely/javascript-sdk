@@ -17,7 +17,6 @@ var fns = require('../../utils/fns');
 var enums = require('../../utils/enums');
 var jsSdkUtils = require('@optimizely/js-sdk-utils');
 var configValidator = require('../../utils/config_validator');
-var projectConfigSchema = require('./project_config_schema');
 
 var EXPERIMENT_RUNNING_STATUS = 'Running';
 var RESERVED_ATTRIBUTE_PREFIX = '$opt_';
@@ -508,7 +507,7 @@ module.exports = {
     if (config.skipJSONValidation === true) {
       config.logger.log(LOG_LEVEL.INFO, jsSdkUtils.sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
     } else if (config.jsonSchemaValidator) {
-      config.jsonSchemaValidator.validate(projectConfigSchema, config.datafile);
+      config.jsonSchemaValidator.validate(config.datafile);
       config.logger.log(LOG_LEVEL.INFO, jsSdkUtils.sprintf(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
     }
     return module.exports.createProjectConfig(config.datafile);
