@@ -31,7 +31,7 @@ module.exports = {
     if (!jsonObject) {
       throw new Error(sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, MODULE_NAME));
     }
-    
+
     var result = validate(jsonObject, projectConfigSchema);
     if (result.valid) {
       return true;
