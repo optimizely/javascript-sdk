@@ -14,83 +14,60 @@
  * limitations under the License.
  */
 
-import { AbortableRequest, Response, Headers } from './http';
+import { AbortableRequest, Response as InternalResponse, Headers as InternalHeaders } from './http';
 import { REQUEST_TIMEOUT_MS } from './config';
 import { getLogger } from '@optimizely/js-sdk-logging';
 
 const logger = getLogger('DatafileManager');
 
-const GET_METHOD = 'GET';
-const READY_STATE_DONE = 4;
-
-function parseHeadersFromXhr(req: XMLHttpRequest): Headers {
-  const allHeadersString = req.getAllResponseHeaders();
-
-  if (allHeadersString === null) {
-    return {};
-  }
-
-  const headerLines = allHeadersString.split('\r\n');
-  const headers: Headers = {};
-  headerLines.forEach(headerLine => {
-    const separatorIndex = headerLine.indexOf(': ');
-    if (separatorIndex > -1) {
-      const headerName = headerLine.slice(0, separatorIndex);
-      const headerValue = headerLine.slice(separatorIndex + 2);
-      if (headerValue.length > 0) {
-        headers[headerName] = headerValue;
-      }
-    }
+function internalHeadersOfFetchAPIHeaders(fetchAPIHeaders: Headers): InternalHeaders {
+  const headers: InternalHeaders = {};
+  fetchAPIHeaders.forEach((value: string, key: string) => {
+    headers[key] = value;
   });
   return headers;
 }
 
-function setHeadersInXhr(headers: Headers, req: XMLHttpRequest): void {
-  Object.keys(headers).forEach(headerName => {
-    const header = headers[headerName];
-    req.setRequestHeader(headerName, header!);
+function fetchAPIHeadersOfInternalHeaders(internalHeaders: InternalHeaders): Headers {
+  const headers = new Headers();
+  Object.keys(internalHeaders).forEach((headerName: string): void => {
+    headers.set(headerName, internalHeaders[headerName]!);
   });
+  return headers;
 }
 
-export function makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest {
-  const req = new XMLHttpRequest();
+export function makeGetRequest(reqUrl: string, headers: InternalHeaders): AbortableRequest {
+  const abortController = new AbortController();
 
-  const responsePromise: Promise<Response> = new Promise((resolve, reject) => {
-    req.open(GET_METHOD, reqUrl, true);
+  const timeout = setTimeout(() => {
+    logger.error('Request timed out');
+    abortController.abort();
+  }, REQUEST_TIMEOUT_MS);
 
-    setHeadersInXhr(headers, req);
-
-    req.onreadystatechange = (): void => {
-      if (req.readyState === READY_STATE_DONE) {
-        const statusCode = req.status;
-        if (statusCode === 0) {
-          reject(new Error('Request error'));
-          return;
+  const responsePromise: Promise<InternalResponse> = fetch(reqUrl, {
+    signal: abortController.signal,
+    headers: fetchAPIHeadersOfInternalHeaders(headers),
+  })
+    .then((response: Response) => {
+      return response.text().then(
+        (responseText: string): InternalResponse => {
+          const resp: InternalResponse = {
+            statusCode: response.status,
+            body: responseText,
+            headers: internalHeadersOfFetchAPIHeaders(response.headers),
+          };
+          return resp;
         }
-
-        const headers = parseHeadersFromXhr(req);
-        const resp: Response = {
-          statusCode: req.status,
-          body: req.responseText,
-          headers,
-        };
-        resolve(resp);
-      }
-    };
-
-    req.timeout = REQUEST_TIMEOUT_MS;
-
-    req.ontimeout = (): void => {
-      logger.error('Request timed out');
-    };
-
-    req.send();
-  });
+      );
+    })
+    .finally((): void => {
+      clearTimeout(timeout);
+    });
 
   return {
     responsePromise,
     abort(): void {
-      req.abort();
+      abortController.abort();
     },
   };
 }
