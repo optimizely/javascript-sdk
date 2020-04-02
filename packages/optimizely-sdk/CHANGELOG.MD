@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.0.0-alpha.1] - March 4, 2020
+
+### Breaking Changes:
+- Removed `Promise` polyfill from browser entry point ([417](https://github.com/optimizely/javascript-sdk/pull/417))
+
 ## [3.6.0-alpha.1] - March 4, 2020
 
 ### New Features
