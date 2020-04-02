@@ -14,43 +14,42 @@
  * limitations under the License.
  */
 
-import { getLogger } from '@optimizely/js-sdk-logging'
-import AsyncStorage from '@react-native-community/async-storage'
+import { getLogger } from '@optimizely/js-sdk-logging';
+import AsyncStorage from '@react-native-community/async-storage';
 
-import PersistentKeyValueCache from './persistentKeyValueCache'
+import PersistentKeyValueCache from './persistentKeyValueCache';
 
-const logger = getLogger('DatafileManager')
+const logger = getLogger('DatafileManager');
 
 export default class ReactNativeAsyncStorageCache implements PersistentKeyValueCache {
   get(key: string): Promise<any | null> {
-    return AsyncStorage.getItem(key)
-      .then((val: string | null) => {
-        if (!val) {
-          return null
-        }
-        try {
-          return JSON.parse(val);
-        } catch (ex) {
-          logger.error('Error Parsing Object from cache - %s', ex)
-          throw ex
-        }  
-      })
+    return AsyncStorage.getItem(key).then((val: string | null) => {
+      if (!val) {
+        return null;
+      }
+      try {
+        return JSON.parse(val);
+      } catch (ex) {
+        logger.error('Error Parsing Object from cache - %s', ex);
+        throw ex;
+      }
+    });
   }
 
-  set(key: string, val: any): Promise<void> {    
+  set(key: string, val: any): Promise<void> {
     try {
-      return AsyncStorage.setItem(key, JSON.stringify(val))
+      return AsyncStorage.setItem(key, JSON.stringify(val));
     } catch (ex) {
-      logger.error('Error stringifying Object to Json - %s', ex)
-      return Promise.reject(ex)
+      logger.error('Error stringifying Object to Json - %s', ex);
+      return Promise.reject(ex);
     }
   }
-  
+
   contains(key: string): Promise<boolean> {
-    return AsyncStorage.getItem(key).then((val: string | null) => (val !== null))
+    return AsyncStorage.getItem(key).then((val: string | null) => val !== null);
   }
-  
+
   remove(key: string): Promise<void> {
-    return AsyncStorage.removeItem(key)
+    return AsyncStorage.removeItem(key);
   }
 }

@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import http from 'http'
-import https from 'https'
-import url from 'url'
-import { Headers, AbortableRequest, Response } from './http'
+import http from 'http';
+import https from 'https';
+import url from 'url';
+import { Headers, AbortableRequest, Response } from './http';
 import { REQUEST_TIMEOUT_MS } from './config';
 
 // Shared signature between http.request and https.request
-type ClientRequestCreator = (options: http.RequestOptions) => http.ClientRequest
+type ClientRequestCreator = (options: http.RequestOptions) => http.ClientRequest;
 
 function getRequestOptionsFromUrl(url: url.UrlWithStringQuery): http.RequestOptions {
   return {
@@ -29,7 +29,7 @@ function getRequestOptionsFromUrl(url: url.UrlWithStringQuery): http.RequestOpti
     path: url.path,
     port: url.port,
     protocol: url.protocol,
-  }
+  };
 }
 
 /**
@@ -41,24 +41,23 @@ function getRequestOptionsFromUrl(url: url.UrlWithStringQuery): http.RequestOpti
  * per header name.
  *
  */
-function createHeadersFromNodeIncomingMessage(
-  incomingMessage: http.IncomingMessage,
-): Headers {
-  const headers: Headers = {}
+function createHeadersFromNodeIncomingMessage(incomingMessage: http.IncomingMessage): Headers {
+  const headers: Headers = {};
   Object.keys(incomingMessage.headers).forEach(headerName => {
-    const headerValue = incomingMessage.headers[headerName]
+    const headerValue = incomingMessage.headers[headerName];
     if (typeof headerValue === 'string') {
-      headers[headerName] = headerValue
+      headers[headerName] = headerValue;
+      // eslint-disable-next-line no-empty
     } else if (typeof headerValue === 'undefined') {
     } else {
       // array
       if (headerValue.length > 0) {
         // We don't care about multiple values - just take the first one
-        headers[headerName] = headerValue[0]
+        headers[headerName] = headerValue[0];
       }
     }
-  })
-  return headers
+  });
+  return headers;
 }
 
 function getResponseFromRequest(request: http.ClientRequest): Promise<Response> {
@@ -66,86 +65,84 @@ function getResponseFromRequest(request: http.ClientRequest): Promise<Response> 
   // constructing own Promise
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
-      request.abort()
-      reject(new Error('Request timed out'))
-    }, REQUEST_TIMEOUT_MS)
+      request.abort();
+      reject(new Error('Request timed out'));
+    }, REQUEST_TIMEOUT_MS);
 
     request.once('response', (incomingMessage: http.IncomingMessage) => {
       if (request.aborted) {
-        return
+        return;
       }
 
-      incomingMessage.setEncoding('utf8')
+      incomingMessage.setEncoding('utf8');
 
-      let responseData = ''
+      let responseData = '';
       incomingMessage.on('data', (chunk: string) => {
         if (!request.aborted) {
-          responseData += chunk
+          responseData += chunk;
         }
-      })
+      });
 
       incomingMessage.on('end', () => {
         if (request.aborted) {
-          return
+          return;
         }
 
-        clearTimeout(timeout)
+        clearTimeout(timeout);
 
         resolve({
           statusCode: incomingMessage.statusCode,
           body: responseData,
           headers: createHeadersFromNodeIncomingMessage(incomingMessage),
-        })
-      })
-    })
+        });
+      });
+    });
 
     request.on('error', (err: any) => {
-      clearTimeout(timeout)
+      clearTimeout(timeout);
 
       if (err instanceof Error) {
-        reject(err)
+        reject(err);
       } else if (typeof err === 'string') {
-        reject(new Error(err))
+        reject(new Error(err));
       } else {
-        reject(new Error('Request error'))
+        reject(new Error('Request error'));
       }
-    })
-  })
+    });
+  });
 }
 
 export function makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest {
   // TODO: Use non-legacy URL parsing when we drop support for Node 6
-  const parsedUrl = url.parse(reqUrl)
+  const parsedUrl = url.parse(reqUrl);
 
-  let requester: ClientRequestCreator
+  let requester: ClientRequestCreator;
   if (parsedUrl.protocol === 'http:') {
-    requester = http.request
+    requester = http.request;
   } else if (parsedUrl.protocol === 'https:') {
-    requester = https.request
+    requester = https.request;
   } else {
     return {
-      responsePromise: Promise.reject(
-        new Error(`Unsupported protocol: ${parsedUrl.protocol}`),
-      ),
-      abort() {},
-    }
+      responsePromise: Promise.reject(new Error(`Unsupported protocol: ${parsedUrl.protocol}`)),
+      abort(): void {},
+    };
   }
 
   const requestOptions: http.RequestOptions = {
     ...getRequestOptionsFromUrl(parsedUrl),
     method: 'GET',
     headers,
-  }
+  };
 
-  const request = requester(requestOptions)
-  const responsePromise = getResponseFromRequest(request)
+  const request = requester(requestOptions);
+  const responsePromise = getResponseFromRequest(request);
 
-  request.end()
+  request.end();
 
   return {
-    abort() {
-      request.abort()
+    abort(): void {
+      request.abort();
     },
     responsePromise,
-  }
+  };
 }

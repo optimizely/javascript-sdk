@@ -14,22 +14,21 @@
  * limitations under the License.
  */
 
-import { makeGetRequest } from './browserRequest'
-import HttpPollingDatafileManager from './httpPollingDatafileManager'
-import { Headers, AbortableRequest } from './http'
-import { DatafileManagerConfig } from './datafileManager'
-import ReactNativeAsyncStorageCache from './reactNativeAsyncStorageCache'
+import { makeGetRequest } from './browserRequest';
+import HttpPollingDatafileManager from './httpPollingDatafileManager';
+import { Headers, AbortableRequest } from './http';
+import { DatafileManagerConfig } from './datafileManager';
+import ReactNativeAsyncStorageCache from './reactNativeAsyncStorageCache';
 
 export default class ReactNativeDatafileManager extends HttpPollingDatafileManager {
-
   protected makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest {
-    return makeGetRequest(reqUrl, headers)
+    return makeGetRequest(reqUrl, headers);
   }
 
   protected getConfigDefaults(): Partial<DatafileManagerConfig> {
     return {
       autoUpdate: true,
       cache: new ReactNativeAsyncStorageCache(),
-    }
+    };
   }
 }

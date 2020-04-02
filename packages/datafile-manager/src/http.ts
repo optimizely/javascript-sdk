@@ -22,16 +22,16 @@
  * to work with multiple values per header name.
  */
 export interface Headers {
-  [header: string]: string | undefined
+  [header: string]: string | undefined;
 }
 
 export interface Response {
-  statusCode?: number
-  body: string
-  headers: Headers
+  statusCode?: number;
+  body: string;
+  headers: Headers;
 }
 
 export interface AbortableRequest {
-  abort(): void
-  responsePromise: Promise<Response>
+  abort(): void;
+  responsePromise: Promise<Response>;
 }

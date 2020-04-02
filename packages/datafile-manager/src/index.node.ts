@@ -14,5 +14,5 @@
  * limitations under the License.
  */
 
-export * from './datafileManager'
-export { default as HttpPollingDatafileManager } from './nodeDatafileManager'
+export * from './datafileManager';
+export { default as HttpPollingDatafileManager } from './nodeDatafileManager';
