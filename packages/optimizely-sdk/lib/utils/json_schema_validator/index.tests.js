@@ -26,7 +26,7 @@ describe('lib/utils/json_schema_validator', function() {
     describe('validate', function() {
       it('should throw an error if the object is not valid', function() {
         assert.throws(function() {
-          jsonSchemaValidator.validate(testData.getMutexFeatureTestsConfig());
+          jsonSchemaValidator.validate({});
         });
       });
 
