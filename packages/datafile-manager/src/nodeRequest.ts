@@ -47,8 +47,8 @@ function createHeadersFromNodeIncomingMessage(incomingMessage: http.IncomingMess
     const headerValue = incomingMessage.headers[headerName];
     if (typeof headerValue === 'string') {
       headers[headerName] = headerValue;
-      // eslint-disable-next-line no-empty
     } else if (typeof headerValue === 'undefined') {
+      // no value provided for this header
     } else {
       // array
       if (headerValue.length > 0) {
