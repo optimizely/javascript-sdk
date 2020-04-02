@@ -46,7 +46,7 @@ export default class ReactNativeAsyncStorageCache implements PersistentKeyValueC
     }
   }
   
-  contains(key: string): Promise<Boolean> {
+  contains(key: string): Promise<boolean> {
     return AsyncStorage.getItem(key).then((val: string | null) => (val !== null))
   }
   

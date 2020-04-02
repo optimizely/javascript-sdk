@@ -44,7 +44,7 @@ const noOpKeyValueCache: PersistentKeyValueCache = {
     return Promise.resolve()
   },
 
-  contains(key: string): Promise<Boolean> {
+  contains(key: string): Promise<boolean> {
     return Promise.resolve(false)
   },
 
