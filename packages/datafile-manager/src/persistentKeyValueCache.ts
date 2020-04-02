@@ -49,7 +49,7 @@ export default interface PersistentKeyValueCache {
    * 2. false if the key does not exist
    * Rejects the promise in case of an error
    */
-  contains(key: string): Promise<Boolean>
+  contains(key: string): Promise<boolean>
 
   /**
    * Removes the key value pair from cache.
