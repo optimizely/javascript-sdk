@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-import { makeGetRequest } from './nodeRequest'
-import HttpPollingDatafileManager from './httpPollingDatafileManager'
+import { makeGetRequest } from './nodeRequest';
+import HttpPollingDatafileManager from './httpPollingDatafileManager';
 import { Headers, AbortableRequest } from './http';
 import { DatafileManagerConfig } from './datafileManager';
 
 export default class NodeDatafileManager extends HttpPollingDatafileManager {
   protected makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest {
-    return makeGetRequest(reqUrl, headers)
+    return makeGetRequest(reqUrl, headers);
   }
 
   protected getConfigDefaults(): Partial<DatafileManagerConfig> {
     return {
       autoUpdate: true,
-    }
+    };
   }
 }

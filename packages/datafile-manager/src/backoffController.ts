@@ -14,33 +14,33 @@
  * limitations under the License.
  */
 
-import { BACKOFF_BASE_WAIT_SECONDS_BY_ERROR_COUNT } from './config'
+import { BACKOFF_BASE_WAIT_SECONDS_BY_ERROR_COUNT } from './config';
 
-function randomMilliseconds() {
-  return Math.round(Math.random() * 1000)
+function randomMilliseconds(): number {
+  return Math.round(Math.random() * 1000);
 }
 
 export default class BackoffController {
-  private errorCount = 0
+  private errorCount = 0;
 
   getDelay(): number {
     if (this.errorCount === 0) {
-      return 0
+      return 0;
     }
     const baseWaitSeconds =
       BACKOFF_BASE_WAIT_SECONDS_BY_ERROR_COUNT[
         Math.min(BACKOFF_BASE_WAIT_SECONDS_BY_ERROR_COUNT.length - 1, this.errorCount)
-      ]
-    return baseWaitSeconds * 1000 + randomMilliseconds()
+      ];
+    return baseWaitSeconds * 1000 + randomMilliseconds();
   }
 
   countError(): void {
     if (this.errorCount < BACKOFF_BASE_WAIT_SECONDS_BY_ERROR_COUNT.length - 1) {
-      this.errorCount++
+      this.errorCount++;
     }
   }
 
   reset(): void {
-    this.errorCount = 0
+    this.errorCount = 0;
   }
 }
