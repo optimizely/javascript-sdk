@@ -48,18 +48,15 @@ export function makeGetRequest(reqUrl: string, headers: InternalHeaders): Aborta
     signal: abortController.signal,
     headers: fetchAPIHeadersOfInternalHeaders(headers),
   })
-    .then((response: Response) => {
-      return response.text().then(
-        (responseText: string): InternalResponse => {
-          const resp: InternalResponse = {
-            statusCode: response.status,
-            body: responseText,
-            headers: internalHeadersOfFetchAPIHeaders(response.headers),
-          };
-          return resp;
-        }
-      );
-    })
+    .then((response: Response) =>
+      response.text().then(
+        (responseText: string): InternalResponse => ({
+          statusCode: response.status,
+          body: responseText,
+          headers: internalHeadersOfFetchAPIHeaders(response.headers),
+        })
+      )
+    )
     .finally((): void => {
       clearTimeout(timeout);
     });
