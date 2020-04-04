@@ -19,7 +19,6 @@ var defaultErrorHandler = require('./plugins/error_handler');
 var defaultEventDispatcher = require('./plugins/event_dispatcher/index.node');
 var enums = require('./utils/enums');
 var fns = require('./utils/fns');
-var jsonSchemaValidator = require('./utils/json_schema_validator');
 var loggerPlugin = require('./plugins/logger');
 var Optimizely = require('./optimizely');
 var eventProcessorConfigValidator = require('./utils/event_processor_config_validator');
@@ -48,7 +47,6 @@ module.exports = {
    * @param  {Object} config.datafile
    * @param  {Object} config.errorHandler
    * @param  {Object} config.eventDispatcher
-   * @param  {Object} config.jsonSchemaValidator
    * @param  {Object} config.logger
    * @param  {Object} config.userProfileService
    * @param {Object} config.eventBatchSize
@@ -93,8 +91,6 @@ module.exports = {
           eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
           eventDispatcher: defaultEventDispatcher,
           eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
-          jsonSchemaValidator: jsonSchemaValidator,
-          skipJSONValidation: false,
         },
         config,
         {

@@ -54,7 +54,6 @@ function getErrorMessage(maybeError, defaultMessage) {
  * @param {Object=}        config.datafileOptions
  * @param {Object=}        config.jsonSchemaValidator
  * @param {string=}        config.sdkKey
- * @param {boolean=}       config.skipJSONValidation
  */
 function ProjectConfigManager(config) {
   try {
@@ -80,12 +79,10 @@ function ProjectConfigManager(config) {
  * @param {Object=}        config.datafileOptions
  * @param {Object=}        config.jsonSchemaValidator
  * @param {string=}        config.sdkKey
- * @param {boolean=}       config.skipJSONValidation
  */
 ProjectConfigManager.prototype.__initialize = function(config) {
   this.__updateListeners = [];
   this.jsonSchemaValidator = config.jsonSchemaValidator;
-  this.skipJSONValidation = config.skipJSONValidation;
 
   if (!config.datafile && !config.sdkKey) {
     this.__configObj = null;
@@ -106,7 +103,6 @@ ProjectConfigManager.prototype.__initialize = function(config) {
         datafile: initialDatafile,
         jsonSchemaValidator: this.jsonSchemaValidator,
         logger: logger,
-        skipJSONValidation: this.skipJSONValidation,
       });
       this.__optimizelyConfigObj = optimizelyConfig.getOptimizelyConfig(this.__configObj);
     } catch (ex) {
@@ -162,7 +158,6 @@ ProjectConfigManager.prototype.__onDatafileManagerReadyFulfill = function() {
       datafile: newDatafile,
       jsonSchemaValidator: this.jsonSchemaValidator,
       logger: logger,
-      skipJSONValidation: this.skipJSONValidation,
     });
   } catch (ex) {
     logger.error(ex);
@@ -204,7 +199,6 @@ ProjectConfigManager.prototype.__onDatafileManagerUpdate = function() {
       datafile: newDatafile,
       jsonSchemaValidator: this.jsonSchemaValidator,
       logger: logger,
-      skipJSONValidation: this.skipJSONValidation,
     });
   } catch (ex) {
     logger.error(ex);

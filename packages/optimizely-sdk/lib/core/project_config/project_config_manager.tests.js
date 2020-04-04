@@ -59,7 +59,6 @@ describe('lib/core/project_config/project_config_manager', function() {
 
   it('should call the error handler and fulfill onReady with an unsuccessful result if neither datafile nor sdkKey are passed into the constructor', function() {
     var manager = new projectConfigManager.ProjectConfigManager({
-      skipJSONValidation: true,
     });
     sinon.assert.calledOnce(globalStubErrorHandler.handleError);
     var errorMessage = globalStubErrorHandler.handleError.lastCall.args[0].message;
@@ -75,7 +74,6 @@ describe('lib/core/project_config/project_config_manager', function() {
     var invalidDatafileJSON = 'abc';
     var manager = new projectConfigManager.ProjectConfigManager({
       datafile: invalidDatafileJSON,
-      skipJSONValidation: true,
     });
     sinon.assert.calledOnce(globalStubErrorHandler.handleError);
     var errorMessage = globalStubErrorHandler.handleError.lastCall.args[0].message;
@@ -131,20 +129,18 @@ describe('lib/core/project_config/project_config_manager', function() {
       jsonSchemaValidator.validate.restore();
     });
 
-    it('should skip JSON schema validation if skipJSONValidation is passed into instance args with `true` value', function() {
+    it('should skip JSON schema validation if jsonSchemaValidator is not provided', function() {
       var manager = new projectConfigManager.ProjectConfigManager({
         datafile: testData.getTestProjectConfig(),
-        skipJSONValidation: true,
       });
       sinon.assert.notCalled(jsonSchemaValidator.validate);
       return manager.onReady();
     });
 
-    it('should not skip JSON schema validation if skipJSONValidation is passed into instance args with any value other than true', function() {
+    it('should not skip JSON schema validation if jsonSchemaValidator is provided', function() {
       var manager = new projectConfigManager.ProjectConfigManager({
         datafile: testData.getTestProjectConfig(),
         jsonSchemaValidator: jsonSchemaValidator,
-        skipJSONValidation: 'hi',
       });
       sinon.assert.calledOnce(jsonSchemaValidator.validate);
       sinon.assert.calledOnce(stubLogHandler.log);
