@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-import NodeDatafileManager from '../src/nodeDatafileManager'
-import * as nodeRequest from '../src/nodeRequest'
-import { Headers, AbortableRequest } from '../src/http'
+import NodeDatafileManager from '../src/nodeDatafileManager';
+import * as nodeRequest from '../src/nodeRequest';
+import { Headers, AbortableRequest } from '../src/http';
 import { advanceTimersByTime, getTimerCount } from './testUtils';
 
 describe('nodeDatafileManager', () => {
-  let makeGetRequestSpy: jest.SpyInstance<AbortableRequest, [string, Headers]>
+  let makeGetRequestSpy: jest.SpyInstance<AbortableRequest, [string, Headers]>;
   beforeEach(() => {
-    jest.useFakeTimers()
-    makeGetRequestSpy = jest.spyOn(nodeRequest, 'makeGetRequest')
-  })
+    jest.useFakeTimers();
+    makeGetRequestSpy = jest.spyOn(nodeRequest, 'makeGetRequest');
+  });
 
   afterEach(() => {
-    jest.restoreAllMocks()
-    jest.clearAllTimers()
-  })
+    jest.restoreAllMocks();
+    jest.clearAllTimers();
+  });
 
   it('calls nodeEnvironment.makeGetRequest when started', async () => {
     makeGetRequestSpy.mockReturnValue({
@@ -38,21 +38,21 @@ describe('nodeDatafileManager', () => {
         statusCode: 200,
         body: '{"foo":"bar"}',
         headers: {},
-      })
-    })
+      }),
+    });
 
     const manager = new NodeDatafileManager({
       sdkKey: '1234',
       autoUpdate: false,
-    })
-    manager.start()
-    expect(makeGetRequestSpy).toBeCalledTimes(1)
-    expect(makeGetRequestSpy.mock.calls[0][0]).toBe('https://cdn.optimizely.com/datafiles/1234.json')
-    expect(makeGetRequestSpy.mock.calls[0][1]).toEqual({})
+    });
+    manager.start();
+    expect(makeGetRequestSpy).toBeCalledTimes(1);
+    expect(makeGetRequestSpy.mock.calls[0][0]).toBe('https://cdn.optimizely.com/datafiles/1234.json');
+    expect(makeGetRequestSpy.mock.calls[0][1]).toEqual({});
 
-    await manager.onReady()
-    await manager.stop()
-  })
+    await manager.onReady();
+    await manager.stop();
+  });
 
   it('calls nodeEnvironment.makeGetRequest for live update requests', async () => {
     makeGetRequestSpy.mockReturnValue({
@@ -63,23 +63,23 @@ describe('nodeDatafileManager', () => {
         headers: {
           'last-modified': 'Fri, 08 Mar 2019 18:57:17 GMT',
         },
-      })
-    })
+      }),
+    });
     const manager = new NodeDatafileManager({
       sdkKey: '1234',
       autoUpdate: true,
-    })
-    manager.start()
-    await manager.onReady()
-    await advanceTimersByTime(300000)
-    expect(makeGetRequestSpy).toBeCalledTimes(2)
-    expect(makeGetRequestSpy.mock.calls[1][0]).toBe('https://cdn.optimizely.com/datafiles/1234.json')
+    });
+    manager.start();
+    await manager.onReady();
+    await advanceTimersByTime(300000);
+    expect(makeGetRequestSpy).toBeCalledTimes(2);
+    expect(makeGetRequestSpy.mock.calls[1][0]).toBe('https://cdn.optimizely.com/datafiles/1234.json');
     expect(makeGetRequestSpy.mock.calls[1][1]).toEqual({
-      'if-modified-since': 'Fri, 08 Mar 2019 18:57:17 GMT'
-    })
+      'if-modified-since': 'Fri, 08 Mar 2019 18:57:17 GMT',
+    });
 
-    await manager.stop()
-  })
+    await manager.stop();
+  });
 
   it('defaults to true for autoUpdate', async () => {
     makeGetRequestSpy.mockReturnValue({
@@ -90,18 +90,18 @@ describe('nodeDatafileManager', () => {
         headers: {
           'last-modified': 'Fri, 08 Mar 2019 18:57:17 GMT',
         },
-      })
-    })
+      }),
+    });
     const manager = new NodeDatafileManager({
       sdkKey: '1234',
-    })
-    manager.start()
-    await manager.onReady()
+    });
+    manager.start();
+    await manager.onReady();
     // Should set a timeout for a later update
-    expect(getTimerCount()).toBe(1)
-    await advanceTimersByTime(300000)
-    expect(makeGetRequestSpy).toBeCalledTimes(2)
+    expect(getTimerCount()).toBe(1);
+    await advanceTimersByTime(300000);
+    expect(makeGetRequestSpy).toBeCalledTimes(2);
 
-    await manager.stop()
-  })
-})
+    await manager.stop();
+  });
+});
