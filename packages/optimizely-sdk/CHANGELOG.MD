@@ -14,9 +14,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### New Features
 
- - Changed functionality of JSON schema validation in React Native, Node, and Browser entry points ([442](https://github.com/optimizely/javascript-sdk/pull/442))
-   - Previosly, `skipJSONValidation` flag was used by the user to specify whether the JSON object should be validated
-   - Now, `skipJSONValidation` has been removed entirely from all three entry points. Instead, a user will need to import `jsonSchemaValidator` from `@optimizely/optimizely-sdk/lib/utils/json_schema_validator` and pass it to `createInstance` to perform validation as shown below:
+ - Changed functionality of JSON schema validation in React Native, Node, and Browser entry points ([442](https://github.com/optimizely/javascript-sdk/pull/442)).
+   - Previously, `skipJSONValidation` flag was used by the user to specify whether the JSON object should be validated.
+   - Now, `skipJSONValidation` has been removed entirely from all entry points. Instead, a user will need to import `jsonSchemaValidator` from `@optimizely/optimizely-sdk/lib/utils/json_schema_validator` and pass it to `createInstance` to perform validation as shown below:
    
   ```js
   const optimizelySDK = require('@optimizely/optimizely-sdk');
