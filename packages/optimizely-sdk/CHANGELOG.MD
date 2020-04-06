@@ -12,6 +12,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Breaking Changes:
 - Removed `Promise` polyfill from browser entry point ([417](https://github.com/optimizely/javascript-sdk/pull/417))
 
+### New Features
+
+ - Changed functionality of JSON schema validation in React Native, Node, and Browser entry points ([442](https://github.com/optimizely/javascript-sdk/pull/442))
+   - Previosly, `skipJSONValidation` flag was used by the user to specify whether the JSON object should be validated
+   - Now, `skipJSONValidation` has been removed entirely from all three entry points. Instead, a user will need to import `jsonSchemaValidator` from `@optimizely/optimizely-sdk/lib/utils/json_schema_validator` and pass it to `createInstance` to perform validation as shown below:
+   
+  ```js
+  const optimizelySDK = require('@optimizely/optimizely-sdk');
+  const jsonSchemaValidator = require('@optimizely/optimizely-sdk/lib/utils/json_schema_validator');
+  
+  // Require JSON schema validation for the datafile
+  var optimizelyClientInstance = optimizely.createInstance({
+    datafile: datafile,
+    jsonSchemaValidator: jsonSchemaValidator,
+  });
+  ```
+
 ## [3.6.0-alpha.1] - March 4, 2020
 
 ### New Features
