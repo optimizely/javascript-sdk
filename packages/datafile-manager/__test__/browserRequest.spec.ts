@@ -16,117 +16,141 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { FakeXMLHttpRequest, FakeXMLHttpRequestStatic, fakeXhr } from 'nise';
+/* global fetchMock */
+import { enableFetchMocks } from 'jest-fetch-mock';
+enableFetchMocks();
 import { makeGetRequest } from '../src/browserRequest';
+import { advanceTimersByTime } from './testUtils';
 
 describe('browserRequest', () => {
-  describe('makeGetRequest', () => {
-    let mockXHR: FakeXMLHttpRequestStatic;
-    let xhrs: FakeXMLHttpRequest[];
+  beforeEach(() => {
+    fetchMock.resetMocks();
+  });
+
+  it('makes a GET request to the argument URL', async () => {
+    fetchMock.mockResponseOnce('{"foo":"bar"}', {
+      status: 200,
+      headers: {},
+    });
+
+    const req = makeGetRequest('https://cdn.optimizely.com/datafiles/123.json', {});
+
+    expect(fetchMock).toBeCalledTimes(1);
+    const firstCallArgs = fetchMock.mock.calls[0];
+    expect(firstCallArgs[0]).toBe('https://cdn.optimizely.com/datafiles/123.json');
+    expect(firstCallArgs[1]).not.toHaveProperty('method');
+
+    await req.responsePromise;
+  });
+
+  it('returns a responsePromise that fulfills with a successful response', async () => {
+    fetchMock.mockResponseOnce('{"foo":"bar"}', {
+      status: 200,
+      headers: {},
+    });
+
+    const req = makeGetRequest('https://cdn.optimizely.com/datafiles/123.json', {});
+
+    const resp = await req.responsePromise;
+    expect(resp).toMatchObject({
+      statusCode: 200,
+      headers: {},
+      body: '{"foo":"bar"}',
+    });
+  });
+
+  it('returns a responsePromise that fulfills with a 404 response', async () => {
+    fetchMock.mockResponseOnce('', { status: 404, headers: {} });
+
+    const req = makeGetRequest('https://cdn.optimizely.com/datafiles/123.json', {});
+
+    const resp = await req.responsePromise;
+    expect(resp).toMatchObject({
+      statusCode: 404,
+      headers: {},
+      body: '',
+    });
+  });
+
+  it('includes headers from the headers argument in the request', async () => {
+    fetchMock.mockResponseOnce('', { status: 404, headers: {} });
+
+    const req = makeGetRequest('https://cdn.optimizely.com/dataifles/123.json', {
+      'if-modified-since': 'Fri, 08 Mar 2019 18:57:18 GMT',
+    });
+
+    expect(fetchMock).toBeCalledTimes(1);
+    const firstCallArgs = fetchMock.mock.calls[0];
+    const fetchOptions = firstCallArgs[1];
+    expect(fetchOptions).toBeDefined();
+    const headers = fetchOptions!.headers;
+    expect(headers).toContainEqual(['if-modified-since', 'Fri, 08 Mar 2019 18:57:18 GMT']);
+    await req.responsePromise;
+  });
+
+  it('returns a responsePromise that fulfills with headers from the response', async () => {
+    fetchMock.mockResponseOnce('{"foo":"bar"}', {
+      status: 200,
+      headers: {
+        'content-type': 'application/json',
+        'last-modified': 'Fri, 08 Mar 2019 18:57:18 GMT',
+      },
+    });
+
+    const req = makeGetRequest('https://cdn.optimizely.com/datafiles/123.json', {});
+
+    const resp = await req.responsePromise;
+    expect(resp).toEqual({
+      statusCode: 200,
+      body: '{"foo":"bar"}',
+      headers: {
+        'content-type': 'application/json',
+        'last-modified': 'Fri, 08 Mar 2019 18:57:18 GMT',
+      },
+    });
+  });
+
+  it('returns a rejected promise when there is a request error', async () => {
+    fetchMock.mockRejectOnce(new Error('Failed to fetch'));
+    const req = makeGetRequest('https://cdn.optimizely.com/datafiles/123.json', {});
+    await expect(req.responsePromise).rejects.toThrow();
+  });
+
+  describe('delayed response', () => {
     beforeEach(() => {
-      xhrs = [];
-      mockXHR = fakeXhr.useFakeXMLHttpRequest();
-      mockXHR.onCreate = (req): number => xhrs.push(req);
+      jest.useFakeTimers();
     });
 
     afterEach(() => {
-      mockXHR.restore();
+      jest.clearAllTimers();
     });
 
-    it('makes a GET request to the argument URL', async () => {
-      const req = makeGetRequest('https://cdn.optimizely.com/datafiles/123.json', {});
-
-      expect(xhrs.length).toBe(1);
-      const xhr = xhrs[0];
-      const { url, method } = xhr;
-      expect({ url, method }).toEqual({
-        url: 'https://cdn.optimizely.com/datafiles/123.json',
-        method: 'GET',
-      });
-
-      xhr.respond(200, {}, '{"foo":"bar"}');
-
-      await req.responsePromise;
-    });
-
-    it('returns a 200 response back to its superclass', async () => {
-      const req = makeGetRequest('https://cdn.optimizely.com/datafiles/123.json', {});
-
-      const xhr = xhrs[0];
-      xhr.respond(200, {}, '{"foo":"bar"}');
-
-      const resp = await req.responsePromise;
-      expect(resp).toEqual({
-        statusCode: 200,
-        headers: {},
-        body: '{"foo":"bar"}',
-      });
-    });
-
-    it('returns a 404 response back to its superclass', async () => {
-      const req = makeGetRequest('https://cdn.optimizely.com/datafiles/123.json', {});
-
-      const xhr = xhrs[0];
-      xhr.respond(404, {}, '');
-
-      const resp = await req.responsePromise;
-      expect(resp).toEqual({
-        statusCode: 404,
-        headers: {},
-        body: '',
-      });
-    });
-
-    it('includes headers from the headers argument in the request', async () => {
-      const req = makeGetRequest('https://cdn.optimizely.com/dataifles/123.json', {
-        'if-modified-since': 'Fri, 08 Mar 2019 18:57:18 GMT',
-      });
-
-      expect(xhrs.length).toBe(1);
-      expect(xhrs[0].requestHeaders['if-modified-since']).toBe('Fri, 08 Mar 2019 18:57:18 GMT');
-
-      xhrs[0].respond(404, {}, '');
-
-      await req.responsePromise;
-    });
-
-    it('includes headers from the response in the eventual response in the return value', async () => {
-      const req = makeGetRequest('https://cdn.optimizely.com/datafiles/123.json', {});
-
-      const xhr = xhrs[0];
-      xhr.respond(
-        200,
-        {
-          'content-type': 'application/json',
-          'last-modified': 'Fri, 08 Mar 2019 18:57:18 GMT',
-        },
-        '{"foo":"bar"}'
+    it('aborts the request when the response is not received before the timeout', async () => {
+      fetchMock.mockResponseOnce(
+        () => new Promise(resolve => setTimeout(() => resolve({ body: '{"foo":"bar"}' }), 61000))
       );
-
-      const resp = await req.responsePromise;
-      expect(resp).toEqual({
-        statusCode: 200,
-        body: '{"foo":"bar"}',
-        headers: {
-          'content-type': 'application/json',
-          'last-modified': 'Fri, 08 Mar 2019 18:57:18 GMT',
-        },
-      });
-    });
-
-    it('returns a rejected promise when there is a request error', async () => {
-      const req = makeGetRequest('https://cdn.optimizely.com/datafiles/123.json', {});
-      xhrs[0].error();
-      await expect(req.responsePromise).rejects.toThrow();
-    });
-
-    it('sets a timeout on the request object', () => {
-      const onCreateMock = jest.fn();
-      mockXHR.onCreate = onCreateMock;
       makeGetRequest('https://cdn.optimizely.com/datafiles/123.json', {});
-      expect(onCreateMock).toBeCalledTimes(1);
-      expect(onCreateMock.mock.calls[0][0].timeout).toBe(60000);
+      await advanceTimersByTime(60000);
+      const firstCallArgs = fetchMock.mock.calls[0];
+      const fetchOptions = firstCallArgs[1];
+      expect(fetchOptions).toBeDefined();
+      const abortSignal = fetchOptions!.signal;
+      expect(abortSignal).toBeDefined();
+      expect(abortSignal!.aborted).toBe(true);
+    });
+
+    it('aborts the request when the abort method is called', () => {
+      fetchMock.mockResponseOnce(
+        () => new Promise(resolve => setTimeout(() => resolve({ body: '{"foo":"bar"}' }), 5000))
+      );
+      const req = makeGetRequest('https://cdn.optimizely.com/datafiles/123.json', {});
+      req.abort();
+      const firstCallArgs = fetchMock.mock.calls[0];
+      const fetchOptions = firstCallArgs[1];
+      expect(fetchOptions).toBeDefined();
+      const abortSignal = fetchOptions!.signal;
+      expect(abortSignal).toBeDefined();
+      expect(abortSignal!.aborted).toBe(true);
     });
   });
 });

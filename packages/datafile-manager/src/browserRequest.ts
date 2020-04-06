@@ -20,7 +20,7 @@ import { getLogger } from '@optimizely/js-sdk-logging';
 
 const logger = getLogger('DatafileManager');
 
-function internalHeadersOfFetchAPIHeaders(fetchAPIHeaders: Headers): InternalHeaders {
+function internalHeadersOfResponseHeaders(fetchAPIHeaders: Headers): InternalHeaders {
   const headers: InternalHeaders = {};
   fetchAPIHeaders.forEach((value: string, key: string) => {
     headers[key] = value;
@@ -28,12 +28,12 @@ function internalHeadersOfFetchAPIHeaders(fetchAPIHeaders: Headers): InternalHea
   return headers;
 }
 
-function fetchAPIHeadersOfInternalHeaders(internalHeaders: InternalHeaders): Headers {
-  const headers = new Headers();
+function headersInitOfInternalHeaders(internalHeaders: InternalHeaders): HeadersInit {
+  const headersInit: string[][] = [];
   Object.keys(internalHeaders).forEach((headerName: string): void => {
-    headers.set(headerName, internalHeaders[headerName]!);
+    headersInit.push([headerName, internalHeaders[headerName]!]);
   });
-  return headers;
+  return headersInit;
 }
 
 export function makeGetRequest(reqUrl: string, headers: InternalHeaders): AbortableRequest {
@@ -46,14 +46,14 @@ export function makeGetRequest(reqUrl: string, headers: InternalHeaders): Aborta
 
   const responsePromise: Promise<InternalResponse> = fetch(reqUrl, {
     signal: abortController.signal,
-    headers: fetchAPIHeadersOfInternalHeaders(headers),
+    headers: headersInitOfInternalHeaders(headers),
   })
     .then((response: Response) =>
       response.text().then(
         (responseText: string): InternalResponse => ({
           statusCode: response.status,
           body: responseText,
-          headers: internalHeadersOfFetchAPIHeaders(response.headers),
+          headers: internalHeadersOfResponseHeaders(response.headers),
         })
       )
     )
