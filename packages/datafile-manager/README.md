@@ -11,7 +11,7 @@ npm i @optimizely/js-sdk-datafile-manager
 
 ## Requirements
 
-This package requires an ES5-compatible environment, in addition to these platform-specific requirements:
+This package requires an ES5-compliant environment, in addition to these platform-specific requirements:
 
 ### Browsers
 For browsers, the globals listed below are required:
