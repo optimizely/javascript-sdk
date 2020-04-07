@@ -57,9 +57,16 @@ export function makeGetRequest(reqUrl: string, headers: InternalHeaders): Aborta
         })
       )
     )
-    .finally((): void => {
-      clearTimeout(timeout);
-    });
+    .then(
+      (response: InternalResponse): InternalResponse => {
+        clearTimeout(timeout);
+        return response;
+      },
+      (err: any): never => {
+        clearTimeout(timeout);
+        throw err;
+      }
+    );
 
   return {
     responsePromise,
