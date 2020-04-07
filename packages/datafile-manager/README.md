@@ -8,20 +8,29 @@ This package provides datafile manager implementations for Node.js, browsers, an
 npm i @optimizely/js-sdk-datafile-manager
 ```
 
-For React Native, installation of peer dependency `@react-native-community/async-storage` is also required:
+
+## Requirements
+
+This package requires an ES5-compatible environment, in addition to these platform-specific requirements:
+
+### Browsers
+For browsers, the globals listed below are required:
+
+- `fetch`
+- `AbortController`
+
+### React Native
+
+For React Native, installation of peer dependency `@react-native-community/async-storage` is required:
 ```sh
 npm i @react-native-community/async-storage
 ```
 
-## Requirements
-js-sdk-datafile-manager relies on the globals listed below:
-
+### All Environments
+In all environments, the globals listed below are required:
 - `Promise`
-- `fetch` (browser only)
-- `AbortController` (browser only)
 
-To use js-sdk-datafile in environments where these globals aren't available, they must be polyfilled.
-
+To use this package in environments where required globals aren't available, such as older browsers or Node.js versions, they must be polyfilled.
 
 ## Usage
 
