@@ -13,6 +13,16 @@ For React Native, installation of peer dependency `@react-native-community/async
 npm i @react-native-community/async-storage
 ```
 
+## Requirements
+js-sdk-datafile-manager relies on the globals listed below:
+
+- `Promise`
+- `fetch` (browser only)
+- `AbortController` (browser only)
+
+To use js-sdk-datafile in environments where these globals aren't available, they must be polyfilled.
+
+
 ## Usage
 
 ```js
