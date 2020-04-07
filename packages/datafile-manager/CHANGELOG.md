@@ -9,7 +9,7 @@ Changes that have landed but are not yet released.
 
 ### Breaking Changes
 - Removed `StaticDatafileManager` from all top level exports
-- For browser, converted HTTP requests to be made using `fetch` and `AbortController`, instead of `XMLHttpRequest`.
+- For browser, converted HTTP requests to be made using `fetch` and (when available) `AbortController`, instead of `XMLHttpRequest`.
 
 ## [0.4.0] - June 12, 2019
 
