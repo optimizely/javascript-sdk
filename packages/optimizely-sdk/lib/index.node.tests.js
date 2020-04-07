@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2019, Optimizely
+ * Copyright 2016-2019, 2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var logging = require('@optimizely/js-sdk-logging');
-var configValidator = require('./utils/config_validator');
-var enums = require('./utils/enums');
-var loggerPlugin = require('./plugins/logger');
-var Optimizely = require('./optimizely');
-var optimizelyFactory = require('./index.node');
-var testData = require('./tests/test_data');
-var eventProcessor = require('@optimizely/js-sdk-event-processor');
+import configValidator from './utils/config_validator';
+import enums from './utils/enums';
+import loggerPlugin from './plugins/logger';
+import Optimizely from './optimizely';
+import optimizelyFactory from './index.node';
+import testData from './tests/test_data';
+import * as eventProcessor from '@optimizely/js-sdk-event-processor';
+import chai from 'chai';
+import sinon from 'sinon';
 
-var chai = require('chai');
 var assert = chai.assert;
-var sinon = require('sinon');
 
 describe('optimizelyFactory', function() {
   describe('APIs', function() {
