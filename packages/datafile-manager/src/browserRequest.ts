@@ -36,13 +36,13 @@ function headersInitOfInternalHeaders(internalHeaders: InternalHeaders): Headers
   return headersInit;
 }
 
-const abortControllerAvailable = typeof AbortController !== 'undefined';
-
 export function makeGetRequest(reqUrl: string, headers: InternalHeaders): AbortableRequest {
   let abortController: AbortController | undefined;
   let abortSignal: AbortSignal | undefined;
   let timeout: any;
-  if (abortControllerAvailable) {
+  // Checking for AbortController because we want to support CF workers, which
+  // don't provide it
+  if (typeof AbortController !== 'undefined') {
     abortController = new AbortController();
     abortSignal = abortController.signal;
     timeout = setTimeout(() => {
@@ -51,20 +51,21 @@ export function makeGetRequest(reqUrl: string, headers: InternalHeaders): Aborta
     }, REQUEST_TIMEOUT_MS);
   }
 
-  const responsePromise: Promise<InternalResponse> = fetch(reqUrl, {
+  let responsePromise: Promise<InternalResponse> = fetch(reqUrl, {
     signal: abortSignal,
     headers: headersInitOfInternalHeaders(headers),
-  })
-    .then((response: Response) =>
-      response.text().then(
-        (responseText: string): InternalResponse => ({
-          statusCode: response.status,
-          body: responseText,
-          headers: internalHeadersOfResponseHeaders(response.headers),
-        })
-      )
+  }).then((response: Response) =>
+    response.text().then(
+      (responseText: string): InternalResponse => ({
+        statusCode: response.status,
+        body: responseText,
+        headers: internalHeadersOfResponseHeaders(response.headers),
+      })
     )
-    .then(
+  );
+
+  if (timeout !== undefined) {
+    responsePromise = responsePromise.then(
       (response: InternalResponse): InternalResponse => {
         clearTimeout(timeout);
         return response;
@@ -74,6 +75,7 @@ export function makeGetRequest(reqUrl: string, headers: InternalHeaders): Aborta
         throw err;
       }
     );
+  }
 
   return {
     responsePromise,
