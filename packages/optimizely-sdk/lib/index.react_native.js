@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, 2020 Optimizely
+ * Copyright 2019-2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 import * as sdkLogging from '@optimizely/js-sdk-logging';
+
 import fns from './utils/fns';
+import utilEnums from './utils/enums';
+import Optimizely from './optimizely';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
-import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
-import utilEnums from './utils/enums';
 import loggerPlugin from './plugins/logger/index.react_native';
-import Optimizely from './optimizely';
+import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
-var logger = sdkLogging.getLogger();
+const logger = sdkLogging.getLogger();
 sdkLogging.setLogHandler(loggerPlugin.createLogger());
 sdkLogging.setLogLevel(sdkLogging.LogLevel.INFO);
 
-var DEFAULT_EVENT_BATCH_SIZE = 10;
-var DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
+const DEFAULT_EVENT_BATCH_SIZE = 10;
+const DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
 
 export const logging = loggerPlugin;
 export const errorHandler = defaultErrorHandler;
@@ -95,12 +96,12 @@ export const createInstance = function(config) {
         errorHandler: sdkLogging.getErrorHandler(),
       }
     );
-    
+
     // If client engine is react, convert it to react native
     if (config.clientEngine === enums.REACT_CLIENT_ENGINE) {
       config.clientEngine = enums.REACT_NATIVE_CLIENT_ENGINE
     }
-    
+
     if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
       logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
       config.eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;

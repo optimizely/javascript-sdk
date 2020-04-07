@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import commonjs from '@rollup/plugin-commonjs';
-import resolve from '@rollup/plugin-node-resolve'
-import { terser } from  'rollup-plugin-terser'
 import { dependencies } from './package.json';
+import commonjs from '@rollup/plugin-commonjs';
+import { terser } from  'rollup-plugin-terser';
+import resolve from '@rollup/plugin-node-resolve';
 
 const getConfigForPlatform = (platform) => {
   return {

@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2016-2017, 2019, 2020 Optimizely, Inc. and contributors        *
+ * Copyright 2016-2017, 2019-2020 Optimizely, Inc. and contributors        *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -14,14 +14,15 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import * as sdkLogging from '@optimizely/js-sdk-logging';
+
+import fns from './utils/fns';
+import Optimizely from './optimizely';
+import utilEnums from './utils/enums';
+import loggerPlugin from './plugins/logger';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
-import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
-import utilEnums from './utils/enums';
-import fns from './utils/fns';
 import jsonSchemaValidator from './utils/json_schema_validator';
-import loggerPlugin from './plugins/logger';
-import Optimizely from './optimizely';
+import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
 const logger = sdkLogging.getLogger();

@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2019, 2020 Optimizely
+ * Copyright 2018-2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,14 @@ import configValidator from './utils/config_validator';
 import enums from './utils/enums';
 import logger from './plugins/logger';
 import Optimizely from './optimizely';
+import testData from './tests/test_data';
 import packageJSON from '../package.json';
 import eventDispatcher from './plugins/event_dispatcher/index.browser';
-import testData from './tests/test_data';
+
 import chai from 'chai';
-var assert = chai.assert;
 import sinon from 'sinon';
+
+var assert = chai.assert;
 
 describe('javascript-sdk', function() {
   describe('APIs', function() {

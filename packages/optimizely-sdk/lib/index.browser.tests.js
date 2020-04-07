@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2019, 2020 Optimizely
+ * Copyright 2016-2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 import * as logging from '@optimizely/js-sdk-logging';
-import configValidator from './utils/config_validator';
-import Optimizely from './optimizely';
-import optimizelyFactory from './index.browser';
-import packageJSON from '../package.json';
-import testData from './tests/test_data';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
+
+import Optimizely from './optimizely';
+import testData from './tests/test_data';
+import packageJSON from '../package.json';
+import optimizelyFactory from './index.browser';
+import configValidator from './utils/config_validator';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
+
 import chai from 'chai';
 import sinon from 'sinon';
+
 var assert = chai.assert;
 var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
 

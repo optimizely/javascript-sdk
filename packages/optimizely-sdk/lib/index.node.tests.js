@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2019, 2020 Optimizely
+ * Copyright 2016-2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import configValidator from './utils/config_validator';
-import enums from './utils/enums';
-import loggerPlugin from './plugins/logger';
-import Optimizely from './optimizely';
-import optimizelyFactory from './index.node';
-import testData from './tests/test_data';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
+
+import enums from './utils/enums';
+import Optimizely from './optimizely';
+import testData from './tests/test_data';
+import loggerPlugin from './plugins/logger';
+import optimizelyFactory from './index.node';
+import configValidator from './utils/config_validator';
+
 import chai from 'chai';
 import sinon from 'sinon';
 
-var assert = chai.assert;
+const assert = chai.assert;
 
 describe('optimizelyFactory', function() {
   describe('APIs', function() {
@@ -37,9 +39,9 @@ describe('optimizelyFactory', function() {
     });
 
     describe('createInstance', function() {
-      var fakeErrorHandler = { handleError: function() {} };
-      var fakeEventDispatcher = { dispatchEvent: function() {} };
-      var fakeLogger;
+      const fakeErrorHandler = { handleError: function() {} };
+      const fakeEventDispatcher = { dispatchEvent: function() {} };
+      let fakeLogger;
 
       beforeEach(function() {
         fakeLogger = { log: sinon.spy(), setLogLevel: sinon.spy() };
@@ -56,9 +58,9 @@ describe('optimizelyFactory', function() {
 
       it('should not throw if the provided config is not valid and log an error if logger is passed in', function() {
         configValidator.validate.throws(new Error('Invalid config or something'));
-        var localLogger = loggerPlugin.createLogger({ logLevel: enums.LOG_LEVEL.INFO });
+        const localLogger = loggerPlugin.createLogger({ logLevel: enums.LOG_LEVEL.INFO });
         assert.doesNotThrow(function() {
-          var optlyInstance = optimizelyFactory.createInstance({
+          const optlyInstance = optimizelyFactory.createInstance({
             datafile: {},
             logger: localLogger,
           });
@@ -71,7 +73,7 @@ describe('optimizelyFactory', function() {
       it('should not throw if the provided config is not valid and log an error if no logger is provided', function() {
         configValidator.validate.throws(new Error('Invalid config or something'));
         assert.doesNotThrow(function() {
-          var optlyInstance = optimizelyFactory.createInstance({
+          const optlyInstance = optimizelyFactory.createInstance({
             datafile: {},
           });
           // Invalid datafile causes onReady Promise rejection - catch this
@@ -81,7 +83,7 @@ describe('optimizelyFactory', function() {
       });
 
       it('should create an instance of optimizely', function() {
-        var optlyInstance = optimizelyFactory.createInstance({
+        const optlyInstance = optimizelyFactory.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
@@ -95,7 +97,7 @@ describe('optimizelyFactory', function() {
       });
 
       describe('event processor configuration', function() {
-        var eventProcessorSpy;
+        let eventProcessorSpy;
         beforeEach(function() {
           eventProcessorSpy = sinon.stub(eventProcessor, 'LogTierV1EventProcessor').callThrough();
         });
