@@ -36,8 +36,26 @@ function headersInitOfInternalHeaders(internalHeaders: InternalHeaders): Headers
   return headersInit;
 }
 
+interface Abortable {
+  abort: () => void;
+}
+
+const noOpRequestAborter: Abortable = {
+  abort(): void {},
+};
+
+const abortControllerAvailable = typeof AbortController !== 'undefined';
+
+function createAbortController(): [Abortable, AbortSignal | undefined] {
+  if (abortControllerAvailable) {
+    const abortController = new AbortController();
+    return [abortController, abortController.signal];
+  }
+  return [noOpRequestAborter, undefined];
+}
+
 export function makeGetRequest(reqUrl: string, headers: InternalHeaders): AbortableRequest {
-  const abortController = new AbortController();
+  const [abortController, abortSignal] = createAbortController();
 
   const timeout = setTimeout(() => {
     logger.error('Request timed out');
@@ -45,7 +63,7 @@ export function makeGetRequest(reqUrl: string, headers: InternalHeaders): Aborta
   }, REQUEST_TIMEOUT_MS);
 
   const responsePromise: Promise<InternalResponse> = fetch(reqUrl, {
-    signal: abortController.signal,
+    signal: abortSignal,
     headers: headersInitOfInternalHeaders(headers),
   })
     .then((response: Response) =>

@@ -17,7 +17,6 @@ This package requires an ES5-compliant environment, in addition to these platfor
 For browsers, the globals listed below are required:
 
 - `fetch`
-- `AbortController`
 
 ### React Native
 
