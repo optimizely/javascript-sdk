@@ -13,11 +13,18 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import * as sdkLogging from '@optimizely/js-sdk-logging';
+import { 
+  getLogger,
+  setLogHandler,
+  setLogLevel,
+  setErrorHandler,
+  getErrorHandler,
+  LogLevel,
+} from '@optimizely/js-sdk-logging';
 
 import fns from './utils/fns';
 import Optimizely from './optimizely';
-import utilEnums from './utils/enums';
+import enums from './utils/enums';
 import loggerPlugin from './plugins/logger';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
@@ -25,18 +32,11 @@ import jsonSchemaValidator from './utils/json_schema_validator';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
-var logger = sdkLogging.getLogger();
-sdkLogging.setLogLevel(sdkLogging.LogLevel.ERROR);
+var logger = getLogger();
+setLogLevel(LogLevel.ERROR);
 
 var DEFAULT_EVENT_BATCH_SIZE = 10;
 var DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
-
-export var logging = loggerPlugin;
-export var errorHandler = defaultErrorHandler;
-export var eventDispatcher = defaultEventDispatcher;
-export var enums = utilEnums;
-export var setLogger = sdkLogging.setLogHandler;
-export var setLogLevel = sdkLogging.setLogLevel;
 
 /**
  * Creates an instance of the Optimizely class
@@ -51,24 +51,24 @@ export var setLogLevel = sdkLogging.setLogLevel;
  * @param {Object} config.eventFlushInterval
  * @return {Object} the Optimizely object
  */
-export var createInstance = (config) => {
+var createInstance = function(config) {
   try {
-    let hasLogger = false;
+    var hasLogger = false;
     config = config || {};
 
     // TODO warn about setting per instance errorHandler / logger / logLevel
     if (config.errorHandler) {
-      sdkLogging.setErrorHandler(config.errorHandler);
+      setErrorHandler(config.errorHandler);
     }
     if (config.logger) {
       // only set a logger in node if one is provided, by not setting we are noop-ing
       hasLogger = true;
-      sdkLogging.setLogHandler(config.logger);
+      setLogHandler(config.logger);
       // respect the logger's shouldLog functionality
-      sdkLogging.setLogLevel(sdkLogging.LogLevel.NOTSET);
+      setLogLevel(LogLevel.NOTSET);
     }
     if (config.logLevel !== undefined) {
-      sdkLogging.setLogLevel(config.logLevel);
+      setLogLevel(config.logLevel);
     }
 
     try {
@@ -85,7 +85,7 @@ export var createInstance = (config) => {
 
     config = fns.assign(
       {
-        clientEngine: utilEnums.NODE_CLIENT_ENGINE,
+        clientEngine: enums.NODE_CLIENT_ENGINE,
         eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
         eventDispatcher: defaultEventDispatcher,
         eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
@@ -96,7 +96,7 @@ export var createInstance = (config) => {
       {
         // always get the OptimizelyLogger facade from logging
         logger: logger,
-        errorHandler: sdkLogging.getErrorHandler(),
+        errorHandler: getErrorHandler(),
       }
     );
 
@@ -123,12 +123,22 @@ export var createInstance = (config) => {
 /**
  * Entry point into the Optimizely Node testing SDK
  */
-export default {
-  logging,
-  errorHandler,
-  eventDispatcher,
+export {
+  loggerPlugin as logging,
+  defaultErrorHandler as errorHandler,
+  defaultEventDispatcher as eventDispatcher,
   enums,
-  setLogger,
+  setLogHandler as setLogger,
+  setLogLevel,
+  createInstance,
+}
+
+export default {
+  logging: loggerPlugin,
+  errorHandler: defaultErrorHandler,
+  eventDispatcher: defaultEventDispatcher,
+  enums,
+  setLogger: setLogHandler,
   setLogLevel,
   createInstance,
 };
