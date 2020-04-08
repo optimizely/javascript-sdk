@@ -16,11 +16,11 @@
 
 import BrowserDatafileManager from '../src/browserDatafileManager';
 import * as browserRequest from '../src/browserRequest';
-import { Headers, AbortableRequest } from '../src/http';
-import { advanceTimersByTime, getTimerCount } from './testUtils';
+import { AbortableRequest, RequestHeaders } from '../src/http';
+import { advanceTimersByTime, getTimerCount, MockHeaders } from './testUtils';
 
 describe('browserDatafileManager', () => {
-  let makeGetRequestSpy: jest.SpyInstance<AbortableRequest, [string, Headers]>;
+  let makeGetRequestSpy: jest.SpyInstance<AbortableRequest, [string, RequestHeaders]>;
   beforeEach(() => {
     jest.useFakeTimers();
     makeGetRequestSpy = jest.spyOn(browserRequest, 'makeGetRequest');
@@ -37,7 +37,7 @@ describe('browserDatafileManager', () => {
       responsePromise: Promise.resolve({
         statusCode: 200,
         body: '{"foo":"bar"}',
-        headers: {},
+        headers: new MockHeaders(),
       }),
     });
 
@@ -60,9 +60,9 @@ describe('browserDatafileManager', () => {
       responsePromise: Promise.resolve({
         statusCode: 200,
         body: '{"foo":"bar"}',
-        headers: {
+        headers: new MockHeaders({
           'last-modified': 'Fri, 08 Mar 2019 18:57:17 GMT',
-        },
+        }),
       }),
     });
     const manager = new BrowserDatafileManager({
@@ -87,9 +87,9 @@ describe('browserDatafileManager', () => {
       responsePromise: Promise.resolve({
         statusCode: 200,
         body: '{"foo":"bar"}',
-        headers: {
+        headers: new MockHeaders({
           'last-modified': 'Fri, 08 Mar 2019 18:57:17 GMT',
-        },
+        }),
       }),
     });
     const manager = new BrowserDatafileManager({

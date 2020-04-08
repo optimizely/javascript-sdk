@@ -16,11 +16,11 @@
 
 import { makeGetRequest } from './nodeRequest';
 import HttpPollingDatafileManager from './httpPollingDatafileManager';
-import { Headers, AbortableRequest } from './http';
+import { AbortableRequest, RequestHeaders } from './http';
 import { DatafileManagerConfig } from './datafileManager';
 
 export default class NodeDatafileManager extends HttpPollingDatafileManager {
-  protected makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest {
+  protected makeGetRequest(reqUrl: string, headers: RequestHeaders): AbortableRequest {
     return makeGetRequest(reqUrl, headers);
   }
 

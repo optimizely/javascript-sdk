@@ -25,3 +25,15 @@ export function getTimerCount(): number {
   // https://jestjs.io/docs/en/jest-object#jestgettimercount
   return (jest as any).getTimerCount();
 }
+
+export class MockHeaders {
+  private headers: { [name: string]: string };
+
+  constructor(init: { [name: string]: string } = {}) {
+    this.headers = init;
+  }
+
+  get(name: string): string | null {
+    return this.headers[name] || null;
+  }
+}

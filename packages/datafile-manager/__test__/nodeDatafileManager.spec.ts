@@ -16,11 +16,11 @@
 
 import NodeDatafileManager from '../src/nodeDatafileManager';
 import * as nodeRequest from '../src/nodeRequest';
-import { Headers, AbortableRequest } from '../src/http';
-import { advanceTimersByTime, getTimerCount } from './testUtils';
+import { AbortableRequest, RequestHeaders } from '../src/http';
+import { advanceTimersByTime, getTimerCount, MockHeaders } from './testUtils';
 
 describe('nodeDatafileManager', () => {
-  let makeGetRequestSpy: jest.SpyInstance<AbortableRequest, [string, Headers]>;
+  let makeGetRequestSpy: jest.SpyInstance<AbortableRequest, [string, RequestHeaders]>;
   beforeEach(() => {
     jest.useFakeTimers();
     makeGetRequestSpy = jest.spyOn(nodeRequest, 'makeGetRequest');
@@ -37,7 +37,7 @@ describe('nodeDatafileManager', () => {
       responsePromise: Promise.resolve({
         statusCode: 200,
         body: '{"foo":"bar"}',
-        headers: {},
+        headers: new MockHeaders(),
       }),
     });
 
@@ -60,9 +60,9 @@ describe('nodeDatafileManager', () => {
       responsePromise: Promise.resolve({
         statusCode: 200,
         body: '{"foo":"bar"}',
-        headers: {
+        headers: new MockHeaders({
           'last-modified': 'Fri, 08 Mar 2019 18:57:17 GMT',
-        },
+        }),
       }),
     });
     const manager = new NodeDatafileManager({
@@ -87,9 +87,9 @@ describe('nodeDatafileManager', () => {
       responsePromise: Promise.resolve({
         statusCode: 200,
         body: '{"foo":"bar"}',
-        headers: {
+        headers: new MockHeaders({
           'last-modified': 'Fri, 08 Mar 2019 18:57:17 GMT',
-        },
+        }),
       }),
     });
     const manager = new NodeDatafileManager({

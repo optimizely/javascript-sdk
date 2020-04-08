@@ -18,7 +18,7 @@ import { getLogger } from '@optimizely/js-sdk-logging';
 import { sprintf } from '@optimizely/js-sdk-utils';
 import { DatafileManager, DatafileManagerConfig, DatafileUpdate } from './datafileManager';
 import EventEmitter, { Disposer } from './eventEmitter';
-import { AbortableRequest, Response, Headers } from './http';
+import { AbortableRequest, Response, ResponseHeaders, RequestHeaders } from './http';
 import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE } from './config';
 import BackoffController from './backoffController';
 import PersistentKeyValueCache from './persistentKeyValueCache';
@@ -58,7 +58,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
   // Return an AbortableRequest, which has a promise for a Response.
   // If we can't get a response, the promise is rejected.
   // The request will be aborted if the manager is stopped while the request is in flight.
-  protected abstract makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest;
+  protected abstract makeGetRequest(reqUrl: string, headers: RequestHeaders): AbortableRequest;
 
   // Return any default configuration options that should be applied
   protected abstract getConfigDefaults(): Partial<DatafileManagerConfig>;
@@ -256,7 +256,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
   }
 
   private syncDatafile(): void {
-    const headers: Headers = {};
+    const headers: RequestHeaders = {};
     if (this.lastResponseLastModified) {
       headers['if-modified-since'] = this.lastResponseLastModified;
     }
@@ -336,9 +336,9 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     return datafileObj;
   }
 
-  private trySavingLastModified(headers: Headers): void {
-    const lastModifiedHeader = headers['last-modified'] || headers['Last-Modified'];
-    if (typeof lastModifiedHeader !== 'undefined') {
+  private trySavingLastModified(headers: ResponseHeaders): void {
+    const lastModifiedHeader = headers.get('last-modified') || headers.get('Last-Modified');
+    if (lastModifiedHeader !== null) {
       this.lastResponseLastModified = lastModifiedHeader;
       logger.debug('Saved last modified header value from response: %s', this.lastResponseLastModified);
     }

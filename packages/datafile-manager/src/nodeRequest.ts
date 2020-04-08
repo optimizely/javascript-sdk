@@ -17,7 +17,7 @@
 import http from 'http';
 import https from 'https';
 import url from 'url';
-import { Headers, AbortableRequest, Response } from './http';
+import { AbortableRequest, RequestHeaders, Response, ResponseHeaders } from './http';
 import { REQUEST_TIMEOUT_MS } from './config';
 
 // Shared signature between http.request and https.request
@@ -41,23 +41,26 @@ function getRequestOptionsFromUrl(url: url.UrlWithStringQuery): http.RequestOpti
  * per header name.
  *
  */
-function createHeadersFromNodeIncomingMessage(incomingMessage: http.IncomingMessage): Headers {
-  const headers: Headers = {};
-  Object.keys(incomingMessage.headers).forEach(headerName => {
-    const headerValue = incomingMessage.headers[headerName];
-    if (typeof headerValue === 'string') {
-      headers[headerName] = headerValue;
-    } else if (typeof headerValue === 'undefined') {
-      // no value provided for this header
-    } else {
-      // array
-      if (headerValue.length > 0) {
-        // We don't care about multiple values - just take the first one
-        headers[headerName] = headerValue[0];
+function createHeadersFromNodeIncomingMessage(incomingMessage: http.IncomingMessage): ResponseHeaders {
+  return {
+    get(name: string): string | null {
+      const headerValue = incomingMessage.headers[name];
+      switch (typeof headerValue) {
+        case 'string':
+          return headerValue;
+
+        case 'undefined':
+          return null;
+
+        default:
+          // array
+          if (headerValue.length > 0) {
+            return headerValue[0];
+          }
+          return null;
       }
-    }
-  });
-  return headers;
+    },
+  };
 }
 
 function getResponseFromRequest(request: http.ClientRequest): Promise<Response> {
@@ -112,7 +115,7 @@ function getResponseFromRequest(request: http.ClientRequest): Promise<Response> 
   });
 }
 
-export function makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest {
+export function makeGetRequest(reqUrl: string, headers: RequestHeaders): AbortableRequest {
   // TODO: Use non-legacy URL parsing when we drop support for Node 6
   const parsedUrl = url.parse(reqUrl);
 

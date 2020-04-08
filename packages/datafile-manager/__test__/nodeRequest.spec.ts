@@ -41,10 +41,9 @@ describe('nodeEnvironment', () => {
         .reply(200, '{"foo":"bar"}');
       const req = makeGetRequest(`${host}${path}`, {});
       const resp = await req.responsePromise;
-      expect(resp).toEqual({
+      expect(resp).toMatchObject({
         statusCode: 200,
         body: '{"foo":"bar"}',
-        headers: {},
       });
       scope.done();
     });
@@ -55,10 +54,9 @@ describe('nodeEnvironment', () => {
         .reply(404, '');
       const req = makeGetRequest(`${host}${path}`, {});
       const resp = await req.responsePromise;
-      expect(resp).toEqual({
+      expect(resp).toMatchObject({
         statusCode: 404,
         body: '',
-        headers: {},
       });
       scope.done();
     });
@@ -72,10 +70,9 @@ describe('nodeEnvironment', () => {
         'if-modified-since': 'Fri, 08 Mar 2019 18:57:18 GMT',
       });
       const resp = await req.responsePromise;
-      expect(resp).toEqual({
+      expect(resp).toMatchObject({
         statusCode: 304,
         body: '',
-        headers: {},
       });
       scope.done();
     });
@@ -92,14 +89,12 @@ describe('nodeEnvironment', () => {
         );
       const req = makeGetRequest(`${host}${path}`, {});
       const resp = await req.responsePromise;
-      expect(resp).toEqual({
+      expect(resp).toMatchObject({
         statusCode: 200,
         body: '{"foo":"bar"}',
-        headers: {
-          'content-type': 'application/json',
-          'last-modified': 'Fri, 08 Mar 2019 18:57:18 GMT',
-        },
       });
+      expect(resp.headers.get('content-type')).toBe('application/json');
+      expect(resp.headers.get('last-modified')).toBe('Fri, 08 Mar 2019 18:57:18 GMT');
       scope.done();
     });
 
@@ -120,10 +115,9 @@ describe('nodeEnvironment', () => {
         .reply(200, '{"foo":"bar"}');
       const req = makeGetRequest(`${httpHost}${path}`, {});
       const resp = await req.responsePromise;
-      expect(resp).toEqual({
+      expect(resp).toMatchObject({
         statusCode: 200,
         body: '{"foo":"bar"}',
-        headers: {},
       });
       scope.done();
     });
@@ -154,10 +148,9 @@ describe('nodeEnvironment', () => {
         .reply(200, '{"foo":"bar"}');
       const req = makeGetRequest(`${hostWithPort}${path}`, {});
       const resp = await req.responsePromise;
-      expect(resp).toEqual({
+      expect(resp).toMatchObject({
         statusCode: 200,
         body: '{"foo":"bar"}',
-        headers: {},
       });
       scope.done();
     });

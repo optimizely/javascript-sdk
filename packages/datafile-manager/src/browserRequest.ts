@@ -14,29 +14,13 @@
  * limitations under the License.
  */
 
-import { AbortableRequest, Response as InternalResponse, Headers as InternalHeaders } from './http';
+import { AbortableRequest, Response as InternalResponse, RequestHeaders as InternalRequestHeaders } from './http';
 import { REQUEST_TIMEOUT_MS } from './config';
 import { getLogger } from '@optimizely/js-sdk-logging';
 
 const logger = getLogger('DatafileManager');
 
-function internalHeadersOfResponseHeaders(fetchAPIHeaders: Headers): InternalHeaders {
-  const headers: InternalHeaders = {};
-  fetchAPIHeaders.forEach((value: string, key: string) => {
-    headers[key] = value;
-  });
-  return headers;
-}
-
-function headersInitOfInternalHeaders(internalHeaders: InternalHeaders): HeadersInit {
-  const headersInit: string[][] = [];
-  Object.keys(internalHeaders).forEach((headerName: string): void => {
-    headersInit.push([headerName, internalHeaders[headerName]!]);
-  });
-  return headersInit;
-}
-
-export function makeGetRequest(reqUrl: string, headers: InternalHeaders): AbortableRequest {
+export function makeGetRequest(reqUrl: string, headers: InternalRequestHeaders): AbortableRequest {
   let abortController: AbortController | undefined;
   let abortSignal: AbortSignal | undefined;
   let timeout: any;
@@ -53,13 +37,13 @@ export function makeGetRequest(reqUrl: string, headers: InternalHeaders): Aborta
 
   let responsePromise: Promise<InternalResponse> = fetch(reqUrl, {
     signal: abortSignal,
-    headers: headersInitOfInternalHeaders(headers),
+    headers,
   }).then((response: Response) =>
     response.text().then(
       (responseText: string): InternalResponse => ({
         statusCode: response.status,
         body: responseText,
-        headers: internalHeadersOfResponseHeaders(response.headers),
+        headers: response.headers,
       })
     )
   );

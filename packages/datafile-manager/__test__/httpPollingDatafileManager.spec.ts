@@ -15,9 +15,9 @@
  */
 
 import HttpPollingDatafileManager from '../src/httpPollingDatafileManager';
-import { Headers, AbortableRequest, Response } from '../src/http';
+import { RequestHeaders, AbortableRequest, Response } from '../src/http';
 import { DatafileManagerConfig } from '../src/datafileManager';
-import { advanceTimersByTime, getTimerCount } from './testUtils';
+import { advanceTimersByTime, getTimerCount, MockHeaders } from './testUtils';
 import PersistentKeyValueCache from '../src/persistentKeyValueCache';
 
 jest.mock('../src/backoffController', () => {
@@ -44,7 +44,7 @@ class TestDatafileManager extends HttpPollingDatafileManager {
 
   // Need these unsued vars for the mock call types to work (being able to check calls)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  makeGetRequest(url: string, headers: Headers): AbortableRequest {
+  makeGetRequest(url: string, headers: RequestHeaders): AbortableRequest {
     const nextResponse: Error | Response | undefined = this.queuedResponses.pop();
     let responsePromise: Promise<Response>;
     if (nextResponse === undefined) {
@@ -66,6 +66,8 @@ class TestDatafileManager extends HttpPollingDatafileManager {
   getConfigDefaults(): Partial<DatafileManagerConfig> {
     return {};
   }
+
+  static readonly emptyMockHeaders = new MockHeaders();
 }
 
 const testCache: PersistentKeyValueCache = {
@@ -121,12 +123,12 @@ describe('httpPollingDatafileManager', () => {
         {
           statusCode: 200,
           body: '{"fooz": "barz"}',
-          headers: {},
+          headers: TestDatafileManager.emptyMockHeaders,
         },
         {
           statusCode: 200,
           body: '{"foo": "bar"}',
-          headers: {},
+          headers: TestDatafileManager.emptyMockHeaders,
         }
       );
       const updateFn = jest.fn();
@@ -162,7 +164,7 @@ describe('httpPollingDatafileManager', () => {
       manager.queuedResponses.push({
         statusCode: 200,
         body: '{"foo": "bar"}',
-        headers: {},
+        headers: TestDatafileManager.emptyMockHeaders,
       });
       manager.start();
       expect(manager.responsePromises.length).toBe(1);
@@ -189,7 +191,7 @@ describe('httpPollingDatafileManager', () => {
         manager.queuedResponses.push({
           statusCode: 200,
           body: '{"foo": "bar"}',
-          headers: {},
+          headers: TestDatafileManager.emptyMockHeaders,
         });
         manager.start();
         expect(makeGetRequestSpy).toBeCalledTimes(1);
@@ -201,7 +203,7 @@ describe('httpPollingDatafileManager', () => {
         manager.queuedResponses.push({
           statusCode: 200,
           body: '{"foo": "bar"}',
-          headers: {},
+          headers: TestDatafileManager.emptyMockHeaders,
         });
         manager.start();
         await manager.onReady();
@@ -213,12 +215,12 @@ describe('httpPollingDatafileManager', () => {
           {
             statusCode: 200,
             body: '{"foo" "',
-            headers: {},
+            headers: TestDatafileManager.emptyMockHeaders,
           },
           {
             statusCode: 200,
             body: '{"foo": "bar"}',
-            headers: {},
+            headers: TestDatafileManager.emptyMockHeaders,
           }
         );
         manager.start();
@@ -235,12 +237,12 @@ describe('httpPollingDatafileManager', () => {
             {
               statusCode: 200,
               body: '{"foo3": "bar3"}',
-              headers: {},
+              headers: TestDatafileManager.emptyMockHeaders,
             },
             {
               statusCode: 200,
               body: '{"foo4": "bar4"}',
-              headers: {},
+              headers: TestDatafileManager.emptyMockHeaders,
             }
           );
           const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest');
@@ -256,17 +258,17 @@ describe('httpPollingDatafileManager', () => {
             {
               statusCode: 200,
               body: '{"foo3": "bar3"}',
-              headers: {},
+              headers: TestDatafileManager.emptyMockHeaders,
             },
             {
               statusCode: 200,
               body: '{"foo2": "bar2"}',
-              headers: {},
+              headers: TestDatafileManager.emptyMockHeaders,
             },
             {
               statusCode: 200,
               body: '{"foo": "bar"}',
-              headers: {},
+              headers: TestDatafileManager.emptyMockHeaders,
             }
           );
 
@@ -313,7 +315,7 @@ describe('httpPollingDatafileManager', () => {
             resolveResponsePromise!({
               statusCode: 200,
               body: '{"foo": "bar"}',
-              headers: {},
+              headers: TestDatafileManager.emptyMockHeaders,
             });
             await responsePromise;
             expect(makeGetRequestSpy).toBeCalledTimes(2);
@@ -324,7 +326,7 @@ describe('httpPollingDatafileManager', () => {
           manager.queuedResponses.push({
             statusCode: 200,
             body: '{"foo": "bar"}',
-            headers: {},
+            headers: TestDatafileManager.emptyMockHeaders,
           });
 
           manager.start();
@@ -340,12 +342,12 @@ describe('httpPollingDatafileManager', () => {
             {
               statusCode: 200,
               body: '{"foo2": "bar2"}',
-              headers: {},
+              headers: TestDatafileManager.emptyMockHeaders,
             },
             {
               statusCode: 200,
               body: '{"foo": "bar"}',
-              headers: {},
+              headers: TestDatafileManager.emptyMockHeaders,
             }
           );
 
@@ -366,7 +368,7 @@ describe('httpPollingDatafileManager', () => {
           manager.queuedResponses.push({
             statusCode: 200,
             body: '{"foo2": "bar2"}',
-            headers: {},
+            headers: TestDatafileManager.emptyMockHeaders,
           });
           const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest');
           manager.start();
@@ -382,12 +384,12 @@ describe('httpPollingDatafileManager', () => {
             {
               statusCode: 200,
               body: '{"foo": "bar"}',
-              headers: {},
+              headers: TestDatafileManager.emptyMockHeaders,
             },
             {
               statusCode: 404,
               body: '',
-              headers: {},
+              headers: TestDatafileManager.emptyMockHeaders,
             }
           );
 
@@ -408,14 +410,14 @@ describe('httpPollingDatafileManager', () => {
               {
                 statusCode: 304,
                 body: '',
-                headers: {},
+                headers: TestDatafileManager.emptyMockHeaders,
               },
               {
                 statusCode: 200,
                 body: '{"foo": "bar"}',
-                headers: {
+                headers: new MockHeaders({
                   'Last-Modified': 'Fri, 08 Mar 2019 18:57:17 GMT',
-                },
+                }),
               }
             );
 
@@ -442,14 +444,14 @@ describe('httpPollingDatafileManager', () => {
               {
                 statusCode: 304,
                 body: '',
-                headers: {},
+                headers: TestDatafileManager.emptyMockHeaders,
               },
               {
                 statusCode: 200,
                 body: '{"foo": "bar"}',
-                headers: {
+                headers: new MockHeaders({
                   'Last-Modified': 'Fri, 08 Mar 2019 18:57:17 GMT',
-                },
+                }),
               }
             );
             manager.start();
@@ -476,7 +478,7 @@ describe('httpPollingDatafileManager', () => {
             manager.queuedResponses.push({
               statusCode: 404,
               body: '',
-              headers: {},
+              headers: TestDatafileManager.emptyMockHeaders,
             });
             manager.start();
             await manager.responsePromises[0];
@@ -495,7 +497,7 @@ describe('httpPollingDatafileManager', () => {
             manager.queuedResponses.push({
               statusCode: 404,
               body: '',
-              headers: {},
+              headers: TestDatafileManager.emptyMockHeaders,
             });
             manager.start();
             await manager.responsePromises[0];
@@ -519,9 +521,9 @@ describe('httpPollingDatafileManager', () => {
             manager.queuedResponses.push({
               statusCode: 200,
               body: '{"foo": "bar"}',
-              headers: {
+              headers: new MockHeaders({
                 'Last-Modified': 'Fri, 08 Mar 2019 18:57:17 GMT',
-              },
+              }),
             });
             manager.start();
             const BackoffControllerMock = (BackoffController as unknown) as jest.Mock<BackoffController, []>;
@@ -555,7 +557,7 @@ describe('httpPollingDatafileManager', () => {
       manager.queuedResponses.push({
         statusCode: 200,
         body: '{"foo": "bar"}',
-        headers: {},
+        headers: TestDatafileManager.emptyMockHeaders,
       });
       manager.start();
       await manager.onReady();
@@ -566,7 +568,7 @@ describe('httpPollingDatafileManager', () => {
       manager.queuedResponses.push({
         statusCode: 200,
         body: '{"foo": "bar"}',
-        headers: {},
+        headers: TestDatafileManager.emptyMockHeaders,
       });
       const updateFn = jest.fn();
       manager.on('update', updateFn);
@@ -580,7 +582,7 @@ describe('httpPollingDatafileManager', () => {
       manager.queuedResponses.push({
         statusCode: 200,
         body: '{"foo": "bar"}',
-        headers: {},
+        headers: TestDatafileManager.emptyMockHeaders,
       });
       manager.makeGetRequest = (): AbortableRequest => ({
         abort(): void {},
@@ -611,7 +613,7 @@ describe('httpPollingDatafileManager', () => {
       manager.queuedResponses.push({
         statusCode: 200,
         body: '{"foo": "bar"}',
-        headers: {},
+        headers: TestDatafileManager.emptyMockHeaders,
       });
       manager.start();
       expect(makeGetRequestSpy).toBeCalledTimes(1);
@@ -631,7 +633,7 @@ describe('httpPollingDatafileManager', () => {
       manager.queuedResponses.push({
         statusCode: 200,
         body: '{"foo3": "bar3"}',
-        headers: {},
+        headers: TestDatafileManager.emptyMockHeaders,
       });
 
       manager.start();
@@ -669,7 +671,7 @@ describe('httpPollingDatafileManager', () => {
       manager.queuedResponses.push({
         statusCode: 200,
         body: '{"foo": "bar"}',
-        headers: {},
+        headers: TestDatafileManager.emptyMockHeaders,
       });
 
       const updateFn = jest.fn();
@@ -688,7 +690,7 @@ describe('httpPollingDatafileManager', () => {
       manager.queuedResponses.push({
         statusCode: 200,
         body: '{"foo": "bar"}',
-        headers: {},
+        headers: TestDatafileManager.emptyMockHeaders,
       });
       manager.start();
       await manager.onReady();
@@ -713,7 +715,7 @@ describe('httpPollingDatafileManager', () => {
       manager.queuedResponses.push({
         statusCode: 200,
         body: '{"foo": "bar"}',
-        headers: {},
+        headers: TestDatafileManager.emptyMockHeaders,
       });
 
       const updateFn = jest.fn();

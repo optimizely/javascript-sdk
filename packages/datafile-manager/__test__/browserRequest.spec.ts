@@ -54,7 +54,6 @@ describe('browserRequest', () => {
     const resp = await req.responsePromise;
     expect(resp).toMatchObject({
       statusCode: 200,
-      headers: {},
       body: '{"foo":"bar"}',
     });
   });
@@ -67,7 +66,6 @@ describe('browserRequest', () => {
     const resp = await req.responsePromise;
     expect(resp).toMatchObject({
       statusCode: 404,
-      headers: {},
       body: '',
     });
   });
@@ -84,7 +82,7 @@ describe('browserRequest', () => {
     const fetchOptions = firstCallArgs[1];
     expect(fetchOptions).toBeDefined();
     const headers = fetchOptions!.headers;
-    expect(headers).toContainEqual(['if-modified-since', 'Fri, 08 Mar 2019 18:57:18 GMT']);
+    expect(headers).toEqual({ 'if-modified-since': 'Fri, 08 Mar 2019 18:57:18 GMT' });
     await req.responsePromise;
   });
 
@@ -100,14 +98,12 @@ describe('browserRequest', () => {
     const req = makeGetRequest('https://cdn.optimizely.com/datafiles/123.json', {});
 
     const resp = await req.responsePromise;
-    expect(resp).toEqual({
+    expect(resp).toMatchObject({
       statusCode: 200,
       body: '{"foo":"bar"}',
-      headers: {
-        'content-type': 'application/json',
-        'last-modified': 'Fri, 08 Mar 2019 18:57:18 GMT',
-      },
     });
+    expect(resp.headers.get('content-type')).toBe('application/json');
+    expect(resp.headers.get('last-modified')).toBe('Fri, 08 Mar 2019 18:57:18 GMT');
   });
 
   it('returns a rejected promise when there is a request error', async () => {
