@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { assert } from 'chai';
+import sinon from 'sinon';
 import * as logging from '@optimizely/js-sdk-logging';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 
@@ -23,10 +25,6 @@ import optimizelyFactory from './index.browser';
 import configValidator from './utils/config_validator';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
-import chai from 'chai';
-import sinon from 'sinon';
-
-var assert = chai.assert;
 var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
 
 describe('javascript-sdk', function() {

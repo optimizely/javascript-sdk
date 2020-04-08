@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import chai from 'chai';
+import { assert } from 'chai';
 import sinon from 'sinon';
 
 import configValidator from './utils/config_validator';
@@ -23,8 +23,6 @@ import Optimizely from './optimizely';
 import testData from './tests/test_data';
 import packageJSON from '../package.json';
 import eventDispatcher from './plugins/event_dispatcher/index.browser';
-
-var assert = chai.assert;
 
 describe('javascript-sdk', function() {
   describe('APIs', function() {

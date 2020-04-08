@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { assert } from 'chai';
+import sinon from 'sinon';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 
 import enums from './utils/enums';
@@ -21,11 +23,6 @@ import testData from './tests/test_data';
 import loggerPlugin from './plugins/logger';
 import optimizelyFactory from './index.node';
 import configValidator from './utils/config_validator';
-
-import chai from 'chai';
-import sinon from 'sinon';
-
-var assert = chai.assert;
 
 describe('optimizelyFactory', function() {
   describe('APIs', function() {

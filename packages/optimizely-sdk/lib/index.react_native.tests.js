@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { assert } from 'chai';
+import sinon from 'sinon';
 import * as logging from '@optimizely/js-sdk-logging';
+import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 
 import Optimizely from './optimizely';
 import testData from './tests/test_data';
 import packageJSON from '../package.json';
 import optimizelyFactory from './index.react_native';
 import configValidator from './utils/config_validator';
-import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
-
-import chai from 'chai';
-import sinon from 'sinon';
-
-var assert = chai.assert;
 
 describe('javascript-sdk/react-native', function() {
   describe('APIs', function() {
