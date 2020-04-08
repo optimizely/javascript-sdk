@@ -2328,7 +2328,6 @@ var typedAudiencesConfig = {
     {
       id: '3988293898',
       name: '$$dummySubstringString',
-      conditions: '["and", ["or"]]',
       conditions: '{ "type": "custom_attribute", "name": "$opt_dummy_attribute", "value": "impossible_value" }',
     },
     {
