@@ -80,12 +80,6 @@ var createInstance = function(config) {
       config.isValidInstance = false;
     }
 
-    // Explicitly check for null or undefined
-    // prettier-ignore
-    if (config.skipJSONValidation == null) { // eslint-disable-line eqeqeq
-      config.skipJSONValidation = true;
-    }
-
     var eventDispatcher;
     // prettier-ignore
     if (config.eventDispatcher == null) { // eslint-disable-line eqeqeq

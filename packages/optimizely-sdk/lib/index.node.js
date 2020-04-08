@@ -28,7 +28,6 @@ import enums from './utils/enums';
 import loggerPlugin from './plugins/logger';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
-import jsonSchemaValidator from './utils/json_schema_validator';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
@@ -44,7 +43,6 @@ var DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
  * @param  {Object} config.datafile
  * @param  {Object} config.errorHandler
  * @param  {Object} config.eventDispatcher
- * @param  {Object} config.jsonSchemaValidator
  * @param  {Object} config.logger
  * @param  {Object} config.userProfileService
  * @param {Object} config.eventBatchSize
@@ -89,8 +87,6 @@ var createInstance = function(config) {
         eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
         eventDispatcher: defaultEventDispatcher,
         eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
-        jsonSchemaValidator: jsonSchemaValidator,
-        skipJSONValidation: false,
       },
       config,
       {

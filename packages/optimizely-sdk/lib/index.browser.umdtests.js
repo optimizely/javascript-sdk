@@ -71,7 +71,6 @@ describe('javascript-sdk', function() {
         // checking that INFO logs log for an unspecified logLevel
         var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
-          skipJSONValidation: true,
         });
         assert.strictEqual(console.info.getCalls().length, 1);
         var call = console.info.getCalls()[0];
@@ -84,7 +83,6 @@ describe('javascript-sdk', function() {
         var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
           logLevel: enums.LOG_LEVEL.ERROR,
-          skipJSONValidation: true,
         });
         assert.strictEqual(console.log.getCalls().length, 0);
 

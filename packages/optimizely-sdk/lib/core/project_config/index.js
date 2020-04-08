@@ -499,14 +499,13 @@ module.exports = {
    * @param  {Object} config.datafile
    * @param  {Object} config.jsonSchemaValidator
    * @param  {Object} config.logger
-   * @param  {Object} config.skipJSONValidation
    * @return {Object} Project config object
    */
   tryCreatingProjectConfig: function(config) {
     configValidator.validateDatafile(config.datafile);
-    if (config.skipJSONValidation === true) {
+    if (!config.jsonSchemaValidator) {
       config.logger.log(LOG_LEVEL.INFO, jsSdkUtils.sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
-    } else if (config.jsonSchemaValidator) {
+    } else {
       config.jsonSchemaValidator.validate(config.datafile);
       config.logger.log(LOG_LEVEL.INFO, jsSdkUtils.sprintf(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
     }
