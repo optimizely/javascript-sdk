@@ -80,12 +80,6 @@ module.exports = {
         config.isValidInstance = false;
       }
 
-      // Explicitly check for null or undefined
-      // prettier-ignore
-      if (config.skipJSONValidation == null) { // eslint-disable-line eqeqeq
-        config.skipJSONValidation = true;
-      }
-
       config = fns.assign(
         {
           clientEngine: enums.REACT_NATIVE_JS_CLIENT_ENGINE,

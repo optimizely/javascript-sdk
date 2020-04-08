@@ -49,7 +49,6 @@ var DEFAULT_ONREADY_TIMEOUT = 30000;
  * @param {Object} config.errorHandler
  * @param {Object} config.eventDispatcher
  * @param {Object} config.logger
- * @param {Object} config.skipJSONValidation
  * @param {Object} config.userProfileService
  * @param {Object} config.eventBatchSize
  * @param {Object} config.eventFlushInterval
@@ -76,7 +75,6 @@ function Optimizely(config) {
     datafileOptions: config.datafileOptions,
     jsonSchemaValidator: config.jsonSchemaValidator,
     sdkKey: config.sdkKey,
-    skipJSONValidation: config.skipJSONValidation,
   });
 
   this.__disposeOnUpdate = this.projectConfigManager.onUpdate(

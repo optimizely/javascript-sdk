@@ -216,7 +216,6 @@ describe('lib/optimizely', function() {
             jsonSchemaValidator: jsonSchemaValidator,
             logger: createdLogger,
             sdkKey: '12345',
-            skipJSONValidation: false,
           });
           sinon.assert.notCalled(stubErrorHandler.handleError);
         });
@@ -236,7 +235,6 @@ describe('lib/optimizely', function() {
             jsonSchemaValidator: jsonSchemaValidator,
             logger: createdLogger,
             sdkKey: '12345',
-            skipJSONValidation: false,
           });
           sinon.assert.calledOnce(projectConfigManager.ProjectConfigManager);
           sinon.assert.calledWithExactly(projectConfigManager.ProjectConfigManager, {
@@ -247,7 +245,6 @@ describe('lib/optimizely', function() {
             },
             jsonSchemaValidator: jsonSchemaValidator,
             sdkKey: '12345',
-            skipJSONValidation: false,
           });
         });
       });
