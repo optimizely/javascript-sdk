@@ -726,7 +726,6 @@ describe('lib/core/project_config', function() {
         datafile: { foo: 'bar' },
         jsonSchemaValidator: stubJsonSchemaValidator,
         logger: logger,
-        skipJSONValidation: false,
       });
       assert.deepEqual(result, configObj);
     });
@@ -739,7 +738,6 @@ describe('lib/core/project_config', function() {
           datafile: { foo: 'bar' },
           jsonSchemaValidator: stubJsonSchemaValidator,
           logger: logger,
-          skipJSONValidation: false,
         });
       });
     });
@@ -752,19 +750,8 @@ describe('lib/core/project_config', function() {
           datafile: { foo: 'bar' },
           jsonSchemaValidator: stubJsonSchemaValidator,
           logger: logger,
-          skipJSONValidation: false,
         });
       });
-    });
-
-    it('does not call jsonSchemaValidator.validate when skipJSONValidation is true', function() {
-      projectConfig.tryCreatingProjectConfig({
-        datafile: { foo: 'bar' },
-        jsonSchemaValidator: stubJsonSchemaValidator,
-        logger: logger,
-        skipJSONValidation: true,
-      });
-      sinon.assert.notCalled(stubJsonSchemaValidator.validate);
     });
 
     it('skips json validation when jsonSchemaValidator is not provided', function() {
