@@ -13,33 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as sdkLogging from '@optimizely/js-sdk-logging';
+import { 
+  getLogger,
+  setLogHandler,
+  setLogLevel,
+  setErrorHandler,
+  getErrorHandler,
+  LogLevel,
+} from '@optimizely/js-sdk-logging';
+import { LocalStoragePendingEventsDispatcher } from '@optimizely/js-sdk-event-processor';
+
 import fns from './utils/fns';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
-import utilEnums from './utils/enums';
-import * as eventProcessor from '@optimizely/js-sdk-event-processor';
+import enums from './utils/enums';
 import loggerPlugin from './plugins/logger';
 import Optimizely from './optimizely';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
-var logger = sdkLogging.getLogger();
-sdkLogging.setLogHandler(loggerPlugin.createLogger());
-sdkLogging.setLogLevel(sdkLogging.LogLevel.INFO);
+var logger = getLogger();
+setLogHandler(loggerPlugin.createLogger());
+setLogLevel(LogLevel.INFO);
 
 var MODULE_NAME = 'INDEX_BROWSER';
 var DEFAULT_EVENT_BATCH_SIZE = 10;
 var DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
 
 var hasRetriedEvents = false;
-
-export var logging = loggerPlugin;
-export var errorHandler = defaultErrorHandler;
-export var eventDispatcher = defaultEventDispatcher;
-export var enums = utilEnums;
-export var setLogger = sdkLogging.setLogHandler;
-export var setLogLevel = sdkLogging.setLogLevel;
 
 /**
  * Creates an instance of the Optimizely class
@@ -54,21 +55,21 @@ export var setLogLevel = sdkLogging.setLogLevel;
  * @param {Object} config.eventFlushInterval
  * @return {Object} the Optimizely object
  */
-export var createInstance = function(config) {
+var createInstance = function(config) {
   try {
     config = config || {};
 
     // TODO warn about setting per instance errorHandler / logger / logLevel
     if (config.errorHandler) {
-      sdkLogging.setErrorHandler(config.errorHandler);
+      setErrorHandler(config.errorHandler);
     }
     if (config.logger) {
-      sdkLogging.setLogHandler(config.logger);
+      setLogHandler(config.logger);
       // respect the logger's shouldLog functionality
-      sdkLogging.setLogLevel(sdkLogging.LogLevel.NOTSET);
+      setLogLevel(LogLevel.NOTSET);
     }
     if (config.logLevel !== undefined) {
-      sdkLogging.setLogLevel(config.logLevel);
+      setLogLevel(config.logLevel);
     }
 
     try {
@@ -89,7 +90,7 @@ export var createInstance = function(config) {
     // prettier-ignore
     if (config.eventDispatcher == null) { // eslint-disable-line eqeqeq
       // only wrap the event dispatcher with pending events retry if the user didnt override
-      eventDispatcher = new eventProcessor.LocalStoragePendingEventsDispatcher({
+      eventDispatcher = new LocalStoragePendingEventsDispatcher({
         eventDispatcher: defaultEventDispatcher,
       });
 
@@ -112,7 +113,7 @@ export var createInstance = function(config) {
         eventDispatcher: eventDispatcher,
         // always get the OptimizelyLogger facade from logging
         logger: logger,
-        errorHandler: sdkLogging.getErrorHandler(),
+        errorHandler: getErrorHandler(),
       }
     );
 
@@ -153,19 +154,30 @@ export var createInstance = function(config) {
   }
 };
 
-export var __internalResetRetryState = function() {
+var __internalResetRetryState = function() {
   hasRetriedEvents = false;
 };
 
 /**
  * Entry point into the Optimizely Browser SDK
  */
-export default {
-  logging,
-  errorHandler,
-  eventDispatcher,
+export {
+  loggerPlugin as logging,
+  defaultErrorHandler as errorHandler,
+  defaultEventDispatcher as eventDispatcher,
   enums,
-  setLogger,
+  setLogHandler as setLogger,
+  setLogLevel,
+  createInstance,
+  __internalResetRetryState,  
+}
+
+export default {
+  logging: loggerPlugin,
+  errorHandler: defaultErrorHandler,
+  eventDispatcher: defaultEventDispatcher,
+  enums,
+  setLogger: setLogHandler,
   setLogLevel,
   createInstance,
   __internalResetRetryState,
