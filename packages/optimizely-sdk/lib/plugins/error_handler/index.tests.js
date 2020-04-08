@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, Optimizely
+ * Copyright 2016, 2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var errorHandler = require('./');
+import { handleError } from './';
 
-var chai = require('chai');
+import chai from 'chai';
 var assert = chai.assert;
 
 describe('lib/plugins/error_handler', function() {
   describe('APIs', function() {
     describe('handleError', function() {
       it('should just be a no-op function', function() {
-        assert.isFunction(errorHandler.handleError);
+        assert.isFunction(handleError);
       });
     });
   });

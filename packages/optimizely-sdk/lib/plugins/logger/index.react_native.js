@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019, 2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var LogLevel = require('@optimizely/js-sdk-logging').LogLevel;
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
+import { LogLevel } from '@optimizely/js-sdk-logging';
+import { sprintf } from '@optimizely/js-sdk-utils';
 
 function getLogLevelName(level) {
   switch (level) {
@@ -54,12 +54,10 @@ function NoOpLogger() {}
 
 NoOpLogger.prototype.log = function() {};
 
-module.exports = {
-  createLogger: function() {
-    return new ReactNativeLogger();
-  },
+export const createLogger = function() {
+  return new ReactNativeLogger();
+}
 
-  createNoOpLogger: function() {
-    return new NoOpLogger();
-  },
-};
+export const createNoOpLogger = function() {
+  return new NoOpLogger();
+}
