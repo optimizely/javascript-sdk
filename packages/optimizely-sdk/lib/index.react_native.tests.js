@@ -27,12 +27,12 @@ import eventProcessorConfigValidator from './utils/event_processor_config_valida
 import chai from 'chai';
 import sinon from 'sinon';
 
-const assert = chai.assert;
+var assert = chai.assert;
 
 describe('javascript-sdk/react-native', function() {
   describe('APIs', function() {
-    let xhr;
-    let requests;
+    var xhr;
+    var requests;
 
     it('should expose logger, errorHandler, eventDispatcher and enums', function() {
       assert.isDefined(optimizelyFactory.logging);
@@ -44,9 +44,9 @@ describe('javascript-sdk/react-native', function() {
     });
 
     describe('createInstance', function() {
-      const fakeErrorHandler = { handleError: function() {} };
-      const fakeEventDispatcher = { dispatchEvent: function() {} };
-      let silentLogger;
+      var fakeErrorHandler = { handleError: function() {} };
+      var fakeEventDispatcher = { dispatchEvent: function() {} };
+      var silentLogger;
 
       beforeEach(function() {
         silentLogger = optimizelyFactory.logging.createLogger({
@@ -72,7 +72,7 @@ describe('javascript-sdk/react-native', function() {
       it('should not throw if the provided config is not valid', function() {
         configValidator.validate.throws(new Error('Invalid config or something'));
         assert.doesNotThrow(function() {
-          const optlyInstance = optimizelyFactory.createInstance({
+          var optlyInstance = optimizelyFactory.createInstance({
             datafile: {},
             logger: silentLogger,
           });
@@ -82,7 +82,7 @@ describe('javascript-sdk/react-native', function() {
       });
 
       it('should create an instance of optimizely', function() {
-        const optlyInstance = optimizelyFactory.createInstance({
+        var optlyInstance = optimizelyFactory.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
@@ -96,7 +96,7 @@ describe('javascript-sdk/react-native', function() {
       });
 
       it('should set the React Native JS client engine and javascript SDK version', function() {
-        const optlyInstance = optimizelyFactory.createInstance({
+        var optlyInstance = optimizelyFactory.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
@@ -109,7 +109,7 @@ describe('javascript-sdk/react-native', function() {
       });
 
       it('should allow passing of "react-sdk" as the clientEngine and convert it to "react-native-sdk"', function() {
-        const optlyInstance = optimizelyFactory.createInstance({
+        var optlyInstance = optimizelyFactory.createInstance({
           clientEngine: 'react-sdk',
           datafile: {},
           errorHandler: fakeErrorHandler,
@@ -122,13 +122,13 @@ describe('javascript-sdk/react-native', function() {
       });
 
       it('should activate with provided event dispatcher', function() {
-        const optlyInstance = optimizelyFactory.createInstance({
+        var optlyInstance = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: optimizelyFactory.eventDispatcher,
           logger: silentLogger,
         });
-        const activate = optlyInstance.activate('testExperiment', 'testUser');
+        var activate = optlyInstance.activate('testExperiment', 'testUser');
         assert.strictEqual(activate, 'control');
       });
 
@@ -144,7 +144,7 @@ describe('javascript-sdk/react-native', function() {
         });
 
         it('uses the default event dispatcher', function() {
-          const optlyInstance = optimizelyFactory.createInstance({
+          var optlyInstance = optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
             errorHandler: fakeErrorHandler,
             logger: silentLogger,
@@ -185,7 +185,7 @@ describe('javascript-sdk/react-native', function() {
         });
 
         it('should call logging.setLogHandler with the supplied logger', function() {
-          const fakeLogger = { log: function() {} };
+          var fakeLogger = { log: function() {} };
           optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
             logger: fakeLogger,
@@ -196,7 +196,7 @@ describe('javascript-sdk/react-native', function() {
       });
 
       describe('event processor configuration', function() {
-        let eventProcessorSpy;
+        var eventProcessorSpy;
         beforeEach(function() {
           eventProcessorSpy = sinon.stub(eventProcessor, 'LogTierV1EventProcessor').callThrough();
         });

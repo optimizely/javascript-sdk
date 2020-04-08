@@ -24,19 +24,19 @@ import loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
-const logger = sdkLogging.getLogger();
+var logger = sdkLogging.getLogger();
 sdkLogging.setLogHandler(loggerPlugin.createLogger());
 sdkLogging.setLogLevel(sdkLogging.LogLevel.INFO);
 
-const DEFAULT_EVENT_BATCH_SIZE = 10;
-const DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
+var DEFAULT_EVENT_BATCH_SIZE = 10;
+var DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
 
-export const logging = loggerPlugin;
-export const errorHandler = defaultErrorHandler;
-export const eventDispatcher = defaultEventDispatcher;
-export const enums = utilEnums;
-export const setLogger = sdkLogging.setLogHandler;
-export const setLogLevel = sdkLogging.setLogLevel;
+export var logging = loggerPlugin;
+export var errorHandler = defaultErrorHandler;
+export var eventDispatcher = defaultEventDispatcher;
+export var enums = utilEnums;
+export var setLogger = sdkLogging.setLogHandler;
+export var setLogLevel = sdkLogging.setLogLevel;
 
 /**
  * Creates an instance of the Optimizely class
@@ -51,7 +51,7 @@ export const setLogLevel = sdkLogging.setLogLevel;
  * @param {Object} config.eventFlushInterval
  * @return {Object} the Optimizely object
  */
-export const createInstance = function(config) {
+export var createInstance = function(config) {
   try {
     config = config || {};
 

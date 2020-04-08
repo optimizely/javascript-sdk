@@ -25,7 +25,7 @@ import configValidator from './utils/config_validator';
 import chai from 'chai';
 import sinon from 'sinon';
 
-const assert = chai.assert;
+var assert = chai.assert;
 
 describe('optimizelyFactory', function() {
   describe('APIs', function() {
@@ -39,9 +39,9 @@ describe('optimizelyFactory', function() {
     });
 
     describe('createInstance', function() {
-      const fakeErrorHandler = { handleError: function() {} };
-      const fakeEventDispatcher = { dispatchEvent: function() {} };
-      let fakeLogger;
+      var fakeErrorHandler = { handleError: function() {} };
+      var fakeEventDispatcher = { dispatchEvent: function() {} };
+      var fakeLogger;
 
       beforeEach(function() {
         fakeLogger = { log: sinon.spy(), setLogLevel: sinon.spy() };
@@ -58,9 +58,9 @@ describe('optimizelyFactory', function() {
 
       it('should not throw if the provided config is not valid and log an error if logger is passed in', function() {
         configValidator.validate.throws(new Error('Invalid config or something'));
-        const localLogger = loggerPlugin.createLogger({ logLevel: enums.LOG_LEVEL.INFO });
+        var localLogger = loggerPlugin.createLogger({ logLevel: enums.LOG_LEVEL.INFO });
         assert.doesNotThrow(function() {
-          const optlyInstance = optimizelyFactory.createInstance({
+          var optlyInstance = optimizelyFactory.createInstance({
             datafile: {},
             logger: localLogger,
           });
@@ -73,7 +73,7 @@ describe('optimizelyFactory', function() {
       it('should not throw if the provided config is not valid and log an error if no logger is provided', function() {
         configValidator.validate.throws(new Error('Invalid config or something'));
         assert.doesNotThrow(function() {
-          const optlyInstance = optimizelyFactory.createInstance({
+          var optlyInstance = optimizelyFactory.createInstance({
             datafile: {},
           });
           // Invalid datafile causes onReady Promise rejection - catch this
@@ -83,7 +83,7 @@ describe('optimizelyFactory', function() {
       });
 
       it('should create an instance of optimizely', function() {
-        const optlyInstance = optimizelyFactory.createInstance({
+        var optlyInstance = optimizelyFactory.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
@@ -97,7 +97,7 @@ describe('optimizelyFactory', function() {
       });
 
       describe('event processor configuration', function() {
-        let eventProcessorSpy;
+        var eventProcessorSpy;
         beforeEach(function() {
           eventProcessorSpy = sinon.stub(eventProcessor, 'LogTierV1EventProcessor').callThrough();
         });

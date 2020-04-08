@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 import * as sdkLogging from '@optimizely/js-sdk-logging';
-import { LocalStoragePendingEventsDispatcher } from '@optimizely/js-sdk-event-processor';
-
 import fns from './utils/fns';
-import Optimizely from './optimizely';
-import utilEnums from './utils/enums';
-import loggerPlugin from './plugins/logger';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
+import utilEnums from './utils/enums';
+import * as eventProcessor from '@optimizely/js-sdk-event-processor';
+import loggerPlugin from './plugins/logger';
+import Optimizely from './optimizely';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
 var logger = sdkLogging.getLogger();
@@ -90,7 +89,7 @@ export var createInstance = function(config) {
     // prettier-ignore
     if (config.eventDispatcher == null) { // eslint-disable-line eqeqeq
       // only wrap the event dispatcher with pending events retry if the user didnt override
-      eventDispatcher = new LocalStoragePendingEventsDispatcher({
+      eventDispatcher = new eventProcessor.LocalStoragePendingEventsDispatcher({
         eventDispatcher: defaultEventDispatcher,
       });
 

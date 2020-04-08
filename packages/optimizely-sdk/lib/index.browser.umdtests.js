@@ -24,7 +24,7 @@ import testData from './tests/test_data';
 import packageJSON from '../package.json';
 import eventDispatcher from './plugins/event_dispatcher/index.browser';
 
-const assert = chai.assert;
+var assert = chai.assert;
 
 describe('javascript-sdk', function() {
   describe('APIs', function() {
