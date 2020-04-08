@@ -18,6 +18,9 @@ import commonjs from '@rollup/plugin-commonjs';
 import { terser } from  'rollup-plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 
+const BUILD_ALL = process.env.BUILD_ALL ? true : false;
+const BUILD_UMD_BUNDLE = process.env.BUILD_UMD_BUNDLE ? true : false;
+
 const getConfigForPlatform = (platform) => {
   return {
     plugins: [
@@ -30,46 +33,51 @@ const getConfigForPlatform = (platform) => {
       exports: 'named',
       format: 'cjs',
       file: `dist/optimizely.${platform}.min.js`,
-      plugins: [terser()]
+      plugins: [ terser() ]
     }
   };
 };
 
-const namedExports = {
-  '@optimizely/js-sdk-logging': [
-    'getLogger',
-    'setLogLevel',
-    'LogLevel',
-    'setLogHandler',
-    'setErrorHandler',
-    'getErrorHandler'
+const configForUMD = {
+  plugins: [
+    resolve({ browser: true }),
+    commonjs({
+      namedExports: {
+        '@optimizely/js-sdk-logging': [
+          'getLogger',
+          'setLogLevel',
+          'LogLevel',
+          'setLogHandler',
+          'setErrorHandler',
+          'getErrorHandler'
+        ],
+        '@optimizely/js-sdk-event-processor': [
+          'LocalStoragePendingEventsDispatcher'
+        ]
+      }
+    }),
   ],
-  '@optimizely/js-sdk-event-processor': [
-    'LocalStoragePendingEventsDispatcher'
-  ]
-};
-
-const getConfigForUMD = (env) => {
-  return {
-    plugins: [
-      resolve({ browser: true }),
-      commonjs({ namedExports: namedExports }),
-    ],
-    input: 'lib/index.browser.js',
-    output: {
+  input: 'lib/index.browser.js',
+  output: [
+    {
       name: 'optimizelySdk',
       format: 'umd',
-      file: `dist/optimizely.browser.umd${ env === 'production' ? '.min' : '' }.js`,
+      file: 'dist/optimizely.browser.umd.js',
       exports: 'named',
-      plugins: [ env === 'production' ? terser() : null ]
     },
-  }
+    {
+      name: 'optimizelySdk',
+      format: 'umd',
+      file: 'dist/optimizely.browser.umd.min.js',
+      exports: 'named',
+      plugins: [ terser() ],
+    },
+  ],
 };
 
 export default [
-  getConfigForPlatform('node'),
-  getConfigForPlatform('browser'),
-  getConfigForPlatform('react_native'),
-  getConfigForUMD('development'),
-  getConfigForUMD('production'),
-];
+  BUILD_ALL && getConfigForPlatform('node'),
+  BUILD_ALL && getConfigForPlatform('browser'),
+  BUILD_ALL && getConfigForPlatform('react_native'),
+  (BUILD_ALL || BUILD_UMD_BUNDLE) && configForUMD,
+].filter(config => config);

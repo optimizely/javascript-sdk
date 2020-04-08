@@ -9,13 +9,14 @@
   "scripts": {
     "test": "mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js --recursive --exit --require esm --require lib/tests/exit_on_unhandled_rejection.js",
     "test-xbrowser": "karma start karma.bs.conf.js --single-run",
-    "test-umdbrowser": "karma start karma.umd.conf.js --single-run",
-    "build": "rollup -c",
-    "test-ci": "rm -rf dist && npm run build && npm run test-xbrowser && npm run test-umdbrowser",
+    "test-umdbrowser": "npm run build-browser-umd && karma start karma.umd.conf.js --single-run",
+    "build-browser-umd": "rollup -c --environment BUILD_UMD_BUNDLE",
+    "build": "rm -rf dist && rollup -c --environment BUILD_ALL",
+    "test-ci": "npm run test-xbrowser && npm run test-umdbrowser",
     "lint": "eslint 'lib/**/*.js'",
     "cover": "istanbul cover _mocha ./lib/*.tests.js ./lib/**/*.tests.js ./lib/**/**/*tests.js",
     "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls",
-    "prepublishOnly": "rm -rf dist && npm run build && npm test && npm run test-xbrowser && npm run test-umdbrowser"
+    "prepublishOnly": "npm run build && npm test && npm run test-xbrowser && npm run test-umdbrowser"
   },
   "repository": {
     "type": "git",
