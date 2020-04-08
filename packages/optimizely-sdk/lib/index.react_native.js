@@ -13,10 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as sdkLogging from '@optimizely/js-sdk-logging';
+import { 
+  getLogger,
+  setLogHandler,
+  setLogLevel,
+  setErrorHandler,
+  getErrorHandler,
+  LogLevel,
+} from '@optimizely/js-sdk-logging';
 
 import fns from './utils/fns';
-import utilEnums from './utils/enums';
+import enums from './utils/enums';
 import Optimizely from './optimizely';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
@@ -24,19 +31,12 @@ import loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
-var logger = sdkLogging.getLogger();
-sdkLogging.setLogHandler(loggerPlugin.createLogger());
-sdkLogging.setLogLevel(sdkLogging.LogLevel.INFO);
+var logger = getLogger();
+setLogHandler(loggerPlugin.createLogger());
+setLogLevel(LogLevel.INFO);
 
 var DEFAULT_EVENT_BATCH_SIZE = 10;
 var DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
-
-export var logging = loggerPlugin;
-export var errorHandler = defaultErrorHandler;
-export var eventDispatcher = defaultEventDispatcher;
-export var enums = utilEnums;
-export var setLogger = sdkLogging.setLogHandler;
-export var setLogLevel = sdkLogging.setLogLevel;
 
 /**
  * Creates an instance of the Optimizely class
@@ -51,21 +51,21 @@ export var setLogLevel = sdkLogging.setLogLevel;
  * @param {Object} config.eventFlushInterval
  * @return {Object} the Optimizely object
  */
-export var createInstance = function(config) {
+var createInstance = function(config) {
   try {
     config = config || {};
 
     // TODO warn about setting per instance errorHandler / logger / logLevel
     if (config.errorHandler) {
-      sdkLogging.setErrorHandler(config.errorHandler);
+      setErrorHandler(config.errorHandler);
     }
     if (config.logger) {
-      sdkLogging.setLogHandler(config.logger);
+      setLogHandler(config.logger);
       // respect the logger's shouldLog functionality
-      sdkLogging.setLogLevel(sdkLogging.LogLevel.NOTSET);
+      setLogLevel(LogLevel.NOTSET);
     }
     if (config.logLevel !== undefined) {
-      sdkLogging.setLogLevel(config.logLevel);
+      setLogLevel(config.logLevel);
     }
 
     try {
@@ -93,7 +93,7 @@ export var createInstance = function(config) {
       {
         // always get the OptimizelyLogger facade from logging
         logger: logger,
-        errorHandler: sdkLogging.getErrorHandler(),
+        errorHandler: getErrorHandler(),
       }
     );
 
@@ -125,12 +125,22 @@ export var createInstance = function(config) {
 /**
  * Entry point into the Optimizely Javascript SDK for React Native
  */
-export default {
-  logging,
-  errorHandler,
-  eventDispatcher,
+export {
+  loggerPlugin as logging,
+  defaultErrorHandler as errorHandler,
+  defaultEventDispatcher as eventDispatcher,
   enums,
-  setLogger,
+  setLogHandler as setLogger,
+  setLogLevel,
+  createInstance,
+}
+
+export default {
+  logging: loggerPlugin,
+  errorHandler: defaultErrorHandler,
+  eventDispatcher: defaultEventDispatcher,
+  enums,
+  setLogger: setLogHandler,
   setLogLevel,
   createInstance,
 };
