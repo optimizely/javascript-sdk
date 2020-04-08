@@ -23,7 +23,7 @@ var READYSTATE_COMPLETE = 4;
  * @param  {Object} eventObj
  * @param  {Function} callback
  */
-export const dispatchEvent = function(eventObj, callback) {
+export var dispatchEvent = function(eventObj, callback) {
   var url = eventObj.url;
   var params = eventObj.params;
   var req;

@@ -54,10 +54,10 @@ function NoOpLogger() {}
 
 NoOpLogger.prototype.log = function() {};
 
-export const createLogger = function() {
+export var createLogger = function() {
   return new ReactNativeLogger();
 }
 
-export const createNoOpLogger = function() {
+export var createNoOpLogger = function() {
   return new NoOpLogger();
 }

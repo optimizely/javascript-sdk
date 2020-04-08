@@ -15,4 +15,4 @@
  */
 import { LogLevel } from '@optimizely/js-sdk-logging';
 
-export const LOG_LEVEL = LogLevel;
+export var LOG_LEVEL = LogLevel;

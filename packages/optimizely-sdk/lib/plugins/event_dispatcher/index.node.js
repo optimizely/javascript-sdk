@@ -26,7 +26,7 @@ import url from 'url';
  * @param {function} callback         callback to execute
  * @return {ClientRequest|undefined}          ClientRequest object which made the request, or undefined if no request was made (error)
  */
-export const dispatchEvent = function(eventObj, callback) {
+export var dispatchEvent = function(eventObj, callback) {
   // Non-POST requests not supported
   if (eventObj.httpVerb !== 'POST') {
     return;

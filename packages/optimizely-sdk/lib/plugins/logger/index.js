@@ -19,10 +19,10 @@ function NoOpLogger() {}
 
 NoOpLogger.prototype.log = function() {};
 
-export const createLogger = function(opts) {
+export var createLogger = function(opts) {
   return new ConsoleLogHandler(opts);
 }
 
-export const createNoOpLogger = function() {
+export var createNoOpLogger = function() {
   return new NoOpLogger();
 }
