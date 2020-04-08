@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, Optimizely
+ * Copyright 2018, 2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,18 @@ module.exports = {
   basePath: '',
 
   //plugins
-  plugins: ['karma-mocha', 'karma-webpack', require('karma-browserstack-launcher')],
+  plugins: ['karma-mocha', 'karma-webpack', require('karma-chrome-launcher'), require('karma-browserstack-launcher')],
 
   webpack: {
     mode: 'production',
+    module: {
+      rules: [{
+        exclude: /\.json$/,
+        use: {
+          loader: 'buble-loader',
+        }
+      }]
+    }
   },
 
   //browserStack setup
