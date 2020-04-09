@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, 2020 Optimizely
+ * Copyright 2016-2017, 2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { dispatchEvent } from './index.browser';
-import chai from 'chai';
+import { assert } from 'chai';
 import sinon from 'sinon';
-var assert = chai.assert;
+
+import { dispatchEvent } from './index.browser';
 
 describe('lib/plugins/event_dispatcher/browser', function() {
   describe('APIs', function() {

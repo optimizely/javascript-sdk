@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2020 Optimizely
+ * Copyright 2016, 2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createLogger } from './';
-import enums from '../../utils/enums';
-import chai from 'chai';
+import { assert, expect } from 'chai';
 import sinon from 'sinon';
 
-var assert = chai.assert;
-var expect = chai.expect;
+import { createLogger } from './';
+import { LOG_LEVEL } from '../../utils/enums';;
 
-var LOG_LEVEL = enums.LOG_LEVEL;
 describe('lib/plugins/logger', function() {
   describe('APIs', function() {
     var defaultLogger;
