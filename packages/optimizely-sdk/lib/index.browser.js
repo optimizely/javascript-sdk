@@ -170,9 +170,9 @@ export default {
   logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
-  enums,
+  enums: enums,
   setLogger: setLogHandler,
-  setLogLevel,
-  createInstance,
-  __internalResetRetryState,
+  setLogLevel: setLogLevel,
+  createInstance: createInstance,
+  __internalResetRetryState: __internalResetRetryState,
 };

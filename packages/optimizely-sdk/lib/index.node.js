@@ -133,8 +133,8 @@ export default {
   logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
-  enums,
+  enums: enums,
   setLogger: setLogHandler,
-  setLogLevel,
-  createInstance,
+  setLogLevel: setLogLevel,
+  createInstance: createInstance,
 };
