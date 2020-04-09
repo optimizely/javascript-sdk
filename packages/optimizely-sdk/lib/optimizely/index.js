@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import * as jsSdkUtils from '@optimizely/js-sdk-utils';
+import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 
 import fns from '../utils/fns'
@@ -58,7 +58,7 @@ function Optimizely(config) {
   if (enums.VALID_CLIENT_ENGINES.indexOf(clientEngine) === -1) {
     config.logger.log(
       LOG_LEVEL.INFO,
-      jsSdkUtils.sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, MODULE_NAME, clientEngine)
+      sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, MODULE_NAME, clientEngine)
     );
     clientEngine = enums.NODE_CLIENT_ENGINE;
   }
@@ -81,7 +81,7 @@ function Optimizely(config) {
     function(configObj) {
       this.logger.log(
         LOG_LEVEL.INFO,
-        jsSdkUtils.sprintf(LOG_MESSAGES.UPDATED_OPTIMIZELY_CONFIG, MODULE_NAME, configObj.revision, configObj.projectId)
+        sprintf(LOG_MESSAGES.UPDATED_OPTIMIZELY_CONFIG, MODULE_NAME, configObj.revision, configObj.projectId)
       );
       this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE);
     }.bind(this)
@@ -94,7 +94,7 @@ function Optimizely(config) {
     try {
       if (userProfileServiceValidator.validate(config.userProfileService)) {
         userProfileService = config.userProfileService;
-        this.logger.log(LOG_LEVEL.INFO, jsSdkUtils.sprintf(LOG_MESSAGES.VALID_USER_PROFILE_SERVICE, MODULE_NAME));
+        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_USER_PROFILE_SERVICE, MODULE_NAME));
       }
     } catch (ex) {
       this.logger.log(LOG_LEVEL.WARNING, ex.message);
@@ -144,7 +144,7 @@ Optimizely.prototype.__isValidInstance = function() {
 Optimizely.prototype.activate = function(experimentKey, userId, attributes) {
   try {
     if (!this.__isValidInstance()) {
-      this.logger.log(LOG_LEVEL.ERROR, jsSdkUtils.sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'activate'));
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'activate'));
       return null;
     }
 
@@ -165,7 +165,7 @@ Optimizely.prototype.activate = function(experimentKey, userId, attributes) {
 
       // If experiment is not set to 'Running' status, log accordingly and return variation key
       if (!projectConfig.isRunning(configObj, experimentKey)) {
-        var shouldNotDispatchActivateLogMessage = jsSdkUtils.sprintf(
+        var shouldNotDispatchActivateLogMessage = sprintf(
           LOG_MESSAGES.SHOULD_NOT_DISPATCH_ACTIVATE,
           MODULE_NAME,
           experimentKey
@@ -179,7 +179,7 @@ Optimizely.prototype.activate = function(experimentKey, userId, attributes) {
       return variationKey;
     } catch (ex) {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
-      var failedActivationLogMessage = jsSdkUtils.sprintf(
+      var failedActivationLogMessage = sprintf(
         LOG_MESSAGES.NOT_ACTIVATING_USER,
         MODULE_NAME,
         userId,
@@ -275,7 +275,7 @@ Optimizely.prototype.__emitNotificationCenterActivate = function(experimentKey, 
 Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
   try {
     if (!this.__isValidInstance()) {
-      this.logger.log(LOG_LEVEL.ERROR, jsSdkUtils.sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'track'));
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'track'));
       return;
     }
 
@@ -291,9 +291,9 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
     if (!projectConfig.eventWithKeyExists(configObj, eventKey)) {
       this.logger.log(
         LOG_LEVEL.WARNING,
-        jsSdkUtils.sprintf(enums.LOG_MESSAGES.EVENT_KEY_NOT_FOUND, MODULE_NAME, eventKey)
+        sprintf(enums.LOG_MESSAGES.EVENT_KEY_NOT_FOUND, MODULE_NAME, eventKey)
       );
-      this.logger.log(LOG_LEVEL.WARNING, jsSdkUtils.sprintf(LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId));
+      this.logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId));
       return;
     }
 
@@ -308,14 +308,14 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
       clientVersion: this.clientVersion,
       configObj: configObj,
     });
-    this.logger.log(LOG_LEVEL.INFO, jsSdkUtils.sprintf(enums.LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId));
+    this.logger.log(LOG_LEVEL.INFO, sprintf(enums.LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId));
     // TODO is it okay to not pass a projectConfig as second argument
     this.eventProcessor.process(conversionEvent);
     this.__emitNotificationCenterTrack(eventKey, userId, attributes, eventTags);
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
-    var failedTrackLogMessage = jsSdkUtils.sprintf(LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId);
+    var failedTrackLogMessage = sprintf(LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId);
     this.logger.log(LOG_LEVEL.ERROR, failedTrackLogMessage);
   }
 };
@@ -369,7 +369,7 @@ Optimizely.prototype.__emitNotificationCenterTrack = function(eventKey, userId, 
 Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) {
   try {
     if (!this.__isValidInstance()) {
-      this.logger.log(LOG_LEVEL.ERROR, jsSdkUtils.sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getVariation'));
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getVariation'));
       return null;
     }
 
@@ -387,7 +387,7 @@ Optimizely.prototype.getVariation = function(experimentKey, userId, attributes) 
       if (!experiment) {
         this.logger.log(
           LOG_LEVEL.DEBUG,
-          jsSdkUtils.sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey)
+          sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey)
         );
         return null;
       }
@@ -485,7 +485,7 @@ Optimizely.prototype.__validateInputs = function(stringInputs, userAttributes, e
     if (stringInputs.hasOwnProperty('user_id')) {
       var userId = stringInputs.user_id;
       if (typeof userId !== 'string' || userId === null || userId === 'undefined') {
-        throw new Error(jsSdkUtils.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, 'user_id'));
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, 'user_id'));
       }
 
       delete stringInputs.user_id;
@@ -495,7 +495,7 @@ Optimizely.prototype.__validateInputs = function(stringInputs, userAttributes, e
     for (var index = 0; index < inputKeys.length; index++) {
       var key = inputKeys[index];
       if (!stringValidator.validate(stringInputs[key])) {
-        throw new Error(jsSdkUtils.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, key));
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, key));
       }
     }
     if (userAttributes) {
@@ -519,7 +519,7 @@ Optimizely.prototype.__validateInputs = function(stringInputs, userAttributes, e
  * @return {null}
  */
 Optimizely.prototype.__notActivatingExperiment = function(experimentKey, userId) {
-  var failedActivationLogMessage = jsSdkUtils.sprintf(
+  var failedActivationLogMessage = sprintf(
     LOG_MESSAGES.NOT_ACTIVATING_USER,
     MODULE_NAME,
     userId,
@@ -555,7 +555,7 @@ Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes)
     if (!this.__isValidInstance()) {
       this.logger.log(
         LOG_LEVEL.ERROR,
-        jsSdkUtils.sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'isFeatureEnabled')
+        sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'isFeatureEnabled')
       );
       return false;
     }
@@ -594,12 +594,12 @@ Optimizely.prototype.isFeatureEnabled = function(featureKey, userId, attributes)
     if (featureEnabled === true) {
       this.logger.log(
         LOG_LEVEL.INFO,
-        jsSdkUtils.sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId)
+        sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId)
       );
     } else {
       this.logger.log(
         LOG_LEVEL.INFO,
-        jsSdkUtils.sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId)
+        sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId)
       );
       featureEnabled = false;
     }
@@ -639,7 +639,7 @@ Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
     if (!this.__isValidInstance()) {
       this.logger.log(
         LOG_LEVEL.ERROR,
-        jsSdkUtils.sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getEnabledFeatures')
+        sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getEnabledFeatures')
       );
       return enabledFeatures;
     }
@@ -653,7 +653,7 @@ Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
       return enabledFeatures;
     }
 
-    jsSdkUtils.objectValues(configObj.featureKeyMap).forEach(
+    objectValues(configObj.featureKeyMap).forEach(
       function(feature) {
         if (this.isFeatureEnabled(feature.key, userId, attributes)) {
           enabledFeatures.push(feature.key);
@@ -721,7 +721,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     var apiName = variableType
       ? 'getFeatureVariable' + variableType.charAt(0).toUpperCase() + variableType.slice(1)
       : 'getFeatureVariable';
-    this.logger.log(LOG_LEVEL.ERROR, jsSdkUtils.sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, apiName));
+    this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, apiName));
     return null;
   }
 
@@ -749,7 +749,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
   } else if (variable.type !== variableType) {
     this.logger.log(
       LOG_LEVEL.WARNING,
-      jsSdkUtils.sprintf(LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE, MODULE_NAME, variableType, variable.type)
+      sprintf(LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE, MODULE_NAME, variableType, variable.type)
     );
     return null;
   }
@@ -766,7 +766,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
         variableValue = value;
         this.logger.log(
           LOG_LEVEL.INFO,
-          jsSdkUtils.sprintf(
+          sprintf(
             LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE,
             MODULE_NAME,
             variableKey,
@@ -778,7 +778,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
       } else {
         this.logger.log(
           LOG_LEVEL.INFO,
-          jsSdkUtils.sprintf(
+          sprintf(
             LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE,
             MODULE_NAME,
             featureFlag.key,
@@ -790,7 +790,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     } else {
       this.logger.log(
         LOG_LEVEL.INFO,
-        jsSdkUtils.sprintf(
+        sprintf(
           LOG_MESSAGES.VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
           MODULE_NAME,
           variableKey,
@@ -801,7 +801,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
   } else {
     this.logger.log(
       LOG_LEVEL.INFO,
-      jsSdkUtils.sprintf(
+      sprintf(
         LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE,
         MODULE_NAME,
         userId,
@@ -1103,7 +1103,7 @@ Optimizely.prototype.onReady = function(options) {
     delete this.__readyTimeouts[timeoutId];
     resolveTimeoutPromise({
       success: false,
-      reason: jsSdkUtils.sprintf('onReady timeout expired after %s ms', timeout),
+      reason: sprintf('onReady timeout expired after %s ms', timeout),
     });
   }.bind(this);
   var readyTimeout = setTimeout(onReadyTimeout, timeout);

@@ -13,9 +13,13 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
+import { assert } from 'chai';
+import sinon from 'sinon';
+import uuid from 'uuid';
+import { sprintf } from '@optimizely/js-sdk-utils';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
-import * as testData from '../tests/test_data';
 import * as logging from '@optimizely/js-sdk-logging';
+
 import Optimizely from './';
 import AudienceEvaluator from '../core/audience_evaluator';
 import bluebird from 'bluebird';
@@ -30,12 +34,7 @@ import logger from '../plugins/logger';
 import decisionService from '../core/decision_service';
 import jsonSchemaValidator from '../utils/json_schema_validator';
 import projectConfig from '../core/project_config';
-import chai from 'chai';
-import sinon from 'sinon';
-import { sprintf } from '@optimizely/js-sdk-utils';
-import uuid from 'uuid';
-
-var assert = chai.assert;
+import testData from '../tests/test_data';
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
