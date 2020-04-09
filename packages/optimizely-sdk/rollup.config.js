@@ -21,7 +21,7 @@ import resolve from '@rollup/plugin-node-resolve';
 const BUILD_ALL = process.env.BUILD_ALL ? true : false;
 const BUILD_UMD_BUNDLE = process.env.BUILD_UMD_BUNDLE ? true : false;
 
-const getConfigForPlatform = (platform) => {
+const getCjsConfigForPlatform = (platform) => {
   return {
     plugins: [
       resolve(),
@@ -38,7 +38,17 @@ const getConfigForPlatform = (platform) => {
   };
 };
 
-const configForUMD = {
+const esModuleConfig = {
+  ... getCjsConfigForPlatform('browser'),
+  output: {
+    exports: 'named',
+    format: 'es',
+    file: 'dist/optimizely.browser.es.min.js',
+    plugins: [ terser() ]
+  }
+}
+
+const umdconfig = {
   plugins: [
     resolve({ browser: true }),
     commonjs({
@@ -76,8 +86,9 @@ const configForUMD = {
 };
 
 export default [
-  BUILD_ALL && getConfigForPlatform('node'),
-  BUILD_ALL && getConfigForPlatform('browser'),
-  BUILD_ALL && getConfigForPlatform('react_native'),
-  (BUILD_ALL || BUILD_UMD_BUNDLE) && configForUMD,
+  BUILD_ALL && getCjsConfigForPlatform('node'),
+  BUILD_ALL && getCjsConfigForPlatform('browser'),
+  BUILD_ALL && getCjsConfigForPlatform('react_native'),
+  BUILD_ALL && esModuleConfig,
+  (BUILD_ALL || BUILD_UMD_BUNDLE) && umdconfig,
 ].filter(config => config);

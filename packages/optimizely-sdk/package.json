@@ -2,6 +2,7 @@
   "name": "@optimizely/optimizely-sdk",
   "version": "4.0.0-alpha.1",
   "description": "JavaScript SDK for Optimizely X Full Stack",
+  "module": "dist/optimizely.browser.es.min.js",
   "main": "dist/optimizely.node.min.js",
   "browser": "dist/optimizely.browser.min.js",
   "react-native": "dist/optimizely.react_native.min.js",

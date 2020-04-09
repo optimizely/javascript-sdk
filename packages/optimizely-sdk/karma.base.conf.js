@@ -24,14 +24,6 @@ module.exports = {
 
   webpack: {
     mode: 'production',
-    module: {
-      rules: [{
-        exclude: /\.json$/,
-        use: {
-          loader: 'buble-loader',
-        }
-      }]
-    }
   },
 
   //browserStack setup
