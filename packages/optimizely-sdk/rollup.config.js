@@ -54,6 +54,7 @@ const umdconfig = {
     commonjs({
       namedExports: {
         '@optimizely/js-sdk-logging': [
+          'ConsoleLogHandler',
           'getLogger',
           'setLogLevel',
           'LogLevel',
