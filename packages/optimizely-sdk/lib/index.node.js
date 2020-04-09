@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2016-2017, 2019, Optimizely, Inc. and contributors             *
+ * Copyright 2016-2017, 2019-2020 Optimizely, Inc. and contributors        *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -13,110 +13,128 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-var logging = require('@optimizely/js-sdk-logging');
-var configValidator = require('./utils/config_validator');
-var defaultErrorHandler = require('./plugins/error_handler');
-var defaultEventDispatcher = require('./plugins/event_dispatcher/index.node');
-var enums = require('./utils/enums');
-var fns = require('./utils/fns');
-var loggerPlugin = require('./plugins/logger');
-var Optimizely = require('./optimizely');
-var eventProcessorConfigValidator = require('./utils/event_processor_config_validator');
+import { 
+  getLogger,
+  setLogHandler,
+  setLogLevel,
+  setErrorHandler,
+  getErrorHandler,
+  LogLevel,
+} from '@optimizely/js-sdk-logging';
 
-var logger = logging.getLogger();
-logging.setLogLevel(logging.LogLevel.ERROR);
+import fns from './utils/fns';
+import Optimizely from './optimizely';
+import enums from './utils/enums';
+import loggerPlugin from './plugins/logger';
+import configValidator from './utils/config_validator';
+import defaultErrorHandler from './plugins/error_handler';
+import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
+import eventProcessorConfigValidator from './utils/event_processor_config_validator';
+
+var logger = getLogger();
+setLogLevel(LogLevel.ERROR);
 
 var DEFAULT_EVENT_BATCH_SIZE = 10;
 var DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
 
 /**
+ * Creates an instance of the Optimizely class
+ * @param  {Object} config
+ * @param  {Object} config.datafile
+ * @param  {Object} config.errorHandler
+ * @param  {Object} config.eventDispatcher
+ * @param  {Object} config.logger
+ * @param  {Object} config.userProfileService
+ * @param {Object} config.eventBatchSize
+ * @param {Object} config.eventFlushInterval
+ * @return {Object} the Optimizely object
+ */
+var createInstance = function(config) {
+  try {
+    var hasLogger = false;
+    config = config || {};
+
+    // TODO warn about setting per instance errorHandler / logger / logLevel
+    if (config.errorHandler) {
+      setErrorHandler(config.errorHandler);
+    }
+    if (config.logger) {
+      // only set a logger in node if one is provided, by not setting we are noop-ing
+      hasLogger = true;
+      setLogHandler(config.logger);
+      // respect the logger's shouldLog functionality
+      setLogLevel(LogLevel.NOTSET);
+    }
+    if (config.logLevel !== undefined) {
+      setLogLevel(config.logLevel);
+    }
+
+    try {
+      configValidator.validate(config);
+      config.isValidInstance = true;
+    } catch (ex) {
+      if (hasLogger) {
+        logger.error(ex);
+      } else {
+        console.error(ex.message);
+      }
+      config.isValidInstance = false;
+    }
+
+    config = fns.assign(
+      {
+        clientEngine: enums.NODE_CLIENT_ENGINE,
+        eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
+        eventDispatcher: defaultEventDispatcher,
+        eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
+      },
+      config,
+      {
+        // always get the OptimizelyLogger facade from logging
+        logger: logger,
+        errorHandler: getErrorHandler(),
+      }
+    );
+
+    if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
+      logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
+      config.eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
+    }
+    if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
+      logger.warn(
+        'Invalid eventFlushInterval %s, defaulting to %s',
+        config.eventFlushInterval,
+        DEFAULT_EVENT_FLUSH_INTERVAL
+      );
+      config.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
+    }
+
+    return new Optimizely(config);
+  } catch (e) {
+    logger.error(e);
+    return null;
+  }
+};
+
+/**
  * Entry point into the Optimizely Node testing SDK
  */
-module.exports = {
+export {
+  loggerPlugin as logging,
+  defaultErrorHandler as errorHandler,
+  defaultEventDispatcher as eventDispatcher,
+  enums,
+  setLogHandler as setLogger,
+  setLogLevel,
+  createInstance,
+}
+
+export default {
   logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
   enums: enums,
-
-  setLogger: logging.setLogHandler,
-  setLogLevel: logging.setLogLevel,
-
-  /**
-   * Creates an instance of the Optimizely class
-   * @param  {Object} config
-   * @param  {Object} config.datafile
-   * @param  {Object} config.errorHandler
-   * @param  {Object} config.eventDispatcher
-   * @param  {Object} config.logger
-   * @param  {Object} config.userProfileService
-   * @param {Object} config.eventBatchSize
-   * @param {Object} config.eventFlushInterval
-   * @return {Object} the Optimizely object
-   */
-  createInstance: function(config) {
-    try {
-      var hasLogger = false;
-      config = config || {};
-
-      // TODO warn about setting per instance errorHandler / logger / logLevel
-      if (config.errorHandler) {
-        logging.setErrorHandler(config.errorHandler);
-      }
-      if (config.logger) {
-        // only set a logger in node if one is provided, by not setting we are noop-ing
-        hasLogger = true;
-        logging.setLogHandler(config.logger);
-        // respect the logger's shouldLog functionality
-        logging.setLogLevel(logging.LogLevel.NOTSET);
-      }
-      if (config.logLevel !== undefined) {
-        logging.setLogLevel(config.logLevel);
-      }
-
-      try {
-        configValidator.validate(config);
-        config.isValidInstance = true;
-      } catch (ex) {
-        if (hasLogger) {
-          logger.error(ex);
-        } else {
-          console.error(ex.message);
-        }
-        config.isValidInstance = false;
-      }
-
-      config = fns.assign(
-        {
-          clientEngine: enums.NODE_CLIENT_ENGINE,
-          eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
-          eventDispatcher: defaultEventDispatcher,
-          eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
-        },
-        config,
-        {
-          // always get the OptimizelyLogger facade from logging
-          logger: logger,
-          errorHandler: logging.getErrorHandler(),
-        }
-      );
-
-      if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
-        logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
-        config.eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
-      }
-      if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
-        logger.warn(
-          'Invalid eventFlushInterval %s, defaulting to %s',
-          config.eventFlushInterval,
-          DEFAULT_EVENT_FLUSH_INTERVAL
-        );
-        config.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
-      }
-
-      return new Optimizely(config);
-    } catch (e) {
-      logger.error(e);
-      return null;
-    }
-  },
+  setLogger: setLogHandler,
+  setLogLevel: setLogLevel,
+  createInstance: createInstance,
 };

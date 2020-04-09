@@ -11,7 +11,8 @@ module.exports = {
     Promise: 'readonly',
   },
   parserOptions: {
-    ecmaVersion: 5,
+    ecmaVersion: 6,
+    sourceType: 'module',
   },
   rules: {
     'no-prototype-builtins': 'off',
