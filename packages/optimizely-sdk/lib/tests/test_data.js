@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2020 Optimizely
+ * Copyright 2016-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { cloneDeep } from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 
 var config = {
   revision: '42',
@@ -2578,12 +2578,12 @@ export var getMutexFeatureTestsConfig = function() {
 };
 
 export default {
-  getParsedAudiences,
-  getTestProjectConfig,
-  getTestProjectConfigWithFeatures,
-  datafileWithFeaturesExpectedData,
-  getUnsupportedVersionConfig,
-  getTypedAudiencesConfig,
-  typedAudiencesById,
-  getMutexFeatureTestsConfig,
-}
+  getTestProjectConfig: getTestProjectConfig,
+  getParsedAudiences: getParsedAudiences,
+  getTestProjectConfigWithFeatures: getTestProjectConfigWithFeatures,
+  datafileWithFeaturesExpectedData: datafileWithFeaturesExpectedData,
+  getUnsupportedVersionConfig: getUnsupportedVersionConfig,
+  getTypedAudiencesConfig: getTypedAudiencesConfig,
+  typedAudiencesById: typedAudiencesById,
+  getMutexFeatureTestsConfig: getMutexFeatureTestsConfig,
+};
