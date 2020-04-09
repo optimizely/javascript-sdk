@@ -47,8 +47,6 @@
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
     "bluebird": "^3.4.6",
-    "buble": "^0.20.0",
-    "buble-loader": "^0.5.1",
     "chai": "^4.2.0",
     "coveralls": "^3.0.2",
     "eslint": "^6.7.2",
