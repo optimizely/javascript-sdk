@@ -14,7 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
-var Optimizely = require('../../optimizely');
+var Optimizely = require('../../optimizely').default;
 var eventBuilder = require('../../core/event_builder/index.js');
 var eventDispatcher = require('../../plugins/event_dispatcher/index.node');
 var errorHandler = require('../../plugins/error_handler');

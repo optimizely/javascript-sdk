@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2016-2019, Optimizely, Inc. and contributors                   *
+ * Copyright 2016-2020 Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -13,21 +13,21 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
+import * as jsSdkUtils from '@optimizely/js-sdk-utils';
+import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 
-var fns = require('../utils/fns');
-var attributesValidator = require('../utils/attributes_validator');
-var decisionService = require('../core/decision_service');
-var enums = require('../utils/enums');
-var eventBuilder = require('../core/event_builder/index.js');
-var eventHelpers = require('../core/event_builder/event_helpers');
-var eventProcessor = require('@optimizely/js-sdk-event-processor');
-var eventTagsValidator = require('../utils/event_tags_validator');
-var notificationCenter = require('../core/notification_center');
-var projectConfig = require('../core/project_config');
-var jsSdkUtils = require('@optimizely/js-sdk-utils');
-var userProfileServiceValidator = require('../utils/user_profile_service_validator');
-var stringValidator = require('../utils/string_value_validator');
-var projectConfigManager = require('../core/project_config/project_config_manager');
+import fns from '../utils/fns'
+import attributesValidator from '../utils/attributes_validator';
+import decisionService from '../core/decision_service';
+import enums from '../utils/enums';
+import eventBuilder from '../core/event_builder/index.js';
+import eventHelpers from '../core/event_builder/event_helpers';
+import eventTagsValidator from '../utils/event_tags_validator';
+import notificationCenter from '../core/notification_center';
+import projectConfig from '../core/project_config';
+import userProfileServiceValidator from '../utils/user_profile_service_validator';
+import stringValidator from '../utils/string_value_validator';
+import projectConfigManager from '../core/project_config/project_config_manager';
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
@@ -1132,4 +1132,4 @@ Optimizely.prototype.onReady = function(options) {
   return Promise.race([this.__readyPromise, timeoutPromise]);
 };
 
-module.exports = Optimizely;
+export default Optimizely;

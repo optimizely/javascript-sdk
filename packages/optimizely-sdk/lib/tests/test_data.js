@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2019, Optimizely
+ * Copyright 2016-2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var cloneDeep = require('lodash/cloneDeep');
+import cloneDeep from 'lodash/cloneDeep';
 
 var config = {
   revision: '42',
@@ -336,7 +336,7 @@ var config = {
   projectId: '111001',
 };
 
-var getParsedAudiences = [
+export var getParsedAudiences = [
   {
     name: 'Firefox users',
     conditions: ['and', ['or', ['or', { name: 'browser_type', type: 'custom_attribute', value: 'firefox' }]]],
@@ -344,7 +344,7 @@ var getParsedAudiences = [
   },
 ];
 
-var getTestProjectConfig = function() {
+export var getTestProjectConfig = function() {
   return cloneDeep(config);
 };
 
@@ -1009,11 +1009,11 @@ var configWithFeatures = {
   variables: [],
 };
 
-var getTestProjectConfigWithFeatures = function() {
+export var getTestProjectConfigWithFeatures = function() {
   return cloneDeep(configWithFeatures);
 };
 
-var datafileWithFeaturesExpectedData = {
+export var datafileWithFeaturesExpectedData = {
   rolloutIdMap: {
     599055: {
       id: '599055',
@@ -2035,7 +2035,7 @@ var unsupportedVersionConfig = {
   projectId: '111001',
 };
 
-var getUnsupportedVersionConfig = function() {
+export var getUnsupportedVersionConfig = function() {
   return cloneDeep(unsupportedVersionConfig);
 };
 
@@ -2435,11 +2435,11 @@ var typedAudiencesConfig = {
   revision: '3',
 };
 
-var getTypedAudiencesConfig = function() {
+export var getTypedAudiencesConfig = function() {
   return cloneDeep(typedAudiencesConfig);
 };
 
-var typedAudiencesById = {
+export var typedAudiencesById = {
   3468206642: {
     id: '3468206642',
     name: 'exactString',
@@ -2573,17 +2573,17 @@ var mutexFeatureTestsConfig = {
   revision: '12',
 };
 
-var getMutexFeatureTestsConfig = function() {
+export var getMutexFeatureTestsConfig = function() {
   return cloneDeep(mutexFeatureTestsConfig);
 };
 
-module.exports = {
-  getTestProjectConfig: getTestProjectConfig,
-  getParsedAudiences: getParsedAudiences,
-  getTestProjectConfigWithFeatures: getTestProjectConfigWithFeatures,
-  datafileWithFeaturesExpectedData: datafileWithFeaturesExpectedData,
-  getUnsupportedVersionConfig: getUnsupportedVersionConfig,
-  getTypedAudiencesConfig: getTypedAudiencesConfig,
-  typedAudiencesById: typedAudiencesById,
-  getMutexFeatureTestsConfig: getMutexFeatureTestsConfig,
-};
+export default {
+  getParsedAudiences,
+  getTestProjectConfig,
+  getTestProjectConfigWithFeatures,
+  datafileWithFeaturesExpectedData,
+  getUnsupportedVersionConfig,
+  getTypedAudiencesConfig,
+  typedAudiencesById,
+  getMutexFeatureTestsConfig,
+}
