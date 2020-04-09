@@ -61,3 +61,8 @@ export var createLogger = function() {
 export var createNoOpLogger = function() {
   return new NoOpLogger();
 }
+
+export default {
+  createLogger,
+  createNoOpLogger,
+}

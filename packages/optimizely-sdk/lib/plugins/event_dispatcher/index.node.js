@@ -59,3 +59,7 @@ export var dispatchEvent = function(eventObj, callback) {
   req.end();
   return req;
 }
+
+export default {
+  dispatchEvent,
+}

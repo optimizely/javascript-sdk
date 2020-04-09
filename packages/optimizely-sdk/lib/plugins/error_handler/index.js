@@ -20,3 +20,7 @@
 export var handleError = function() {
   // no-op
 }
+
+export default {
+  handleError,
+}

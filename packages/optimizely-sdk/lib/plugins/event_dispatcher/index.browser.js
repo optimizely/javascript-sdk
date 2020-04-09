@@ -70,3 +70,7 @@ function toQueryString(obj) {
     })
     .join('&');
 }
+
+export default {
+  dispatchEvent,
+}
