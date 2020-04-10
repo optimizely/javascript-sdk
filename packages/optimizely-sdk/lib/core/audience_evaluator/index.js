@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2018-2019 Optimizely
+ * Copyright 2016, 2018-2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var conditionTreeEvaluator = require('../condition_tree_evaluator');
-var customAttributeConditionEvaluator = require('../custom_attribute_condition_evaluator');
-var enums = require('../../utils/enums');
-var fns = require('../../utils/fns');
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
-var logging = require('@optimizely/js-sdk-logging');
-var logger = logging.getLogger();
+import conditionTreeEvaluator from '../condition_tree_evaluator';
+import customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
+import enums from '../../utils/enums';
+import fns from '../../utils/fns';
+import { sprintf } from '@optimizely/js-sdk-utils';
+import { getLogger } from '@optimizely/js-sdk-logging';
+var logger = getLogger();
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
@@ -108,4 +108,4 @@ AudienceEvaluator.prototype.evaluateConditionWithUserAttributes = function(userA
   return null;
 };
 
-module.exports = AudienceEvaluator;
+export default AudienceEvaluator;

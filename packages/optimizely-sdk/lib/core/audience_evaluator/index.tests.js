@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2018-2019 Optimizely
+ * Copyright 2016, 2018-2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var AudienceEvaluator = require('./');
-var chai = require('chai');
-var conditionTreeEvaluator = require('../condition_tree_evaluator');
-var customAttributeConditionEvaluator = require('../custom_attribute_condition_evaluator');
-var sinon = require('sinon');
+import AudienceEvaluator from './index';
+import chai from 'chai';
+import conditionTreeEvaluator from '../condition_tree_evaluator';
+import customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
+import sinon from 'sinon';
+import { getLogger } from '@optimizely/js-sdk-logging';
+
 var assert = chai.assert;
-var logging = require('@optimizely/js-sdk-logging');
-var mockLogger = logging.getLogger();
-var enums = require('../../utils/enums');
-var LOG_LEVEL = enums.LOG_LEVEL;
+var mockLogger = getLogger();
 
 var chromeUserAudience = {
   conditions: [

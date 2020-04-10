@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2017-2020, Optimizely, Inc. and contributors                        *
+ * Copyright 2017-2019, 2020 Optimizely, Inc. and contributors              *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -13,25 +13,23 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
+import Optimizely from '../../optimizely';
+import eventBuilder from '../../core/event_builder/index.js';
+import eventDispatcher from '../../plugins/event_dispatcher/index.node';
+import errorHandler from '../../plugins/error_handler';
+import bucketer from '../bucketer';
+import DecisionService from './';
+import enums from '../../utils/enums';
+import cloneDeep from 'lodash/cloneDeep';
+import logger from '../../plugins/logger';
+import projectConfig from '../project_config';
+import { sprintf } from '@optimizely/js-sdk-utils';
+import { getTestProjectConfig, getTestProjectConfigWithFeatures } from '../../tests/test_data';
+import jsonSchemaValidator from '../../utils/json_schema_validator';
+import AudienceEvaluator from '../audience_evaluator';
 
-var Optimizely = require('../../optimizely').default;
-var eventBuilder = require('../../core/event_builder/index.js');
-var eventDispatcher = require('../../plugins/event_dispatcher/index.node');
-var errorHandler = require('../../plugins/error_handler');
-var bucketer = require('../bucketer');
-var DecisionService = require('./');
-var enums = require('../../utils/enums');
-var cloneDeep = require('lodash/cloneDeep');
-var logger = require('../../plugins/logger');
-var projectConfig = require('../project_config');
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
-var testData = require('../../tests/test_data').getTestProjectConfig();
-var testDataWithFeatures = require('../../tests/test_data').getTestProjectConfigWithFeatures();
-var jsonSchemaValidator = require('../../utils/json_schema_validator');
-var AudienceEvaluator = require('../audience_evaluator');
-
-var chai = require('chai');
-var sinon = require('sinon');
+import chai from 'chai';
+import sinon from 'sinon';
 var assert = chai.assert;
 
 var LOG_LEVEL = enums.LOG_LEVEL;
@@ -40,7 +38,7 @@ var DECISION_SOURCES = enums.DECISION_SOURCES;
 
 describe('lib/core/decision_service', function() {
   describe('APIs', function() {
-    var configObj = projectConfig.createProjectConfig(cloneDeep(testData));
+    var configObj = projectConfig.createProjectConfig(cloneDeep(getTestProjectConfig()));
     var decisionServiceInstance;
     var mockLogger = logger.createLogger({ logLevel: LOG_LEVEL.INFO });
     var bucketerStub;
@@ -860,7 +858,7 @@ describe('lib/core/decision_service', function() {
           'control'
         );
         assert.strictEqual(didSetVariation, true);
-        var newDatafile = cloneDeep(testData);
+        var newDatafile = cloneDeep(getTestProjectConfig());
         // Remove 'control' variation from variations, traffic allocation, and datafile forcedVariations.
         newDatafile.experiments[0].variations = [
           {
@@ -892,7 +890,7 @@ describe('lib/core/decision_service', function() {
           'control'
         );
         assert.strictEqual(didSetVariation, true);
-        var newConfigObj = projectConfig.createProjectConfig(cloneDeep(testDataWithFeatures));
+        var newConfigObj = projectConfig.createProjectConfig(cloneDeep(getTestProjectConfigWithFeatures()));
         var forcedVar = decisionServiceInstance.getForcedVariation(newConfigObj, 'testExperiment', 'user1');
         assert.strictEqual(forcedVar, null);
       });
@@ -917,7 +915,7 @@ describe('lib/core/decision_service', function() {
 
   // TODO: Move tests that test methods of Optimizely to lib/optimizely/index.tests.js
   describe('when a bucketingID is provided', function() {
-    var configObj = projectConfig.createProjectConfig(cloneDeep(testData));
+    var configObj = projectConfig.createProjectConfig(cloneDeep(getTestProjectConfig()));
     var createdLogger = logger.createLogger({
       logLevel: LOG_LEVEL.DEBUG,
       logToConsole: false,
@@ -926,7 +924,7 @@ describe('lib/core/decision_service', function() {
     beforeEach(function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
-        datafile: cloneDeep(testData),
+        datafile: cloneDeep(getTestProjectConfig()),
         jsonSchemaValidator: jsonSchemaValidator,
         isValidInstance: true,
         logger: createdLogger,
@@ -1050,7 +1048,7 @@ describe('lib/core/decision_service', function() {
 
     beforeEach(function() {
       sinon.stub(mockLogger, 'log');
-      configObj = projectConfig.createProjectConfig(cloneDeep(testData));
+      configObj = projectConfig.createProjectConfig(cloneDeep(getTestProjectConfig()));
       decisionService = DecisionService.createDecisionService({
         logger: mockLogger,
       });
@@ -1088,7 +1086,7 @@ describe('lib/core/decision_service', function() {
       var sandbox;
       var mockLogger = logger.createLogger({ logLevel: LOG_LEVEL.INFO });
       beforeEach(function() {
-        configObj = projectConfig.createProjectConfig(cloneDeep(testDataWithFeatures));
+        configObj = projectConfig.createProjectConfig(cloneDeep(getTestProjectConfigWithFeatures()));
         sandbox = sinon.sandbox.create();
         sandbox.stub(mockLogger, 'log');
         decisionServiceInstance = DecisionService.createDecisionService({
@@ -1978,7 +1976,7 @@ describe('lib/core/decision_service', function() {
       var __buildBucketerParamsSpy;
 
       beforeEach(function() {
-        configObj = projectConfig.createProjectConfig(cloneDeep(testDataWithFeatures));
+        configObj = projectConfig.createProjectConfig(cloneDeep(getTestProjectConfigWithFeatures()));
         feature = configObj.featureKeyMap.test_feature;
         decisionService = DecisionService.createDecisionService({
           logger: logger.createLogger({ logLevel: LOG_LEVEL.INFO }),
