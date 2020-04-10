@@ -365,7 +365,6 @@ describe('lib/core/bucketer', function() {
     });
 
     describe('testBucketWithBucketingId', function() {
-      var configObj;
       var bucketerParams;
       var createdLogger = logger.createLogger({
         logLevel: LOG_LEVEL.INFO,
@@ -373,7 +372,7 @@ describe('lib/core/bucketer', function() {
       });
 
       beforeEach(function() {
-        configObj = projectConfig.createProjectConfig(cloneDeep(testData));
+        var configObj = projectConfig.createProjectConfig(cloneDeep(testData));
         bucketerParams = {
           trafficAllocationConfig: configObj.experiments[0].trafficAllocation,
           variationIdMap: configObj.variationIdMap,
