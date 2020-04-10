@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2019-2020 Optimizely
+ * Copyright 2016, 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,15 @@
  * Bucketer API for determining the variation id from the specified parameters
  */
 import { sprintf } from '@optimizely/js-sdk-utils';
-
 import murmurhash from 'murmurhash';
-import enums from '../../utils/enums';
 
-var ERROR_MESSAGES = enums.ERROR_MESSAGES;
+import {
+  ERROR_MESSAGES,
+  LOG_LEVEL,
+  LOG_MESSAGES,
+} from '../../utils/enums';
+
 var HASH_SEED = 1;
-var LOG_LEVEL = enums.LOG_LEVEL;
-var LOG_MESSAGES = enums.LOG_MESSAGES;
 var MAX_HASH_VALUE = Math.pow(2, 32);
 var MAX_TRAFFIC_VALUE = 10000;
 var MODULE_NAME = 'BUCKETER';
@@ -136,7 +137,7 @@ export var bucket = function(bucketerParams) {
   }
 
   return entityId;
-}
+};
 
 /**
  * Returns bucketed experiment ID to compare against experiment user is being called into
@@ -156,7 +157,7 @@ export var bucketUserIntoExperiment = function(group, bucketingId, userId, logge
   var trafficAllocationConfig = group.trafficAllocation;
   var bucketedExperimentId = this._findBucket(bucketValue, trafficAllocationConfig);
   return bucketedExperimentId;
-}
+};
 
 /**
  * Returns entity ID associated with bucket value
@@ -173,7 +174,7 @@ export var _findBucket = function(bucketValue, trafficAllocationConfig) {
     }
   }
   return null;
-}
+};
 
 /**
  * Helper function to generate bucket value in half-closed interval [0, MAX_TRAFFIC_VALUE)
@@ -191,11 +192,11 @@ export var _generateBucketValue = function(bucketingKey) {
   } catch (ex) {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, MODULE_NAME, bucketingKey, ex.message));
   }
-}
+};
 
 export default {
-  bucket,
-  bucketUserIntoExperiment,
-  _findBucket,
-  _generateBucketValue,
-}
+  bucket: bucket,
+  bucketUserIntoExperiment: bucketUserIntoExperiment,
+  _findBucket: _findBucket,
+  _generateBucketValue: _generateBucketValue,
+};

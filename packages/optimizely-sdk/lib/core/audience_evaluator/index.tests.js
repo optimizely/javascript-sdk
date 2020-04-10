@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2018-2020 Optimizely
+ * Copyright 2016, 2018-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import sinon from 'sinon';
+import { assert } from 'chai';
 import { getLogger } from '@optimizely/js-sdk-logging';
 
 import AudienceEvaluator from './index';
 import conditionTreeEvaluator from '../condition_tree_evaluator';
 import customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
-
-import { assert } from 'chai';
-import sinon from 'sinon';
 
 var mockLogger = getLogger();
 

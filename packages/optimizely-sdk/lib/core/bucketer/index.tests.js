@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, 2019-2020 Optimizely
+ * Copyright 2016-2017, 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import sinon from 'sinon';
+import { assert, expect } from 'chai';
+import { cloneDeep } from 'lodash';
 import { sprintf } from '@optimizely/js-sdk-utils';
 
 import bucketer from './';
-import enums from '../../utils/enums';
+import {
+  ERROR_MESSAGES,
+  LOG_MESSAGES,
+  LOG_LEVEL,
+} from '../../utils/enums';
 import logger from '../../plugins/logger';
 import projectConfig from '../project_config';
 import { getTestProjectConfig } from '../../tests/test_data';
 
-import { assert, expect } from 'chai';
-import sinon from 'sinon';
-import { cloneDeep } from 'lodash';
-
-var ERROR_MESSAGES = enums.ERROR_MESSAGES;
-var LOG_LEVEL = enums.LOG_LEVEL;
-var LOG_MESSAGES = enums.LOG_MESSAGES;
+var testData = getTestProjectConfig();
 
 describe('lib/core/bucketer', function() {
   describe('APIs', function() {
@@ -46,7 +47,7 @@ describe('lib/core/bucketer', function() {
 
       describe('return values for bucketing (excluding groups)', function() {
         beforeEach(function() {
-          configObj = projectConfig.createProjectConfig(cloneDeep(getTestProjectConfig()));
+          configObj = projectConfig.createProjectConfig(cloneDeep(testData));
           bucketerParams = {
             experimentId: configObj.experiments[0].id,
             experimentKey: configObj.experiments[0].key,
@@ -102,7 +103,7 @@ describe('lib/core/bucketer', function() {
       describe('return values for bucketing (including groups)', function() {
         var bucketerStub;
         beforeEach(function() {
-          configObj = projectConfig.createProjectConfig(cloneDeep(getTestProjectConfig()));
+          configObj = projectConfig.createProjectConfig(cloneDeep(testData));
           bucketerParams = {
             experimentId: configObj.experiments[0].id,
             experimentKey: configObj.experiments[0].key,
@@ -283,7 +284,7 @@ describe('lib/core/bucketer', function() {
 
       describe('when the bucket value falls into empty traffic allocation ranges', function() {
         beforeEach(function() {
-          configObj = projectConfig.createProjectConfig(cloneDeep(getTestProjectConfig()));
+          configObj = projectConfig.createProjectConfig(cloneDeep(testData));
           bucketerParams = {
             experimentId: configObj.experiments[0].id,
             experimentKey: configObj.experiments[0].key,
@@ -313,7 +314,7 @@ describe('lib/core/bucketer', function() {
 
       describe('when the traffic allocation has invalid variation ids', function() {
         beforeEach(function() {
-          configObj = projectConfig.createProjectConfig(cloneDeep(getTestProjectConfig()));
+          configObj = projectConfig.createProjectConfig(cloneDeep(testData));
           bucketerParams = {
             experimentId: configObj.experiments[0].id,
             experimentKey: configObj.experiments[0].key,
@@ -372,7 +373,7 @@ describe('lib/core/bucketer', function() {
       });
 
       beforeEach(function() {
-        configObj = projectConfig.createProjectConfig(cloneDeep(getTestProjectConfig()));
+        configObj = projectConfig.createProjectConfig(cloneDeep(testData));
         bucketerParams = {
           trafficAllocationConfig: configObj.experiments[0].trafficAllocation,
           variationIdMap: configObj.variationIdMap,

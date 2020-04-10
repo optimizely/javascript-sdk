@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2018, 2020 Optimizely, Inc. and contributors                   *
+ * Copyright 2018, 2020, Optimizely, Inc. and contributors                  *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -56,7 +56,7 @@ export var evaluate = function(conditions, leafEvaluator) {
 
   var leafCondition = conditions;
   return leafEvaluator(leafCondition);
-}
+};
 
 /**
  * Evaluates an array of conditions as if the evaluator had been applied
@@ -122,5 +122,5 @@ function orEvaluator(conditions, leafEvaluator) {
 }
 
 export default {
-  evaluate,
-}
+  evaluate: evaluate,
+};

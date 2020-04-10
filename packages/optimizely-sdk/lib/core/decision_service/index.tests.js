@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2017-2019, 2020 Optimizely, Inc. and contributors              *
+ * Copyright 2017-2020 Optimizely, Inc. and contributors                    *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -13,12 +13,18 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
+import sinon from 'sinon';
+import { assert } from 'chai';
+import cloneDeep from 'lodash/cloneDeep';
 import { sprintf } from '@optimizely/js-sdk-utils';
 
 import DecisionService from './';
 import bucketer from '../bucketer';
-import enums from '../../utils/enums';
-import cloneDeep from 'lodash/cloneDeep';
+import {
+  LOG_LEVEL,
+  LOG_MESSAGES,
+  DECISION_SOURCES,
+} from '../../utils/enums';
 import logger from '../../plugins/logger';
 import Optimizely from '../../optimizely';
 import projectConfig from '../project_config';
@@ -27,18 +33,17 @@ import errorHandler from '../../plugins/error_handler';
 import eventBuilder from '../../core/event_builder/index.js';
 import eventDispatcher from '../../plugins/event_dispatcher/index.node';
 import jsonSchemaValidator from '../../utils/json_schema_validator';
-import { getTestProjectConfig, getTestProjectConfigWithFeatures } from '../../tests/test_data';
+import {
+  getTestProjectConfig,
+  getTestProjectConfigWithFeatures,
+} from '../../tests/test_data';
 
-import sinon from 'sinon';
-import { assert } from 'chai';
-
-var LOG_LEVEL = enums.LOG_LEVEL;
-var LOG_MESSAGES = enums.LOG_MESSAGES;
-var DECISION_SOURCES = enums.DECISION_SOURCES;
+var testData = getTestProjectConfig();
+var testDataWithFeatures = getTestProjectConfigWithFeatures(); 
 
 describe('lib/core/decision_service', function() {
   describe('APIs', function() {
-    var configObj = projectConfig.createProjectConfig(cloneDeep(getTestProjectConfig()));
+    var configObj = projectConfig.createProjectConfig(cloneDeep(testData));
     var decisionServiceInstance;
     var mockLogger = logger.createLogger({ logLevel: LOG_LEVEL.INFO });
     var bucketerStub;
@@ -858,7 +863,7 @@ describe('lib/core/decision_service', function() {
           'control'
         );
         assert.strictEqual(didSetVariation, true);
-        var newDatafile = cloneDeep(getTestProjectConfig());
+        var newDatafile = cloneDeep(testData);
         // Remove 'control' variation from variations, traffic allocation, and datafile forcedVariations.
         newDatafile.experiments[0].variations = [
           {
@@ -890,7 +895,7 @@ describe('lib/core/decision_service', function() {
           'control'
         );
         assert.strictEqual(didSetVariation, true);
-        var newConfigObj = projectConfig.createProjectConfig(cloneDeep(getTestProjectConfigWithFeatures()));
+        var newConfigObj = projectConfig.createProjectConfig(cloneDeep(testDataWithFeatures));
         var forcedVar = decisionServiceInstance.getForcedVariation(newConfigObj, 'testExperiment', 'user1');
         assert.strictEqual(forcedVar, null);
       });
@@ -915,7 +920,7 @@ describe('lib/core/decision_service', function() {
 
   // TODO: Move tests that test methods of Optimizely to lib/optimizely/index.tests.js
   describe('when a bucketingID is provided', function() {
-    var configObj = projectConfig.createProjectConfig(cloneDeep(getTestProjectConfig()));
+    var configObj = projectConfig.createProjectConfig(cloneDeep(testData));
     var createdLogger = logger.createLogger({
       logLevel: LOG_LEVEL.DEBUG,
       logToConsole: false,
@@ -924,7 +929,7 @@ describe('lib/core/decision_service', function() {
     beforeEach(function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
-        datafile: cloneDeep(getTestProjectConfig()),
+        datafile: cloneDeep(testData),
         jsonSchemaValidator: jsonSchemaValidator,
         isValidInstance: true,
         logger: createdLogger,
@@ -1048,7 +1053,7 @@ describe('lib/core/decision_service', function() {
 
     beforeEach(function() {
       sinon.stub(mockLogger, 'log');
-      configObj = projectConfig.createProjectConfig(cloneDeep(getTestProjectConfig()));
+      configObj = projectConfig.createProjectConfig(cloneDeep(testData));
       decisionService = DecisionService.createDecisionService({
         logger: mockLogger,
       });
@@ -1086,7 +1091,7 @@ describe('lib/core/decision_service', function() {
       var sandbox;
       var mockLogger = logger.createLogger({ logLevel: LOG_LEVEL.INFO });
       beforeEach(function() {
-        configObj = projectConfig.createProjectConfig(cloneDeep(getTestProjectConfigWithFeatures()));
+        configObj = projectConfig.createProjectConfig(cloneDeep(testDataWithFeatures));
         sandbox = sinon.sandbox.create();
         sandbox.stub(mockLogger, 'log');
         decisionServiceInstance = DecisionService.createDecisionService({
@@ -1976,7 +1981,7 @@ describe('lib/core/decision_service', function() {
       var __buildBucketerParamsSpy;
 
       beforeEach(function() {
-        configObj = projectConfig.createProjectConfig(cloneDeep(getTestProjectConfigWithFeatures()));
+        configObj = projectConfig.createProjectConfig(cloneDeep(testDataWithFeatures));
         feature = configObj.featureKeyMap.test_feature;
         decisionService = DecisionService.createDecisionService({
           logger: logger.createLogger({ logLevel: LOG_LEVEL.INFO }),

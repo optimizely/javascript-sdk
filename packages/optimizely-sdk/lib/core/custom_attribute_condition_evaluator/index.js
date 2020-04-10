@@ -16,10 +16,11 @@
 import { sprintf } from '@optimizely/js-sdk-utils';
 
 import fns from '../../utils/fns';
-import enums from '../../utils/enums';
+import {
+  LOG_LEVEL,
+  LOG_MESSAGES,
+} from '../../utils/enums';
 
-var LOG_LEVEL = enums.LOG_LEVEL;
-var LOG_MESSAGES = enums.LOG_MESSAGES;
 var MODULE_NAME = 'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR';
 
 var EXACT_MATCH_TYPE = 'exact';
@@ -71,7 +72,7 @@ export var evaluate = function(condition, userAttributes, logger) {
 
   var evaluatorForMatch = EVALUATORS_BY_MATCH_TYPE[conditionMatch] || exactEvaluator;
   return evaluatorForMatch(condition, userAttributes, logger);
-}
+};
 
 /**
  * Returns true if the value is valid for exact conditions. Valid values include
@@ -299,5 +300,5 @@ function substringEvaluator(condition, userAttributes, logger) {
 }
 
 export default {
-  evaluate,
-}
+  evaluate: evaluate,
+};

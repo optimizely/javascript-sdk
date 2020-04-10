@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2018-2020 Optimizely
+ * Copyright 2016, 2018-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,16 @@ import { sprintf } from '@optimizely/js-sdk-utils';
 import { getLogger } from '@optimizely/js-sdk-logging';
 
 import fns from '../../utils/fns';
-import enums from '../../utils/enums';
+import {
+  LOG_LEVEL,
+  LOG_MESSAGES, 
+  ERROR_MESSAGES,
+} from '../../utils/enums';
 import conditionTreeEvaluator from '../condition_tree_evaluator';
 import customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
 
 var logger = getLogger();
-var LOG_LEVEL = enums.LOG_LEVEL;
-var LOG_MESSAGES = enums.LOG_MESSAGES;
 var MODULE_NAME = 'AUDIENCE_EVALUATOR';
-var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 
 /**
  * Construct an instance of AudienceEvaluator with given options
