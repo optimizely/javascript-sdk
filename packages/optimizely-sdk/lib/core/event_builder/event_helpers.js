@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019-2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var logging = require('@optimizely/js-sdk-logging');
+import { getLogger } from '@optimizely/js-sdk-logging';
 
-var attributesValidator = require('../../utils/attributes_validator');
-var fns = require('../../utils/fns');
-var eventTagUtils = require('../../utils/event_tag_utils');
-var projectConfig = require('../project_config');
+import fns from '../../utils/fns';
+import projectConfig from '../project_config';
+import eventTagUtils from '../../utils/event_tag_utils';
+import attributesValidator from'../../utils/attributes_validator';
 
-var logger = logging.getLogger('EVENT_BUILDER');
+var logger = getLogger('EVENT_BUILDER');
 
 /**
  * Creates an ImpressionEvent object from decision data
@@ -34,7 +34,7 @@ var logger = logging.getLogger('EVENT_BUILDER');
  * @param {String} config.clientVersion
  * @return {Object} an ImpressionEvent object
  */
-exports.buildImpressionEvent = function buildImpressionEvent(config) {
+export var buildImpressionEvent = function(config) {
   var configObj = config.configObj;
   var experimentKey = config.experimentKey;
   var variationKey = config.variationKey;
@@ -95,7 +95,7 @@ exports.buildImpressionEvent = function buildImpressionEvent(config) {
  * @param {String} config.clientVersion
  * @return {Object} a ConversionEvent object
  */
-exports.buildConversionEvent = function buildConversionEvent(config) {
+export var buildConversionEvent = function(config) {
   var configObj = config.configObj;
   var userId = config.userId;
   var userAttributes = config.userAttributes;

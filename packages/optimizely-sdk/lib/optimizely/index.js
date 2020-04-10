@@ -20,8 +20,8 @@ import fns from '../utils/fns'
 import attributesValidator from '../utils/attributes_validator';
 import decisionService from '../core/decision_service';
 import enums from '../utils/enums';
-import eventBuilder from '../core/event_builder/index.js';
-import eventHelpers from '../core/event_builder/event_helpers';
+import { getImpressionEvent, getConversionEvent } from '../core/event_builder/index.js';
+import { buildConversionEvent, buildImpressionEvent } from '../core/event_builder/event_helpers';
 import eventTagsValidator from '../utils/event_tags_validator';
 import notificationCenter from '../core/notification_center';
 import projectConfig from '../core/project_config';
@@ -211,7 +211,7 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
     return;
   }
 
-  var impressionEvent = eventHelpers.buildImpressionEvent({
+  var impressionEvent = buildImpressionEvent({
     experimentKey: experimentKey,
     variationKey: variationKey,
     userId: userId,
@@ -250,7 +250,7 @@ Optimizely.prototype.__emitNotificationCenterActivate = function(experimentKey, 
     variationId: variationId,
     logger: this.logger,
   };
-  var impressionEvent = eventBuilder.getImpressionEvent(impressionEventOptions);
+  var impressionEvent = getImpressionEvent(impressionEventOptions);
   var experiment = configObj.experimentKeyMap[experimentKey];
   var variation;
   if (experiment && experiment.variationKeyMap) {
@@ -299,7 +299,7 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
 
     // remove null values from eventTags
     eventTags = this.__filterEmptyValues(eventTags);
-    var conversionEvent = eventHelpers.buildConversionEvent({
+    var conversionEvent = buildConversionEvent({
       eventKey: eventKey,
       eventTags: eventTags,
       userId: userId,
@@ -344,7 +344,7 @@ Optimizely.prototype.__emitNotificationCenterTrack = function(eventKey, userId, 
       logger: this.logger,
       userId: userId,
     };
-    var conversionEvent = eventBuilder.getConversionEvent(conversionEventOptions);
+    var conversionEvent = getConversionEvent(conversionEventOptions);
 
     this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.TRACK, {
       eventKey: eventKey,
