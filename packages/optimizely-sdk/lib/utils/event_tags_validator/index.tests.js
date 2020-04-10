@@ -1,5 +1,5 @@
 /**
- * Copyright 2017, Optimizely
+ * Copyright 2017, 2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,30 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var chai = require('chai');
-var assert = chai.assert;
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
-var eventTagsValidator = require('./');
+import { assert } from 'chai';
+import { sprintf } from '@optimizely/js-sdk-utils';
 
-var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
+import { validate } from './';
+import { ERROR_MESSAGES } from'../enums';
 
 describe('lib/utils/event_tags_validator', function() {
   describe('APIs', function() {
     describe('validate', function() {
       it('should validate the given event tags if event tags is an object', function() {
-        assert.isTrue(eventTagsValidator.validate({ testAttribute: 'testValue' }));
+        assert.isTrue(validate({ testAttribute: 'testValue' }));
       });
 
       it('should throw an error if event tags is an array', function() {
         var eventTagsArray = ['notGonnaWork'];
         assert.throws(function() {
-          eventTagsValidator.validate(eventTagsArray);
+          validate(eventTagsArray);
         }, sprintf(ERROR_MESSAGES.INVALID_EVENT_TAGS, 'EVENT_TAGS_VALIDATOR'));
       });
 
       it('should throw an error if event tags is null', function() {
         assert.throws(function() {
-          eventTagsValidator.validate(null);
+          validate(null);
         }, sprintf(ERROR_MESSAGES.INVALID_EVENT_TAGS, 'EVENT_TAGS_VALIDATOR'));
       });
 
@@ -45,7 +44,7 @@ describe('lib/utils/event_tags_validator', function() {
           console.log('This is an invalid input!');
         }
         assert.throws(function() {
-          eventTagsValidator.validate(invalidInput);
+          validate(invalidInput);
         }, sprintf(ERROR_MESSAGES.INVALID_EVENT_TAGS, 'EVENT_TAGS_VALIDATOR'));
       });
     });
