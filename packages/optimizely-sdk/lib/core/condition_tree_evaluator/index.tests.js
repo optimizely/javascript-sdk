@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2018, Optimizely, Inc. and contributors                        *
+ * Copyright 2018, 2020 Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -14,10 +14,11 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
-var chai = require('chai');
-var sinon = require('sinon');
+import chai from 'chai';
+import sinon from 'sinon';
+import conditionTreeEvaluator from './';
+
 var assert = chai.assert;
-var conditionTreeEvaluator = require('./');
 
 var conditionA = {
   name: 'browser_type',

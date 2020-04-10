@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2018-2019, Optimizely, Inc. and contributors                        *
+ * Copyright 2018-2019, 2020 Optimizely, Inc. and contributors              *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -14,9 +14,9 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
-var fns = require('../../utils/fns');
-var enums = require('../../utils/enums');
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
+import fns from '../../utils/fns';
+import enums from '../../utils/enums';
+import { sprintf } from '@optimizely/js-sdk-utils';
 
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
@@ -53,7 +53,7 @@ EVALUATORS_BY_MATCH_TYPE[SUBSTRING_MATCH_TYPE] = substringEvaluator;
  *                                      null if the given user attributes and condition can't be evaluated
  * TODO: Change to accept and object with named properties
  */
-function evaluate(condition, userAttributes, logger) {
+export var evaluate = function(condition, userAttributes, logger) {
   var conditionMatch = condition.match;
   if (typeof conditionMatch !== 'undefined' && MATCH_TYPES.indexOf(conditionMatch) === -1) {
     logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, JSON.stringify(condition)));
@@ -298,6 +298,6 @@ function substringEvaluator(condition, userAttributes, logger) {
   return userValue.indexOf(conditionValue) !== -1;
 }
 
-module.exports = {
-  evaluate: evaluate,
-};
+export default {
+  evaluate,
+}

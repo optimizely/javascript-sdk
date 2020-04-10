@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2018-2019, Optimizely, Inc. and contributors                        *
+ * Copyright 2018-2019, 2020 Optimizely, Inc. and contributors              *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -14,13 +14,13 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
-var customAttributeEvaluator = require('./');
-var enums = require('../../utils/enums');
-var LOG_LEVEL = enums.LOG_LEVEL;
-var logger = require('../../plugins/logger');
+import customAttributeEvaluator from './';
+import enums from '../../utils/enums';
+import logger from '../../plugins/logger';
+import chai from 'chai';
+import sinon from 'sinon';
 
-var chai = require('chai');
-var sinon = require('sinon');
+var LOG_LEVEL = enums.LOG_LEVEL;
 var assert = chai.assert;
 
 var browserConditionSafari = {
