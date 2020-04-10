@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2018-2019, Optimizely
+ * Copyright 2016, 2018-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var chai = require('chai');
-var assert = chai.assert;
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
-var attributesValidator = require('./');
-var fns = require('./../fns/');
+import { assert } from 'chai';
+import { sprintf } from '@optimizely/js-sdk-utils';
 
-var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
+import attributesValidator from './';
+import { ERROR_MESSAGES } from '../enums';
 
 describe('lib/utils/attributes_validator', function() {
   describe('APIs', function() {
