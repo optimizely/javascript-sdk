@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019-2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var assert = require('chai').assert;
-var cloneDeep = require('lodash/cloneDeep');
-var datafile = require('../../tests/test_data').getTestProjectConfigWithFeatures();
-var projectConfig = require('../project_config');
-var optimizelyConfig = require('./index');
+import { getOptimizelyConfig } from './index';
+import projectConfig from '../project_config';
+import { getTestProjectConfigWithFeatures } from '../../tests/test_data';
+
+import { assert } from 'chai';
+import { cloneDeep } from 'lodash';
 
 var getAllExperimentsFromDatafile = function(datafile) {
   var allExperiments = [];
@@ -37,8 +38,8 @@ describe('lib/core/optimizely_config', function() {
     var optimizelyConfigObject;
     var projectConfigObject;
     beforeEach(function() {
-      projectConfigObject = projectConfig.createProjectConfig(cloneDeep(datafile));
-      optimizelyConfigObject = optimizelyConfig.getOptimizelyConfig(projectConfigObject);
+      projectConfigObject = projectConfig.createProjectConfig(cloneDeep(getTestProjectConfigWithFeatures()));
+      optimizelyConfigObject = getOptimizelyConfig(projectConfigObject);
     });
 
     it('should return all experiments except rollouts', function() {
@@ -46,7 +47,7 @@ describe('lib/core/optimizely_config', function() {
       var experimentsCount = Object.keys(optimizelyConfigObject.experimentsMap).length;
       assert.equal(experimentsCount, 6);
 
-      var allExperiments = getAllExperimentsFromDatafile(datafile);
+      var allExperiments = getAllExperimentsFromDatafile(getTestProjectConfigWithFeatures());
       allExperiments.forEach(function(experiment) {
         assert.include(experimentsMap[experiment.key], {
           id: experiment.id,
@@ -67,7 +68,7 @@ describe('lib/core/optimizely_config', function() {
       assert.equal(featureFlagsCount, 7);
 
       var featuresMap = optimizelyConfigObject.featuresMap;
-      datafile.featureFlags.forEach(function(featureFlag) {
+      getTestProjectConfigWithFeatures().featureFlags.forEach(function(featureFlag) {
         assert.include(featuresMap[featureFlag.key], {
           id: featureFlag.id,
           key: featureFlag.key,
@@ -89,8 +90,8 @@ describe('lib/core/optimizely_config', function() {
     });
 
     it('should correctly merge all feature variables', function() {
-      var featureFlags = datafile.featureFlags;
-      var datafileExperimentsMap = getAllExperimentsFromDatafile(datafile).reduce(function(experiments, experiment) {
+      var featureFlags = getTestProjectConfigWithFeatures().featureFlags;
+      var datafileExperimentsMap = getAllExperimentsFromDatafile(getTestProjectConfigWithFeatures()).reduce(function(experiments, experiment) {
         experiments[experiment.key] = experiment;
         return experiments;
       }, {});
@@ -119,7 +120,7 @@ describe('lib/core/optimizely_config', function() {
     });
 
     it('should return correct config revision', function() {
-      assert.equal(optimizelyConfigObject.revision, datafile.revision);
+      assert.equal(optimizelyConfigObject.revision, getTestProjectConfigWithFeatures().revision);
     });
   });
 });
