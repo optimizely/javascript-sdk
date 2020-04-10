@@ -37,7 +37,7 @@ export var validate = function(attributes) {
   } else {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, MODULE_NAME));
   }
-}
+};
 
 export var isAttributeValid = function(attributeKey, attributeValue) {
   return (
@@ -46,7 +46,7 @@ export var isAttributeValid = function(attributeKey, attributeValue) {
       typeof attributeValue === 'boolean' ||
       (fns.isNumber(attributeValue) && fns.isSafeInteger(attributeValue)))
   );
-}
+};
 
 /**
  * Provides utility method for validating that the attributes user has provided are valid
@@ -54,4 +54,4 @@ export var isAttributeValid = function(attributeKey, attributeValue) {
 export default {
   validate: validate,
   isAttributeValid: isAttributeValid,
-}
+};

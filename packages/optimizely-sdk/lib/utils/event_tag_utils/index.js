@@ -46,7 +46,7 @@ export var getRevenueValue = function(eventTags, logger) {
     return parsedRevenueValue;
   }
   return null;
-}
+};
 
 /**
  * Grab the event value from the event tags. "value" is a reserved keyword.
@@ -66,9 +66,9 @@ export var getEventValue = function(eventTags, logger) {
     return parsedEventValue;
   }
   return null;
-}
+};
 
 export default {
   getRevenueValue: getRevenueValue,
   getEventValue: getEventValue,
-}
+};

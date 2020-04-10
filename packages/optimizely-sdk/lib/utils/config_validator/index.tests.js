@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2018, 2019-2020 Optimizely
+ * Copyright 2016, 2018-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { assert } from 'chai';
 import { sprintf } from '@optimizely/js-sdk-utils';
 
 import configValidator from './';
 import { ERROR_MESSAGES } from '../enums';
 import testData from '../../tests/test_data';
-
-import { assert } from 'chai';
 
 describe('lib/utils/config_validator', function() {
   describe('APIs', function() {

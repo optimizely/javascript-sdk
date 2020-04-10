@@ -20,6 +20,7 @@
 import { sprintf } from '@optimizely/js-sdk-utils';
 
 import { ERROR_MESSAGES } from '../enums';
+
 var MODULE_NAME = 'EVENT_TAGS_VALIDATOR';
 
 /**
@@ -37,5 +38,5 @@ export var validate = function(eventTags) {
 }
 
 export default {
-  validate,
+  validate: validate,
 }

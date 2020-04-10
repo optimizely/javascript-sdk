@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2018, 2019-2020 Optimizely
+ * Copyright 2016, 2018-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,10 @@
  */
 import { sprintf } from '@optimizely/js-sdk-utils';
 
-import { ERROR_MESSAGES } from '../enums';
-import { DATAFILE_VERSIONS } from '../enums';
+import { 
+  ERROR_MESSAGES, 
+  DATAFILE_VERSIONS,
+} from '../enums';
 
 var MODULE_NAME = 'CONFIG_VALIDATOR';
 var SUPPORTED_VERSIONS = [DATAFILE_VERSIONS.V2, DATAFILE_VERSIONS.V3, DATAFILE_VERSIONS.V4];
@@ -44,7 +46,7 @@ export var validate = function(config) {
   }
 
   return true;
-}
+};
 
 /**
  * Validates the datafile
@@ -74,7 +76,7 @@ export var validateDatafile = function(datafile) {
   }
 
   return true;
-}
+};
 
 /**
  * Provides utility methods for validating that the configuration options are valid
@@ -82,4 +84,4 @@ export var validateDatafile = function(datafile) {
 export default {
   validate: validate,
   validateDatafile: validateDatafile,
-}
+};
