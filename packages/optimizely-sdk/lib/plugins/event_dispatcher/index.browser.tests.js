@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2016-2017, 2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var eventDispatcher = require('./index.browser');
-var chai = require('chai');
-var assert = chai.assert;
-var sinon = require('sinon');
+import { assert } from 'chai';
+import sinon from 'sinon';
+
+import { dispatchEvent } from './index.browser';
 
 describe('lib/plugins/event_dispatcher/browser', function() {
   describe('APIs', function() {
@@ -25,7 +25,6 @@ describe('lib/plugins/event_dispatcher/browser', function() {
       var requests;
       beforeEach(function() {
         xhr = sinon.useFakeXMLHttpRequest();
-        global.XMLHttpRequest = xhr;
         requests = [];
         xhr.onCreate = function(req) {
           requests.push(req);
@@ -48,7 +47,7 @@ describe('lib/plugins/event_dispatcher/browser', function() {
         };
 
         var callback = sinon.spy();
-        eventDispatcher.dispatchEvent(eventObj, callback);
+        dispatchEvent(eventObj, callback);
         assert.strictEqual(1, requests.length);
         assert.strictEqual(requests[0].method, 'POST');
         assert.strictEqual(requests[0].requestBody, JSON.stringify(eventParams));
@@ -67,7 +66,7 @@ describe('lib/plugins/event_dispatcher/browser', function() {
         };
 
         var callback = sinon.spy();
-        eventDispatcher.dispatchEvent(eventObj, callback);
+        dispatchEvent(eventObj, callback);
         requests[0].respond([
           200,
           {},
@@ -84,7 +83,7 @@ describe('lib/plugins/event_dispatcher/browser', function() {
         };
 
         var callback = sinon.spy();
-        eventDispatcher.dispatchEvent(eventObj, callback);
+        dispatchEvent(eventObj, callback);
         requests[0].respond([200, {}, '{"url":"https://cdn.com/event","httpVerb":"GET"']);
         sinon.assert.calledOnce(callback);
         done();

@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, Optimizely
+ * Copyright 2016, 2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,10 @@
 /**
  * Default error handler implementation
  */
-module.exports = {
-  /**
-   * Handle given exception
-   * @param  {Object} exception An exception object
-   */
-  handleError: function() {
-    // no-op
-  },
-};
+export var handleError = function() {
+  // no-op
+}
+
+export default {
+  handleError,
+}
