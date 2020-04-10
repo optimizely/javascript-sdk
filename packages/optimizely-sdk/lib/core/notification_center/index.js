@@ -1,5 +1,5 @@
 /**
- * Copyright 2017, 2019 Optimizely
+ * Copyright 2017, 2019-2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import * as jsSdkUtils from '@optimizely/js-sdk-utils';
 
-var enums = require('../../utils/enums');
-var jsSdkUtils = require('@optimizely/js-sdk-utils');
+import enums from '../../utils/enums';
 
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
@@ -187,14 +187,16 @@ NotificationCenter.prototype.sendNotifications = function(notificationType, noti
   }
 };
 
-module.exports = {
-  /**
-   * Create an instance of NotificationCenter
-   * @param {Object} options
-   * @param {Object} options.logger An instance of a logger to log messages with
-   * @returns {Object} An instance of NotificationCenter
-   */
-  createNotificationCenter: function(options) {
-    return new NotificationCenter(options);
-  },
-};
+/**
+ * Create an instance of NotificationCenter
+ * @param {Object} options
+ * @param {Object} options.logger An instance of a logger to log messages with
+ * @returns {Object} An instance of NotificationCenter
+ */
+export var createNotificationCenter = function(options) {
+  return new NotificationCenter(options);
+}
+
+export default {
+  createNotificationCenter,
+}
