@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-
-import customAttributeEvaluator from './';
 import enums from '../../utils/enums';
 import logger from '../../plugins/logger';
-import chai from 'chai';
+import customAttributeEvaluator from './';
+
 import sinon from 'sinon';
+import { assert } from 'chai';
 
 var LOG_LEVEL = enums.LOG_LEVEL;
-var assert = chai.assert;
 
 var browserConditionSafari = {
   name: 'browser_type',

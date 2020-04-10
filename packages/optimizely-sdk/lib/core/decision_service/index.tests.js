@@ -13,24 +13,24 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import Optimizely from '../../optimizely';
-import eventBuilder from '../../core/event_builder/index.js';
-import eventDispatcher from '../../plugins/event_dispatcher/index.node';
-import errorHandler from '../../plugins/error_handler';
-import bucketer from '../bucketer';
+import { sprintf } from '@optimizely/js-sdk-utils';
+
 import DecisionService from './';
+import bucketer from '../bucketer';
 import enums from '../../utils/enums';
 import cloneDeep from 'lodash/cloneDeep';
 import logger from '../../plugins/logger';
+import Optimizely from '../../optimizely';
 import projectConfig from '../project_config';
-import { sprintf } from '@optimizely/js-sdk-utils';
-import { getTestProjectConfig, getTestProjectConfigWithFeatures } from '../../tests/test_data';
-import jsonSchemaValidator from '../../utils/json_schema_validator';
 import AudienceEvaluator from '../audience_evaluator';
+import errorHandler from '../../plugins/error_handler';
+import eventBuilder from '../../core/event_builder/index.js';
+import eventDispatcher from '../../plugins/event_dispatcher/index.node';
+import jsonSchemaValidator from '../../utils/json_schema_validator';
+import { getTestProjectConfig, getTestProjectConfigWithFeatures } from '../../tests/test_data';
 
-import chai from 'chai';
 import sinon from 'sinon';
-var assert = chai.assert;
+import { assert } from 'chai';
 
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;

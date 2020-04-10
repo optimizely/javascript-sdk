@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import AudienceEvaluator from '../audience_evaluator';
+import { sprintf } from'@optimizely/js-sdk-utils';
+
 import bucketer from '../bucketer';
 import enums from '../../utils/enums';
 import fns from '../../utils/fns';
 import projectConfig from '../project_config';
+import AudienceEvaluator from '../audience_evaluator';
 import stringValidator from '../../utils/string_value_validator';
-import { sprintf } from'@optimizely/js-sdk-utils';
 
 var MODULE_NAME = 'DECISION_SERVICE';
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;

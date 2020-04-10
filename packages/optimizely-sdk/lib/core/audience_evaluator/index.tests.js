@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import AudienceEvaluator from './index';
-import chai from 'chai';
-import conditionTreeEvaluator from '../condition_tree_evaluator';
-import customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
-import sinon from 'sinon';
 import { getLogger } from '@optimizely/js-sdk-logging';
 
-var assert = chai.assert;
+import AudienceEvaluator from './index';
+import conditionTreeEvaluator from '../condition_tree_evaluator';
+import customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
+
+import { assert } from 'chai';
+import sinon from 'sinon';
+
 var mockLogger = getLogger();
 
 var chromeUserAudience = {

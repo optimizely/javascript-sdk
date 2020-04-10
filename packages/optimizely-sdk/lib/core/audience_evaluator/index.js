@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import conditionTreeEvaluator from '../condition_tree_evaluator';
-import customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
-import enums from '../../utils/enums';
-import fns from '../../utils/fns';
 import { sprintf } from '@optimizely/js-sdk-utils';
 import { getLogger } from '@optimizely/js-sdk-logging';
-var logger = getLogger();
 
-var ERROR_MESSAGES = enums.ERROR_MESSAGES;
+import fns from '../../utils/fns';
+import enums from '../../utils/enums';
+import conditionTreeEvaluator from '../condition_tree_evaluator';
+import customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
+
+var logger = getLogger();
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
 var MODULE_NAME = 'AUDIENCE_EVALUATOR';
+var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 
 /**
  * Construct an instance of AudienceEvaluator with given options

@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-
-import chai from 'chai';
-import sinon from 'sinon';
 import conditionTreeEvaluator from './';
 
-var assert = chai.assert;
+import sinon from 'sinon';
+import { assert } from 'chai';
 
 var conditionA = {
   name: 'browser_type',

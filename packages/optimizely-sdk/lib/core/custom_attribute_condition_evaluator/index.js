@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
+import { sprintf } from '@optimizely/js-sdk-utils';
 
 import fns from '../../utils/fns';
 import enums from '../../utils/enums';
-import { sprintf } from '@optimizely/js-sdk-utils';
 
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;

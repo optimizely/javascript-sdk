@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { sprintf } from '@optimizely/js-sdk-utils';
+
 import bucketer from './';
 import enums from '../../utils/enums';
 import logger from '../../plugins/logger';
 import projectConfig from '../project_config';
-import { sprintf } from '@optimizely/js-sdk-utils';
 import { getTestProjectConfig } from '../../tests/test_data';
-import chai from 'chai';
-import cloneDeep from 'lodash/cloneDeep';
-import sinon from 'sinon';
 
-var assert = chai.assert;
-var expect = chai.expect;
+import { assert, expect } from 'chai';
+import sinon from 'sinon';
+import { cloneDeep } from 'lodash';
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;

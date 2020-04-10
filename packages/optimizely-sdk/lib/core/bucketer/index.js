@@ -17,9 +17,10 @@
 /**
  * Bucketer API for determining the variation id from the specified parameters
  */
-import enums from '../../utils/enums';
-import murmurhash from 'murmurhash';
 import { sprintf } from '@optimizely/js-sdk-utils';
+
+import murmurhash from 'murmurhash';
+import enums from '../../utils/enums';
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var HASH_SEED = 1;
