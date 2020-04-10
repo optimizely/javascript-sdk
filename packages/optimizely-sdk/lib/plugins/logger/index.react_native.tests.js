@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019-2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var logger = require('./index.react_native');
-var chai = require('chai');
-var enums = require('../../utils/enums');
-var assert = chai.assert;
-var sinon = require('sinon');
+import sinon from 'sinon';
+import { assert } from 'chai';
 
-var LOG_LEVEL = enums.LOG_LEVEL;
+import { createLogger } from './index.react_native';
+import { LOG_LEVEL } from '../../utils/enums';
+
 describe('lib/plugins/logger/react_native', function() {
   describe('APIs', function() {
     var defaultLogger;
     describe('createLogger', function() {
       it('should return an instance of the default logger', function() {
-        defaultLogger = logger.createLogger();
+        defaultLogger = createLogger();
         assert.isObject(defaultLogger);
       });
     });
 
     describe('log', function() {
       beforeEach(function() {
-        defaultLogger = logger.createLogger();
+        defaultLogger = createLogger();
 
         sinon.stub(console, 'log');
         sinon.stub(console, 'info');

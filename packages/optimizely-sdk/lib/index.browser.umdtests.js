@@ -42,6 +42,7 @@ describe('javascript-sdk', function() {
         sinon.stub(Optimizely.prototype, 'close');
 
         xhr = sinon.useFakeXMLHttpRequest();
+        global.XMLHttpRequest = xhr;
         requests = [];
         xhr.onCreate = function(req) {
           requests.push(req);
