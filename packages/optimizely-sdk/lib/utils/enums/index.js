@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2016-2020, Optimizely, Inc. and contributors                   *
+ * Copyright 2016-2019, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { NOTIFICATION_TYPES } from '@optimizely/js-sdk-utils';
+
+var jsSdkUtils = require('@optimizely/js-sdk-utils');
 
 /**
  * Contains global enums used throughout the library
  */
-export var LOG_LEVEL = {
+exports.LOG_LEVEL = {
   NOTSET: 0,
   DEBUG: 1,
   INFO: 2,
@@ -26,7 +27,7 @@ export var LOG_LEVEL = {
   ERROR: 4,
 };
 
-export var ERROR_MESSAGES = {
+exports.ERROR_MESSAGES = {
   CONDITION_EVALUATOR_ERROR: '%s: Error evaluating audience condition of type %s: %s',
   DATAFILE_AND_SDK_KEY_MISSING: '%s: You must provide at least one of sdkKey or datafile. Cannot start Optimizely',
   EXPERIMENT_KEY_NOT_IN_DATAFILE: '%s: Experiment key %s is not in datafile.',
@@ -64,7 +65,7 @@ export var ERROR_MESSAGES = {
   INVALID_VARIATION_KEY: '%s: Provided variation key is in an invalid format.',
 };
 
-export var LOG_MESSAGES = {
+exports.LOG_MESSAGES = {
   ACTIVATE_USER: '%s: Activating user %s in experiment %s.',
   DISPATCH_CONVERSION_EVENT: '%s: Dispatching conversion event to URL %s with params %s.',
   DISPATCH_IMPRESSION_EVENT: '%s: Dispatching impression event to URL %s with params %s.',
@@ -157,36 +158,36 @@ export var LOG_MESSAGES = {
   UNABLE_TO_ATTACH_UNLOAD: '%s: unable to bind optimizely.close() to page unload event: "%s"',
 };
 
-export var RESERVED_EVENT_KEYWORDS = {
+exports.RESERVED_EVENT_KEYWORDS = {
   REVENUE: 'revenue',
   VALUE: 'value',
 };
 
-export var CONTROL_ATTRIBUTES = {
+exports.CONTROL_ATTRIBUTES = {
   BOT_FILTERING: '$opt_bot_filtering',
   BUCKETING_ID: '$opt_bucketing_id',
   STICKY_BUCKETING_KEY: '$opt_experiment_bucket_map',
   USER_AGENT: '$opt_user_agent',
 };
 
-export var JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
-export var NODE_CLIENT_ENGINE = 'node-sdk';
-export var REACT_CLIENT_ENGINE = 'react-sdk';
-export var REACT_NATIVE_CLIENT_ENGINE = 'react-native-sdk';
-export var REACT_NATIVE_JS_CLIENT_ENGINE = 'react-native-js-sdk';
-export var NODE_CLIENT_VERSION = '4.0.0-alpha.1';
+exports.JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
+exports.NODE_CLIENT_ENGINE = 'node-sdk';
+exports.REACT_CLIENT_ENGINE = 'react-sdk';
+exports.REACT_NATIVE_CLIENT_ENGINE = 'react-native-sdk';
+exports.REACT_NATIVE_JS_CLIENT_ENGINE = 'react-native-js-sdk';
+exports.NODE_CLIENT_VERSION = '4.0.0-alpha.1';
 
-export var VALID_CLIENT_ENGINES = [
-  NODE_CLIENT_ENGINE,
-  REACT_CLIENT_ENGINE,
-  JAVASCRIPT_CLIENT_ENGINE,
-  REACT_NATIVE_CLIENT_ENGINE,
-  REACT_NATIVE_JS_CLIENT_ENGINE,
+exports.VALID_CLIENT_ENGINES = [
+  exports.NODE_CLIENT_ENGINE,
+  exports.REACT_CLIENT_ENGINE,
+  exports.JAVASCRIPT_CLIENT_ENGINE,
+  exports.REACT_NATIVE_CLIENT_ENGINE,
+  exports.REACT_NATIVE_JS_CLIENT_ENGINE,
 ];
 
-export { NOTIFICATION_TYPES };
+exports.NOTIFICATION_TYPES = jsSdkUtils.NOTIFICATION_TYPES;
 
-export var DECISION_NOTIFICATION_TYPES = {
+exports.DECISION_NOTIFICATION_TYPES = {
   AB_TEST: 'ab-test',
   FEATURE: 'feature',
   FEATURE_TEST: 'feature-test',
@@ -199,7 +200,7 @@ export var DECISION_NOTIFICATION_TYPES = {
  * source is used to decide whether to dispatch an impression event to
  * Optimizely.
  */
-export var DECISION_SOURCES = {
+exports.DECISION_SOURCES = {
   FEATURE_TEST: 'feature-test',
   ROLLOUT: 'rollout',
 };
@@ -207,7 +208,7 @@ export var DECISION_SOURCES = {
 /*
  * Possible types of variables attached to features
  */
-export var FEATURE_VARIABLE_TYPES = {
+exports.FEATURE_VARIABLE_TYPES = {
   BOOLEAN: 'boolean',
   DOUBLE: 'double',
   INTEGER: 'integer',
@@ -217,7 +218,7 @@ export var FEATURE_VARIABLE_TYPES = {
 /*
  * Supported datafile versions
  */
-export var DATAFILE_VERSIONS = {
+exports.DATAFILE_VERSIONS = {
   V2: '2',
   V3: '3',
   V4: '4',

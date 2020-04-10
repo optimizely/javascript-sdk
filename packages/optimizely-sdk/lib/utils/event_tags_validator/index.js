@@ -1,5 +1,5 @@
 /**
- * Copyright 2017, Optimizely
+ * Copyright 2017, 2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +17,25 @@
 /**
  * Provides utility method for validating that event tags user has provided are valid
  */
+import { sprintf } from '@optimizely/js-sdk-utils';
 
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
-
-var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
+import { ERROR_MESSAGES } from '../enums';
 var MODULE_NAME = 'EVENT_TAGS_VALIDATOR';
 
-module.exports = {
-  /**
-   * Validates user's provided event tags
-   * @param  {Object}  event tags
-   * @return {boolean} True if event tags are valid
-   * @throws If event tags are not valid
-   */
-  validate: function(eventTags) {
-    if (typeof eventTags === 'object' && !Array.isArray(eventTags) && eventTags !== null) {
-      return true;
-    } else {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_TAGS, MODULE_NAME));
-    }
-  },
-};
+/**
+ * Validates user's provided event tags
+ * @param  {Object}  event tags
+ * @return {boolean} True if event tags are valid
+ * @throws If event tags are not valid
+ */
+export var validate = function(eventTags) {
+  if (typeof eventTags === 'object' && !Array.isArray(eventTags) && eventTags !== null) {
+    return true;
+  } else {
+    throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_TAGS, MODULE_NAME));
+  }
+}
+
+export default {
+  validate,
+}

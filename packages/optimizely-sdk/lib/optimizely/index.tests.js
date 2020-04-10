@@ -25,7 +25,7 @@ import AudienceEvaluator from '../core/audience_evaluator';
 import bluebird from 'bluebird';
 import bucketer from '../core/bucketer';
 import projectConfigManager from '../core/project_config/project_config_manager';
-import * as enums from '../utils/enums';
+import enums from '../utils/enums';
 import eventBuilder from '../core/event_builder/index.js';
 import eventDispatcher from '../plugins/event_dispatcher/index.node';
 import errorHandler from '../plugins/error_handler';

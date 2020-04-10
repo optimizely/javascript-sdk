@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2020 Optimizely, Inc. and contributors                   *
+ * Copyright 2020, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { VALID_CLIENT_ENGINES } from './';
 
-import { assert } from 'chai';
+var chai = require('chai')
+var enums = require('./')
+var assert = chai.assert;
 
 describe('lib/utils/enums', function() {
   describe('valid client engines', function() {
     it('all valid client engines should end with "-sdk"', function() {
-      VALID_CLIENT_ENGINES.forEach(function(clientEngine) {
+      enums.VALID_CLIENT_ENGINES.forEach(function(clientEngine) {
         assert.isTrue(clientEngine.endsWith('-sdk'))
       });
     });

@@ -17,7 +17,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 
-import * as enums from './utils/enums';
+import enums from './utils/enums';
 import Optimizely from './optimizely';
 import testData from './tests/test_data';
 import loggerPlugin from './plugins/logger';
