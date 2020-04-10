@@ -13,11 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/**
- * Provides utility method for validating that the attributes user has provided are valid
- */
-
 import { sprintf } from '@optimizely/js-sdk-utils';
 
 import fns from '../../utils/fns';
@@ -53,6 +48,9 @@ export var isAttributeValid = function(attributeKey, attributeValue) {
   );
 }
 
+/**
+ * Provides utility method for validating that the attributes user has provided are valid
+ */
 export default {
   validate: validate,
   isAttributeValid: isAttributeValid,

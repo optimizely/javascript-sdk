@@ -17,7 +17,7 @@ import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 
 import fns from '../utils/fns'
-import attributesValidator from '../utils/attributes_validator';
+import { validate } from '../utils/attributes_validator';
 import decisionService from '../core/decision_service';
 import enums from '../utils/enums';
 import eventBuilder from '../core/event_builder/index.js';
@@ -499,7 +499,7 @@ Optimizely.prototype.__validateInputs = function(stringInputs, userAttributes, e
       }
     }
     if (userAttributes) {
-      attributesValidator.validate(userAttributes);
+      validate(userAttributes);
     }
     if (eventTags) {
       eventTagsValidator.validate(eventTags);
