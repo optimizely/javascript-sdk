@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { 
+import {
   getLogger,
   setLogHandler,
   setLogLevel,
@@ -27,7 +27,7 @@ import fns from './utils/fns';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
-import enums from './utils/enums';
+import * as enums from './utils/enums';
 import loggerPlugin from './plugins/logger';
 import Optimizely from './optimizely';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
@@ -163,7 +163,7 @@ export {
   setLogHandler as setLogger,
   setLogLevel,
   createInstance,
-  __internalResetRetryState,  
+  __internalResetRetryState,
 }
 
 export default {

@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import enums from './';
+import { VALID_CLIENT_ENGINES } from './';
 
 import { assert } from 'chai';
 
 describe('lib/utils/enums', function() {
   describe('valid client engines', function() {
     it('all valid client engines should end with "-sdk"', function() {
-      enums.VALID_CLIENT_ENGINES.forEach(function(clientEngine) {
+      VALID_CLIENT_ENGINES.forEach(function(clientEngine) {
         assert.isTrue(clientEngine.endsWith('-sdk'))
       });
     });

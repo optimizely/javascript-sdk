@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { 
+import {
   getLogger,
   setLogHandler,
   setLogLevel,
@@ -24,7 +24,7 @@ import {
 
 import fns from './utils/fns';
 import Optimizely from './optimizely';
-import enums from './utils/enums';
+import * as enums from './utils/enums';
 import loggerPlugin from './plugins/logger';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';

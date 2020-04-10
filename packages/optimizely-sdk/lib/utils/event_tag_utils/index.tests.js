@@ -1,5 +1,5 @@
 /**
- * Copyright 2017, Optimizely
+ * Copyright 2017, 2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var chai = require('chai');
-var assert = chai.assert;
-var sinon = require('sinon');
-var eventTagUtils = require('./');
+import eventTagUtils from './';
+
+import sinon from 'sinon';
+import { assert } from 'chai';
 
 describe('lib/utils/event_tag_utils', function() {
   var mockLogger;
