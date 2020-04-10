@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2017-2019, Optimizely, Inc. and contributors                        *
+ * Copyright 2017-2020, Optimizely, Inc. and contributors                        *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -14,7 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
-var Optimizely = require('../../optimizely');
+var Optimizely = require('../../optimizely').default;
 var eventBuilder = require('../../core/event_builder/index.js');
 var eventDispatcher = require('../../plugins/event_dispatcher/index.node');
 var errorHandler = require('../../plugins/error_handler');

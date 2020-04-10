@@ -63,6 +63,7 @@ const umdconfig = {
           'getErrorHandler'
         ],
         '@optimizely/js-sdk-event-processor': [
+          'LogTierV1EventProcessor',
           'LocalStoragePendingEventsDispatcher'
         ]
       }
