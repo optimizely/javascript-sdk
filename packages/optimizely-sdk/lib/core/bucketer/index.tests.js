@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, 2019 Optimizely
+ * Copyright 2016-2017, 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var bucketer = require('./');
-var enums = require('../../utils/enums');
-var logger = require('../../plugins/logger');
-var projectConfig = require('../project_config');
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
-var testData = require('../../tests/test_data').getTestProjectConfig();
+import sinon from 'sinon';
+import { assert, expect } from 'chai';
+import { cloneDeep } from 'lodash';
+import { sprintf } from '@optimizely/js-sdk-utils';
 
-var chai = require('chai');
-var assert = chai.assert;
-var expect = chai.expect;
-var cloneDeep = require('lodash/cloneDeep');
-var sinon = require('sinon');
+import bucketer from './';
+import {
+  ERROR_MESSAGES,
+  LOG_MESSAGES,
+  LOG_LEVEL,
+} from '../../utils/enums';
+import logger from '../../plugins/logger';
+import projectConfig from '../project_config';
+import { getTestProjectConfig } from '../../tests/test_data';
 
-var ERROR_MESSAGES = enums.ERROR_MESSAGES;
-var LOG_LEVEL = enums.LOG_LEVEL;
-var LOG_MESSAGES = enums.LOG_MESSAGES;
+var testData = getTestProjectConfig();
 
 describe('lib/core/bucketer', function() {
   describe('APIs', function() {
@@ -365,13 +365,14 @@ describe('lib/core/bucketer', function() {
     });
 
     describe('testBucketWithBucketingId', function() {
+      var bucketerParams;
       var createdLogger = logger.createLogger({
         logLevel: LOG_LEVEL.INFO,
         logToConsole: false,
       });
 
       beforeEach(function() {
-        configObj = projectConfig.createProjectConfig(cloneDeep(testData));
+        var configObj = projectConfig.createProjectConfig(cloneDeep(testData));
         bucketerParams = {
           trafficAllocationConfig: configObj.experiments[0].trafficAllocation,
           variationIdMap: configObj.variationIdMap,

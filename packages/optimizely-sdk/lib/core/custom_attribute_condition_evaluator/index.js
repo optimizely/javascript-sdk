@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2018-2019, Optimizely, Inc. and contributors                        *
+ * Copyright 2018-2019, 2020 Optimizely, Inc. and contributors              *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
+import { sprintf } from '@optimizely/js-sdk-utils';
 
-var fns = require('../../utils/fns');
-var enums = require('../../utils/enums');
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
+import fns from '../../utils/fns';
+import {
+  LOG_LEVEL,
+  LOG_MESSAGES,
+} from '../../utils/enums';
 
-var LOG_LEVEL = enums.LOG_LEVEL;
-var LOG_MESSAGES = enums.LOG_MESSAGES;
 var MODULE_NAME = 'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR';
 
 var EXACT_MATCH_TYPE = 'exact';
@@ -53,7 +54,7 @@ EVALUATORS_BY_MATCH_TYPE[SUBSTRING_MATCH_TYPE] = substringEvaluator;
  *                                      null if the given user attributes and condition can't be evaluated
  * TODO: Change to accept and object with named properties
  */
-function evaluate(condition, userAttributes, logger) {
+export var evaluate = function(condition, userAttributes, logger) {
   var conditionMatch = condition.match;
   if (typeof conditionMatch !== 'undefined' && MATCH_TYPES.indexOf(conditionMatch) === -1) {
     logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, JSON.stringify(condition)));
@@ -71,7 +72,7 @@ function evaluate(condition, userAttributes, logger) {
 
   var evaluatorForMatch = EVALUATORS_BY_MATCH_TYPE[conditionMatch] || exactEvaluator;
   return evaluatorForMatch(condition, userAttributes, logger);
-}
+};
 
 /**
  * Returns true if the value is valid for exact conditions. Valid values include
@@ -298,6 +299,6 @@ function substringEvaluator(condition, userAttributes, logger) {
   return userValue.indexOf(conditionValue) !== -1;
 }
 
-module.exports = {
+export default {
   evaluate: evaluate,
 };
