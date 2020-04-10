@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
+import { 
   getLogger,
   setLogHandler,
   setLogLevel,
@@ -163,7 +163,7 @@ export {
   setLogHandler as setLogger,
   setLogLevel,
   createInstance,
-  __internalResetRetryState,
+  __internalResetRetryState,  
 }
 
 export default {
