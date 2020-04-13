@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2019, Optimizely
+ * Copyright 2016-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,31 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var chai = require('chai');
-var assert = chai.assert;
-var jsonSchemaValidator = require('./');
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
-var testData = require('../../tests/test_data.js');
+import { sprintf } from '@optimizely/js-sdk-utils';
+import { assert } from 'chai';
 
-var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
+import { validate } from './';
+import { ERROR_MESSAGES } from '../enums';
+import testData from '../../tests/test_data.js';
+
 
 describe('lib/utils/json_schema_validator', function() {
   describe('APIs', function() {
     describe('validate', function() {
       it('should throw an error if the object is not valid', function() {
         assert.throws(function() {
-          jsonSchemaValidator.validate({});
+          validate({});
         });
       });
 
       it('should throw an error if no json object is passed in', function() {
         assert.throws(function() {
-          jsonSchemaValidator.validate();
+          validate();
         }, sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, 'JSON_SCHEMA_VALIDATOR'));
       });
 
       it('should validate specified Optimizely datafile', function() {
-        assert.isTrue(jsonSchemaValidator.validate(testData.getTestProjectConfig()));
+        assert.isTrue(validate(testData.getTestProjectConfig()));
       });
     });
   });
