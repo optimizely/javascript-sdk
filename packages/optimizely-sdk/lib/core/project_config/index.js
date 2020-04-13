@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2020 Optimizely
+ * Copyright 2016-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,17 @@
 import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 
 import fns from '../../utils/fns';
-import enums from '../../utils/enums';
+import {
+  ERROR_MESSAGES,
+  LOG_MESSAGES,
+  LOG_LEVEL,
+  FEATURE_VARIABLE_TYPES,
+} from '../../utils/enums';
 import configValidator from '../../utils/config_validator';
 
 var EXPERIMENT_RUNNING_STATUS = 'Running';
 var RESERVED_ATTRIBUTE_PREFIX = '$opt_';
 var MODULE_NAME = 'PROJECT_CONFIG';
-
-var ERROR_MESSAGES = enums.ERROR_MESSAGES;
-var LOG_MESSAGES = enums.LOG_MESSAGES;
-var LOG_LEVEL = enums.LOG_LEVEL;
-var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
 
 /**
  * Creates projectConfig object to be used for quick project property lookup
@@ -109,7 +109,7 @@ export var createProjectConfig = function(datafile) {
   });
 
   return projectConfig;
-}
+};
 
 /**
  * Get experiment ID for the provided experiment key
@@ -124,7 +124,7 @@ export var getExperimentId = function(projectConfig, experimentKey) {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
   }
   return experiment.id;
-}
+};
 
 /**
  * Get layer ID for the provided experiment key
@@ -139,7 +139,7 @@ export var getLayerId = function(projectConfig, experimentId) {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
   }
   return experiment.layerId;
-}
+};
 
 /**
  * Get attribute ID for the provided attribute key
@@ -169,7 +169,7 @@ export var getAttributeId = function(projectConfig, attributeKey, logger) {
 
   logger.log(LOG_LEVEL.DEBUG, sprintf(ERROR_MESSAGES.UNRECOGNIZED_ATTRIBUTE, MODULE_NAME, attributeKey));
   return null;
-}
+};
 
 /**
  * Get event ID for the provided
@@ -183,7 +183,7 @@ export var getEventId = function(projectConfig, eventKey) {
     return event.id;
   }
   return null;
-}
+};
 
 /**
  * Get experiment status for the provided experiment key
@@ -198,7 +198,7 @@ export var getExperimentStatus = function(projectConfig, experimentKey) {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
   }
   return experiment.status;
-}
+};
 
 /**
  * Returns whether experiment has a status of 'Running'
@@ -208,14 +208,14 @@ export var getExperimentStatus = function(projectConfig, experimentKey) {
  */
 export var isActive = function(projectConfig, experimentKey) {
   return this.getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_RUNNING_STATUS;
-}
+};
 
 /**
  * Determine for given experiment if event is running, which determines whether should be dispatched or not
  */
 export var isRunning = function(projectConfig, experimentKey) {
   return this.getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_RUNNING_STATUS;
-}
+};
 
 /**
  * Get audience conditions for the experiment
@@ -233,7 +233,7 @@ export var getExperimentAudienceConditions = function(projectConfig, experimentK
   }
 
   return experiment.audienceConditions || experiment.audienceIds;
-}
+};
 
 /**
  * Get variation key given experiment key and variation ID
@@ -246,7 +246,7 @@ export var getVariationKeyFromId = function(projectConfig, variationId) {
     return projectConfig.variationIdMap[variationId].key;
   }
   return null;
-}
+};
 
 /**
  * Get the variation ID given the experiment key and variation key
@@ -261,7 +261,7 @@ export var getVariationIdFromExperimentAndVariationKey = function(projectConfig,
     return experiment.variationKeyMap[variationKey].id;
   }
   return null;
-}
+};
 
 /**
  * Get experiment from provided experiment key
@@ -279,7 +279,7 @@ export var getExperimentFromKey = function(projectConfig, experimentKey) {
   }
 
   throw new Error(sprintf(ERROR_MESSAGES.EXPERIMENT_KEY_NOT_IN_DATAFILE, MODULE_NAME, experimentKey));
-}
+};
 
 /**
  * Given an experiment key, returns the traffic allocation within that experiment
@@ -294,7 +294,7 @@ export var getTrafficAllocation = function(projectConfig, experimentKey) {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
   }
   return experiment.trafficAllocation;
-}
+};
 
 /**
  * Get experiment from provided experiment id. Log an error if no experiment
@@ -313,7 +313,7 @@ export var getExperimentFromId = function(projectConfig, experimentId, logger) {
 
   logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
   return null;
-}
+};
 
 /**
  * Get feature from provided feature key. Log an error if no feature exists in
@@ -334,7 +334,7 @@ export var getFeatureFromKey = function(projectConfig, featureKey, logger) {
 
   logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, featureKey));
   return null;
-}
+};
 
 /**
  * Get the variable with the given key associated with the feature with the
@@ -364,7 +364,7 @@ export var getVariableForFeature = function(projectConfig, featureKey, variableK
   }
 
   return variable;
-}
+};
 
 /**
  * Get the value of the given variable for the given variation. If the given
@@ -395,7 +395,7 @@ export var getVariableValueForVariation = function(projectConfig, variable, vari
   var variableUsage = variableUsages[variable.id];
 
   return variableUsage ? variableUsage.value : null;
-}
+};
 
 /**
  * Given a variable value in string form, try to cast it to the argument type.
@@ -458,7 +458,7 @@ export var getTypeCastValue = function(variableValue, variableType, logger) {
   }
 
   return castValue;
-}
+};
 
 /**
  * Returns an object containing all audiences in the project config. Keys are audience IDs
@@ -468,7 +468,7 @@ export var getTypeCastValue = function(variableValue, variableType, logger) {
  */
 export var getAudiencesById = function(projectConfig) {
   return projectConfig.audiencesById;
-}
+};
 
 /**
  * Returns true if an event with the given key exists in the datafile, and false otherwise
@@ -478,7 +478,7 @@ export var getAudiencesById = function(projectConfig) {
  */
 export var eventWithKeyExists = function(projectConfig, eventKey) {
   return projectConfig.eventKeyMap.hasOwnProperty(eventKey);
-}
+};
 
 /**
  *
@@ -489,7 +489,7 @@ export var eventWithKeyExists = function(projectConfig, eventKey) {
  */
 export var isFeatureExperiment = function(projectConfig, experimentId) {
   return projectConfig.experimentFeatureMap.hasOwnProperty(experimentId);
-}
+};
 
 /**
  * Try to create a project config object from the given datafile and
@@ -510,7 +510,7 @@ export var tryCreatingProjectConfig = function(config) {
     config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
   }
   return this.createProjectConfig(config.datafile);
-}
+};
 
 export default {
   createProjectConfig: createProjectConfig,
@@ -535,4 +535,4 @@ export default {
   eventWithKeyExists: eventWithKeyExists,
   isFeatureExperiment: isFeatureExperiment,
   tryCreatingProjectConfig: tryCreatingProjectConfig,
-}
+};

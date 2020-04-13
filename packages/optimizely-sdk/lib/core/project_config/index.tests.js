@@ -13,25 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import sinon from 'sinon';
+import { assert } from 'chai';
+import { forEach, cloneDeep } from 'lodash';
 import { getLogger } from '@optimizely/js-sdk-logging';
 import { sprintf } from '@optimizely/js-sdk-utils';
 
+import fns from '../../utils/fns';
 import projectConfig from './';
-import enums from '../../utils/enums';
+import {
+  ERROR_MESSAGES,
+  FEATURE_VARIABLE_TYPES,
+  LOG_LEVEL,
+} from '../../utils/enums';
 import loggerPlugin from '../../plugins/logger';
 import testDatafile from '../../tests/test_data';
 import configValidator from '../../utils/config_validator';
 
-import { assert } from 'chai';
-import sinon from 'sinon';
-import fns from '../../utils/fns';
-import { forEach, cloneDeep } from 'lodash';
-
 var logger = getLogger();
-
-var ERROR_MESSAGES = enums.ERROR_MESSAGES;
-var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
-var LOG_LEVEL = enums.LOG_LEVEL;
 
 describe('lib/core/project_config', function() {
   var parsedAudiences = testDatafile.getParsedAudiences;

@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020 Optimizely
+ * Copyright 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,12 @@ import { getLogger } from '@optimizely/js-sdk-logging';
 import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager';
 
 import fns from '../../utils/fns';
-import enums from '../../utils/enums';
+import { ERROR_MESSAGES } from '../../utils/enums';
 import projectConfig from '../../core/project_config';
 import { getOptimizelyConfig } from '../optimizely_config';
 import configValidator from '../../utils/config_validator';
 
 var logger = getLogger();
-
-var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var MODULE_NAME = 'PROJECT_CONFIG_MANAGER';
 
 /**
@@ -54,7 +52,7 @@ function getErrorMessage(maybeError, defaultMessage) {
  * @param {Object=}        config.jsonSchemaValidator
  * @param {string=}        config.sdkKey
  */
-function ProjectConfigManager(config) {
+export function ProjectConfigManager(config) {
   try {
     this.__initialize(config);
   } catch (ex) {

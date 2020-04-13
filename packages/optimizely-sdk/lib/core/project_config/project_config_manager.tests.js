@@ -13,23 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import sinon from 'sinon';
+import { assert } from 'chai';
+import { cloneDeep } from 'lodash';
 import { sprintf } from '@optimizely/js-sdk-utils';
 import * as logging from '@optimizely/js-sdk-logging';
 import * as datafileManager from '@optimizely/js-sdk-datafile-manager';
 
 import projectConfig from './index';
-import enums from '../../utils/enums';
+import { ERROR_MESSAGES, LOG_MESSAGES } from '../../utils/enums';
 import testData from '../../tests/test_data';
 import * as optimizelyConfig from '../optimizely_config/index';
 import projectConfigManager from './project_config_manager';
 import jsonSchemaValidator from '../../utils/json_schema_validator';
-
-import sinon from 'sinon';
-import { assert } from 'chai';
-import { cloneDeep } from 'lodash';
-
-var ERROR_MESSAGES = enums.ERROR_MESSAGES;
-var LOG_MESSAGES = enums.LOG_MESSAGES;
 
 describe('lib/core/project_config/project_config_manager', function() {
   var globalStubErrorHandler;
