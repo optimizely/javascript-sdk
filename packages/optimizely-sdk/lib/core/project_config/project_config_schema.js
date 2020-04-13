@@ -275,3 +275,5 @@ export var schema = {
     },
   },
 };
+
+export default schema;
