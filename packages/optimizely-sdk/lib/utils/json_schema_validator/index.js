@@ -42,8 +42,8 @@ export var validate = function(jsonObject) {
     }
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_JSON, MODULE_NAME));
   }
-}
+};
 
 export default {
   validate: validate,
-}
+};

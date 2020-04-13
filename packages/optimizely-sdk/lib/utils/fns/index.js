@@ -1,5 +1,5 @@
 /**
- * Copyright 2017, 2019-2020 Optimizely
+ * Copyright 2017, 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { v4 } from 'uuid';
 import { keyBy as keyByUtil } from '@optimizely/js-sdk-utils';
-
-import uid from 'uuid';
 
 var MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
@@ -40,31 +39,30 @@ export var assign = function(target) {
     }
     return to;
   }
-}
+};
 
 export var currentTimestamp = function() {
-  console.log('Calling Actual Method');
   return Math.round(new Date().getTime());
-}
+};
 
 export var isSafeInteger = function(number) {
   return typeof number == 'number' && Math.abs(number) <= MAX_SAFE_INTEGER_LIMIT;
-}
+};
 
 export var keyBy = function(arr, key) {
   if (!arr) return {};
   return keyByUtil(arr, function(item) {
     return item[key];
   });
-}
+};
 
 export var uuid = function() {
-  return uid.v4();
-}
+  return v4();
+};
 
 export var isNumber = function(value) {
   return typeof value === 'number';
-}
+};
 
 export default {
   assign: assign,
@@ -73,4 +71,4 @@ export default {
   keyBy: keyBy,
   uuid: uuid,
   isNumber: isNumber,
-}
+};

@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2017, 2020 Optimizely, Inc. and contributors                   *
+ * Copyright 2017, 2020, Optimizely, Inc. and contributors                  *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -36,8 +36,8 @@ export var validate = function(userProfileServiceInstance) {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'save'"));
   }
   return true;
-}
+};
 
 export default {
   validate: validate,
-}
+};
