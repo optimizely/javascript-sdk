@@ -70,8 +70,8 @@ jobs:
       before_script:
         - mkdir $HOME/travisci-tools && pushd $HOME/travisci-tools && git init && git pull https://$CI_USER_TOKEN@github.com/optimizely/travisci-tools.git && popd
       script:
-        - CLIENT=node $HOME/travisci-tools/trigger-script-with-status-update.sh
-        - CLIENT=browser $HOME/travisci-tools/trigger-script-with-status-update.sh
+        - CLIENT=node TESTAPP_BRANCH=zeeshan/fix-enums-import $HOME/travisci-tools/trigger-script-with-status-update.sh
+        - CLIENT=browser TESTAPP_BRANCH=zeeshan/fix-enums-import $HOME/travisci-tools/trigger-script-with-status-update.sh
       after_success: travis_terminate 0
     - <<: *integrationtest
       stage: 'Benchmarking tests'
