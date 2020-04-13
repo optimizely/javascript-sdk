@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import uuid from 'uuid';
+import sinon from 'sinon';
+import { assert } from 'chai';
+
 import testData from '../../tests/test_data';
 import projectConfig from '../project_config';
 import packageJSON from '../../../package.json';
 import { getConversionEvent, getImpressionEvent} from './index.js';
-
-import uuid from 'uuid';
-import sinon from 'sinon';
-import { assert } from 'chai';
 
 describe('lib/core/event_builder', function() {
   describe('APIs', function() {

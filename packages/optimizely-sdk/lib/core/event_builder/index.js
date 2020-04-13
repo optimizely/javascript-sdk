@@ -180,7 +180,7 @@ export var getImpressionEvent = function(options) {
   impressionEvent.params = commonParams;
 
   return impressionEvent;
-}
+};
 
 /**
  * Create conversion event params to be sent to the logging endpoint
@@ -209,9 +209,9 @@ export var getConversionEvent = function(options) {
   conversionEvent.params = commonParams;
 
   return conversionEvent;
-}
+};
 
 export default {
-  getConversionEvent,
-  getImpressionEvent,
-}
+  getConversionEvent: getConversionEvent,
+  getImpressionEvent: getImpressionEvent,
+};

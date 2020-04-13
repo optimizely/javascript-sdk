@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020 Optimizely
+ * Copyright 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import projectConfig from '../project_config';
+import { isFeatureExperiment } from '../project_config';
 
 // Get Experiment Ids which are part of rollouts
 function getRolloutExperimentIds(rollouts) {
@@ -44,7 +44,7 @@ function getExperimentsMap(configObj) {
             key: variation.key,
             variablesMap: getMergedVariablesMap(configObj, variation, experiment.id, featureVariablesMap),
           };
-          if (projectConfig.isFeatureExperiment(configObj, experiment.id)) {
+          if (isFeatureExperiment(configObj, experiment.id)) {
             variations[variation.key].featureEnabled = variation.featureEnabled;
           }
           return variations;
@@ -118,4 +118,4 @@ export var getOptimizelyConfig = function(configObj) {
     featuresMap: getFeaturesMap(configObj, experimentsMap),
     revision: configObj.revision,
   };
-}
+};
