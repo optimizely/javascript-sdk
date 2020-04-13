@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-var fns = require('../fns');
+import { isSafeInteger } from '../fns';
 
 /**
  * Return true if the argument is a valid event batch size, false otherwise
  * @param {*} eventBatchSize
  * @returns boolean
  */
-function validateEventBatchSize(eventBatchSize) {
-  return fns.isSafeInteger(eventBatchSize) && eventBatchSize >= 1;
-}
+export var validateEventBatchSize = function(eventBatchSize) {
+  return isSafeInteger(eventBatchSize) && eventBatchSize >= 1;
+};
 
 /**
  * Return true if the argument is a valid event flush interval, false otherwise
  * @param {*} eventFlushInterval
  * @returns boolean
  */
-function validateEventFlushInterval(eventFlushInterval) {
-  return fns.isSafeInteger(eventFlushInterval) && eventFlushInterval > 0;
-}
+export var validateEventFlushInterval = function(eventFlushInterval) {
+  return isSafeInteger(eventFlushInterval) && eventFlushInterval > 0;
+};
 
-module.exports = {
+export default {
   validateEventBatchSize: validateEventBatchSize,
   validateEventFlushInterval: validateEventFlushInterval,
 };

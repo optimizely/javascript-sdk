@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2017-2020, Optimizely, Inc. and contributors                        *
+ * Copyright 2017-2020 Optimizely, Inc. and contributors                    *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -13,30 +13,33 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
+import sinon from 'sinon';
+import { assert } from 'chai';
+import cloneDeep from 'lodash/cloneDeep';
+import { sprintf } from '@optimizely/js-sdk-utils';
 
-var Optimizely = require('../../optimizely').default;
-var eventBuilder = require('../../core/event_builder/index.js');
-var eventDispatcher = require('../../plugins/event_dispatcher/index.node');
-var errorHandler = require('../../plugins/error_handler');
-var bucketer = require('../bucketer');
-var DecisionService = require('./');
-var enums = require('../../utils/enums');
-var cloneDeep = require('lodash/cloneDeep');
-var logger = require('../../plugins/logger');
-var projectConfig = require('../project_config');
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
-var testData = require('../../tests/test_data').getTestProjectConfig();
-var testDataWithFeatures = require('../../tests/test_data').getTestProjectConfigWithFeatures();
-var jsonSchemaValidator = require('../../utils/json_schema_validator');
-var AudienceEvaluator = require('../audience_evaluator');
+import DecisionService from './';
+import bucketer from '../bucketer';
+import {
+  LOG_LEVEL,
+  LOG_MESSAGES,
+  DECISION_SOURCES,
+} from '../../utils/enums';
+import logger from '../../plugins/logger';
+import Optimizely from '../../optimizely';
+import projectConfig from '../project_config';
+import AudienceEvaluator from '../audience_evaluator';
+import errorHandler from '../../plugins/error_handler';
+import eventBuilder from '../../core/event_builder/index.js';
+import eventDispatcher from '../../plugins/event_dispatcher/index.node';
+import jsonSchemaValidator from '../../utils/json_schema_validator';
+import {
+  getTestProjectConfig,
+  getTestProjectConfigWithFeatures,
+} from '../../tests/test_data';
 
-var chai = require('chai');
-var sinon = require('sinon');
-var assert = chai.assert;
-
-var LOG_LEVEL = enums.LOG_LEVEL;
-var LOG_MESSAGES = enums.LOG_MESSAGES;
-var DECISION_SOURCES = enums.DECISION_SOURCES;
+var testData = getTestProjectConfig();
+var testDataWithFeatures = getTestProjectConfigWithFeatures(); 
 
 describe('lib/core/decision_service', function() {
   describe('APIs', function() {

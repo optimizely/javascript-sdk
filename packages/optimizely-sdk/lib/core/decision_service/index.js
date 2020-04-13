@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2017-2019, Optimizely, Inc. and contributors                   *
+ * Copyright 2017-2020 Optimizely, Inc. and contributors                    *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
+import { sprintf } from'@optimizely/js-sdk-utils';
 
-var AudienceEvaluator = require('../audience_evaluator');
-var bucketer = require('../bucketer');
-var enums = require('../../utils/enums');
-var fns = require('../../utils/fns');
-var projectConfig = require('../project_config');
-var stringValidator = require('../../utils/string_value_validator');
-
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
+import bucketer from '../bucketer';
+import enums from '../../utils/enums';
+import fns from '../../utils/fns';
+import projectConfig from '../project_config';
+import AudienceEvaluator from '../audience_evaluator';
+import stringValidator from '../../utils/string_value_validator';
 
 var MODULE_NAME = 'DECISION_SERVICE';
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
@@ -718,15 +717,17 @@ DecisionService.prototype.setForcedVariation = function(configObj, experimentKey
   }
 };
 
-module.exports = {
-  /**
-   * Creates an instance of the DecisionService.
-   * @param  {Object} options               Configuration options
-   * @param  {Object} options.userProfileService
-   * @param  {Object} options.logger
-   * @return {Object} An instance of the DecisionService
-   */
-  createDecisionService: function(options) {
-    return new DecisionService(options);
-  },
+/**
+ * Creates an instance of the DecisionService.
+ * @param  {Object} options               Configuration options
+ * @param  {Object} options.userProfileService
+ * @param  {Object} options.logger
+ * @return {Object} An instance of the DecisionService
+ */
+export var createDecisionService = function(options) {
+  return new DecisionService(options);
+};
+
+export default {
+  createDecisionService: createDecisionService,
 };
