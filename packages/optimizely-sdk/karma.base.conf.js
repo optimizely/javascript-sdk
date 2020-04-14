@@ -100,6 +100,7 @@ module.exports = {
 
   rollupPreprocessor: {
     plugins: [
+      require('@rollup/plugin-json')({ exclude: 'node_modules/**'}),
       require('@rollup/plugin-node-resolve')({ browser: true }),
       require('@rollup/plugin-commonjs')({
         namedExports: {
