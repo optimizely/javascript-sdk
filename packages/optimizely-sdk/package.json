@@ -44,7 +44,6 @@
     "uuid": "^3.3.2"
   },
   "devDependencies": {
-    "@rollup/plugin-buble": "^0.21.3",
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
     "bluebird": "^3.4.6",
@@ -67,6 +66,7 @@
     "nock": "^7.7.2",
     "promise-polyfill": "8.1.0",
     "rollup": "2.2.0",
+    "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-terser": "^5.3.0",
     "sinon": "^2.3.1",
     "webpack": "^4.42.1"

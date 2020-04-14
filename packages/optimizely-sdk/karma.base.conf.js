@@ -118,7 +118,7 @@ module.exports = {
           ]
         }
       }),
-      require('@rollup/plugin-buble')()
+      require('rollup-plugin-babel')()
     ],
     output: {
       format: 'iife',
