@@ -133,6 +133,7 @@ module.exports = {
       format: 'iife',
       name: 'optimizelySdk',
       exports: 'named',
+      intro: 'const global = window;'
     },
   },
 
