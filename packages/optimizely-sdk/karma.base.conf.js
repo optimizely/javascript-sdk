@@ -99,10 +99,31 @@ module.exports = {
   },
 
   rollupPreprocessor: {
-    plugins: [require('@rollup/plugin-buble')()],
+    plugins: [
+      require('@rollup/plugin-node-resolve')({ browser: true }),
+      require('@rollup/plugin-commonjs')({
+        namedExports: {
+          '@optimizely/js-sdk-logging': [
+            'ConsoleLogHandler',
+            'getLogger',
+            'setLogLevel',
+            'LogLevel',
+            'setLogHandler',
+            'setErrorHandler',
+            'getErrorHandler'
+          ],
+          '@optimizely/js-sdk-event-processor': [
+            'LogTierV1EventProcessor',
+            'LocalStoragePendingEventsDispatcher'
+          ]
+        }
+      }),
+      require('@rollup/plugin-buble')()
+    ],
     output: {
       format: 'iife',
       name: 'optimizelySdk',
+      exports: 'named',
     },
   },
 
