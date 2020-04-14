@@ -87,10 +87,27 @@ const umdconfig = {
   ],
 };
 
+// A separate bundle for json schema validator.
+const jsonSchemaValidatorConfig = {
+  plugins: [
+    resolve(),
+    commonjs(),
+  ],
+  external: ['json-schema', '@optimizely/js-sdk-utils'],
+  input: 'lib/utils/json_schema_validator/index.js',
+  output: {
+    exports: 'named',
+    format: 'cjs',
+    file: 'dist/optimizely.json_schema_validator.min.js',
+    plugins: [ terser() ],
+  }
+};
+
 export default [
   BUILD_ALL && getCjsConfigForPlatform('node'),
   BUILD_ALL && getCjsConfigForPlatform('browser'),
   BUILD_ALL && getCjsConfigForPlatform('react_native'),
   BUILD_ALL && esModuleConfig,
+  BUILD_ALL && jsonSchemaValidatorConfig,
   (BUILD_ALL || BUILD_UMD_BUNDLE) && umdconfig,
 ].filter(config => config);
