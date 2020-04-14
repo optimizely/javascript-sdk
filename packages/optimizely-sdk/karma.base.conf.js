@@ -116,10 +116,15 @@ module.exports = {
           '@optimizely/js-sdk-event-processor': [
             'LogTierV1EventProcessor',
             'LocalStoragePendingEventsDispatcher'
+          ],
+          'chai': [
+            'assert',
           ]
         }
       }),
-      require('rollup-plugin-babel')()
+      require('rollup-plugin-babel')({
+        exclude: 'node_modules/**'
+      })
     ],
     output: {
       format: 'iife',
