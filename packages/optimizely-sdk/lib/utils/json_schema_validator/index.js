@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2016-2017, 2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 var validate = require('json-schema').validate;
 var sprintf = require('@optimizely/js-sdk-utils').sprintf;
-var projectConfigSchema = require('../../core/project_config/project_config_schema');
+var projectConfigSchema = require('../../core/project_config/project_config_schema').default;
 
 var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
 var MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';

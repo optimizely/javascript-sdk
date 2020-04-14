@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2019, Optimizely
+ * Copyright 2016-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var projectConfig = require('./');
-var enums = require('../../utils/enums');
-var testDatafile = require('../../tests/test_data');
-var configValidator = require('../../utils/config_validator');
-var logging = require('@optimizely/js-sdk-logging');
+import sinon from 'sinon';
+import { assert } from 'chai';
+import { forEach, cloneDeep } from 'lodash';
+import { getLogger } from '@optimizely/js-sdk-logging';
+import { sprintf } from '@optimizely/js-sdk-utils';
 
-var logger = logging.getLogger();
+import fns from '../../utils/fns';
+import projectConfig from './';
+import {
+  ERROR_MESSAGES,
+  FEATURE_VARIABLE_TYPES,
+  LOG_LEVEL,
+} from '../../utils/enums';
+import loggerPlugin from '../../plugins/logger';
+import testDatafile from '../../tests/test_data';
+import configValidator from '../../utils/config_validator';
 
-var forEach = require('lodash/forEach');
-var cloneDeep = require('lodash/cloneDeep');
-var fns = require('../../utils/fns');
-var chai = require('chai');
-var assert = chai.assert;
-var loggerPlugin = require('../../plugins/logger');
-var sinon = require('sinon');
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
-
-var ERROR_MESSAGES = enums.ERROR_MESSAGES;
-var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
-var LOG_LEVEL = enums.LOG_LEVEL;
+var logger = getLogger();
 
 describe('lib/core/project_config', function() {
   var parsedAudiences = testDatafile.getParsedAudiences;

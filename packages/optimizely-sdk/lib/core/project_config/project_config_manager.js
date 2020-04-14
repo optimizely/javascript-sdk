@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { sprintf } from '@optimizely/js-sdk-utils';
+import { getLogger } from '@optimizely/js-sdk-logging';
+import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager';
 
-var fns = require('../../utils/fns');
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
-var logging = require('@optimizely/js-sdk-logging');
-var configValidator = require('../../utils/config_validator');
-var datafileManager = require('@optimizely/js-sdk-datafile-manager');
-var enums = require('../../utils/enums');
-var projectConfig = require('../../core/project_config');
-var optimizelyConfig = require('../optimizely_config');
+import fns from '../../utils/fns';
+import { ERROR_MESSAGES } from '../../utils/enums';
+import projectConfig from '../../core/project_config';
+import { getOptimizelyConfig } from '../optimizely_config';
+import configValidator from '../../utils/config_validator';
 
-var logger = logging.getLogger();
-
-var ERROR_MESSAGES = enums.ERROR_MESSAGES;
-
+var logger = getLogger();
 var MODULE_NAME = 'PROJECT_CONFIG_MANAGER';
 
 /**
@@ -55,7 +52,7 @@ function getErrorMessage(maybeError, defaultMessage) {
  * @param {Object=}        config.jsonSchemaValidator
  * @param {string=}        config.sdkKey
  */
-function ProjectConfigManager(config) {
+export function ProjectConfigManager(config) {
   try {
     this.__initialize(config);
   } catch (ex) {
@@ -104,7 +101,7 @@ ProjectConfigManager.prototype.__initialize = function(config) {
         jsonSchemaValidator: this.jsonSchemaValidator,
         logger: logger,
       });
-      this.__optimizelyConfigObj = optimizelyConfig.getOptimizelyConfig(this.__configObj);
+      this.__optimizelyConfigObj = getOptimizelyConfig(this.__configObj);
     } catch (ex) {
       logger.error(ex);
       projectConfigCreationEx = ex;
@@ -124,7 +121,7 @@ ProjectConfigManager.prototype.__initialize = function(config) {
     if (initialDatafile && this.__configObj) {
       datafileManagerConfig.datafile = initialDatafile;
     }
-    this.datafileManager = new datafileManager.HttpPollingDatafileManager(datafileManagerConfig);
+    this.datafileManager = new HttpPollingDatafileManager(datafileManagerConfig);
     this.datafileManager.start();
     this.__readyPromise = this.datafileManager
       .onReady()
@@ -265,7 +262,7 @@ ProjectConfigManager.prototype.__handleNewConfigObj = function(newConfigObj) {
   }
 
   this.__configObj = newConfigObj;
-  this.__optimizelyConfigObj = optimizelyConfig.getOptimizelyConfig(newConfigObj);
+  this.__optimizelyConfigObj = getOptimizelyConfig(newConfigObj);
 
   this.__updateListeners.forEach(function(listener) {
     listener(newConfigObj);
@@ -340,6 +337,6 @@ ProjectConfigManager.prototype.stop = function() {
   this.__updateListeners = [];
 };
 
-module.exports = {
+export default {
   ProjectConfigManager: ProjectConfigManager,
 };
