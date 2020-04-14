@@ -119,7 +119,10 @@ module.exports = {
           ],
           'chai': [
             'assert',
-          ]
+          ],
+          'sinon': [
+            'restore',
+          ],
         }
       }),
       require('rollup-plugin-babel')({
