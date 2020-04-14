@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var assert = require('chai').assert;
-var cloneDeep = require('lodash/cloneDeep');
-var datafile = require('../../tests/test_data').getTestProjectConfigWithFeatures();
-var projectConfig = require('../project_config');
-var optimizelyConfig = require('./index');
+import { assert } from 'chai';
+import { cloneDeep } from 'lodash';
+
+import { getOptimizelyConfig } from './index';
+import { createProjectConfig } from '../project_config';
+import { getTestProjectConfigWithFeatures } from '../../tests/test_data';
+
+var datafile = getTestProjectConfigWithFeatures();
 
 var getAllExperimentsFromDatafile = function(datafile) {
   var allExperiments = [];
@@ -37,8 +40,8 @@ describe('lib/core/optimizely_config', function() {
     var optimizelyConfigObject;
     var projectConfigObject;
     beforeEach(function() {
-      projectConfigObject = projectConfig.createProjectConfig(cloneDeep(datafile));
-      optimizelyConfigObject = optimizelyConfig.getOptimizelyConfig(projectConfigObject);
+      projectConfigObject = createProjectConfig(cloneDeep(datafile));
+      optimizelyConfigObject = getOptimizelyConfig(projectConfigObject);
     });
 
     it('should return all experiments except rollouts', function() {

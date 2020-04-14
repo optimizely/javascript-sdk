@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2019, Optimizely
+ * Copyright 2016-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var enums = require('../../utils/enums');
-var fns = require('../../utils/fns');
-var eventTagUtils = require('../../utils/event_tag_utils');
-var projectConfig = require('../project_config');
-var attributeValidator = require('../../utils/attributes_validator');
+import fns from '../../utils/fns';
+import enums from '../../utils/enums';
+import projectConfig from '../project_config';
+import eventTagUtils from '../../utils/event_tag_utils';
+import attributeValidator from '../../utils/attributes_validator';
 
 var ACTIVATE_EVENT_KEY = 'campaign_activated';
 var CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom';
@@ -153,62 +153,65 @@ function getVisitorSnapshot(configObj, eventKey, eventTags, logger) {
   return snapshot;
 }
 
-module.exports = {
-  /**
-   * Create impression event params to be sent to the logging endpoint
-   * @param  {Object} options               Object containing values needed to build impression event
-   * @param  {Object} options.attributes    Object representing user attributes and values which need to be recorded
-   * @param  {string} options.clientEngine  The client we are using: node or javascript
-   * @param  {string} options.clientVersion The version of the client
-   * @param  {Object} options.configObj     Object representing project configuration, including datafile information and mappings for quick lookup
-   * @param  {string} options.experimentId  Experiment for which impression needs to be recorded
-   * @param  {string} options.userId        ID for user
-   * @param  {string} options.variationId   ID for variation which would be presented to user
-   * @return {Object}                       Params to be used in impression event logging endpoint call
-   */
-  getImpressionEvent: function(options) {
-    var impressionEvent = {
-      httpVerb: HTTP_VERB,
-    };
+/**
+ * Create impression event params to be sent to the logging endpoint
+ * @param  {Object} options               Object containing values needed to build impression event
+ * @param  {Object} options.attributes    Object representing user attributes and values which need to be recorded
+ * @param  {string} options.clientEngine  The client we are using: node or javascript
+ * @param  {string} options.clientVersion The version of the client
+ * @param  {Object} options.configObj     Object representing project configuration, including datafile information and mappings for quick lookup
+ * @param  {string} options.experimentId  Experiment for which impression needs to be recorded
+ * @param  {string} options.userId        ID for user
+ * @param  {string} options.variationId   ID for variation which would be presented to user
+ * @return {Object}                       Params to be used in impression event logging endpoint call
+ */
+export var getImpressionEvent = function(options) {
+  var impressionEvent = {
+    httpVerb: HTTP_VERB,
+  };
 
-    var commonParams = getCommonEventParams(options);
-    impressionEvent.url = ENDPOINT;
+  var commonParams = getCommonEventParams(options);
+  impressionEvent.url = ENDPOINT;
 
-    var impressionEventParams = getImpressionEventParams(options.configObj, options.experimentId, options.variationId);
-    // combine Event params into visitor obj
-    commonParams.visitors[0].snapshots.push(impressionEventParams);
+  var impressionEventParams = getImpressionEventParams(options.configObj, options.experimentId, options.variationId);
+  // combine Event params into visitor obj
+  commonParams.visitors[0].snapshots.push(impressionEventParams);
 
-    impressionEvent.params = commonParams;
+  impressionEvent.params = commonParams;
 
-    return impressionEvent;
-  },
+  return impressionEvent;
+};
 
-  /**
-   * Create conversion event params to be sent to the logging endpoint
-   * @param  {Object} options                           Object containing values needed to build conversion event
-   * @param  {Object} options.attributes                Object representing user attributes and values which need to be recorded
-   * @param  {string} options.clientEngine              The client we are using: node or javascript
-   * @param  {string} options.clientVersion             The version of the client
-   * @param  {Object} options.configObj                 Object representing project configuration, including datafile information and mappings for quick lookup
-   * @param  {string} options.eventKey                  Event key representing the event which needs to be recorded
-   * @param  {Object} options.eventTags                 Object with event-specific tags
-   * @param  {Object} options.logger                    Logger object
-   * @param  {string} options.userId                    ID for user
-   * @return {Object}                                   Params to be used in conversion event logging endpoint call
-   */
-  getConversionEvent: function(options) {
-    var conversionEvent = {
-      httpVerb: HTTP_VERB,
-    };
+/**
+ * Create conversion event params to be sent to the logging endpoint
+ * @param  {Object} options                           Object containing values needed to build conversion event
+ * @param  {Object} options.attributes                Object representing user attributes and values which need to be recorded
+ * @param  {string} options.clientEngine              The client we are using: node or javascript
+ * @param  {string} options.clientVersion             The version of the client
+ * @param  {Object} options.configObj                 Object representing project configuration, including datafile information and mappings for quick lookup
+ * @param  {string} options.eventKey                  Event key representing the event which needs to be recorded
+ * @param  {Object} options.eventTags                 Object with event-specific tags
+ * @param  {Object} options.logger                    Logger object
+ * @param  {string} options.userId                    ID for user
+ * @return {Object}                                   Params to be used in conversion event logging endpoint call
+ */
+export var getConversionEvent = function(options) {
+  var conversionEvent = {
+    httpVerb: HTTP_VERB,
+  };
 
-    var commonParams = getCommonEventParams(options);
-    conversionEvent.url = ENDPOINT;
+  var commonParams = getCommonEventParams(options);
+  conversionEvent.url = ENDPOINT;
 
-    var snapshot = getVisitorSnapshot(options.configObj, options.eventKey, options.eventTags, options.logger);
+  var snapshot = getVisitorSnapshot(options.configObj, options.eventKey, options.eventTags, options.logger);
 
-    commonParams.visitors[0].snapshots = [snapshot];
-    conversionEvent.params = commonParams;
+  commonParams.visitors[0].snapshots = [snapshot];
+  conversionEvent.params = commonParams;
 
-    return conversionEvent;
-  },
+  return conversionEvent;
+};
+
+export default {
+  getConversionEvent: getConversionEvent,
+  getImpressionEvent: getImpressionEvent,
 };

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 import { sprintf } from '@optimizely/js-sdk-utils';
-
 import { validate as jsonSchemaValidator } from 'json-schema';
+
 import { ERROR_MESSAGES } from '../enums';
 import projectConfigSchema from '../../core/project_config/project_config_schema';
 

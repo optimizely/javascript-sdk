@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2019, Optimizely
+ * Copyright 2016-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var eventBuilder = require('./index.js');
-var packageJSON = require('../../../package.json');
-var projectConfig = require('../project_config');
-var testData = require('../../tests/test_data');
+import uuid from 'uuid';
+import sinon from 'sinon';
+import { assert } from 'chai';
 
-var chai = require('chai');
-var assert = chai.assert;
-var sinon = require('sinon');
-var uuid = require('uuid');
+import testData from '../../tests/test_data';
+import projectConfig from '../project_config';
+import packageJSON from '../../../package.json';
+import { getConversionEvent, getImpressionEvent} from './index.js';
 
 describe('lib/core/event_builder', function() {
   describe('APIs', function() {
@@ -93,7 +92,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+        var actualParams = getImpressionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -154,7 +153,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+        var actualParams = getImpressionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -216,7 +215,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+        var actualParams = getImpressionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -278,7 +277,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+        var actualParams = getImpressionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -334,7 +333,7 @@ describe('lib/core/event_builder', function() {
           logger: mockLogger,
         };
 
-        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+        var actualParams = getImpressionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -403,7 +402,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+        var actualParams = getImpressionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -473,7 +472,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+        var actualParams = getImpressionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -558,7 +557,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+        var actualParams = getImpressionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -638,7 +637,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+        var actualParams = getImpressionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -687,7 +686,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        var actualParams = getConversionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -742,7 +741,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        var actualParams = getConversionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -796,7 +795,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        var actualParams = getConversionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -858,7 +857,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        var actualParams = getConversionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -906,7 +905,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        var actualParams = getConversionEvent(eventOptions);
         sinon.assert.calledOnce(mockLogger.log);
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -968,7 +967,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        var actualParams = getConversionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -1031,7 +1030,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        var actualParams = getConversionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -1078,7 +1077,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        var actualParams = getConversionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -1151,7 +1150,7 @@ describe('lib/core/event_builder', function() {
           },
         };
 
-        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        var actualParams = getConversionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -1205,7 +1204,7 @@ describe('lib/core/event_builder', function() {
             userId: 'testUser',
           };
 
-          var actualParams = eventBuilder.getConversionEvent(eventOptions);
+          var actualParams = getConversionEvent(eventOptions);
 
           assert.deepEqual(actualParams, expectedParams);
         });
@@ -1262,7 +1261,7 @@ describe('lib/core/event_builder', function() {
               userId: 'testUser',
             };
 
-            var actualParams = eventBuilder.getConversionEvent(eventOptions);
+            var actualParams = getConversionEvent(eventOptions);
 
             assert.deepEqual(actualParams, expectedParams);
           });
@@ -1316,7 +1315,7 @@ describe('lib/core/event_builder', function() {
               userId: 'testUser',
             };
 
-            var actualParams = eventBuilder.getConversionEvent(eventOptions);
+            var actualParams = getConversionEvent(eventOptions);
 
             assert.deepEqual(actualParams, expectedParams);
           });
@@ -1372,7 +1371,7 @@ describe('lib/core/event_builder', function() {
                 userId: 'testUser',
               };
 
-              var actualParams = eventBuilder.getConversionEvent(eventOptions);
+              var actualParams = getConversionEvent(eventOptions);
 
               assert.deepEqual(actualParams, expectedParams);
             });
@@ -1431,7 +1430,7 @@ describe('lib/core/event_builder', function() {
               userId: 'testUser',
             };
 
-            var actualParams = eventBuilder.getConversionEvent(eventOptions);
+            var actualParams = getConversionEvent(eventOptions);
 
             assert.deepEqual(actualParams, expectedParams);
           });
@@ -1485,7 +1484,7 @@ describe('lib/core/event_builder', function() {
               userId: 'testUser',
             };
 
-            var actualParams = eventBuilder.getConversionEvent(eventOptions);
+            var actualParams = getConversionEvent(eventOptions);
 
             assert.deepEqual(actualParams, expectedParams);
           });
@@ -1541,7 +1540,7 @@ describe('lib/core/event_builder', function() {
                 userId: 'testUser',
               };
 
-              var actualParams = eventBuilder.getConversionEvent(eventOptions);
+              var actualParams = getConversionEvent(eventOptions);
 
               assert.deepEqual(actualParams, expectedParams);
             });
@@ -1600,7 +1599,7 @@ describe('lib/core/event_builder', function() {
             attributes: { $opt_bucketing_id: 'variation' },
           };
 
-          var actualParams = eventBuilder.getConversionEvent(eventOptions);
+          var actualParams = getConversionEvent(eventOptions);
 
           assert.deepEqual(actualParams, expectedParams);
         });
