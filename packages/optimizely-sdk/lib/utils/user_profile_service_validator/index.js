@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2017, Optimizely, Inc. and contributors                        *
+ * Copyright 2017, 2020, Optimizely, Inc. and contributors                  *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -18,24 +18,26 @@
  * Provides utility method for validating that the given user profile service implementation is valid.
  */
 
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
+import { sprintf } from '@optimizely/js-sdk-utils';
 
-var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
+import { ERROR_MESSAGES } from '../enums';
 var MODULE_NAME = 'USER_PROFILE_SERVICE_VALIDATOR';
 
-module.exports = {
-  /**
-   * Validates user's provided user profile service instance
-   * @param  {Object}  userProfileServiceInstance
-   * @return {boolean} True if the instance is valid
-   * @throws If the instance is not valid
-   */
-  validate: function(userProfileServiceInstance) {
-    if (typeof userProfileServiceInstance.lookup !== 'function') {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'lookup'"));
-    } else if (typeof userProfileServiceInstance.save !== 'function') {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'save'"));
-    }
-    return true;
-  },
+/**
+ * Validates user's provided user profile service instance
+ * @param  {Object}  userProfileServiceInstance
+ * @return {boolean} True if the instance is valid
+ * @throws If the instance is not valid
+ */
+export var validate = function(userProfileServiceInstance) {
+  if (typeof userProfileServiceInstance.lookup !== 'function') {
+    throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'lookup'"));
+  } else if (typeof userProfileServiceInstance.save !== 'function') {
+    throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'save'"));
+  }
+  return true;
+};
+
+export default {
+  validate: validate,
 };
