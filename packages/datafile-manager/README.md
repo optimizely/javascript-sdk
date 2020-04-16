@@ -2,6 +2,14 @@
 
 This package provides datafile manager implementations for Node.js, browsers, and React Native.
 
+## Requirements
+In general, an ES5-compatible environment is required, as well as `Promise` (must be polyfilled if absent).
+
+Platform-specific minimum supported versions:
+
+- Node.js: `8`
+- React Native: `0.61.5`
+
 ## Installation
 
 ```sh
