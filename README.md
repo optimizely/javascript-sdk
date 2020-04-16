@@ -27,3 +27,36 @@ This repository is a monorepo that we manage using [Lerna](https://github.com/le
 ### Contributing
 
 Please see [CONTRIBUTING](CONTRIBUTING.md).
+
+## Credits
+
+First-party code (under packages/optimizely-sdk/lib/, packages/datafile-manager/lib, packages/datafile-manager/src, packages/datafile-manager/__test__, packages/event-processor/src, packages/event-processor/__tests__, packages/logging/src, packages/logging/__tests__, packages/utils/src, packages/utils/__tests__) is copyright Optimizely, Inc. and contributors, licensed under Apache 2.0.
+
+## Additional Code
+
+Prod dependencies are as follows:
+
+```json
+{
+  "json-schema@0.2.3": {
+    "licenses": [
+      "AFLv2.1",
+      "BSD"
+    ],
+    "publisher": "Kris Zyp",
+    "repository": "https://github.com/kriszyp/json-schema"
+  },
+  "murmurhash@0.0.2": {
+    "licenses": "MIT*",
+    "repository": "https://github.com/perezd/node-murmurhash"
+  },
+  "uuid@3.3.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/kelektiv/node-uuid"
+  },
+  "decompress-response@4.2.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/sindresorhus/decompress-response"
+  }
+}
+```
