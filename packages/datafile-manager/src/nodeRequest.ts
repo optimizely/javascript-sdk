@@ -136,7 +136,7 @@ export function makeGetRequest(reqUrl: string, headers: Headers): AbortableReque
     method: 'GET',
     headers: {
       ...headers,
-      'Accept-Encoding': 'gzip,deflate',
+      'accept-encoding': 'gzip,deflate',
     },
   };
 
