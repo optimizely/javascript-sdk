@@ -30,7 +30,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md).
 
 ## Credits
 
-First-party code (under packages/optimizely-sdk/lib/, packages/datafile-manager/lib, packages/datafile-manager/src, packages/datafile-manager/__test__, packages/event-processor/src, packages/event-processor/__tests__, packages/logging/src, packages/logging/__tests__, packages/utils/src, packages/utils/__tests__) is copyright Optimizely, Inc. and contributors, licensed under Apache 2.0.
+First-party code (under `packages/optimizely-sdk/lib/`, `packages/datafile-manager/lib`, `packages/datafile-manager/src`, `packages/datafile-manager/__test__`, `packages/event-processor/src`, `packages/event-processor/__tests__`, `packages/logging/src`, `packages/logging/__tests__`, `packages/utils/src`, `packages/utils/__tests__`) is copyright Optimizely, Inc. and contributors, licensed under Apache 2.0.
 
 ## Additional Code
 
