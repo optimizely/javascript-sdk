@@ -148,14 +148,8 @@ ProjectConfigManager.prototype.__initialize = function(config) {
  * successful result.
  */
 ProjectConfigManager.prototype.__onDatafileManagerReadyFulfill = function() {
-  var newDatafile = this.datafileManager.get();
-  var newConfigObj;
   try {
-    newConfigObj = projectConfig.tryCreatingProjectConfig({
-      datafile: newDatafile,
-      jsonSchemaValidator: this.jsonSchemaValidator,
-      logger: logger,
-    });
+    this.__handleNewDatafile();
   } catch (ex) {
     logger.error(ex);
     return {
@@ -163,7 +157,7 @@ ProjectConfigManager.prototype.__onDatafileManagerReadyFulfill = function() {
       reason: getErrorMessage(ex),
     };
   }
-  this.__handleNewConfigObj(newConfigObj);
+
   return {
     success: true,
   };
@@ -189,19 +183,10 @@ ProjectConfigManager.prototype.__onDatafileManagerReadyReject = function(err) {
  * update listeners if successful
  */
 ProjectConfigManager.prototype.__onDatafileManagerUpdate = function() {
-  var newDatafile = this.datafileManager.get();
-  var newConfigObj;
   try {
-    newConfigObj = projectConfig.tryCreatingProjectConfig({
-      datafile: newDatafile,
-      jsonSchemaValidator: this.jsonSchemaValidator,
-      logger: logger,
-    });
+    this.__handleNewDatafile();
   } catch (ex) {
     logger.error(ex);
-  }
-  if (newConfigObj) {
-    this.__handleNewConfigObj(newConfigObj);
   }
 };
 
@@ -253,11 +238,21 @@ ProjectConfigManager.prototype.__validateDatafileOptions = function(datafileOpti
  * object. If the internal object is updated, call update listeners.
  * @param {Object} newConfigObj
  */
-ProjectConfigManager.prototype.__handleNewConfigObj = function(newConfigObj) {
-  var oldConfigObj = this.__configObj;
+ProjectConfigManager.prototype.__handleNewDatafile = function() {
+  var newDatafile = this.datafileManager.get();
 
-  var oldRevision = oldConfigObj ? oldConfigObj.revision : 'null';
-  if (oldRevision === newConfigObj.revision) {
+  // Only proceed if the datafile has a different revision
+  if (!newDatafile || newDatafile.revision === this.__configObj.revision) {
+    return;
+  }
+  
+  var newConfigObj = projectConfig.tryCreatingProjectConfig({
+    datafile: newDatafile,
+    jsonSchemaValidator: this.jsonSchemaValidator,
+    logger: logger,
+  });
+
+  if (!newConfigObj) {
     return;
   }
 
