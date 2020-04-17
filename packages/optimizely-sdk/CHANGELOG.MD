@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.0.0-rc.1] - April 17, 2020
+
+### New Features
+- ES module entry point for the browser - `"module"` property of `package.json` points to `dist/optimizely.browser.es.min.js` ([#445](https://github.com/optimizely/javascript-sdk/pull/445))
+
+### Breaking Changes:
+- Dropped support for Node.js version <8 ([#456](https://github.com/optimizely/javascript-sdk/pull/456))
+
+### Bug fixes
+- Node.js datafile manager uses gzip,deflate compression for requests ([#456](https://github.com/optimizely/javascript-sdk/pull/456))
+
 ## [4.0.0-alpha.1] - March 4, 2020
 
 ### Breaking Changes:
@@ -14,11 +25,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Changed functionality of JSON schema validation in all entry points ([442](https://github.com/optimizely/javascript-sdk/pull/442)).
    - Previously, `skipJSONValidation` flag was used by the user to specify whether the JSON object should be validated.
    - Now, `skipJSONValidation` has been removed entirely from all entry points. Instead, a user will need to import `jsonSchemaValidator` from `@optimizely/optimizely-sdk/dist/optimizely.json_schema_validator.min.js` and pass it to `createInstance` to perform validation as shown below:
-   
+
   ```js
   const optimizelySDK = require('@optimizely/optimizely-sdk');
   const jsonSchemaValidator = require('@optimizely/optimizely-sdk/dist/optimizely.json_schema_validator.min');
-  
+
   // Require JSON schema validation for the datafile
   var optimizelyClientInstance = optimizely.createInstance({
     datafile: datafile,
