@@ -242,7 +242,7 @@ ProjectConfigManager.prototype.__handleNewDatafile = function() {
   var newDatafile = this.datafileManager.get();
 
   // Only proceed if the datafile has a different revision
-  if (!newDatafile || newDatafile.revision === this.__configObj.revision) {
+  if (!newDatafile || (this.__configObj && newDatafile.revision === this.__configObj.revision)) {
     return;
   }
   
