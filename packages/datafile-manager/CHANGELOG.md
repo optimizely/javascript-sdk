@@ -9,6 +9,11 @@ Changes that have landed but are not yet released.
 
 ### Breaking Changes
 - Removed `StaticDatafileManager` from all top level exports
+- Dropped support for Node.js version <8
+
+### Fixed
+
+- Node datafile manager requests use gzip,deflate compression
 
 ## [0.4.0] - June 12, 2019
 

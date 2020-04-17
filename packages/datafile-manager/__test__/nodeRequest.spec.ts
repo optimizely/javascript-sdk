@@ -15,6 +15,7 @@
  */
 
 import nock from 'nock';
+import zlib from 'zlib';
 import { makeGetRequest } from '../src/nodeRequest';
 import { advanceTimersByTime } from './testUtils';
 
@@ -76,6 +77,20 @@ describe('nodeEnvironment', () => {
         statusCode: 304,
         body: '',
         headers: {},
+      });
+      scope.done();
+    });
+
+    it('adds an Accept-Encoding request header and unzips a gzipped response body', async () => {
+      const scope = nock(host)
+        .matchHeader('accept-encoding', 'gzip,deflate')
+        .get(path)
+        .reply(200, () => zlib.gzipSync('{"foo":"bar"}'), { 'content-encoding': 'gzip' });
+      const req = makeGetRequest(`${host}${path}`, {});
+      const resp = await req.responsePromise;
+      expect(resp).toMatchObject({
+        statusCode: 200,
+        body: '{"foo":"bar"}',
       });
       scope.done();
     });

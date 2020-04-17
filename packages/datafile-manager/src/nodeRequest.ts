@@ -19,6 +19,7 @@ import https from 'https';
 import url from 'url';
 import { Headers, AbortableRequest, Response } from './http';
 import { REQUEST_TIMEOUT_MS } from './config';
+import decompressResponse from 'decompress-response';
 
 // Shared signature between http.request and https.request
 type ClientRequestCreator = (options: http.RequestOptions) => http.ClientRequest;
@@ -74,16 +75,18 @@ function getResponseFromRequest(request: http.ClientRequest): Promise<Response> 
         return;
       }
 
-      incomingMessage.setEncoding('utf8');
+      const response = decompressResponse(incomingMessage);
+
+      response.setEncoding('utf8');
 
       let responseData = '';
-      incomingMessage.on('data', (chunk: string) => {
+      response.on('data', (chunk: string) => {
         if (!request.aborted) {
           responseData += chunk;
         }
       });
 
-      incomingMessage.on('end', () => {
+      response.on('end', () => {
         if (request.aborted) {
           return;
         }
@@ -131,7 +134,10 @@ export function makeGetRequest(reqUrl: string, headers: Headers): AbortableReque
   const requestOptions: http.RequestOptions = {
     ...getRequestOptionsFromUrl(parsedUrl),
     method: 'GET',
-    headers,
+    headers: {
+      ...headers,
+      'accept-encoding': 'gzip,deflate',
+    },
   };
 
   const request = requester(requestOptions);
