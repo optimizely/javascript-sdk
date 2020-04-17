@@ -148,19 +148,7 @@ ProjectConfigManager.prototype.__initialize = function(config) {
  * successful result.
  */
 ProjectConfigManager.prototype.__onDatafileManagerReadyFulfill = function() {
-  try {
-    this.__handleNewDatafile();
-  } catch (ex) {
-    logger.error(ex);
-    return {
-      success: false,
-      reason: getErrorMessage(ex),
-    };
-  }
-
-  return {
-    success: true,
-  };
+  return this.__handleNewDatafile();
 };
 
 /**
@@ -183,11 +171,7 @@ ProjectConfigManager.prototype.__onDatafileManagerReadyReject = function(err) {
  * update listeners if successful
  */
 ProjectConfigManager.prototype.__onDatafileManagerUpdate = function() {
-  try {
-    this.__handleNewDatafile();
-  } catch (ex) {
-    logger.error(ex);
-  }
+  this.__handleNewDatafile();
 };
 
 /**
@@ -236,24 +220,33 @@ ProjectConfigManager.prototype.__validateDatafileOptions = function(datafileOpti
  * Update internal project config object to be argument object when the argument
  * object has a different revision than the current internal project config
  * object. If the internal object is updated, call update listeners.
+ * 
  * @param {Object} newConfigObj
+ * @returns {Object}
+ *   { success: true } if successfull
+ *   { success: false, reason: "error message"} if failed
  */
 ProjectConfigManager.prototype.__handleNewDatafile = function() {
   var newDatafile = this.datafileManager.get();
 
   // Only proceed if the datafile has a different revision
   if (!newDatafile || (this.__configObj && newDatafile.revision === this.__configObj.revision)) {
-    return;
+    return { success: true };
   }
   
-  var newConfigObj = projectConfig.tryCreatingProjectConfig({
-    datafile: newDatafile,
-    jsonSchemaValidator: this.jsonSchemaValidator,
-    logger: logger,
-  });
-
-  if (!newConfigObj) {
-    return;
+  var newConfigObj;
+  try {
+    newConfigObj = projectConfig.tryCreatingProjectConfig({
+      datafile: newDatafile,
+      jsonSchemaValidator: this.jsonSchemaValidator,
+      logger: logger,
+    });
+  } catch (ex) {
+    logger.error(ex);
+    return {
+      success: false,
+      reason: getErrorMessage(ex),
+    };
   }
 
   this.__configObj = newConfigObj;
@@ -262,6 +255,8 @@ ProjectConfigManager.prototype.__handleNewDatafile = function() {
   this.__updateListeners.forEach(function(listener) {
     listener(newConfigObj);
   });
+
+  return { success: true };
 };
 
 /**
