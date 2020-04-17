@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/js-sdk-datafile-manager",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Optimizely Full Stack Datafile Manager",
   "license": "Apache-2.0",
   "engines": {
