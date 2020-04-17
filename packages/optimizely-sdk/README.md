@@ -96,23 +96,17 @@ Prod dependencies are as follows:
     "publisher": "Kris Zyp",
     "repository": "https://github.com/kriszyp/json-schema"
   },
-  "lodash@4.17.10": {
-    "licenses": "MIT",
-    "publisher": "John-David Dalton",
-    "repository": "https://github.com/lodash/lodash"
-  },
   "murmurhash@0.0.2": {
     "licenses": "MIT*",
     "repository": "https://github.com/perezd/node-murmurhash"
   },
-  "sprintf@0.1.5": {
-    "licenses": "BSD-3-Clause",
-    "publisher": "Moritz Peters",
-    "repository": "https://github.com/maritz/node-sprintf"
-  },
-  "uuid@3.2.1": {
+  "uuid@3.3.2": {
     "licenses": "MIT",
     "repository": "https://github.com/kelektiv/node-uuid"
+  },
+  "decompress-response@4.2.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/sindresorhus/decompress-response"
   }
 }
 ```
