@@ -175,7 +175,7 @@ export var NODE_CLIENT_ENGINE = 'node-sdk';
 export var REACT_CLIENT_ENGINE = 'react-sdk';
 export var REACT_NATIVE_CLIENT_ENGINE = 'react-native-sdk';
 export var REACT_NATIVE_JS_CLIENT_ENGINE = 'react-native-js-sdk';
-export var NODE_CLIENT_VERSION = '4.0.0-alpha.1';
+export var NODE_CLIENT_VERSION = '4.0.0-rc.1';
 
 export var VALID_CLIENT_ENGINES = [
   NODE_CLIENT_ENGINE,
