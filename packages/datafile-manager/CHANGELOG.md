@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.5.0] - April 17, 2020
+
 ### Breaking Changes
 - Removed `StaticDatafileManager` from all top level exports
 - Dropped support for Node.js version <8
