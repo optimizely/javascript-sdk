@@ -41,7 +41,9 @@
     "@optimizely/js-sdk-utils": "^0.2.0",
     "json-schema": "^0.2.3",
     "murmurhash": "0.0.2",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "http-proxy-agent": "^4.0.1",
+    "https-proxy-agent": "^5.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.2",

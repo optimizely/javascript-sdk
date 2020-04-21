@@ -16,6 +16,8 @@
 import http from 'http';
 import https from 'https';
 import url from 'url';
+import HttpProxyAgent from 'http-proxy-agent';
+import HttpsProxyAgent from 'https-proxy-agent';
 
 /**
  * Dispatch an HTTP request to the given url and the specified options
@@ -32,9 +34,15 @@ export var dispatchEvent = function(eventObj, callback) {
     return;
   }
 
+  var proxyUrl = null;
+  var proxyAgent = null;  
   var parsedUrl = url.parse(eventObj.url);
-
   var dataString = JSON.stringify(eventObj.params);
+  var isSecure = parsedUrl.protocol === 'https:';
+
+  if (proxyUrl) {
+    proxyAgent = new (isSecure ? HttpsProxyAgent : HttpProxyAgent)(proxyUrl);
+  }
 
   var requestOptions = {
     host: parsedUrl.host,
@@ -44,6 +52,7 @@ export var dispatchEvent = function(eventObj, callback) {
       'content-type': 'application/json',
       'content-length': dataString.length.toString(),
     },
+    agent: proxyAgent,
   };
 
   var requestCallback = function(response) {
@@ -52,7 +61,7 @@ export var dispatchEvent = function(eventObj, callback) {
     }
   };
 
-  var req = (parsedUrl.protocol === 'http:' ? http : https).request(requestOptions, requestCallback);
+  var req = (isSecure ? https : http).request(requestOptions, requestCallback);
   // Add no-op error listener to prevent this from throwing
   req.on('error', function() {});
   req.write(dataString);
