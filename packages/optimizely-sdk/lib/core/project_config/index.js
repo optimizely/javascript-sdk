@@ -33,6 +33,12 @@ function createMutationSafeDatafileCopy(datafile) {
   datafileCopy.audiences = (datafile.audiences || []).map(function(audience) {
     return fns.assign({}, audience);
   });
+  datafileCopy.experiments = (datafile.experiments || []).map(function(experiment) {
+    return fns.assign({}, experiment);
+  });
+  datafileCopy.featureFlags = (datafile.featureFlags || []).map(function(featureFlag) {
+    return fns.assign({}, featureFlag);
+  });
   datafileCopy.groups = (datafile.groups || []).map(function(group) {
     var groupCopy = fns.assign({}, group);
     groupCopy.experiments = (group.experiments || []).map(function(experiment) {
@@ -40,18 +46,12 @@ function createMutationSafeDatafileCopy(datafile) {
     });
     return groupCopy;
   });
-  datafileCopy.experiments = (datafile.experiments || []).map(function(experiment) {
-    return fns.assign({}, experiment);
-  });
   datafileCopy.rollouts = (datafile.rollouts || []).map(function(rollout) {
     var rolloutCopy = fns.assign({}, rollout);
     rolloutCopy.experiments = (rollout.experiments || []).map(function(experiment) {
       return fns.assign({}, experiment);
     });
     return rolloutCopy;
-  });
-  datafileCopy.featureFlags = (datafile.featureFlags || []).map(function(featureFlag) {
-    return fns.assign({}, featureFlag);
   });
   return datafileCopy;
 }
