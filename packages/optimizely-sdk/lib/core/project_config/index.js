@@ -28,43 +28,55 @@ var EXPERIMENT_RUNNING_STATUS = 'Running';
 var RESERVED_ATTRIBUTE_PREFIX = '$opt_';
 var MODULE_NAME = 'PROJECT_CONFIG';
 
-/**
- * Creates projectConfig object to be used for quick project property lookup
- * @param  {Object} datafile JSON datafile representing the project
- * @return {Object} Object representing project configuration
- */
-export var createProjectConfig = function(datafile) {
-  var projectConfig = fns.assign({}, datafile);
-
-  // Shallow copy audiences to avoid mutating datafile object (below we will overwrite
-  // the conditions string with the parsed conditions)
-  projectConfig.audiences = (datafile.audiences || []).map(function(audience) {
-    var audienceCopy = fns.assign({}, audience);
-    /*
-    * Note: Conditions of audiences in projectConfig.typedAudiences are not
-    * expected to be string-encoded as they are here in projectConfig.audiences.
-    */
-    audienceCopy.conditions = JSON.parse(audienceCopy.conditions);
-    return audienceCopy;
+function createMutationSafeDatafileCopy(datafile) {
+  var datafileCopy = fns.assign({}, datafile);
+  datafileCopy.audiences = (datafile.audiences || []).map(function(audience) {
+    return fns.assign({}, audience);
   });
-  projectConfig.audiencesById = fns.keyBy(projectConfig.audiences, 'id');
-  fns.assign(projectConfig.audiencesById, fns.keyBy(projectConfig.typedAudiences, 'id'));
-
-  projectConfig.attributeKeyMap = fns.keyBy(projectConfig.attributes, 'key');
-  projectConfig.eventKeyMap = fns.keyBy(projectConfig.events, 'key');
-
-  projectConfig.groups = (datafile.groups || []).map(function(group) {
+  datafileCopy.groups = (datafile.groups || []).map(function(group) {
     var groupCopy = fns.assign({}, group);
     groupCopy.experiments = (group.experiments || []).map(function(experiment) {
       return fns.assign({}, experiment);
     });
     return groupCopy;
   });
-  projectConfig.groupIdMap = fns.keyBy(projectConfig.groups, 'id');
-
-  projectConfig.experiments = (datafile.experiments || []).map(function(experiment) {
+  datafileCopy.experiments = (datafile.experiments || []).map(function(experiment) {
     return fns.assign({}, experiment);
   });
+  datafileCopy.rollouts = (datafile.rollouts || []).map(function(rollout) {
+    var rolloutCopy = fns.assign({}, rollout);
+    rolloutCopy.experiments = (rollout.experiments || []).map(function(experiment) {
+      return fns.assign({}, experiment);
+    });
+    return rolloutCopy;
+  });
+  datafileCopy.featureFlags = (datafile.featureFlags || []).map(function(featureFlag) {
+    return fns.assign({}, featureFlag);
+  });
+  return datafileCopy;
+}
+
+/**
+ * Creates projectConfig object to be used for quick project property lookup
+ * @param  {Object} datafile JSON datafile representing the project
+ * @return {Object} Object representing project configuration
+ */
+export var createProjectConfig = function(datafile) {
+  var projectConfig = createMutationSafeDatafileCopy(datafile);
+
+  /*
+   * Conditions of audiences in projectConfig.typedAudiences are not
+   * expected to be string-encoded as they are here in projectConfig.audiences.
+   */
+  (projectConfig.audiences || []).forEach(function(audience) {
+    audience.conditions = JSON.parse(audience.conditions);
+  });
+  projectConfig.audiencesById = fns.keyBy(projectConfig.audiences, 'id');
+  fns.assign(projectConfig.audiencesById, fns.keyBy(projectConfig.typedAudiences, 'id'));
+
+  projectConfig.attributeKeyMap = fns.keyBy(projectConfig.attributes, 'key');
+  projectConfig.eventKeyMap = fns.keyBy(projectConfig.events, 'key');
+  projectConfig.groupIdMap = fns.keyBy(projectConfig.groups, 'id');
 
   var experiments;
   Object.keys(projectConfig.groupIdMap || {}).forEach(function(Id) {
@@ -72,14 +84,6 @@ export var createProjectConfig = function(datafile) {
     (experiments || []).forEach(function(experiment) {
       projectConfig.experiments.push(fns.assign(experiment, { groupId: Id }));
     });
-  });
-
-  projectConfig.rollouts = (datafile.rollouts || []).map(function(rollout) {
-    var rolloutCopy = fns.assign({}, rollout);
-    rolloutCopy.experiments = (rollout.experiments || []).map(function(experiment) {
-      return fns.assign({}, experiment);
-    });
-    return rolloutCopy;
   });
 
   projectConfig.rolloutIdMap = fns.keyBy(projectConfig.rollouts || [], 'id');
@@ -112,10 +116,6 @@ export var createProjectConfig = function(datafile) {
   // Object containing experiment Ids that exist in any feature
   // for checking that experiment is a feature experiment or not.
   projectConfig.experimentFeatureMap = {};
-
-  projectConfig.featureFlags = (datafile.featureFlags || []).map(function(featureFlag) {
-    return fns.assign({}, featureFlag);
-  });
 
   projectConfig.featureKeyMap = fns.keyBy(projectConfig.featureFlags || [], 'key');
   objectValues(projectConfig.featureKeyMap || {}).forEach(function(feature) {
