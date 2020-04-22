@@ -24,6 +24,7 @@ export class LogTierV1EventProcessor extends AbstractEventProcessor {
       url: 'https://logx.optimizely.com/v1/events',
       httpVerb: 'POST',
       params: makeBatchedEventV1(events),
+      proxyUrl: this.proxyUrl,
     }
   }
 }

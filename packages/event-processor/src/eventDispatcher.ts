@@ -30,5 +30,6 @@ export interface EventDispatcher {
 export interface EventV1Request {
   url: string
   httpVerb: 'POST' | 'PUT' | 'GET' | 'PATCH'
-  params: EventV1,
+  params: EventV1
+  proxyUrl?: string
 }

@@ -40,17 +40,20 @@ export abstract class AbstractEventProcessor implements EventProcessor {
   protected queue: EventQueue<ProcessableEvents>
   private notificationCenter?: NotificationCenter
   private requestTracker: RequestTracker
+  protected proxyUrl?: string
 
   constructor({
     dispatcher,
     flushInterval = 30000,
     maxQueueSize = 3000,
     notificationCenter,
+    proxyUrl,
   }: {
     dispatcher: EventDispatcher
     flushInterval?: number
     maxQueueSize?: number
     notificationCenter?: NotificationCenter
+    proxyUrl?: string
   }) {
     this.dispatcher = dispatcher
 
@@ -85,6 +88,7 @@ export abstract class AbstractEventProcessor implements EventProcessor {
     this.notificationCenter = notificationCenter
 
     this.requestTracker = new RequestTracker()
+    this.proxyUrl = proxyUrl
   }
 
   drainQueue(buffer: ProcessableEvents[]): Promise<void> {

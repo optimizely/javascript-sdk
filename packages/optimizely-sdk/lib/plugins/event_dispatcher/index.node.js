@@ -34,7 +34,7 @@ export var dispatchEvent = function(eventObj, callback) {
     return;
   }
 
-  var proxyUrl = null;
+  var proxyUrl = eventObj.proxyUrl;
   var proxyAgent = null;  
   var parsedUrl = url.parse(eventObj.url);
   var dataString = JSON.stringify(eventObj.params);
