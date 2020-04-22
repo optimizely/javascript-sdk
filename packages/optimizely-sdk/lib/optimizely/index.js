@@ -52,6 +52,7 @@ var DEFAULT_ONREADY_TIMEOUT = 30000;
  * @param {Object} config.userProfileService
  * @param {Object} config.eventBatchSize
  * @param {Object} config.eventFlushInterval
+ * @param {string} config.proxyUrl
  */
 function Optimizely(config) {
   var clientEngine = config.clientEngine;
@@ -75,6 +76,7 @@ function Optimizely(config) {
     datafileOptions: config.datafileOptions,
     jsonSchemaValidator: config.jsonSchemaValidator,
     sdkKey: config.sdkKey,
+    proxyUrl: config.proxyUrl,
   });
 
   this.__disposeOnUpdate = this.projectConfigManager.onUpdate(
@@ -117,6 +119,7 @@ function Optimizely(config) {
     flushInterval: config.eventFlushInterval,
     maxQueueSize: config.eventBatchSize,
     notificationCenter: this.notificationCenter,
+    proxyUrl: config.proxyUrl,
   });
   this.eventProcessor.start();
 

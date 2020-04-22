@@ -119,10 +119,9 @@ function getResponseFromRequest(request: http.ClientRequest): Promise<Response> 
   });
 }
 
-export function makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest {
+export function makeGetRequest(reqUrl: string, headers: Headers, proxyUrl?: string): AbortableRequest {
   // TODO: Use non-legacy URL parsing when we drop support for Node 6
   const parsedUrl = url.parse(reqUrl);
-  let proxyUrl = null;
   let proxyAgent = null;
 
   let requester: ClientRequestCreator;

@@ -21,7 +21,7 @@ import { DatafileManagerConfig } from './datafileManager';
 
 export default class NodeDatafileManager extends HttpPollingDatafileManager {
   protected makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest {
-    return makeGetRequest(reqUrl, headers);
+    return makeGetRequest(reqUrl, headers, this.proxyUrl);
   }
 
   protected getConfigDefaults(): Partial<DatafileManagerConfig> {

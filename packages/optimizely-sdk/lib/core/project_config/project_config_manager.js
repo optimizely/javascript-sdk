@@ -114,6 +114,7 @@ ProjectConfigManager.prototype.__initialize = function(config) {
   if (config.sdkKey) {
     var datafileManagerConfig = {
       sdkKey: config.sdkKey,
+      proxyUrl: config.proxyUrl,
     };
     if (this.__validateDatafileOptions(config.datafileOptions)) {
       fns.assign(datafileManagerConfig, config.datafileOptions);

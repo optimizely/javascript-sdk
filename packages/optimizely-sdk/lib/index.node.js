@@ -47,6 +47,7 @@ var DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
  * @param  {Object} config.userProfileService
  * @param {Object} config.eventBatchSize
  * @param {Object} config.eventFlushInterval
+ * @param {string} config.proxyUrl
  * @return {Object} the Optimizely object
  */
 var createInstance = function(config) {

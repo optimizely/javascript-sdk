@@ -95,6 +95,8 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
 
   private cache: PersistentKeyValueCache;
 
+  protected proxyUrl?: string;
+
   // When true, this means the update interval timeout fired before the current
   // sync completed. In that case, we should sync again immediately upon
   // completion of the current request, instead of waiting another update
@@ -113,8 +115,10 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
       updateInterval = DEFAULT_UPDATE_INTERVAL,
       urlTemplate = DEFAULT_URL_TEMPLATE,
       cache = noOpKeyValueCache,
+      proxyUrl,
     } = configWithDefaultsApplied;
 
+    this.proxyUrl = proxyUrl;
     this.cache = cache;
     this.cacheKey = 'opt-datafile-' + sdkKey;
     this.isReadyPromiseSettled = false;

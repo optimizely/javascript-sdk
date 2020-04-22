@@ -43,4 +43,5 @@ export interface DatafileManagerConfig {
   updateInterval?: number;
   urlTemplate?: string;
   cache?: PersistentKeyValueCache;
+  proxyUrl?: string;
 }
