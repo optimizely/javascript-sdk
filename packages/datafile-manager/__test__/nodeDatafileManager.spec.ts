@@ -20,7 +20,7 @@ import { Headers, AbortableRequest } from '../src/http';
 import { advanceTimersByTime, getTimerCount } from './testUtils';
 
 describe('nodeDatafileManager', () => {
-  let makeGetRequestSpy: jest.SpyInstance<AbortableRequest, [string, Headers]>;
+  let makeGetRequestSpy: jest.SpyInstance<AbortableRequest, [string, Headers, (string | undefined)?]>;
   beforeEach(() => {
     jest.useFakeTimers();
     makeGetRequestSpy = jest.spyOn(nodeRequest, 'makeGetRequest');
