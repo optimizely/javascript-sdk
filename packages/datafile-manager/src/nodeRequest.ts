@@ -17,9 +17,13 @@
 import http from 'http';
 import https from 'https';
 import url from 'url';
+import HttpProxyAgent from 'http-proxy-agent';
+import HttpsProxyAgent from 'https-proxy-agent';
+import decompressResponse from 'decompress-response';
+
 import { Headers, AbortableRequest, Response } from './http';
 import { REQUEST_TIMEOUT_MS } from './config';
-import decompressResponse from 'decompress-response';
+
 
 // Shared signature between http.request and https.request
 type ClientRequestCreator = (options: http.RequestOptions) => http.ClientRequest;
@@ -118,12 +122,20 @@ function getResponseFromRequest(request: http.ClientRequest): Promise<Response> 
 export function makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest {
   // TODO: Use non-legacy URL parsing when we drop support for Node 6
   const parsedUrl = url.parse(reqUrl);
+  let proxyUrl = null;
+  let proxyAgent = null;
 
   let requester: ClientRequestCreator;
   if (parsedUrl.protocol === 'http:') {
     requester = http.request;
+    if (proxyUrl) {
+      proxyAgent = new (HttpProxyAgent as any)(proxyUrl);
+    }
   } else if (parsedUrl.protocol === 'https:') {
     requester = https.request;
+    if (proxyUrl) {
+      proxyAgent = new (HttpsProxyAgent as any)(proxyUrl);
+    }
   } else {
     return {
       responsePromise: Promise.reject(new Error(`Unsupported protocol: ${parsedUrl.protocol}`)),
@@ -134,6 +146,7 @@ export function makeGetRequest(reqUrl: string, headers: Headers): AbortableReque
   const requestOptions: http.RequestOptions = {
     ...getRequestOptionsFromUrl(parsedUrl),
     method: 'GET',
+    agent: proxyAgent,
     headers: {
       ...headers,
       'accept-encoding': 'gzip,deflate',
