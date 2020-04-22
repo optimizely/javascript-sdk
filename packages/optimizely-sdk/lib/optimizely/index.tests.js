@@ -231,6 +231,7 @@ describe('lib/optimizely', function() {
             isValidInstance: true,
             jsonSchemaValidator: jsonSchemaValidator,
             logger: createdLogger,
+            proxyUrl: 'http://myproxy:1234',
             sdkKey: '12345',
           });
           sinon.assert.calledOnce(projectConfigManager.ProjectConfigManager);
@@ -241,6 +242,7 @@ describe('lib/optimizely', function() {
               updateInterval: 2 * 60 * 1000,
             },
             jsonSchemaValidator: jsonSchemaValidator,
+            proxyUrl: 'http://myproxy:1234',
             sdkKey: '12345',
           });
         });
