@@ -247,6 +247,28 @@ describe('lib/optimizely', function() {
           });
         });
       });
+
+      it('should support constructing two instances using the same datafile object', function() {
+        var datafile = testData.getTypedAudiencesConfig();
+        var optlyInstance = new Optimizely({
+          clientEngine: 'node-sdk',
+          datafile: datafile,
+          errorHandler: stubErrorHandler,
+          eventDispatcher: stubEventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+        });
+        assert.instanceOf(optlyInstance, Optimizely);
+        var optlyInstance2 = new Optimizely({
+          clientEngine: 'node-sdk',
+          datafile: datafile,
+          errorHandler: stubErrorHandler,
+          eventDispatcher: stubEventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+        });
+        assert.instanceOf(optlyInstance2, Optimizely);
+      });
     });
   });
 

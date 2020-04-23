@@ -33,7 +33,8 @@ const getCjsConfigForPlatform = (platform) => {
       exports: 'named',
       format: 'cjs',
       file: `dist/optimizely.${platform}.min.js`,
-      plugins: [ terser() ]
+      plugins: [ terser() ],
+      sourcemap: true,
     }
   };
 };
@@ -44,7 +45,8 @@ const esModuleConfig = {
     exports: 'named',
     format: 'es',
     file: 'dist/optimizely.browser.es.min.js',
-    plugins: [ terser() ]
+    plugins: [ terser() ],
+    sourcemap: true,
   }
 }
 
@@ -83,6 +85,7 @@ const umdconfig = {
       file: 'dist/optimizely.browser.umd.min.js',
       exports: 'named',
       plugins: [ terser() ],
+      sourcemap: true,
     },
   ],
 };
@@ -100,6 +103,7 @@ const jsonSchemaValidatorConfig = {
     format: 'cjs',
     file: 'dist/optimizely.json_schema_validator.min.js',
     plugins: [ terser() ],
+    sourcemap: true,
   }
 };
 
