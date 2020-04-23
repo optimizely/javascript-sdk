@@ -310,11 +310,11 @@ describe('httpPollingDatafileManager', () => {
             await advanceTimersByTime(1000);
             expect(makeGetRequestSpy).toBeCalledTimes(1);
 
-            resolveResponsePromise!({
+            await resolveResponsePromise!({
               statusCode: 200,
               body: '{"foo": "bar"}',
               headers: {},
-            });
+            });            
             await responsePromise;
             expect(makeGetRequestSpy).toBeCalledTimes(2);
           });
@@ -353,7 +353,7 @@ describe('httpPollingDatafileManager', () => {
           await manager.onReady();
           expect(manager.get()).toEqual({ foo: 'bar' });
 
-          advanceTimersByTime(1000);
+          await advanceTimersByTime(1000);
 
           expect(manager.responsePromises.length).toBe(2);
           manager.stop();
@@ -397,7 +397,7 @@ describe('httpPollingDatafileManager', () => {
           // Not ready yet due to first request failed, but should have queued a live update
           expect(getTimerCount()).toBe(1);
           // Trigger the update, should fetch the next response which should succeed, then we get ready
-          advanceTimersByTime(1000);
+          await advanceTimersByTime(1000);
           await manager.onReady();
           expect(manager.get()).toEqual({ foo: 'bar' });
         });
@@ -428,7 +428,7 @@ describe('httpPollingDatafileManager', () => {
             // First response promise was for the initial 200 response
             expect(manager.responsePromises.length).toBe(1);
             // Trigger the queued update
-            advanceTimersByTime(1000);
+            await advanceTimersByTime(1000);
             // Second response promise is for the 304 response
             expect(manager.responsePromises.length).toBe(2);
             await manager.responsePromises[1];
@@ -455,7 +455,7 @@ describe('httpPollingDatafileManager', () => {
             manager.start();
             await manager.onReady();
             const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest');
-            advanceTimersByTime(1000);
+            await advanceTimersByTime(1000);
             expect(makeGetRequestSpy).toBeCalledTimes(1);
             const firstCall = makeGetRequestSpy.mock.calls[0];
             const headers = firstCall[1];
@@ -483,11 +483,11 @@ describe('httpPollingDatafileManager', () => {
             expect(makeGetRequestSpy).toBeCalledTimes(1);
 
             // Should not make another request after 1 second because the error should have triggered backoff
-            advanceTimersByTime(1000);
+            await advanceTimersByTime(1000);
             expect(makeGetRequestSpy).toBeCalledTimes(1);
 
             // But after another 5 seconds, another request should be made
-            advanceTimersByTime(5000);
+            await advanceTimersByTime(5000);
             expect(makeGetRequestSpy).toBeCalledTimes(2);
           });
 
