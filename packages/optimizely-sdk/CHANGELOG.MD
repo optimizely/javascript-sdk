@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.0.0-rc.2] - April 23, 2020
+
+### Bug fixes
+- Allow multiple instances to be created from the same datafile object ([#462](https://github.com/optimizely/javascript-sdk/pull/462))
+
 ## [4.0.0-rc.1] - April 17, 2020
 
 ### New Features
