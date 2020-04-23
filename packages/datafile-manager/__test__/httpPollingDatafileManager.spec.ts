@@ -314,7 +314,7 @@ describe('httpPollingDatafileManager', () => {
               statusCode: 200,
               body: '{"foo": "bar"}',
               headers: {},
-            });            
+            });
             await responsePromise;
             expect(makeGetRequestSpy).toBeCalledTimes(2);
           });
