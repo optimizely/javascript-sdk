@@ -934,6 +934,30 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
 };
 
 /**
+ * Returns value for the given json variable attached to the given feature
+ * flag.
+ * @param {string} featureKey   Key of the feature whose variable's value is
+ *                              being accessed
+ * @param {string} variableKey  Key of the variable whose value is being
+ *                              accessed
+ * @param {string} userId       ID for the user
+ * @param {Object} attributes   Optional user attributes
+ * @return {object|null}        Object value of the variable, or null if the
+ *                              feature key is invalid, the variable key is
+ *                              invalid, or there is a mismatch with the type
+ *                              of the variable
+ */
+Optimizely.prototype.getFeatureVariableJson = function(featureKey, variableKey, userId, attributes) {
+  try {
+    return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.JSON, userId, attributes);
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
+    return null;
+  }
+};
+
+/**
  * Returns OptimizelyConfig object containing experiments and features data
  * @return {Object}
  *
