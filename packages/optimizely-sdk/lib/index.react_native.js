@@ -78,7 +78,7 @@ var createInstance = function(config) {
 
     config = fns.assign(
       {
-        clientEngine: enums.REACT_NATIVE_JS_CLIENT_ENGINE,
+        clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
         eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
         eventDispatcher: defaultEventDispatcher,
         eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
@@ -90,11 +90,6 @@ var createInstance = function(config) {
         errorHandler: getErrorHandler(),
       }
     );
-
-    // If client engine is react, convert it to react native
-    if (config.clientEngine === enums.REACT_CLIENT_ENGINE) {
-      config.clientEngine = enums.REACT_NATIVE_CLIENT_ENGINE
-    }
 
     if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
       logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
