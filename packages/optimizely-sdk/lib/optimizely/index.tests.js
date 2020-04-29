@@ -157,7 +157,7 @@ describe('lib/optimizely', function() {
             save: function() {},
           };
 
-          var optlyInstance = new Optimizely({
+          new Optimizely({
             clientEngine: 'node-sdk',
             logger: createdLogger,
             datafile: testData.getTestProjectConfig(),
@@ -180,7 +180,7 @@ describe('lib/optimizely', function() {
             save: function() {},
           };
 
-          var optlyInstance = new Optimizely({
+          new Optimizely({
             clientEngine: 'node-sdk',
             logger: createdLogger,
             datafile: testData.getTestProjectConfig(),
@@ -4540,6 +4540,21 @@ describe('lib/optimizely', function() {
             );
           });
 
+          it('returns the right value from getFeatureVariable', function() {
+            var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info', 'user1', {
+              test_attribute: 'test_value',
+            });
+            assert.deepEqual(result, {
+              num_buttons: 1,
+              text: 'first variation',
+            });
+            sinon.assert.calledWith(
+              createdLogger.log,
+              LOG_LEVEL.INFO,
+              'OPTIMIZELY: Value for variable "button_info" of feature flag "test_feature_for_experiment" is { "num_buttons": 1, "text": "first variation"} for user "user1"'
+            );
+          });
+
           it('returns the right value from getFeatureVariableBoolean', function() {
             var result = optlyInstance.getFeatureVariableBoolean(
               'test_feature_for_experiment',
@@ -4597,6 +4612,21 @@ describe('lib/optimizely', function() {
             );
           });
 
+          it('returns the right value from getFeatureVariableJson', function() {
+            var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info', 'user1', {
+              test_attribute: 'test_value',
+            });
+            assert.deepEqual(result, {
+              num_buttons: 1,
+              text: 'first variation',
+            });
+            sinon.assert.calledWith(
+              createdLogger.log,
+              LOG_LEVEL.INFO,
+              'OPTIMIZELY: Value for variable "button_info" of feature flag "test_feature_for_experiment" is { "num_buttons": 1, "text": "first variation"} for user "user1"'
+            );
+          });
+
           describe('when the variable is not used in the variation', function() {
             beforeEach(function() {
               sandbox.stub(projectConfig, 'getVariableValueForVariation').returns(null);
@@ -4650,6 +4680,21 @@ describe('lib/optimizely', function() {
                 createdLogger.log,
                 LOG_LEVEL.INFO,
                 'OPTIMIZELY: Variable "button_txt" is not used in variation "variation". Returning default value.'
+              );
+            });
+
+            it('returns the variable default value from getFeatureVariable', function() {
+              var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info', 'user1', {
+                test_attribute: 'test_value',
+              });
+              assert.deepEqual(result, {
+                num_buttons: 0,
+                text: 'default value',
+              });
+              sinon.assert.calledWith(
+                createdLogger.log,
+                LOG_LEVEL.INFO,
+                'OPTIMIZELY: Variable "button_info" is not used in variation "variation". Returning default value.'
               );
             });
 
@@ -4710,6 +4755,24 @@ describe('lib/optimizely', function() {
                 createdLogger.log,
                 LOG_LEVEL.INFO,
                 'OPTIMIZELY: Variable "button_txt" is not used in variation "variation". Returning default value.'
+              );
+            });
+
+            it('returns the variable default value from getFeatureVariableJson', function() {
+              var result = optlyInstance.getFeatureVariableJson(
+                'test_feature_for_experiment',
+                'button_info',
+                'user1',
+                { test_attribute: 'test_value' }
+              );
+              assert.deepEqual(result, {
+                num_buttons: 0,
+                text: "default value",
+              });
+              sinon.assert.calledWith(
+                createdLogger.log,
+                LOG_LEVEL.INFO,
+                'OPTIMIZELY: Variable "button_info" is not used in variation "variation". Returning default value.'
               );
             });
           });
@@ -4780,6 +4843,21 @@ describe('lib/optimizely', function() {
             );
           });
 
+          it('returns the variable default value from getFeatureVariable', function() {
+            var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info', 'user1', {
+              test_attribute: 'test_value',
+            });
+            assert.deepEqual(result, {
+              num_buttons: 0,
+              text: "default value",
+            });
+            sinon.assert.calledWith(
+              createdLogger.log,
+              LOG_LEVEL.INFO,
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "button_info".'
+            );
+          });
+
           it('returns the variable default value from getFeatureVariableBoolean', function() {
             var result = optlyInstance.getFeatureVariableBoolean(
               'test_feature_for_experiment',
@@ -4834,6 +4912,21 @@ describe('lib/optimizely', function() {
               createdLogger.log,
               LOG_LEVEL.INFO,
               'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "button_txt".'
+            );
+          });
+
+          it('returns the variable default value from getFeatureVariableJson', function() {
+            var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info', 'user1', {
+              test_attribute: 'test_value',
+            });
+            assert.deepEqual(result, {
+              num_buttons: 0,
+              text: 'default value',
+            });
+            sinon.assert.calledWith(
+              createdLogger.log,
+              LOG_LEVEL.INFO,
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "button_info".'
             );
           });
         });

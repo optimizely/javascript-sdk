@@ -444,12 +444,19 @@ var configWithFeatures = {
           key: 'button_txt',
           id: '5636734406623232',
           defaultValue: 'Buy me',
-        },
+        },        
         {
           type: 'double',
           key: 'button_width',
           id: '6199684360044544',
           defaultValue: '50.55',
+        },
+        {
+          type: 'string',
+          subType: 'json',
+          key: 'button_info',
+          id: '1547854156498475',
+          defaultValue: '{ "num_buttons": 0, "text": "default value"}',
         },
       ],
     },
@@ -532,6 +539,10 @@ var configWithFeatures = {
               id: '6199684360044544',
               value: '20.25',
             },
+            {
+              id: '1547854156498475',
+              value: '{ "num_buttons": 1, "text": "first variation"}',
+            },
           ],
         },
         {
@@ -555,6 +566,10 @@ var configWithFeatures = {
               id: '6199684360044544',
               value: '50.55',
             },
+            {
+              id: '1547854156498475',
+              value: '{ "num_buttons": 2, "text": "second variation"}',
+            },
           ],
         },
         {
@@ -577,6 +592,10 @@ var configWithFeatures = {
             {
               id: '6199684360044544',
               value: '99.99',
+            },
+            {
+              id: '1547854156498475',
+              value: '{ "num_buttons": 3, "text": "third variation"}',
             },
           ],
         },

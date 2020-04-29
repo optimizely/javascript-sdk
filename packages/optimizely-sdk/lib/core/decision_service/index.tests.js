@@ -1147,6 +1147,10 @@ describe('lib/core/decision_service', function() {
                         id: '6199684360044544',
                         value: '20.25',
                       },
+                      {
+                        id: '1547854156498475',
+                        value: '{ "num_buttons": 1, "text": "first variation"}',
+                      },
                     ],
                     featureEnabled: true,
                     key: 'variation',
@@ -1170,6 +1174,10 @@ describe('lib/core/decision_service', function() {
                         id: '6199684360044544',
                         value: '50.55',
                       },
+                      {
+                        id: '1547854156498475',
+                        value: '{ "num_buttons": 2, "text": "second variation"}',
+                      },
                     ],
                     featureEnabled: true,
                     key: 'control',
@@ -1192,6 +1200,10 @@ describe('lib/core/decision_service', function() {
                       {
                         id: '6199684360044544',
                         value: '99.99',
+                      },
+                      {
+                        id: '1547854156498475',
+                        value: '{ "num_buttons": 3, "text": "third variation"}',
                       },
                     ],
                     featureEnabled: false,
@@ -1224,6 +1236,10 @@ describe('lib/core/decision_service', function() {
                         id: '6199684360044544',
                         value: '50.55',
                       },
+                      {
+                        id: '1547854156498475',
+                        value: '{ "num_buttons": 2, "text": "second variation"}',
+                      },                      
                     ],
                     featureEnabled: true,
                     key: 'control',
@@ -1247,6 +1263,10 @@ describe('lib/core/decision_service', function() {
                         id: '6199684360044544',
                         value: '20.25',
                       },
+                      {
+                        id: '1547854156498475',
+                        value: '{ "num_buttons": 1, "text": "first variation"}',
+                      },
                     ],
                     featureEnabled: true,
                     key: 'variation',
@@ -1269,6 +1289,10 @@ describe('lib/core/decision_service', function() {
                       {
                         id: '6199684360044544',
                         value: '99.99',
+                      },
+                      {
+                        id: '1547854156498475',
+                        value: '{ "num_buttons": 3, "text": "third variation"}',
                       },
                     ],
                     featureEnabled: false,
@@ -1294,6 +1318,10 @@ describe('lib/core/decision_service', function() {
                   {
                     id: '6199684360044544',
                     value: '20.25',
+                  },
+                  {
+                    id: '1547854156498475',
+                    value: '{ "num_buttons": 1, "text": "first variation"}',
                   },
                 ],
                 featureEnabled: true,
