@@ -209,6 +209,7 @@ export var FEATURE_VARIABLE_TYPES = {
   DOUBLE: 'double',
   INTEGER: 'integer',
   STRING: 'string',
+  JSON: 'json',
 };
 
 /*

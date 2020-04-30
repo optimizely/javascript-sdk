@@ -119,6 +119,15 @@ export var createProjectConfig = function(datafile) {
 
   projectConfig.featureKeyMap = fns.keyBy(projectConfig.featureFlags || [], 'key');
   objectValues(projectConfig.featureKeyMap || {}).forEach(function(feature) {
+    // Json type is represented in datafile as a subtype of string for the sake of backwards compatibility.
+    // Converting it to a first-class json type while creating Project Config
+    feature.variables.forEach(function(variable) {
+      if (variable.type === FEATURE_VARIABLE_TYPES.STRING && variable.subType === FEATURE_VARIABLE_TYPES.JSON) {
+        variable.type = FEATURE_VARIABLE_TYPES.JSON;
+        delete variable.subType;
+      }
+    });
+
     feature.variableKeyMap = fns.keyBy(feature.variables, 'key');
     (feature.experimentIds || []).forEach(function(experimentId) {
       // Add this experiment in experiment-feature map.
@@ -471,6 +480,18 @@ export var getTypeCastValue = function(variableValue, variableType, logger) {
     case FEATURE_VARIABLE_TYPES.DOUBLE:
       castValue = parseFloat(variableValue);
       if (isNaN(castValue)) {
+        logger.log(
+          LOG_LEVEL.ERROR,
+          sprintf(ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType)
+        );
+        castValue = null;
+      }
+      break;
+
+    case FEATURE_VARIABLE_TYPES.JSON:
+      try {
+        castValue = JSON.parse(variableValue);
+      } catch (e) {
         logger.log(
           LOG_LEVEL.ERROR,
           sprintf(ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType)
