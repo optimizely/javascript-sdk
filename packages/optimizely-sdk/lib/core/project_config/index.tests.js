@@ -33,14 +33,13 @@ import configValidator from '../../utils/config_validator';
 var logger = getLogger();
 
 describe('lib/core/project_config', function() {
-  var parsedAudiences = testDatafile.getParsedAudiences;
   describe('createProjectConfig method', function() {
     it('should set properties correctly when createProjectConfig is called', function() {
       var testData = testDatafile.getTestProjectConfig();
       var configObj = projectConfig.createProjectConfig(testData);
 
       forEach(testData.audiences, function(audience) {
-        audience.conditions = audience.conditions;
+        audience.conditions = JSON.parse(audience.conditions);
       });
 
       assert.strictEqual(configObj.accountId, testData.accountId);
@@ -48,6 +47,12 @@ describe('lib/core/project_config', function() {
       assert.strictEqual(configObj.revision, testData.revision);
       assert.deepEqual(configObj.events, testData.events);
       assert.deepEqual(configObj.audiences, testData.audiences);
+      testData.groups.forEach(function(group) {
+        group.experiments.forEach(function(experiment) {
+          experiment.groupId = group.id;
+          experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
+        });
+      });
       assert.deepEqual(configObj.groups, testData.groups);
 
       var expectedGroupIdMap = {
@@ -168,6 +173,13 @@ describe('lib/core/project_config', function() {
       };
 
       assert.deepEqual(configObj.variationIdMap, expectedVariationIdMap);
+    });
+
+    it('should not mutate the datafile', function() {
+      var datafile = testDatafile.getTypedAudiencesConfig();
+      var datafileClone = cloneDeep(datafile);
+      projectConfig.createProjectConfig(datafile);
+      assert.deepEqual(datafileClone, datafile);
     });
 
     describe('feature management', function() {

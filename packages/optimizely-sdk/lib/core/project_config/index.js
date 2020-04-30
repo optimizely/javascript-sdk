@@ -28,13 +28,41 @@ var EXPERIMENT_RUNNING_STATUS = 'Running';
 var RESERVED_ATTRIBUTE_PREFIX = '$opt_';
 var MODULE_NAME = 'PROJECT_CONFIG';
 
+function createMutationSafeDatafileCopy(datafile) {
+  var datafileCopy = fns.assign({}, datafile);
+  datafileCopy.audiences = (datafile.audiences || []).map(function(audience) {
+    return fns.assign({}, audience);
+  });
+  datafileCopy.experiments = (datafile.experiments || []).map(function(experiment) {
+    return fns.assign({}, experiment);
+  });
+  datafileCopy.featureFlags = (datafile.featureFlags || []).map(function(featureFlag) {
+    return fns.assign({}, featureFlag);
+  });
+  datafileCopy.groups = (datafile.groups || []).map(function(group) {
+    var groupCopy = fns.assign({}, group);
+    groupCopy.experiments = (group.experiments || []).map(function(experiment) {
+      return fns.assign({}, experiment);
+    });
+    return groupCopy;
+  });
+  datafileCopy.rollouts = (datafile.rollouts || []).map(function(rollout) {
+    var rolloutCopy = fns.assign({}, rollout);
+    rolloutCopy.experiments = (rollout.experiments || []).map(function(experiment) {
+      return fns.assign({}, experiment);
+    });
+    return rolloutCopy;
+  });
+  return datafileCopy;
+}
+
 /**
  * Creates projectConfig object to be used for quick project property lookup
  * @param  {Object} datafile JSON datafile representing the project
  * @return {Object} Object representing project configuration
  */
 export var createProjectConfig = function(datafile) {
-  var projectConfig = fns.assign({}, datafile);
+  var projectConfig = createMutationSafeDatafileCopy(datafile);
 
   /*
    * Conditions of audiences in projectConfig.typedAudiences are not
