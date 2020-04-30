@@ -123,7 +123,7 @@ describe('lib/core/optimizely_config', function() {
                   id: variableToAssert.id,
                   key: variableToAssert.key,
                   type: variableToAssert.type,
-                },
+                }
               );
               if (!variation.featureEnabled) {
                 assert.equal(variable.defaultValue, variableToAssert.value);
