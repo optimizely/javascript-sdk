@@ -119,10 +119,12 @@ export var createProjectConfig = function(datafile) {
 
   projectConfig.featureKeyMap = fns.keyBy(projectConfig.featureFlags || [], 'key');
   objectValues(projectConfig.featureKeyMap || {}).forEach(function(feature) {
-    // Convert type:string and subType:json to type:json to generalize implementation
+    // Json type is represented in datafile as a subtype of string for the sake of backwards compatibility.
+    // Converting it to a first-class json type while creating Project Config
     feature.variables.forEach(function(variable) {
       if (variable.type === FEATURE_VARIABLE_TYPES.STRING && variable.subType === FEATURE_VARIABLE_TYPES.JSON) {
-        variable.type = FEATURE_VARIABLE_TYPES.JSON;       
+        variable.type = FEATURE_VARIABLE_TYPES.JSON;
+        delete variable.subType;
       }
     });
 

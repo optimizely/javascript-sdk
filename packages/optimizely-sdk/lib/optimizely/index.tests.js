@@ -2898,7 +2898,7 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('returns the right value from getFeatureVariable and send notification with featureEnabled true', function() {
+                it('returns the right value from getFeatureVariable when variable type is boolean and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariable(
                     'test_feature_for_experiment',
                     'is_button_animated',
@@ -2925,7 +2925,7 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('returns the right value from getFeatureVariable and send notification with featureEnabled true', function() {
+                it('returns the right value from getFeatureVariable when variable type is double and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariable(
                     'test_feature_for_experiment',
                     'button_width',
@@ -2952,7 +2952,7 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('returns the right value from getFeatureVariable and send notification with featureEnabled true', function() {
+                it('returns the right value from getFeatureVariable when variable type is integer and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'num_buttons', 'user1', {
                     test_attribute: 'test_value',
                   });
@@ -2976,7 +2976,7 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('returns the right value from getFeatureVariable and send notification with featureEnabled true', function() {
+                it('returns the right value from getFeatureVariable when variable type is string and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_txt', 'user1', {
                     test_attribute: 'test_value',
                   });
@@ -3000,7 +3000,7 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('returns the right value from getFeatureVariable and send notification with featureEnabled true', function() {
+                it('returns the right value from getFeatureVariable when variable type is json and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info', 'user1', {
                     test_attribute: 'test_value',
                   });
@@ -3344,7 +3344,7 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('should return the right value from getFeatureVariable and send notification with featureEnabled true', function() {
+                it('should return the right value from getFeatureVariable when variable type is boolean and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariable('test_feature', 'new_content', 'user1', {
                     test_attribute: 'test_value',
                   });
@@ -3365,7 +3365,7 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('should return the right value from getFeatureVariable and send notification with featureEnabled true', function() {
+                it('should return the right value from getFeatureVariable when variable type is double and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariable('test_feature', 'price', 'user1', {
                     test_attribute: 'test_value',
                   });
@@ -3386,7 +3386,7 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('should return the right value from getFeatureVariable and send notification with featureEnabled true', function() {
+                it('should return the right value from getFeatureVariable when variable type is integer and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariable('test_feature', 'lasers', 'user1', {
                     test_attribute: 'test_value',
                   });
@@ -3407,7 +3407,7 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('should return the right value from getFeatureVariable and send notification with featureEnabled true', function() {
+                it('should return the right value from getFeatureVariable when variable type is string and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariable('test_feature', 'message', 'user1', {
                     test_attribute: 'test_value',
                   });
@@ -3428,7 +3428,7 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('should return the right value from getFeatureVariable and send notification with featureEnabled true', function() {
+                it('should return the right value from getFeatureVariable when variable type is json and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariable('test_feature', 'message_info', 'user1', {
                     test_attribute: 'test_value',
                   });
@@ -3581,7 +3581,7 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('should return the default value from getFeatureVariable and send notification with featureEnabled false', function() {
+                it('should return the default value from getFeatureVariable when variable type is boolean and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariable('test_feature', 'new_content', 'user1', {
                     test_attribute: 'test_value',
                   });
@@ -3602,7 +3602,7 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('should return the default value from getFeatureVariable and send notification with featureEnabled false', function() {
+                it('should return the default value from getFeatureVariable when variable type is double and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariable('test_feature', 'price', 'user1', {
                     test_attribute: 'test_value',
                   });
@@ -3623,7 +3623,7 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('should return the default value from getFeatureVariable and send notification with featureEnabled false', function() {
+                it('should return the default value from getFeatureVariable when variable type is integer and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariable('test_feature', 'lasers', 'user1', {
                     test_attribute: 'test_value',
                   });
@@ -3644,7 +3644,7 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('should return the default value from getFeatureVariable and send notification with featureEnabled false', function() {
+                it('should return the default value from getFeatureVariable when variable type is string and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariable('test_feature', 'message', 'user1', {
                     test_attribute: 'test_value',
                   });
@@ -3665,7 +3665,7 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('should return the default value from getFeatureVariable and send notification with featureEnabled false', function() {
+                it('should return the default value from getFeatureVariable when variable type is json and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariable('test_feature', 'message_info', 'user1', {
                     test_attribute: 'test_value',
                   });
@@ -3811,7 +3811,7 @@ describe('lib/optimizely', function() {
                 });
               });
 
-              it('returns the variable default value from getFeatureVariable and send notification with featureEnabled false', function() {
+              it('returns the variable default value from getFeatureVariable when variable type is boolean and send notification with featureEnabled false', function() {
                 var result = optlyInstance.getFeatureVariable(
                   'test_feature_for_experiment',
                   'is_button_animated',
@@ -3835,7 +3835,7 @@ describe('lib/optimizely', function() {
                 });
               });
 
-              it('returns the variable default value from getFeatureVariable and send notification with featureEnabled false', function() {
+              it('returns the variable default value from getFeatureVariable when variable type is double and send notification with featureEnabled false', function() {
                 var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_width', 'user1', {
                   test_attribute: 'test_value',
                 });
@@ -3856,7 +3856,7 @@ describe('lib/optimizely', function() {
                 });
               });
 
-              it('returns the variable default value from getFeatureVariable and send notification with featureEnabled false', function() {
+              it('returns the variable default value from getFeatureVariable when variable type is integer and send notification with featureEnabled false', function() {
                 var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'num_buttons', 'user1', {
                   test_attribute: 'test_value',
                 });
@@ -3877,7 +3877,7 @@ describe('lib/optimizely', function() {
                 });
               });
 
-              it('returns the variable default value from getFeatureVariable and send notification with featureEnabled false', function() {
+              it('returns the variable default value from getFeatureVariable when variable type is string and send notification with featureEnabled false', function() {
                 var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_txt', 'user1', {
                   test_attribute: 'test_value',
                 });
@@ -3898,7 +3898,7 @@ describe('lib/optimizely', function() {
                 });
               });
 
-              it('returns the variable default value from getFeatureVariable and send notification with featureEnabled false', function() {
+              it('returns the variable default value from getFeatureVariable when variable type is json and send notification with featureEnabled false', function() {
                 var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info', 'user1', {
                   test_attribute: 'test_value',
                 });
@@ -4747,7 +4747,7 @@ describe('lib/optimizely', function() {
             });
           });
 
-          it('returns the right value from getFeatureVariable', function() {
+          it('returns the right value from getFeatureVariable when variable type is boolean', function() {
             var result = optlyInstance.getFeatureVariable(
               'test_feature_for_experiment',
               'is_button_animated',
@@ -4762,7 +4762,7 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the right value from getFeatureVariable', function() {
+          it('returns the right value from getFeatureVariable when variable type is double', function() {
             var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_width', 'user1', {
               test_attribute: 'test_value',
             });
@@ -4774,7 +4774,7 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the right value from getFeatureVariable', function() {
+          it('returns the right value from getFeatureVariable when variable type is integer', function() {
             var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'num_buttons', 'user1', {
               test_attribute: 'test_value',
             });
@@ -4786,7 +4786,7 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the right value from getFeatureVariable', function() {
+          it('returns the right value from getFeatureVariable when variable type is string', function() {
             var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_txt', 'user1', {
               test_attribute: 'test_value',
             });
@@ -4798,7 +4798,7 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the right value from getFeatureVariable', function() {
+          it('returns the right value from getFeatureVariable when variable type is json', function() {
             var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info', 'user1', {
               test_attribute: 'test_value',
             });
@@ -4890,7 +4890,7 @@ describe('lib/optimizely', function() {
               sandbox.stub(projectConfig, 'getVariableValueForVariation').returns(null);
             });
 
-            it('returns the variable default value from getFeatureVariable', function() {
+            it('returns the variable default value from getFeatureVariable when variable type is boolean', function() {
               var result = optlyInstance.getFeatureVariable(
                 'test_feature_for_experiment',
                 'is_button_animated',
@@ -4905,7 +4905,7 @@ describe('lib/optimizely', function() {
               );
             });
 
-            it('returns the variable default value from getFeatureVariable', function() {
+            it('returns the variable default value from getFeatureVariable when variable type is double', function() {
               var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_width', 'user1', {
                 test_attribute: 'test_value',
               });
@@ -4917,7 +4917,7 @@ describe('lib/optimizely', function() {
               );
             });
 
-            it('returns the variable default value from getFeatureVariable', function() {
+            it('returns the variable default value from getFeatureVariable when variable type is integer', function() {
               var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'num_buttons', 'user1', {
                 test_attribute: 'test_value',
               });
@@ -4929,7 +4929,7 @@ describe('lib/optimizely', function() {
               );
             });
 
-            it('returns the variable default value from getFeatureVariable', function() {
+            it('returns the variable default value from getFeatureVariable when variable type is string', function() {
               var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_txt', 'user1', {
                 test_attribute: 'test_value',
               });
@@ -4941,7 +4941,7 @@ describe('lib/optimizely', function() {
               );
             });
 
-            it('returns the variable default value from getFeatureVariable', function() {
+            it('returns the variable default value from getFeatureVariable when variable type is json', function() {
               var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info', 'user1', {
                 test_attribute: 'test_value',
               });
@@ -5050,7 +5050,7 @@ describe('lib/optimizely', function() {
             });
           });
 
-          it('returns the variable default value from getFeatureVariable', function() {
+          it('returns the variable default value from getFeatureVariable when variable type is boolean', function() {
             var result = optlyInstance.getFeatureVariable(
               'test_feature_for_experiment',
               'is_button_animated',
@@ -5065,7 +5065,7 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the variable default value from getFeatureVariable', function() {
+          it('returns the variable default value from getFeatureVariable when variable type is double', function() {
             var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_width', 'user1', {
               test_attribute: 'test_value',
             });
@@ -5077,7 +5077,7 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the variable default value from getFeatureVariable', function() {
+          it('returns the variable default value from getFeatureVariable when variable type is integer', function() {
             var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'num_buttons', 'user1', {
               test_attribute: 'test_value',
             });
@@ -5089,7 +5089,7 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the variable default value from getFeatureVariable', function() {
+          it('returns the variable default value from getFeatureVariable when variable type is string', function() {
             var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_txt', 'user1', {
               test_attribute: 'test_value',
             });
@@ -5101,7 +5101,7 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the variable default value from getFeatureVariable', function() {
+          it('returns the variable default value from getFeatureVariable when variable type is json', function() {
             var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info', 'user1', {
               test_attribute: 'test_value',
             });
@@ -5205,7 +5205,7 @@ describe('lib/optimizely', function() {
             });
           });
 
-          it('returns the right value from getFeatureVariable', function() {
+          it('returns the right value from getFeatureVariable when variable type is boolean', function() {
             var result = optlyInstance.getFeatureVariable('test_feature', 'new_content', 'user1', {
               test_attribute: 'test_value',
             });
@@ -5217,7 +5217,7 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the right value from getFeatureVariable', function() {
+          it('returns the right value from getFeatureVariable when variable type is double', function() {
             var result = optlyInstance.getFeatureVariable('test_feature', 'price', 'user1', {
               test_attribute: 'test_value',
             });
@@ -5229,7 +5229,7 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the right value from getFeatureVariable', function() {
+          it('returns the right value from getFeatureVariable when variable type is integer', function() {
             var result = optlyInstance.getFeatureVariable('test_feature', 'lasers', 'user1', {
               test_attribute: 'test_value',
             });
@@ -5241,7 +5241,7 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the right value from getFeatureVariable', function() {
+          it('returns the right value from getFeatureVariable when variable type is string', function() {
             var result = optlyInstance.getFeatureVariable('test_feature', 'message', 'user1', {
               test_attribute: 'test_value',
             });
@@ -5253,7 +5253,7 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the right value from getFeatureVariable', function() {
+          it('returns the right value from getFeatureVariable when variable type is json', function() {
             var result = optlyInstance.getFeatureVariable('test_feature', 'message_info', 'user1', {
               test_attribute: 'test_value',
             });
@@ -5336,7 +5336,7 @@ describe('lib/optimizely', function() {
               sandbox.stub(projectConfig, 'getVariableValueForVariation').returns(null);
             });
 
-            it('returns the variable default value from getFeatureVariable', function() {
+            it('returns the variable default value from getFeatureVariable when variable type is boolean', function() {
               var result = optlyInstance.getFeatureVariable('test_feature', 'new_content', 'user1', {
                 test_attribute: 'test_value',
               });
@@ -5348,7 +5348,7 @@ describe('lib/optimizely', function() {
               );
             });
 
-            it('returns the variable default value from getFeatureVariable', function() {
+            it('returns the variable default value from getFeatureVariable when variable type is double', function() {
               var result = optlyInstance.getFeatureVariable('test_feature', 'price', 'user1', {
                 test_attribute: 'test_value',
               });
@@ -5360,7 +5360,7 @@ describe('lib/optimizely', function() {
               );
             });
 
-            it('returns the variable default value from getFeatureVariable', function() {
+            it('returns the variable default value from getFeatureVariable when variable type is integer', function() {
               var result = optlyInstance.getFeatureVariable('test_feature', 'lasers', 'user1', {
                 test_attribute: 'test_value',
               });
@@ -5372,7 +5372,7 @@ describe('lib/optimizely', function() {
               );
             });
 
-            it('returns the variable default value from getFeatureVariable', function() {
+            it('returns the variable default value from getFeatureVariable when variable type is string', function() {
               var result = optlyInstance.getFeatureVariable('test_feature', 'message', 'user1', {
                 test_attribute: 'test_value',
               });
@@ -5384,7 +5384,7 @@ describe('lib/optimizely', function() {
               );
             });
 
-            it('returns the variable default value from getFeatureVariable', function() {
+            it('returns the variable default value from getFeatureVariable when variable type is json', function() {
               var result = optlyInstance.getFeatureVariable('test_feature', 'message_info', 'user1', {
                 test_attribute: 'test_value',
               });
@@ -5478,7 +5478,7 @@ describe('lib/optimizely', function() {
             });
           });
 
-          it('returns the variable default value from getFeatureVariable', function() {
+          it('returns the variable default value from getFeatureVariable when variable type is boolean', function() {
             var result = optlyInstance.getFeatureVariable('test_feature', 'new_content', 'user1', {
               test_attribute: 'test_value',
             });
@@ -5490,7 +5490,7 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the variable default value from getFeatureVariable', function() {
+          it('returns the variable default value from getFeatureVariable when variable type is double', function() {
             var result = optlyInstance.getFeatureVariable('test_feature', 'price', 'user1', {
               test_attribute: 'test_value',
             });
@@ -5502,7 +5502,7 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the variable default value from getFeatureVariable', function() {
+          it('returns the variable default value from getFeatureVariable when variable type is integer', function() {
             var result = optlyInstance.getFeatureVariable('test_feature', 'lasers', 'user1', {
               test_attribute: 'test_value',
             });
@@ -5514,7 +5514,7 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the variable default value from getFeatureVariable', function() {
+          it('returns the variable default value from getFeatureVariable when variable type is string', function() {
             var result = optlyInstance.getFeatureVariable('test_feature', 'message', 'user1', {
               test_attribute: 'test_value',
             });
@@ -5526,7 +5526,7 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the variable default value from getFeatureVariable', function() {
+          it('returns the variable default value from getFeatureVariable when variable type is json', function() {
             var result = optlyInstance.getFeatureVariable('test_feature', 'message_info', 'user1', {
               test_attribute: 'test_value',
             });
@@ -5615,7 +5615,7 @@ describe('lib/optimizely', function() {
           });
         });
 
-        it('returns the variable default value from getFeatureVariable', function() {
+        it('returns the variable default value from getFeatureVariable when variable type is boolean', function() {
           var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'is_button_animated', 'user1', {
             test_attribute: 'test_value',
           });
@@ -5627,7 +5627,7 @@ describe('lib/optimizely', function() {
           );
         });
 
-        it('returns the variable default value from getFeatureVariable', function() {
+        it('returns the variable default value from getFeatureVariable when variable type is double', function() {
           var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_width', 'user1', {
             test_attribute: 'test_value',
           });
@@ -5639,7 +5639,7 @@ describe('lib/optimizely', function() {
           );
         });
 
-        it('returns the variable default value from getFeatureVariable', function() {
+        it('returns the variable default value from getFeatureVariable when variable type is integer', function() {
           var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'num_buttons', 'user1', {
             test_attribute: 'test_value',
           });
@@ -5651,7 +5651,7 @@ describe('lib/optimizely', function() {
           );
         });
 
-        it('returns the variable default value from getFeatureVariable', function() {
+        it('returns the variable default value from getFeatureVariable when variable type is string', function() {
           var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_txt', 'user1', {
             test_attribute: 'test_value',
           });
@@ -5663,7 +5663,7 @@ describe('lib/optimizely', function() {
           );
         });
 
-        it('returns the variable default value from getFeatureVariable', function() {
+        it('returns the variable default value from getFeatureVariable when variable type is json', function() {
           var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info', 'user1', {
             test_attribute: 'test_value',
           });
@@ -5746,7 +5746,7 @@ describe('lib/optimizely', function() {
 
       });
 
-      it('returns null from getFeatureVariable if user id is null', function() {
+      it('returns null from getFeatureVariable if user id is null when variable type is boolean', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'is_button_animated', null, {
           test_attribute: 'test_value',
         });
@@ -5758,7 +5758,7 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariable if user id is undefined', function() {
+      it('returns null from getFeatureVariable if user id is undefined when variable type is boolean', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'is_button_animated', undefined, {
           test_attribute: 'test_value',
         });
@@ -5770,7 +5770,7 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariable if user id is not provided', function() {
+      it('returns null from getFeatureVariable if user id is not provided when variable type is boolean', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'is_button_animated');
         assert.strictEqual(result, null);
         sinon.assert.calledWith(
@@ -5780,7 +5780,7 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariable if user id is null', function() {
+      it('returns null from getFeatureVariable if user id is null when variable type is double', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_width', null, {
           test_attribute: 'test_value',
         });
@@ -5792,7 +5792,7 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariable if user id is undefined', function() {
+      it('returns null from getFeatureVariable if user id is undefined when variable type is double', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_width', undefined, {
           test_attribute: 'test_value',
         });
@@ -5804,7 +5804,7 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariable if user id is not provided', function() {
+      it('returns null from getFeatureVariable if user id is not provided when variable type is double', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_width');
         assert.strictEqual(result, null);
         sinon.assert.calledWith(
@@ -5814,7 +5814,7 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariable if user id is null', function() {
+      it('returns null from getFeatureVariable if user id is null when variable type is integer', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'num_buttons', null, {
           test_attribute: 'test_value',
         });
@@ -5826,7 +5826,7 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariable if user id is undefined', function() {
+      it('returns null from getFeatureVariable if user id is undefined when variable type is integer', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'num_buttons', undefined, {
           test_attribute: 'test_value',
         });
@@ -5838,7 +5838,7 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariable if user id is not provided', function() {
+      it('returns null from getFeatureVariable if user id is not provided when variable type is integer', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'num_buttons');
         assert.strictEqual(result, null);
         sinon.assert.calledWith(
@@ -5848,7 +5848,7 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariable if user id is null', function() {
+      it('returns null from getFeatureVariable if user id is null when variable type is string', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_txt', null, {
           test_attribute: 'test_value',
         });
@@ -5860,7 +5860,7 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariable if user id is undefined', function() {
+      it('returns null from getFeatureVariable if user id is undefined when variable type is string', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_txt', undefined, {
           test_attribute: 'test_value',
         });
@@ -5872,7 +5872,7 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariable if user id is not provided', function() {
+      it('returns null from getFeatureVariable if user id is not provided when variable type is string', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_txt');
         assert.strictEqual(result, null);
         sinon.assert.calledWith(
@@ -5882,7 +5882,7 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariable if user id is null', function() {
+      it('returns null from getFeatureVariable if user id is null when variable type is json', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info', null, {
           test_attribute: 'test_value',
         });
@@ -5894,7 +5894,7 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariable if user id is undefined', function() {
+      it('returns null from getFeatureVariable if user id is undefined when variable type is json', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info', undefined, {
           test_attribute: 'test_value',
         });
@@ -5906,7 +5906,7 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariable if user id is not provided', function() {
+      it('returns null from getFeatureVariable if user id is not provided when variable type is json', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info');
         assert.strictEqual(result, null);
         sinon.assert.calledWith(
@@ -6216,7 +6216,7 @@ describe('lib/optimizely', function() {
         });
       });
 
-      it('returns null from getFeatureVariable if the argument feature key is invalid', function() {
+      it('returns null from getFeatureVariable if the argument feature key is invalid when variable type is boolean', function() {
         var result = optlyInstance.getFeatureVariable('thisIsNotAValidKey<><><>', 'is_button_animated', 'user1');
         assert.strictEqual(result, null);
         sinon.assert.calledWith(
@@ -6226,7 +6226,7 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariable if the argument feature key is invalid', function() {
+      it('returns null from getFeatureVariable if the argument feature key is invalid when variable type is double', function() {
         var result = optlyInstance.getFeatureVariable('thisIsNotAValidKey<><><>', 'button_width', 'user1');
         assert.strictEqual(result, null);
         sinon.assert.calledWith(
@@ -6236,7 +6236,7 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariable if the argument feature key is invalid', function() {
+      it('returns null from getFeatureVariable if the argument feature key is invalid when variable type is integer', function() {
         var result = optlyInstance.getFeatureVariable('thisIsNotAValidKey<><><>', 'num_buttons', 'user1');
         assert.strictEqual(result, null);
         sinon.assert.calledWith(
@@ -6246,7 +6246,7 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariable if the argument feature key is invalid', function() {
+      it('returns null from getFeatureVariable if the argument feature key is invalid when variable type is string', function() {
         var result = optlyInstance.getFeatureVariable('thisIsNotAValidKey<><><>', 'button_txt', 'user1');
         assert.strictEqual(result, null);
         sinon.assert.calledWith(
@@ -6256,55 +6256,13 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariable if the argument feature key is invalid', function() {
+      it('returns null from getFeatureVariable if the argument feature key is invalid when variable type is json', function() {
         var result = optlyInstance.getFeatureVariable('thisIsNotAValidKey<><><>', 'button_info', 'user1');
         assert.strictEqual(result, null);
         sinon.assert.calledWith(
           createdLogger.log,
           LOG_LEVEL.ERROR,
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
-        );
-      });
-
-      it('returns null from getFeatureVariable if the argument variable key is invalid', function() {
-        var result = optlyInstance.getFeatureVariable(
-          'test_feature_for_experiment',
-          'thisIsNotAVariableKey****',
-          'user1'
-        );
-        assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
-          'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.'
-        );
-      });
-
-      it('returns null from getFeatureVariable if the argument variable key is invalid', function() {
-        var result = optlyInstance.getFeatureVariable(
-          'test_feature_for_experiment',
-          'thisIsNotAVariableKey****',
-          'user1'
-        );
-        assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
-          'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.'
-        );
-      });
-
-      it('returns null from getFeatureVariable if the argument variable key is invalid', function() {
-        var result = optlyInstance.getFeatureVariable(
-          'test_feature_for_experiment',
-          'thisIsNotAVariableKey****',
-          'user1'
-        );
-        assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
-          'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.'
         );
       });
 
@@ -6476,23 +6434,6 @@ describe('lib/optimizely', function() {
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableBoolean'));
       });
 
-      it('returns null from getFeatureVariable when optimizely object is not a valid instance', function() {
-        var instance = new Optimizely({
-          datafile: {},
-          errorHandler: errorHandler,
-          eventDispatcher: eventDispatcher,
-          logger: createdLogger,
-        });
-
-        createdLogger.log.reset();
-
-        instance.getFeatureVariable('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
-
-        sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariable'));
-      });
-
       it('returns null from getFeatureVariableDouble when optimizely object is not a valid instance', function() {
         var instance = new Optimizely({
           datafile: {},
@@ -6510,23 +6451,6 @@ describe('lib/optimizely', function() {
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableDouble'));
       });
 
-      it('returns null from getFeatureVariable when optimizely object is not a valid instance', function() {
-        var instance = new Optimizely({
-          datafile: {},
-          errorHandler: errorHandler,
-          eventDispatcher: eventDispatcher,
-          logger: createdLogger,
-        });
-
-        createdLogger.log.reset();
-
-        instance.getFeatureVariable('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
-
-        sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariable'));
-      });
-
       it('returns null from getFeatureVariableInteger when optimizely object is not a valid instance', function() {
         var instance = new Optimizely({
           datafile: {},
@@ -6542,23 +6466,6 @@ describe('lib/optimizely', function() {
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableInteger'));
-      });
-
-      it('returns null from getFeatureVariable when optimizely object is not a valid instance', function() {
-        var instance = new Optimizely({
-          datafile: {},
-          errorHandler: errorHandler,
-          eventDispatcher: eventDispatcher,
-          logger: createdLogger,
-        });
-
-        createdLogger.log.reset();
-
-        instance.getFeatureVariable('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
-
-        sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariable'));
       });
 
       it('returns null from getFeatureVariableString when optimizely object is not a valid instance', function() {

@@ -1602,7 +1602,6 @@ export var datafileWithFeaturesExpectedData = {
         },
         {
           type: 'json',
-          subType: 'json',
           key: 'message_info',
           id: '8765345281230956',
           defaultValue: '{ "count": 1, "message": "Hello" }',
@@ -1639,7 +1638,6 @@ export var datafileWithFeaturesExpectedData = {
         },
         message_info: {
           type: 'json',
-          subType: 'json',
           key: 'message_info',
           id: '8765345281230956',
           defaultValue: '{ "count": 1, "message": "Hello" }',
@@ -1732,7 +1730,6 @@ export var datafileWithFeaturesExpectedData = {
         },
         {
           type: 'json',
-          subType: 'json',
           key: 'button_info',
           id: '1547854156498475',
           defaultValue: "{ \"num_buttons\": 0, \"text\": \"default value\"}"
@@ -1771,7 +1768,6 @@ export var datafileWithFeaturesExpectedData = {
           defaultValue: "{ \"num_buttons\": 0, \"text\": \"default value\"}",
           id: '1547854156498475',
           key: 'button_info',
-          subType: 'json',
           type: 'json',
         },
       },

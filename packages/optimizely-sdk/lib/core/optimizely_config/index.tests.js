@@ -81,13 +81,13 @@ describe('lib/core/optimizely_config', function() {
         });
         var variablesMap = featuresMap[featureFlag.key].variablesMap;
         featureFlag.variables.forEach(function(variable) {
-          if (variable.type === 'string' && variable.subType === 'json') {
-            variable.type = 'json';
-          }
+          // json is represented as sub type of string to support backwards compatibility in datafile.
+          // project config treats it as a first-class type.
+          var expectedVariableType = (variable.type === "string" && variable.subType === "json") ? "json" : variable.type;
           assert.include(variablesMap[variable.key], {
             id: variable.id,
             key: variable.key,
-            type: variable.type,
+            type: expectedVariableType,
             value: variable.defaultValue,
           });
         });
@@ -110,11 +110,21 @@ describe('lib/core/optimizely_config', function() {
           variations.forEach(function(variation) {
             featureFlag.variables.forEach(function(variable) {
               var variableToAssert = variationsMap[variation.key].variablesMap[variable.key];
-              assert.include(variable, {
-                id: variableToAssert.id,
-                key: variableToAssert.key,
-                type: variableToAssert.type,
-              });
+              // json is represented as sub type of string to support backwards compatibility in datafile.
+              // project config treats it as a first-class type.
+              var expectedVariableType = (variable.type === "string" && variable.subType === "json") ? "json" : variable.type;              
+              assert.include(
+                {
+                  id: variable.id,
+                  key: variable.key,
+                  type: expectedVariableType,
+                },
+                {
+                  id: variableToAssert.id,
+                  key: variableToAssert.key,
+                  type: variableToAssert.type,
+                },
+              );
               if (!variation.featureEnabled) {
                 assert.equal(variable.defaultValue, variableToAssert.value);
               }
