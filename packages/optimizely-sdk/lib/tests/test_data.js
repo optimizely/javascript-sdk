@@ -387,6 +387,13 @@ var configWithFeatures = {
           id: '6327227708866560',
           defaultValue: 'Hello',
         },
+        {
+          type: 'string',
+          subType: 'json',
+          key: 'message_info',
+          id: '8765345281230956',
+          defaultValue: '{ "count": 1, "message": "Hello" }',
+        },
       ],
     },
     {
@@ -854,6 +861,10 @@ var configWithFeatures = {
                   id: '6327227708866560',
                   value: 'Hello audience',
                 },
+                {
+                  id: "8765345281230956",
+                  value: '{ "count": 2, "message": "Hello audience" }',
+                }
               ],
             },
           ],
@@ -893,6 +904,10 @@ var configWithFeatures = {
                   id: '6327227708866560',
                   value: 'Hello',
                 },
+                {
+                  id: '8765345281230956',
+                  value: '{ "count": 1, "message": "Hello" }',
+                }
               ],
             },
           ],
@@ -1549,6 +1564,13 @@ export var datafileWithFeaturesExpectedData = {
           type: 'string',
           id: '6327227708866560',
         },
+        {
+          type: 'string',
+          subType: 'json',
+          key: 'message_info',
+          id: '8765345281230956',
+          defaultValue: '{ "count": 1, "message": "Hello"}',
+        },
       ],
       experimentIds: [],
       rolloutId: '594030',
@@ -1578,6 +1600,13 @@ export var datafileWithFeaturesExpectedData = {
           key: 'message',
           type: 'string',
           id: '6327227708866560',
+        },
+        message_info: {
+          type: 'string',
+          subType: 'json',
+          key: 'message_info',
+          id: '8765345281230956',
+          defaultValue: '{ "count": 1, "message": "Hello"}',
         },
       },
     },

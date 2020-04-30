@@ -3000,6 +3000,36 @@ describe('lib/optimizely', function() {
                   });
                 });
 
+                it('returns the right value from getFeatureVariable and send notification with featureEnabled true', function() {
+                  var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info', 'user1', {
+                    test_attribute: 'test_value',
+                  });
+                  assert.deepEqual(result, {
+                    num_buttons: 1,
+                    text: 'first variation',
+                  });
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature_for_experiment',
+                      featureEnabled: true,
+                      variableKey: 'button_info',
+                      variableValue: {
+                        num_buttons: 1,
+                        text: "first variation",
+                      },
+                      variableType: FEATURE_VARIABLE_TYPES.JSON,
+                      source: DECISION_SOURCES.FEATURE_TEST,
+                      sourceInfo: {
+                        experimentKey: 'testing_my_feature',
+                        variationKey: 'variation',
+                      },
+                    },
+                  });
+                });
+
                 it('returns the right value from getFeatureVariableBoolean and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariableBoolean(
                     'test_feature_for_experiment',
@@ -3099,6 +3129,39 @@ describe('lib/optimizely', function() {
                       variableKey: 'button_txt',
                       variableValue: 'Buy me NOW',
                       variableType: FEATURE_VARIABLE_TYPES.STRING,
+                      source: DECISION_SOURCES.FEATURE_TEST,
+                      sourceInfo: {
+                        experimentKey: 'testing_my_feature',
+                        variationKey: 'variation',
+                      },
+                    },
+                  });
+                });
+
+                it('returns the right value from getFeatureVariableJson and send notification with featureEnabled true', function() {
+                  var result = optlyInstance.getFeatureVariableJson(
+                    'test_feature_for_experiment',
+                    'button_info',
+                    'user1',
+                    { test_attribute: 'test_value' }
+                  );
+                  assert.deepEqual(result, {
+                    num_buttons: 1,
+                    text: 'first variation',
+                  });
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature_for_experiment',
+                      featureEnabled: true,
+                      variableKey: 'button_info',
+                      variableValue: {
+                        num_buttons: 1,
+                        text: 'first variation',
+                      },
+                      variableType: FEATURE_VARIABLE_TYPES.JSON,
                       source: DECISION_SOURCES.FEATURE_TEST,
                       sourceInfo: {
                         experimentKey: 'testing_my_feature',
@@ -3230,6 +3293,39 @@ describe('lib/optimizely', function() {
                     },
                   });
                 });
+
+                it('returns the default value from getFeatureVariableJson and send notification with featureEnabled false', function() {
+                  var result = optlyInstance.getFeatureVariableJson(
+                    'test_feature_for_experiment',
+                    'button_info',
+                    'user1',
+                    { test_attribute: 'test_value' }
+                  );
+                  assert.deepEqual(result, {
+                    num_buttons: 0,
+                    text: 'default value',
+                  });
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature_for_experiment',
+                      featureEnabled: false,
+                      variableKey: 'button_info',
+                      variableValue: {
+                        num_buttons: 0,
+                        text: 'default value',
+                      },
+                      variableType: FEATURE_VARIABLE_TYPES.JSON,
+                      source: DECISION_SOURCES.FEATURE_TEST,
+                      sourceInfo: {
+                        experimentKey: 'testing_my_feature',
+                        variationKey: 'variation2',
+                      },
+                    },
+                  });
+                });
               });
             });
 
@@ -3332,6 +3428,33 @@ describe('lib/optimizely', function() {
                   });
                 });
 
+                it('should return the right value from getFeatureVariable and send notification with featureEnabled true', function() {
+                  var result = optlyInstance.getFeatureVariable('test_feature', 'message_info', 'user1', {
+                    test_attribute: 'test_value',
+                  });
+                  assert.deepEqual(result, {
+                    count: 2,
+                    message: 'Hello audience',
+                  });
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature',
+                      featureEnabled: true,
+                      variableKey: 'message_info',
+                      variableValue: {
+                        count: 2,
+                        message: 'Hello audience',
+                      },
+                      variableType: FEATURE_VARIABLE_TYPES.JSON,
+                      source: DECISION_SOURCES.ROLLOUT,
+                      sourceInfo: {},
+                    },
+                  });
+                });
+
                 it('should return the right value from getFeatureVariableBoolean and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', {
                     test_attribute: 'test_value',
@@ -3410,6 +3533,33 @@ describe('lib/optimizely', function() {
                       variableKey: 'message',
                       variableValue: 'Hello audience',
                       variableType: FEATURE_VARIABLE_TYPES.STRING,
+                      source: DECISION_SOURCES.ROLLOUT,
+                      sourceInfo: {},
+                    },
+                  });
+                });
+
+                it('should return the right value from getFeatureVariableJson and send notification with featureEnabled true', function() {
+                  var result = optlyInstance.getFeatureVariableJson('test_feature', 'message_info', 'user1', {
+                    test_attribute: 'test_value',
+                  });
+                  assert.deepEqual(result, {
+                    count: 2,
+                    message: 'Hello audience',
+                  });
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature',
+                      featureEnabled: true,
+                      variableKey: 'message_info',
+                      variableValue: {
+                        count: 2,
+                        message: 'Hello audience',
+                      },
+                      variableType: FEATURE_VARIABLE_TYPES.JSON,
                       source: DECISION_SOURCES.ROLLOUT,
                       sourceInfo: {},
                     },
@@ -3515,6 +3665,30 @@ describe('lib/optimizely', function() {
                   });
                 });
 
+                it('should return the default value from getFeatureVariable and send notification with featureEnabled false', function() {
+                  var result = optlyInstance.getFeatureVariable('test_feature', 'message_info', 'user1', {
+                    test_attribute: 'test_value',
+                  });
+                  assert.deepEqual(result, {
+                    count: 1,
+                    message: 'Hello'
+                  });
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature',
+                      featureEnabled: false,
+                      variableKey: 'message_info',
+                      variableValue: { count: 1, message: 'Hello' },
+                      variableType: FEATURE_VARIABLE_TYPES.JSON,
+                      source: DECISION_SOURCES.ROLLOUT,
+                      sourceInfo: {},
+                    },
+                  });
+                });
+
                 it('should return the default value from getFeatureVariableBoolean and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', {
                     test_attribute: 'test_value',
@@ -3593,6 +3767,33 @@ describe('lib/optimizely', function() {
                       variableKey: 'message',
                       variableValue: 'Hello',
                       variableType: FEATURE_VARIABLE_TYPES.STRING,
+                      source: DECISION_SOURCES.ROLLOUT,
+                      sourceInfo: {},
+                    },
+                  });
+                });
+
+                it('should return the default value from getFeatureVariableJson and send notification with featureEnabled false', function() {
+                  var result = optlyInstance.getFeatureVariableJson('test_feature', 'message_info', 'user1', {
+                    test_attribute: 'test_value',
+                  });
+                  assert.deepEqual(result, {
+                    count: 1,
+                    message: 'Hello',
+                  });
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature',
+                      featureEnabled: false,
+                      variableKey: 'message_info',
+                      variableValue: {
+                        count: 1,
+                        message: 'Hello',
+                      },
+                      variableType: FEATURE_VARIABLE_TYPES.JSON,
                       source: DECISION_SOURCES.ROLLOUT,
                       sourceInfo: {},
                     },
@@ -3697,6 +3898,33 @@ describe('lib/optimizely', function() {
                 });
               });
 
+              it('returns the variable default value from getFeatureVariable and send notification with featureEnabled false', function() {
+                var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info', 'user1', {
+                  test_attribute: 'test_value',
+                });
+                assert.deepEqual(result, {
+                  num_buttons: 0,
+                  text: 'default value',
+                });
+                sinon.assert.calledWith(decisionListener, {
+                  type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+                  userId: 'user1',
+                  attributes: { test_attribute: 'test_value' },
+                  decisionInfo: {
+                    featureKey: 'test_feature_for_experiment',
+                    featureEnabled: false,
+                    variableKey: 'button_info',
+                    variableValue: {
+                      num_buttons: 0,
+                      text: 'default value',
+                    },
+                    variableType: FEATURE_VARIABLE_TYPES.JSON,
+                    source: DECISION_SOURCES.ROLLOUT,
+                    sourceInfo: {},
+                  },
+                });
+              });
+
               it('returns the variable default value from getFeatureVariableBoolean and send notification with featureEnabled false', function() {
                 var result = optlyInstance.getFeatureVariableBoolean(
                   'test_feature_for_experiment',
@@ -3787,6 +4015,36 @@ describe('lib/optimizely', function() {
                     variableKey: 'button_txt',
                     variableValue: 'Buy me',
                     variableType: FEATURE_VARIABLE_TYPES.STRING,
+                    source: DECISION_SOURCES.ROLLOUT,
+                    sourceInfo: {},
+                  },
+                });
+              });
+
+              it('returns the variable default value from getFeatureVariableJson and send notification with featureEnabled false', function() {
+                var result = optlyInstance.getFeatureVariableJson(
+                  'test_feature_for_experiment',
+                  'button_info',
+                  'user1',
+                  { test_attribute: 'test_value' }
+                );
+                assert.deepEqual(result, {
+                  num_buttons: 0,
+                  text: 'default value',
+                });
+                sinon.assert.calledWith(decisionListener, {
+                  type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+                  userId: 'user1',
+                  attributes: { test_attribute: 'test_value' },
+                  decisionInfo: {
+                    featureKey: 'test_feature_for_experiment',
+                    featureEnabled: false,
+                    variableKey: 'button_info',
+                    variableValue: {
+                      num_buttons: 0,
+                      text: 'default value',
+                    },
+                    variableType: FEATURE_VARIABLE_TYPES.JSON,
                     source: DECISION_SOURCES.ROLLOUT,
                     sourceInfo: {},
                   },
@@ -4995,6 +5253,21 @@ describe('lib/optimizely', function() {
             );
           });
 
+          it('returns the right value from getFeatureVariable', function() {
+            var result = optlyInstance.getFeatureVariable('test_feature', 'message_info', 'user1', {
+              test_attribute: 'test_value',
+            });
+            assert.deepEqual(result, {
+              count: 2,
+              message: 'Hello audience',
+            });
+            sinon.assert.calledWith(
+              createdLogger.log,
+              LOG_LEVEL.INFO,
+              'OPTIMIZELY: Value for variable "message_info" of feature flag "test_feature" is { "count": 2, "message": "Hello audience" } for user "user1"'
+            );
+          });
+
           it('returns the right value from getFeatureVariableBoolean', function() {
             var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', {
               test_attribute: 'test_value',
@@ -5040,6 +5313,21 @@ describe('lib/optimizely', function() {
               createdLogger.log,
               LOG_LEVEL.INFO,
               'OPTIMIZELY: Value for variable "message" of feature flag "test_feature" is Hello audience for user "user1"'
+            );
+          });
+
+          it('returns the right value from getFeatureVariableJson', function() {
+            var result = optlyInstance.getFeatureVariableJson('test_feature', 'message_info', 'user1', {
+              test_attribute: 'test_value',
+            });
+            assert.deepEqual(result, {
+              count: 2,
+              message: 'Hello audience',
+            });
+            sinon.assert.calledWith(
+              createdLogger.log,
+              LOG_LEVEL.INFO,
+              'OPTIMIZELY: Value for variable "message_info" of feature flag "test_feature" is { "count": 2, "message": "Hello audience" } for user "user1"'
             );
           });
 
@@ -5096,6 +5384,21 @@ describe('lib/optimizely', function() {
               );
             });
 
+            it('returns the variable default value from getFeatureVariable', function() {
+              var result = optlyInstance.getFeatureVariable('test_feature', 'message_info', 'user1', {
+                test_attribute: 'test_value',
+              });
+              assert.deepEqual(result, {
+                count: 1,
+                message: 'Hello',
+              });
+              sinon.assert.calledWith(
+                createdLogger.log,
+                LOG_LEVEL.INFO,
+                'OPTIMIZELY: Variable "message_info" is not used in variation "594032". Returning default value.'
+              );
+            });
+
             it('returns the variable default value from getFeatureVariableBoolean', function() {
               var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', {
                 test_attribute: 'test_value',
@@ -5141,6 +5444,21 @@ describe('lib/optimizely', function() {
                 createdLogger.log,
                 LOG_LEVEL.INFO,
                 'OPTIMIZELY: Variable "message" is not used in variation "594032". Returning default value.'
+              );
+            });
+
+            it('returns the variable default value from getFeatureVariableJson', function() {
+              var result = optlyInstance.getFeatureVariableJson('test_feature', 'message_info', 'user1', {
+                test_attribute: 'test_value',
+              });
+              assert.deepEqual(result, {
+                count: 1,
+                message: 'Hello'
+              });
+              sinon.assert.calledWith(
+                createdLogger.log,
+                LOG_LEVEL.INFO,
+                'OPTIMIZELY: Variable "message_info" is not used in variation "594032". Returning default value.'
               );
             });
           });
@@ -5208,6 +5526,21 @@ describe('lib/optimizely', function() {
             );
           });
 
+          it('returns the variable default value from getFeatureVariable', function() {
+            var result = optlyInstance.getFeatureVariable('test_feature', 'message_info', 'user1', {
+              test_attribute: 'test_value',
+            });
+            assert.deepEqual(result, {
+              count: 1,
+              message: 'Hello'
+            });
+            sinon.assert.calledWith(
+              createdLogger.log,
+              LOG_LEVEL.INFO,
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "message_info".'
+            );
+          });
+
           it('returns the variable default value from getFeatureVariableBoolean', function() {
             var result = optlyInstance.getFeatureVariableBoolean('test_feature', 'new_content', 'user1', {
               test_attribute: 'test_value',
@@ -5253,6 +5586,21 @@ describe('lib/optimizely', function() {
               createdLogger.log,
               LOG_LEVEL.INFO,
               'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "message".'
+            );
+          });
+
+          it('returns the variable default value from getFeatureVariableJson', function() {
+            var result = optlyInstance.getFeatureVariableJson('test_feature', 'message_info', 'user1', {
+              test_attribute: 'test_value',
+            });
+            assert.deepEqual(result, {
+              count: 1,
+              message: 'Hello'
+            });
+            sinon.assert.calledWith(
+              createdLogger.log,
+              LOG_LEVEL.INFO,
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "message_info".'
             );
           });
         });
@@ -5315,6 +5663,21 @@ describe('lib/optimizely', function() {
           );
         });
 
+        it('returns the variable default value from getFeatureVariable', function() {
+          var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info', 'user1', {
+            test_attribute: 'test_value',
+          });
+          assert.deepEqual(result, {
+            num_buttons: 0,
+            text: 'default value',            
+          });
+          sinon.assert.calledWith(
+            createdLogger.log,
+            LOG_LEVEL.INFO,
+            'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_info" of feature flag "test_feature_for_experiment".'
+          );
+        });
+
         it('returns the variable default value from getFeatureVariableBoolean', function() {
           var result = optlyInstance.getFeatureVariableBoolean(
             'test_feature_for_experiment',
@@ -5365,6 +5728,22 @@ describe('lib/optimizely', function() {
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_txt" of feature flag "test_feature_for_experiment".'
           );
         });
+
+        it('returns the variable default value from getFeatureVariableJson', function() {
+          var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info', 'user1', {
+            test_attribute: 'test_value',
+          });
+          assert.deepEqual(result, {
+            num_buttons: 0,
+            text: 'default value',
+          });
+          sinon.assert.calledWith(
+            createdLogger.log,
+            LOG_LEVEL.INFO,
+            'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_info" of feature flag "test_feature_for_experiment".'
+          );
+        });
+
       });
 
       it('returns null from getFeatureVariable if user id is null', function() {
@@ -5503,6 +5882,40 @@ describe('lib/optimizely', function() {
         );
       });
 
+      it('returns null from getFeatureVariable if user id is null', function() {
+        var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info', null, {
+          test_attribute: 'test_value',
+        });
+        assert.strictEqual(result, null);
+        sinon.assert.calledWith(
+          createdLogger.log,
+          LOG_LEVEL.ERROR,
+          'OPTIMIZELY: Provided user_id is in an invalid format.'
+        );
+      });
+
+      it('returns null from getFeatureVariable if user id is undefined', function() {
+        var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info', undefined, {
+          test_attribute: 'test_value',
+        });
+        assert.strictEqual(result, null);
+        sinon.assert.calledWith(
+          createdLogger.log,
+          LOG_LEVEL.ERROR,
+          'OPTIMIZELY: Provided user_id is in an invalid format.'
+        );
+      });
+
+      it('returns null from getFeatureVariable if user id is not provided', function() {
+        var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info');
+        assert.strictEqual(result, null);
+        sinon.assert.calledWith(
+          createdLogger.log,
+          LOG_LEVEL.ERROR,
+          'OPTIMIZELY: Provided user_id is in an invalid format.'
+        );
+      });
+
       it('returns null from getFeatureVariableBoolean when called with a non-boolean variable', function() {
         var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'button_width', 'user1');
         assert.strictEqual(result, null);
@@ -5544,6 +5957,16 @@ describe('lib/optimizely', function() {
           createdLogger.log,
           LOG_LEVEL.WARNING,
           'OPTIMIZELY: Requested variable type "string", but variable is of type "integer". Use correct API to retrieve value. Returning None.'
+        );
+      });
+
+      it('returns null from getFeatureVariableJson when called with a non-json variable', function() {
+        var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_txt', 'user1');
+        assert.strictEqual(result, null);
+        sinon.assert.calledWith(
+          createdLogger.log,
+          LOG_LEVEL.WARNING,
+          'OPTIMIZELY: Requested variable type "json", but variable is of type "string". Use correct API to retrieve value. Returning None.'
         );
       });
 
@@ -5689,6 +6112,40 @@ describe('lib/optimizely', function() {
         );
       });
 
+      it('returns null from getFeatureVariableJson if user id is null', function() {
+        var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info', null, {
+          test_attribute: 'test_value',
+        });
+        assert.strictEqual(result, null);
+        sinon.assert.calledWith(
+          createdLogger.log,
+          LOG_LEVEL.ERROR,
+          'OPTIMIZELY: Provided user_id is in an invalid format.'
+        );
+      });
+
+      it('returns null from getFeatureVariableJson if user id is undefined', function() {
+        var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info', undefined, {
+          test_attribute: 'test_value',
+        });
+        assert.strictEqual(result, null);
+        sinon.assert.calledWith(
+          createdLogger.log,
+          LOG_LEVEL.ERROR,
+          'OPTIMIZELY: Provided user_id is in an invalid format.'
+        );
+      });
+
+      it('returns null from getFeatureVariableJson if user id is not provided', function() {
+        var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info');
+        assert.strictEqual(result, null);
+        sinon.assert.calledWith(
+          createdLogger.log,
+          LOG_LEVEL.ERROR,
+          'OPTIMIZELY: Provided user_id is in an invalid format.'
+        );
+      });
+
       describe('type casting failures', function() {
         describe('invalid boolean', function() {
           beforeEach(function() {
@@ -5741,6 +6198,22 @@ describe('lib/optimizely', function() {
             );
           });
         });
+
+        describe('invalid json', function() {
+          beforeEach(function() {
+            sandbox.stub(projectConfig, 'getVariableValueForVariation').returns('zzz44.55');
+          });
+
+          it('should return null and log an error', function() {
+            var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info', 'user1');
+            assert.strictEqual(result, null);
+            sinon.assert.calledWith(
+              createdLogger.log,
+              LOG_LEVEL.ERROR,
+              'PROJECT_CONFIG: Unable to cast value zzz44.55 to type json, returning null.'
+            );
+          });
+        });
       });
 
       it('returns null from getFeatureVariable if the argument feature key is invalid', function() {
@@ -5775,6 +6248,16 @@ describe('lib/optimizely', function() {
 
       it('returns null from getFeatureVariable if the argument feature key is invalid', function() {
         var result = optlyInstance.getFeatureVariable('thisIsNotAValidKey<><><>', 'button_txt', 'user1');
+        assert.strictEqual(result, null);
+        sinon.assert.calledWith(
+          createdLogger.log,
+          LOG_LEVEL.ERROR,
+          'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
+        );
+      });
+
+      it('returns null from getFeatureVariable if the argument feature key is invalid', function() {
+        var result = optlyInstance.getFeatureVariable('thisIsNotAValidKey<><><>', 'button_info', 'user1');
         assert.strictEqual(result, null);
         sinon.assert.calledWith(
           createdLogger.log,
@@ -5879,6 +6362,16 @@ describe('lib/optimizely', function() {
         );
       });
 
+      it('returns null from getFeatureVariableJson if the argument feature key is invalid', function() {
+        var result = optlyInstance.getFeatureVariableJson('thisIsNotAValidKey<><><>', 'button_info', 'user1');
+        assert.strictEqual(result, null);
+        sinon.assert.calledWith(
+          createdLogger.log,
+          LOG_LEVEL.ERROR,
+          'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
+        );
+      });
+
       it('returns null from getFeatureVariableBoolean if the argument variable key is invalid', function() {
         var result = optlyInstance.getFeatureVariableBoolean(
           'test_feature_for_experiment',
@@ -5923,6 +6416,20 @@ describe('lib/optimizely', function() {
 
       it('returns null from getFeatureVariableString if the argument variable key is invalid', function() {
         var result = optlyInstance.getFeatureVariableString(
+          'test_feature_for_experiment',
+          'thisIsNotAVariableKey****',
+          'user1'
+        );
+        assert.strictEqual(result, null);
+        sinon.assert.calledWith(
+          createdLogger.log,
+          LOG_LEVEL.ERROR,
+          'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.'
+        );
+      });
+
+      it('returns null from getFeatureVariableJson if the argument variable key is invalid', function() {
+        var result = optlyInstance.getFeatureVariableJson(
           'test_feature_for_experiment',
           'thisIsNotAVariableKey****',
           'user1'
@@ -6069,6 +6576,23 @@ describe('lib/optimizely', function() {
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableString'));
+      });
+
+      it('returns null from getFeatureVariableJson when optimizely object is not a valid instance', function() {
+        var instance = new Optimizely({
+          datafile: {},
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          logger: createdLogger,
+        });
+
+        createdLogger.log.reset();
+
+        instance.getFeatureVariableJson('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
+
+        sinon.assert.calledOnce(createdLogger.log);
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableJson'));
       });
     });
   });
