@@ -1532,6 +1532,10 @@ describe('lib/core/decision_service', function() {
                         id: '6327227708866560',
                         value: 'Hello audience',
                       },
+                      {
+                        id: "8765345281230956",
+                        value: '{ "count": 2, "message": "Hello audience" }',
+                      },
                     ],
                     featureEnabled: true,
                     key: '594032',
@@ -1556,6 +1560,10 @@ describe('lib/core/decision_service', function() {
                       {
                         id: '6327227708866560',
                         value: 'Hello audience',
+                      },
+                      {
+                        id: "8765345281230956",
+                        value: '{ "count": 2, "message": "Hello audience" }',
                       },
                     ],
                     featureEnabled: true,
@@ -1584,6 +1592,10 @@ describe('lib/core/decision_service', function() {
                   {
                     id: '6327227708866560',
                     value: 'Hello audience',
+                  },
+                  {
+                    id: "8765345281230956",
+                    value: '{ "count": 2, "message": "Hello audience" }',
                   },
                 ],
                 featureEnabled: true,
@@ -1644,6 +1656,10 @@ describe('lib/core/decision_service', function() {
                         id: '6327227708866560',
                         value: 'Hello',
                       },
+                      {
+                        id: '8765345281230956',
+                        value: '{ "count": 1, "message": "Hello" }',
+                      },
                     ],
                     featureEnabled: false,
                     key: '594038',
@@ -1672,6 +1688,10 @@ describe('lib/core/decision_service', function() {
                         id: '6327227708866560',
                         value: 'Hello',
                       },
+                      {
+                        id: '8765345281230956',
+                        value: '{ "count": 1, "message": "Hello" }',
+                      },
                     ],
                     featureEnabled: false,
                     key: '594038',
@@ -1696,6 +1716,10 @@ describe('lib/core/decision_service', function() {
                   {
                     id: '6327227708866560',
                     value: 'Hello',
+                  },
+                  {
+                    id: '8765345281230956',
+                    value: '{ "count": 1, "message": "Hello" }',
                   },
                 ],
                 featureEnabled: false,
@@ -1789,6 +1813,10 @@ describe('lib/core/decision_service', function() {
                         id: '6327227708866560',
                         value: 'Hello',
                       },
+                      {
+                        id: '8765345281230956',
+                        value: '{ "count": 1, "message": "Hello" }',
+                      },
                     ],
                     featureEnabled: false,
                     key: '594038',
@@ -1817,6 +1845,10 @@ describe('lib/core/decision_service', function() {
                         id: '6327227708866560',
                         value: 'Hello',
                       },
+                      {
+                        id: '8765345281230956',
+                        value: '{ "count": 1, "message": "Hello" }',
+                      },
                     ],
                     featureEnabled: false,
                     key: '594038',
@@ -1841,6 +1873,10 @@ describe('lib/core/decision_service', function() {
                   {
                     id: '6327227708866560',
                     value: 'Hello',
+                  },
+                  {
+                    id: '8765345281230956',
+                    value: '{ "count": 1, "message": "Hello" }',
                   },
                 ],
                 featureEnabled: false,
