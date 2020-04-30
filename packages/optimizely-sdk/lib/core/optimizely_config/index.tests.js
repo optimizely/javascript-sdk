@@ -81,6 +81,9 @@ describe('lib/core/optimizely_config', function() {
         });
         var variablesMap = featuresMap[featureFlag.key].variablesMap;
         featureFlag.variables.forEach(function(variable) {
+          if (variable.type === 'string' && variable.subType === 'json') {
+            variable.type = 'json';
+          }
           assert.include(variablesMap[variable.key], {
             id: variable.id,
             key: variable.key,

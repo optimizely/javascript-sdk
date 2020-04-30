@@ -1128,6 +1128,10 @@ export var datafileWithFeaturesExpectedData = {
                   value: 'Hello audience',
                   id: '6327227708866560',
                 },
+                {
+                  id: '8765345281230956',
+                  value: '{ "count": 2, "message": "Hello audience" }',
+                },
               ],
               featureEnabled: true,
               key: '594032',
@@ -1161,6 +1165,10 @@ export var datafileWithFeaturesExpectedData = {
                   value: 'Hello audience',
                   id: '6327227708866560',
                 },
+                {
+                  id: '8765345281230956',
+                  value: '{ "count": 2, "message": "Hello audience" }',
+                },
               ],
               featureEnabled: true,
               key: '594032',
@@ -1191,6 +1199,10 @@ export var datafileWithFeaturesExpectedData = {
                 {
                   value: 'Hello',
                   id: '6327227708866560',
+                },
+                {
+                  id: '8765345281230956',
+                  value: '{ "count": 1, "message": "Hello" }',
                 },
               ],
               featureEnabled: false,
@@ -1224,6 +1236,10 @@ export var datafileWithFeaturesExpectedData = {
                 {
                   value: 'Hello',
                   id: '6327227708866560',
+                },
+                {
+                  id: '8765345281230956',
+                  value: '{ "count": 1, "message": "Hello" }',
                 },
               ],
               featureEnabled: false,
@@ -1388,6 +1404,10 @@ export var datafileWithFeaturesExpectedData = {
         id: '6327227708866560',
         value: 'Hello audience',
       },
+      8765345281230956: {
+        id:'8765345281230956',
+        value: '{ "count": 2, "message": "Hello audience" }',
+      }
     },
     594038: {
       4919852825313280: {
@@ -1406,6 +1426,10 @@ export var datafileWithFeaturesExpectedData = {
         id: '6327227708866560',
         value: 'Hello',
       },
+      8765345281230956: {
+        id:'8765345281230956',
+        value: '{ "count": 1, "message": "Hello" }',
+      }
     },
     594061: {
       5060590313668608: {
@@ -1460,6 +1484,10 @@ export var datafileWithFeaturesExpectedData = {
         value: '20.25',
         id: '6199684360044544',
       },
+      1547854156498475: {
+        id:'1547854156498475',
+        value: '{ "num_buttons": 1, "text": "first variation"}',
+      },
     },
     594097: {
       4792309476491264: {
@@ -1478,6 +1506,10 @@ export var datafileWithFeaturesExpectedData = {
         value: '50.55',
         id: '6199684360044544',
       },
+      1547854156498475: {
+        id:'1547854156498475',
+        value: '{ "num_buttons": 2, "text": "second variation"}',
+      },
     },
     594099: {
       4792309476491264: {
@@ -1495,6 +1527,10 @@ export var datafileWithFeaturesExpectedData = {
       6199684360044544: {
         value: '99.99',
         id: '6199684360044544',
+      },
+      1547854156498475: {
+        id:'1547854156498475',
+        value: '{ "num_buttons": 3, "text": "third variation"}',
       },
     },
     595008: {},
@@ -1565,11 +1601,11 @@ export var datafileWithFeaturesExpectedData = {
           id: '6327227708866560',
         },
         {
-          type: 'string',
+          type: 'json',
           subType: 'json',
           key: 'message_info',
           id: '8765345281230956',
-          defaultValue: '{ "count": 1, "message": "Hello"}',
+          defaultValue: '{ "count": 1, "message": "Hello" }',
         },
       ],
       experimentIds: [],
@@ -1602,11 +1638,11 @@ export var datafileWithFeaturesExpectedData = {
           id: '6327227708866560',
         },
         message_info: {
-          type: 'string',
+          type: 'json',
           subType: 'json',
           key: 'message_info',
           id: '8765345281230956',
-          defaultValue: '{ "count": 1, "message": "Hello"}',
+          defaultValue: '{ "count": 1, "message": "Hello" }',
         },
       },
     },
@@ -1694,6 +1730,13 @@ export var datafileWithFeaturesExpectedData = {
           type: 'double',
           id: '6199684360044544',
         },
+        {
+          type: 'json',
+          subType: 'json',
+          key: 'button_info',
+          id: '1547854156498475',
+          defaultValue: "{ \"num_buttons\": 0, \"text\": \"default value\"}"
+        },
       ],
       experimentIds: ['594098'],
       rolloutId: '',
@@ -1723,6 +1766,13 @@ export var datafileWithFeaturesExpectedData = {
           key: 'button_width',
           type: 'double',
           id: '6199684360044544',
+        },
+        button_info: {
+          defaultValue: "{ \"num_buttons\": 0, \"text\": \"default value\"}",
+          id: '1547854156498475',
+          key: 'button_info',
+          subType: 'json',
+          type: 'json',
         },
       },
     },

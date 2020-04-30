@@ -16,7 +16,7 @@
 import sinon from 'sinon';
 import { assert } from 'chai';
 import { forEach, cloneDeep } from 'lodash';
-import { getLogger } from '@optimizely/js-sdk-logging';
+import { getLogger, ConsoleLogHandler } from '@optimizely/js-sdk-logging';
 import { sprintf } from '@optimizely/js-sdk-utils';
 
 import fns from '../../utils/fns';
@@ -210,6 +210,7 @@ describe('lib/core/project_config', function() {
             { value: '395', id: '5482802778734592' },
             { value: '4.99', id: '6045752732155904' },
             { value: 'Hello audience', id: '6327227708866560' },
+            { value: '{ "count": 2, "message": "Hello audience" }', id: '8765345281230956' },
           ],
           featureEnabled: true,
           key: '594032',
@@ -221,6 +222,7 @@ describe('lib/core/project_config', function() {
             { value: '400', id: '5482802778734592' },
             { value: '14.99', id: '6045752732155904' },
             { value: 'Hello', id: '6327227708866560' },
+            { value: '{ "count": 1, "message": "Hello" }', id: '8765345281230956' },
           ],
           featureEnabled: false,
           key: '594038',
