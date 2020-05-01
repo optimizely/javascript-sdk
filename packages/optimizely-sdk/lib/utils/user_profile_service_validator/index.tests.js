@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2017, Optimizely, Inc. and contributors                        *
+ * Copyright 2017, 2020, Optimizely, Inc. and contributors                  *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -14,52 +14,67 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
-var chai = require('chai');
-var assert = chai.assert;
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
-var userProfileServiceValidator = require('./');
+import { assert } from 'chai';
+import { sprintf } from '@optimizely/js-sdk-utils';
 
-var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
+import { validate } from './';
+import { ERROR_MESSAGES } from '../enums';
 
 describe('lib/utils/user_profile_service_validator', function() {
   describe('APIs', function() {
     describe('validate', function() {
-      it('should throw if the instance does not provide a \'lookup\' function', function() {
+      it("should throw if the instance does not provide a 'lookup' function", function() {
         var missingLookupFunction = {
-          save: function() {}
+          save: function() {},
         };
         assert.throws(function() {
-          userProfileServiceValidator.validate(missingLookupFunction);
-        }, sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, 'USER_PROFILE_SERVICE_VALIDATOR', 'Missing function \'lookup\''));
+          validate(missingLookupFunction);
+        }, sprintf(
+          ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE,
+          'USER_PROFILE_SERVICE_VALIDATOR',
+          "Missing function 'lookup'"
+        ));
       });
 
-      it('should throw if \'lookup\' is not a function', function() {
+      it("should throw if 'lookup' is not a function", function() {
         var lookupNotFunction = {
           save: function() {},
           lookup: 'notGonnaWork',
         };
         assert.throws(function() {
-          userProfileServiceValidator.validate(lookupNotFunction);
-        }, sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, 'USER_PROFILE_SERVICE_VALIDATOR', 'Missing function \'lookup\''));
+          validate(lookupNotFunction);
+        }, sprintf(
+          ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE,
+          'USER_PROFILE_SERVICE_VALIDATOR',
+          "Missing function 'lookup'"
+        ));
       });
 
-      it('should throw if the instance does not provide a \'save\' function', function() {
+      it("should throw if the instance does not provide a 'save' function", function() {
         var missingSaveFunction = {
-          lookup: function() {}
+          lookup: function() {},
         };
         assert.throws(function() {
-          userProfileServiceValidator.validate(missingSaveFunction);
-        }, sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, 'USER_PROFILE_SERVICE_VALIDATOR', 'Missing function \'save\''));
+          validate(missingSaveFunction);
+        }, sprintf(
+          ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE,
+          'USER_PROFILE_SERVICE_VALIDATOR',
+          "Missing function 'save'"
+        ));
       });
 
-      it('should throw if \'save\' is not a function', function() {
+      it("should throw if 'save' is not a function", function() {
         var saveNotFunction = {
           lookup: function() {},
           save: 'notGonnaWork',
         };
         assert.throws(function() {
-          userProfileServiceValidator.validate(saveNotFunction);
-        }, sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, 'USER_PROFILE_SERVICE_VALIDATOR', 'Missing function \'save\''));
+          validate(saveNotFunction);
+        }, sprintf(
+          ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE,
+          'USER_PROFILE_SERVICE_VALIDATOR',
+          "Missing function 'save'"
+        ));
       });
 
       it('should return true if the instance is valid', function() {
@@ -67,7 +82,7 @@ describe('lib/utils/user_profile_service_validator', function() {
           save: function() {},
           lookup: function() {},
         };
-        assert.isTrue(userProfileServiceValidator.validate(validInstance));
+        assert.isTrue(validate(validInstance));
       });
     });
   });

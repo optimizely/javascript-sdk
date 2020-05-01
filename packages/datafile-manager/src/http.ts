@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,16 @@
  * to work with multiple values per header name.
  */
 export interface Headers {
-  [header: string]: string | undefined
+  [header: string]: string | undefined;
 }
 
 export interface Response {
-  statusCode?: number
-  body: string
-  headers: Headers
+  statusCode?: number;
+  body: string;
+  headers: Headers;
 }
 
 export interface AbortableRequest {
-  abort(): void
-  responsePromise: Promise<Response>
+  abort(): void;
+  responsePromise: Promise<Response>;
 }

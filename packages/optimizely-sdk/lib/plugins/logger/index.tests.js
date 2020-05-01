@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, Optimizely
+ * Copyright 2016, 2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var logger = require('./');
-var chai = require('chai');
-var enums = require('../../utils/enums');
-var assert = chai.assert;
-var expect = chai.expect;
-var sinon = require('sinon');
+import { assert, expect } from 'chai';
+import sinon from 'sinon';
 
-var LOG_LEVEL = enums.LOG_LEVEL;
+import { createLogger } from './';
+import { LOG_LEVEL } from '../../utils/enums';;
+
 describe('lib/plugins/logger', function() {
   describe('APIs', function() {
     var defaultLogger;
     describe('createLogger', function() {
       it('should return an instance of the default logger', function() {
-        defaultLogger = logger.createLogger({logLevel: LOG_LEVEL.NOTSET});
+        defaultLogger = createLogger({ logLevel: LOG_LEVEL.NOTSET });
         assert.isObject(defaultLogger);
         expect(defaultLogger.logLevel).to.equal(LOG_LEVEL.NOTSET);
       });
@@ -34,7 +32,7 @@ describe('lib/plugins/logger', function() {
 
     describe('log', function() {
       beforeEach(function() {
-        defaultLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+        defaultLogger = createLogger({ logLevel: LOG_LEVEL.INFO });
 
         sinon.stub(console, 'log');
         sinon.stub(console, 'info');
@@ -81,7 +79,7 @@ describe('lib/plugins/logger', function() {
 
     describe('setLogLevel', function() {
       beforeEach(function() {
-        defaultLogger = logger.createLogger({logLevel: LOG_LEVEL.NOTSET});
+        defaultLogger = createLogger({ logLevel: LOG_LEVEL.NOTSET });
       });
 
       it('should set the log level to the specified log level', function() {

@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
  */
 
 export function advanceTimersByTime(waitMs: number): Promise<void> {
-  const timeoutPromise: Promise<void> = new Promise(res => setTimeout(res, waitMs))
-  jest.advanceTimersByTime(waitMs)
-  return timeoutPromise
+  const timeoutPromise: Promise<void> = new Promise(res => setTimeout(res, waitMs));
+  jest.advanceTimersByTime(waitMs);
+  return timeoutPromise;
 }
 
 export function getTimerCount(): number {
   // Type definition for jest doesn't include this, but it exists
   // https://jestjs.io/docs/en/jest-object#jestgettimercount
-  return (jest as any).getTimerCount()
+  return (jest as any).getTimerCount();
 }

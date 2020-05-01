@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2018, Optimizely, Inc. and contributors                        *
+ * Copyright 2018, 2020, Optimizely, Inc. and contributors                  *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -32,7 +32,7 @@ var DEFAULT_OPERATOR_TYPES = [AND_CONDITION, OR_CONDITION, NOT_CONDITION];
  *                                      indicates that the conditions are invalid or unable to be
  *                                      evaluated
  */
-function evaluate(conditions, leafEvaluator) {
+export var evaluate = function(conditions, leafEvaluator) {
   if (Array.isArray(conditions)) {
     var firstOperator = conditions[0];
     var restOfConditions = conditions.slice(1);
@@ -48,14 +48,15 @@ function evaluate(conditions, leafEvaluator) {
         return andEvaluator(restOfConditions, leafEvaluator);
       case NOT_CONDITION:
         return notEvaluator(restOfConditions, leafEvaluator);
-      default: // firstOperator is OR_CONDITION
+      default:
+        // firstOperator is OR_CONDITION
         return orEvaluator(restOfConditions, leafEvaluator);
     }
   }
 
   var leafCondition = conditions;
   return leafEvaluator(leafCondition);
-}
+};
 
 /**
  * Evaluates an array of conditions as if the evaluator had been applied
@@ -120,6 +121,6 @@ function orEvaluator(conditions, leafEvaluator) {
   return sawNullResult ? null : false;
 }
 
-module.exports = {
+export default {
   evaluate: evaluate,
 };

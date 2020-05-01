@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, Optimizely
+ * Copyright 2018, 2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-module.exports = {
-  /**
-   * Validates provided value is a non-empty string
-   * @param  {string}  input
-   * @return {boolean} True for non-empty string, false otherwise
-   */
-  validate: function(input) {
-      return typeof input === 'string' && input !== '';
-  }
+/**
+ * Validates provided value is a non-empty string
+ * @param  {string}  input
+ * @return {boolean} True for non-empty string, false otherwise
+ */
+export var validate = function(input) {
+  return typeof input === 'string' && input !== '';
+};
+
+export default {
+  validate: validate,
 };

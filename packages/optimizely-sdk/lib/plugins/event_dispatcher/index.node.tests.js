@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018, Optimizely
+ * Copyright 2016-2018, 2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var eventDispatcher = require('./index.node');
-var chai = require('chai');
-var assert = chai.assert;
-var nock = require('nock');
-var sinon = require('sinon');
+import nock from 'nock';
+import sinon from 'sinon';
+import { assert } from 'chai';
+
+import { dispatchEvent } from './index.node';
 
 describe('lib/plugins/event_dispatcher/node', function() {
   describe('APIs', function() {
     describe('dispatchEvent', function() {
       var stubCallback = {
-        callback: function() {}
+        callback: function() {},
       };
 
       beforeEach(function() {
@@ -49,7 +49,7 @@ describe('lib/plugins/event_dispatcher/node', function() {
           httpVerb: 'POST',
         };
 
-        eventDispatcher.dispatchEvent(eventObj, function(resp) {
+        dispatchEvent(eventObj, function(resp) {
           assert.equal(200, resp.statusCode);
           done();
         });
@@ -64,14 +64,14 @@ describe('lib/plugins/event_dispatcher/node', function() {
           httpVerb: 'POST',
         };
 
-        eventDispatcher.dispatchEvent(eventObj, stubCallback.callback)
-        .on('response', function(response) {
-          sinon.assert.calledOnce(stubCallback.callback);
-          done();
-        })
-        .on('error', function(error) {
-          assert.fail('status code okay', 'status code not okay', '');
-        });
+        dispatchEvent(eventObj, stubCallback.callback)
+          .on('response', function(response) {
+            sinon.assert.calledOnce(stubCallback.callback);
+            done();
+          })
+          .on('error', function(error) {
+            assert.fail('status code okay', 'status code not okay', '');
+          });
       });
 
       it('rejects GET httpVerb', function() {
@@ -84,7 +84,7 @@ describe('lib/plugins/event_dispatcher/node', function() {
         };
 
         var callback = sinon.spy();
-        eventDispatcher.dispatchEvent(eventObj, callback);
+        dispatchEvent(eventObj, callback);
         sinon.assert.notCalled(callback);
       });
     });
@@ -97,7 +97,7 @@ describe('lib/plugins/event_dispatcher/node', function() {
       };
 
       var callback = sinon.spy();
-      eventDispatcher.dispatchEvent(eventObj, callback);
+      dispatchEvent(eventObj, callback);
       sinon.assert.notCalled(callback);
     });
   });

@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,32 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import PersistentKeyValueCache from './persistentKeyValueCache';
 
- export interface DatafileUpdate {
-   datafile: object
- }
+export interface DatafileUpdate {
+  datafile: object;
+}
 
 export interface DatafileUpdateListener {
-  (datafileUpdate: DatafileUpdate): void
+  (datafileUpdate: DatafileUpdate): void;
 }
 
 // TODO: Replace this with the one from js-sdk-models
 interface Managed {
-  start(): void
+  start(): void;
 
-  stop(): Promise<any>
+  stop(): Promise<any>;
 }
 
 export interface DatafileManager extends Managed {
-  get: () => object | null
-  on: (eventName: string, listener: DatafileUpdateListener) => () => void
-  onReady: () => Promise<void>
+  get: () => object | null;
+  on: (eventName: string, listener: DatafileUpdateListener) => () => void;
+  onReady: () => Promise<void>;
 }
 
 export interface DatafileManagerConfig {
-  autoUpdate?: boolean
-  datafile?: object
-  sdkKey: string
-  updateInterval?: number
-  urlTemplate?: string
+  autoUpdate?: boolean;
+  datafile?: object;
+  sdkKey: string;
+  updateInterval?: number;
+  urlTemplate?: string;
+  cache?: PersistentKeyValueCache;
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2018-2019, Optimizely
+ * Copyright 2016, 2018-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,40 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { sprintf } from '@optimizely/js-sdk-utils';
+
+import fns from '../../utils/fns';
+import { ERROR_MESSAGES } from '../enums';
+
+var MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
+
+/**
+ * Validates user's provided attributes
+ * @param  {Object}  attributes
+ * @return {boolean} True if the attributes are valid
+ * @throws If the attributes are not valid
+ */
+export var validate = function(attributes) {
+  if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
+    Object.keys(attributes).forEach(function(key) {
+      if (typeof attributes[key] === 'undefined') {
+        throw new Error(sprintf(ERROR_MESSAGES.UNDEFINED_ATTRIBUTE, MODULE_NAME, key));
+      }
+    });
+    return true;
+  } else {
+    throw new Error(sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, MODULE_NAME));
+  }
+};
+
+export var isAttributeValid = function(attributeKey, attributeValue) {
+  return (
+    typeof attributeKey === 'string' &&
+    (typeof attributeValue === 'string' ||
+      typeof attributeValue === 'boolean' ||
+      (fns.isNumber(attributeValue) && fns.isSafeInteger(attributeValue)))
+  );
+};
 
 /**
  * Provides utility method for validating that the attributes user has provided are valid
  */
-
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
-var lodashForOwn = require('lodash/forOwn');
-var fns = require('../../utils/fns');
-
-var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
-var MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
-
-module.exports = {
-  /**
-   * Validates user's provided attributes
-   * @param  {Object}  attributes
-   * @return {boolean} True if the attributes are valid
-   * @throws If the attributes are not valid
-   */
-  validate: function(attributes) {
-    if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
-      lodashForOwn(attributes, function(value, key) {
-        if (typeof value === 'undefined') {
-          throw new Error(sprintf(ERROR_MESSAGES.UNDEFINED_ATTRIBUTE, MODULE_NAME, key));
-        }
-      });
-      return true;
-    } else {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, MODULE_NAME));
-    }
-  },
-
-  isAttributeValid: function(attributeKey, attributeValue) {
-    return (typeof attributeKey === 'string') &&
-    (typeof attributeValue === 'string' || typeof attributeValue === 'boolean' || (fns.isNumber(attributeValue) && fns.isSafeInteger(attributeValue)));
-  },
+export default {
+  validate: validate,
+  isAttributeValid: isAttributeValid,
 };

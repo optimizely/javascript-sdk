@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2019, Optimizely
+ * Copyright 2016-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var cloneDeep = require('lodash/cloneDeep');
+import cloneDeep from 'lodash/cloneDeep';
 
 var config = {
   revision: '42',
@@ -336,7 +336,7 @@ var config = {
   projectId: '111001',
 };
 
-var getParsedAudiences = [
+export var getParsedAudiences = [
   {
     name: 'Firefox users',
     conditions: ['and', ['or', ['or', { name: 'browser_type', type: 'custom_attribute', value: 'firefox' }]]],
@@ -344,7 +344,7 @@ var getParsedAudiences = [
   },
 ];
 
-var getTestProjectConfig = function() {
+export var getTestProjectConfig = function() {
   return cloneDeep(config);
 };
 
@@ -386,6 +386,13 @@ var configWithFeatures = {
           key: 'message',
           id: '6327227708866560',
           defaultValue: 'Hello',
+        },
+        {
+          type: 'string',
+          subType: 'json',
+          key: 'message_info',
+          id: '8765345281230956',
+          defaultValue: '{ "count": 1, "message": "Hello" }',
         },
       ],
     },
@@ -444,12 +451,19 @@ var configWithFeatures = {
           key: 'button_txt',
           id: '5636734406623232',
           defaultValue: 'Buy me',
-        },
+        },        
         {
           type: 'double',
           key: 'button_width',
           id: '6199684360044544',
           defaultValue: '50.55',
+        },
+        {
+          type: 'string',
+          subType: 'json',
+          key: 'button_info',
+          id: '1547854156498475',
+          defaultValue: '{ "num_buttons": 0, "text": "default value"}',
         },
       ],
     },
@@ -532,6 +546,10 @@ var configWithFeatures = {
               id: '6199684360044544',
               value: '20.25',
             },
+            {
+              id: '1547854156498475',
+              value: '{ "num_buttons": 1, "text": "first variation"}',
+            },
           ],
         },
         {
@@ -555,6 +573,10 @@ var configWithFeatures = {
               id: '6199684360044544',
               value: '50.55',
             },
+            {
+              id: '1547854156498475',
+              value: '{ "num_buttons": 2, "text": "second variation"}',
+            },
           ],
         },
         {
@@ -577,6 +599,10 @@ var configWithFeatures = {
             {
               id: '6199684360044544',
               value: '99.99',
+            },
+            {
+              id: '1547854156498475',
+              value: '{ "num_buttons": 3, "text": "third variation"}',
             },
           ],
         },
@@ -835,6 +861,10 @@ var configWithFeatures = {
                   id: '6327227708866560',
                   value: 'Hello audience',
                 },
+                {
+                  id: "8765345281230956",
+                  value: '{ "count": 2, "message": "Hello audience" }',
+                }
               ],
             },
           ],
@@ -874,6 +904,10 @@ var configWithFeatures = {
                   id: '6327227708866560',
                   value: 'Hello',
                 },
+                {
+                  id: '8765345281230956',
+                  value: '{ "count": 1, "message": "Hello" }',
+                }
               ],
             },
           ],
@@ -1009,11 +1043,11 @@ var configWithFeatures = {
   variables: [],
 };
 
-var getTestProjectConfigWithFeatures = function() {
+export var getTestProjectConfigWithFeatures = function() {
   return cloneDeep(configWithFeatures);
 };
 
-var datafileWithFeaturesExpectedData = {
+export var datafileWithFeaturesExpectedData = {
   rolloutIdMap: {
     599055: {
       id: '599055',
@@ -1094,6 +1128,10 @@ var datafileWithFeaturesExpectedData = {
                   value: 'Hello audience',
                   id: '6327227708866560',
                 },
+                {
+                  id: '8765345281230956',
+                  value: '{ "count": 2, "message": "Hello audience" }',
+                },
               ],
               featureEnabled: true,
               key: '594032',
@@ -1127,6 +1165,10 @@ var datafileWithFeaturesExpectedData = {
                   value: 'Hello audience',
                   id: '6327227708866560',
                 },
+                {
+                  id: '8765345281230956',
+                  value: '{ "count": 2, "message": "Hello audience" }',
+                },
               ],
               featureEnabled: true,
               key: '594032',
@@ -1157,6 +1199,10 @@ var datafileWithFeaturesExpectedData = {
                 {
                   value: 'Hello',
                   id: '6327227708866560',
+                },
+                {
+                  id: '8765345281230956',
+                  value: '{ "count": 1, "message": "Hello" }',
                 },
               ],
               featureEnabled: false,
@@ -1190,6 +1236,10 @@ var datafileWithFeaturesExpectedData = {
                 {
                   value: 'Hello',
                   id: '6327227708866560',
+                },
+                {
+                  id: '8765345281230956',
+                  value: '{ "count": 1, "message": "Hello" }',
                 },
               ],
               featureEnabled: false,
@@ -1354,6 +1404,10 @@ var datafileWithFeaturesExpectedData = {
         id: '6327227708866560',
         value: 'Hello audience',
       },
+      8765345281230956: {
+        id:'8765345281230956',
+        value: '{ "count": 2, "message": "Hello audience" }',
+      }
     },
     594038: {
       4919852825313280: {
@@ -1372,6 +1426,10 @@ var datafileWithFeaturesExpectedData = {
         id: '6327227708866560',
         value: 'Hello',
       },
+      8765345281230956: {
+        id:'8765345281230956',
+        value: '{ "count": 1, "message": "Hello" }',
+      }
     },
     594061: {
       5060590313668608: {
@@ -1426,6 +1484,10 @@ var datafileWithFeaturesExpectedData = {
         value: '20.25',
         id: '6199684360044544',
       },
+      1547854156498475: {
+        id:'1547854156498475',
+        value: '{ "num_buttons": 1, "text": "first variation"}',
+      },
     },
     594097: {
       4792309476491264: {
@@ -1444,23 +1506,31 @@ var datafileWithFeaturesExpectedData = {
         value: '50.55',
         id: '6199684360044544',
       },
+      1547854156498475: {
+        id:'1547854156498475',
+        value: '{ "num_buttons": 2, "text": "second variation"}',
+      },
     },
     594099: {
       4792309476491264: {
         value: '40',
-        id: '4792309476491264'
+        id: '4792309476491264',
       },
       5073784453201920: {
         value: 'true',
-        id: '5073784453201920'
+        id: '5073784453201920',
       },
       5636734406623232: {
         value: 'Buy me Later',
-        id: '5636734406623232'
+        id: '5636734406623232',
       },
       6199684360044544: {
         value: '99.99',
-        id: '6199684360044544'
+        id: '6199684360044544',
+      },
+      1547854156498475: {
+        id:'1547854156498475',
+        value: '{ "num_buttons": 3, "text": "third variation"}',
       },
     },
     595008: {},
@@ -1530,6 +1600,12 @@ var datafileWithFeaturesExpectedData = {
           type: 'string',
           id: '6327227708866560',
         },
+        {
+          type: 'json',
+          key: 'message_info',
+          id: '8765345281230956',
+          defaultValue: '{ "count": 1, "message": "Hello" }',
+        },
       ],
       experimentIds: [],
       rolloutId: '594030',
@@ -1559,6 +1635,12 @@ var datafileWithFeaturesExpectedData = {
           key: 'message',
           type: 'string',
           id: '6327227708866560',
+        },
+        message_info: {
+          type: 'json',
+          key: 'message_info',
+          id: '8765345281230956',
+          defaultValue: '{ "count": 1, "message": "Hello" }',
         },
       },
     },
@@ -1646,6 +1728,12 @@ var datafileWithFeaturesExpectedData = {
           type: 'double',
           id: '6199684360044544',
         },
+        {
+          type: 'json',
+          key: 'button_info',
+          id: '1547854156498475',
+          defaultValue: "{ \"num_buttons\": 0, \"text\": \"default value\"}"
+        },
       ],
       experimentIds: ['594098'],
       rolloutId: '',
@@ -1675,6 +1763,12 @@ var datafileWithFeaturesExpectedData = {
           key: 'button_width',
           type: 'double',
           id: '6199684360044544',
+        },
+        button_info: {
+          defaultValue: "{ \"num_buttons\": 0, \"text\": \"default value\"}",
+          id: '1547854156498475',
+          key: 'button_info',
+          type: 'json',
         },
       },
     },
@@ -2035,7 +2129,7 @@ var unsupportedVersionConfig = {
   projectId: '111001',
 };
 
-var getUnsupportedVersionConfig = function() {
+export var getUnsupportedVersionConfig = function() {
   return cloneDeep(unsupportedVersionConfig);
 };
 
@@ -2328,7 +2422,6 @@ var typedAudiencesConfig = {
     {
       id: '3988293898',
       name: '$$dummySubstringString',
-      conditions: '["and", ["or"]]',
       conditions: '{ "type": "custom_attribute", "name": "$opt_dummy_attribute", "value": "impossible_value" }',
     },
     {
@@ -2436,11 +2529,11 @@ var typedAudiencesConfig = {
   revision: '3',
 };
 
-var getTypedAudiencesConfig = function() {
+export var getTypedAudiencesConfig = function() {
   return cloneDeep(typedAudiencesConfig);
 };
 
-var typedAudiencesById = {
+export var typedAudiencesById = {
   3468206642: {
     id: '3468206642',
     name: 'exactString',
@@ -2503,10 +2596,10 @@ var mutexFeatureTestsConfig = {
           layerId: '17151011617',
           trafficAllocation: [{ entityId: '17138530965', endOfRange: 0 }],
           forcedVariations: {},
-        }
+        },
       ],
       id: '17151011617',
-    }
+    },
   ],
   typedAudiences: [],
   anonymizeIP: false,
@@ -2528,7 +2621,7 @@ var mutexFeatureTestsConfig = {
       policy: 'random',
       trafficAllocation: [
         { entityId: '17139931304', endOfRange: 9900 },
-        { entityId: '17128410791', endOfRange: 10000 }
+        { entityId: '17128410791', endOfRange: 10000 },
       ],
       experiments: [
         {
@@ -2536,36 +2629,36 @@ var mutexFeatureTestsConfig = {
           audienceIds: [],
           variations: [
             { variables: [], id: 17155031309, key: 'variation_1', featureEnabled: false },
-            { variables: [], id: 17124610952, key: 'variation_2', featureEnabled: true }
+            { variables: [], id: 17124610952, key: 'variation_2', featureEnabled: true },
           ],
           id: '17139931304',
           key: 'f_test2',
           layerId: '17149391594',
           trafficAllocation: [
             { entityId: '17155031309', endOfRange: 5000 },
-            { entityId: '17124610952', endOfRange: 10000 }
+            { entityId: '17124610952', endOfRange: 10000 },
           ],
-          forcedVariations: {}
+          forcedVariations: {},
         },
         {
           status: 'Running',
           audienceIds: [],
           variations: [
             { variables: [], id: '17175820099', key: 'variation_1', featureEnabled: false },
-            { variables: [], id: '17144050391', key: 'variation_2', featureEnabled: true }
+            { variables: [], id: '17144050391', key: 'variation_2', featureEnabled: true },
           ],
           id: '17128410791',
           key: 'f_test1',
           layerId: '17145581153',
           trafficAllocation: [
             { entityId: '17175820099', endOfRange: 5000 },
-            { entityId: '17144050391', endOfRange: 10000 }
+            { entityId: '17144050391', endOfRange: 10000 },
           ],
-          forcedVariations: {}
-        }
+          forcedVariations: {},
+        },
       ],
-      id: '17142090293'
-    }
+      id: '17142090293',
+    },
   ],
   attributes: [],
   botFiltering: false,
@@ -2574,11 +2667,11 @@ var mutexFeatureTestsConfig = {
   revision: '12',
 };
 
-var getMutexFeatureTestsConfig = function() {
+export var getMutexFeatureTestsConfig = function() {
   return cloneDeep(mutexFeatureTestsConfig);
 };
 
-module.exports = {
+export default {
   getTestProjectConfig: getTestProjectConfig,
   getParsedAudiences: getParsedAudiences,
   getTestProjectConfigWithFeatures: getTestProjectConfigWithFeatures,

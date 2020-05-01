@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,5 @@
  * limitations under the License.
  */
 
-export * from './datafileManager'
-export { default as HttpPollingDatafileManager } from './browserDatafileManager'
-export { default as StaticDatafileManager } from './staticDatafileManager';
+export * from './datafileManager';
+export { default as HttpPollingDatafileManager } from './browserDatafileManager';

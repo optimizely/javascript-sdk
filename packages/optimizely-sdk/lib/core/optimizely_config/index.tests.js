@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var assert = require('chai').assert;
+import { assert } from 'chai';
+import { cloneDeep } from 'lodash';
 
-var datafile = require('../../tests/test_data').getTestProjectConfigWithFeatures();
-var projectConfig = require('../project_config');
-var optimizelyConfig = require('./index');
+import { getOptimizelyConfig } from './index';
+import { createProjectConfig } from '../project_config';
+import { getTestProjectConfigWithFeatures } from '../../tests/test_data';
+
+var datafile = getTestProjectConfigWithFeatures();
 
 var getAllExperimentsFromDatafile = function(datafile) {
   var allExperiments = [];
@@ -37,15 +40,15 @@ describe('lib/core/optimizely_config', function() {
     var optimizelyConfigObject;
     var projectConfigObject;
     beforeEach(function() {
-      projectConfigObject = projectConfig.createProjectConfig(datafile);
-      optimizelyConfigObject = optimizelyConfig.getOptimizelyConfig(projectConfigObject);
+      projectConfigObject = createProjectConfig(cloneDeep(datafile));
+      optimizelyConfigObject = getOptimizelyConfig(projectConfigObject);
     });
 
     it('should return all experiments except rollouts', function() {
       var experimentsMap = optimizelyConfigObject.experimentsMap;
       var experimentsCount = Object.keys(optimizelyConfigObject.experimentsMap).length;
       assert.equal(experimentsCount, 6);
-      
+
       var allExperiments = getAllExperimentsFromDatafile(datafile);
       allExperiments.forEach(function(experiment) {
         assert.include(experimentsMap[experiment.key], {
@@ -57,15 +60,15 @@ describe('lib/core/optimizely_config', function() {
           assert.include(variationsMap[variation.key], {
             id: variation.id,
             key: variation.key,
-          })
+          });
         });
       });
     });
-    
+
     it('should return all the feature flags', function() {
       var featureFlagsCount = Object.keys(optimizelyConfigObject.featuresMap).length;
       assert.equal(featureFlagsCount, 7);
-      
+
       var featuresMap = optimizelyConfigObject.featuresMap;
       datafile.featureFlags.forEach(function(featureFlag) {
         assert.include(featuresMap[featureFlag.key], {
@@ -78,23 +81,25 @@ describe('lib/core/optimizely_config', function() {
         });
         var variablesMap = featuresMap[featureFlag.key].variablesMap;
         featureFlag.variables.forEach(function(variable) {
+          // json is represented as sub type of string to support backwards compatibility in datafile.
+          // project config treats it as a first-class type.
+          var expectedVariableType = (variable.type === "string" && variable.subType === "json") ? "json" : variable.type;
           assert.include(variablesMap[variable.key], {
             id: variable.id,
             key: variable.key,
-            type: variable.type,
+            type: expectedVariableType,
             value: variable.defaultValue,
-          })
+          });
         });
       });
     });
-    
+
     it('should correctly merge all feature variables', function() {
       var featureFlags = datafile.featureFlags;
-      var datafileExperimentsMap = getAllExperimentsFromDatafile(datafile)
-        .reduce(function(experiments, experiment) {
-          experiments[experiment.key] = experiment;
-          return experiments;
-        }, {});
+      var datafileExperimentsMap = getAllExperimentsFromDatafile(datafile).reduce(function(experiments, experiment) {
+        experiments[experiment.key] = experiment;
+        return experiments;
+      }, {});
       featureFlags.forEach(function(featureFlag) {
         var experimentIds = featureFlag.experimentIds;
         experimentIds.forEach(function(experimentId) {
@@ -105,16 +110,26 @@ describe('lib/core/optimizely_config', function() {
           variations.forEach(function(variation) {
             featureFlag.variables.forEach(function(variable) {
               var variableToAssert = variationsMap[variation.key].variablesMap[variable.key];
-              assert.include(variable, {
-                id: variableToAssert.id,
-                key: variableToAssert.key,
-                type: variableToAssert.type,
-              });
+              // json is represented as sub type of string to support backwards compatibility in datafile.
+              // project config treats it as a first-class type.
+              var expectedVariableType = (variable.type === "string" && variable.subType === "json") ? "json" : variable.type;              
+              assert.include(
+                {
+                  id: variable.id,
+                  key: variable.key,
+                  type: expectedVariableType,
+                },
+                {
+                  id: variableToAssert.id,
+                  key: variableToAssert.key,
+                  type: variableToAssert.type,
+                }
+              );
               if (!variation.featureEnabled) {
-                assert.equal(variable.defaultValue, variableToAssert.value);  
+                assert.equal(variable.defaultValue, variableToAssert.value);
               }
-            });  
-          })
+            });
+          });
         });
       });
     });

@@ -15,7 +15,7 @@
  */
 
 // Karma configuration for cross-browser testing
-const baseConfig = require('./karma.base.conf.js')
+const baseConfig = require('./karma.base.conf.js');
 
 module.exports = function(config) {
   config.set({
@@ -27,6 +27,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+      './node_modules/promise-polyfill/dist/polyfill.min.js',
       './lib/index.browser.tests.js'
     ],
   });

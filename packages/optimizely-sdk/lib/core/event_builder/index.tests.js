@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2019, Optimizely
+ * Copyright 2016-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var eventBuilder = require('./index.js');
-var packageJSON = require('../../../package.json');
-var projectConfig = require('../project_config');
-var testData = require('../../tests/test_data');
+import uuid from 'uuid';
+import sinon from 'sinon';
+import { assert } from 'chai';
 
-var chai = require('chai');
-var assert = chai.assert;
-var sinon = require('sinon');
-var uuid = require('uuid');
-
+import testData from '../../tests/test_data';
+import projectConfig from '../project_config';
+import packageJSON from '../../../package.json';
+import { getConversionEvent, getImpressionEvent} from './index.js';
 
 describe('lib/core/event_builder', function() {
   describe('APIs', function() {
-
     var mockLogger;
     var configObj;
     var clock;
@@ -47,35 +44,42 @@ describe('lib/core/event_builder', function() {
 
     describe('getImpressionEvent', function() {
       it('should create proper params for getImpressionEvent without attributes', function() {
-
         var expectedParams = {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: {
-            'account_id': '12001',
-            'project_id': '111001',
-            'visitors': [{
-              'attributes': [],
-              'visitor_id': 'testUser',
-              'snapshots': [{
-                'decisions': [{
-                  'variation_id': '111128',
-                  'experiment_id': '111127',
-                  'campaign_id': '4'
-                }],
-                'events': [{
-                  'timestamp': Math.round(new Date().getTime()),
-                  'entity_id': '4',
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'key': 'campaign_activated'
-                }]
-              }]
-            }],
-            'revision': '42',
-            'client_name': 'node-sdk',
-            'client_version': packageJSON.version,
-            'anonymize_ip': false,
-            'enrich_decisions': true,
+            account_id: '12001',
+            project_id: '111001',
+            visitors: [
+              {
+                attributes: [],
+                visitor_id: 'testUser',
+                snapshots: [
+                  {
+                    decisions: [
+                      {
+                        variation_id: '111128',
+                        experiment_id: '111127',
+                        campaign_id: '4',
+                      },
+                    ],
+                    events: [
+                      {
+                        timestamp: Math.round(new Date().getTime()),
+                        entity_id: '4',
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        key: 'campaign_activated',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            revision: '42',
+            client_name: 'node-sdk',
+            client_version: packageJSON.version,
+            anonymize_ip: false,
+            enrich_decisions: true,
           },
         };
 
@@ -88,7 +92,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+        var actualParams = getImpressionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -98,39 +102,49 @@ describe('lib/core/event_builder', function() {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: {
-            'account_id': '12001',
-            'project_id': '111001',
-            'visitors': [{
-              'attributes': [{
-                'entity_id': '111094',
-                'type': 'custom',
-                'value': 'firefox',
-                'key': 'browser_type'
-              }],
-              'visitor_id': 'testUser',
-              'snapshots': [{
-                'decisions': [{
-                  'variation_id': '111128',
-                  'experiment_id': '111127',
-                  'campaign_id': '4'
-                }],
-                'events': [{
-                  'timestamp': Math.round(new Date().getTime()),
-                  'entity_id': '4',
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'key': 'campaign_activated'
-                }]
-              }]
-            }],
-            'revision': '42',
-            'client_name': 'node-sdk',
-            'client_version': packageJSON.version,
-            'anonymize_ip': false,
-            'enrich_decisions': true,
+            account_id: '12001',
+            project_id: '111001',
+            visitors: [
+              {
+                attributes: [
+                  {
+                    entity_id: '111094',
+                    type: 'custom',
+                    value: 'firefox',
+                    key: 'browser_type',
+                  },
+                ],
+                visitor_id: 'testUser',
+                snapshots: [
+                  {
+                    decisions: [
+                      {
+                        variation_id: '111128',
+                        experiment_id: '111127',
+                        campaign_id: '4',
+                      },
+                    ],
+                    events: [
+                      {
+                        timestamp: Math.round(new Date().getTime()),
+                        entity_id: '4',
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        key: 'campaign_activated',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            revision: '42',
+            client_name: 'node-sdk',
+            client_version: packageJSON.version,
+            anonymize_ip: false,
+            enrich_decisions: true,
           },
         };
         var eventOptions = {
-          attributes: {browser_type: 'firefox'},
+          attributes: { browser_type: 'firefox' },
           clientEngine: 'node-sdk',
           clientVersion: packageJSON.version,
           configObj: configObj,
@@ -139,7 +153,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+        var actualParams = getImpressionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -149,40 +163,50 @@ describe('lib/core/event_builder', function() {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: {
-            'account_id': '12001',
-            'project_id': '111001',
-            'visitors': [{
-              'attributes': [{
-                'entity_id': '111094',
-                'type': 'custom',
-                'value': false,
-                'key': 'browser_type'
-              }],
-              'visitor_id': 'testUser',
-              'snapshots': [{
-                'decisions': [{
-                  'variation_id': '111128',
-                  'experiment_id': '111127',
-                  'campaign_id': '4'
-                }],
-                'events': [{
-                  'timestamp': Math.round(new Date().getTime()),
-                  'entity_id': '4',
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'key': 'campaign_activated'
-                }]
-              }]
-            }],
-            'revision': '42',
-            'client_name': 'node-sdk',
-            'client_version': packageJSON.version,
-            'anonymize_ip': false,
-            'enrich_decisions': true,
-          }
+            account_id: '12001',
+            project_id: '111001',
+            visitors: [
+              {
+                attributes: [
+                  {
+                    entity_id: '111094',
+                    type: 'custom',
+                    value: false,
+                    key: 'browser_type',
+                  },
+                ],
+                visitor_id: 'testUser',
+                snapshots: [
+                  {
+                    decisions: [
+                      {
+                        variation_id: '111128',
+                        experiment_id: '111127',
+                        campaign_id: '4',
+                      },
+                    ],
+                    events: [
+                      {
+                        timestamp: Math.round(new Date().getTime()),
+                        entity_id: '4',
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        key: 'campaign_activated',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            revision: '42',
+            client_name: 'node-sdk',
+            client_version: packageJSON.version,
+            anonymize_ip: false,
+            enrich_decisions: true,
+          },
         };
 
         var eventOptions = {
-          attributes: {browser_type: false},
+          attributes: { browser_type: false },
           clientEngine: 'node-sdk',
           clientVersion: packageJSON.version,
           configObj: configObj,
@@ -191,7 +215,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+        var actualParams = getImpressionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -201,40 +225,50 @@ describe('lib/core/event_builder', function() {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: {
-            'account_id': '12001',
-            'project_id': '111001',
-            'visitors': [{
-              'attributes': [{
-                'entity_id': '111094',
-                'type': 'custom',
-                'value': 0,
-                'key': 'browser_type'
-              }],
-              'visitor_id': 'testUser',
-              'snapshots': [{
-                'decisions': [{
-                  'variation_id': '111128',
-                  'experiment_id': '111127',
-                  'campaign_id': '4'
-                }],
-                'events': [{
-                  'timestamp': Math.round(new Date().getTime()),
-                  'entity_id': '4',
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'key': 'campaign_activated'
-                }]
-              }]
-            }],
-            'revision': '42',
-            'client_name': 'node-sdk',
-            'client_version': packageJSON.version,
-            'anonymize_ip': false,
-            'enrich_decisions': true,
+            account_id: '12001',
+            project_id: '111001',
+            visitors: [
+              {
+                attributes: [
+                  {
+                    entity_id: '111094',
+                    type: 'custom',
+                    value: 0,
+                    key: 'browser_type',
+                  },
+                ],
+                visitor_id: 'testUser',
+                snapshots: [
+                  {
+                    decisions: [
+                      {
+                        variation_id: '111128',
+                        experiment_id: '111127',
+                        campaign_id: '4',
+                      },
+                    ],
+                    events: [
+                      {
+                        timestamp: Math.round(new Date().getTime()),
+                        entity_id: '4',
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        key: 'campaign_activated',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            revision: '42',
+            client_name: 'node-sdk',
+            client_version: packageJSON.version,
+            anonymize_ip: false,
+            enrich_decisions: true,
           },
         };
 
         var eventOptions = {
-          attributes: {browser_type: 0},
+          attributes: { browser_type: 0 },
           clientEngine: 'node-sdk',
           clientVersion: packageJSON.version,
           configObj: configObj,
@@ -243,7 +277,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+        var actualParams = getImpressionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -253,35 +287,43 @@ describe('lib/core/event_builder', function() {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: {
-            'account_id': '12001',
-            'project_id': '111001',
-            'visitors': [{
-              'attributes': [],
-              'visitor_id': 'testUser',
-              'snapshots': [{
-                'decisions': [{
-                  'variation_id': '111128',
-                  'experiment_id': '111127',
-                  'campaign_id': '4'
-                }],
-                'events': [{
-                  'timestamp': Math.round(new Date().getTime()),
-                  'entity_id': '4',
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'key': 'campaign_activated'
-                }]
-              }]
-            }],
-            'revision': '42',
-            'client_name': 'node-sdk',
-            'client_version': packageJSON.version,
-            'anonymize_ip': false,
-            'enrich_decisions': true,
+            account_id: '12001',
+            project_id: '111001',
+            visitors: [
+              {
+                attributes: [],
+                visitor_id: 'testUser',
+                snapshots: [
+                  {
+                    decisions: [
+                      {
+                        variation_id: '111128',
+                        experiment_id: '111127',
+                        campaign_id: '4',
+                      },
+                    ],
+                    events: [
+                      {
+                        timestamp: Math.round(new Date().getTime()),
+                        entity_id: '4',
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        key: 'campaign_activated',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            revision: '42',
+            client_name: 'node-sdk',
+            client_version: packageJSON.version,
+            anonymize_ip: false,
+            enrich_decisions: true,
           },
         };
 
         var eventOptions = {
-          attributes: {invalid_attribute: 'sorry_not_sorry'},
+          attributes: { invalid_attribute: 'sorry_not_sorry' },
           clientEngine: 'node-sdk',
           clientVersion: packageJSON.version,
           configObj: configObj,
@@ -291,7 +333,7 @@ describe('lib/core/event_builder', function() {
           logger: mockLogger,
         };
 
-        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+        var actualParams = getImpressionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -302,45 +344,56 @@ describe('lib/core/event_builder', function() {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: {
-            'account_id': '572018',
-            'project_id': '594001',
-            'visitors': [{
-              'attributes': [{
-                'entity_id': '$opt_user_agent',
-                'key': '$opt_user_agent',
-                'type': 'custom',
-                'value': 'Chrome'
-              }, {
-                'entity_id': '$opt_bot_filtering',
-                'key': '$opt_bot_filtering',
-                'type': 'custom',
-                'value': true
-              }],
-              'visitor_id': 'testUser',
-              'snapshots': [{
-                'decisions': [{
-                  'variation_id': '595008',
-                  'experiment_id': '595010',
-                  'campaign_id': '595005'
-                }],
-                'events': [{
-                  'timestamp': Math.round(new Date().getTime()),
-                  'entity_id': '595005',
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'key': 'campaign_activated'
-                }]
-              }]
-            }],
-            'revision': '35',
-            'client_name': 'node-sdk',
-            'client_version': packageJSON.version,
-            'anonymize_ip': true,
-            'enrich_decisions': true,
+            account_id: '572018',
+            project_id: '594001',
+            visitors: [
+              {
+                attributes: [
+                  {
+                    entity_id: '$opt_user_agent',
+                    key: '$opt_user_agent',
+                    type: 'custom',
+                    value: 'Chrome',
+                  },
+                  {
+                    entity_id: '$opt_bot_filtering',
+                    key: '$opt_bot_filtering',
+                    type: 'custom',
+                    value: true,
+                  },
+                ],
+                visitor_id: 'testUser',
+                snapshots: [
+                  {
+                    decisions: [
+                      {
+                        variation_id: '595008',
+                        experiment_id: '595010',
+                        campaign_id: '595005',
+                      },
+                    ],
+                    events: [
+                      {
+                        timestamp: Math.round(new Date().getTime()),
+                        entity_id: '595005',
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        key: 'campaign_activated',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            revision: '35',
+            client_name: 'node-sdk',
+            client_version: packageJSON.version,
+            anonymize_ip: true,
+            enrich_decisions: true,
           },
         };
 
         var eventOptions = {
-          attributes: {'$opt_user_agent': 'Chrome'},
+          attributes: { $opt_user_agent: 'Chrome' },
           clientEngine: 'node-sdk',
           clientVersion: packageJSON.version,
           configObj: v4ConfigObj,
@@ -349,7 +402,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+        var actualParams = getImpressionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -361,45 +414,56 @@ describe('lib/core/event_builder', function() {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: {
-            'account_id': '572018',
-            'project_id': '594001',
-            'visitors': [{
-              'attributes': [{
-                'entity_id': '$opt_user_agent',
-                'key': '$opt_user_agent',
-                'type': 'custom',
-                'value': 'Chrome'
-              }, {
-                'entity_id': '$opt_bot_filtering',
-                'key': '$opt_bot_filtering',
-                'type': 'custom',
-                'value': false
-              }],
-              'visitor_id': 'testUser',
-              'snapshots': [{
-                'decisions': [{
-                  'variation_id': '595008',
-                  'experiment_id': '595010',
-                  'campaign_id': '595005'
-                }],
-                'events': [{
-                  'timestamp': Math.round(new Date().getTime()),
-                  'entity_id': '595005',
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'key': 'campaign_activated'
-                }]
-              }]
-            }],
-            'revision': '35',
-            'client_name': 'node-sdk',
-            'client_version': packageJSON.version,
-            'anonymize_ip': true,
-            'enrich_decisions': true,
+            account_id: '572018',
+            project_id: '594001',
+            visitors: [
+              {
+                attributes: [
+                  {
+                    entity_id: '$opt_user_agent',
+                    key: '$opt_user_agent',
+                    type: 'custom',
+                    value: 'Chrome',
+                  },
+                  {
+                    entity_id: '$opt_bot_filtering',
+                    key: '$opt_bot_filtering',
+                    type: 'custom',
+                    value: false,
+                  },
+                ],
+                visitor_id: 'testUser',
+                snapshots: [
+                  {
+                    decisions: [
+                      {
+                        variation_id: '595008',
+                        experiment_id: '595010',
+                        campaign_id: '595005',
+                      },
+                    ],
+                    events: [
+                      {
+                        timestamp: Math.round(new Date().getTime()),
+                        entity_id: '595005',
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        key: 'campaign_activated',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            revision: '35',
+            client_name: 'node-sdk',
+            client_version: packageJSON.version,
+            anonymize_ip: true,
+            enrich_decisions: true,
           },
         };
 
         var eventOptions = {
-          attributes: {'$opt_user_agent': 'Chrome'},
+          attributes: { $opt_user_agent: 'Chrome' },
           clientEngine: 'node-sdk',
           clientVersion: packageJSON.version,
           configObj: v4ConfigObj,
@@ -408,7 +472,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+        var actualParams = getImpressionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -418,59 +482,72 @@ describe('lib/core/event_builder', function() {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: {
-            'account_id': '12001',
-            'project_id': '111001',
-            'visitors': [{
-              'attributes': [{
-                'entity_id': '111094',
-                'key': 'browser_type',
-                'type': 'custom',
-                'value': 'Chrome'
-              }, {
-                'entity_id': '323434545',
-                'key': 'boolean_key',
-                'type': 'custom',
-                'value': true
-              }, {
-                'entity_id': '616727838',
-                'key': 'integer_key',
-                'type': 'custom',
-                'value': 10
-              }, {
-                'entity_id': '808797686',
-                'key': 'double_key',
-                'type': 'custom',
-                'value': 3.14
-              }],
-              'visitor_id': 'testUser',
-              'snapshots': [{
-                'decisions': [{
-                  'variation_id': '111128',
-                  'experiment_id': '111127',
-                  'campaign_id': '4'
-                }],
-                'events': [{
-                  'timestamp': Math.round(new Date().getTime()),
-                  'entity_id': '4',
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'key': 'campaign_activated'
-                }]
-              }]
-            }],
-            'revision': '42',
-            'client_name': 'node-sdk',
-            'client_version': packageJSON.version,
-            'anonymize_ip': false,
-            'enrich_decisions': true,
+            account_id: '12001',
+            project_id: '111001',
+            visitors: [
+              {
+                attributes: [
+                  {
+                    entity_id: '111094',
+                    key: 'browser_type',
+                    type: 'custom',
+                    value: 'Chrome',
+                  },
+                  {
+                    entity_id: '323434545',
+                    key: 'boolean_key',
+                    type: 'custom',
+                    value: true,
+                  },
+                  {
+                    entity_id: '616727838',
+                    key: 'integer_key',
+                    type: 'custom',
+                    value: 10,
+                  },
+                  {
+                    entity_id: '808797686',
+                    key: 'double_key',
+                    type: 'custom',
+                    value: 3.14,
+                  },
+                ],
+                visitor_id: 'testUser',
+                snapshots: [
+                  {
+                    decisions: [
+                      {
+                        variation_id: '111128',
+                        experiment_id: '111127',
+                        campaign_id: '4',
+                      },
+                    ],
+                    events: [
+                      {
+                        timestamp: Math.round(new Date().getTime()),
+                        entity_id: '4',
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        key: 'campaign_activated',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            revision: '42',
+            client_name: 'node-sdk',
+            client_version: packageJSON.version,
+            anonymize_ip: false,
+            enrich_decisions: true,
           },
         };
 
         var eventOptions = {
           attributes: {
-            'browser_type': 'Chrome',
-            'boolean_key': true,
-            'integer_key': 10,
-            'double_key': 3.14,
+            browser_type: 'Chrome',
+            boolean_key: true,
+            integer_key: 10,
+            double_key: 3.14,
           },
           clientEngine: 'node-sdk',
           clientVersion: packageJSON.version,
@@ -480,7 +557,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+        var actualParams = getImpressionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -490,55 +567,67 @@ describe('lib/core/event_builder', function() {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: {
-            'account_id': '12001',
-            'project_id': '111001',
-            'visitors': [{
-              'attributes': [{
-                'entity_id': '111094',
-                'key': 'browser_type',
-                'type': 'custom',
-                'value': 'Chrome'
-              }, {
-                'entity_id': '808797687',
-                'key': 'valid_positive_number',
-                'type': 'custom',
-                'value': Math.pow(2, 53)
-              }, {
-                'entity_id': '808797688',
-                'key': 'valid_negative_number',
-                'type': 'custom',
-                'value': -Math.pow(2, 53)
-              }],
-              'visitor_id': 'testUser',
-              'snapshots': [{
-                'decisions': [{
-                  'variation_id': '111128',
-                  'experiment_id': '111127',
-                  'campaign_id': '4'
-                }],
-                'events': [{
-                  'timestamp': Math.round(new Date().getTime()),
-                  'entity_id': '4',
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'key': 'campaign_activated'
-                }]
-              }]
-            }],
-            'revision': '42',
-            'client_name': 'node-sdk',
-            'client_version': packageJSON.version,
-            'anonymize_ip': false,
-            'enrich_decisions': true,
+            account_id: '12001',
+            project_id: '111001',
+            visitors: [
+              {
+                attributes: [
+                  {
+                    entity_id: '111094',
+                    key: 'browser_type',
+                    type: 'custom',
+                    value: 'Chrome',
+                  },
+                  {
+                    entity_id: '808797687',
+                    key: 'valid_positive_number',
+                    type: 'custom',
+                    value: Math.pow(2, 53),
+                  },
+                  {
+                    entity_id: '808797688',
+                    key: 'valid_negative_number',
+                    type: 'custom',
+                    value: -Math.pow(2, 53),
+                  },
+                ],
+                visitor_id: 'testUser',
+                snapshots: [
+                  {
+                    decisions: [
+                      {
+                        variation_id: '111128',
+                        experiment_id: '111127',
+                        campaign_id: '4',
+                      },
+                    ],
+                    events: [
+                      {
+                        timestamp: Math.round(new Date().getTime()),
+                        entity_id: '4',
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        key: 'campaign_activated',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            revision: '42',
+            client_name: 'node-sdk',
+            client_version: packageJSON.version,
+            anonymize_ip: false,
+            enrich_decisions: true,
           },
         };
 
         var eventOptions = {
           attributes: {
-            'browser_type': 'Chrome',
-            'valid_positive_number': Math.pow(2, 53),
-            'valid_negative_number': -Math.pow(2, 53),
-            'invalid_number': Math.pow(2, 53) + 2,
-            'array': [1, 2, 3],
+            browser_type: 'Chrome',
+            valid_positive_number: Math.pow(2, 53),
+            valid_negative_number: -Math.pow(2, 53),
+            invalid_number: Math.pow(2, 53) + 2,
+            array: [1, 2, 3],
           },
           clientEngine: 'node-sdk',
           clientVersion: packageJSON.version,
@@ -548,7 +637,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getImpressionEvent(eventOptions);
+        var actualParams = getImpressionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -560,25 +649,31 @@ describe('lib/core/event_builder', function() {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: {
-            'account_id': '12001',
-            'project_id': '111001',
-            'visitors': [{
-              'visitor_id': 'testUser',
-              'attributes': [],
-              'snapshots': [{
-                'events': [{
-                  'timestamp': Math.round(new Date().getTime()),
-                  'entity_id': '111095',
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'key': 'testEvent'
-                }]
-              }]
-            }],
-            'revision': '42',
-            'client_name': 'node-sdk',
-            'client_version': packageJSON.version,
-            'anonymize_ip': false,
-            'enrich_decisions': true,
+            account_id: '12001',
+            project_id: '111001',
+            visitors: [
+              {
+                visitor_id: 'testUser',
+                attributes: [],
+                snapshots: [
+                  {
+                    events: [
+                      {
+                        timestamp: Math.round(new Date().getTime()),
+                        entity_id: '111095',
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        key: 'testEvent',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            revision: '42',
+            client_name: 'node-sdk',
+            client_version: packageJSON.version,
+            anonymize_ip: false,
+            enrich_decisions: true,
           },
         };
 
@@ -591,7 +686,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        var actualParams = getConversionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -601,35 +696,43 @@ describe('lib/core/event_builder', function() {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: {
-            'account_id': '12001',
-            'project_id': '111001',
-            'visitors': [{
-              'visitor_id': 'testUser',
-              'attributes': [{
-                'entity_id': '111094',
-                'type': 'custom',
-                'value': 'firefox',
-                'key': 'browser_type'
-              }],
-              'snapshots': [{
-                'events': [{
-                  'timestamp': Math.round(new Date().getTime()),
-                  'entity_id': '111095',
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'key': 'testEvent'
-                }]
-              }]
-            }],
-            'revision': '42',
-            'client_name': 'node-sdk',
-            'client_version': packageJSON.version,
-            'anonymize_ip': false,
-            'enrich_decisions': true,
+            account_id: '12001',
+            project_id: '111001',
+            visitors: [
+              {
+                visitor_id: 'testUser',
+                attributes: [
+                  {
+                    entity_id: '111094',
+                    type: 'custom',
+                    value: 'firefox',
+                    key: 'browser_type',
+                  },
+                ],
+                snapshots: [
+                  {
+                    events: [
+                      {
+                        timestamp: Math.round(new Date().getTime()),
+                        entity_id: '111095',
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        key: 'testEvent',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            revision: '42',
+            client_name: 'node-sdk',
+            client_version: packageJSON.version,
+            anonymize_ip: false,
+            enrich_decisions: true,
           },
         };
 
         var eventOptions = {
-          attributes: {browser_type: 'firefox'},
+          attributes: { browser_type: 'firefox' },
           clientEngine: 'node-sdk',
           clientVersion: packageJSON.version,
           configObj: configObj,
@@ -638,7 +741,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        var actualParams = getConversionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -648,29 +751,35 @@ describe('lib/core/event_builder', function() {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: {
-            'client_version': packageJSON.version,
-            'project_id': '111001',
-            'visitors': [{
-              'attributes': [],
-              'visitor_id': 'testUser',
-              'snapshots': [{
-                'events': [{
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'tags': {
-                    'revenue': 4200
+            client_version: packageJSON.version,
+            project_id: '111001',
+            visitors: [
+              {
+                attributes: [],
+                visitor_id: 'testUser',
+                snapshots: [
+                  {
+                    events: [
+                      {
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        tags: {
+                          revenue: 4200,
+                        },
+                        timestamp: Math.round(new Date().getTime()),
+                        revenue: 4200,
+                        key: 'testEvent',
+                        entity_id: '111095',
+                      },
+                    ],
                   },
-                  'timestamp': Math.round(new Date().getTime()),
-                  'revenue': 4200,
-                  'key': 'testEvent',
-                  'entity_id': '111095'
-                }]
-              }]
-            }],
-            'account_id': '12001',
-            'client_name': 'node-sdk',
-            'revision': '42',
-            'anonymize_ip': false,
-            'enrich_decisions': true,
+                ],
+              },
+            ],
+            account_id: '12001',
+            client_name: 'node-sdk',
+            revision: '42',
+            anonymize_ip: false,
+            enrich_decisions: true,
           },
         };
 
@@ -686,7 +795,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        var actualParams = getConversionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -696,51 +805,59 @@ describe('lib/core/event_builder', function() {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: {
-            'client_version': packageJSON.version,
-            'project_id': '111001',
-            'visitors': [{
-              'attributes': [{
-                'entity_id': '111094',
-                'type': 'custom',
-                'value': 'firefox',
-                'key': 'browser_type'
-              }],
-              'visitor_id': 'testUser',
-              'snapshots': [{
-                'events': [{
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'tags': {
-                    'revenue': 4200
+            client_version: packageJSON.version,
+            project_id: '111001',
+            visitors: [
+              {
+                attributes: [
+                  {
+                    entity_id: '111094',
+                    type: 'custom',
+                    value: 'firefox',
+                    key: 'browser_type',
                   },
-                  'timestamp': Math.round(new Date().getTime()),
-                  'revenue': 4200,
-                  'key': 'testEvent',
-                  'entity_id': '111095'
-                }]
-              }]
-            }],
-            'account_id': '12001',
-            'client_name': 'node-sdk',
-            'revision': '42',
-            'anonymize_ip': false,
-            'enrich_decisions': true,
+                ],
+                visitor_id: 'testUser',
+                snapshots: [
+                  {
+                    events: [
+                      {
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        tags: {
+                          revenue: 4200,
+                        },
+                        timestamp: Math.round(new Date().getTime()),
+                        revenue: 4200,
+                        key: 'testEvent',
+                        entity_id: '111095',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            account_id: '12001',
+            client_name: 'node-sdk',
+            revision: '42',
+            anonymize_ip: false,
+            enrich_decisions: true,
           },
         };
 
         var eventOptions = {
-          attributes: {browser_type: 'firefox'},
+          attributes: { browser_type: 'firefox' },
           clientEngine: 'node-sdk',
           clientVersion: packageJSON.version,
           configObj: configObj,
           eventKey: 'testEvent',
           eventTags: {
-            revenue: 4200
+            revenue: 4200,
           },
           logger: mockLogger,
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        var actualParams = getConversionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -750,30 +867,36 @@ describe('lib/core/event_builder', function() {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: {
-            'client_version': packageJSON.version,
-            'project_id': '111001',
-            'visitors': [{
-              'attributes': [],
-              'visitor_id': 'testUser',
-              'snapshots': [{
-                'events': [{
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'timestamp': Math.round(new Date().getTime()),
-                  'key': 'testEvent',
-                  'entity_id': '111095'
-                }]
-              }]
-            }],
-            'account_id': '12001',
-            'client_name': 'node-sdk',
-            'revision': '42',
-            'anonymize_ip': false,
-            'enrich_decisions': true,
+            client_version: packageJSON.version,
+            project_id: '111001',
+            visitors: [
+              {
+                attributes: [],
+                visitor_id: 'testUser',
+                snapshots: [
+                  {
+                    events: [
+                      {
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        timestamp: Math.round(new Date().getTime()),
+                        key: 'testEvent',
+                        entity_id: '111095',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            account_id: '12001',
+            client_name: 'node-sdk',
+            revision: '42',
+            anonymize_ip: false,
+            enrich_decisions: true,
           },
         };
 
         var eventOptions = {
-          attributes: {invalid_attribute: 'sorry_not_sorry'},
+          attributes: { invalid_attribute: 'sorry_not_sorry' },
           clientEngine: 'node-sdk',
           clientVersion: packageJSON.version,
           configObj: configObj,
@@ -782,7 +905,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        var actualParams = getConversionEvent(eventOptions);
         sinon.assert.calledOnce(mockLogger.log);
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -793,40 +916,49 @@ describe('lib/core/event_builder', function() {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: {
-            'account_id': '572018',
-            'project_id': '594001',
-            'visitors': [{
-              'attributes': [{
-                'entity_id': '$opt_user_agent',
-                'key': '$opt_user_agent',
-                'type': 'custom',
-                'value': 'Chrome'
-              }, {
-                'entity_id': '$opt_bot_filtering',
-                'key': '$opt_bot_filtering',
-                'type': 'custom',
-                'value': true
-              }],
-              'visitor_id': 'testUser',
-              'snapshots': [{
-                'events': [{
-                  'timestamp': Math.round(new Date().getTime()),
-                  'entity_id': '594089',
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'key': 'item_bought'
-                }]
-              }]
-            }],
-            'revision': '35',
-            'client_name': 'node-sdk',
-            'client_version': packageJSON.version,
-            'anonymize_ip': true,
-            'enrich_decisions': true,
+            account_id: '572018',
+            project_id: '594001',
+            visitors: [
+              {
+                attributes: [
+                  {
+                    entity_id: '$opt_user_agent',
+                    key: '$opt_user_agent',
+                    type: 'custom',
+                    value: 'Chrome',
+                  },
+                  {
+                    entity_id: '$opt_bot_filtering',
+                    key: '$opt_bot_filtering',
+                    type: 'custom',
+                    value: true,
+                  },
+                ],
+                visitor_id: 'testUser',
+                snapshots: [
+                  {
+                    events: [
+                      {
+                        timestamp: Math.round(new Date().getTime()),
+                        entity_id: '594089',
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        key: 'item_bought',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            revision: '35',
+            client_name: 'node-sdk',
+            client_version: packageJSON.version,
+            anonymize_ip: true,
+            enrich_decisions: true,
           },
         };
 
         var eventOptions = {
-          attributes: {'$opt_user_agent': 'Chrome'},
+          attributes: { $opt_user_agent: 'Chrome' },
           clientEngine: 'node-sdk',
           clientVersion: packageJSON.version,
           configObj: v4ConfigObj,
@@ -835,7 +967,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        var actualParams = getConversionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -847,40 +979,49 @@ describe('lib/core/event_builder', function() {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: {
-            'account_id': '572018',
-            'project_id': '594001',
-            'visitors': [{
-              'attributes': [{
-                'entity_id': '$opt_user_agent',
-                'key': '$opt_user_agent',
-                'type': 'custom',
-                'value': 'Chrome'
-              }, {
-                'entity_id': '$opt_bot_filtering',
-                'key': '$opt_bot_filtering',
-                'type': 'custom',
-                'value': false
-              }],
-              'visitor_id': 'testUser',
-              'snapshots': [{
-                'events': [{
-                  'timestamp': Math.round(new Date().getTime()),
-                  'entity_id': '594089',
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'key': 'item_bought'
-                }]
-              }]
-            }],
-            'revision': '35',
-            'client_name': 'node-sdk',
-            'client_version': packageJSON.version,
-            'anonymize_ip': true,
-            'enrich_decisions': true,
+            account_id: '572018',
+            project_id: '594001',
+            visitors: [
+              {
+                attributes: [
+                  {
+                    entity_id: '$opt_user_agent',
+                    key: '$opt_user_agent',
+                    type: 'custom',
+                    value: 'Chrome',
+                  },
+                  {
+                    entity_id: '$opt_bot_filtering',
+                    key: '$opt_bot_filtering',
+                    type: 'custom',
+                    value: false,
+                  },
+                ],
+                visitor_id: 'testUser',
+                snapshots: [
+                  {
+                    events: [
+                      {
+                        timestamp: Math.round(new Date().getTime()),
+                        entity_id: '594089',
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        key: 'item_bought',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            revision: '35',
+            client_name: 'node-sdk',
+            client_version: packageJSON.version,
+            anonymize_ip: true,
+            enrich_decisions: true,
           },
         };
 
         var eventOptions = {
-          attributes: {'$opt_user_agent': 'Chrome'},
+          attributes: { $opt_user_agent: 'Chrome' },
           clientEngine: 'node-sdk',
           clientVersion: packageJSON.version,
           configObj: v4ConfigObj,
@@ -889,7 +1030,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        var actualParams = getConversionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -899,25 +1040,31 @@ describe('lib/core/event_builder', function() {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: {
-            'account_id': '12001',
-            'project_id': '111001',
-            'visitors': [{
-              'visitor_id': 'testUser',
-              'attributes': [],
-              'snapshots': [{
-                'events': [{
-                  'timestamp': Math.round(new Date().getTime()),
-                  'entity_id': '111100',
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'key': 'testEventWithMultipleExperiments'
-                }]
-              }]
-            }],
-            'revision': '42',
-            'client_name': 'node-sdk',
-            'client_version': packageJSON.version,
-            'anonymize_ip': false,
-            'enrich_decisions': true,
+            account_id: '12001',
+            project_id: '111001',
+            visitors: [
+              {
+                visitor_id: 'testUser',
+                attributes: [],
+                snapshots: [
+                  {
+                    events: [
+                      {
+                        timestamp: Math.round(new Date().getTime()),
+                        entity_id: '111100',
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        key: 'testEventWithMultipleExperiments',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            revision: '42',
+            client_name: 'node-sdk',
+            client_version: packageJSON.version,
+            anonymize_ip: false,
+            enrich_decisions: true,
           },
         };
 
@@ -930,7 +1077,7 @@ describe('lib/core/event_builder', function() {
           userId: 'testUser',
         };
 
-        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        var actualParams = getConversionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -940,40 +1087,50 @@ describe('lib/core/event_builder', function() {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: {
-            'account_id': '12001',
-            'project_id': '111001',
-            'visitors': [{
-              'visitor_id': 'testUser',
-              'attributes': [{
-                'entity_id': '111094',
-                'key': 'browser_type',
-                'type': 'custom',
-                'value': 'Chrome'
-              }, {
-                'entity_id': '808797687',
-                'key': 'valid_positive_number',
-                'type': 'custom',
-                'value': Math.pow(2, 53)
-              }, {
-                'entity_id': '808797688',
-                'key': 'valid_negative_number',
-                'type': 'custom',
-                'value': -Math.pow(2, 53)
-              }],
-              'snapshots': [{
-                'events': [{
-                  'timestamp': Math.round(new Date().getTime()),
-                  'entity_id': '111100',
-                  'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                  'key': 'testEventWithMultipleExperiments'
-                }]
-              }]
-            }],
-            'revision': '42',
-            'client_name': 'node-sdk',
-            'client_version': packageJSON.version,
-            'anonymize_ip': false,
-            'enrich_decisions': true,
+            account_id: '12001',
+            project_id: '111001',
+            visitors: [
+              {
+                visitor_id: 'testUser',
+                attributes: [
+                  {
+                    entity_id: '111094',
+                    key: 'browser_type',
+                    type: 'custom',
+                    value: 'Chrome',
+                  },
+                  {
+                    entity_id: '808797687',
+                    key: 'valid_positive_number',
+                    type: 'custom',
+                    value: Math.pow(2, 53),
+                  },
+                  {
+                    entity_id: '808797688',
+                    key: 'valid_negative_number',
+                    type: 'custom',
+                    value: -Math.pow(2, 53),
+                  },
+                ],
+                snapshots: [
+                  {
+                    events: [
+                      {
+                        timestamp: Math.round(new Date().getTime()),
+                        entity_id: '111100',
+                        uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        key: 'testEventWithMultipleExperiments',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            revision: '42',
+            client_name: 'node-sdk',
+            client_version: packageJSON.version,
+            anonymize_ip: false,
+            enrich_decisions: true,
           },
         };
 
@@ -985,15 +1142,15 @@ describe('lib/core/event_builder', function() {
           logger: mockLogger,
           userId: 'testUser',
           attributes: {
-            'browser_type': 'Chrome',
-            'valid_positive_number': Math.pow(2, 53),
-            'valid_negative_number': -Math.pow(2, 53),
-            'invalid_number': -Math.pow(2, 53) - 2,
-            'array': [1, 2, 3],
+            browser_type: 'Chrome',
+            valid_positive_number: Math.pow(2, 53),
+            valid_negative_number: -Math.pow(2, 53),
+            invalid_number: -Math.pow(2, 53) - 2,
+            array: [1, 2, 3],
           },
         };
 
-        var actualParams = eventBuilder.getConversionEvent(eventOptions);
+        var actualParams = getConversionEvent(eventOptions);
 
         assert.deepEqual(actualParams, expectedParams);
       });
@@ -1004,28 +1161,34 @@ describe('lib/core/event_builder', function() {
             url: 'https://logx.optimizely.com/v1/events',
             httpVerb: 'POST',
             params: {
-              'client_version': packageJSON.version,
-              'project_id': '111001',
-              'visitors': [{
-                'attributes': [],
-                'visitor_id': 'testUser',
-                'snapshots': [{
-                  'events': [{
-                    'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                    'tags': {
-                      'non-revenue': 'cool',
+              client_version: packageJSON.version,
+              project_id: '111001',
+              visitors: [
+                {
+                  attributes: [],
+                  visitor_id: 'testUser',
+                  snapshots: [
+                    {
+                      events: [
+                        {
+                          uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                          tags: {
+                            'non-revenue': 'cool',
+                          },
+                          timestamp: Math.round(new Date().getTime()),
+                          key: 'testEvent',
+                          entity_id: '111095',
+                        },
+                      ],
                     },
-                    'timestamp': Math.round(new Date().getTime()),
-                    'key': 'testEvent',
-                    'entity_id': '111095'
-                  }]
-                }]
-              }],
-              'account_id': '12001',
-              'client_name': 'node-sdk',
-              'revision': '42',
-              'anonymize_ip': false,
-              'enrich_decisions': true,
+                  ],
+                },
+              ],
+              account_id: '12001',
+              client_name: 'node-sdk',
+              revision: '42',
+              anonymize_ip: false,
+              enrich_decisions: true,
             },
           };
 
@@ -1041,7 +1204,7 @@ describe('lib/core/event_builder', function() {
             userId: 'testUser',
           };
 
-          var actualParams = eventBuilder.getConversionEvent(eventOptions);
+          var actualParams = getConversionEvent(eventOptions);
 
           assert.deepEqual(actualParams, expectedParams);
         });
@@ -1052,30 +1215,36 @@ describe('lib/core/event_builder', function() {
               url: 'https://logx.optimizely.com/v1/events',
               httpVerb: 'POST',
               params: {
-                'client_version': packageJSON.version,
-                'project_id': '111001',
-                'visitors': [{
-                  'attributes': [],
-                  'visitor_id': 'testUser',
-                  'snapshots': [{
-                    'events': [{
-                      'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                      'tags': {
-                        'non-revenue': 'cool',
-                        'revenue': 4200
+                client_version: packageJSON.version,
+                project_id: '111001',
+                visitors: [
+                  {
+                    attributes: [],
+                    visitor_id: 'testUser',
+                    snapshots: [
+                      {
+                        events: [
+                          {
+                            uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                            tags: {
+                              'non-revenue': 'cool',
+                              revenue: 4200,
+                            },
+                            timestamp: Math.round(new Date().getTime()),
+                            revenue: 4200,
+                            key: 'testEvent',
+                            entity_id: '111095',
+                          },
+                        ],
                       },
-                      'timestamp': Math.round(new Date().getTime()),
-                      'revenue': 4200,
-                      'key': 'testEvent',
-                      'entity_id': '111095'
-                    }]
-                  }]
-                }],
-                'account_id': '12001',
-                'client_name': 'node-sdk',
-                'revision': '42',
-                'anonymize_ip': false,
-                'enrich_decisions': true,
+                    ],
+                  },
+                ],
+                account_id: '12001',
+                client_name: 'node-sdk',
+                revision: '42',
+                anonymize_ip: false,
+                enrich_decisions: true,
               },
             };
 
@@ -1085,14 +1254,14 @@ describe('lib/core/event_builder', function() {
               configObj: configObj,
               eventKey: 'testEvent',
               eventTags: {
-                'revenue': 4200,
+                revenue: 4200,
                 'non-revenue': 'cool',
               },
               logger: mockLogger,
               userId: 'testUser',
             };
 
-            var actualParams = eventBuilder.getConversionEvent(eventOptions);
+            var actualParams = getConversionEvent(eventOptions);
 
             assert.deepEqual(actualParams, expectedParams);
           });
@@ -1102,29 +1271,35 @@ describe('lib/core/event_builder', function() {
               url: 'https://logx.optimizely.com/v1/events',
               httpVerb: 'POST',
               params: {
-                'client_version': packageJSON.version,
-                'project_id': '111001',
-                'visitors': [{
-                  'attributes': [],
-                  'visitor_id': 'testUser',
-                  'snapshots': [{
-                    'events': [{
-                      'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                      'tags': {
-                        'revenue': 0
+                client_version: packageJSON.version,
+                project_id: '111001',
+                visitors: [
+                  {
+                    attributes: [],
+                    visitor_id: 'testUser',
+                    snapshots: [
+                      {
+                        events: [
+                          {
+                            uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                            tags: {
+                              revenue: 0,
+                            },
+                            timestamp: Math.round(new Date().getTime()),
+                            revenue: 0,
+                            key: 'testEvent',
+                            entity_id: '111095',
+                          },
+                        ],
                       },
-                      'timestamp': Math.round(new Date().getTime()),
-                      'revenue': 0,
-                      'key': 'testEvent',
-                      'entity_id': '111095'
-                    }]
-                  }]
-                }],
-                'account_id': '12001',
-                'client_name': 'node-sdk',
-                'revision': '42',
-                'anonymize_ip': false,
-                'enrich_decisions': true,
+                    ],
+                  },
+                ],
+                account_id: '12001',
+                client_name: 'node-sdk',
+                revision: '42',
+                anonymize_ip: false,
+                enrich_decisions: true,
               },
             };
 
@@ -1134,13 +1309,13 @@ describe('lib/core/event_builder', function() {
               configObj: configObj,
               eventKey: 'testEvent',
               eventTags: {
-                'revenue': 0,
+                revenue: 0,
               },
               logger: mockLogger,
               userId: 'testUser',
             };
 
-            var actualParams = eventBuilder.getConversionEvent(eventOptions);
+            var actualParams = getConversionEvent(eventOptions);
 
             assert.deepEqual(actualParams, expectedParams);
           });
@@ -1151,29 +1326,35 @@ describe('lib/core/event_builder', function() {
                 url: 'https://logx.optimizely.com/v1/events',
                 httpVerb: 'POST',
                 params: {
-                  'client_version': packageJSON.version,
-                  'project_id': '111001',
-                  'visitors': [{
-                    'attributes': [],
-                    'visitor_id': 'testUser',
-                    'snapshots': [{
-                      'events': [{
-                        'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                        'tags': {
-                          'non-revenue': 'cool',
-                          'revenue': 'invalid revenue'
+                  client_version: packageJSON.version,
+                  project_id: '111001',
+                  visitors: [
+                    {
+                      attributes: [],
+                      visitor_id: 'testUser',
+                      snapshots: [
+                        {
+                          events: [
+                            {
+                              uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                              tags: {
+                                'non-revenue': 'cool',
+                                revenue: 'invalid revenue',
+                              },
+                              timestamp: Math.round(new Date().getTime()),
+                              key: 'testEvent',
+                              entity_id: '111095',
+                            },
+                          ],
                         },
-                        'timestamp': Math.round(new Date().getTime()),
-                        'key': 'testEvent',
-                        'entity_id': '111095'
-                      }]
-                    }]
-                  }],
-                  'account_id': '12001',
-                  'client_name': 'node-sdk',
-                  'revision': '42',
-                  'anonymize_ip': false,
-                  'enrich_decisions': true,
+                      ],
+                    },
+                  ],
+                  account_id: '12001',
+                  client_name: 'node-sdk',
+                  revision: '42',
+                  anonymize_ip: false,
+                  enrich_decisions: true,
                 },
               };
 
@@ -1183,14 +1364,14 @@ describe('lib/core/event_builder', function() {
                 configObj: configObj,
                 eventKey: 'testEvent',
                 eventTags: {
-                  'revenue': 'invalid revenue',
+                  revenue: 'invalid revenue',
                   'non-revenue': 'cool',
                 },
                 logger: mockLogger,
                 userId: 'testUser',
               };
 
-              var actualParams = eventBuilder.getConversionEvent(eventOptions);
+              var actualParams = getConversionEvent(eventOptions);
 
               assert.deepEqual(actualParams, expectedParams);
             });
@@ -1203,30 +1384,36 @@ describe('lib/core/event_builder', function() {
               url: 'https://logx.optimizely.com/v1/events',
               httpVerb: 'POST',
               params: {
-                'client_version': packageJSON.version,
-                'project_id': '111001',
-                'visitors': [{
-                  'attributes': [],
-                  'visitor_id': 'testUser',
-                  'snapshots': [{
-                    'events': [{
-                      'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                      'tags': {
-                        'non-revenue': 'cool',
-                        'value': '13.37'
+                client_version: packageJSON.version,
+                project_id: '111001',
+                visitors: [
+                  {
+                    attributes: [],
+                    visitor_id: 'testUser',
+                    snapshots: [
+                      {
+                        events: [
+                          {
+                            uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                            tags: {
+                              'non-revenue': 'cool',
+                              value: '13.37',
+                            },
+                            timestamp: Math.round(new Date().getTime()),
+                            value: 13.37,
+                            key: 'testEvent',
+                            entity_id: '111095',
+                          },
+                        ],
                       },
-                      'timestamp': Math.round(new Date().getTime()),
-                      'value': 13.37,
-                      'key': 'testEvent',
-                      'entity_id': '111095'
-                    }]
-                  }]
-                }],
-                'account_id': '12001',
-                'client_name': 'node-sdk',
-                'revision': '42',
-                'anonymize_ip': false,
-                'enrich_decisions': true,
+                    ],
+                  },
+                ],
+                account_id: '12001',
+                client_name: 'node-sdk',
+                revision: '42',
+                anonymize_ip: false,
+                enrich_decisions: true,
               },
             };
 
@@ -1236,14 +1423,14 @@ describe('lib/core/event_builder', function() {
               configObj: configObj,
               eventKey: 'testEvent',
               eventTags: {
-                'value': '13.37',
+                value: '13.37',
                 'non-revenue': 'cool',
               },
               logger: mockLogger,
               userId: 'testUser',
             };
 
-            var actualParams = eventBuilder.getConversionEvent(eventOptions);
+            var actualParams = getConversionEvent(eventOptions);
 
             assert.deepEqual(actualParams, expectedParams);
           });
@@ -1253,29 +1440,35 @@ describe('lib/core/event_builder', function() {
               url: 'https://logx.optimizely.com/v1/events',
               httpVerb: 'POST',
               params: {
-                'client_version': packageJSON.version,
-                'project_id': '111001',
-                'visitors': [{
-                  'attributes': [],
-                  'visitor_id': 'testUser',
-                  'snapshots': [{
-                    'events': [{
-                      'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                      'tags': {
-                        'value': '0.0'
+                client_version: packageJSON.version,
+                project_id: '111001',
+                visitors: [
+                  {
+                    attributes: [],
+                    visitor_id: 'testUser',
+                    snapshots: [
+                      {
+                        events: [
+                          {
+                            uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                            tags: {
+                              value: '0.0',
+                            },
+                            timestamp: Math.round(new Date().getTime()),
+                            value: 0.0,
+                            key: 'testEvent',
+                            entity_id: '111095',
+                          },
+                        ],
                       },
-                      'timestamp': Math.round(new Date().getTime()),
-                      'value': 0.0,
-                      'key': 'testEvent',
-                      'entity_id': '111095'
-                    }]
-                  }]
-                }],
-                'account_id': '12001',
-                'client_name': 'node-sdk',
-                'revision': '42',
-                'anonymize_ip': false,
-                'enrich_decisions': true,
+                    ],
+                  },
+                ],
+                account_id: '12001',
+                client_name: 'node-sdk',
+                revision: '42',
+                anonymize_ip: false,
+                enrich_decisions: true,
               },
             };
 
@@ -1285,13 +1478,13 @@ describe('lib/core/event_builder', function() {
               configObj: configObj,
               eventKey: 'testEvent',
               eventTags: {
-                'value': '0.0',
+                value: '0.0',
               },
               logger: mockLogger,
               userId: 'testUser',
             };
 
-            var actualParams = eventBuilder.getConversionEvent(eventOptions);
+            var actualParams = getConversionEvent(eventOptions);
 
             assert.deepEqual(actualParams, expectedParams);
           });
@@ -1302,29 +1495,35 @@ describe('lib/core/event_builder', function() {
                 url: 'https://logx.optimizely.com/v1/events',
                 httpVerb: 'POST',
                 params: {
-                  'client_version': packageJSON.version,
-                  'project_id': '111001',
-                  'visitors': [{
-                    'attributes': [],
-                    'visitor_id': 'testUser',
-                    'snapshots': [{
-                      'events': [{
-                        'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                        'tags': {
-                          'non-revenue': 'cool',
-                          'value': 'invalid value'
+                  client_version: packageJSON.version,
+                  project_id: '111001',
+                  visitors: [
+                    {
+                      attributes: [],
+                      visitor_id: 'testUser',
+                      snapshots: [
+                        {
+                          events: [
+                            {
+                              uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                              tags: {
+                                'non-revenue': 'cool',
+                                value: 'invalid value',
+                              },
+                              timestamp: Math.round(new Date().getTime()),
+                              key: 'testEvent',
+                              entity_id: '111095',
+                            },
+                          ],
                         },
-                        'timestamp': Math.round(new Date().getTime()),
-                        'key': 'testEvent',
-                        'entity_id': '111095'
-                      }]
-                    }]
-                  }],
-                  'account_id': '12001',
-                  'client_name': 'node-sdk',
-                  'revision': '42',
-                  'anonymize_ip': false,
-                  'enrich_decisions': true,
+                      ],
+                    },
+                  ],
+                  account_id: '12001',
+                  client_name: 'node-sdk',
+                  revision: '42',
+                  anonymize_ip: false,
+                  enrich_decisions: true,
                 },
               };
 
@@ -1334,14 +1533,14 @@ describe('lib/core/event_builder', function() {
                 configObj: configObj,
                 eventKey: 'testEvent',
                 eventTags: {
-                  'value': 'invalid value',
+                  value: 'invalid value',
                   'non-revenue': 'cool',
                 },
                 logger: mockLogger,
                 userId: 'testUser',
               };
 
-              var actualParams = eventBuilder.getConversionEvent(eventOptions);
+              var actualParams = getConversionEvent(eventOptions);
 
               assert.deepEqual(actualParams, expectedParams);
             });
@@ -1349,36 +1548,44 @@ describe('lib/core/event_builder', function() {
         });
       });
 
-      describe('createEventWithBucketingId', function () {
-        it('should send proper bucketingID with user attributes', function () {
+      describe('createEventWithBucketingId', function() {
+        it('should send proper bucketingID with user attributes', function() {
           var expectedParams = {
             url: 'https://logx.optimizely.com/v1/events',
             httpVerb: 'POST',
             params: {
-              'account_id': '12001',
-              'project_id': '111001',
-              'visitors': [{
-                'visitor_id': 'testUser',
-                'attributes': [{
-                  'entity_id': '$opt_bucketing_id',
-                  'key': '$opt_bucketing_id',
-                  'type': 'custom',
-                  'value': 'variation',
-                }],
-                'snapshots': [{
-                  'events': [{
-                    'timestamp': Math.round(new Date().getTime()),
-                    'entity_id': '111095',
-                    'uuid': 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                    'key': 'testEvent'
-                  }]
-                }]
-              }],
-              'revision': '42',
-              'client_name': 'node-sdk',
-              'client_version': packageJSON.version,
-              'anonymize_ip': false,
-              'enrich_decisions': true,
+              account_id: '12001',
+              project_id: '111001',
+              visitors: [
+                {
+                  visitor_id: 'testUser',
+                  attributes: [
+                    {
+                      entity_id: '$opt_bucketing_id',
+                      key: '$opt_bucketing_id',
+                      type: 'custom',
+                      value: 'variation',
+                    },
+                  ],
+                  snapshots: [
+                    {
+                      events: [
+                        {
+                          timestamp: Math.round(new Date().getTime()),
+                          entity_id: '111095',
+                          uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                          key: 'testEvent',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+              revision: '42',
+              client_name: 'node-sdk',
+              client_version: packageJSON.version,
+              anonymize_ip: false,
+              enrich_decisions: true,
             },
           };
 
@@ -1389,10 +1596,10 @@ describe('lib/core/event_builder', function() {
             eventKey: 'testEvent',
             logger: mockLogger,
             userId: 'testUser',
-            attributes: {'$opt_bucketing_id': 'variation'},
+            attributes: { $opt_bucketing_id: 'variation' },
           };
 
-          var actualParams = eventBuilder.getConversionEvent(eventOptions);
+          var actualParams = getConversionEvent(eventOptions);
 
           assert.deepEqual(actualParams, expectedParams);
         });

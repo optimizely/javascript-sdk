@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, Optimizely
+ * Copyright 2016-2017, 2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,36 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var validate = require('json-schema').validate;
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
+import { sprintf } from '@optimizely/js-sdk-utils';
+import { validate as jsonSchemaValidator } from 'json-schema';
 
-var ERROR_MESSAGES = require('../enums').ERROR_MESSAGES;
+import { ERROR_MESSAGES } from '../enums';
+import projectConfigSchema from '../../core/project_config/project_config_schema';
+
 var MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';
 
-module.exports = {
-  /**
-   * Validate the given json object against the specified schema
-   * @param  {Object} jsonSchema The json schema to validate against
-   * @param  {Object} jsonObject The object to validate against the schema
-   * @return {Boolean}           True if the given object is valid
-   */
-  validate: function(jsonSchema, jsonObject) {
-    if (!jsonSchema) {
-      throw new Error(sprintf(ERROR_MESSAGES.JSON_SCHEMA_EXPECTED, MODULE_NAME));
-    }
-
-    if (!jsonObject) {
-      throw new Error(sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, MODULE_NAME));
-    }
-
-    var result = validate(jsonObject, jsonSchema);
-    if (result.valid) {
-      return true;
-    } else {
-      if (Array.isArray(result.errors)) {
-        throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE, MODULE_NAME, result.errors[0].property, result.errors[0].message));
-      }
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_JSON, MODULE_NAME));
-    }
+/**
+ * Validate the given json object against the specified schema
+ * @param  {Object} jsonObject The object to validate against the schema
+ * @return {Boolean}           True if the given object is valid
+ */
+export var validate = function(jsonObject) {
+  if (!jsonObject) {
+    throw new Error(sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, MODULE_NAME));
   }
+
+  var result = jsonSchemaValidator(jsonObject, projectConfigSchema);
+  if (result.valid) {
+    return true;
+  } else {
+    if (Array.isArray(result.errors)) {
+      throw new Error(
+        sprintf(ERROR_MESSAGES.INVALID_DATAFILE, MODULE_NAME, result.errors[0].property, result.errors[0].message)
+      );
+    }
+    throw new Error(sprintf(ERROR_MESSAGES.INVALID_JSON, MODULE_NAME));
+  }
+};
+
+export default {
+  validate: validate,
 };

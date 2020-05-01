@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019-2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var logging = require('@optimizely/js-sdk-logging');
-var configValidator = require('./utils/config_validator');
-var eventProcessor = require('@optimizely/js-sdk-event-processor');
-var Optimizely = require('./optimizely');
-var optimizelyFactory = require('./index.react_native');
-var packageJSON = require('../package.json');
-var testData = require('./tests/test_data');
-var eventProcessor = require('@optimizely/js-sdk-event-processor');
-var eventProcessorConfigValidator = require('./utils/event_processor_config_validator');
-var defaultEventDispatcher = require('./plugins/event_dispatcher/index.browser');
+import { assert } from 'chai';
+import sinon from 'sinon';
+import * as logging from '@optimizely/js-sdk-logging';
+import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 
-var chai = require('chai');
-var assert = chai.assert;
-var sinon = require('sinon');
+import Optimizely from './optimizely';
+import testData from './tests/test_data';
+import packageJSON from '../package.json';
+import optimizelyFactory from './index.react_native';
+import configValidator from './utils/config_validator';
+import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
+import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
 describe('javascript-sdk/react-native', function() {
   describe('APIs', function() {
@@ -56,7 +54,6 @@ describe('javascript-sdk/react-native', function() {
         sinon.stub(configValidator, 'validate');
 
         xhr = sinon.useFakeXMLHttpRequest();
-        global.XMLHttpRequest = xhr;
         requests = [];
         xhr.onCreate = function(req) {
           requests.push(req);
@@ -92,10 +89,10 @@ describe('javascript-sdk/react-native', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '3.5.0');
+        assert.equal(optlyInstance.clientVersion, '4.0.0');
       });
 
-      it('should set the JavaScript client engine and version', function() {
+      it('should set the Javascript client engine and version', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
@@ -137,7 +134,7 @@ describe('javascript-sdk/react-native', function() {
           sinon.stub(defaultEventDispatcher, 'dispatchEvent', function(evt, cb) {
             cb();
           });
-        })
+        });
 
         afterEach(function() {
           defaultEventDispatcher.dispatchEvent.restore();
@@ -212,9 +209,12 @@ describe('javascript-sdk/react-native', function() {
             eventDispatcher: fakeEventDispatcher,
             logger: silentLogger,
           });
-          sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-            flushInterval: 1000,
-          }));
+          sinon.assert.calledWithExactly(
+            eventProcessorSpy,
+            sinon.match({
+              flushInterval: 1000,
+            })
+          );
         });
 
         describe('with an invalid flush interval', function() {
@@ -234,9 +234,12 @@ describe('javascript-sdk/react-native', function() {
               logger: silentLogger,
               eventFlushInterval: ['invalid', 'flush', 'interval'],
             });
-            sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-              flushInterval: 1000,
-            }));
+            sinon.assert.calledWithExactly(
+              eventProcessorSpy,
+              sinon.match({
+                flushInterval: 1000,
+              })
+            );
           });
         });
 
@@ -257,9 +260,12 @@ describe('javascript-sdk/react-native', function() {
               logger: silentLogger,
               eventFlushInterval: 9000,
             });
-            sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-              flushInterval: 9000,
-            }));
+            sinon.assert.calledWithExactly(
+              eventProcessorSpy,
+              sinon.match({
+                flushInterval: 9000,
+              })
+            );
           });
         });
 
@@ -270,9 +276,12 @@ describe('javascript-sdk/react-native', function() {
             eventDispatcher: fakeEventDispatcher,
             logger: silentLogger,
           });
-          sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-            maxQueueSize: 10,
-          }));
+          sinon.assert.calledWithExactly(
+            eventProcessorSpy,
+            sinon.match({
+              maxQueueSize: 10,
+            })
+          );
         });
 
         describe('with an invalid event batch size', function() {
@@ -292,9 +301,12 @@ describe('javascript-sdk/react-native', function() {
               logger: silentLogger,
               eventBatchSize: null,
             });
-            sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-              maxQueueSize: 10,
-            }));
+            sinon.assert.calledWithExactly(
+              eventProcessorSpy,
+              sinon.match({
+                maxQueueSize: 10,
+              })
+            );
           });
         });
 
@@ -315,9 +327,12 @@ describe('javascript-sdk/react-native', function() {
               logger: silentLogger,
               eventBatchSize: 300,
             });
-            sinon.assert.calledWithExactly(eventProcessorSpy, sinon.match({
-              maxQueueSize: 300,
-            }));
+            sinon.assert.calledWithExactly(
+              eventProcessorSpy,
+              sinon.match({
+                maxQueueSize: 300,
+              })
+            );
           });
         });
       });

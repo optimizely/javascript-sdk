@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019-2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { assert } from 'chai';
 
-var chai = require('chai');
-var assert = chai.assert;
-var fns = require('./');
+import fns from './';
 
 describe('lib/utils/fns', function() {
   describe('APIs', function() {
@@ -55,7 +54,7 @@ describe('lib/utils/fns', function() {
           row1: { key1: 'row1', key2: 'key2row1' },
           row2: { key1: 'row2', key2: 'key2row2' },
           row3: { key1: 'row3', key2: 'key2row3' },
-          row4: { key1: 'row4', key2: 'key2row4' }
+          row4: { key1: 'row4', key2: 'key2row4' },
         });
       });
 
@@ -65,7 +64,7 @@ describe('lib/utils/fns', function() {
 
         obj = fns.keyBy(undefined, 'key1');
         assert.isEmpty(obj);
-        });
+      });
     });
 
     describe('isNumber', function() {

@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, 2019 Optimizely
+ * Copyright 2016-2017, 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var bucketer = require('./');
-var enums = require('../../utils/enums');
-var logger = require('../../plugins/logger');
-var projectConfig = require('../project_config');
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
-var testData = require('../../tests/test_data').getTestProjectConfig();
+import sinon from 'sinon';
+import { assert, expect } from 'chai';
+import { cloneDeep } from 'lodash';
+import { sprintf } from '@optimizely/js-sdk-utils';
 
-var chai = require('chai');
-var assert = chai.assert;
-var expect = chai.expect;
-var cloneDeep = require('lodash/cloneDeep');
-var sinon = require('sinon');
+import bucketer from './';
+import {
+  ERROR_MESSAGES,
+  LOG_MESSAGES,
+  LOG_LEVEL,
+} from '../../utils/enums';
+import logger from '../../plugins/logger';
+import projectConfig from '../project_config';
+import { getTestProjectConfig } from '../../tests/test_data';
 
-var ERROR_MESSAGES = enums.ERROR_MESSAGES;
-var LOG_LEVEL = enums.LOG_LEVEL;
-var LOG_MESSAGES = enums.LOG_MESSAGES;
+var testData = getTestProjectConfig();
 
 describe('lib/core/bucketer', function() {
   describe('APIs', function() {
     describe('bucket', function() {
       var configObj;
-      var createdLogger = logger.createLogger({logLevel: LOG_LEVEL.INFO});
+      var createdLogger = logger.createLogger({ logLevel: LOG_LEVEL.INFO });
       var bucketerParams;
 
       beforeEach(function() {
@@ -47,7 +47,7 @@ describe('lib/core/bucketer', function() {
 
       describe('return values for bucketing (excluding groups)', function() {
         beforeEach(function() {
-          configObj = projectConfig.createProjectConfig(testData);
+          configObj = projectConfig.createProjectConfig(cloneDeep(testData));
           bucketerParams = {
             experimentId: configObj.experiments[0].id,
             experimentKey: configObj.experiments[0].key,
@@ -57,9 +57,12 @@ describe('lib/core/bucketer', function() {
             groupIdMap: configObj.groupIdMap,
             logger: createdLogger,
           };
-          sinon.stub(bucketer, '_generateBucketValue')
-            .onFirstCall().returns(50)
-            .onSecondCall().returns(50000);
+          sinon
+            .stub(bucketer, '_generateBucketValue')
+            .onFirstCall()
+            .returns(50)
+            .onSecondCall()
+            .returns(50000);
         });
 
         afterEach(function() {
@@ -74,8 +77,12 @@ describe('lib/core/bucketer', function() {
           var bucketedUser_log1 = createdLogger.log.args[0][1];
           var bucketedUser_log2 = createdLogger.log.args[1][1];
 
-          expect(bucketedUser_log1).to.equal(sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, 'BUCKETER', '50', 'ppid1'));
-          expect(bucketedUser_log2).to.equal(sprintf(LOG_MESSAGES.USER_HAS_VARIATION, 'BUCKETER', 'ppid1', 'control', 'testExperiment'));
+          expect(bucketedUser_log1).to.equal(
+            sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, 'BUCKETER', '50', 'ppid1')
+          );
+          expect(bucketedUser_log2).to.equal(
+            sprintf(LOG_MESSAGES.USER_HAS_VARIATION, 'BUCKETER', 'ppid1', 'control', 'testExperiment')
+          );
 
           var bucketerParamsTest2 = cloneDeep(bucketerParams);
           bucketerParamsTest2.userId = 'ppid2';
@@ -84,15 +91,19 @@ describe('lib/core/bucketer', function() {
           var notBucketedUser_log1 = createdLogger.log.args[2][1];
           var notBucketedUser_log2 = createdLogger.log.args[3][1];
 
-          expect(notBucketedUser_log1).to.equal(sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, 'BUCKETER', '50000', 'ppid2'));
-          expect(notBucketedUser_log2).to.equal(sprintf(LOG_MESSAGES.USER_HAS_NO_VARIATION, 'BUCKETER', 'ppid2', 'testExperiment'));
+          expect(notBucketedUser_log1).to.equal(
+            sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, 'BUCKETER', '50000', 'ppid2')
+          );
+          expect(notBucketedUser_log2).to.equal(
+            sprintf(LOG_MESSAGES.USER_HAS_NO_VARIATION, 'BUCKETER', 'ppid2', 'testExperiment')
+          );
         });
       });
 
       describe('return values for bucketing (including groups)', function() {
         var bucketerStub;
         beforeEach(function() {
-          configObj = projectConfig.createProjectConfig(testData);
+          configObj = projectConfig.createProjectConfig(cloneDeep(testData));
           bucketerParams = {
             experimentId: configObj.experiments[0].id,
             experimentKey: configObj.experiments[0].key,
@@ -134,16 +145,30 @@ describe('lib/core/bucketer', function() {
             sinon.assert.callCount(createdLogger.log, 4);
 
             var log1 = createdLogger.log.args[0][1];
-            expect(log1).to.equal(sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, 'BUCKETER', '50', 'testUser'));
+            expect(log1).to.equal(
+              sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, 'BUCKETER', '50', 'testUser')
+            );
 
             var log2 = createdLogger.log.args[1][1];
-            expect(log2).to.equal(sprintf(LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP, 'BUCKETER', 'testUser', 'groupExperiment1', '666'));
+            expect(log2).to.equal(
+              sprintf(
+                LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
+                'BUCKETER',
+                'testUser',
+                'groupExperiment1',
+                '666'
+              )
+            );
 
             var log3 = createdLogger.log.args[2][1];
-            expect(log3).to.equal(sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, 'BUCKETER', '50', 'testUser'));
+            expect(log3).to.equal(
+              sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, 'BUCKETER', '50', 'testUser')
+            );
 
             var log4 = createdLogger.log.args[3][1];
-            expect(log4).to.equal(sprintf(LOG_MESSAGES.USER_HAS_VARIATION, 'BUCKETER', 'testUser', 'var1exp1', 'groupExperiment1'));
+            expect(log4).to.equal(
+              sprintf(LOG_MESSAGES.USER_HAS_VARIATION, 'BUCKETER', 'testUser', 'var1exp1', 'groupExperiment1')
+            );
           });
 
           it('should return null when a user is bucketed into a different grouped experiment than the one speicfied', function() {
@@ -155,9 +180,19 @@ describe('lib/core/bucketer', function() {
             sinon.assert.calledTwice(createdLogger.log);
 
             var log1 = createdLogger.log.args[0][1];
-            expect(log1).to.equal(sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, 'BUCKETER', '5000', 'testUser'));
+            expect(log1).to.equal(
+              sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, 'BUCKETER', '5000', 'testUser')
+            );
             var log2 = createdLogger.log.args[1][1];
-            expect(log2).to.equal(sprintf(LOG_MESSAGES.USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP, 'BUCKETER', 'testUser', 'groupExperiment1', '666'));
+            expect(log2).to.equal(
+              sprintf(
+                LOG_MESSAGES.USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
+                'BUCKETER',
+                'testUser',
+                'groupExperiment1',
+                '666'
+              )
+            );
           });
 
           it('should return null when a user is not bucketed into any experiments in the random group', function() {
@@ -169,7 +204,9 @@ describe('lib/core/bucketer', function() {
             sinon.assert.calledTwice(createdLogger.log);
 
             var log1 = createdLogger.log.args[0][1];
-            expect(log1).to.equal(sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, 'BUCKETER', '50000', 'testUser'));
+            expect(log1).to.equal(
+              sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, 'BUCKETER', '50000', 'testUser')
+            );
             var log2 = createdLogger.log.args[1][1];
             expect(log2).to.equal(sprintf(LOG_MESSAGES.USER_NOT_IN_ANY_EXPERIMENT, 'BUCKETER', 'testUser', '666'));
           });
@@ -183,7 +220,9 @@ describe('lib/core/bucketer', function() {
             sinon.assert.calledTwice(createdLogger.log);
 
             var log1 = createdLogger.log.args[0][1];
-            expect(log1).to.equal(sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, 'BUCKETER', '9000', 'testUser'));
+            expect(log1).to.equal(
+              sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, 'BUCKETER', '9000', 'testUser')
+            );
             var log2 = createdLogger.log.args[1][1];
             expect(log2).to.equal(sprintf(LOG_MESSAGES.USER_NOT_IN_ANY_EXPERIMENT, 'BUCKETER', 'testUser', '666'));
           });
@@ -224,7 +263,15 @@ describe('lib/core/bucketer', function() {
             var log1 = createdLogger.log.args[0][1];
             expect(log1).to.equal(sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, 'BUCKETER', '0', 'testUser'));
             var log2 = createdLogger.log.args[1][1];
-            expect(log2).to.equal(sprintf(LOG_MESSAGES.USER_HAS_VARIATION, 'BUCKETER', 'testUser', 'overlappingvar1', 'overlappingGroupExperiment1'));
+            expect(log2).to.equal(
+              sprintf(
+                LOG_MESSAGES.USER_HAS_VARIATION,
+                'BUCKETER',
+                'testUser',
+                'overlappingvar1',
+                'overlappingGroupExperiment1'
+              )
+            );
           });
 
           it('should return null when a user does not fall into an experiment within an overlapping group', function() {
@@ -237,17 +284,20 @@ describe('lib/core/bucketer', function() {
 
       describe('when the bucket value falls into empty traffic allocation ranges', function() {
         beforeEach(function() {
-          configObj = projectConfig.createProjectConfig(testData);
+          configObj = projectConfig.createProjectConfig(cloneDeep(testData));
           bucketerParams = {
             experimentId: configObj.experiments[0].id,
             experimentKey: configObj.experiments[0].key,
-            trafficAllocationConfig: [{
-              entityId: '',
-              endOfRange: 5000
-            }, {
-              entityId: '',
-              endOfRange: 10000
-            }],
+            trafficAllocationConfig: [
+              {
+                entityId: '',
+                endOfRange: 5000,
+              },
+              {
+                entityId: '',
+                endOfRange: 10000,
+              },
+            ],
             variationIdMap: configObj.variationIdMap,
             experimentKeyMap: configObj.experimentKeyMap,
             groupIdMap: configObj.groupIdMap,
@@ -264,17 +314,20 @@ describe('lib/core/bucketer', function() {
 
       describe('when the traffic allocation has invalid variation ids', function() {
         beforeEach(function() {
-          configObj = projectConfig.createProjectConfig(testData);
+          configObj = projectConfig.createProjectConfig(cloneDeep(testData));
           bucketerParams = {
             experimentId: configObj.experiments[0].id,
             experimentKey: configObj.experiments[0].key,
-            trafficAllocationConfig: [{
-              entityId: -1,
-              endOfRange: 5000
-            }, {
-              entityId: -2,
-              endOfRange: 10000
-            }],
+            trafficAllocationConfig: [
+              {
+                entityId: -1,
+                endOfRange: 5000,
+              },
+              {
+                entityId: -2,
+                endOfRange: 10000,
+              },
+            ],
             variationIdMap: configObj.variationIdMap,
             experimentKeyMap: configObj.experimentKeyMap,
             groupIdMap: configObj.groupIdMap,
@@ -307,18 +360,19 @@ describe('lib/core/bucketer', function() {
       it('should return an error if it cannot generate the hash value', function() {
         assert.throws(function() {
           bucketer._generateBucketValue(null);
-        }, sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, 'Cannot read property \'length\' of null'));
+        }, sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "Cannot read property 'length' of null"));
       });
     });
 
     describe('testBucketWithBucketingId', function() {
+      var bucketerParams;
       var createdLogger = logger.createLogger({
         logLevel: LOG_LEVEL.INFO,
         logToConsole: false,
       });
 
       beforeEach(function() {
-        configObj = projectConfig.createProjectConfig(testData);
+        var configObj = projectConfig.createProjectConfig(cloneDeep(testData));
         bucketerParams = {
           trafficAllocationConfig: configObj.experiments[0].trafficAllocation,
           variationIdMap: configObj.variationIdMap,
@@ -328,7 +382,7 @@ describe('lib/core/bucketer', function() {
         };
       });
 
-      it('check that a non null bucketingId buckets a variation different than the one expected with userId', function () {
+      it('check that a non null bucketingId buckets a variation different than the one expected with userId', function() {
         var bucketerParams1 = cloneDeep(bucketerParams);
         bucketerParams1['userId'] = 'testBucketingIdControl';
         bucketerParams1['bucketingId'] = '123456789';
@@ -337,7 +391,7 @@ describe('lib/core/bucketer', function() {
         expect(bucketer.bucket(bucketerParams1)).to.equal('111129');
       });
 
-      it('check that a null bucketing ID defaults to bucketing with the userId', function () {
+      it('check that a null bucketing ID defaults to bucketing with the userId', function() {
         var bucketerParams2 = cloneDeep(bucketerParams);
         bucketerParams2['userId'] = 'testBucketingIdControl';
         bucketerParams2['bucketingId'] = null;
@@ -346,7 +400,7 @@ describe('lib/core/bucketer', function() {
         expect(bucketer.bucket(bucketerParams2)).to.equal('111128');
       });
 
-      it('check that bucketing works with an experiment in group', function () {
+      it('check that bucketing works with an experiment in group', function() {
         var bucketerParams4 = cloneDeep(bucketerParams);
         bucketerParams4['userId'] = 'testBucketingIdControl';
         bucketerParams4['bucketingId'] = '123456789';

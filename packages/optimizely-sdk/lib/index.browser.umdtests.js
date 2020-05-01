@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2019, Optimizely
+ * Copyright 2018-2020 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var configValidator = require('./utils/config_validator');
-var enums = require('./utils/enums');
-var logger = require('./plugins/logger');
-var Optimizely = require('./optimizely');
+import { assert } from 'chai';
+import sinon from 'sinon';
 
-var packageJSON = require('../package.json');
-var eventDispatcher = require('./plugins/event_dispatcher/index.browser');
-var testData = require('./tests/test_data');
-
-var chai = require('chai');
-var assert = chai.assert;
-var sinon = require('sinon');
+import configValidator from './utils/config_validator';
+import enums from './utils/enums';
+import logger from './plugins/logger';
+import Optimizely from './optimizely';
+import testData from './tests/test_data';
+import packageJSON from '../package.json';
+import eventDispatcher from './plugins/event_dispatcher/index.browser';
 
 describe('javascript-sdk', function() {
   describe('APIs', function() {
@@ -74,10 +72,9 @@ describe('javascript-sdk', function() {
         // checking that INFO logs log for an unspecified logLevel
         var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
-          skipJSONValidation: true,
         });
         assert.strictEqual(console.info.getCalls().length, 1);
-        call = console.info.getCalls()[0];
+        var call = console.info.getCalls()[0];
         assert.strictEqual(call.args.length, 1);
         assert(call.args[0].indexOf('PROJECT_CONFIG: Skipping JSON schema validation.') > -1);
       });
@@ -87,7 +84,6 @@ describe('javascript-sdk', function() {
         var optlyInstance = window.optimizelySdk.createInstance({
           datafile: testData.getTestProjectConfig(),
           logLevel: enums.LOG_LEVEL.ERROR,
-          skipJSONValidation: true,
         });
         assert.strictEqual(console.log.getCalls().length, 0);
 

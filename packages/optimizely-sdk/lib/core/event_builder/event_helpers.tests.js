@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var projectConfig = require('../project_config');
-var eventHelpers = require('./event_helpers');
-var fns = require('../../utils/fns');
+import sinon from 'sinon';
+import { assert } from 'chai';
 
-var chai = require('chai');
-var assert = chai.assert;
-var sinon = require('sinon');
+import fns from '../../utils/fns';
+import projectConfig from '../project_config';
+import { buildImpressionEvent, buildConversionEvent } from './event_helpers';
 
 describe('lib/event_builder/event_helpers', function() {
   var configObj;
@@ -65,7 +64,7 @@ describe('lib/event_builder/event_helpers', function() {
 
         projectConfig.getAttributeId.withArgs(configObj, 'plan_type').returns('plan_type_id');
 
-        var result = eventHelpers.buildImpressionEvent({
+        var result = buildImpressionEvent({
           configObj: configObj,
           experimentKey: 'exp1',
           variationKey: 'var1',
@@ -131,7 +130,7 @@ describe('lib/event_builder/event_helpers', function() {
         delete configObj['anonymizeIP'];
         delete configObj['botFiltering'];
 
-        var result = eventHelpers.buildImpressionEvent({
+        var result = buildImpressionEvent({
           configObj: configObj,
           experimentKey: 'exp1',
           variationKey: 'var1',
@@ -191,7 +190,7 @@ describe('lib/event_builder/event_helpers', function() {
         projectConfig.getEventId.withArgs(configObj, 'event').returns('event-id');
         projectConfig.getAttributeId.withArgs(configObj, 'plan_type').returns('plan_type_id');
 
-        var result = eventHelpers.buildConversionEvent({
+        var result = buildConversionEvent({
           configObj: configObj,
           eventKey: 'event',
           eventTags: {
@@ -257,7 +256,7 @@ describe('lib/event_builder/event_helpers', function() {
         delete configObj['anonymizeIP'];
         delete configObj['botFiltering'];
 
-        var result = eventHelpers.buildConversionEvent({
+        var result = buildConversionEvent({
           configObj: configObj,
           eventKey: 'event',
           eventTags: {

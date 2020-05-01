@@ -15,7 +15,7 @@ This directory contains the source code for the JavaScript SDK, which is usable 
 ### Prerequisites
 
 Ensure the SDK supports all of the platforms you're targeting. In particular, the SDK targets any ES5-compliant JavaScript environment. We officially support:
-- Node.js >= 4.0.0. By extension, environments like AWS Lambda, Google Cloud Functions, and Auth0 Webtasks are supported as well. Older Node.js releases likely work too (try `npm test` to validate for yourself), but are not formally supported.
+- Node.js >= 8.0.0. By extension, environments like AWS Lambda, Google Cloud Functions, and Auth0 Webtasks are supported as well. Older Node.js releases likely work too (try `npm test` to validate for yourself), but are not formally supported.
 - [Web browsers](https://caniuse.com/#feat=es5)
 
 Other environments likely are compatible, too, but note that we don't officially support them:
@@ -96,23 +96,17 @@ Prod dependencies are as follows:
     "publisher": "Kris Zyp",
     "repository": "https://github.com/kriszyp/json-schema"
   },
-  "lodash@4.17.10": {
-    "licenses": "MIT",
-    "publisher": "John-David Dalton",
-    "repository": "https://github.com/lodash/lodash"
-  },
   "murmurhash@0.0.2": {
     "licenses": "MIT*",
     "repository": "https://github.com/perezd/node-murmurhash"
   },
-  "sprintf@0.1.5": {
-    "licenses": "BSD-3-Clause",
-    "publisher": "Moritz Peters",
-    "repository": "https://github.com/maritz/node-sprintf"
-  },
-  "uuid@3.2.1": {
+  "uuid@3.3.2": {
     "licenses": "MIT",
     "repository": "https://github.com/kelektiv/node-uuid"
+  },
+  "decompress-response@4.2.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/sindresorhus/decompress-response"
   }
 }
 ```

@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { assert } from 'chai';
 
-var chai = require('chai');
-var eventProcessorConfigValidator = require('./index');
-
-var assert = chai.assert;
+import eventProcessorConfigValidator from './index';
 
 describe('utils/event_processor_config_validator', function() {
   describe('validateEventFlushInterval', function() {

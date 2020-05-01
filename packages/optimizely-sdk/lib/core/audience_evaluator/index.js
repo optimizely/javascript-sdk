@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2018-2019 Optimizely
+ * Copyright 2016, 2018-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var conditionTreeEvaluator = require('../condition_tree_evaluator');
-var customAttributeConditionEvaluator = require('../custom_attribute_condition_evaluator');
-var enums = require('../../utils/enums');
-var fns = require('../../utils/fns');
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
-var logging = require('@optimizely/js-sdk-logging');
-var logger = logging.getLogger();
+import { sprintf } from '@optimizely/js-sdk-utils';
+import { getLogger } from '@optimizely/js-sdk-logging';
 
-var ERROR_MESSAGES = enums.ERROR_MESSAGES;
-var LOG_LEVEL = enums.LOG_LEVEL;
-var LOG_MESSAGES = enums.LOG_MESSAGES;
+import fns from '../../utils/fns';
+import {
+  LOG_LEVEL,
+  LOG_MESSAGES, 
+  ERROR_MESSAGES,
+} from '../../utils/enums';
+import conditionTreeEvaluator from '../condition_tree_evaluator';
+import customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
+
+var logger = getLogger();
 var MODULE_NAME = 'AUDIENCE_EVALUATOR';
-
 
 /**
  * Construct an instance of AudienceEvaluator with given options
@@ -36,7 +37,7 @@ var MODULE_NAME = 'AUDIENCE_EVALUATOR';
  */
 function AudienceEvaluator(UNSTABLE_conditionEvaluators) {
   this.typeToEvaluatorMap = fns.assign({}, UNSTABLE_conditionEvaluators, {
-    'custom_attribute': customAttributeConditionEvaluator
+    custom_attribute: customAttributeConditionEvaluator,
   });
 }
 
@@ -66,8 +67,14 @@ AudienceEvaluator.prototype.evaluate = function(audienceConditions, audiencesByI
   var evaluateAudience = function(audienceId) {
     var audience = audiencesById[audienceId];
     if (audience) {
-      logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.EVALUATING_AUDIENCE, MODULE_NAME, audienceId, JSON.stringify(audience.conditions)));
-      var result = conditionTreeEvaluator.evaluate(audience.conditions, this.evaluateConditionWithUserAttributes.bind(this, userAttributes));
+      logger.log(
+        LOG_LEVEL.DEBUG,
+        sprintf(LOG_MESSAGES.EVALUATING_AUDIENCE, MODULE_NAME, audienceId, JSON.stringify(audience.conditions))
+      );
+      var result = conditionTreeEvaluator.evaluate(
+        audience.conditions,
+        this.evaluateConditionWithUserAttributes.bind(this, userAttributes)
+      );
       var resultText = result === null ? 'UNKNOWN' : result.toString().toUpperCase();
       logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText));
       return result;
@@ -95,9 +102,12 @@ AudienceEvaluator.prototype.evaluateConditionWithUserAttributes = function(userA
   try {
     return evaluator.evaluate(condition, userAttributes, logger);
   } catch (err) {
-    logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.CONDITION_EVALUATOR_ERROR, MODULE_NAME, condition.type, err.message));
+    logger.log(
+      LOG_LEVEL.ERROR,
+      sprintf(ERROR_MESSAGES.CONDITION_EVALUATOR_ERROR, MODULE_NAME, condition.type, err.message)
+    );
   }
   return null;
 };
 
-module.exports = AudienceEvaluator;
+export default AudienceEvaluator;

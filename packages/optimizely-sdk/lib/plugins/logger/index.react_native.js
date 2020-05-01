@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var LogLevel = require('@optimizely/js-sdk-logging').LogLevel;
-var sprintf = require('@optimizely/js-sdk-utils').sprintf;
+import { LogLevel } from '@optimizely/js-sdk-logging';
+import { sprintf } from '@optimizely/js-sdk-utils';
 
 function getLogLevelName(level) {
-  switch(level) {
-    case LogLevel.INFO: return 'INFO';
-    case LogLevel.ERROR: return 'ERROR';
-    case LogLevel.WARNING: return 'WARNING';
-    case LogLevel.DEBUG: return 'DEBUG';
-    default: return 'NOTSET';
+  switch (level) {
+    case LogLevel.INFO:
+      return 'INFO';
+    case LogLevel.ERROR:
+      return 'ERROR';
+    case LogLevel.WARNING:
+      return 'WARNING';
+    case LogLevel.DEBUG:
+      return 'DEBUG';
+    default:
+      return 'NOTSET';
   }
 }
 
@@ -31,11 +36,17 @@ function ReactNativeLogger() {}
 ReactNativeLogger.prototype.log = function(level, message) {
   var formattedMessage = sprintf('[OPTIMIZELY] - %s %s %s', getLogLevelName(level), new Date().toISOString(), message);
   switch (level) {
-    case LogLevel.INFO: console.info(formattedMessage); break;
+    case LogLevel.INFO:
+      console.info(formattedMessage);
+      break;
     case LogLevel.ERROR:
-    case LogLevel.WARNING: console.warn(formattedMessage); break;
+    case LogLevel.WARNING:
+      console.warn(formattedMessage);
+      break;
     case LogLevel.DEBUG:
-    case LogLevel.NOTSET: console.log(formattedMessage); break;
+    case LogLevel.NOTSET:
+      console.log(formattedMessage);
+      break;
   }
 };
 
@@ -43,12 +54,15 @@ function NoOpLogger() {}
 
 NoOpLogger.prototype.log = function() {};
 
-module.exports = {
-  createLogger: function() {
-    return new ReactNativeLogger();
-  },
+export var createLogger = function() {
+  return new ReactNativeLogger();
+}
 
-  createNoOpLogger: function() {
-    return new NoOpLogger();
-  },
+export var createNoOpLogger = function() {
+  return new NoOpLogger();
+}
+
+export default {
+  createLogger,
+  createNoOpLogger,
 };
