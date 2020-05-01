@@ -957,6 +957,16 @@ Optimizely.prototype.getFeatureVariableJson = function(featureKey, variableKey, 
   }
 };
 
+/**
+ * Returns values for all the json variables attached to the given feature
+ * flag.
+ * @param {string} featureKey   Key of the feature whose variables are being
+ *                              accessed
+ * @param {string} userId       ID for the user
+ * @param {Object} attributes   Optional user attributes
+ * @return {object|null}        Object cointaining all the variables, or null if the
+ *                              feature key is invalid
+ */
 Optimizely.prototype.getAllFeatureVariables = function(featureKey, userId, attributes) {
   try {
     if (!this.__isValidInstance()) {
@@ -1039,6 +1049,27 @@ Optimizely.prototype.getAllFeatureVariables = function(featureKey, userId, attri
       var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variable.type, logger);
       allVariables[variable.key] = typeCastedValue;
     });
+
+    var sourceInfo = {};
+    if (decision.decisionSource === DECISION_SOURCES.FEATURE_TEST) {
+      sourceInfo = {
+        experimentKey: decision.experiment.key,
+        variationKey: decision.variation.key,
+      };
+    }
+    this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.DECISION, {
+      type: DECISION_NOTIFICATION_TYPES.ALL_FEATURE_VARIABLES,
+      userId: userId,
+      attributes: attributes || {},
+      decisionInfo: {
+        featureKey: featureKey,
+        featureEnabled: featureEnabled,
+        source: decision.decisionSource,        
+        variableValues: allVariables,        
+        sourceInfo: sourceInfo,
+      },
+    });
+
     return allVariables;
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);

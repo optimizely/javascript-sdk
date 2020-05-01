@@ -3170,7 +3170,49 @@ describe('lib/optimizely', function() {
                     },
                   });
                 });
-              });
+
+                it('returns the right value from getAllFeatureVariables and send notification with featureEnabled true', function() {
+                  var result = optlyInstance.getAllFeatureVariables(
+                    'test_feature_for_experiment',                  
+                    'user1',
+                    { test_attribute: 'test_value' }
+                  );
+                  assert.deepEqual(result, {
+                    is_button_animated: true,
+                    button_width: 20.25,
+                    num_buttons: 2,
+                    button_txt: 'Buy me NOW',
+                    button_info: {
+                      num_buttons: 1,
+                      text: 'first variation',
+                    },
+                  });
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_NOTIFICATION_TYPES.ALL_FEATURE_VARIABLES,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature_for_experiment',
+                      featureEnabled: true,                      
+                      variableValues: {
+                        is_button_animated: true,
+                        button_width: 20.25,
+                        num_buttons: 2,
+                        button_txt: 'Buy me NOW',
+                        button_info: {
+                          num_buttons: 1,
+                          text: 'first variation',
+                        },
+                      },
+                      source: DECISION_SOURCES.FEATURE_TEST,
+                      sourceInfo: {
+                        experimentKey: 'testing_my_feature',
+                        variationKey: 'variation',
+                      },
+                    },
+                  });                  
+                });
+              });              
 
               describe('when the variation is toggled OFF', function() {
                 beforeEach(function() {
@@ -3325,6 +3367,48 @@ describe('lib/optimizely', function() {
                       },
                     },
                   });
+                });
+
+                it('returns the right value from getAllFeatureVariables and send notification with featureEnabled false', function() {
+                  var result = optlyInstance.getAllFeatureVariables(
+                    'test_feature_for_experiment',                  
+                    'user1',
+                    { test_attribute: 'test_value' }
+                  );
+                  assert.deepEqual(result, {
+                    is_button_animated: false,
+                    button_width: 50.55,
+                    num_buttons: 10,
+                    button_txt: 'Buy me',
+                    button_info: {
+                      num_buttons: 0,
+                      text: 'default value',
+                    },
+                  });
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_NOTIFICATION_TYPES.ALL_FEATURE_VARIABLES,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature_for_experiment',
+                      featureEnabled: false,                      
+                      variableValues: {
+                        is_button_animated: false,
+                        button_width: 50.55,
+                        num_buttons: 10,
+                        button_txt: 'Buy me',
+                        button_info: {
+                          num_buttons: 0,
+                          text: 'default value',
+                        },
+                      },
+                      source: DECISION_SOURCES.FEATURE_TEST,
+                      sourceInfo: {
+                        experimentKey: 'testing_my_feature',
+                        variationKey: 'variation2',
+                      },
+                    },
+                  });              
                 });
               });
             });
@@ -3565,6 +3649,45 @@ describe('lib/optimizely', function() {
                     },
                   });
                 });
+
+                it('returns the right value from getAllFeatureVariables and send notification with featureEnabled true', function() {
+                  var result = optlyInstance.getAllFeatureVariables(
+                    'test_feature',
+                    'user1',
+                    { test_attribute: 'test_value' }
+                  );
+                  assert.deepEqual(result, {
+                    new_content: true,
+                    price: 4.99,
+                    lasers: 395,
+                    message: 'Hello audience',
+                    message_info: {
+                      count: 2,
+                      message: 'Hello audience',
+                    },
+                  });
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_NOTIFICATION_TYPES.ALL_FEATURE_VARIABLES,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature',
+                      featureEnabled: true,                      
+                      variableValues: {
+                        new_content: true,
+                        price: 4.99,
+                        lasers: 395,
+                        message: 'Hello audience',
+                        message_info: {
+                          count: 2,
+                          message: 'Hello audience',
+                        },
+                      },                      
+                      source: DECISION_SOURCES.ROLLOUT,
+                      sourceInfo: {},
+                    },
+                  });
+                });
               });
 
               describe('when the variation is toggled OFF', function() {
@@ -3794,6 +3917,45 @@ describe('lib/optimizely', function() {
                         message: 'Hello',
                       },
                       variableType: FEATURE_VARIABLE_TYPES.JSON,
+                      source: DECISION_SOURCES.ROLLOUT,
+                      sourceInfo: {},
+                    },
+                  });
+                });
+
+                it('returns the default value from getAllFeatureVariables and send notification with featureEnabled false', function() {
+                  var result = optlyInstance.getAllFeatureVariables(
+                    'test_feature',
+                    'user1',
+                    { test_attribute: 'test_value' }
+                  );
+                  assert.deepEqual(result, {
+                    new_content: false,
+                    price: 14.99,
+                    lasers: 400,
+                    message: 'Hello',
+                    message_info: {
+                      count: 1,
+                      message: 'Hello',
+                    },
+                  });
+                  sinon.assert.calledWith(decisionListener, {
+                    type: DECISION_NOTIFICATION_TYPES.ALL_FEATURE_VARIABLES,
+                    userId: 'user1',
+                    attributes: { test_attribute: 'test_value' },
+                    decisionInfo: {
+                      featureKey: 'test_feature',
+                      featureEnabled: false,
+                      variableValues: {
+                        new_content: false,
+                        price: 14.99,
+                        lasers: 400,
+                        message: 'Hello',
+                        message_info: {
+                          count: 1,
+                          message: 'Hello',
+                        },
+                      },
                       source: DECISION_SOURCES.ROLLOUT,
                       sourceInfo: {},
                     },
@@ -4045,6 +4207,45 @@ describe('lib/optimizely', function() {
                       text: 'default value',
                     },
                     variableType: FEATURE_VARIABLE_TYPES.JSON,
+                    source: DECISION_SOURCES.ROLLOUT,
+                    sourceInfo: {},
+                  },
+                });
+              });
+
+              it('returns the default value from getAllFeatureVariables and send notification with featureEnabled false', function() {
+                var result = optlyInstance.getAllFeatureVariables(
+                  'test_feature_for_experiment',
+                  'user1',
+                  { test_attribute: 'test_value' }
+                );
+                assert.deepEqual(result, {
+                  is_button_animated: false,
+                  button_width: 50.55,
+                  num_buttons: 10,
+                  button_txt: 'Buy me',
+                  button_info: {
+                    num_buttons: 0,
+                    text: 'default value',
+                  }
+                });
+                sinon.assert.calledWith(decisionListener, {
+                  type: DECISION_NOTIFICATION_TYPES.ALL_FEATURE_VARIABLES,
+                  userId: 'user1',
+                  attributes: { test_attribute: 'test_value' },
+                  decisionInfo: {
+                    featureKey: 'test_feature_for_experiment',
+                    featureEnabled: false,                    
+                    variableValues: {
+                      is_button_animated: false,
+                      button_width: 50.55,
+                      num_buttons: 10,
+                      button_txt: 'Buy me',
+                      button_info: {
+                        num_buttons: 0,
+                        text: 'default value',
+                      }
+                    },                    
                     source: DECISION_SOURCES.ROLLOUT,
                     sourceInfo: {},
                   },
@@ -6013,11 +6214,6 @@ describe('lib/optimizely', function() {
             createdLogger.log,
             LOG_LEVEL.INFO,
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_width" of feature flag "test_feature_for_experiment".'
-          );
-          sinon.assert.calledWith(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
-            'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "num_buttons" of feature flag "test_feature_for_experiment".'
           );
           sinon.assert.calledWith(
             createdLogger.log,
