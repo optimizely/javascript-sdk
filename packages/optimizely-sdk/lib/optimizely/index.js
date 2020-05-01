@@ -957,6 +957,96 @@ Optimizely.prototype.getFeatureVariableJson = function(featureKey, variableKey, 
   }
 };
 
+Optimizely.prototype.getAllFeatureVariables = function(featureKey, userId, attributes) {
+  try {
+    if (!this.__isValidInstance()) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getAllFeatureVariables'));
+      return null;
+    }
+
+    if (!this.__validateInputs({ feature_key: featureKey, user_id: userId }, attributes)) {
+      return null;
+    }
+  
+    var configObj = this.projectConfigManager.getConfig();
+    if (!configObj) {
+      return null;
+    }
+  
+    var featureFlag = projectConfig.getFeatureFromKey(configObj, featureKey, this.logger);
+    if (!featureFlag) {
+      return null;
+    }
+    
+    var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);    
+    var featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;
+    var logger = this.logger;
+    var allVariables = {};
+    
+    featureFlag.variables.forEach(function (variable) {
+      var variableValue = variable.defaultValue;      
+      if (decision.variation !== null) {
+        var value = projectConfig.getVariableValueForVariation(configObj, variable, decision.variation, logger);
+        if (value !== null) {
+          if (featureEnabled) {
+            variableValue = value;
+            logger.log(
+              LOG_LEVEL.INFO,
+              sprintf(
+                LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE,
+                MODULE_NAME,
+                variable.key,
+                featureFlag.key,
+                variableValue,
+                userId
+              )
+            );
+          } else {
+            logger.log(
+              LOG_LEVEL.INFO,
+              sprintf(
+                LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE,
+                MODULE_NAME,
+                featureFlag.key,
+                userId,
+                variable.key
+              )
+            );
+          }
+        } else {
+          logger.log(
+            LOG_LEVEL.INFO,
+            sprintf(
+              LOG_MESSAGES.VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
+              MODULE_NAME,
+              variable.key,
+              decision.variation.key
+            )
+          );
+        }
+      } else {
+        logger.log(
+          LOG_LEVEL.INFO,
+          sprintf(
+            LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE,
+            MODULE_NAME,
+            userId,
+            variable.key,
+            featureFlag.key
+          )
+        );
+      }      
+      var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variable.type, logger);
+      allVariables[variable.key] = typeCastedValue;
+    });
+    return allVariables;
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
+    return null;
+  }  
+};
+
 /**
  * Returns OptimizelyConfig object containing experiments and features data
  * @return {Object}
