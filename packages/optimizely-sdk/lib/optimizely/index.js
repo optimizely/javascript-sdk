@@ -964,7 +964,7 @@ Optimizely.prototype.getFeatureVariableJson = function(featureKey, variableKey, 
  *                              accessed
  * @param {string} userId       ID for the user
  * @param {Object} attributes   Optional user attributes
- * @return {object|null}        Object cointaining all the variables, or null if the
+ * @return {object|null}        Object containing all the variables, or null if the
  *                              feature key is invalid
  */
 Optimizely.prototype.getAllFeatureVariables = function(featureKey, userId, attributes) {
