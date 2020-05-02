@@ -744,72 +744,17 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     return null;
   }
 
-  if (!variableType) {
-    variableType = variable.type;
-  } else if (variable.type !== variableType) {
+  if (variableType && variable.type !== variableType) {
     this.logger.log(
       LOG_LEVEL.WARNING,
       sprintf(LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE, MODULE_NAME, variableType, variable.type)
     );
     return null;
   }
-
-  var featureEnabled = false;
-  var variableValue = variable.defaultValue;
-  var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
-
-  if (decision.variation !== null) {
-    featureEnabled = decision.variation.featureEnabled;
-    var value = projectConfig.getVariableValueForVariation(configObj, variable, decision.variation, this.logger);
-    if (value !== null) {
-      if (featureEnabled === true) {
-        variableValue = value;
-        this.logger.log(
-          LOG_LEVEL.INFO,
-          sprintf(
-            LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE,
-            MODULE_NAME,
-            variableKey,
-            featureFlag.key,
-            variableValue,
-            userId
-          )
-        );
-      } else {
-        this.logger.log(
-          LOG_LEVEL.INFO,
-          sprintf(
-            LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE,
-            MODULE_NAME,
-            featureFlag.key,
-            userId,
-            variableKey
-          )
-        );
-      }
-    } else {
-      this.logger.log(
-        LOG_LEVEL.INFO,
-        sprintf(
-          LOG_MESSAGES.VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
-          MODULE_NAME,
-          variableKey,
-          decision.variation.key
-        )
-      );
-    }
-  } else {
-    this.logger.log(
-      LOG_LEVEL.INFO,
-      sprintf(
-        LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE,
-        MODULE_NAME,
-        userId,
-        variableKey,
-        featureFlag.key
-      )
-    );
-  }
+  
+  var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);  
+  var featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;
+  var variableValue = this._getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
 
   var sourceInfo = {};
   if (decision.decisionSource === DECISION_SOURCES.FEATURE_TEST) {
@@ -818,8 +763,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
       variationKey: decision.variation.key,
     };
   }
-
-  var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
+  
   this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.DECISION, {
     type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
     userId: userId,
@@ -829,13 +773,88 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
       featureEnabled: featureEnabled,
       source: decision.decisionSource,
       variableKey: variableKey,
-      variableValue: typeCastedValue,
-      variableType: variableType,
+      variableValue: variableValue,
+      variableType: variable.type,
       sourceInfo: sourceInfo,
     },
   });
-  return typeCastedValue;
+  return variableValue;
 };
+
+Optimizely.prototype._getFeatureVariableValueFromVariation = function(featureKey, featureEnabled, variation, variable, userId) {
+  var configObj = this.projectConfigManager.getConfig();
+  if (!configObj) {
+    return null;
+  }
+
+  var variableValue = variable.defaultValue;
+  var valueFromVariation = null;
+
+  if (variation) {
+    valueFromVariation = projectConfig.getVariableValueForVariation(configObj, variable, variation, this.logger);
+    if (valueFromVariation && featureEnabled) {
+      variableValue = valueFromVariation;
+    }
+  }
+
+  // User is not in any variation
+  if (!variation) {  
+    this.logger.log(
+      LOG_LEVEL.INFO,
+      sprintf(
+        LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE,
+        MODULE_NAME,
+        userId,
+        variable.key,
+        featureKey
+      )
+    );
+  }
+  
+  // When variable value is in variation and feature is enabled
+  if (variation && valueFromVariation && featureEnabled) {
+    this.logger.log(
+      LOG_LEVEL.INFO,
+      sprintf(
+        LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE,
+        MODULE_NAME,
+        variable.key,
+        featureKey,
+        variableValue,
+        userId
+      )
+    );
+  }
+
+  // When variable value is in variation but feature is not enabled
+  if (variation && valueFromVariation && !featureEnabled) {
+    this.logger.log(
+      LOG_LEVEL.INFO,
+      sprintf(
+        LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE,
+        MODULE_NAME,
+        featureKey,
+        userId,
+        variable.key
+      )
+    );
+  }
+
+  // When varible is not used in variation
+  if (variation && !valueFromVariation) {
+    this.logger.log(
+      LOG_LEVEL.INFO,
+      sprintf(
+        LOG_MESSAGES.VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
+        MODULE_NAME,
+        variable.key,
+        variation.key
+      )
+    );
+  }
+  
+  return projectConfig.getTypeCastValue(variableValue, variable.type, this.logger);
+}
 
 /**
  * Returns value for the given boolean variable attached to the given feature
@@ -958,7 +977,7 @@ Optimizely.prototype.getFeatureVariableJson = function(featureKey, variableKey, 
 };
 
 /**
- * Returns values for all the json variables attached to the given feature
+ * Returns values for all the variables attached to the given feature
  * flag.
  * @param {string} featureKey   Key of the feature whose variables are being
  *                              accessed
@@ -989,66 +1008,12 @@ Optimizely.prototype.getAllFeatureVariables = function(featureKey, userId, attri
     }
     
     var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);    
-    var featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;
-    var logger = this.logger;
+    var featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;    
     var allVariables = {};
     
     featureFlag.variables.forEach(function (variable) {
-      var variableValue = variable.defaultValue;      
-      if (decision.variation !== null) {
-        var value = projectConfig.getVariableValueForVariation(configObj, variable, decision.variation, logger);
-        if (value !== null) {
-          if (featureEnabled) {
-            variableValue = value;
-            logger.log(
-              LOG_LEVEL.INFO,
-              sprintf(
-                LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE,
-                MODULE_NAME,
-                variable.key,
-                featureFlag.key,
-                variableValue,
-                userId
-              )
-            );
-          } else {
-            logger.log(
-              LOG_LEVEL.INFO,
-              sprintf(
-                LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE,
-                MODULE_NAME,
-                featureFlag.key,
-                userId,
-                variable.key
-              )
-            );
-          }
-        } else {
-          logger.log(
-            LOG_LEVEL.INFO,
-            sprintf(
-              LOG_MESSAGES.VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
-              MODULE_NAME,
-              variable.key,
-              decision.variation.key
-            )
-          );
-        }
-      } else {
-        logger.log(
-          LOG_LEVEL.INFO,
-          sprintf(
-            LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE,
-            MODULE_NAME,
-            userId,
-            variable.key,
-            featureFlag.key
-          )
-        );
-      }      
-      var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variable.type, logger);
-      allVariables[variable.key] = typeCastedValue;
-    });
+      allVariables[variable.key] = this._getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
+    }.bind(this));
 
     var sourceInfo = {};
     if (decision.decisionSource === DECISION_SOURCES.FEATURE_TEST) {
