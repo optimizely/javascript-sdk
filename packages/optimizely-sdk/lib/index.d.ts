@@ -94,12 +94,12 @@ declare module '@optimizely/optimizely-sdk' {
       variableKey: string,
       userId: string,
       attributes?: UserAttributes
-    ): any;
+    ): any | null;
     getAllFeatureVariables(
       featureKey: string,
       userId: string,
       attributes?: UserAttributes
-    ): any;
+    ): any | null;
     getOptimizelyConfig(): OptimizelyConfig | null;
     onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
     close(): Promise<{ success: boolean; reason?: string }>;
