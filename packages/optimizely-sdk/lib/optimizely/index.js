@@ -788,17 +788,46 @@ Optimizely.prototype._getFeatureVariableValueFromVariation = function(featureKey
   }
 
   var variableValue = variable.defaultValue;
-  var valueFromVariation = null;
-
-  if (variation) {
-    valueFromVariation = projectConfig.getVariableValueForVariation(configObj, variable, variation, this.logger);
-    if (valueFromVariation && featureEnabled) {
-      variableValue = valueFromVariation;
+  if (variation !== null) {
+    var value = projectConfig.getVariableValueForVariation(configObj, variable, variation, this.logger);
+    if (value !== null) {
+      if (featureEnabled) {
+        variableValue = value;
+        this.logger.log(
+          LOG_LEVEL.INFO,
+          sprintf(
+            LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE,
+            MODULE_NAME,
+            variable.key,
+            featureKey,
+            variableValue,
+            userId
+          )
+        );
+      } else {
+        this.logger.log(
+          LOG_LEVEL.INFO,
+          sprintf(
+            LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE,
+            MODULE_NAME,
+            featureKey,
+            userId,
+            variable.key
+          )
+        );
+      }
+    } else {
+      this.logger.log(
+        LOG_LEVEL.INFO,
+        sprintf(
+          LOG_MESSAGES.VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
+          MODULE_NAME,
+          variable.key,
+          variation.key
+        )
+      );
     }
-  }
-
-  // User is not in any variation
-  if (!variation) {  
+  } else {
     this.logger.log(
       LOG_LEVEL.INFO,
       sprintf(
@@ -807,48 +836,6 @@ Optimizely.prototype._getFeatureVariableValueFromVariation = function(featureKey
         userId,
         variable.key,
         featureKey
-      )
-    );
-  }
-  
-  // When variable value is in variation and feature is enabled
-  if (variation && valueFromVariation && featureEnabled) {
-    this.logger.log(
-      LOG_LEVEL.INFO,
-      sprintf(
-        LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE,
-        MODULE_NAME,
-        variable.key,
-        featureKey,
-        variableValue,
-        userId
-      )
-    );
-  }
-
-  // When variable value is in variation but feature is not enabled
-  if (variation && valueFromVariation && !featureEnabled) {
-    this.logger.log(
-      LOG_LEVEL.INFO,
-      sprintf(
-        LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE,
-        MODULE_NAME,
-        featureKey,
-        userId,
-        variable.key
-      )
-    );
-  }
-
-  // When varible is not used in variation
-  if (variation && !valueFromVariation) {
-    this.logger.log(
-      LOG_LEVEL.INFO,
-      sprintf(
-        LOG_MESSAGES.VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
-        MODULE_NAME,
-        variable.key,
-        variation.key
       )
     );
   }
@@ -1040,7 +1027,7 @@ Optimizely.prototype.getAllFeatureVariables = function(featureKey, userId, attri
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
     return null;
-  }  
+  }
 };
 
 /**
