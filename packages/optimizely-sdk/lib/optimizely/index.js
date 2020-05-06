@@ -781,6 +781,22 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
   return variableValue;
 };
 
+/**
+ * Helper method to get the non type-casted value for a variable attached to a 
+ * feature flag. Returns appropriate variable value depending on whether there 
+ * was a matching variation, feature was enabled or not or varible was part of the 
+ * available variation or not. Also logs the appropriate message explaining how it 
+ * evaluated the value of the variable.
+ *
+ * @param {string} featureKey           Key of the feature whose variable's value is
+ *                                      being accessed
+ * @param {boolean} featureEnabled      Boolean indicating if feature is enabled or not
+ * @param {object} variation            variation returned by decision service
+ * @param {object} variable             varible whose value is being evaluated
+ * @param {string} userId               ID for the user
+ * @return {string|null}                String value of the variable or null if the config Obj
+ *                                      is null
+ */
 Optimizely.prototype._getFeatureVariableValueFromVariation = function(featureKey, featureEnabled, variation, variable, userId) {
   var configObj = this.projectConfigManager.getConfig();
   if (!configObj) {
