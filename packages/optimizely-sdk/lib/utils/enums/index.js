@@ -173,7 +173,7 @@ export var CONTROL_ATTRIBUTES = {
 export var JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 export var NODE_CLIENT_ENGINE = 'node-sdk';
 export var REACT_CLIENT_ENGINE = 'react-sdk';
-export var NODE_CLIENT_VERSION = '4.0.0-rc.2';
+export var NODE_CLIENT_VERSION = '4.0.0';
 
 export var VALID_CLIENT_ENGINES = [
   NODE_CLIENT_ENGINE,
@@ -188,6 +188,7 @@ export var DECISION_NOTIFICATION_TYPES = {
   FEATURE: 'feature',
   FEATURE_TEST: 'feature-test',
   FEATURE_VARIABLE: 'feature-variable',
+  ALL_FEATURE_VARIABLES: 'all-feature-variables',
 };
 
 /*
@@ -209,6 +210,7 @@ export var FEATURE_VARIABLE_TYPES = {
   DOUBLE: 'double',
   INTEGER: 'integer',
   STRING: 'string',
+  JSON: 'json',
 };
 
 /*
