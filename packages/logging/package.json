@@ -25,7 +25,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/optimizely/javascript-sdk.git"
+    "url": "git+https://github.com/optimizely/javascript-sdk.git",
+    "directory": "packages/logging"
   },
   "keywords": [
     "optimizely"
