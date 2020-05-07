@@ -89,6 +89,17 @@ declare module '@optimizely/optimizely-sdk' {
       userId: string,
       attributes?: UserAttributes
     ): string | null;
+    getFeatureVariableJson(
+      featureKey: string,
+      variableKey: string,
+      userId: string,
+      attributes?: UserAttributes
+    ): unknown;
+    getAllFeatureVariables(
+      featureKey: string,
+      userId: string,
+      attributes?: UserAttributes
+    ): unknown;
     getOptimizelyConfig(): OptimizelyConfig | null;
     onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
     close(): Promise<{ success: boolean; reason?: string }>;
