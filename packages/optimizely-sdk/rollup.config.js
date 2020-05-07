@@ -15,7 +15,7 @@
  */
 import { dependencies } from './package.json';
 import commonjs from '@rollup/plugin-commonjs';
-import { terser } from  'rollup-plugin-terser';
+import { terser } from 'rollup-plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 
 const BUILD_ALL = process.env.BUILD_ALL ? true : false;
@@ -23,32 +23,29 @@ const BUILD_UMD_BUNDLE = process.env.BUILD_UMD_BUNDLE ? true : false;
 
 const getCjsConfigForPlatform = (platform) => {
   return {
-    plugins: [
-      resolve(),
-      commonjs(),
-    ],
+    plugins: [resolve(), commonjs()],
     external: ['https', 'http', 'url'].concat(Object.keys(dependencies || {})),
     input: `lib/index.${platform}.js`,
     output: {
       exports: 'named',
       format: 'cjs',
       file: `dist/optimizely.${platform}.min.js`,
-      plugins: [ terser() ],
+      plugins: [terser()],
       sourcemap: true,
-    }
+    },
   };
 };
 
 const esModuleConfig = {
-  ... getCjsConfigForPlatform('browser'),
+  ...getCjsConfigForPlatform('browser'),
   output: {
     exports: 'named',
     format: 'es',
     file: 'dist/optimizely.browser.es.min.js',
-    plugins: [ terser() ],
+    plugins: [terser()],
     sourcemap: true,
-  }
-}
+  },
+};
 
 const umdconfig = {
   plugins: [
@@ -62,13 +59,10 @@ const umdconfig = {
           'LogLevel',
           'setLogHandler',
           'setErrorHandler',
-          'getErrorHandler'
+          'getErrorHandler',
         ],
-        '@optimizely/js-sdk-event-processor': [
-          'LogTierV1EventProcessor',
-          'LocalStoragePendingEventsDispatcher'
-        ]
-      }
+        '@optimizely/js-sdk-event-processor': ['LogTierV1EventProcessor', 'LocalStoragePendingEventsDispatcher'],
+      },
     }),
   ],
   input: 'lib/index.browser.js',
@@ -84,7 +78,7 @@ const umdconfig = {
       format: 'umd',
       file: 'dist/optimizely.browser.umd.min.js',
       exports: 'named',
-      plugins: [ terser() ],
+      plugins: [terser()],
       sourcemap: true,
     },
   ],
@@ -92,19 +86,16 @@ const umdconfig = {
 
 // A separate bundle for json schema validator.
 const jsonSchemaValidatorConfig = {
-  plugins: [
-    resolve(),
-    commonjs(),
-  ],
+  plugins: [resolve(), commonjs()],
   external: ['json-schema', '@optimizely/js-sdk-utils'],
   input: 'lib/utils/json_schema_validator/index.js',
   output: {
     exports: 'named',
     format: 'cjs',
     file: 'dist/optimizely.json_schema_validator.min.js',
-    plugins: [ terser() ],
+    plugins: [terser()],
     sourcemap: true,
-  }
+  },
 };
 
 export default [
@@ -114,4 +105,4 @@ export default [
   BUILD_ALL && esModuleConfig,
   BUILD_ALL && jsonSchemaValidatorConfig,
   (BUILD_ALL || BUILD_UMD_BUNDLE) && umdconfig,
-].filter(config => config);
+].filter((config) => config);
