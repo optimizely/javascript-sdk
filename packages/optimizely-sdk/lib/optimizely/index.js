@@ -744,33 +744,78 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     return null;
   }
 
-  if (!variableType) {
-    variableType = variable.type;
-  } else if (variable.type !== variableType) {
+  if (variableType && variable.type !== variableType) {
     this.logger.log(
       LOG_LEVEL.WARNING,
       sprintf(LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE, MODULE_NAME, variableType, variable.type)
     );
     return null;
   }
+  
+  var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);  
+  var featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;
+  var variableValue = this._getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
 
-  var featureEnabled = false;
+  var sourceInfo = {};
+  if (decision.decisionSource === DECISION_SOURCES.FEATURE_TEST) {
+    sourceInfo = {
+      experimentKey: decision.experiment.key,
+      variationKey: decision.variation.key,
+    };
+  }
+  
+  this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.DECISION, {
+    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
+    userId: userId,
+    attributes: attributes || {},
+    decisionInfo: {
+      featureKey: featureKey,
+      featureEnabled: featureEnabled,
+      source: decision.decisionSource,
+      variableKey: variableKey,
+      variableValue: variableValue,
+      variableType: variable.type,
+      sourceInfo: sourceInfo,
+    },
+  });
+  return variableValue;
+};
+
+/**
+ * Helper method to get the non type-casted value for a variable attached to a 
+ * feature flag. Returns appropriate variable value depending on whether there 
+ * was a matching variation, feature was enabled or not or varible was part of the 
+ * available variation or not. Also logs the appropriate message explaining how it 
+ * evaluated the value of the variable.
+ *
+ * @param {string} featureKey           Key of the feature whose variable's value is
+ *                                      being accessed
+ * @param {boolean} featureEnabled      Boolean indicating if feature is enabled or not
+ * @param {object} variation            variation returned by decision service
+ * @param {object} variable             varible whose value is being evaluated
+ * @param {string} userId               ID for the user
+ * @return {string|null}                String value of the variable or null if the config Obj
+ *                                      is null
+ */
+Optimizely.prototype._getFeatureVariableValueFromVariation = function(featureKey, featureEnabled, variation, variable, userId) {
+  var configObj = this.projectConfigManager.getConfig();
+  if (!configObj) {
+    return null;
+  }
+
   var variableValue = variable.defaultValue;
-  var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
-
-  if (decision.variation !== null) {
-    featureEnabled = decision.variation.featureEnabled;
-    var value = projectConfig.getVariableValueForVariation(configObj, variable, decision.variation, this.logger);
+  if (variation !== null) {
+    var value = projectConfig.getVariableValueForVariation(configObj, variable, variation, this.logger);
     if (value !== null) {
-      if (featureEnabled === true) {
+      if (featureEnabled) {
         variableValue = value;
         this.logger.log(
           LOG_LEVEL.INFO,
           sprintf(
             LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE,
             MODULE_NAME,
-            variableKey,
-            featureFlag.key,
+            variable.key,
+            featureKey,
             variableValue,
             userId
           )
@@ -781,9 +826,9 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
           sprintf(
             LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE,
             MODULE_NAME,
-            featureFlag.key,
+            featureKey,
             userId,
-            variableKey
+            variable.key
           )
         );
       }
@@ -793,8 +838,8 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
         sprintf(
           LOG_MESSAGES.VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
           MODULE_NAME,
-          variableKey,
-          decision.variation.key
+          variable.key,
+          variation.key
         )
       );
     }
@@ -805,37 +850,14 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
         LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE,
         MODULE_NAME,
         userId,
-        variableKey,
-        featureFlag.key
+        variable.key,
+        featureKey
       )
     );
   }
-
-  var sourceInfo = {};
-  if (decision.decisionSource === DECISION_SOURCES.FEATURE_TEST) {
-    sourceInfo = {
-      experimentKey: decision.experiment.key,
-      variationKey: decision.variation.key,
-    };
-  }
-
-  var typeCastedValue = projectConfig.getTypeCastValue(variableValue, variableType, this.logger);
-  this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.DECISION, {
-    type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
-    userId: userId,
-    attributes: attributes || {},
-    decisionInfo: {
-      featureKey: featureKey,
-      featureEnabled: featureEnabled,
-      source: decision.decisionSource,
-      variableKey: variableKey,
-      variableValue: typeCastedValue,
-      variableType: variableType,
-      sourceInfo: sourceInfo,
-    },
-  });
-  return typeCastedValue;
-};
+  
+  return projectConfig.getTypeCastValue(variableValue, variable.type, this.logger);
+}
 
 /**
  * Returns value for the given boolean variable attached to the given feature
@@ -950,6 +972,73 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
 Optimizely.prototype.getFeatureVariableJson = function(featureKey, variableKey, userId, attributes) {
   try {
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.JSON, userId, attributes);
+  } catch (e) {
+    this.logger.log(LOG_LEVEL.ERROR, e.message);
+    this.errorHandler.handleError(e);
+    return null;
+  }
+};
+
+/**
+ * Returns values for all the variables attached to the given feature
+ * flag.
+ * @param {string} featureKey   Key of the feature whose variables are being
+ *                              accessed
+ * @param {string} userId       ID for the user
+ * @param {Object} attributes   Optional user attributes
+ * @return {object|null}        Object containing all the variables, or null if the
+ *                              feature key is invalid
+ */
+Optimizely.prototype.getAllFeatureVariables = function(featureKey, userId, attributes) {
+  try {
+    if (!this.__isValidInstance()) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getAllFeatureVariables'));
+      return null;
+    }
+
+    if (!this.__validateInputs({ feature_key: featureKey, user_id: userId }, attributes)) {
+      return null;
+    }
+  
+    var configObj = this.projectConfigManager.getConfig();
+    if (!configObj) {
+      return null;
+    }
+  
+    var featureFlag = projectConfig.getFeatureFromKey(configObj, featureKey, this.logger);
+    if (!featureFlag) {
+      return null;
+    }
+    
+    var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);    
+    var featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;    
+    var allVariables = {};
+    
+    featureFlag.variables.forEach(function (variable) {
+      allVariables[variable.key] = this._getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
+    }.bind(this));
+
+    var sourceInfo = {};
+    if (decision.decisionSource === DECISION_SOURCES.FEATURE_TEST) {
+      sourceInfo = {
+        experimentKey: decision.experiment.key,
+        variationKey: decision.variation.key,
+      };
+    }
+    this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.DECISION, {
+      type: DECISION_NOTIFICATION_TYPES.ALL_FEATURE_VARIABLES,
+      userId: userId,
+      attributes: attributes || {},
+      decisionInfo: {
+        featureKey: featureKey,
+        featureEnabled: featureEnabled,
+        source: decision.decisionSource,        
+        variableValues: allVariables,        
+        sourceInfo: sourceInfo,
+      },
+    });
+
+    return allVariables;
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
     this.errorHandler.handleError(e);
