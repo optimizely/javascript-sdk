@@ -15,7 +15,6 @@
  ***************************************************************************/
 import { assert } from 'chai';
 import sinon from 'sinon';
-import uuid from 'uuid';
 import { sprintf } from '@optimizely/js-sdk-utils';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 import * as logging from '@optimizely/js-sdk-logging';
@@ -294,7 +293,7 @@ describe('lib/optimizely', function() {
       sinon.stub(eventDispatcher, 'dispatchEvent');
       sinon.stub(errorHandler, 'handleError');
       sinon.stub(createdLogger, 'log');
-      sinon.stub(uuid, 'v4').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
+      sinon.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
 
       clock = sinon.useFakeTimers(new Date().getTime());
     });
@@ -305,7 +304,7 @@ describe('lib/optimizely', function() {
       errorHandler.handleError.restore();
       createdLogger.log.restore();
       clock.restore();
-      uuid.v4.restore();
+      fns.uuid.restore();
     });
 
     describe('#activate', function() {
@@ -4337,7 +4336,7 @@ describe('lib/optimizely', function() {
       sandbox.stub(eventDispatcher, 'dispatchEvent');
       sandbox.stub(errorHandler, 'handleError');
       sandbox.stub(createdLogger, 'log');
-      sandbox.stub(uuid, 'v4').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
+      sandbox.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
       sandbox.stub(fns, 'currentTimestamp').returns(1509489766569);
       clock = sinon.useFakeTimers(new Date().getTime());
     });
@@ -7311,7 +7310,7 @@ describe('lib/optimizely', function() {
       sinon.stub(eventDispatcher, 'dispatchEvent');
       sinon.stub(errorHandler, 'handleError');
       sinon.stub(createdLogger, 'log');
-      sinon.stub(uuid, 'v4').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
+      sinon.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
 
       clock = sinon.useFakeTimers(new Date().getTime());
     });
@@ -7322,7 +7321,7 @@ describe('lib/optimizely', function() {
       errorHandler.handleError.restore();
       createdLogger.log.restore();
       clock.restore();
-      uuid.v4.restore();
+      fns.uuid.restore();
     });
 
     describe('when eventBatchSize = 3 and eventFlushInterval = 100', function() {

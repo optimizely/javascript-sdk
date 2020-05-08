@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import uuid from 'uuid';
 import sinon from 'sinon';
 import { assert } from 'chai';
 
+import fns from '../../utils/fns';
 import testData from '../../tests/test_data';
 import projectConfig from '../project_config';
 import packageJSON from '../../../package.json';
@@ -31,7 +31,7 @@ describe('lib/core/event_builder', function() {
     beforeEach(function() {
       configObj = projectConfig.createProjectConfig(testData.getTestProjectConfig());
       clock = sinon.useFakeTimers(new Date().getTime());
-      sinon.stub(uuid, 'v4').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
+      sinon.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
       mockLogger = {
         log: sinon.stub(),
       };
@@ -39,7 +39,7 @@ describe('lib/core/event_builder', function() {
 
     afterEach(function() {
       clock.restore();
-      uuid.v4.restore();
+      fns.uuid.restore();
     });
 
     describe('getImpressionEvent', function() {
