@@ -40,8 +40,7 @@
     "@optimizely/js-sdk-logging": "^0.1.0",
     "@optimizely/js-sdk-utils": "^0.2.0",
     "json-schema": "^0.2.3",
-    "murmurhash": "0.0.2",
-    "uuid": "^3.3.2"
+    "murmurhash": "0.0.2"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.2",
