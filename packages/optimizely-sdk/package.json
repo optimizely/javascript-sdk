@@ -21,7 +21,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/optimizely/javascript-sdk.git"
+    "url": "git+https://github.com/optimizely/javascript-sdk.git",
+    "directory": "packages/optimizely-sdk"
   },
   "license": "Apache-2.0",
   "engines": {
