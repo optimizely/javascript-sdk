@@ -21,7 +21,8 @@
   "scripts": {
     "tsc": "rm -rf lib && tsc",
     "test": "jest",
-    "prepublishOnly": "jest && npm run tsc"
+    "prepare": "npm run tsc",
+    "prepublishOnly": "npm test"
   },
   "repository": {
     "type": "git",
