@@ -19,11 +19,7 @@
     "test": "__test__"
   },
   "files": [
-    "lib",
-    "LICENSE",
-    "CHANGELOG",
-    "README.md",
-    "package.json"
+    "lib"
   ],
   "publishConfig": {
     "access": "public"

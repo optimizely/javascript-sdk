@@ -12,11 +12,7 @@
     "test": "test"
   },
   "files": [
-    "lib",
-    "LICENSE",
-    "CHANGELOG",
-    "README.md",
-    "package.json"
+    "lib"
   ],
   "scripts": {
     "clean": "rm -rf lib",
