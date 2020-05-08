@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { generateUUID, keyBy as keyByUtil } from '@optimizely/js-sdk-utils';
+import { generateUUID as uuid, keyBy as keyByUtil } from '@optimizely/js-sdk-utils';
 
 var MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
@@ -55,17 +55,17 @@ export var keyBy = function(arr, key) {
   });
 };
 
-export var uuid = generateUUID
+export { uuid }
 
 export var isNumber = function(value) {
   return typeof value === 'number';
 };
 
 export default {
-  assign: assign,
-  currentTimestamp: currentTimestamp,
-  isSafeInteger: isSafeInteger,
-  keyBy: keyBy,
-  uuid: uuid,
-  isNumber: isNumber,
+  assign,
+  currentTimestamp,
+  isSafeInteger,
+  keyBy,
+  uuid,
+  isNumber,
 };
