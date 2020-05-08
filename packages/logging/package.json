@@ -19,9 +19,11 @@
     "package.json"
   ],
   "scripts": {
-    "tsc": "rm -rf lib && tsc",
+    "clean": "rm -rf lib",
+    "prebuild": "npm run clean",
+    "build": "tsc",
     "test": "jest",
-    "prepare": "npm run tsc",
+    "prepare": "npm run build",
     "prepublishOnly": "npm test"
   },
   "repository": {

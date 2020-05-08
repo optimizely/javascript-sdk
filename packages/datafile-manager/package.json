@@ -55,11 +55,13 @@
     "@react-native-community/async-storage": "^1.2.0"
   },
   "scripts": {
+    "clean": "rm -rf lib",
     "lint": "tsc --noEmit && eslint --fix 'src/**/*.ts' '__test__/**/*.ts'",
     "test": "jest",
     "posttest": "npm run lint",
-    "tsc": "rm -rf lib && tsc",
-    "prepare": "npm run tsc",
+    "prebuild": "npm run clean",
+    "build": "tsc",
+    "prepare": "npm run build",
     "prepublishOnly": "npm test"
   }
 }
