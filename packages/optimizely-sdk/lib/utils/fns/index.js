@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import uuidLib from 'uuid';
-import { keyBy as keyByUtil } from '@optimizely/js-sdk-utils';
+import { generateUUID, keyBy as keyByUtil } from '@optimizely/js-sdk-utils';
 
 var MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
@@ -56,9 +55,7 @@ export var keyBy = function(arr, key) {
   });
 };
 
-export var uuid = function() {
-  return uuidLib.v4();
-};
+export var uuid = generateUUID
 
 export var isNumber = function(value) {
   return typeof value === 'number';
