@@ -62,10 +62,10 @@ export var isNumber = function (value) {
 };
 
 export default {
-  assign,
-  currentTimestamp,
-  isSafeInteger,
-  keyBy,
-  uuid,
-  isNumber,
+  assign: assign,
+  currentTimestamp: currentTimestamp,
+  isSafeInteger: isSafeInteger,
+  keyBy: keyBy,
+  uuid: uuid,
+  isNumber: isNumber,
 };
