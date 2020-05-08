@@ -13,16 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { v4 } from 'uuid'
+export { v4 as generateUUID } from 'uuid'
 
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>
 
 export function getTimestamp(): number {
   return new Date().getTime()
-}
-
-export function generateUUID(): string {
-  return v4()
 }
 
 /**
