@@ -24,11 +24,10 @@ describe('lib/plugins/event_dispatcher/browser', function() {
       beforeEach(function() {
         this.requests = [];
         global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-        XMLHttpRequest.onCreate = (req) => { this.requests.push(req); };
+        global.XMLHttpRequest.onCreate = (req) => { this.requests.push(req); };
       });
 
       afterEach(function() {
-        XMLHttpRequest.restore();
         delete global.XMLHttpRequest
       });
 

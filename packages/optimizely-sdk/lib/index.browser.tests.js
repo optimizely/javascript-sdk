@@ -61,7 +61,6 @@ describe('javascript-sdk', function() {
         optimizelyFactory.__internalResetRetryState();
         console.error.restore();
         configValidator.validate.restore();
-        XMLHttpRequest.restore();
         delete global.XMLHttpRequest
       });
 
