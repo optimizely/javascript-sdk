@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import uuidLib from 'uuid';
-import { keyBy as keyByUtil } from '@optimizely/js-sdk-utils';
+import { generateUUID as uuid, keyBy as keyByUtil } from '@optimizely/js-sdk-utils';
 
 var MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
-export var assign = function(target) {
+export var assign = function (target) {
   if (!target) {
     return {};
   }
@@ -41,26 +40,24 @@ export var assign = function(target) {
   }
 };
 
-export var currentTimestamp = function() {
+export var currentTimestamp = function () {
   return Math.round(new Date().getTime());
 };
 
-export var isSafeInteger = function(number) {
+export var isSafeInteger = function (number) {
   return typeof number == 'number' && Math.abs(number) <= MAX_SAFE_INTEGER_LIMIT;
 };
 
-export var keyBy = function(arr, key) {
+export var keyBy = function (arr, key) {
   if (!arr) return {};
-  return keyByUtil(arr, function(item) {
+  return keyByUtil(arr, function (item) {
     return item[key];
   });
 };
 
-export var uuid = function() {
-  return uuidLib.v4();
-};
+export { uuid };
 
-export var isNumber = function(value) {
+export var isNumber = function (value) {
   return typeof value === 'number';
 };
 

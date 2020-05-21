@@ -100,10 +100,6 @@ Prod dependencies are as follows:
     "licenses": "MIT*",
     "repository": "https://github.com/perezd/node-murmurhash"
   },
-  "uuid@3.3.2": {
-    "licenses": "MIT",
-    "repository": "https://github.com/kelektiv/node-uuid"
-  },
   "decompress-response@4.2.1": {
     "licenses": "MIT",
     "repository": "https://github.com/sindresorhus/decompress-response"
