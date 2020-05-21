@@ -28,9 +28,6 @@ import eventProcessorConfigValidator from './utils/event_processor_config_valida
 
 describe('javascript-sdk/react-native', function() {
   describe('APIs', function() {
-    var xhr;
-    var requests;
-
     it('should expose logger, errorHandler, eventDispatcher and enums', function() {
       assert.isDefined(optimizelyFactory.logging);
       assert.isDefined(optimizelyFactory.logging.createLogger);
@@ -52,18 +49,11 @@ describe('javascript-sdk/react-native', function() {
         });
         sinon.spy(console, 'error');
         sinon.stub(configValidator, 'validate');
-
-        xhr = sinon.useFakeXMLHttpRequest();
-        requests = [];
-        xhr.onCreate = function(req) {
-          requests.push(req);
-        };
       });
 
       afterEach(function() {
         console.error.restore();
         configValidator.validate.restore();
-        xhr.restore();
       });
 
       it('should not throw if the provided config is not valid', function() {
