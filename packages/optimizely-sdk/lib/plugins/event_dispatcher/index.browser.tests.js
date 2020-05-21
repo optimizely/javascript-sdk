@@ -21,19 +21,18 @@ import { dispatchEvent } from './index.browser';
 describe('lib/plugins/event_dispatcher/browser', function() {
   describe('APIs', function() {
     describe('dispatchEvent', function() {
-      var xhr;
       var requests;
       beforeEach(function() {
-        xhr = sinon.useFakeXMLHttpRequest();
-        global.XMLHttpRequest = xhr;
         requests = [];
-        xhr.onCreate = function(req) {
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        XMLHttpRequest.onCreate = function(req) {
           requests.push(req);
         };
       });
 
       afterEach(function() {
-        xhr.restore();
+        XMLHttpRequest.restore();
+        delete global.XMLHttpRequest
       });
 
       it('should send a POST request with the specified params', function(done) {
