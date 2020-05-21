@@ -17,8 +17,10 @@
     "build-browser-umd": "rollup -c --config-umd",
     "test-ci": "npm run test-xbrowser && npm run test-umdbrowser",
     "lint": "eslint 'lib/**/*.js'",
-    "cover": "nyc npm test",
-    "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls",
+    "precover": "nyc npm test",
+    "cover": "nyc report -r lcov",
+    "precoveralls": "npm run cover",
+    "coveralls": "< coverage/lcov.info coveralls",
     "prepublishOnly": "npm run build && npm test && npm run test-xbrowser && npm run test-umdbrowser"
   },
   "repository": {
