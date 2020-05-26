@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Bug fixes
+- Added definition of `getFeatureVariable` method in TypeScript type definitions
+- Fixed return type of `getAllFeatureVariables` method in TypeScript type definitions
+
 ## [4.0.0] - April 30, 2020
 
 ### New Features
