@@ -65,6 +65,7 @@ declare module '@optimizely/optimizely-sdk' {
     getForcedVariation(experimentKey: string, userId: string): string | null;
     isFeatureEnabled(featureKey: string, userId: string, attributes?: UserAttributes): boolean;
     getEnabledFeatures(userId: string, attributes?: UserAttributes): string[];
+    getFeatureVariable(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): unknown
     getFeatureVariableBoolean(
       featureKey: string,
       variableKey: string,
@@ -99,7 +100,7 @@ declare module '@optimizely/optimizely-sdk' {
       featureKey: string,
       userId: string,
       attributes?: UserAttributes
-    ): unknown;
+    ): { [variableKey: string]: unknown };
     getOptimizelyConfig(): OptimizelyConfig | null;
     onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
     close(): Promise<{ success: boolean; reason?: string }>;
