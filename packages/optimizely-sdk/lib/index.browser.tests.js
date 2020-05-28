@@ -29,9 +29,6 @@ var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEven
 
 describe('javascript-sdk', function() {
   describe('APIs', function() {
-    var xhr;
-    var requests;
-
     it('should expose logger, errorHandler, eventDispatcher and enums', function() {
       assert.isDefined(optimizelyFactory.logging);
       assert.isDefined(optimizelyFactory.logging.createLogger);
@@ -54,12 +51,7 @@ describe('javascript-sdk', function() {
         sinon.spy(console, 'error');
         sinon.stub(configValidator, 'validate');
 
-        xhr = sinon.useFakeXMLHttpRequest();
-        global.XMLHttpRequest = xhr;
-        requests = [];
-        xhr.onCreate = function(req) {
-          requests.push(req);
-        };
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
 
         sinon.stub(LocalStoragePendingEventsDispatcher.prototype, 'sendPendingEvents');
       });
@@ -69,7 +61,7 @@ describe('javascript-sdk', function() {
         optimizelyFactory.__internalResetRetryState();
         console.error.restore();
         configValidator.validate.restore();
-        xhr.restore();
+        delete global.XMLHttpRequest
       });
 
       describe('when an eventDispatcher is not passed in', function() {

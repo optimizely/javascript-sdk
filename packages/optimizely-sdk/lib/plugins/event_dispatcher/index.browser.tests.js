@@ -21,18 +21,14 @@ import { dispatchEvent } from './index.browser';
 describe('lib/plugins/event_dispatcher/browser', function() {
   describe('APIs', function() {
     describe('dispatchEvent', function() {
-      var xhr;
-      var requests;
       beforeEach(function() {
-        xhr = sinon.useFakeXMLHttpRequest();
-        requests = [];
-        xhr.onCreate = function(req) {
-          requests.push(req);
-        };
+        this.requests = [];
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        global.XMLHttpRequest.onCreate = (req) => { this.requests.push(req); };
       });
 
       afterEach(function() {
-        xhr.restore();
+        delete global.XMLHttpRequest
       });
 
       it('should send a POST request with the specified params', function(done) {
@@ -48,9 +44,9 @@ describe('lib/plugins/event_dispatcher/browser', function() {
 
         var callback = sinon.spy();
         dispatchEvent(eventObj, callback);
-        assert.strictEqual(1, requests.length);
-        assert.strictEqual(requests[0].method, 'POST');
-        assert.strictEqual(requests[0].requestBody, JSON.stringify(eventParams));
+        assert.strictEqual(1, this.requests.length);
+        assert.strictEqual(this.requests[0].method, 'POST');
+        assert.strictEqual(this.requests[0].requestBody, JSON.stringify(eventParams));
         done();
       });
 
@@ -67,7 +63,7 @@ describe('lib/plugins/event_dispatcher/browser', function() {
 
         var callback = sinon.spy();
         dispatchEvent(eventObj, callback);
-        requests[0].respond([
+        this.requests[0].respond([
           200,
           {},
           '{"url":"https://cdn.com/event","body":{"id":123},"httpVerb":"POST","params":{"testParam":"testParamValue"}}',
@@ -84,7 +80,7 @@ describe('lib/plugins/event_dispatcher/browser', function() {
 
         var callback = sinon.spy();
         dispatchEvent(eventObj, callback);
-        requests[0].respond([200, {}, '{"url":"https://cdn.com/event","httpVerb":"GET"']);
+        this.requests[0].respond([200, {}, '{"url":"https://cdn.com/event","httpVerb":"GET"']);
         sinon.assert.calledOnce(callback);
         done();
       });
