@@ -27,7 +27,6 @@ stages:
   - name: 'Lint markdown files'
   - 'Lint'
   - 'Integration tests'
-  - 'Benchmarking tests'
   - 'Cross-browser and umd unit tests'
   - 'Test'
   - 'Test sub packages'
@@ -77,9 +76,6 @@ jobs:
       script:
         - CLIENT=react-native-android REPO_SLUG=optimizely/react-native-testapp $HOME/travisci-tools/trigger-script-with-status-update.sh
         - CLIENT=react-native-ios REPO_SLUG=optimizely/react-native-testapp $HOME/travisci-tools/trigger-script-with-status-update.sh
-    - <<: *integrationtest
-      stage: 'Benchmarking tests'
-      env: FULLSTACK_TEST_REPO=Benchmarking
     - stage: Cross-browser and umd unit tests
       node_js: '8'
       script: npm run test-ci
