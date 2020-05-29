@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [4.0.0] - April 30, 2020
 
+### Bug fixes
+Revisited audience evaluation log level to debug
+
 ### New Features
 
 - Removed lodash dependency
