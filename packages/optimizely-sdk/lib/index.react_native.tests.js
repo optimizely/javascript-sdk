@@ -23,10 +23,29 @@ import testData from './tests/test_data';
 import packageJSON from '../package.json';
 import optimizelyFactory from './index.react_native';
 import configValidator from './utils/config_validator';
-import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
 describe('javascript-sdk/react-native', function() {
+  beforeEach(function() {
+    sinon.spy(optimizelyFactory, 'createInstance');
+    sinon.stub(optimizelyFactory.eventDispatcher, 'dispatchEvent').callsFake(function(eventObj, cb) {
+      setTimeout(function() {
+        cb();
+      }, 0);
+    });
+  });
+
+  afterEach(function() {
+    optimizelyFactory.eventDispatcher.dispatchEvent.restore();
+    var instances = optimizelyFactory.createInstance.getCalls().map(function(call) {
+      return call.returnValue;
+    })
+    optimizelyFactory.createInstance.restore();
+    return Promise.all(instances.map(function(instance) {
+      return instance.close();
+    }));
+  });
+
   describe('APIs', function() {
     it('should expose logger, errorHandler, eventDispatcher and enums', function() {
       assert.isDefined(optimizelyFactory.logging);
@@ -120,16 +139,6 @@ describe('javascript-sdk/react-native', function() {
       });
 
       describe('when no event dispatcher passed to createInstance', function() {
-        beforeEach(function() {
-          sinon.stub(defaultEventDispatcher, 'dispatchEvent', function(evt, cb) {
-            cb();
-          });
-        });
-
-        afterEach(function() {
-          defaultEventDispatcher.dispatchEvent.restore();
-        });
-
         it('uses the default event dispatcher', function() {
           var optlyInstance = optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
@@ -138,7 +147,7 @@ describe('javascript-sdk/react-native', function() {
           });
           optlyInstance.activate('testExperiment', 'testUser');
           return optlyInstance.close().then(function() {
-            sinon.assert.calledOnce(defaultEventDispatcher.dispatchEvent);
+            sinon.assert.calledOnce(optimizelyFactory.eventDispatcher.dispatchEvent);
           });
         });
       });
@@ -185,7 +194,7 @@ describe('javascript-sdk/react-native', function() {
       describe('event processor configuration', function() {
         var eventProcessorSpy;
         beforeEach(function() {
-          eventProcessorSpy = sinon.stub(eventProcessor, 'LogTierV1EventProcessor').callThrough();
+          eventProcessorSpy = sinon.spy(eventProcessor, 'LogTierV1EventProcessor');
         });
 
         afterEach(function() {
