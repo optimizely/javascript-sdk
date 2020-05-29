@@ -19,7 +19,7 @@ import { getLogger } from '@optimizely/js-sdk-logging';
 import fns from '../../utils/fns';
 import {
   LOG_LEVEL,
-  LOG_MESSAGES, 
+  LOG_MESSAGES,
   ERROR_MESSAGES,
 } from '../../utils/enums';
 import conditionTreeEvaluator from '../condition_tree_evaluator';
@@ -76,7 +76,7 @@ AudienceEvaluator.prototype.evaluate = function(audienceConditions, audiencesByI
         this.evaluateConditionWithUserAttributes.bind(this, userAttributes)
       );
       var resultText = result === null ? 'UNKNOWN' : result.toString().toUpperCase();
-      logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText));
+      logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText));
       return result;
     }
 
