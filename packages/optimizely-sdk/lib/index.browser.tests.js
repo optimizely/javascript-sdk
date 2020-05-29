@@ -28,6 +28,26 @@ import eventProcessorConfigValidator from './utils/event_processor_config_valida
 var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
 
 describe('javascript-sdk', function() {
+  beforeEach(function() {
+    sinon.spy(optimizelyFactory, 'createInstance');
+    sinon.stub(optimizelyFactory.eventDispatcher, 'dispatchEvent').callsFake(function(eventObj, cb) {
+      setTimeout(function() {
+        cb();
+      }, 0);
+    });
+  });
+
+  afterEach(function() {
+    optimizelyFactory.eventDispatcher.dispatchEvent.restore();
+    var instances = optimizelyFactory.createInstance.getCalls().map(function(call) {
+      return call.returnValue;
+    })
+    optimizelyFactory.createInstance.restore();
+    return Promise.all(instances.map(function(instance) {
+      return instance.close();
+    }));
+  });
+
   describe('APIs', function() {
     it('should expose logger, errorHandler, eventDispatcher and enums', function() {
       assert.isDefined(optimizelyFactory.logging);
@@ -151,19 +171,6 @@ describe('javascript-sdk', function() {
         optlyInstance.onReady().catch(function() {});
         assert.equal('javascript-sdk', optlyInstance.clientEngine);
         assert.equal(packageJSON.version, optlyInstance.clientVersion);
-      });
-
-      it('should allow passing of "react-sdk" as the clientEngine', function() {
-        var optlyInstance = optimizelyFactory.createInstance({
-          clientEngine: 'react-sdk',
-          datafile: {},
-          errorHandler: fakeErrorHandler,
-          eventDispatcher: fakeEventDispatcher,
-          logger: silentLogger,
-        });
-        // Invalid datafile causes onReady Promise rejection - catch this error
-        optlyInstance.onReady().catch(function() {});
-        assert.equal('react-sdk', optlyInstance.clientEngine);
       });
 
       it('should allow passing of "react-sdk" as the clientEngine', function() {
@@ -393,7 +400,7 @@ describe('javascript-sdk', function() {
       describe('event processor configuration', function() {
         var eventProcessorSpy;
         beforeEach(function() {
-          eventProcessorSpy = sinon.stub(eventProcessor, 'LogTierV1EventProcessor').callThrough();
+          eventProcessorSpy = sinon.spy(eventProcessor, 'LogTierV1EventProcessor');
         });
 
         afterEach(function() {
@@ -407,6 +414,7 @@ describe('javascript-sdk', function() {
             eventDispatcher: fakeEventDispatcher,
             logger: silentLogger,
           });
+
           sinon.assert.calledWithExactly(
             eventProcessorSpy,
             sinon.match({
