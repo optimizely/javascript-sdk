@@ -65,12 +65,18 @@ describe('lib/optimizely', function() {
         onReady: sinon.stub().returns({ then: function() {} }),
       };
     });
+    sinon.stub(eventDispatcher, 'dispatchEvent').callsFake(function(eventObj, cb) {
+      setTimeout(function() {
+        cb();
+      }, 0);
+    });
   });
 
   afterEach(function() {
     ProjectConfigManagerStub.restore();
     logging.resetErrorHandler();
     logging.resetLogger();
+    eventDispatcher.dispatchEvent.restore();
   });
 
   describe('constructor', function() {
@@ -290,7 +296,6 @@ describe('lib/optimizely', function() {
       });
 
       bucketStub = sinon.stub(bucketer, 'bucket');
-      sinon.stub(eventDispatcher, 'dispatchEvent');
       sinon.stub(errorHandler, 'handleError');
       sinon.stub(createdLogger, 'log');
       sinon.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
@@ -300,7 +305,6 @@ describe('lib/optimizely', function() {
 
     afterEach(function() {
       bucketer.bucket.restore();
-      eventDispatcher.dispatchEvent.restore();
       errorHandler.handleError.restore();
       createdLogger.log.restore();
       clock.restore();
@@ -4333,7 +4337,6 @@ describe('lib/optimizely', function() {
         eventBatchSize: 1,
       });
 
-      sandbox.stub(eventDispatcher, 'dispatchEvent');
       sandbox.stub(errorHandler, 'handleError');
       sandbox.stub(createdLogger, 'log');
       sandbox.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
@@ -7010,7 +7013,6 @@ describe('lib/optimizely', function() {
         eventBatchSize: 1,
       });
 
-      sandbox.stub(eventDispatcher, 'dispatchEvent');
       sandbox.stub(errorHandler, 'handleError');
       sandbox.stub(createdLogger, 'log');
     });
@@ -7144,7 +7146,6 @@ describe('lib/optimizely', function() {
       });
       audienceEvaluator = AudienceEvaluator.prototype;
 
-      sandbox.stub(eventDispatcher, 'dispatchEvent');
       sandbox.stub(errorHandler, 'handleError');
       sandbox.stub(createdLogger, 'log');
       sandbox.spy(audienceEvaluator, 'evaluate');
@@ -7307,7 +7308,6 @@ describe('lib/optimizely', function() {
 
     beforeEach(function() {
       bucketStub = sinon.stub(bucketer, 'bucket');
-      sinon.stub(eventDispatcher, 'dispatchEvent');
       sinon.stub(errorHandler, 'handleError');
       sinon.stub(createdLogger, 'log');
       sinon.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
@@ -7317,7 +7317,6 @@ describe('lib/optimizely', function() {
 
     afterEach(function() {
       bucketer.bucket.restore();
-      eventDispatcher.dispatchEvent.restore();
       errorHandler.handleError.restore();
       createdLogger.log.restore();
       clock.restore();
@@ -7665,14 +7664,12 @@ describe('lib/optimizely', function() {
     });
 
     beforeEach(function() {
-      sinon.stub(eventDispatcher, 'dispatchEvent');
       sinon.stub(errorHandler, 'handleError');
       sinon.stub(createdLogger, 'log');
       sinon.spy(eventProcessor, 'LogTierV1EventProcessor');
     });
 
     afterEach(function() {
-      eventDispatcher.dispatchEvent.restore();
       errorHandler.handleError.restore();
       createdLogger.log.restore();
       eventProcessor.LogTierV1EventProcessor.restore();
@@ -7709,13 +7706,11 @@ describe('lib/optimizely', function() {
     });
 
     beforeEach(function() {
-      sinon.stub(eventDispatcher, 'dispatchEvent');
       sinon.stub(errorHandler, 'handleError');
       sinon.stub(createdLogger, 'log');
     });
 
     afterEach(function() {
-      eventDispatcher.dispatchEvent.restore();
       errorHandler.handleError.restore();
       createdLogger.log.restore();
     });
@@ -7943,6 +7938,7 @@ describe('lib/optimizely', function() {
           logger: createdLogger,
           sdkKey: '12345',
           isValidInstance: true,
+          eventBatchSize: 1,
         });
       });
 
