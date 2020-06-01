@@ -414,7 +414,6 @@ describe('javascript-sdk', function() {
             eventDispatcher: fakeEventDispatcher,
             logger: silentLogger,
           });
-
           sinon.assert.calledWithExactly(
             eventProcessorSpy,
             sinon.match({
