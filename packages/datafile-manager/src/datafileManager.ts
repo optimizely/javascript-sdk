@@ -43,5 +43,8 @@ export interface DatafileManagerConfig {
   updateInterval?: number;
   urlTemplate?: string;
   cache?: PersistentKeyValueCache;
-  authDatafileToken?: string
+}
+
+export interface NodeDatafileManagerConfig extends DatafileManagerConfig {
+  authDatafileToken?: string;
 }

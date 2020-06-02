@@ -14,21 +14,27 @@
  * limitations under the License.
  */
 
+import { getLogger } from '@optimizely/js-sdk-logging';
 import { makeGetRequest } from './nodeRequest';
 import HttpPollingDatafileManager from './httpPollingDatafileManager';
 import { Headers, AbortableRequest } from './http';
-import { DatafileManagerConfig } from './datafileManager';
+import {
+  NodeDatafileManagerConfig,
+  DatafileManagerConfig,
+} from './datafileManager';
 import {
   DEFAULT_URL_TEMPLATE,
-  DEFAULT_AUTHENTICATED_DATAFILE_URL_TEMPLATE,
+  DEFAULT_AUTHENTICATED_URL_TEMPLATE,
 } from './config';
+
+const logger = getLogger('NodeDatafileManager');
 
 export default class NodeDatafileManager extends HttpPollingDatafileManager {
 
   private authToken?: string;
 
-  constructor(config: DatafileManagerConfig) {  
-    const defaultUrlTemplate = config.authDatafileToken ? DEFAULT_AUTHENTICATED_DATAFILE_URL_TEMPLATE : DEFAULT_URL_TEMPLATE;
+  constructor(config: NodeDatafileManagerConfig) {
+    const defaultUrlTemplate = config.authDatafileToken ? DEFAULT_AUTHENTICATED_URL_TEMPLATE : DEFAULT_URL_TEMPLATE;
     super({
       ... config,
       urlTemplate: config.urlTemplate || defaultUrlTemplate,
@@ -37,10 +43,12 @@ export default class NodeDatafileManager extends HttpPollingDatafileManager {
   }
 
   protected makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest {
+    let requestHeaders = Object.assign({}, headers);
     if (this.authToken) {
-      headers['Authorization'] = `Bearer ${this.authToken}`;      
+      logger.debug('Adding Authorization header with Bearer Token');
+      requestHeaders['Authorization'] = `Bearer ${this.authToken}`;
     }
-    return makeGetRequest(reqUrl, headers);
+    return makeGetRequest(reqUrl, requestHeaders);
   }
 
   protected getConfigDefaults(): Partial<DatafileManagerConfig> {
