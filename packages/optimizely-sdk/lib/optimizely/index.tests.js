@@ -46,6 +46,7 @@ describe('lib/optimizely', function() {
   var ProjectConfigManagerStub;
   var globalStubErrorHandler;
   var stubLogHandler;
+  var clock;
   beforeEach(function() {
     logging.setLogLevel('notset');
     stubLogHandler = {
@@ -65,11 +66,8 @@ describe('lib/optimizely', function() {
         onReady: sinon.stub().returns({ then: function() {} }),
       };
     });
-    sinon.stub(eventDispatcher, 'dispatchEvent').callsFake(function(eventObj, cb) {
-      setTimeout(function() {
-        cb();
-      }, 0);
-    });
+    sinon.stub(eventDispatcher, 'dispatchEvent');
+    clock = sinon.useFakeTimers(new Date());
   });
 
   afterEach(function() {
@@ -77,6 +75,7 @@ describe('lib/optimizely', function() {
     logging.resetErrorHandler();
     logging.resetLogger();
     eventDispatcher.dispatchEvent.restore();
+    clock.restore();
   });
 
   describe('constructor', function() {
@@ -278,7 +277,6 @@ describe('lib/optimizely', function() {
   describe('APIs', function() {
     var optlyInstance;
     var bucketStub;
-    var clock;
     var createdLogger = logger.createLogger({
       logLevel: LOG_LEVEL.INFO,
       logToConsole: false,
@@ -299,15 +297,12 @@ describe('lib/optimizely', function() {
       sinon.stub(errorHandler, 'handleError');
       sinon.stub(createdLogger, 'log');
       sinon.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
-
-      clock = sinon.useFakeTimers(new Date().getTime());
     });
 
     afterEach(function() {
       bucketer.bucket.restore();
       errorHandler.handleError.restore();
       createdLogger.log.restore();
-      clock.restore();
       fns.uuid.restore();
     });
 
@@ -3176,7 +3171,7 @@ describe('lib/optimizely', function() {
 
                 it('returns the right value from getAllFeatureVariables and send notification with featureEnabled true', function() {
                   var result = optlyInstance.getAllFeatureVariables(
-                    'test_feature_for_experiment',                  
+                    'test_feature_for_experiment',
                     'user1',
                     { test_attribute: 'test_value' }
                   );
@@ -3196,7 +3191,7 @@ describe('lib/optimizely', function() {
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
                       featureKey: 'test_feature_for_experiment',
-                      featureEnabled: true,                      
+                      featureEnabled: true,
                       variableValues: {
                         is_button_animated: true,
                         button_width: 20.25,
@@ -3213,9 +3208,9 @@ describe('lib/optimizely', function() {
                         variationKey: 'variation',
                       },
                     },
-                  });                  
+                  });
                 });
-              });              
+              });
 
               describe('when the variation is toggled OFF', function() {
                 beforeEach(function() {
@@ -3374,7 +3369,7 @@ describe('lib/optimizely', function() {
 
                 it('returns the right value from getAllFeatureVariables and send notification with featureEnabled false', function() {
                   var result = optlyInstance.getAllFeatureVariables(
-                    'test_feature_for_experiment',                  
+                    'test_feature_for_experiment',
                     'user1',
                     { test_attribute: 'test_value' }
                   );
@@ -3394,7 +3389,7 @@ describe('lib/optimizely', function() {
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
                       featureKey: 'test_feature_for_experiment',
-                      featureEnabled: false,                      
+                      featureEnabled: false,
                       variableValues: {
                         is_button_animated: false,
                         button_width: 50.55,
@@ -3411,7 +3406,7 @@ describe('lib/optimizely', function() {
                         variationKey: 'variation2',
                       },
                     },
-                  });              
+                  });
                 });
               });
             });
@@ -3675,7 +3670,7 @@ describe('lib/optimizely', function() {
                     attributes: { test_attribute: 'test_value' },
                     decisionInfo: {
                       featureKey: 'test_feature',
-                      featureEnabled: true,                      
+                      featureEnabled: true,
                       variableValues: {
                         new_content: true,
                         price: 4.99,
@@ -3685,7 +3680,7 @@ describe('lib/optimizely', function() {
                           count: 2,
                           message: 'Hello audience',
                         },
-                      },                      
+                      },
                       source: DECISION_SOURCES.ROLLOUT,
                       sourceInfo: {},
                     },
@@ -4238,7 +4233,7 @@ describe('lib/optimizely', function() {
                   attributes: { test_attribute: 'test_value' },
                   decisionInfo: {
                     featureKey: 'test_feature_for_experiment',
-                    featureEnabled: false,                    
+                    featureEnabled: false,
                     variableValues: {
                       is_button_animated: false,
                       button_width: 50.55,
@@ -4248,7 +4243,7 @@ describe('lib/optimizely', function() {
                         num_buttons: 0,
                         text: 'default value',
                       }
-                    },                    
+                    },
                     source: DECISION_SOURCES.ROLLOUT,
                     sourceInfo: {},
                   },
@@ -4322,7 +4317,6 @@ describe('lib/optimizely', function() {
       logToConsole: false,
     });
     var optlyInstance;
-    var clock;
 
     beforeEach(function() {
       optlyInstance = new Optimizely({
@@ -4341,12 +4335,10 @@ describe('lib/optimizely', function() {
       sandbox.stub(createdLogger, 'log');
       sandbox.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
       sandbox.stub(fns, 'currentTimestamp').returns(1509489766569);
-      clock = sinon.useFakeTimers(new Date().getTime());
     });
 
     afterEach(function() {
       sandbox.restore();
-      clock.restore();
     });
 
     describe('#isFeatureEnabled', function() {
@@ -5867,7 +5859,7 @@ describe('lib/optimizely', function() {
                 createdLogger.log,
                 LOG_LEVEL.INFO,
                 'OPTIMIZELY: Variable "message_info" is not used in variation "594032". Returning default value.'
-              );              
+              );
             });
           });
         });
@@ -6118,7 +6110,7 @@ describe('lib/optimizely', function() {
           });
           assert.deepEqual(result, {
             num_buttons: 0,
-            text: 'default value',            
+            text: 'default value',
           });
           sinon.assert.calledWith(
             createdLogger.log,
@@ -6232,7 +6224,7 @@ describe('lib/optimizely', function() {
             LOG_LEVEL.INFO,
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_info" of feature flag "test_feature_for_experiment".'
           );
-        });        
+        });
       });
 
       it('returns null from getFeatureVariable if user id is null when variable type is boolean', function() {
@@ -7299,7 +7291,6 @@ describe('lib/optimizely', function() {
 
   describe('event batching', function() {
     var bucketStub;
-    var clock;
 
     var createdLogger = logger.createLogger({
       logLevel: LOG_LEVEL.INFO,
@@ -7312,14 +7303,12 @@ describe('lib/optimizely', function() {
       sinon.stub(createdLogger, 'log');
       sinon.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
 
-      clock = sinon.useFakeTimers(new Date().getTime());
     });
 
     afterEach(function() {
       bucketer.bucket.restore();
       errorHandler.handleError.restore();
       createdLogger.log.restore();
-      clock.restore();
       fns.uuid.restore();
     });
 
@@ -7769,11 +7758,9 @@ describe('lib/optimizely', function() {
     });
 
     describe('onReady method', function() {
-      var clock;
       var setTimeoutSpy;
       var clearTimeoutSpy;
       beforeEach(function() {
-        clock = sinon.useFakeTimers(new Date().getTime());
         setTimeoutSpy = sinon.spy(clock, 'setTimeout');
         clearTimeoutSpy = sinon.spy(clock, 'clearTimeout');
       });
@@ -7781,7 +7768,6 @@ describe('lib/optimizely', function() {
       afterEach(function() {
         setTimeoutSpy.restore();
         clearTimeoutSpy.restore();
-        clock.restore();
       });
 
       it('fulfills the promise with the value from the project config manager ready promise after the project config manager ready promise is fulfilled', function() {

@@ -28,24 +28,15 @@ import eventProcessorConfigValidator from './utils/event_processor_config_valida
 var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
 
 describe('javascript-sdk', function() {
+  var clock;
   beforeEach(function() {
-    sinon.spy(optimizelyFactory, 'createInstance');
-    sinon.stub(optimizelyFactory.eventDispatcher, 'dispatchEvent').callsFake(function(eventObj, cb) {
-      setTimeout(function() {
-        cb();
-      }, 0);
-    });
+    sinon.stub(optimizelyFactory.eventDispatcher, 'dispatchEvent');
+    clock = sinon.useFakeTimers(new Date());
   });
 
   afterEach(function() {
     optimizelyFactory.eventDispatcher.dispatchEvent.restore();
-    var instances = optimizelyFactory.createInstance.getCalls().map(function(call) {
-      return call.returnValue;
-    })
-    optimizelyFactory.createInstance.restore();
-    return Promise.all(instances.map(function(instance) {
-      return instance.close();
-    }));
+    clock.restore();
   });
 
   describe('APIs', function() {
