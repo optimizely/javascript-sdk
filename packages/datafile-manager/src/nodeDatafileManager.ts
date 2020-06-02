@@ -18,9 +18,28 @@ import { makeGetRequest } from './nodeRequest';
 import HttpPollingDatafileManager from './httpPollingDatafileManager';
 import { Headers, AbortableRequest } from './http';
 import { DatafileManagerConfig } from './datafileManager';
+import {
+  DEFAULT_URL_TEMPLATE,
+  DEFAULT_AUTHENTICATED_DATAFILE_URL_TEMPLATE ,
+} from './config';
 
 export default class NodeDatafileManager extends HttpPollingDatafileManager {
+
+  private authToken?: string;
+
+  constructor(config: DatafileManagerConfig) {  
+    const defaultUrlTemplate = config.authDatafileToken ? DEFAULT_AUTHENTICATED_DATAFILE_URL_TEMPLATE : DEFAULT_URL_TEMPLATE;
+    super({
+      ... config,
+      urlTemplate: config.urlTemplate || defaultUrlTemplate,
+    });
+    this.authToken = config.authDatafileToken;
+  }
+
   protected makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest {
+    if (this.authToken) {
+      headers['Authorization'] = `Bearer ${this.authToken}`;      
+    }
     return makeGetRequest(reqUrl, headers);
   }
 
