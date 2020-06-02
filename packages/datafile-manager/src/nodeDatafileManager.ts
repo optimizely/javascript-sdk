@@ -20,7 +20,7 @@ import { Headers, AbortableRequest } from './http';
 import { DatafileManagerConfig } from './datafileManager';
 import {
   DEFAULT_URL_TEMPLATE,
-  DEFAULT_AUTHENTICATED_DATAFILE_URL_TEMPLATE ,
+  DEFAULT_AUTHENTICATED_DATAFILE_URL_TEMPLATE,
 } from './config';
 
 export default class NodeDatafileManager extends HttpPollingDatafileManager {
