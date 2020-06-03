@@ -87,18 +87,26 @@ describe('lib/plugins/event_dispatcher/node', function() {
         dispatchEvent(eventObj, callback);
         sinon.assert.notCalled(callback);
       });
-    });
 
-    it('does not throw in the event of an error', function() {
-      var eventObj = {
-        url: 'https://example',
-        params: {},
-        httpVerb: 'POST',
-      };
+      describe('in the event of an error', function() {
+        beforeEach(function() {
+          nock('https://example')
+            .post('/event')
+            .replyWithError('Connection error')
+        });
 
-      var callback = sinon.spy();
-      dispatchEvent(eventObj, callback);
-      sinon.assert.notCalled(callback);
+        it('does not throw', function() {
+          var eventObj = {
+            url: 'https://example/event',
+            params: {},
+            httpVerb: 'POST',
+          };
+
+          var callback = sinon.spy();
+          dispatchEvent(eventObj, callback);
+          sinon.assert.notCalled(callback);
+        });
+      });
     });
   });
 });

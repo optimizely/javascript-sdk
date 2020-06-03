@@ -10,7 +10,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "lint": "eslint 'lib/**/*.js'",
-    "test": "mocha --exit -r esm -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.js'",
+    "test": "mocha -r esm -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.js'",
     "posttest": "npm run lint",
     "test-ci": "npm run test-xbrowser && npm run test-umdbrowser",
     "test-xbrowser": "karma start karma.bs.conf.js --single-run",

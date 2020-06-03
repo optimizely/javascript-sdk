@@ -23,10 +23,20 @@ import testData from './tests/test_data';
 import packageJSON from '../package.json';
 import optimizelyFactory from './index.react_native';
 import configValidator from './utils/config_validator';
-import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
 describe('javascript-sdk/react-native', function() {
+  var clock;
+  beforeEach(function() {
+    sinon.stub(optimizelyFactory.eventDispatcher, 'dispatchEvent');
+    clock = sinon.useFakeTimers(new Date());
+  });
+
+  afterEach(function() {
+    optimizelyFactory.eventDispatcher.dispatchEvent.restore();
+    clock.restore();
+  });
+
   describe('APIs', function() {
     it('should expose logger, errorHandler, eventDispatcher and enums', function() {
       assert.isDefined(optimizelyFactory.logging);
@@ -120,16 +130,6 @@ describe('javascript-sdk/react-native', function() {
       });
 
       describe('when no event dispatcher passed to createInstance', function() {
-        beforeEach(function() {
-          sinon.stub(defaultEventDispatcher, 'dispatchEvent', function(evt, cb) {
-            cb();
-          });
-        });
-
-        afterEach(function() {
-          defaultEventDispatcher.dispatchEvent.restore();
-        });
-
         it('uses the default event dispatcher', function() {
           var optlyInstance = optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
@@ -137,9 +137,8 @@ describe('javascript-sdk/react-native', function() {
             logger: silentLogger,
           });
           optlyInstance.activate('testExperiment', 'testUser');
-          return optlyInstance.close().then(function() {
-            sinon.assert.calledOnce(defaultEventDispatcher.dispatchEvent);
-          });
+          clock.tick(30001)
+          sinon.assert.calledOnce(optimizelyFactory.eventDispatcher.dispatchEvent);
         });
       });
 
@@ -185,7 +184,7 @@ describe('javascript-sdk/react-native', function() {
       describe('event processor configuration', function() {
         var eventProcessorSpy;
         beforeEach(function() {
-          eventProcessorSpy = sinon.stub(eventProcessor, 'LogTierV1EventProcessor').callThrough();
+          eventProcessorSpy = sinon.spy(eventProcessor, 'LogTierV1EventProcessor');
         });
 
         afterEach(function() {
