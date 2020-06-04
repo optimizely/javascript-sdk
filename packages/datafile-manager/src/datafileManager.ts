@@ -44,3 +44,7 @@ export interface DatafileManagerConfig {
   urlTemplate?: string;
   cache?: PersistentKeyValueCache;
 }
+
+export interface NodeDatafileManagerConfig extends DatafileManagerConfig {
+  datafileAccessToken?: string;
+}
