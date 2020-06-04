@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 Changes that have landed but are not yet released.
 
 ### Changed
-- Added support for authenticated datafiles. `NodeDatafileManager` now accepts `datafileAccessToken` to be able to fetch authentication datafiles.
+- Added support for authenticated datafiles. `NodeDatafileManager` now accepts `datafileAccessToken` to be able to fetch authenticated datafiles.
 
 ## [0.5.0] - April 17, 2020
 
