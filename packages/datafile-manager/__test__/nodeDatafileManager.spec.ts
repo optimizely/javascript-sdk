@@ -116,7 +116,7 @@ describe('nodeDatafileManager', () => {
     });
     const manager = new NodeDatafileManager({
       sdkKey: '1234',    
-      authDatafileToken: 'abcdefgh',
+      datafileAccessToken: 'abcdefgh',
     });    
     manager.start();
     expect(makeGetRequestSpy).toBeCalledTimes(1);
@@ -153,7 +153,7 @@ describe('nodeDatafileManager', () => {
     });
     const manager = new NodeDatafileManager({
       sdkKey: '1234',
-      authDatafileToken: 'abcdefgh',
+      datafileAccessToken: 'abcdefgh',
     });    
     manager.start();
     expect(makeGetRequestSpy).toBeCalledTimes(1);
@@ -172,7 +172,7 @@ describe('nodeDatafileManager', () => {
     });
     const manager = new NodeDatafileManager({
       sdkKey: '1234',
-      authDatafileToken: 'abcdefgh',
+      datafileAccessToken: 'abcdefgh',
       urlTemplate: 'https://myawesomeurl/'
     });    
     manager.start();

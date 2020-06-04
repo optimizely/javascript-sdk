@@ -31,22 +31,22 @@ const logger = getLogger('NodeDatafileManager');
 
 export default class NodeDatafileManager extends HttpPollingDatafileManager {
 
-  private authToken?: string;
+  private accessToken?: string;
 
   constructor(config: NodeDatafileManagerConfig) {
-    const defaultUrlTemplate = config.authDatafileToken ? DEFAULT_AUTHENTICATED_URL_TEMPLATE : DEFAULT_URL_TEMPLATE;
+    const defaultUrlTemplate = config.datafileAccessToken ? DEFAULT_AUTHENTICATED_URL_TEMPLATE : DEFAULT_URL_TEMPLATE;
     super({
       ... config,
       urlTemplate: config.urlTemplate || defaultUrlTemplate,
     });
-    this.authToken = config.authDatafileToken;
+    this.accessToken = config.datafileAccessToken;
   }
 
   protected makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest {
     let requestHeaders = Object.assign({}, headers);
-    if (this.authToken) {
+    if (this.accessToken) {
       logger.debug('Adding Authorization header with Bearer Token');
-      requestHeaders['Authorization'] = `Bearer ${this.authToken}`;
+      requestHeaders['Authorization'] = `Bearer ${this.accessToken}`;
     }
     return makeGetRequest(reqUrl, requestHeaders);
   }

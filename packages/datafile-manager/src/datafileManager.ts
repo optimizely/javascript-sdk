@@ -46,5 +46,5 @@ export interface DatafileManagerConfig {
 }
 
 export interface NodeDatafileManagerConfig extends DatafileManagerConfig {
-  authDatafileToken?: string;
+  datafileAccessToken?: string;
 }
