@@ -120,7 +120,10 @@ describe('nodeDatafileManager', () => {
     });
     manager.start();
     expect(makeGetRequestSpy).toBeCalledTimes(1);
-    expect(makeGetRequestSpy).toBeCalledWith('https://config.optimizely.com/datafiles/auth/1234.json', expect.anything());
+    expect(makeGetRequestSpy).toBeCalledWith(
+      'https://config.optimizely.com/datafiles/auth/1234.json',
+      expect.anything()
+    );
     await manager.stop();
   });
 
@@ -157,7 +160,7 @@ describe('nodeDatafileManager', () => {
     });
     manager.start();
     expect(makeGetRequestSpy).toBeCalledTimes(1);
-    expect(makeGetRequestSpy).toBeCalledWith(expect.anything(), { 'Authorization': 'Bearer abcdefgh'});
+    expect(makeGetRequestSpy).toBeCalledWith(expect.anything(), { Authorization: 'Bearer abcdefgh' });
     await manager.stop();
   });
 
@@ -173,7 +176,7 @@ describe('nodeDatafileManager', () => {
     const manager = new NodeDatafileManager({
       sdkKey: '1234',
       datafileAccessToken: 'abcdefgh',
-      urlTemplate: 'https://myawesomeurl/'
+      urlTemplate: 'https://myawesomeurl/',
     });
     manager.start();
     expect(makeGetRequestSpy).toBeCalledTimes(1);
