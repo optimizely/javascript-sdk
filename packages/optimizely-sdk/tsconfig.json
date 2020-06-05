@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "module": "esnext"
+  },
+  "include": [
+    "./lib"
+  ],
+  "exclude": [
+    "./dist",
+    "./lib/**/*.tests.js"
+  ]
+ }
