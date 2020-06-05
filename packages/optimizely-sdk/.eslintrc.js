@@ -10,6 +10,7 @@ module.exports = {
     SharedArrayBuffer: 'readonly',
     Promise: 'readonly',
   },
+  ignorePatterns: ["rollup.config.js"],
   parserOptions: {
     ecmaVersion: 6,
     sourceType: 'module',

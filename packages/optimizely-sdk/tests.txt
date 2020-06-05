@@ -1,0 +1,39 @@
+./lib/core/project_config/index.tests.js
+./lib/core/project_config/project_config_manager.tests.js
+./lib/core/notification_center/index.tests.js
+./lib/core/condition_tree_evaluator/index.tests.js
+./lib/core/custom_attribute_condition_evaluator/index.tests.js
+./lib/core/bucketer/index.tests.js
+./lib/core/optimizely_config/index.tests.js
+./lib/core/event_builder/index.tests.js
+./lib/core/event_builder/event_helpers.tests.js
+./lib/plugins/logger/index.tests.js
+./lib/plugins/logger/index.react_native.tests.js
+./lib/plugins/event_dispatcher/index.browser.tests.js
+./lib/plugins/event_dispatcher/index.node.tests.js
+./lib/plugins/error_handler/index.tests.js
+./lib/optimizely/index.tests.js
+./lib/utils/user_profile_service_validator/index.tests.js
+./lib/utils/event_tag_utils/index.tests.js
+./lib/utils/fns/index.tests.js
+./lib/utils/enums/index.tests.js
+./lib/utils/attributes_validator/index.tests.js
+./lib/utils/config_validator/index.tests.js
+./lib/utils/string_value_validator/index.tests.js
+./lib/utils/event_processor_config_validator/index.tests.js
+./lib/utils/event_tags_validator/index.tests.js
+./lib/utils/json_schema_validator/index.tests.js
+./lib/index.node.tests.js
+
+
+SUSPEct:
+
+Log messages:
+./lib/core/decision_service/index.tests.js (log messages)
+./lib/core/audience_evaluator/index.tests.js (log messages)
+./lib/index.react_native.tests.js
+
+Hanging
+./lib/index.browser.tests.js
+./lib/plugins/event_dispatcher/index.node.tests.js
+./lib/index.react_native.tests.js
