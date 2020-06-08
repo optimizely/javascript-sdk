@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### New Features
+- upgrade js-sdk-datafile-manager to 0.6.0 which adds support for `datafileAccessToken` within `datafileOptions` for private datafiles.
+
 ### Bug fixes
 - Added definition of `getFeatureVariable` method in TypeScript type definitions
 - Fixed return type of `getAllFeatureVariables` method in TypeScript type definitions
