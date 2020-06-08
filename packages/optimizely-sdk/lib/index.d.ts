@@ -34,6 +34,7 @@ declare module '@optimizely/optimizely-sdk' {
     autoUpdate?: boolean;
     updateInterval?: number;
     urlTemplate?: string;
+    datafileAccessToken?: string;
   }
 
   // The options object given to Optimizely.createInstance.
