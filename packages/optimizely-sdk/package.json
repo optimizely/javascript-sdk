@@ -10,7 +10,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "lint": "eslint 'lib/**/*.js'",
-    "test": "mocha --exit -r esm -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.js'",
+    "test": "mocha -r esm -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.js'",
     "posttest": "npm run lint",
     "test-ci": "npm run test-xbrowser && npm run test-umdbrowser",
     "test-xbrowser": "karma start karma.bs.conf.js --single-run",
@@ -41,7 +41,7 @@
   },
   "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/optimizely-sdk",
   "dependencies": {
-    "@optimizely/js-sdk-datafile-manager": "^0.5.0",
+    "@optimizely/js-sdk-datafile-manager": "^0.6.0",
     "@optimizely/js-sdk-event-processor": "^0.4.0",
     "@optimizely/js-sdk-logging": "^0.1.0",
     "@optimizely/js-sdk-utils": "^0.2.0",

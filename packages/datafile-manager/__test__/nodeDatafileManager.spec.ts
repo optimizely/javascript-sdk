@@ -104,4 +104,83 @@ describe('nodeDatafileManager', () => {
 
     await manager.stop();
   });
+
+  it('uses authenticated default datafile url when auth token is provided', async () => {
+    makeGetRequestSpy.mockReturnValue({
+      abort: jest.fn(),
+      responsePromise: Promise.resolve({
+        statusCode: 200,
+        body: '{"foo":"bar"}',
+        headers: {},
+      }),
+    });
+    const manager = new NodeDatafileManager({
+      sdkKey: '1234',
+      datafileAccessToken: 'abcdefgh',
+    });
+    manager.start();
+    expect(makeGetRequestSpy).toBeCalledTimes(1);
+    expect(makeGetRequestSpy).toBeCalledWith(
+      'https://config.optimizely.com/datafiles/auth/1234.json',
+      expect.anything()
+    );
+    await manager.stop();
+  });
+
+  it('uses public default datafile url when auth token is not provided', async () => {
+    makeGetRequestSpy.mockReturnValue({
+      abort: jest.fn(),
+      responsePromise: Promise.resolve({
+        statusCode: 200,
+        body: '{"foo":"bar"}',
+        headers: {},
+      }),
+    });
+    const manager = new NodeDatafileManager({
+      sdkKey: '1234',
+    });
+    manager.start();
+    expect(makeGetRequestSpy).toBeCalledTimes(1);
+    expect(makeGetRequestSpy).toBeCalledWith('https://cdn.optimizely.com/datafiles/1234.json', expect.anything());
+    await manager.stop();
+  });
+
+  it('adds authorization header with bearer token when auth token is provided', async () => {
+    makeGetRequestSpy.mockReturnValue({
+      abort: jest.fn(),
+      responsePromise: Promise.resolve({
+        statusCode: 200,
+        body: '{"foo":"bar"}',
+        headers: {},
+      }),
+    });
+    const manager = new NodeDatafileManager({
+      sdkKey: '1234',
+      datafileAccessToken: 'abcdefgh',
+    });
+    manager.start();
+    expect(makeGetRequestSpy).toBeCalledTimes(1);
+    expect(makeGetRequestSpy).toBeCalledWith(expect.anything(), { Authorization: 'Bearer abcdefgh' });
+    await manager.stop();
+  });
+
+  it('prefers user provided url template over defaults', async () => {
+    makeGetRequestSpy.mockReturnValue({
+      abort: jest.fn(),
+      responsePromise: Promise.resolve({
+        statusCode: 200,
+        body: '{"foo":"bar"}',
+        headers: {},
+      }),
+    });
+    const manager = new NodeDatafileManager({
+      sdkKey: '1234',
+      datafileAccessToken: 'abcdefgh',
+      urlTemplate: 'https://myawesomeurl/',
+    });
+    manager.start();
+    expect(makeGetRequestSpy).toBeCalledTimes(1);
+    expect(makeGetRequestSpy).toBeCalledWith('https://myawesomeurl/', expect.anything());
+    await manager.stop();
+  });
 });
