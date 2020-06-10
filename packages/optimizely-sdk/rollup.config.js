@@ -20,32 +20,43 @@ import resolve from '@rollup/plugin-node-resolve';
 import { dependencies } from './package.json';
 import typescript from 'rollup-plugin-typescript2';
 
+const typescriptPluginOptions = {
+  allowJs: true,
+  include: ["*.ts", "**/*.ts", "*.js", "**/*.js"]
+};
+
 const cjsBundleFor = (platform) => ({
   plugins: [
     resolve(),
     commonjs(),
-    typescript({
-      allowJs: true,
-      include: ["*.ts", "**/*.ts", "*.js", "**/*.js"]
-     }),
+    typescript(typescriptPluginOptions),
   ],
   external: ['https', 'http', 'url'].concat(Object.keys(dependencies || {})),
   input: `lib/index.${platform}.js`,
   output: {
     exports: 'named',
     format: 'cjs',
-    file: `dist/optimizely.${platform}.js`,
+    file: `dist/optimizely.${platform}.min.js`,
+    plugins: [terser()],
     sourcemap: true,
   },
 });
 
 const esmBundle = {
   ...cjsBundleFor('browser'),
-  output: {
-    format: 'es',
-    file: 'dist/optimizely.browser.es.js',
-    sourcemap: true,
-  },
+  output: [
+    {
+      format: 'es',
+      file: 'dist/optimizely.browser.es.js',
+      sourcemap: true,
+    },
+    {
+      format: 'es',
+      file: 'dist/optimizely.browser.es.min.js',
+      plugins: [terser()],
+      sourcemap: true,
+    },
+  ],
 };
 
 const umdBundle = {
@@ -65,10 +76,7 @@ const umdBundle = {
         '@optimizely/js-sdk-event-processor': ['LogTierV1EventProcessor', 'LocalStoragePendingEventsDispatcher'],
       },
     }),
-    typescript({
-      allowJs: true,
-      include: ["*.ts", "**/*.ts", "*.js", "**/*.js"]
-     }),
+    typescript(typescriptPluginOptions),
   ],
   input: 'lib/index.browser.js',
   output: [
@@ -94,10 +102,7 @@ const jsonSchemaBundle = {
   plugins: [
     resolve(),
     commonjs(),
-    typescript({
-      allowJs: true,
-      include: ["*.ts", "**/*.ts", "*.js", "**/*.js"]
-     }),
+    typescript(typescriptPluginOptions),
   ],
   external: ['json-schema', '@optimizely/js-sdk-utils'],
   input: 'lib/utils/json_schema_validator/index.js',
@@ -105,6 +110,7 @@ const jsonSchemaBundle = {
     exports: 'named',
     format: 'cjs',
     file: 'dist/optimizely.json_schema_validator.min.js',
+    plugins: [terser()],
     sourcemap: true,
   },
 };
