@@ -1,14 +1,16 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "./dist",
-    "module": "esnext"
+    "allowJs": true,
+    "module": "esnext",
+    "outDir": "./dist"
   },
-  "include": [
-    "./lib"
-  ],
   "exclude": [
     "./dist",
-    "./lib/**/*.tests.js"
+    "./lib/**/*.tests.js",
+    "./lib/**/*.tests.ts",
+  ],
+  "include": [
+    "./lib"
   ]
  }
