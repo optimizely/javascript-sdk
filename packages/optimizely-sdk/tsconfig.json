@@ -4,7 +4,8 @@
     "allowJs": true,
     "declaration": false,
     "module": "esnext",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "sourceMap": true
   },
   "exclude": [
     "./dist",
