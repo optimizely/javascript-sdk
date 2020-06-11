@@ -2,15 +2,21 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "allowJs": true,
+    "declaration": false,
     "module": "esnext",
     "outDir": "./dist"
   },
   "exclude": [
     "./dist",
     "./lib/**/*.tests.js",
+    "./lib/**/*.tests.js",
     "./lib/**/*.tests.ts",
+    "./lib/**/*.umdtests.js",
+    "./lib/tests",
+    "node_modules"
   ],
   "include": [
-    "./lib"
+    "./lib/**/*.ts",
+    "./lib/**/*.js"
   ]
  }

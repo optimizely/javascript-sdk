@@ -22,7 +22,19 @@ import typescript from 'rollup-plugin-typescript2';
 
 const typescriptPluginOptions = {
   allowJs: true,
-  include: ["*.ts", "**/*.ts", "*.js", "**/*.js"]
+  exclude: [
+    './dist',
+    './lib/**/*.tests.js',
+    './lib/**/*.tests.js',
+    './lib/**/*.tests.ts',
+    './lib/**/*.umdtests.js',
+    './lib/tests',
+    'node_modules'
+  ],
+  include: [
+    './lib/**/*.ts',
+    './lib/**/*.js'
+  ],
 };
 
 const cjsBundleFor = (platform) => ({
