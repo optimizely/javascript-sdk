@@ -9,7 +9,7 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "clean": "rm -rf dist",
-    "lint": "eslint 'lib/**/*.js'",
+    "lint": "tsc --noEmit && eslint 'lib/**/*.js' 'lib/**/*.ts'",
     "test": "TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.ts' 'lib/**/*.tests.js'",
     "posttest": "npm run lint",
     "test-ci": "npm run test-xbrowser && npm run test-umdbrowser",
@@ -53,6 +53,8 @@
     "@rollup/plugin-node-resolve": "^7.1.1",
     "@types/chai": "^4.2.11",
     "@types/mocha": "^5.2.7",
+    "@typescript-eslint/eslint-plugin": "^3.2.0",
+    "@typescript-eslint/parser": "^3.2.0",
     "bluebird": "^3.4.6",
     "chai": "^4.2.0",
     "coveralls": "^3.0.2",
