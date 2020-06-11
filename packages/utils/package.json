@@ -38,8 +38,7 @@
     "access": "public"
   },
   "dependencies": {
-    "uuid": "^3.3.2",
-    "@optimizely/js-sdk-logging": "^0.1.0"
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@types/jest": "^23.3.12",

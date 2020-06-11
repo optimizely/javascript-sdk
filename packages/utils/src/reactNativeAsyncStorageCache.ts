@@ -13,13 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { getLogger } from '@optimizely/js-sdk-logging';
 import AsyncStorage from '@react-native-community/async-storage';
 
 import PersistentKeyValueCache from './persistentKeyValueCache';
-
-const logger = getLogger('DatafileManager');
 
 export default class ReactNativeAsyncStorageCache implements PersistentKeyValueCache {
   get(key: string): Promise<any | null> {
@@ -30,7 +26,6 @@ export default class ReactNativeAsyncStorageCache implements PersistentKeyValueC
       try {
         return JSON.parse(val);
       } catch (ex) {
-        logger.error('Error Parsing Object from cache - %s', ex);
         throw ex;
       }
     });
@@ -40,7 +35,6 @@ export default class ReactNativeAsyncStorageCache implements PersistentKeyValueC
     try {
       return AsyncStorage.setItem(key, JSON.stringify(val));
     } catch (ex) {
-      logger.error('Error stringifying Object to Json - %s', ex);
       return Promise.reject(ex);
     }
   }
