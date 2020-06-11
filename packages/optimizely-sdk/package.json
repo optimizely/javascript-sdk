@@ -10,9 +10,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "lint": "eslint 'lib/**/*.js'",
-    "test": "npm run test-js && npm run test-ts",
-    "test-js": "mocha -r esm -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.js'",
-    "test-ts": "TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.ts'",
+    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.ts' 'lib/**/*.tests.js'",
     "posttest": "npm run lint",
     "test-ci": "npm run test-xbrowser && npm run test-umdbrowser",
     "test-xbrowser": "karma start karma.bs.conf.js --single-run",
@@ -59,7 +57,6 @@
     "chai": "^4.2.0",
     "coveralls": "^3.0.2",
     "eslint": "^6.7.2",
-    "esm": "^3.2.25",
     "json-loader": "^0.5.4",
     "karma": "^4.4.1",
     "karma-browserstack-launcher": "^1.5.1",
