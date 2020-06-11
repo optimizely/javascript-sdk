@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/js-sdk-utils",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Optimizely Full Stack Utils",
   "author": "jordangarcia <jordan@optimizely.com>",
   "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/utils",

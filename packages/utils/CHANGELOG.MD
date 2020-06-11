@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.2.0] - June 11, 2020
+
 ### New Features
 - Added `PersistentKeyValueCache` interface and its implementation for React Native under `ReactNativeAsyncStorageCahe`.
 
