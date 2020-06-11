@@ -1,3 +1,3 @@
 export class Foo {
-  public bar: string = 'sup'
+  public bar = 'sup'
 }
