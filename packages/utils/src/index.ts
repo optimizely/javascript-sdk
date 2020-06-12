@@ -152,5 +152,5 @@ export interface NotificationCenter {
   sendNotifications(notificationType: NOTIFICATION_TYPES, notificationData?: any): void
 }
 
-export * from './persistentKeyValueCache'
-export * from './reactNativeAsyncStorageCache'
+export { default as PersistentKeyValueCache } from './persistentKeyValueCache'
+export { default as ReactNativeAsyncStorageCache } from './reactNativeAsyncStorageCache'
