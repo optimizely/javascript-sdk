@@ -10,7 +10,7 @@ Changes that have landed but are not yet released.
 ## [0.3.1] - June 12, 2020
 
 ### Bug Fixes
-- Fix exports of `PersistentKeyValueCache` and `ReactNativeAsyncStorageCache` to be named, not default
+- Fix exports of `PersistentKeyValueCache` and `ReactNativeAsyncStorageCache` to be named, not default ([#506](https://github.com/optimizely/javascript-sdk/pull/506))
 
 ## [0.3.0] - June 11, 2020
 
