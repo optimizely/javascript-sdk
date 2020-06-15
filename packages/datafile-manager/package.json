@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@optimizely/js-sdk-logging": "^0.1.0",
-    "@optimizely/js-sdk-utils": "^0.3.1",
+    "@optimizely/js-sdk-utils": "^0.3.2",
     "decompress-response": "^4.2.1"
   },
   "peerDependencies": {
