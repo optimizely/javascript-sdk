@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.3.2] - June 15, 2020
+
+### Bug Fixes
+- Wrap `uuid.v4` to disallow passing extra arguments and prevent dependency on `uuid` package types ([#509](https://github.com/optimizely/javascript-sdk/pull/509))
+
 ## [0.3.1] - June 12, 2020
 
 ### Bug Fixes
