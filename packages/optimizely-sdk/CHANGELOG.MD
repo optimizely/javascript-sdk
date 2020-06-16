@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [4.1.0-beta] - June 16, 2020
 
 ### New Features
-- Added support for JSON feature variables: new methods `getFeatureVariableJson` and `getAllFeatureVaraibles` ([#467](https://github.com/optimizely/javascript-sdk/pull/467), [#470](https://github.com/optimizely/javascript-sdk/pull/470))
+- Added support for JSON feature variables: new methods `getFeatureVariableJson` and `getAllFeatureVariables` ([#467](https://github.com/optimizely/javascript-sdk/pull/467), [#470](https://github.com/optimizely/javascript-sdk/pull/470))
 - Added support for authenticated datafiles when running in Node.js. Pass `datafileAccessToken` within `datafileOptions` to request an authenticated datafile using the token ([#498](https://github.com/optimizely/javascript-sdk/pull/498), [#502](https://github.com/optimizely/javascript-sdk/pull/502)):
   ```js
   const optimizelySDK = require('@optimizely/optimizely-sdk');
