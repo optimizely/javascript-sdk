@@ -7,13 +7,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.1.0-beta] - June 16, 2020
+
 ### New Features
-- upgrade js-sdk-datafile-manager to 0.6.0 which adds support for `datafileAccessToken` within `datafileOptions` for private datafiles.
+- Added support for JSON feature variables: new methods `getFeatureVariableJson` and `getAllFeatureVaraibles` ([#467](https://github.com/optimizely/javascript-sdk/pull/467), [#470](https://github.com/optimizely/javascript-sdk/pull/470))
+- Added support for authenticated datafiles when running in Node.js. Pass `datafileAccessToken` within `datafileOptions` to request an authenticated datafile using the token ([#498](https://github.com/optimizely/javascript-sdk/pull/498), [#502](https://github.com/optimizely/javascript-sdk/pull/502)):
+  ```js
+  const optimizelySDK = require('@optimizely/optimizely-sdk');
+  var optimizelyClientInstance = optimizely.createInstance({
+    sdkKey: '<Your SDK key>',
+    datafileOptions: {
+      datafileAccessToken: '<Your datafile access token>',
+    }
+  });
+  ```
 
 ### Bug fixes
-- Added definition of `getFeatureVariable` method in TypeScript type definitions
-- Fixed return type of `getAllFeatureVariables` method in TypeScript type definitions
-- Revisited audience evaluation log level to debug
+- Fixed audience evaluation log level: changed from `INFO` to `DEBUG` ([#496](https://github.com/optimizely/javascript-sdk/pull/496))
 
 ## [4.0.0] - April 30, 2020
 
