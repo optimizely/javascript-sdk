@@ -25,7 +25,6 @@ const typescriptPluginOptions = {
   exclude: [
     './dist',
     './lib/**/*.tests.js',
-    './lib/**/*.tests.js',
     './lib/**/*.tests.ts',
     './lib/**/*.umdtests.js',
     './lib/tests',
