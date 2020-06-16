@@ -39,7 +39,7 @@ declare module '@optimizely/optimizely-sdk' {
 
   // The options object given to Optimizely.createInstance.
   export interface Config {
-    // TODO: Don't use object type
+    // TODO[OASIS-6649]: Don't use object type
     // eslint-disable-next-line  @typescript-eslint/ban-types
     datafile?: object | string;
     datafileOptions?: DatafileOptions;
@@ -52,7 +52,7 @@ declare module '@optimizely/optimizely-sdk' {
       | enums.LOG_LEVEL.INFO
       | enums.LOG_LEVEL.NOTSET
       | enums.LOG_LEVEL.WARNING;
-    // TODO: Don't use object type
+    // TODO[OASIS-6649]: Don't use object type
     // eslint-disable-next-line  @typescript-eslint/ban-types
     jsonSchemaValidator?: object;
     userProfileService?: UserProfileService | null;
@@ -115,13 +115,11 @@ declare module '@optimizely/optimizely-sdk' {
   // tests and feature rollouts.
   export interface Event {
     // URL to which to send the HTTP request.
-    // TODO: Don't use any
-    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     url: string;
     // HTTP method with which to send the event.
     httpVerb: 'POST';
     // Value to send in the request body, JSON-serialized.
-    // TODO: Don't use any
+    // TODO[OASIS-6649]: Don't use any type
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     params: any;
   }
@@ -167,7 +165,7 @@ declare module '@optimizely/optimizely-sdk' {
   }
 
   export type UserAttributes = {
-    // TODO: Don't use any
+    // TODO[OASIS-6649]: Don't use any type
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     [name: string]: any;
   };
@@ -193,7 +191,7 @@ declare module '@optimizely/optimizely-sdk' {
       endOfRange: number;
     }>;
     audienceIds: string[];
-    // TODO: Don't use object type
+    // TODO[OASIS-6649]: Don't use object type
     // eslint-disable-next-line  @typescript-eslint/ban-types
     forcedVariations: object;
   }
