@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import PersistentKeyValueCache from './persistentKeyValueCache';
+import { PersistentKeyValueCache } from '@optimizely/js-sdk-utils';
 
 export interface DatafileUpdate {
   datafile: object;

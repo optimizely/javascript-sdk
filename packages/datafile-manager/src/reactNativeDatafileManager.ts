@@ -18,7 +18,7 @@ import { makeGetRequest } from './browserRequest';
 import HttpPollingDatafileManager from './httpPollingDatafileManager';
 import { Headers, AbortableRequest } from './http';
 import { DatafileManagerConfig } from './datafileManager';
-import ReactNativeAsyncStorageCache from './reactNativeAsyncStorageCache';
+import { ReactNativeAsyncStorageCache } from '@optimizely/js-sdk-utils';
 
 export default class ReactNativeDatafileManager extends HttpPollingDatafileManager {
   protected makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest {

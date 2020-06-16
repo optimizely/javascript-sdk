@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { v4 as generateUUID } from 'uuid'
+import { v4 } from 'uuid';
+
+export function generateUUID(): string {
+  return v4()
+}
 
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>
 
@@ -151,3 +155,6 @@ export enum NOTIFICATION_TYPES {
 export interface NotificationCenter {
   sendNotifications(notificationType: NOTIFICATION_TYPES, notificationData?: any): void
 }
+
+export { default as PersistentKeyValueCache } from './persistentKeyValueCache'
+export { default as ReactNativeAsyncStorageCache } from './reactNativeAsyncStorageCache'
