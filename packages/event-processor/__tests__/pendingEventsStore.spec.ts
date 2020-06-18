@@ -36,105 +36,106 @@ describe('LocalStorageStore', () => {
     localStorage.clear()
   })
 
-  it('should get, set and remove items', () => {
-    store.set('1', {
+  it('should get, set and remove items', async () => {
+    await store.set('1', {
       uuid: '1',
       timestamp: 1,
       value: 'first',
     })
 
-    expect(store.get('1')).toEqual({
+    expect(await store.get('1')).toEqual({
       uuid: '1',
       timestamp: 1,
       value: 'first',
     })
 
-    store.set('1', {
+    await store.set('1', {
       uuid: '1',
       timestamp: 2,
       value: 'second',
     })
 
-    expect(store.get('1')).toEqual({
+    expect(await store.get('1')).toEqual({
       uuid: '1',
       timestamp: 2,
       value: 'second',
     })
 
-    expect(store.values()).toHaveLength(1)
+    expect(await store.values()).toHaveLength(1)
 
-    store.remove('1')
+    await store.remove('1')
 
-    expect(store.values()).toHaveLength(0)
+    expect(await store.values()).toHaveLength(0)
   })
 
-  it('should allow replacement of the entire map', () => {
-    store.set('1', {
+  it('should allow replacement of the entire map', async () => {
+    await store.set('1', {
       uuid: '1',
       timestamp: 1,
       value: 'first',
     })
 
-    store.set('2', {
+    await store.set('2', {
       uuid: '2',
       timestamp: 2,
       value: 'second',
     })
 
-    store.set('3', {
+    await store.set('3', {
       uuid: '3',
       timestamp: 3,
       value: 'third',
     })
 
-    expect(store.values()).toEqual([
+    expect(await store.values()).toEqual([
       { uuid: '1', timestamp: 1, value: 'first' },
       { uuid: '2', timestamp: 2, value: 'second' },
       { uuid: '3', timestamp: 3, value: 'third' },
     ])
 
     const newMap = {}
-    store.values().forEach(item => {
+    const theItems = await store.values()
+    theItems.forEach(item => {
       newMap[item.uuid] = {
         ...item,
         value: 'new',
       }
     })
-    store.replace(newMap)
+    await store.replace(newMap)
 
-    expect(store.values()).toEqual([
+    expect(await store.values()).toEqual([
       { uuid: '1', timestamp: 1, value: 'new' },
       { uuid: '2', timestamp: 2, value: 'new' },
       { uuid: '3', timestamp: 3, value: 'new' },
     ])
   })
 
-  it(`shouldn't allow more than the configured maxValues, using timestamp to remove the oldest entries`, () => {
-    store.set('2', {
+  it(`shouldn't allow more than the configured maxValues, using timestamp to remove the oldest entries`, async () => {
+    await store.set('2', {
       uuid: '2',
       timestamp: 2,
       value: 'second',
     })
 
-    store.set('3', {
+    await store.set('3', {
       uuid: '3',
       timestamp: 3,
       value: 'third',
     })
 
-    store.set('1', {
+    await store.set('1', {
       uuid: '1',
       timestamp: 1,
       value: 'first',
     })
 
-    store.set('4', {
+    await store.set('4', {
       uuid: '4',
       timestamp: 4,
       value: 'fourth',
     })
 
-    expect(store.values()).toEqual([
+    expect(await store.values()).toEqual([
       { uuid: '2', timestamp: 2, value: 'second' },
       { uuid: '3', timestamp: 3, value: 'third' },
       { uuid: '4', timestamp: 4, value: 'fourth' },
