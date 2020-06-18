@@ -19,17 +19,17 @@ import { getLogger } from '@optimizely/js-sdk-logging';
 const logger = getLogger('EventProcessor')
 
 export interface PendingEventsStore<K> {
-  get(key: string): K | null
+  get(key: string): Promise<K | null>
 
-  set(key: string, value: K): void
+  set(key: string, value: K): Promise<void>
 
-  remove(key: string): void
+  remove(key: string): Promise<void>
 
-  values(): K[]
+  values(): Promise<K[]>
 
-  clear(): void
+  clear(): Promise<void>
 
-  replace(newMap: { [key: string]: K }): void
+  replace(newMap: { [key: string]: K }): Promise<void>
 }
 
 interface StoreEntry {
@@ -46,31 +46,31 @@ export class LocalStorageStore<K extends StoreEntry> implements PendingEventsSto
     this.maxValues = maxValues
   }
 
-  get(key: string): K | null {
+  async get(key: string): Promise<K | null> {
     return this.getMap()[key] || null
   }
 
-  set(key: string, value: K): void {
+  async set(key: string, value: K): Promise<void> {
     const map = this.getMap()
     map[key] = value
     this.replace(map)
   }
 
-  remove(key: string): void {
+  async remove(key: string): Promise<void> {
     const map = this.getMap()
     delete map[key]
     this.replace(map)
   }
 
-  values(): K[] {
+  async values(): Promise<K[]> {
     return objectValues(this.getMap())
   }
 
-  clear(): void {
+  async clear(): Promise<void> {
     this.replace({})
   }
 
-  replace(map: { [key: string]: K }): void {
+  async replace(map: { [key: string]: K }): Promise<void> {
     try {
       // This is a temporary fix to support React Native which does not have localStorage.
       window.localStorage && localStorage.setItem(this.LS_KEY, JSON.stringify(map))

@@ -53,23 +53,22 @@ export class PendingEventsDispatcher implements EventDispatcher {
   }
 
   sendPendingEvents(): void {
-    const pendingEvents = this.store.values()
-
-    logger.debug('Sending %s pending events from previous page', pendingEvents.length)
-
-    pendingEvents.forEach(item => {
-      try {
-        this.send(item, () => {})
-      } catch (e) {}
+    this.store.values().then((pendingEvents) => {
+      logger.debug('Sending %s pending events from previous page', pendingEvents.length)
+      pendingEvents.forEach(item => {
+        try {
+          this.send(item, () => {})
+        } catch (e) {}
+      })
     })
   }
 
   protected send(entry: DispatcherEntry, callback: EventDispatcherCallback): void {
-    this.store.set(entry.uuid, entry)
-
-    this.dispatcher.dispatchEvent(entry.request, response => {
-      this.store.remove(entry.uuid)
-      callback(response)
+    this.store.set(entry.uuid, entry).then(() => {
+      this.dispatcher.dispatchEvent(entry.request, response => {
+        this.store.remove(entry.uuid)
+        callback(response)
+      })
     })
   }
 }
