@@ -72,10 +72,12 @@ describe('LocalStoragePendingEventsDispatcher', () => {
       expect((originalEventDispatcher.dispatchEvent as unknown) as jest.Mock).toBeCalledTimes(1)
       expect(internalDispatchCall[0]).toEqual(eventV1Request)
 
-      // assert that the passed in callback to pendingEventsDispatcher was called
-      expect(callback).toHaveBeenCalledTimes(1)
-      expect(callback).toHaveBeenCalledWith({ statusCode: 200 })
-      done()
+      setTimeout(() => {
+        // assert that the passed in callback to pendingEventsDispatcher was called
+        expect(callback).toHaveBeenCalledTimes(1)
+        expect(callback).toHaveBeenCalledWith({ statusCode: 200 })
+        done()
+      })
     })
   })
 
@@ -100,10 +102,12 @@ describe('LocalStoragePendingEventsDispatcher', () => {
       expect((originalEventDispatcher.dispatchEvent as unknown) as jest.Mock).toBeCalledTimes(1)
       expect(internalDispatchCall[0]).toEqual(eventV1Request)
 
-      // assert that the passed in callback to pendingEventsDispatcher was called
-      expect(callback).toHaveBeenCalledTimes(1)
-      expect(callback).toHaveBeenCalledWith({ statusCode: 400})
-      done()
+      setTimeout(() => {
+        // assert that the passed in callback to pendingEventsDispatcher was called
+        expect(callback).toHaveBeenCalledTimes(1)
+        expect(callback).toHaveBeenCalledWith({ statusCode: 400})
+        done()
+      })
     })
   })
 })
@@ -135,7 +139,7 @@ describe('PendingEventsDispatcher', () => {
 
   describe('dispatch', () => {
     describe('when the dispatch is successful', () => {
-      it('should save the pendingEvent to the store and remove it once dispatch is completed', async () => {
+      it('should save the pendingEvent to the store and remove it once dispatch is completed', async (done) => {
         const callback = jest.fn()
         const eventV1Request: EventV1Request = {
           url: 'http://cdn.com',
@@ -164,16 +168,19 @@ describe('PendingEventsDispatcher', () => {
         ).toBeCalledTimes(1)
         expect(internalDispatchCall[0]).toEqual(eventV1Request)
 
-        // assert that the passed in callback to pendingEventsDispatcher was called
-        expect(callback).toHaveBeenCalledTimes(1)
-        expect(callback).toHaveBeenCalledWith({ statusCode: 200 })
+        setTimeout(async () => {
+          // assert that the passed in callback to pendingEventsDispatcher was called
+          expect(callback).toHaveBeenCalledTimes(1)
+          expect(callback).toHaveBeenCalledWith({ statusCode: 200 })
 
-        expect(await store.values()).toHaveLength(0)
+          expect(await store.values()).toHaveLength(0)
+          done()
+        })
       })
     })
 
     describe('when the dispatch is unsuccessful', () => {
-      it('should save the pendingEvent to the store and remove it once dispatch is completed', async () => {
+      it('should save the pendingEvent to the store and remove it once dispatch is completed', async (done) => {
         const callback = jest.fn()
         const eventV1Request: EventV1Request = {
           url: 'http://cdn.com',
@@ -202,11 +209,14 @@ describe('PendingEventsDispatcher', () => {
         ).toBeCalledTimes(1)
         expect(internalDispatchCall[0]).toEqual(eventV1Request)
 
-        // assert that the passed in callback to pendingEventsDispatcher was called
-        expect(callback).toHaveBeenCalledTimes(1)
-        expect(callback).toHaveBeenCalledWith({ statusCode: 400 })
+        setTimeout(async () => {
+          // assert that the passed in callback to pendingEventsDispatcher was called
+          expect(callback).toHaveBeenCalledTimes(1)
+          expect(callback).toHaveBeenCalledWith({ statusCode: 400 })
 
-        expect(await store.values()).toHaveLength(0)
+          expect(await store.values()).toHaveLength(0)
+          done()
+        })
       })
     })
   })
