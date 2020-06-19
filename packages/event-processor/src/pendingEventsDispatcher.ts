@@ -66,8 +66,7 @@ export class PendingEventsDispatcher implements EventDispatcher {
   protected send(entry: DispatcherEntry, callback: EventDispatcherCallback): void {
     this.store.set(entry.uuid, entry).then(() => {
       this.dispatcher.dispatchEvent(entry.request, response => {
-        this.store.remove(entry.uuid)
-        callback(response)
+        this.store.remove(entry.uuid).then(() => callback(response))
       })
     })
   }
