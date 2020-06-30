@@ -39,7 +39,7 @@ import {
 } from '../../tests/test_data';
 
 var testData = getTestProjectConfig();
-var testDataWithFeatures = getTestProjectConfigWithFeatures(); 
+var testDataWithFeatures = getTestProjectConfigWithFeatures();
 
 describe('lib/core/decision_service', function() {
   describe('APIs', function() {
@@ -285,7 +285,7 @@ describe('lib/core/decision_service', function() {
           );
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
           sinon.assert.calledOnce(bucketerStub);
-          assert.strictEqual(4, mockLogger.log.callCount);
+          assert.strictEqual(5, mockLogger.log.callCount);
           sinon.assert.calledWith(userProfileServiceInstance.save, {
             user_id: 'decision_service_user',
             experiment_bucket_map: {
@@ -299,7 +299,7 @@ describe('lib/core/decision_service', function() {
             'DECISION_SERVICE: User decision_service_user is not in the forced variation map.'
           );
           assert.strictEqual(
-            mockLogger.log.args[3][1],
+            mockLogger.log.args[4][1],
             'DECISION_SERVICE: Saved variation "control" of experiment "testExperiment" for user "decision_service_user".'
           );
         });
@@ -336,13 +336,13 @@ describe('lib/core/decision_service', function() {
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
           sinon.assert.calledOnce(bucketerStub); // should still go through with bucketing
 
-          assert.strictEqual(4, mockLogger.log.callCount);
+          assert.strictEqual(5, mockLogger.log.callCount);
           assert.strictEqual(
             mockLogger.log.args[0][1],
             'DECISION_SERVICE: User decision_service_user is not in the forced variation map.'
           );
           assert.strictEqual(
-            mockLogger.log.args[3][1],
+            mockLogger.log.args[4][1],
             'DECISION_SERVICE: Error while saving user profile for user ID "decision_service_user": I am an error.'
           );
 
@@ -560,7 +560,7 @@ describe('lib/core/decision_service', function() {
 
       it('should return true when audience conditions are met', function() {
         assert.isTrue(
-          decisionServiceInstance.__checkIfUserIsInAudience(configObj, 'testExperimentWithAudiences', 'testUser', {
+          decisionServiceInstance.__checkIfUserIsInAudience(configObj, 'testExperimentWithAudiences', "experiment", 'testUser', {
             browser_type: 'firefox',
           })
         );
@@ -576,7 +576,7 @@ describe('lib/core/decision_service', function() {
       });
 
       it('should return true when experiment has no audience', function() {
-        assert.isTrue(decisionServiceInstance.__checkIfUserIsInAudience(configObj, 'testExperiment', 'testUser'));
+        assert.isTrue(decisionServiceInstance.__checkIfUserIsInAudience(configObj, 'testExperiment', "experiment", 'testUser'));
         assert.isTrue(__audienceEvaluateSpy.alwaysReturned(true));
 
         assert.strictEqual(2, mockLogger.log.callCount);
@@ -592,7 +592,7 @@ describe('lib/core/decision_service', function() {
 
       it('should return false when audience conditions can not be evaluated', function() {
         assert.isFalse(
-          decisionServiceInstance.__checkIfUserIsInAudience(configObj, 'testExperimentWithAudiences', 'testUser')
+          decisionServiceInstance.__checkIfUserIsInAudience(configObj, 'testExperimentWithAudiences', "experiment", 'testUser')
         );
         assert.isTrue(__audienceEvaluateSpy.alwaysReturned(false));
 
@@ -613,7 +613,7 @@ describe('lib/core/decision_service', function() {
 
       it('should return false when audience conditions are not met', function() {
         assert.isFalse(
-          decisionServiceInstance.__checkIfUserIsInAudience(configObj, 'testExperimentWithAudiences', 'testUser', {
+          decisionServiceInstance.__checkIfUserIsInAudience(configObj, 'testExperimentWithAudiences', "experiment", 'testUser', {
             browser_type: 'chrome',
           })
         );
@@ -1239,7 +1239,7 @@ describe('lib/core/decision_service', function() {
                       {
                         id: '1547854156498475',
                         value: '{ "num_buttons": 2, "text": "second variation"}',
-                      },                      
+                      },
                     ],
                     featureEnabled: true,
                     key: 'control',

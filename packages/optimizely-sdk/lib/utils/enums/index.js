@@ -137,9 +137,9 @@ export var LOG_MESSAGES = {
   VALID_BUCKETING_ID: '%s: BucketingId is valid: "%s"',
   BUCKETING_ID_NOT_STRING: '%s: BucketingID attribute is not a string. Defaulted to userId',
   EVALUATING_AUDIENCE: '%s: Starting to evaluate audience "%s" with conditions: %s.',
-  EVALUATING_AUDIENCES_COMBINED: '%s: Evaluating audiences for experiment "%s": %s.',
+  EVALUATING_AUDIENCES_COMBINED: '%s: Evaluating audiences for %s "%s": %s.',
   AUDIENCE_EVALUATION_RESULT: '%s: Audience "%s" evaluated to %s.',
-  AUDIENCE_EVALUATION_RESULT_COMBINED: '%s: Audiences for experiment %s collectively evaluated to %s.',
+  AUDIENCE_EVALUATION_RESULT_COMBINED: '%s: Audiences for %s %s collectively evaluated to %s.',
   MISSING_ATTRIBUTE_VALUE:
     '%s: Audience condition %s evaluated to UNKNOWN because no value was passed for user attribute "%s".',
   UNEXPECTED_CONDITION_VALUE:
@@ -202,6 +202,11 @@ export var DECISION_SOURCES = {
   ROLLOUT: 'rollout',
 };
 
+export var AUDIENCE_EVALUATION_TYPES = {
+  RULE: 'rule',
+  EXPERIMENT: 'experiment',
+}
+
 /*
  * Possible types of variables attached to features
  */
@@ -238,4 +243,5 @@ export default {
   DECISION_SOURCES: DECISION_SOURCES,
   FEATURE_VARIABLE_TYPES: FEATURE_VARIABLE_TYPES,
   DATAFILE_VERSIONS: DATAFILE_VERSIONS,
+  AUDIENCE_EVALUATION_TYPES: AUDIENCE_EVALUATION_TYPES
 }
