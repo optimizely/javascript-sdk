@@ -112,28 +112,11 @@ export var bucket = function(bucketerParams) {
   bucketerParams.logger.log(LOG_LEVEL.DEBUG, bucketedUserLogMessage);
 
   var entityId = this._findBucket(bucketValue, bucketerParams.trafficAllocationConfig);
-  if (!entityId) {
-    var userHasNoVariationLogMessage = sprintf(
-      LOG_MESSAGES.USER_HAS_NO_VARIATION,
-      MODULE_NAME,
-      bucketerParams.userId,
-      bucketerParams.experimentKey
-    );
-    bucketerParams.logger.log(LOG_LEVEL.DEBUG, userHasNoVariationLogMessage);
-  } else if (!bucketerParams.variationIdMap.hasOwnProperty(entityId)) {
+
+  if (!bucketerParams.variationIdMap.hasOwnProperty(entityId)) {
     var invalidVariationIdLogMessage = sprintf(LOG_MESSAGES.INVALID_VARIATION_ID, MODULE_NAME);
     bucketerParams.logger.log(LOG_LEVEL.WARNING, invalidVariationIdLogMessage);
     return null;
-  } else {
-    var variationKey = bucketerParams.variationIdMap[entityId].key;
-    var userInVariationLogMessage = sprintf(
-      LOG_MESSAGES.USER_HAS_VARIATION,
-      MODULE_NAME,
-      bucketerParams.userId,
-      variationKey,
-      bucketerParams.experimentKey
-    );
-    bucketerParams.logger.log(LOG_LEVEL.INFO, userInVariationLogMessage);
   }
 
   return entityId;
