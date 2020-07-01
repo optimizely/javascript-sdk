@@ -3136,8 +3136,8 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('returns the right value from getFeatureVariableJson and send notification with featureEnabled true', function() {
-                  var result = optlyInstance.getFeatureVariableJson(
+                it('returns the right value from getFeatureVariableJSON and send notification with featureEnabled true', function() {
+                  var result = optlyInstance.getFeatureVariableJSON(
                     'test_feature_for_experiment',
                     'button_info',
                     'user1',
@@ -3334,8 +3334,8 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('returns the default value from getFeatureVariableJson and send notification with featureEnabled false', function() {
-                  var result = optlyInstance.getFeatureVariableJson(
+                it('returns the default value from getFeatureVariableJSON and send notification with featureEnabled false', function() {
+                  var result = optlyInstance.getFeatureVariableJSON(
                     'test_feature_for_experiment',
                     'button_info',
                     'user1',
@@ -3621,8 +3621,8 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('should return the right value from getFeatureVariableJson and send notification with featureEnabled true', function() {
-                  var result = optlyInstance.getFeatureVariableJson('test_feature', 'message_info', 'user1', {
+                it('should return the right value from getFeatureVariableJSON and send notification with featureEnabled true', function() {
+                  var result = optlyInstance.getFeatureVariableJSON('test_feature', 'message_info', 'user1', {
                     test_attribute: 'test_value',
                   });
                   assert.deepEqual(result, {
@@ -3894,8 +3894,8 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('should return the default value from getFeatureVariableJson and send notification with featureEnabled false', function() {
-                  var result = optlyInstance.getFeatureVariableJson('test_feature', 'message_info', 'user1', {
+                it('should return the default value from getFeatureVariableJSON and send notification with featureEnabled false', function() {
+                  var result = optlyInstance.getFeatureVariableJSON('test_feature', 'message_info', 'user1', {
                     test_attribute: 'test_value',
                   });
                   assert.deepEqual(result, {
@@ -4181,8 +4181,8 @@ describe('lib/optimizely', function() {
                 });
               });
 
-              it('returns the variable default value from getFeatureVariableJson and send notification with featureEnabled false', function() {
-                var result = optlyInstance.getFeatureVariableJson(
+              it('returns the variable default value from getFeatureVariableJSON and send notification with featureEnabled false', function() {
+                var result = optlyInstance.getFeatureVariableJSON(
                   'test_feature_for_experiment',
                   'button_info',
                   'user1',
@@ -5065,8 +5065,8 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the right value from getFeatureVariableJson', function() {
-            var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info', 'user1', {
+          it('returns the right value from getFeatureVariableJSON', function() {
+            var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_info', 'user1', {
               test_attribute: 'test_value',
             });
             assert.deepEqual(result, {
@@ -5252,8 +5252,8 @@ describe('lib/optimizely', function() {
               );
             });
 
-            it('returns the variable default value from getFeatureVariableJson', function() {
-              var result = optlyInstance.getFeatureVariableJson(
+            it('returns the variable default value from getFeatureVariableJSON', function() {
+              var result = optlyInstance.getFeatureVariableJSON(
                 'test_feature_for_experiment',
                 'button_info',
                 'user1',
@@ -5450,8 +5450,8 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the variable default value from getFeatureVariableJson', function() {
-            var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info', 'user1', {
+          it('returns the variable default value from getFeatureVariableJSON', function() {
+            var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_info', 'user1', {
               test_attribute: 'test_value',
             });
             assert.deepEqual(result, {
@@ -5634,8 +5634,8 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the right value from getFeatureVariableJson', function() {
-            var result = optlyInstance.getFeatureVariableJson('test_feature', 'message_info', 'user1', {
+          it('returns the right value from getFeatureVariableJSON', function() {
+            var result = optlyInstance.getFeatureVariableJSON('test_feature', 'message_info', 'user1', {
               test_attribute: 'test_value',
             });
             assert.deepEqual(result, {
@@ -5806,8 +5806,8 @@ describe('lib/optimizely', function() {
               );
             });
 
-            it('returns the variable default value from getFeatureVariableJson', function() {
-              var result = optlyInstance.getFeatureVariableJson('test_feature', 'message_info', 'user1', {
+            it('returns the variable default value from getFeatureVariableJSON', function() {
+              var result = optlyInstance.getFeatureVariableJSON('test_feature', 'message_info', 'user1', {
                 test_attribute: 'test_value',
               });
               assert.deepEqual(result, {
@@ -5989,8 +5989,8 @@ describe('lib/optimizely', function() {
             );
           });
 
-          it('returns the variable default value from getFeatureVariableJson', function() {
-            var result = optlyInstance.getFeatureVariableJson('test_feature', 'message_info', 'user1', {
+          it('returns the variable default value from getFeatureVariableJSON', function() {
+            var result = optlyInstance.getFeatureVariableJSON('test_feature', 'message_info', 'user1', {
               test_attribute: 'test_value',
             });
             assert.deepEqual(result, {
@@ -6170,8 +6170,8 @@ describe('lib/optimizely', function() {
           );
         });
 
-        it('returns the variable default value from getFeatureVariableJson', function() {
-          var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info', 'user1', {
+        it('returns the variable default value from getFeatureVariableJSON', function() {
+          var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_info', 'user1', {
             test_attribute: 'test_value',
           });
           assert.deepEqual(result, {
@@ -6441,8 +6441,8 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariableJson when called with a non-json variable', function() {
-        var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_txt', 'user1');
+      it('returns null from getFeatureVariableJSON when called with a non-json variable', function() {
+        var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_txt', 'user1');
         assert.strictEqual(result, null);
         sinon.assert.calledWith(
           createdLogger.log,
@@ -6593,8 +6593,8 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariableJson if user id is null', function() {
-        var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info', null, {
+      it('returns null from getFeatureVariableJSON if user id is null', function() {
+        var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_info', null, {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
@@ -6605,8 +6605,8 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariableJson if user id is undefined', function() {
-        var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info', undefined, {
+      it('returns null from getFeatureVariableJSON if user id is undefined', function() {
+        var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_info', undefined, {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
@@ -6617,8 +6617,8 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariableJson if user id is not provided', function() {
-        var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info');
+      it('returns null from getFeatureVariableJSON if user id is not provided', function() {
+        var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_info');
         assert.strictEqual(result, null);
         sinon.assert.calledWith(
           createdLogger.log,
@@ -6686,7 +6686,7 @@ describe('lib/optimizely', function() {
           });
 
           it('should return null and log an error', function() {
-            var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info', 'user1');
+            var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_info', 'user1');
             assert.strictEqual(result, null);
             sinon.assert.calledWith(
               createdLogger.log,
@@ -6801,8 +6801,8 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariableJson if the argument feature key is invalid', function() {
-        var result = optlyInstance.getFeatureVariableJson('thisIsNotAValidKey<><><>', 'button_info', 'user1');
+      it('returns null from getFeatureVariableJSON if the argument feature key is invalid', function() {
+        var result = optlyInstance.getFeatureVariableJSON('thisIsNotAValidKey<><><>', 'button_info', 'user1');
         assert.strictEqual(result, null);
         sinon.assert.calledWith(
           createdLogger.log,
@@ -6867,8 +6867,8 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariableJson if the argument variable key is invalid', function() {
-        var result = optlyInstance.getFeatureVariableJson(
+      it('returns null from getFeatureVariableJSON if the argument variable key is invalid', function() {
+        var result = optlyInstance.getFeatureVariableJSON(
           'test_feature_for_experiment',
           'thisIsNotAVariableKey****',
           'user1'
@@ -6966,7 +6966,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableString'));
       });
 
-      it('returns null from getFeatureVariableJson when optimizely object is not a valid instance', function() {
+      it('returns null from getFeatureVariableJSON when optimizely object is not a valid instance', function() {
         var instance = new Optimizely({
           datafile: {},
           errorHandler: errorHandler,
@@ -6976,11 +6976,11 @@ describe('lib/optimizely', function() {
 
         createdLogger.log.reset();
 
-        instance.getFeatureVariableJson('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
+        instance.getFeatureVariableJSON('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableJson'));
+        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableJSON'));
       });
     });
   });
