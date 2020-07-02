@@ -38,8 +38,8 @@ const DEFAULT_MAX_QUEUE_SIZE = 10
 export abstract class AbstractEventProcessor implements EventProcessor {
   protected dispatcher: EventDispatcher
   protected queue: EventQueue<ProcessableEvents>
-  private notificationCenter?: NotificationCenter
-  private requestTracker: RequestTracker
+  protected notificationCenter?: NotificationCenter
+  protected requestTracker: RequestTracker
 
   constructor({
     dispatcher,

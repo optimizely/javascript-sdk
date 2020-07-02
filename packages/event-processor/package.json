@@ -6,6 +6,7 @@
   "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/event-processor",
   "license": "Apache-2.0",
   "main": "lib/index.js",
+  "react-native": "lib/index.react_native.js",
   "types": "lib/index.d.ts",
   "directories": {
     "lib": "lib",
@@ -39,7 +40,7 @@
   },
   "dependencies": {
     "@optimizely/js-sdk-logging": "^0.1.0",
-    "@optimizely/js-sdk-utils": "^0.2.0"
+    "@optimizely/js-sdk-utils": "^0.3.2"
   },
   "devDependencies": {
     "@types/jest": "^24.0.9",
