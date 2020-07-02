@@ -467,7 +467,7 @@ DecisionService.prototype._getVariationForRollout = function(configObj, feature,
   var loggingKey;
   for (index = 0; index < endIndex; index++) {
     rolloutRule = configObj.experimentKeyMap[rollout.experiments[index].key];
-    loggingKey = ++index;
+    loggingKey = index + 1;
 
     if (!this.__checkIfUserIsInAudience(configObj, rolloutRule.key, AUDIENCE_EVALUATION_TYPES.RULE, userId, attributes, loggingKey)) {
       this.logger.log(
