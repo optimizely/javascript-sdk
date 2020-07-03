@@ -1,8 +1,5 @@
-import { ReactNativeEventProcessor } from './v1/ReactNativeEventProcessor'
-import { LogTierV1EventProcessor } from './v1/v1EventProcessor'
-
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +13,11 @@ import { LogTierV1EventProcessor } from './v1/v1EventProcessor'
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 export * from './events'
 export * from './eventProcessor'
 export * from './eventDispatcher'
 export * from './managed'
 export * from './pendingEventsDispatcher'
 export * from './v1/buildEventV1'
-export { ReactNativeEventProcessor as LogTierV1EventProcessor } from './v1/ReactNativeEventProcessor'
+export { LogTierV1ReactNativeEventProcessor as LogTierV1EventProcessor } from './v1/v1EventProcessor'

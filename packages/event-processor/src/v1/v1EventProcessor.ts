@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019-2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,22 @@
 import { AbstractEventProcessor, ProcessableEvents } from '../eventProcessor'
 import { EventV1Request } from '../eventDispatcher'
 import { makeBatchedEventV1 } from './buildEventV1'
+import { AbstractReactNativeEventProcessor } from '../reactNativeEventProcessor'
 
 export class LogTierV1EventProcessor extends AbstractEventProcessor {
   protected formatEvents(events: ProcessableEvents[]): EventV1Request {
     return {
       url: 'https://logx.optimizely.com/v1/events',
+      httpVerb: 'POST',
+      params: makeBatchedEventV1(events),
+    }
+  }
+}
+
+export class LogTierV1ReactNativeEventProcessor extends AbstractReactNativeEventProcessor {
+  protected formatEvents(events: ProcessableEvents[]): EventV1Request {
+    return {
+      url: 'https://logx.optimizely.com/v1/events',      
       httpVerb: 'POST',
       params: makeBatchedEventV1(events),
     }

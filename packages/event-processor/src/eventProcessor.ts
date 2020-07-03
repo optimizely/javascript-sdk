@@ -100,15 +100,19 @@ export abstract class AbstractEventProcessor implements EventProcessor {
       this.dispatcher.dispatchEvent(formattedEvent, () => {
         resolve()
       })
-      if (this.notificationCenter) {
-        this.notificationCenter.sendNotifications(
-          NOTIFICATION_TYPES.LOG_EVENT,
-          formattedEvent,
-        )
-      }
+      this.sendEventNotification(formattedEvent)
     })
     this.requestTracker.trackRequest(reqPromise)
     return reqPromise
+  }
+
+  protected sendEventNotification(event: EventV1Request): void {
+    if (this.notificationCenter) {
+      this.notificationCenter.sendNotifications(
+        NOTIFICATION_TYPES.LOG_EVENT,
+        event,
+      )
+    }
   }
 
   process(event: ProcessableEvents): void {
