@@ -17,19 +17,39 @@ import {
   objectValues,
   NOTIFICATION_TYPES,
   ReactNativeAsyncStorageCache,
-  generateUUID,  
+  generateUUID,
+  NotificationCenter,
 } from '@optimizely/js-sdk-utils'
 import { getLogger } from '@optimizely/js-sdk-logging'
 
 import { ProcessableEvents } from "../eventProcessor"
 import { LogTierV1EventProcessor } from "./v1EventProcessor"
-import { EventV1Request } from '../eventDispatcher'
+import { EventV1Request, EventDispatcher } from '../eventDispatcher'
 
 const logger = getLogger('ReactNativeEventProcessor')
 
+const DEFAULT_MAX_QUEUE_SIZE = 10000
+
 export class ReactNativeEventProcessor extends LogTierV1EventProcessor {
-  private store: ReactNativeEventsStore = new ReactNativeEventsStore()
+  private store: ReactNativeEventsStore
   private bufferStore: ReactNativeBufferStore = new ReactNativeBufferStore()
+
+  constructor({
+    dispatcher,
+    flushInterval = 30000,
+    batchSize = 3000,
+    maxQueueSize = DEFAULT_MAX_QUEUE_SIZE,
+    notificationCenter,
+  }: {
+    dispatcher: EventDispatcher
+    flushInterval?: number
+    batchSize?: number
+    maxQueueSize?: number
+    notificationCenter?: NotificationCenter
+  }) {
+    super({ dispatcher, flushInterval, batchSize, notificationCenter })
+    this.store = new ReactNativeEventsStore(maxQueueSize)
+  }
 
   sendEventNotification(event: EventV1Request): void {
     if (this.notificationCenter) {
@@ -130,6 +150,11 @@ class ReactNativeEventsStore {
   private storageKey: string = 'fs_optly_pending_events'
   private cache: ReactNativeAsyncStorageCache = new ReactNativeAsyncStorageCache()
   private lockPromises: ResolvablePromise[] = []
+  private maxSize: number
+
+  constructor(maxSize: number) {
+    this.maxSize = maxSize
+  }
 
   private async getLock(): Promise<void> {
     this.lockPromises.push(new ResolvablePromise())
@@ -149,9 +174,11 @@ class ReactNativeEventsStore {
 
   public async set(key: string, event: any): Promise<string> {
     await this.getLock()
-    const eventsMap = await this.cache.get(this.storageKey) || {}
-    eventsMap[key] = event
-    await this.cache.set(this.storageKey, eventsMap)
+    const eventsMap = await this.cache.get(this.storageKey) || {}    
+    if (Object.keys(eventsMap).length < this.maxSize) {
+      eventsMap[key] = event
+      await this.cache.set(this.storageKey, eventsMap)
+    }
     this.releaseLock()
     return key
   }

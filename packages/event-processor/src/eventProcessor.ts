@@ -33,7 +33,7 @@ export interface EventProcessor extends Managed {
 }
 
 const DEFAULT_FLUSH_INTERVAL = 30000 // Unit is ms - default flush interval is 30s
-const DEFAULT_MAX_QUEUE_SIZE = 10
+const DEFAULT_BATCH_SIZE = 10
 
 export abstract class AbstractEventProcessor implements EventProcessor {
   protected dispatcher: EventDispatcher
@@ -44,12 +44,12 @@ export abstract class AbstractEventProcessor implements EventProcessor {
   constructor({
     dispatcher,
     flushInterval = 30000,
-    maxQueueSize = 3000,
+    batchSize = 3000,
     notificationCenter,
   }: {
     dispatcher: EventDispatcher
     flushInterval?: number
-    maxQueueSize?: number
+    batchSize?: number
     notificationCenter?: NotificationCenter
   }) {
     this.dispatcher = dispatcher
@@ -61,19 +61,19 @@ export abstract class AbstractEventProcessor implements EventProcessor {
       flushInterval = DEFAULT_FLUSH_INTERVAL
     }
 
-    maxQueueSize = Math.floor(maxQueueSize)
-    if (maxQueueSize < 1) {
+    batchSize = Math.floor(batchSize)
+    if (batchSize < 1) {
       logger.warn(
-        `Invalid maxQueueSize ${maxQueueSize}, defaulting to ${DEFAULT_MAX_QUEUE_SIZE}`,
+        `Invalid batchSize ${batchSize}, defaulting to ${DEFAULT_BATCH_SIZE}`,
       )
-      maxQueueSize = DEFAULT_MAX_QUEUE_SIZE
+      batchSize = DEFAULT_BATCH_SIZE
     }
 
-    maxQueueSize = Math.max(1, maxQueueSize)
-    if (maxQueueSize > 1) {
+    batchSize = Math.max(1, batchSize)
+    if (batchSize > 1) {
       this.queue = new DefaultEventQueue<ProcessableEvents>({
         flushInterval,
-        maxQueueSize,
+        maxQueueSize: batchSize,
         sink: buffer => this.drainQueue(buffer),
         batchComparator: areEventContextsEqual,
       })
