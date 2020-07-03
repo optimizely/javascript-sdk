@@ -38,7 +38,7 @@ const DEFAULT_BATCH_SIZE = 10
 export abstract class AbstractEventProcessor implements EventProcessor {
   protected dispatcher: EventDispatcher
   protected queue: EventQueue<ProcessableEvents>
-  protected notificationCenter?: NotificationCenter
+  private notificationCenter?: NotificationCenter
   protected requestTracker: RequestTracker
 
   constructor({

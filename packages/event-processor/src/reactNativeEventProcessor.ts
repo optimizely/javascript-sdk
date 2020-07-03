@@ -99,7 +99,13 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
         this.sendEventNotification(formattedEvent)
       })
 
-      //TODO: Zeeshan - Add details of why i added this kludge.
+      // This is somehow needed to make sure events are dispatched in the correct order.
+      // The dispatcher always hands over the requests to XMLHttpRequest in correct order
+      // but for some reason, XMLHttpRequest internally mismanages the order and the events
+      // are received by server in random order. This peice of code probably pushes each subsequent event's
+      // processing to next iteration of javascript event loop somehow resulting in the correct predictable
+      // behavior. This is definitely a kludge which appears to be working consistently as expected
+      // when tested. I dont have a better logical explanation of this.
       await (() => new Promise(resolve => setTimeout(resolve)))()
 
       return requestPromise
