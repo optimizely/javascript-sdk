@@ -18,6 +18,10 @@ import {
   NotificationCenter,
 } from '@optimizely/js-sdk-utils'
 import { getLogger } from '@optimizely/js-sdk-logging'
+import {
+  NetInfoState,
+  addEventListener as addConnectionListener,
+} from "@react-native-community/netinfo"
 
 import { EventDispatcher } from './eventDispatcher'
 import { ProcessableEvents, AbstractEventProcessor } from "./eventProcessor"
@@ -30,6 +34,8 @@ const DEFAULT_MAX_QUEUE_SIZE = 10000
 export abstract class AbstractReactNativeEventProcessor extends AbstractEventProcessor {
   private pendingEventsStore: ReactNativePendingEventsStore
   private eventBufferStore: ReactNativeEventBufferStore = new ReactNativeEventBufferStore()
+  private unsubscribeNetInfo: Function
+  private isInternetReachable: boolean = true
 
   constructor({
     dispatcher,
@@ -46,6 +52,16 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
   }) {
     super({ dispatcher, flushInterval, batchSize, notificationCenter })
     this.pendingEventsStore = new ReactNativePendingEventsStore(maxQueueSize)
+    this.unsubscribeNetInfo = addConnectionListener((state: NetInfoState) => {
+      if (this.isInternetReachable && !state.isInternetReachable) {
+        this.isInternetReachable = false
+      }
+
+      if (!this.isInternetReachable && state.isInternetReachable) {
+        this.isInternetReachable = true
+        this.processPendingEvents()
+      }
+    })
   }
 
   isSuccessResponse(status: number): boolean {
@@ -128,5 +144,10 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
     this.eventBufferStore.getAll().then((events: ProcessableEvents[]) => {
       events.forEach((event: ProcessableEvents) => this.process(event))
     })
+  }
+
+  stop(): Promise<void> {
+    this.unsubscribeNetInfo()
+    return super.stop() 
   }
 }
