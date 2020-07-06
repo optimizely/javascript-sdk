@@ -138,7 +138,7 @@ describe('LogTierV1EventProcessor', () => {
       const processor = new LogTierV1EventProcessor({
         dispatcher: stubDispatcher,
         flushInterval: 100,
-        maxQueueSize: 100,
+        batchSize: 100,
       })
 
       processor.stop().then(() => {
@@ -150,7 +150,7 @@ describe('LogTierV1EventProcessor', () => {
       const processor = new LogTierV1EventProcessor({
         dispatcher: stubDispatcher,
         flushInterval: 100,
-        maxQueueSize: 100,
+        batchSize: 100,
       })
       processor.start()
 
@@ -178,7 +178,7 @@ describe('LogTierV1EventProcessor', () => {
       const processor = new LogTierV1EventProcessor({
         dispatcher: stubDispatcher,
         flushInterval: 100,
-        maxQueueSize: 100,
+        batchSize: 100,
       })
       processor.start()
 
@@ -205,7 +205,7 @@ describe('LogTierV1EventProcessor', () => {
       const processor = new LogTierV1EventProcessor({
         dispatcher: stubDispatcher,
         flushInterval: 100,
-        maxQueueSize: 100,
+        batchSize: 100,
       })
       processor.start()
 
@@ -230,7 +230,7 @@ describe('LogTierV1EventProcessor', () => {
       const processor = new LogTierV1EventProcessor({
         dispatcher,
         flushInterval: 100,
-        maxQueueSize: 3,
+        batchSize: 3,
       })
       processor.start()
 
@@ -267,7 +267,7 @@ describe('LogTierV1EventProcessor', () => {
       const processor = new LogTierV1EventProcessor({
         dispatcher,
         flushInterval: 100,
-        maxQueueSize: 2,
+        batchSize: 2,
       })
       processor.start()
 
@@ -291,13 +291,13 @@ describe('LogTierV1EventProcessor', () => {
     })
   })
 
-  describe('when maxQueueSize = 1', () => {
+  describe('when batchSize = 1', () => {
     let processor: EventProcessor
     beforeEach(() => {
       processor = new LogTierV1EventProcessor({
         dispatcher: stubDispatcher,
         flushInterval: 100,
-        maxQueueSize: 1,
+        batchSize: 1,
       })
       processor.start()
     })
@@ -319,13 +319,13 @@ describe('LogTierV1EventProcessor', () => {
     })
   })
 
-  describe('when maxQueueSize = 3, flushInterval = 100', () => {
+  describe('when batchSize = 3, flushInterval = 100', () => {
     let processor: EventProcessor
     beforeEach(() => {
       processor = new LogTierV1EventProcessor({
         dispatcher: stubDispatcher,
         flushInterval: 100,
-        maxQueueSize: 3,
+        batchSize: 3,
       })
       processor.start()
     })
@@ -462,7 +462,7 @@ describe('LogTierV1EventProcessor', () => {
       const processor = new LogTierV1EventProcessor({
         dispatcher,
         notificationCenter,
-        maxQueueSize: 1,
+        batchSize: 1,
       })
       processor.start()
 
@@ -475,12 +475,12 @@ describe('LogTierV1EventProcessor', () => {
     })
   })
 
-  describe('invalid flushInterval or maxQueueSize', () => {
+  describe('invalid flushInterval or batchSize', () => {
     it('should ignore a flushInterval of 0 and use the default', () => {
       const processor = new LogTierV1EventProcessor({
         dispatcher: stubDispatcher,
         flushInterval: 0,
-        maxQueueSize: 10,
+        batchSize: 10,
       })
       processor.start()
 
@@ -496,11 +496,11 @@ describe('LogTierV1EventProcessor', () => {
       })
     })
 
-    it('should ignore a maxQueueSize of 0 and use the default', () => {
+    it('should ignore a batchSize of 0 and use the default', () => {
       const processor = new LogTierV1EventProcessor({
         dispatcher: stubDispatcher,
         flushInterval: 30000,
-        maxQueueSize: 0,
+        batchSize: 0,
       })
       processor.start()
 

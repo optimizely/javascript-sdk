@@ -17,7 +17,6 @@ export type EventV1 = {
 }
 
 type Visitor = {
-  timestamp: number
   snapshots: Visitor.Snapshot[]
   visitor_id: string
   attributes: Visitor.Attribute[]
@@ -161,7 +160,6 @@ function makeDecisionSnapshot(event: ImpressionEvent): Visitor.Snapshot {
 
 function makeVisitor(data: ImpressionEvent | ConversionEvent): Visitor {
   const visitor: Visitor = {
-    timestamp: data.timestamp,
     snapshots: [],
     visitor_id: data.user.id,
     attributes: [],
