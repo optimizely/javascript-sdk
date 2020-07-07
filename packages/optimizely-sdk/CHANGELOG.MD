@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.1.0] - July 7, 2020
+
+### Bug fixes
+- Temporarily disabled React Native FSC tests ([#514](https://github.com/optimizely/javascript-sdk/pull/514))
+- Changed `getFeatureVariableJson` to `getFeatureVariableJSON` ([#516](https://github.com/optimizely/javascript-sdk/pull/516))
+
 ## [4.1.0-beta] - June 16, 2020
 
 ### New Features
