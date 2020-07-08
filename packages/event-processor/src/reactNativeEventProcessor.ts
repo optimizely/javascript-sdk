@@ -36,6 +36,8 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
   private eventBufferStore: ReactNativeEventBufferStore = new ReactNativeEventBufferStore()
   private unsubscribeNetInfo: Function
   private isInternetReachable: boolean = true
+  private isProcessingPendingEvents: boolean = false
+  private pendingEventsPromise: Promise<void> | null = null
 
   constructor({
     dispatcher,
@@ -59,7 +61,8 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
 
       if (!this.isInternetReachable && state.isInternetReachable) {
         this.isInternetReachable = true
-        this.processPendingEvents()
+        // To make sure `eventProcessor.stop()` waits for pending events to completely process
+        this.requestTracker.trackRequest(this.processPendingEvents())
       }
     })
   }
@@ -69,7 +72,9 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
   }
 
   async drainQueue(buffer: ProcessableEvents[]): Promise<void> {
-    const pendingEventRequests = await this.processPendingEvents()
+    const pendingEventsPromise = this.processPendingEvents()
+    this.requestTracker.trackRequest(pendingEventsPromise)
+    await pendingEventsPromise
     const reqPromise = new Promise<void>(async (resolve) => {
       logger.debug('draining queue with %s events', buffer.length)
 
@@ -86,7 +91,6 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
 
       // Clear buffer because the buffer has become a formatted event and is already stored in pending cache.
       this.eventBufferStore.clear()
-
       this.dispatcher.dispatchEvent(formattedEvent, (status: number) => {
         if (this.isSuccessResponse(status)) {
           this.pendingEventsStore.remove(cacheKey).then(() => resolve())
@@ -97,35 +101,38 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
       this.sendEventNotification(formattedEvent)
     })
     this.requestTracker.trackRequest(reqPromise)
-    return Promise.all([ ...pendingEventRequests, reqPromise]).then(() => {})
+    return reqPromise
   }
 
-  async processPendingEvents(): Promise<Promise<void>[]> {
-    const formattedEvents: {[key: string]: any} = await this.pendingEventsStore.getEventsMap()
-    return Object.keys(formattedEvents).map(async (eventKey) => {
-      const requestPromise = new Promise<void>((resolve) => {
-        const formattedEvent = formattedEvents[eventKey]
-        this.dispatcher.dispatchEvent(formattedEvent, (status: number) => {
-          if (this.isSuccessResponse(status)) {
-            this.pendingEventsStore.remove(eventKey).then(() => resolve())
-          } else {
-            resolve()
-          }
+  async processPendingEvents(): Promise<void> {
+    // If pending events are already being dispatched, return the same promise
+    if (this.isProcessingPendingEvents && this.pendingEventsPromise) {
+      return this.pendingEventsPromise
+    }
+    this.pendingEventsPromise = new Promise(async (resolvePendingEventPromise) => {
+      this.isProcessingPendingEvents = true
+      const formattedEvents: {[key: string]: any} = await this.pendingEventsStore.getEventsMap()
+      const eventKeys = Object.keys(formattedEvents)
+      for (let i = 0; i < eventKeys.length; i++) {
+        const eventKey = eventKeys[i]
+        const requestPromise = new Promise<void>((resolve) => {
+          const formattedEvent = formattedEvents[eventKey]
+          this.dispatcher.dispatchEvent(formattedEvent, (status: number) => {
+            if (this.isSuccessResponse(status)) {
+              this.pendingEventsStore.remove(eventKey).then(() => resolve())
+            } else {
+              resolve()
+            }
+          })
+          this.sendEventNotification(formattedEvent)
         })
-        this.sendEventNotification(formattedEvent)
-      })
-
-      // This is somehow needed to make sure events are dispatched in the correct order.
-      // The dispatcher always hands over the requests to XMLHttpRequest in correct order
-      // but for some reason, XMLHttpRequest internally mismanages the order and the events
-      // are received by server in random order. This peice of code probably pushes each subsequent event's
-      // processing to next iteration of javascript event loop somehow resulting in the correct predictable
-      // behavior. This is definitely a kludge which appears to be working consistently as expected
-      // when tested. I dont have a better logical explanation of this.
-      await (() => new Promise(resolve => setTimeout(resolve)))()
-
-      return requestPromise
+        // Waiting for last event to finish before dispatching the new one to ensure sequence
+        await requestPromise
+      }
+      this.isProcessingPendingEvents = false
+      resolvePendingEventPromise()
     })
+    return this.pendingEventsPromise
   }
   
   process(event: ProcessableEvents): void {
@@ -148,6 +155,6 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
 
   stop(): Promise<void> {
     this.unsubscribeNetInfo()
-    return super.stop() 
+    return super.stop()
   }
 }
