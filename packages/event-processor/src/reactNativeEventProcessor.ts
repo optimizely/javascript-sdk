@@ -143,13 +143,12 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
 
   start(): void {
     super.start()
-
     // Dispatch all the formatted pending events right away
-    this.processPendingEvents()
-
-    // Process individual events pending from the buffer.
-    this.eventBufferStore.getAll().then((events: ProcessableEvents[]) => {
-      events.forEach((event: ProcessableEvents) => this.process(event))
+    this.processPendingEvents().then(() => {
+      // Process individual events pending from the buffer.
+      this.eventBufferStore.getAll().then((events: ProcessableEvents[]) => {
+        events.forEach((event: ProcessableEvents) => this.process(event))
+      })
     })
   }
 
