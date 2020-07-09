@@ -105,7 +105,7 @@ class Synchronizer {
     if (this.lockPromises.length === 1) {
       return
     }
-    await this.lockPromises[this.lockPromises.length - 2]
+    await this.lockPromises[this.lockPromises.length - 2].getPromise()
   }
 
   public releaseLock(): void {
@@ -119,18 +119,21 @@ class Synchronizer {
 
 
 // A Resolvable process to support synchornization block
-export class ResolvablePromise extends Promise<void> {
+export class ResolvablePromise {
   private resolver: any
+  private promise: Promise<void>
 
   constructor() {
-    var res
-    super((resolve) => {
-      res = resolve
+    this.promise = new Promise((resolve) => {
+      this.resolver = resolve
     })
-    this.resolver = res
   }
 
   public resolve(): void {
     this.resolver()
+  }
+
+  public getPromise(): Promise<void> {
+    return this.promise
   }
 }
