@@ -34,7 +34,7 @@ const DEFAULT_MAX_QUEUE_SIZE = 10000
 export abstract class AbstractReactNativeEventProcessor extends AbstractEventProcessor {
   private pendingEventsStore: ReactNativePendingEventsStore
   private eventBufferStore: ReactNativeEventBufferStore = new ReactNativeEventBufferStore()
-  private unsubscribeNetInfo: Function
+  private unsubscribeNetInfo: Function | null = null
   private isInternetReachable: boolean = true
   private isProcessingPendingEvents: boolean = false
   private pendingEventsPromise: Promise<void> | null = null
@@ -57,17 +57,6 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
   }) {
     super({ dispatcher, flushInterval, batchSize, notificationCenter })
     this.pendingEventsStore = new ReactNativePendingEventsStore(maxQueueSize)
-    this.unsubscribeNetInfo = addConnectionListener((state: NetInfoState) => {
-      if (this.isInternetReachable && !state.isInternetReachable) {
-        this.isInternetReachable = false
-      }
-
-      if (!this.isInternetReachable && state.isInternetReachable) {
-        this.isInternetReachable = true
-        // To make sure `eventProcessor.stop()` waits for pending events to completely process
-        this.requestTracker.trackRequest(this.processPendingEvents())
-      }
-    })
   }
 
   isSuccessResponse(status: number): boolean {
@@ -94,7 +83,7 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
       await this.pendingEventsStore.set(cacheKey, formattedEvent)
 
       // Clear buffer because the buffer has become a formatted event and is already stored in pending cache.
-      this.eventBufferStore.clear()
+      await this.eventBufferStore.clear()
 
       this.dispatcher.dispatchEvent(formattedEvent, (status: number) => {
         delete this.eventsInProgress[cacheKey]
@@ -154,6 +143,17 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
 
   start(): void {
     super.start()
+    this.unsubscribeNetInfo = addConnectionListener((state: NetInfoState) => {
+      if (this.isInternetReachable && !state.isInternetReachable) {
+        this.isInternetReachable = false
+      }
+
+      if (!this.isInternetReachable && state.isInternetReachable) {
+        this.isInternetReachable = true
+        // To make sure `eventProcessor.stop()` waits for pending events to completely process
+        this.requestTracker.trackRequest(this.processPendingEvents())
+      }
+    })
     // Dispatch all the formatted pending events right away
     this.processPendingEvents().then(() => {
       // Process individual events pending from the buffer.
@@ -164,7 +164,7 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
   }
 
   stop(): Promise<void> {
-    this.unsubscribeNetInfo()
+    this.unsubscribeNetInfo && this.unsubscribeNetInfo()
     return super.stop()
   }
 }

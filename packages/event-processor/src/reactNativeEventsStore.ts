@@ -89,7 +89,7 @@ export class ReactNativeEventBufferStore {
   }
 
   public async clear(): Promise<void> {
-    this.cache.remove(this.storageKey)
+    await this.cache.remove(this.storageKey)
   }
 }
 
