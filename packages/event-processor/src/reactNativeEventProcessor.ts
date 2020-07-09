@@ -39,6 +39,9 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
   private isProcessingPendingEvents: boolean = false
   private pendingEventsPromise: Promise<void> | null = null
 
+  // Tracks the events which are being dispatched to prevent from dispatching twice.
+  private eventsInProgress: {} = {}
+
   constructor({
     dispatcher,
     flushInterval = 30000,
@@ -82,16 +85,19 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
         resolve()
         return
       }
-      
+
       const formattedEvent = this.formatEvents(buffer)
       const cacheKey = generateUUID()
+      this.eventsInProgress[cacheKey] = true
 
       // Store formatted event before dispatching.
       await this.pendingEventsStore.set(cacheKey, formattedEvent)
 
       // Clear buffer because the buffer has become a formatted event and is already stored in pending cache.
       this.eventBufferStore.clear()
+
       this.dispatcher.dispatchEvent(formattedEvent, (status: number) => {
+        delete this.eventsInProgress[cacheKey]
         if (this.isSuccessResponse(status)) {
           this.pendingEventsStore.remove(cacheKey).then(() => resolve())
         } else {
@@ -115,9 +121,14 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
       const eventKeys = Object.keys(formattedEvents)
       for (let i = 0; i < eventKeys.length; i++) {
         const eventKey = eventKeys[i]
+        if (this.eventsInProgress[eventKey]) {
+          continue
+        }
+        this.eventsInProgress[eventKey] = true
         const requestPromise = new Promise<void>((resolve) => {
           const formattedEvent = formattedEvents[eventKey]
           this.dispatcher.dispatchEvent(formattedEvent, (status: number) => {
+            delete this.eventsInProgress[eventKey]
             if (this.isSuccessResponse(status)) {
               this.pendingEventsStore.remove(eventKey).then(() => resolve())
             } else {
@@ -134,7 +145,7 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
     })
     return this.pendingEventsPromise
   }
-  
+
   process(event: ProcessableEvents): void {
     // Adding events to buffer store. If app closes before dispatch, we can reprocess next time the app initializes
     this.eventBufferStore.add(event)
