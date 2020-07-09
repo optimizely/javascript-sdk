@@ -617,7 +617,7 @@ describe('lib/core/decision_service', function() {
         );
         assert.isTrue(__audienceEvaluateSpy.alwaysReturned(false));
 
-        assert.strictEqual(3, mockLogger.log.callCount);
+        assert.strictEqual(2, mockLogger.log.callCount);
         assert.strictEqual(
           mockLogger.log.args[0][1],
           'DECISION_SERVICE: Evaluating audiences for experiment "testExperimentWithAudiences": ["11154"].'
@@ -625,10 +625,6 @@ describe('lib/core/decision_service', function() {
         assert.strictEqual(
           mockLogger.log.args[1][1],
           'DECISION_SERVICE: Audiences for experiment testExperimentWithAudiences collectively evaluated to FALSE.'
-        );
-        assert.strictEqual(
-          mockLogger.log.args[2][1],
-          'DECISION_SERVICE: User testUser does not meet conditions to be in experiment testExperimentWithAudiences.'
         );
       });
 
@@ -645,7 +641,7 @@ describe('lib/core/decision_service', function() {
         );
         assert.isTrue(__audienceEvaluateSpy.alwaysReturned(false));
 
-        assert.strictEqual(3, mockLogger.log.callCount);
+        assert.strictEqual(2, mockLogger.log.callCount);
         assert.strictEqual(
           mockLogger.log.args[0][1],
           'DECISION_SERVICE: Evaluating audiences for experiment "testExperimentWithAudiences": ["11154"].'
@@ -653,10 +649,6 @@ describe('lib/core/decision_service', function() {
         assert.strictEqual(
           mockLogger.log.args[1][1],
           'DECISION_SERVICE: Audiences for experiment testExperimentWithAudiences collectively evaluated to FALSE.'
-        );
-        assert.strictEqual(
-          mockLogger.log.args[2][1],
-          'DECISION_SERVICE: User testUser does not meet conditions to be in experiment testExperimentWithAudiences.'
         );
       });
     });
