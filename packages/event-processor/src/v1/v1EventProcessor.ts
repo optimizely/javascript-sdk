@@ -55,7 +55,7 @@ export class LogTierV1EventProcessor implements EventProcessor {
     
     flushInterval = validateAndGetFlushInterval(flushInterval)
     batchSize = validateAndGetBatchSize(batchSize)
-    this.queue = getQueue(batchSize, flushInterval, this.drainQueue, areEventContextsEqual)
+    this.queue = getQueue(batchSize, flushInterval, this.drainQueue.bind(this), areEventContextsEqual)
   }
 
   drainQueue(buffer: ProcessableEvents[]): Promise<void> {

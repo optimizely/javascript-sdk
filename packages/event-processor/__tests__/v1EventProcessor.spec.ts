@@ -114,7 +114,7 @@ describe('LogTierV1EventProcessor', () => {
     stubDispatcher = {
       dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
         dispatchStub(event)
-        callback(200)
+        callback({ statusCode: 200 })
       },
     }
   })
@@ -161,7 +161,7 @@ describe('LogTierV1EventProcessor', () => {
         done()
       })
 
-      localCallback(200)
+      localCallback({ statusCode: 200 })
     })
 
     it('should return a promise that is resolved when the dispatcher callback returns a 400 response', done => {
@@ -198,7 +198,7 @@ describe('LogTierV1EventProcessor', () => {
       stubDispatcher = {
         dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
           dispatchStub(event)
-          callback(200)
+          callback({ statusCode: 200 })
         },
       }
 
@@ -224,7 +224,7 @@ describe('LogTierV1EventProcessor', () => {
     it('should stop accepting events after stop is called', () => {
       const dispatcher = {
         dispatchEvent: jest.fn((event: EventV1Request, callback: EventDispatcherCallback) => {
-          setTimeout(() => callback(204), 0)
+          setTimeout(() => callback({ statusCode: 204 }), 0)
         })
       }
       const processor = new LogTierV1EventProcessor({
@@ -282,10 +282,10 @@ describe('LogTierV1EventProcessor', () => {
       })
       expect(stopPromiseResolved).toBe(false)
 
-      dispatchCbs[0](204)
+      dispatchCbs[0]({ statusCode: 204 })
       jest.advanceTimersByTime(100)
       expect(stopPromiseResolved).toBe(false)
-      dispatchCbs[1](204)
+      dispatchCbs[1]({ statusCode: 204 })
       await stopPromise
       expect(stopPromiseResolved).toBe(true)
     })
