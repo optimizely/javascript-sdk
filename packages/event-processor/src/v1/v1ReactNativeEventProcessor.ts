@@ -17,21 +17,40 @@ import {
   generateUUID,
   NotificationCenter,
 } from '@optimizely/js-sdk-utils'
-import { getLogger } from '@optimizely/js-sdk-logging'
 import {
   NetInfoState,
   addEventListener as addConnectionListener,
 } from "@react-native-community/netinfo"
+import { getLogger } from '@optimizely/js-sdk-logging'
 
-import { EventDispatcher } from './eventDispatcher'
-import { ProcessableEvents, AbstractEventProcessor } from "./eventProcessor"
-import { ReactNativePendingEventsStore, ReactNativeEventBufferStore } from './reactNativeEventsStore'
+import {
+  getQueue,
+  EventProcessor,
+  ProcessableEvents,
+  sendEventNotification,
+  validateAndGetBatchSize,
+  validateAndGetFlushInterval,
+} from "../eventProcessor"
+import {
+  ReactNativeEventBufferStore,
+  ReactNativePendingEventsStore,
+} from '../reactNativeEventsStore'
+import { EventQueue } from '../eventQueue'
+import RequestTracker from '../requestTracker'
+import { areEventContextsEqual } from '../events'
+import { formatEvents } from './buildEventV1'
+import { EventDispatcher, EventDispatcherResponse } from '../eventDispatcher'
 
 const logger = getLogger('ReactNativeEventProcessor')
 
 const DEFAULT_MAX_QUEUE_SIZE = 10000
 
-export abstract class AbstractReactNativeEventProcessor extends AbstractEventProcessor {
+export abstract class LogTierV1EventProcessor implements EventProcessor {
+  protected dispatcher: EventDispatcher
+  protected queue: EventQueue<ProcessableEvents>
+  private notificationCenter?: NotificationCenter
+  protected requestTracker: RequestTracker
+
   private pendingEventsStore: ReactNativePendingEventsStore
   private eventBufferStore: ReactNativeEventBufferStore = new ReactNativeEventBufferStore()
   private unsubscribeNetInfo: Function | null = null
@@ -55,7 +74,13 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
     maxQueueSize?: number
     notificationCenter?: NotificationCenter
   }) {
-    super({ dispatcher, flushInterval, batchSize, notificationCenter })
+    this.dispatcher = dispatcher
+    this.notificationCenter = notificationCenter
+    this.requestTracker = new RequestTracker()
+    
+    flushInterval = validateAndGetFlushInterval(flushInterval)
+    batchSize = validateAndGetBatchSize(batchSize)
+    this.queue = getQueue(batchSize, flushInterval, this.drainQueue.bind(this), areEventContextsEqual)
     this.pendingEventsStore = new ReactNativePendingEventsStore(maxQueueSize)
   }
 
@@ -75,7 +100,7 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
         return
       }
 
-      const formattedEvent = this.formatEvents(buffer)
+      const formattedEvent = formatEvents(buffer)
       const cacheKey = generateUUID()
       this.eventsInProgress[cacheKey] = true
 
@@ -85,15 +110,15 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
       // Clear buffer because the buffer has become a formatted event and is already stored in pending cache.
       await this.eventBufferStore.clear()
 
-      this.dispatcher.dispatchEvent(formattedEvent, (status: number) => {
+      this.dispatcher.dispatchEvent(formattedEvent, ({ statusCode }: EventDispatcherResponse) => {
         delete this.eventsInProgress[cacheKey]
-        if (this.isSuccessResponse(status)) {
+        if (this.isSuccessResponse(statusCode)) {
           this.pendingEventsStore.remove(cacheKey).then(() => resolve())
         } else {
           resolve()
         }
       })
-      this.sendEventNotification(formattedEvent)
+      sendEventNotification(this.notificationCenter, formattedEvent)
     })
     this.requestTracker.trackRequest(reqPromise)
     return reqPromise
@@ -116,15 +141,15 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
         this.eventsInProgress[eventKey] = true
         const requestPromise = new Promise<void>((resolve) => {
           const formattedEvent = formattedEvents[eventKey]
-          this.dispatcher.dispatchEvent(formattedEvent, (status: number) => {
+          this.dispatcher.dispatchEvent(formattedEvent, ({ statusCode }: EventDispatcherResponse) => {
             delete this.eventsInProgress[eventKey]
-            if (this.isSuccessResponse(status)) {
+            if (this.isSuccessResponse(statusCode)) {
               this.pendingEventsStore.remove(eventKey).then(() => resolve())
             } else {
               resolve()
             }
           })
-          this.sendEventNotification(formattedEvent)
+          sendEventNotification(this.notificationCenter, formattedEvent)
         })
         // Waiting for last event to finish before dispatching the new one to ensure sequence
         await requestPromise
@@ -138,11 +163,11 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
   process(event: ProcessableEvents): void {
     // Adding events to buffer store. If app closes before dispatch, we can reprocess next time the app initializes
     this.eventBufferStore.add(event)
-    super.process(event)
+    this.queue.enqueue(event)
   }
 
   start(): void {
-    super.start()
+    this.queue.start()
     this.unsubscribeNetInfo = addConnectionListener((state: NetInfoState) => {
       if (this.isInternetReachable && !state.isInternetReachable) {
         this.isInternetReachable = false
@@ -165,6 +190,13 @@ export abstract class AbstractReactNativeEventProcessor extends AbstractEventPro
 
   stop(): Promise<void> {
     this.unsubscribeNetInfo && this.unsubscribeNetInfo()
-    return super.stop()
+    // swallow - an error stopping this queue shouldn't prevent this from stopping
+    try {
+      this.queue.stop()
+      return this.requestTracker.onRequestsComplete()
+    } catch (e) {
+      logger.error('Error stopping EventProcessor: "%s"', e.message, e)
+    }
+    return Promise.resolve()
   }
 }

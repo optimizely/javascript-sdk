@@ -15,7 +15,11 @@
  */
 import { EventV1 } from "./v1/buildEventV1";
 
-export type EventDispatcherCallback = (status: number) => void
+export type EventDispatcherResponse = {
+  statusCode: number  
+}
+
+export type EventDispatcherCallback = (response: EventDispatcherResponse) => void
 
 export interface EventDispatcher {
   dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void

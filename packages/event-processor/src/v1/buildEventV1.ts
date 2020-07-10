@@ -1,5 +1,6 @@
 import { EventTags, ConversionEvent, ImpressionEvent, VisitorAttribute } from '../events'
 import { ProcessableEvents } from '../eventProcessor'
+import { EventV1Request } from '../eventDispatcher'
 
 const ACTIVATE_EVENT_KEY = 'campaign_activated'
 const CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom'
@@ -225,5 +226,15 @@ export function buildConversionEventV1(data: ConversionEvent): EventV1 {
     enrich_decisions: true,
 
     visitors: [visitor],
+  }
+}
+
+export function formatEvents(events: ProcessableEvents[]): EventV1Request {
+  return {
+    //url: 'https://logx.optimizely.com/v1/events',
+    //url: 'http://localhost:4321/',
+    url: 'http://10.0.0.175:4321/',
+    httpVerb: 'POST',
+    params: makeBatchedEventV1(events),
   }
 }
