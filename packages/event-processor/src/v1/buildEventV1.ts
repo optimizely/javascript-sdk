@@ -231,9 +231,7 @@ export function buildConversionEventV1(data: ConversionEvent): EventV1 {
 
 export function formatEvents(events: ProcessableEvents[]): EventV1Request {
   return {
-    //url: 'https://logx.optimizely.com/v1/events',
-    //url: 'http://localhost:4321/',
-    url: 'http://10.0.0.175:4321/',
+    url: 'https://logx.optimizely.com/v1/events',
     httpVerb: 'POST',
     params: makeBatchedEventV1(events),
   }
