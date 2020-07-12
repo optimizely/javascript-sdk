@@ -812,7 +812,7 @@ Optimizely.prototype._getFeatureVariableValueFromVariation = function(featureKey
             MODULE_NAME,
             variableValue,
             variable.key,
-            featureKey,
+            featureKey
           )
         );
       } else {
