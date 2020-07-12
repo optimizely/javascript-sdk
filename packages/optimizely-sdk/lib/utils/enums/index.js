@@ -125,10 +125,10 @@ export var LOG_MESSAGES = {
   USER_RECEIVED_DEFAULT_VARIABLE_VALUE:
     '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
   FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE:
-    '%s: Feature "%s" is not enabled for user %s. Returning default value for variable "%s".',
+    '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
   VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE:
     '%s: Variable "%s" is not used in variation "%s". Returning default value.',
-  USER_RECEIVED_VARIABLE_VALUE: '%s: Value for variable "%s" of feature flag "%s" is %s for user "%s"',
+  USER_RECEIVED_VARIABLE_VALUE: '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
   VALID_DATAFILE: '%s: Datafile is valid.',
   VALID_USER_PROFILE_SERVICE: '%s: Valid user profile service provided.',
   VARIATION_REMOVED_FOR_USER: '%s: Variation mapped to experiment %s has been removed for user %s.',
