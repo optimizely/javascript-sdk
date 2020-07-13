@@ -26,12 +26,12 @@ const DEFAULT_BATCH_SIZE = 10
 
 const logger = getLogger('EventProcessor')
 
-export type ProcessableEvents = ConversionEvent | ImpressionEvent
+export type ProcessableEvent = ConversionEvent | ImpressionEvent
 
-export type EventDispatchResult = { result: boolean; event: ProcessableEvents }
+export type EventDispatchResult = { result: boolean; event: ProcessableEvent }
 
 export interface EventProcessor extends Managed {
-  process(event: ProcessableEvents): void
+  process(event: ProcessableEvent): void
 }
 
 export function validateAndGetFlushInterval(flushInterval: number): number {
@@ -56,10 +56,10 @@ export function validateAndGetBatchSize(batchSize: number): number {
   return batchSize
 }
 
-export function getQueue(batchSize: number, flushInterval: number, sink: any, batchComparator: any): EventQueue<ProcessableEvents> {
-  let queue: EventQueue<ProcessableEvents>
+export function getQueue(batchSize: number, flushInterval: number, sink: any, batchComparator: any): EventQueue<ProcessableEvent> {
+  let queue: EventQueue<ProcessableEvent>
   if (batchSize > 1) {
-    queue = new DefaultEventQueue<ProcessableEvents>({
+    queue = new DefaultEventQueue<ProcessableEvent>({
       flushInterval,
       maxQueueSize: batchSize,
       sink,

@@ -20,7 +20,7 @@ import { EventDispatcher } from '../eventDispatcher'
 import {
   getQueue,
   EventProcessor,
-  ProcessableEvents,
+  ProcessableEvent,
   sendEventNotification,
   validateAndGetBatchSize,
   validateAndGetFlushInterval,
@@ -33,10 +33,10 @@ import { formatEvents } from './buildEventV1'
 const logger = getLogger('LogTierV1EventProcessor')
 
 export class LogTierV1EventProcessor implements EventProcessor {
-  protected dispatcher: EventDispatcher
-  protected queue: EventQueue<ProcessableEvents>
+  private dispatcher: EventDispatcher
+  private queue: EventQueue<ProcessableEvent>
   private notificationCenter?: NotificationCenter
-  protected requestTracker: RequestTracker
+  private requestTracker: RequestTracker
 
   constructor({
     dispatcher,
@@ -58,7 +58,7 @@ export class LogTierV1EventProcessor implements EventProcessor {
     this.queue = getQueue(batchSize, flushInterval, this.drainQueue.bind(this), areEventContextsEqual)
   }
 
-  drainQueue(buffer: ProcessableEvents[]): Promise<void> {
+  drainQueue(buffer: ProcessableEvent[]): Promise<void> {
     const reqPromise = new Promise<void>(resolve => {
       logger.debug('draining queue with %s events', buffer.length)
 
@@ -77,7 +77,7 @@ export class LogTierV1EventProcessor implements EventProcessor {
     return reqPromise
   }
 
-  process(event: ProcessableEvents): void {
+  process(event: ProcessableEvent): void {
     this.queue.enqueue(event)
   }
 

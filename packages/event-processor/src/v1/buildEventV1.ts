@@ -1,5 +1,5 @@
 import { EventTags, ConversionEvent, ImpressionEvent, VisitorAttribute } from '../events'
-import { ProcessableEvents } from '../eventProcessor'
+import { ProcessableEvent } from '../eventProcessor'
 import { EventV1Request } from '../eventDispatcher'
 
 const ACTIVATE_EVENT_KEY = 'campaign_activated'
@@ -67,10 +67,10 @@ type Attributes = {
  * Given an array of batchable Decision or ConversionEvent events it returns
  * a single EventV1 with proper batching
  *
- * @param {ProcessableEvents[]} events
+ * @param {ProcessableEvent[]} events
  * @returns {EventV1}
  */
-export function makeBatchedEventV1(events: ProcessableEvents[]): EventV1 {
+export function makeBatchedEventV1(events: ProcessableEvent[]): EventV1 {
   const visitors: Visitor[] = []
   const data = events[0]
 
@@ -229,7 +229,7 @@ export function buildConversionEventV1(data: ConversionEvent): EventV1 {
   }
 }
 
-export function formatEvents(events: ProcessableEvents[]): EventV1Request {
+export function formatEvents(events: ProcessableEvent[]): EventV1Request {
   return {
     url: 'https://logx.optimizely.com/v1/events',
     httpVerb: 'POST',

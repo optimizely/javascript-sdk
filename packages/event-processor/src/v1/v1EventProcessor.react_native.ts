@@ -27,15 +27,12 @@ import { getLogger } from '@optimizely/js-sdk-logging'
 import {
   getQueue,
   EventProcessor,
-  ProcessableEvents,
+  ProcessableEvent,
   sendEventNotification,
   validateAndGetBatchSize,
   validateAndGetFlushInterval,
 } from "../eventProcessor"
-import {
-  ReactNativeEventBufferStore,
-  ReactNativePendingEventsStore,
-} from '../reactNativeEventsStore'
+import { ReactNativeEventsStore } from '../reactNativeEventsStore'
 import { EventQueue } from '../eventQueue'
 import RequestTracker from '../requestTracker'
 import { areEventContextsEqual } from '../events'
@@ -49,10 +46,15 @@ import {
 const logger = getLogger('ReactNativeEventProcessor')
 
 const DEFAULT_MAX_QUEUE_SIZE = 10000
+const PENDING_EVENTS_STORE_KEY = 'fs_optly_pending_events'
+const EVENT_BUFFER_STORE_KEY = 'fs_optly_event_buffer'
 
+/**
+ * React Native Events Processor with Caching support for events when app is offline.
+ */
 export abstract class LogTierV1EventProcessor implements EventProcessor {
   private dispatcher: EventDispatcher
-  private queue: EventQueue<ProcessableEvents>
+  private queue: EventQueue<ProcessableEvent>
   private notificationCenter?: NotificationCenter
   private requestTracker: RequestTracker
   
@@ -60,8 +62,18 @@ export abstract class LogTierV1EventProcessor implements EventProcessor {
   private isInternetReachable: boolean = true
   private pendingEventsPromise: Promise<void> | null = null
   
-  private pendingEventsStore: ReactNativePendingEventsStore
-  private eventBufferStore: ReactNativeEventBufferStore = new ReactNativeEventBufferStore()
+  /**
+   * This Stores Formatted events before dispatching. The events are removed after they are successfully dispatched.
+   * Stored events are retried on every new event dispatch, when connection becomes available again or when SDK initializes the next time.
+   */
+  private pendingEventsStore: ReactNativeEventsStore<EventV1Request>
+  
+  /** 
+   * This stores individual events generated from the SDK till they are part of the pending buffer.
+   * The store is cleared right before the event is formatted to be dispatched.
+   * This is to make sure that individual events are not lost when app closes before the buffer was flushed.
+   */
+  private eventBufferStore: ReactNativeEventsStore<ProcessableEvent>
   
   constructor({
     dispatcher,
@@ -83,51 +95,48 @@ export abstract class LogTierV1EventProcessor implements EventProcessor {
     flushInterval = validateAndGetFlushInterval(flushInterval)
     batchSize = validateAndGetBatchSize(batchSize)
     this.queue = getQueue(batchSize, flushInterval, this.drainQueue.bind(this), areEventContextsEqual)
-    this.pendingEventsStore = new ReactNativePendingEventsStore(maxQueueSize)
+    this.pendingEventsStore = new ReactNativeEventsStore(maxQueueSize, PENDING_EVENTS_STORE_KEY)
+    this.eventBufferStore = new ReactNativeEventsStore(maxQueueSize, EVENT_BUFFER_STORE_KEY)
   }
 
-  start(): void {
+  async start(): Promise<void> {
     this.queue.start()
-    this.unsubscribeNetInfo = addConnectionListener(async (state: NetInfoState) => {
-      if (this.isInternetReachable && !state.isInternetReachable) {
-        this.isInternetReachable = false
-        return
-      }
-
-      if (!this.isInternetReachable && state.isInternetReachable) {
-        this.isInternetReachable = true
-        // To make sure `eventProcessor.stop()` waits for pending events to completely process
-        this.processPendingEvents()
-      }
-    })
-    // Dispatch all the formatted pending events right away
-    this.processPendingEvents().then(() => {
-      this.pendingEventsPromise = null
-      // Process individual events pending from the buffer.
-      this.eventBufferStore.getAll().then((events: ProcessableEvents[]) => {
-        events.forEach((event: ProcessableEvents) => this.process(event))
-      })
-    })
+    this.unsubscribeNetInfo = addConnectionListener(this.connectionListener.bind(this))
+    await this.processPendingEvents()
+    // Process individual events pending from the buffer.
+    const events: ProcessableEvent[] = await this.eventBufferStore.getEventsList()
+    events.forEach(this.process.bind(this))
+  }
+  
+  private connectionListener(state: NetInfoState) {
+    if (this.isInternetReachable && !state.isInternetReachable) {
+      this.isInternetReachable = false
+      return
+    }
+    if (!this.isInternetReachable && state.isInternetReachable) {
+      this.isInternetReachable = true
+      this.processPendingEvents()
+    }
   }
 
   isSuccessResponse(status: number): boolean {
     return status >= 200 && status < 400
   }
 
-  async drainQueue(buffer: ProcessableEvents[]): Promise<void> {    
+  async drainQueue(buffer: ProcessableEvent[]): Promise<void> {
+    // Retry pending failed events while draining queue
     await this.processPendingEvents()
-
-    logger.debug('draining queue with %s events', buffer.length)
 
     if (buffer.length === 0) {
       return
     }
 
+    logger.debug('draining queue with %s events', buffer.length)
 
     const eventCacheKey = generateUUID()
     const formattedEvent = formatEvents(buffer)
 
-    // Store formatted event before dispatching.
+    // Store formatted event before dispatching to be retried later in case of failure.
     await this.pendingEventsStore.set(eventCacheKey, formattedEvent)
 
     // Clear buffer because the buffer has become a formatted event and is already stored in pending cache.
@@ -137,33 +146,24 @@ export abstract class LogTierV1EventProcessor implements EventProcessor {
   }
 
   async processPendingEvents(): Promise<void> {
-    // If pending events are already being dispatched, wait for the promise to complete and then return
-    // This is to prevent processing events twice if pending events are tried simultenously from two flows.
-    // For example when there were pending events and device gained back connectivity.
-    // At the same time, batch is complete and drainQueue attempts to process pending events.
-    // It will then get the same pendingEventsPromise and wait for it so that the new events are 
-    // successfully sequenced after the pending events are dispatched.
-    if (this.pendingEventsPromise) {
-      await this.pendingEventsPromise
-      return
+    if (!this.pendingEventsPromise){
+      // Only process events if existing promise is not in progress
+      this.pendingEventsPromise = this.getPendingEventsPromise()
     }
-    
-    this.pendingEventsPromise = this.getPendingEventsPromise()
     await this.pendingEventsPromise
-
-    // Clear pending events promise because its fulfilled now
     this.pendingEventsPromise = null
   }
 
   async getPendingEventsPromise(): Promise<void>{
     const formattedEvents: {[key: string]: any} = await this.pendingEventsStore.getEventsMap()
     const eventEntries = objectEntries(formattedEvents)
+    // Using for loop to be able to wait for previous dispatch to finish before moving on to the new one
     for (let i = 0; i < eventEntries.length; i++) {
       const [eventKey, event] = eventEntries[i]
       await this.dispatchEvent(eventKey, event)
     }
   }
-  
+
   async dispatchEvent(eventCacheKey: string, event: EventV1Request): Promise<void> {
     const requestPromise = new Promise<void>((resolve) => {
       this.dispatcher.dispatchEvent(event, async ({ statusCode }: EventDispatcherResponse) => {
@@ -174,13 +174,14 @@ export abstract class LogTierV1EventProcessor implements EventProcessor {
       })
       sendEventNotification(this.notificationCenter, event)
     })
+    // Tracking all the requests to dispatch to make sure request is completed before fulfilling the `stop` promise
     this.requestTracker.trackRequest(requestPromise)
     return requestPromise
   }
 
-  process(event: ProcessableEvents): void {
+  process(event: ProcessableEvent): void {
     // Adding events to buffer store. If app closes before dispatch, we can reprocess next time the app initializes
-    this.eventBufferStore.add(event)
+    this.eventBufferStore.set(generateUUID(), event)
     this.queue.enqueue(event)
   }
 
