@@ -158,8 +158,7 @@ export abstract class LogTierV1EventProcessor implements EventProcessor {
     const formattedEvents: {[key: string]: any} = await this.pendingEventsStore.getEventsMap()
     const eventEntries = objectEntries(formattedEvents)
     // Using for loop to be able to wait for previous dispatch to finish before moving on to the new one
-    for (let i = 0; i < eventEntries.length; i++) {
-      const [eventKey, event] = eventEntries[i]
+    for (const [eventKey, event] of eventEntries) {
       await this.dispatchEvent(eventKey, event)
     }
   }
