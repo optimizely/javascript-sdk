@@ -48,10 +48,44 @@ export var isAttributeValid = function(attributeKey, attributeValue) {
   );
 };
 
+export var compareVersion = (userProvidedVersion, conditionsVersion) => {
+  // any version
+  if (!userProvidedVersion) {
+    return 0;
+  }
+
+  var userVersionParts = userProvidedVersion.split('.');
+  var conditionsVersionParts = conditionsVersion.split('.');
+
+  for (var idx = 0; idx < userVersionParts.length; idx++) {
+    if (conditionsVersionParts.length <= idx) {
+      return -1;
+    } else if (!fns.isNumber(conditionsVersionParts[idx])) {
+      // compare string
+      if (conditionsVersionParts[idx] !== userVersionParts[idx]) {
+        return -1;
+      }
+    } else if (fns.isNumber(parseInt(userVersionParts[idx])) && fns.isNumber(parseInt(conditionsVersionParts[idx]))) {
+        var userVersionPart = parseInt(userVersionParts[idx]);
+        var conditionsVersionPart = parseInt(conditionsVersionParts[idx]);
+        if (conditionsVersionPart < userVersionPart) {
+          return -1;
+        } else if (conditionsVersionPart > userVersionPart) {
+          return 1;
+        }
+    } else {
+        return -1;
+    }
+  }
+
+  return 0;
+}
+
 /**
  * Provides utility method for validating that the attributes user has provided are valid
  */
 export default {
   validate: validate,
   isAttributeValid: isAttributeValid,
+  compareVersion: compareVersion
 };
