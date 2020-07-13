@@ -98,42 +98,25 @@ export class ReactNativeEventBufferStore {
 // for ex. Req 1 gets the map. Req 2 gets the map. Req 1 sets the map. Req 2 sets the map. The map now loses item from Req 1.
 // This synchronizer makes sure the operations are atomic using promises.
 class Synchronizer {
-  private lockPromises: ResolvablePromise[] = []
+  private lockPromises: Promise<void>[] = []
+  private resolvers: any[] = []
 
+  // Adds a promise to the existing list and returns the promise so that the code block can wait for its turn
   public async getLock(): Promise<void> {
-    this.lockPromises.push(new ResolvablePromise())
+    this.lockPromises.push(new Promise(resolve => this.resolvers.push(resolve)))
     if (this.lockPromises.length === 1) {
       return
     }
-    await this.lockPromises[this.lockPromises.length - 2].getPromise()
+    await this.lockPromises[this.lockPromises.length - 2]
   }
 
+  // Resolves first promise in the array so that the code block waiting on the first promise can continue execution
   public releaseLock(): void {
     if (this.lockPromises.length > 0) {
-      const promise = this.lockPromises.shift()
-      promise && promise.resolve()
+      this.lockPromises.shift()
+      const resolver = this.resolvers.shift()
+      resolver()
       return
     }
-  } 
-}
-
-
-// A Resolvable process to support synchornization block
-export class ResolvablePromise {
-  private resolver: any
-  private promise: Promise<void>
-
-  constructor() {
-    this.promise = new Promise((resolve) => {
-      this.resolver = resolve
-    })
-  }
-
-  public resolve(): void {
-    this.resolver()
-  }
-
-  public getPromise(): Promise<void> {
-    return this.promise
   }
 }
