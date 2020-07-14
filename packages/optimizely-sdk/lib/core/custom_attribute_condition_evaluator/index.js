@@ -364,6 +364,22 @@ function isSemanticVersionEqual(condition, userAttributes, logger) {
   var userValueType = typeof userValue;
   var conditionValue = condition.value;
 
+  if (userValue === null) {
+    logger.log(
+      LOG_LEVEL.DEBUG,
+      sprintf(LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName)
+    );
+    return null;
+  }
+
+  if (typeof conditionValue !== 'string') {
+    logger.log(
+      LOG_LEVEL.WARNING,
+      sprintf(LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition))
+    );
+    return null;
+  }
+
   if (typeof userValue !== 'string') {
     logger.log(
       LOG_LEVEL.WARNING,
@@ -389,6 +405,22 @@ function isSemanticVersionGreater(condition, userAttributes, logger) {
   var userValue = userAttributes[conditionName];
   var userValueType = typeof userValue;
   var conditionValue = condition.value;
+
+  if (userValue === null) {
+    logger.log(
+      LOG_LEVEL.DEBUG,
+      sprintf(LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName)
+    );
+    return null;
+  }
+
+  if (typeof conditionValue !== 'string') {
+    logger.log(
+      LOG_LEVEL.WARNING,
+      sprintf(LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition))
+    );
+    return null;
+  }
 
   if (typeof userValue !== 'string') {
     logger.log(
@@ -428,6 +460,22 @@ function isSemanticVersionLess(condition, userAttributes, logger) {
   var userValue = userAttributes[conditionName];
   var userValueType = typeof userValue;
   var conditionValue = condition.value;
+
+  if (userValue === null) {
+    logger.log(
+      LOG_LEVEL.DEBUG,
+      sprintf(LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName)
+    );
+    return null;
+  }
+
+  if (typeof conditionValue !== 'string') {
+    logger.log(
+      LOG_LEVEL.WARNING,
+      sprintf(LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition))
+    );
+    return null;
+  }
 
   if (typeof userValue !== 'string') {
     logger.log(

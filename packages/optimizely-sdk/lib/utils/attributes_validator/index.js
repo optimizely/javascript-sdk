@@ -59,8 +59,8 @@ export var compareVersion = (userProvidedVersion, conditionsVersion) => {
 
   for (var idx = 0; idx < userVersionParts.length; idx++) {
     if (conditionsVersionParts.length <= idx) {
-      return -1;
-    } else if (!fns.isNumber(conditionsVersionParts[idx])) {
+      return 1;
+    } else if (!fns.isNumber(parseInt(conditionsVersionParts[idx]))) {
       // compare string
       if (conditionsVersionParts[idx] !== userVersionParts[idx]) {
         return -1;
@@ -68,10 +68,10 @@ export var compareVersion = (userProvidedVersion, conditionsVersion) => {
     } else if (fns.isNumber(parseInt(userVersionParts[idx])) && fns.isNumber(parseInt(conditionsVersionParts[idx]))) {
         var userVersionPart = parseInt(userVersionParts[idx]);
         var conditionsVersionPart = parseInt(conditionsVersionParts[idx]);
-        if (conditionsVersionPart < userVersionPart) {
-          return -1;
-        } else if (conditionsVersionPart > userVersionPart) {
+        if (userVersionPart > conditionsVersionPart) {
           return 1;
+        } else if (userVersionPart < conditionsVersionPart) {
+          return -1;
         }
     } else {
         return -1;

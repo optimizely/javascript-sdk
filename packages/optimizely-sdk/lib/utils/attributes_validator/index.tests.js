@@ -92,5 +92,103 @@ describe('lib/utils/attributes_validator', function() {
         });
       });
     });
+
+    describe('compareVersion', function() {
+      it('target string partially equal to conditions', function() {
+        var target = '2.0';
+        var version = '2.0.1';
+        assert.equal(attributesValidator.compareVersion(target, version), 0);
+      });
+
+      it('target string less than conditions', function() {
+        var target = '2.0.0';
+        var version = '2.0.1';
+        assert.equal(attributesValidator.compareVersion(target, version), -1);
+      });
+
+      it('target string great than conditions', function() {
+        var target = '2.0.1';
+        var version = '2.0.0';
+        assert.equal(attributesValidator.compareVersion(target, version), 1);
+      });
+
+      it('target string exactly equal to conditions', function() {
+        var target = '2.0.0';
+        var version = '2.0.0';
+        assert.equal(attributesValidator.compareVersion(target, version), 0);
+      });
+
+      it('target string exactly equal to conditions', function() {
+        var target = '2.0.0';
+        var version = '2.0.0';
+        assert.equal(attributesValidator.compareVersion(target, version), 0);
+      });
+
+      it('target string major part is greater than conditions', function() {
+        var target = '3.0';
+        var version = '2.0.1';
+        assert.equal(attributesValidator.compareVersion(target, version), 1);
+      });
+
+      it('target string major part is less than conditions', function() {
+        var target = '2.0';
+        var version = '3.0.1';
+        assert.equal(attributesValidator.compareVersion(target, version), -1);
+      });
+
+      it('target string minor part is greater than conditions', function() {
+        var target = '2.3';
+        var version = '2.0.1';
+        assert.equal(attributesValidator.compareVersion(target, version), 1);
+      });
+
+      it('target string minor part is less than conditions', function() {
+        var target = '2.0';
+        var version = '2.9.1';
+        assert.equal(attributesValidator.compareVersion(target, version), -1);
+      });
+
+      it('target string minor part is equal to conditions', function() {
+        var target = '2.9';
+        var version = '2.9.1';
+        assert.equal(attributesValidator.compareVersion(target, version), 0);
+      });
+
+      it('target string patch is greater to conditions', function() {
+        var target = '2.3.5';
+        var version = '2.3.1';
+        assert.equal(attributesValidator.compareVersion(target, version), 1);
+      });
+
+      it('target string patch is less to conditions', function() {
+        var target = '2.9.0';
+        var version = '2.9.1';
+        assert.equal(attributesValidator.compareVersion(target, version), -1);
+      });
+
+      it('target string patch is equal to conditions', function() {
+        var target = '2.9.9';
+        var version = '2.9.9';
+        assert.equal(attributesValidator.compareVersion(target, version), 0);
+      });
+
+      it('target string patch with beta tag is equal to conditions', function() {
+        var target = '2.9.9-beta';
+        var version = '2.9.9-beta';
+        assert.equal(attributesValidator.compareVersion(target, version), 0);
+      });
+
+      it('target string patch with beta tag with different delimiter is equal to conditions', function() {
+        var target = '2.9.9-beta';
+        var version = '2.9.9.beta';
+        assert.equal(attributesValidator.compareVersion(target, version), 0);
+      });
+
+      it('conditions string partially equal to target', function() {
+        var target = '2.9.8';
+        var version = '2.9';
+        assert.equal(attributesValidator.compareVersion(target, version), 1);
+      });
+    });
   });
 });
