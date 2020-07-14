@@ -95,7 +95,7 @@ declare module '@optimizely/optimizely-sdk' {
       userId: string,
       attributes?: UserAttributes
     ): string | null;
-    getFeatureVariableJson(
+    getFeatureVariableJSON(
       featureKey: string,
       variableKey: string,
       userId: string,

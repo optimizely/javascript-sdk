@@ -686,6 +686,10 @@ Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
 
 Optimizely.prototype.getFeatureVariable = function(featureKey, variableKey, userId, attributes) {
   try {
+    if (!this.__isValidInstance()) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariable'));
+      return null;
+    }
     return this._getFeatureVariableForType(featureKey, variableKey, null, userId, attributes);
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
@@ -717,14 +721,6 @@ Optimizely.prototype.getFeatureVariable = function(featureKey, variableKey, user
  *                                      with the type of the variable
  */
 Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableKey, variableType, userId, attributes) {
-  if (!this.__isValidInstance()) {
-    var apiName = variableType
-      ? 'getFeatureVariable' + variableType.charAt(0).toUpperCase() + variableType.slice(1)
-      : 'getFeatureVariable';
-    this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, apiName));
-    return null;
-  }
-
   if (!this.__validateInputs({ feature_key: featureKey, variable_key: variableKey, user_id: userId }, attributes)) {
     return null;
   }
@@ -875,6 +871,10 @@ Optimizely.prototype._getFeatureVariableValueFromVariation = function(featureKey
  */
 Optimizely.prototype.getFeatureVariableBoolean = function(featureKey, variableKey, userId, attributes) {
   try {
+    if (!this.__isValidInstance()) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableBoolean'));
+      return null;
+    }
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.BOOLEAN, userId, attributes);
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
@@ -899,6 +899,10 @@ Optimizely.prototype.getFeatureVariableBoolean = function(featureKey, variableKe
  */
 Optimizely.prototype.getFeatureVariableDouble = function(featureKey, variableKey, userId, attributes) {
   try {
+    if (!this.__isValidInstance()) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableDouble'));
+      return null;
+    }
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.DOUBLE, userId, attributes);
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
@@ -923,6 +927,10 @@ Optimizely.prototype.getFeatureVariableDouble = function(featureKey, variableKey
  */
 Optimizely.prototype.getFeatureVariableInteger = function(featureKey, variableKey, userId, attributes) {
   try {
+    if (!this.__isValidInstance()) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableInteger'));
+      return null;
+    }
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.INTEGER, userId, attributes);
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
@@ -947,6 +955,10 @@ Optimizely.prototype.getFeatureVariableInteger = function(featureKey, variableKe
  */
 Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey, userId, attributes) {
   try {
+    if (!this.__isValidInstance()) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableString'));
+      return null;
+    }
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.STRING, userId, attributes);
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
@@ -969,8 +981,12 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
  *                              invalid, or there is a mismatch with the type
  *                              of the variable
  */
-Optimizely.prototype.getFeatureVariableJson = function(featureKey, variableKey, userId, attributes) {
+Optimizely.prototype.getFeatureVariableJSON = function(featureKey, variableKey, userId, attributes) {
   try {
+    if (!this.__isValidInstance()) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableJSON'));
+      return null;
+    }
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.JSON, userId, attributes);
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);

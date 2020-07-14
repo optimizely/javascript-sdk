@@ -42,18 +42,6 @@ jobs:
       notifications:
         email: false
 
-    - stage: 'Lint markdown files'
-      os: linux
-      language: generic
-      before_install: skip
-      install:
-        - npm i -g markdown-spellcheck
-      before_script:
-        - wget --quiet https://raw.githubusercontent.com/optimizely/mdspell-config/master/.spelling
-      script:
-        - mdspell -a -n -r --en-us '**/*.md'
-      after_success: skip
-
     - stage: 'Lint'
       node_js: '12'
       script: npm run lint
@@ -72,10 +60,6 @@ jobs:
         - CLIENT=node $HOME/travisci-tools/trigger-script-with-status-update.sh
         - CLIENT=browser $HOME/travisci-tools/trigger-script-with-status-update.sh
       after_success: travis_terminate 0
-    - <<: *integrationtest
-      script:
-        - CLIENT=react-native-android REPO_SLUG=optimizely/react-native-testapp $HOME/travisci-tools/trigger-script-with-status-update.sh
-        - CLIENT=react-native-ios REPO_SLUG=optimizely/react-native-testapp $HOME/travisci-tools/trigger-script-with-status-update.sh
     - stage: Cross-browser and umd unit tests
       node_js: '8'
       script: npm run test-ci
