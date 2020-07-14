@@ -13,25 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+const items: {[key: string]: string} = {}
 
 export default class AsyncStorage {
+
   static getItem(key: string, callback?: (error?: Error, result?: string) => void): Promise<string | null> {
-    return new Promise((resolve, reject) => {
-      switch (key) {
-        case 'keyThatExists':
-          resolve('{ "name": "Awesome Object" }')
-          break
-        case 'keyThatDoesNotExist':
-          resolve(null)
-          break
-        case 'keyWithInvalidJsonObject':
-          resolve('bad json }')
-          break
-      }
+    return new Promise(resolve => {
+      setTimeout(() => resolve(items[key] || null), 1)
     })
   }
 
-  static setItem(key: string, value: string, callback?: (error?: Error) => void): Promise<void> {
-    return Promise.resolve()
+  static setItem(key: string, value: string, callback?: (error?: Error) => void): Promise<void> {    
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        items[key] = value
+        resolve()
+      }, 1)
+    })
+  }
+
+  static removeItem(key: string, callback?: (error?: Error, result?: string) => void): Promise<string | null> {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        items[key] && delete items[key]
+        resolve()
+      }, 1)
+    })
+  }
+
+  static dumpItems(): {[key: string]: string} {
+    return items
   }
 }
