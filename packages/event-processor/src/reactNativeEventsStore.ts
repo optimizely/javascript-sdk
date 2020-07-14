@@ -14,28 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { getLogger } from '@optimizely/js-sdk-logging'
 import { ReactNativeAsyncStorageCache, objectValues } from "@optimizely/js-sdk-utils"
+
+const logger = getLogger('ReactNativeEventsStore')
 
 /**
  * A key value store which stores objects of type T with string keys
  */
 export class ReactNativeEventsStore<T> {
   private maxSize: number
-  private storageKey: string
+  private storeKey: string
   private synchronizer: Synchronizer = new Synchronizer()
   private cache: ReactNativeAsyncStorageCache = new ReactNativeAsyncStorageCache()
 
-  constructor(maxSize: number, storageKey: string) {
+  constructor(maxSize: number, storeKey: string) {
     this.maxSize = maxSize
-    this.storageKey = storageKey
+    this.storeKey = storeKey
   }
 
   public async set(key: string, event: T): Promise<string> {
     await this.synchronizer.getLock()
-    const eventsMap: {[key: string]: T} = await this.cache.get(this.storageKey) || {}    
+    const eventsMap: {[key: string]: T} = await this.cache.get(this.storeKey) || {}    
     if (Object.keys(eventsMap).length < this.maxSize) {
       eventsMap[key] = event
-      await this.cache.set(this.storageKey, eventsMap)
+      await this.cache.set(this.storeKey, eventsMap)
+    } else {
+      logger.warn('React native events store is full. Store key: %s', this.storeKey)
     }
     this.synchronizer.releaseLock()
     return key
@@ -43,32 +48,32 @@ export class ReactNativeEventsStore<T> {
 
   public async get(key: string): Promise<T> {
     await this.synchronizer.getLock()
-    const eventsMap: {[key: string]: T} = await this.cache.get(this.storageKey) || {}
+    const eventsMap: {[key: string]: T} = await this.cache.get(this.storeKey) || {}
     this.synchronizer.releaseLock()
     return eventsMap[key]
   }
 
   public async getEventsMap(): Promise<{[key: string]: T}> {
-    return await this.cache.get(this.storageKey) || {}
+    return await this.cache.get(this.storeKey) || {}
   }
 
   public async getEventsList(): Promise<T[]> {
     await this.synchronizer.getLock()
-    const eventsMap: {[key: string]: T} = await this.cache.get(this.storageKey) || {}
+    const eventsMap: {[key: string]: T} = await this.cache.get(this.storeKey) || {}
     this.synchronizer.releaseLock()
     return objectValues(eventsMap)
   }
 
   public async remove(key: string): Promise<void> {
     await this.synchronizer.getLock()
-    const eventsMap: {[key: string]: T} = await this.cache.get(this.storageKey) || {}
+    const eventsMap: {[key: string]: T} = await this.cache.get(this.storeKey) || {}
     eventsMap[key] && delete eventsMap[key]
-    await this.cache.set(this.storageKey, eventsMap)
+    await this.cache.set(this.storeKey, eventsMap)
     this.synchronizer.releaseLock()
   }
 
   public async clear(): Promise<void> {
-    await this.cache.remove(this.storageKey)
+    await this.cache.remove(this.storeKey)
   }
 }
 

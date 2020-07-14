@@ -111,10 +111,12 @@ export abstract class LogTierV1EventProcessor implements EventProcessor {
   private connectionListener(state: NetInfoState) {
     if (this.isInternetReachable && !state.isInternetReachable) {
       this.isInternetReachable = false
+      logger.debug('Internet connection lost')
       return
     }
     if (!this.isInternetReachable && state.isInternetReachable) {
       this.isInternetReachable = true
+      logger.debug('Internet connection is restored, attempting to dispatch pending events')
       this.processPendingEvents()
     }
   }
@@ -146,9 +148,12 @@ export abstract class LogTierV1EventProcessor implements EventProcessor {
   }
 
   async processPendingEvents(): Promise<void> {
+    logger.debug('Processing pending events from offline storage')
     if (!this.pendingEventsPromise){
       // Only process events if existing promise is not in progress
       this.pendingEventsPromise = this.getPendingEventsPromise()
+    } else {
+      logger.debug('Already processing pending events, returning the existing promise')
     }
     await this.pendingEventsPromise
     this.pendingEventsPromise = null
@@ -157,6 +162,7 @@ export abstract class LogTierV1EventProcessor implements EventProcessor {
   async getPendingEventsPromise(): Promise<void>{
     const formattedEvents: {[key: string]: any} = await this.pendingEventsStore.getEventsMap()
     const eventEntries = objectEntries(formattedEvents)
+    logger.debug('Processing %s pending events', eventEntries.length)
     // Using for loop to be able to wait for previous dispatch to finish before moving on to the new one
     for (const [eventKey, event] of eventEntries) {
       await this.dispatchEvent(eventKey, event)
@@ -168,6 +174,8 @@ export abstract class LogTierV1EventProcessor implements EventProcessor {
       this.dispatcher.dispatchEvent(event, async ({ statusCode }: EventDispatcherResponse) => {
         if (this.isSuccessResponse(statusCode)) {
           await this.pendingEventsStore.remove(eventCacheKey)
+        } else {
+          logger.warn('Failed to dispatch event, Response status Code: %s', statusCode)
         }
         resolve()
       })
