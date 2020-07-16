@@ -27,7 +27,7 @@ stages:
   - name: 'Lint markdown files'
   - 'Lint'
   - 'Integration tests'
-  - 'Production tests'
+  - 'Full stack production tests'
   - 'Cross-browser and umd unit tests'
   - 'Test'
   - 'Test sub packages'
@@ -76,7 +76,7 @@ jobs:
       after_success: travis_terminate 0
 
     - <<: *integrationtest
-      stage: 'Production tests'
+      stage: 'Full stack production tests'
       env:
         SDK=javascript
         SDK_BRANCH=$TRAVIS_PULL_REQUEST_BRANCH

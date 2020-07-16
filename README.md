@@ -1,7 +1,7 @@
 <h3 align="center">
   Optimizely JavaScript SDK
 </h3>
-
+Sohail Hussain
 <p align="center">
   This repository houses the official JavaScript SDK for use with Optimizely Full Stack and Optimizely Rollouts.
 </p>
