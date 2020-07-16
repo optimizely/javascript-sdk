@@ -24,6 +24,8 @@ import {
   sendEventNotification,
   validateAndGetBatchSize,
   validateAndGetFlushInterval,
+  DEFAULT_BATCH_SIZE,
+  DEFAULT_FLUSH_INTERVAL,
 } from '../eventProcessor'
 import { EventQueue } from '../eventQueue'
 import RequestTracker from '../requestTracker'
@@ -40,8 +42,8 @@ export class LogTierV1EventProcessor implements EventProcessor {
 
   constructor({
     dispatcher,
-    flushInterval = 30000,
-    batchSize = 3000,
+    flushInterval = DEFAULT_FLUSH_INTERVAL,
+    batchSize = DEFAULT_BATCH_SIZE,
     notificationCenter,
   }: {
     dispatcher: EventDispatcher

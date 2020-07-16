@@ -21,8 +21,8 @@ import { EventQueue, DefaultEventQueue, SingleEventQueue } from './eventQueue'
 import { getLogger } from '@optimizely/js-sdk-logging'
 import { NOTIFICATION_TYPES, NotificationCenter } from '@optimizely/js-sdk-utils'
 
-const DEFAULT_FLUSH_INTERVAL = 30000 // Unit is ms - default flush interval is 30s
-const DEFAULT_BATCH_SIZE = 10
+export const DEFAULT_FLUSH_INTERVAL = 30000 // Unit is ms - default flush interval is 30s
+export const DEFAULT_BATCH_SIZE = 10
 
 const logger = getLogger('EventProcessor')
 
