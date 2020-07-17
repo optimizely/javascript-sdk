@@ -17,21 +17,21 @@ import { sprintf } from '@optimizely/js-sdk-utils';
 import { validate as jsonSchemaValidator } from 'json-schema';
 
 import { ERROR_MESSAGES } from '../enums';
-import projectConfigSchema from '../../core/project_config/project_config_schema';
+import { schema } from '../../core/project_config/project_config_schema';
 
-var MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';
+const MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';
 
 /**
  * Validate the given json object against the specified schema
- * @param  {Object} jsonObject The object to validate against the schema
- * @return {Boolean}           True if the given object is valid
+ * @param  {object} jsonObject The object to validate against the schema
+ * @return {boolean}           true if the given object is valid
  */
-export var validate = function(jsonObject) {
+export function validate(jsonObject: Record<string, unknown>): boolean {
   if (!jsonObject) {
     throw new Error(sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, MODULE_NAME));
   }
 
-  var result = jsonSchemaValidator(jsonObject, projectConfigSchema);
+  const result = jsonSchemaValidator(jsonObject, schema);
   if (result.valid) {
     return true;
   } else {
@@ -42,8 +42,4 @@ export var validate = function(jsonObject) {
     }
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_JSON, MODULE_NAME));
   }
-};
-
-export default {
-  validate: validate,
-};
+}

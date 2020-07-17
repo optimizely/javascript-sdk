@@ -17,7 +17,9 @@
 /**
  * Project Config JSON Schema file used to validate the project json datafile
  */
-export var schema = {
+ import { JSONSchema4 } from 'json-schema';
+
+ var schemaDefinition = {
   $schema: 'http://json-schema.org/draft-04/schema#',
   type: 'object',
   properties: {
@@ -276,4 +278,6 @@ export var schema = {
   },
 };
 
-export default schema;
+const schema = schemaDefinition as JSONSchema4
+
+export { schema }
