@@ -30,6 +30,7 @@ stages:
   - 'Cross-browser and umd unit tests'
   - 'Test'
   - 'Test sub packages'
+  - 'Source Clear'
 
 jobs:
   include:
@@ -47,8 +48,6 @@ jobs:
       script: npm run lint
     - &integrationtest
       stage: 'Integration tests'
-      addons:
-        srcclr: true
       merge_mode: replace
       cache: false
       language: minimal
@@ -74,3 +73,14 @@ jobs:
     - <<: *packagetest
       before_script: npm install "@react-native-community/async-storage"
       before_install: cd packages/datafile-manager
+
+    - stage: 'Source Clear'
+      if: type = cron
+      addons:
+        srcclr: true
+      before_install: skip
+      install: skip
+      before_script: skip
+      script: skip
+      after_script: skip
+      after_success: skip
