@@ -17,7 +17,7 @@ import { sprintf } from '@optimizely/js-sdk-utils';
 import { validate as jsonSchemaValidator } from 'json-schema';
 
 import { ERROR_MESSAGES } from '../enums';
-import { schema } from '../../core/project_config/project_config_schema';
+import schema from '../../core/project_config/project_config_schema';
 
 const MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';
 
@@ -26,7 +26,7 @@ const MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';
  * @param  {object} jsonObject The object to validate against the schema
  * @return {boolean}           true if the given object is valid
  */
-export function validate(jsonObject: Record<string, unknown>): boolean {
+export function validate(jsonObject: JSON): boolean {
   if (!jsonObject) {
     throw new Error(sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, MODULE_NAME));
   }

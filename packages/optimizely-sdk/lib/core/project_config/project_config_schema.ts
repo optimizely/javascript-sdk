@@ -280,4 +280,4 @@
 
 const schema = schemaDefinition as JSONSchema4
 
-export { schema }
+export default schema
