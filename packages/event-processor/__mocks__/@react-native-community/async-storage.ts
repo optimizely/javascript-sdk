@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const items: {[key: string]: string} = {}
+let items: {[key: string]: string} = {}
 
 export default class AsyncStorage {
 
@@ -43,5 +43,9 @@ export default class AsyncStorage {
 
   static dumpItems(): {[key: string]: string} {
     return items
+  }
+  
+  static clearStore(): void {
+    items = {}
   }
 }

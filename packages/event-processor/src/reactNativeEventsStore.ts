@@ -17,6 +17,7 @@
 import { getLogger } from '@optimizely/js-sdk-logging'
 import { objectValues } from "@optimizely/js-sdk-utils"
 
+import { Synchronizer } from './synchronizer'
 import ReactNativeAsyncStorageCache from './reactNativeAsyncStorageCache'
 
 const logger = getLogger('ReactNativeEventsStore')
@@ -76,35 +77,5 @@ export class ReactNativeEventsStore<T> {
 
   public async clear(): Promise<void> {
     await this.cache.remove(this.storeKey)
-  }
-}
-
-/**
- * Both the above stores use single entry in the async storage store to manage their maps and lists.
- * This results in race condition when two items are added to the map or array in parallel.
- * for ex. Req 1 gets the map. Req 2 gets the map. Req 1 sets the map. Req 2 sets the map. The map now loses item from Req 1.
- * This synchronizer makes sure the operations are atomic using promises.
- */
-class Synchronizer {
-  private lockPromises: Promise<void>[] = []
-  private resolvers: any[] = []
-
-  // Adds a promise to the existing list and returns the promise so that the code block can wait for its turn
-  public async getLock(): Promise<void> {
-    this.lockPromises.push(new Promise(resolve => this.resolvers.push(resolve)))
-    if (this.lockPromises.length === 1) {
-      return
-    }
-    await this.lockPromises[this.lockPromises.length - 2]
-  }
-
-  // Resolves first promise in the array so that the code block waiting on the first promise can continue execution
-  public releaseLock(): void {
-    if (this.lockPromises.length > 0) {
-      this.lockPromises.shift()
-      const resolver = this.resolvers.shift()
-      resolver()
-      return
-    }
   }
 }

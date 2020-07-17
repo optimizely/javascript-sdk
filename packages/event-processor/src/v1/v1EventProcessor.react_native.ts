@@ -35,6 +35,7 @@ import {
   DEFAULT_FLUSH_INTERVAL,  
 } from "../eventProcessor"
 import { ReactNativeEventsStore } from '../reactNativeEventsStore'
+import { Synchronizer } from '../synchronizer'
 import { EventQueue } from '../eventQueue'
 import RequestTracker from '../requestTracker'
 import { areEventContextsEqual } from '../events'
@@ -63,6 +64,7 @@ export class LogTierV1EventProcessor implements EventProcessor {
   private unsubscribeNetInfo: Function | null = null
   private isInternetReachable: boolean = true
   private pendingEventsPromise: Promise<void> | null = null
+  private synchronizer: Synchronizer = new Synchronizer()
 
   // If a pending event fails to dispatch, this indicates skipping further events to preserve sequence in the next retry.
   private shouldSkipDispatchToPreserveSequence: boolean = false
@@ -123,12 +125,14 @@ export class LogTierV1EventProcessor implements EventProcessor {
   }
 
   private async drainQueue(buffer: ProcessableEvent[]): Promise<void> {
-    // Retry pending failed events while draining queue
-    await this.processPendingEvents()
-
-    if (buffer.length === 0) {
+    if (buffer.length === 0) {     
       return
     }
+
+    await this.synchronizer.getLock()    
+
+    // Retry pending failed events while draining queue
+    await this.processPendingEvents()
 
     logger.debug('draining queue with %s events', buffer.length)
 
@@ -147,6 +151,8 @@ export class LogTierV1EventProcessor implements EventProcessor {
 
     // Resetting skip flag because current sequence of events have all been processed
     this.shouldSkipDispatchToPreserveSequence = false
+
+    this.synchronizer.releaseLock()
   }
 
   private async processPendingEvents(): Promise<void> {
@@ -212,15 +218,14 @@ export class LogTierV1EventProcessor implements EventProcessor {
     this.queue.enqueue(event)
   }
 
-  public stop(): Promise<void> {
+  public async stop(): Promise<void> {
     // swallow - an error stopping this queue shouldn't prevent this from stopping
     try {
       this.unsubscribeNetInfo && this.unsubscribeNetInfo()
-      this.queue.stop()
+      await this.queue.stop()
       return this.requestTracker.onRequestsComplete()
     } catch (e) {
       logger.error('Error stopping EventProcessor: "%s"', e.message, e)
     }
-    return Promise.resolve()
   }
 }
