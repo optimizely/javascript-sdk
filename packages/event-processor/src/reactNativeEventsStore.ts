@@ -15,7 +15,9 @@
  * limitations under the License.
  */
 import { getLogger } from '@optimizely/js-sdk-logging'
-import { ReactNativeAsyncStorageCache, objectValues } from "@optimizely/js-sdk-utils"
+import { objectValues } from "@optimizely/js-sdk-utils"
+
+import ReactNativeAsyncStorageCache from './reactNativeAsyncStorageCache'
 
 const logger = getLogger('ReactNativeEventsStore')
 
