@@ -57,7 +57,8 @@ const EVENT_BUFFER_STORE_KEY = 'fs_optly_event_buffer'
  */
 export class LogTierV1EventProcessor implements EventProcessor {
   private dispatcher: EventDispatcher
-  private queue: EventQueue<ProcessableEvent>
+  // expose for testing
+  public queue: EventQueue<ProcessableEvent>
   private notificationCenter?: NotificationCenter
   private requestTracker: RequestTracker
 
@@ -143,7 +144,9 @@ export class LogTierV1EventProcessor implements EventProcessor {
     await this.pendingEventsStore.set(eventCacheKey, formattedEvent)
 
     // Clear buffer because the buffer has become a formatted event and is already stored in pending cache.
-    await this.eventBufferStore.clear()
+    for (const {uuid} of buffer) {
+      await this.eventBufferStore.remove(uuid)
+    }
 
     if (!this.shouldSkipDispatchToPreserveSequence) {
       await this.dispatchEvent(eventCacheKey, formattedEvent)
@@ -214,8 +217,9 @@ export class LogTierV1EventProcessor implements EventProcessor {
 
   public process(event: ProcessableEvent): void {
     // Adding events to buffer store. If app closes before dispatch, we can reprocess next time the app initializes
-    this.eventBufferStore.set(generateUUID(), event)
-    this.queue.enqueue(event)
+    this.eventBufferStore.set(event.uuid, event).then(() => {
+      this.queue.enqueue(event)
+    })
   }
 
   public async stop(): Promise<void> {
