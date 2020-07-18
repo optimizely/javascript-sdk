@@ -21,23 +21,20 @@
 import { sprintf } from '@optimizely/js-sdk-utils';
 
 import { ERROR_MESSAGES } from '../enums';
-var MODULE_NAME = 'USER_PROFILE_SERVICE_VALIDATOR';
+
+const MODULE_NAME = 'USER_PROFILE_SERVICE_VALIDATOR';
 
 /**
  * Validates user's provided user profile service instance
- * @param  {Object}  userProfileServiceInstance
- * @return {boolean} True if the instance is valid
+ * @param  {object}  userProfileServiceInstance
+ * @return {boolean} true if the instance is valid
  * @throws If the instance is not valid
  */
-export var validate = function(userProfileServiceInstance) {
+export function validate(userProfileServiceInstance: Record<string, unknown>): boolean {
   if (typeof userProfileServiceInstance.lookup !== 'function') {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'lookup'"));
   } else if (typeof userProfileServiceInstance.save !== 'function') {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'save'"));
   }
   return true;
-};
-
-export default {
-  validate: validate,
-};
+}
