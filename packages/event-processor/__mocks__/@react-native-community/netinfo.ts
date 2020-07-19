@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// TODO: Implement mock class for testing here 
-export function addEventListener() {
-  // mock here
+let localCallback: any
+
+export function addEventListener(callback: any) {
+  localCallback = callback  
+}
+
+export function triggerInternetState(isInternetReachable: boolean) {
+  localCallback({ isInternetReachable })
 }

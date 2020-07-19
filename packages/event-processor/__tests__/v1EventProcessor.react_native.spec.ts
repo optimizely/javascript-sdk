@@ -25,8 +25,8 @@ import {
 import { EventProcessor, ProcessableEvent } from '../src/eventProcessor'
 import { buildImpressionEventV1, makeBatchedEventV1 } from '../src/v1/buildEventV1'
 import AsyncStorage from '../__mocks__/@react-native-community/async-storage'
+import { triggerInternetState } from '../__mocks__/@react-native-community/netinfo'
 import { DefaultEventQueue } from '../src/eventQueue'
-import { ReactNativeEventsStore } from '../src/reactNativeEventsStore'
 
 function createImpressionEvent() {
   return {
@@ -474,6 +474,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
 
     afterEach(() => {
       jest.clearAllMocks()
+      AsyncStorage.clearStore()
     })
 
     describe('Sequence', () => {
@@ -612,8 +613,6 @@ describe('LogTierV1EventProcessorReactNative', () => {
         })
 
         it('should dispatch pending events first and then process events in buffer store', async () => {
-          const store = new ReactNativeEventsStore(100, 'fs_optly_event_buffer')
-
           stubDispatcher = {
             dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
               dispatchStub(event)
@@ -665,30 +664,226 @@ describe('LogTierV1EventProcessorReactNative', () => {
 
           await new Promise(resolve => setTimeout(resolve, 250))
           expect(visitorIds.length).toEqual(8)
+          expect(visitorIds).toEqual(['user0', 'user1', 'user2', 'user3', 'user4', 'user5', 'user6', 'user7'])
         })
       })
 
-      describe.skip('When a new event is dispatched', () => {
-        it('should dispatch all the pending events first', () => {
+      describe('When a new event is dispatched', () => {
+        it('should dispatch all the pending events first and then new event in correct order', async () => {
+          let receivedVisitorIds: string[] = []
+          let dispatchCount = 0
+          stubDispatcher = {
+            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {              
+              dispatchStub(event)
+              dispatchCount++
+              if (dispatchCount > 4) {
+                event.params.visitors.forEach(visitor => receivedVisitorIds.push(visitor.visitor_id))
+                callback({ statusCode: 200 })
+              } else {
+                callback({ statusCode: 400 })
+              }              
+            },
+          }
 
-        })
+          let processor = new LogTierV1EventProcessor({
+            dispatcher: stubDispatcher,
+            flushInterval: 100,
+            batchSize: 1,
+          })
 
-        it('should dispatch pending events and new event in correct order', () => {
-          
-        })
+          await processor.start()
+          let event1 = createConversionEvent()
+          event1.user.id = event1.uuid = 'user1'
+          let event2 = createConversionEvent()
+          event2.user.id = event2.uuid = 'user2'
+          let event3 = createConversionEvent()
+          event3.user.id = event3.uuid = 'user3'
+          let event4 = createConversionEvent()
+          event4.user.id = event4.uuid = 'user4'
 
-        it('should skip dispatching subsequent events if an event fails to dispatch', () => {
-          
+          processor.process(event1)
+          processor.process(event2)
+          processor.process(event3)
+          processor.process(event4)
+
+          await new Promise(resolve => setTimeout(resolve, 100))
+
+          // Four events will return response code 400 which means only the first pending event will be tried each time and rest will be skipped
+          expect(dispatchStub).toBeCalledTimes(4)
+
+          jest.resetAllMocks()
+
+          let event5 = createConversionEvent()
+          event5.user.id = event5.uuid = 'user5'
+
+          processor.process(event5)
+
+          await new Promise(resolve => setTimeout(resolve, 100))
+          expect(dispatchStub).toBeCalledTimes(5)
+          expect(receivedVisitorIds).toEqual(['user1', 'user2', 'user3', 'user4', 'user5'])
+          await processor.stop()
+        })        
+
+        it('should skip dispatching subsequent events if an event fails to dispatch', async () => {
+          let receivedVisitorIds: string[] = []
+          let dispatchCount = 0
+          stubDispatcher = {
+            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
+              dispatchStub(event)
+              dispatchCount++
+              event.params.visitors.forEach(visitor => receivedVisitorIds.push(visitor.visitor_id))
+              callback({ statusCode: 400 })
+            },
+          }
+
+          let processor = new LogTierV1EventProcessor({
+            dispatcher: stubDispatcher,
+            flushInterval: 100,
+            batchSize: 1,
+          })
+
+          await processor.start()
+          let event1 = createConversionEvent()
+          event1.user.id = event1.uuid = 'user1'
+          let event2 = createConversionEvent()
+          event2.user.id = event2.uuid = 'user2'
+          let event3 = createConversionEvent()
+          event3.user.id = event3.uuid = 'user3'
+          let event4 = createConversionEvent()
+          event4.user.id = event4.uuid = 'user4'
+
+          processor.process(event1)
+          await new Promise(resolve => setTimeout(resolve, 100))
+          expect(dispatchStub).toBeCalledTimes(1)
+
+          processor.process(event2)
+          await new Promise(resolve => setTimeout(resolve, 100))
+          expect(dispatchStub).toBeCalledTimes(2)
+
+          processor.process(event3)
+          await new Promise(resolve => setTimeout(resolve, 100))
+          expect(dispatchStub).toBeCalledTimes(3)
+
+          processor.process(event4)
+          await new Promise(resolve => setTimeout(resolve, 100))
+          expect(dispatchStub).toBeCalledTimes(4)
+
+          expect(dispatchCount).toEqual(4)
+
+          // subsequent events were skipped with each attempt because of request failure
+          expect(receivedVisitorIds).toEqual(['user1', 'user1', 'user1', 'user1'])
+          await processor.stop()
         })
       })
 
-      describe.skip('When internet connection is restored', () => {
-        it('should dispatch all the pending events in correct order when internet connection is restored', () => {
+      describe('When internet connection is restored', () => {
+        it('should dispatch all the pending events in correct order when internet connection is restored', async () => {
+          let receivedVisitorIds: string[] = []
+          let dispatchCount = 0
+          stubDispatcher = {
+            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {              
+              dispatchStub(event)
+              dispatchCount++
+              if (dispatchCount > 4) {
+                event.params.visitors.forEach(visitor => receivedVisitorIds.push(visitor.visitor_id))
+                callback({ statusCode: 200 })
+              } else {
+                callback({ statusCode: 400 })
+              }              
+            },
+          }
 
+          let processor = new LogTierV1EventProcessor({
+            dispatcher: stubDispatcher,
+            flushInterval: 100,
+            batchSize: 1,
+          })
+
+          await processor.start()
+          triggerInternetState(false)
+          let event1 = createConversionEvent()
+          event1.user.id = event1.uuid = 'user1'
+          let event2 = createConversionEvent()
+          event2.user.id = event2.uuid = 'user2'
+          let event3 = createConversionEvent()
+          event3.user.id = event3.uuid = 'user3'
+          let event4 = createConversionEvent()
+          event4.user.id = event4.uuid = 'user4'
+
+          processor.process(event1)
+          processor.process(event2)
+          processor.process(event3)
+          processor.process(event4)
+
+          await new Promise(resolve => setTimeout(resolve, 100))
+
+          // Four events will return response code 400 which means only the first pending event will be tried each time and rest will be skipped
+          expect(dispatchStub).toBeCalledTimes(4)
+
+          jest.resetAllMocks()
+
+          triggerInternetState(true)          
+          await new Promise(resolve => setTimeout(resolve, 100))
+          expect(dispatchStub).toBeCalledTimes(4)
+          expect(receivedVisitorIds).toEqual(['user1', 'user2', 'user3', 'user4'])
+          await processor.stop()
         })
 
-        it('should not dispatch duplicate events if internet is lost and restored twice in a short interval', () => {
+        it('should not dispatch duplicate events if internet is lost and restored twice in a short interval', async () => {
+          let receivedVisitorIds: string[] = []
+          let dispatchCount = 0
+          stubDispatcher = {
+            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {              
+              dispatchStub(event)
+              dispatchCount++
+              if (dispatchCount > 4) {
+                event.params.visitors.forEach(visitor => receivedVisitorIds.push(visitor.visitor_id))
+                callback({ statusCode: 200 })
+              } else {
+                callback({ statusCode: 400 })
+              }              
+            },
+          }
 
+          let processor = new LogTierV1EventProcessor({
+            dispatcher: stubDispatcher,
+            flushInterval: 100,
+            batchSize: 1,
+          })
+
+          await processor.start()
+          triggerInternetState(false)
+          let event1 = createConversionEvent()
+          event1.user.id = event1.uuid = 'user1'
+          let event2 = createConversionEvent()
+          event2.user.id = event2.uuid = 'user2'
+          let event3 = createConversionEvent()
+          event3.user.id = event3.uuid = 'user3'
+          let event4 = createConversionEvent()
+          event4.user.id = event4.uuid = 'user4'
+
+          processor.process(event1)
+          processor.process(event2)
+          processor.process(event3)
+          processor.process(event4)
+
+          await new Promise(resolve => setTimeout(resolve, 100))
+
+          // Four events will return response code 400 which means only the first pending event will be tried each time and rest will be skipped
+          expect(dispatchStub).toBeCalledTimes(4)
+
+          jest.resetAllMocks()
+
+          triggerInternetState(true)
+          triggerInternetState(false)
+          triggerInternetState(true)
+          triggerInternetState(false)
+          triggerInternetState(true)
+
+          await new Promise(resolve => setTimeout(resolve, 100))
+          expect(dispatchStub).toBeCalledTimes(4)
+          expect(receivedVisitorIds).toEqual(['user1', 'user2', 'user3', 'user4'])
+          await processor.stop()
         })
       })
     })
