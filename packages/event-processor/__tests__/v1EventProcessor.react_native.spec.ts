@@ -194,7 +194,6 @@ describe('LogTierV1EventProcessorReactNative', () => {
       })
 
       it('should return a promise when multiple event batches are sent', async () => {
-        await new Promise(resolve => setTimeout(resolve, 2000))
         stubDispatcher = {
           dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
             dispatchStub(event)
@@ -236,7 +235,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
 
         const impressionEvent1 = createImpressionEvent()
         processor.process(impressionEvent1)
-        await new Promise(resolve => setTimeout(resolve, 200))
+        await new Promise(resolve => setTimeout(resolve, 150))
 
         await processor.stop()
         // calling stop should haver flushed the current batch of size 1
@@ -313,12 +312,12 @@ describe('LogTierV1EventProcessorReactNative', () => {
         processor.process(impressionEvent1)
         processor.process(impressionEvent2)
 
-        await new Promise(resolve => setTimeout(resolve, 150))
+        await new Promise(resolve => setTimeout(resolve, 50))
         expect(dispatchStub).toHaveBeenCalledTimes(0)
 
         processor.process(impressionEvent3)
 
-        await new Promise(resolve => setTimeout(resolve, 150))
+        await new Promise(resolve => setTimeout(resolve, 50))
         expect(dispatchStub).toHaveBeenCalledTimes(1)
         expect(dispatchStub).toHaveBeenCalledWith({
           url: 'https://logx.optimizely.com/v1/events',
@@ -344,12 +343,12 @@ describe('LogTierV1EventProcessorReactNative', () => {
         processor.process(impressionEvent1)
         processor.process(conversionEvent)
 
-        await new Promise(resolve => setTimeout(resolve, 150))
+        await new Promise(resolve => setTimeout(resolve, 50))
         expect(dispatchStub).toHaveBeenCalledTimes(0)
 
         processor.process(impressionEvent2)
 
-        await new Promise(resolve => setTimeout(resolve, 150))
+        await new Promise(resolve => setTimeout(resolve, 50))
         expect(dispatchStub).toHaveBeenCalledTimes(1)
         expect(dispatchStub).toHaveBeenCalledWith({
           url: 'https://logx.optimizely.com/v1/events',
@@ -368,12 +367,12 @@ describe('LogTierV1EventProcessorReactNative', () => {
         processor.process(impressionEvent1)
         processor.process(conversionEvent)
 
-        await new Promise(resolve => setTimeout(resolve, 150))
+        await new Promise(resolve => setTimeout(resolve, 50))
         expect(dispatchStub).toHaveBeenCalledTimes(0)
 
         processor.process(impressionEvent2)
 
-        await new Promise(resolve => setTimeout(resolve, 150))
+        await new Promise(resolve => setTimeout(resolve, 50))
         expect(dispatchStub).toHaveBeenCalledTimes(1)
         expect(dispatchStub).toHaveBeenCalledWith({
           url: 'https://logx.optimizely.com/v1/events',
@@ -475,15 +474,6 @@ describe('LogTierV1EventProcessorReactNative', () => {
     afterEach(() => {
       jest.clearAllMocks()
       AsyncStorage.clearStore()
-    })
-
-    describe('Sequence', () => {
-      it('should dispatch pending events in correct sequence', () => {
-        // Add Pending events to the store and that try dispatching them and check the sequence
-      })
-      it('should dispatch new event after pending events', () => {
-        // Add pending events to the store and
-      })
     })
 
     describe('Retry Pending Events', () => {
@@ -594,13 +584,13 @@ describe('LogTierV1EventProcessorReactNative', () => {
 
           processor = new LogTierV1EventProcessor({
             dispatcher: stubDispatcher,
-            flushInterval: 1000,
+            flushInterval: 100,
             batchSize: 4,
           })
 
           await processor.start()
 
-          await new Promise(resolve => setTimeout(resolve, 1500))
+          await new Promise(resolve => setTimeout(resolve, 150))
           expect(dispatchStub).toBeCalledTimes(1)
           expect(receivedEvents.length).toEqual(1)
           const receivedEvent = receivedEvents[0]
@@ -635,7 +625,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
             processor.process(event)
           }
           
-          await new Promise(resolve => setTimeout(resolve, 150))
+          await new Promise(resolve => setTimeout(resolve, 50))
 
           expect(dispatchStub).toBeCalledTimes(2)          
 
@@ -753,19 +743,19 @@ describe('LogTierV1EventProcessorReactNative', () => {
           event4.user.id = event4.uuid = 'user4'
 
           processor.process(event1)
-          await new Promise(resolve => setTimeout(resolve, 100))
+          await new Promise(resolve => setTimeout(resolve, 50))
           expect(dispatchStub).toBeCalledTimes(1)
 
           processor.process(event2)
-          await new Promise(resolve => setTimeout(resolve, 100))
+          await new Promise(resolve => setTimeout(resolve, 50))
           expect(dispatchStub).toBeCalledTimes(2)
 
           processor.process(event3)
-          await new Promise(resolve => setTimeout(resolve, 100))
+          await new Promise(resolve => setTimeout(resolve, 50))
           expect(dispatchStub).toBeCalledTimes(3)
 
           processor.process(event4)
-          await new Promise(resolve => setTimeout(resolve, 100))
+          await new Promise(resolve => setTimeout(resolve, 50))
           expect(dispatchStub).toBeCalledTimes(4)
 
           expect(dispatchCount).toEqual(4)
@@ -815,7 +805,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
           processor.process(event3)
           processor.process(event4)
 
-          await new Promise(resolve => setTimeout(resolve, 100))
+          await new Promise(resolve => setTimeout(resolve, 50))
 
           // Four events will return response code 400 which means only the first pending event will be tried each time and rest will be skipped
           expect(dispatchStub).toBeCalledTimes(4)
@@ -823,7 +813,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
           jest.resetAllMocks()
 
           triggerInternetState(true)          
-          await new Promise(resolve => setTimeout(resolve, 100))
+          await new Promise(resolve => setTimeout(resolve, 50))
           expect(dispatchStub).toBeCalledTimes(4)
           expect(receivedVisitorIds).toEqual(['user1', 'user2', 'user3', 'user4'])
           await processor.stop()
@@ -885,16 +875,6 @@ describe('LogTierV1EventProcessorReactNative', () => {
           expect(receivedVisitorIds).toEqual(['user1', 'user2', 'user3', 'user4'])
           await processor.stop()
         })
-      })
-    })
-
-    describe.skip('Race Conditions', () => {
-      it('should not dispatch pending events twice if retyring is triggered simultenously from internet connection and new event', () => {
-        
-      })
-
-      it('should dispatch pending events in correct order if retyring is triggered from multiple sources simultenously', () => {
-
       })
     })
   })
