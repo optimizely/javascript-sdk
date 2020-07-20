@@ -25,7 +25,7 @@ import { buildConversionEvent, buildImpressionEvent } from '../core/event_builde
 import eventTagsValidator from '../utils/event_tags_validator';
 import notificationCenter from '../core/notification_center';
 import projectConfig from '../core/project_config';
-import userProfileServiceValidator from '../utils/user_profile_service_validator';
+import * as userProfileServiceValidator from '../utils/user_profile_service_validator';
 import * as stringValidator from '../utils/string_value_validator';
 import projectConfigManager from '../core/project_config/project_config_manager';
 
