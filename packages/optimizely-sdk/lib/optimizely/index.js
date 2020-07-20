@@ -115,7 +115,7 @@ function Optimizely(config) {
   this.eventProcessor = new eventProcessor.LogTierV1EventProcessor({
     dispatcher: this.eventDispatcher,
     flushInterval: config.eventFlushInterval,
-    maxQueueSize: config.eventBatchSize,
+    batchSize: config.eventBatchSize,
     notificationCenter: this.notificationCenter,
   });
   this.eventProcessor.start();
