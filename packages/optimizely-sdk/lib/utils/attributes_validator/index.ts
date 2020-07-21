@@ -18,15 +18,19 @@ import { sprintf } from '@optimizely/js-sdk-utils';
 import fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../enums';
 
-var MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
+const MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
 
 /**
  * Validates user's provided attributes
- * @param  {Object}  attributes
- * @return {boolean} True if the attributes are valid
+ * @param  {object}  attributes
+ * @return {boolean} true if the attributes are valid
  * @throws If the attributes are not valid
  */
-export var validate = function(attributes) {
+type Attributes = {
+  [key: string]: string | number | boolean
+}
+
+export function validate(attributes: Attributes): boolean {
   if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
     Object.keys(attributes).forEach(function(key) {
       if (typeof attributes[key] === 'undefined') {
@@ -37,21 +41,19 @@ export var validate = function(attributes) {
   } else {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, MODULE_NAME));
   }
-};
+}
 
-export var isAttributeValid = function(attributeKey, attributeValue) {
+/**
+ * Validates user's provided attribute
+ * @param  {string}  attributeKey
+ * @param  {string | boolean | number}  attributeValue
+ * @return {boolean}  true if the attribute is valid
+ */
+export function isAttributeValid(attributeKey: string, attributeValue: string | boolean | number): boolean {
   return (
     typeof attributeKey === 'string' &&
     (typeof attributeValue === 'string' ||
       typeof attributeValue === 'boolean' ||
       (fns.isNumber(attributeValue) && fns.isSafeInteger(attributeValue)))
   );
-};
-
-/**
- * Provides utility method for validating that the attributes user has provided are valid
- */
-export default {
-  validate: validate,
-  isAttributeValid: isAttributeValid,
-};
+}
