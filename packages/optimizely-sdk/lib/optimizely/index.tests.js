@@ -5338,7 +5338,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "is_button_animated".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "false".'
             );
           });
 
@@ -5350,7 +5350,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "button_width".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "50.55".'
             );
           });
 
@@ -5362,7 +5362,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "num_buttons".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "10".'
             );
           });
 
@@ -5374,7 +5374,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "button_txt".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "Buy me".'
             );
           });
 
@@ -5389,7 +5389,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "button_info".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "{ "num_buttons": 0, "text": "default value"}".'
             );
           });
 
@@ -5404,7 +5404,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "is_button_animated".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "false".'
             );
           });
 
@@ -5419,7 +5419,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "button_width".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "50.55".'
             );
           });
 
@@ -5434,7 +5434,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "num_buttons".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "10".'
             );
           });
 
@@ -5446,7 +5446,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "button_txt".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "Buy me".'
             );
           });
 
@@ -5461,7 +5461,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "button_info".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "{ "num_buttons": 0, "text": "default value"}".'
             );
           });
 
@@ -5482,27 +5482,27 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "is_button_animated".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "false".'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "button_width".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "50.55".'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "num_buttons".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "10".'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "button_txt".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "Buy me".'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "button_info".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "{ "num_buttons": 0, "text": "default value"}".'
             );
           });
         });
@@ -5886,7 +5886,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "new_content".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "false".'
             );
           });
 
@@ -5898,7 +5898,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "price".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "14.99".'
             );
           });
 
@@ -5910,7 +5910,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "lasers".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "400".'
             );
           });
 
@@ -5922,7 +5922,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "message".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "Hello".'
             );
           });
 
@@ -5937,7 +5937,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "message_info".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "{ "count": 1, "message": "Hello" }".'
             );
           });
 
@@ -5949,7 +5949,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "new_content".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "false".'
             );
           });
 
@@ -5961,7 +5961,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "price".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "14.99".'
             );
           });
 
@@ -5973,7 +5973,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "lasers".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "400".'
             );
           });
 
@@ -5985,7 +5985,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "message".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "Hello".'
             );
           });
 
@@ -6000,7 +6000,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "message_info".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "{ "count": 1, "message": "Hello" }".'
             );
           });
 
@@ -6021,27 +6021,27 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "new_content".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "false".'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "price".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "14.99".'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "lasers".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "400".'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "message".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "Hello".'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "message_info".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "{ "count": 1, "message": "Hello" }".'
             );
           });
         });
