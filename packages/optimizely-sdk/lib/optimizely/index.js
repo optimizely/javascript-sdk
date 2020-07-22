@@ -122,7 +122,10 @@ function Optimizely(config) {
 
   var eventProcessorStartedPromise = this.eventProcessor.start();
 
-  this.__readyPromise = Promise.all([projectConfigManagerReadyPromise, eventProcessorStartedPromise]);
+  this.__readyPromise = Promise.all([projectConfigManagerReadyPromise, eventProcessorStartedPromise]).then(function([projectConfigStatus]) {
+    // Only return status from project config promise because event processor promise does not return any status.
+    return projectConfigStatus;
+  })
 
   this.__readyTimeouts = {};
   this.__nextReadyTimeoutId = 0;
