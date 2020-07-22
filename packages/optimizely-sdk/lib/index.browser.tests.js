@@ -475,7 +475,7 @@ describe('javascript-sdk', function() {
           sinon.assert.calledWithExactly(
             eventProcessorSpy,
             sinon.match({
-              maxQueueSize: 10,
+              batchSize: 10,
             })
           );
         });
@@ -500,7 +500,7 @@ describe('javascript-sdk', function() {
             sinon.assert.calledWithExactly(
               eventProcessorSpy,
               sinon.match({
-                maxQueueSize: 10,
+                batchSize: 10,
               })
             );
           });
@@ -526,7 +526,7 @@ describe('javascript-sdk', function() {
             sinon.assert.calledWithExactly(
               eventProcessorSpy,
               sinon.match({
-                maxQueueSize: 300,
+                batchSize: 300,
               })
             );
           });

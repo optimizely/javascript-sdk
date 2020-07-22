@@ -87,7 +87,7 @@ function Optimizely(config) {
     }.bind(this)
   );
 
-  this.__readyPromise = this.projectConfigManager.onReady();
+  var projectConfigManagerReadyPromise = this.projectConfigManager.onReady();
 
   var userProfileService = null;
   if (config.userProfileService) {
@@ -115,10 +115,17 @@ function Optimizely(config) {
   this.eventProcessor = new eventProcessor.LogTierV1EventProcessor({
     dispatcher: this.eventDispatcher,
     flushInterval: config.eventFlushInterval,
-    maxQueueSize: config.eventBatchSize,
+    batchSize: config.eventBatchSize,
+    maxQueueSize: config.eventMaxQueueSize,
     notificationCenter: this.notificationCenter,
   });
-  this.eventProcessor.start();
+
+  var eventProcessorStartedPromise = this.eventProcessor.start();
+
+  this.__readyPromise = Promise.all([projectConfigManagerReadyPromise, eventProcessorStartedPromise]).then(function(promiseResults) {
+    // Only return status from project config promise because event processor promise does not return any status.
+    return promiseResults[0];
+  })
 
   this.__readyTimeouts = {};
   this.__nextReadyTimeoutId = 0;

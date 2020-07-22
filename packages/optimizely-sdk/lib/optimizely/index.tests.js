@@ -7682,7 +7682,7 @@ describe('lib/optimizely', function() {
         sinon.match({
           dispatcher: eventDispatcher,
           flushInterval: 20000,
-          maxQueueSize: 100,
+          batchSize: 100,
         })
       );
     });
