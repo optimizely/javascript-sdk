@@ -48,7 +48,7 @@ export var isAttributeValid = function(attributeKey, attributeValue) {
   );
 };
 
-export var compareVersion = (userProvidedVersion, conditionsVersion) => {
+export var compareVersion = function(userProvidedVersion, conditionsVersion) {
   // any version
   if (!userProvidedVersion) {
     return 0;
