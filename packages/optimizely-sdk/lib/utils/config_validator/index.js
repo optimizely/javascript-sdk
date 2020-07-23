@@ -50,8 +50,8 @@ export var validate = function(config) {
 
 /**
  * Validates the datafile
- * @param {string}  datafile
- * @return {Boolean} True if the datafile is valid
+ * @param {Object|string}  datafile
+ * @return {Object} The datafile object if the datafile is valid
  * @throws If the datafile is not valid for any of the following reasons:
  - The datafile string is undefined
  - The datafile string cannot be parsed as a JSON object
@@ -75,7 +75,7 @@ export var validateDatafile = function(datafile) {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, MODULE_NAME, datafile.version));
   }
 
-  return true;
+  return datafile;
 };
 
 /**

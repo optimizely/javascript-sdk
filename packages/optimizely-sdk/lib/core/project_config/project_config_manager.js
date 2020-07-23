@@ -92,12 +92,12 @@ ProjectConfigManager.prototype.__initialize = function(config) {
     return;
   }
 
-  var initialDatafile = this.__getDatafileFromConfig(config);
   var projectConfigCreationEx;
-  if (initialDatafile) {
+  if (config.datafile) {
     try {
+      this.__setDatafile(config.datafile);
       this.__configObj = projectConfig.tryCreatingProjectConfig({
-        datafile: initialDatafile,
+        datafile: this.__datafileObj,
         jsonSchemaValidator: this.jsonSchemaValidator,
         logger: logger,
       });
@@ -118,8 +118,8 @@ ProjectConfigManager.prototype.__initialize = function(config) {
     if (this.__validateDatafileOptions(config.datafileOptions)) {
       fns.assign(datafileManagerConfig, config.datafileOptions);
     }
-    if (initialDatafile && this.__configObj) {
-      datafileManagerConfig.datafile = initialDatafile;
+    if (this.__datafileObj && this.__configObj) {
+      datafileManagerConfig.datafile = this.__datafileObj;
     }
     this.datafileManager = new HttpPollingDatafileManager(datafileManagerConfig);
     this.datafileManager.start();
@@ -148,11 +148,11 @@ ProjectConfigManager.prototype.__initialize = function(config) {
  * successful result.
  */
 ProjectConfigManager.prototype.__onDatafileManagerReadyFulfill = function() {
-  var newDatafile = this.datafileManager.get();
   var newConfigObj;
   try {
+    this.__setDatafile(this.datafileManager.get());
     newConfigObj = projectConfig.tryCreatingProjectConfig({
-      datafile: newDatafile,
+      datafile: this.__datafileObj,
       jsonSchemaValidator: this.jsonSchemaValidator,
       logger: logger,
     });
@@ -189,11 +189,11 @@ ProjectConfigManager.prototype.__onDatafileManagerReadyReject = function(err) {
  * update listeners if successful
  */
 ProjectConfigManager.prototype.__onDatafileManagerUpdate = function() {
-  var newDatafile = this.datafileManager.get();
   var newConfigObj;
   try {
+    this.__setDatafile(this.datafileManager.get());
     newConfigObj = projectConfig.tryCreatingProjectConfig({
-      datafile: newDatafile,
+      datafile: this.__datafileObj,
       jsonSchemaValidator: this.jsonSchemaValidator,
       logger: logger,
     });
@@ -206,28 +206,28 @@ ProjectConfigManager.prototype.__onDatafileManagerUpdate = function() {
 };
 
 /**
- * If the argument config contains a valid datafile object or string,
- * return a datafile object based on that provided datafile, otherwise
- * return null.
- * @param {Object}         config
- * @param {Object|string=} config.datafile
- * @return {Object|null}
+ * If the argument datafile is a valid datafile object or string,
+ * set the the datafile object and string instance variables based on 
+ * that provided datafile, otherwise set to null and empty, respectively
+ * @param {Object|string} datafile
  */
-ProjectConfigManager.prototype.__getDatafileFromConfig = function(config) {
-  var initialDatafile = null;
+ProjectConfigManager.prototype.__setDatafile = function(datafile) {
   try {
-    if (config.datafile) {
-      configValidator.validateDatafile(config.datafile);
-      if (typeof config.datafile === 'string' || config.datafile instanceof String) {
-        initialDatafile = JSON.parse(config.datafile);
-      } else {
-        initialDatafile = config.datafile;
+    if (datafile) {
+      this.__datafileObj = configValidator.validateDatafile(datafile);
+      if (typeof datafile === 'string' || datafile instanceof String) {
+        this.__datafileStr = datafile;
       }
+      else {
+        this.__datafileStr = JSON.stringify(datafile);
+      }
+    } else {
+      this.__datafileObj = null;
+      this.__datafileStr = '';
     }
   } catch (ex) {
     logger.error(ex);
   }
-  return initialDatafile;
 };
 
 /**
@@ -284,6 +284,14 @@ ProjectConfigManager.prototype.getConfig = function() {
  */
 ProjectConfigManager.prototype.getOptimizelyConfig = function() {
   return this.__optimizelyConfigObj;
+};
+
+/**
+ * Returns the datafile string
+ * @return {string}
+ */
+ProjectConfigManager.prototype.toDatafile = function() {
+  return this.__datafileStr;
 };
 
 /**
