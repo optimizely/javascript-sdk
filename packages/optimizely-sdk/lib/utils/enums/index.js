@@ -97,7 +97,7 @@ export var LOG_MESSAGES = {
   SKIPPING_JSON_VALIDATION: '%s: Skipping JSON schema validation.',
   TRACK_EVENT: '%s: Tracking event %s for user %s.',
   USER_ASSIGNED_TO_VARIATION_BUCKET: '%s: Assigned bucket %s to user with bucketing ID %s.',
-  USER_ASSIGNED_TO_EXPERIMENT_BUCKET: '%s: Assigned experiment bucket %s to user %s.',
+  USER_ASSIGNED_TO_EXPERIMENT_BUCKET: '%s: Assigned bucket %s to user with bucketing ID %s.',
   USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP: '%s: User %s is in experiment %s of group %s.',
   USER_BUCKETED_INTO_TARGETING_RULE: '%s: User %s bucketed into targeting rule %s.',
   USER_IN_FEATURE_EXPERIMENT: '%s: User %s is in variation %s of experiment %s on the feature %s.',

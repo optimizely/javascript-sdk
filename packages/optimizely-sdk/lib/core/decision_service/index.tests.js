@@ -1435,7 +1435,7 @@ describe('lib/core/decision_service', function() {
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              'BUCKETER: Assigned experiment bucket 593 to user user1.'
+              'BUCKETER: Assigned bucket 593 to user with bucketing ID user1.'
             );
           });
         });
