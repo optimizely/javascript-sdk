@@ -96,8 +96,7 @@ export var LOG_MESSAGES = {
   SHOULD_NOT_DISPATCH_ACTIVATE: '%s: Experiment %s is not in "Running" state. Not activating user.',
   SKIPPING_JSON_VALIDATION: '%s: Skipping JSON schema validation.',
   TRACK_EVENT: '%s: Tracking event %s for user %s.',
-  USER_ASSIGNED_TO_VARIATION_BUCKET: '%s: Assigned variation bucket %s to user %s.',
-  USER_ASSIGNED_TO_EXPERIMENT_BUCKET: '%s: Assigned experiment bucket %s to user %s.',
+  USER_ASSIGNED_TO_EXPERIMENT_BUCKET: '%s: Assigned bucket %s to user with bucketing ID %s.',
   USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP: '%s: User %s is in experiment %s of group %s.',
   USER_BUCKETED_INTO_TARGETING_RULE: '%s: User %s bucketed into targeting rule %s.',
   USER_IN_FEATURE_EXPERIMENT: '%s: User %s is in variation %s of experiment %s on the feature %s.',
@@ -125,10 +124,10 @@ export var LOG_MESSAGES = {
   USER_RECEIVED_DEFAULT_VARIABLE_VALUE:
     '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
   FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE:
-    '%s: Feature "%s" is not enabled for user %s. Returning default value for variable "%s".',
+    '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
   VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE:
     '%s: Variable "%s" is not used in variation "%s". Returning default value.',
-  USER_RECEIVED_VARIABLE_VALUE: '%s: Value for variable "%s" of feature flag "%s" is %s for user "%s"',
+  USER_RECEIVED_VARIABLE_VALUE: '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
   VALID_DATAFILE: '%s: Datafile is valid.',
   VALID_USER_PROFILE_SERVICE: '%s: Valid user profile service provided.',
   VARIATION_REMOVED_FOR_USER: '%s: Variation mapped to experiment %s has been removed for user %s.',
@@ -137,9 +136,9 @@ export var LOG_MESSAGES = {
   VALID_BUCKETING_ID: '%s: BucketingId is valid: "%s"',
   BUCKETING_ID_NOT_STRING: '%s: BucketingID attribute is not a string. Defaulted to userId',
   EVALUATING_AUDIENCE: '%s: Starting to evaluate audience "%s" with conditions: %s.',
-  EVALUATING_AUDIENCES_COMBINED: '%s: Evaluating audiences for experiment "%s": %s.',
+  EVALUATING_AUDIENCES_COMBINED: '%s: Evaluating audiences for %s "%s": %s.',
   AUDIENCE_EVALUATION_RESULT: '%s: Audience "%s" evaluated to %s.',
-  AUDIENCE_EVALUATION_RESULT_COMBINED: '%s: Audiences for experiment %s collectively evaluated to %s.',
+  AUDIENCE_EVALUATION_RESULT_COMBINED: '%s: Audiences for %s %s collectively evaluated to %s.',
   MISSING_ATTRIBUTE_VALUE:
     '%s: Audience condition %s evaluated to UNKNOWN because no value was passed for user attribute "%s".',
   UNEXPECTED_CONDITION_VALUE:
@@ -202,6 +201,11 @@ export var DECISION_SOURCES = {
   ROLLOUT: 'rollout',
 };
 
+export var AUDIENCE_EVALUATION_TYPES = {
+  RULE: 'rule',
+  EXPERIMENT: 'experiment',
+}
+
 /*
  * Possible types of variables attached to features
  */
@@ -238,4 +242,5 @@ export default {
   DECISION_SOURCES: DECISION_SOURCES,
   FEATURE_VARIABLE_TYPES: FEATURE_VARIABLE_TYPES,
   DATAFILE_VERSIONS: DATAFILE_VERSIONS,
+  AUDIENCE_EVALUATION_TYPES: AUDIENCE_EVALUATION_TYPES
 }

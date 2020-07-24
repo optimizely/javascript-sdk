@@ -39,7 +39,7 @@ import {
 } from '../../tests/test_data';
 
 var testData = getTestProjectConfig();
-var testDataWithFeatures = getTestProjectConfigWithFeatures(); 
+var testDataWithFeatures = getTestProjectConfigWithFeatures();
 
 describe('lib/core/decision_service', function() {
   describe('APIs', function() {
@@ -285,7 +285,7 @@ describe('lib/core/decision_service', function() {
           );
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
           sinon.assert.calledOnce(bucketerStub);
-          assert.strictEqual(4, mockLogger.log.callCount);
+          assert.strictEqual(5, mockLogger.log.callCount);
           sinon.assert.calledWith(userProfileServiceInstance.save, {
             user_id: 'decision_service_user',
             experiment_bucket_map: {
@@ -299,7 +299,7 @@ describe('lib/core/decision_service', function() {
             'DECISION_SERVICE: User decision_service_user is not in the forced variation map.'
           );
           assert.strictEqual(
-            mockLogger.log.args[3][1],
+            mockLogger.log.args[4][1],
             'DECISION_SERVICE: Saved variation "control" of experiment "testExperiment" for user "decision_service_user".'
           );
         });
@@ -336,13 +336,13 @@ describe('lib/core/decision_service', function() {
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
           sinon.assert.calledOnce(bucketerStub); // should still go through with bucketing
 
-          assert.strictEqual(4, mockLogger.log.callCount);
+          assert.strictEqual(5, mockLogger.log.callCount);
           assert.strictEqual(
             mockLogger.log.args[0][1],
             'DECISION_SERVICE: User decision_service_user is not in the forced variation map.'
           );
           assert.strictEqual(
-            mockLogger.log.args[3][1],
+            mockLogger.log.args[4][1],
             'DECISION_SERVICE: Error while saving user profile for user ID "decision_service_user": I am an error.'
           );
 
@@ -560,9 +560,14 @@ describe('lib/core/decision_service', function() {
 
       it('should return true when audience conditions are met', function() {
         assert.isTrue(
-          decisionServiceInstance.__checkIfUserIsInAudience(configObj, 'testExperimentWithAudiences', 'testUser', {
-            browser_type: 'firefox',
-          })
+          decisionServiceInstance.__checkIfUserIsInAudience(
+            configObj,
+            'testExperimentWithAudiences',
+            "experiment",
+            'testUser',
+            { browser_type: 'firefox' },
+            ''
+          )
         );
         assert.strictEqual(2, mockLogger.log.callCount);
         assert.strictEqual(
@@ -576,7 +581,16 @@ describe('lib/core/decision_service', function() {
       });
 
       it('should return true when experiment has no audience', function() {
-        assert.isTrue(decisionServiceInstance.__checkIfUserIsInAudience(configObj, 'testExperiment', 'testUser'));
+        assert.isTrue(
+          decisionServiceInstance.__checkIfUserIsInAudience(
+            configObj,
+            'testExperiment',
+            "experiment",
+            'testUser',
+            {},
+            ''
+          )
+        );
         assert.isTrue(__audienceEvaluateSpy.alwaysReturned(true));
 
         assert.strictEqual(2, mockLogger.log.callCount);
@@ -592,11 +606,18 @@ describe('lib/core/decision_service', function() {
 
       it('should return false when audience conditions can not be evaluated', function() {
         assert.isFalse(
-          decisionServiceInstance.__checkIfUserIsInAudience(configObj, 'testExperimentWithAudiences', 'testUser')
+          decisionServiceInstance.__checkIfUserIsInAudience(
+            configObj,
+            'testExperimentWithAudiences',
+            "experiment",
+            'testUser',
+            {},
+            ''
+          )
         );
         assert.isTrue(__audienceEvaluateSpy.alwaysReturned(false));
 
-        assert.strictEqual(3, mockLogger.log.callCount);
+        assert.strictEqual(2, mockLogger.log.callCount);
         assert.strictEqual(
           mockLogger.log.args[0][1],
           'DECISION_SERVICE: Evaluating audiences for experiment "testExperimentWithAudiences": ["11154"].'
@@ -604,22 +625,23 @@ describe('lib/core/decision_service', function() {
         assert.strictEqual(
           mockLogger.log.args[1][1],
           'DECISION_SERVICE: Audiences for experiment testExperimentWithAudiences collectively evaluated to FALSE.'
-        );
-        assert.strictEqual(
-          mockLogger.log.args[2][1],
-          'DECISION_SERVICE: User testUser does not meet conditions to be in experiment testExperimentWithAudiences.'
         );
       });
 
       it('should return false when audience conditions are not met', function() {
         assert.isFalse(
-          decisionServiceInstance.__checkIfUserIsInAudience(configObj, 'testExperimentWithAudiences', 'testUser', {
-            browser_type: 'chrome',
-          })
+          decisionServiceInstance.__checkIfUserIsInAudience(
+            configObj,
+            'testExperimentWithAudiences',
+            "experiment",
+            'testUser',
+            { browser_type: 'chrome' },
+            ''
+          )
         );
         assert.isTrue(__audienceEvaluateSpy.alwaysReturned(false));
 
-        assert.strictEqual(3, mockLogger.log.callCount);
+        assert.strictEqual(2, mockLogger.log.callCount);
         assert.strictEqual(
           mockLogger.log.args[0][1],
           'DECISION_SERVICE: Evaluating audiences for experiment "testExperimentWithAudiences": ["11154"].'
@@ -627,10 +649,6 @@ describe('lib/core/decision_service', function() {
         assert.strictEqual(
           mockLogger.log.args[1][1],
           'DECISION_SERVICE: Audiences for experiment testExperimentWithAudiences collectively evaluated to FALSE.'
-        );
-        assert.strictEqual(
-          mockLogger.log.args[2][1],
-          'DECISION_SERVICE: User testUser does not meet conditions to be in experiment testExperimentWithAudiences.'
         );
       });
     });
@@ -1239,7 +1257,7 @@ describe('lib/core/decision_service', function() {
                       {
                         id: '1547854156498475',
                         value: '{ "num_buttons": 2, "text": "second variation"}',
-                      },                      
+                      },
                     ],
                     featureEnabled: true,
                     key: 'control',
@@ -1330,11 +1348,6 @@ describe('lib/core/decision_service', function() {
               decisionSource: DECISION_SOURCES.FEATURE_TEST,
             };
             assert.deepEqual(decision, expectedDecision);
-            sinon.assert.calledWithExactly(
-              mockLogger.log,
-              LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE: User user1 is in variation variation of experiment testing_my_feature on the feature test_feature_for_experiment.'
-            );
             sinon.assert.calledWithExactly(getVariationStub, configObj, 'testing_my_feature', 'user1', {
               test_attribute: 'test_value',
             });
@@ -1359,7 +1372,7 @@ describe('lib/core/decision_service', function() {
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE: User user1 is not in any experiment on the feature test_feature_for_experiment.'
+              'DECISION_SERVICE: User user1 is not in rollout of feature test_feature_for_experiment.'
             );
           });
         });
@@ -1422,7 +1435,7 @@ describe('lib/core/decision_service', function() {
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE: User user1 is in variation var of experiment exp_with_group on the feature feature_with_group.'
+              'BUCKETER: Assigned bucket 593 to user with bucketing ID user1.'
             );
           });
         });
@@ -1445,7 +1458,7 @@ describe('lib/core/decision_service', function() {
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE: User user1 is not in any experiment on the feature feature_with_group.'
+              'DECISION_SERVICE: User user1 is not in rollout of feature feature_with_group.'
             );
           });
 
@@ -1461,7 +1474,7 @@ describe('lib/core/decision_service', function() {
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE: User user1 is not in any experiment on the feature feature_exp_no_traffic.'
+              'DECISION_SERVICE: There is no rollout of feature feature_exp_no_traffic.'
             );
           });
         });
@@ -1484,7 +1497,7 @@ describe('lib/core/decision_service', function() {
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE: User user1 is not in any experiment on the feature feature_with_group.'
+              'DECISION_SERVICE: There is no rollout of feature feature_with_group.'
             );
           });
         });
@@ -1990,11 +2003,6 @@ describe('lib/core/decision_service', function() {
           sinon.assert.calledWithExactly(
             mockLogger.log,
             LOG_LEVEL.DEBUG,
-            'DECISION_SERVICE: User user1 is not in any experiment on the feature shared_feature.'
-          );
-          sinon.assert.calledWithExactly(
-            mockLogger.log,
-            LOG_LEVEL.DEBUG,
             'DECISION_SERVICE: User user1 bucketed into everyone targeting rule.'
           );
           sinon.assert.calledWithExactly(
@@ -2023,11 +2031,6 @@ describe('lib/core/decision_service', function() {
             mockLogger.log,
             LOG_LEVEL.DEBUG,
             'DECISION_SERVICE: Feature unused_flag is not attached to any experiments.'
-          );
-          sinon.assert.calledWithExactly(
-            mockLogger.log,
-            LOG_LEVEL.DEBUG,
-            'DECISION_SERVICE: User user1 is not in any experiment on the feature unused_flag.'
           );
           sinon.assert.calledWithExactly(
             mockLogger.log,

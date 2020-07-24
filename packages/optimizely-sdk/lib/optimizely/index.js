@@ -754,8 +754,8 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     );
     return null;
   }
-  
-  var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);  
+
+  var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
   var featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;
   var variableValue = this._getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
 
@@ -766,7 +766,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
       variationKey: decision.variation.key,
     };
   }
-  
+
   this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.DECISION, {
     type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
     userId: userId,
@@ -785,10 +785,10 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
 };
 
 /**
- * Helper method to get the non type-casted value for a variable attached to a 
- * feature flag. Returns appropriate variable value depending on whether there 
- * was a matching variation, feature was enabled or not or varible was part of the 
- * available variation or not. Also logs the appropriate message explaining how it 
+ * Helper method to get the non type-casted value for a variable attached to a
+ * feature flag. Returns appropriate variable value depending on whether there
+ * was a matching variation, feature was enabled or not or varible was part of the
+ * available variation or not. Also logs the appropriate message explaining how it
  * evaluated the value of the variable.
  *
  * @param {string} featureKey           Key of the feature whose variable's value is
@@ -817,10 +817,9 @@ Optimizely.prototype._getFeatureVariableValueFromVariation = function(featureKey
           sprintf(
             LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE,
             MODULE_NAME,
-            variable.key,
-            featureKey,
             variableValue,
-            userId
+            variable.key,
+            featureKey
           )
         );
       } else {
@@ -831,7 +830,7 @@ Optimizely.prototype._getFeatureVariableValueFromVariation = function(featureKey
             MODULE_NAME,
             featureKey,
             userId,
-            variable.key
+            variableValue
           )
         );
       }
@@ -858,7 +857,7 @@ Optimizely.prototype._getFeatureVariableValueFromVariation = function(featureKey
       )
     );
   }
-  
+
   return projectConfig.getTypeCastValue(variableValue, variable.type, this.logger);
 }
 
@@ -1022,21 +1021,21 @@ Optimizely.prototype.getAllFeatureVariables = function(featureKey, userId, attri
     if (!this.__validateInputs({ feature_key: featureKey, user_id: userId }, attributes)) {
       return null;
     }
-  
+
     var configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return null;
     }
-  
+
     var featureFlag = projectConfig.getFeatureFromKey(configObj, featureKey, this.logger);
     if (!featureFlag) {
       return null;
     }
-    
-    var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);    
-    var featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;    
+
+    var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
+    var featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;
     var allVariables = {};
-    
+
     featureFlag.variables.forEach(function (variable) {
       allVariables[variable.key] = this._getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
     }.bind(this));
@@ -1055,8 +1054,8 @@ Optimizely.prototype.getAllFeatureVariables = function(featureKey, userId, attri
       decisionInfo: {
         featureKey: featureKey,
         featureEnabled: featureEnabled,
-        source: decision.decisionSource,        
-        variableValues: allVariables,        
+        source: decision.decisionSource,
+        variableValues: allVariables,
         sourceInfo: sourceInfo,
       },
     });
