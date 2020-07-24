@@ -319,23 +319,6 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     return null;
   }
 
-  // private tryParsingBodyAsJSON(body: string): object | null {
-  //   let parseResult: any;
-  //   try {
-  //     parseResult = JSON.parse(body);
-  //   } catch (err) {
-  //     logger.error('Error parsing response body: %s', err.message, err);
-  //     return null;
-  //   }
-  //   let datafileObj: object | null = null;
-  //   if (typeof parseResult === 'object' && parseResult !== null) {
-  //     datafileObj = parseResult;
-  //   } else {
-  //     logger.error('Error parsing response body: was not an object');
-  //   }
-  //   return datafileObj;
-  // }
-
   private trySavingLastModified(headers: Headers): void {
     const lastModifiedHeader = headers['last-modified'] || headers['Last-Modified'];
     if (typeof lastModifiedHeader !== 'undefined') {
