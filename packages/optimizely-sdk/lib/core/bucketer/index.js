@@ -104,7 +104,7 @@ export var bucket = function(bucketerParams) {
   var bucketValue = this._generateBucketValue(bucketingId);
 
   var bucketedUserLogMessage = sprintf(
-    LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET,
+    LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
     MODULE_NAME,
     bucketValue,
     bucketerParams.userId

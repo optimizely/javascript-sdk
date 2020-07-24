@@ -76,7 +76,7 @@ describe('lib/core/bucketer', function() {
 
           var bucketedUser_log1 = createdLogger.log.args[0][1];
           expect(bucketedUser_log1).to.equal(
-            sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, 'BUCKETER', '50', 'ppid1')
+            sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, 'BUCKETER', '50', 'ppid1')
           );
 
           var bucketerParamsTest2 = cloneDeep(bucketerParams);
@@ -86,7 +86,7 @@ describe('lib/core/bucketer', function() {
           var notBucketedUser_log1 = createdLogger.log.args[1][1];
 
           expect(notBucketedUser_log1).to.equal(
-            sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, 'BUCKETER', '50000', 'ppid2')
+            sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, 'BUCKETER', '50000', 'ppid2')
           );
         });
       });
@@ -153,7 +153,7 @@ describe('lib/core/bucketer', function() {
 
             var log3 = createdLogger.log.args[2][1];
             expect(log3).to.equal(
-              sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, 'BUCKETER', '50', 'testUser')
+              sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, 'BUCKETER', '50', 'testUser')
             );
           });
 
@@ -247,7 +247,7 @@ describe('lib/core/bucketer', function() {
             sinon.assert.calledOnce(createdLogger.log);
 
             var log1 = createdLogger.log.args[0][1];
-            expect(log1).to.equal(sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, 'BUCKETER', '0', 'testUser'));
+            expect(log1).to.equal(sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, 'BUCKETER', '0', 'testUser'));
           });
 
           it('should return null when a user does not fall into an experiment within an overlapping group', function() {
