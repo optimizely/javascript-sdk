@@ -313,7 +313,6 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
       return null;
     }
     if (isSuccessStatusCode(response.statusCode)) {
-      // return this.tryParsingBodyAsJSON(response.body);
       return response.body;
     }
     return null;

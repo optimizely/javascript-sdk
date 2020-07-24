@@ -20,7 +20,7 @@ import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager'
 import fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../../utils/enums';
 import projectConfig from '../../core/project_config';
-import { getOptimizelyConfig } from '../optimizely_config';
+import optimizelyConfig from '../optimizely_config';
 import configValidator from '../../utils/config_validator';
 
 var logger = getLogger();
@@ -83,6 +83,7 @@ ProjectConfigManager.prototype.__initialize = function(config) {
 
   if (!config.datafile && !config.sdkKey) {
     this.__configObj = null;
+    this.__datafileObj = null;
     var datafileAndSdkKeyMissingError = new Error(sprintf(ERROR_MESSAGES.DATAFILE_AND_SDK_KEY_MISSING, MODULE_NAME));
     this.__readyPromise = Promise.resolve({
       success: false,
@@ -254,7 +255,7 @@ ProjectConfigManager.prototype.__handleNewConfigObj = function(newConfigObj) {
   }
 
   this.__configObj = newConfigObj;
-  this.__optimizelyConfigObj = getOptimizelyConfig(newConfigObj);
+  this.__optimizelyConfigObj = new optimizelyConfig.OptimizelyConfig(newConfigObj, this.__datafileStr);
 
   this.__updateListeners.forEach(function(listener) {
     listener(newConfigObj);

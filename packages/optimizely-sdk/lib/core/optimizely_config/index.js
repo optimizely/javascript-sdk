@@ -15,19 +15,25 @@
  */
 import { isFeatureExperiment } from '../project_config';
 
-// Get Experiment Ids which are part of rollouts
-function getRolloutExperimentIds(rollouts) {
-  return (rollouts || []).reduce(function(experimentIds, rollout) {
-    rollout.experiments.forEach(function(e) {
-      experimentIds[e.id] = true;
-    });
-    return experimentIds;
-  }, {});
+/**
+ * The OptimizelyConfig class
+ * @param {Object} configObj
+ * @param {string} datafile
+ */
+export function OptimizelyConfig(configObj, datafile) {
+  this.experimentsMap = this.__getExperimentsMap(configObj);
+  this.featuresMap = this.__getFeaturesMap(configObj, this.experimentsMap);
+  this.revision = configObj.revision;
+  this.__datafile = datafile;
+}
+
+OptimizelyConfig.prototype.toDatafile = function() {
+  return this.__datafile;
 }
 
 // Gets Map of all experiments except rollouts
-function getExperimentsMap(configObj) {
-  var rolloutExperimentIds = getRolloutExperimentIds(configObj.rollouts);
+OptimizelyConfig.prototype.__getExperimentsMap = function(configObj) {
+  var rolloutExperimentIds = this.__getRolloutExperimentIds(configObj.rollouts);
   var featureVariablesMap = (configObj.featureFlags || []).reduce(function(resultMap, feature) {
     resultMap[feature.id] = feature.variables;
     return resultMap;
@@ -42,7 +48,7 @@ function getExperimentsMap(configObj) {
           variations[variation.key] = {
             id: variation.id,
             key: variation.key,
-            variablesMap: getMergedVariablesMap(configObj, variation, experiment.id, featureVariablesMap),
+            variablesMap: this.__getMergedVariablesMap(configObj, variation, experiment.id, featureVariablesMap),
           };
           if (isFeatureExperiment(configObj, experiment.id)) {
             variations[variation.key].featureEnabled = variation.featureEnabled;
@@ -55,8 +61,33 @@ function getExperimentsMap(configObj) {
   }, {});
 }
 
+// Gets map of all experiments
+OptimizelyConfig.prototype.__getFeaturesMap = function(configObj, allExperiments) {
+  return (configObj.featureFlags || []).reduce(function(features, feature) {
+    features[feature.key] = {
+      id: feature.id,
+      key: feature.key,
+      experimentsMap: (feature.experimentIds || []).reduce(function(experiments, experimentId) {
+        var experimentKey = configObj.experimentIdMap[experimentId].key;
+        experiments[experimentKey] = allExperiments[experimentKey];
+        return experiments;
+      }, {}),
+      variablesMap: (feature.variables || []).reduce(function(variables, variable) {
+        variables[variable.key] = {
+          id: variable.id,
+          key: variable.key,
+          type: variable.type,
+          value: variable.defaultValue,
+        };
+        return variables;
+      }, {}),
+    };
+    return features;
+  }, {});
+}
+
 // Merges feature key and type from feature variables to variation variables.
-function getMergedVariablesMap(configObj, variation, experimentId, featureVariablesMap) {
+OptimizelyConfig.prototype.__getMergedVariablesMap = function(configObj, variation, experimentId, featureVariablesMap) {
   var featureId = configObj.experimentFeatureMap[experimentId];
   var variablesObject = {};
   if (featureId) {
@@ -85,37 +116,16 @@ function getMergedVariablesMap(configObj, variation, experimentId, featureVariab
   return variablesObject;
 }
 
-// Gets map of all experiments
-function getFeaturesMap(configObj, allExperiments) {
-  return (configObj.featureFlags || []).reduce(function(features, feature) {
-    features[feature.key] = {
-      id: feature.id,
-      key: feature.key,
-      experimentsMap: (feature.experimentIds || []).reduce(function(experiments, experimentId) {
-        var experimentKey = configObj.experimentIdMap[experimentId].key;
-        experiments[experimentKey] = allExperiments[experimentKey];
-        return experiments;
-      }, {}),
-      variablesMap: (feature.variables || []).reduce(function(variables, variable) {
-        variables[variable.key] = {
-          id: variable.id,
-          key: variable.key,
-          type: variable.type,
-          value: variable.defaultValue,
-        };
-        return variables;
-      }, {}),
-    };
-    return features;
+// Get Experiment Ids which are part of rollouts
+OptimizelyConfig.prototype.__getRolloutExperimentIds = function(rollouts) {
+  return (rollouts || []).reduce(function(experimentIds, rollout) {
+    rollout.experiments.forEach(function(e) {
+      experimentIds[e.id] = true;
+    });
+    return experimentIds;
   }, {});
 }
 
-export var getOptimizelyConfig = function(configObj) {
-  // Fetch all feature variables from feature flags to merge them with variation variables
-  var experimentsMap = getExperimentsMap(configObj);
-  return {
-    experimentsMap: experimentsMap,
-    featuresMap: getFeaturesMap(configObj, experimentsMap),
-    revision: configObj.revision,
-  };
-};
+export default {
+  OptimizelyConfig: OptimizelyConfig
+}
