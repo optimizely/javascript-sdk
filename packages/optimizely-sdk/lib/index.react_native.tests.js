@@ -89,7 +89,7 @@ describe('javascript-sdk/react-native', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.1.0-beta');
+        assert.equal(optlyInstance.clientVersion, '4.1.0');
       });
 
       it('should set the Javascript client engine and version', function() {
@@ -268,7 +268,7 @@ describe('javascript-sdk/react-native', function() {
           sinon.assert.calledWithExactly(
             eventProcessorSpy,
             sinon.match({
-              maxQueueSize: 10,
+              batchSize: 10,
             })
           );
         });
@@ -293,7 +293,7 @@ describe('javascript-sdk/react-native', function() {
             sinon.assert.calledWithExactly(
               eventProcessorSpy,
               sinon.match({
-                maxQueueSize: 10,
+                batchSize: 10,
               })
             );
           });
@@ -319,7 +319,7 @@ describe('javascript-sdk/react-native', function() {
             sinon.assert.calledWithExactly(
               eventProcessorSpy,
               sinon.match({
-                maxQueueSize: 300,
+                batchSize: 300,
               })
             );
           });

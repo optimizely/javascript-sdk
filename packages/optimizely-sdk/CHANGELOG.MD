@@ -7,10 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-## [4.1.0-beta] - June 16, 2020
+## [4.1.0] - July 7, 2020
 
 ### New Features
-- Added support for JSON feature variables: new methods `getFeatureVariableJson` and `getAllFeatureVariables` ([#467](https://github.com/optimizely/javascript-sdk/pull/467), [#470](https://github.com/optimizely/javascript-sdk/pull/470))
+
+- Added support for JSON feature variables: new methods `getFeatureVariableJSON` and `getAllFeatureVariables` ([#467](https://github.com/optimizely/javascript-sdk/pull/467), [#470](https://github.com/optimizely/javascript-sdk/pull/470))
 - Added support for authenticated datafiles when running in Node.js. Pass `datafileAccessToken` within `datafileOptions` to request an authenticated datafile using the token ([#498](https://github.com/optimizely/javascript-sdk/pull/498), [#502](https://github.com/optimizely/javascript-sdk/pull/502)):
   ```js
   const optimizelySDK = require('@optimizely/optimizely-sdk');
@@ -23,6 +24,29 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   ```
 
 ### Bug fixes
+
+- Fixed audience evaluation log level: changed from `INFO` to `DEBUG` ([#496](https://github.com/optimizely/javascript-sdk/pull/496))
+- Temporarily disabled React Native FSC tests ([#514](https://github.com/optimizely/javascript-sdk/pull/514))
+- Changed `getFeatureVariableJson` to `getFeatureVariableJSON` ([#516](https://github.com/optimizely/javascript-sdk/pull/516))
+
+## [4.1.0-beta] - June 16, 2020
+
+### New Features
+
+- Added support for JSON feature variables: new methods `getFeatureVariableJSON` and `getAllFeatureVariables` ([#467](https://github.com/optimizely/javascript-sdk/pull/467), [#470](https://github.com/optimizely/javascript-sdk/pull/470))
+- Added support for authenticated datafiles when running in Node.js. Pass `datafileAccessToken` within `datafileOptions` to request an authenticated datafile using the token ([#498](https://github.com/optimizely/javascript-sdk/pull/498), [#502](https://github.com/optimizely/javascript-sdk/pull/502)):
+  ```js
+  const optimizelySDK = require('@optimizely/optimizely-sdk');
+  var optimizelyClientInstance = optimizely.createInstance({
+    sdkKey: '<Your SDK key>',
+    datafileOptions: {
+      datafileAccessToken: '<Your datafile access token>',
+    }
+  });
+  ```
+
+### Bug fixes
+
 - Fixed audience evaluation log level: changed from `INFO` to `DEBUG` ([#496](https://github.com/optimizely/javascript-sdk/pull/496))
 
 ## [4.0.0] - April 30, 2020
@@ -59,22 +83,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [4.0.0-rc.2] - April 24, 2020
 
 ### Bug fixes
+
 - Allow multiple instances to be created from the same datafile object ([#462](https://github.com/optimizely/javascript-sdk/pull/462))
 
 ## [4.0.0-rc.1] - April 17, 2020
 
 ### New Features
+
 - ES module entry point for the browser - `"module"` property of `package.json` points to `dist/optimizely.browser.es.min.js` ([#445](https://github.com/optimizely/javascript-sdk/pull/445))
 
 ### Breaking Changes:
+
 - Dropped support for Node.js version <8 ([#456](https://github.com/optimizely/javascript-sdk/pull/456))
 
 ### Bug fixes
+
 - Node.js datafile manager uses gzip,deflate compression for requests ([#456](https://github.com/optimizely/javascript-sdk/pull/456))
 
 ## [4.0.0-alpha.1] - March 4, 2020
 
 ### Breaking Changes:
+
 - Removed `Promise` polyfill from browser entry point ([417](https://github.com/optimizely/javascript-sdk/pull/417)).
 - Changed functionality of JSON schema validation in all entry points ([442](https://github.com/optimizely/javascript-sdk/pull/442)).
    - Previously, `skipJSONValidation` flag was used by the user to specify whether the JSON object should be validated.

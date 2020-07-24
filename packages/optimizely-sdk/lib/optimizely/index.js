@@ -88,7 +88,7 @@ function Optimizely(config) {
     }.bind(this)
   );
 
-  this.__readyPromise = this.projectConfigManager.onReady();
+  var projectConfigManagerReadyPromise = this.projectConfigManager.onReady();
 
   var userProfileService = null;
   if (config.userProfileService) {
@@ -116,10 +116,17 @@ function Optimizely(config) {
   this.eventProcessor = new eventProcessor.LogTierV1EventProcessor({
     dispatcher: this.eventDispatcher,
     flushInterval: config.eventFlushInterval,
-    maxQueueSize: config.eventBatchSize,
+    batchSize: config.eventBatchSize,
+    maxQueueSize: config.eventMaxQueueSize,
     notificationCenter: this.notificationCenter,
   });
-  this.eventProcessor.start();
+
+  var eventProcessorStartedPromise = this.eventProcessor.start();
+
+  this.__readyPromise = Promise.all([projectConfigManagerReadyPromise, eventProcessorStartedPromise]).then(function(promiseResults) {
+    // Only return status from project config promise because event processor promise does not return any status.
+    return promiseResults[0];
+  })
 
   this.__readyTimeouts = {};
   this.__nextReadyTimeoutId = 0;
@@ -687,6 +694,10 @@ Optimizely.prototype.getEnabledFeatures = function(userId, attributes) {
 
 Optimizely.prototype.getFeatureVariable = function(featureKey, variableKey, userId, attributes) {
   try {
+    if (!this.__isValidInstance()) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariable'));
+      return null;
+    }
     return this._getFeatureVariableForType(featureKey, variableKey, null, userId, attributes);
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
@@ -718,14 +729,6 @@ Optimizely.prototype.getFeatureVariable = function(featureKey, variableKey, user
  *                                      with the type of the variable
  */
 Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableKey, variableType, userId, attributes) {
-  if (!this.__isValidInstance()) {
-    var apiName = variableType
-      ? 'getFeatureVariable' + variableType.charAt(0).toUpperCase() + variableType.slice(1)
-      : 'getFeatureVariable';
-    this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, apiName));
-    return null;
-  }
-
   if (!this.__validateInputs({ feature_key: featureKey, variable_key: variableKey, user_id: userId }, attributes)) {
     return null;
   }
@@ -752,8 +755,8 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
     );
     return null;
   }
-  
-  var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);  
+
+  var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
   var featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;
   var variableValue = this._getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
 
@@ -764,7 +767,7 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
       variationKey: decision.variation.key,
     };
   }
-  
+
   this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.DECISION, {
     type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
     userId: userId,
@@ -783,10 +786,10 @@ Optimizely.prototype._getFeatureVariableForType = function(featureKey, variableK
 };
 
 /**
- * Helper method to get the non type-casted value for a variable attached to a 
- * feature flag. Returns appropriate variable value depending on whether there 
- * was a matching variation, feature was enabled or not or varible was part of the 
- * available variation or not. Also logs the appropriate message explaining how it 
+ * Helper method to get the non type-casted value for a variable attached to a
+ * feature flag. Returns appropriate variable value depending on whether there
+ * was a matching variation, feature was enabled or not or varible was part of the
+ * available variation or not. Also logs the appropriate message explaining how it
  * evaluated the value of the variable.
  *
  * @param {string} featureKey           Key of the feature whose variable's value is
@@ -815,10 +818,9 @@ Optimizely.prototype._getFeatureVariableValueFromVariation = function(featureKey
           sprintf(
             LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE,
             MODULE_NAME,
-            variable.key,
-            featureKey,
             variableValue,
-            userId
+            variable.key,
+            featureKey
           )
         );
       } else {
@@ -829,7 +831,7 @@ Optimizely.prototype._getFeatureVariableValueFromVariation = function(featureKey
             MODULE_NAME,
             featureKey,
             userId,
-            variable.key
+            variableValue
           )
         );
       }
@@ -856,7 +858,7 @@ Optimizely.prototype._getFeatureVariableValueFromVariation = function(featureKey
       )
     );
   }
-  
+
   return projectConfig.getTypeCastValue(variableValue, variable.type, this.logger);
 }
 
@@ -876,6 +878,10 @@ Optimizely.prototype._getFeatureVariableValueFromVariation = function(featureKey
  */
 Optimizely.prototype.getFeatureVariableBoolean = function(featureKey, variableKey, userId, attributes) {
   try {
+    if (!this.__isValidInstance()) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableBoolean'));
+      return null;
+    }
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.BOOLEAN, userId, attributes);
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
@@ -900,6 +906,10 @@ Optimizely.prototype.getFeatureVariableBoolean = function(featureKey, variableKe
  */
 Optimizely.prototype.getFeatureVariableDouble = function(featureKey, variableKey, userId, attributes) {
   try {
+    if (!this.__isValidInstance()) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableDouble'));
+      return null;
+    }
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.DOUBLE, userId, attributes);
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
@@ -924,6 +934,10 @@ Optimizely.prototype.getFeatureVariableDouble = function(featureKey, variableKey
  */
 Optimizely.prototype.getFeatureVariableInteger = function(featureKey, variableKey, userId, attributes) {
   try {
+    if (!this.__isValidInstance()) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableInteger'));
+      return null;
+    }
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.INTEGER, userId, attributes);
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
@@ -948,6 +962,10 @@ Optimizely.prototype.getFeatureVariableInteger = function(featureKey, variableKe
  */
 Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey, userId, attributes) {
   try {
+    if (!this.__isValidInstance()) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableString'));
+      return null;
+    }
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.STRING, userId, attributes);
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
@@ -970,8 +988,12 @@ Optimizely.prototype.getFeatureVariableString = function(featureKey, variableKey
  *                              invalid, or there is a mismatch with the type
  *                              of the variable
  */
-Optimizely.prototype.getFeatureVariableJson = function(featureKey, variableKey, userId, attributes) {
+Optimizely.prototype.getFeatureVariableJSON = function(featureKey, variableKey, userId, attributes) {
   try {
+    if (!this.__isValidInstance()) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableJSON'));
+      return null;
+    }
     return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.JSON, userId, attributes);
   } catch (e) {
     this.logger.log(LOG_LEVEL.ERROR, e.message);
@@ -1000,21 +1022,21 @@ Optimizely.prototype.getAllFeatureVariables = function(featureKey, userId, attri
     if (!this.__validateInputs({ feature_key: featureKey, user_id: userId }, attributes)) {
       return null;
     }
-  
+
     var configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return null;
     }
-  
+
     var featureFlag = projectConfig.getFeatureFromKey(configObj, featureKey, this.logger);
     if (!featureFlag) {
       return null;
     }
-    
-    var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);    
-    var featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;    
+
+    var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
+    var featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;
     var allVariables = {};
-    
+
     featureFlag.variables.forEach(function (variable) {
       allVariables[variable.key] = this._getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
     }.bind(this));
@@ -1033,8 +1055,8 @@ Optimizely.prototype.getAllFeatureVariables = function(featureKey, userId, attri
       decisionInfo: {
         featureKey: featureKey,
         featureEnabled: featureEnabled,
-        source: decision.decisionSource,        
-        variableValues: allVariables,        
+        source: decision.decisionSource,
+        variableValues: allVariables,
         sourceInfo: sourceInfo,
       },
     });

@@ -27,9 +27,11 @@ stages:
   - name: 'Lint markdown files'
   - 'Lint'
   - 'Integration tests'
+  - 'Full stack production tests'
   - 'Cross-browser and umd unit tests'
   - 'Test'
   - 'Test sub packages'
+  - 'Source Clear'
 
 jobs:
   include:
@@ -42,25 +44,12 @@ jobs:
       notifications:
         email: false
 
-    - stage: 'Lint markdown files'
-      os: linux
-      language: generic
-      before_install: skip
-      install:
-        - npm i -g markdown-spellcheck
-      before_script:
-        - wget --quiet https://raw.githubusercontent.com/optimizely/mdspell-config/master/.spelling
-      script:
-        - mdspell -a -n -r --en-us '**/*.md'
-      after_success: skip
-
     - stage: 'Lint'
       node_js: '12'
       script: npm run lint
+
     - &integrationtest
       stage: 'Integration tests'
-      addons:
-        srcclr: true
       merge_mode: replace
       cache: false
       language: minimal
@@ -72,10 +61,15 @@ jobs:
         - CLIENT=node $HOME/travisci-tools/trigger-script-with-status-update.sh
         - CLIENT=browser $HOME/travisci-tools/trigger-script-with-status-update.sh
       after_success: travis_terminate 0
+
     - <<: *integrationtest
-      script:
-        - CLIENT=react-native-android REPO_SLUG=optimizely/react-native-testapp $HOME/travisci-tools/trigger-script-with-status-update.sh
-        - CLIENT=react-native-ios REPO_SLUG=optimizely/react-native-testapp $HOME/travisci-tools/trigger-script-with-status-update.sh
+      stage: 'Full stack production tests'
+      env:
+        SDK=javascript
+        SDK_BRANCH=$TRAVIS_PULL_REQUEST_BRANCH
+        FULLSTACK_TEST_REPO=ProdTesting
+      script: $HOME/travisci-tools/trigger-script-with-status-update.sh
+
     - stage: Cross-browser and umd unit tests
       node_js: '8'
       script: npm run test-ci
@@ -90,3 +84,14 @@ jobs:
     - <<: *packagetest
       before_script: npm install "@react-native-community/async-storage"
       before_install: cd packages/datafile-manager
+
+    - stage: 'Source Clear'
+      if: type = cron
+      addons:
+        srcclr: true
+      before_install: skip
+      install: skip
+      before_script: skip
+      script: skip
+      after_script: skip
+      after_success: skip

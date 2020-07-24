@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { EventV1 } from "./v1/buildEventV1";
+let localCallback: any
 
-export type EventDispatcherResponse = {
-  statusCode: number  
+export function addEventListener(callback: any) {
+  localCallback = callback  
 }
 
-export type EventDispatcherCallback = (response: EventDispatcherResponse) => void
-
-export interface EventDispatcher {
-  dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void
-}
-
-export interface EventV1Request {
-  url: string
-  httpVerb: 'POST' | 'PUT' | 'GET' | 'PATCH'
-  params: EventV1,
+export function triggerInternetState(isInternetReachable: boolean) {
+  localCallback({ isInternetReachable })
 }

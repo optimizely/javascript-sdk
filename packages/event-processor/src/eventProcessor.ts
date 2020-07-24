@@ -15,120 +15,67 @@
  */
 // TODO change this to use Managed from js-sdk-models when available
 import { Managed } from './managed'
-import { ConversionEvent, ImpressionEvent, areEventContextsEqual } from './events'
-import { EventDispatcher, EventV1Request } from './eventDispatcher'
+import { ConversionEvent, ImpressionEvent } from './events'
+import { EventV1Request } from './eventDispatcher'
 import { EventQueue, DefaultEventQueue, SingleEventQueue } from './eventQueue'
 import { getLogger } from '@optimizely/js-sdk-logging'
 import { NOTIFICATION_TYPES, NotificationCenter } from '@optimizely/js-sdk-utils'
-import RequestTracker from './requestTracker';
+
+export const DEFAULT_FLUSH_INTERVAL = 30000 // Unit is ms - default flush interval is 30s
+export const DEFAULT_BATCH_SIZE = 10
 
 const logger = getLogger('EventProcessor')
 
-export type ProcessableEvents = ConversionEvent | ImpressionEvent
+export type ProcessableEvent = ConversionEvent | ImpressionEvent
 
-export type EventDispatchResult = { result: boolean; event: ProcessableEvents }
+export type EventDispatchResult = { result: boolean; event: ProcessableEvent }
 
 export interface EventProcessor extends Managed {
-  process(event: ProcessableEvents): void
+  process(event: ProcessableEvent): void
 }
 
-const DEFAULT_FLUSH_INTERVAL = 30000 // Unit is ms - default flush interval is 30s
-const DEFAULT_MAX_QUEUE_SIZE = 10
-
-export abstract class AbstractEventProcessor implements EventProcessor {
-  protected dispatcher: EventDispatcher
-  protected queue: EventQueue<ProcessableEvents>
-  private notificationCenter?: NotificationCenter
-  private requestTracker: RequestTracker
-
-  constructor({
-    dispatcher,
-    flushInterval = 30000,
-    maxQueueSize = 3000,
-    notificationCenter,
-  }: {
-    dispatcher: EventDispatcher
-    flushInterval?: number
-    maxQueueSize?: number
-    notificationCenter?: NotificationCenter
-  }) {
-    this.dispatcher = dispatcher
-
-    if (flushInterval <= 0) {
-      logger.warn(
-        `Invalid flushInterval ${flushInterval}, defaulting to ${DEFAULT_FLUSH_INTERVAL}`,
-      )
-      flushInterval = DEFAULT_FLUSH_INTERVAL
-    }
-
-    maxQueueSize = Math.floor(maxQueueSize)
-    if (maxQueueSize < 1) {
-      logger.warn(
-        `Invalid maxQueueSize ${maxQueueSize}, defaulting to ${DEFAULT_MAX_QUEUE_SIZE}`,
-      )
-      maxQueueSize = DEFAULT_MAX_QUEUE_SIZE
-    }
-
-    maxQueueSize = Math.max(1, maxQueueSize)
-    if (maxQueueSize > 1) {
-      this.queue = new DefaultEventQueue<ProcessableEvents>({
-        flushInterval,
-        maxQueueSize,
-        sink: buffer => this.drainQueue(buffer),
-        batchComparator: areEventContextsEqual,
-      })
-    } else {
-      this.queue = new SingleEventQueue({
-        sink: buffer => this.drainQueue(buffer),
-      })
-    }
-    this.notificationCenter = notificationCenter
-
-    this.requestTracker = new RequestTracker()
+export function validateAndGetFlushInterval(flushInterval: number): number {
+  if (flushInterval <= 0) {
+    logger.warn(
+      `Invalid flushInterval ${flushInterval}, defaulting to ${DEFAULT_FLUSH_INTERVAL}`,
+    )
+    flushInterval = DEFAULT_FLUSH_INTERVAL
   }
+  return flushInterval
+}
 
-  drainQueue(buffer: ProcessableEvents[]): Promise<void> {
-    const reqPromise = new Promise<void>(resolve => {
-      logger.debug('draining queue with %s events', buffer.length)
+export function validateAndGetBatchSize(batchSize: number): number {
+  batchSize = Math.floor(batchSize)
+  if (batchSize < 1) {
+    logger.warn(
+      `Invalid batchSize ${batchSize}, defaulting to ${DEFAULT_BATCH_SIZE}`,
+    )
+    batchSize = DEFAULT_BATCH_SIZE
+  }
+  batchSize = Math.max(1, batchSize)
+  return batchSize
+}
 
-      if (buffer.length === 0) {
-        resolve()
-        return
-      }
-
-      const formattedEvent = this.formatEvents(buffer)
-      this.dispatcher.dispatchEvent(formattedEvent, () => {
-        resolve()
-      })
-      if (this.notificationCenter) {
-        this.notificationCenter.sendNotifications(
-          NOTIFICATION_TYPES.LOG_EVENT,
-          formattedEvent,
-        )
-      }
+export function getQueue(batchSize: number, flushInterval: number, sink: any, batchComparator: any): EventQueue<ProcessableEvent> {
+  let queue: EventQueue<ProcessableEvent>
+  if (batchSize > 1) {
+    queue = new DefaultEventQueue<ProcessableEvent>({
+      flushInterval,
+      maxQueueSize: batchSize,
+      sink,
+      batchComparator,
     })
-    this.requestTracker.trackRequest(reqPromise)
-    return reqPromise
+  } else {
+    queue = new SingleEventQueue({ sink })
   }
+  return queue
+}
 
-  process(event: ProcessableEvents): void {
-    this.queue.enqueue(event)
+export function sendEventNotification(notificationCenter: NotificationCenter | undefined, event: EventV1Request): void {
+  if (notificationCenter) {
+    notificationCenter.sendNotifications(
+      NOTIFICATION_TYPES.LOG_EVENT,
+      event,
+    )
   }
-
-  stop(): Promise<any> {
-    // swallow - an error stopping this queue shouldn't prevent this from stopping
-    try {
-      this.queue.stop()
-      return this.requestTracker.onRequestsComplete()
-    } catch (e) {
-      logger.error('Error stopping EventProcessor: "%s"', e.message, e)
-    }
-    return Promise.resolve()
-  }
-
-  start(): void {
-    this.queue.start()
-  }
-
-  protected abstract formatEvents(events: ProcessableEvents[]): EventV1Request
 }

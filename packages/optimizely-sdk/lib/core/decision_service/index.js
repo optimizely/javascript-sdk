@@ -27,6 +27,7 @@ var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
 var DECISION_SOURCES = enums.DECISION_SOURCES;
+var AUDIENCE_EVALUATION_TYPES = enums.AUDIENCE_EVALUATION_TYPES;
 
 /**
  * Optimizely's decision service that determines which variation of an experiment the user will be allocated to.
@@ -90,7 +91,14 @@ DecisionService.prototype.getVariation = function(configObj, experimentKey, user
   }
 
   // Perform regular targeting and bucketing
-  if (!this.__checkIfUserIsInAudience(configObj, experimentKey, userId, attributes)) {
+  if (!this.__checkIfUserIsInAudience(configObj, experimentKey, AUDIENCE_EVALUATION_TYPES.EXPERIMENT, userId, attributes, '')) {
+    var userDoesNotMeetConditionsLogMessage = sprintf(
+      LOG_MESSAGES.USER_NOT_IN_EXPERIMENT,
+      MODULE_NAME,
+      userId,
+      experimentKey
+    );
+    this.logger.log(LOG_LEVEL.INFO, userDoesNotMeetConditionsLogMessage);
     return null;
   }
 
@@ -98,9 +106,24 @@ DecisionService.prototype.getVariation = function(configObj, experimentKey, user
   var variationId = bucketer.bucket(bucketerParams);
   variation = configObj.variationIdMap[variationId];
   if (!variation) {
+    var userHasNoVariationLogMessage = sprintf(
+      LOG_MESSAGES.USER_HAS_NO_VARIATION,
+      MODULE_NAME,
+      userId,
+      experimentKey
+    );
+    this.logger.log(LOG_LEVEL.DEBUG, userHasNoVariationLogMessage);
     return null;
   }
 
+  var userInVariationLogMessage = sprintf(
+    LOG_MESSAGES.USER_HAS_VARIATION,
+    MODULE_NAME,
+    userId,
+    variation.key,
+    experimentKey
+  );
+  this.logger.log(LOG_LEVEL.INFO, userInVariationLogMessage);
   // persist bucketing
   this.__saveUserProfile(experiment, variation, userId, experimentBucketMap);
 
@@ -171,13 +194,15 @@ DecisionService.prototype.__getWhitelistedVariation = function(experiment, userI
 
 /**
  * Checks whether the user is included in experiment audience
- * @param  {Object}  configObj     The parsed project configuration object
- * @param  {string}  experimentKey Key of experiment being validated
- * @param  {string}  userId        ID of user
- * @param  {Object}  attributes    Optional parameter for user's attributes
+ * @param  {Object}  configObj            The parsed project configuration object
+ * @param  {string}  experimentKey        Key of experiment being validated
+ * @param  {string}  evaluationAttribute  String representing experiment key or rule
+ * @param  {string}  userId               ID of user
+ * @param  {Object}  attributes           Optional parameter for user's attributes
+ * @param  {string}  loggingKey           String representing experiment key or rollout rule. To be used in log messages only.
  * @return {boolean} True if user meets audience conditions
  */
-DecisionService.prototype.__checkIfUserIsInAudience = function(configObj, experimentKey, userId, attributes) {
+DecisionService.prototype.__checkIfUserIsInAudience = function(configObj, experimentKey, evaluationAttribute, userId, attributes, loggingKey) {
   var experimentAudienceConditions = projectConfig.getExperimentAudienceConditions(configObj, experimentKey);
   var audiencesById = projectConfig.getAudiencesById(configObj);
   this.logger.log(
@@ -185,7 +210,8 @@ DecisionService.prototype.__checkIfUserIsInAudience = function(configObj, experi
     sprintf(
       LOG_MESSAGES.EVALUATING_AUDIENCES_COMBINED,
       MODULE_NAME,
-      experimentKey,
+      evaluationAttribute,
+      loggingKey || experimentKey,
       JSON.stringify(experimentAudienceConditions)
     )
   );
@@ -195,23 +221,13 @@ DecisionService.prototype.__checkIfUserIsInAudience = function(configObj, experi
     sprintf(
       LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
       MODULE_NAME,
-      experimentKey,
+      evaluationAttribute,
+      loggingKey || experimentKey,
       result.toString().toUpperCase()
     )
   );
 
-  if (!result) {
-    var userDoesNotMeetConditionsLogMessage = sprintf(
-      LOG_MESSAGES.USER_NOT_IN_EXPERIMENT,
-      MODULE_NAME,
-      userId,
-      experimentKey
-    );
-    this.logger.log(LOG_LEVEL.INFO, userDoesNotMeetConditionsLogMessage);
-    return false;
-  }
-
-  return true;
+  return result;
 };
 
 /**
@@ -335,24 +351,8 @@ DecisionService.prototype.__saveUserProfile = function(experiment, variation, us
 DecisionService.prototype.getVariationForFeature = function(configObj, feature, userId, attributes) {
   var experimentDecision = this._getVariationForFeatureExperiment(configObj, feature, userId, attributes);
   if (experimentDecision.variation !== null) {
-    this.logger.log(
-      LOG_LEVEL.DEBUG,
-      sprintf(
-        LOG_MESSAGES.USER_IN_FEATURE_EXPERIMENT,
-        MODULE_NAME,
-        userId,
-        experimentDecision.variation.key,
-        experimentDecision.experiment.key,
-        feature.key
-      )
-    );
     return experimentDecision;
   }
-
-  this.logger.log(
-    LOG_LEVEL.DEBUG,
-    sprintf(LOG_MESSAGES.USER_NOT_IN_FEATURE_EXPERIMENT, MODULE_NAME, userId, feature.key)
-  );
 
   var rolloutDecision = this._getVariationForRollout(configObj, feature, userId, attributes);
   if (rolloutDecision.variation !== null) {
@@ -456,50 +456,56 @@ DecisionService.prototype._getVariationForRollout = function(configObj, feature,
   // "everyone else", which will be evaluated separately outside this loop
   var endIndex = rollout.experiments.length - 1;
   var index;
-  var experiment;
+  var rolloutRule;
   var bucketerParams;
   var variationId;
   var variation;
+  var loggingKey;
   for (index = 0; index < endIndex; index++) {
-    experiment = configObj.experimentKeyMap[rollout.experiments[index].key];
+    rolloutRule = configObj.experimentKeyMap[rollout.experiments[index].key];
+    loggingKey = index + 1;
 
-    if (!this.__checkIfUserIsInAudience(configObj, experiment.key, userId, attributes)) {
+    if (!this.__checkIfUserIsInAudience(configObj, rolloutRule.key, AUDIENCE_EVALUATION_TYPES.RULE, userId, attributes, loggingKey)) {
       this.logger.log(
         LOG_LEVEL.DEBUG,
-        sprintf(LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE, MODULE_NAME, userId, index + 1)
+        sprintf(LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE, MODULE_NAME, userId, loggingKey)
       );
       continue;
     }
 
     this.logger.log(
       LOG_LEVEL.DEBUG,
-      sprintf(LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE, MODULE_NAME, userId, index + 1)
+      sprintf(LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE, MODULE_NAME, userId, loggingKey)
     );
-    bucketerParams = this.__buildBucketerParams(configObj, experiment.key, bucketingId, userId);
+    bucketerParams = this.__buildBucketerParams(configObj, rolloutRule.key, bucketingId, userId);
     variationId = bucketer.bucket(bucketerParams);
     variation = configObj.variationIdMap[variationId];
     if (variation) {
       this.logger.log(
         LOG_LEVEL.DEBUG,
-        sprintf(LOG_MESSAGES.USER_BUCKETED_INTO_TARGETING_RULE, MODULE_NAME, userId, index + 1)
+        sprintf(LOG_MESSAGES.USER_BUCKETED_INTO_TARGETING_RULE, MODULE_NAME, userId, loggingKey)
       );
       return {
-        experiment: experiment,
+        experiment: rolloutRule,
         variation: variation,
         decisionSource: DECISION_SOURCES.ROLLOUT,
       };
     } else {
       this.logger.log(
         LOG_LEVEL.DEBUG,
-        sprintf(LOG_MESSAGES.USER_NOT_BUCKETED_INTO_TARGETING_RULE, MODULE_NAME, userId, index + 1)
+        sprintf(LOG_MESSAGES.USER_NOT_BUCKETED_INTO_TARGETING_RULE, MODULE_NAME, userId, loggingKey)
       );
       break;
     }
   }
 
-  var everyoneElseExperiment = configObj.experimentKeyMap[rollout.experiments[endIndex].key];
-  if (this.__checkIfUserIsInAudience(configObj, everyoneElseExperiment.key, userId, attributes)) {
-    bucketerParams = this.__buildBucketerParams(configObj, everyoneElseExperiment.key, bucketingId, userId);
+  var everyoneElseRule = configObj.experimentKeyMap[rollout.experiments[endIndex].key];
+  if (this.__checkIfUserIsInAudience(configObj, everyoneElseRule.key, AUDIENCE_EVALUATION_TYPES.RULE, userId, attributes, 'Everyone Else')) {
+    this.logger.log(
+      LOG_LEVEL.DEBUG,
+      sprintf(LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE, MODULE_NAME, userId, 'Everyone Else')
+    );
+    bucketerParams = this.__buildBucketerParams(configObj, everyoneElseRule.key, bucketingId, userId);
     variationId = bucketer.bucket(bucketerParams);
     variation = configObj.variationIdMap[variationId];
     if (variation) {
@@ -508,7 +514,7 @@ DecisionService.prototype._getVariationForRollout = function(configObj, feature,
         sprintf(LOG_MESSAGES.USER_BUCKETED_INTO_EVERYONE_TARGETING_RULE, MODULE_NAME, userId)
       );
       return {
-        experiment: everyoneElseExperiment,
+        experiment: everyoneElseRule,
         variation: variation,
         decisionSource: DECISION_SOURCES.ROLLOUT,
       };

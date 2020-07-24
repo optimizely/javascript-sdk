@@ -3136,8 +3136,8 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('returns the right value from getFeatureVariableJson and send notification with featureEnabled true', function() {
-                  var result = optlyInstance.getFeatureVariableJson(
+                it('returns the right value from getFeatureVariableJSON and send notification with featureEnabled true', function() {
+                  var result = optlyInstance.getFeatureVariableJSON(
                     'test_feature_for_experiment',
                     'button_info',
                     'user1',
@@ -3334,8 +3334,8 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('returns the default value from getFeatureVariableJson and send notification with featureEnabled false', function() {
-                  var result = optlyInstance.getFeatureVariableJson(
+                it('returns the default value from getFeatureVariableJSON and send notification with featureEnabled false', function() {
+                  var result = optlyInstance.getFeatureVariableJSON(
                     'test_feature_for_experiment',
                     'button_info',
                     'user1',
@@ -3621,8 +3621,8 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('should return the right value from getFeatureVariableJson and send notification with featureEnabled true', function() {
-                  var result = optlyInstance.getFeatureVariableJson('test_feature', 'message_info', 'user1', {
+                it('should return the right value from getFeatureVariableJSON and send notification with featureEnabled true', function() {
+                  var result = optlyInstance.getFeatureVariableJSON('test_feature', 'message_info', 'user1', {
                     test_attribute: 'test_value',
                   });
                   assert.deepEqual(result, {
@@ -3894,8 +3894,8 @@ describe('lib/optimizely', function() {
                   });
                 });
 
-                it('should return the default value from getFeatureVariableJson and send notification with featureEnabled false', function() {
-                  var result = optlyInstance.getFeatureVariableJson('test_feature', 'message_info', 'user1', {
+                it('should return the default value from getFeatureVariableJSON and send notification with featureEnabled false', function() {
+                  var result = optlyInstance.getFeatureVariableJSON('test_feature', 'message_info', 'user1', {
                     test_attribute: 'test_value',
                   });
                   assert.deepEqual(result, {
@@ -4181,8 +4181,8 @@ describe('lib/optimizely', function() {
                 });
               });
 
-              it('returns the variable default value from getFeatureVariableJson and send notification with featureEnabled false', function() {
-                var result = optlyInstance.getFeatureVariableJson(
+              it('returns the variable default value from getFeatureVariableJSON and send notification with featureEnabled false', function() {
+                var result = optlyInstance.getFeatureVariableJSON(
                   'test_feature_for_experiment',
                   'button_info',
                   'user1',
@@ -4953,7 +4953,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "is_button_animated" of feature flag "test_feature_for_experiment" is true for user "user1"'
+              'OPTIMIZELY: Got variable value "true" for variable "is_button_animated" of feature flag "test_feature_for_experiment"'
             );
           });
 
@@ -4965,7 +4965,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "button_width" of feature flag "test_feature_for_experiment" is 20.25 for user "user1"'
+              'OPTIMIZELY: Got variable value "20.25" for variable "button_width" of feature flag "test_feature_for_experiment"'
             );
           });
 
@@ -4977,7 +4977,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "num_buttons" of feature flag "test_feature_for_experiment" is 2 for user "user1"'
+              'OPTIMIZELY: Got variable value "2" for variable "num_buttons" of feature flag "test_feature_for_experiment"'
             );
           });
 
@@ -4989,7 +4989,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "button_txt" of feature flag "test_feature_for_experiment" is Buy me NOW for user "user1"'
+              'OPTIMIZELY: Got variable value "Buy me NOW" for variable "button_txt" of feature flag "test_feature_for_experiment"'
             );
           });
 
@@ -5004,7 +5004,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "button_info" of feature flag "test_feature_for_experiment" is { "num_buttons": 1, "text": "first variation"} for user "user1"'
+              'OPTIMIZELY: Got variable value "{ "num_buttons": 1, "text": "first variation"}" for variable "button_info" of feature flag "test_feature_for_experiment"'
             );
           });
 
@@ -5019,7 +5019,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "is_button_animated" of feature flag "test_feature_for_experiment" is true for user "user1"'
+              'OPTIMIZELY: Got variable value "true" for variable "is_button_animated" of feature flag "test_feature_for_experiment"'
             );
           });
 
@@ -5034,7 +5034,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "button_width" of feature flag "test_feature_for_experiment" is 20.25 for user "user1"'
+              'OPTIMIZELY: Got variable value "20.25" for variable "button_width" of feature flag "test_feature_for_experiment"'
             );
           });
 
@@ -5049,7 +5049,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "num_buttons" of feature flag "test_feature_for_experiment" is 2 for user "user1"'
+              'OPTIMIZELY: Got variable value "2" for variable "num_buttons" of feature flag "test_feature_for_experiment"'
             );
           });
 
@@ -5061,12 +5061,12 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "button_txt" of feature flag "test_feature_for_experiment" is Buy me NOW for user "user1"'
+              'OPTIMIZELY: Got variable value "Buy me NOW" for variable "button_txt" of feature flag "test_feature_for_experiment"'
             );
           });
 
-          it('returns the right value from getFeatureVariableJson', function() {
-            var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info', 'user1', {
+          it('returns the right value from getFeatureVariableJSON', function() {
+            var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_info', 'user1', {
               test_attribute: 'test_value',
             });
             assert.deepEqual(result, {
@@ -5076,7 +5076,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "button_info" of feature flag "test_feature_for_experiment" is { "num_buttons": 1, "text": "first variation"} for user "user1"'
+              'OPTIMIZELY: Got variable value "{ "num_buttons": 1, "text": "first variation"}" for variable "button_info" of feature flag "test_feature_for_experiment"'
             );
           });
 
@@ -5097,27 +5097,27 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "is_button_animated" of feature flag "test_feature_for_experiment" is true for user "user1"'
+              'OPTIMIZELY: Got variable value "true" for variable "is_button_animated" of feature flag "test_feature_for_experiment"'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "button_width" of feature flag "test_feature_for_experiment" is 20.25 for user "user1"'
+              'OPTIMIZELY: Got variable value "20.25" for variable "button_width" of feature flag "test_feature_for_experiment"'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "num_buttons" of feature flag "test_feature_for_experiment" is 2 for user "user1"'
+              'OPTIMIZELY: Got variable value "2" for variable "num_buttons" of feature flag "test_feature_for_experiment"'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "button_txt" of feature flag "test_feature_for_experiment" is Buy me NOW for user "user1"'
+              'OPTIMIZELY: Got variable value "Buy me NOW" for variable "button_txt" of feature flag "test_feature_for_experiment"'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "button_info" of feature flag "test_feature_for_experiment" is { "num_buttons": 1, "text": "first variation"} for user "user1"'
+              'OPTIMIZELY: Got variable value "{ "num_buttons": 1, "text": "first variation"}" for variable "button_info" of feature flag "test_feature_for_experiment"'
             );
           });
 
@@ -5252,8 +5252,8 @@ describe('lib/optimizely', function() {
               );
             });
 
-            it('returns the variable default value from getFeatureVariableJson', function() {
-              var result = optlyInstance.getFeatureVariableJson(
+            it('returns the variable default value from getFeatureVariableJSON', function() {
+              var result = optlyInstance.getFeatureVariableJSON(
                 'test_feature_for_experiment',
                 'button_info',
                 'user1',
@@ -5338,7 +5338,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "is_button_animated".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "false".'
             );
           });
 
@@ -5350,7 +5350,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "button_width".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "50.55".'
             );
           });
 
@@ -5362,7 +5362,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "num_buttons".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "10".'
             );
           });
 
@@ -5374,7 +5374,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "button_txt".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "Buy me".'
             );
           });
 
@@ -5389,7 +5389,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "button_info".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "{ "num_buttons": 0, "text": "default value"}".'
             );
           });
 
@@ -5404,7 +5404,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "is_button_animated".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "false".'
             );
           });
 
@@ -5419,7 +5419,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "button_width".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "50.55".'
             );
           });
 
@@ -5434,7 +5434,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "num_buttons".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "10".'
             );
           });
 
@@ -5446,12 +5446,12 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "button_txt".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "Buy me".'
             );
           });
 
-          it('returns the variable default value from getFeatureVariableJson', function() {
-            var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info', 'user1', {
+          it('returns the variable default value from getFeatureVariableJSON', function() {
+            var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_info', 'user1', {
               test_attribute: 'test_value',
             });
             assert.deepEqual(result, {
@@ -5461,7 +5461,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "button_info".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "{ "num_buttons": 0, "text": "default value"}".'
             );
           });
 
@@ -5482,27 +5482,27 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "is_button_animated".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "false".'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "button_width".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "50.55".'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "num_buttons".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "10".'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "button_txt".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "Buy me".'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning default value for variable "button_info".'
+              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "{ "num_buttons": 0, "text": "default value"}".'
             );
           });
         });
@@ -5531,7 +5531,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "new_content" of feature flag "test_feature" is true for user "user1"'
+              'OPTIMIZELY: Got variable value "true" for variable "new_content" of feature flag "test_feature"'
             );
           });
 
@@ -5543,7 +5543,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "price" of feature flag "test_feature" is 4.99 for user "user1"'
+              'OPTIMIZELY: Got variable value "4.99" for variable "price" of feature flag "test_feature"'
             );
           });
 
@@ -5555,7 +5555,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "lasers" of feature flag "test_feature" is 395 for user "user1"'
+              'OPTIMIZELY: Got variable value "395" for variable "lasers" of feature flag "test_feature"'
             );
           });
 
@@ -5567,7 +5567,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "message" of feature flag "test_feature" is Hello audience for user "user1"'
+              'OPTIMIZELY: Got variable value "Hello audience" for variable "message" of feature flag "test_feature"'
             );
           });
 
@@ -5582,7 +5582,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "message_info" of feature flag "test_feature" is { "count": 2, "message": "Hello audience" } for user "user1"'
+              'OPTIMIZELY: Got variable value "{ "count": 2, "message": "Hello audience" }" for variable "message_info" of feature flag "test_feature"'
             );
           });
 
@@ -5594,7 +5594,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "new_content" of feature flag "test_feature" is true for user "user1"'
+              'OPTIMIZELY: Got variable value "true" for variable "new_content" of feature flag "test_feature"'
             );
           });
 
@@ -5606,7 +5606,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "price" of feature flag "test_feature" is 4.99 for user "user1"'
+              'OPTIMIZELY: Got variable value "4.99" for variable "price" of feature flag "test_feature"'
             );
           });
 
@@ -5618,7 +5618,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "lasers" of feature flag "test_feature" is 395 for user "user1"'
+              'OPTIMIZELY: Got variable value "395" for variable "lasers" of feature flag "test_feature"'
             );
           });
 
@@ -5630,12 +5630,12 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "message" of feature flag "test_feature" is Hello audience for user "user1"'
+              'OPTIMIZELY: Got variable value "Hello audience" for variable "message" of feature flag "test_feature"'
             );
           });
 
-          it('returns the right value from getFeatureVariableJson', function() {
-            var result = optlyInstance.getFeatureVariableJson('test_feature', 'message_info', 'user1', {
+          it('returns the right value from getFeatureVariableJSON', function() {
+            var result = optlyInstance.getFeatureVariableJSON('test_feature', 'message_info', 'user1', {
               test_attribute: 'test_value',
             });
             assert.deepEqual(result, {
@@ -5645,7 +5645,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "message_info" of feature flag "test_feature" is { "count": 2, "message": "Hello audience" } for user "user1"'
+              'OPTIMIZELY: Got variable value "{ "count": 2, "message": "Hello audience" }" for variable "message_info" of feature flag "test_feature"'
             );
           });
 
@@ -5666,27 +5666,27 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "new_content" of feature flag "test_feature" is true for user "user1"'
+              'OPTIMIZELY: Got variable value "true" for variable "new_content" of feature flag "test_feature"'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "price" of feature flag "test_feature" is 4.99 for user "user1"'
+              'OPTIMIZELY: Got variable value "4.99" for variable "price" of feature flag "test_feature"'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "lasers" of feature flag "test_feature" is 395 for user "user1"'
+              'OPTIMIZELY: Got variable value "395" for variable "lasers" of feature flag "test_feature"'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "message" of feature flag "test_feature" is Hello audience for user "user1"'
+              'OPTIMIZELY: Got variable value "Hello audience" for variable "message" of feature flag "test_feature"'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Value for variable "message_info" of feature flag "test_feature" is { "count": 2, "message": "Hello audience" } for user "user1"'
+              'OPTIMIZELY: Got variable value "{ "count": 2, "message": "Hello audience" }" for variable "message_info" of feature flag "test_feature"'
             );
           });
 
@@ -5806,8 +5806,8 @@ describe('lib/optimizely', function() {
               );
             });
 
-            it('returns the variable default value from getFeatureVariableJson', function() {
-              var result = optlyInstance.getFeatureVariableJson('test_feature', 'message_info', 'user1', {
+            it('returns the variable default value from getFeatureVariableJSON', function() {
+              var result = optlyInstance.getFeatureVariableJSON('test_feature', 'message_info', 'user1', {
                 test_attribute: 'test_value',
               });
               assert.deepEqual(result, {
@@ -5886,7 +5886,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "new_content".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "false".'
             );
           });
 
@@ -5898,7 +5898,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "price".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "14.99".'
             );
           });
 
@@ -5910,7 +5910,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "lasers".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "400".'
             );
           });
 
@@ -5922,7 +5922,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "message".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "Hello".'
             );
           });
 
@@ -5937,7 +5937,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "message_info".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "{ "count": 1, "message": "Hello" }".'
             );
           });
 
@@ -5949,7 +5949,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "new_content".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "false".'
             );
           });
 
@@ -5961,7 +5961,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "price".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "14.99".'
             );
           });
 
@@ -5973,7 +5973,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "lasers".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "400".'
             );
           });
 
@@ -5985,12 +5985,12 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "message".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "Hello".'
             );
           });
 
-          it('returns the variable default value from getFeatureVariableJson', function() {
-            var result = optlyInstance.getFeatureVariableJson('test_feature', 'message_info', 'user1', {
+          it('returns the variable default value from getFeatureVariableJSON', function() {
+            var result = optlyInstance.getFeatureVariableJSON('test_feature', 'message_info', 'user1', {
               test_attribute: 'test_value',
             });
             assert.deepEqual(result, {
@@ -6000,7 +6000,7 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "message_info".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "{ "count": 1, "message": "Hello" }".'
             );
           });
 
@@ -6021,27 +6021,27 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "new_content".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "false".'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "price".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "14.99".'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "lasers".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "400".'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "message".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "Hello".'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning default value for variable "message_info".'
+              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "{ "count": 1, "message": "Hello" }".'
             );
           });
         });
@@ -6170,8 +6170,8 @@ describe('lib/optimizely', function() {
           );
         });
 
-        it('returns the variable default value from getFeatureVariableJson', function() {
-          var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info', 'user1', {
+        it('returns the variable default value from getFeatureVariableJSON', function() {
+          var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_info', 'user1', {
             test_attribute: 'test_value',
           });
           assert.deepEqual(result, {
@@ -6441,8 +6441,8 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariableJson when called with a non-json variable', function() {
-        var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_txt', 'user1');
+      it('returns null from getFeatureVariableJSON when called with a non-json variable', function() {
+        var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_txt', 'user1');
         assert.strictEqual(result, null);
         sinon.assert.calledWith(
           createdLogger.log,
@@ -6593,8 +6593,8 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariableJson if user id is null', function() {
-        var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info', null, {
+      it('returns null from getFeatureVariableJSON if user id is null', function() {
+        var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_info', null, {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
@@ -6605,8 +6605,8 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariableJson if user id is undefined', function() {
-        var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info', undefined, {
+      it('returns null from getFeatureVariableJSON if user id is undefined', function() {
+        var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_info', undefined, {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
@@ -6617,8 +6617,8 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariableJson if user id is not provided', function() {
-        var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info');
+      it('returns null from getFeatureVariableJSON if user id is not provided', function() {
+        var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_info');
         assert.strictEqual(result, null);
         sinon.assert.calledWith(
           createdLogger.log,
@@ -6686,7 +6686,7 @@ describe('lib/optimizely', function() {
           });
 
           it('should return null and log an error', function() {
-            var result = optlyInstance.getFeatureVariableJson('test_feature_for_experiment', 'button_info', 'user1');
+            var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_info', 'user1');
             assert.strictEqual(result, null);
             sinon.assert.calledWith(
               createdLogger.log,
@@ -6801,8 +6801,8 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariableJson if the argument feature key is invalid', function() {
-        var result = optlyInstance.getFeatureVariableJson('thisIsNotAValidKey<><><>', 'button_info', 'user1');
+      it('returns null from getFeatureVariableJSON if the argument feature key is invalid', function() {
+        var result = optlyInstance.getFeatureVariableJSON('thisIsNotAValidKey<><><>', 'button_info', 'user1');
         assert.strictEqual(result, null);
         sinon.assert.calledWith(
           createdLogger.log,
@@ -6867,8 +6867,8 @@ describe('lib/optimizely', function() {
         );
       });
 
-      it('returns null from getFeatureVariableJson if the argument variable key is invalid', function() {
-        var result = optlyInstance.getFeatureVariableJson(
+      it('returns null from getFeatureVariableJSON if the argument variable key is invalid', function() {
+        var result = optlyInstance.getFeatureVariableJSON(
           'test_feature_for_experiment',
           'thisIsNotAVariableKey****',
           'user1'
@@ -6966,7 +6966,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableString'));
       });
 
-      it('returns null from getFeatureVariableJson when optimizely object is not a valid instance', function() {
+      it('returns null from getFeatureVariableJSON when optimizely object is not a valid instance', function() {
         var instance = new Optimizely({
           datafile: {},
           errorHandler: errorHandler,
@@ -6976,11 +6976,11 @@ describe('lib/optimizely', function() {
 
         createdLogger.log.reset();
 
-        instance.getFeatureVariableJson('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
+        instance.getFeatureVariableJSON('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableJson'));
+        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableJSON'));
       });
     });
   });
@@ -7682,7 +7682,7 @@ describe('lib/optimizely', function() {
         sinon.match({
           dispatcher: eventDispatcher,
           flushInterval: 20000,
-          maxQueueSize: 100,
+          batchSize: 100,
         })
       );
     });

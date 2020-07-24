@@ -37,6 +37,7 @@ setLogLevel(LogLevel.INFO);
 
 var DEFAULT_EVENT_BATCH_SIZE = 10;
 var DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
+var DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
 
 /**
  * Creates an instance of the Optimizely class
@@ -82,6 +83,7 @@ var createInstance = function(config) {
         clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
         eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
         eventDispatcher: defaultEventDispatcher,
+        eventMaxQueueSize: DEFAULT_EVENT_MAX_QUEUE_SIZE,
         eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
       },
       config,
