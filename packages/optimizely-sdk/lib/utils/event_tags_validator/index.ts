@@ -21,8 +21,6 @@ import { sprintf } from '@optimizely/js-sdk-utils';
 
 import { ERROR_MESSAGES } from '../enums';
 
-import { EventTags } from '../../../../event-processor/src/events';
-
 const MODULE_NAME = 'EVENT_TAGS_VALIDATOR';
 
 /**
@@ -31,7 +29,7 @@ const MODULE_NAME = 'EVENT_TAGS_VALIDATOR';
  * @return {boolean} true if event tags are valid
  * @throws If event tags are not valid
  */
-export function validate(eventTags: EventTags): boolean {
+export function validate(eventTags: unknown): boolean {
   if (typeof eventTags === 'object' && !Array.isArray(eventTags) && eventTags !== null) {
     return true;
   } else {
