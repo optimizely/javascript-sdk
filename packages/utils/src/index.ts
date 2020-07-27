@@ -155,6 +155,3 @@ export enum NOTIFICATION_TYPES {
 export interface NotificationCenter {
   sendNotifications(notificationType: NOTIFICATION_TYPES, notificationData?: any): void
 }
-
-export { default as PersistentKeyValueCache } from './persistentKeyValueCache'
-export { default as ReactNativeAsyncStorageCache } from './reactNativeAsyncStorageCache'
