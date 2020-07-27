@@ -22,6 +22,7 @@ import {
   LOG_LEVEL,
   FEATURE_VARIABLE_TYPES,
 } from '../../utils/enums';
+import configValidator from '../../utils/config_validator';
 
 var EXPERIMENT_RUNNING_STATUS = 'Running';
 var RESERVED_ATTRIBUTE_PREFIX = '$opt_';
@@ -62,6 +63,8 @@ function createMutationSafeDatafileCopy(datafile) {
  */
 export var createProjectConfig = function(datafile) {
   var projectConfig = createMutationSafeDatafileCopy(datafile);
+
+  projectConfig.__datafileStr = JSON.stringify(datafile);
 
   /*
    * Conditions of audiences in projectConfig.typedAudiences are not
@@ -540,23 +543,53 @@ export var isFeatureExperiment = function(projectConfig, experimentId) {
 };
 
 /**
+ *
+ * @param {Object} projectConfig
+ * @returns {string} Datafile
+ */
+export function toDatafile(projectConfig) {
+  return projectConfig.__datafileStr;
+}
+
+/**
+ * @typedef {Object} TryCreatingProjectConfigResult
+ * @property {Object|null} configObj
+ * @property {Error|null} error
+ */
+
+/**
  * Try to create a project config object from the given datafile and
  * configuration properties.
- * If successful, return the project config object, otherwise throws an error
+ * Returns an object with configObj and error properties.
+ * If successful, configObj is the project config object, and error is null.
+ * Otherwise, configObj is null and error is an error with more information.
  * @param  {Object} config
  * @param  {Object} config.datafile
  * @param  {Object} config.jsonSchemaValidator
- * @param  {Object} config.logger
- * @return {Object} Project config object
+ * @return {TryCreatingProjectConfigResult}
  */
 export var tryCreatingProjectConfig = function(config) {
-  if (!config.jsonSchemaValidator) {
-    config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
-  } else {
-    config.jsonSchemaValidator.validate(config.datafile);
-    config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
+  var newDatafileObj = null;
+  try {
+    newDatafileObj = configValidator.validateDatafile(config.datafile);
+  } catch (error) {
+    return { configObj: null, error };
   }
-  return this.createProjectConfig(config.datafile);
+
+  if (config.jsonSchemaValidator) {
+    try {
+      config.jsonSchemaValidator.validate(newDatafileObj);
+    } catch (error) {
+      config.logger.error(error);
+      return { configObj: null, error };
+    }
+  }
+
+  var newConfigObj = this.createProjectConfig(config.datafile);
+  return {
+    configObj: newConfigObj,
+    error: null,
+  };
 };
 
 export default {
@@ -581,5 +614,6 @@ export default {
   getAudiencesById: getAudiencesById,
   eventWithKeyExists: eventWithKeyExists,
   isFeatureExperiment: isFeatureExperiment,
+  toDatafile,
   tryCreatingProjectConfig: tryCreatingProjectConfig,
 };

@@ -21,7 +21,6 @@ import fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../../utils/enums';
 import projectConfig from '../../core/project_config';
 import optimizelyConfig from '../optimizely_config';
-import configValidator from '../../utils/config_validator';
 
 var logger = getLogger();
 var MODULE_NAME = 'PROJECT_CONFIG_MANAGER';
@@ -83,7 +82,6 @@ ProjectConfigManager.prototype.__initialize = function(config) {
 
   if (!config.datafile && !config.sdkKey) {
     this.__configObj = null;
-    this.__datafileObj = null;
     var datafileAndSdkKeyMissingError = new Error(sprintf(ERROR_MESSAGES.DATAFILE_AND_SDK_KEY_MISSING, MODULE_NAME));
     this.__readyPromise = Promise.resolve({
       success: false,
@@ -93,17 +91,7 @@ ProjectConfigManager.prototype.__initialize = function(config) {
     return;
   }
 
-  var exception;
-  this.__configObj = null;
-  this.__datafileObj = null;
-  if (config.datafile) {
-    try {
-      this.__createProjectConfigFromDatafile(config.datafile);
-    } catch (ex) {
-      logger.error(ex);
-      exception = ex;
-    }
-  }
+  var exception = this.__handleNewDatafile(config.datafile);
 
   if (config.sdkKey) {
     var datafileManagerConfig = {
@@ -112,8 +100,8 @@ ProjectConfigManager.prototype.__initialize = function(config) {
     if (this.__validateDatafileOptions(config.datafileOptions)) {
       fns.assign(datafileManagerConfig, config.datafileOptions);
     }
-    if (this.__datafileObj && this.__configObj) {
-      datafileManagerConfig.datafile = this.__datafileObj;
+    if (config.datafile && !exception) {
+      datafileManagerConfig.datafile = projectConfig.toDatafile(this.__configObj)
     }
     this.datafileManager = new HttpPollingDatafileManager(datafileManagerConfig);
     this.datafileManager.start();
@@ -128,7 +116,7 @@ ProjectConfigManager.prototype.__initialize = function(config) {
   } else {
     this.__readyPromise = Promise.resolve({
       success: false,
-      reason: getErrorMessage(exception),
+      reason: getErrorMessage(exception, 'Invalid datafile'),
     });
   }
 };
@@ -142,19 +130,14 @@ ProjectConfigManager.prototype.__initialize = function(config) {
  * successful result.
  */
 ProjectConfigManager.prototype.__onDatafileManagerReadyFulfill = function() {
-  try {
-    var datafile = this.datafileManager.get();
-    this.__createProjectConfigFromDatafile(datafile);
-    return {
-      success: true,
-    }
-  } catch (ex) {
-    logger.error(ex);
+  var newDatafileError = this.__handleNewDatafile(this.datafileManager.get());
+  if (newDatafileError) {
     return {
       success: false,
-      reason: getErrorMessage(ex),
+      reason: getErrorMessage(newDatafileError),
     };
   }
+  return { success: true };
 };
 
 /**
@@ -177,33 +160,7 @@ ProjectConfigManager.prototype.__onDatafileManagerReadyReject = function(err) {
  * update listeners if successful
  */
 ProjectConfigManager.prototype.__onDatafileManagerUpdate = function() {
-  try {
-    var datafile = this.datafileManager.get();
-    this.__createProjectConfigFromDatafile(datafile);
-  } catch (ex) {
-    logger.error(ex);
-  }
-};
-
-/**
- * If the argument datafile is a valid datafile object or string,
- * set the the datafile object and string instance variables based on 
- * that provided datafile, otherwise set to null and empty, respectively
- * @param {Object|string} datafile
- */
-ProjectConfigManager.prototype.__setDatafile = function(datafile) {
-  if(datafile) {
-    this.__datafileObj = configValidator.validateDatafile(datafile);
-    if (typeof datafile === 'string' || datafile instanceof String) {
-      this.__datafileStr = datafile;
-    }
-    else {
-      this.__datafileStr = JSON.stringify(datafile);
-    }
-  } else {
-    this.__datafileObj = null;
-    this.__datafileStr = '';
-  }
+  this.__handleNewDatafile(this.datafileManager.get());
 };
 
 /**
@@ -223,43 +180,23 @@ ProjectConfigManager.prototype.__validateDatafileOptions = function(datafileOpti
   return false;
 };
 
-/**
- * Sets internal datafile object and string to be argument datafile if valid.
- * Then, creates projectConfig object using the provided datafile. If successful,
- * sets the project config and optimizely config objects instance variables 
- * according to the returned config object
- * @param {Object|string} datafile
- */
-ProjectConfigManager.prototype.__createProjectConfigFromDatafile = function(datafile) {
-  this.__setDatafile(datafile); 
-  var configObj = projectConfig.tryCreatingProjectConfig({
-    datafile: this.__datafileObj,
+ProjectConfigManager.prototype.__handleNewDatafile = function(newDatafile) {
+  var { configObj, error } = projectConfig.tryCreatingProjectConfig({
+    datafile: newDatafile,
     jsonSchemaValidator: this.jsonSchemaValidator,
-    logger: logger,
   });
-  this.__handleNewConfigObj(configObj);
-};
 
-/**
- * Update internal project config object to be argument object when the argument
- * object has a different revision than the current internal project config
- * object. If the internal object is updated, call update listeners.
- * @param {Object} newConfigObj
- */
-ProjectConfigManager.prototype.__handleNewConfigObj = function(newConfigObj) {
-  var oldConfigObj = this.__configObj;
-
-  var oldRevision = oldConfigObj ? oldConfigObj.revision : 'null';
-  if (oldRevision === newConfigObj.revision) {
-    return;
+  if (error) {
+    logger.error(error);
+  } else {
+    this.__configObj = configObj;
+    this.__optimizelyConfigObj = new optimizelyConfig.OptimizelyConfig(this.__configObj, projectConfig.toDatafile(this.__configObj));
+    this.__updateListeners.forEach(function(listener) {
+      listener(configObj);
+    });
   }
 
-  this.__configObj = newConfigObj;
-  this.__optimizelyConfigObj = new optimizelyConfig.OptimizelyConfig(newConfigObj, this.__datafileStr);
-
-  this.__updateListeners.forEach(function(listener) {
-    listener(newConfigObj);
-  });
+  return error;
 };
 
 /**
@@ -277,14 +214,6 @@ ProjectConfigManager.prototype.getConfig = function() {
  */
 ProjectConfigManager.prototype.getOptimizelyConfig = function() {
   return this.__optimizelyConfigObj;
-};
-
-/**
- * Returns the datafile string
- * @return {string}
- */
-ProjectConfigManager.prototype.toDatafile = function() {
-  return this.__datafileStr;
 };
 
 /**
