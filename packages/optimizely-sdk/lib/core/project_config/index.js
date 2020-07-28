@@ -569,7 +569,7 @@ export function toDatafile(projectConfig) {
  * @return {TryCreatingProjectConfigResult}
  */
 export var tryCreatingProjectConfig = function(config) {
-  var newDatafileObj = null;
+  var newDatafileObj;
   try {
     newDatafileObj = configValidator.validateDatafile(config.datafile);
   } catch (error) {
