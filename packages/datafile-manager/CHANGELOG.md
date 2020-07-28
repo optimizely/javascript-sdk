@@ -11,7 +11,7 @@ Changes that have landed but are not yet released.
 
 ### Changed
 
-- Move react native async storage implementation to datafile manager
+- Move React Native async storage implementation to datafile manager
 
 ## [0.6.0] - June 8, 2020
 
