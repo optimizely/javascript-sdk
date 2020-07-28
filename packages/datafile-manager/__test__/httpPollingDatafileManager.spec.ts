@@ -109,11 +109,11 @@ describe('httpPollingDatafileManager', () => {
 
   describe('when constructed with sdkKey and datafile and autoUpdate: true,', () => {
     beforeEach(() => {
-      manager = new TestDatafileManager({ datafile: { foo: 'abcd' }, sdkKey: '123', autoUpdate: true });
+      manager = new TestDatafileManager({ datafile: JSON.stringify({ foo: 'abcd' }), sdkKey: '123', autoUpdate: true });
     });
 
     it('returns the passed datafile from get', () => {
-      expect(manager.get()).toEqual({ foo: 'abcd' });
+      expect(manager.get()).toEqual(JSON.stringify({ foo: 'abcd' }));
     });
 
     it('after being started, fetches the datafile, updates itself, and updates itself again after a timeout', async () => {
@@ -134,7 +134,7 @@ describe('httpPollingDatafileManager', () => {
       manager.start();
       expect(manager.responsePromises.length).toBe(1);
       await manager.responsePromises[0];
-      expect(manager.get()).toEqual({ foo: 'bar' });
+      expect(manager.get()).toEqual(JSON.stringify({ foo: 'bar' }));
       updateFn.mockReset();
 
       await advanceTimersByTime(300000);
@@ -145,17 +145,17 @@ describe('httpPollingDatafileManager', () => {
       expect(updateFn).toBeCalledWith({
         datafile: { fooz: 'barz' },
       });
-      expect(manager.get()).toEqual({ fooz: 'barz' });
+      expect(manager.get()).toEqual(JSON.stringify({ fooz: 'barz' }));
     });
   });
 
   describe('when constructed with sdkKey and datafile and autoUpdate: false,', () => {
     beforeEach(() => {
-      manager = new TestDatafileManager({ datafile: { foo: 'abcd' }, sdkKey: '123', autoUpdate: false });
+      manager = new TestDatafileManager({ datafile: JSON.stringify({ foo: 'bar' }), sdkKey: '123', autoUpdate: false });
     });
 
     it('returns the passed datafile from get', () => {
-      expect(manager.get()).toEqual({ foo: 'abcd' });
+      expect(manager.get()).toEqual(JSON.stringify({ foo: 'abcd' }));
     });
 
     it('after being started, fetches the datafile, updates itself once, but does not schedule a future update', async () => {
@@ -167,7 +167,7 @@ describe('httpPollingDatafileManager', () => {
       manager.start();
       expect(manager.responsePromises.length).toBe(1);
       await manager.responsePromises[0];
-      expect(manager.get()).toEqual({ foo: 'bar' });
+      expect(manager.get()).toEqual(JSON.stringify({ foo: 'bar' }));
       expect(getTimerCount()).toBe(0);
     });
   });
@@ -721,7 +721,7 @@ describe('httpPollingDatafileManager', () => {
       manager.start();
       await advanceTimersByTime(50);
       await manager.onReady();
-      expect(manager.get()).toEqual({ foo: 'bar' });
+      expect(manager.get()).toEqual(JSON.stringify({ foo: 'bar' }));
       expect(updateFn).toBeCalledTimes(0);
     });
   });
