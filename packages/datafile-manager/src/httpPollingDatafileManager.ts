@@ -15,12 +15,13 @@
  */
 
 import { getLogger } from '@optimizely/js-sdk-logging';
-import { sprintf, PersistentKeyValueCache } from '@optimizely/js-sdk-utils';
+import { sprintf } from '@optimizely/js-sdk-utils';
 import { DatafileManager, DatafileManagerConfig, DatafileUpdate } from './datafileManager';
 import EventEmitter, { Disposer } from './eventEmitter';
 import { AbortableRequest, Response, Headers } from './http';
 import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE } from './config';
 import BackoffController from './backoffController';
+import PersistentKeyValueCache from './persistentKeyValueCache';
 
 const logger = getLogger('DatafileManager');
 
