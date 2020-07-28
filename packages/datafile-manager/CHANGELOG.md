@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
-## [0.7.0] - July  28, 2020
+## [0.7.0] - July 28, 2020
 
 ### Changed
 
