@@ -15,25 +15,9 @@
  */
 import { isFeatureExperiment } from '../project_config';
 
-/**
- * The OptimizelyConfig class
- * @param {Object} configObj
- * @param {string} datafile
- */
-export function OptimizelyConfig(configObj, datafile) {
-  this.experimentsMap = this.__getExperimentsMap(configObj);
-  this.featuresMap = this.__getFeaturesMap(configObj, this.experimentsMap);
-  this.revision = configObj.revision;
-  this.__datafile = datafile;
-}
-
-OptimizelyConfig.prototype.toDatafile = function() {
-  return this.__datafile;
-}
-
 // Gets Map of all experiments except rollouts
-OptimizelyConfig.prototype.__getExperimentsMap = function(configObj) {
-  var rolloutExperimentIds = this.__getRolloutExperimentIds(configObj.rollouts);
+function getExperimentsMap(configObj) {
+  var rolloutExperimentIds = getRolloutExperimentIds(configObj.rollouts);
   var featureVariablesMap = (configObj.featureFlags || []).reduce(function(resultMap, feature) {
     resultMap[feature.id] = feature.variables;
     return resultMap;
@@ -48,7 +32,7 @@ OptimizelyConfig.prototype.__getExperimentsMap = function(configObj) {
           variations[variation.key] = {
             id: variation.id,
             key: variation.key,
-            variablesMap: this.__getMergedVariablesMap(configObj, variation, experiment.id, featureVariablesMap),
+            variablesMap: getMergedVariablesMap(configObj, variation, experiment.id, featureVariablesMap),
           };
           if (isFeatureExperiment(configObj, experiment.id)) {
             variations[variation.key].featureEnabled = variation.featureEnabled;
@@ -62,7 +46,7 @@ OptimizelyConfig.prototype.__getExperimentsMap = function(configObj) {
 }
 
 // Gets map of all experiments
-OptimizelyConfig.prototype.__getFeaturesMap = function(configObj, allExperiments) {
+function getFeaturesMap(configObj, allExperiments) {
   return (configObj.featureFlags || []).reduce(function(features, feature) {
     features[feature.key] = {
       id: feature.id,
@@ -87,7 +71,7 @@ OptimizelyConfig.prototype.__getFeaturesMap = function(configObj, allExperiments
 }
 
 // Merges feature key and type from feature variables to variation variables.
-OptimizelyConfig.prototype.__getMergedVariablesMap = function(configObj, variation, experimentId, featureVariablesMap) {
+function getMergedVariablesMap(configObj, variation, experimentId, featureVariablesMap) {
   var featureId = configObj.experimentFeatureMap[experimentId];
   var variablesObject = {};
   if (featureId) {
@@ -117,13 +101,29 @@ OptimizelyConfig.prototype.__getMergedVariablesMap = function(configObj, variati
 }
 
 // Get Experiment Ids which are part of rollouts
-OptimizelyConfig.prototype.__getRolloutExperimentIds = function(rollouts) {
+function getRolloutExperimentIds(rollouts) {
   return (rollouts || []).reduce(function(experimentIds, rollout) {
     rollout.experiments.forEach(function(e) {
       experimentIds[e.id] = true;
     });
     return experimentIds;
   }, {});
+}
+
+/**
+ * The OptimizelyConfig class
+ * @param {Object} configObj
+ * @param {string} datafile
+ */
+export function OptimizelyConfig(configObj, datafile) {
+  this.experimentsMap = getExperimentsMap(configObj);
+  this.featuresMap = getFeaturesMap(configObj, this.experimentsMap);
+  this.revision = configObj.revision;
+  this.__datafile = datafile;
+}
+
+OptimizelyConfig.prototype.getDatafile = function() {
+  return this.__datafile;
 }
 
 export default {

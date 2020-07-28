@@ -20,7 +20,7 @@ import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager'
 import fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../../utils/enums';
 import projectConfig from '../../core/project_config';
-import optimizelyConfig from '../optimizely_config';
+import { OptimizelyConfig } from '../optimizely_config';
 
 var logger = getLogger();
 var MODULE_NAME = 'PROJECT_CONFIG_MANAGER';
@@ -91,7 +91,7 @@ ProjectConfigManager.prototype.__initialize = function(config) {
     return;
   }
 
-  var exception = this.__handleNewDatafile(config.datafile);
+  var handleNewDatafileException = this.__handleNewDatafile(config.datafile);
 
   if (config.sdkKey) {
     var datafileManagerConfig = {
@@ -100,7 +100,7 @@ ProjectConfigManager.prototype.__initialize = function(config) {
     if (this.__validateDatafileOptions(config.datafileOptions)) {
       fns.assign(datafileManagerConfig, config.datafileOptions);
     }
-    if (config.datafile && !exception) {
+    if (!handleNewDatafileException) {
       datafileManagerConfig.datafile = projectConfig.toDatafile(this.__configObj)
     }
     this.datafileManager = new HttpPollingDatafileManager(datafileManagerConfig);
@@ -116,7 +116,7 @@ ProjectConfigManager.prototype.__initialize = function(config) {
   } else {
     this.__readyPromise = Promise.resolve({
       success: false,
-      reason: getErrorMessage(exception, 'Invalid datafile'),
+      reason: getErrorMessage(handleNewDatafileException, 'Invalid datafile'),
     });
   }
 };
@@ -180,6 +180,14 @@ ProjectConfigManager.prototype.__validateDatafileOptions = function(datafileOpti
   return false;
 };
 
+/**
+ * Handle new datafile by attemping to create a new Project Config object. If successful,
+ * sets the project config and optimizely config object instance variables and returns null
+ * for the error. If unsuccessful, the project config and optimizely config objects will 
+ * not be updated, and the error is returned.
+ * @param   {Object|string} newDatafile
+ * @returns {Error|null}    error
+ */
 ProjectConfigManager.prototype.__handleNewDatafile = function(newDatafile) {
   var { configObj, error } = projectConfig.tryCreatingProjectConfig({
     datafile: newDatafile,
@@ -190,7 +198,7 @@ ProjectConfigManager.prototype.__handleNewDatafile = function(newDatafile) {
     logger.error(error);
   } else {
     this.__configObj = configObj;
-    this.__optimizelyConfigObj = new optimizelyConfig.OptimizelyConfig(this.__configObj, projectConfig.toDatafile(this.__configObj));
+    this.__optimizelyConfigObj = new OptimizelyConfig(this.__configObj, projectConfig.toDatafile(this.__configObj));
     this.__updateListeners.forEach(function(listener) {
       listener(configObj);
     });

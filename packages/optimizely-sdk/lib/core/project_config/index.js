@@ -514,7 +514,7 @@ export var getTypeCastValue = function(variableValue, variableType, logger) {
 /**
  * Returns an object containing all audiences in the project config. Keys are audience IDs
  * and values are audience objects.
- * @param projectConfig
+ * @param   {Object} projectConfig
  * @returns {Object}
  */
 export var getAudiencesById = function(projectConfig) {
@@ -523,8 +523,8 @@ export var getAudiencesById = function(projectConfig) {
 
 /**
  * Returns true if an event with the given key exists in the datafile, and false otherwise
- * @param {Object} projectConfig
- * @param {string} eventKey
+ * @param   {Object} projectConfig
+ * @param   {string} eventKey
  * @returns {boolean}
  */
 export var eventWithKeyExists = function(projectConfig, eventKey) {
@@ -544,17 +544,17 @@ export var isFeatureExperiment = function(projectConfig, experimentId) {
 
 /**
  *
- * @param {Object} projectConfig
- * @returns {string} Datafile
+ * @param   {Object} projectConfig
+ * @returns {string} datafile
  */
-export function toDatafile(projectConfig) {
+export var toDatafile = function(projectConfig) {
   return projectConfig.__datafileStr;
 }
 
 /**
- * @typedef {Object} TryCreatingProjectConfigResult
- * @property {Object|null} configObj
- * @property {Error|null} error
+ * @typedef   {Object}      TryCreatingProjectConfigResult
+ * @property  {Object|null} configObj
+ * @property  {Error|null}  error
  */
 
 /**
@@ -563,10 +563,10 @@ export function toDatafile(projectConfig) {
  * Returns an object with configObj and error properties.
  * If successful, configObj is the project config object, and error is null.
  * Otherwise, configObj is null and error is an error with more information.
- * @param  {Object} config
- * @param  {Object} config.datafile
- * @param  {Object} config.jsonSchemaValidator
- * @return {TryCreatingProjectConfigResult}
+ * @param   {Object}         config
+ * @param   {Object|string}  config.datafile
+ * @param   {Object}         config.jsonSchemaValidator
+ * @returns {TryCreatingProjectConfigResult}
  */
 export var tryCreatingProjectConfig = function(config) {
   var newDatafileObj;
@@ -585,7 +585,7 @@ export var tryCreatingProjectConfig = function(config) {
     }
   }
 
-  var newConfigObj = this.createProjectConfig(config.datafile);
+  var newConfigObj = this.createProjectConfig(newDatafileObj);
   return {
     configObj: newConfigObj,
     error: null,
@@ -614,6 +614,6 @@ export default {
   getAudiencesById: getAudiencesById,
   eventWithKeyExists: eventWithKeyExists,
   isFeatureExperiment: isFeatureExperiment,
-  toDatafile,
+  toDatafile: toDatafile,
   tryCreatingProjectConfig: tryCreatingProjectConfig,
 };
