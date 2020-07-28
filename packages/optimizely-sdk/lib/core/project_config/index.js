@@ -18,7 +18,6 @@ import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 import fns from '../../utils/fns';
 import {
   ERROR_MESSAGES,
-  LOG_MESSAGES,
   LOG_LEVEL,
   FEATURE_VARIABLE_TYPES,
 } from '../../utils/enums';
@@ -58,13 +57,14 @@ function createMutationSafeDatafileCopy(datafile) {
 
 /**
  * Creates projectConfig object to be used for quick project property lookup
- * @param  {Object} datafile JSON datafile representing the project
- * @return {Object} Object representing project configuration
+ * @param  {Object}   datafileObj JSON datafile representing the project
+ * @param  {String=}  datafilStr  JSON string representation of the datafile
+ * @return {Object}   Object representing project configuration
  */
-export var createProjectConfig = function(datafile) {
-  var projectConfig = createMutationSafeDatafileCopy(datafile);
+export var createProjectConfig = function(datafileObj, datafileStr=null) {
+  var projectConfig = createMutationSafeDatafileCopy(datafileObj);
 
-  projectConfig.__datafileStr = JSON.stringify(datafile);
+  projectConfig.__datafileStr = datafileStr === null ? JSON.stringify(datafileObj) : datafileStr;
 
   /*
    * Conditions of audiences in projectConfig.typedAudiences are not
@@ -532,20 +532,19 @@ export var eventWithKeyExists = function(projectConfig, eventKey) {
 };
 
 /**
- *
+ * Returns true if experiment belongs to any feature, false otherwise.
  * @param {Object} projectConfig
  * @param {string} experimentId
- * @returns {boolean} Returns true if experiment belongs to
- * any feature, false otherwise.
+ * @returns {boolean} 
  */
 export var isFeatureExperiment = function(projectConfig, experimentId) {
   return projectConfig.experimentFeatureMap.hasOwnProperty(experimentId);
 };
 
 /**
- *
+ * Returns the JSON string representation of the datafile
  * @param   {Object} projectConfig
- * @returns {string} datafile
+ * @returns {string}
  */
 export var toDatafile = function(projectConfig) {
   return projectConfig.__datafileStr;
@@ -585,7 +584,13 @@ export var tryCreatingProjectConfig = function(config) {
     }
   }
 
-  var newConfigObj = this.createProjectConfig(newDatafileObj);
+  var createProjectConfigArgs = [newDatafileObj];
+  if (typeof config.datafile === 'string') {
+    // Since config.datafile was validated above, we know that it is a valid JSON string
+    createProjectConfigArgs.push(config.datafile);
+  }
+  var newConfigObj = this.createProjectConfig(...createProjectConfigArgs);
+
   return {
     configObj: newConfigObj,
     error: null,

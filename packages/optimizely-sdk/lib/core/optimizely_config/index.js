@@ -15,6 +15,16 @@
  */
 import { isFeatureExperiment } from '../project_config';
 
+// Get Experiment Ids which are part of rollouts
+function getRolloutExperimentIds(rollouts) {
+  return (rollouts || []).reduce(function(experimentIds, rollout) {
+    rollout.experiments.forEach(function(e) {
+      experimentIds[e.id] = true;
+    });
+    return experimentIds;
+  }, {});
+}
+
 // Gets Map of all experiments except rollouts
 function getExperimentsMap(configObj) {
   var rolloutExperimentIds = getRolloutExperimentIds(configObj.rollouts);
@@ -42,31 +52,6 @@ function getExperimentsMap(configObj) {
       };
     }
     return experiments;
-  }, {});
-}
-
-// Gets map of all experiments
-function getFeaturesMap(configObj, allExperiments) {
-  return (configObj.featureFlags || []).reduce(function(features, feature) {
-    features[feature.key] = {
-      id: feature.id,
-      key: feature.key,
-      experimentsMap: (feature.experimentIds || []).reduce(function(experiments, experimentId) {
-        var experimentKey = configObj.experimentIdMap[experimentId].key;
-        experiments[experimentKey] = allExperiments[experimentKey];
-        return experiments;
-      }, {}),
-      variablesMap: (feature.variables || []).reduce(function(variables, variable) {
-        variables[variable.key] = {
-          id: variable.id,
-          key: variable.key,
-          type: variable.type,
-          value: variable.defaultValue,
-        };
-        return variables;
-      }, {}),
-    };
-    return features;
   }, {});
 }
 
@@ -100,13 +85,28 @@ function getMergedVariablesMap(configObj, variation, experimentId, featureVariab
   return variablesObject;
 }
 
-// Get Experiment Ids which are part of rollouts
-function getRolloutExperimentIds(rollouts) {
-  return (rollouts || []).reduce(function(experimentIds, rollout) {
-    rollout.experiments.forEach(function(e) {
-      experimentIds[e.id] = true;
-    });
-    return experimentIds;
+// Gets map of all experiments
+function getFeaturesMap(configObj, allExperiments) {
+  return (configObj.featureFlags || []).reduce(function(features, feature) {
+    features[feature.key] = {
+      id: feature.id,
+      key: feature.key,
+      experimentsMap: (feature.experimentIds || []).reduce(function(experiments, experimentId) {
+        var experimentKey = configObj.experimentIdMap[experimentId].key;
+        experiments[experimentKey] = allExperiments[experimentKey];
+        return experiments;
+      }, {}),
+      variablesMap: (feature.variables || []).reduce(function(variables, variable) {
+        variables[variable.key] = {
+          id: variable.id,
+          key: variable.key,
+          type: variable.type,
+          value: variable.defaultValue,
+        };
+        return variables;
+      }, {}),
+    };
+    return features;
   }, {});
 }
 
@@ -122,6 +122,10 @@ export function OptimizelyConfig(configObj, datafile) {
   this.__datafile = datafile;
 }
 
+/**
+ * Get the datafile
+ * @returns {string} JSON string representation of the datafile associated with the current config object
+ */
 OptimizelyConfig.prototype.getDatafile = function() {
   return this.__datafile;
 }
