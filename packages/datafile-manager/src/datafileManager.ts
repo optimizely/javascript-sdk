@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import PersistentKeyValueCache from './persistentKeyValueCache';
+import { PersistentKeyValueCache } from '@optimizely/js-sdk-utils';
 
 export interface DatafileUpdate {
-  datafile: object;
+  datafile: string;
 }
 
 export interface DatafileUpdateListener {
@@ -31,14 +31,14 @@ interface Managed {
 }
 
 export interface DatafileManager extends Managed {
-  get: () => object | null;
+  get: () => string | null;
   on: (eventName: string, listener: DatafileUpdateListener) => () => void;
   onReady: () => Promise<void>;
 }
 
 export interface DatafileManagerConfig {
   autoUpdate?: boolean;
-  datafile?: object;
+  datafile?: string;
   sdkKey: string;
   updateInterval?: number;
   urlTemplate?: string;
