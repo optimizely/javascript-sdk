@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.7.0] - July  28, 2020
+
+### Changed
+
+- Move react native async storage implementation to datafile manager
+
 ## [0.6.0] - June 8, 2020
 
 ### New Features
