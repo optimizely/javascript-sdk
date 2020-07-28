@@ -18,7 +18,7 @@ import HttpPollingDatafileManager from '../src/httpPollingDatafileManager';
 import { Headers, AbortableRequest, Response } from '../src/http';
 import { DatafileManagerConfig } from '../src/datafileManager';
 import { advanceTimersByTime, getTimerCount } from './testUtils';
-import { PersistentKeyValueCache } from '@optimizely/js-sdk-utils';
+import PersistentKeyValueCache from '../src/persistentKeyValueCache';
 
 jest.mock('../src/backoffController', () => {
   return jest.fn().mockImplementation(() => {
