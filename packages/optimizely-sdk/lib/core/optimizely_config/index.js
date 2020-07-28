@@ -124,7 +124,7 @@ export function OptimizelyConfig(configObj, datafile) {
 
 /**
  * Get the datafile
- * @returns {string} JSON string representation of the datafile associated with the current config object
+ * @returns {string} JSON string representation of the datafile that was used to create the current config object
  */
 OptimizelyConfig.prototype.getDatafile = function() {
   return this.__datafile;

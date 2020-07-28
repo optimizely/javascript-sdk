@@ -57,8 +57,8 @@ function createMutationSafeDatafileCopy(datafile) {
 
 /**
  * Creates projectConfig object to be used for quick project property lookup
- * @param  {Object}   datafileObj JSON datafile representing the project
- * @param  {String=}  datafilStr  JSON string representation of the datafile
+ * @param  {Object}   datafileObj   JSON datafile representing the project
+ * @param  {string=}  datafileStr   JSON string representation of the datafile
  * @return {Object}   Object representing project configuration
  */
 export var createProjectConfig = function(datafileObj, datafileStr=null) {
