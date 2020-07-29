@@ -31,7 +31,7 @@ interface Managed {
 }
 
 export interface DatafileManager extends Managed {
-  get: () => string | null;
+  get: () => string;
   on: (eventName: string, listener: DatafileUpdateListener) => () => void;
   onReady: () => Promise<void>;
 }
