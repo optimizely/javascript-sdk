@@ -62,7 +62,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
   // Return any default configuration options that should be applied
   protected abstract getConfigDefaults(): Partial<DatafileManagerConfig>;
 
-  private currentDatafile: string | null;
+  private currentDatafile: string;
 
   private readonly readyPromise: Promise<void>;
 
@@ -130,7 +130,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
         this.resolveReadyPromise();
       }
     } else {
-      this.currentDatafile = null;
+      this.currentDatafile = '';
     }
 
     this.isStarted = false;
@@ -151,7 +151,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     this.syncOnCurrentRequestComplete = false;
   }
 
-  get(): string | null {
+  get(): string {
     return this.currentDatafile;
   }
 
@@ -221,7 +221,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     this.trySavingLastModified(response.headers);
 
     const datafile = this.getNextDatafileFromResponse(response);
-    if (datafile !== null) {
+    if (datafile !== '') {
       logger.info('Updating datafile from response');
       this.currentDatafile = datafile;
       this.cache.set(this.cacheKey, datafile);
@@ -304,18 +304,18 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     }, nextUpdateDelay);
   }
 
-  private getNextDatafileFromResponse(response: Response): string | null {
+  private getNextDatafileFromResponse(response: Response): string {
     logger.debug('Response status code: %s', response.statusCode);
     if (typeof response.statusCode === 'undefined') {
-      return null;
+      return '';
     }
     if (response.statusCode === 304) {
-      return null;
+      return '';
     }
     if (isSuccessStatusCode(response.statusCode)) {
       return response.body;
     }
-    return null;
+    return '';
   }
 
   private trySavingLastModified(headers: Headers): void {
