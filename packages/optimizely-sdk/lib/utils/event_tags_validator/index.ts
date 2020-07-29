@@ -25,7 +25,7 @@ const MODULE_NAME = 'EVENT_TAGS_VALIDATOR';
 
 /**
  * Validates user's provided event tags
- * @param  {object}  eventTags
+ * @param  {unknown}  eventTags
  * @return {boolean} true if event tags are valid
  * @throws If event tags are not valid
  */

@@ -26,17 +26,19 @@ const MODULE_NAME = 'USER_PROFILE_SERVICE_VALIDATOR';
 
 /**
  * Validates user's provided user profile service instance
- * @param  {object}  userProfileServiceInstance
+ * @param  {unknown}  userProfileServiceInstance
  * @return {boolean} true if the instance is valid
  * @throws If the instance is not valid
  */
 
-//TODO: Use defined UserProfileService interface instead of 'Record<string, unknown>'
-export function validate(userProfileServiceInstance: Record<string, unknown>): boolean {
-  if (typeof userProfileServiceInstance.lookup !== 'function') {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'lookup'"));
-  } else if (typeof userProfileServiceInstance.save !== 'function') {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'save'"));
+export function validate(userProfileServiceInstance: unknown): boolean {
+  if (typeof userProfileServiceInstance === 'object' && userProfileServiceInstance !== null) {
+    if (typeof userProfileServiceInstance['lookup'] !== 'function') {
+      throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'lookup'"));
+    } else if (typeof userProfileServiceInstance['save'] !== 'function') {
+      throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'save'"));
+    }
+    return true;
   }
-  return true;
+  throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME));
 }
