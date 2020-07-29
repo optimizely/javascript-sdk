@@ -23,15 +23,15 @@ const MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';
 
 /**
  * Validate the given json object against the specified schema
- * @param  {object} jsonObject The object to validate against the schema
- * @return {boolean}           true if the given object is valid
+ * @param  {unknown} jsonObject The object to validate against the schema
+ * @return {boolean}            true if the given object is valid
  */
-export function validate(jsonObject: JSON): boolean {
+export function validate(jsonObject: unknown): boolean {
   if (!jsonObject) {
     throw new Error(sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, MODULE_NAME));
   }
 
-  const result = jsonSchemaValidator(jsonObject, schema);
+  const result = jsonSchemaValidator(jsonObject as {}, schema);
   if (result.valid) {
     return true;
   } else {
