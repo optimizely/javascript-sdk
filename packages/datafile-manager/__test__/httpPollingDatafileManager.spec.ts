@@ -109,7 +109,7 @@ describe('httpPollingDatafileManager', () => {
 
   describe('when constructed with sdkKey and datafile and autoUpdate: true,', () => {
     beforeEach(() => {
-      manager = new TestDatafileManager({ datafile: { foo: 'abcd' }, sdkKey: '123', autoUpdate: true });
+      manager = new TestDatafileManager({ datafile: JSON.stringify({ foo: 'abcd' }), sdkKey: '123', autoUpdate: true });
     });
 
     it('returns the passed datafile from get', () => {
@@ -149,11 +149,11 @@ describe('httpPollingDatafileManager', () => {
 
   describe('when constructed with sdkKey and datafile and autoUpdate: false,', () => {
     beforeEach(() => {
-      manager = new TestDatafileManager({ datafile: { foo: 'abcd' }, sdkKey: '123', autoUpdate: false });
+      manager = new TestDatafileManager({ datafile: JSON.stringify({ foo: 'abcd' }), sdkKey: '123', autoUpdate: false });
     });
 
     it('returns the passed datafile from get', () => {
-      expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
+      expect(JSON.parse(manager.get())).toEqual({ foo: 'abcd' });
     });
 
     it('after being started, fetches the datafile, updates itself once, but does not schedule a future update', async () => {
