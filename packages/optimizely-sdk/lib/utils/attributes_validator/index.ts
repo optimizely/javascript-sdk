@@ -22,15 +22,12 @@ const MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
 
 /**
  * Validates user's provided attributes
- * @param  {object}  attributes
- * @return {boolean} true if the attributes are valid
+ * @param  {unknown}  attributes
+ * @return {boolean}  true if the attributes are valid
  * @throws If the attributes are not valid
  */
-type Attributes = {
-  [key: string]: string | number | boolean
-}
 
-export function validate(attributes: Attributes): boolean {
+export function validate(attributes: unknown): boolean {
   if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
     Object.keys(attributes).forEach(function(key) {
       if (typeof attributes[key] === 'undefined') {
@@ -45,11 +42,11 @@ export function validate(attributes: Attributes): boolean {
 
 /**
  * Validates user's provided attribute
- * @param  {string}  attributeKey
- * @param  {string | boolean | number}  attributeValue
+ * @param  {unknown}  attributeKey
+ * @param  {unknown}  attributeValue
  * @return {boolean}  true if the attribute is valid
  */
-export function isAttributeValid(attributeKey: string, attributeValue: string | boolean | number): boolean {
+export function isAttributeValid(attributeKey: unknown, attributeValue: unknown): boolean {
   return (
     typeof attributeKey === 'string' &&
     (typeof attributeValue === 'string' ||
