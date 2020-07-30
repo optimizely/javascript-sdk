@@ -17,7 +17,7 @@ import { getLogger } from '@optimizely/js-sdk-logging';
 
 import fns from '../../utils/fns';
 import projectConfig from '../project_config';
-import eventTagUtils from '../../utils/event_tag_utils';
+import * as eventTagUtils from '../../utils/event_tag_utils';
 import attributesValidator from'../../utils/attributes_validator';
 
 var logger = getLogger('EVENT_BUILDER');

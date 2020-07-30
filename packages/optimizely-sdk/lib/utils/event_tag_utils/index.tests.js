@@ -16,7 +16,7 @@
 import sinon from 'sinon';
 import { assert } from 'chai';
 
-import eventTagUtils from './';
+import * as eventTagUtils from './';
 
 describe('lib/utils/event_tag_utils', function() {
   var mockLogger;
