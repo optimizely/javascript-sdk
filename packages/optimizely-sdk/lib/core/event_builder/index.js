@@ -16,7 +16,7 @@
 import fns from '../../utils/fns';
 import enums from '../../utils/enums';
 import projectConfig from '../project_config';
-import eventTagUtils from '../../utils/event_tag_utils';
+import * as eventTagUtils from '../../utils/event_tag_utils';
 import * as attributeValidator from '../../utils/attributes_validator';
 
 var ACTIVATE_EVENT_KEY = 'campaign_activated';
