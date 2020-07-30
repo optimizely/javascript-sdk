@@ -15,7 +15,7 @@
  */
 import { sprintf } from '@optimizely/js-sdk-utils';
 
-import { EventTags } from '../../../../event-processor/src/events';
+import { EventTags } from '@optimizely/js-sdk-event-processor';
 import { LoggerFacade } from '@optimizely/js-sdk-logging';
 
 import {
@@ -31,9 +31,6 @@ const MODULE_NAME = 'EVENT_TAG_UTILS';
 const REVENUE_EVENT_METRIC_NAME = RESERVED_EVENT_KEYWORDS.REVENUE;
 const VALUE_EVENT_METRIC_NAME = RESERVED_EVENT_KEYWORDS.VALUE;
 
-let parsedRevenueValue;
-let parsedEventValue;
-
 /**
  * Grab the revenue value from the event tags. "revenue" is a reserved keyword.
  * @param {EventTags} eventTags
@@ -43,6 +40,7 @@ let parsedEventValue;
 export function getRevenueValue(eventTags: EventTags, logger: LoggerFacade): number | null {
   if (eventTags.hasOwnProperty(REVENUE_EVENT_METRIC_NAME)) {
     const rawValue = eventTags[REVENUE_EVENT_METRIC_NAME];
+    let parsedRevenueValue;
     if (typeof rawValue === 'string') {
       parsedRevenueValue = parseInt(rawValue);
       if (isNaN(parsedRevenueValue)) {
@@ -71,6 +69,7 @@ export function getRevenueValue(eventTags: EventTags, logger: LoggerFacade): num
 export function getEventValue(eventTags: EventTags, logger: LoggerFacade): number | null {
   if (eventTags.hasOwnProperty(VALUE_EVENT_METRIC_NAME)) {
     const rawValue = eventTags[VALUE_EVENT_METRIC_NAME];
+    let parsedEventValue;
     if (typeof rawValue === 'string') {
       parsedEventValue = parseFloat(rawValue);
       if (isNaN(parsedEventValue)) {
