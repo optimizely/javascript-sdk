@@ -25,7 +25,7 @@ import { ERROR_MESSAGES, LOG_MESSAGES } from '../../utils/enums';
 import testData from '../../tests/test_data';
 import * as optimizelyConfig from '../optimizely_config/index';
 import projectConfigManager from './project_config_manager';
-import jsonSchemaValidator from '../../utils/json_schema_validator';
+import * as jsonSchemaValidator from '../../utils/json_schema_validator';
 
 describe('lib/core/project_config/project_config_manager', function() {
   var globalStubErrorHandler;
