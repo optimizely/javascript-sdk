@@ -31,6 +31,9 @@ const MODULE_NAME = 'EVENT_TAG_UTILS';
 const REVENUE_EVENT_METRIC_NAME = RESERVED_EVENT_KEYWORDS.REVENUE;
 const VALUE_EVENT_METRIC_NAME = RESERVED_EVENT_KEYWORDS.VALUE;
 
+let parsedRevenueValue;
+let parsedEventValue;
+
 /**
  * Grab the revenue value from the event tags. "revenue" is a reserved keyword.
  * @param {EventTags} eventTags
@@ -40,14 +43,21 @@ const VALUE_EVENT_METRIC_NAME = RESERVED_EVENT_KEYWORDS.VALUE;
 export function getRevenueValue(eventTags: EventTags, logger: LoggerFacade): number | null {
   if (eventTags && eventTags.hasOwnProperty(REVENUE_EVENT_METRIC_NAME)) {
     const rawValue = eventTags[REVENUE_EVENT_METRIC_NAME];
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const parsedRevenueValue = parseInt(rawValue as any);
-    if (isNaN(parsedRevenueValue)) {
-      logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FAILED_TO_PARSE_REVENUE, MODULE_NAME, rawValue));
-      return null;
+    if (typeof rawValue === 'string') {
+      parsedRevenueValue = parseInt(rawValue);
+      if (isNaN(parsedRevenueValue)) {
+        logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FAILED_TO_PARSE_REVENUE, MODULE_NAME, rawValue));
+        return null;
+      }
+      logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.PARSED_REVENUE_VALUE, MODULE_NAME, parsedRevenueValue));
+      return parsedRevenueValue;
     }
-    logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.PARSED_REVENUE_VALUE, MODULE_NAME, parsedRevenueValue));
-    return parsedRevenueValue;
+    if (typeof rawValue === 'number') {
+      parsedRevenueValue = rawValue;
+      logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.PARSED_REVENUE_VALUE, MODULE_NAME, parsedRevenueValue));
+      return parsedRevenueValue;
+    }
+    return null;
   }
   return null;
 }
@@ -61,14 +71,21 @@ export function getRevenueValue(eventTags: EventTags, logger: LoggerFacade): num
 export function getEventValue(eventTags: EventTags, logger: LoggerFacade): number | null {
   if (eventTags && eventTags.hasOwnProperty(VALUE_EVENT_METRIC_NAME)) {
     const rawValue = eventTags[VALUE_EVENT_METRIC_NAME];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const parsedEventValue = parseFloat(rawValue as any);
-    if (isNaN(parsedEventValue)) {
-      logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FAILED_TO_PARSE_VALUE, MODULE_NAME, rawValue));
-      return null;
-    }
+    if (typeof rawValue === 'string') {
+      parsedEventValue = parseFloat(rawValue);
+      if (isNaN(parsedEventValue)) {
+        logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FAILED_TO_PARSE_VALUE, MODULE_NAME, rawValue));
+        return null;
+      }
     logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.PARSED_NUMERIC_VALUE, MODULE_NAME, parsedEventValue));
     return parsedEventValue;
+    }
+    if (typeof rawValue === 'number') {
+      parsedEventValue = rawValue;
+      logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.PARSED_NUMERIC_VALUE, MODULE_NAME, parsedEventValue));
+      return parsedEventValue;
+    }
+    return null;
   }
   return null;
 }
