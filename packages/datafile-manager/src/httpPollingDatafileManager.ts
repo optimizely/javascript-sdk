@@ -328,7 +328,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
   }
 
   setDatafileFromCacheIfAvailable(): void {
-    this.cache.get(this.cacheKey).then((datafile) => {
+    this.cache.get(this.cacheKey).then(datafile => {
       if (this.isStarted && !this.isReadyPromiseSettled && datafile) {
         logger.debug('Using datafile from cache');
         this.currentDatafile = datafile;

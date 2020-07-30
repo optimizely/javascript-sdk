@@ -149,7 +149,11 @@ describe('httpPollingDatafileManager', () => {
 
   describe('when constructed with sdkKey and datafile and autoUpdate: false,', () => {
     beforeEach(() => {
-      manager = new TestDatafileManager({ datafile: JSON.stringify({ foo: 'abcd' }), sdkKey: '123', autoUpdate: false });
+      manager = new TestDatafileManager({
+        datafile: JSON.stringify({ foo: 'abcd' }),
+        sdkKey: '123',
+        autoUpdate: false,
+      });
     });
 
     it('returns the passed datafile from get', () => {
