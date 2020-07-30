@@ -106,6 +106,14 @@ export var buildConversionEvent = function(config) {
   var eventTags = config.eventTags;
   var eventId = projectConfig.getEventId(configObj, eventKey);
 
+  let revenue = null;
+  let eventValue = null;
+
+  if (eventTags) {
+    revenue = eventTagUtils.getRevenueValue(eventTags, logger);
+    eventValue = eventTagUtils.getEventValue(eventTags, logger);
+  }
+
   return {
     type: 'conversion',
     timestamp: fns.currentTimestamp(),
@@ -131,8 +139,8 @@ export var buildConversionEvent = function(config) {
       key: eventKey,
     },
 
-    revenue: eventTagUtils.getRevenueValue(eventTags, logger),
-    value: eventTagUtils.getEventValue(eventTags, logger),
+    revenue: revenue,
+    value: eventValue,
     tags: eventTags,
   };
 };

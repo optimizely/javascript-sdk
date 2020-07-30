@@ -16,7 +16,7 @@
 import { sprintf } from '@optimizely/js-sdk-utils';
 
 import { EventTags } from '../../../../event-processor/src/events';
-import { LoggerFacade } from '../../../../logging/src/models';
+import { LoggerFacade } from '@optimizely/js-sdk-logging';
 
 import {
   LOG_LEVEL,
@@ -41,7 +41,7 @@ let parsedEventValue;
  * @return {number|null}
  */
 export function getRevenueValue(eventTags: EventTags, logger: LoggerFacade): number | null {
-  if (eventTags && eventTags.hasOwnProperty(REVENUE_EVENT_METRIC_NAME)) {
+  if (eventTags.hasOwnProperty(REVENUE_EVENT_METRIC_NAME)) {
     const rawValue = eventTags[REVENUE_EVENT_METRIC_NAME];
     if (typeof rawValue === 'string') {
       parsedRevenueValue = parseInt(rawValue);
@@ -69,7 +69,7 @@ export function getRevenueValue(eventTags: EventTags, logger: LoggerFacade): num
  * @return {number|null}
  */
 export function getEventValue(eventTags: EventTags, logger: LoggerFacade): number | null {
-  if (eventTags && eventTags.hasOwnProperty(VALUE_EVENT_METRIC_NAME)) {
+  if (eventTags.hasOwnProperty(VALUE_EVENT_METRIC_NAME)) {
     const rawValue = eventTags[VALUE_EVENT_METRIC_NAME];
     if (typeof rawValue === 'string') {
       parsedEventValue = parseFloat(rawValue);
