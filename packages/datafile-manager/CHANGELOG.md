@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+### Changed
+
+- Modified datafile manager to accept, process, and return the datafile's string representation instead of the datafile object.
+- Remove JSON parsing of response received from datafile fetch request
+  - Responsibility of validating the datafile now solely belongs to the project config manager
+
 ## [0.7.0] - July 28, 2020
 
 ### Changed
