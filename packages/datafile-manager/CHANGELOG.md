@@ -12,6 +12,7 @@ Changes that have landed but are not yet released.
 - Modified datafile manager to accept, process, and return the datafile's string representation instead of the datafile object.
 - Remove JSON parsing of response received from datafile fetch request
   - Responsibility of validating the datafile now solely belongs to the project config manager
+- Modified React Native async storage cache and persistent value cache implementation to store strings instead of objects as values.
 
 ## [0.7.0] - July 28, 2020
 
