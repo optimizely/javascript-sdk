@@ -17,8 +17,8 @@ import { getLogger } from '@optimizely/js-sdk-logging';
 
 import fns from '../../utils/fns';
 import projectConfig from '../project_config';
-import eventTagUtils from '../../utils/event_tag_utils';
-import attributesValidator from'../../utils/attributes_validator';
+import * as eventTagUtils from '../../utils/event_tag_utils';
+import * as attributesValidator from'../../utils/attributes_validator';
 
 var logger = getLogger('EVENT_BUILDER');
 
@@ -106,6 +106,14 @@ export var buildConversionEvent = function(config) {
   var eventTags = config.eventTags;
   var eventId = projectConfig.getEventId(configObj, eventKey);
 
+  let revenue = null;
+  let eventValue = null;
+
+  if (eventTags) {
+    revenue = eventTagUtils.getRevenueValue(eventTags, logger);
+    eventValue = eventTagUtils.getEventValue(eventTags, logger);
+  }
+
   return {
     type: 'conversion',
     timestamp: fns.currentTimestamp(),
@@ -131,8 +139,8 @@ export var buildConversionEvent = function(config) {
       key: eventKey,
     },
 
-    revenue: eventTagUtils.getRevenueValue(eventTags, logger),
-    value: eventTagUtils.getEventValue(eventTags, logger),
+    revenue: revenue,
+    value: eventValue,
     tags: eventTags,
   };
 };

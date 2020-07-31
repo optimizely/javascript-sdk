@@ -16,13 +16,9 @@
 
 /**
  * Validates provided value is a non-empty string
- * @param  {string}  input
- * @return {boolean} True for non-empty string, false otherwise
+ * @param  {unknown}  input
+ * @return {boolean}  true for non-empty string, false otherwise
  */
-export var validate = function(input) {
+export function validate(input: unknown): boolean {
   return typeof input === 'string' && input !== '';
-};
-
-export default {
-  validate: validate,
-};
+}

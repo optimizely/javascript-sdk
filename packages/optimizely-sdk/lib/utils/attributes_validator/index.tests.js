@@ -16,7 +16,7 @@
 import { assert } from 'chai';
 import { sprintf } from '@optimizely/js-sdk-utils';
 
-import attributesValidator from './';
+import * as attributesValidator from './';
 import { ERROR_MESSAGES } from '../enums';
 
 describe('lib/utils/attributes_validator', function() {
