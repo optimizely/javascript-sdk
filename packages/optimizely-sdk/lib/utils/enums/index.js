@@ -172,7 +172,7 @@ export var CONTROL_ATTRIBUTES = {
 export var JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 export var NODE_CLIENT_ENGINE = 'node-sdk';
 export var REACT_CLIENT_ENGINE = 'react-sdk';
-export var NODE_CLIENT_VERSION = '4.1.0';
+export var NODE_CLIENT_VERSION = '4.2.0';
 
 export var VALID_CLIENT_ENGINES = [
   NODE_CLIENT_ENGINE,
