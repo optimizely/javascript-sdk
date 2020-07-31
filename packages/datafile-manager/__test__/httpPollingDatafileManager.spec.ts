@@ -69,11 +69,11 @@ class TestDatafileManager extends HttpPollingDatafileManager {
 }
 
 const testCache: PersistentKeyValueCache = {
-  get(key: string): Promise<any | null> {
-    let val = null;
+  get(key: string): Promise<string> {
+    let val = '';
     switch (key) {
       case 'opt-datafile-keyThatExists':
-        val = { name: 'keyThatExists' };
+        val = JSON.stringify({ name: 'keyThatExists' });
         break;
     }
     return Promise.resolve(val);
@@ -640,9 +640,9 @@ describe('httpPollingDatafileManager', () => {
       manager.on('update', updateFn);
       manager.start();
       await manager.onReady();
-      expect(manager.get()).toEqual({ name: 'keyThatExists' });
+      expect(JSON.parse(manager.get())).toEqual({ name: 'keyThatExists' });
       await advanceTimersByTime(50);
-      expect(manager.get()).toEqual({ name: 'keyThatExists' });
+      expect(JSON.parse(manager.get())).toEqual({ name: 'keyThatExists' });
       expect(updateFn).toBeCalledTimes(0);
     });
 
@@ -657,7 +657,7 @@ describe('httpPollingDatafileManager', () => {
       manager.on('update', updateFn);
       manager.start();
       await manager.onReady();
-      expect(manager.get()).toEqual({ name: 'keyThatExists' });
+      expect(JSON.parse(manager.get())).toEqual({ name: 'keyThatExists' });
       expect(updateFn).toBeCalledTimes(0);
       await advanceTimersByTime(50);
       expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });

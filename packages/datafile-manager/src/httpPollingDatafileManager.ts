@@ -36,8 +36,8 @@ function isSuccessStatusCode(statusCode: number): boolean {
 }
 
 const noOpKeyValueCache: PersistentKeyValueCache = {
-  get(): Promise<any | null> {
-    return Promise.resolve(null);
+  get(): Promise<string> {
+    return Promise.resolve('');
   },
 
   set(): Promise<void> {
@@ -329,7 +329,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
 
   setDatafileFromCacheIfAvailable(): void {
     this.cache.get(this.cacheKey).then(datafile => {
-      if (this.isStarted && !this.isReadyPromiseSettled && datafile) {
+      if (this.isStarted && !this.isReadyPromiseSettled && datafile !== '') {
         logger.debug('Using datafile from cache');
         this.currentDatafile = datafile;
         this.resolveReadyPromise();

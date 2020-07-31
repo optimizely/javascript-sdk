@@ -14,35 +14,22 @@
  * limitations under the License.
  */
 
-import { getLogger } from '@optimizely/js-sdk-logging';
 import AsyncStorage from '@react-native-community/async-storage';
 
 import PersistentKeyValueCache from './persistentKeyValueCache';
 
-const logger = getLogger('DatafileManager');
-
 export default class ReactNativeAsyncStorageCache implements PersistentKeyValueCache {
-  get(key: string): Promise<any | null> {
+  get(key: string): Promise<string> {
     return AsyncStorage.getItem(key).then((val: string | null) => {
       if (!val) {
-        return null;
+        return '';
       }
-      try {
-        return JSON.parse(val);
-      } catch (ex) {
-        logger.error('Error Parsing Object from cache - %s', ex);
-        throw ex;
-      }
+      return val;
     });
   }
 
-  set(key: string, val: any): Promise<void> {
-    try {
-      return AsyncStorage.setItem(key, JSON.stringify(val));
-    } catch (ex) {
-      logger.error('Error stringifying Object to Json - %s', ex);
-      return Promise.reject(ex);
-    }
+  set(key: string, val: string): Promise<void> {
+    return AsyncStorage.setItem(key, val);
   }
 
   contains(key: string): Promise<boolean> {
