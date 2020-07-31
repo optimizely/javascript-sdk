@@ -75,27 +75,18 @@ describe('lib/core/bucketer', function() {
           expect(bucketer.bucket(bucketerParamsTest1)).to.equal('111128');
 
           var bucketedUser_log1 = createdLogger.log.args[0][1];
-          var bucketedUser_log2 = createdLogger.log.args[1][1];
-
           expect(bucketedUser_log1).to.equal(
-            sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, 'BUCKETER', '50', 'ppid1')
-          );
-          expect(bucketedUser_log2).to.equal(
-            sprintf(LOG_MESSAGES.USER_HAS_VARIATION, 'BUCKETER', 'ppid1', 'control', 'testExperiment')
+            sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, 'BUCKETER', '50', 'ppid1')
           );
 
           var bucketerParamsTest2 = cloneDeep(bucketerParams);
           bucketerParamsTest2.userId = 'ppid2';
           expect(bucketer.bucket(bucketerParamsTest2)).to.equal(null);
 
-          var notBucketedUser_log1 = createdLogger.log.args[2][1];
-          var notBucketedUser_log2 = createdLogger.log.args[3][1];
+          var notBucketedUser_log1 = createdLogger.log.args[1][1];
 
           expect(notBucketedUser_log1).to.equal(
-            sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, 'BUCKETER', '50000', 'ppid2')
-          );
-          expect(notBucketedUser_log2).to.equal(
-            sprintf(LOG_MESSAGES.USER_HAS_NO_VARIATION, 'BUCKETER', 'ppid2', 'testExperiment')
+            sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, 'BUCKETER', '50000', 'ppid2')
           );
         });
       });
@@ -142,7 +133,7 @@ describe('lib/core/bucketer', function() {
             expect(bucketer.bucket(bucketerParams)).to.equal('551');
 
             sinon.assert.calledTwice(bucketerStub);
-            sinon.assert.callCount(createdLogger.log, 4);
+            sinon.assert.callCount(createdLogger.log, 3);
 
             var log1 = createdLogger.log.args[0][1];
             expect(log1).to.equal(
@@ -162,12 +153,7 @@ describe('lib/core/bucketer', function() {
 
             var log3 = createdLogger.log.args[2][1];
             expect(log3).to.equal(
-              sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, 'BUCKETER', '50', 'testUser')
-            );
-
-            var log4 = createdLogger.log.args[3][1];
-            expect(log4).to.equal(
-              sprintf(LOG_MESSAGES.USER_HAS_VARIATION, 'BUCKETER', 'testUser', 'var1exp1', 'groupExperiment1')
+              sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, 'BUCKETER', '50', 'testUser')
             );
           });
 
@@ -258,20 +244,10 @@ describe('lib/core/bucketer', function() {
             expect(bucketer.bucket(bucketerParams)).to.equal('553');
 
             sinon.assert.calledOnce(bucketerStub);
-            sinon.assert.calledTwice(createdLogger.log);
+            sinon.assert.calledOnce(createdLogger.log);
 
             var log1 = createdLogger.log.args[0][1];
-            expect(log1).to.equal(sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_VARIATION_BUCKET, 'BUCKETER', '0', 'testUser'));
-            var log2 = createdLogger.log.args[1][1];
-            expect(log2).to.equal(
-              sprintf(
-                LOG_MESSAGES.USER_HAS_VARIATION,
-                'BUCKETER',
-                'testUser',
-                'overlappingvar1',
-                'overlappingGroupExperiment1'
-              )
-            );
+            expect(log1).to.equal(sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, 'BUCKETER', '0', 'testUser'));
           });
 
           it('should return null when a user does not fall into an experiment within an overlapping group', function() {
@@ -308,7 +284,7 @@ describe('lib/core/bucketer', function() {
         it('should return null', function() {
           var bucketerParamsTest1 = cloneDeep(bucketerParams);
           bucketerParamsTest1.userId = 'ppid1';
-          expect(bucketer.bucket(bucketerParamsTest1)).to.equal('');
+          expect(bucketer.bucket(bucketerParamsTest1)).to.equal(null);
         });
       });
 

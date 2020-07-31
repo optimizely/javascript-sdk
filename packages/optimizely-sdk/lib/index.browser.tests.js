@@ -148,7 +148,7 @@ describe('javascript-sdk', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.1.0');
+        assert.equal(optlyInstance.clientVersion, '4.2.0');
       });
 
       it('should set the JavaScript client engine and version', function() {
@@ -475,7 +475,7 @@ describe('javascript-sdk', function() {
           sinon.assert.calledWithExactly(
             eventProcessorSpy,
             sinon.match({
-              maxQueueSize: 10,
+              batchSize: 10,
             })
           );
         });
@@ -500,7 +500,7 @@ describe('javascript-sdk', function() {
             sinon.assert.calledWithExactly(
               eventProcessorSpy,
               sinon.match({
-                maxQueueSize: 10,
+                batchSize: 10,
               })
             );
           });
@@ -526,7 +526,7 @@ describe('javascript-sdk', function() {
             sinon.assert.calledWithExactly(
               eventProcessorSpy,
               sinon.match({
-                maxQueueSize: 300,
+                batchSize: 300,
               })
             );
           });

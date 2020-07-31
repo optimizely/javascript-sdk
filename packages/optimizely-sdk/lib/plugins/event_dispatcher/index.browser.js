@@ -34,7 +34,7 @@ export var dispatchEvent = function(eventObj, callback) {
     req.onreadystatechange = function() {
       if (req.readyState === READYSTATE_COMPLETE && callback && typeof callback === 'function') {
         try {
-          callback(params);
+          callback({ statusCode: req.status });
         } catch (e) {
           // TODO: Log this somehow (consider adding a logger to the EventDispatcher interface)
         }

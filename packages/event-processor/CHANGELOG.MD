@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.6.0] - July 28, 2020
+
+### Fixed
+- Upgrade utils dependency version
+
+## [0.5.1] - July 22, 2020
+
+### Fixed
+- In event processor, reverted back the typescript version to fix stubbing issue
+
+## [0.5.0] - July 21, 2020
+
+### New Features
+- Added Offline storage support to Event processor for React Native Apps
+
 ## [0.4.0] - February 19, 2020
 
 ### New Features

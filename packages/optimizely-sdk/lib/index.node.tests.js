@@ -90,7 +90,7 @@ describe('optimizelyFactory', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.1.0');
+        assert.equal(optlyInstance.clientVersion, '4.2.0');
       });
 
       describe('event processor configuration', function() {
@@ -161,7 +161,7 @@ describe('optimizelyFactory', function() {
           sinon.assert.calledWithExactly(
             eventProcessorSpy,
             sinon.match({
-              maxQueueSize: 10,
+              batchSize: 10,
             })
           );
         });
@@ -176,7 +176,7 @@ describe('optimizelyFactory', function() {
           sinon.assert.calledWithExactly(
             eventProcessorSpy,
             sinon.match({
-              maxQueueSize: 10,
+              batchSize: 10,
             })
           );
         });
@@ -192,7 +192,7 @@ describe('optimizelyFactory', function() {
           sinon.assert.calledWithExactly(
             eventProcessorSpy,
             sinon.match({
-              maxQueueSize: 300,
+              batchSize: 300,
             })
           );
         });
