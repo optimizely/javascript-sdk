@@ -19,7 +19,7 @@ import { forEach, cloneDeep } from 'lodash';
 import { getLogger } from '@optimizely/js-sdk-logging';
 import { sprintf } from '@optimizely/js-sdk-utils';
 
-import fns from '../../utils/fns';
+import * as fns from '../../utils/fns';
 import projectConfig from './';
 import {
   ERROR_MESSAGES,

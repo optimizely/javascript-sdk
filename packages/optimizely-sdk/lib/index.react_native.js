@@ -22,7 +22,7 @@ import {
   LogLevel,
 } from '@optimizely/js-sdk-logging';
 
-import fns from './utils/fns';
+import * as fns from './utils/fns';
 import enums from './utils/enums';
 import Optimizely from './optimizely';
 import configValidator from './utils/config_validator';

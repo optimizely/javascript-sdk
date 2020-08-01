@@ -15,20 +15,27 @@
  */
 import { generateUUID as uuid, keyBy as keyByUtil } from '@optimizely/js-sdk-utils';
 
-var MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
+const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
-export var assign = function (target) {
+//TODO: define Target type
+type Target = {
+  [key: string]: unknown;
+};
+
+// FIX lint errors
+export function assign(target: Target, ...args: [object, ...any[]]): Target {
+  // debugger;
   if (!target) {
     return {};
   }
   if (typeof Object.assign === 'function') {
-    return Object.assign.apply(Object, arguments);
+    return Object.assign.apply(null, arguments as any);
   } else {
-    var to = Object(target);
-    for (var index = 1; index < arguments.length; index++) {
-      var nextSource = arguments[index];
+    const to = Object(target);
+    for (let index = 1; index < arguments.length; index++) {
+      const nextSource = arguments[index];
       if (nextSource !== null && nextSource !== undefined) {
-        for (var nextKey in nextSource) {
+        for (const nextKey in nextSource) {
           // Avoid bugs when hasOwnProperty is shadowed
           if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
             to[nextKey] = nextSource[nextKey];
@@ -38,34 +45,25 @@ export var assign = function (target) {
     }
     return to;
   }
-};
+}
 
-export var currentTimestamp = function () {
+export function currentTimestamp(): number {
   return Math.round(new Date().getTime());
-};
+}
 
-export var isSafeInteger = function (number) {
+export function isSafeInteger(number: unknown): boolean {
   return typeof number == 'number' && Math.abs(number) <= MAX_SAFE_INTEGER_LIMIT;
-};
+}
 
-export var keyBy = function (arr, key) {
+export function keyBy<K>(arr: K[] , key: string): object {
   if (!arr) return {};
   return keyByUtil(arr, function (item) {
     return item[key];
   });
-};
+}
 
 export { uuid };
 
-export var isNumber = function (value) {
+export function isNumber(value: unknown): boolean {
   return typeof value === 'number';
-};
-
-export default {
-  assign: assign,
-  currentTimestamp: currentTimestamp,
-  isSafeInteger: isSafeInteger,
-  keyBy: keyBy,
-  uuid: uuid,
-  isNumber: isNumber,
-};
+}

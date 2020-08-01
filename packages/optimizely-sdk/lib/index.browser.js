@@ -23,7 +23,7 @@ import {
 } from '@optimizely/js-sdk-logging';
 import { LocalStoragePendingEventsDispatcher } from '@optimizely/js-sdk-event-processor';
 
-import fns from './utils/fns';
+import * as fns from './utils/fns';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';

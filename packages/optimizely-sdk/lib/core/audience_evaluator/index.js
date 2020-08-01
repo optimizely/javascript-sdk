@@ -16,7 +16,7 @@
 import { sprintf } from '@optimizely/js-sdk-utils';
 import { getLogger } from '@optimizely/js-sdk-logging';
 
-import fns from '../../utils/fns';
+import * as fns from '../../utils/fns';
 import {
   LOG_LEVEL,
   LOG_MESSAGES,

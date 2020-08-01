@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import fns from '../../utils/fns';
+import * as fns from '../../utils/fns';
 import enums from '../../utils/enums';
 import projectConfig from '../project_config';
 import * as eventTagUtils from '../../utils/event_tag_utils';
