@@ -15,7 +15,7 @@
  */
 import { getLogger } from '@optimizely/js-sdk-logging';
 
-import fns from '../../utils/fns';
+import * as fns from '../../utils/fns';
 import projectConfig from '../project_config';
 import * as eventTagUtils from '../../utils/event_tag_utils';
 import * as attributesValidator from'../../utils/attributes_validator';

@@ -17,7 +17,7 @@ import { sprintf } from '@optimizely/js-sdk-utils';
 import { getLogger } from '@optimizely/js-sdk-logging';
 import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager';
 
-import fns from '../../utils/fns';
+import * as fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../../utils/enums';
 import projectConfig from '../../core/project_config';
 import { getOptimizelyConfig } from '../optimizely_config';

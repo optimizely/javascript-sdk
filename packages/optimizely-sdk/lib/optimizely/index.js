@@ -16,7 +16,7 @@
 import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 
-import fns from '../utils/fns'
+import * as fns from '../utils/fns'
 import { validate } from '../utils/attributes_validator';
 import decisionService from '../core/decision_service';
 import * as enums from '../utils/enums';

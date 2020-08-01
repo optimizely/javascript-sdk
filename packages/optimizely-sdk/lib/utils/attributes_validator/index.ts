@@ -15,7 +15,7 @@
  */
 import { sprintf } from '@optimizely/js-sdk-utils';
 
-import fns from '../../utils/fns';
+import * as fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../enums';
 
 const MODULE_NAME = 'ATTRIBUTES_VALIDATOR';

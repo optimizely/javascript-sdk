@@ -15,7 +15,7 @@
  */
 import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 
-import fns from '../../utils/fns';
+import * as fns from '../../utils/fns';
 import {
   ERROR_MESSAGES,
   LOG_MESSAGES,

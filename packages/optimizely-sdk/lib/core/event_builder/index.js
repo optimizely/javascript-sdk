@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import fns from '../../utils/fns';
 import { CONTROL_ATTRIBUTES, RESERVED_EVENT_KEYWORDS } from '../../utils/enums';
+import * as fns from '../../utils/fns';
 import projectConfig from '../project_config';
 import * as eventTagUtils from '../../utils/event_tag_utils';
 import * as attributeValidator from '../../utils/attributes_validator';

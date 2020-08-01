@@ -16,7 +16,7 @@
 import sinon from 'sinon';
 import { assert } from 'chai';
 
-import fns from '../../utils/fns';
+import * as fns from '../../utils/fns';
 import testData from '../../tests/test_data';
 import projectConfig from '../project_config';
 import packageJSON from '../../../package.json';
