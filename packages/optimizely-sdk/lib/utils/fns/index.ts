@@ -55,7 +55,7 @@ export function isSafeInteger(number: unknown): boolean {
   return typeof number == 'number' && Math.abs(number) <= MAX_SAFE_INTEGER_LIMIT;
 }
 
-export function keyBy<K>(arr: K[] , key: string): object {
+export function keyBy<K>(arr: K[] , key: string): { [key: string]: K } {
   if (!arr) return {};
   return keyByUtil(arr, function (item) {
     return item[key];
