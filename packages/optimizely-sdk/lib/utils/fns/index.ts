@@ -17,23 +17,20 @@ import { generateUUID as uuid, keyBy as keyByUtil } from '@optimizely/js-sdk-uti
 
 const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
-//TODO: define Target type
-type Target = {
+type Config = {
   [key: string]: unknown;
 };
 
-// FIX lint errors
-export function assign(target: Target, ...args: [object, ...any[]]): Target {
-  // debugger;
-  if (!target) {
+export function assign(...args: [Config, ...Config[]]): Config {
+  if (!args[0]) {
     return {};
   }
   if (typeof Object.assign === 'function') {
-    return Object.assign.apply(Object, arguments as any);
+    return Object.assign(...args);
   } else {
-    const to = Object(target);
-    for (let index = 1; index < arguments.length; index++) {
-      const nextSource = arguments[index];
+    const to = Object(args[0]);
+    for (let index = 1; index < args.length; index++) {
+      const nextSource = args[index];
       if (nextSource !== null && nextSource !== undefined) {
         for (const nextKey in nextSource) {
           // Avoid bugs when hasOwnProperty is shadowed
@@ -55,7 +52,7 @@ export function isSafeInteger(number: unknown): boolean {
   return typeof number == 'number' && Math.abs(number) <= MAX_SAFE_INTEGER_LIMIT;
 }
 
-export function keyBy<K>(arr: K[] , key: string): { [key: string]: K } {
+export function keyBy<K>(arr: K[], key: string): { [key: string]: K } {
   if (!arr) return {};
   return keyByUtil(arr, function (item) {
     return item[key];
