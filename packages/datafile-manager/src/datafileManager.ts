@@ -16,7 +16,7 @@
 import PersistentKeyValueCache from './persistentKeyValueCache';
 
 export interface DatafileUpdate {
-  datafile: object;
+  datafile: string;
 }
 
 export interface DatafileUpdateListener {
@@ -31,14 +31,14 @@ interface Managed {
 }
 
 export interface DatafileManager extends Managed {
-  get: () => object | null;
+  get: () => string;
   on: (eventName: string, listener: DatafileUpdateListener) => () => void;
   onReady: () => Promise<void>;
 }
 
 export interface DatafileManagerConfig {
   autoUpdate?: boolean;
-  datafile?: object;
+  datafile?: string;
   sdkKey: string;
   updateInterval?: number;
   urlTemplate?: string;

@@ -36,8 +36,8 @@ function isSuccessStatusCode(statusCode: number): boolean {
 }
 
 const noOpKeyValueCache: PersistentKeyValueCache = {
-  get(): Promise<any | null> {
-    return Promise.resolve(null);
+  get(): Promise<string> {
+    return Promise.resolve('');
   },
 
   set(): Promise<void> {
@@ -63,7 +63,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
   // Return any default configuration options that should be applied
   protected abstract getConfigDefaults(): Partial<DatafileManagerConfig>;
 
-  private currentDatafile: object | null;
+  private currentDatafile: string;
 
   private readonly readyPromise: Promise<void>;
 
@@ -131,7 +131,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
         this.resolveReadyPromise();
       }
     } else {
-      this.currentDatafile = null;
+      this.currentDatafile = '';
     }
 
     this.isStarted = false;
@@ -152,7 +152,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     this.syncOnCurrentRequestComplete = false;
   }
 
-  get(): object | null {
+  get(): string {
     return this.currentDatafile;
   }
 
@@ -222,7 +222,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     this.trySavingLastModified(response.headers);
 
     const datafile = this.getNextDatafileFromResponse(response);
-    if (datafile !== null) {
+    if (datafile !== '') {
       logger.info('Updating datafile from response');
       this.currentDatafile = datafile;
       this.cache.set(this.cacheKey, datafile);
@@ -305,35 +305,18 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     }, nextUpdateDelay);
   }
 
-  private getNextDatafileFromResponse(response: Response): object | null {
+  private getNextDatafileFromResponse(response: Response): string {
     logger.debug('Response status code: %s', response.statusCode);
     if (typeof response.statusCode === 'undefined') {
-      return null;
+      return '';
     }
     if (response.statusCode === 304) {
-      return null;
+      return '';
     }
     if (isSuccessStatusCode(response.statusCode)) {
-      return this.tryParsingBodyAsJSON(response.body);
+      return response.body;
     }
-    return null;
-  }
-
-  private tryParsingBodyAsJSON(body: string): object | null {
-    let parseResult: any;
-    try {
-      parseResult = JSON.parse(body);
-    } catch (err) {
-      logger.error('Error parsing response body: %s', err.message, err);
-      return null;
-    }
-    let datafileObj: object | null = null;
-    if (typeof parseResult === 'object' && parseResult !== null) {
-      datafileObj = parseResult;
-    } else {
-      logger.error('Error parsing response body: was not an object');
-    }
-    return datafileObj;
+    return '';
   }
 
   private trySavingLastModified(headers: Headers): void {
@@ -346,7 +329,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
 
   setDatafileFromCacheIfAvailable(): void {
     this.cache.get(this.cacheKey).then(datafile => {
-      if (this.isStarted && !this.isReadyPromiseSettled && datafile) {
+      if (this.isStarted && !this.isReadyPromiseSettled && datafile !== '') {
         logger.debug('Using datafile from cache');
         this.currentDatafile = datafile;
         this.resolveReadyPromise();
