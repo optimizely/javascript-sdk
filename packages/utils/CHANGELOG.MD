@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.4.0] - July 27, 2020
+
+- Removed React Native async storage implementation from utils ([#536](https://github.com/optimizely/javascript-sdk/pull/536))
+
 ## [0.3.2] - June 15, 2020
 
 ### Bug Fixes

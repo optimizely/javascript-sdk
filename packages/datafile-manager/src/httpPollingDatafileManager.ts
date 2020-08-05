@@ -15,12 +15,13 @@
  */
 
 import { getLogger } from '@optimizely/js-sdk-logging';
-import { sprintf, PersistentKeyValueCache } from '@optimizely/js-sdk-utils';
+import { sprintf } from '@optimizely/js-sdk-utils';
 import { DatafileManager, DatafileManagerConfig, DatafileUpdate } from './datafileManager';
 import EventEmitter, { Disposer } from './eventEmitter';
 import { AbortableRequest, Response, Headers } from './http';
 import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE } from './config';
 import BackoffController from './backoffController';
+import PersistentKeyValueCache from './persistentKeyValueCache';
 
 const logger = getLogger('DatafileManager');
 
@@ -35,8 +36,8 @@ function isSuccessStatusCode(statusCode: number): boolean {
 }
 
 const noOpKeyValueCache: PersistentKeyValueCache = {
-  get(): Promise<any | null> {
-    return Promise.resolve(null);
+  get(): Promise<string> {
+    return Promise.resolve('');
   },
 
   set(): Promise<void> {
@@ -327,8 +328,8 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
   }
 
   setDatafileFromCacheIfAvailable(): void {
-    this.cache.get(this.cacheKey).then((datafile) => {
-      if (this.isStarted && !this.isReadyPromiseSettled && datafile) {
+    this.cache.get(this.cacheKey).then(datafile => {
+      if (this.isStarted && !this.isReadyPromiseSettled && datafile !== '') {
         logger.debug('Using datafile from cache');
         this.currentDatafile = datafile;
         this.resolveReadyPromise();

@@ -22,11 +22,11 @@ import decisionService from '../core/decision_service';
 import enums from '../utils/enums';
 import { getImpressionEvent, getConversionEvent } from '../core/event_builder/index.js';
 import { buildConversionEvent, buildImpressionEvent } from '../core/event_builder/event_helpers';
-import eventTagsValidator from '../utils/event_tags_validator';
+import * as eventTagsValidator from '../utils/event_tags_validator';
 import notificationCenter from '../core/notification_center';
 import projectConfig from '../core/project_config';
-import userProfileServiceValidator from '../utils/user_profile_service_validator';
-import stringValidator from '../utils/string_value_validator';
+import * as userProfileServiceValidator from '../utils/user_profile_service_validator';
+import * as stringValidator from '../utils/string_value_validator';
 import projectConfigManager from '../core/project_config/project_config_manager';
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;

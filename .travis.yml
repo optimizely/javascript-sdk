@@ -24,14 +24,14 @@ after_success: npm run coveralls
 
 # Integration tests need to run first to reset the PR build status to pending
 stages:
-  - name: 'Lint markdown files'
+  - 'Source Clear'
+  - 'Lint markdown files'
   - 'Lint'
   - 'Integration tests'
   - 'Full stack production tests'
   - 'Cross-browser and umd unit tests'
   - 'Test'
   - 'Test sub packages'
-  - 'Source Clear'
 
 jobs:
   include:

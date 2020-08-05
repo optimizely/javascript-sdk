@@ -20,7 +20,7 @@ import enums from '../../utils/enums';
 import fns from '../../utils/fns';
 import projectConfig from '../project_config';
 import AudienceEvaluator from '../audience_evaluator';
-import stringValidator from '../../utils/string_value_validator';
+import * as stringValidator from '../../utils/string_value_validator';
 
 var MODULE_NAME = 'DECISION_SERVICE';
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;

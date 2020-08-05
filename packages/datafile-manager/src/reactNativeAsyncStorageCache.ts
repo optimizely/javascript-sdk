@@ -13,30 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import AsyncStorage from '@react-native-community/async-storage';
 
 import PersistentKeyValueCache from './persistentKeyValueCache';
 
 export default class ReactNativeAsyncStorageCache implements PersistentKeyValueCache {
-  get(key: string): Promise<any | null> {
+  get(key: string): Promise<string> {
     return AsyncStorage.getItem(key).then((val: string | null) => {
       if (!val) {
-        return null;
+        return '';
       }
-      try {
-        return JSON.parse(val);
-      } catch (ex) {
-        throw ex;
-      }
+      return val;
     });
   }
 
-  set(key: string, val: any): Promise<void> {
-    try {
-      return AsyncStorage.setItem(key, JSON.stringify(val));
-    } catch (ex) {
-      return Promise.reject(ex);
-    }
+  set(key: string, val: string): Promise<void> {
+    return AsyncStorage.setItem(key, val);
   }
 
   contains(key: string): Promise<boolean> {

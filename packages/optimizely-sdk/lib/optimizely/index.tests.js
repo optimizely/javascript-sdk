@@ -31,7 +31,7 @@ import errorHandler from '../plugins/error_handler';
 import fns from '../utils/fns';
 import logger from '../plugins/logger';
 import decisionService from '../core/decision_service';
-import jsonSchemaValidator from '../utils/json_schema_validator';
+import * as jsonSchemaValidator from '../utils/json_schema_validator';
 import projectConfig from '../core/project_config';
 import testData from '../tests/test_data';
 

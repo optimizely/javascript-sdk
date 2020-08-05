@@ -18,7 +18,7 @@ import HttpPollingDatafileManager from '../src/httpPollingDatafileManager';
 import { Headers, AbortableRequest, Response } from '../src/http';
 import { DatafileManagerConfig } from '../src/datafileManager';
 import { advanceTimersByTime, getTimerCount } from './testUtils';
-import { PersistentKeyValueCache } from '@optimizely/js-sdk-utils';
+import PersistentKeyValueCache from '../src/persistentKeyValueCache';
 
 jest.mock('../src/backoffController', () => {
   return jest.fn().mockImplementation(() => {
@@ -69,11 +69,11 @@ class TestDatafileManager extends HttpPollingDatafileManager {
 }
 
 const testCache: PersistentKeyValueCache = {
-  get(key: string): Promise<any | null> {
-    let val = null;
+  get(key: string): Promise<string> {
+    let val = '';
     switch (key) {
       case 'opt-datafile-keyThatExists':
-        val = { name: 'keyThatExists' };
+        val = JSON.stringify({ name: 'keyThatExists' });
         break;
     }
     return Promise.resolve(val);
@@ -149,11 +149,15 @@ describe('httpPollingDatafileManager', () => {
 
   describe('when constructed with sdkKey and datafile and autoUpdate: false,', () => {
     beforeEach(() => {
-      manager = new TestDatafileManager({ datafile: JSON.stringify({ foo: 'bar' }), sdkKey: '123', autoUpdate: false });
+      manager = new TestDatafileManager({
+        datafile: JSON.stringify({ foo: 'abcd' }),
+        sdkKey: '123',
+        autoUpdate: false,
+      });
     });
 
     it('returns the passed datafile from get', () => {
-      expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
+      expect(JSON.parse(manager.get())).toEqual({ foo: 'abcd' });
     });
 
     it('after being started, fetches the datafile, updates itself once, but does not schedule a future update', async () => {
@@ -636,9 +640,9 @@ describe('httpPollingDatafileManager', () => {
       manager.on('update', updateFn);
       manager.start();
       await manager.onReady();
-      expect(manager.get()).toEqual({ name: 'keyThatExists' });
+      expect(JSON.parse(manager.get())).toEqual({ name: 'keyThatExists' });
       await advanceTimersByTime(50);
-      expect(manager.get()).toEqual({ name: 'keyThatExists' });
+      expect(JSON.parse(manager.get())).toEqual({ name: 'keyThatExists' });
       expect(updateFn).toBeCalledTimes(0);
     });
 
@@ -653,7 +657,7 @@ describe('httpPollingDatafileManager', () => {
       manager.on('update', updateFn);
       manager.start();
       await manager.onReady();
-      expect(manager.get()).toEqual({ name: 'keyThatExists' });
+      expect(JSON.parse(manager.get())).toEqual({ name: 'keyThatExists' });
       expect(updateFn).toBeCalledTimes(0);
       await advanceTimersByTime(50);
       expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
