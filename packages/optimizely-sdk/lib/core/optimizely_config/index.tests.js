@@ -16,7 +16,7 @@
 import { assert } from 'chai';
 import { cloneDeep } from 'lodash';
 
-import { getOptimizelyConfig } from './index';
+import { OptimizelyConfig } from './index';
 import { createProjectConfig } from '../project_config';
 import { getTestProjectConfigWithFeatures } from '../../tests/test_data';
 
@@ -41,7 +41,7 @@ describe('lib/core/optimizely_config', function() {
     var projectConfigObject;
     beforeEach(function() {
       projectConfigObject = createProjectConfig(cloneDeep(datafile));
-      optimizelyConfigObject = getOptimizelyConfig(projectConfigObject);
+      optimizelyConfigObject = new OptimizelyConfig(projectConfigObject, JSON.stringify(datafile));
     });
 
     it('should return all experiments except rollouts', function() {

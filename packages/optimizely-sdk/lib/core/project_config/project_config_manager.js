@@ -20,7 +20,7 @@ import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager'
 import fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../../utils/enums';
 import projectConfig from '../../core/project_config';
-import { OptimizelyConfig } from '../optimizely_config';
+import optimizelyConfig from '../optimizely_config';
 
 var logger = getLogger();
 var MODULE_NAME = 'PROJECT_CONFIG_MANAGER';
@@ -92,6 +92,9 @@ ProjectConfigManager.prototype.__initialize = function(config) {
   }
 
   var handleNewDatafileException = this.__handleNewDatafile(config.datafile);
+  if (handleNewDatafileException) {
+    this.__configObj = null;
+  }
 
   if (config.sdkKey) {
     var datafileManagerConfig = {
@@ -181,10 +184,10 @@ ProjectConfigManager.prototype.__validateDatafileOptions = function(datafileOpti
 };
 
 /**
- * Handle new datafile by attemping to create a new Project Config object. If successful,
- * sets the project config and optimizely config object instance variables and returns null
- * for the error. If unsuccessful, the project config and optimizely config objects will 
- * not be updated, and the error is returned.
+ * Handle new datafile by attemping to create a new Project Config object. If successful and
+ * the new config object's revision is newer than the current one, sets/updates the project config
+ * and optimizely config object instance variables and returns null for the error. If unsuccessful,
+ * the project config and optimizely config objects will not be updated, and the error is returned.
  * @param   {Object|string} newDatafile
  * @returns {Error|null}    error
  */
@@ -197,11 +200,14 @@ ProjectConfigManager.prototype.__handleNewDatafile = function(newDatafile) {
   if (error) {
     logger.error(error);
   } else {
-    this.__configObj = configObj;
-    this.__optimizelyConfigObj = new OptimizelyConfig(this.__configObj, projectConfig.toDatafile(this.__configObj));
-    this.__updateListeners.forEach(function(listener) {
-      listener(configObj);
-    });
+    var oldRevision = this.__configObj ? this.__configObj.revision : 'null';
+    if (oldRevision !== configObj.revision) {
+      this.__configObj = configObj;
+      this.__optimizelyConfigObj = new optimizelyConfig.OptimizelyConfig(this.__configObj, projectConfig.toDatafile(this.__configObj));
+      this.__updateListeners.forEach(function(listener) {
+        listener(configObj);
+      });
+    }
   }
 
   return error;

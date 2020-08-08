@@ -739,31 +739,29 @@ describe('lib/core/project_config', function() {
         jsonSchemaValidator: stubJsonSchemaValidator,
         logger: logger,
       });
-      assert.deepEqual(result, configObj);
+      assert.deepEqual(result.configObj, configObj);
     });
 
     it('throws an error when validateDatafile throws', function() {
       configValidator.validateDatafile.throws();
       stubJsonSchemaValidator.validate.returns(true);
-      assert.throws(function() {
-        projectConfig.tryCreatingProjectConfig({
-          datafile: { foo: 'bar' },
-          jsonSchemaValidator: stubJsonSchemaValidator,
-          logger: logger,
-        });
+      var { error } = projectConfig.tryCreatingProjectConfig({
+        datafile: { foo: 'bar' },
+        jsonSchemaValidator: stubJsonSchemaValidator,
+        logger: logger,
       });
+      assert.isNotNull(error);
     });
 
     it('throws an error when jsonSchemaValidator.validate throws', function() {
       configValidator.validateDatafile.returns(true);
       stubJsonSchemaValidator.validate.throws();
-      assert.throws(function() {
-        var result = projectConfig.tryCreatingProjectConfig({
-          datafile: { foo: 'bar' },
-          jsonSchemaValidator: stubJsonSchemaValidator,
-          logger: logger,
-        });
+      var { error } = projectConfig.tryCreatingProjectConfig({
+        datafile: { foo: 'bar' },
+        jsonSchemaValidator: stubJsonSchemaValidator,
+        logger: logger,
       });
+    assert.isNotNull(error);
     });
 
     it('skips json validation when jsonSchemaValidator is not provided', function() {
@@ -780,7 +778,7 @@ describe('lib/core/project_config', function() {
         datafile: { foo: 'bar' },
         logger: logger,
       });
-      assert.deepEqual(result, configObj);
+      assert.deepEqual(result.configObj, configObj);
       sinon.assert.notCalled(logger.error);
     });
   });

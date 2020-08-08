@@ -579,7 +579,6 @@ export var tryCreatingProjectConfig = function(config) {
     try {
       config.jsonSchemaValidator.validate(newDatafileObj);
     } catch (error) {
-      config.logger.error(error);
       return { configObj: null, error };
     }
   }
