@@ -114,8 +114,10 @@ export var bucket = function(bucketerParams) {
   var entityId = this._findBucket(bucketValue, bucketerParams.trafficAllocationConfig);
 
   if (!bucketerParams.variationIdMap.hasOwnProperty(entityId)) {
-    var invalidVariationIdLogMessage = sprintf(LOG_MESSAGES.INVALID_VARIATION_ID, MODULE_NAME);
-    bucketerParams.logger.log(LOG_LEVEL.WARNING, invalidVariationIdLogMessage);
+    if (entityId) {
+      var invalidVariationIdLogMessage = sprintf(LOG_MESSAGES.INVALID_VARIATION_ID, MODULE_NAME);
+      bucketerParams.logger.log(LOG_LEVEL.WARNING, invalidVariationIdLogMessage);
+    }
     return null;
   }
 
@@ -128,7 +130,7 @@ export var bucket = function(bucketerParams) {
  * @param {string} bucketingId  Bucketing ID
  * @param {string} userId       ID of user to be bucketed into experiment
  * @param {Object} logger       Logger implementation
- * @return {string} ID of experiment if user is bucketed into experiment within the group, null otherwise
+ * @return {string|null} ID of experiment if user is bucketed into experiment within the group, null otherwise
  */
 export var bucketUserIntoExperiment = function(group, bucketingId, userId, logger) {
   var bucketingKey = sprintf('%s%s', bucketingId, group.id);
@@ -148,7 +150,7 @@ export var bucketUserIntoExperiment = function(group, bucketingId, userId, logge
  * @param  {Object[]} trafficAllocationConfig
  * @param  {number}   trafficAllocationConfig[].endOfRange
  * @param  {number}   trafficAllocationConfig[].entityId
- * @return {string}   Entity ID for bucketing if bucket value is within traffic allocation boundaries, null otherwise
+ * @return {string|null}   Entity ID for bucketing if bucket value is within traffic allocation boundaries, null otherwise
  */
 export var _findBucket = function(bucketValue, trafficAllocationConfig) {
   for (var i = 0; i < trafficAllocationConfig.length; i++) {

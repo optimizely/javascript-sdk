@@ -286,6 +286,15 @@ describe('lib/core/bucketer', function() {
           bucketerParamsTest1.userId = 'ppid1';
           expect(bucketer.bucket(bucketerParamsTest1)).to.equal(null);
         });
+
+        it('should not log an invalid variation ID warning', function() {
+          bucketer.bucket(bucketerParams)
+          const foundInvalidVariationWarning = createdLogger.log.getCalls().some((call) => {
+            const message = call.args[1];
+            return message.includes('Bucketed into an invalid variation ID')
+          });
+          expect(foundInvalidVariationWarning).to.equal(false);
+        });
       });
 
       describe('when the traffic allocation has invalid variation ids', function() {
