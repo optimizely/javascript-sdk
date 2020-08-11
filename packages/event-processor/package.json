@@ -21,6 +21,7 @@
   ],
   "scripts": {
     "tsc": "rm -rf lib && tsc",
+    "build": "tsc",
     "test": "jest",
     "prepublishOnly": "jest && npm run tsc"
   },

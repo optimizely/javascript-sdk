@@ -59,6 +59,7 @@
     "lint": "tsc --noEmit && eslint --fix 'src/**/*.ts' '__test__/**/*.ts'",
     "test": "jest",
     "tsc": "rm -rf lib && tsc",
+    "build": "tsc",
     "prepublishOnly": "npm run lint && npm test && npm run tsc"
   }
 }
