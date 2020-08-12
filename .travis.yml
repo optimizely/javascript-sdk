@@ -70,7 +70,7 @@ jobs:
 
     - stage: Cross-browser and umd unit tests
       node_js: '8'
-      before_install: cd packages/optimizely-sdk
+      after_install: cd packages/optimizely-sdk
       script: npm run test-ci
 
     - stage: 'Source Clear'
