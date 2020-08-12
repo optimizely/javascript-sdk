@@ -29,7 +29,8 @@ stages:
   - 'Integration tests'
   - 'Full stack production tests'
   - 'Cross-browser and umd unit tests'
-  - 'Test'  
+  - 'Test'
+  - 'Test sub packages'
 
 jobs:
   include:
@@ -72,6 +73,18 @@ jobs:
       node_js: '8'
       before_script: cd packages/optimizely-sdk
       script: npm run test-ci
+    - stage: 'Test'
+      before_script: cd packages/optimizely-sdk
+    - &packagetest
+      stage: 'Test sub packages'
+      node_js: '12'
+      before_script: cd packages/utils
+    - <<: *packagetest
+      before_script: cd packages/event-processor
+    - <<: *packagetest
+      before_script: cd packages/logging
+    - <<: *packagetest      
+      before_script: cd packages/datafile-manager    
 
     - stage: 'Source Clear'
       if: type = cron
