@@ -44,6 +44,7 @@ jobs:
 
     - stage: 'Lint'
       node_js: '12'
+      install: npm install && npm run bootstrap
       script: npm run lint
 
     - &integrationtest

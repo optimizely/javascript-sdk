@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "name": "optimizely-sdk-packages",
   "scripts": {
+    "lint": "lerna run lint",
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
     "clean": "lerna run clean",
