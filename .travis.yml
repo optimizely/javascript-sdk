@@ -70,7 +70,6 @@ jobs:
         SDK=javascript
         SDK_BRANCH=$TRAVIS_PULL_REQUEST_BRANCH
         FULLSTACK_TEST_REPO=ProdTesting
-      before_script: skip
       script: $HOME/travisci-tools/trigger-script-with-status-update.sh
 
     - stage: Cross-browser and umd unit tests
@@ -84,8 +83,8 @@ jobs:
       before_script: cd packages/event-processor
     - <<: *packagetest
       before_script: cd packages/logging
-    - <<: *packagetest      
-      before_script: cd packages/datafile-manager    
+    - <<: *packagetest
+      before_script: cd packages/datafile-manager
 
     - stage: 'Source Clear'
       if: type = cron
