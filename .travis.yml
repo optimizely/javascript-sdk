@@ -18,6 +18,7 @@ env:
     - SDK=javascript
     - SDK_BRANCH=$TRAVIS_PULL_REQUEST_BRANCH
 install: npm install && npm run bootstrap && npm run build
+before_script: cd packages/optimizely-sdk
 script: npm test
 after_success: npm run coveralls
 
@@ -38,6 +39,7 @@ jobs:
       os: linux
       language: generic
       install: gem install awesome_bot
+      before_script: skip
       script:
         - find . -type f -name '*.md' -exec awesome_bot {} \;
       notifications:
@@ -45,6 +47,7 @@ jobs:
 
     - stage: 'Lint'
       node_js: '12'
+      before_script: skip
       script: npm run lint
 
     - &integrationtest
@@ -67,14 +70,12 @@ jobs:
         SDK=javascript
         SDK_BRANCH=$TRAVIS_PULL_REQUEST_BRANCH
         FULLSTACK_TEST_REPO=ProdTesting
+      before_script: skip
       script: $HOME/travisci-tools/trigger-script-with-status-update.sh
 
     - stage: Cross-browser and umd unit tests
       node_js: '8'
-      before_script: cd packages/optimizely-sdk
       script: npm run test-ci
-    - stage: 'Test'
-      before_script: cd packages/optimizely-sdk
     - &packagetest
       stage: 'Test sub packages'
       node_js: '12'
