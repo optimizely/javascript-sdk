@@ -15,9 +15,9 @@
  ***************************************************************************/
 
 import { assert } from 'chai';
-import { sprintf } from '@optimizely/js-sdk-utils';
 
 import { validate } from './';
+import { sprintf } from '../fns';
 import { ERROR_MESSAGES } from '../enums';
 
 describe('lib/utils/user_profile_service_validator', function() {

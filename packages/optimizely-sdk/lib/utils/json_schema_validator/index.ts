@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf } from '@optimizely/js-sdk-utils';
 import { validate as jsonSchemaValidator } from 'json-schema';
 
 import { ERROR_MESSAGES } from '../enums';
+import { sprintf } from '../fns'
 import schema from '../../core/project_config/project_config_schema';
 
 const MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';

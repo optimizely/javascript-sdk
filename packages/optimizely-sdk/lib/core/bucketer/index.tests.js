@@ -16,7 +16,6 @@
 import sinon from 'sinon';
 import { assert, expect } from 'chai';
 import { cloneDeep } from 'lodash';
-import { sprintf } from '@optimizely/js-sdk-utils';
 
 import bucketer from './';
 import {
@@ -24,6 +23,7 @@ import {
   LOG_MESSAGES,
   LOG_LEVEL,
 } from '../../utils/enums';
+import { sprintf } from '../../utils/fns'
 import logger from '../../plugins/logger';
 import projectConfig from '../project_config';
 import { getTestProjectConfig } from '../../tests/test_data';

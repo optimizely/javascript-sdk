@@ -16,7 +16,6 @@
 import sinon from 'sinon';
 import { assert } from 'chai';
 import cloneDeep from 'lodash/cloneDeep';
-import { sprintf } from '@optimizely/js-sdk-utils';
 
 import DecisionService from './';
 import bucketer from '../bucketer';
@@ -25,6 +24,7 @@ import {
   LOG_MESSAGES,
   DECISION_SOURCES,
 } from '../../utils/enums';
+import { sprintf } from '../../utils/fns';
 import logger from '../../plugins/logger';
 import Optimizely from '../../optimizely';
 import projectConfig from '../project_config';

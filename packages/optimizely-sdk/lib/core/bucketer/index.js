@@ -17,9 +17,9 @@
 /**
  * Bucketer API for determining the variation id from the specified parameters
  */
-import { sprintf } from '@optimizely/js-sdk-utils';
 import murmurhash from 'murmurhash';
 
+import { sprintf } from '../../utils/fns';
 import {
   ERROR_MESSAGES,
   LOG_LEVEL,

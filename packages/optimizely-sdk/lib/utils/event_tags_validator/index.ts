@@ -17,9 +17,8 @@
 /**
  * Provides utility method for validating that event tags user has provided are valid
  */
-import { sprintf } from '@optimizely/js-sdk-utils';
-
 import { ERROR_MESSAGES } from '../enums';
+import { sprintf } from '../fns';
 
 const MODULE_NAME = 'EVENT_TAGS_VALIDATOR';
 

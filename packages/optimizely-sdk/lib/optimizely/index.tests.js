@@ -15,7 +15,6 @@
  ***************************************************************************/
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { sprintf } from '@optimizely/js-sdk-utils';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 import * as logging from '@optimizely/js-sdk-logging';
 
@@ -131,7 +130,7 @@ describe('lib/optimizely', function() {
 
         sinon.assert.called(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, 'OPTIMIZELY', 'undefined'));
+        assert.strictEqual(logMessage, fns.sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, 'OPTIMIZELY', 'undefined'));
       });
 
       it('should allow passing `react-sdk` as the clientEngine', function() {
@@ -691,13 +690,13 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.DEBUG,
-          sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
+          fns.sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'testExperiment')
+          fns.sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'testExperiment')
         );
       });
 
@@ -707,19 +706,19 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.DEBUG,
-          sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
+          fns.sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'testExperimentWithAudiences')
+          fns.sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'testExperimentWithAudiences')
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'testExperimentWithAudiences')
+          fns.sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'testExperimentWithAudiences')
         );
       });
 
@@ -729,19 +728,19 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.DEBUG,
-          sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
+          fns.sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'groupExperiment1')
+          fns.sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'groupExperiment1')
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'groupExperiment1')
+          fns.sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'groupExperiment1')
         );
       });
 
@@ -752,12 +751,12 @@ describe('lib/optimizely', function() {
         var logMessage1 = createdLogger.log.args[0][1];
         assert.strictEqual(
           logMessage1,
-          sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning')
+          fns.sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning')
         );
         var logMessage2 = createdLogger.log.args[1][1];
         assert.strictEqual(
           logMessage2,
-          sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'testExperimentNotRunning')
+          fns.sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'testExperimentNotRunning')
         );
       });
 
@@ -768,16 +767,16 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledOnce(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
+        assert.strictEqual(errorMessage, fns.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
 
         sinon.assert.calledTwice(createdLogger.log);
 
         var logMessage1 = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage1, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
+        assert.strictEqual(logMessage1, fns.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
         var logMessage2 = createdLogger.log.args[1][1];
         assert.strictEqual(
           logMessage2,
-          sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'null', 'testExperiment')
+          fns.sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'null', 'testExperiment')
         );
       });
 
@@ -790,12 +789,12 @@ describe('lib/optimizely', function() {
         var logMessage1 = createdLogger.log.args[0][1];
         assert.strictEqual(
           logMessage1,
-          sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'OPTIMIZELY', 'invalidExperimentKey')
+          fns.sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'OPTIMIZELY', 'invalidExperimentKey')
         );
         var logMessage2 = createdLogger.log.args[1][1];
         assert.strictEqual(
           logMessage2,
-          sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'invalidExperimentKey')
+          fns.sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'invalidExperimentKey')
         );
       });
 
@@ -805,15 +804,15 @@ describe('lib/optimizely', function() {
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
         sinon.assert.calledOnce(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
+        assert.strictEqual(errorMessage, fns.sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
 
         sinon.assert.calledTwice(createdLogger.log);
         var logMessage1 = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage1, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
+        assert.strictEqual(logMessage1, fns.sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
         var logMessage2 = createdLogger.log.args[1][1];
         assert.strictEqual(
           logMessage2,
-          sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'testExperimentWithAudiences')
+          fns.sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'testExperimentWithAudiences')
         );
       });
 
@@ -855,12 +854,12 @@ describe('lib/optimizely', function() {
           var logMessage0 = createdLogger.log.args[0][1];
           assert.strictEqual(
             logMessage0,
-            sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'user1')
+            fns.sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'user1')
           );
           var logMessage1 = createdLogger.log.args[1][1];
           assert.strictEqual(
             logMessage1,
-            sprintf(LOG_MESSAGES.USER_FORCED_IN_VARIATION, 'DECISION_SERVICE', 'user1', 'control')
+            fns.sprintf(LOG_MESSAGES.USER_FORCED_IN_VARIATION, 'DECISION_SERVICE', 'user1', 'control')
           );
 
           var expectedObj = {
@@ -918,7 +917,7 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'activate'));
+        assert.strictEqual(logMessage, fns.sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'activate'));
 
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
       });
@@ -1538,11 +1537,11 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledOnce(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
+        assert.strictEqual(errorMessage, fns.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
+        assert.strictEqual(logMessage, fns.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
 
       it('should log a warning for an event key that is not in the datafile and a warning for not tracking user', function() {
@@ -1554,14 +1553,14 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           logCall1,
           LOG_LEVEL.WARNING,
-          sprintf(LOG_MESSAGES.EVENT_KEY_NOT_FOUND, 'OPTIMIZELY', 'invalidEventKey')
+          fns.sprintf(LOG_MESSAGES.EVENT_KEY_NOT_FOUND, 'OPTIMIZELY', 'invalidEventKey')
         );
 
         var logCall2 = createdLogger.log.getCall(1);
         sinon.assert.calledWithExactly(
           logCall2,
           LOG_LEVEL.WARNING,
-          sprintf(LOG_MESSAGES.NOT_TRACKING_USER, 'OPTIMIZELY', 'testUser')
+          fns.sprintf(LOG_MESSAGES.NOT_TRACKING_USER, 'OPTIMIZELY', 'testUser')
         );
 
         sinon.assert.notCalled(errorHandler.handleError);
@@ -1574,11 +1573,11 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledOnce(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
+        assert.strictEqual(errorMessage, fns.sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
+        assert.strictEqual(logMessage, fns.sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
       });
 
       it('should not throw an error for an event key without associated experiment IDs', function() {
@@ -1618,7 +1617,7 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'track'));
+        assert.strictEqual(logMessage, fns.sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'track'));
 
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
       });
@@ -1637,7 +1636,7 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.DEBUG,
-          sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
+          fns.sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
         );
       });
 
@@ -1666,19 +1665,19 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.DEBUG,
-          sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
+          fns.sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'testExperimentWithAudiences')
+          fns.sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'testExperimentWithAudiences')
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning')
+          fns.sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning')
         );
       });
 
@@ -1689,11 +1688,11 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledOnce(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
+        assert.strictEqual(errorMessage, fns.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
+        assert.strictEqual(logMessage, fns.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
 
       it('should log an error for invalid experiment key', function() {
@@ -1704,7 +1703,7 @@ describe('lib/optimizely', function() {
         var logMessage = createdLogger.log.args[0][1];
         assert.strictEqual(
           logMessage,
-          sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'OPTIMIZELY', 'invalidExperimentKey')
+          fns.sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'OPTIMIZELY', 'invalidExperimentKey')
         );
       });
 
@@ -1715,11 +1714,11 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledOnce(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
+        assert.strictEqual(errorMessage, fns.sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
+        assert.strictEqual(logMessage, fns.sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
       });
 
       describe('whitelisting', function() {
@@ -1742,12 +1741,12 @@ describe('lib/optimizely', function() {
           var logMessage0 = createdLogger.log.args[0][1];
           assert.strictEqual(
             logMessage0,
-            sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'user1')
+            fns.sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'user1')
           );
           var logMessage = createdLogger.log.args[1][1];
           assert.strictEqual(
             logMessage,
-            sprintf(LOG_MESSAGES.USER_FORCED_IN_VARIATION, 'DECISION_SERVICE', 'user1', 'control')
+            fns.sprintf(LOG_MESSAGES.USER_FORCED_IN_VARIATION, 'DECISION_SERVICE', 'user1', 'control')
           );
         });
       });
@@ -1766,7 +1765,7 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getVariation'));
+        assert.strictEqual(logMessage, fns.sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getVariation'));
 
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
       });
@@ -1814,7 +1813,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(forcedVariation, null);
 
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'user1'));
+        assert.strictEqual(logMessage, fns.sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'user1'));
       });
 
       it('should return null with a null experimentKey', function() {
@@ -1822,7 +1821,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(forcedVariation, null);
 
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key'));
+        assert.strictEqual(logMessage, fns.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key'));
       });
 
       it('should return null with an undefined experimentKey', function() {
@@ -1830,7 +1829,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(forcedVariation, null);
 
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key'));
+        assert.strictEqual(logMessage, fns.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key'));
       });
 
       it('should return null with a null userId', function() {
@@ -1838,7 +1837,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(forcedVariation, null);
 
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
+        assert.strictEqual(logMessage, fns.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
 
       it('should return null with an undefined userId', function() {
@@ -1846,7 +1845,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(forcedVariation, null);
 
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
+        assert.strictEqual(logMessage, fns.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
     });
 
@@ -1858,7 +1857,7 @@ describe('lib/optimizely', function() {
         var logMessage = createdLogger.log.args[0][1];
         assert.strictEqual(
           logMessage,
-          sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'DECISION_SERVICE', 111128, 111127, 'user1')
+          fns.sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'DECISION_SERVICE', 111128, 111127, 'user1')
         );
       });
 
@@ -1897,17 +1896,17 @@ describe('lib/optimizely', function() {
 
         assert.strictEqual(
           setVariationLogMessage,
-          sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'DECISION_SERVICE', 111128, 111127, 'user1')
+          fns.sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'DECISION_SERVICE', 111128, 111127, 'user1')
         );
 
         assert.strictEqual(
           variationIsMappedLogMessage,
-          sprintf(LOG_MESSAGES.USER_HAS_FORCED_VARIATION, 'DECISION_SERVICE', 'control', 'testExperiment', 'user1')
+          fns.sprintf(LOG_MESSAGES.USER_HAS_FORCED_VARIATION, 'DECISION_SERVICE', 'control', 'testExperiment', 'user1')
         );
 
         assert.strictEqual(
           variationMappingRemovedLogMessage,
-          sprintf(LOG_MESSAGES.VARIATION_REMOVED_FOR_USER, 'DECISION_SERVICE', 'testExperiment', 'user1')
+          fns.sprintf(LOG_MESSAGES.VARIATION_REMOVED_FOR_USER, 'DECISION_SERVICE', 'testExperiment', 'user1')
         );
       });
 
@@ -1936,7 +1935,7 @@ describe('lib/optimizely', function() {
         var logMessage = createdLogger.log.args[0][1];
         assert.strictEqual(
           logMessage,
-          sprintf(
+          fns.sprintf(
             ERROR_MESSAGES.NO_VARIATION_FOR_EXPERIMENT_KEY,
             'DECISION_SERVICE',
             'definitely_not_valid_variation_key',
@@ -1952,7 +1951,7 @@ describe('lib/optimizely', function() {
         var logMessage = createdLogger.log.args[0][1];
         assert.strictEqual(
           logMessage,
-          sprintf(ERROR_MESSAGES.EXPERIMENT_KEY_NOT_IN_DATAFILE, 'PROJECT_CONFIG', 'definitely_not_valid_exp_key')
+          fns.sprintf(ERROR_MESSAGES.EXPERIMENT_KEY_NOT_IN_DATAFILE, 'PROJECT_CONFIG', 'definitely_not_valid_exp_key')
         );
       });
 
@@ -1966,13 +1965,13 @@ describe('lib/optimizely', function() {
         var setVariationLogMessage = createdLogger.log.args[0][1];
         assert.strictEqual(
           setVariationLogMessage,
-          sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'DECISION_SERVICE', 111128, 111127, 'user1')
+          fns.sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'DECISION_SERVICE', 111128, 111127, 'user1')
         );
 
         var noVariationToGetLogMessage = createdLogger.log.args[1][1];
         assert.strictEqual(
           noVariationToGetLogMessage,
-          sprintf(
+          fns.sprintf(
             LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
             'DECISION_SERVICE',
             'testExperimentLaunched',
@@ -1988,7 +1987,7 @@ describe('lib/optimizely', function() {
         var setVariationLogMessage = createdLogger.log.args[0][1];
         assert.strictEqual(
           setVariationLogMessage,
-          sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key')
+          fns.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key')
         );
       });
 
@@ -1999,7 +1998,7 @@ describe('lib/optimizely', function() {
         var setVariationLogMessage = createdLogger.log.args[0][1];
         assert.strictEqual(
           setVariationLogMessage,
-          sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key')
+          fns.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key')
         );
       });
 
@@ -2010,7 +2009,7 @@ describe('lib/optimizely', function() {
         var setVariationLogMessage = createdLogger.log.args[0][1];
         assert.strictEqual(
           setVariationLogMessage,
-          sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key')
+          fns.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key')
         );
       });
 
@@ -2021,7 +2020,7 @@ describe('lib/optimizely', function() {
         var setVariationLogMessage = createdLogger.log.args[0][1];
         assert.strictEqual(
           setVariationLogMessage,
-          sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id')
+          fns.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id')
         );
       });
 
@@ -2032,7 +2031,7 @@ describe('lib/optimizely', function() {
         var setVariationLogMessage = createdLogger.log.args[0][1];
         assert.strictEqual(
           setVariationLogMessage,
-          sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id')
+          fns.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id')
         );
       });
 
@@ -2048,7 +2047,7 @@ describe('lib/optimizely', function() {
         var setVariationLogMessage = createdLogger.log.args[0][1];
         assert.strictEqual(
           setVariationLogMessage,
-          sprintf(ERROR_MESSAGES.USER_NOT_IN_FORCED_VARIATION, 'DECISION_SERVICE', 'user1')
+          fns.sprintf(ERROR_MESSAGES.USER_NOT_IN_FORCED_VARIATION, 'DECISION_SERVICE', 'user1')
         );
       });
 
@@ -2059,7 +2058,7 @@ describe('lib/optimizely', function() {
         var setVariationLogMessage = createdLogger.log.args[0][1];
         assert.strictEqual(
           setVariationLogMessage,
-          sprintf(ERROR_MESSAGES.USER_NOT_IN_FORCED_VARIATION, 'DECISION_SERVICE', 'user1')
+          fns.sprintf(ERROR_MESSAGES.USER_NOT_IN_FORCED_VARIATION, 'DECISION_SERVICE', 'user1')
         );
       });
 
@@ -2077,13 +2076,13 @@ describe('lib/optimizely', function() {
         var logMessage0 = createdLogger.log.args[0][1];
         assert.strictEqual(
           logMessage0,
-          sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'DECISION_SERVICE', 133338, 133337, 'user1')
+          fns.sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'DECISION_SERVICE', 133338, 133337, 'user1')
         );
 
         var logMessage1 = createdLogger.log.args[1][1];
         assert.strictEqual(
           logMessage1,
-          sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning')
+          fns.sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning')
         );
       });
     });
@@ -2108,11 +2107,11 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledThrice(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
+        assert.strictEqual(errorMessage, fns.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
 
         sinon.assert.calledThrice(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
+        assert.strictEqual(logMessage, fns.sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
 
       it('should return false and throw an error if attributes are invalid', function() {
@@ -2121,11 +2120,11 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledOnce(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
+        assert.strictEqual(errorMessage, fns.sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
+        assert.strictEqual(logMessage, fns.sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
       });
     });
 
@@ -6895,7 +6894,7 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariable'));
+        assert.strictEqual(logMessage, fns.sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariable'));
       });
 
       it('returns null from getFeatureVariableBoolean when optimizely object is not a valid instance', function() {
@@ -6912,7 +6911,7 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableBoolean'));
+        assert.strictEqual(logMessage, fns.sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableBoolean'));
       });
 
       it('returns null from getFeatureVariableDouble when optimizely object is not a valid instance', function() {
@@ -6929,7 +6928,7 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableDouble'));
+        assert.strictEqual(logMessage, fns.sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableDouble'));
       });
 
       it('returns null from getFeatureVariableInteger when optimizely object is not a valid instance', function() {
@@ -6946,7 +6945,7 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableInteger'));
+        assert.strictEqual(logMessage, fns.sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableInteger'));
       });
 
       it('returns null from getFeatureVariableString when optimizely object is not a valid instance', function() {
@@ -6963,7 +6962,7 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableString'));
+        assert.strictEqual(logMessage, fns.sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableString'));
       });
 
       it('returns null from getFeatureVariableJSON when optimizely object is not a valid instance', function() {
@@ -6980,7 +6979,7 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableJSON'));
+        assert.strictEqual(logMessage, fns.sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableJSON'));
       });
     });
   });

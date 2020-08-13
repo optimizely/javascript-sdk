@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf } from '@optimizely/js-sdk-utils';
-
 import fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../enums';
 
@@ -31,12 +29,12 @@ export function validate(attributes: unknown): boolean {
   if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
     Object.keys(attributes).forEach(function(key) {
       if (typeof attributes[key] === 'undefined') {
-        throw new Error(sprintf(ERROR_MESSAGES.UNDEFINED_ATTRIBUTE, MODULE_NAME, key));
+        throw new Error(fns.sprintf(ERROR_MESSAGES.UNDEFINED_ATTRIBUTE, MODULE_NAME, key));
       }
     });
     return true;
   } else {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, MODULE_NAME));
+    throw new Error(fns.sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, MODULE_NAME));
   }
 }
 

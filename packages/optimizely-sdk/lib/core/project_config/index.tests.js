@@ -17,9 +17,8 @@ import sinon from 'sinon';
 import { assert } from 'chai';
 import { forEach, cloneDeep } from 'lodash';
 import { getLogger } from '@optimizely/js-sdk-logging';
-import { sprintf } from '@optimizely/js-sdk-utils';
 
-import fns from '../../utils/fns';
+import { keyBy, sprintf } from '../../utils/fns';
 import projectConfig from './';
 import {
   ERROR_MESSAGES,
@@ -50,7 +49,7 @@ describe('lib/core/project_config', function() {
       testData.groups.forEach(function(group) {
         group.experiments.forEach(function(experiment) {
           experiment.groupId = group.id;
-          experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
+          experiment.variationKeyMap = keyBy(experiment.variations, 'key');
         });
       });
       assert.deepEqual(configObj.groups, testData.groups);
@@ -71,7 +70,7 @@ describe('lib/core/project_config', function() {
       });
 
       forEach(expectedExperiments, function(experiment) {
-        experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
+        experiment.variationKeyMap = keyBy(experiment.variations, 'key');
       });
 
       assert.deepEqual(configObj.experiments, expectedExperiments);

@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf } from '@optimizely/js-sdk-utils';
 import { getLogger } from '@optimizely/js-sdk-logging';
 
-import fns from '../../utils/fns';
+import { assign, sprintf } from '../../utils/fns';
 import {
   LOG_LEVEL,
   LOG_MESSAGES,
@@ -36,7 +35,7 @@ var MODULE_NAME = 'AUDIENCE_EVALUATOR';
  * @constructor
  */
 function AudienceEvaluator(UNSTABLE_conditionEvaluators) {
-  this.typeToEvaluatorMap = fns.assign({}, UNSTABLE_conditionEvaluators, {
+  this.typeToEvaluatorMap = assign({}, UNSTABLE_conditionEvaluators, {
     custom_attribute: customAttributeConditionEvaluator,
   });
 }

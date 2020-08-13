@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-
-import { NOTIFICATION_TYPES as notificationTypesEnum } from '@optimizely/js-sdk-utils';
+import * as notificationCenter from '../notification_center'
 
 /**
  * Contains global enums used throughout the library
@@ -180,7 +179,7 @@ export var VALID_CLIENT_ENGINES = [
   JAVASCRIPT_CLIENT_ENGINE,
 ];
 
-export var NOTIFICATION_TYPES = notificationTypesEnum;
+export var NOTIFICATION_TYPES = notificationCenter.NOTIFICATION_TYPES;
 
 export var DECISION_NOTIFICATION_TYPES = {
   AB_TEST: 'ab-test',

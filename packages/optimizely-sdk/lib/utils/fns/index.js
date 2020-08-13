@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { generateUUID as uuid, keyBy as keyByUtil } from '@optimizely/js-sdk-utils';
+import * as utils from './utils-pkg'
 
 var MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
+var uuid = utils.generateUUID;
 
 export var assign = function (target) {
   if (!target) {
@@ -50,7 +51,7 @@ export var isSafeInteger = function (number) {
 
 export var keyBy = function (arr, key) {
   if (!arr) return {};
-  return keyByUtil(arr, function (item) {
+  return utils.keyBy(arr, function (item) {
     return item[key];
   });
 };
@@ -61,6 +62,14 @@ export var isNumber = function (value) {
   return typeof value === 'number';
 };
 
+export var sprintf = utils.sprintf;
+export var getTimestamp = utils.getTimestamp;
+export var isValidEnum = utils.isValidEnum;
+export var groupBy = utils.groupBy;
+export var objectValues = utils.objectValues;
+export var objectEntries = utils.objectEntries;
+export var find = utils.find;
+
 export default {
   assign: assign,
   currentTimestamp: currentTimestamp,
@@ -68,4 +77,11 @@ export default {
   keyBy: keyBy,
   uuid: uuid,
   isNumber: isNumber,
+  sprintf: sprintf,
+  getTimestamp: getTimestamp,
+  isValidEnum: isValidEnum,
+  groupBy: groupBy,
+  objectValues: objectValues,
+  objectEntries: objectEntries,
+  find: find
 };

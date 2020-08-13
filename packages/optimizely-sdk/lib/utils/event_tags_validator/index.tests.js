@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 import { assert } from 'chai';
-import { sprintf } from '@optimizely/js-sdk-utils';
 
 import { validate } from './';
+import { sprintf } from '../fns'
 import { ERROR_MESSAGES } from'../enums';
 
 describe('lib/utils/event_tags_validator', function() {

@@ -16,11 +16,11 @@
 import sinon from 'sinon';
 import { assert } from 'chai';
 import { cloneDeep } from 'lodash';
-import { sprintf } from '@optimizely/js-sdk-utils';
 import * as logging from '@optimizely/js-sdk-logging';
 import * as datafileManager from '@optimizely/js-sdk-datafile-manager';
 
 import projectConfig from './index';
+import { sprintf } from '../../utils/fns';
 import { ERROR_MESSAGES, LOG_MESSAGES } from '../../utils/enums';
 import testData from '../../tests/test_data';
 import * as optimizelyConfig from '../optimizely_config/index';

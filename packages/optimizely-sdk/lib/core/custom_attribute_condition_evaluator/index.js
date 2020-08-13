@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { sprintf } from '@optimizely/js-sdk-utils';
-
-import fns from '../../utils/fns';
+import {
+  isSafeInteger,
+  isNumber,
+  sprintf
+} from '../../utils/fns';
 import {
   LOG_LEVEL,
   LOG_MESSAGES,
@@ -81,7 +83,7 @@ export var evaluate = function(condition, userAttributes, logger) {
  * @returns {Boolean}
  */
 function isValueTypeValidForExactConditions(value) {
-  return typeof value === 'string' || typeof value === 'boolean' || fns.isNumber(value);
+  return typeof value === 'string' || typeof value === 'boolean' || isNumber(value);
 }
 
 /**
@@ -104,7 +106,7 @@ function exactEvaluator(condition, userAttributes, logger) {
 
   if (
     !isValueTypeValidForExactConditions(conditionValue) ||
-    (fns.isNumber(conditionValue) && !fns.isSafeInteger(conditionValue))
+    (isNumber(conditionValue) && !isSafeInteger(conditionValue))
   ) {
     logger.log(
       LOG_LEVEL.WARNING,
@@ -129,7 +131,7 @@ function exactEvaluator(condition, userAttributes, logger) {
     return null;
   }
 
-  if (fns.isNumber(userValue) && !fns.isSafeInteger(userValue)) {
+  if (isNumber(userValue) && !isSafeInteger(userValue)) {
     logger.log(
       LOG_LEVEL.WARNING,
       sprintf(LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName)
@@ -170,7 +172,7 @@ function greaterThanEvaluator(condition, userAttributes, logger) {
   var userValueType = typeof userValue;
   var conditionValue = condition.value;
 
-  if (!fns.isSafeInteger(conditionValue)) {
+  if (!isSafeInteger(conditionValue)) {
     logger.log(
       LOG_LEVEL.WARNING,
       sprintf(LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition))
@@ -186,7 +188,7 @@ function greaterThanEvaluator(condition, userAttributes, logger) {
     return null;
   }
 
-  if (!fns.isNumber(userValue)) {
+  if (!isNumber(userValue)) {
     logger.log(
       LOG_LEVEL.WARNING,
       sprintf(LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName)
@@ -194,7 +196,7 @@ function greaterThanEvaluator(condition, userAttributes, logger) {
     return null;
   }
 
-  if (!fns.isSafeInteger(userValue)) {
+  if (!isSafeInteger(userValue)) {
     logger.log(
       LOG_LEVEL.WARNING,
       sprintf(LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName)
@@ -221,7 +223,7 @@ function lessThanEvaluator(condition, userAttributes, logger) {
   var userValueType = typeof userValue;
   var conditionValue = condition.value;
 
-  if (!fns.isSafeInteger(conditionValue)) {
+  if (!isSafeInteger(conditionValue)) {
     logger.log(
       LOG_LEVEL.WARNING,
       sprintf(LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition))
@@ -237,7 +239,7 @@ function lessThanEvaluator(condition, userAttributes, logger) {
     return null;
   }
 
-  if (!fns.isNumber(userValue)) {
+  if (!isNumber(userValue)) {
     logger.log(
       LOG_LEVEL.WARNING,
       sprintf(LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName)
@@ -245,7 +247,7 @@ function lessThanEvaluator(condition, userAttributes, logger) {
     return null;
   }
 
-  if (!fns.isSafeInteger(userValue)) {
+  if (!isSafeInteger(userValue)) {
     logger.log(
       LOG_LEVEL.WARNING,
       sprintf(LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName)

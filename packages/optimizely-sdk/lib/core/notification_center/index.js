@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
-
+import { sprintf, objectValues } from '../../utils/fns';
 import {
   LOG_LEVEL,
   LOG_MESSAGES,

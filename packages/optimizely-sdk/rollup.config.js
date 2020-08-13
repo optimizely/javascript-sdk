@@ -85,6 +85,7 @@ const umdBundle = {
           'getErrorHandler',
         ],
         '@optimizely/js-sdk-event-processor': ['LogTierV1EventProcessor', 'LocalStoragePendingEventsDispatcher'],
+        'uuid': ['v4']
       },
     }),
     typescript(typescriptPluginOptions),
@@ -115,7 +116,7 @@ const jsonSchemaBundle = {
     commonjs(),
     typescript(typescriptPluginOptions),
   ],
-  external: ['json-schema', '@optimizely/js-sdk-utils'],
+  external: ['json-schema', 'uuid'],
   input: 'lib/utils/json_schema_validator/index.ts',
   output: {
     exports: 'named',
