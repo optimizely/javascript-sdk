@@ -15,11 +15,10 @@
  */
 import { generateUUID as uuid, keyBy as keyByUtil } from '@optimizely/js-sdk-utils';
 
+import { Config } from '@optimizely/optimizely-sdk';
+
 const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
-type Config = {
-  [key: string]: unknown;
-};
 
 export function assign(...args: [Config, ...Config[]]): Config {
   if (!args[0]) {
