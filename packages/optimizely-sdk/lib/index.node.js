@@ -22,7 +22,7 @@ import {
   LogLevel,
 } from '@optimizely/js-sdk-logging';
 
-import * as fns from './utils/fns';
+import { assign } from './utils/fns';
 import Optimizely from './optimizely';
 import * as enums from './utils/enums';
 import loggerPlugin from './plugins/logger';
@@ -81,7 +81,7 @@ var createInstance = function(config) {
       config.isValidInstance = false;
     }
 
-    config = fns.assign(
+    config = assign(
       {
         clientEngine: enums.NODE_CLIENT_ENGINE,
         eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,

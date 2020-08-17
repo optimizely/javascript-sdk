@@ -16,7 +16,7 @@
 import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 
-import * as fns from '../utils/fns'
+import { isSafeInteger } from '../utils/fns'
 import { validate } from '../utils/attributes_validator';
 import decisionService from '../core/decision_service';
 import * as enums from '../utils/enums';
@@ -1222,7 +1222,7 @@ Optimizely.prototype.onReady = function(options) {
   if (typeof options === 'object' && options !== null) {
     timeout = options.timeout;
   }
-  if (!fns.isSafeInteger(timeout)) {
+  if (!isSafeInteger(timeout)) {
     timeout = DEFAULT_ONREADY_TIMEOUT;
   }
 

@@ -15,12 +15,10 @@
  */
 import { generateUUID as uuid, keyBy as keyByUtil } from '@optimizely/js-sdk-utils';
 
-import { Config } from '@optimizely/optimizely-sdk';
-
 const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
-
-export function assign(...args: [Config, ...Config[]]): Config {
+// eslint-disable-next-line
+export function assign(...args: [any]): any {
   if (!args[0]) {
     return {};
   }
