@@ -19,7 +19,7 @@ import { NOTIFICATION_TYPES as notificationTypesEnum } from '@optimizely/js-sdk-
 /**
  * Contains global enums used throughout the library
  */
-export var LOG_LEVEL = {
+export const LOG_LEVEL = {
   NOTSET: 0,
   DEBUG: 1,
   INFO: 2,
@@ -27,7 +27,7 @@ export var LOG_LEVEL = {
   ERROR: 4,
 };
 
-export var ERROR_MESSAGES = {
+export const ERROR_MESSAGES = {
   CONDITION_EVALUATOR_ERROR: '%s: Error evaluating audience condition of type %s: %s',
   DATAFILE_AND_SDK_KEY_MISSING: '%s: You must provide at least one of sdkKey or datafile. Cannot start Optimizely',
   EXPERIMENT_KEY_NOT_IN_DATAFILE: '%s: Experiment key %s is not in datafile.',
@@ -65,7 +65,7 @@ export var ERROR_MESSAGES = {
   INVALID_VARIATION_KEY: '%s: Provided variation key is in an invalid format.',
 };
 
-export var LOG_MESSAGES = {
+export const LOG_MESSAGES = {
   ACTIVATE_USER: '%s: Activating user %s in experiment %s.',
   DISPATCH_CONVERSION_EVENT: '%s: Dispatching conversion event to URL %s with params %s.',
   DISPATCH_IMPRESSION_EVENT: '%s: Dispatching impression event to URL %s with params %s.',
@@ -157,32 +157,32 @@ export var LOG_MESSAGES = {
   UNABLE_TO_ATTACH_UNLOAD: '%s: unable to bind optimizely.close() to page unload event: "%s"',
 };
 
-export var RESERVED_EVENT_KEYWORDS = {
+export const RESERVED_EVENT_KEYWORDS = {
   REVENUE: 'revenue',
   VALUE: 'value',
 };
 
-export var CONTROL_ATTRIBUTES = {
+export const CONTROL_ATTRIBUTES = {
   BOT_FILTERING: '$opt_bot_filtering',
   BUCKETING_ID: '$opt_bucketing_id',
   STICKY_BUCKETING_KEY: '$opt_experiment_bucket_map',
   USER_AGENT: '$opt_user_agent',
 };
 
-export var JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
-export var NODE_CLIENT_ENGINE = 'node-sdk';
-export var REACT_CLIENT_ENGINE = 'react-sdk';
-export var NODE_CLIENT_VERSION = '4.2.1';
+export const JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
+export const NODE_CLIENT_ENGINE = 'node-sdk';
+export const REACT_CLIENT_ENGINE = 'react-sdk';
+export const NODE_CLIENT_VERSION = '4.2.1';
 
-export var VALID_CLIENT_ENGINES = [
+export const VALID_CLIENT_ENGINES = [
   NODE_CLIENT_ENGINE,
   REACT_CLIENT_ENGINE,
   JAVASCRIPT_CLIENT_ENGINE,
 ];
 
-export var NOTIFICATION_TYPES = notificationTypesEnum;
+export const NOTIFICATION_TYPES = notificationTypesEnum;
 
-export var DECISION_NOTIFICATION_TYPES = {
+export const DECISION_NOTIFICATION_TYPES = {
   AB_TEST: 'ab-test',
   FEATURE: 'feature',
   FEATURE_TEST: 'feature-test',
@@ -196,20 +196,20 @@ export var DECISION_NOTIFICATION_TYPES = {
  * source is used to decide whether to dispatch an impression event to
  * Optimizely.
  */
-export var DECISION_SOURCES = {
+export const DECISION_SOURCES = {
   FEATURE_TEST: 'feature-test',
   ROLLOUT: 'rollout',
 };
 
-export var AUDIENCE_EVALUATION_TYPES = {
+export const AUDIENCE_EVALUATION_TYPES = {
   RULE: 'rule',
   EXPERIMENT: 'experiment',
-}
+};
 
 /*
  * Possible types of variables attached to features
  */
-export var FEATURE_VARIABLE_TYPES = {
+export const FEATURE_VARIABLE_TYPES = {
   BOOLEAN: 'boolean',
   DOUBLE: 'double',
   INTEGER: 'integer',
@@ -220,27 +220,8 @@ export var FEATURE_VARIABLE_TYPES = {
 /*
  * Supported datafile versions
  */
-export var DATAFILE_VERSIONS = {
+export const DATAFILE_VERSIONS = {
   V2: '2',
   V3: '3',
   V4: '4',
 };
-
-export default {
-  LOG_LEVEL: LOG_LEVEL,
-  ERROR_MESSAGES: ERROR_MESSAGES,
-  LOG_MESSAGES: LOG_MESSAGES,
-  RESERVED_EVENT_KEYWORDS: RESERVED_EVENT_KEYWORDS,
-  CONTROL_ATTRIBUTES: CONTROL_ATTRIBUTES,
-  JAVASCRIPT_CLIENT_ENGINE: JAVASCRIPT_CLIENT_ENGINE,
-  NODE_CLIENT_ENGINE: NODE_CLIENT_ENGINE,
-  REACT_CLIENT_ENGINE: REACT_CLIENT_ENGINE,
-  NODE_CLIENT_VERSION: NODE_CLIENT_VERSION,
-  VALID_CLIENT_ENGINES: VALID_CLIENT_ENGINES,
-  NOTIFICATION_TYPES: NOTIFICATION_TYPES,
-  DECISION_NOTIFICATION_TYPES: DECISION_NOTIFICATION_TYPES,
-  DECISION_SOURCES: DECISION_SOURCES,
-  FEATURE_VARIABLE_TYPES: FEATURE_VARIABLE_TYPES,
-  DATAFILE_VERSIONS: DATAFILE_VERSIONS,
-  AUDIENCE_EVALUATION_TYPES: AUDIENCE_EVALUATION_TYPES
-}

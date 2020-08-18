@@ -17,7 +17,7 @@ import sinon from 'sinon';
 import { assert } from 'chai';
 
 import NotificationCenter from './';
-import enums from '../../utils/enums';
+import * as enums from '../../utils/enums';
 import logger from '../../plugins/logger';
 import errorHandler from '../../plugins/error_handler';
 
