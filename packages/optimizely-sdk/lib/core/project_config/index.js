@@ -22,7 +22,7 @@ import {
   LOG_LEVEL,
   FEATURE_VARIABLE_TYPES,
 } from '../../utils/enums';
-import configValidator from '../../utils/config_validator';
+import { validateDatafile } from '../../utils/config_validator';
 
 var EXPERIMENT_RUNNING_STATUS = 'Running';
 var RESERVED_ATTRIBUTE_PREFIX = '$opt_';
@@ -551,7 +551,7 @@ export var isFeatureExperiment = function(projectConfig, experimentId) {
  * @return {Object} Project config object
  */
 export var tryCreatingProjectConfig = function(config) {
-  configValidator.validateDatafile(config.datafile);
+  validateDatafile(config.datafile);
   if (!config.jsonSchemaValidator) {
     config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
   } else {

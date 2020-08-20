@@ -16,7 +16,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 
-import configValidator from './utils/config_validator';
+import * as configValidator from './utils/config_validator';
 import * as enums from './utils/enums';
 import logger from './plugins/logger';
 import Optimizely from './optimizely';

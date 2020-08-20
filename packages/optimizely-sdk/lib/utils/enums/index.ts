@@ -37,6 +37,7 @@ export const ERROR_MESSAGES = {
   INVALID_BUCKETING_ID: '%s: Unable to generate hash for bucketing ID %s: %s',
   INVALID_DATAFILE: '%s: Datafile is invalid - property %s: %s',
   INVALID_DATAFILE_MALFORMED: '%s: Datafile is invalid because it is malformed.',
+  INVALID_CONFIG: '%s: Provided Optimizely config is in an invalid format.',
   INVALID_JSON: '%s: JSON object is not valid.',
   INVALID_ERROR_HANDLER: '%s: Provided "errorHandler" is in an invalid format.',
   INVALID_EVENT_DISPATCHER: '%s: Provided "eventDispatcher" is in an invalid format.',
