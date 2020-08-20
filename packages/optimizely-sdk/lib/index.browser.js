@@ -24,7 +24,7 @@ import {
 import { LocalStoragePendingEventsDispatcher } from '@optimizely/js-sdk-event-processor';
 
 import { assign } from './utils/fns';
-import { validate } from './utils/config_validator';
+import * as configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import * as enums from './utils/enums';
@@ -73,7 +73,7 @@ var createInstance = function(config) {
     }
 
     try {
-      validate(config);
+      configValidator.validate(config);
       config.isValidInstance = true;
     } catch (ex) {
       logger.error(ex);
