@@ -565,6 +565,7 @@ export var toDatafile = function(projectConfig) {
  * @param   {Object}         config
  * @param   {Object|string}  config.datafile
  * @param   {Object}         config.jsonSchemaValidator
+ * @param   {Object}         config.logger
  * @returns {TryCreatingProjectConfigResult}
  */
 export var tryCreatingProjectConfig = function(config) {
@@ -578,10 +579,13 @@ export var tryCreatingProjectConfig = function(config) {
   if (config.jsonSchemaValidator) {
     try {
       config.jsonSchemaValidator.validate(newDatafileObj);
+      config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
     } catch (error) {
       return { configObj: null, error };
     }
-  }
+  } else {
+    config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
+  }   
 
   var createProjectConfigArgs = [newDatafileObj];
   if (typeof config.datafile === 'string') {

@@ -195,6 +195,7 @@ ProjectConfigManager.prototype.__handleNewDatafile = function(newDatafile) {
   var { configObj, error } = projectConfig.tryCreatingProjectConfig({
     datafile: newDatafile,
     jsonSchemaValidator: this.jsonSchemaValidator,
+    logger: logger
   });
 
   if (error) {
