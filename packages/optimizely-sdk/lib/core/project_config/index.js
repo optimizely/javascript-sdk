@@ -19,6 +19,7 @@ import fns from '../../utils/fns';
 import {
   ERROR_MESSAGES,
   LOG_LEVEL,
+  LOG_MESSAGES,
   FEATURE_VARIABLE_TYPES,
 } from '../../utils/enums';
 import configValidator from '../../utils/config_validator';
