@@ -19,7 +19,7 @@ const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
 // eslint-disable-next-line
 export function assign(...sources: [any]): any {
-  if (!sources[0]) {
+  if (sources.length < 1) {
     return {};
   }
   if (typeof Object.assign === 'function') {
