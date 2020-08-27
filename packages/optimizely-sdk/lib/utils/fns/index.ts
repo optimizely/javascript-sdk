@@ -18,14 +18,14 @@ import { generateUUID as uuid, keyBy as keyByUtil } from '@optimizely/js-sdk-uti
 const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
 // eslint-disable-next-line
-export function assign(target: any, ...sources: any[]): any {
-  if (!target) {
+export function assign(...sources: [any]): any {
+  if (!sources[0]) {
     return {};
   }
   if (typeof Object.assign === 'function') {
-    return Object.assign(target, ...sources);
+    return Object.assign(...sources);
   } else {
-    const to = Object(target);
+    const to = Object(sources[0]);
     for (let index = 1; index < sources.length; index++) {
       const nextSource = sources[index];
       if (nextSource !== null && nextSource !== undefined) {
