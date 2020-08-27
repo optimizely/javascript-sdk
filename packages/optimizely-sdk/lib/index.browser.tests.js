@@ -22,7 +22,6 @@ import Optimizely from './optimizely';
 import testData from './tests/test_data';
 import packageJSON from '../package.json';
 import optimizelyFactory from './index.browser';
-import * as configValidator from './utils/config_validator';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
 var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
@@ -60,7 +59,6 @@ describe('javascript-sdk', function() {
           logToConsole: false,
         });
         sinon.spy(console, 'error');
-        sinon.stub(configValidator, 'validate');
 
         global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
 
@@ -71,7 +69,6 @@ describe('javascript-sdk', function() {
         LocalStoragePendingEventsDispatcher.prototype.sendPendingEvents.restore();
         optimizelyFactory.__internalResetRetryState();
         console.error.restore();
-        configValidator.validate.restore();
         delete global.XMLHttpRequest
       });
 
@@ -125,12 +122,11 @@ describe('javascript-sdk', function() {
         sinon.assert.calledOnce(LocalStoragePendingEventsDispatcher.prototype.sendPendingEvents);
       });
 
-      it('should not throw if the provided config is not valid', function() {
-        configValidator.validate.throws(new Error('Invalid config or something'));
+      it('should not throw an error if the provided config contains invalid dispatcher', function() {
         assert.doesNotThrow(function() {
           var optlyInstance = optimizelyFactory.createInstance({
             datafile: {},
-            logger: silentLogger,
+            dispatcher: 'invalid dispatcher',
           });
           // Invalid datafile causes onReady Promise rejection - catch this error
           optlyInstance.onReady().catch(function() {});
