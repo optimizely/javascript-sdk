@@ -26,7 +26,7 @@ import { assign } from './utils/fns';
 import Optimizely from './optimizely';
 import * as enums from './utils/enums';
 import loggerPlugin from './plugins/logger';
-import * as configValidator from './utils/config_validator';
+import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';

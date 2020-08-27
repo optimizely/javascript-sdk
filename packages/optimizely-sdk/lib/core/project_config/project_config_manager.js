@@ -21,7 +21,7 @@ import { assign } from '../../utils/fns';
 import { ERROR_MESSAGES } from '../../utils/enums';
 import projectConfig from '../../core/project_config';
 import { getOptimizelyConfig } from '../optimizely_config';
-import { validateDatafile } from '../../utils/config_validator';
+import configValidator from '../../utils/config_validator';
 
 var logger = getLogger();
 var MODULE_NAME = 'PROJECT_CONFIG_MANAGER';
@@ -217,7 +217,7 @@ ProjectConfigManager.prototype.__getDatafileFromConfig = function(config) {
   var initialDatafile = null;
   try {
     if (config.datafile) {
-      validateDatafile(config.datafile);
+      configValidator.validateDatafile(config.datafile);
       if (typeof config.datafile === 'string' || config.datafile instanceof String) {
         initialDatafile = JSON.parse(config.datafile);
       } else {

@@ -22,7 +22,7 @@ import Optimizely from './optimizely';
 import testData from './tests/test_data';
 import packageJSON from '../package.json';
 import optimizelyFactory from './index.react_native';
-import * as configValidator from './utils/config_validator';
+import configValidator from './utils/config_validator';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
 describe('javascript-sdk/react-native', function() {

@@ -16,7 +16,7 @@
 import { assert } from 'chai';
 import { sprintf } from '@optimizely/js-sdk-utils';
 
-import * as configValidator from './';
+import configValidator from './';
 import { ERROR_MESSAGES } from '../enums';
 import testData from '../../tests/test_data';
 

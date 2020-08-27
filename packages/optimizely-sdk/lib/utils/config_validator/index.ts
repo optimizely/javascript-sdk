@@ -13,10 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
- /**
- * Provides utility methods for validating that the configuration options are valid
- */
 import { sprintf } from '@optimizely/js-sdk-utils';
 
 import { 
@@ -81,3 +77,10 @@ export function validateDatafile(datafile: unknown): boolean {
   return true;
 }
 
+/**
+ * Provides utility methods for validating that the configuration options are valid
+ */
+export default {
+  validate: validate,
+  validateDatafile: validateDatafile,
+}

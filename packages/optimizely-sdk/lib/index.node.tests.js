@@ -22,7 +22,7 @@ import Optimizely from './optimizely';
 import testData from './tests/test_data';
 import loggerPlugin from './plugins/logger';
 import optimizelyFactory from './index.node';
-import * as configValidator from './utils/config_validator';
+import configValidator from './utils/config_validator';
 
 describe('optimizelyFactory', function() {
   describe('APIs', function() {

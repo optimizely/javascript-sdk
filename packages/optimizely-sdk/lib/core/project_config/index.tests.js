@@ -28,7 +28,7 @@ import {
 } from '../../utils/enums';
 import loggerPlugin from '../../plugins/logger';
 import testDatafile from '../../tests/test_data';
-import * as configValidator from '../../utils/config_validator';
+import configValidator from '../../utils/config_validator';
 
 var logger = getLogger();
 
