@@ -32,7 +32,7 @@ const SUPPORTED_VERSIONS = [DATAFILE_VERSIONS.V2, DATAFILE_VERSIONS.V3, DATAFILE
  * @return {boolean} true if the config options are valid
  * @throws If any of the config options are not valid
  */
-export function validate(config: unknown): boolean {
+export const validate = function(config: unknown): boolean {
   if (typeof config === 'object' && config !== null) {
     if (config['errorHandler'] && typeof config['errorHandler'].handleError !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_ERROR_HANDLER, MODULE_NAME));
@@ -57,7 +57,7 @@ export function validate(config: unknown): boolean {
  - The datafile string cannot be parsed as a JSON object
  - The datafile version is not supported
  */
-export function validateDatafile(datafile: unknown): boolean {
+export const validateDatafile = function(datafile: unknown): boolean {
   if (!datafile) {
     throw new Error(sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, MODULE_NAME));
   }
