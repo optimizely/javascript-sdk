@@ -16,7 +16,7 @@
 import sinon from 'sinon';
 import { assert } from 'chai';
 
- import conditionTreeEvaluator from './';
+ import * as conditionTreeEvaluator from './';
 
 var conditionA = {
   name: 'browser_type',
