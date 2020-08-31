@@ -23,7 +23,7 @@ import {
 } from '@optimizely/js-sdk-logging';
 import { LocalStoragePendingEventsDispatcher } from '@optimizely/js-sdk-event-processor';
 
-import fns from './utils/fns';
+import { assign } from './utils/fns';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
@@ -96,7 +96,7 @@ var createInstance = function(config) {
       eventDispatcher = config.eventDispatcher;
     }
 
-    config = fns.assign(
+    config = assign(
       {
         clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
         eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
