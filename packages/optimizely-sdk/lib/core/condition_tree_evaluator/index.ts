@@ -14,11 +14,11 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
-var AND_CONDITION = 'and';
-var OR_CONDITION = 'or';
-var NOT_CONDITION = 'not';
+const AND_CONDITION = 'and';
+const OR_CONDITION = 'or';
+const NOT_CONDITION = 'not';
 
-var DEFAULT_OPERATOR_TYPES = [AND_CONDITION, OR_CONDITION, NOT_CONDITION];
+const DEFAULT_OPERATOR_TYPES = [AND_CONDITION, OR_CONDITION, NOT_CONDITION];
 
 /**
  * Top level method to evaluate conditions
@@ -27,15 +27,17 @@ var DEFAULT_OPERATOR_TYPES = [AND_CONDITION, OR_CONDITION, NOT_CONDITION];
  *                                      Example: ['and', '0', ['or', '1', '2']]
  * @param  {Function}   leafEvaluator   Function which will be called to evaluate leaf condition
  *                                      values
- * @return {?Boolean}                   Result of evaluating the conditions using the operator
+ * @return {?boolean}                   Result of evaluating the conditions using the operator
  *                                      rules and the leaf evaluator. A return value of null
  *                                      indicates that the conditions are invalid or unable to be
  *                                      evaluated
  */
-export var evaluate = function(conditions, leafEvaluator) {
+// TODO[OASIS-7052]: Define leafEvaluator function shape after converting audience_evaluator module
+// eslint-disable-next-line
+export function evaluate(conditions: [any], leafEvaluator: Function): boolean | null {
   if (Array.isArray(conditions)) {
-    var firstOperator = conditions[0];
-    var restOfConditions = conditions.slice(1);
+    let firstOperator = conditions[0];
+    let restOfConditions = conditions.slice(1);
 
     if (DEFAULT_OPERATOR_TYPES.indexOf(firstOperator) === -1) {
       // Operator to apply is not explicit - assume 'or'
@@ -54,23 +56,25 @@ export var evaluate = function(conditions, leafEvaluator) {
     }
   }
 
-  var leafCondition = conditions;
+  const leafCondition = conditions;
   return leafEvaluator(leafCondition);
-};
+}
 
 /**
  * Evaluates an array of conditions as if the evaluator had been applied
  * to each entry and the results AND-ed together.
  * @param  {Array}      conditions      Array of conditions ex: [operand_1, operand_2]
  * @param  {Function}   leafEvaluator   Function which will be called to evaluate leaf condition values
- * @return {?Boolean}                   Result of evaluating the conditions. A return value of null
+ * @return {?boolean}                   Result of evaluating the conditions. A return value of null
  *                                      indicates that the conditions are invalid or unable to be
  *                                      evaluated.
  */
-function andEvaluator(conditions, leafEvaluator) {
-  var sawNullResult = false;
-  for (var i = 0; i < conditions.length; i++) {
-    var conditionResult = evaluate(conditions[i], leafEvaluator);
+// TODO[OASIS-7052]: Define leafEvaluator function shape after converting audience_evaluator module
+// eslint-disable-next-line
+function andEvaluator(conditions: any[], leafEvaluator: Function): boolean | null {
+  let sawNullResult = false;
+  for (let i = 0; i < conditions.length; i++) {
+    const conditionResult = evaluate(conditions[i], leafEvaluator);
     if (conditionResult === false) {
       return false;
     }
@@ -86,13 +90,15 @@ function andEvaluator(conditions, leafEvaluator) {
  * to a single entry and NOT was applied to the result.
  * @param  {Array}      conditions      Array of conditions ex: [operand_1]
  * @param  {Function}   leafEvaluator   Function which will be called to evaluate leaf condition values
- * @return {?Boolean}                   Result of evaluating the conditions. A return value of null
+ * @return {?boolean}                   Result of evaluating the conditions. A return value of null
  *                                      indicates that the conditions are invalid or unable to be
  *                                      evaluated.
  */
-function notEvaluator(conditions, leafEvaluator) {
+// TODO[OASIS-7052]: Define leafEvaluator function shape after converting audience_evaluator module
+// eslint-disable-next-line
+function notEvaluator(conditions: any[], leafEvaluator: Function): boolean | null {
   if (conditions.length > 0) {
-    var result = evaluate(conditions[0], leafEvaluator);
+    const result = evaluate(conditions[0], leafEvaluator);
     return result === null ? null : !result;
   }
   return null;
@@ -103,14 +109,16 @@ function notEvaluator(conditions, leafEvaluator) {
  * to each entry and the results OR-ed together.
  * @param  {Array}      conditions      Array of conditions ex: [operand_1, operand_2]
  * @param  {Function}   leafEvaluator   Function which will be called to evaluate leaf condition values
- * @return {?Boolean}                   Result of evaluating the conditions. A return value of null
+ * @return {?boolean}                   Result of evaluating the conditions. A return value of null
  *                                      indicates that the conditions are invalid or unable to be
  *                                      evaluated.
  */
-function orEvaluator(conditions, leafEvaluator) {
-  var sawNullResult = false;
-  for (var i = 0; i < conditions.length; i++) {
-    var conditionResult = evaluate(conditions[i], leafEvaluator);
+// TODO[OASIS-7052]: Define leafEvaluator function shape after converting audience_evaluator module
+// eslint-disable-next-line
+function orEvaluator(conditions: any[], leafEvaluator: Function): boolean | null {
+  let sawNullResult = false;
+  for (let i = 0; i < conditions.length; i++) {
+    const conditionResult = evaluate(conditions[i], leafEvaluator);
     if (conditionResult === true) {
       return true;
     }
@@ -120,7 +128,3 @@ function orEvaluator(conditions, leafEvaluator) {
   }
   return sawNullResult ? null : false;
 }
-
-export default {
-  evaluate: evaluate,
-};

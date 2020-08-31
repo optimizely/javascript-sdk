@@ -22,7 +22,7 @@ import {
   LOG_MESSAGES,
   ERROR_MESSAGES,
 } from '../../utils/enums';
-import conditionTreeEvaluator from '../condition_tree_evaluator';
+import * as conditionTreeEvaluator from '../condition_tree_evaluator';
 import * as customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
 
 var logger = getLogger();
