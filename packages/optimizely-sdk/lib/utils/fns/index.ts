@@ -26,7 +26,7 @@ export function assign(target: any, ...sources: any[]): any {
     return Object.assign(target, ...sources);
   } else {
     const to = Object(target);
-    for (let index = 1; index < sources.length; index++) {
+    for (let index = 0; index < sources.length; index++) {
       const nextSource = sources[index];
       if (nextSource !== null && nextSource !== undefined) {
         for (const nextKey in nextSource) {
