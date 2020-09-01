@@ -43,7 +43,6 @@ export default class AudienceEvaluator {
     this.typeToEvaluatorMap = assign({}, UNSTABLE_conditionEvaluators, {
       custom_attribute: customAttributeConditionEvaluator,
     })
-    console.log('typeToEvaluatorMap', this.typeToEvaluatorMap);
   }
 
   /**
