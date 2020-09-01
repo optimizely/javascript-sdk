@@ -18,7 +18,7 @@ import { assert } from 'chai';
 
 import { LOG_LEVEL } from '../../utils/enums';
 import logger from '../../plugins/logger';
-import customAttributeEvaluator from './';
+import * as customAttributeEvaluator from './';
 
 var browserConditionSafari = {
   name: 'browser_type',

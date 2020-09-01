@@ -15,21 +15,33 @@
  ***************************************************************************/
 import { sprintf } from '@optimizely/js-sdk-utils';
 
+import { LoggerFacade } from '@optimizely/js-sdk-logging';
+
 import { isNumber, isSafeInteger } from '../../utils/fns';
 import {
   LOG_LEVEL,
   LOG_MESSAGES,
 } from '../../utils/enums';
 
-var MODULE_NAME = 'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR';
+export type UserAttributes = {
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  [name: string]: any;
+};
 
-var EXACT_MATCH_TYPE = 'exact';
-var EXISTS_MATCH_TYPE = 'exists';
-var GREATER_THAN_MATCH_TYPE = 'gt';
-var LESS_THAN_MATCH_TYPE = 'lt';
-var SUBSTRING_MATCH_TYPE = 'substring';
+export type Condition = {
+  [name: string]: string;
+};
 
-var MATCH_TYPES = [
+const MODULE_NAME = 'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR';
+
+const EXACT_MATCH_TYPE = 'exact';
+const EXISTS_MATCH_TYPE = 'exists';
+const GREATER_THAN_MATCH_TYPE = 'gt';
+const LESS_THAN_MATCH_TYPE = 'lt';
+const SUBSTRING_MATCH_TYPE = 'substring';
+
+const MATCH_TYPES = [
   EXACT_MATCH_TYPE,
   EXISTS_MATCH_TYPE,
   GREATER_THAN_MATCH_TYPE,
@@ -37,7 +49,7 @@ var MATCH_TYPES = [
   SUBSTRING_MATCH_TYPE,
 ];
 
-var EVALUATORS_BY_MATCH_TYPE = {};
+const EVALUATORS_BY_MATCH_TYPE = {};
 EVALUATORS_BY_MATCH_TYPE[EXACT_MATCH_TYPE] = exactEvaluator;
 EVALUATORS_BY_MATCH_TYPE[EXISTS_MATCH_TYPE] = existsEvaluator;
 EVALUATORS_BY_MATCH_TYPE[GREATER_THAN_MATCH_TYPE] = greaterThanEvaluator;
@@ -47,21 +59,21 @@ EVALUATORS_BY_MATCH_TYPE[SUBSTRING_MATCH_TYPE] = substringEvaluator;
 /**
  * Given a custom attribute audience condition and user attributes, evaluate the
  * condition against the attributes.
- * @param  {Object}     condition
- * @param  {Object}     userAttributes
- * @param  {Object}     logger
- * @return {?Boolean}   true/false if the given user attributes match/don't match the given condition,
- *                                      null if the given user attributes and condition can't be evaluated
+ * @param  {Condition}        condition
+ * @param  {UserAttributes}   userAttributes
+ * @param  {LoggerFacade}     logger
+ * @return {?boolean}         true/false if the given user attributes match/don't match the given condition,
+ *                            null if the given user attributes and condition can't be evaluated
  * TODO: Change to accept and object with named properties
  */
-export var evaluate = function(condition, userAttributes, logger) {
-  var conditionMatch = condition.match;
+export function evaluate(condition: Condition, userAttributes: UserAttributes, logger: LoggerFacade): boolean | null {
+  const conditionMatch = condition.match;
   if (typeof conditionMatch !== 'undefined' && MATCH_TYPES.indexOf(conditionMatch) === -1) {
     logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, JSON.stringify(condition)));
     return null;
   }
 
-  var attributeKey = condition.name;
+  const attributeKey = condition.name;
   if (!userAttributes.hasOwnProperty(attributeKey) && conditionMatch != EXISTS_MATCH_TYPE) {
     logger.log(
       LOG_LEVEL.DEBUG,
@@ -70,37 +82,37 @@ export var evaluate = function(condition, userAttributes, logger) {
     return null;
   }
 
-  var evaluatorForMatch = EVALUATORS_BY_MATCH_TYPE[conditionMatch] || exactEvaluator;
+  const evaluatorForMatch = EVALUATORS_BY_MATCH_TYPE[conditionMatch] || exactEvaluator;
   return evaluatorForMatch(condition, userAttributes, logger);
-};
+}
 
 /**
  * Returns true if the value is valid for exact conditions. Valid values include
  * strings, booleans, and numbers that aren't NaN, -Infinity, or Infinity.
  * @param value
- * @returns {Boolean}
+ * @returns {?boolean}
  */
-function isValueTypeValidForExactConditions(value) {
+function isValueTypeValidForExactConditions(value: unknown): boolean | null {
   return typeof value === 'string' || typeof value === 'boolean' || isNumber(value);
 }
 
 /**
  * Evaluate the given exact match condition for the given user attributes
- * @param   {Object}    condition
- * @param   {Object}    userAttributes
- * @param   {Object}    logger
- * @return  {?Boolean}  true if the user attribute value is equal (===) to the condition value,
- *                      false if the user attribute value is not equal (!==) to the condition value,
- *                      null if the condition value or user attribute value has an invalid type, or
- *                      if there is a mismatch between the user attribute type and the condition value
- *                      type
+ * @param   {Condition}       condition
+ * @param   {UserAttributes}  userAttributes
+ * @param   {LoggerFacade}    logger
+ * @return  {?boolean}        true if the user attribute value is equal (===) to the condition value,
+ *                            false if the user attribute value is not equal (!==) to the condition value,
+ *                            null if the condition value or user attribute value has an invalid type, or
+ *                            if there is a mismatch between the user attribute type and the condition value
+ *                            type
  */
-function exactEvaluator(condition, userAttributes, logger) {
-  var conditionValue = condition.value;
-  var conditionValueType = typeof conditionValue;
-  var conditionName = condition.name;
-  var userValue = userAttributes[conditionName];
-  var userValueType = typeof userValue;
+function exactEvaluator(condition: Condition, userAttributes: UserAttributes, logger: LoggerFacade): boolean | null {
+  const conditionValue = condition.value;
+  const conditionValueType = typeof conditionValue;
+  const conditionName = condition.name;
+  const userValue = userAttributes[conditionName];
+  const userValueType = typeof userValue;
 
   if (
     !isValueTypeValidForExactConditions(conditionValue) ||
@@ -142,33 +154,33 @@ function exactEvaluator(condition, userAttributes, logger) {
 
 /**
  * Evaluate the given exists match condition for the given user attributes
- * @param   {Object}  condition
- * @param   {Object}  userAttributes
- * @returns {Boolean} true if both:
- *                      1) the user attributes have a value for the given condition, and
- *                      2) the user attribute value is neither null nor undefined
- *                    Returns false otherwise
+ * @param   {Condition}       condition
+ * @param   {UserAttributes}  userAttributes
+ * @returns {boolean}         true if both:
+ *                             1) the user attributes have a value for the given condition, and
+ *                             2) the user attribute value is neither null nor undefined
+ *                            Returns false otherwise
  */
-function existsEvaluator(condition, userAttributes) {
-  var userValue = userAttributes[condition.name];
+function existsEvaluator(condition: Condition, userAttributes: UserAttributes): boolean {
+  const userValue = userAttributes[condition.name];
   return typeof userValue !== 'undefined' && userValue !== null;
 }
 
 /**
  * Evaluate the given greater than match condition for the given user attributes
- * @param   {Object}    condition
- * @param   {Object}    userAttributes
- * @param   {Object}    logger
- * @returns {?Boolean}  true if the user attribute value is greater than the condition value,
- *                      false if the user attribute value is less than or equal to the condition value,
- *                      null if the condition value isn't a number or the user attribute value
- *                      isn't a number
+ * @param   {Condition}       condition
+ * @param   {UserAttributes}  userAttributes
+ * @param   {LoggerFacade}    logger
+ * @returns {?boolean}        true if the user attribute value is greater than the condition value,
+ *                            false if the user attribute value is less than or equal to the condition value,
+ *                            null if the condition value isn't a number or the user attribute value
+ *                            isn't a number
  */
-function greaterThanEvaluator(condition, userAttributes, logger) {
-  var conditionName = condition.name;
-  var userValue = userAttributes[conditionName];
-  var userValueType = typeof userValue;
-  var conditionValue = condition.value;
+function greaterThanEvaluator(condition: Condition, userAttributes: UserAttributes, logger: LoggerFacade): boolean | null {
+  const conditionName = condition.name;
+  const userValue = userAttributes[conditionName];
+  const userValueType = typeof userValue;
+  const conditionValue = condition.value;
 
   if (!isSafeInteger(conditionValue)) {
     logger.log(
@@ -207,19 +219,19 @@ function greaterThanEvaluator(condition, userAttributes, logger) {
 
 /**
  * Evaluate the given less than match condition for the given user attributes
- * @param   {Object}    condition
- * @param   {Object}    userAttributes
- * @param   {Object}    logger
- * @returns {?Boolean}  true if the user attribute value is less than the condition value,
- *                      false if the user attribute value is greater than or equal to the condition value,
- *                      null if the condition value isn't a number or the user attribute value isn't a
- *                      number
+ * @param   {Condition}       condition
+ * @param   {UserAttributes}  userAttributes
+ * @param   {LoggerFacade}    logger
+ * @returns {?boolean}        true if the user attribute value is less than the condition value,
+ *                            false if the user attribute value is greater than or equal to the condition value,
+ *                            null if the condition value isn't a number or the user attribute value isn't a
+ *                            number
  */
-function lessThanEvaluator(condition, userAttributes, logger) {
-  var conditionName = condition.name;
-  var userValue = userAttributes[condition.name];
-  var userValueType = typeof userValue;
-  var conditionValue = condition.value;
+function lessThanEvaluator(condition: Condition, userAttributes: UserAttributes, logger: LoggerFacade): boolean | null {
+  const conditionName = condition.name;
+  const userValue = userAttributes[condition.name];
+  const userValueType = typeof userValue;
+  const conditionValue = condition.value;
 
   if (!isSafeInteger(conditionValue)) {
     logger.log(
@@ -258,19 +270,21 @@ function lessThanEvaluator(condition, userAttributes, logger) {
 
 /**
  * Evaluate the given substring match condition for the given user attributes
- * @param   {Object}    condition
- * @param   {Object}    userAttributes
- * @param   {Object}    logger
- * @returns {?Boolean}  true if the condition value is a substring of the user attribute value,
- *                      false if the condition value is not a substring of the user attribute value,
- *                      null if the condition value isn't a string or the user attribute value
- *                      isn't a string
+ * @param   {Condition}       condition
+ * @param   {UserAttributes}  userAttributes
+ * @param   {LoggerFacade}    logger
+ * @returns {?Boolean}        true if the condition value is a substring of the user attribute value,
+ *                            false if the condition value is not a substring of the user attribute value,
+ *                            null if the condition value isn't a string or the user attribute value
+ *                            isn't a string
  */
-function substringEvaluator(condition, userAttributes, logger) {
-  var conditionName = condition.name;
-  var userValue = userAttributes[condition.name];
-  var userValueType = typeof userValue;
-  var conditionValue = condition.value;
+function substringEvaluator(condition: Condition, userAttributes: UserAttributes, logger: LoggerFacade): boolean | null {
+  console.log('my condition', condition);
+  console.log('my userAttributes', userAttributes);
+  const conditionName = condition.name;
+  const userValue = userAttributes[condition.name];
+  const userValueType = typeof userValue;
+  const conditionValue = condition.value;
 
   if (typeof conditionValue !== 'string') {
     logger.log(
@@ -298,7 +312,3 @@ function substringEvaluator(condition, userAttributes, logger) {
 
   return userValue.indexOf(conditionValue) !== -1;
 }
-
-export default {
-  evaluate: evaluate,
-};
