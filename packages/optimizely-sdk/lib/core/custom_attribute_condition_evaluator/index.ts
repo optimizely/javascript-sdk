@@ -23,13 +23,14 @@ import {
   LOG_MESSAGES,
 } from '../../utils/enums';
 
-export type UserAttributes = {
+// TODO: Find place for UserAttributes and Condition types to live in
+type UserAttributes = {
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   [name: string]: any;
 };
 
-export type Condition = {
+type Condition = {
   [name: string]: string;
 };
 
@@ -279,8 +280,6 @@ function lessThanEvaluator(condition: Condition, userAttributes: UserAttributes,
  *                            isn't a string
  */
 function substringEvaluator(condition: Condition, userAttributes: UserAttributes, logger: LoggerFacade): boolean | null {
-  console.log('my condition', condition);
-  console.log('my userAttributes', userAttributes);
   const conditionName = condition.name;
   const userValue = userAttributes[condition.name];
   const userValueType = typeof userValue;
