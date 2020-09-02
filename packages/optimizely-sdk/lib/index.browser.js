@@ -24,7 +24,7 @@ import {
 import { LocalStoragePendingEventsDispatcher } from '@optimizely/js-sdk-event-processor';
 
 import { assign } from './utils/fns';
-import configValidator from './utils/config_validator';
+import * as configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import * as enums from './utils/enums';

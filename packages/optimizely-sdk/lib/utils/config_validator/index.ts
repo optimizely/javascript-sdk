@@ -20,49 +20,48 @@ import {
   DATAFILE_VERSIONS,
 } from '../enums';
 
-var MODULE_NAME = 'CONFIG_VALIDATOR';
-var SUPPORTED_VERSIONS = [DATAFILE_VERSIONS.V2, DATAFILE_VERSIONS.V3, DATAFILE_VERSIONS.V4];
+const MODULE_NAME = 'CONFIG_VALIDATOR';
+const SUPPORTED_VERSIONS = [DATAFILE_VERSIONS.V2, DATAFILE_VERSIONS.V3, DATAFILE_VERSIONS.V4];
 
 /**
  * Validates the given config options
- * @param  {Object} config
- * @param  {Object} config.errorHandler
- * @param  {Object} config.eventDispatcher
- * @param  {Object} config.logger
- * @return {Boolean} True if the config options are valid
+ * @param  {unknown} config
+ * @param  {object}  config.errorHandler
+ * @param  {object}  config.eventDispatcher
+ * @param  {object}  config.logger
+ * @return {boolean} true if the config options are valid
  * @throws If any of the config options are not valid
  */
-export var validate = function(config) {
-  if (config.errorHandler && typeof config.errorHandler.handleError !== 'function') {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_ERROR_HANDLER, MODULE_NAME));
+export const validate = function(config: unknown): boolean {
+  if (typeof config === 'object' && config !== null) {
+    if (config['errorHandler'] && typeof config['errorHandler'].handleError !== 'function') {
+      throw new Error(sprintf(ERROR_MESSAGES.INVALID_ERROR_HANDLER, MODULE_NAME));
+    }
+    if (config['eventDispatcher'] && typeof config['eventDispatcher'].dispatchEvent !== 'function') {
+      throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_DISPATCHER, MODULE_NAME));
+    }
+    if (config['logger'] && typeof config['logger'].log !== 'function') {
+      throw new Error(sprintf(ERROR_MESSAGES.INVALID_LOGGER, MODULE_NAME));
+    }
+    return true;
   }
-
-  if (config.eventDispatcher && typeof config.eventDispatcher.dispatchEvent !== 'function') {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_DISPATCHER, MODULE_NAME));
-  }
-
-  if (config.logger && typeof config.logger.log !== 'function') {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_LOGGER, MODULE_NAME));
-  }
-
-  return true;
-};
+  throw new Error(sprintf(ERROR_MESSAGES.INVALID_CONFIG, MODULE_NAME));
+}
 
 /**
  * Validates the datafile
  * @param {string}  datafile
- * @return {Boolean} True if the datafile is valid
+ * @return {boolean} true if the datafile is valid
  * @throws If the datafile is not valid for any of the following reasons:
  - The datafile string is undefined
  - The datafile string cannot be parsed as a JSON object
  - The datafile version is not supported
  */
-export var validateDatafile = function(datafile) {
+export const validateDatafile = function(datafile: unknown): boolean {
   if (!datafile) {
     throw new Error(sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, MODULE_NAME));
   }
-
-  if (typeof datafile === 'string' || datafile instanceof String) {
+  if (typeof datafile === 'string') {
     // Attempt to parse the datafile string
     try {
       datafile = JSON.parse(datafile);
@@ -70,13 +69,13 @@ export var validateDatafile = function(datafile) {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE_MALFORMED, MODULE_NAME));
     }
   }
-
-  if (SUPPORTED_VERSIONS.indexOf(datafile.version) === -1) {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, MODULE_NAME, datafile.version));
+  if (typeof datafile === 'object' && !Array.isArray(datafile) && datafile !== null) {
+    if (SUPPORTED_VERSIONS.indexOf(datafile['version']) === -1) {
+      throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, MODULE_NAME, datafile['version']));
+    }
   }
-
   return true;
-};
+}
 
 /**
  * Provides utility methods for validating that the configuration options are valid
@@ -84,4 +83,4 @@ export var validateDatafile = function(datafile) {
 export default {
   validate: validate,
   validateDatafile: validateDatafile,
-};
+}
