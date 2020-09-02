@@ -16,23 +16,13 @@
 import { sprintf } from '@optimizely/js-sdk-utils';
 
 import { LoggerFacade } from '@optimizely/js-sdk-logging';
+import { Condition, UserAttributes } from '../../shared_types';
 
 import { isNumber, isSafeInteger } from '../../utils/fns';
 import {
   LOG_LEVEL,
   LOG_MESSAGES,
 } from '../../utils/enums';
-
-// TODO: Find place for UserAttributes and Condition types to live in
-type UserAttributes = {
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  [name: string]: any;
-};
-
-type Condition = {
-  [name: string]: string;
-};
 
 const MODULE_NAME = 'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR';
 
@@ -91,9 +81,9 @@ export function evaluate(condition: Condition, userAttributes: UserAttributes, l
  * Returns true if the value is valid for exact conditions. Valid values include
  * strings, booleans, and numbers that aren't NaN, -Infinity, or Infinity.
  * @param value
- * @returns {?boolean}
+ * @returns {boolean}
  */
-function isValueTypeValidForExactConditions(value: unknown): boolean | null {
+function isValueTypeValidForExactConditions(value: unknown): boolean {
   return typeof value === 'string' || typeof value === 'boolean' || isNumber(value);
 }
 
