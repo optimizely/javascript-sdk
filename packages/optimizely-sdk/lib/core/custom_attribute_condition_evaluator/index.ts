@@ -148,8 +148,8 @@ function exactEvaluator(condition: Condition, userAttributes: UserAttributes, lo
  * @param   {Condition}       condition
  * @param   {UserAttributes}  userAttributes
  * @returns {boolean}         true if both:
- *                             1) the user attributes have a value for the given condition, and
- *                             2) the user attribute value is neither null nor undefined
+ *                              1) the user attributes have a value for the given condition, and
+ *                              2) the user attribute value is neither null nor undefined
  *                            Returns false otherwise
  */
 function existsEvaluator(condition: Condition, userAttributes: UserAttributes): boolean {
