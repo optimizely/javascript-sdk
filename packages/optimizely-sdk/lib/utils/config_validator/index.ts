@@ -57,7 +57,8 @@ export const validate = function(config: unknown): boolean {
  - The datafile string cannot be parsed as a JSON object
  - The datafile version is not supported
  */
-export const validateDatafile = function(datafile: unknown): boolean {
+// eslint-disable-next-line
+export const validateDatafile = function(datafile: unknown): any {
   if (!datafile) {
     throw new Error(sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, MODULE_NAME));
   }
