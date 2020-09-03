@@ -15,9 +15,9 @@
  ***************************************************************************/
 import { sprintf } from'@optimizely/js-sdk-utils';
 
+import { assign } from '../../utils/fns';
 import bucketer from '../bucketer';
-import enums from '../../utils/enums';
-import fns from '../../utils/fns';
+import * as enums from '../../utils/enums';
 import projectConfig from '../project_config';
 import AudienceEvaluator from '../audience_evaluator';
 import * as stringValidator from '../../utils/string_value_validator';
@@ -139,7 +139,7 @@ DecisionService.prototype.__resolveExperimentBucketMap = function(userId, attrib
   attributes = attributes || {};
   var userProfile = this.__getUserProfile(userId) || {};
   var attributeExperimentBucketMap = attributes[enums.CONTROL_ATTRIBUTES.STICKY_BUCKETING_KEY];
-  return fns.assign({}, userProfile.experiment_bucket_map, attributeExperimentBucketMap);
+  return assign({}, userProfile.experiment_bucket_map, attributeExperimentBucketMap);
 };
 
 /**

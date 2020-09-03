@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.2.1] - August 10, 2020
+
+### Bug fixes
+  - Remove incorrect warning about invalid variation ID when user not bucketed into experiment or feature rollout ([#549](https://github.com/optimizely/javascript-sdk/pull/549))
+
 ## [4.2.0] - July 31, 2020
 
 ### New Features

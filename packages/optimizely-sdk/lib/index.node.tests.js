@@ -17,7 +17,7 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 
-import enums from './utils/enums';
+import * as enums from './utils/enums';
 import Optimizely from './optimizely';
 import testData from './tests/test_data';
 import loggerPlugin from './plugins/logger';
@@ -90,7 +90,7 @@ describe('optimizelyFactory', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.2.0');
+        assert.equal(optlyInstance.clientVersion, '4.2.1');
       });
 
       describe('event processor configuration', function() {

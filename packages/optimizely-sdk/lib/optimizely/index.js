@@ -16,10 +16,10 @@
 import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 
-import fns from '../utils/fns'
+import { isSafeInteger } from '../utils/fns'
 import { validate } from '../utils/attributes_validator';
 import decisionService from '../core/decision_service';
-import enums from '../utils/enums';
+import * as enums from '../utils/enums';
 import { getImpressionEvent, getConversionEvent } from '../core/event_builder/index.js';
 import { buildConversionEvent, buildImpressionEvent } from '../core/event_builder/event_helpers';
 import * as eventTagsValidator from '../utils/event_tags_validator';
@@ -1223,7 +1223,7 @@ Optimizely.prototype.onReady = function(options) {
   if (typeof options === 'object' && options !== null) {
     timeout = options.timeout;
   }
-  if (!fns.isSafeInteger(timeout)) {
+  if (!isSafeInteger(timeout)) {
     timeout = DEFAULT_ONREADY_TIMEOUT;
   }
 

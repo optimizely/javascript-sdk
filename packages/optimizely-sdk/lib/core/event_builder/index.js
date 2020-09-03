@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import fns from '../../utils/fns';
-import enums from '../../utils/enums';
+import { currentTimestamp, uuid } from '../../utils/fns';
+import { CONTROL_ATTRIBUTES, RESERVED_EVENT_KEYWORDS } from '../../utils/enums';
 import projectConfig from '../project_config';
 import * as eventTagUtils from '../../utils/event_tag_utils';
 import * as attributeValidator from '../../utils/attributes_validator';
@@ -78,8 +78,8 @@ function getCommonEventParams(options) {
 
   if (typeof botFiltering === 'boolean') {
     commonParams.visitors[0].attributes.push({
-      entity_id: enums.CONTROL_ATTRIBUTES.BOT_FILTERING,
-      key: enums.CONTROL_ATTRIBUTES.BOT_FILTERING,
+      entity_id: CONTROL_ATTRIBUTES.BOT_FILTERING,
+      key: CONTROL_ATTRIBUTES.BOT_FILTERING,
       type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
       value: botFiltering,
     });
@@ -106,9 +106,9 @@ function getImpressionEventParams(configObj, experimentId, variationId) {
     events: [
       {
         entity_id: projectConfig.getLayerId(configObj, experimentId),
-        timestamp: fns.currentTimestamp(),
+        timestamp: currentTimestamp(),
         key: ACTIVATE_EVENT_KEY,
-        uuid: fns.uuid(),
+        uuid: uuid(),
       },
     ],
   };
@@ -130,20 +130,20 @@ function getVisitorSnapshot(configObj, eventKey, eventTags, logger) {
 
   var eventDict = {
     entity_id: projectConfig.getEventId(configObj, eventKey),
-    timestamp: fns.currentTimestamp(),
-    uuid: fns.uuid(),
+    timestamp: currentTimestamp(),
+    uuid: uuid(),
     key: eventKey,
   };
 
   if (eventTags) {
     var revenue = eventTagUtils.getRevenueValue(eventTags, logger);
     if (revenue !== null) {
-      eventDict[enums.RESERVED_EVENT_KEYWORDS.REVENUE] = revenue;
+      eventDict[RESERVED_EVENT_KEYWORDS.REVENUE] = revenue;
     }
 
     var eventValue = eventTagUtils.getEventValue(eventTags, logger);
     if (eventValue !== null) {
-      eventDict[enums.RESERVED_EVENT_KEYWORDS.VALUE] = eventValue;
+      eventDict[RESERVED_EVENT_KEYWORDS.VALUE] = eventValue;
     }
 
     eventDict['tags'] = eventTags;
