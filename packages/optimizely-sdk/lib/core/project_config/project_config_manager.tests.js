@@ -199,7 +199,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         datafileManager.HttpPollingDatafileManager.returns({
           start: sinon.stub(),
           stop: sinon.stub(),
-          get: sinon.stub().returns(cloneDeep(configWithFeatures)),
+          get: sinon.stub().returns(JSON.stringify(cloneDeep(configWithFeatures))),
           on: sinon.stub().returns(function() {}),
           onReady: sinon.stub().returns(Promise.resolve()),
         });
@@ -237,7 +237,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         datafileManager.HttpPollingDatafileManager.returns({
           start: sinon.stub(),
           stop: sinon.stub(),
-          get: sinon.stub().returns(testData.getTestProjectConfigWithFeatures()),
+          get: sinon.stub().returns(JSON.stringify(testData.getTestProjectConfigWithFeatures())),
           on: sinon.stub().returns(function() {}),
           onReady: sinon.stub().returns(Promise.resolve()),
         });
@@ -264,7 +264,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         datafileManager.HttpPollingDatafileManager.returns({
           start: sinon.stub(),
           stop: sinon.stub(),
-          get: sinon.stub().returns(testData.getTestProjectConfigWithFeatures()),
+          get: sinon.stub().returns(JSON.stringify(testData.getTestProjectConfigWithFeatures())),
           on: sinon.stub().returns(function() {}),
           onReady: sinon.stub().returns(Promise.resolve()),
         });
@@ -302,7 +302,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         datafileManager.HttpPollingDatafileManager.returns({
           start: sinon.stub(),
           stop: sinon.stub(),
-          get: sinon.stub().returns(invalidDatafile),
+          get: sinon.stub().returns(JSON.stringify(invalidDatafile)),
           on: sinon.stub().returns(function() {}),
           onReady: sinon.stub().returns(Promise.resolve()),
         });
@@ -350,7 +350,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         datafileManager.HttpPollingDatafileManager.returns({
           start: sinon.stub(),
           stop: sinon.stub(),
-          get: sinon.stub().returns(testData.getTestProjectConfigWithFeatures()),
+          get: sinon.stub().returns(JSON.stringify(testData.getTestProjectConfigWithFeatures())),
           on: sinon.stub().returns(function() {}),
           onReady: sinon.stub().returns(Promise.resolve()),
         });
@@ -377,7 +377,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         datafileManager.HttpPollingDatafileManager.returns({
           start: sinon.stub(),
           stop: sinon.stub(),
-          get: sinon.stub().returns(testData.getTestProjectConfigWithFeatures()),
+          get: sinon.stub().returns(JSON.stringify(testData.getTestProjectConfigWithFeatures())),
           on: sinon.stub().returns(function() {}),
           onReady: sinon.stub().returns(Promise.resolve()),
         });
