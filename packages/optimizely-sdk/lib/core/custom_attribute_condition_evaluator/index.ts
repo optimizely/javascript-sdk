@@ -14,9 +14,9 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import { sprintf } from '@optimizely/js-sdk-utils';
-
+import { getLogger } from '@optimizely/js-sdk-logging';
 import { LoggerFacade } from '@optimizely/js-sdk-logging';
-import { Condition, UserAttributes } from '../../shared_types';
+import { UserAttributes } from '../../shared_types';
 
 import { isNumber, isSafeInteger } from '../../utils/fns';
 import {
@@ -25,6 +25,8 @@ import {
 } from '../../utils/enums';
 
 const MODULE_NAME = 'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR';
+
+const logger = getLogger(MODULE_NAME)
 
 const EXACT_MATCH_TYPE = 'exact';
 const EXISTS_MATCH_TYPE = 'exists';
@@ -40,7 +42,16 @@ const MATCH_TYPES = [
   SUBSTRING_MATCH_TYPE,
 ];
 
-const EVALUATORS_BY_MATCH_TYPE = {};
+type Condition = {
+  name: string;
+  type: string;
+  match?: string;
+  value: string | number | boolean;
+}
+
+type ConditionEvaluator = (condition: Condition, userAttributes: UserAttributes, logger: LoggerFacade) => boolean | null;
+
+const EVALUATORS_BY_MATCH_TYPE: { [conditionType: string]: ConditionEvaluator | undefined } = {};
 EVALUATORS_BY_MATCH_TYPE[EXACT_MATCH_TYPE] = exactEvaluator;
 EVALUATORS_BY_MATCH_TYPE[EXISTS_MATCH_TYPE] = existsEvaluator;
 EVALUATORS_BY_MATCH_TYPE[GREATER_THAN_MATCH_TYPE] = greaterThanEvaluator;
@@ -73,7 +84,16 @@ export function evaluate(condition: Condition, userAttributes: UserAttributes, l
     return null;
   }
 
-  const evaluatorForMatch = EVALUATORS_BY_MATCH_TYPE[conditionMatch] || exactEvaluator;
+  let evaluatorForMatch;
+  if (!conditionMatch) {
+    evaluatorForMatch = exactEvaluator;
+  } else {
+    evaluatorForMatch = EVALUATORS_BY_MATCH_TYPE[conditionMatch];
+  }
+  if (!evaluatorForMatch) {
+    return null;
+  }
+
   return evaluatorForMatch(condition, userAttributes, logger);
 }
 
