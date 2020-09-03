@@ -50,13 +50,8 @@ export const validate = function(config: unknown): boolean {
 
 /**
  * Validates the datafile
-<<<<<<< HEAD:packages/optimizely-sdk/lib/utils/config_validator/index.js
  * @param {Object|string}  datafile
  * @return {Object} The datafile object if the datafile is valid
-=======
- * @param {string}  datafile
- * @return {boolean} true if the datafile is valid
->>>>>>> master:packages/optimizely-sdk/lib/utils/config_validator/index.ts
  * @throws If the datafile is not valid for any of the following reasons:
  - The datafile string is undefined
  - The datafile string cannot be parsed as a JSON object
@@ -79,14 +74,9 @@ export const validateDatafile = function(datafile: unknown): boolean {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, MODULE_NAME, datafile['version']));
     }
   }
-<<<<<<< HEAD:packages/optimizely-sdk/lib/utils/config_validator/index.js
 
   return datafile;
 };
-=======
-  return true;
-}
->>>>>>> master:packages/optimizely-sdk/lib/utils/config_validator/index.ts
 
 /**
  * Provides utility methods for validating that the configuration options are valid
