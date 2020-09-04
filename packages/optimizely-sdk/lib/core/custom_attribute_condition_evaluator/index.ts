@@ -82,10 +82,7 @@ export function evaluate(condition: Condition, userAttributes: UserAttributes): 
   if (!conditionMatch) {
     evaluatorForMatch = exactEvaluator;
   } else {
-    evaluatorForMatch = EVALUATORS_BY_MATCH_TYPE[conditionMatch];
-  }
-  if (!evaluatorForMatch) {
-    return null;
+    evaluatorForMatch = EVALUATORS_BY_MATCH_TYPE[conditionMatch] || exactEvaluator;
   }
 
   return evaluatorForMatch(condition, userAttributes);
