@@ -41,7 +41,7 @@ type Condition = {
   name: string;
   type: string;
   match?: string;
-  value: string | number | boolean;
+  value: string | number | boolean | null;
 }
 
 type ConditionEvaluator = (condition: Condition, userAttributes: UserAttributes) => boolean | null;
@@ -180,7 +180,7 @@ function greaterThanEvaluator(condition: Condition, userAttributes: UserAttribut
   const userValueType = typeof userValue;
   const conditionValue = condition.value;
 
-  if (!isSafeInteger(conditionValue)) {
+  if (conditionValue === null || !isSafeInteger(conditionValue)) {
     logger.warn(
       LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
     );
@@ -227,7 +227,7 @@ function lessThanEvaluator(condition: Condition, userAttributes: UserAttributes)
   const userValueType = typeof userValue;
   const conditionValue = condition.value;
 
-  if (!isSafeInteger(conditionValue)) {
+  if (conditionValue === null || !isSafeInteger(conditionValue)) {
     logger.warn(
       LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
     );
