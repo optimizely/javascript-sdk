@@ -20,6 +20,10 @@ const NOT_CONDITION = 'not';
 
 const DEFAULT_OPERATOR_TYPES = [AND_CONDITION, OR_CONDITION, NOT_CONDITION];
 
+type ConditionTree<Leaf> = Leaf | unknown[];
+
+type LeafEvaluator<Leaf> = (leaf: Leaf) => boolean | null;
+
 /**
  * Top level method to evaluate conditions
  * @param  {Array|*}    conditions      Nested array of and/or conditions, or a single leaf
@@ -32,13 +36,12 @@ const DEFAULT_OPERATOR_TYPES = [AND_CONDITION, OR_CONDITION, NOT_CONDITION];
  *                                      indicates that the conditions are invalid or unable to be
  *                                      evaluated
  */
-// eslint-disable-next-line
-export function evaluate(conditions: [any], leafEvaluator: (condition: any) => boolean | null): boolean | null {
+export function evaluate<Leaf>(conditions: ConditionTree<Leaf>, leafEvaluator: LeafEvaluator<Leaf>): boolean | null {
   if (Array.isArray(conditions)) {
     let firstOperator = conditions[0];
     let restOfConditions = conditions.slice(1);
 
-    if (DEFAULT_OPERATOR_TYPES.indexOf(firstOperator) === -1) {
+    if (typeof firstOperator === 'string' && DEFAULT_OPERATOR_TYPES.indexOf(firstOperator) === -1) {
       // Operator to apply is not explicit - assume 'or'
       firstOperator = OR_CONDITION;
       restOfConditions = conditions;
@@ -68,11 +71,10 @@ export function evaluate(conditions: [any], leafEvaluator: (condition: any) => b
  *                                      indicates that the conditions are invalid or unable to be
  *                                      evaluated.
  */
-// eslint-disable-next-line
-function andEvaluator(conditions: any[], leafEvaluator: (condition: any) => boolean | null): boolean | null {
+function andEvaluator<Leaf>(conditions: unknown[], leafEvaluator: LeafEvaluator<Leaf>): boolean | null {
   let sawNullResult = false;
   for (let i = 0; i < conditions.length; i++) {
-    const conditionResult = evaluate(conditions[i], leafEvaluator);
+    const conditionResult = evaluate(conditions[i] as ConditionTree<Leaf>, leafEvaluator);
     if (conditionResult === false) {
       return false;
     }
@@ -92,10 +94,9 @@ function andEvaluator(conditions: any[], leafEvaluator: (condition: any) => bool
  *                                      indicates that the conditions are invalid or unable to be
  *                                      evaluated.
  */
-// eslint-disable-next-line
-function notEvaluator(conditions: any[], leafEvaluator: (condition: any) => boolean | null): boolean | null {
+function notEvaluator<Leaf>(conditions: unknown[], leafEvaluator: LeafEvaluator<Leaf>): boolean | null {
   if (conditions.length > 0) {
-    const result = evaluate(conditions[0], leafEvaluator);
+    const result = evaluate(conditions[0] as ConditionTree<Leaf>, leafEvaluator);
     return result === null ? null : !result;
   }
   return null;
@@ -110,11 +111,10 @@ function notEvaluator(conditions: any[], leafEvaluator: (condition: any) => bool
  *                                      indicates that the conditions are invalid or unable to be
  *                                      evaluated.
  */
-// eslint-disable-next-line
-function orEvaluator(conditions: any[], leafEvaluator: (condition: any) => boolean | null): boolean | null {
+function orEvaluator<Leaf>(conditions: unknown[], leafEvaluator: LeafEvaluator<Leaf>): boolean | null {
   let sawNullResult = false;
   for (let i = 0; i < conditions.length; i++) {
-    const conditionResult = evaluate(conditions[i], leafEvaluator);
+    const conditionResult = evaluate(conditions[i] as ConditionTree<Leaf>, leafEvaluator);
     if (conditionResult === true) {
       return true;
     }
