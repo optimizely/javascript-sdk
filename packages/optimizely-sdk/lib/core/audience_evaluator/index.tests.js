@@ -19,7 +19,7 @@ import { getLogger } from '@optimizely/js-sdk-logging';
 
 import AudienceEvaluator from './index';
 import conditionTreeEvaluator from '../condition_tree_evaluator';
-import customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
+import * as customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
 
 var mockLogger = getLogger();
 
