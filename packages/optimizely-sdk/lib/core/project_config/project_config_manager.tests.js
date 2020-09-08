@@ -405,7 +405,7 @@ describe('lib/core/project_config/project_config_manager', function() {
       });
 
       afterEach(function() {
-        optimizelyConfig.OptimizelyConfig.restore();
+        optimizelyConfig.restore();
       });
 
       it('should return the same config until revision is changed', function() {
@@ -414,10 +414,10 @@ describe('lib/core/project_config/project_config_manager', function() {
           sdkKey: '12345',
         });
         // creating optimizely config once project config manager for the first time
-        sinon.assert.calledOnce(optimizelyConfig.OptimizelyConfig);
+        sinon.assert.calledOnce(optimizelyConfig);
         // validate it should return the existing optimizely config
         manager.getOptimizelyConfig();
-        sinon.assert.calledOnce(optimizelyConfig.OptimizelyConfig);
+        sinon.assert.calledOnce(optimizelyConfig);
         // create config with new revision
         var fakeDatafileManager = datafileManager.HttpPollingDatafileManager.getCall(0).returnValue;
         var updateListener = fakeDatafileManager.on.getCall(0).args[1];
@@ -426,7 +426,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         fakeDatafileManager.get.returns(newDatafile);
         updateListener({ datafile: newDatafile });
         // verify the optimizely config is updated
-        sinon.assert.calledTwice(optimizelyConfig.OptimizelyConfig);
+        sinon.assert.calledTwice(optimizelyConfig);
       });
     });
   });
