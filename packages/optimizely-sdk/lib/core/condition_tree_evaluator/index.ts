@@ -71,18 +71,21 @@ export function evaluate<Leaf>(conditions: ConditionTree<Leaf>, leafEvaluator: L
  *                                                 indicates that the conditions are invalid or unable to be
  *                                                 evaluated.
  */
-function andEvaluator<Leaf>(conditions: unknown[], leafEvaluator: LeafEvaluator<Leaf>): boolean | null {
+function andEvaluator<Leaf>(conditions: ConditionTree<Leaf>, leafEvaluator: LeafEvaluator<Leaf>): boolean | null {
   let sawNullResult = false;
-  for (let i = 0; i < conditions.length; i++) {
-    const conditionResult = evaluate(conditions[i] as ConditionTree<Leaf>, leafEvaluator);
-    if (conditionResult === false) {
-      return false;
+  if (Array.isArray(conditions)) {
+    for (let i = 0; i < conditions.length; i++) {
+      const conditionResult = evaluate(conditions[i] as ConditionTree<Leaf>, leafEvaluator);
+      if (conditionResult === false) {
+        return false;
+      }
+      if (conditionResult === null) {
+        sawNullResult = true;
+      }
     }
-    if (conditionResult === null) {
-      sawNullResult = true;
-    }
+    return sawNullResult ? null : true;
   }
-  return sawNullResult ? null : true;
+  return null;
 }
 
 /**
@@ -94,8 +97,8 @@ function andEvaluator<Leaf>(conditions: unknown[], leafEvaluator: LeafEvaluator<
  *                                                 indicates that the conditions are invalid or unable to be
  *                                                 evaluated.
  */
-function notEvaluator<Leaf>(conditions: unknown[], leafEvaluator: LeafEvaluator<Leaf>): boolean | null {
-  if (conditions.length > 0) {
+function notEvaluator<Leaf>(conditions: ConditionTree<Leaf>, leafEvaluator: LeafEvaluator<Leaf>): boolean | null {
+  if (Array.isArray(conditions) && conditions.length > 0) {
     const result = evaluate(conditions[0] as ConditionTree<Leaf>, leafEvaluator);
     return result === null ? null : !result;
   }
@@ -111,16 +114,19 @@ function notEvaluator<Leaf>(conditions: unknown[], leafEvaluator: LeafEvaluator<
  *                                                 indicates that the conditions are invalid or unable to be
  *                                                 evaluated.
  */
-function orEvaluator<Leaf>(conditions: unknown[], leafEvaluator: LeafEvaluator<Leaf>): boolean | null {
+function orEvaluator<Leaf>(conditions: ConditionTree<Leaf>, leafEvaluator: LeafEvaluator<Leaf>): boolean | null {
   let sawNullResult = false;
-  for (let i = 0; i < conditions.length; i++) {
-    const conditionResult = evaluate(conditions[i] as ConditionTree<Leaf>, leafEvaluator);
-    if (conditionResult === true) {
-      return true;
+  if (Array.isArray(conditions)) {
+    for (let i = 0; i < conditions.length; i++) {
+      const conditionResult = evaluate(conditions[i] as ConditionTree<Leaf>, leafEvaluator);
+      if (conditionResult === true) {
+        return true;
+      }
+      if (conditionResult === null) {
+        sawNullResult = true;
+      }
     }
-    if (conditionResult === null) {
-      sawNullResult = true;
-    }
+    return sawNullResult ? null : false;
   }
-  return sawNullResult ? null : false;
+  return null;
 }

@@ -15,6 +15,7 @@
  */
 import { sprintf } from '@optimizely/js-sdk-utils';
 import { getLogger } from '@optimizely/js-sdk-logging';
+import { UserAttributes, Condition, ConditionEvaluator } from '../../shared_types';
 
 import { assign } from '../../utils/fns';
 import {
@@ -28,9 +29,27 @@ import * as customAttributeConditionEvaluator from '../custom_attribute_conditio
 const logger = getLogger();
 const MODULE_NAME = 'AUDIENCE_EVALUATOR';
 
+type ConditionTree<Leaf> = Leaf | unknown[];
+
+type Audience = {
+  id: string;
+  name: string;
+  conditions: Condition;
+};
+
+type AudienceByID = {
+  [key: string]: Audience;
+};
+
+type typeToEvaluatorMap = {
+  custom_attribute: {
+    evaluate: ConditionEvaluator;
+  }
+}
+
 export default class AudienceEvaluator {
   // eslint-disable-next-line
-  private typeToEvaluatorMap: any;
+  private typeToEvaluatorMap: typeToEvaluatorMap;
   
   /**
    * Construct an instance of AudienceEvaluator with given options
@@ -47,28 +66,28 @@ export default class AudienceEvaluator {
 
   /**
    * Determine if the given user attributes satisfy the given audience conditions
-   * @param  {Array|String|null|undefined}  audienceConditions    Audience conditions to match the user attributes against - can be an array
+   * @param  {ConditionTree<Leaf>}  audienceConditions            Audience conditions to match the user attributes against - can be an array
    *                                                              of audience IDs, a nested array of conditions, or a single leaf condition.
    *                                                              Examples: ["5", "6"], ["and", ["or", "1", "2"], "3"], "1"
-   * @param  {Object}                       audiencesById         Object providing access to full audience objects for audience IDs
+   * @param  {AudienceByID}         audiencesById                 Object providing access to full audience objects for audience IDs
    *                                                              contained in audienceConditions. Keys should be audience IDs, values
    *                                                              should be full audience objects with conditions properties
-   * @param  {Object}                       [userAttributes]      User attributes which will be used in determining if audience conditions
+   * @param  {UserAttributes}       [userAttributes]              User attributes which will be used in determining if audience conditions
    *                                                              are met. If not provided, defaults to an empty object
    * @return {boolean}                                            true if the user attributes match the given audience conditions, false
    *                                                              otherwise
    */
-  // eslint-disable-next-line
-  evaluate(audienceConditions: any, audiencesById: any, userAttributes: any): boolean {
+  evaluate<Leaf>(audienceConditions: ConditionTree<Leaf>, audiencesById: AudienceByID, userAttributes: UserAttributes): boolean {
   // if there are no audiences, return true because that means ALL users are included in the experiment
-    if (!audienceConditions || audienceConditions.length === 0) {
+    if (!audienceConditions || (Array.isArray(audienceConditions) && audienceConditions.length === 0)) {
       return true;
     }
     if (!userAttributes) {
       userAttributes = {};
     }
 
-    const evaluateAudience = function(this: AudienceEvaluator, audienceId: number | string) : boolean | null {
+    // eslint-disable-next-line
+    const evaluateAudience = function(this: AudienceEvaluator, audienceId: any) : boolean | null {
       const audience = audiencesById[audienceId];
       if (audience) {
         logger.log(
@@ -94,12 +113,11 @@ export default class AudienceEvaluator {
   /**
    * Wrapper around evaluator.evaluate that is passed to the conditionTreeEvaluator.
    * Evaluates the condition provided given the user attributes if an evaluator has been defined for the condition type.
-   * @param  {Object} userAttributes     A map of user attributes.
-   * @param  {Object} condition          A single condition object to evaluate.
-   * @return {boolean | null}            true if the condition is satisfied, null if a matcher is not found.
+   * @param  {UserAttributes}       userAttributes     A map of user attributes.
+   * @param  {Condition}            condition          A single condition object to evaluate.
+   * @return {boolean | null}                          true if the condition is satisfied, null if a matcher is not found.
    */
-  // eslint-disable-next-line
-  evaluateConditionWithUserAttributes(userAttributes: any, condition: any): boolean | null {
+  evaluateConditionWithUserAttributes(userAttributes: UserAttributes, condition: Condition): boolean | null {
     const evaluator = this.typeToEvaluatorMap[condition.type];
     if (!evaluator) {
       logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNKNOWN_CONDITION_TYPE, MODULE_NAME, JSON.stringify(condition)));

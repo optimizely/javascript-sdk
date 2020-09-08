@@ -14,7 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import { getLogger } from '@optimizely/js-sdk-logging';
-import { UserAttributes } from '../../shared_types';
+import { UserAttributes, Condition, ConditionEvaluator } from '../../shared_types';
 
 import { isNumber, isSafeInteger } from '../../utils/fns';
 import { LOG_MESSAGES } from '../../utils/enums';
@@ -36,15 +36,6 @@ const MATCH_TYPES = [
   LESS_THAN_MATCH_TYPE,
   SUBSTRING_MATCH_TYPE,
 ];
-
-type Condition = {
-  name: string;
-  type: string;
-  match?: string;
-  value: string | number | boolean | null;
-}
-
-type ConditionEvaluator = (condition: Condition, userAttributes: UserAttributes) => boolean | null;
 
 const EVALUATORS_BY_MATCH_TYPE: { [conditionType: string]: ConditionEvaluator | undefined } = {};
 EVALUATORS_BY_MATCH_TYPE[EXACT_MATCH_TYPE] = exactEvaluator;
