@@ -742,7 +742,7 @@ describe('lib/core/project_config', function() {
       assert.deepEqual(result.configObj, configObj);
     });
 
-    it('throws an error when validateDatafile throws', function() {
+    it('returns an error when validateDatafile throws', function() {
       configValidator.validateDatafile.throws();
       stubJsonSchemaValidator.validate.returns(true);
       var { error } = projectConfig.tryCreatingProjectConfig({
@@ -753,7 +753,7 @@ describe('lib/core/project_config', function() {
       assert.isNotNull(error);
     });
 
-    it('throws an error when jsonSchemaValidator.validate throws', function() {
+    it('returns an error when jsonSchemaValidator.validate throws', function() {
       configValidator.validateDatafile.returns(true);
       stubJsonSchemaValidator.validate.throws();
       var { error } = projectConfig.tryCreatingProjectConfig({

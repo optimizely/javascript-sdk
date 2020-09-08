@@ -103,7 +103,7 @@ ProjectConfigManager.prototype.__initialize = function(config) {
     if (this.__validateDatafileOptions(config.datafileOptions)) {
       assign(datafileManagerConfig, config.datafileOptions);
     }
-    if (!handleNewDatafileException) {
+    if (this.__configObj) {
       datafileManagerConfig.datafile = projectConfig.toDatafile(this.__configObj)
     }
     this.datafileManager = new HttpPollingDatafileManager(datafileManagerConfig);
