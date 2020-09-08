@@ -26,15 +26,15 @@ type LeafEvaluator<Leaf> = (leaf: Leaf) => boolean | null;
 
 /**
  * Top level method to evaluate conditions
- * @param  {Array|*}    conditions      Nested array of and/or conditions, or a single leaf
- *                                      condition value of any type
- *                                      Example: ['and', '0', ['or', '1', '2']]
- * @param  {Function}   leafEvaluator   Function which will be called to evaluate leaf condition
- *                                      values
- * @return {?boolean}                   Result of evaluating the conditions using the operator
- *                                      rules and the leaf evaluator. A return value of null
- *                                      indicates that the conditions are invalid or unable to be
- *                                      evaluated
+ * @param  {ConditionTree<Leaf>}    conditions      Nested array of and/or conditions, or a single leaf
+ *                                                  condition value of any type
+ *                                                  Example: ['and', '0', ['or', '1', '2']]
+ * @param  {LeafEvaluator<Leaf>}    leafEvaluator   Function which will be called to evaluate leaf condition
+ *                                                  values
+ * @return {?boolean}                               Result of evaluating the conditions using the operator
+ *                                                  rules and the leaf evaluator. A return value of null
+ *                                                  indicates that the conditions are invalid or unable to be
+ *                                                  evaluated.
  */
 export function evaluate<Leaf>(conditions: ConditionTree<Leaf>, leafEvaluator: LeafEvaluator<Leaf>): boolean | null {
   if (Array.isArray(conditions)) {
@@ -65,11 +65,11 @@ export function evaluate<Leaf>(conditions: ConditionTree<Leaf>, leafEvaluator: L
 /**
  * Evaluates an array of conditions as if the evaluator had been applied
  * to each entry and the results AND-ed together.
- * @param  {Array}      conditions      Array of conditions ex: [operand_1, operand_2]
- * @param  {Function}   leafEvaluator   Function which will be called to evaluate leaf condition values
- * @return {?boolean}                   Result of evaluating the conditions. A return value of null
- *                                      indicates that the conditions are invalid or unable to be
- *                                      evaluated.
+ * @param  {unknown[]}             conditions      Array of conditions ex: [operand_1, operand_2]
+ * @param  {LeafEvaluator<Leaf>}   leafEvaluator   Function which will be called to evaluate leaf condition values
+ * @return {?boolean}                              Result of evaluating the conditions. A return value of null
+ *                                                 indicates that the conditions are invalid or unable to be
+ *                                                 evaluated.
  */
 function andEvaluator<Leaf>(conditions: unknown[], leafEvaluator: LeafEvaluator<Leaf>): boolean | null {
   let sawNullResult = false;
@@ -88,11 +88,11 @@ function andEvaluator<Leaf>(conditions: unknown[], leafEvaluator: LeafEvaluator<
 /**
  * Evaluates an array of conditions as if the evaluator had been applied
  * to a single entry and NOT was applied to the result.
- * @param  {Array}      conditions      Array of conditions ex: [operand_1]
- * @param  {Function}   leafEvaluator   Function which will be called to evaluate leaf condition values
- * @return {?boolean}                   Result of evaluating the conditions. A return value of null
- *                                      indicates that the conditions are invalid or unable to be
- *                                      evaluated.
+ * @param  {unknown[]}             conditions      Array of conditions ex: [operand_1]
+ * @param  {LeafEvaluator<Leaf>}   leafEvaluator   Function which will be called to evaluate leaf condition values
+ * @return {?boolean}                              Result of evaluating the conditions. A return value of null
+ *                                                 indicates that the conditions are invalid or unable to be
+ *                                                 evaluated.
  */
 function notEvaluator<Leaf>(conditions: unknown[], leafEvaluator: LeafEvaluator<Leaf>): boolean | null {
   if (conditions.length > 0) {
@@ -105,11 +105,11 @@ function notEvaluator<Leaf>(conditions: unknown[], leafEvaluator: LeafEvaluator<
 /**
  * Evaluates an array of conditions as if the evaluator had been applied
  * to each entry and the results OR-ed together.
- * @param  {Array}      conditions      Array of conditions ex: [operand_1, operand_2]
- * @param  {Function}   leafEvaluator   Function which will be called to evaluate leaf condition values
- * @return {?boolean}                   Result of evaluating the conditions. A return value of null
- *                                      indicates that the conditions are invalid or unable to be
- *                                      evaluated.
+ * @param  {unknown[]}             conditions      Array of conditions ex: [operand_1, operand_2]
+ * @param  {LeafEvaluator<Leaf>}   leafEvaluator   Function which will be called to evaluate leaf condition values
+ * @return {?boolean}                              Result of evaluating the conditions. A return value of null
+ *                                                 indicates that the conditions are invalid or unable to be
+ *                                                 evaluated.
  */
 function orEvaluator<Leaf>(conditions: unknown[], leafEvaluator: LeafEvaluator<Leaf>): boolean | null {
   let sawNullResult = false;
