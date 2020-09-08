@@ -23,7 +23,7 @@ import {
   ERROR_MESSAGES,
 } from '../../utils/enums';
 import * as conditionTreeEvaluator from '../condition_tree_evaluator';
-import customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
+import * as customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
 
 const logger = getLogger();
 const MODULE_NAME = 'AUDIENCE_EVALUATOR';
