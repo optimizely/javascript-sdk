@@ -141,8 +141,6 @@ describe('lib/core/project_config/project_config_manager', function() {
         jsonSchemaValidator: jsonSchemaValidator,
       });
       sinon.assert.calledOnce(jsonSchemaValidator.validate);
-      var logMessage = stubLogHandler.log.args[0][1];
-      assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.VALID_DATAFILE, 'PROJECT_CONFIG'));
       return manager.onReady();
     });
   });

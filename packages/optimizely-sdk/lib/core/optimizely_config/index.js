@@ -130,4 +130,6 @@ OptimizelyConfig.prototype.getDatafile = function() {
   return this.__datafile;
 }
 
-export default OptimizelyConfig
+export default {
+  OptimizelyConfig: OptimizelyConfig
+}
