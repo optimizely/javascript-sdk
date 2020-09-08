@@ -570,6 +570,7 @@ export var toDatafile = function(projectConfig) {
  * @returns {TryCreatingProjectConfigResult}
  */
 export var tryCreatingProjectConfig = function(config) {
+
   var newDatafileObj;
   try {
     newDatafileObj = configValidator.validateDatafile(config.datafile);
@@ -593,7 +594,8 @@ export var tryCreatingProjectConfig = function(config) {
     // Since config.datafile was validated above, we know that it is a valid JSON string
     createProjectConfigArgs.push(config.datafile);
   }
-  var newConfigObj = this.createProjectConfig(...createProjectConfigArgs);
+
+  var newConfigObj = createProjectConfig(...createProjectConfigArgs);
 
   return {
     configObj: newConfigObj,
