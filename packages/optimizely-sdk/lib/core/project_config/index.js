@@ -586,14 +586,14 @@ export var tryCreatingProjectConfig = function(config) {
     }
   } else {
     config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
-  }   
+  }
 
   var createProjectConfigArgs = [newDatafileObj];
   if (typeof config.datafile === 'string') {
     // Since config.datafile was validated above, we know that it is a valid JSON string
     createProjectConfigArgs.push(config.datafile);
   }
-  var newConfigObj = createProjectConfig(...createProjectConfigArgs);
+  var newConfigObj = this.createProjectConfig(...createProjectConfigArgs);
 
   return {
     configObj: newConfigObj,

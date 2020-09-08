@@ -204,7 +204,7 @@ ProjectConfigManager.prototype.__handleNewDatafile = function(newDatafile) {
     var oldRevision = this.__configObj ? this.__configObj.revision : 'null';
     if (oldRevision !== configObj.revision) {
       this.__configObj = configObj;
-      this.__optimizelyConfigObj = new optimizelyConfig(this.__configObj, projectConfig.toDatafile(this.__configObj));
+      this.__optimizelyConfigObj = new optimizelyConfig.OptimizelyConfig(this.__configObj, projectConfig.toDatafile(this.__configObj));
       this.__updateListeners.forEach(function(listener) {
         listener(configObj);
       });
