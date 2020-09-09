@@ -41,16 +41,17 @@ var DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
 
 /**
  * Creates an instance of the Optimizely class
- * @param  {Object} config
- * @param  {Object} config.datafile
- * @param  {Object} config.errorHandler
- * @param  {Object} config.eventDispatcher
- * @param  {Object} config.logger
- * @param  {Object} config.logLevel
- * @param  {Object} config.userProfileService
- * @param {Object} config.eventBatchSize
- * @param {Object} config.eventFlushInterval
- * @return {Object} the Optimizely object
+ * @param  {Object}         config
+ * @param  {Object|string}  config.datafile
+ * @param  {Object}         config.errorHandler
+ * @param  {Object}         config.eventDispatcher
+ * @param  {Object}         config.logger
+ * @param  {Object}         config.logLevel
+ * @param  {Object}         config.userProfileService
+ * @param  {Object}         config.eventBatchSize
+ * @param  {Object}         config.eventFlushInterval
+ * @param  {string}         config.sdkKey
+ * @return {Object}         the Optimizely object
  */
 var createInstance = function(config) {
   try {

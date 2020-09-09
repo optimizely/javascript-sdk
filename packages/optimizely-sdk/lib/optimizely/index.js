@@ -42,16 +42,17 @@ var DEFAULT_ONREADY_TIMEOUT = 30000;
 
 /**
  * The Optimizely class
- * @param {Object} config
- * @param {string} config.clientEngine
- * @param {string} config.clientVersion
- * @param {Object} config.datafile
- * @param {Object} config.errorHandler
- * @param {Object} config.eventDispatcher
- * @param {Object} config.logger
- * @param {Object} config.userProfileService
- * @param {Object} config.eventBatchSize
- * @param {Object} config.eventFlushInterval
+ * @param {Object}        config
+ * @param {string}        config.clientEngine
+ * @param {string}        config.clientVersion
+ * @param {Object|string} config.datafile
+ * @param {Object}        config.errorHandler
+ * @param {Object}        config.eventDispatcher
+ * @param {Object}        config.logger
+ * @param {Object}        config.userProfileService
+ * @param {Object}        config.eventBatchSize
+ * @param {Object}        config.eventFlushInterval
+ * @param {string}        config.sdkKey
  */
 function Optimizely(config) {
   var clientEngine = config.clientEngine;

@@ -110,12 +110,26 @@ function getFeaturesMap(configObj, allExperiments) {
   }, {});
 }
 
-export var getOptimizelyConfig = function(configObj) {
-  // Fetch all feature variables from feature flags to merge them with variation variables
-  var experimentsMap = getExperimentsMap(configObj);
-  return {
-    experimentsMap: experimentsMap,
-    featuresMap: getFeaturesMap(configObj, experimentsMap),
-    revision: configObj.revision,
-  };
-};
+/**
+ * The OptimizelyConfig class
+ * @param {Object} configObj
+ * @param {string} datafile
+ */
+export function OptimizelyConfig(configObj, datafile) {
+  this.experimentsMap = getExperimentsMap(configObj);
+  this.featuresMap = getFeaturesMap(configObj, this.experimentsMap);
+  this.revision = configObj.revision;
+  this.__datafile = datafile;
+}
+
+/**
+ * Get the datafile
+ * @returns {string} JSON string representation of the datafile that was used to create the current config object
+ */
+OptimizelyConfig.prototype.getDatafile = function() {
+  return this.__datafile;
+}
+
+export default {
+  OptimizelyConfig: OptimizelyConfig
+}

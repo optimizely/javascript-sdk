@@ -18,8 +18,8 @@ import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 import { assign, keyBy } from '../../utils/fns';
 import {
   ERROR_MESSAGES,
-  LOG_MESSAGES,
   LOG_LEVEL,
+  LOG_MESSAGES,
   FEATURE_VARIABLE_TYPES,
 } from '../../utils/enums';
 import configValidator from '../../utils/config_validator';
@@ -58,11 +58,14 @@ function createMutationSafeDatafileCopy(datafile) {
 
 /**
  * Creates projectConfig object to be used for quick project property lookup
- * @param  {Object} datafile JSON datafile representing the project
- * @return {Object} Object representing project configuration
+ * @param  {Object}   datafileObj   JSON datafile representing the project
+ * @param  {string=}  datafileStr   JSON string representation of the datafile
+ * @return {Object}   Object representing project configuration
  */
-export var createProjectConfig = function(datafile) {
-  var projectConfig = createMutationSafeDatafileCopy(datafile);
+export var createProjectConfig = function(datafileObj, datafileStr=null) {
+  var projectConfig = createMutationSafeDatafileCopy(datafileObj);
+
+  projectConfig.__datafileStr = datafileStr === null ? JSON.stringify(datafileObj) : datafileStr;
 
   /*
    * Conditions of audiences in projectConfig.typedAudiences are not
@@ -512,7 +515,7 @@ export var getTypeCastValue = function(variableValue, variableType, logger) {
 /**
  * Returns an object containing all audiences in the project config. Keys are audience IDs
  * and values are audience objects.
- * @param projectConfig
+ * @param   {Object} projectConfig
  * @returns {Object}
  */
 export var getAudiencesById = function(projectConfig) {
@@ -521,8 +524,8 @@ export var getAudiencesById = function(projectConfig) {
 
 /**
  * Returns true if an event with the given key exists in the datafile, and false otherwise
- * @param {Object} projectConfig
- * @param {string} eventKey
+ * @param   {Object} projectConfig
+ * @param   {string} eventKey
  * @returns {boolean}
  */
 export var eventWithKeyExists = function(projectConfig, eventKey) {
@@ -530,35 +533,74 @@ export var eventWithKeyExists = function(projectConfig, eventKey) {
 };
 
 /**
- *
+ * Returns true if experiment belongs to any feature, false otherwise.
  * @param {Object} projectConfig
  * @param {string} experimentId
- * @returns {boolean} Returns true if experiment belongs to
- * any feature, false otherwise.
+ * @returns {boolean} 
  */
 export var isFeatureExperiment = function(projectConfig, experimentId) {
   return projectConfig.experimentFeatureMap.hasOwnProperty(experimentId);
 };
 
 /**
+ * Returns the JSON string representation of the datafile
+ * @param   {Object} projectConfig
+ * @returns {string}
+ */
+export var toDatafile = function(projectConfig) {
+  return projectConfig.__datafileStr;
+}
+
+/**
+ * @typedef   {Object}      TryCreatingProjectConfigResult
+ * @property  {Object|null} configObj
+ * @property  {Error|null}  error
+ */
+
+/**
  * Try to create a project config object from the given datafile and
  * configuration properties.
- * If successful, return the project config object, otherwise throws an error
- * @param  {Object} config
- * @param  {Object} config.datafile
- * @param  {Object} config.jsonSchemaValidator
- * @param  {Object} config.logger
- * @return {Object} Project config object
+ * Returns an object with configObj and error properties.
+ * If successful, configObj is the project config object, and error is null.
+ * Otherwise, configObj is null and error is an error with more information.
+ * @param   {Object}         config
+ * @param   {Object|string}  config.datafile
+ * @param   {Object}         config.jsonSchemaValidator
+ * @param   {Object}         config.logger
+ * @returns {TryCreatingProjectConfigResult}
  */
 export var tryCreatingProjectConfig = function(config) {
-  configValidator.validateDatafile(config.datafile);
-  if (!config.jsonSchemaValidator) {
-    config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
-  } else {
-    config.jsonSchemaValidator.validate(config.datafile);
-    config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
+
+  var newDatafileObj;
+  try {
+    newDatafileObj = configValidator.validateDatafile(config.datafile);
+  } catch (error) {
+    return { configObj: null, error };
   }
-  return this.createProjectConfig(config.datafile);
+
+  if (config.jsonSchemaValidator) {
+    try {
+      config.jsonSchemaValidator.validate(newDatafileObj);
+      config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
+    } catch (error) {
+      return { configObj: null, error };
+    }
+  } else {
+    config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
+  }
+
+  var createProjectConfigArgs = [newDatafileObj];
+  if (typeof config.datafile === 'string') {
+    // Since config.datafile was validated above, we know that it is a valid JSON string
+    createProjectConfigArgs.push(config.datafile);
+  }
+
+  var newConfigObj = createProjectConfig(...createProjectConfigArgs);
+
+  return {
+    configObj: newConfigObj,
+    error: null,
+  };
 };
 
 export default {
@@ -583,5 +625,6 @@ export default {
   getAudiencesById: getAudiencesById,
   eventWithKeyExists: eventWithKeyExists,
   isFeatureExperiment: isFeatureExperiment,
+  toDatafile: toDatafile,
   tryCreatingProjectConfig: tryCreatingProjectConfig,
 };

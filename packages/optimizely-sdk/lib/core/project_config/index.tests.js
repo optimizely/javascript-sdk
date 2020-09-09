@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import sinon from 'sinon';
-import { assert } from 'chai';
+import { assert, expect, config } from 'chai';
 import { forEach, cloneDeep } from 'lodash';
 import { getLogger } from '@optimizely/js-sdk-logging';
 import { sprintf } from '@optimizely/js-sdk-utils';
@@ -712,75 +712,91 @@ describe('lib/core/project_config', function() {
       stubJsonSchemaValidator = {
         validate: sinon.stub().returns(true),
       };
-      sinon.stub(projectConfig, 'createProjectConfig').returns({});
       sinon.stub(configValidator, 'validateDatafile').returns(true);
       sinon.spy(logger, 'error');
     });
 
     afterEach(function() {
-      projectConfig.createProjectConfig.restore();
       configValidator.validateDatafile.restore();
       logger.error.restore();
     });
 
     it('returns a project config object created by createProjectConfig when all validation is applied and there are no errors', function() {
-      configValidator.validateDatafile.returns(true);
-      stubJsonSchemaValidator.validate.returns(true);
+      var configDatafile = {
+        foo: 'bar',
+        experiments: [
+          {key: 'a'},
+          {key: 'b'}
+        ]
+      }
+      configValidator.validateDatafile.returns(configDatafile);
       var configObj = {
         foo: 'bar',
         experimentKeyMap: {
-          a: { key: 'a' },
-          b: { key: 'b' },
+          "a": { key: "a", variationKeyMap: {} },
+          "b": { key: "b", variationKeyMap: {} }
         },
       };
-      projectConfig.createProjectConfig.returns(configObj);
+
+      stubJsonSchemaValidator.validate.returns(true);
+
       var result = projectConfig.tryCreatingProjectConfig({
+        datafile: configDatafile,
+        jsonSchemaValidator: stubJsonSchemaValidator,
+        logger: logger,
+      });
+
+      assert.deepInclude(result.configObj, configObj)
+    });
+
+    it('returns an error when validateDatafile throws', function() {
+      configValidator.validateDatafile.throws();
+      stubJsonSchemaValidator.validate.returns(true);
+      var { error } = projectConfig.tryCreatingProjectConfig({
         datafile: { foo: 'bar' },
         jsonSchemaValidator: stubJsonSchemaValidator,
         logger: logger,
       });
-      assert.deepEqual(result, configObj);
+      assert.isNotNull(error);
     });
 
-    it('throws an error when validateDatafile throws', function() {
-      configValidator.validateDatafile.throws();
-      stubJsonSchemaValidator.validate.returns(true);
-      assert.throws(function() {
-        projectConfig.tryCreatingProjectConfig({
-          datafile: { foo: 'bar' },
-          jsonSchemaValidator: stubJsonSchemaValidator,
-          logger: logger,
-        });
-      });
-    });
-
-    it('throws an error when jsonSchemaValidator.validate throws', function() {
+    it('returns an error when jsonSchemaValidator.validate throws', function() {
       configValidator.validateDatafile.returns(true);
       stubJsonSchemaValidator.validate.throws();
-      assert.throws(function() {
-        var result = projectConfig.tryCreatingProjectConfig({
-          datafile: { foo: 'bar' },
-          jsonSchemaValidator: stubJsonSchemaValidator,
-          logger: logger,
-        });
+      var { error } = projectConfig.tryCreatingProjectConfig({
+        datafile: { foo: 'bar' },
+        jsonSchemaValidator: stubJsonSchemaValidator,
+        logger: logger,
       });
+    assert.isNotNull(error);
     });
 
     it('skips json validation when jsonSchemaValidator is not provided', function() {
-      configValidator.validateDatafile.returns(true);
+
+      var configDatafile = {
+        foo: 'bar',
+        experiments: [
+          {key: 'a'},
+          {key: 'b'}
+        ]
+      }
+
+      configValidator.validateDatafile.returns(configDatafile);
+
       var configObj = {
         foo: 'bar',
         experimentKeyMap: {
-          a: { key: 'a' },
-          b: { key: 'b' },
+          a: { key: 'a', variationKeyMap: {} },
+          b: { key: 'b', variationKeyMap: {} },
         },
       };
-      projectConfig.createProjectConfig.returns(configObj);
+
       var result = projectConfig.tryCreatingProjectConfig({
-        datafile: { foo: 'bar' },
+        datafile: configDatafile,
         logger: logger,
       });
-      assert.deepEqual(result, configObj);
+
+      assert.deepInclude(result.configObj, configObj);
       sinon.assert.notCalled(logger.error);
     });
   });

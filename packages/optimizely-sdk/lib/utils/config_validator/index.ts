@@ -50,14 +50,15 @@ export const validate = function(config: unknown): boolean {
 
 /**
  * Validates the datafile
- * @param {string}  datafile
- * @return {boolean} true if the datafile is valid
+ * @param {Object|string}  datafile
+ * @return {Object} The datafile object if the datafile is valid
  * @throws If the datafile is not valid for any of the following reasons:
  - The datafile string is undefined
  - The datafile string cannot be parsed as a JSON object
  - The datafile version is not supported
  */
-export const validateDatafile = function(datafile: unknown): boolean {
+// eslint-disable-next-line
+export const validateDatafile = function(datafile: unknown): any {
   if (!datafile) {
     throw new Error(sprintf(ERROR_MESSAGES.NO_DATAFILE_SPECIFIED, MODULE_NAME));
   }
@@ -74,8 +75,9 @@ export const validateDatafile = function(datafile: unknown): boolean {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, MODULE_NAME, datafile['version']));
     }
   }
-  return true;
-}
+
+  return datafile;
+};
 
 /**
  * Provides utility methods for validating that the configuration options are valid
