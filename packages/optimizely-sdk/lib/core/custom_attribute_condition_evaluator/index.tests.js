@@ -773,8 +773,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         leCondition,
         {
           meters_travelled: 48.3,
-        },
-        mockLogger
+        }
       );
       assert.isFalse(result);
     });
@@ -784,8 +783,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         leCondition,
         {
           meters_travelled: 48,
-        },
-        mockLogger
+        }
       );
       assert.isTrue(result);
     });
@@ -795,8 +793,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         leCondition,
         {
           meters_travelled: 48.2,
-        },
-        mockLogger
+        }
       );
       assert.isTrue(result);
     });
@@ -815,8 +812,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         geCondition,
         {
           meters_travelled: 48,
-        },
-        mockLogger
+        }
       );
       assert.isFalse(result);
     });
@@ -826,8 +822,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         geCondition,
         {
           meters_travelled: 100,
-        },
-        mockLogger
+        }
       );
       assert.isTrue(result);
     });
@@ -837,8 +832,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         geCondition,
         {
           meters_travelled: 48.2,
-        },
-        mockLogger
+        }
       );
       assert.isTrue(result);
     });
@@ -857,8 +851,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semvergtCondition,
         {
           app_version: '2.0.1',
-        },
-        mockLogger
+        }
       );
       assert.isTrue(result);
     });
@@ -868,8 +861,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semvergtCondition,
         {
           app_version: '1.9',
-        },
-        mockLogger
+        }
       );
       assert.isFalse(result);
     });
@@ -879,8 +871,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semvergtCondition,
         {
           app_version: 22,
-        },
-        mockLogger
+        }
       );
       assert.isNull(result);
 
@@ -888,36 +879,35 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semvergtCondition,
         {
           app_version: false,
-        },
-        mockLogger
+        }
       );
       assert.isNull(result);
 
-      assert.strictEqual(2, mockLogger.log.callCount);
-      console.log(mockLogger.log.args);
+      assert.strictEqual(2, stubLogHandler.log.callCount);
+      console.log(stubLogHandler.log.args);
       assert.strictEqual(
-        mockLogger.log.args[0][1],
+        stubLogHandler.log.args[0][1],
         'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_gt","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a value of type "number" was passed for user attribute "app_version".'
       );
       assert.strictEqual(
-        mockLogger.log.args[1][1],
+        stubLogHandler.log.args[1][1],
         'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_gt","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a value of type "boolean" was passed for user attribute "app_version".'
       );
     });
 
     it('should log and return null if the user-provided value is null', function() {
-      var result = customAttributeEvaluator.evaluate(semvergtCondition, { app_version: null }, mockLogger);
+      var result = customAttributeEvaluator.evaluate(semvergtCondition, { app_version: null });
       assert.isNull(result);
-      sinon.assert.calledOnce(mockLogger.log);
+      sinon.assert.calledOnce(stubLogHandler.log);
       sinon.assert.calledWithExactly(
-        mockLogger.log,
+        stubLogHandler.log,
         LOG_LEVEL.DEBUG,
         'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_gt","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a null value was passed for user attribute "app_version".'
       );
     });
 
     it('should return null if there is no user-provided value', function() {
-      var result = customAttributeEvaluator.evaluate(semvergtCondition, {}, mockLogger);
+      var result = customAttributeEvaluator.evaluate(semvergtCondition, {});
       assert.isNull(result);
     });
   });
@@ -935,8 +925,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semverltCondition,
         {
           app_version: '2.1',
-        },
-        mockLogger
+        }
       );
       assert.isFalse(result);
     });
@@ -946,8 +935,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semverltCondition,
         {
           app_version: '1.9',
-        },
-        mockLogger
+        }
       );
       assert.isTrue(result);
     });
@@ -957,8 +945,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semverltCondition,
         {
           app_version: 22,
-        },
-        mockLogger
+        }
       );
       assert.isNull(result);
 
@@ -966,36 +953,35 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semverltCondition,
         {
           app_version: false,
-        },
-        mockLogger
+        }
       );
       assert.isNull(result);
 
-      assert.strictEqual(2, mockLogger.log.callCount);
-      console.log(mockLogger.log.args);
+      assert.strictEqual(2, stubLogHandler.log.callCount);
+      console.log(stubLogHandler.log.args);
       assert.strictEqual(
-        mockLogger.log.args[0][1],
+        stubLogHandler.log.args[0][1],
         'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_lt","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a value of type "number" was passed for user attribute "app_version".'
       );
       assert.strictEqual(
-        mockLogger.log.args[1][1],
+        stubLogHandler.log.args[1][1],
         'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_lt","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a value of type "boolean" was passed for user attribute "app_version".'
       );
     });
 
     it('should log and return null if the user-provided value is null', function() {
-      var result = customAttributeEvaluator.evaluate(semverltCondition, { app_version: null }, mockLogger);
+      var result = customAttributeEvaluator.evaluate(semverltCondition, { app_version: null });
       assert.isNull(result);
-      sinon.assert.calledOnce(mockLogger.log);
+      sinon.assert.calledOnce(stubLogHandler.log);
       sinon.assert.calledWithExactly(
-        mockLogger.log,
+        stubLogHandler.log,
         LOG_LEVEL.DEBUG,
         'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_lt","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a null value was passed for user attribute "app_version".'
       );
     });
 
     it('should return null if there is no user-provided value', function() {
-      var result = customAttributeEvaluator.evaluate(semverltCondition, {}, mockLogger);
+      var result = customAttributeEvaluator.evaluate(semverltCondition, {});
       assert.isNull(result);
     });
   });
@@ -1013,8 +999,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semvereqCondition,
         {
           app_version: '2.1',
-        },
-        mockLogger
+        }
       );
       assert.isFalse(result);
     });
@@ -1024,8 +1009,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semvereqCondition,
         {
           app_version: '1.9',
-        },
-        mockLogger
+        }
       );
       assert.isFalse(result);
     });
@@ -1035,8 +1019,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semvereqCondition,
         {
           app_version: '2.0',
-        },
-        mockLogger
+        }
       );
       assert.isTrue(result);
     });
@@ -1046,8 +1029,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semvereqCondition,
         {
           app_version: 22,
-        },
-        mockLogger
+        }
       );
       assert.isNull(result);
 
@@ -1055,36 +1037,35 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semvereqCondition,
         {
           app_version: false,
-        },
-        mockLogger
+        }
       );
       assert.isNull(result);
 
-      assert.strictEqual(2, mockLogger.log.callCount);
-      console.log(mockLogger.log.args);
+      assert.strictEqual(2, stubLogHandler.log.callCount);
+      console.log(stubLogHandler.log.args);
       assert.strictEqual(
-        mockLogger.log.args[0][1],
+        stubLogHandler.log.args[0][1],
         'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_eq","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a value of type "number" was passed for user attribute "app_version".'
       );
       assert.strictEqual(
-        mockLogger.log.args[1][1],
+        stubLogHandler.log.args[1][1],
         'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_eq","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a value of type "boolean" was passed for user attribute "app_version".'
       );
     });
 
     it('should log and return null if the user-provided value is null', function() {
-      var result = customAttributeEvaluator.evaluate(semvereqCondition, { app_version: null }, mockLogger);
+      var result = customAttributeEvaluator.evaluate(semvereqCondition, { app_version: null });
       assert.isNull(result);
-      sinon.assert.calledOnce(mockLogger.log);
+      sinon.assert.calledOnce(stubLogHandler.log);
       sinon.assert.calledWithExactly(
-        mockLogger.log,
+        stubLogHandler.log,
         LOG_LEVEL.DEBUG,
         'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_eq","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a null value was passed for user attribute "app_version".'
       );
     });
 
     it('should return null if there is no user-provided value', function() {
-      var result = customAttributeEvaluator.evaluate(semvereqCondition, {}, mockLogger);
+      var result = customAttributeEvaluator.evaluate(semvereqCondition, {});
       assert.isNull(result);
     });
   });
@@ -1102,8 +1083,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semverleCondition,
         {
           app_version: '2.0.1',
-        },
-        mockLogger
+        }
       );
       assert.isFalse(result);
     });
@@ -1113,8 +1093,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semverleCondition,
         {
           app_version: '1.9.2',
-        },
-        mockLogger
+        }
       );
       assert.isTrue(result);
     });
@@ -1124,8 +1103,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semverleCondition,
         {
           app_version: '2.0',
-        },
-        mockLogger
+        }
       );
       assert.isTrue(result);
     });
@@ -1144,8 +1122,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semvergeCondition,
         {
           app_version: '1.9.9',
-        },
-        mockLogger
+        }
       );
       assert.isFalse(result);
     });
@@ -1155,8 +1132,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semvergeCondition,
         {
           app_version: '2.2',
-        },
-        mockLogger
+        }
       );
       assert.isTrue(result);
     });
@@ -1166,8 +1142,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         semvergeCondition,
         {
           app_version: '2.0',
-        },
-        mockLogger
+        }
       );
       assert.isTrue(result);
     });
