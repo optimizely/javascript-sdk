@@ -54,3 +54,36 @@ export function isAttributeValid(attributeKey: unknown, attributeValue: unknown)
       (isNumber(attributeValue) && isSafeInteger(attributeValue)))
   );
 }
+
+export var compareVersion = function(userProvidedVersion: unknown, conditionsVersion: unknown): number {
+  // any version
+  if (!userProvidedVersion || !(typeof userProvidedVersion == 'string') || !(typeof conditionsVersion == 'string')) {
+    return 0;
+  }
+
+  var userVersionParts = userProvidedVersion.split('.');
+  var conditionsVersionParts = conditionsVersion.split('.');
+
+  for (var idx = 0; idx < userVersionParts.length; idx++) {
+    if (conditionsVersionParts.length <= idx) {
+      return 1;
+    } else if (!isNumber(parseInt(conditionsVersionParts[idx]))) {
+      // compare string
+      if (conditionsVersionParts[idx] !== userVersionParts[idx]) {
+        return -1;
+      }
+    } else if (isNumber(parseInt(userVersionParts[idx])) && isNumber(parseInt(conditionsVersionParts[idx]))) {
+        var userVersionPart = parseInt(userVersionParts[idx]);
+        var conditionsVersionPart = parseInt(conditionsVersionParts[idx]);
+        if (userVersionPart > conditionsVersionPart) {
+          return 1;
+        } else if (userVersionPart < conditionsVersionPart) {
+          return -1;
+        }
+    } else {
+        return -1;
+    }
+  }
+
+  return 0;
+}

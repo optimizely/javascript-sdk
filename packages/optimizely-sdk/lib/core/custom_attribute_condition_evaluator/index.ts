@@ -18,6 +18,7 @@ import { UserAttributes } from '../../shared_types';
 
 import { isNumber, isSafeInteger } from '../../utils/fns';
 import { LOG_MESSAGES } from '../../utils/enums';
+import { compareVersion } from '../../utils/attributes_validator';
 
 const MODULE_NAME = 'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR';
 
@@ -26,15 +27,29 @@ const logger = getLogger();
 const EXACT_MATCH_TYPE = 'exact';
 const EXISTS_MATCH_TYPE = 'exists';
 const GREATER_THAN_MATCH_TYPE = 'gt';
+const GREATER_OR_EQUAL_THAN_MATCH_TYPE = 'ge';
 const LESS_THAN_MATCH_TYPE = 'lt';
+const LESS_OR_EQUAL_THAN_MATCH_TYPE = 'le';
 const SUBSTRING_MATCH_TYPE = 'substring';
+const SEMVER_EXACT_MATCH_TYPE = 'semver_eq';
+const SEMVER_LESS_THAN_MATCH_TYPE = 'semver_lt';
+const SEMVER_LESS_OR_EQUAL_THAN_MATCH_TYPE = 'semver_le';
+const SEMVER_GREATER_THAN_MATCH_TYPE = 'semver_gt';
+const SEMVER_GREATER_OR_EQUAL_THAN_MATCH_TYPE = 'semver_ge';
 
 const MATCH_TYPES = [
   EXACT_MATCH_TYPE,
   EXISTS_MATCH_TYPE,
   GREATER_THAN_MATCH_TYPE,
+  GREATER_OR_EQUAL_THAN_MATCH_TYPE,
   LESS_THAN_MATCH_TYPE,
+  LESS_OR_EQUAL_THAN_MATCH_TYPE,
   SUBSTRING_MATCH_TYPE,
+  SEMVER_EXACT_MATCH_TYPE,
+  SEMVER_LESS_THAN_MATCH_TYPE,
+  SEMVER_LESS_OR_EQUAL_THAN_MATCH_TYPE,
+  SEMVER_GREATER_THAN_MATCH_TYPE,
+  SEMVER_GREATER_OR_EQUAL_THAN_MATCH_TYPE
 ];
 
 type Condition = {
@@ -50,8 +65,15 @@ const EVALUATORS_BY_MATCH_TYPE: { [conditionType: string]: ConditionEvaluator | 
 EVALUATORS_BY_MATCH_TYPE[EXACT_MATCH_TYPE] = exactEvaluator;
 EVALUATORS_BY_MATCH_TYPE[EXISTS_MATCH_TYPE] = existsEvaluator;
 EVALUATORS_BY_MATCH_TYPE[GREATER_THAN_MATCH_TYPE] = greaterThanEvaluator;
+EVALUATORS_BY_MATCH_TYPE[GREATER_OR_EQUAL_THAN_MATCH_TYPE] = greaterOrEqualThanEvaluator;
 EVALUATORS_BY_MATCH_TYPE[LESS_THAN_MATCH_TYPE] = lessThanEvaluator;
+EVALUATORS_BY_MATCH_TYPE[LESS_OR_EQUAL_THAN_MATCH_TYPE] = lessOrEqualThanEvaluator;
 EVALUATORS_BY_MATCH_TYPE[SUBSTRING_MATCH_TYPE] = substringEvaluator;
+EVALUATORS_BY_MATCH_TYPE[SEMVER_EXACT_MATCH_TYPE] = isSemanticVersionEqual;
+EVALUATORS_BY_MATCH_TYPE[SEMVER_GREATER_THAN_MATCH_TYPE] = isSemanticVersionGreater;
+EVALUATORS_BY_MATCH_TYPE[SEMVER_GREATER_OR_EQUAL_THAN_MATCH_TYPE] = isSemanticVersionGreaterOrEqual;
+EVALUATORS_BY_MATCH_TYPE[SEMVER_LESS_THAN_MATCH_TYPE] = isSemanticVersionLess;
+EVALUATORS_BY_MATCH_TYPE[SEMVER_LESS_OR_EQUAL_THAN_MATCH_TYPE] = isSemanticVersionLessOrEqual;
 
 /**
  * Given a custom attribute audience condition and user attributes, evaluate the
@@ -212,6 +234,20 @@ function greaterThanEvaluator(condition: Condition, userAttributes: UserAttribut
 }
 
 /**
+ * Evaluate the given greater or equal than match condition for the given user attributes
+ * @param   {Condition}        condition
+ * @param   {UserAttributes}   userAttributes
+ * @param   {LoggerFacade}     logger
+ * @returns {?Boolean}         true if the user attribute value is greater or equal than the condition value,
+ *                             false if the user attribute value is less than to the condition value,
+ *                             null if the condition value isn't a number or the user attribute value isn't a
+ *                             number
+ */
+function greaterOrEqualThanEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
+  return greaterThanEvaluator(condition, userAttributes) || exactEvaluator(condition, userAttributes);
+}
+
+/**
  * Evaluate the given less than match condition for the given user attributes
  * @param   {Condition}       condition
  * @param   {UserAttributes}  userAttributes
@@ -259,6 +295,20 @@ function lessThanEvaluator(condition: Condition, userAttributes: UserAttributes)
 }
 
 /**
+ * Evaluate the given less or equal than match condition for the given user attributes
+ * @param   {Condition}       condition
+ * @param   {UserAttributes}  userAttributes
+ * @param   {LoggerFacade}    logger
+ * @returns {?Boolean}        true if the user attribute value is less or equal than the condition value,
+ *                            false if the user attribute value is greater than to the condition value,
+ *                            null if the condition value isn't a number or the user attribute value isn't a
+ *                            number
+ */
+function lessOrEqualThanEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
+  return lessThanEvaluator(condition, userAttributes) || exactEvaluator(condition, userAttributes);
+}
+
+/**
  * Evaluate the given substring match condition for the given user attributes
  * @param   {Condition}       condition
  * @param   {UserAttributes}  userAttributes
@@ -296,4 +346,148 @@ function substringEvaluator(condition: Condition, userAttributes: UserAttributes
   }
 
   return userValue.indexOf(conditionValue) !== -1;
+}
+
+/**
+ * Evaluate the given version match condition for the given user attributes
+ * @param   {Condition}       condition
+ * @param   {UserAttributes}  userAttributes
+ * @param   {LoggerFacade}    logger
+ * @returns {?Boolean}        true if the user attribute version is equal (===) to the condition version,
+ *                            false if the user attribute version is not equal (!==) to the condition version,
+ *                            null if the user attribute version has an invalid type
+ */
+function isSemanticVersionEqual(condition: Condition, userAttributes: UserAttributes): boolean | null {
+  const conditionName = condition.name;
+  const userValue = userAttributes[conditionName];
+  const userValueType = typeof userValue;
+  const conditionValue = condition.value;
+
+  if (typeof conditionValue !== 'string') {
+    logger.warn(
+      LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
+    );
+    return null;
+  }
+
+  if (userValue === null) {
+    logger.debug(
+      LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
+    );
+    return null;
+  }
+
+  if (typeof userValue !== 'string') {
+    logger.warn(
+      LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
+    );
+    return null;
+  }
+  
+
+  return compareVersion(userValue, conditionValue) === 0;
+}
+
+/**
+ * Evaluate the given version greater than match condition for the given user attributes
+ * @param   {Condition}       condition
+ * @param   {UserAttributes}  userAttributes
+ * @param   {LoggerFacade}    logger
+ * @returns {?Boolean}        true if the user attribute version is greater than the condition version,
+ *                            false if the user attribute version is less than or equal to the condition version,
+ *                            null if the user attribute version has an invalid type
+ */
+function isSemanticVersionGreater(condition: Condition, userAttributes: UserAttributes): boolean | null {
+  const conditionName = condition.name;
+  const userValue = userAttributes[conditionName];
+  const userValueType = typeof userValue;
+  const conditionValue = condition.value;
+
+  if (typeof conditionValue !== 'string') {
+    logger.warn(
+      LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
+    );
+    return null;
+  }
+
+  if (userValue === null) {
+    logger.debug(
+      LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
+    );
+    return null;
+  }
+
+  if (typeof userValue !== 'string') {
+    logger.warn(
+      LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
+    );
+    return null;
+  }
+
+  return compareVersion(userValue, conditionValue) > 0;
+}
+
+/**
+ * Evaluate the given version greater or equal than match condition for the given user attributes
+ * @param   {Condition}       condition
+ * @param   {UserAttributes}  userAttributes
+ * @param   {LoggerFacade}    logger
+ * @returns {?Boolean}        true if the user attribute version is greater or equal than the condition version,
+ *                            false if the user attribute version is less than to the condition version,
+ *                            null if the user attribute version has an invalid type
+ */
+function isSemanticVersionGreaterOrEqual(condition: Condition, userAttributes: UserAttributes): boolean | null {
+  return isSemanticVersionEqual(condition, userAttributes) || isSemanticVersionGreater(condition, userAttributes);
+}
+
+/**
+ * Evaluate the given version less than match condition for the given user attributes
+ * @param   {Condition}       condition
+ * @param   {UserAttributes}  userAttributes
+ * @param   {LoggerFacade}    logger
+ * @returns {?Boolean}        true if the user attribute version is less than the condition version,
+ *                            false if the user attribute version is greater than or equal to the condition version,
+ *                            null if the user attribute version has an invalid type
+ */
+function isSemanticVersionLess(condition: Condition, userAttributes: UserAttributes): boolean | null {
+  const conditionName = condition.name;
+  const userValue = userAttributes[conditionName];
+  const userValueType = typeof userValue;
+  const conditionValue = condition.value;
+
+  if (typeof conditionValue !== 'string') {
+    logger.warn(
+      LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
+    );
+    return null;
+  }
+
+  if (userValue === null) {
+    logger.debug(
+      LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
+    );
+    return null;
+  }
+
+  if (typeof userValue !== 'string') {
+    logger.warn(
+      LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
+    );
+    return null;
+  }
+
+  return compareVersion(userValue, conditionValue) < 0;
+}
+
+/**
+ * Evaluate the given version less or equal than match condition for the given user attributes
+ * @param   {Condition}       condition
+ * @param   {UserAttributes}  userAttributes
+ * @param   {LoggerFacade}    logger
+ * @returns {?Boolean}        true if the user attribute version is less or equal than the condition version,
+ *                            false if the user attribute version is greater than to the condition version,
+ *                            null if the user attribute version has an invalid type
+ */
+function isSemanticVersionLessOrEqual(condition: Condition, userAttributes: UserAttributes): boolean | null {
+  return isSemanticVersionLess(condition, userAttributes) || isSemanticVersionEqual(condition, userAttributes);
 }

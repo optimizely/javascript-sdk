@@ -760,4 +760,416 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       );
     });
   });
+  describe('less than equal to match type', function() {
+    var leCondition = {
+      match: 'le',
+      name: 'meters_travelled',
+      type: 'custom_attribute',
+      value: 48.2,
+    };
+
+    it('should return false if the user-provided value is greater than the condition value', function() {
+      var result = customAttributeEvaluator.evaluate(
+        leCondition,
+        {
+          meters_travelled: 48.3,
+        },
+        mockLogger
+      );
+      assert.isFalse(result);
+    });
+
+    it('should return true if the user-provided value is less than the condition value', function() {
+      var result = customAttributeEvaluator.evaluate(
+        leCondition,
+        {
+          meters_travelled: 48,
+        },
+        mockLogger
+      );
+      assert.isTrue(result);
+    });
+
+    it('should return true if the user-provided value is equal than the condition value', function() {
+      var result = customAttributeEvaluator.evaluate(
+        leCondition,
+        {
+          meters_travelled: 48.2,
+        },
+        mockLogger
+      );
+      assert.isTrue(result);
+    });
+  });
+
+  describe('greater than equal to match type', function() {
+    var geCondition = {
+      match: 'ge',
+      name: 'meters_travelled',
+      type: 'custom_attribute',
+      value: 48.2,
+    };
+
+    it('should return false if the user-provided value is less than the condition value', function() {
+      var result = customAttributeEvaluator.evaluate(
+        geCondition,
+        {
+          meters_travelled: 48,
+        },
+        mockLogger
+      );
+      assert.isFalse(result);
+    });
+
+    it('should return true if the user-provided value is less than the condition value', function() {
+      var result = customAttributeEvaluator.evaluate(
+        geCondition,
+        {
+          meters_travelled: 100,
+        },
+        mockLogger
+      );
+      assert.isTrue(result);
+    });
+
+    it('should return true if the user-provided value is equal than the condition value', function() {
+      var result = customAttributeEvaluator.evaluate(
+        geCondition,
+        {
+          meters_travelled: 48.2,
+        },
+        mockLogger
+      );
+      assert.isTrue(result);
+    });
+  });
+
+  describe('semver greater than match type', function() {
+    var semvergtCondition = {
+      match: 'semver_gt',
+      name: 'app_version',
+      type: 'custom_attribute',
+      value: '2.0.0',
+    };
+
+    it('should return true if the user-provided version is greater than the condition version', function() {
+      var result = customAttributeEvaluator.evaluate(
+        semvergtCondition,
+        {
+          app_version: '2.0.1',
+        },
+        mockLogger
+      );
+      assert.isTrue(result);
+    });
+
+    it('should return false if the user-provided version is not greater than the condition version', function() {
+      var result = customAttributeEvaluator.evaluate(
+        semvergtCondition,
+        {
+          app_version: '1.9',
+        },
+        mockLogger
+      );
+      assert.isFalse(result);
+    });
+
+    it('should log and return null if the user-provided version is not a string', function() {
+      var result = customAttributeEvaluator.evaluate(
+        semvergtCondition,
+        {
+          app_version: 22,
+        },
+        mockLogger
+      );
+      assert.isNull(result);
+
+      result = customAttributeEvaluator.evaluate(
+        semvergtCondition,
+        {
+          app_version: false,
+        },
+        mockLogger
+      );
+      assert.isNull(result);
+
+      assert.strictEqual(2, mockLogger.log.callCount);
+      console.log(mockLogger.log.args);
+      assert.strictEqual(
+        mockLogger.log.args[0][1],
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_gt","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a value of type "number" was passed for user attribute "app_version".'
+      );
+      assert.strictEqual(
+        mockLogger.log.args[1][1],
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_gt","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a value of type "boolean" was passed for user attribute "app_version".'
+      );
+    });
+
+    it('should log and return null if the user-provided value is null', function() {
+      var result = customAttributeEvaluator.evaluate(semvergtCondition, { app_version: null }, mockLogger);
+      assert.isNull(result);
+      sinon.assert.calledOnce(mockLogger.log);
+      sinon.assert.calledWithExactly(
+        mockLogger.log,
+        LOG_LEVEL.DEBUG,
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_gt","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a null value was passed for user attribute "app_version".'
+      );
+    });
+
+    it('should return null if there is no user-provided value', function() {
+      var result = customAttributeEvaluator.evaluate(semvergtCondition, {}, mockLogger);
+      assert.isNull(result);
+    });
+  });
+
+  describe('semver less than match type', function() {
+    var semverltCondition = {
+      match: 'semver_lt',
+      name: 'app_version',
+      type: 'custom_attribute',
+      value: '2.0.0',
+    };
+
+    it('should return false if the user-provided version is greater than the condition version', function() {
+      var result = customAttributeEvaluator.evaluate(
+        semverltCondition,
+        {
+          app_version: '2.1',
+        },
+        mockLogger
+      );
+      assert.isFalse(result);
+    });
+
+    it('should return true if the user-provided version is less than the condition version', function() {
+      var result = customAttributeEvaluator.evaluate(
+        semverltCondition,
+        {
+          app_version: '1.9',
+        },
+        mockLogger
+      );
+      assert.isTrue(result);
+    });
+
+    it('should log and return null if the user-provided version is not a string', function() {
+      var result = customAttributeEvaluator.evaluate(
+        semverltCondition,
+        {
+          app_version: 22,
+        },
+        mockLogger
+      );
+      assert.isNull(result);
+
+      result = customAttributeEvaluator.evaluate(
+        semverltCondition,
+        {
+          app_version: false,
+        },
+        mockLogger
+      );
+      assert.isNull(result);
+
+      assert.strictEqual(2, mockLogger.log.callCount);
+      console.log(mockLogger.log.args);
+      assert.strictEqual(
+        mockLogger.log.args[0][1],
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_lt","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a value of type "number" was passed for user attribute "app_version".'
+      );
+      assert.strictEqual(
+        mockLogger.log.args[1][1],
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_lt","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a value of type "boolean" was passed for user attribute "app_version".'
+      );
+    });
+
+    it('should log and return null if the user-provided value is null', function() {
+      var result = customAttributeEvaluator.evaluate(semverltCondition, { app_version: null }, mockLogger);
+      assert.isNull(result);
+      sinon.assert.calledOnce(mockLogger.log);
+      sinon.assert.calledWithExactly(
+        mockLogger.log,
+        LOG_LEVEL.DEBUG,
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_lt","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a null value was passed for user attribute "app_version".'
+      );
+    });
+
+    it('should return null if there is no user-provided value', function() {
+      var result = customAttributeEvaluator.evaluate(semverltCondition, {}, mockLogger);
+      assert.isNull(result);
+    });
+  });
+
+  describe('semver equal to match type', function() {
+    var semvereqCondition = {
+      match: 'semver_eq',
+      name: 'app_version',
+      type: 'custom_attribute',
+      value: '2.0.0',
+    };
+
+    it('should return false if the user-provided version is greater than the condition version', function() {
+      var result = customAttributeEvaluator.evaluate(
+        semvereqCondition,
+        {
+          app_version: '2.1',
+        },
+        mockLogger
+      );
+      assert.isFalse(result);
+    });
+
+    it('should return false if the user-provided version is less than the condition version', function() {
+      var result = customAttributeEvaluator.evaluate(
+        semvereqCondition,
+        {
+          app_version: '1.9',
+        },
+        mockLogger
+      );
+      assert.isFalse(result);
+    });
+
+    it('should return true if the user-provided version is equal than the condition version', function() {
+      var result = customAttributeEvaluator.evaluate(
+        semvereqCondition,
+        {
+          app_version: '2.0',
+        },
+        mockLogger
+      );
+      assert.isTrue(result);
+    });
+
+    it('should log and return null if the user-provided version is not a string', function() {
+      var result = customAttributeEvaluator.evaluate(
+        semvereqCondition,
+        {
+          app_version: 22,
+        },
+        mockLogger
+      );
+      assert.isNull(result);
+
+      result = customAttributeEvaluator.evaluate(
+        semvereqCondition,
+        {
+          app_version: false,
+        },
+        mockLogger
+      );
+      assert.isNull(result);
+
+      assert.strictEqual(2, mockLogger.log.callCount);
+      console.log(mockLogger.log.args);
+      assert.strictEqual(
+        mockLogger.log.args[0][1],
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_eq","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a value of type "number" was passed for user attribute "app_version".'
+      );
+      assert.strictEqual(
+        mockLogger.log.args[1][1],
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_eq","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a value of type "boolean" was passed for user attribute "app_version".'
+      );
+    });
+
+    it('should log and return null if the user-provided value is null', function() {
+      var result = customAttributeEvaluator.evaluate(semvereqCondition, { app_version: null }, mockLogger);
+      assert.isNull(result);
+      sinon.assert.calledOnce(mockLogger.log);
+      sinon.assert.calledWithExactly(
+        mockLogger.log,
+        LOG_LEVEL.DEBUG,
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_eq","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a null value was passed for user attribute "app_version".'
+      );
+    });
+
+    it('should return null if there is no user-provided value', function() {
+      var result = customAttributeEvaluator.evaluate(semvereqCondition, {}, mockLogger);
+      assert.isNull(result);
+    });
+  });
+
+  describe('semver less than equal to match type', function() {
+    var semverleCondition = {
+      match: 'semver_le',
+      name: 'app_version',
+      type: 'custom_attribute',
+      value: '2.0.0',
+    };
+
+    it('should return false if the user-provided version is greater than the condition version', function() {
+      var result = customAttributeEvaluator.evaluate(
+        semverleCondition,
+        {
+          app_version: '2.0.1',
+        },
+        mockLogger
+      );
+      assert.isFalse(result);
+    });
+
+    it('should return true if the user-provided version is less than the condition version', function() {
+      var result = customAttributeEvaluator.evaluate(
+        semverleCondition,
+        {
+          app_version: '1.9.2',
+        },
+        mockLogger
+      );
+      assert.isTrue(result);
+    });
+
+    it('should return true if the user-provided version is equal than the condition version', function() {
+      var result = customAttributeEvaluator.evaluate(
+        semverleCondition,
+        {
+          app_version: '2.0',
+        },
+        mockLogger
+      );
+      assert.isTrue(result);
+    });
+  });
+
+  describe('semver greater than equal to match type', function() {
+    var semvergeCondition = {
+      match: 'semver_ge',
+      name: 'app_version',
+      type: 'custom_attribute',
+      value: '2.0.0',
+    };
+
+    it('should return false if the user-provided version is less than the condition version', function() {
+      var result = customAttributeEvaluator.evaluate(
+        semvergeCondition,
+        {
+          app_version: '1.9.9',
+        },
+        mockLogger
+      );
+      assert.isFalse(result);
+    });
+
+    it('should return true if the user-provided version is greater than the condition version', function() {
+      var result = customAttributeEvaluator.evaluate(
+        semvergeCondition,
+        {
+          app_version: '2.2',
+        },
+        mockLogger
+      );
+      assert.isTrue(result);
+    });
+
+    it('should return true if the user-provided version is equal than the condition version', function() {
+      var result = customAttributeEvaluator.evaluate(
+        semvergeCondition,
+        {
+          app_version: '2.0',
+        },
+        mockLogger
+      );
+      assert.isTrue(result);
+    });
+  });
 });
