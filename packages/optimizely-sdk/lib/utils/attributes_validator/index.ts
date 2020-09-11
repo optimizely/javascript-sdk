@@ -53,4 +53,3 @@ export function isAttributeValid(attributeKey: unknown, attributeValue: unknown)
       typeof attributeValue === 'boolean' ||
       (isNumber(attributeValue) && isSafeInteger(attributeValue)))
   );
-}
