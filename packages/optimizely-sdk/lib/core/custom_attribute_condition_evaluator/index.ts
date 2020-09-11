@@ -30,12 +30,12 @@ const GREATER_THAN_MATCH_TYPE = 'gt';
 const GREATER_OR_EQUAL_THAN_MATCH_TYPE = 'ge';
 const LESS_THAN_MATCH_TYPE = 'lt';
 const LESS_OR_EQUAL_THAN_MATCH_TYPE = 'le';
+const SEMVER_EXACT_MATCH_TYPE = 'semver_eq';
+const SEMVER_GREATER_THAN_MATCH_TYPE = 'semver_gt';
+const SEMVER_GREATER_OR_EQUAL_THAN_MATCH_TYPE = 'semver_ge';
+const SEMVER_LESS_THAN_MATCH_TYPE = 'semver_lt';
+const SEMVER_LESS_OR_EQUAL_THAN_MATCH_TYPE = 'semver_le';
 const SUBSTRING_MATCH_TYPE = 'substring';
-const SEMVER_EXACT_MATCH_TYPE = 'semvereq';
-const SEMVER_LESS_THAN_MATCH_TYPE = 'semverlt';
-const SEMVER_LESS_OR_EQUAL_THAN_MATCH_TYPE = 'semverle';
-const SEMVER_GREATER_THAN_MATCH_TYPE = 'semvergt';
-const SEMVER_GREATER_OR_EQUAL_THAN_MATCH_TYPE = 'semverge';
 
 const MATCH_TYPES = [
   EXACT_MATCH_TYPE,
@@ -101,7 +101,6 @@ export function evaluate(condition: Condition, userAttributes: UserAttributes): 
   }
 
   let evaluatorForMatch;
-  console.log("condition match", conditionMatch)
   if (!conditionMatch) {
     evaluatorForMatch = exactEvaluator;
   } else {
@@ -420,8 +419,7 @@ function substringEvaluator(condition: Condition, userAttributes: UserAttributes
  * @param   {Condition}       condition
  * @param   {UserAttributes}  userAttributes
  * @param   {LoggerFacade}    logger
- * @returns {?Boolean}        true if the user attribute version is equal (===) to the condition version,
- *                            false if the user attribute version is not equal (!==) to the condition version,
+ * @returns {?number}         returns compareVersion result
  *                            null if the user attribute version has an invalid type
  */
 function evaluateSemanticVersion(condition: Condition, userAttributes: UserAttributes): number | null {
@@ -451,10 +449,7 @@ function evaluateSemanticVersion(condition: Condition, userAttributes: UserAttri
     return null;
   }
   
-  const result = compareVersion(conditionValue, userValue);
-  if (result === null)
-    return null;
-  return result;
+  return compareVersion(conditionValue, userValue);
 }
 
 /**

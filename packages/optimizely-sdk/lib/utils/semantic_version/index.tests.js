@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2018-2020, Optimizely
+ * Copyright 2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ describe('lib/utils/sematic_version', function() {
         }
       });
 
-      it('should return 1 target version is greater than user version are equal', function() {
+      it('should return 1 when target version is greater than user version are equal', function() {
         var versions = [
           ['2.0.0', '2.0.1'],
           ['2.0', '3.0.1'],
@@ -52,7 +52,7 @@ describe('lib/utils/sematic_version', function() {
         }
       });
 
-      it('should return 1 target version is greater than user version are equal', function() {
+      it('should return -1 when targe version is less than user version', function() {
         var versions = [
           ['2.0.1', '2.0.0'],
           ['3.0', '2.0.1'],
@@ -73,24 +73,12 @@ describe('lib/utils/sematic_version', function() {
         }
       });
 
-      it('should return 1 target version is greater than user version are equal', function() {
-        var versions = [
-          ['2.0.1', '2.0.0'],
-          ['3.0', '2.0.1'],
-          ['2.3', '2.0.1'],
-          ['2.3.5', '2.3.1'],
-          ['2.9.8', '2.9'],
-          ['2.1.2-release', '2.1.2-beta'],
-          ['2.1.3', '2.1.3-beta'],
-          ['2.1.3', '2.1.3+beta'],
-          ['2.9.9+beta', '2.9.9-beta'],
-          ['3.7.0+build3.7.0-prerelease+build', '3.7.0-prerelease'],
-          ['2.1.3-beta-beta2', '2.1.3-beta'],
-          ['2.1.3-beta1+beta3', '2.1.3-beta1+beta2']
-      ];
-        for (let [targetVersion, userVersion] of versions) {
-          var result = semanticVersion.compareVersion(targetVersion, userVersion)
-          assert.equal(result, -1, `Got result ${result}. Failed for target version: ${targetVersion} and user version: ${userVersion}`);
+      it('should return null when user version is invalid', function() {
+        var versions = ['-', '.', '..', '+', '+test', ' ', '2 .3. 0', '2.', '.2.2', '3.7.2.2', '3.x', ',', '+build-prerelease', '2..2']
+        var targetVersion = '2.1.0';
+        for (let userVersion of versions) {
+          var result = semanticVersion.compareVersion(targetVersion, userVersion);
+          assert.equal(result, null, `Got result ${result}. Failed for target version: ${targetVersion} and user version: ${userVersion}`);
         }
       });
 

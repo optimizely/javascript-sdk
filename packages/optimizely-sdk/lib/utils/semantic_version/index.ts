@@ -145,7 +145,6 @@ function isPreReleaseVersion(version: string): boolean {
     // check if user version contains build or pre-release and target version doesn't
     if ((isPreReleaseInuserProvidedVersion && !isPreReleaseInconditionsVersion) || (isBuildInuserProvidedVersion && !isBuildInconditionsVersion))
       return -1;
-  
+      
     return 0;
   }
-  
