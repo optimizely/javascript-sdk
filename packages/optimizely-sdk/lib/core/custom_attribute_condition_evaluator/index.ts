@@ -384,8 +384,10 @@ function isSemanticVersionEqual(condition: Condition, userAttributes: UserAttrib
     return null;
   }
   
-
-  return compareVersion(userValue, conditionValue) === 0;
+  const result = compareVersion(conditionValue, userValue);
+  if (result == null)
+    return null;
+  return result === 0;
 }
 
 /**
@@ -424,7 +426,11 @@ function isSemanticVersionGreater(condition: Condition, userAttributes: UserAttr
     return null;
   }
 
-  return compareVersion(userValue, conditionValue) > 0;
+  const result = compareVersion(conditionValue, userValue);
+  if (result == null)
+    return null;
+
+  return result > 0;
 }
 
 /**
@@ -476,7 +482,11 @@ function isSemanticVersionLess(condition: Condition, userAttributes: UserAttribu
     return null;
   }
 
-  return compareVersion(userValue, conditionValue) < 0;
+  const result = compareVersion(conditionValue, userValue);
+  if (result == null)
+    return null;
+
+  return result < 0;
 }
 
 /**
