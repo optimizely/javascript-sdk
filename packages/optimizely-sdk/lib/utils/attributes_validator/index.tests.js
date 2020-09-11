@@ -150,7 +150,7 @@ describe('lib/utils/attributes_validator', function() {
 
       it('should return 1 target version is greater than user version are equal', function() {
         var versions = [
-          ['2.0.0', '2.0.0'],
+          ['2.0.1', '2.0.0'],
           ['3.0', '2.0.1'],
           ['2.3', '2.0.1'],
           ['2.3.5', '2.3.1'],
