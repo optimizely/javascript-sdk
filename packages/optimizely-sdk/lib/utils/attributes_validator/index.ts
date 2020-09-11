@@ -118,8 +118,8 @@ function hasWhiteSpaces(version: unknown): boolean {
  *                    null if given version is in invalid format 
  */
 function splitVersion(version: unknown): string[] | null {
-  var targetPrefix = version;
-  var targetSuffix = '';
+  let targetPrefix = version;
+  let targetSuffix = '';
   
   if (typeof version != 'string') {
     return null;
@@ -153,7 +153,7 @@ function splitVersion(version: unknown): string[] | null {
       logger.warn(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
       return null;
     }
-    for (let part of targetVersionParts){
+    for (const part of targetVersionParts){
       if (!part.match(/^[0-9]+$/)) {
         logger.warn(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
         return null;
@@ -191,7 +191,7 @@ export function compareVersion(conditionsVersion: unknown, userProvidedVersion: 
 
   const userVersionPartsLen = userVersionParts.length;
 
-  for (const { idx, value } of conditionsVersionParts.map((value, idx) => ({ idx, value }))) {
+  for (let idx = 0; idx < conditionsVersionParts.length; idx++) {
     if (userVersionPartsLen <= idx)
         return isPreReleaseInconditionsVersion || isBuildInconditionsVersion ? 1 : -1
     else if (!userVersionParts[idx].match(/^[0-9]+$/)) {

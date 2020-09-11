@@ -991,7 +991,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       match: 'semver_eq',
       name: 'app_version',
       type: 'custom_attribute',
-      value: '2.0.0',
+      value: '2.0',
     };
 
     it('should return false if the user-provided version is greater than the condition version', function() {
@@ -1045,11 +1045,11 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       console.log(stubLogHandler.log.args);
       assert.strictEqual(
         stubLogHandler.log.args[0][1],
-        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_eq","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a value of type "number" was passed for user attribute "app_version".'
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_eq","name":"app_version","type":"custom_attribute","value":"2.0"} evaluated to UNKNOWN because a value of type "number" was passed for user attribute "app_version".'
       );
       assert.strictEqual(
         stubLogHandler.log.args[1][1],
-        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_eq","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a value of type "boolean" was passed for user attribute "app_version".'
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_eq","name":"app_version","type":"custom_attribute","value":"2.0"} evaluated to UNKNOWN because a value of type "boolean" was passed for user attribute "app_version".'
       );
     });
 
@@ -1060,7 +1060,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       sinon.assert.calledWithExactly(
         stubLogHandler.log,
         LOG_LEVEL.DEBUG,
-        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_eq","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a null value was passed for user attribute "app_version".'
+        'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_eq","name":"app_version","type":"custom_attribute","value":"2.0"} evaluated to UNKNOWN because a null value was passed for user attribute "app_version".'
       );
     });
 
@@ -1114,7 +1114,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       match: 'semver_ge',
       name: 'app_version',
       type: 'custom_attribute',
-      value: '2.0.0',
+      value: '2.0',
     };
 
     it('should return false if the user-provided version is less than the condition version', function() {
