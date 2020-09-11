@@ -18,7 +18,7 @@ import { UserAttributes } from '../../shared_types';
 
 import { isNumber, isSafeInteger } from '../../utils/fns';
 import { LOG_MESSAGES } from '../../utils/enums';
-import { compareVersion } from '../../utils/attributes_validator';
+import { compareVersion } from '../../utils/semantic_version';
 
 const MODULE_NAME = 'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR';
 
@@ -31,11 +31,11 @@ const GREATER_OR_EQUAL_THAN_MATCH_TYPE = 'ge';
 const LESS_THAN_MATCH_TYPE = 'lt';
 const LESS_OR_EQUAL_THAN_MATCH_TYPE = 'le';
 const SUBSTRING_MATCH_TYPE = 'substring';
-const SEMVER_EXACT_MATCH_TYPE = 'semver_eq';
-const SEMVER_LESS_THAN_MATCH_TYPE = 'semver_lt';
-const SEMVER_LESS_OR_EQUAL_THAN_MATCH_TYPE = 'semver_le';
-const SEMVER_GREATER_THAN_MATCH_TYPE = 'semver_gt';
-const SEMVER_GREATER_OR_EQUAL_THAN_MATCH_TYPE = 'semver_ge';
+const SEMVER_EXACT_MATCH_TYPE = 'semvereq';
+const SEMVER_LESS_THAN_MATCH_TYPE = 'semverlt';
+const SEMVER_LESS_OR_EQUAL_THAN_MATCH_TYPE = 'semverle';
+const SEMVER_GREATER_THAN_MATCH_TYPE = 'semvergt';
+const SEMVER_GREATER_OR_EQUAL_THAN_MATCH_TYPE = 'semverge';
 
 const MATCH_TYPES = [
   EXACT_MATCH_TYPE,
@@ -245,7 +245,40 @@ function greaterThanEvaluator(condition: Condition, userAttributes: UserAttribut
  *                             number
  */
 function greaterOrEqualThanEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
-  return greaterThanEvaluator(condition, userAttributes) || exactEvaluator(condition, userAttributes);
+  const conditionName = condition.name;
+  const userValue = userAttributes[conditionName];
+  const userValueType = typeof userValue;
+  const conditionValue = condition.value;
+
+  if (conditionValue === null || !isSafeInteger(conditionValue)) {
+    logger.warn(
+      LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
+    );
+    return null;
+  }
+
+  if (userValue === null) {
+    logger.debug(
+      LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
+    );
+    return null;
+  }
+
+  if (!isNumber(userValue)) {
+    logger.warn(
+      LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
+    );
+    return null;
+  }
+
+  if (!isSafeInteger(userValue)) {
+    logger.warn(
+      LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName
+    );
+    return null;
+  }
+
+  return userValue >= conditionValue;
 }
 
 /**
@@ -306,7 +339,40 @@ function lessThanEvaluator(condition: Condition, userAttributes: UserAttributes)
  *                            number
  */
 function lessOrEqualThanEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
-  return lessThanEvaluator(condition, userAttributes) || exactEvaluator(condition, userAttributes);
+  const conditionName = condition.name;
+  const userValue = userAttributes[condition.name];
+  const userValueType = typeof userValue;
+  const conditionValue = condition.value;
+
+  if (conditionValue === null || !isSafeInteger(conditionValue)) {
+    logger.warn(
+      LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
+    );
+    return null;
+  }
+
+  if (userValue === null) {
+    logger.debug(
+      LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
+    );
+    return null;
+  }
+
+  if (!isNumber(userValue)) {
+    logger.warn(
+      LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
+    );
+    return null;
+  }
+
+  if (!isSafeInteger(userValue)) {
+    logger.warn(
+      LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName
+    );
+    return null;
+  }
+
+  return userValue <= conditionValue;
 }
 
 /**
@@ -350,7 +416,7 @@ function substringEvaluator(condition: Condition, userAttributes: UserAttributes
 }
 
 /**
- * Evaluate the given version match condition for the given user attributes
+ * Evaluate the given semantic version match condition for the given user attributes
  * @param   {Condition}       condition
  * @param   {UserAttributes}  userAttributes
  * @param   {LoggerFacade}    logger
@@ -358,7 +424,7 @@ function substringEvaluator(condition: Condition, userAttributes: UserAttributes
  *                            false if the user attribute version is not equal (!==) to the condition version,
  *                            null if the user attribute version has an invalid type
  */
-function semverEqualEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
+function evaluateSemanticVersion(condition: Condition, userAttributes: UserAttributes): number | null {
   const conditionName = condition.name;
   const userValue = userAttributes[conditionName];
   const userValueType = typeof userValue;
@@ -386,9 +452,23 @@ function semverEqualEvaluator(condition: Condition, userAttributes: UserAttribut
   }
   
   const result = compareVersion(conditionValue, userValue);
-  if (result == null)
+  if (result === null)
     return null;
-  return result === 0;
+  return result;
+}
+
+/**
+ * Evaluate the given version match condition for the given user attributes
+ * @param   {Condition}       condition
+ * @param   {UserAttributes}  userAttributes
+ * @param   {LoggerFacade}    logger
+ * @returns {?Boolean}        true if the user attribute version is equal (===) to the condition version,
+ *                            false if the user attribute version is not equal (!==) to the condition version,
+ *                            null if the user attribute version has an invalid type
+ */
+function semverEqualEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
+  const result = evaluateSemanticVersion(condition, userAttributes);
+  return result != null ? result === 0 : null; 
 }
 
 /**
@@ -401,36 +481,8 @@ function semverEqualEvaluator(condition: Condition, userAttributes: UserAttribut
  *                            null if the user attribute version has an invalid type
  */
 function semverGreaterThanEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
-  const conditionName = condition.name;
-  const userValue = userAttributes[conditionName];
-  const userValueType = typeof userValue;
-  const conditionValue = condition.value;
-
-  if (typeof conditionValue !== 'string') {
-    logger.warn(
-      LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
-    );
-    return null;
-  }
-
-  if (userValue === null) {
-    logger.debug(
-      LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
-    );
-    return null;
-  }
-
-  if (typeof userValue !== 'string') {
-    logger.warn(
-      LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
-    );
-    return null;
-  }
-  
-  const result = compareVersion(conditionValue, userValue);
-  if (result == null)
-    return null;
-  return result > 0;
+  const result = evaluateSemanticVersion(condition, userAttributes);
+  return result != null ? result > 0 : null; 
 }
 
 /**
@@ -443,36 +495,8 @@ function semverGreaterThanEvaluator(condition: Condition, userAttributes: UserAt
  *                            null if the user attribute version has an invalid type
  */
 function semverLessThanEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
-  const conditionName = condition.name;
-  const userValue = userAttributes[conditionName];
-  const userValueType = typeof userValue;
-  const conditionValue = condition.value;
-
-  if (typeof conditionValue !== 'string') {
-    logger.warn(
-      LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
-    );
-    return null;
-  }
-
-  if (userValue === null) {
-    logger.debug(
-      LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
-    );
-    return null;
-  }
-
-  if (typeof userValue !== 'string') {
-    logger.warn(
-      LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
-    );
-    return null;
-  }
-  
-  const result = compareVersion(conditionValue, userValue);
-  if (result == null)
-    return null;
-  return result < 0;
+  const result = evaluateSemanticVersion(condition, userAttributes);
+  return result != null ? result < 0 : null; 
 }
 
 /**
@@ -485,36 +509,8 @@ function semverLessThanEvaluator(condition: Condition, userAttributes: UserAttri
  *                            null if the user attribute version has an invalid type
  */
 function semverGreaterThanOrEqualEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
-  const conditionName = condition.name;
-  const userValue = userAttributes[conditionName];
-  const userValueType = typeof userValue;
-  const conditionValue = condition.value;
-
-  if (typeof conditionValue !== 'string') {
-    logger.warn(
-      LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
-    );
-    return null;
-  }
-
-  if (userValue === null) {
-    logger.debug(
-      LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
-    );
-    return null;
-  }
-
-  if (typeof userValue !== 'string') {
-    logger.warn(
-      LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
-    );
-    return null;
-  }
-  
-  const result = compareVersion(conditionValue, userValue);
-  if (result == null)
-    return null;
-  return result >= 0;
+  const result = evaluateSemanticVersion(condition, userAttributes);
+  return result != null ? result >= 0 : null; 
 }
 
 /**
@@ -527,34 +523,6 @@ function semverGreaterThanOrEqualEvaluator(condition: Condition, userAttributes:
  *                            null if the user attribute version has an invalid type
  */
 function semverLessThanOrEqualEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
-  const conditionName = condition.name;
-  const userValue = userAttributes[conditionName];
-  const userValueType = typeof userValue;
-  const conditionValue = condition.value;
-
-  if (typeof conditionValue !== 'string') {
-    logger.warn(
-      LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
-    );
-    return null;
-  }
-
-  if (userValue === null) {
-    logger.debug(
-      LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
-    );
-    return null;
-  }
-
-  if (typeof userValue !== 'string') {
-    logger.warn(
-      LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
-    );
-    return null;
-  }
-  
-  const result = compareVersion(conditionValue, userValue);
-  if (result == null)
-    return null;
-  return result <= 0;
+  const result = evaluateSemanticVersion(condition, userAttributes);
+  return result != null ? result <= 0 : null; 
 }
