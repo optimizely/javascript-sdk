@@ -463,7 +463,10 @@ function evaluateSemanticVersion(condition: Condition, userAttributes: UserAttri
  */
 function semverEqualEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
   const result = evaluateSemanticVersion(condition, userAttributes);
-  return result != null ? result === 0 : null; 
+  if (result === null ) {
+    return null;
+  }
+  return result === 0;
 }
 
 /**
@@ -477,7 +480,10 @@ function semverEqualEvaluator(condition: Condition, userAttributes: UserAttribut
  */
 function semverGreaterThanEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
   const result = evaluateSemanticVersion(condition, userAttributes);
-  return result != null ? result > 0 : null; 
+  if (result === null ) {
+    return null;
+  }
+  return result > 0;
 }
 
 /**
@@ -491,7 +497,10 @@ function semverGreaterThanEvaluator(condition: Condition, userAttributes: UserAt
  */
 function semverLessThanEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
   const result = evaluateSemanticVersion(condition, userAttributes);
-  return result != null ? result < 0 : null; 
+  if (result === null ) {
+    return null;
+  }
+  return result < 0;
 }
 
 /**
@@ -505,7 +514,10 @@ function semverLessThanEvaluator(condition: Condition, userAttributes: UserAttri
  */
 function semverGreaterThanOrEqualEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
   const result = evaluateSemanticVersion(condition, userAttributes);
-  return result != null ? result >= 0 : null; 
+  if (result === null ) {
+    return null;
+  }
+  return result >= 0;
 }
 
 /**
@@ -519,5 +531,9 @@ function semverGreaterThanOrEqualEvaluator(condition: Condition, userAttributes:
  */
 function semverLessThanOrEqualEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
   const result = evaluateSemanticVersion(condition, userAttributes);
-  return result != null ? result <= 0 : null; 
+  if (result === null ) {
+    return null;
+  }
+  return result <= 0;
+  
 }
