@@ -16,7 +16,7 @@
 import { sprintf } from '@optimizely/js-sdk-utils';
 
 import { isNumber, isSafeInteger } from '../../utils/fns';
-import { ERROR_MESSAGES} from '../enums';
+import { ERROR_MESSAGES } from '../enums';
 
 const MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
 
