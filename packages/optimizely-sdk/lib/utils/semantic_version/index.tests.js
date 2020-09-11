@@ -37,10 +37,12 @@ describe('lib/utils/sematic_version', function() {
         var versions = [
           ['2.0.0', '2.0.1'],
           ['2.0', '3.0.1'],
+          ['2.0.0', '2.1'],
           ['2.1.2-beta', '2.1.2-release'],
           ['2.1.3-beta1', '2.1.3-beta2'],
           ['2.9.9-beta', '2.9.9'],
           ['2.9.9+beta', '2.9.9'],
+          ['2.0.0', '2.1'],
           ['3.7.0-prerelease+build', '3.7.0-prerelease+rc'],
           ['2.2.3-beta-beta1', '2.2.3-beta-beta2'],
           ['2.2.3-beta+beta1', '2.2.3-beta+beta2'],

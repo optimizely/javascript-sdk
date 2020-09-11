@@ -847,23 +847,47 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
     };
 
     it('should return true if the user-provided version is greater than the condition version', function() {
-      var result = customAttributeEvaluator.evaluate(
-        semvergtCondition,
-        {
-          app_version: '2.0.1',
-        }
-      );
-      assert.isTrue(result);
+      var versions = [
+        ['1.8.1', '1.9']
+      ];
+      for (let [targetVersion, userVersion] of versions) {
+        var customSemvergtCondition = {
+          match: 'semver_gt',
+          name: 'app_version',
+          type: 'custom_attribute',
+          value: targetVersion,
+        };
+        var result = customAttributeEvaluator.evaluate(
+          customSemvergtCondition,
+          {
+            app_version: userVersion,
+          }
+        );
+        assert.isTrue(result, `Got result ${result}. Failed for target version: ${targetVersion} and user version: ${userVersion}`);
+      }
     });
 
-    it('should return false if the user-provided version is not greater than the condition version', function() {
-      var result = customAttributeEvaluator.evaluate(
-        semvergtCondition,
-        {
-          app_version: '1.9',
-        }
-      );
-      assert.isFalse(result);
+    it('should return false if the user-provided version is not greater than the condition version', function() {   
+      var versions = [
+        ['2.0.1', '2.0.1'],
+        ['2.0', '2.0.0'],
+        ['2.0.1', '2.0.0']
+      ];
+      for (let [targetVersion, userVersion] of versions) {
+        var customSemvergtCondition = {
+          match: 'semver_gt',
+          name: 'app_version',
+          type: 'custom_attribute',
+          value: targetVersion,
+        };
+        var result = customAttributeEvaluator.evaluate(
+          customSemvergtCondition,
+          {
+            app_version: userVersion,
+          }
+        );
+        assert.isFalse(result, `Got result ${result}. Failed for target version: ${targetVersion} and user version: ${userVersion}`);
+      }
     });
 
     it('should log and return null if the user-provided version is not a string', function() {
@@ -921,23 +945,49 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
     };
 
     it('should return false if the user-provided version is greater than the condition version', function() {
-      var result = customAttributeEvaluator.evaluate(
-        semverltCondition,
-        {
-          app_version: '2.1',
-        }
-      );
-      assert.isFalse(result);
+      var versions = [
+        ['2.0.0', '2.0.1'],
+        ['1.9', '2.0.0'],
+        ['2.0.0', '2.0.0'],
+
+      ];
+      for (let [targetVersion, userVersion] of versions) {
+        var customSemverltCondition = {
+          match: 'semver_lt',
+          name: 'app_version',
+          type: 'custom_attribute',
+          value: targetVersion,
+        };
+        var result = customAttributeEvaluator.evaluate(
+          customSemverltCondition,
+          {
+            app_version: userVersion,
+          }
+        );
+        assert.isFalse(result, `Got result ${result}. Failed for target version: ${targetVersion} and user version: ${userVersion}`);
+      }
     });
 
     it('should return true if the user-provided version is less than the condition version', function() {
-      var result = customAttributeEvaluator.evaluate(
-        semverltCondition,
-        {
-          app_version: '1.9',
-        }
-      );
-      assert.isTrue(result);
+      var versions = [
+        ['2.0.1', '2.0.0'],
+        ['2.0.0', '1.9']
+      ];
+      for (let [targetVersion, userVersion] of versions) {
+        var customSemverltCondition = {
+          match: 'semver_lt',
+          name: 'app_version',
+          type: 'custom_attribute',
+          value: targetVersion,
+        };
+        var result = customAttributeEvaluator.evaluate(
+          customSemverltCondition,
+          {
+            app_version: userVersion,
+          }
+        );
+        assert.isTrue(result, `Got result ${result}. Failed for target version: ${targetVersion} and user version: ${userVersion}`);
+      }
     });
 
     it('should log and return null if the user-provided version is not a string', function() {
@@ -995,33 +1045,48 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
     };
 
     it('should return false if the user-provided version is greater than the condition version', function() {
-      var result = customAttributeEvaluator.evaluate(
-        semvereqCondition,
-        {
-          app_version: '2.1',
-        }
-      );
-      assert.isFalse(result);
-    });
-
-    it('should return false if the user-provided version is less than the condition version', function() {
-      var result = customAttributeEvaluator.evaluate(
-        semvereqCondition,
-        {
-          app_version: '1.9',
-        }
-      );
-      assert.isFalse(result);
+      var versions = [
+        ['2.0.0', '2.0.1'],
+        ['2.0.1', '2.0.0'],
+        ['1.9.1', '1.9']
+      ];
+      for (let [targetVersion, userVersion] of versions) {
+        var customSemvereqCondition = {
+          match: 'semver_eq',
+          name: 'app_version',
+          type: 'custom_attribute',
+          value: targetVersion,
+        };
+        var result = customAttributeEvaluator.evaluate(
+          customSemvereqCondition,
+          {
+            app_version: userVersion,
+          }
+        );
+        assert.isFalse(result, `Got result ${result}. Failed for target version: ${targetVersion} and user version: ${userVersion}`);
+      }
     });
 
     it('should return true if the user-provided version is equal than the condition version', function() {
-      var result = customAttributeEvaluator.evaluate(
-        semvereqCondition,
-        {
-          app_version: '2.0',
-        }
-      );
-      assert.isTrue(result);
+      var versions = [
+        ['2.0.1', '2.0.1'],
+        ['1.9', '1.9.1']
+      ];
+      for (let [targetVersion, userVersion] of versions) {
+        var customSemvereqCondition = {
+          match: 'semver_eq',
+          name: 'app_version',
+          type: 'custom_attribute',
+          value: targetVersion,
+        };
+        var result = customAttributeEvaluator.evaluate(
+          customSemvereqCondition,
+          {
+            app_version: userVersion,
+          }
+        );
+        assert.isTrue(result, `Got result ${result}. Failed for target version: ${targetVersion} and user version: ${userVersion}`);
+      }
     });
 
     it('should log and return null if the user-provided version is not a string', function() {
