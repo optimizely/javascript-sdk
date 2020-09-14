@@ -778,26 +778,20 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       assert.isFalse(result);
     });
 
-    it('should return true if the user-provided value is less than the condition value', function() {
-      var result = customAttributeEvaluator.evaluate(
-        leCondition,
-        {
-          meters_travelled: 48,
-        }
-      );
-      assert.isTrue(result);
-    });
-
-    it('should return true if the user-provided value is equal than the condition value', function() {
-      var result = customAttributeEvaluator.evaluate(
-        leCondition,
-        {
-          meters_travelled: 48.2,
-        }
-      );
-      assert.isTrue(result);
+    it('should return true if the user-provided value is less than or equal to the condition value', function() {
+      var versions = [48, 48.2];
+      for (let userValue of versions) {
+        var result = customAttributeEvaluator.evaluate(
+          leCondition,
+          {
+            meters_travelled: userValue,
+          }
+        );
+        assert.isTrue(result, `Got result ${result}. Failed for condition value: ${leCondition.value} and user value: ${userValue}`);
+      }
     });
   });
+
 
   describe('greater than equal to match type', function() {
     var geCondition = {
@@ -817,24 +811,17 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       assert.isFalse(result);
     });
 
-    it('should return true if the user-provided value is less than the condition value', function() {
-      var result = customAttributeEvaluator.evaluate(
-        geCondition,
-        {
-          meters_travelled: 100,
-        }
-      );
-      assert.isTrue(result);
-    });
-
-    it('should return true if the user-provided value is equal than the condition value', function() {
-      var result = customAttributeEvaluator.evaluate(
-        geCondition,
-        {
-          meters_travelled: 48.2,
-        }
-      );
-      assert.isTrue(result);
+    it('should return true if the user-provided value is less than or equal to the condition value', function() {
+      var versions = [100, 48.2];
+      for (let userValue of versions) {
+        var result = customAttributeEvaluator.evaluate(
+          geCondition,
+          {
+            meters_travelled: userValue,
+          }
+        );
+        assert.isTrue(result, `Got result ${result}. Failed for condition value: ${geCondition.value} and user value: ${userValue}`);
+      }
     });
   });
 
