@@ -760,7 +760,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       );
     });
   });
-  describe('less than equal to match type', function() {
+  describe('less than or equal to match type', function() {
     var leCondition = {
       match: 'le',
       name: 'meters_travelled',
@@ -1123,7 +1123,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
     });
   });
 
-  describe('semver less than equal to match type', function() {
+  describe('semver less than or equal to match type', function() {
     var semverleCondition = {
       match: 'semver_le',
       name: 'app_version',
@@ -1152,7 +1152,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       }
     });
 
-    it('should return true if the user-provided version is less than the condition version', function() {
+    it('should return true if the user-provided version is less than or equal to the condition version', function() {
       var versions = [
         ['2.0.1', '2.0.0'],
         ['2.0.1', '2.0.1'],
@@ -1186,7 +1186,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
     });
   });
 
-  describe('semver greater than equal to match type', function() {
+  describe('semver greater than or equal to match type', function() {
     var semvergeCondition = {
       match: 'semver_ge',
       name: 'app_version',
@@ -1194,7 +1194,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       value: '2.0',
     };
 
-    it('should return true if the user-provided version is less than the condition version', function() {
+    it('should return true if the user-provided version is greater than or equal to the condition version', function() {
       var versions = [
         ['2.0.0', '2.0.1'],
         ['2.0.1', '2.0.1'],
@@ -1217,7 +1217,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       }
     });
 
-    it('should return false if the user-provided version is greater than the condition version', function() {
+    it('should return false if the user-provided version is less than the condition version', function() {
       var versions = [
         ['2.0.1', '2.0.0'],
         ['1.9.1', '1.9']
@@ -1237,16 +1237,6 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         );
         assert.isFalse(result, `Got result ${result}. Failed for target version: ${targetVersion} and user version: ${userVersion}`);
       }
-    });
-
-    it('should return true if the user-provided version is equal to the condition version', function() {
-      var result = customAttributeEvaluator.evaluate(
-        semvergeCondition,
-        {
-          app_version: '2.0',
-        }
-      );
-      assert.isTrue(result);
     });
   });
 });

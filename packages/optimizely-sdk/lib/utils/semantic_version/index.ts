@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2018-2020, Optimizely
+ * Copyright 2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,24 @@ import { VERSION_TYPE, LOG_MESSAGES } from '../enums';
 
 const MODULE_NAME = 'SEMANTIC VERSION';
 const logger = getLogger();
-/**
- * Evaluate if provided version contains pre-release "-"
- * @param  {unknown}  version
- * @return {boolean}  true if the version contains "-" and meets condition
- *                     
- */
 
-function isNumber(content: string): boolean {
+/**
+  * Evaluate if provided string is number only
+  * @param  {unknown}  content
+  * @return {boolean}  true if the string is number only
+  *                     
+  */
+  function isNumber(content: string): boolean {
     return content.match(/^[0-9]+$/) != null ? true : false;
   }
 
-function isPreReleaseVersion(version: string): boolean {
+ /**
+  * Evaluate if provided version contains pre-release "-"
+  * @param  {unknown}  version
+  * @return {boolean}  true if the version contains "-" and meets condition
+  *                     
+  */
+  function isPreReleaseVersion(version: string): boolean {
     const preReleaseIndex = version.indexOf(VERSION_TYPE.IS_PRE_RELEASE);
     const buildIndex = version.indexOf(VERSION_TYPE.IS_BUILD);
 
@@ -102,33 +108,34 @@ function isPreReleaseVersion(version: string): boolean {
     }
   
     // check dot counts in target_prefix
-    if (typeof targetPrefix === 'string' && typeof targetSuffix === 'string') {
-      const dotCount = targetPrefix.split(".").length - 1;
-      if (dotCount > 2){
-        logger.warn(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
+    if (typeof targetPrefix !== 'string' || typeof targetSuffix !== 'string') {
         return null;
-      }
-  
-      const targetVersionParts = targetPrefix.split(".")
-      if (targetVersionParts.length != dotCount + 1) {
-        logger.warn(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
-        return null;
-      }
-      for (const part of targetVersionParts){
-        if (!isNumber(part)) {
-          logger.warn(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
-          return null;
-        }
-      }
-      
-      if (targetSuffix) {
-          targetVersionParts.push(targetSuffix)
-      }
-  
-    return targetVersionParts
     }
-    else
-      return null;
+
+    const dotCount = targetPrefix.split(".").length - 1;
+    if (dotCount > 2){
+    logger.warn(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
+    return null;
+    }
+
+    const targetVersionParts = targetPrefix.split(".")
+    if (targetVersionParts.length != dotCount + 1) {
+    logger.warn(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
+    return null;
+    }
+    for (const part of targetVersionParts){
+    if (!isNumber(part)) {
+        logger.warn(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
+        return null;
+    }
+    }
+    
+    if (targetSuffix) {
+        targetVersionParts.push(targetSuffix)
+    }
+
+    return targetVersionParts
+      
   }
   
   export function compareVersion(conditionsVersion: string, userProvidedVersion: string): number | null {
@@ -172,3 +179,4 @@ function isPreReleaseVersion(version: string): boolean {
       
     return 0;
   }
+  

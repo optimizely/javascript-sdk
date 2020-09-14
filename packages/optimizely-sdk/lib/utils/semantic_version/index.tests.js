@@ -20,21 +20,20 @@ describe('lib/utils/sematic_version', function() {
   describe('APIs', function() {
     describe('compareVersion', function() {
       it('should return 0 if user version and target version are equal', function() {
-        var versions = [
+        const versions = [
           ['2.0.1', '2.0.1'],
           ['2.9.9-beta', '2.9.9-beta'],
           ['2.1', '2.1.0'],
           ['2', '2.12'],
           ['2.9', '2.9.1']
         ];
-        for (let [targetVersion, userVersion] of versions) {
-          var result = semanticVersion.compareVersion(targetVersion, userVersion)
+        for (const [targetVersion, userVersion] of versions) {
+          const result = semanticVersion.compareVersion(targetVersion, userVersion)
           assert.equal(result, 0, `Got result ${result}. Failed for target version: ${targetVersion} and user version: ${userVersion}`);
         }
       });
-
-      it('should return 1 when target version is greater than user version', function() {
-        var versions = [
+      it('should return 1 when user version is greater than target version', function() {
+        const versions = [
           ['2.0.0', '2.0.1'],
           ['2.0', '3.0.1'],
           ['2.0.0', '2.1'],
@@ -48,14 +47,14 @@ describe('lib/utils/sematic_version', function() {
           ['2.2.3-beta+beta1', '2.2.3-beta+beta2'],
           ['2.2.3+beta2-beta1', '2.2.3+beta3-beta2']
         ];
-        for (let [targetVersion, userVersion] of versions) {
-          var result = semanticVersion.compareVersion(targetVersion, userVersion)
+        for (const [targetVersion, userVersion] of versions) {
+          const result = semanticVersion.compareVersion(targetVersion, userVersion)
           assert.equal(result, 1, `Got result ${result}. Failed for target version: ${targetVersion} and user version: ${userVersion}`);
         }
       });
 
-      it('should return -1 when targe version is less than user version', function() {
-        var versions = [
+      it('should return -1 when user version is less than target version', function() {
+        const versions = [
           ['2.0.1', '2.0.0'],
           ['3.0', '2.0.1'],
           ['2.3', '2.0.1'],
@@ -69,18 +68,18 @@ describe('lib/utils/sematic_version', function() {
           ['2.1.3-beta-beta2', '2.1.3-beta'],
           ['2.1.3-beta1+beta3', '2.1.3-beta1+beta2']
       ];
-        for (let [targetVersion, userVersion] of versions) {
-          var result = semanticVersion.compareVersion(targetVersion, userVersion)
+        for (const [targetVersion, userVersion] of versions) {
+          const result = semanticVersion.compareVersion(targetVersion, userVersion)
           assert.equal(result, -1, `Got result ${result}. Failed for target version: ${targetVersion} and user version: ${userVersion}`);
         }
       });
 
       it('should return null when user version is invalid', function() {
-        var versions = ['-', '.', '..', '+', '+test', ' ', '2 .3. 0', '2.', '.2.2', '3.7.2.2', '3.x', ',', '+build-prerelease', '2..2']
-        var targetVersion = '2.1.0';
-        for (let userVersion of versions) {
-          var result = semanticVersion.compareVersion(targetVersion, userVersion);
-          assert.equal(result, null, `Got result ${result}. Failed for target version: ${targetVersion} and user version: ${userVersion}`);
+        const versions = ['-', '.', '..', '+', '+test', ' ', '2 .3. 0', '2.', '.2.2', '3.7.2.2', '3.x', ',', '+build-prerelease', '2..2']
+        const targetVersion = '2.1.0';
+        for (const userVersion of versions) {
+          const result = semanticVersion.compareVersion(targetVersion, userVersion);
+          assert.isNull(result, `Got result ${result}. Failed for target version: ${targetVersion} and user version: ${userVersion}`);
         }
       });
 
