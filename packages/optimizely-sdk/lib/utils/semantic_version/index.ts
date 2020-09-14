@@ -30,14 +30,18 @@ function isNumber(content: string): boolean {
   }
 
 function isPreReleaseVersion(version: string): boolean {
-    if (version.includes(VERSION_TYPE.IS_PRE_RELEASE)) {
-      const userVersionReleaseIndex = version.indexOf(VERSION_TYPE.IS_PRE_RELEASE);
-      const userVersionBuildIndex = version.indexOf(VERSION_TYPE.IS_BUILD);
-      if ((userVersionReleaseIndex < userVersionBuildIndex) || (userVersionBuildIndex < 0)) {
-          return true;
-      } 
+    var preReleaseIndex = version.indexOf(VERSION_TYPE.IS_PRE_RELEASE);
+    var buildIndex = version.indexOf(VERSION_TYPE.IS_BUILD);
+
+    if (preReleaseIndex < 0) {
+        return false;
     }
-    return false;
+
+    if (buildIndex < 0 ) {
+        return true;
+    }
+
+    return preReleaseIndex < buildIndex;
   }
   
   /**
@@ -47,14 +51,18 @@ function isPreReleaseVersion(version: string): boolean {
    *                     
    */
   function isBuildVersion(version: string): boolean {
-    if (version.includes(VERSION_TYPE.IS_BUILD)) {
-      const userVersionReleaseIndex = version.indexOf(VERSION_TYPE.IS_PRE_RELEASE);
-      const userVersionBuildIndex = version.indexOf(VERSION_TYPE.IS_BUILD);
-      if ((userVersionBuildIndex < userVersionReleaseIndex) || (userVersionReleaseIndex < 0)) {
-          return true;
-      } 
+    var preReleaseIndex = version.indexOf(VERSION_TYPE.IS_PRE_RELEASE);
+    var buildIndex = version.indexOf(VERSION_TYPE.IS_BUILD);
+
+    if (buildIndex < 0) {
+        return false;
     }
-    return false;
+
+    if (preReleaseIndex < 0 ) {
+        return true;
+    }
+
+    return buildIndex < preReleaseIndex;
   }
   
   /**
