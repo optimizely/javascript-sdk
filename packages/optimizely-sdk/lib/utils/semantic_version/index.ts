@@ -1,3 +1,18 @@
+/**
+ * Copyright 2016, 2018-2020, Optimizely
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import { getLogger } from '@optimizely/js-sdk-logging';
 import { VERSION_TYPE, LOG_MESSAGES } from '../enums';
 
@@ -9,6 +24,10 @@ const logger = getLogger();
  * @return {boolean}  true if the version contains "-" and meets condition
  *                     
  */
+
+function isNumber(content: string): string[] | null {
+    return content.match(/^[0-9]+$/);
+  }
 
 function isPreReleaseVersion(version: string): boolean {
     if (version.includes(VERSION_TYPE.IS_PRE_RELEASE)) {
@@ -54,13 +73,10 @@ function isPreReleaseVersion(version: string): boolean {
    * @return {boolean}  The array of version split into smaller parts i.e major, minor, patch etc
    *                    null if given version is in invalid format 
    */
-  function splitVersion(version: unknown): string[] | null {
+  function splitVersion(version: string): string[] | null {
     let targetPrefix = version;
     let targetSuffix = '';
     
-    if (typeof version != 'string') {
-      return null;
-    }
     // check that version shouldn't have white space
     if (hasWhiteSpaces(version)) {
       logger.warn(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
@@ -91,7 +107,7 @@ function isPreReleaseVersion(version: string): boolean {
         return null;
       }
       for (const part of targetVersionParts){
-        if (!part.match(/^[0-9]+$/)) {
+        if (!isNumber(part)) {
           logger.warn(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, version);
           return null;
         }
@@ -124,7 +140,7 @@ function isPreReleaseVersion(version: string): boolean {
     for (let idx = 0; idx < conditionsVersionParts.length; idx++) {
       if (userVersionPartsLen <= idx)
           return isPreReleaseInconditionsVersion || isBuildInconditionsVersion ? 1 : -1
-      else if (!userVersionParts[idx].match(/^[0-9]+$/)) {
+      else if (!isNumber(userVersionParts[idx])) {
         if (userVersionParts[idx] < conditionsVersionParts[idx]) {
           return isPreReleaseInconditionsVersion && !isPreReleaseInuserProvidedVersion ? 1 : -1;
         }
