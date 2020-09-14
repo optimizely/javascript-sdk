@@ -15,7 +15,7 @@
  */
 import { assert } from 'chai';
 
-import eventProcessorConfigValidator from './index';
+import * as eventProcessorConfigValidator from './index';
 
 describe('utils/event_processor_config_validator', function() {
   describe('validateEventFlushInterval', function() {
