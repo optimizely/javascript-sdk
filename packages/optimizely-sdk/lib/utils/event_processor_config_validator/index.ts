@@ -20,7 +20,7 @@ import { isSafeInteger } from '../fns';
  * @param {unknown}   eventBatchSize
  * @returns {boolean}
  */
-export function validateEventBatchSize(eventBatchSize: unknown): boolean {
+const validateEventBatchSize = function(eventBatchSize: unknown): boolean {
   if (typeof eventBatchSize === 'number' && isSafeInteger(eventBatchSize)) {
     return eventBatchSize >= 1;
   }
@@ -32,9 +32,14 @@ export function validateEventBatchSize(eventBatchSize: unknown): boolean {
  * @param {unknown}   eventFlushInterval
  * @returns {boolean}
  */
-export function validateEventFlushInterval(eventFlushInterval: unknown): boolean {
+const validateEventFlushInterval = function(eventFlushInterval: unknown): boolean {
   if (typeof eventFlushInterval === 'number' && isSafeInteger(eventFlushInterval)) {
     return eventFlushInterval > 0;
   }
   return false;
+}
+
+export default {
+  validateEventBatchSize: validateEventBatchSize,
+  validateEventFlushInterval: validateEventFlushInterval,
 }

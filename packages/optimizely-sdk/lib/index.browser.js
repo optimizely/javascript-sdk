@@ -30,7 +30,7 @@ import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import * as enums from './utils/enums';
 import loggerPlugin from './plugins/logger';
 import Optimizely from './optimizely';
-import * as eventProcessorConfigValidator from './utils/event_processor_config_validator';
+import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
 var logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
