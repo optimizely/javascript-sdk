@@ -25,8 +25,8 @@ const logger = getLogger();
  *                     
  */
 
-function isNumber(content: string): string[] | null {
-    return content.match(/^[0-9]+$/);
+function isNumber(content: string): boolean {
+    return content.match(/^[0-9]+$/) != null ? true : false;
   }
 
 function isPreReleaseVersion(version: string): boolean {
