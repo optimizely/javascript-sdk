@@ -793,7 +793,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
   });
 
 
-  describe('greater than equal to match type', function() {
+  describe('greater than and equal to match type', function() {
     var geCondition = {
       match: 'ge',
       name: 'meters_travelled',
@@ -1055,7 +1055,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       }
     });
 
-    it('should return true if the user-provided version is equal than the condition version', function() {
+    it('should return true if the user-provided version is equal to the condition version', function() {
       var versions = [
         ['2.0.1', '2.0.1'],
         ['1.9', '1.9.1']
@@ -1175,7 +1175,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       }
     });
 
-    it('should return true if the user-provided version is equal than the condition version', function() {
+    it('should return true if the user-provided version is equal to the condition version', function() {
       var result = customAttributeEvaluator.evaluate(
         semverleCondition,
         {
@@ -1239,7 +1239,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       }
     });
 
-    it('should return true if the user-provided version is equal than the condition version', function() {
+    it('should return true if the user-provided version is equal to the condition version', function() {
       var result = customAttributeEvaluator.evaluate(
         semvergeCondition,
         {
