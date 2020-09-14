@@ -871,7 +871,8 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       var versions = [
         ['2.0.1', '2.0.1'],
         ['2.0', '2.0.0'],
-        ['2.0.1', '2.0.0']
+        ['2.0', '2.0.1'],
+        ['2.0.1', '2.0.0'],
       ];
       for (let [targetVersion, userVersion] of versions) {
         var customSemvergtCondition = {
