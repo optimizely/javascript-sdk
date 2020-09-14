@@ -30,8 +30,8 @@ function isNumber(content: string): boolean {
   }
 
 function isPreReleaseVersion(version: string): boolean {
-    var preReleaseIndex = version.indexOf(VERSION_TYPE.IS_PRE_RELEASE);
-    var buildIndex = version.indexOf(VERSION_TYPE.IS_BUILD);
+    const preReleaseIndex = version.indexOf(VERSION_TYPE.IS_PRE_RELEASE);
+    const buildIndex = version.indexOf(VERSION_TYPE.IS_BUILD);
 
     if (preReleaseIndex < 0) {
         return false;
@@ -51,8 +51,8 @@ function isPreReleaseVersion(version: string): boolean {
    *                     
    */
   function isBuildVersion(version: string): boolean {
-    var preReleaseIndex = version.indexOf(VERSION_TYPE.IS_PRE_RELEASE);
-    var buildIndex = version.indexOf(VERSION_TYPE.IS_BUILD);
+    const preReleaseIndex = version.indexOf(VERSION_TYPE.IS_PRE_RELEASE);
+    const buildIndex = version.indexOf(VERSION_TYPE.IS_BUILD);
 
     if (buildIndex < 0) {
         return false;
