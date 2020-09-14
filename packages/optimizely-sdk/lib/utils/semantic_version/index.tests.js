@@ -33,7 +33,7 @@ describe('lib/utils/sematic_version', function() {
         }
       });
 
-      it('should return 1 when target version is greater than user version are equal', function() {
+      it('should return 1 when target version is greater than user version', function() {
         var versions = [
           ['2.0.0', '2.0.1'],
           ['2.0', '3.0.1'],
