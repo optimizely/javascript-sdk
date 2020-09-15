@@ -26,15 +26,15 @@ const logger = getLogger();
 
 const EXACT_MATCH_TYPE = 'exact';
 const EXISTS_MATCH_TYPE = 'exists';
-const GREATER_THAN_MATCH_TYPE = 'gt';
 const GREATER_OR_EQUAL_THAN_MATCH_TYPE = 'ge';
-const LESS_THAN_MATCH_TYPE = 'lt';
+const GREATER_THAN_MATCH_TYPE = 'gt';
 const LESS_OR_EQUAL_THAN_MATCH_TYPE = 'le';
+const LESS_THAN_MATCH_TYPE = 'lt';
 const SEMVER_EXACT_MATCH_TYPE = 'semver_eq';
-const SEMVER_GREATER_THAN_MATCH_TYPE = 'semver_gt';
 const SEMVER_GREATER_OR_EQUAL_THAN_MATCH_TYPE = 'semver_ge';
-const SEMVER_LESS_THAN_MATCH_TYPE = 'semver_lt';
+const SEMVER_GREATER_THAN_MATCH_TYPE = 'semver_gt';
 const SEMVER_LESS_OR_EQUAL_THAN_MATCH_TYPE = 'semver_le';
+const SEMVER_LESS_THAN_MATCH_TYPE = 'semver_lt';
 const SUBSTRING_MATCH_TYPE = 'substring';
 
 const MATCH_TYPES = [
