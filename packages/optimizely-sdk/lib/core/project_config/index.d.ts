@@ -19,8 +19,12 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
   import { Experiment, Variation } from '@optimizely/optimizely-sdk';
 
   interface Config {
+    // TODO[OASIS-6649]: Don't use object type
+    // eslint-disable-next-line  @typescript-eslint/ban-types
     datafile: object;
     logger: LogHandler;
+    // TODO[OASIS-6649]: Don't use object type
+    // eslint-disable-next-line  @typescript-eslint/ban-types
     jsonSchemaValidator: object;
   }
 
@@ -80,6 +84,8 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
     audiencesById: {[id: string]: Audience};
     eventKeyMap: {[key: string]: Event};
     events: Event[];
+    // TODO[OASIS-6649]: Don't use object type
+    // eslint-disable-next-line  @typescript-eslint/ban-types
     experimentFeatureMap: object;
     experimentIdMap: {[id: string]: Experiment};
     experimentKeyMap: {[key: string]: Experiment};
@@ -92,14 +98,19 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
     rolloutIdMap: {[id: string]: RollOut};
     rollouts: RollOut[];
     variationIdMap: {[id: string]: Variation};
+    // TODO[OASIS-6649]: Don't use object type
+    // eslint-disable-next-line  @typescript-eslint/ban-types
     variationVariableUsageMap: object;
     version: string;
     revision: string;
   }
 
   export interface EventBuilder {
-
+    // TODO[OASIS-6649]: Don't use object type
+    // eslint-disable-next-line  @typescript-eslint/ban-types
     createMutationSafeDatafileCopy(datafile: object): object;
+    // TODO[OASIS-6649]: Don't use object type
+    // eslint-disable-next-line  @typescript-eslint/ban-types
     createProjectConfig(datafile: object, datafileString: string | null): ProjectConfig
     getExperimentId(projectConfig: ProjectConfig, experimentKey: string): string | null
     getLayerId(projectConfig: ProjectConfig, experimentId: string): string | null
@@ -117,6 +128,8 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
     getFeatureFromKey(projectConfig: ProjectConfig, featureKey: string, logger: LogHandler): FeatureFlag | null
     getVariableForFeature(projectConfig: ProjectConfig, featureKey: string, variableKey: string, logger: LogHandler): Variable | null
     getVariableValueForVariation(projectConfig: ProjectConfig, variable: Variable, variation: Variation, logger: LogHandler) : string | null
+    // TODO[OASIS-6649]: Don't use any type
+    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     getTypeCastValue(variableValue: string, variableType: string, logger: LogHandler): any
     getAudiencesById(projectConfig: ProjectConfig): {[id: string]: Audience}
     eventWithKeyExists(projectConfig: ProjectConfig, eventKey: string): boolean
