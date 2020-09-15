@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
+declare module '@optimizely/optimizely-sdk/lib/core/project_config' {
   import { LogHandler } from '@optimizely/js-sdk-logging';
   import { Experiment, Variation } from '@optimizely/optimizely-sdk';
 
