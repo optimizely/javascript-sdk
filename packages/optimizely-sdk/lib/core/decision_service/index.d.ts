@@ -62,18 +62,17 @@ declare module '@optimizely/optimizely-sdk/lib/core/decision_service' {
     projectId: string;
     accountId: string;
     version: string;
-      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    variables: any; //to be defined
+    variables: FeatureVariable[];
     audiencesById: {[key : string]: Audience};
     attributeKeyMap: attributeKeyMap;
     groupIdMap: {[key: string]: Group};
     rolloutIdMap: {[key:string]: Rollout};
-    experimentKeyMap: {[key: string]: Experiment} //look into this one closer
+    experimentKeyMap: {[key: string]: Experiment}
     experimentIdMap: {[key: string]: Experiment};
     variationIdMap: {[key: string]: Variation};
     variationVariableUsageMap: {[key: string]: ExperimentVariableByID};
     experimentFeatureMap: {[key: string]: string[]};
-    featureKeyMap: {[key: string]: FeatureFlag}; //look into this one closer
+    featureKeyMap: {[key: string]: FeatureFlag};
   }
 
   interface Event {
@@ -88,11 +87,12 @@ declare module '@optimizely/optimizely-sdk/lib/core/decision_service' {
     id: string;
     experimentIds: string[],
     variables: FeatureVariable[],
-    variableKeyMap?: {[key: string]: FeatureVariable} //look into this one closer
+    variableKeyMap?: {[key: string]: FeatureVariable}
   }
 
   interface FeatureVariable {
     type: string;
+    subType?: string;
     key: string;
     id: string;
     defaultValue: string;
@@ -109,7 +109,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/decision_service' {
     // TODO[OASIS-6649]: Don't use object type
     // eslint-disable-next-line  @typescript-eslint/ban-types
   forcedVariations: object;
-  variationKeyMap: {[key: string]: Variation} //look into it closer
+  variationKeyMap?: {[key: string]: Variation};
   }
 
   interface Variation {
