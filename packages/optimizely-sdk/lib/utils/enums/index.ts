@@ -226,3 +226,11 @@ export const DATAFILE_VERSIONS = {
   V3: '3',
   V4: '4',
 };
+
+/*
+* Pre-Release and Build symbols
+*/
+export const VERSION_TYPE = {
+  IS_PRE_RELEASE: '-',
+  IS_BUILD: '+'
+}
