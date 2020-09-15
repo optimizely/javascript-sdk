@@ -176,7 +176,7 @@ declare module '@optimizely/optimizely-sdk' {
     logEvent: Event;
   }
 
-  interface Experiment {
+  export interface Experiment {
     id: string;
     key: string;
     status: string;
@@ -192,7 +192,7 @@ declare module '@optimizely/optimizely-sdk' {
     forcedVariations: object;
   }
 
-  interface Variation {
+  export interface Variation {
     id: string;
     key: string;
   }
