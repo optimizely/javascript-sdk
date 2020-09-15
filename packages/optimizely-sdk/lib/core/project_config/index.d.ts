@@ -15,7 +15,7 @@
  */
 
 declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
-  import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
+  import { LogHandler } from '@optimizely/js-sdk-logging';
   import { Experiment, Variation } from '@optimizely/optimizely-sdk';
 
   interface Config {
