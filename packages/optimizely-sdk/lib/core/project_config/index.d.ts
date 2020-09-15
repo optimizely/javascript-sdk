@@ -50,14 +50,15 @@ declare module '@optimizely/optimizely-sdk/lib/core/project_config' {
     key: string;
   }
 
-  interface Variable {
+  interface FeatureVariable {
     defaultValue: string;
     id: string;
     key: string;
+    subType?: string;
     type: string;
   }
 
-  interface RollOut {
+  interface Rollout {
     experiments: Experiment[];
     id: string;
   }
@@ -67,7 +68,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/project_config' {
     id: string;
     key: string;
     rolloutId: string;
-    variables: Variable[];
+    variables: FeatureVariable[];
   }
 
   interface Attribute {
@@ -95,17 +96,15 @@ declare module '@optimizely/optimizely-sdk/lib/core/project_config' {
     groupIdMap: {[id: string]: Group};
     groups: Group[];
     projectId: string;
-    rolloutIdMap: {[id: string]: RollOut};
-    rollouts: RollOut[];
+    rolloutIdMap: {[id: string]: Rollout};
+    rollouts: Rollout[];
     variationIdMap: {[id: string]: Variation};
     // TODO[OASIS-6649]: Don't use object type
     // eslint-disable-next-line  @typescript-eslint/ban-types
     variationVariableUsageMap: object;
     version: string;
     revision: string;
-  }
 
-  export interface EventBuilder {
     // TODO[OASIS-6649]: Don't use object type
     // eslint-disable-next-line  @typescript-eslint/ban-types
     createMutationSafeDatafileCopy(datafile: object): object;
@@ -126,8 +125,8 @@ declare module '@optimizely/optimizely-sdk/lib/core/project_config' {
     getTrafficAllocation(projectConfig: ProjectConfig, experimentKey: string): Array<{entityId: string; endOfRange: number;}>
     getExperimentFromId(projectConfig: ProjectConfig, experimentId: string, logger: LogHandler): Experiment | null
     getFeatureFromKey(projectConfig: ProjectConfig, featureKey: string, logger: LogHandler): FeatureFlag | null
-    getVariableForFeature(projectConfig: ProjectConfig, featureKey: string, variableKey: string, logger: LogHandler): Variable | null
-    getVariableValueForVariation(projectConfig: ProjectConfig, variable: Variable, variation: Variation, logger: LogHandler) : string | null
+    getVariableForFeature(projectConfig: ProjectConfig, featureKey: string, variableKey: string, logger: LogHandler): FeatureVariable | null
+    getVariableValueForVariation(projectConfig: ProjectConfig, variable: FeatureVariable, variation: Variation, logger: LogHandler) : string | null
     // TODO[OASIS-6649]: Don't use any type
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     getTypeCastValue(variableValue: string, variableType: string, logger: LogHandler): any
