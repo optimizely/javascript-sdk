@@ -16,6 +16,7 @@
 
 declare module '@optimizely/optimizely-sdk' {
   import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
+  import { UserProfileService } from '@optimizely/optimizely-sdk/lib/core/decision_service';
   import * as enums from '@optimizely/optimizely-sdk/lib/utils/enums';
   import * as logging from '@optimizely/optimizely-sdk/lib/plugins/logger';
   export { enums, logging };
@@ -135,11 +136,6 @@ declare module '@optimizely/optimizely-sdk' {
     dispatchEvent: (event: Event, callback: () => void) => void;
   }
 
-  export interface UserProfileService {
-    lookup: (userId: string) => UserProfile;
-    save: (profile: UserProfile) => void;
-  }
-
   // NotificationCenter-related types
   export interface NotificationCenter {
     addNotificationListener<T extends ListenerPayload>(
@@ -199,16 +195,6 @@ declare module '@optimizely/optimizely-sdk' {
   interface Variation {
     id: string;
     key: string;
-  }
-
-  // Information about past bucketing decisions for a user.
-  export interface UserProfile {
-    user_id: string;
-    experiment_bucket_map: {
-      [experiment_id: string]: {
-        variation_id: string;
-      };
-    };
   }
 
   /**

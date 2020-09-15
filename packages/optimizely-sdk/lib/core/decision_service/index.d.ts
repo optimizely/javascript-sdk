@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2020, Optimizely
+ * Copyright 2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,40 @@
  */
 
 declare module '@optimizely/optimizely-sdk/lib/core/decision_service' { 
+  import { LogHandler } from '@optimizely/js-sdk-logging';
 
-  export interface DecisionService {
-    getVariation(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
-    // getVariationForFeature(configObj, feature, userId, attributes):
+  export function createDecisionService(options: Options): DecisionService;
+
+  export interface UserProfileService {
+    lookup(userId: string): UserProfile;
+    save(profile: UserProfile): void;
   }
 
-  export interface ConfigObj {
-    __datafileStr: string;
+  interface DecisionService {
+    getVariation(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
+    getVariationForFeature(configObj: ConfigObj, feature: FeatureFlag, userId: string, attributes: unknown): Decision;
+    removeForcedVariation(userId: unknown, experimentId: string, experimentKey: string): void;
+    getForcedVariation(configObj: ConfigObj, experimentKey: string, userId: string): string | null;
+    setForcedVariation(configObj: ConfigObj, experimentKey: string, userId: string, variationKey: unknown): boolean;
+  }
+
+  // Information about past bucketing decisions for a user.
+  interface UserProfile {
+    user_id: string;
+    experiment_bucket_map: {
+      [experiment_id: string]: {
+        variation_id: string;
+      };
+    };
+  }
+
+  interface Options {
+    userProfileService: UserProfileService | null;
+    logger: LogHandler;
+    UNSTABLE_conditionEvaluators: unknown;
+  }
+
+  interface ConfigObj {
     events: Event[];
     featureFlags: FeatureFlag[];
     experiments: Experiment[];
@@ -62,7 +88,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/decision_service' {
     id: string;
     experimentIds: string[],
     variables: FeatureVariable[],
-    variableKeyMap: {[key: string]: FeatureVariable}
+    variableKeyMap?: {[key: string]: FeatureVariable} //look into this one closer
   }
 
   interface FeatureVariable {
@@ -72,7 +98,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/decision_service' {
     defaultValue: string;
   }
 
-  export interface Experiment {
+  interface Experiment {
   id: string;
   key: string;
   status: string;
@@ -83,10 +109,10 @@ declare module '@optimizely/optimizely-sdk/lib/core/decision_service' {
     // TODO[OASIS-6649]: Don't use object type
     // eslint-disable-next-line  @typescript-eslint/ban-types
   forcedVariations: object;
-  variationKeyMap: {[key: string]: Variation}
+  variationKeyMap: {[key: string]: Variation} //look into it closer
   }
 
-  export interface Variation {
+  interface Variation {
     id: string;
     key: string;
     featureEnabled: boolean;
@@ -119,13 +145,12 @@ declare module '@optimizely/optimizely-sdk/lib/core/decision_service' {
     value: string | number | boolean | null;
   }
   
+  type ConditionTree<Leaf> = Leaf | unknown[];
+
   interface TrafficAllocationEntity {
     endOfRange: number;
     entityId: string;
   }
-
-  type ConditionTree<Leaf> = Leaf | unknown[];
-
 
   interface Rollout {
     id: string;
@@ -145,7 +170,14 @@ declare module '@optimizely/optimizely-sdk/lib/core/decision_service' {
     id: string;
     value: string;
   }
+
   type ExperimentVariableByID = {
-    [key: string]: ExperimentVariable
+    [key: string]: ExperimentVariable;
+  }
+
+  interface Decision {
+    experiment: Experiment | null;
+    variation: Variation | null;
+    decisionSource: string;
   }
 }
