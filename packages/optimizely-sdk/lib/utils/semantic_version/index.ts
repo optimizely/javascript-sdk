@@ -173,8 +173,8 @@ const logger = getLogger();
       }
     }
   
-    // check if user version contains build or pre-release and target version doesn't
-    if ((isPreReleaseInuserProvidedVersion && !isPreReleaseInconditionsVersion) || (isBuildInuserProvidedVersion && !isBuildInconditionsVersion))
+    // check if user version contains release and target version contains build
+    if ((isPreReleaseInuserProvidedVersion && isBuildInconditionsVersion))
       return -1;
       
     return 0;
