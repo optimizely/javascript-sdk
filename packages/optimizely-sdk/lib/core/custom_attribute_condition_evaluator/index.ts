@@ -65,9 +65,9 @@ const EVALUATORS_BY_MATCH_TYPE: { [conditionType: string]: ConditionEvaluator | 
 EVALUATORS_BY_MATCH_TYPE[EXACT_MATCH_TYPE] = exactEvaluator;
 EVALUATORS_BY_MATCH_TYPE[EXISTS_MATCH_TYPE] = existsEvaluator;
 EVALUATORS_BY_MATCH_TYPE[GREATER_THAN_MATCH_TYPE] = greaterThanEvaluator;
-EVALUATORS_BY_MATCH_TYPE[GREATER_OR_EQUAL_THAN_MATCH_TYPE] = greaterOrEqualThanEvaluator;
+EVALUATORS_BY_MATCH_TYPE[GREATER_OR_EQUAL_THAN_MATCH_TYPE] = greaterThanOrEqualEvaluator;
 EVALUATORS_BY_MATCH_TYPE[LESS_THAN_MATCH_TYPE] = lessThanEvaluator;
-EVALUATORS_BY_MATCH_TYPE[LESS_OR_EQUAL_THAN_MATCH_TYPE] = lessOrEqualThanEvaluator;
+EVALUATORS_BY_MATCH_TYPE[LESS_OR_EQUAL_THAN_MATCH_TYPE] = lessThanOrEqualEvaluator;
 EVALUATORS_BY_MATCH_TYPE[SUBSTRING_MATCH_TYPE] = substringEvaluator;
 EVALUATORS_BY_MATCH_TYPE[SEMVER_EXACT_MATCH_TYPE] = semverEqualEvaluator;
 EVALUATORS_BY_MATCH_TYPE[SEMVER_GREATER_THAN_MATCH_TYPE] = semverGreaterThanEvaluator;
@@ -243,7 +243,7 @@ function greaterThanEvaluator(condition: Condition, userAttributes: UserAttribut
  *                             null if the condition value isn't a number or the user attribute value isn't a
  *                             number
  */
-function greaterOrEqualThanEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
+function greaterThanOrEqualEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
   const conditionName = condition.name;
   const userValue = userAttributes[conditionName];
   const userValueType = typeof userValue;
@@ -337,7 +337,7 @@ function lessThanEvaluator(condition: Condition, userAttributes: UserAttributes)
  *                            null if the condition value isn't a number or the user attribute value isn't a
  *                            number
  */
-function lessOrEqualThanEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
+function lessThanOrEqualEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
   const conditionName = condition.name;
   const userValue = userAttributes[condition.name];
   const userValueType = typeof userValue;
