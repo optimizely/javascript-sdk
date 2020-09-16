@@ -142,7 +142,6 @@ const logger = getLogger();
     const isPreReleaseInconditionsVersion = isPreReleaseVersion(conditionsVersion)
     const isPreReleaseInuserProvidedVersion = isPreReleaseVersion(userProvidedVersion)
     const isBuildInconditionsVersion = isBuildVersion(conditionsVersion)
-    const isBuildInuserProvidedVersion = isBuildVersion(userProvidedVersion)
   
     const userVersionParts = splitVersion(userProvidedVersion);
     const conditionsVersionParts = splitVersion(conditionsVersion);
