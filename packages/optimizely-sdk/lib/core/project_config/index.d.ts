@@ -37,10 +37,19 @@ declare module '@optimizely/optimizely-sdk/lib/core/project_config' {
       endOfRange: number;
     }>
   } 
+
+type ConditionTree<Leaf> = Leaf | unknown[];
+
+type Condition = {
+  name: string;
+  type: string;
+  match?: string;
+  value: string | number | boolean | null;
+}
   
   interface Audience {
     id: string;
-    conditions: unknown[];
+    conditions: ConditionTree<Condition>;
     name: string;
   }
   
