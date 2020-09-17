@@ -16,15 +16,19 @@
 
 declare module '@optimizely/optimizely-sdk/lib/core/decision_service' {
   import { LogHandler } from '@optimizely/js-sdk-logging';
-  import { UserProfile, UserAttributes } from '@optimizely/optimizely-sdk';
-  import { ProjectConfig } from '@optimizely/optimizely-sdk/lib/core/project_config';
-  import { Experiment, Variation, FeatureFlag } from '@optimizely/optimizely-sdk/lib/core/project_config';
+  import { ProjectConfig, Experiment, Variation, FeatureFlag } from '@optimizely/optimizely-sdk/lib/core/project_config';
 
   export function createDecisionService(options: Options): DecisionService;
 
   export interface UserProfileService {
     lookup(userId: string): UserProfile;
     save(profile: UserProfile): void;
+  }
+
+  export type UserAttributes = {
+    // TODO[OASIS-6649]: Don't use any type
+    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+    [name: string]: any;
   }
 
   interface DecisionService {
@@ -45,5 +49,15 @@ declare module '@optimizely/optimizely-sdk/lib/core/decision_service' {
     experiment: Experiment | null;
     variation: Variation | null;
     decisionSource: string;
+  }
+
+  // Information about past bucketing decisions for a user.
+  interface UserProfile {
+    user_id: string;
+    experiment_bucket_map: {
+      [experiment_id: string]: {
+        variation_id: string;
+      };
+    };
   }
 }
