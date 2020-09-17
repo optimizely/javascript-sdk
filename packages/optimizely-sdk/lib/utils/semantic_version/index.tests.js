@@ -29,8 +29,7 @@ describe('lib/utils/sematic_version', function() {
           ['2.9+beta', '2.9+beta'],
           ['2.9.9+beta', '2.9.9+beta'],
           ['2.9.9+beta-alpha', '2.9.9+beta-alpha'],
-          ['2.2.3', '2.2.3+beta'],
-          ['2.1.3', '2.1.3-beta']
+          ['2.2.3', '2.2.3+beta']
         ];
         for (const [targetVersion, userVersion] of versions) {
           const result = semanticVersion.compareVersion(targetVersion, userVersion)
@@ -71,7 +70,8 @@ describe('lib/utils/sematic_version', function() {
           ['2.9.9+beta', '2.9.9-beta'],
           ['3.7.0+build3.7.0-prerelease+build', '3.7.0-prerelease'],
           ['2.1.3-beta-beta2', '2.1.3-beta'],
-          ['2.1.3-beta1+beta3', '2.1.3-beta1+beta2']
+          ['2.1.3-beta1+beta3', '2.1.3-beta1+beta2'],
+          ['2.1.3', '2.1.3-beta']
       ];
         for (const [targetVersion, userVersion] of versions) {
           const result = semanticVersion.compareVersion(targetVersion, userVersion)
