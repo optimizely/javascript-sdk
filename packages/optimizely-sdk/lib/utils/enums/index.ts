@@ -230,7 +230,7 @@ export const DATAFILE_VERSIONS = {
 /*
 * Pre-Release and Build symbols
 */
-export const VERSION_TYPE = {
-  IS_PRE_RELEASE: '-',
-  IS_BUILD: '+'
+export const enum VERSION_TYPE {
+  PRE_RELEASE_VERSION_DELIMITER = '-',
+  BUILD_VERSION_DELIMITER = '+'
 }

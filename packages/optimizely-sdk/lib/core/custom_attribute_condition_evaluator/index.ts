@@ -187,6 +187,49 @@ function existsEvaluator(condition: Condition, userAttributes: UserAttributes): 
 }
 
 /**
+ * Validate user and condition values
+ * @param   {Condition}       condition
+ * @param   {UserAttributes}  userAttributes
+ * @returns {?boolean}        true if values are valid,
+ *                            false if values are not valid
+ */
+function validateValues(condition: Condition, userAttributes: UserAttributes): boolean {
+  const conditionName = condition.name;
+  const userValue = userAttributes[conditionName];
+  const userValueType = typeof userValue;
+  const conditionValue = condition.value;
+
+  if (conditionValue === null || !isSafeInteger(conditionValue)) {
+    logger.warn(
+      LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
+    );
+    return false;
+  }
+
+  if (userValue === null) {
+    logger.debug(
+      LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
+    );
+    return false;
+  }
+
+  if (!isNumber(userValue)) {
+    logger.warn(
+      LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
+    );
+    return false;
+  }
+
+  if (!isSafeInteger(userValue)) {
+    logger.warn(
+      LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName
+    );
+    return false;
+  }
+  return true;
+}
+
+/**
  * Evaluate the given greater than match condition for the given user attributes
  * @param   {Condition}       condition
  * @param   {UserAttributes}  userAttributes
@@ -197,39 +240,12 @@ function existsEvaluator(condition: Condition, userAttributes: UserAttributes): 
  *                            isn't a number
  */
 function greaterThanEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
-  const conditionName = condition.name;
-  const userValue = userAttributes[conditionName];
-  const userValueType = typeof userValue;
+  const userValue = userAttributes[condition.name];
   const conditionValue = condition.value;
 
-  if (conditionValue === null || !isSafeInteger(conditionValue)) {
-    logger.warn(
-      LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
-    );
+  if (!validateValues(condition, userAttributes) || conditionValue === null) {
     return null;
   }
-
-  if (userValue === null) {
-    logger.debug(
-      LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
-    );
-    return null;
-  }
-
-  if (!isNumber(userValue)) {
-    logger.warn(
-      LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
-    );
-    return null;
-  }
-
-  if (!isSafeInteger(userValue)) {
-    logger.warn(
-      LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName
-    );
-    return null;
-  }
-
   return userValue > conditionValue;
 }
 
@@ -244,36 +260,10 @@ function greaterThanEvaluator(condition: Condition, userAttributes: UserAttribut
  *                             number
  */
 function greaterThanOrEqualEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
-  const conditionName = condition.name;
-  const userValue = userAttributes[conditionName];
-  const userValueType = typeof userValue;
+  const userValue = userAttributes[condition.name];
   const conditionValue = condition.value;
 
-  if (conditionValue === null || !isSafeInteger(conditionValue)) {
-    logger.warn(
-      LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
-    );
-    return null;
-  }
-
-  if (userValue === null) {
-    logger.debug(
-      LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
-    );
-    return null;
-  }
-
-  if (!isNumber(userValue)) {
-    logger.warn(
-      LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
-    );
-    return null;
-  }
-
-  if (!isSafeInteger(userValue)) {
-    logger.warn(
-      LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName
-    );
+  if (!validateValues(condition, userAttributes) || conditionValue === null) {
     return null;
   }
 
@@ -291,36 +281,10 @@ function greaterThanOrEqualEvaluator(condition: Condition, userAttributes: UserA
  *                            number
  */
 function lessThanEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
-  const conditionName = condition.name;
   const userValue = userAttributes[condition.name];
-  const userValueType = typeof userValue;
   const conditionValue = condition.value;
 
-  if (conditionValue === null || !isSafeInteger(conditionValue)) {
-    logger.warn(
-      LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
-    );
-    return null;
-  }
-
-  if (userValue === null) {
-    logger.debug(
-      LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
-    );
-    return null;
-  }
-
-  if (!isNumber(userValue)) {
-    logger.warn(
-      LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
-    );
-    return null;
-  }
-
-  if (!isSafeInteger(userValue)) {
-    logger.warn(
-      LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName
-    );
+  if (!validateValues(condition, userAttributes) || conditionValue === null) {
     return null;
   }
 
@@ -338,36 +302,10 @@ function lessThanEvaluator(condition: Condition, userAttributes: UserAttributes)
  *                            number
  */
 function lessThanOrEqualEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
-  const conditionName = condition.name;
   const userValue = userAttributes[condition.name];
-  const userValueType = typeof userValue;
   const conditionValue = condition.value;
 
-  if (conditionValue === null || !isSafeInteger(conditionValue)) {
-    logger.warn(
-      LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
-    );
-    return null;
-  }
-
-  if (userValue === null) {
-    logger.debug(
-      LOG_MESSAGES.UNEXPECTED_TYPE_NULL, MODULE_NAME, JSON.stringify(condition), conditionName
-    );
-    return null;
-  }
-
-  if (!isNumber(userValue)) {
-    logger.warn(
-      LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
-    );
-    return null;
-  }
-
-  if (!isSafeInteger(userValue)) {
-    logger.warn(
-      LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName
-    );
+  if (!validateValues(condition, userAttributes) || conditionValue === null) {
     return null;
   }
 

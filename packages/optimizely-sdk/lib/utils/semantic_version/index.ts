@@ -26,7 +26,7 @@ const logger = getLogger();
   *                     
   */
   function isNumber(content: string): boolean {
-    return content.match(/^[0-9]+$/) != null ? true : false;
+    return new RegExp(/^\d+$/).test(content);
   }
 
  /**
@@ -36,8 +36,8 @@ const logger = getLogger();
   *                     
   */
   function isPreReleaseVersion(version: string): boolean {
-    const preReleaseIndex = version.indexOf(VERSION_TYPE.IS_PRE_RELEASE);
-    const buildIndex = version.indexOf(VERSION_TYPE.IS_BUILD);
+    const preReleaseIndex = version.indexOf(VERSION_TYPE.PRE_RELEASE_VERSION_DELIMITER);
+    const buildIndex = version.indexOf(VERSION_TYPE.BUILD_VERSION_DELIMITER);
 
     if (preReleaseIndex < 0) {
         return false;
@@ -57,8 +57,8 @@ const logger = getLogger();
    *                     
    */
   function isBuildVersion(version: string): boolean {
-    const preReleaseIndex = version.indexOf(VERSION_TYPE.IS_PRE_RELEASE);
-    const buildIndex = version.indexOf(VERSION_TYPE.IS_BUILD);
+    const preReleaseIndex = version.indexOf(VERSION_TYPE.PRE_RELEASE_VERSION_DELIMITER);
+    const buildIndex = version.indexOf(VERSION_TYPE.BUILD_VERSION_DELIMITER);
 
     if (buildIndex < 0) {
         return false;
@@ -78,7 +78,7 @@ const logger = getLogger();
    *                     
    */
   function hasWhiteSpaces(version: string): boolean {
-    return version.includes(' ');
+    return new RegExp(/\s/).test(version);
   }
   
   /**
@@ -99,12 +99,12 @@ const logger = getLogger();
     //check for pre release e.g. 1.0.0-alpha where 'alpha' is a pre release
     //otherwise check for build e.g. 1.0.0+001 where 001 is a build metadata
     if (isPreReleaseVersion(version)) {
-      targetPrefix = version.substring(0, version.indexOf(VERSION_TYPE.IS_PRE_RELEASE));
-      targetSuffix = version.substring(version.indexOf(VERSION_TYPE.IS_PRE_RELEASE) + 1);
+      targetPrefix = version.substring(0, version.indexOf(VERSION_TYPE.PRE_RELEASE_VERSION_DELIMITER));
+      targetSuffix = version.substring(version.indexOf(VERSION_TYPE.PRE_RELEASE_VERSION_DELIMITER) + 1);
     }
     else if (isBuildVersion(version)) {
-        targetPrefix = version.substring(0, version.indexOf(VERSION_TYPE.IS_BUILD));
-        targetSuffix = version.substring(version.indexOf(VERSION_TYPE.IS_BUILD) + 1);
+        targetPrefix = version.substring(0, version.indexOf(VERSION_TYPE.BUILD_VERSION_DELIMITER));
+        targetSuffix = version.substring(version.indexOf(VERSION_TYPE.BUILD_VERSION_DELIMITER) + 1);
     }
   
     // check dot counts in target_prefix
@@ -138,22 +138,33 @@ const logger = getLogger();
       
   }
   
+  /**
+   * Compare user version with condition version
+   * @param  {string}  conditionsVersion
+   * @param  {string}  userProvidedVersion
+   * @return {number | null}  0 if user version is equal to condition version
+   *                          1 if user version is greater than condition version
+   *                         -1 if user version is less than condition version
+   *                          null if invalid user or condition version is provided
+   */
   export function compareVersion(conditionsVersion: string, userProvidedVersion: string): number | null {
-    const isPreReleaseInconditionsVersion = isPreReleaseVersion(conditionsVersion)
-    const isPreReleaseInuserProvidedVersion = isPreReleaseVersion(userProvidedVersion)
-    const isBuildInconditionsVersion = isBuildVersion(conditionsVersion)
+    const isPreReleaseInconditionsVersion = isPreReleaseVersion(conditionsVersion);
+    const isPreReleaseInuserProvidedVersion = isPreReleaseVersion(userProvidedVersion);
+    const isBuildInconditionsVersion = isBuildVersion(conditionsVersion);
   
     const userVersionParts = splitVersion(userProvidedVersion);
     const conditionsVersionParts = splitVersion(conditionsVersion);
   
-    if (!userVersionParts || !conditionsVersionParts)
+    if (!userVersionParts || !conditionsVersionParts) {
       return null;
+    }
   
     const userVersionPartsLen = userVersionParts.length;
   
     for (let idx = 0; idx < conditionsVersionParts.length; idx++) {
-      if (userVersionPartsLen <= idx)
-          return isPreReleaseInconditionsVersion || isBuildInconditionsVersion ? 1 : -1
+      if (userVersionPartsLen <= idx) {
+          return isPreReleaseInconditionsVersion || isBuildInconditionsVersion ? 1 : -1;
+      }
       else if (!isNumber(userVersionParts[idx])) {
         if (userVersionParts[idx] < conditionsVersionParts[idx]) {
           return isPreReleaseInconditionsVersion && !isPreReleaseInuserProvidedVersion ? 1 : -1;
@@ -163,17 +174,19 @@ const logger = getLogger();
         }
       }
       else {
-        const userVersionPart = parseInt(userVersionParts[idx])
-        const conditionsVersionPart = parseInt(conditionsVersionParts[idx])
-        if (userVersionPart > conditionsVersionPart)
+        const userVersionPart = parseInt(userVersionParts[idx]);
+        const conditionsVersionPart = parseInt(conditionsVersionParts[idx]);
+        if (userVersionPart > conditionsVersionPart) {
             return 1;
-        else if (userVersionPart < conditionsVersionPart)
+        }
+        else if (userVersionPart < conditionsVersionPart) {
             return -1;
+        }
       }
     }
   
     // check if user version contains release and target version contains build
-    if ((isPreReleaseInuserProvidedVersion && isBuildInconditionsVersion))
+    if (isPreReleaseInuserProvidedVersion && isBuildInconditionsVersion)
       return -1;
       
     return 0;
