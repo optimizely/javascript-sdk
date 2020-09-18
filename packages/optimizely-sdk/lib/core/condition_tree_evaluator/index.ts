@@ -20,7 +20,7 @@ const NOT_CONDITION = 'not';
 
 const DEFAULT_OPERATOR_TYPES = [AND_CONDITION, OR_CONDITION, NOT_CONDITION];
 
-type ConditionTree<Leaf> = Leaf | unknown[];
+export type ConditionTree<Leaf> = Leaf | unknown[];
 
 type LeafEvaluator<Leaf> = (leaf: Leaf) => boolean | null;
 
