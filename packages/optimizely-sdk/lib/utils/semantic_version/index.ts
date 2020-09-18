@@ -148,9 +148,9 @@ const logger = getLogger();
    *                          null if invalid user or condition version is provided
    */
   export function compareVersion(conditionsVersion: string, userProvidedVersion: string): number | null {
-    const isPreReleaseInconditionsVersion = isPreReleaseVersion(conditionsVersion);
-    const isPreReleaseInuserProvidedVersion = isPreReleaseVersion(userProvidedVersion);
-    const isBuildInconditionsVersion = isBuildVersion(conditionsVersion);
+    const isPreReleaseInConditionsVersion = isPreReleaseVersion(conditionsVersion);
+    const isPreReleaseInUserProvidedVersion = isPreReleaseVersion(userProvidedVersion);
+    const isBuildInConditionsVersion = isBuildVersion(conditionsVersion);
   
     const userVersionParts = splitVersion(userProvidedVersion);
     const conditionsVersionParts = splitVersion(conditionsVersion);
@@ -163,14 +163,14 @@ const logger = getLogger();
   
     for (let idx = 0; idx < conditionsVersionParts.length; idx++) {
       if (userVersionPartsLen <= idx) {
-          return isPreReleaseInconditionsVersion || isBuildInconditionsVersion ? 1 : -1;
+          return isPreReleaseInConditionsVersion || isBuildInConditionsVersion ? 1 : -1;
       }
       else if (!isNumber(userVersionParts[idx])) {
         if (userVersionParts[idx] < conditionsVersionParts[idx]) {
-          return isPreReleaseInconditionsVersion && !isPreReleaseInuserProvidedVersion ? 1 : -1;
+          return isPreReleaseInConditionsVersion && !isPreReleaseInUserProvidedVersion ? 1 : -1;
         }
         else if (userVersionParts[idx] > conditionsVersionParts[idx]) {
-          return !isPreReleaseInconditionsVersion && isPreReleaseInuserProvidedVersion ? -1 : 1;
+          return !isPreReleaseInConditionsVersion && isPreReleaseInUserProvidedVersion ? -1 : 1;
         }
       }
       else {
@@ -186,7 +186,7 @@ const logger = getLogger();
     }
   
     // check if user version contains release and target version contains build
-    if (isPreReleaseInuserProvidedVersion && !isPreReleaseInconditionsVersion)
+    if (isPreReleaseInUserProvidedVersion && !isPreReleaseInConditionsVersion)
       return -1;
       
     return 0;
