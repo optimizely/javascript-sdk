@@ -70,7 +70,7 @@ declare module '@optimizely/optimizely-sdk' {
     getForcedVariation(experimentKey: string, userId: string): string | null;
     isFeatureEnabled(featureKey: string, userId: string, attributes?: UserAttributes): boolean;
     getEnabledFeatures(userId: string, attributes?: UserAttributes): string[];
-    getFeatureVariable(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): unknown
+    getFeatureVariable(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): unknown;
     getFeatureVariableBoolean(
       featureKey: string,
       variableKey: string,
@@ -159,8 +159,8 @@ declare module '@optimizely/optimizely-sdk' {
   }
 
   export interface ActivateListenerPayload extends ListenerPayload {
-    experiment: Experiment;
-    variation: Variation;
+    experiment: import('./core/project_config/entities').Experiment;
+    variation: import('./core/project_config/entities').Variation;
     logEvent: Event;
   }
 
@@ -178,27 +178,6 @@ declare module '@optimizely/optimizely-sdk' {
     eventKey: string;
     eventTags: EventTags;
     logEvent: Event;
-  }
-
-  export interface Experiment {
-    id: string;
-    key: string;
-    status: string;
-    layerId: string;
-    variations: Variation[];
-    trafficAllocation: Array<{
-      entityId: string;
-      endOfRange: number;
-    }>;
-    audienceIds: string[];
-    // TODO[OASIS-6649]: Don't use object type
-    // eslint-disable-next-line  @typescript-eslint/ban-types
-    forcedVariations: object;
-  }
-
-  export interface Variation {
-    id: string;
-    key: string;
   }
 
   // Information about past bucketing decisions for a user.

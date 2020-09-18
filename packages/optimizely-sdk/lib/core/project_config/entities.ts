@@ -14,8 +14,28 @@
  * limitations under the License.
  */
 
-import { Experiment } from '@optimizely/optimizely-sdk';
-import { ConditionTree } from '../condition_tree_evaluator';
+export type ConditionTree<Leaf> = Leaf | unknown[];
+
+export interface Variation {
+  id: string;
+  key: string;
+}
+
+export interface Experiment {
+  id: string;
+  key: string;
+  status: string;
+  layerId: string;
+  variations: Variation[];
+  trafficAllocation: Array<{
+    entityId: string;
+    endOfRange: number;
+  }>;
+  audienceIds: string[];
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
+  forcedVariations: object;
+}
 
 export interface Group {
   experiments: Experiment[];
