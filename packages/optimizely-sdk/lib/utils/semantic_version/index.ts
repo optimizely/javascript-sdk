@@ -26,7 +26,7 @@ const logger = getLogger();
   *                     
   */
   function isNumber(content: string): boolean {
-    return new RegExp(/^\d+$/).test(content);
+    return /^\d+$/.test(content);
   }
 
  /**
@@ -78,7 +78,7 @@ const logger = getLogger();
    *                     
    */
   function hasWhiteSpaces(version: string): boolean {
-    return new RegExp(/\s/).test(version);
+    return /\s/.test(version);
   }
   
   /**
