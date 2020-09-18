@@ -175,7 +175,7 @@ export function compareVersion(conditionsVersion: string, userProvidedVersion: s
     }
   }
 
-  // check if user version contains release and target version contains build
+  // check if user version contains release and target version does not
   if (isPreReleaseVersion(userProvidedVersion) && !isPreReleaseVersion(conditionsVersion)) {
     return -1;
   }
