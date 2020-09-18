@@ -193,7 +193,7 @@ function existsEvaluator(condition: Condition, userAttributes: UserAttributes): 
  * @returns {?boolean}        true if values are valid,
  *                            false if values are not valid
  */
-function validateValues(condition: Condition, userAttributes: UserAttributes): boolean {
+function validateValuesForNumericCondition(condition: Condition, userAttributes: UserAttributes): boolean {
   const conditionName = condition.name;
   const userValue = userAttributes[conditionName];
   const userValueType = typeof userValue;
@@ -243,7 +243,7 @@ function greaterThanEvaluator(condition: Condition, userAttributes: UserAttribut
   const userValue = userAttributes[condition.name];
   const conditionValue = condition.value;
 
-  if (!validateValues(condition, userAttributes) || conditionValue === null) {
+  if (!validateValuesForNumericCondition(condition, userAttributes) || conditionValue === null) {
     return null;
   }
   return userValue > conditionValue;
@@ -263,7 +263,7 @@ function greaterThanOrEqualEvaluator(condition: Condition, userAttributes: UserA
   const userValue = userAttributes[condition.name];
   const conditionValue = condition.value;
 
-  if (!validateValues(condition, userAttributes) || conditionValue === null) {
+  if (!validateValuesForNumericCondition(condition, userAttributes) || conditionValue === null) {
     return null;
   }
 
@@ -284,7 +284,7 @@ function lessThanEvaluator(condition: Condition, userAttributes: UserAttributes)
   const userValue = userAttributes[condition.name];
   const conditionValue = condition.value;
 
-  if (!validateValues(condition, userAttributes) || conditionValue === null) {
+  if (!validateValuesForNumericCondition(condition, userAttributes) || conditionValue === null) {
     return null;
   }
 
@@ -305,7 +305,7 @@ function lessThanOrEqualEvaluator(condition: Condition, userAttributes: UserAttr
   const userValue = userAttributes[condition.name];
   const conditionValue = condition.value;
 
-  if (!validateValues(condition, userAttributes) || conditionValue === null) {
+  if (!validateValuesForNumericCondition(condition, userAttributes) || conditionValue === null) {
     return null;
   }
 
