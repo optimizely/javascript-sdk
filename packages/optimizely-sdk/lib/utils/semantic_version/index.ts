@@ -148,10 +148,6 @@ const logger = getLogger();
    *                          null if invalid user or condition version is provided
    */
   export function compareVersion(conditionsVersion: string, userProvidedVersion: string): number | null {
-    const isPreReleaseInConditionsVersion = isPreReleaseVersion(conditionsVersion);
-    const isPreReleaseInUserProvidedVersion = isPreReleaseVersion(userProvidedVersion);
-    const isBuildInConditionsVersion = isBuildVersion(conditionsVersion);
-  
     const userVersionParts = splitVersion(userProvidedVersion);
     const conditionsVersionParts = splitVersion(conditionsVersion);
   
@@ -163,14 +159,14 @@ const logger = getLogger();
   
     for (let idx = 0; idx < conditionsVersionParts.length; idx++) {
       if (userVersionPartsLen <= idx) {
-          return isPreReleaseInConditionsVersion || isBuildInConditionsVersion ? 1 : -1;
+          return isPreReleaseVersion(conditionsVersion) || isBuildVersion(conditionsVersion) ? 1 : -1;
       }
       else if (!isNumber(userVersionParts[idx])) {
         if (userVersionParts[idx] < conditionsVersionParts[idx]) {
-          return isPreReleaseInConditionsVersion && !isPreReleaseInUserProvidedVersion ? 1 : -1;
+          return isPreReleaseVersion(conditionsVersion) && !isPreReleaseVersion(userProvidedVersion) ? 1 : -1;
         }
         else if (userVersionParts[idx] > conditionsVersionParts[idx]) {
-          return !isPreReleaseInConditionsVersion && isPreReleaseInUserProvidedVersion ? -1 : 1;
+          return !isPreReleaseVersion(conditionsVersion) && isPreReleaseVersion(userProvidedVersion) ? -1 : 1;
         }
       }
       else {
@@ -186,7 +182,7 @@ const logger = getLogger();
     }
   
     // check if user version contains release and target version contains build
-    if (isPreReleaseInUserProvidedVersion && !isPreReleaseInConditionsVersion)
+    if (isPreReleaseVersion(userProvidedVersion) && !isPreReleaseVersion(conditionsVersion))
       return -1;
       
     return 0;
