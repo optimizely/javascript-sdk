@@ -63,48 +63,73 @@ declare module '@optimizely/optimizely-sdk' {
 
   export interface Client {
     notificationCenter: NotificationCenter;
-    activate(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
-    track(eventKey: string, userId: string, attributes?: UserAttributes, eventTags?: EventTags): void;
-    getVariation(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
+    activate(
+      experimentKey: string,
+      userId: string,
+      attributes?: import('../lib/core/project_config/entities').UserAttributes
+    ): string | null;
+    track(
+      eventKey: string,
+      userId: string,
+      attributes?: import('../lib/core/project_config/entities').UserAttributes,
+      eventTags?: import('../lib/core/project_config/entities').EventTags
+    ): void;
+    getVariation(
+      experimentKey: string,
+      userId: string,
+      attributes?: import('../lib/core/project_config/entities').UserAttributes
+    ): string | null;
     setForcedVariation(experimentKey: string, userId: string, variationKey: string | null): boolean;
     getForcedVariation(experimentKey: string, userId: string): string | null;
-    isFeatureEnabled(featureKey: string, userId: string, attributes?: UserAttributes): boolean;
-    getEnabledFeatures(userId: string, attributes?: UserAttributes): string[];
-    getFeatureVariable(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): unknown;
+    isFeatureEnabled(
+      featureKey: string,
+      userId: string,
+      attributes?: import('../lib/core/project_config/entities').UserAttributes
+    ): boolean;
+    getEnabledFeatures(
+      userId: string,
+      attributes?: import('../lib/core/project_config/entities').UserAttributes
+    ): string[];
+    getFeatureVariable(
+      featureKey: string,
+      variableKey: string,
+      userId: string,
+      attributes?: import('../lib/core/project_config/entities').UserAttributes
+    ): unknown;
     getFeatureVariableBoolean(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: UserAttributes
+      attributes?: import('../lib/core/project_config/entities').UserAttributes
     ): boolean | null;
     getFeatureVariableDouble(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: UserAttributes
+      attributes?: import('../lib/core/project_config/entities').UserAttributes
     ): number | null;
     getFeatureVariableInteger(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: UserAttributes
+      attributes?: import('../lib/core/project_config/entities').UserAttributes
     ): number | null;
     getFeatureVariableString(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: UserAttributes
+      attributes?: import('../lib/core/project_config/entities').UserAttributes
     ): string | null;
     getFeatureVariableJSON(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: UserAttributes
+      attributes?: import('../lib/core/project_config/entities').UserAttributes
     ): unknown;
     getAllFeatureVariables(
       featureKey: string,
       userId: string,
-      attributes?: UserAttributes
+      attributes?: import('../lib/core/project_config/entities').UserAttributes
     ): { [variableKey: string]: unknown };
     getOptimizelyConfig(): OptimizelyConfig | null;
     onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
@@ -155,7 +180,7 @@ declare module '@optimizely/optimizely-sdk' {
 
   export interface ListenerPayload {
     userId: string;
-    attributes: UserAttributes;
+    attributes: import('../lib/core/project_config/entities').UserAttributes;
   }
 
   export interface ActivateListenerPayload extends ListenerPayload {
@@ -164,19 +189,9 @@ declare module '@optimizely/optimizely-sdk' {
     logEvent: Event;
   }
 
-  export type UserAttributes = {
-    // TODO[OASIS-6649]: Don't use any type
-    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    [name: string]: any;
-  };
-
-  export type EventTags = {
-    [key: string]: string | number | boolean;
-  };
-
   export interface TrackListenerPayload extends ListenerPayload {
     eventKey: string;
-    eventTags: EventTags;
+    eventTags: import('../lib/core/project_config/entities').EventTags;
     logEvent: Event;
   }
 

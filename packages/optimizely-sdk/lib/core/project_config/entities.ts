@@ -14,6 +14,16 @@
  * limitations under the License.
  */
 
+export type UserAttributes = {
+  // TODO[OASIS-6649]: Don't use any type
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  [name: string]: any;
+};
+
+export type EventTags = {
+  [key: string]: string | number | boolean;
+};
+
 export type ConditionTree<Leaf> = Leaf | unknown[];
 
 export interface Variation {
