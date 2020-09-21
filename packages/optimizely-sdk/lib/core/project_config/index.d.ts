@@ -15,7 +15,5 @@
  */
 
 declare module '@optimizely/optimizely-sdk/lib/core/project_config' {
-  // TODO[OASIS-6649]: Don't use any type
-  // eslint-disable-next-line  @typescript-eslint/no-empty-interface
   export interface ProjectConfig {}
 }
