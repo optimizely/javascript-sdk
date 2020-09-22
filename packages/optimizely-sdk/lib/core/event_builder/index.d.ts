@@ -19,12 +19,9 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
   import { LogHandler } from '@optimizely/js-sdk-logging';
   import { EventTags, UserAttributes } from '@optimizely/optimizely-sdk';
   import { Event as EventLoggingEndpoint } from '@optimizely/optimizely-sdk';
-  export type Attributes = {
-    [name: string]: unknown;
-  };
 
   interface ImpressionOptions {
-    attributes: Attributes;
+    attributes: UserAttributes;
     clientEngine: string;
     clientVersion: string;
     configObj: ProjectConfig;
@@ -50,7 +47,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
   interface ImpressionEvent {}
 
   interface ConversionEventOptions {
-    attributes: Attributes;
+    attributes: UserAttributes;
     clientEngine: string;
     clientVersion: string;
     configObj: ProjectConfig;
