@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
+export interface FeatureVariable {
+  type: string;
+}
+
+export interface FeatureFlag {
+  variables: FeatureVariable[];
+}
+
 export type UserAttributes = {
   // TODO[OASIS-6649]: Don't use any type
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
@@ -75,25 +83,9 @@ export interface Event {
   key: string;
 }
 
-export interface FeatureVariable {
-  defaultValue: string;
-  id: string;
-  key: string;
-  subType?: string;
-  type: string;
-}
-
 export interface Rollout {
   experiments: Experiment[];
   id: string;
-}
-
-export interface FeatureFlag {
-  experimentIds: string[];
-  id: string;
-  key: string;
-  rolloutId: string;
-  variables: FeatureVariable[];
 }
 
 export interface Attribute {

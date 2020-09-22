@@ -63,73 +63,48 @@ declare module '@optimizely/optimizely-sdk' {
 
   export interface Client {
     notificationCenter: NotificationCenter;
-    activate(
-      experimentKey: string,
-      userId: string,
-      attributes?: import('../lib/core/project_config/entities').UserAttributes
-    ): string | null;
-    track(
-      eventKey: string,
-      userId: string,
-      attributes?: import('../lib/core/project_config/entities').UserAttributes,
-      eventTags?: import('../lib/core/project_config/entities').EventTags
-    ): void;
-    getVariation(
-      experimentKey: string,
-      userId: string,
-      attributes?: import('../lib/core/project_config/entities').UserAttributes
-    ): string | null;
+    activate(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
+    track(eventKey: string, userId: string, attributes?: UserAttributes, eventTags?: EventTags): void;
+    getVariation(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
     setForcedVariation(experimentKey: string, userId: string, variationKey: string | null): boolean;
     getForcedVariation(experimentKey: string, userId: string): string | null;
-    isFeatureEnabled(
-      featureKey: string,
-      userId: string,
-      attributes?: import('../lib/core/project_config/entities').UserAttributes
-    ): boolean;
-    getEnabledFeatures(
-      userId: string,
-      attributes?: import('../lib/core/project_config/entities').UserAttributes
-    ): string[];
-    getFeatureVariable(
-      featureKey: string,
-      variableKey: string,
-      userId: string,
-      attributes?: import('../lib/core/project_config/entities').UserAttributes
-    ): unknown;
+    isFeatureEnabled(featureKey: string, userId: string, attributes?: UserAttributes): boolean;
+    getEnabledFeatures(userId: string, attributes?: UserAttributes): string[];
+    getFeatureVariable(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): unknown
     getFeatureVariableBoolean(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: import('../lib/core/project_config/entities').UserAttributes
+      attributes?: UserAttributes
     ): boolean | null;
     getFeatureVariableDouble(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: import('../lib/core/project_config/entities').UserAttributes
+      attributes?: UserAttributes
     ): number | null;
     getFeatureVariableInteger(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: import('../lib/core/project_config/entities').UserAttributes
+      attributes?: UserAttributes
     ): number | null;
     getFeatureVariableString(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: import('../lib/core/project_config/entities').UserAttributes
+      attributes?: UserAttributes
     ): string | null;
     getFeatureVariableJSON(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: import('../lib/core/project_config/entities').UserAttributes
+      attributes?: UserAttributes
     ): unknown;
     getAllFeatureVariables(
       featureKey: string,
       userId: string,
-      attributes?: import('../lib/core/project_config/entities').UserAttributes
+      attributes?: UserAttributes
     ): { [variableKey: string]: unknown };
     getOptimizelyConfig(): OptimizelyConfig | null;
     onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
@@ -180,19 +155,50 @@ declare module '@optimizely/optimizely-sdk' {
 
   export interface ListenerPayload {
     userId: string;
-    attributes: import('../lib/core/project_config/entities').UserAttributes;
+    attributes: UserAttributes;
   }
 
   export interface ActivateListenerPayload extends ListenerPayload {
-    experiment: import('./core/project_config/entities').Experiment;
-    variation: import('./core/project_config/entities').Variation;
+    experiment: Experiment;
+    variation: Variation;
     logEvent: Event;
   }
 
+  export type UserAttributes = {
+    // TODO[OASIS-6649]: Don't use any type
+    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+    [name: string]: any;
+  };
+
+  export type EventTags = {
+    [key: string]: string | number | boolean;
+  };
+
   export interface TrackListenerPayload extends ListenerPayload {
     eventKey: string;
-    eventTags: import('../lib/core/project_config/entities').EventTags;
+    eventTags: EventTags;
     logEvent: Event;
+  }
+
+  interface Experiment {
+    id: string;
+    key: string;
+    status: string;
+    layerId: string;
+    variations: Variation[];
+    trafficAllocation: Array<{
+      entityId: string;
+      endOfRange: number;
+    }>;
+    audienceIds: string[];
+    // TODO[OASIS-6649]: Don't use object type
+    // eslint-disable-next-line  @typescript-eslint/ban-types
+    forcedVariations: object;
+  }
+
+  interface Variation {
+    id: string;
+    key: string;
   }
 
   // Information about past bucketing decisions for a user.
@@ -251,6 +257,7 @@ declare module '@optimizely/optimizely-sdk' {
       [featureKey: string]: OptimizelyFeature;
     };
     revision: string;
+    getDatafile(): string;
   }
 }
 
