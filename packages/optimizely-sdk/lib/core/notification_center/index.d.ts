@@ -15,8 +15,10 @@
  * limitations under the License.
  */
 
+import { UserAttributes } from '@optimizely/optimizely-sdk';
+import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
+
 declare module '@optimizely/optimizely-sdk/lib/core/notification_center' {
-  import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
 
   export enum NOTIFICATION_TYPES {
     ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
@@ -44,23 +46,27 @@ declare module '@optimizely/optimizely-sdk/lib/core/notification_center' {
     variationKey?: string;
   }
 
+  export type VariableValues = {
+    [name: string]: unknown;
+  };
+
   interface DecisionInfo {
     experimentKey?: string;
     variationKey?: string;
     featureKey?: string;
-    featureEnabled: boolean;
+    featureEnabled?: boolean;
     source?: string;
     sourceInfo?: SourceInfo;
     variableKey?: string;
     variableValue?: unknown;
-    variableValues?: unknown;
+    variableValues?: VariableValues;
     variableType?: string;
   }
 
   interface NotificationData {
     type?: DECISION_NOTIFICATION_TYPES;
     userId?: string;
-    attributes?: unknown;
+    attributes?: UserAttributes;
     decisionInfo?: DecisionInfo;
     experiment?: import('../project_config/entities').Experiment;
     variation?: import('../project_config/entities').Variation;
