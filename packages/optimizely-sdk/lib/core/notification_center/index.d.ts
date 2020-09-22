@@ -35,12 +35,12 @@ declare module '@optimizely/optimizely-sdk/lib/core/notification_center' {
     ALL_FEATURE_VARIABLES = 'all-feature-variables',
   }
 
-  interface Options {
+  export type Options =  {
     logger: LogHandler;
     errorHandle: ErrorHandler;
   }
 
-  interface SourceInfo {
+  export type SourceInfo = {
     experimentKey?: string;
     variationKey?: string;
   }
@@ -49,7 +49,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/notification_center' {
     [name: string]: unknown;
   };
 
-  interface DecisionInfo {
+  export type DecisionInfo =  {
     experimentKey?: string;
     variationKey?: string;
     featureKey?: string;
@@ -62,7 +62,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/notification_center' {
     variableType?: string;
   }
 
-  interface NotificationData {
+  export interface NotificationData {
     type?: DECISION_NOTIFICATION_TYPES;
     userId?: string;
     attributes?: UserAttributes;
