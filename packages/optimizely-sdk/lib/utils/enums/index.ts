@@ -226,3 +226,11 @@ export const DATAFILE_VERSIONS = {
   V3: '3',
   V4: '4',
 };
+
+/*
+* Pre-Release and Build symbols
+*/
+export const enum VERSION_TYPE {
+  PRE_RELEASE_VERSION_DELIMITER = '-',
+  BUILD_VERSION_DELIMITER = '+'
+}
