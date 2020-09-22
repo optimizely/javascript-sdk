@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { UserAttributes } from '@optimizely/optimizely-sdk';
+import { UserAttributes, Experiment, Variation } from '@optimizely/optimizely-sdk';
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
 
 declare module '@optimizely/optimizely-sdk/lib/core/notification_center' {
@@ -67,8 +67,8 @@ declare module '@optimizely/optimizely-sdk/lib/core/notification_center' {
     userId?: string;
     attributes?: UserAttributes;
     decisionInfo?: DecisionInfo;
-    experiment?: import('../project_config/entities').Experiment;
-    variation?: import('../project_config/entities').Variation;
+    experiment?: Experiment;
+    variation?: Variation;
     logEvent?: string;
     eventKey?: string;
     eventTags?: string;

@@ -180,12 +180,12 @@ declare module '@optimizely/optimizely-sdk' {
     logEvent: Event;
   }
 
-  interface Experiment {
+  export interface Experiment {
     id: string;
     key: string;
     status: string;
     layerId: string;
-    variations: Variation[];
+    variations: Vaiation[];
     trafficAllocation: Array<{
       entityId: string;
       endOfRange: number;
@@ -196,7 +196,7 @@ declare module '@optimizely/optimizely-sdk' {
     forcedVariations: object;
   }
 
-  interface Variation {
+  export interface Variation {
     id: string;
     key: string;
   }
