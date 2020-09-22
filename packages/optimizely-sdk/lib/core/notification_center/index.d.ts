@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 /**
  * Copyright 2020, Optimizely
  *
@@ -15,30 +16,61 @@
  */
 
 declare module '@optimizely/optimizely-sdk/lib/core/notification_center' {
-    import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
+  import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
 
-    interface Options {
-        logger: LogHandler;
-        errorHandle: ErrorHandler;
-    }
+  export enum NOTIFICATION_TYPES {
+    ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
+    DECISION = 'DECISION:type, userId, attributes, decisionInfo',
+    LOG_EVENT = 'LOG_EVENT:logEvent',
+    OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
+    TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
+  }
 
-    export interface NotificationCenter {
-        _logger: LogHandler;
-        _errorHandler: ErrorHandler;
-        // TODO[OASIS-6649]: Don't use object type
-        // eslint-disable-next-line  @typescript-eslint/ban-types
-        __notificationListeners: Object;
+  export enum DECISION_NOTIFICATION_TYPES {
+    AB_TEST = 'ab-test',
+    FEATURE = 'feature',
+    FEATURE_TEST = 'feature-test',
+    FEATURE_VARIABLE = 'feature-variable',
+    ALL_FEATURE_VARIABLES = 'all-feature-variables',
+  }
 
-        NotificationCenter(options: Options): void
-        // TODO[OASIS-6649]: Don't use any type
-        // eslint-disable-next-line  @typescript-eslint/no-explicit-any 
-        addNotificationListener(notificationType: string, callback: (...args: any[]) => any): number | boolean
-        removeNotificationListener(listenerId: number): boolean
-        clearAllNotificationListeners(): void
-        clearNotificationListeners(notificationType: string): void
-        // TODO[OASIS-6649]: Don't use object type
-        // eslint-disable-next-line  @typescript-eslint/ban-types
-        sendNotifications(notificationType: string, notificationData: Object): void
-        createNotificationCenter(options: Options): NotificationCenter
-    }
+  interface Options {
+    logger: LogHandler;
+    errorHandle: ErrorHandler;
+  }
+
+  interface SourceInfo {
+    experimentKey?: string;
+    variationKey?: string;
+  }
+
+  interface DecisionInfo {
+    experimentKey?: string;
+    variationKey?: string;
+    featureKey?: string;
+    featureEnabled: boolean;
+    source?: string;
+    sourceInfo?: SourceInfo;
+    variableKey?: string;
+    variableValue?: unknown;
+    variableValues?: unknown;
+    variableType?: string;
+  }
+
+  interface NotificationData {
+    type?: DECISION_NOTIFICATION_TYPES;
+    userId?: string;
+    attributes?: unknown;
+    decisionInfo?: DecisionInfo;
+    experiment?: import('../project_config/entities').Experiment;
+    variation?: import('../project_config/entities').Variation;
+    logEvent?: string;
+    eventKey?: string;
+    eventTags?: string;
+  }
+
+  export interface NotificationCenter {
+    sendNotifications(notificationType: NOTIFICATION_TYPES, notificationData: NotificationData): void;
+  }
+  export function createNotificationCenter(options: Options): NotificationCenter;
 }
