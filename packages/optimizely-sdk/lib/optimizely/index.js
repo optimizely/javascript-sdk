@@ -228,7 +228,6 @@ Optimizely.prototype._sendImpressionEvent = function(experimentKey, variationKey
     clientVersion: this.clientVersion,
     configObj: configObj,
   });
-  
   // TODO is it okay to not pass a projectConfig as second argument
   this.eventProcessor.process(impressionEvent);
   this.__emitNotificationCenterActivate(experimentKey, variationKey, userId, attributes);
@@ -259,8 +258,6 @@ Optimizely.prototype.__emitNotificationCenterActivate = function(experimentKey, 
     variationId: variationId,
     logger: this.logger,
   };
-  
-  console.log(impressionEventOptions)
   var impressionEvent = getImpressionEvent(impressionEventOptions);
   var experiment = configObj.experimentKeyMap[experimentKey];
   var variation;
@@ -319,7 +316,6 @@ Optimizely.prototype.track = function(eventKey, userId, attributes, eventTags) {
       clientVersion: this.clientVersion,
       configObj: configObj,
     });
-    
     this.logger.log(LOG_LEVEL.INFO, sprintf(enums.LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId));
     // TODO is it okay to not pass a projectConfig as second argument
     this.eventProcessor.process(conversionEvent);
@@ -357,6 +353,7 @@ Optimizely.prototype.__emitNotificationCenterTrack = function(eventKey, userId, 
       userId: userId,
     };
     var conversionEvent = getConversionEvent(conversionEventOptions);
+
     this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.TRACK, {
       eventKey: eventKey,
       userId: userId,
