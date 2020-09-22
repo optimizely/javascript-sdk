@@ -16,133 +16,93 @@
 
 declare module '@optimizely/optimizely-sdk/lib/core/project_config' {
   import { LogHandler } from '@optimizely/js-sdk-logging';
-  import { Experiment, Variation } from '@optimizely/optimizely-sdk';
 
-  interface Config {
-    // TODO[OASIS-6649]: Don't use object type
-    // eslint-disable-next-line  @typescript-eslint/ban-types
-    datafile: object;
-    logger: LogHandler;
-    // TODO[OASIS-6649]: Don't use object type
-    // eslint-disable-next-line  @typescript-eslint/ban-types
-    jsonSchemaValidator: object;
-  }
+  export interface ProjectConfig {}
+  /**
+   * Determine for given experiment if event is running, which determines whether should be dispatched or not
+   * @param  {ProjectConfig} configObj Object representing project configuration
+   * @param  {string} experimentKey Experiment key for which the status is to be determined
+   * @return {boolean} True is the experiment is running
+   *                   False is the experiment is not running
+   *
+   */
+  export function isRunning(configObj: ProjectConfig, experimentKey: string): boolean;
 
-  interface Group {
-    experiments: Experiment[]  
-    id: string
-    policy: string
-    trafficAllocation: Array<{
-      entityId: string;
-      endOfRange: number;
-    }>
-  } 
+  /**
+   * Get the variation ID given the experiment key and variation key
+   * @param  {ProjectConfig} configObj Object representing project configuration
+   * @param  {string} experimentKey Key of the experiment the variation belongs to
+   * @param  {string} variationKey  The variation key
+   * @return {string} the variation ID
+   */
+  export function getVariationIdFromExperimentAndVariationKey(configObj: ProjectConfig, experimentKey: string, variationKey: string): string;
 
-type ConditionTree<Leaf> = Leaf | unknown[];
+  /**
+   * Get experiment ID for the provided experiment key
+   * @param  {ProjectConfig} configObj Object representing project configuration
+   * @param  {string} experimentKey Experiment key for which ID is to be determined
+   * @return {string} Experiment ID corresponding to the provided experiment key
+   * @throws If experiment key is not in datafile
+   */
+  export function getExperimentId(configObj: ProjectConfig, experimentKey: string): string | never;
 
-type Condition = {
-  name: string;
-  type: string;
-  match?: string;
-  value: string | number | boolean | null;
-}
-  
-  interface Audience {
-    id: string;
-    conditions: ConditionTree<Condition>;
-    name: string;
-  }
-  
-  interface Event {
-    experimentIds: string[];
-    id: string;
-    key: string;
-  }
+  /**
+   * Check if the event with a specific key is present in the datafile
+   * @param   {ProjectConfig} configObj Object representing project configuration
+   * @param   {string} eventKey Event key for which event is to be determined
+   * @returns {boolean} True if key exists in the datafile
+   *                    False if key does not exist in the datafile
+   */
+  export function eventWithKeyExists(configObj: ProjectConfig, eventKey: string): boolean;
 
-  interface FeatureVariable {
-    defaultValue: string;
-    id: string;
-    key: string;
-    subType?: string;
-    type: string;
-  }
+  /**
+   * Check if the experiment is belongs to any feature
+   * @param {ProjectConfig} configObj Object representing project configuration
+   * @param {string} experimentId Experiment ID of an experiment 
+   * @returns {boolean} True if experiement belongs to any feature
+   *                    False if experiement does not belong to any feature
+   */
+  export function isFeatureExperiment(configObj: ProjectConfig, experimentId: string): boolean;
 
-  interface Rollout {
-    experiments: Experiment[];
-    id: string;
-  }
+  /**
+   * Get feature from provided feature key. Log an error if no feature exists in
+   * the project config with the given key.
+   * @param {ProjectConfig} configObj Object representing project configuration
+   * @param {string} featureKey Key of a feature for which feature is to be determined
+   * @param {LogHandler} logger Logger instance
+   * @return {FeatureFlag|null} Feature object, or null if no feature with the given
+   *                            key exists
+   */
+  export function getFeatureFromKey(configObj: ProjectConfig, featureKey: string, logger: LogHandler): import('./entities').FeatureFlag | null;
 
-  interface FeatureFlag {
-    experimentIds: string[];
-    id: string;
-    key: string;
-    rolloutId: string;
-    variables: FeatureVariable[];
-  }
+  /**
+   * Get the variable with the given key associated with the feature with the
+   * given key. If the feature key or the variable key are invalid, log an error
+   * message.
+   * @param {ProjectConfig} configObj Object representing project configuration
+   * @param {string} featureKey Key of a feature for which feature is to be determined
+   * @param {string} variableKey Key of a variable for which variable is to be determined
+   * @param {LogHandler} logger Logger instances
+   * @return {FeatureVariable|null} Variable object, or null one or both of the given
+   *                                feature and variable keys are invalid
+   */
+  export function getVariableForFeature(configObj: ProjectConfig, featureKey: string, variableKey: string, logger: LogHandler): import('./entities').FeatureVariable | null;
 
-  interface Attribute {
-    id: string;
-    key: string;
-  }
-
-  export interface ProjectConfig {
-    __datafileStr: string;
-    accountId: string;
-    attributeKeyMap: {[key: string]: Attribute};
-    attributes: Attribute[];
-    audiences: Audience[];
-    audiencesById: {[id: string]: Audience};
-    eventKeyMap: {[key: string]: Event};
-    events: Event[];
-    // TODO[OASIS-6649]: Don't use object type
-    // eslint-disable-next-line  @typescript-eslint/ban-types
-    experimentFeatureMap: object;
-    experimentIdMap: {[id: string]: Experiment};
-    experimentKeyMap: {[key: string]: Experiment};
-    experiments: Experiment[];
-    featureFlags: FeatureFlag[];
-    featureKeyMap: {[key: string]: FeatureFlag};
-    groupIdMap: {[id: string]: Group};
-    groups: Group[];
-    projectId: string;
-    rolloutIdMap: {[id: string]: Rollout};
-    rollouts: Rollout[];
-    variationIdMap: {[id: string]: Variation};
-    // TODO[OASIS-6649]: Don't use object type
-    // eslint-disable-next-line  @typescript-eslint/ban-types
-    variationVariableUsageMap: object;
-    version: string;
-    revision: string;
-
-    // TODO[OASIS-6649]: Don't use object type
-    // eslint-disable-next-line  @typescript-eslint/ban-types
-    createMutationSafeDatafileCopy(datafile: object): object;
-    // TODO[OASIS-6649]: Don't use object type
-    // eslint-disable-next-line  @typescript-eslint/ban-types
-    createProjectConfig(datafile: object, datafileString: string | null): ProjectConfig
-    getExperimentId(projectConfig: ProjectConfig, experimentKey: string): string | null
-    getLayerId(projectConfig: ProjectConfig, experimentId: string): string | null
-    getAttributeId(projectConfig: ProjectConfig, attributeKey: string, logger: LogHandler): string | null
-    getEventId(projectConfig: ProjectConfig, eventKey: string): string | null
-    getExperimentStatus(projectConfig: ProjectConfig, experimentKey: string): string | null
-    isActive(projectConfig: ProjectConfig, experimentKey: string): boolean
-    isRunning(projectConfig: ProjectConfig, experimentKey:string): boolean
-    getExperimentAudienceConditions(projectConfig: ProjectConfig, experimentKey:string): string[]
-    getVariationKeyFromId(projectConfig: ProjectConfig, variationId: string): string | null 
-    getVariationIdFromExperimentAndVariationKey(projectConfig: ProjectConfig, experimentKey: string, variationKey: string): string | null
-    getExperimentFromKey(projectConfig: ProjectConfig, experimentKey: string): Experiment | null
-    getTrafficAllocation(projectConfig: ProjectConfig, experimentKey: string): Array<{entityId: string; endOfRange: number;}>
-    getExperimentFromId(projectConfig: ProjectConfig, experimentId: string, logger: LogHandler): Experiment | null
-    getFeatureFromKey(projectConfig: ProjectConfig, featureKey: string, logger: LogHandler): FeatureFlag | null
-    getVariableForFeature(projectConfig: ProjectConfig, featureKey: string, variableKey: string, logger: LogHandler): FeatureVariable | null
-    getVariableValueForVariation(projectConfig: ProjectConfig, variable: FeatureVariable, variation: Variation, logger: LogHandler) : string | null
-    // TODO[OASIS-6649]: Don't use any type
-    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    getTypeCastValue(variableValue: string, variableType: string, logger: LogHandler): any
-    getAudiencesById(projectConfig: ProjectConfig): {[id: string]: Audience}
-    eventWithKeyExists(projectConfig: ProjectConfig, eventKey: string): boolean
-    isFeatureExperiment(projectConfig: ProjectConfig, experimentId: string): boolean
-    toDatafile(projectConfig: ProjectConfig): string
-    tryCreatingProjectConfig(config: Config): { config: ProjectConfig, error: string | null}
-  }
+  /**
+   * Given a variable value in string form, try to cast it to the argument type.
+   * If the type cast succeeds, return the type casted value, otherwise log an
+   * error and return null.
+   * @param {string} variableValue  Variable value in string form
+   * @param {string} type   Type of the variable whose value was passed
+   *                        in the first argument. Must be one of
+   *                        FEATURE_VARIABLE_TYPES in
+   *                        lib/utils/enums/index.js. The return value's
+   *                        type is determined by this argument (boolean
+   *                        for BOOLEAN, number for INTEGER or DOUBLE,
+   *                        and string for STRING).
+   * @param {LogHandler} logger Logger instance
+   * @returns {any} Variable value of the appropriate type, or
+   *                null if the type cast failed
+   */
+  export function getTypeCastValue<T>(variableValue: string, type: string, logger: LogHandler): T;
 }
