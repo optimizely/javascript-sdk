@@ -17,7 +17,7 @@
 declare module '@optimizely/optimizely-sdk/lib/core/project_config' {
   import { LogHandler } from '@optimizely/js-sdk-logging';
 
-  // TODO[OASIS-6649]: Don't use object type
+  // TODO[OASIS-6649]: Don't use empty interface type
   // eslint-disable-next-line  @typescript-eslint/no-empty-interface
   export interface ProjectConfig {}
   /**

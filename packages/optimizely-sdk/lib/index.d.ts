@@ -257,7 +257,6 @@ declare module '@optimizely/optimizely-sdk' {
       [featureKey: string]: OptimizelyFeature;
     };
     revision: string;
-    getDatafile(): string;
   }
 }
 
