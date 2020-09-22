@@ -42,7 +42,6 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
     configObj: ProjectConfig;
   }
 
-  // TODO[OASIS-6649]: Don't use empty interface type
   // eslint-disable-next-line  @typescript-eslint/no-empty-interface
   interface ImpressionEvent {}
 
@@ -67,7 +66,6 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
     configObj: ProjectConfig;
   }
 
-  // TODO[OASIS-6649]: Don't use empty interface type
   // eslint-disable-next-line  @typescript-eslint/no-empty-interface
   interface ConversionEvent {}
 
