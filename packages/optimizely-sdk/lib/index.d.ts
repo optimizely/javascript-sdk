@@ -185,7 +185,7 @@ declare module '@optimizely/optimizely-sdk' {
     key: string;
     status: string;
     layerId: string;
-    variations: Vaiation[];
+    variations: Variation[];
     trafficAllocation: Array<{
       entityId: string;
       endOfRange: number;
