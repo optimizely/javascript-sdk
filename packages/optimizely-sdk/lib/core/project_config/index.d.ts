@@ -104,7 +104,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/project_config' {
    *                        and string for STRING).
    * @param {LogHandler} logger Logger instance
    * @returns {T} Variable value of the appropriate type, or
-   *                null if the type cast failed
+   *              null if the type cast failed
    */
   export function getTypeCastValue<T>(variableValue: string, type: string, logger: LogHandler): T;
 }
