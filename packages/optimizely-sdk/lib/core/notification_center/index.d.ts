@@ -19,7 +19,6 @@ import { UserAttributes } from '@optimizely/optimizely-sdk';
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
 
 declare module '@optimizely/optimizely-sdk/lib/core/notification_center' {
-
   export enum NOTIFICATION_TYPES {
     ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
     DECISION = 'DECISION:type, userId, attributes, decisionInfo',
@@ -76,7 +75,19 @@ declare module '@optimizely/optimizely-sdk/lib/core/notification_center' {
   }
 
   export interface NotificationCenter {
+    /**
+     * Fires notifications for the argument type. All registered callbacks for this type will be
+     * called. The notificationData object will be passed on to callbacks called.
+     * @param {NOTIFICATION_TYPES} notificationType One of NOTIFICATION_TYPES
+     * @param {NotificationData} notificationData Will be passed to callbacks called
+     */
     sendNotifications(notificationType: NOTIFICATION_TYPES, notificationData: NotificationData): void;
   }
+
+  /**
+   * Create an instance of NotificationCenter
+   * @param {Options} options
+   * @returns {NotificationCenter} An instance of NotificationCenter
+   */
   export function createNotificationCenter(options: Options): NotificationCenter;
 }
