@@ -17,6 +17,8 @@
 declare module '@optimizely/optimizely-sdk/lib/core/project_config' {
   import { LogHandler } from '@optimizely/js-sdk-logging';
 
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/no-empty-interface
   export interface ProjectConfig {}
   /**
    * Determine for given experiment if event is running, which determines whether should be dispatched or not
@@ -101,7 +103,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/project_config' {
    *                        for BOOLEAN, number for INTEGER or DOUBLE,
    *                        and string for STRING).
    * @param {LogHandler} logger Logger instance
-   * @returns {any} Variable value of the appropriate type, or
+   * @returns {T} Variable value of the appropriate type, or
    *                null if the type cast failed
    */
   export function getTypeCastValue<T>(variableValue: string, type: string, logger: LogHandler): T;
