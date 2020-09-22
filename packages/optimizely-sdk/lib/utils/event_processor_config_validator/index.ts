@@ -17,23 +17,29 @@ import { isSafeInteger } from '../fns';
 
 /**
  * Return true if the argument is a valid event batch size, false otherwise
- * @param {*} eventBatchSize
- * @returns boolean
+ * @param {unknown}   eventBatchSize
+ * @returns {boolean}
  */
-export var validateEventBatchSize = function(eventBatchSize) {
-  return isSafeInteger(eventBatchSize) && eventBatchSize >= 1;
-};
+const validateEventBatchSize = function(eventBatchSize: unknown): boolean {
+  if (typeof eventBatchSize === 'number' && isSafeInteger(eventBatchSize)) {
+    return eventBatchSize >= 1;
+  }
+  return false;
+}
 
 /**
  * Return true if the argument is a valid event flush interval, false otherwise
- * @param {*} eventFlushInterval
- * @returns boolean
+ * @param {unknown}   eventFlushInterval
+ * @returns {boolean}
  */
-export var validateEventFlushInterval = function(eventFlushInterval) {
-  return isSafeInteger(eventFlushInterval) && eventFlushInterval > 0;
-};
+const validateEventFlushInterval = function(eventFlushInterval: unknown): boolean {
+  if (typeof eventFlushInterval === 'number' && isSafeInteger(eventFlushInterval)) {
+    return eventFlushInterval > 0;
+  }
+  return false;
+}
 
 export default {
   validateEventBatchSize: validateEventBatchSize,
   validateEventFlushInterval: validateEventFlushInterval,
-};
+}
