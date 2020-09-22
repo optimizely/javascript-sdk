@@ -15,69 +15,69 @@
  */
 
 declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
-    import { ProjectConfig } from '@optimizely/optimizely-sdk/lib/core/project_config';
-    import { LogHandler } from '@optimizely/js-sdk-logging';
-    import { Event as TrackEvent } from '@optimizely/optimizely-sdk';
-    interface Options {
-        // TODO[OASIS-6649]: Don't use object type
-        // eslint-disable-next-line  @typescript-eslint/ban-types
-        attributes: Object;
-        clientEngine: string;
-        clientVersion: string;
-        configObj: ProjectConfig;
-        eventKey: string;
-        logger: LogHandler;
-        userId: string;
-    }
+  import { ProjectConfig } from '@optimizely/optimizely-sdk/lib/core/project_config';
+  import { LogHandler } from '@optimizely/js-sdk-logging';
+  import { EventTags, UserAttributes } from '@optimizely/optimizely-sdk';
+  import { Event as EventLoggingEndpoint } from '@optimizely/optimizely-sdk';
+  export type Attributes = {
+    [name: string]: unknown;
+  };
 
-    interface Event {
-        entity_id: string;
-        timestamp: number;
-        key: string;
-        uuid: string;
-    }
+  interface ImpressionOptions {
+    attributes: Attributes;
+    clientEngine: string;
+    clientVersion: string;
+    configObj: ProjectConfig;
+    experimentId: string;
+    eventKey: string;
+    variationId: string;
+    logger: LogHandler;
+    userId: string;
+  }
 
-    interface Decision {
-        campaign_id: string;
-        experiment_id: string;
-        variation_id: string;
-    }
+  interface ImpressionConfig {
+    experimentKey: string;
+    variationKey: string;
+    userId: string;
+    userAttributes: UserAttributes;
+    clientEngine: string;
+    clientVersion: string;
+    configObj: ProjectConfig;
+  }
 
-    interface ImpressionEvent {
-        decisions: Decision[];
-        events: Event[];
-    }
+  // TODO[OASIS-6649]: Don't use any type
+  // eslint-disable-next-line  @typescript-eslint/no-empty-interface
+  interface ImpressionEvent {}
 
-    interface CommonParams {
-        account_id: string;
-        project_id: string;
-        visitors: Array<{
-            snapshot: unknown[];
-            visitor_id: string;
-            attributes: Array<{
-                entity_id: string;
-                key: string;
-                type: string;
-                value: boolean;
-            }>
-        }>
-        revision: string;
-        client_name: string;
-        client_version: string;
-        anonymize_ip:boolean;
-        enrich_decisions: boolean;
-    }
+  interface ConversionEventOptions {
+    attributes: Attributes;
+    clientEngine: string;
+    clientVersion: string;
+    configObj: ProjectConfig;
+    eventKey: string;
+    logger: LogHandler;
+    userId: string;
+    eventTags: EventTags;
+  }
 
-    export interface EventBuilder {
-        getCommonEventParams(options: Options): CommonParams
-        getConversionEvent(options: Options): TrackEvent
-        getImpressionEventParams(configObj: ProjectConfig, experimentId: string, variationId: string): ImpressionEvent
-        // TODO[OASIS-6649]: Don't use object type
-        // eslint-disable-next-line  @typescript-eslint/ban-types
-        getImpressionEvent(options: Options): TrackEvent
-        // TODO[OASIS-6649]: Don't use object type
-        // eslint-disable-next-line  @typescript-eslint/ban-types
-        getVisitorSnapshot(configObj: ProjectConfig, eventKey: string, eventTags: Object, logger: LogHandler): {[events: string]: Event[]}
-    }
+  interface ConversionConfig {
+    eventKey: string;
+    eventTags: EventTags;
+    userId: string;
+    userAttributes: UserAttributes;
+    clientEngine: string;
+    clientVersion: string;
+    configObj: ProjectConfig;
+  }
+
+  // TODO[OASIS-6649]: Don't use any type
+  // eslint-disable-next-line  @typescript-eslint/no-empty-interface
+  interface ConversionEvent {}
+
+  export interface EventBuilder {
+    getImpressionEvent(options: ImpressionOptions): EventLoggingEndpoint;
+    getConversionEvent(options: ConversionEventOptions): EventLoggingEndpoint;
+    buildImpressionEvent(config: ImpressionConfig): ImpressionEvent;
+    buildConversionEvent(config: ConversionConfig): ConversionEvent;
+  }
 }
-
