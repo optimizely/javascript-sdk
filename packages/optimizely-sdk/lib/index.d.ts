@@ -16,8 +16,6 @@
 
 declare module '@optimizely/optimizely-sdk' {
   import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
-  import { Experiment, Variation } from '@optimizely/optimizely-sdk/lib/core/project_config';
-  import { UserProfileService, UserAttributes } from '@optimizely/optimizely-sdk/lib/core/decision_service';
   import * as enums from '@optimizely/optimizely-sdk/lib/utils/enums';
   import * as logging from '@optimizely/optimizely-sdk/lib/plugins/logger';
   export { enums, logging };
@@ -57,7 +55,7 @@ declare module '@optimizely/optimizely-sdk' {
     // TODO[OASIS-6649]: Don't use object type
     // eslint-disable-next-line  @typescript-eslint/ban-types
     jsonSchemaValidator?: object;
-    userProfileService?: UserProfileService | null;
+    userProfileService?: import('./shared_types').UserProfileService | null;
     eventBatchSize?: number;
     eventFlushInterval?: number;
     sdkKey?: string;
@@ -65,48 +63,73 @@ declare module '@optimizely/optimizely-sdk' {
 
   export interface Client {
     notificationCenter: NotificationCenter;
-    activate(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
-    track(eventKey: string, userId: string, attributes?: UserAttributes, eventTags?: EventTags): void;
-    getVariation(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
+    activate(
+      experimentKey: string,
+      userId: string,
+      attributes?: import('./shared_types').UserAttributes
+    ): string | null;
+    track(
+      eventKey: string,
+      userId: string,
+      attributes?: import('./shared_types').UserAttributes,
+      eventTags?: EventTags
+    ): void;
+    getVariation(
+      experimentKey: string,
+      userId: string,
+      attributes?: import('./shared_types').UserAttributes
+    ): string | null;
     setForcedVariation(experimentKey: string, userId: string, variationKey: string | null): boolean;
     getForcedVariation(experimentKey: string, userId: string): string | null;
-    isFeatureEnabled(featureKey: string, userId: string, attributes?: UserAttributes): boolean;
-    getEnabledFeatures(userId: string, attributes?: UserAttributes): string[];
-    getFeatureVariable(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): unknown
+    isFeatureEnabled(
+      featureKey: string,
+      userId: string,
+      attributes?: import('./shared_types').UserAttributes
+    ): boolean;
+    getEnabledFeatures(
+      userId: string,
+      attributes?: import('./shared_types').UserAttributes
+    ): string[];
+    getFeatureVariable(
+      featureKey: string,
+      variableKey: string,
+      userId: string,
+      attributes?: import('./shared_types').UserAttributes
+    ): unknown;
     getFeatureVariableBoolean(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: UserAttributes
+      attributes?: import('./shared_types').UserAttributes
     ): boolean | null;
     getFeatureVariableDouble(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: UserAttributes
+      attributes?: import('./shared_types').UserAttributes
     ): number | null;
     getFeatureVariableInteger(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: UserAttributes
+      attributes?: import('./shared_types').UserAttributes
     ): number | null;
     getFeatureVariableString(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: UserAttributes
+      attributes?: import('./shared_types').UserAttributes
     ): string | null;
     getFeatureVariableJSON(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: UserAttributes
+      attributes?: import('./shared_types').UserAttributes
     ): unknown;
     getAllFeatureVariables(
       featureKey: string,
       userId: string,
-      attributes?: UserAttributes
+      attributes?: import('./shared_types').UserAttributes
     ): { [variableKey: string]: unknown };
     getOptimizelyConfig(): OptimizelyConfig | null;
     onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
@@ -152,12 +175,12 @@ declare module '@optimizely/optimizely-sdk' {
 
   export interface ListenerPayload {
     userId: string;
-    attributes: UserAttributes;
+    attributes: import('./shared_types').UserAttributes;
   }
 
   export interface ActivateListenerPayload extends ListenerPayload {
-    experiment: Experiment;
-    variation: Variation;
+    experiment: import('./shared_types').Experiment;
+    variation: import('./shared_types').Variation;
     logEvent: Event;
   }
 

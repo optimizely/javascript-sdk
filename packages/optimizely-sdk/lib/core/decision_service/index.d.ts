@@ -16,48 +16,86 @@
 
 declare module '@optimizely/optimizely-sdk/lib/core/decision_service' {
   import { LogHandler } from '@optimizely/js-sdk-logging';
-  import { ProjectConfig, Experiment, Variation, FeatureFlag } from '@optimizely/optimizely-sdk/lib/core/project_config';
+  import { ProjectConfig } from '@optimizely/optimizely-sdk/lib/core/project_config';
 
   export function createDecisionService(options: Options): DecisionService;
 
-  export interface UserProfileService {
-    lookup(userId: string): UserProfile;
-    save(profile: UserProfile): void;
-  }
-
-  export type UserAttributes = {
-    // TODO[OASIS-6649]: Don't use any type
-    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    [name: string]: any;
-  }
-
   interface DecisionService {
-    getVariation(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
-    getVariationForFeature(configObj: ProjectConfig, feature: FeatureFlag, userId: string, attributes: unknown): Decision;
+
+    /**
+     * Gets variation where visitor will be bucketed.
+     * @param  {Object}      configObj      The parsed project configuration object
+     * @param  {string}      experimentKey
+     * @param  {string}      userId
+     * @param  {Object}      attributes
+     * @return {string|null} The variation the user is bucketed into.
+     */
+    getVariation(
+      experimentKey: string,
+      userId: string,
+      attributes?: import('../../shared_types').UserAttributes
+    ): string | null;
+
+    /**
+     * Given a feature, user ID, and attributes, returns an object representing a
+     * decision. If the user was bucketed into a variation for the given feature
+     * and attributes, the returned decision object will have variation and
+     * experiment properties (both objects), as well as a decisionSource property.
+     * decisionSource indicates whether the decision was due to a rollout or an
+     * experiment.
+     * @param   {ProjectConfig} configObj      The parsed project configuration object
+     * @param   {FeatureFlag}   feature        A feature flag object from project configuration
+     * @param   {string}        userId         A string identifying the user, for bucketing
+     * @param   {unknown}       attributes     Optional user attributes
+     * @return  {Decision}      An object with experiment, variation, and decisionSource
+     * properties. If the user was not bucketed into a variation, the variation
+     * property is null.
+     */
+    getVariationForFeature(
+      configObj: ProjectConfig,
+      feature: import('../project_config/entities').FeatureFlag,
+      userId: string,
+      attributes: unknown
+    ): Decision;
+
+    /**
+     * Removes forced variation for given userId and experimentKey
+     * @param  {unknown}        userId         String representing the user id
+     * @param  {string}         experimentId   Number representing the experiment id
+     * @param  {string}         experimentKey  Key representing the experiment id
+     * @throws If the user id is not valid or not in the forced variation map
+     */
     removeForcedVariation(userId: unknown, experimentId: string, experimentKey: string): void;
+
+    /**
+     * Gets the forced variation key for the given user and experiment.
+     * @param  {ProjectConfig}  configObj      Object representing project configuration
+     * @param  {string}         experimentKey  Key for experiment.
+     * @param  {string}         userId         The user Id.
+     * @return {string|null}    Variation key that specifies the variation which the given user and experiment should be forced into.
+     */
     getForcedVariation(configObj: ProjectConfig, experimentKey: string, userId: string): string | null;
+
+    /**
+     * Sets the forced variation for a user in a given experiment
+     * @param  {ProjectConfig}  configObj      Object representing project configuration
+     * @param  {string}         experimentKey  Key for experiment.
+     * @param  {string}         userId         The user Id.
+     * @param  {unknown}        variationKey   Key for variation. If null, then clear the existing experiment-to-variation mapping
+     * @return {boolean}        A boolean value that indicates if the set completed successfully.
+     */
     setForcedVariation(configObj: ProjectConfig, experimentKey: string, userId: string, variationKey: unknown): boolean;
   }
 
   interface Options {
-    userProfileService: UserProfileService | null;
+    userProfileService: import('../../shared_types').UserProfileService | null;
     logger: LogHandler;
     UNSTABLE_conditionEvaluators: unknown;
   }
 
   interface Decision {
-    experiment: Experiment | null;
-    variation: Variation | null;
+    experiment: import('../../shared_types').Experiment | null;
+    variation: import('../../shared_types').Variation | null;
     decisionSource: string;
-  }
-
-  // Information about past bucketing decisions for a user.
-  interface UserProfile {
-    user_id: string;
-    experiment_bucket_map: {
-      [experiment_id: string]: {
-        variation_id: string;
-      };
-    };
   }
 }
