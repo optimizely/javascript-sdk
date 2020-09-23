@@ -22,11 +22,11 @@ declare module '@optimizely/optimizely-sdk/lib/core/projet_config_manager' {
   * getConfig and onUpdate. It uses a DatafileManager to fetch datafiles. It is
   * responsible for parsing and validating datafiles, and converting datafile
   * JSON objects into project config objects.
-  * @param {ProjectConfig}         config
-  * @param {Object|string}        config.datafile
-  * @param {Object}               config.datafileOptions
-  * @param {Object}               config.jsonSchemaValidator
-  * @param {string}               config.sdkKey
+  * @param     {ProjectConfig}        config
+  * @param     {Object|string}        config.datafile
+  * @param     {Object}               config.datafileOptions
+  * @param     {Object}               config.jsonSchemaValidator
+  * @param     {string}               config.sdkKey
   */
   export function ProjectConfigManager(config: ProjectConfig): ProjectConfigManager;
 
@@ -43,7 +43,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/projet_config_manager' {
      * Add a listener for project config updates. The listener will be called
      * whenever this instance has a new project config object available.
      * Returns a dispose function that removes the subscription
-     * @param {Function} listener
+     * @param  {Function}            listener
      * @return {Function}
      */
     onUpdate(): (listener: (config: ProjectConfig) => void) => () => void;
