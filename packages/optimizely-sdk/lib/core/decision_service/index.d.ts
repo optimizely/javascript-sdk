@@ -18,6 +18,11 @@ declare module '@optimizely/optimizely-sdk/lib/core/decision_service' {
   import { LogHandler } from '@optimizely/js-sdk-logging';
   import { ProjectConfig } from '@optimizely/optimizely-sdk/lib/core/project_config';
 
+  /**
+   * Creates an instance of the DecisionService.
+   * @param  {Options}       options        Configuration options
+   * @return {DecisionService}  An instance of the DecisionService
+   */
   export function createDecisionService(options: Options): DecisionService;
 
   interface DecisionService {
