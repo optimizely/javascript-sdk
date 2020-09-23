@@ -15,49 +15,47 @@
  */
 
 declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
-    import { ProjectConfig } from '@optimizely/optimizely-sdk/lib/core/project_config';
-    import { EventTags, UserAttributes } from '@optimizely/optimizely-sdk';
-  
-    interface ImpressionConfig {
-      experimentKey: string;
-      variationKey: string;
-      userId: string;
-      userAttributes: UserAttributes;
-      clientEngine: string;
-      clientVersion: string;
-      configObj: ProjectConfig;
-    }
-  
-    // eslint-disable-next-line  @typescript-eslint/no-empty-interface
-    interface ImpressionEvent {}
-  
-    interface ConversionConfig {
-      eventKey: string;
-      eventTags: EventTags;
-      userId: string;
-      userAttributes: UserAttributes;
-      clientEngine: string;
-      clientVersion: string;
-      configObj: ProjectConfig;
-    }
-  
-    // eslint-disable-next-line  @typescript-eslint/no-empty-interface
-    interface ConversionEvent {}
-  
-    export interface EventHelpers {
-      /**
-       * Creates an ImpressionEvent object from decision data
-       * @param {ImpressionConfig} config
-       * @return {ImpressionEvent} an ImpressionEvent object
-       */
-      buildImpressionEvent(config: ImpressionConfig): ImpressionEvent;
-      /**
-       * Creates a ConversionEvent object from track
-       * @param {ConversionConfig} config
-       * @return {ConversionEvent} a ConversionEvent object
-       */
-      buildConversionEvent(config: ConversionConfig): ConversionEvent;
-    }
+  import { ProjectConfig } from '@optimizely/optimizely-sdk/lib/core/project_config';
+  import { EventTags, UserAttributes } from '@optimizely/optimizely-sdk';
+
+  interface ImpressionConfig {
+    experimentKey: string;
+    variationKey: string;
+    userId: string;
+    userAttributes: UserAttributes;
+    clientEngine: string;
+    clientVersion: string;
+    configObj: ProjectConfig;
   }
-  
-  
+
+  // eslint-disable-next-line  @typescript-eslint/no-empty-interface
+  interface ImpressionEvent {}
+
+  interface ConversionConfig {
+    eventKey: string;
+    eventTags: EventTags;
+    userId: string;
+    userAttributes: UserAttributes;
+    clientEngine: string;
+    clientVersion: string;
+    configObj: ProjectConfig;
+  }
+
+  // eslint-disable-next-line  @typescript-eslint/no-empty-interface
+  interface ConversionEvent {}
+
+  export interface EventHelpers {
+    /**
+     * Creates an ImpressionEvent object from decision data
+     * @param {ImpressionConfig} config
+     * @return {ImpressionEvent} an ImpressionEvent object
+     */
+    buildImpressionEvent(config: ImpressionConfig): ImpressionEvent;
+    /**
+     * Creates a ConversionEvent object from track
+     * @param {ConversionConfig} config
+     * @return {ConversionEvent} a ConversionEvent object
+     */
+    buildConversionEvent(config: ConversionConfig): ConversionEvent;
+  }
+}
