@@ -20,7 +20,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/decision_service' {
 
   /**
    * Creates an instance of the DecisionService.
-   * @param  {Options}       options        Configuration options
+   * @param  {Options}          options        Configuration options
    * @return {DecisionService}  An instance of the DecisionService
    */
   export function createDecisionService(options: Options): DecisionService;
@@ -29,13 +29,14 @@ declare module '@optimizely/optimizely-sdk/lib/core/decision_service' {
 
     /**
      * Gets variation where visitor will be bucketed.
-     * @param  {Object}      configObj      The parsed project configuration object
-     * @param  {string}      experimentKey
-     * @param  {string}      userId
-     * @param  {Object}      attributes
-     * @return {string|null} The variation the user is bucketed into.
+     * @param   {ProjectConfig}  configObj      The parsed project configuration object
+     * @param   {string}         experimentKey
+     * @param   {string}         userId
+     * @param   {UserAttributes} attributes
+     * @return  {string|null}    The variation the user is bucketed into.
      */
     getVariation(
+      configObj: ProjectConfig,
       experimentKey: string,
       userId: string,
       attributes?: import('../../shared_types').UserAttributes
