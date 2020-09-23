@@ -32,19 +32,6 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
     userId: string;
   }
 
-  interface ImpressionConfig {
-    experimentKey: string;
-    variationKey: string;
-    userId: string;
-    userAttributes: UserAttributes;
-    clientEngine: string;
-    clientVersion: string;
-    configObj: ProjectConfig;
-  }
-
-  // eslint-disable-next-line  @typescript-eslint/no-empty-interface
-  interface ImpressionEvent {}
-
   interface ConversionEventOptions {
     attributes: UserAttributes;
     clientEngine: string;
@@ -55,19 +42,6 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
     userId: string;
     eventTags: EventTags;
   }
-
-  interface ConversionConfig {
-    eventKey: string;
-    eventTags: EventTags;
-    userId: string;
-    userAttributes: UserAttributes;
-    clientEngine: string;
-    clientVersion: string;
-    configObj: ProjectConfig;
-  }
-
-  // eslint-disable-next-line  @typescript-eslint/no-empty-interface
-  interface ConversionEvent {}
 
   export interface EventBuilder {
     /**
@@ -82,18 +56,5 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
      * @return {EventLoggingEndpoint} Params to be used in conversion event logging endpoint call
      */
     getConversionEvent(options: ConversionEventOptions): EventLoggingEndpoint;
-
-    /**
-     * Creates an ImpressionEvent object from decision data
-     * @param {ImpressionConfig} config
-     * @return {ImpressionEvent} an ImpressionEvent object
-     */
-    buildImpressionEvent(config: ImpressionConfig): ImpressionEvent;
-    /**
-     * Creates a ConversionEvent object from track
-     * @param {ConversionConfig} config
-     * @return {ConversionEvent} a ConversionEvent object
-     */
-    buildConversionEvent(config: ConversionConfig): ConversionEvent;
   }
 }
