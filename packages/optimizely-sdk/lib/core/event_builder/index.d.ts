@@ -17,11 +17,11 @@
 declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
   import { ProjectConfig } from '@optimizely/optimizely-sdk/lib/core/project_config';
   import { LogHandler } from '@optimizely/js-sdk-logging';
-  import { EventTags, UserAttributes } from '@optimizely/optimizely-sdk';
+  import { EventTags } from '@optimizely/optimizely-sdk';
   import { Event as EventLoggingEndpoint } from '@optimizely/optimizely-sdk';
 
   interface ImpressionOptions {
-    attributes: UserAttributes;
+    attributes: import('../../shared_types').UserAttributes;
     clientEngine: string;
     clientVersion: string;
     configObj: ProjectConfig;
@@ -33,7 +33,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
   }
 
   interface ConversionEventOptions {
-    attributes: UserAttributes;
+    attributes: import('../../shared_types').UserAttributes;
     clientEngine: string;
     clientVersion: string;
     configObj: ProjectConfig;

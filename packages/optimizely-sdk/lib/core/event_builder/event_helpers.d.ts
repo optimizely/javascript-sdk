@@ -16,13 +16,13 @@
 
 declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
   import { ProjectConfig } from '@optimizely/optimizely-sdk/lib/core/project_config';
-  import { EventTags, UserAttributes } from '@optimizely/optimizely-sdk';
+  import { EventTags } from '@optimizely/optimizely-sdk';
 
   interface ImpressionConfig {
     experimentKey: string;
     variationKey: string;
     userId: string;
-    userAttributes: UserAttributes;
+    userAttributes: import('../../shared_types').UserAttributes;
     clientEngine: string;
     clientVersion: string;
     configObj: ProjectConfig;
@@ -35,7 +35,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
     eventKey: string;
     eventTags: EventTags;
     userId: string;
-    userAttributes: UserAttributes;
+    userAttributes: import('../../shared_types').UserAttributes;
     clientEngine: string;
     clientVersion: string;
     configObj: ProjectConfig;
