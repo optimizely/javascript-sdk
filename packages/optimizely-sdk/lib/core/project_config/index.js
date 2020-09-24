@@ -247,14 +247,14 @@ export var getExperimentStatus = function(projectConfig, experimentKey) {
  * @return {Boolean}               true if experiment status is set to 'Running', false otherwise
  */
 export var isActive = function(projectConfig, experimentKey) {
-  return this.getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_RUNNING_STATUS;
+  return getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_RUNNING_STATUS;
 };
 
 /**
  * Determine for given experiment if event is running, which determines whether should be dispatched or not
  */
 export var isRunning = function(projectConfig, experimentKey) {
-  return this.getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_RUNNING_STATUS;
+  return getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_RUNNING_STATUS;
 };
 
 /**

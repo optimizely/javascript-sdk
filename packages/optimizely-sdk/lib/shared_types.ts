@@ -4,9 +4,16 @@ export type UserAttributes = {
   [name: string]: any;
 }
 
+export interface VariationVariable {
+  id: string;
+  value: string;
+}
+
 export interface Variation {
   id: string;
   key: string;
+  featureEnabled: boolean;
+  variables: VariationVariable[];
 }
 
 export interface Experiment {
@@ -23,6 +30,7 @@ export interface Experiment {
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
   forcedVariations: object;
+  variationKeyMap?: {[key: string]: Variation}
 }
 
 // Information about past bucketing decisions for a user.
@@ -35,11 +43,38 @@ export interface UserProfile {
   };
 }
 
+export type EventTags = {
+  [key: string]: string | number | boolean;
+};
+
+// An event to be submitted to Optimizely, enabling tracking the reach and impact of
+// tests and feature rollouts.
+export interface Event {
+  // URL to which to send the HTTP request.
+  url: string;
+  // HTTP method with which to send the event.
+  httpVerb: 'POST';
+  // Value to send in the request body, JSON-serialized.
+  // TODO[OASIS-6649]: Don't use any type
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  params: any;
+}
+
 export interface UserProfileService {
   lookup(userId: string): UserProfile;
   save(profile: UserProfile): void;
 }
 
+export interface DatafileOptions {
+  autoUpdate?: boolean;
+  updateInterval?: number;
+  urlTemplate?: string;
+  datafileAccessToken?: string;
+}
+
+/**
+ * Optimizely Config Entities
+ */
 export interface OptimizelyExperiment {
   id: string;
   key: string;
@@ -48,9 +83,6 @@ export interface OptimizelyExperiment {
   };
 }
 
-/**
- * Optimizely Config Entities
- */
 export interface OptimizelyVariable {
   id: string;
   key: string;
@@ -89,19 +121,13 @@ export interface OptimizelyConfig {
   getDatafile(): string;
 }
 
-export type EventTags = {
-  [key: string]: string | number | boolean;
-};
-
-// An event to be submitted to Optimizely, enabling tracking the reach and impact of
-// tests and feature rollouts.
-export interface Event {
-  // URL to which to send the HTTP request.
-  url: string;
-  // HTTP method with which to send the event.
-  httpVerb: 'POST';
-  // Value to send in the request body, JSON-serialized.
-  // TODO[OASIS-6649]: Don't use any type
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  params: any;
+/**
+ * Temprorary placement of LogTierV1EventProcessorConfig
+ */
+export interface LogTierV1EventProcessorConfig {
+  dispatcher: import ('@optimizely/js-sdk-event-processor').EventDispatcher;
+  flushInterval?: number;
+  batchSize?: number;
+  notificationCenter?: import('./core/notification_center').NotificationCenter;
+  maxQueueSize?: number;
 }
