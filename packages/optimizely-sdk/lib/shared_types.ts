@@ -39,3 +39,52 @@ export interface UserProfileService {
   lookup(userId: string): UserProfile;
   save(profile: UserProfile): void;
 }
+
+export interface OptimizelyExperiment {
+  id: string;
+  key: string;
+  variationsMap: {
+    [variationKey: string]: OptimizelyVariation;
+  };
+}
+
+/**
+ * Optimizely Config Entities
+ */
+export interface OptimizelyVariable {
+  id: string;
+  key: string;
+  type: string;
+  value: string;
+}
+
+export interface OptimizelyFeature {
+  id: string;
+  key: string;
+  experimentsMap: {
+    [experimentKey: string]: OptimizelyExperiment;
+  };
+  variablesMap: {
+    [variableKey: string]: OptimizelyVariable;
+  };
+}
+
+export interface OptimizelyVariation {
+  id: string;
+  key: string;
+  featureEnabled?: boolean;
+  variablesMap: {
+    [variableKey: string]: OptimizelyVariable;
+  };
+}
+
+export interface OptimizelyConfig {
+  experimentsMap: {
+    [experimentKey: string]: OptimizelyExperiment;
+  };
+  featuresMap: {
+    [featureKey: string]: OptimizelyFeature;
+  };
+  revision: string;
+  getDatafile(): string;
+}
