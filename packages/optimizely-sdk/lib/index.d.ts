@@ -18,6 +18,7 @@ declare module '@optimizely/optimizely-sdk' {
   import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
   import * as enums from '@optimizely/optimizely-sdk/lib/utils/enums';
   import * as logging from '@optimizely/optimizely-sdk/lib/plugins/logger';
+
   export { enums, logging };
 
   export function setLogger(logger: LogHandler | null): void;
@@ -34,7 +35,7 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type OptimizelyConfig = import('./shared_types').OptimizelyConfig;
 
-  interface DatafileOptions {
+  export interface DatafileOptions {
     autoUpdate?: boolean;
     updateInterval?: number;
     urlTemplate?: string;
@@ -134,7 +135,7 @@ declare module '@optimizely/optimizely-sdk' {
       featureKey: string,
       userId: string,
       attributes?: UserAttributes
-    ): { [variableKey: string]: unknown };
+    ): { [variableKey: string]: unknown } | null;
     getOptimizelyConfig(): OptimizelyConfig | null;
     onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
     close(): Promise<{ success: boolean; reason?: string }>;
@@ -161,8 +162,12 @@ declare module '@optimizely/optimizely-sdk' {
      *        After the event has at least been queued for dispatch, call this function to return
      *        control back to the Client.
      */
-    dispatchEvent: (event: Event, callback: () => void) => void;
+    dispatchEvent: (event: Event, callback: (response: { statusCode: number; }) => void) => void;
   }
+
+  export type EventTags = {
+    [key: string]: string | number | null;
+  };
 
   // NotificationCenter-related types
   export interface NotificationCenter {
@@ -183,14 +188,10 @@ declare module '@optimizely/optimizely-sdk' {
   }
 
   export interface ActivateListenerPayload extends ListenerPayload {
-    experiment: import('./shared_types').Experiment;
-    variation: import('./shared_types').Variation;
+    experiment: import('./core/project_config/entities').Experiment;
+    variation: import('./core/project_config/entities').Variation;
     logEvent: Event;
   }
-
-  export type EventTags = {
-    [key: string]: string | number | boolean;
-  };
 
   export interface TrackListenerPayload extends ListenerPayload {
     eventKey: string;

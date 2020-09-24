@@ -23,16 +23,16 @@ import Optimizely from './';
 import AudienceEvaluator from '../core/audience_evaluator';
 import bluebird from 'bluebird';
 import bucketer from '../core/bucketer';
-import projectConfigManager from '../core/project_config/project_config_manager';
+import * as projectConfigManager from '../core/project_config/project_config_manager';
 import * as enums from '../utils/enums';
-import eventBuilder from '../core/event_builder/index.js';
+import * as eventBuilder from '../core/event_builder';
 import eventDispatcher from '../plugins/event_dispatcher/index.node';
 import errorHandler from '../plugins/error_handler';
 import * as fns from '../utils/fns';
 import logger from '../plugins/logger';
-import decisionService from '../core/decision_service';
+import * as decisionService from '../core/decision_service';
 import * as jsonSchemaValidator from '../utils/json_schema_validator';
-import projectConfig from '../core/project_config';
+import * as projectConfig from '../core/project_config';
 import testData from '../tests/test_data';
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
@@ -57,7 +57,7 @@ describe('lib/optimizely', function() {
       handleError: sinon.stub(),
     };
     logging.setErrorHandler(globalStubErrorHandler);
-    ProjectConfigManagerStub = sinon.stub(projectConfigManager, 'ProjectConfigManager').callsFake(function(config) {
+    ProjectConfigManagerStub = sinon.stub(projectConfigManager, 'createProjectConfigManager').callsFake(function(config) {
       var currentConfig = config.datafile ? projectConfig.createProjectConfig(config.datafile) : null;
       return {
         stop: sinon.stub(),
@@ -237,8 +237,8 @@ describe('lib/optimizely', function() {
             logger: createdLogger,
             sdkKey: '12345',
           });
-          sinon.assert.calledOnce(projectConfigManager.ProjectConfigManager);
-          sinon.assert.calledWithExactly(projectConfigManager.ProjectConfigManager, {
+          sinon.assert.calledOnce(projectConfigManager.createProjectConfigManager);
+          sinon.assert.calledWithExactly(projectConfigManager.createProjectConfigManager, {
             datafile: config,
             datafileOptions: {
               autoUpdate: true,
@@ -839,18 +839,18 @@ describe('lib/optimizely', function() {
 
       describe('whitelisting', function() {
         beforeEach(function() {
-          sinon.spy(Optimizely.prototype, '__validateInputs');
+          sinon.spy(Optimizely.prototype, 'validateInputs');
         });
 
         afterEach(function() {
-          Optimizely.prototype.__validateInputs.restore();
+          Optimizely.prototype.validateInputs.restore();
         });
 
         it('should return forced variation after experiment status check and before audience check', function() {
           var activate = optlyInstance.activate('testExperiment', 'user1');
           assert.strictEqual(activate, 'control');
 
-          sinon.assert.calledTwice(Optimizely.prototype.__validateInputs);
+          sinon.assert.calledTwice(Optimizely.prototype.validateInputs);
 
           var logMessage0 = createdLogger.log.args[0][1];
           assert.strictEqual(
@@ -1724,18 +1724,18 @@ describe('lib/optimizely', function() {
 
       describe('whitelisting', function() {
         beforeEach(function() {
-          sinon.spy(Optimizely.prototype, '__validateInputs');
+          sinon.spy(Optimizely.prototype, 'validateInputs');
         });
 
         afterEach(function() {
-          Optimizely.prototype.__validateInputs.restore();
+          Optimizely.prototype.validateInputs.restore();
         });
 
         it('should return forced variation after experiment status check and before audience check', function() {
           var getVariation = optlyInstance.getVariation('testExperiment', 'user1');
           assert.strictEqual(getVariation, 'control');
 
-          sinon.assert.calledOnce(Optimizely.prototype.__validateInputs);
+          sinon.assert.calledOnce(Optimizely.prototype.validateInputs);
 
           sinon.assert.calledTwice(createdLogger.log);
 
@@ -2088,22 +2088,22 @@ describe('lib/optimizely', function() {
       });
     });
 
-    describe('__validateInputs', function() {
+    describe('validateInputs', function() {
       it('should return true if user ID and attributes are valid', function() {
-        assert.isTrue(optlyInstance.__validateInputs({ user_id: 'testUser' }));
-        assert.isTrue(optlyInstance.__validateInputs({ user_id: '' }));
-        assert.isTrue(optlyInstance.__validateInputs({ user_id: 'testUser' }, { browser_type: 'firefox' }));
+        assert.isTrue(optlyInstance.validateInputs({ user_id: 'testUser' }));
+        assert.isTrue(optlyInstance.validateInputs({ user_id: '' }));
+        assert.isTrue(optlyInstance.validateInputs({ user_id: 'testUser' }, { browser_type: 'firefox' }));
         sinon.assert.notCalled(createdLogger.log);
       });
 
       it('should return false and throw an error if user ID is invalid', function() {
-        var falseUserIdInput = optlyInstance.__validateInputs({ user_id: [] });
+        var falseUserIdInput = optlyInstance.validateInputs({ user_id: [] });
         assert.isFalse(falseUserIdInput);
 
-        falseUserIdInput = optlyInstance.__validateInputs({ user_id: null });
+        falseUserIdInput = optlyInstance.validateInputs({ user_id: null });
         assert.isFalse(falseUserIdInput);
 
-        falseUserIdInput = optlyInstance.__validateInputs({ user_id: 3.14 });
+        falseUserIdInput = optlyInstance.validateInputs({ user_id: 3.14 });
         assert.isFalse(falseUserIdInput);
 
         sinon.assert.calledThrice(errorHandler.handleError);
@@ -2116,7 +2116,7 @@ describe('lib/optimizely', function() {
       });
 
       it('should return false and throw an error if attributes are invalid', function() {
-        var falseUserIdInput = optlyInstance.__validateInputs({ user_id: 'testUser' }, []);
+        var falseUserIdInput = optlyInstance.validateInputs({ user_id: 'testUser' }, []);
         assert.isFalse(falseUserIdInput);
 
         sinon.assert.calledOnce(errorHandler.handleError);
@@ -2132,25 +2132,25 @@ describe('lib/optimizely', function() {
     describe('should filter out null values', function() {
       it('should filter out a null value', function() {
         var dict = { test: null };
-        var filteredValue = optlyInstance.__filterEmptyValues(dict);
+        var filteredValue = optlyInstance.filterEmptyValues(dict);
         assert.deepEqual(filteredValue, {});
       });
 
       it('should filter out a undefined value', function() {
         var dict = { test: undefined };
-        var filteredValue = optlyInstance.__filterEmptyValues(dict);
+        var filteredValue = optlyInstance.filterEmptyValues(dict);
         assert.deepEqual(filteredValue, {});
       });
 
       it('should filter out a null value, leave a non null one', function() {
         var dict = { test: null, test2: 'not_null' };
-        var filteredValue = optlyInstance.__filterEmptyValues(dict);
+        var filteredValue = optlyInstance.filterEmptyValues(dict);
         assert.deepEqual(filteredValue, { test2: 'not_null' });
       });
 
       it('should not filter out a non empty value', function() {
         var dict = { test: 'hello' };
-        var filteredValue = optlyInstance.__filterEmptyValues(dict);
+        var filteredValue = optlyInstance.filterEmptyValues(dict);
         assert.deepEqual(filteredValue, { test: 'hello' });
       });
     });
@@ -7717,7 +7717,7 @@ describe('lib/optimizely', function() {
         isValidInstance: true,
       });
       optlyInstance.close();
-      var fakeManager = projectConfigManager.ProjectConfigManager.getCall(0).returnValue;
+      var fakeManager = projectConfigManager.createProjectConfigManager.getCall(0).returnValue;
       sinon.assert.calledOnce(fakeManager.stop);
     });
 
@@ -7771,7 +7771,7 @@ describe('lib/optimizely', function() {
       });
 
       it('fulfills the promise with the value from the project config manager ready promise after the project config manager ready promise is fulfilled', function() {
-        projectConfigManager.ProjectConfigManager.callsFake(function(config) {
+        projectConfigManager.createProjectConfigManager.callsFake(function(config) {
           var currentConfig = config.datafile ? projectConfig.createProjectConfig(config.datafile) : null;
           return {
             stop: sinon.stub(),
@@ -7879,7 +7879,7 @@ describe('lib/optimizely', function() {
       });
 
       it('clears the timeout when the project config manager ready promise fulfills', function() {
-        projectConfigManager.ProjectConfigManager.callsFake(function(config) {
+        projectConfigManager.createProjectConfigManager.callsFake(function(config) {
           return {
             stop: sinon.stub(),
             getConfig: sinon.stub().returns(null),
@@ -7914,7 +7914,7 @@ describe('lib/optimizely', function() {
           onUpdate: sinon.stub().returns(function() {}),
           onReady: sinon.stub().returns({ then: function() {} }),
         };
-        projectConfigManager.ProjectConfigManager.returns(fakeProjectConfigManager);
+        projectConfigManager.createProjectConfigManager.returns(fakeProjectConfigManager);
 
         optlyInstance = new Optimizely({
           clientEngine: 'node-sdk',

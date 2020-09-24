@@ -4,27 +4,6 @@ export type UserAttributes = {
   [name: string]: any;
 }
 
-export interface Variation {
-  id: string;
-  key: string;
-}
-
-export interface Experiment {
-  id: string;
-  key: string;
-  status: string;
-  layerId: string;
-  variations: Variation[];
-  trafficAllocation: Array<{
-    entityId: string;
-    endOfRange: number;
-  }>;
-  audienceIds: string[];
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  forcedVariations: object;
-}
-
 // Information about past bucketing decisions for a user.
 export interface UserProfile {
   user_id: string;
@@ -35,11 +14,52 @@ export interface UserProfile {
   };
 }
 
+export type EventTags = {
+  [key: string]: string | number | null;
+};
+
 export interface UserProfileService {
   lookup(userId: string): UserProfile;
   save(profile: UserProfile): void;
 }
 
+export interface DatafileOptions {
+  autoUpdate?: boolean;
+  updateInterval?: number;
+  urlTemplate?: string;
+  datafileAccessToken?: string;
+}
+
+export interface Event {
+  // URL to which to send the HTTP request.
+  url: string;
+  // HTTP method with which to send the event.
+  httpVerb: 'POST';
+  // Value to send in the request body, JSON-serialized.
+  // TODO[OASIS-6649]: Don't use any type
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  params: any;
+}
+
+export interface EventDispatcher {
+  /**
+   * @param event
+   *        Event being submitted for eventual dispatch.
+   * @param callback
+   *        After the event has at least been queued for dispatch, call this function to return
+   *        control back to the Client.
+   */
+  dispatchEvent: (event: Event, callback: (response: { statusCode: number; }) => void) => void;
+}
+
+export interface OnReadyResult {
+  success: boolean;
+  reason?: string;
+}
+
+/**
+ * Optimizely Config Entities
+ */
 export interface OptimizelyExperiment {
   id: string;
   key: string;
@@ -48,9 +68,6 @@ export interface OptimizelyExperiment {
   };
 }
 
-/**
- * Optimizely Config Entities
- */
 export interface OptimizelyVariable {
   id: string;
   key: string;
@@ -87,21 +104,4 @@ export interface OptimizelyConfig {
   };
   revision: string;
   getDatafile(): string;
-}
-
-export type EventTags = {
-  [key: string]: string | number | boolean;
-};
-
-// An event to be submitted to Optimizely, enabling tracking the reach and impact of
-// tests and feature rollouts.
-export interface Event {
-  // URL to which to send the HTTP request.
-  url: string;
-  // HTTP method with which to send the event.
-  httpVerb: 'POST';
-  // Value to send in the request body, JSON-serialized.
-  // TODO[OASIS-6649]: Don't use any type
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  params: any;
 }

@@ -13,12 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 export interface FeatureVariable {
   type: string;
+  key: string;
+  id: string;
+  defaultValue: string;
 }
 
 export interface FeatureFlag {
-  variables: FeatureVariable[];
+  rolloutId: string;
+  key: string;
+  id: string;
+  experimentIds: string[],
+  variables: FeatureVariable[],
+  variableKeyMap: {[key: string]: FeatureVariable}
 }
 
+export interface FeatureKeyMap {
+  [key: string]: FeatureFlag
+}
+
+export interface Variation {
+  id: string;
+  key: string;
+  featureEnabled: boolean;
+  variables: VariationVariable[];
+}
+
+export interface VariationVariable {
+  id: string;
+  value: string;
+}
+
+export interface Experiment {
+  id: string;
+  key: string;
+  variationKeyMap: {[key: string]: Variation}
+}
