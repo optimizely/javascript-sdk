@@ -131,7 +131,7 @@ declare module '@optimizely/optimizely-sdk' {
       userId: string,
       attributes?: import('./shared_types').UserAttributes
     ): { [variableKey: string]: unknown };
-    getOptimizelyConfig(): OptimizelyConfig | null;
+    getOptimizelyConfig(): import('./shared_types').OptimizelyConfig | null;
     onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
     close(): Promise<{ success: boolean; reason?: string }>;
   }
@@ -192,55 +192,6 @@ declare module '@optimizely/optimizely-sdk' {
     eventKey: string;
     eventTags: EventTags;
     logEvent: Event;
-  }
-
-  /**
-   * Optimizely Config Entities
-   */
-  export interface OptimizelyVariable {
-    id: string;
-    key: string;
-    type: string;
-    value: string;
-  }
-
-  export interface OptimizelyVariation {
-    id: string;
-    key: string;
-    featureEnabled?: boolean;
-    variablesMap: {
-      [variableKey: string]: OptimizelyVariable;
-    };
-  }
-
-  export interface OptimizelyExperiment {
-    id: string;
-    key: string;
-    variationsMap: {
-      [variationKey: string]: OptimizelyVariation;
-    };
-  }
-
-  export interface OptimizelyFeature {
-    id: string;
-    key: string;
-    experimentsMap: {
-      [experimentKey: string]: OptimizelyExperiment;
-    };
-    variablesMap: {
-      [variableKey: string]: OptimizelyVariable;
-    };
-  }
-
-  export interface OptimizelyConfig {
-    experimentsMap: {
-      [experimentKey: string]: OptimizelyExperiment;
-    };
-    featuresMap: {
-      [featureKey: string]: OptimizelyFeature;
-    };
-    revision: string;
-    getDatafile(): string;
   }
 }
 

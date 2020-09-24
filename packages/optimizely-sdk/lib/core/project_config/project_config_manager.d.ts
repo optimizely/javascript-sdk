@@ -72,14 +72,14 @@ declare module '@optimizely/optimizely-sdk/lib/core/projet_config_manager' {
 
     /**
      * Returns the optimizely config object
-     * @return {ProjectConfig}
+     * @return {OptimizelyConfig}
      */
-    getOptimizelyConfig(): ProjectConfig;
+    getOptimizelyConfig(): import('../../shared_types').OptimizelyConfig;
 
     /**
      * Stop the internal datafile manager and remove all update listeners
-     * @return {Promise|void}
+     * @return {void}
      */
-    stop(): Promise<void> | void;
+    stop(): void;
   }
 }
