@@ -18,6 +18,7 @@ declare module '@optimizely/optimizely-sdk' {
   import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
   import * as enums from '@optimizely/optimizely-sdk/lib/utils/enums';
   import * as logging from '@optimizely/optimizely-sdk/lib/plugins/logger';
+  import { EventDispatcher } from '@optimizely/js-sdk-event-processor';
   export { enums, logging };
 
   export function setLogger(logger: LogHandler | null): void;
@@ -30,19 +31,12 @@ declare module '@optimizely/optimizely-sdk' {
 
   export const eventDispatcher: EventDispatcher;
 
-  interface DatafileOptions {
-    autoUpdate?: boolean;
-    updateInterval?: number;
-    urlTemplate?: string;
-    datafileAccessToken?: string;
-  }
-
   // The options object given to Optimizely.createInstance.
   export interface Config {
     // TODO[OASIS-6649]: Don't use object type
     // eslint-disable-next-line  @typescript-eslint/ban-types
     datafile?: object | string;
-    datafileOptions?: DatafileOptions;
+    datafileOptions?: import('./shared_types').DatafileOptions;
     errorHandler?: ErrorHandler;
     eventDispatcher?: EventDispatcher;
     logger?: LogHandler;
@@ -72,7 +66,7 @@ declare module '@optimizely/optimizely-sdk' {
       eventKey: string,
       userId: string,
       attributes?: import('./shared_types').UserAttributes,
-      eventTags?: EventTags
+      eventTags?: import('./shared_types').EventTags
     ): void;
     getVariation(
       experimentKey: string,
@@ -130,34 +124,10 @@ declare module '@optimizely/optimizely-sdk' {
       featureKey: string,
       userId: string,
       attributes?: import('./shared_types').UserAttributes
-    ): { [variableKey: string]: unknown };
+    ): { [variableKey: string]: unknown } | null;
     getOptimizelyConfig(): import('./shared_types').OptimizelyConfig | null;
     onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
     close(): Promise<{ success: boolean; reason?: string }>;
-  }
-
-  // An event to be submitted to Optimizely, enabling tracking the reach and impact of
-  // tests and feature rollouts.
-  export interface Event {
-    // URL to which to send the HTTP request.
-    url: string;
-    // HTTP method with which to send the event.
-    httpVerb: 'POST';
-    // Value to send in the request body, JSON-serialized.
-    // TODO[OASIS-6649]: Don't use any type
-    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    params: any;
-  }
-
-  export interface EventDispatcher {
-    /**
-     * @param event
-     *        Event being submitted for eventual dispatch.
-     * @param callback
-     *        After the event has at least been queued for dispatch, call this function to return
-     *        control back to the Client.
-     */
-    dispatchEvent: (event: Event, callback: () => void) => void;
   }
 
   // NotificationCenter-related types
@@ -184,13 +154,9 @@ declare module '@optimizely/optimizely-sdk' {
     logEvent: Event;
   }
 
-  export type EventTags = {
-    [key: string]: string | number | boolean;
-  };
-
   export interface TrackListenerPayload extends ListenerPayload {
     eventKey: string;
-    eventTags: EventTags;
+    eventTags: import('./shared_types').EventTags;
     logEvent: Event;
   }
 }

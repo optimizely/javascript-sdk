@@ -16,9 +16,20 @@
 
 export interface FeatureVariable {
   type: string;
+  key: string;
+  id: string;
+  defaultValue: string;
 }
 
 export interface FeatureFlag {
-  variables: FeatureVariable[];
+  rolloutId: string;
+  key: string;
+  id: string;
+  experimentIds: string[],
+  variables: FeatureVariable[],
+  variableKeyMap?: {[key: string]: FeatureVariable}
 }
 
+export interface FeatureKeyMap {
+  [key: string]: FeatureFlag
+}

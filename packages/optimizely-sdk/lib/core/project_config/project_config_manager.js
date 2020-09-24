@@ -51,7 +51,7 @@ function getErrorMessage(maybeError, defaultMessage) {
  * @param {Object=}        config.jsonSchemaValidator
  * @param {string=}        config.sdkKey
  */
-export function ProjectConfigManager(config) {
+function ProjectConfigManager(config) {
   try {
     this.__initialize(config);
   } catch (ex) {
@@ -282,6 +282,10 @@ ProjectConfigManager.prototype.stop = function() {
   this.__updateListeners = [];
 };
 
+export var createProjectConfigManager = function(config) {
+  return new ProjectConfigManager(config);
+}
+
 export default {
-  ProjectConfigManager: ProjectConfigManager,
+  createProjectConfigManager: createProjectConfigManager,
 };
