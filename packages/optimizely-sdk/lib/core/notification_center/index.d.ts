@@ -16,7 +16,6 @@
  */
 
 declare module '@optimizely/optimizely-sdk/lib/core/notification_center' {
-  import { UserAttributes, Experiment, Variation } from '@optimizely/optimizely-sdk';
   import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
 
   export enum NOTIFICATION_TYPES {
@@ -65,10 +64,10 @@ declare module '@optimizely/optimizely-sdk/lib/core/notification_center' {
   export interface NotificationData {
     type?: DECISION_NOTIFICATION_TYPES;
     userId?: string;
-    attributes?: UserAttributes;
+    attributes?: import('../../shared_types').UserAttributes;
     decisionInfo?: DecisionInfo;
-    experiment?: Experiment;
-    variation?: Variation;
+    experiment?: import('../../shared_types').Experiment;
+    variation?: import('../../shared_types').Variation;
     logEvent?: string;
     eventKey?: string;
     eventTags?: string;
