@@ -55,7 +55,7 @@ declare module '@optimizely/optimizely-sdk' {
     // TODO[OASIS-6649]: Don't use object type
     // eslint-disable-next-line  @typescript-eslint/ban-types
     jsonSchemaValidator?: object;
-    userProfileService?: UserProfileService | null;
+    userProfileService?: import('./shared_types').UserProfileService | null;
     eventBatchSize?: number;
     eventFlushInterval?: number;
     sdkKey?: string;
@@ -63,50 +63,75 @@ declare module '@optimizely/optimizely-sdk' {
 
   export interface Client {
     notificationCenter: NotificationCenter;
-    activate(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
-    track(eventKey: string, userId: string, attributes?: UserAttributes, eventTags?: EventTags): void;
-    getVariation(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
+    activate(
+      experimentKey: string,
+      userId: string,
+      attributes?: import('./shared_types').UserAttributes
+    ): string | null;
+    track(
+      eventKey: string,
+      userId: string,
+      attributes?: import('./shared_types').UserAttributes,
+      eventTags?: EventTags
+    ): void;
+    getVariation(
+      experimentKey: string,
+      userId: string,
+      attributes?: import('./shared_types').UserAttributes
+    ): string | null;
     setForcedVariation(experimentKey: string, userId: string, variationKey: string | null): boolean;
     getForcedVariation(experimentKey: string, userId: string): string | null;
-    isFeatureEnabled(featureKey: string, userId: string, attributes?: UserAttributes): boolean;
-    getEnabledFeatures(userId: string, attributes?: UserAttributes): string[];
-    getFeatureVariable(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): unknown
+    isFeatureEnabled(
+      featureKey: string,
+      userId: string,
+      attributes?: import('./shared_types').UserAttributes
+    ): boolean;
+    getEnabledFeatures(
+      userId: string,
+      attributes?: import('./shared_types').UserAttributes
+    ): string[];
+    getFeatureVariable(
+      featureKey: string,
+      variableKey: string,
+      userId: string,
+      attributes?: import('./shared_types').UserAttributes
+    ): unknown;
     getFeatureVariableBoolean(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: UserAttributes
+      attributes?: import('./shared_types').UserAttributes
     ): boolean | null;
     getFeatureVariableDouble(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: UserAttributes
+      attributes?: import('./shared_types').UserAttributes
     ): number | null;
     getFeatureVariableInteger(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: UserAttributes
+      attributes?: import('./shared_types').UserAttributes
     ): number | null;
     getFeatureVariableString(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: UserAttributes
+      attributes?: import('./shared_types').UserAttributes
     ): string | null;
     getFeatureVariableJSON(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: UserAttributes
+      attributes?: import('./shared_types').UserAttributes
     ): unknown;
     getAllFeatureVariables(
       featureKey: string,
       userId: string,
-      attributes?: UserAttributes
+      attributes?: import('./shared_types').UserAttributes
     ): { [variableKey: string]: unknown };
-    getOptimizelyConfig(): OptimizelyConfig | null;
+    getOptimizelyConfig(): import('./shared_types').OptimizelyConfig | null;
     onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
     close(): Promise<{ success: boolean; reason?: string }>;
   }
@@ -135,11 +160,6 @@ declare module '@optimizely/optimizely-sdk' {
     dispatchEvent: (event: Event, callback: () => void) => void;
   }
 
-  export interface UserProfileService {
-    lookup: (userId: string) => UserProfile;
-    save: (profile: UserProfile) => void;
-  }
-
   // NotificationCenter-related types
   export interface NotificationCenter {
     addNotificationListener<T extends ListenerPayload>(
@@ -155,20 +175,14 @@ declare module '@optimizely/optimizely-sdk' {
 
   export interface ListenerPayload {
     userId: string;
-    attributes: UserAttributes;
+    attributes: import('./shared_types').UserAttributes;
   }
 
   export interface ActivateListenerPayload extends ListenerPayload {
-    experiment: Experiment;
-    variation: Variation;
+    experiment: import('./shared_types').Experiment;
+    variation: import('./shared_types').Variation;
     logEvent: Event;
   }
-
-  export type UserAttributes = {
-    // TODO[OASIS-6649]: Don't use any type
-    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    [name: string]: any;
-  };
 
   export type EventTags = {
     [key: string]: string | number | boolean;
@@ -178,86 +192,6 @@ declare module '@optimizely/optimizely-sdk' {
     eventKey: string;
     eventTags: EventTags;
     logEvent: Event;
-  }
-
-  export interface Experiment {
-    id: string;
-    key: string;
-    status: string;
-    layerId: string;
-    variations: Variation[];
-    trafficAllocation: Array<{
-      entityId: string;
-      endOfRange: number;
-    }>;
-    audienceIds: string[];
-    // TODO[OASIS-6649]: Don't use object type
-    // eslint-disable-next-line  @typescript-eslint/ban-types
-    forcedVariations: object;
-  }
-
-  export interface Variation {
-    id: string;
-    key: string;
-  }
-
-  // Information about past bucketing decisions for a user.
-  export interface UserProfile {
-    user_id: string;
-    experiment_bucket_map: {
-      [experiment_id: string]: {
-        variation_id: string;
-      };
-    };
-  }
-
-  /**
-   * Optimizely Config Entities
-   */
-  export interface OptimizelyVariable {
-    id: string;
-    key: string;
-    type: string;
-    value: string;
-  }
-
-  export interface OptimizelyVariation {
-    id: string;
-    key: string;
-    featureEnabled?: boolean;
-    variablesMap: {
-      [variableKey: string]: OptimizelyVariable;
-    };
-  }
-
-  export interface OptimizelyExperiment {
-    id: string;
-    key: string;
-    variationsMap: {
-      [variationKey: string]: OptimizelyVariation;
-    };
-  }
-
-  export interface OptimizelyFeature {
-    id: string;
-    key: string;
-    experimentsMap: {
-      [experimentKey: string]: OptimizelyExperiment;
-    };
-    variablesMap: {
-      [variableKey: string]: OptimizelyVariable;
-    };
-  }
-
-  export interface OptimizelyConfig {
-    experimentsMap: {
-      [experimentKey: string]: OptimizelyExperiment;
-    };
-    featuresMap: {
-      [featureKey: string]: OptimizelyFeature;
-    };
-    revision: string;
-    getDatafile(): string;
   }
 }
 
