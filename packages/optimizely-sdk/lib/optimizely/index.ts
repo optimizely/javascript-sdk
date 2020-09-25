@@ -17,7 +17,7 @@ import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 import { EventTags, EventDispatcher } from '@optimizely/optimizely-sdk';
-import { FeatureFlag } from '../core/project_config/entities';
+import { FeatureFlag, FeatureVariable } from '../core/project_config/entities';
 import { UserAttributes, Variation } from '../shared_types';
 import { ProjectConfig } from '@optimizely/optimizely-sdk/lib/core/project_config';
 import { ProjectConfigManager, createProjectConfigManager }from '@optimizely/optimizely-sdk/lib/core/projet_config_manager';
@@ -774,7 +774,7 @@ export default class Optimizely {
     variableKey: string,
     variableType: string | null,
     userId: string,
-    attributes: UserAttributes) {
+    attributes?: UserAttributes): unknown {
     if (!this.__validateInputs({ feature_key: featureKey, variable_key: variableKey, user_id: userId }, attributes)) {
       return null;
     }
@@ -841,20 +841,22 @@ export default class Optimizely {
    * available variation or not. Also logs the appropriate message explaining how it
    * evaluated the value of the variable.
    *
-   * @param {string} featureKey           Key of the feature whose variable's value is
-   *                                      being accessed
-   * @param {boolean} featureEnabled      Boolean indicating if feature is enabled or not
-   * @param {object} variation            variation returned by decision service
-   * @param {object} variable             varible whose value is being evaluated
-   * @param {string} userId               ID for the user
-   * @return {string|null}                String value of the variable or null if the config Obj
-   *                                      is null
+   * @param  {string}          featureKey           Key of the feature whose variable's value is
+   *                                                being accessed
+   * @param  {boolean}         featureEnabled       Boolean indicating if feature is enabled or not
+   * @param  {Variation}       variation            variation returned by decision service
+   * @param  {FeatureVariable} variable             varible whose value is being evaluated
+   * @param  {string}          userId               ID for the user
+   * @return {string|null}                          String value of the variable or null if the
+   *                                                config Obj is null
    */
   _getFeatureVariableValueFromVariation(
     featureKey: string,
     featureEnabled: boolean,
     variation: Variation,
-    variable: , userId) {
+    variable: FeatureVariable,
+    userId: string
+  ): string | null {
     var configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return null;
@@ -918,24 +920,28 @@ export default class Optimizely {
   /**
    * Returns value for the given boolean variable attached to the given feature
    * flag.
-   * @param {string} featureKey   Key of the feature whose variable's value is
-   *                              being accessed
-   * @param {string} variableKey  Key of the variable whose value is being
-   *                              accessed
-   * @param {string} userId       ID for the user
-   * @param {Object} attributes   Optional user attributes
-   * @return {boolean|null}       Boolean value of the variable, or null if the
-   *                              feature key is invalid, the variable key is
-   *                              invalid, or there is a mismatch with the type
-   *                              of the variable
+   * @param  {string}         featureKey   Key of the feature whose variable's value is
+   *                                       being accessed
+   * @param  {string}         variableKey  Key of the variable whose value is being
+   *                                       accessed
+   * @param  {string}         userId       ID for the user
+   * @param  {UserAttributes} attributes   Optional user attributes
+   * @return {boolean|null}                Boolean value of the variable, or null if the
+   *                                       feature key is invalid, the variable key is invalid,
+   *                                       or there is a mismatch with the type of the variable.
    */
-  getFeatureVariableBoolean(featureKey, variableKey, userId, attributes) {
+  getFeatureVariableBoolean(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): boolean | null {
     try {
       if (!this.__isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableBoolean'));
         return null;
       }
-      return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.BOOLEAN, userId, attributes);
+      return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.BOOLEAN, userId, attributes) as boolean | null;
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
@@ -946,24 +952,29 @@ export default class Optimizely {
   /**
    * Returns value for the given double variable attached to the given feature
    * flag.
-   * @param {string} featureKey   Key of the feature whose variable's value is
-   *                              being accessed
-   * @param {string} variableKey  Key of the variable whose value is being
-   *                              accessed
-   * @param {string} userId       ID for the user
-   * @param {Object} attributes   Optional user attributes
-   * @return {number|null}        Number value of the variable, or null if the
-   *                              feature key is invalid, the variable key is
-   *                              invalid, or there is a mismatch with the type
-   *                              of the variable
+   * @param  {string} featureKey           Key of the feature whose variable's value is
+   *                                       being accessed
+   * @param  {string} variableKey          Key of the variable whose value is being
+   *                                       accessed
+   * @param  {string} userId               ID for the user
+   * @param  {UserAttributes} attributes   Optional user attributes
+   * @return {number|null}                 Number value of the variable, or null if the
+   *                                       feature key is invalid, the variable key is
+   *                                       invalid, or there is a mismatch with the type
+   *                                       of the variable
    */
-  getFeatureVariableDouble(featureKey, variableKey, userId, attributes) {
+  getFeatureVariableDouble(
+    featureKey:string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): number | null {
     try {
       if (!this.__isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableDouble'));
         return null;
       }
-      return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.DOUBLE, userId, attributes);
+      return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.DOUBLE, userId, attributes) as number | null;
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
@@ -974,24 +985,29 @@ export default class Optimizely {
   /**
    * Returns value for the given integer variable attached to the given feature
    * flag.
-   * @param {string} featureKey   Key of the feature whose variable's value is
-   *                              being accessed
-   * @param {string} variableKey  Key of the variable whose value is being
-   *                              accessed
-   * @param {string} userId       ID for the user
-   * @param {Object} attributes   Optional user attributes
-   * @return {number|null}        Number value of the variable, or null if the
-   *                              feature key is invalid, the variable key is
-   *                              invalid, or there is a mismatch with the type
-   *                              of the variable
+   * @param  {string}         featureKey   Key of the feature whose variable's value is
+   *                                       being accessed
+   * @param  {string}         variableKey  Key of the variable whose value is being
+   *                                       accessed
+   * @param  {string}         userId       ID for the user
+   * @param  {UserAttributes} attributes   Optional user attributes
+   * @return {number|null}                 Number value of the variable, or null if the
+   *                                       feature key is invalid, the variable key is
+   *                                       invalid, or there is a mismatch with the type
+   *                                       of the variable
    */
-  getFeatureVariableInteger(featureKey, variableKey, userId, attributes) {
+  getFeatureVariableInteger(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): number | null {
     try {
       if (!this.__isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableInteger'));
         return null;
       }
-      return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.INTEGER, userId, attributes);
+      return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.INTEGER, userId, attributes) as number | null;
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
@@ -1002,24 +1018,29 @@ export default class Optimizely {
   /**
    * Returns value for the given string variable attached to the given feature
    * flag.
-   * @param {string} featureKey   Key of the feature whose variable's value is
-   *                              being accessed
-   * @param {string} variableKey  Key of the variable whose value is being
-   *                              accessed
-   * @param {string} userId       ID for the user
-   * @param {Object} attributes   Optional user attributes
-   * @return {string|null}        String value of the variable, or null if the
-   *                              feature key is invalid, the variable key is
-   *                              invalid, or there is a mismatch with the type
-   *                              of the variable
+   * @param  {string}         featureKey   Key of the feature whose variable's value is
+   *                                       being accessed
+   * @param  {string}         variableKey  Key of the variable whose value is being
+   *                                       accessed
+   * @param  {string}         userId       ID for the user
+   * @param  {UserAttributes} attributes   Optional user attributes
+   * @return {string|null}                 String value of the variable, or null if the
+   *                                       feature key is invalid, the variable key is
+   *                                       invalid, or there is a mismatch with the type
+   *                                       of the variable
    */
-  getFeatureVariableString(featureKey, variableKey, userId, attributes) {
+  getFeatureVariableString(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): string | null {
     try {
       if (!this.__isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableString'));
         return null;
       }
-      return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.STRING, userId, attributes);
+      return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.STRING, userId, attributes) as string | null;
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
@@ -1030,18 +1051,23 @@ export default class Optimizely {
   /**
    * Returns value for the given json variable attached to the given feature
    * flag.
-   * @param {string} featureKey   Key of the feature whose variable's value is
-   *                              being accessed
-   * @param {string} variableKey  Key of the variable whose value is being
-   *                              accessed
-   * @param {string} userId       ID for the user
-   * @param {Object} attributes   Optional user attributes
-   * @return {object|null}        Object value of the variable, or null if the
-   *                              feature key is invalid, the variable key is
-   *                              invalid, or there is a mismatch with the type
-   *                              of the variable
+   * @param  {string}         featureKey   Key of the feature whose variable's value is
+   *                                       being accessed
+   * @param  {string}         variableKey  Key of the variable whose value is being
+   *                                       accessed
+   * @param  {string}         userId       ID for the user
+   * @param  {UserAttributes} attributes   Optional user attributes
+   * @return {unknown}                     Object value of the variable, or null if the
+   *                                       feature key is invalid, the variable key is
+   *                                       invalid, or there is a mismatch with the type
+   *                                       of the variable
    */
-  getFeatureVariableJSON(featureKey, variableKey, userId, attributes) {
+  getFeatureVariableJSON(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes: UserAttributes
+  ): unknown {
     try {
       if (!this.__isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableJSON'));
@@ -1058,14 +1084,18 @@ export default class Optimizely {
   /**
    * Returns values for all the variables attached to the given feature
    * flag.
-   * @param {string} featureKey   Key of the feature whose variables are being
-   *                              accessed
-   * @param {string} userId       ID for the user
-   * @param {Object} attributes   Optional user attributes
-   * @return {object|null}        Object containing all the variables, or null if the
-   *                              feature key is invalid
+   * @param  {string}         featureKey   Key of the feature whose variables are being
+   *                                       accessed
+   * @param  {string}         userId       ID for the user
+   * @param  {UserAttributes} attributes   Optional user attributes
+   * @return {object|null}                 Object containing all the variables, or null if the
+   *                                       feature key is invalid
    */
-  getAllFeatureVariables(featureKey, userId, attributes) {
+  getAllFeatureVariables(
+    featureKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): { [variableKey: string]: unknown } | null {
     try {
       if (!this.__isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getAllFeatureVariables'));

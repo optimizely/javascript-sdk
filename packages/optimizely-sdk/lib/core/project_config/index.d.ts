@@ -133,4 +133,23 @@ declare module '@optimizely/optimizely-sdk/lib/core/project_config' {
    *              null if the type cast failed
    */
   export function getTypeCastValue<T>(variableValue: string, type: string, logger: LogHandler): T;
+
+  /**
+   * Get the value of the given variable for the given variation. If the given
+   * variable has no value for the given variation, return null. Log an error message if the variation is invalid. If the
+   * variable or variation are invalid, return null.
+   * @param  {ProjectConfig}   projectConfig
+   * @param  {FeatureVariable} variable
+   * @param  {Variation}       variation
+   * @param  {LogHandler}      logger
+   * @return {string|null} The value of the given variable for the given
+   * variation, or null if the given variable has no value
+   * for the given variation or if the variation or variable are invalid
+   */
+  export function getVariableValueForVariation(
+    projectConfig: ProjectConfig,
+    variable: import('./entities').FeatureVariable,
+    variation: import('../../shared_types').Variation,
+    logger: LogHandler
+  ): string | null;
 }

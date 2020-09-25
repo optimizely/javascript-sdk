@@ -130,7 +130,7 @@ declare module '@optimizely/optimizely-sdk' {
       featureKey: string,
       userId: string,
       attributes?: import('./shared_types').UserAttributes
-    ): { [variableKey: string]: unknown };
+    ): { [variableKey: string]: unknown } | null;
     getOptimizelyConfig(): import('./shared_types').OptimizelyConfig | null;
     onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
     close(): Promise<{ success: boolean; reason?: string }>;
