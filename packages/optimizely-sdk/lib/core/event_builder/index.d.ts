@@ -42,9 +42,6 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
     eventTags: import('../../shared_types').EventTags;
   }
 
-  // eslint-disable-next-line  @typescript-eslint/no-empty-interface
-  export interface EventBuilder {}
-
   /**
    * Create impression event params to be sent to the logging endpoint
    * @param  {ImpressionOptions} options Object containing values needed to build impression event

@@ -37,9 +37,6 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
     configObj: ProjectConfig;
   }
 
-  // eslint-disable-next-line  @typescript-eslint/no-empty-interface
-  export interface EventHelpers {}
-
   /**
    * Creates an ImpressionEvent object from decision data
    * @param {ImpressionConfig} config
