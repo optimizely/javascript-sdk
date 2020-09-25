@@ -42,12 +42,12 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
    * @param {ImpressionConfig} config
    * @return {ImpressionEvent} an ImpressionEvent object
    */
-  export function buildImpressionEvent(config: ImpressionConfig): import('../../../../event-processor/src/events').ImpressionEvent;
+  export function buildImpressionEvent(config: ImpressionConfig): import('@optimizely/js-sdk-event-processor').ImpressionEvent;
 
   /**
    * Creates a ConversionEvent object from track
    * @param {ConversionConfig} config
    * @return {ConversionEvent} a ConversionEvent object
    */
-  export function buildConversionEvent(config: ConversionConfig): import('../../../../event-processor/src/events').ConversionEvent;
+  export function buildConversionEvent(config: ConversionConfig): import('@optimizely/js-sdk-event-processor').ConversionEvent;
 }
