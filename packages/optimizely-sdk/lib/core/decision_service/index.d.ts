@@ -25,7 +25,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/decision_service' {
    */
   export function createDecisionService(options: Options): DecisionService;
 
-  interface DecisionService {
+  export interface DecisionService {
 
     /**
      * Gets variation where visitor will be bucketed.

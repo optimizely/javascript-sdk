@@ -15,10 +15,37 @@
  */
 
 declare module '@optimizely/optimizely-sdk/lib/core/project_config' {
-  import { LogHandler } from '@optimizely/js-sdk-logging';
+  import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
+  import { EventDispatcher, DatafileOptions } from '@optimizely/optimizely-sdk';
 
   // eslint-disable-next-line  @typescript-eslint/no-empty-interface
-  export interface ProjectConfig {}
+  export interface ProjectConfig {
+    revision: string;
+    projectId: string;
+    featureKeyMap?: {
+      [key: string]: import('./entities').FeatureFlag
+    };
+    clientEngine: string;
+    clientVersion?: string;
+    errorHandler: ErrorHandler;
+    eventDispatcher: EventDispatcher;
+    isValidInstance: boolean;
+    // TODO[OASIS-6649]: Don't use object type
+    // eslint-disable-next-line  @typescript-eslint/ban-types
+    datafile: object | string;
+    // TODO[OASIS-6649]: Don't use object type
+    // eslint-disable-next-line  @typescript-eslint/ban-types
+    jsonSchemaValidator?: object;
+    sdkKey?: string;
+    userProfileService?: import('../../shared_types').UserProfileService | null;
+    UNSTABLE_conditionEvaluators?: unknown;
+    eventFlushInterval?: number;
+    eventBatchSize?: number;
+    datafileOptions?: DatafileOptions;
+    eventMaxQueueSize?: number;
+    logger: LogHandler;
+    experimentKeyMap:{[key: string]: import('../../shared_types').Experiment};
+  }
   /**
    * Determine for given experiment if event is running, which determines whether should be dispatched or not
    * @param  {ProjectConfig} configObj Object representing project configuration

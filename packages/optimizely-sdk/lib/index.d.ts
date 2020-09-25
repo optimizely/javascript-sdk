@@ -30,7 +30,7 @@ declare module '@optimizely/optimizely-sdk' {
 
   export const eventDispatcher: EventDispatcher;
 
-  interface DatafileOptions {
+  export interface DatafileOptions {
     autoUpdate?: boolean;
     updateInterval?: number;
     urlTemplate?: string;
@@ -149,6 +149,12 @@ declare module '@optimizely/optimizely-sdk' {
     params: any;
   }
 
+  export type EventDispatcherResponse = {
+    statusCode: number
+  }
+
+  export type EventDispatcherCallback = (response: EventDispatcherResponse) => void
+
   export interface EventDispatcher {
     /**
      * @param event
@@ -157,7 +163,7 @@ declare module '@optimizely/optimizely-sdk' {
      *        After the event has at least been queued for dispatch, call this function to return
      *        control back to the Client.
      */
-    dispatchEvent: (event: Event, callback: () => void) => void;
+    dispatchEvent: (event: Event, callback: EventDispatcherCallback) => void;
   }
 
   // NotificationCenter-related types

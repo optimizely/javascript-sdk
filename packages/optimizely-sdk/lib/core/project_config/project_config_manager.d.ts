@@ -28,9 +28,9 @@ declare module '@optimizely/optimizely-sdk/lib/core/projet_config_manager' {
   * @param     {Object}               config.jsonSchemaValidator
   * @param     {string}               config.sdkKey
   */
-  export function ProjectConfigManager(config: ProjectConfig): ProjectConfigManager;
+  export function createProjectConfigManager(config: Partial<ProjectConfig>): ProjectConfigManager;
 
-  interface ProjectConfigManager {
+  export interface ProjectConfigManager {
 
     /**
      * Returns the current project config object, or null if no project config object
@@ -46,7 +46,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/projet_config_manager' {
      * @param  {Function}            listener
      * @return {Function}
      */
-    onUpdate(): (listener: (config: ProjectConfig) => void) => () => void;
+    onUpdate(listener: (config: ProjectConfig) => void): () => void;
 
     /**
      * Returns a Promise that fulfills when this ProjectConfigManager is ready to

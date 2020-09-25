@@ -21,12 +21,12 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
   import { Event as EventLoggingEndpoint } from '@optimizely/optimizely-sdk';
 
   interface ImpressionOptions {
-    attributes: import('../../shared_types').UserAttributes;
+    attributes?: import('../../shared_types').UserAttributes;
     clientEngine: string;
     clientVersion: string;
     configObj: ProjectConfig;
     experimentId: string;
-    eventKey: string;
+    eventKey?: string;
     variationId: string;
     logger: LogHandler;
     userId: string;
@@ -43,18 +43,16 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
     eventTags: EventTags;
   }
 
-  export interface EventBuilder {
-    /**
-     * Create impression event params to be sent to the logging endpoint
-     * @param  {ImpressionOptions} options Object containing values needed to build impression event
-     * @return {EventLoggingEndpoint} Params to be used in impression event logging endpoint call
-     */
-    getImpressionEvent(options: ImpressionOptions): EventLoggingEndpoint;
-    /**
-     * Create conversion event params to be sent to the logging endpoint
-     * @param  {ConversionEventOptions} options  Object containing values needed to build conversion event
-     * @return {EventLoggingEndpoint} Params to be used in conversion event logging endpoint call
-     */
-    getConversionEvent(options: ConversionEventOptions): EventLoggingEndpoint;
-  }
+  /**
+   * Create impression event params to be sent to the logging endpoint
+   * @param  {ImpressionOptions} options Object containing values needed to build impression event
+   * @return {EventLoggingEndpoint} Params to be used in impression event logging endpoint call
+   */
+  export function getImpressionEvent(options: ImpressionOptions): EventLoggingEndpoint;
+  /**
+   * Create conversion event params to be sent to the logging endpoint
+   * @param  {ConversionEventOptions} options  Object containing values needed to build conversion event
+   * @return {EventLoggingEndpoint} Params to be used in conversion event logging endpoint call
+   */
+  export function getConversionEvent(options: ConversionEventOptions): EventLoggingEndpoint;
 }

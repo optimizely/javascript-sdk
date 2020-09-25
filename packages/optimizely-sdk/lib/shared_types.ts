@@ -4,9 +4,16 @@ export type UserAttributes = {
   [name: string]: any;
 }
 
+export interface VariationVariable {
+  id: string;
+  value: string;
+}
+
 export interface Variation {
   id: string;
   key: string;
+  featureEnabled: boolean;
+  variables: VariationVariable[];
 }
 
 export interface Experiment {
@@ -23,6 +30,7 @@ export interface Experiment {
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
   forcedVariations: object;
+  variationKeyMap?: {[key: string]: Variation}
 }
 
 // Information about past bucketing decisions for a user.

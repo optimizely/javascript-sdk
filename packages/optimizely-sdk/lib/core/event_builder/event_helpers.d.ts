@@ -22,7 +22,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
     experimentKey: string;
     variationKey: string;
     userId: string;
-    userAttributes: import('../../shared_types').UserAttributes;
+    userAttributes?: import('../../shared_types').UserAttributes;
     clientEngine: string;
     clientVersion: string;
     configObj: ProjectConfig;
@@ -33,9 +33,9 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
 
   interface ConversionConfig {
     eventKey: string;
-    eventTags: EventTags;
+    eventTags?: EventTags;
     userId: string;
-    userAttributes: import('../../shared_types').UserAttributes;
+    userAttributes?: import('../../shared_types').UserAttributes;
     clientEngine: string;
     clientVersion: string;
     configObj: ProjectConfig;
@@ -44,18 +44,16 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
   // eslint-disable-next-line  @typescript-eslint/no-empty-interface
   interface ConversionEvent {}
 
-  export interface EventHelpers {
-    /**
-     * Creates an ImpressionEvent object from decision data
-     * @param {ImpressionConfig} config
-     * @return {ImpressionEvent} an ImpressionEvent object
-     */
-    buildImpressionEvent(config: ImpressionConfig): ImpressionEvent;
-    /**
-     * Creates a ConversionEvent object from track
-     * @param {ConversionConfig} config
-     * @return {ConversionEvent} a ConversionEvent object
-     */
-    buildConversionEvent(config: ConversionConfig): ConversionEvent;
-  }
+  /**
+   * Creates an ImpressionEvent object from decision data
+   * @param {ImpressionConfig} config
+   * @return {ImpressionEvent} an ImpressionEvent object
+   */
+  export function buildImpressionEvent(config: ImpressionConfig): ImpressionEvent;
+  /**
+   * Creates a ConversionEvent object from track
+   * @param {ConversionConfig} config
+   * @return {ConversionEvent} a ConversionEvent object
+   */
+  export function buildConversionEvent(config: ConversionConfig): ConversionEvent;
 }

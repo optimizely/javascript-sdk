@@ -17,7 +17,7 @@
 
 declare module '@optimizely/optimizely-sdk/lib/core/notification_center' {
   import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
-
+  import { Event, EventTags } from '@optimizely/optimizely-sdk';
   export enum NOTIFICATION_TYPES {
     ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
     DECISION = 'DECISION:type, userId, attributes, decisionInfo',
@@ -50,7 +50,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/notification_center' {
 
   export type DecisionInfo = {
     experimentKey?: string;
-    variationKey?: string;
+    variationKey?: string | null;
     featureKey?: string;
     featureEnabled?: boolean;
     source?: string;
@@ -62,15 +62,16 @@ declare module '@optimizely/optimizely-sdk/lib/core/notification_center' {
   };
 
   export interface NotificationData {
-    type?: DECISION_NOTIFICATION_TYPES;
+    // type?: DECISION_NOTIFICATION_TYPES;
+    type?: string;
     userId?: string;
     attributes?: import('../../shared_types').UserAttributes;
     decisionInfo?: DecisionInfo;
     experiment?: import('../../shared_types').Experiment;
     variation?: import('../../shared_types').Variation;
-    logEvent?: string;
+    logEvent?: Event;
     eventKey?: string;
-    eventTags?: string;
+    eventTags?: EventTags;
   }
 
   export interface NotificationCenter {
@@ -80,7 +81,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/notification_center' {
      * @param {NOTIFICATION_TYPES} notificationType One of NOTIFICATION_TYPES
      * @param {NotificationData} notificationData Will be passed to callbacks called
      */
-    sendNotifications(notificationType: NOTIFICATION_TYPES, notificationData: NotificationData): void;
+    sendNotifications(notificationType: NOTIFICATION_TYPES, notificationData?: NotificationData): void;
   }
 
   /**
