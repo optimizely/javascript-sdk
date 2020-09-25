@@ -46,7 +46,7 @@ declare module '@optimizely/optimizely-sdk/lib/core/projet_config_manager' {
      * @param  {Function}            listener
      * @return {Function}
      */
-    onUpdate(listener: (config: ProjectConfig) => void): () => void;
+    onUpdate(listener: (config: ProjectConfig) => void): (() => void) | null;
 
     /**
      * Returns a Promise that fulfills when this ProjectConfigManager is ready to

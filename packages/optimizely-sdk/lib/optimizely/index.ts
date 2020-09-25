@@ -64,20 +64,20 @@ const DEFAULT_ONREADY_TIMEOUT = 30000;
  * @param {string}        config.sdkKey
  */
 export default class Optimizely {
+  private __isOptimizelyConfigValid: boolean;
+  private __disposeOnUpdate: (() => void ) | null;
+  private __readyPromise: Promise<{ success: boolean; reason?: string }>; //TODO
+  private __readyTimeouts: any;//TODO
+  private __nextReadyTimeoutId: any;//TODO
   private clientEngine: string;
   private clientVersion: string;
   private errorHandler: ErrorHandler;
   private eventDispatcher: EventDispatcher;
-  private __isOptimizelyConfigValid: boolean;
   private logger: LogHandler;
   private projectConfigManager: ProjectConfigManager;
-  private __disposeOnUpdate: () => void;
   private notificationCenter: NotificationCenter;
   private decisionService: DecisionService;
   private eventProcessor: eventProcessor.EventProcessor;
-  private __readyPromise: any; //TODO
-  private __readyTimeouts: any;//TODO
-  private __nextReadyTimeoutId: any;//TODO
 
 
   constructor(config: ProjectConfig) {
@@ -624,7 +624,7 @@ export default class Optimizely {
         featureEnabled = variation.featureEnabled;
         if (
           decision.decisionSource === DECISION_SOURCES.FEATURE_TEST &&
-          decision.experiment !== null && 
+          decision.experiment !== null &&
           decision.variation !== null
         ) {
           sourceInfo = {
@@ -808,7 +808,7 @@ export default class Optimizely {
     var sourceInfo = {};
     if (
       decision.decisionSource === DECISION_SOURCES.FEATURE_TEST &&
-      decision.experiment !== null && 
+      decision.experiment !== null &&
       decision.variation !== null
     ) {
       sourceInfo = {
@@ -853,7 +853,7 @@ export default class Optimizely {
   _getFeatureVariableValueFromVariation(
     featureKey: string,
     featureEnabled: boolean,
-    variation: Variation,
+    variation: Variation | null,
     variable: FeatureVariable,
     userId: string
   ): string | null {
@@ -1120,12 +1120,15 @@ export default class Optimizely {
       var featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;
       var allVariables = {};
 
-      featureFlag.variables.forEach(function (variable) {
+      featureFlag.variables.forEach(function (this: Optimizely, variable: FeatureVariable) {
         allVariables[variable.key] = this._getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
       }.bind(this));
 
       var sourceInfo = {};
-      if (decision.decisionSource === DECISION_SOURCES.FEATURE_TEST) {
+      if (decision.decisionSource === DECISION_SOURCES.FEATURE_TEST &&
+          decision.experiment !== null &&
+          decision.variation !== null
+      ) {
         sourceInfo = {
           experimentKey: decision.experiment.key,
           variationKey: decision.variation.key,
@@ -1233,7 +1236,7 @@ export default class Optimizely {
    *
    * @return {Promise}
    */
-  close() {
+  close(): Promise<{ success: boolean; reason?: string }> {
     try {
       var eventProcessorStoppedPromise = this.eventProcessor.stop();
       if (this.__disposeOnUpdate) {
@@ -1244,7 +1247,7 @@ export default class Optimizely {
         this.projectConfigManager.stop();
       }
       Object.keys(this.__readyTimeouts).forEach(
-        function(readyTimeoutId) {
+        function(this: Optimizely, readyTimeoutId: string ) {
           var readyTimeoutRecord = this.__readyTimeouts[readyTimeoutId];
           clearTimeout(readyTimeoutRecord.readyTimeout);
           readyTimeoutRecord.onClose();
@@ -1301,31 +1304,35 @@ export default class Optimizely {
    * @param  {number|undefined} options.timeout
    * @return {Promise}
    */
-  onReady(options) {
-    var timeout;
+  onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }> {
+    let timeoutValue: number | undefined;
     if (typeof options === 'object' && options !== null) {
-      timeout = options.timeout;
+      if (options.timeout !== undefined) {
+        timeoutValue = options.timeout;
+      }
     }
-    if (!isSafeInteger(timeout)) {
-      timeout = DEFAULT_ONREADY_TIMEOUT;
+    if (!isSafeInteger(timeoutValue)) {
+      timeoutValue = DEFAULT_ONREADY_TIMEOUT;
     }
 
-    var resolveTimeoutPromise;
-    var timeoutPromise = new Promise(function(resolve) {
+    type Resolve = (value?: unknown) => void;
+
+    let resolveTimeoutPromise: any;
+    var timeoutPromise = new Promise(function(resolve: Resolve) {
       resolveTimeoutPromise = resolve;
     });
 
     var timeoutId = this.__nextReadyTimeoutId;
     this.__nextReadyTimeoutId++;
 
-    var onReadyTimeout = function() {
+    var onReadyTimeout = function(this: Optimizely) {
       delete this.__readyTimeouts[timeoutId];
       resolveTimeoutPromise({
         success: false,
-        reason: sprintf('onReady timeout expired after %s ms', timeout),
+        reason: sprintf('onReady timeout expired after %s ms', timeoutValue),
       });
     }.bind(this);
-    var readyTimeout = setTimeout(onReadyTimeout, timeout);
+    var readyTimeout = setTimeout(onReadyTimeout, timeoutValue);
     var onClose = function() {
       resolveTimeoutPromise({
         success: false,
@@ -1339,7 +1346,7 @@ export default class Optimizely {
     };
 
     this.__readyPromise.then(
-      function() {
+      function(this: Optimizely) {
         clearTimeout(readyTimeout);
         delete this.__readyTimeouts[timeoutId];
         resolveTimeoutPromise({
@@ -1348,6 +1355,6 @@ export default class Optimizely {
       }.bind(this)
     );
 
-    return Promise.race([this.__readyPromise, timeoutPromise]);
+    return Promise.race([this.__readyPromise, timeoutPromise]) as Promise<{ success: boolean; reason?: string | undefined; }>;
   };
 }
