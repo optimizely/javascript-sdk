@@ -88,3 +88,7 @@ export interface OptimizelyConfig {
   revision: string;
   getDatafile(): string;
 }
+
+export type EventTags = {
+  [key: string]: string | number | boolean;
+};

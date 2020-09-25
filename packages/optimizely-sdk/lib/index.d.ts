@@ -72,7 +72,7 @@ declare module '@optimizely/optimizely-sdk' {
       eventKey: string,
       userId: string,
       attributes?: import('./shared_types').UserAttributes,
-      eventTags?: EventTags
+      eventTags?: import('./shared_types').EventTags
     ): void;
     getVariation(
       experimentKey: string,
@@ -184,13 +184,9 @@ declare module '@optimizely/optimizely-sdk' {
     logEvent: Event;
   }
 
-  export type EventTags = {
-    [key: string]: string | number | boolean;
-  };
-
   export interface TrackListenerPayload extends ListenerPayload {
     eventKey: string;
-    eventTags: EventTags;
+    eventTags: import('./shared_types').EventTags;
     logEvent: Event;
   }
 }
