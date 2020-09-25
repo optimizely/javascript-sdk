@@ -57,7 +57,7 @@ describe('lib/optimizely', function() {
       handleError: sinon.stub(),
     };
     logging.setErrorHandler(globalStubErrorHandler);
-    ProjectConfigManagerStub = sinon.stub(projectConfigManager, 'ProjectConfigManager').callsFake(function(config) {
+    ProjectConfigManagerStub = sinon.stub(projectConfigManager, 'createProjectConfigManager').callsFake(function(config) {
       var currentConfig = config.datafile ? projectConfig.createProjectConfig(config.datafile) : null;
       return {
         stop: sinon.stub(),
@@ -237,8 +237,8 @@ describe('lib/optimizely', function() {
             logger: createdLogger,
             sdkKey: '12345',
           });
-          sinon.assert.calledOnce(projectConfigManager.ProjectConfigManager);
-          sinon.assert.calledWithExactly(projectConfigManager.ProjectConfigManager, {
+          sinon.assert.calledOnce(projectConfigManager.createProjectConfigManager);
+          sinon.assert.calledWithExactly(projectConfigManager.createProjectConfigManager, {
             datafile: config,
             datafileOptions: {
               autoUpdate: true,
@@ -7717,7 +7717,7 @@ describe('lib/optimizely', function() {
         isValidInstance: true,
       });
       optlyInstance.close();
-      var fakeManager = projectConfigManager.ProjectConfigManager.getCall(0).returnValue;
+      var fakeManager = projectConfigManager.createProjectConfigManager.getCall(0).returnValue;
       sinon.assert.calledOnce(fakeManager.stop);
     });
 
@@ -7771,7 +7771,7 @@ describe('lib/optimizely', function() {
       });
 
       it('fulfills the promise with the value from the project config manager ready promise after the project config manager ready promise is fulfilled', function() {
-        projectConfigManager.ProjectConfigManager.callsFake(function(config) {
+        projectConfigManager.createProjectConfigManager.callsFake(function(config) {
           var currentConfig = config.datafile ? projectConfig.createProjectConfig(config.datafile) : null;
           return {
             stop: sinon.stub(),
@@ -7879,7 +7879,7 @@ describe('lib/optimizely', function() {
       });
 
       it('clears the timeout when the project config manager ready promise fulfills', function() {
-        projectConfigManager.ProjectConfigManager.callsFake(function(config) {
+        projectConfigManager.createProjectConfigManager.callsFake(function(config) {
           return {
             stop: sinon.stub(),
             getConfig: sinon.stub().returns(null),
@@ -7914,7 +7914,7 @@ describe('lib/optimizely', function() {
           onUpdate: sinon.stub().returns(function() {}),
           onReady: sinon.stub().returns({ then: function() {} }),
         };
-        projectConfigManager.ProjectConfigManager.returns(fakeProjectConfigManager);
+        projectConfigManager.createProjectConfigManager.returns(fakeProjectConfigManager);
 
         optlyInstance = new Optimizely({
           clientEngine: 'node-sdk',
