@@ -13,47 +13,54 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { 
+import {
   getLogger,
   setLogHandler,
   setLogLevel,
   setErrorHandler,
   getErrorHandler,
   LogLevel,
+  ErrorHandler,
+  LogHandler,
 } from '@optimizely/js-sdk-logging';
 
 import { assign } from './utils/fns';
-import Optimizely from './optimizely';
+import { Optimizely } from '@optimizely/optimizely-sdk/optimizely';
 import * as enums from './utils/enums';
 import loggerPlugin from './plugins/logger';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
+import { ProjectConfig } from '@optimizely/optimizely-sdk/lib/core/project_config';
 
-var logger = getLogger();
+const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
 
-var DEFAULT_EVENT_BATCH_SIZE = 10;
-var DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
+const DEFAULT_EVENT_BATCH_SIZE = 10;
+const DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
+
+export interface Config {
+  datafile?: ProjectConfig;
+  errorHandler?: ErrorHandler;
+  eventDispatcher?: (...args: unknown[]) => unknown;
+  logger?: LogHandler;
+  logLevel?: LogLevel;
+  userProfileService?: import('./shared_types').UserProfileService;
+  eventBatchSize?: number;
+  eventFlushInterval?: number;
+  sdkKey?: string;
+  isValidInstance?: boolean;
+}
 
 /**
  * Creates an instance of the Optimizely class
- * @param  {Object}         config
- * @param  {Object|string}  config.datafile
- * @param  {Object}         config.errorHandler
- * @param  {Object}         config.eventDispatcher
- * @param  {Object}         config.logger
- * @param  {Object}         config.logLevel
- * @param  {Object}         config.userProfileService
- * @param  {Object}         config.eventBatchSize
- * @param  {Object}         config.eventFlushInterval
- * @param  {string}         config.sdkKey
- * @return {Object}         the Optimizely object
+ * @param  {Config} config
+ * @return {Optimizely} the Optimizely object
  */
-var createInstance = function(config) {
+const createInstance = function (config: Config): Optimizely | null {
   try {
-    var hasLogger = false;
+    let hasLogger = false;
     config = config || {};
 
     // TODO warn about setting per instance errorHandler / logger / logLevel
@@ -70,7 +77,6 @@ var createInstance = function(config) {
     if (config.logLevel !== undefined) {
       setLogLevel(config.logLevel);
     }
-
     try {
       configValidator.validate(config);
       config.isValidInstance = true;
@@ -83,7 +89,7 @@ var createInstance = function(config) {
       config.isValidInstance = false;
     }
 
-    config = assign(
+    const optimizelyConfig = assign(
       {
         clientEngine: enums.NODE_CLIENT_ENGINE,
         eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
@@ -111,7 +117,7 @@ var createInstance = function(config) {
       config.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
     }
 
-    return new Optimizely(config);
+    return new Optimizely(optimizelyConfig);
   } catch (e) {
     logger.error(e);
     return null;
@@ -129,7 +135,7 @@ export {
   setLogHandler as setLogger,
   setLogLevel,
   createInstance,
-}
+};
 
 export default {
   logging: loggerPlugin,
