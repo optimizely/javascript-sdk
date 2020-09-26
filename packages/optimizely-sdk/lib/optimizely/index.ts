@@ -60,9 +60,9 @@ const DEFAULT_ONREADY_TIMEOUT = 30000;
 export default class Optimizely {
   private __isOptimizelyConfigValid: boolean;
   private __disposeOnUpdate: (() => void ) | null;
-  private __readyPromise: Promise<{ success: boolean; reason?: string }>; //TODO
-  private __readyTimeouts: any;//TODO
-  private __nextReadyTimeoutId: any;//TODO
+  private __readyPromise: Promise<{ success: boolean; reason?: string }>;
+  private __readyTimeouts: { [key: string]: {readyTimeout: number; onClose:() => void} };
+  private __nextReadyTimeoutId: number;
   private clientEngine: string;
   private clientVersion: string;
   private errorHandler: ErrorHandler;
@@ -1309,10 +1309,8 @@ export default class Optimizely {
       timeoutValue = DEFAULT_ONREADY_TIMEOUT;
     }
 
-    type Resolve = (value?: unknown) => void;
-
-    let resolveTimeoutPromise: any;
-    const timeoutPromise = new Promise(function(resolve: Resolve) {
+    let resolveTimeoutPromise: (value?: unknown) => void;
+    const timeoutPromise = new Promise(function(resolve: (value?: unknown) => void) {
       resolveTimeoutPromise = resolve;
     });
 
