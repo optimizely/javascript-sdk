@@ -120,3 +120,14 @@ export interface OptimizelyConfig {
   revision: string;
   getDatafile(): string;
 }
+
+/**
+ * Temprorary location LogTierV1EventProcessorConfig
+ */
+export interface LogTierV1EventProcessorConfig {
+  dispatcher: import ('@optimizely/js-sdk-event-processor').EventDispatcher;
+  flushInterval?: number;
+  batchSize?: number;
+  notificationCenter?: import('./core/notification_center').NotificationCenter;
+  maxQueueSize?: number;
+}

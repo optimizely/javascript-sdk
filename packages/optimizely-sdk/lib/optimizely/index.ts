@@ -15,11 +15,16 @@
  ***************************************************************************/
 import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
-import { LogTierV1EventProcessorConfig } from '../../../event-processor/src';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 import { FeatureFlag, FeatureVariable } from '../core/project_config/entities';
 import { EventDispatcher } from '@optimizely/js-sdk-event-processor';
-import { UserAttributes, Variation, EventTags, OptimizelyConfig } from '../shared_types';
+import {
+  UserAttributes,
+  Variation,
+  EventTags,
+  OptimizelyConfig,
+  LogTierV1EventProcessorConfig
+} from '../shared_types';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
 import { createDecisionService, DecisionService } from '../core/decision_service';
@@ -77,88 +82,87 @@ export default class Optimizely {
 
   constructor(config: projectConfig.ProjectConfig) {
     let clientEngine = config.clientEngine;
-  if (enums.VALID_CLIENT_ENGINES.indexOf(clientEngine) === -1) {
-    config.logger.log(
-      LOG_LEVEL.INFO,
-      sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, MODULE_NAME, clientEngine)
-    );
-    clientEngine = enums.NODE_CLIENT_ENGINE;
-  }
-
-  this.clientEngine = clientEngine;
-  this.clientVersion = config.clientVersion || enums.NODE_CLIENT_VERSION;
-  this.errorHandler = config.errorHandler;
-  this.eventDispatcher = config.eventDispatcher;
-  this.__isOptimizelyConfigValid = config.isValidInstance;
-  this.logger = config.logger;
-
-  this.projectConfigManager = createProjectConfigManager({
-    datafile: config.datafile,
-    datafileOptions: config.datafileOptions,
-    jsonSchemaValidator: config.jsonSchemaValidator,
-    sdkKey: config.sdkKey,
-  });
-
-  this.__disposeOnUpdate = this.projectConfigManager.onUpdate(
-    function(this: Optimizely, configObj: projectConfig.ProjectConfig) {
-      this.logger.log(
+    if (enums.VALID_CLIENT_ENGINES.indexOf(clientEngine) === -1) {
+      config.logger.log(
         LOG_LEVEL.INFO,
-        sprintf(LOG_MESSAGES.UPDATED_OPTIMIZELY_CONFIG, MODULE_NAME, configObj.revision, configObj.projectId)
+        sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, MODULE_NAME, clientEngine)
       );
-      this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE);
-    }.bind(this)
-  );
-
-  const projectConfigManagerReadyPromise = this.projectConfigManager.onReady();
-
-  let userProfileService = null;
-  if (config.userProfileService) {
-    try {
-      if (userProfileServiceValidator.validate(config.userProfileService)) {
-        userProfileService = config.userProfileService;
-        this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_USER_PROFILE_SERVICE, MODULE_NAME));
-      }
-    } catch (ex) {
-      this.logger.log(LOG_LEVEL.WARNING, ex.message);
+      clientEngine = enums.NODE_CLIENT_ENGINE;
     }
-  }
 
-  this.decisionService = createDecisionService({
-    userProfileService: userProfileService,
-    logger: this.logger,
-    UNSTABLE_conditionEvaluators: config.UNSTABLE_conditionEvaluators,
-  });
+    this.clientEngine = clientEngine;
+    this.clientVersion = config.clientVersion || enums.NODE_CLIENT_VERSION;
+    this.errorHandler = config.errorHandler;
+    this.eventDispatcher = config.eventDispatcher;
+    this.__isOptimizelyConfigValid = config.isValidInstance;
+    this.logger = config.logger;
 
-  this.notificationCenter = createNotificationCenter({
-    logger: this.logger,
-    errorHandler: this.errorHandler,
-  });
+    this.projectConfigManager = createProjectConfigManager({
+      datafile: config.datafile,
+      datafileOptions: config.datafileOptions,
+      jsonSchemaValidator: config.jsonSchemaValidator,
+      sdkKey: config.sdkKey,
+    });
 
-  this.eventProcessor = new eventProcessor.LogTierV1EventProcessor({
-    dispatcher: this.eventDispatcher,
-    flushInterval: config.eventFlushInterval,
-    batchSize: config.eventBatchSize,
-    maxQueueSize: config.eventMaxQueueSize, // TODO: update event-processor to include maxQueueSize
-    notificationCenter: this.notificationCenter,
-  } as LogTierV1EventProcessorConfig);
-  
+    this.__disposeOnUpdate = this.projectConfigManager.onUpdate(
+      function(this: Optimizely, configObj: projectConfig.ProjectConfig) {
+        this.logger.log(
+          LOG_LEVEL.INFO,
+          sprintf(LOG_MESSAGES.UPDATED_OPTIMIZELY_CONFIG, MODULE_NAME, configObj.revision, configObj.projectId)
+        );
+        this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE);
+      }.bind(this)
+    );
 
-  const eventProcessorStartedPromise = this.eventProcessor.start();
+    const projectConfigManagerReadyPromise = this.projectConfigManager.onReady();
 
-  this.__readyPromise = Promise.all([projectConfigManagerReadyPromise, eventProcessorStartedPromise]).then(function(promiseResults) {
-    // Only return status from project config promise because event processor promise does not return any status.
-    return promiseResults[0];
-  })
+    let userProfileService = null;
+    if (config.userProfileService) {
+      try {
+        if (userProfileServiceValidator.validate(config.userProfileService)) {
+          userProfileService = config.userProfileService;
+          this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_USER_PROFILE_SERVICE, MODULE_NAME));
+        }
+      } catch (ex) {
+        this.logger.log(LOG_LEVEL.WARNING, ex.message);
+      }
+    }
 
-  this.__readyTimeouts = {};
-  this.__nextReadyTimeoutId = 0;
+    this.decisionService = createDecisionService({
+      userProfileService: userProfileService,
+      logger: this.logger,
+      UNSTABLE_conditionEvaluators: config.UNSTABLE_conditionEvaluators,
+    });
+
+    this.notificationCenter = createNotificationCenter({
+      logger: this.logger,
+      errorHandler: this.errorHandler,
+    });
+
+    this.eventProcessor = new eventProcessor.LogTierV1EventProcessor({
+      dispatcher: this.eventDispatcher,
+      flushInterval: config.eventFlushInterval,
+      batchSize: config.eventBatchSize,
+      maxQueueSize: config.eventMaxQueueSize, // TODO: update event-processor to include maxQueueSize
+      notificationCenter: this.notificationCenter,
+    } as LogTierV1EventProcessorConfig);
+
+    const eventProcessorStartedPromise = this.eventProcessor.start();
+
+    this.__readyPromise = Promise.all([projectConfigManagerReadyPromise, eventProcessorStartedPromise]).then(function(promiseResults) {
+      // Only return status from project config promise because event processor promise does not return any status.
+      return promiseResults[0];
+    })
+
+    this.__readyTimeouts = {};
+    this.__nextReadyTimeoutId = 0;
   }
 
   /**
    * Returns a truthy value if this instance currently has a valid project config
    * object, and the initial configuration object that was passed into the
    * constructor was also valid.
-   * @return {*}
+   * @return {boolean}
    */
   __isValidInstance(): boolean {
   return this.__isOptimizelyConfigValid && !!this.projectConfigManager.getConfig();
@@ -451,10 +455,11 @@ export default class Optimizely {
 
   /**
    * Force a user into a variation for a given experiment.
-   * @param {string}      experimentKey
-   * @param {string}      userId
-   * @param {string|null} variationKey user will be forced into. If null, then clear the existing experiment-to-variation mapping.
-   * @return {boolean} A boolean value that indicates if the set completed successfully.
+   * @param  {string}      experimentKey
+   * @param  {string}      userId
+   * @param  {string|null} variationKey   user will be forced into. If null,
+   *                                      then clear the existing experiment-to-variation mapping.
+   * @return {boolean}                    A boolean value that indicates if the set completed successfully.
    */
   setForcedVariation(experimentKey: string, userId: string, variationKey: string | null): boolean {
     if (!this.__validateInputs({ experiment_key: experimentKey, user_id: userId })) {
@@ -477,8 +482,8 @@ export default class Optimizely {
 
   /**
    * Gets the forced variation for a given user and experiment.
-   * @param  {string} experimentKey
-   * @param  {string} userId
+   * @param  {string}      experimentKey
+   * @param  {string}      userId
    * @return {string|null} The forced variation key.
    */
   getForcedVariation(experimentKey: string, userId: string): string | null {
@@ -505,7 +510,7 @@ export default class Optimizely {
    * @param  {unknown}  stringInputs   Map of string keys and associated values
    * @param  {unknown}  userAttributes Optional parameter for user's attributes
    * @param  {unknown}  eventTags      Optional parameter for event tags
-   * @return {boolean} True if inputs are valid
+   * @return {boolean}                 True if inputs are valid
    *
    */
   __validateInputs(
@@ -720,8 +725,9 @@ export default class Optimizely {
    *                                               being accessed
    * @param {string}          userId               ID for the user
    * @param {UserAttributes}  attributes           Optional user attributes
-   * @return {unknown}        Value of the variable cast to the appropriate
-   * type, or null if the feature key is invalid or the variable key is invalid
+   * @return {unknown}                             Value of the variable cast to the appropriate
+   *                                               type, or null if the feature key is invalid or
+   *                                               the variable key is invalid
    */
 
   getFeatureVariable(

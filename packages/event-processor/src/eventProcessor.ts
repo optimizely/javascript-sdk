@@ -16,7 +16,7 @@
 // TODO change this to use Managed from js-sdk-models when available
 import { Managed } from './managed'
 import { ConversionEvent, ImpressionEvent } from './events'
-import { EventV1Request, EventDispatcher } from './eventDispatcher'
+import { EventV1Request } from './eventDispatcher'
 import { EventQueue, DefaultEventQueue, SingleEventQueue } from './eventQueue'
 import { getLogger } from '@optimizely/js-sdk-logging'
 import { NOTIFICATION_TYPES, NotificationCenter } from '@optimizely/js-sdk-utils'
@@ -32,14 +32,6 @@ export type EventDispatchResult = { result: boolean; event: ProcessableEvent }
 
 export interface EventProcessor extends Managed {
   process(event: Partial<ProcessableEvent>): void
-}
-
-export interface LogTierV1EventProcessorConfig {
-  dispatcher: EventDispatcher;
-  flushInterval?: number;
-  batchSize?: number;
-  notificationCenter?: NotificationCenter;
-  maxQueueSize?: number;
 }
 
 export function validateAndGetFlushInterval(flushInterval: number): number {
