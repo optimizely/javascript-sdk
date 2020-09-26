@@ -255,7 +255,7 @@ export default class Optimizely {
       configObj: configObj,
     });
     // TODO is it okay to not pass a projectConfig as second argument
-    this.eventProcessor.process(impressionEvent);
+    this.eventProcessor.process(impressionEvent as eventProcessor.ProcessableEvent);
     this.__emitNotificationCenterActivate(experimentKey, variationKey, userId, attributes);
   }
 
@@ -344,7 +344,7 @@ export default class Optimizely {
       });
       this.logger.log(LOG_LEVEL.INFO, sprintf(enums.LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId));
       // TODO is it okay to not pass a projectConfig as second argument
-      this.eventProcessor.process(conversionEvent);
+      this.eventProcessor.process(conversionEvent as eventProcessor.ProcessableEvent);
       this.__emitNotificationCenterTrack(eventKey, userId, attributes as UserAttributes, eventTags);
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);

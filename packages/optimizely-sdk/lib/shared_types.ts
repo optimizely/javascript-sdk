@@ -122,7 +122,7 @@ export interface OptimizelyConfig {
 }
 
 /**
- * Temprorary location LogTierV1EventProcessorConfig
+ * Temprorary placement of LogTierV1EventProcessorConfig
  */
 export interface LogTierV1EventProcessorConfig {
   dispatcher: import ('@optimizely/js-sdk-event-processor').EventDispatcher;
