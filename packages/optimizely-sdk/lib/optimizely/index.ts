@@ -18,7 +18,7 @@ import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 import { FeatureFlag, FeatureVariable } from '../core/project_config/entities';
 import { EventDispatcher } from '@optimizely/js-sdk-event-processor';
-import { UserAttributes, Variation, EventTags } from '../shared_types';
+import { UserAttributes, Variation, EventTags, OptimizelyConfig } from '../shared_types';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
 import { createDecisionService, DecisionService } from '../core/decision_service';
@@ -161,7 +161,7 @@ export default class Optimizely {
    */
   __isValidInstance(): boolean {
   return this.__isOptimizelyConfigValid && !!this.projectConfigManager.getConfig();
-  };
+  }
 
   /**
    * Buckets visitor and sends impression event to Optimizely.
@@ -181,20 +181,20 @@ export default class Optimizely {
         return this.__notActivatingExperiment(experimentKey, userId);
       }
 
-      var configObj = this.projectConfigManager.getConfig();
+      const configObj = this.projectConfigManager.getConfig();
       if (!configObj) {
         return null;
       }
 
       try {
-        var variationKey = this.getVariation(experimentKey, userId, attributes);
+        const variationKey = this.getVariation(experimentKey, userId, attributes);
         if (variationKey === null) {
           return this.__notActivatingExperiment(experimentKey, userId);
         }
 
         // If experiment is not set to 'Running' status, log accordingly and return variation key
         if (!projectConfig.isRunning(configObj, experimentKey)) {
-          var shouldNotDispatchActivateLogMessage = sprintf(
+          const shouldNotDispatchActivateLogMessage = sprintf(
             LOG_MESSAGES.SHOULD_NOT_DISPATCH_ACTIVATE,
             MODULE_NAME,
             experimentKey
@@ -208,7 +208,7 @@ export default class Optimizely {
         return variationKey;
       } catch (ex) {
         this.logger.log(LOG_LEVEL.ERROR, ex.message);
-        var failedActivationLogMessage = sprintf(
+        const failedActivationLogMessage = sprintf(
           LOG_MESSAGES.NOT_ACTIVATING_USER,
           MODULE_NAME,
           userId,
@@ -223,7 +223,7 @@ export default class Optimizely {
       this.errorHandler.handleError(e);
       return null;
     }
-  };
+  }
 
   /**
    * Create an impression event and call the event dispatcher's dispatch method to
@@ -252,7 +252,7 @@ export default class Optimizely {
     // TODO is it okay to not pass a projectConfig as second argument
     this.eventProcessor.process(impressionEvent);
     this.__emitNotificationCenterActivate(experimentKey, variationKey, userId, attributes);
-  };
+  }
 
   /**
    * Emit the ACTIVATE notification on the notificationCenter
@@ -261,7 +261,7 @@ export default class Optimizely {
    * @param {string}         userId         ID of user to whom the variation was shown
    * @param {UserAttributes} attributes     Optional user attributes
    */
-  __emitNotificationCenterActivate(experimentKey: string, variationKey: string, userId: string, attributes?: UserAttributes) {
+  __emitNotificationCenterActivate(experimentKey: string, variationKey: string, userId: string, attributes?: UserAttributes): void {
     const configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return;
@@ -292,7 +292,7 @@ export default class Optimizely {
       variation: variation,
       logEvent: impressionEvent,
     });
-  };
+  }
 
   /**
    * Sends conversion event to Optimizely.
@@ -312,7 +312,7 @@ export default class Optimizely {
         return;
       }
 
-      var configObj = this.projectConfigManager.getConfig();
+      const configObj = this.projectConfigManager.getConfig();
       if (!configObj) {
         return;
       }
@@ -328,7 +328,7 @@ export default class Optimizely {
 
       // remove null values from eventTags
       eventTags = this.__filterEmptyValues(eventTags as EventTags);
-      var conversionEvent = buildConversionEvent({
+      const conversionEvent = buildConversionEvent({
         eventKey: eventKey,
         eventTags: eventTags,
         userId: userId,
@@ -344,7 +344,7 @@ export default class Optimizely {
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
-      var failedTrackLogMessage = sprintf(LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId);
+      const failedTrackLogMessage = sprintf(LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId);
       this.logger.log(LOG_LEVEL.ERROR, failedTrackLogMessage);
     }
   }
@@ -357,12 +357,12 @@ export default class Optimizely {
    */
   __emitNotificationCenterTrack(eventKey: string, userId: string, attributes: UserAttributes, eventTags: EventTags): void {
     try {
-      var configObj = this.projectConfigManager.getConfig();
+      const configObj = this.projectConfigManager.getConfig();
       if (!configObj) {
         return;
       }
 
-      var conversionEventOptions = {
+      const conversionEventOptions = {
         attributes: attributes,
         clientEngine: this.clientEngine,
         clientVersion: this.clientVersion,
@@ -372,7 +372,7 @@ export default class Optimizely {
         logger: this.logger,
         userId: userId,
       };
-      var conversionEvent = getConversionEvent(conversionEventOptions);
+      const conversionEvent = getConversionEvent(conversionEventOptions);
 
       this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.TRACK, {
         eventKey: eventKey,
@@ -385,7 +385,7 @@ export default class Optimizely {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       this.errorHandler.handleError(ex);
     }
-  };
+  }
 
   /**
    * Gets variation where visitor will be bucketed.
@@ -406,12 +406,12 @@ export default class Optimizely {
           return null;
         }
 
-        var configObj = this.projectConfigManager.getConfig();
+        const configObj = this.projectConfigManager.getConfig();
         if (!configObj) {
           return null;
         }
 
-        var experiment = configObj.experimentKeyMap[experimentKey];
+        const experiment = configObj.experimentKeyMap[experimentKey];
         if (!experiment) {
           this.logger.log(
             LOG_LEVEL.DEBUG,
@@ -420,8 +420,8 @@ export default class Optimizely {
           return null;
         }
 
-        var variationKey = this.decisionService.getVariation(configObj, experimentKey, userId, attributes);
-        var decisionNotificationType = projectConfig.isFeatureExperiment(configObj, experiment.id)
+        const variationKey = this.decisionService.getVariation(configObj, experimentKey, userId, attributes);
+        const decisionNotificationType = projectConfig.isFeatureExperiment(configObj, experiment.id)
           ? DECISION_NOTIFICATION_TYPES.FEATURE_TEST
           : DECISION_NOTIFICATION_TYPES.AB_TEST;
 
@@ -446,7 +446,7 @@ export default class Optimizely {
       this.errorHandler.handleError(e);
       return null;
     }
-  };
+  }
 
   /**
    * Force a user into a variation for a given experiment.
@@ -460,7 +460,7 @@ export default class Optimizely {
       return false;
     }
 
-    var configObj = this.projectConfigManager.getConfig();
+    const configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return false;
     }
@@ -472,7 +472,7 @@ export default class Optimizely {
       this.errorHandler.handleError(ex);
       return false;
     }
-  };
+  }
 
   /**
    * Gets the forced variation for a given user and experiment.
@@ -485,7 +485,7 @@ export default class Optimizely {
       return null;
     }
 
-    var configObj = this.projectConfigManager.getConfig();
+    const configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return null;
     }
@@ -497,7 +497,7 @@ export default class Optimizely {
       this.errorHandler.handleError(ex);
       return null;
     }
-  };
+  }
 
   /**
    * Validate string inputs, user attributes and event tags.
@@ -524,8 +524,8 @@ export default class Optimizely {
           delete stringInputs['user_id'];
         }
         const inputKeys = Object.keys(stringInputs);
-        for (var index = 0; index < inputKeys.length; index++) {
-          var key = inputKeys[index];
+        for (let index = 0; index < inputKeys.length; index++) {
+          const key = inputKeys[index];
           if (!stringValidator.validate(stringInputs[key])) {
             throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, key));
           }
@@ -545,7 +545,7 @@ export default class Optimizely {
       return false;
     }
 
-  };
+  }
 
   /**
    * Shows failed activation log message and returns null when user is not activated in experiment
@@ -562,7 +562,7 @@ export default class Optimizely {
     );
     this.logger.log(LOG_LEVEL.INFO, failedActivationLogMessage);
     return null;
-  };
+  }
 
   /**
    * Filters out attributes/eventTags with null or undefined values
@@ -570,13 +570,13 @@ export default class Optimizely {
    * @returns {EventTags} 
    */
   __filterEmptyValues(map: EventTags): EventTags {
-    for (var key in map) {
+    for (const key in map) {
       if (map.hasOwnProperty(key) && (map[key] === null || map[key] === undefined)) {
         delete map[key];
       }
     }
     return map;
-  };
+  }
 
   /**
    * Returns true if the feature is enabled for the given user.
@@ -663,7 +663,7 @@ export default class Optimizely {
       this.errorHandler.handleError(e);
       return false;
     }
-  };
+  }
 
   /**
    * Returns an Array containing the keys of all features in the project that are
@@ -693,7 +693,7 @@ export default class Optimizely {
       }
       if (configObj.featureKeyMap) {
         objectValues(configObj.featureKeyMap).forEach(
-          function(this: Optimizely,feature: FeatureFlag): void {
+          function(this: Optimizely, feature: FeatureFlag): void {
             if (this.isFeatureEnabled(feature.key, userId, attributes)) {
               enabledFeatures.push(feature.key);
             }
@@ -707,7 +707,7 @@ export default class Optimizely {
       this.errorHandler.handleError(e);
       return [];
     }
-  };
+  }
 
   /**
    * Returns dynamically-typed value of the variable attached to the given
@@ -740,7 +740,7 @@ export default class Optimizely {
       this.errorHandler.handleError(e);
       return null;
     }
-  };
+  }
 
   /**
    * Helper method to get the value for a variable of a certain type attached to a
@@ -773,17 +773,17 @@ export default class Optimizely {
       return null;
     }
 
-    var configObj = this.projectConfigManager.getConfig();
+    const configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return null;
     }
 
-    var featureFlag = projectConfig.getFeatureFromKey(configObj, featureKey, this.logger);
+    const featureFlag = projectConfig.getFeatureFromKey(configObj, featureKey, this.logger);
     if (!featureFlag) {
       return null;
     }
 
-    var variable = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, this.logger);
+    const variable = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, this.logger);
     if (!variable) {
       return null;
     }
@@ -796,10 +796,10 @@ export default class Optimizely {
       return null;
     }
 
-    var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
-    var featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;
-    var variableValue = this._getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
-    var sourceInfo = {};
+    const decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
+    const featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;
+    const variableValue = this._getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
+    let sourceInfo = {};
     if (
       decision.decisionSource === DECISION_SOURCES.FEATURE_TEST &&
       decision.experiment !== null &&
@@ -826,7 +826,7 @@ export default class Optimizely {
       },
     });
     return variableValue;
-  };
+  }
 
   /**
    * Helper method to get the non type-casted value for a variable attached to a
@@ -851,14 +851,14 @@ export default class Optimizely {
     variable: FeatureVariable,
     userId: string
   ): string | null {
-    var configObj = this.projectConfigManager.getConfig();
+    const configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return null;
     }
 
-    var variableValue = variable.defaultValue;
+    let variableValue = variable.defaultValue;
     if (variation !== null) {
-      var value = projectConfig.getVariableValueForVariation(configObj, variable, variation, this.logger);
+      const value = projectConfig.getVariableValueForVariation(configObj, variable, variation, this.logger);
       if (value !== null) {
         if (featureEnabled) {
           variableValue = value;
@@ -941,7 +941,7 @@ export default class Optimizely {
       this.errorHandler.handleError(e);
       return null;
     }
-  };
+  }
 
   /**
    * Returns value for the given double variable attached to the given feature
@@ -974,7 +974,7 @@ export default class Optimizely {
       this.errorHandler.handleError(e);
       return null;
     }
-  };
+  }
 
   /**
    * Returns value for the given integer variable attached to the given feature
@@ -1007,7 +1007,7 @@ export default class Optimizely {
       this.errorHandler.handleError(e);
       return null;
     }
-  };
+  }
 
   /**
    * Returns value for the given string variable attached to the given feature
@@ -1040,7 +1040,7 @@ export default class Optimizely {
       this.errorHandler.handleError(e);
       return null;
     }
-  };
+  }
 
   /**
    * Returns value for the given json variable attached to the given feature
@@ -1073,7 +1073,7 @@ export default class Optimizely {
       this.errorHandler.handleError(e);
       return null;
     }
-  };
+  }
 
   /**
    * Returns values for all the variables attached to the given feature
@@ -1100,25 +1100,25 @@ export default class Optimizely {
         return null;
       }
 
-      var configObj = this.projectConfigManager.getConfig();
+      const configObj = this.projectConfigManager.getConfig();
       if (!configObj) {
         return null;
       }
 
-      var featureFlag = projectConfig.getFeatureFromKey(configObj, featureKey, this.logger);
+      const featureFlag = projectConfig.getFeatureFromKey(configObj, featureKey, this.logger);
       if (!featureFlag) {
         return null;
       }
 
-      var decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
-      var featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;
-      var allVariables = {};
+      const decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
+      const featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;
+      const allVariables = {};
 
       featureFlag.variables.forEach(function (this: Optimizely, variable: FeatureVariable) {
         allVariables[variable.key] = this._getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
       }.bind(this));
 
-      var sourceInfo = {};
+      let sourceInfo = {};
       if (decision.decisionSource === DECISION_SOURCES.FEATURE_TEST &&
           decision.experiment !== null &&
           decision.variation !== null
@@ -1147,11 +1147,11 @@ export default class Optimizely {
       this.errorHandler.handleError(e);
       return null;
     }
-  };
+  }
 
   /**
    * Returns OptimizelyConfig object containing experiments and features data
-   * @return {Object}
+   * @return {OptimizelyConfig|null}
    *
    * OptimizelyConfig Object Schema
    * {
@@ -1185,9 +1185,9 @@ export default class Optimizely {
    *   }
    * }
    */
-  getOptimizelyConfig() {
+  getOptimizelyConfig(): OptimizelyConfig | null {
     try {
-      var configObj = this.projectConfigManager.getConfig();
+      const configObj = this.projectConfigManager.getConfig();
       if (!configObj) {
         return null;
       }
@@ -1197,7 +1197,7 @@ export default class Optimizely {
       this.errorHandler.handleError(e);
       return null;
     }
-  };
+  }
 
   /**
    * Stop background processes belonging to this instance, including:
@@ -1232,7 +1232,7 @@ export default class Optimizely {
    */
   close(): Promise<{ success: boolean; reason?: string }> {
     try {
-      var eventProcessorStoppedPromise = this.eventProcessor.stop();
+      const eventProcessorStoppedPromise = this.eventProcessor.stop();
       if (this.__disposeOnUpdate) {
         this.__disposeOnUpdate();
         this.__disposeOnUpdate = null;
@@ -1242,7 +1242,7 @@ export default class Optimizely {
       }
       Object.keys(this.__readyTimeouts).forEach(
         function(this: Optimizely, readyTimeoutId: string ) {
-          var readyTimeoutRecord = this.__readyTimeouts[readyTimeoutId];
+          const readyTimeoutRecord = this.__readyTimeouts[readyTimeoutId];
           clearTimeout(readyTimeoutRecord.readyTimeout);
           readyTimeoutRecord.onClose();
         }.bind(this)
@@ -1269,7 +1269,7 @@ export default class Optimizely {
         reason: String(err),
       });
     }
-  };
+  }
 
   /**
    * Returns a Promise that fulfills when this instance is ready to use (meaning
@@ -1312,22 +1312,22 @@ export default class Optimizely {
     type Resolve = (value?: unknown) => void;
 
     let resolveTimeoutPromise: any;
-    var timeoutPromise = new Promise(function(resolve: Resolve) {
+    const timeoutPromise = new Promise(function(resolve: Resolve) {
       resolveTimeoutPromise = resolve;
     });
 
-    var timeoutId = this.__nextReadyTimeoutId;
+    const timeoutId = this.__nextReadyTimeoutId;
     this.__nextReadyTimeoutId++;
 
-    var onReadyTimeout = function(this: Optimizely) {
+    const onReadyTimeout = function(this: Optimizely) {
       delete this.__readyTimeouts[timeoutId];
       resolveTimeoutPromise({
         success: false,
         reason: sprintf('onReady timeout expired after %s ms', timeoutValue),
       });
     }.bind(this);
-    var readyTimeout = setTimeout(onReadyTimeout, timeoutValue);
-    var onClose = function() {
+    const readyTimeout = setTimeout(onReadyTimeout, timeoutValue);
+    const onClose = function() {
       resolveTimeoutPromise({
         success: false,
         reason: 'Instance closed',
@@ -1350,5 +1350,5 @@ export default class Optimizely {
     );
 
     return Promise.race([this.__readyPromise, timeoutPromise]) as Promise<{ success: boolean; reason?: string | undefined; }>;
-  };
+  }
 }
