@@ -15,6 +15,7 @@
  ***************************************************************************/
 import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
+import { LogTierV1EventProcessorConfig } from '../../../event-processor/src';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 import { FeatureFlag, FeatureVariable } from '../core/project_config/entities';
 import { EventDispatcher } from '@optimizely/js-sdk-event-processor';
@@ -139,7 +140,7 @@ export default class Optimizely {
     batchSize: config.eventBatchSize,
     maxQueueSize: config.eventMaxQueueSize, // TODO: update event-processor to include maxQueueSize
     notificationCenter: this.notificationCenter,
-  });
+  } as LogTierV1EventProcessorConfig);
   
 
   const eventProcessorStartedPromise = this.eventProcessor.start();
