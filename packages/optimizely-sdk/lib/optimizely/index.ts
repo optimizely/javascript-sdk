@@ -16,27 +16,21 @@
 import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
 import * as eventProcessor from '@optimizely/js-sdk-event-processor';
-import { EventTags, EventDispatcher } from '@optimizely/optimizely-sdk';
 import { FeatureFlag, FeatureVariable } from '../core/project_config/entities';
-import { UserAttributes, Variation } from '../shared_types';
-import { ProjectConfig } from '@optimizely/optimizely-sdk/lib/core/project_config';
-import { ProjectConfigManager, createProjectConfigManager }from '@optimizely/optimizely-sdk/lib/core/projet_config_manager';
-
+import { EventDispatcher } from '@optimizely/js-sdk-event-processor';
+import { UserAttributes, Variation, EventTags } from '../shared_types';
+import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
+import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
+import { createDecisionService, DecisionService } from '../core/decision_service';
+import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
+import { buildImpressionEvent, buildConversionEvent } from '../core/event_builder/event_helpers';
 import { isSafeInteger } from '../utils/fns'
 import { validate } from '../utils/attributes_validator';
-// import * as decisionService from '../core/decision_service';
-import { DecisionService, createDecisionService} from '@optimizely/optimizely-sdk/lib/core/decision_service';
 import * as enums from '../utils/enums';
-import { getImpressionEvent, getConversionEvent } from '@optimizely/optimizely-sdk/lib/core/event_builder';
-import { buildImpressionEvent, buildConversionEvent } from '@optimizely/optimizely-sdk/lib/core/event_builder';
 import * as eventTagsValidator from '../utils/event_tags_validator';
-// import notificationCenter from '../core/notification_center';
-import { NotificationCenter, createNotificationCenter} from '@optimizely/optimizely-sdk/lib/core/notification_center';
-// import projectConfig from '../core/project_config';
-import * as projectConfig from '@optimizely/optimizely-sdk/lib/core/project_config';
+import * as projectConfig from '../core/project_config';
 import * as userProfileServiceValidator from '../utils/user_profile_service_validator';
 import * as stringValidator from '../utils/string_value_validator';
-// import * as projectConfigManager from '@optimizely/optimizely-sdk/lib/core/projet_config_manager';
 
 const ERROR_MESSAGES = enums.ERROR_MESSAGES;
 const LOG_LEVEL = enums.LOG_LEVEL;
@@ -80,7 +74,7 @@ export default class Optimizely {
   private eventProcessor: eventProcessor.EventProcessor;
 
 
-  constructor(config: ProjectConfig) {
+  constructor(config: projectConfig.ProjectConfig) {
     let clientEngine = config.clientEngine;
   if (enums.VALID_CLIENT_ENGINES.indexOf(clientEngine) === -1) {
     config.logger.log(
@@ -105,7 +99,7 @@ export default class Optimizely {
   });
 
   this.__disposeOnUpdate = this.projectConfigManager.onUpdate(
-    function(this: Optimizely, configObj: ProjectConfig) {
+    function(this: Optimizely, configObj: projectConfig.ProjectConfig) {
       this.logger.log(
         LOG_LEVEL.INFO,
         sprintf(LOG_MESSAGES.UPDATED_OPTIMIZELY_CONFIG, MODULE_NAME, configObj.revision, configObj.projectId)
