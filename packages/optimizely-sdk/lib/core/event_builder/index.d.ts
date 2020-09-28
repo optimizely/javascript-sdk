@@ -20,26 +20,26 @@ declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
   import { Event as EventLoggingEndpoint } from '@optimizely/optimizely-sdk';
 
   interface ImpressionOptions {
-    attributes: import('../../shared_types').UserAttributes;
+    attributes?: import('../../shared_types').UserAttributes;
     clientEngine: string;
     clientVersion: string;
     configObj: ProjectConfig;
     experimentId: string;
-    eventKey: string;
+    eventKey?: string;
     variationId: string;
-    logger: LogHandler;
+    logger?: LogHandler;
     userId: string;
   }
 
   interface ConversionEventOptions {
-    attributes: import('../../shared_types').UserAttributes;
+    attributes?: import('../../shared_types').UserAttributes;
     clientEngine: string;
     clientVersion: string;
     configObj: ProjectConfig;
     eventKey: string;
     logger: LogHandler;
     userId: string;
-    eventTags: import('../../shared_types').EventTags;
+    eventTags?: import('../../shared_types').EventTags;
   }
 
   /**
