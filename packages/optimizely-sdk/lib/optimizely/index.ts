@@ -589,7 +589,7 @@ export default class Optimizely {
    * @param  {string}         featureKey   Key of feature which will be checked
    * @param  {string}         userId       ID of user which will be checked
    * @param  {UserAttributes} attributes   Optional user attributes
-   * @return {boolean}        true if the feature is enabled for the user, false otherwise
+   * @return {boolean}                     true if the feature is enabled for the user, false otherwise
    */
   isFeatureEnabled(featureKey: string, userId: string, attributes?: UserAttributes): boolean {
     try {
@@ -678,7 +678,7 @@ export default class Optimizely {
    * @param  {UserAttributes} attributes
    * @return {string[]}       Array of feature keys (strings)
    */
-  getEnabledFeatures(userId: string, attributes: UserAttributes): string[] {
+  getEnabledFeatures(userId: string, attributes?: UserAttributes): string[] {
     try {
       const enabledFeatures: string[] = [];
       if (!this.__isValidInstance()) {
@@ -719,15 +719,15 @@ export default class Optimizely {
    * Returns dynamically-typed value of the variable attached to the given
    * feature flag. Returns null if the feature key or variable key is invalid.
    *
-   * @param {string}          featureKey           Key of the feature whose variable's
-   *                                               value is being accessed
-   * @param {string}          variableKey          Key of the variable whose value is
-   *                                               being accessed
-   * @param {string}          userId               ID for the user
-   * @param {UserAttributes}  attributes           Optional user attributes
-   * @return {unknown}                             Value of the variable cast to the appropriate
-   *                                               type, or null if the feature key is invalid or
-   *                                               the variable key is invalid
+   * @param  {string}          featureKey           Key of the feature whose variable's
+   *                                                value is being accessed
+   * @param  {string}          variableKey          Key of the variable whose value is
+   *                                                being accessed
+   * @param  {string}          userId               ID for the user
+   * @param  {UserAttributes}  attributes           Optional user attributes
+   * @return {unknown}                              Value of the variable cast to the appropriate
+   *                                                type, or null if the feature key is invalid or
+   *                                                the variable key is invalid
    */
 
   getFeatureVariable(
@@ -766,9 +766,10 @@ export default class Optimizely {
    *                                                value of the variable cast to the appropriate type
    * @param   {string}         userId               ID for the user
    * @param   {UserAttributes} attributes           Optional user attributes
-   * @return  {unknown}        Value of the variable cast to the appropriate
-   * type, or null if the feature key is invalid, thevariable key is invalid, or there is
-   * a mismatch with the type of the variable
+   * @return  {unknown}                             Value of the variable cast to the appropriate
+   *                                                type, or null if the feature key is invalid, thevariable
+   *                                                key is invalid, or there is a mismatch with the type of
+   *                                                the variable
    */
   _getFeatureVariableForType(
     featureKey: string,
