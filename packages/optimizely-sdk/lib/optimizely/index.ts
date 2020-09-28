@@ -15,7 +15,6 @@
  ***************************************************************************/
 import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
-import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 import { FeatureFlag, FeatureVariable } from '../core/project_config/entities';
 import { EventDispatcher } from '@optimizely/js-sdk-event-processor';
 import {
@@ -32,6 +31,7 @@ import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
 import { buildImpressionEvent, buildConversionEvent } from '../core/event_builder/event_helpers';
 import { isSafeInteger } from '../utils/fns'
 import { validate } from '../utils/attributes_validator';
+import * as eventProcessor from '@optimizely/js-sdk-event-processor';
 import * as enums from '../utils/enums';
 import * as eventTagsValidator from '../utils/event_tags_validator';
 import * as projectConfig from '../core/project_config';
@@ -78,7 +78,6 @@ export default class Optimizely {
   private notificationCenter: NotificationCenter;
   private decisionService: DecisionService;
   private eventProcessor: eventProcessor.EventProcessor;
-
 
   constructor(config: projectConfig.ProjectConfig) {
     let clientEngine = config.clientEngine;
