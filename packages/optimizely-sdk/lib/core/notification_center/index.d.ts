@@ -62,15 +62,15 @@ declare module '@optimizely/optimizely-sdk/lib/core/notification_center' {
   };
 
   export interface NotificationData {
-    type?: DECISION_NOTIFICATION_TYPES;
+    type?: string;
     userId?: string;
     attributes?: import('../../shared_types').UserAttributes;
     decisionInfo?: DecisionInfo;
     experiment?: import('../../shared_types').Experiment;
     variation?: import('../../shared_types').Variation;
-    logEvent?: string;
+    logEvent?: import('../../shared_types').Event;
     eventKey?: string;
-    eventTags?: string;
+    eventTags?: import('../../shared_types').EventTags;
   }
 
   export interface NotificationCenter {
