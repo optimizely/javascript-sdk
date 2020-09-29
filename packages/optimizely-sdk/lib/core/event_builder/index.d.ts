@@ -16,7 +16,7 @@
 import { ProjectConfig } from '../project_config';
 import { LogHandler } from '@optimizely/js-sdk-logging';
 import { EventTags, UserAttributes } from '../../shared_types';
-import { Event as EventLoggingEndpoint } from '../../shared_types';
+import { Event as EventLoggingEndpoint } from '@optimizely/optimizely-sdk';
 
 interface ImpressionOptions {
   attributes?: UserAttributes;

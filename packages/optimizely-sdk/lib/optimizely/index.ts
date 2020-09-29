@@ -37,15 +37,17 @@ import * as eventTagsValidator from '../utils/event_tags_validator';
 import * as projectConfig from '../core/project_config';
 import * as userProfileServiceValidator from '../utils/user_profile_service_validator';
 import * as stringValidator from '../utils/string_value_validator';
+import {
+  ERROR_MESSAGES,
+  LOG_LEVEL,
+  LOG_MESSAGES,
+  DECISION_SOURCES,
+  FEATURE_VARIABLE_TYPES,
+  DECISION_NOTIFICATION_TYPES,
+  NOTIFICATION_TYPES
+} from '../utils/enums';
 
-const ERROR_MESSAGES = enums.ERROR_MESSAGES;
-const LOG_LEVEL = enums.LOG_LEVEL;
-const LOG_MESSAGES = enums.LOG_MESSAGES;
 const MODULE_NAME = 'OPTIMIZELY';
-const DECISION_SOURCES = enums.DECISION_SOURCES;
-const FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
-const DECISION_NOTIFICATION_TYPES = enums.DECISION_NOTIFICATION_TYPES;
-const NOTIFICATION_TYPES = enums.NOTIFICATION_TYPES;
 
 const DEFAULT_ONREADY_TIMEOUT = 30000;
 
@@ -64,11 +66,11 @@ const DEFAULT_ONREADY_TIMEOUT = 30000;
  * @param {string}        config.sdkKey
  */
 export default class Optimizely {
-  private __isOptimizelyConfigValid: boolean;
-  private __disposeOnUpdate: (() => void ) | null;
-  private __readyPromise: Promise<{ success: boolean; reason?: string }>;
-  private __readyTimeouts: { [key: string]: {readyTimeout: number; onClose:() => void} };
-  private __nextReadyTimeoutId: number;
+  private isOptimizelyConfigValid: boolean;
+  private disposeOnUpdate: (() => void ) | null;
+  private readyPromise: Promise<{ success: boolean; reason?: string }>;
+  private readyTimeouts: { [key: string]: {readyTimeout: number; onClose:() => void} };
+  private nextReadyTimeoutId: number;
   private clientEngine: string;
   private clientVersion: string;
   private errorHandler: ErrorHandler;
@@ -93,7 +95,7 @@ export default class Optimizely {
     this.clientVersion = config.clientVersion || enums.NODE_CLIENT_VERSION;
     this.errorHandler = config.errorHandler;
     this.eventDispatcher = config.eventDispatcher;
-    this.__isOptimizelyConfigValid = config.isValidInstance;
+    this.isOptimizelyConfigValid = config.isValidInstance;
     this.logger = config.logger;
 
     this.projectConfigManager = createProjectConfigManager({
@@ -103,14 +105,14 @@ export default class Optimizely {
       sdkKey: config.sdkKey,
     });
 
-    this.__disposeOnUpdate = this.projectConfigManager.onUpdate(
-      function(this: Optimizely, configObj: projectConfig.ProjectConfig) {
+    this.disposeOnUpdate = this.projectConfigManager.onUpdate(
+      (configObj: projectConfig.ProjectConfig) => {
         this.logger.log(
           LOG_LEVEL.INFO,
           sprintf(LOG_MESSAGES.UPDATED_OPTIMIZELY_CONFIG, MODULE_NAME, configObj.revision, configObj.projectId)
         );
         this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE);
-      }.bind(this)
+      }
     );
 
     const projectConfigManagerReadyPromise = this.projectConfigManager.onReady();
@@ -148,13 +150,13 @@ export default class Optimizely {
 
     const eventProcessorStartedPromise = this.eventProcessor.start();
 
-    this.__readyPromise = Promise.all([projectConfigManagerReadyPromise, eventProcessorStartedPromise]).then(function(promiseResults) {
+    this.readyPromise = Promise.all([projectConfigManagerReadyPromise, eventProcessorStartedPromise]).then(function(promiseResults) {
       // Only return status from project config promise because event processor promise does not return any status.
       return promiseResults[0];
     })
 
-    this.__readyTimeouts = {};
-    this.__nextReadyTimeoutId = 0;
+    this.readyTimeouts = {};
+    this.nextReadyTimeoutId = 0;
   }
 
   /**
@@ -164,7 +166,7 @@ export default class Optimizely {
    * @return {boolean}
    */
   __isValidInstance(): boolean {
-  return this.__isOptimizelyConfigValid && !!this.projectConfigManager.getConfig();
+  return this.isOptimizelyConfigValid && !!this.projectConfigManager.getConfig();
   }
 
   /**
@@ -857,7 +859,7 @@ export default class Optimizely {
     variation: Variation | null,
     variable: FeatureVariable,
     userId: string
-  ): string | null {
+  ): unknown {
     const configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return null;
@@ -1240,21 +1242,21 @@ export default class Optimizely {
   close(): Promise<{ success: boolean; reason?: string }> {
     try {
       const eventProcessorStoppedPromise = this.eventProcessor.stop();
-      if (this.__disposeOnUpdate) {
-        this.__disposeOnUpdate();
-        this.__disposeOnUpdate = null;
+      if (this.disposeOnUpdate) {
+        this.disposeOnUpdate();
+        this.disposeOnUpdate = null;
       }
       if (this.projectConfigManager) {
         this.projectConfigManager.stop();
       }
-      Object.keys(this.__readyTimeouts).forEach(
+      Object.keys(this.readyTimeouts).forEach(
         function(this: Optimizely, readyTimeoutId: string ) {
-          const readyTimeoutRecord = this.__readyTimeouts[readyTimeoutId];
+          const readyTimeoutRecord = this.readyTimeouts[readyTimeoutId];
           clearTimeout(readyTimeoutRecord.readyTimeout);
           readyTimeoutRecord.onClose();
         }.bind(this)
       );
-      this.__readyTimeouts = {};
+      this.readyTimeouts = {};
       return eventProcessorStoppedPromise.then(
         function() {
           return {
@@ -1321,11 +1323,11 @@ export default class Optimizely {
       resolveTimeoutPromise = resolve;
     });
 
-    const timeoutId = this.__nextReadyTimeoutId;
-    this.__nextReadyTimeoutId++;
+    const timeoutId = this.nextReadyTimeoutId;
+    this.nextReadyTimeoutId++;
 
     const onReadyTimeout = (() => {
-      delete this.__readyTimeouts[timeoutId];
+      delete this.readyTimeouts[timeoutId];
       resolveTimeoutPromise({
         success: false,
         reason: sprintf('onReady timeout expired after %s ms', timeoutValue),
@@ -1339,21 +1341,21 @@ export default class Optimizely {
       });
     };
 
-    this.__readyTimeouts[timeoutId] = {
+    this.readyTimeouts[timeoutId] = {
       readyTimeout: readyTimeout,
       onClose: onClose,
     };
 
-    this.__readyPromise.then(
+    this.readyPromise.then(
       function(this: Optimizely) {
         clearTimeout(readyTimeout);
-        delete this.__readyTimeouts[timeoutId];
+        delete this.readyTimeouts[timeoutId];
         resolveTimeoutPromise({
           success: true,
         });
       }.bind(this)
     );
 
-    return Promise.race([this.__readyPromise, timeoutPromise]) as Promise<{ success: boolean; reason?: string | undefined; }>;
+    return Promise.race([this.readyPromise, timeoutPromise]) as Promise<{ success: boolean; reason?: string | undefined; }>;
   }
 }

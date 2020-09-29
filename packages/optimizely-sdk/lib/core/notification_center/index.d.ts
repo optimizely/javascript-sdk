@@ -15,7 +15,8 @@
  * limitations under the License.
  */
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
-import { Event, EventTags, UserAttributes } from '../../shared_types';
+import { Event } from '@optimizely/optimizely-sdk';
+import { EventTags, UserAttributes } from '../../shared_types';
 import { Experiment, Variation } from '../project_config/entities';
 
 export enum NOTIFICATION_TYPES {
@@ -62,7 +63,6 @@ export type DecisionInfo = {
 };
 
 export interface NotificationData {
-  // type?: DECISION_NOTIFICATION_TYPES;
   type?: string;
   userId?: string;
   attributes?: UserAttributes;
