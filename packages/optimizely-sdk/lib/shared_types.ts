@@ -4,35 +4,6 @@ export type UserAttributes = {
   [name: string]: any;
 }
 
-export interface VariationVariable {
-  id: string;
-  value: string;
-}
-
-export interface Variation {
-  id: string;
-  key: string;
-  featureEnabled: boolean;
-  variables: VariationVariable[];
-}
-
-export interface Experiment {
-  id: string;
-  key: string;
-  status: string;
-  layerId: string;
-  variations: Variation[];
-  trafficAllocation: Array<{
-    entityId: string;
-    endOfRange: number;
-  }>;
-  audienceIds: string[];
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  forcedVariations: object;
-  variationKeyMap?: {[key: string]: Variation}
-}
-
 // Information about past bucketing decisions for a user.
 export interface UserProfile {
   user_id: string;
@@ -63,13 +34,6 @@ export interface Event {
 export interface UserProfileService {
   lookup(userId: string): UserProfile;
   save(profile: UserProfile): void;
-}
-
-export interface DatafileOptions {
-  autoUpdate?: boolean;
-  updateInterval?: number;
-  urlTemplate?: string;
-  datafileAccessToken?: string;
 }
 
 /**

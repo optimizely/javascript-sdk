@@ -19,11 +19,11 @@ import { FeatureFlag, FeatureVariable } from '../core/project_config/entities';
 import { EventDispatcher } from '@optimizely/js-sdk-event-processor';
 import {
   UserAttributes,
-  Variation,
   EventTags,
   OptimizelyConfig,
   LogTierV1EventProcessorConfig
 } from '../shared_types';
+import { Variation } from '../core/project_config/entities';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
 import { createDecisionService, DecisionService } from '../core/decision_service';
@@ -1324,13 +1324,13 @@ export default class Optimizely {
     const timeoutId = this.__nextReadyTimeoutId;
     this.__nextReadyTimeoutId++;
 
-    const onReadyTimeout = function(this: Optimizely) {
+    const onReadyTimeout = (() => {
       delete this.__readyTimeouts[timeoutId];
       resolveTimeoutPromise({
         success: false,
         reason: sprintf('onReady timeout expired after %s ms', timeoutValue),
       });
-    }.bind(this);
+    }).bind(this);
     const readyTimeout = setTimeout(onReadyTimeout, timeoutValue);
     const onClose = function() {
       resolveTimeoutPromise({

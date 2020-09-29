@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
+import { DatafileOptions } from '@optimizely/optimizely-sdk';
 import { EventDispatcher } from '@optimizely/js-sdk-event-processor';
-import { DatafileOptions, UserProfileService, Experiment, Variation } from '../../shared_types';
-import { FeatureFlag, FeatureVariable } from './entities';
+import { UserProfileService } from '../../shared_types';
+import { FeatureFlag, FeatureVariable, Experiment, Variation  } from './entities';
 
 
 // eslint-disable-next-line  @typescript-eslint/no-empty-interface
