@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Bug fixes
+
+  - Fixed return type of `getAllFeatureVariables` method in TypeScript type definitions ([#576](https://github.com/optimizely/javascript-sdk/pull/576))
+
 ## [4.2.1] - August 10, 2020
 
 ### Bug fixes

@@ -19,8 +19,6 @@ import { EventDispatcher } from '@optimizely/js-sdk-event-processor';
 import { UserProfileService } from '../../shared_types';
 import { FeatureFlag, FeatureVariable, Experiment, Variation  } from './entities';
 
-
-// eslint-disable-next-line  @typescript-eslint/no-empty-interface
 export interface ProjectConfig {
   revision: string;
   projectId: string;
@@ -134,7 +132,8 @@ export function getVariableForFeature(configObj: ProjectConfig, featureKey: stri
  * @returns {T}                               Variable value of the appropriate type, or
  *                                            null if the type cast failed
  */
-export function getTypeCastValue<T>(variableValue: string, type: string, logger: LogHandler): T;
+//TODO:[OASIS-7189] define type as enum
+export function getTypeCastValue(variableValue: string, type: string, logger: LogHandler): unknown;
 
 /**
  * Get the value of the given variable for the given variation. If the given

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 export interface FeatureVariable {
   type: string;
   key: string;
@@ -27,7 +26,7 @@ export interface FeatureFlag {
   id: string;
   experimentIds: string[],
   variables: FeatureVariable[],
-  variableKeyMap?: {[key: string]: FeatureVariable}
+  variableKeyMap: {[key: string]: FeatureVariable}
 }
 
 export interface FeatureKeyMap {
