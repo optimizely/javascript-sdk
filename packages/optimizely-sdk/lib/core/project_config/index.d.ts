@@ -129,7 +129,7 @@ export function getVariableForFeature(configObj: ProjectConfig, featureKey: stri
  *                                            for BOOLEAN, number for INTEGER or DOUBLE,
  *                                            and string for STRING).
  * @param   {LogHandler}    logger            Logger instance
- * @returns {T}                               Variable value of the appropriate type, or
+ * @returns {unknown}                         Variable value of the appropriate type, or
  *                                            null if the type cast failed
  */
 //TODO:[OASIS-7189] define type as enum

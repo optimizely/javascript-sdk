@@ -166,7 +166,7 @@ export default class Optimizely {
    * @return {boolean}
    */
   __isValidInstance(): boolean {
-  return this.isOptimizelyConfigValid && !!this.projectConfigManager.getConfig();
+    return this.isOptimizelyConfigValid && !!this.projectConfigManager.getConfig();
   }
 
   /**
@@ -333,7 +333,7 @@ export default class Optimizely {
       }
 
       // remove null values from eventTags
-      eventTags = this.__filterEmptyValues(eventTags as EventTags);
+      eventTags = this.__filterEmptyValues(eventTags);
       const conversionEvent = buildConversionEvent({
         eventKey: eventKey,
         eventTags: eventTags,
@@ -346,7 +346,7 @@ export default class Optimizely {
       this.logger.log(LOG_LEVEL.INFO, sprintf(enums.LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId));
       // TODO is it okay to not pass a projectConfig as second argument
       this.eventProcessor.process(conversionEvent as eventProcessor.ProcessableEvent);
-      this.__emitNotificationCenterTrack(eventKey, userId, attributes as UserAttributes, eventTags);
+      this.__emitNotificationCenterTrack(eventKey, userId, attributes, eventTags);
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
@@ -361,7 +361,7 @@ export default class Optimizely {
    * @param  {UserAttributes} attributes
    * @param  {EventTags}      eventTags Values associated with the event.
    */
-  __emitNotificationCenterTrack(eventKey: string, userId: string, attributes: UserAttributes, eventTags: EventTags): void {
+  __emitNotificationCenterTrack(eventKey: string, userId: string, attributes?: UserAttributes, eventTags?: EventTags): void {
     try {
       const configObj = this.projectConfigManager.getConfig();
       if (!configObj) {
@@ -530,13 +530,11 @@ export default class Optimizely {
 
           delete stringInputs['user_id'];
         }
-        const inputKeys = Object.keys(stringInputs);
-        for (let index = 0; index < inputKeys.length; index++) {
-          const key = inputKeys[index];
+        Object.keys(stringInputs).forEach(key => {
           if (!stringValidator.validate(stringInputs[key])) {
             throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, key));
           }
-        }
+        })
       }
       if (userAttributes) {
         validate(userAttributes);
@@ -573,10 +571,10 @@ export default class Optimizely {
 
   /**
    * Filters out attributes/eventTags with null or undefined values
-   * @param   {EventTags} map
-   * @returns {EventTags} 
+   * @param   {EventTags | undefined} map
+   * @returns {EventTags | undefined}
    */
-  __filterEmptyValues(map: EventTags): EventTags {
+  __filterEmptyValues(map: EventTags | undefined): EventTags | undefined {
     for (const key in map) {
       if (map.hasOwnProperty(key) && (map[key] === null || map[key] === undefined)) {
         delete map[key];
@@ -700,11 +698,11 @@ export default class Optimizely {
       }
       if (configObj.featureKeyMap) {
         objectValues(configObj.featureKeyMap).forEach(
-          function(this: Optimizely, feature: FeatureFlag): void {
+          (feature: FeatureFlag) => {
             if (this.isFeatureEnabled(feature.key, userId, attributes)) {
               enabledFeatures.push(feature.key);
             }
-          }.bind(this)
+          }
         );
       }
 
@@ -850,7 +848,7 @@ export default class Optimizely {
    * @param  {Variation}       variation            variation returned by decision service
    * @param  {FeatureVariable} variable             varible whose value is being evaluated
    * @param  {string}          userId               ID for the user
-   * @return {string|null}                          String value of the variable or null if the
+   * @return {unknown}                              Value of the variable or null if the
    *                                                config Obj is null
    */
   _getFeatureVariableValueFromVariation(
@@ -1123,9 +1121,9 @@ export default class Optimizely {
       const featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;
       const allVariables = {};
 
-      featureFlag.variables.forEach(function (this: Optimizely, variable: FeatureVariable) {
+      featureFlag.variables.forEach((variable: FeatureVariable) => {
         allVariables[variable.key] = this._getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
-      }.bind(this));
+      });
 
       let sourceInfo = {};
       if (decision.decisionSource === DECISION_SOURCES.FEATURE_TEST &&
@@ -1250,11 +1248,11 @@ export default class Optimizely {
         this.projectConfigManager.stop();
       }
       Object.keys(this.readyTimeouts).forEach(
-        function(this: Optimizely, readyTimeoutId: string ) {
+        (readyTimeoutId: string) => {
           const readyTimeoutRecord = this.readyTimeouts[readyTimeoutId];
           clearTimeout(readyTimeoutRecord.readyTimeout);
           readyTimeoutRecord.onClose();
-        }.bind(this)
+        }
       );
       this.readyTimeouts = {};
       return eventProcessorStoppedPromise.then(
@@ -1318,10 +1316,12 @@ export default class Optimizely {
       timeoutValue = DEFAULT_ONREADY_TIMEOUT;
     }
 
-    let resolveTimeoutPromise: (value?: unknown) => void;
-    const timeoutPromise = new Promise(function(resolve: (value?: unknown) => void) {
+    let resolveTimeoutPromise: (value?: { success: boolean; reason?: string | undefined; }) => void;
+    const timeoutPromise = new Promise(
+      function(resolve: (value?: { success: boolean; reason?: string | undefined; }) => void) {
       resolveTimeoutPromise = resolve;
-    });
+      }
+    );
 
     const timeoutId = this.nextReadyTimeoutId;
     this.nextReadyTimeoutId++;
@@ -1346,16 +1346,14 @@ export default class Optimizely {
       onClose: onClose,
     };
 
-    this.readyPromise.then(
-      function(this: Optimizely) {
-        clearTimeout(readyTimeout);
-        delete this.readyTimeouts[timeoutId];
-        resolveTimeoutPromise({
-          success: true,
-        });
-      }.bind(this)
-    );
+    this.readyPromise.then(() => {
+      clearTimeout(readyTimeout);
+      delete this.readyTimeouts[timeoutId];
+      resolveTimeoutPromise({
+        success: true,
+      });
+    });
 
-    return Promise.race([this.readyPromise, timeoutPromise]) as Promise<{ success: boolean; reason?: string | undefined; }>;
+    return Promise.race([this.readyPromise, timeoutPromise]);
   }
 }
