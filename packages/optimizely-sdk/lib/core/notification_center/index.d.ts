@@ -15,13 +15,8 @@
  * limitations under the License.
  */
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
-import {
-  Event,
-  EventTags,
-  UserAttributes,
-  Experiment,
-  Variation
-} from '../../shared_types';
+import { Event, EventTags, UserAttributes } from '../../shared_types';
+import { Experiment, Variation } from '../project_config/entities';
 
 export enum NOTIFICATION_TYPES {
   ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
