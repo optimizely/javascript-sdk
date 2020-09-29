@@ -15,7 +15,7 @@ export interface UserProfile {
 }
 
 export type EventTags = {
-  [key: string]: string | number | boolean;
+  [key: string]: string | number | null;
 };
 
 export interface UserProfileService {

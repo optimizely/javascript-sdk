@@ -25,9 +25,42 @@ interface ImpressionConfig {
   clientVersion: string;
   configObj: ProjectConfig;
 }
+type  VisitorAttribute = {
+  entityId: string;
+  key: string;
+  value: string | number | boolean;
+}
+type EventContext = {
+  accountId: string;
+  projectId: string;
+  revision: string;
+  clientName: string;
+  clientVersion: string;
+  anonymizeIP: boolean;
+  botFiltering: boolean | undefined;
+}
 
-// eslint-disable-next-line  @typescript-eslint/no-empty-interface
-interface ImpressionEvent {}
+interface ImpressionEvent {
+  type: 'impression';
+  timestamp: number;
+  uuid: string;
+  user: {
+      id: string;
+      attributes: VisitorAttribute[];
+  };
+  context: EventContext;
+  layer: {
+      id: string;
+  };
+  experiment: {
+      id: string;
+      key: string;
+  } | null;
+  variation: {
+      id: string;
+      key: string;
+  } | null;
+}
 
 interface ConversionConfig {
   eventKey: string;
@@ -39,8 +72,27 @@ interface ConversionConfig {
   configObj: ProjectConfig;
 }
 
-// eslint-disable-next-line  @typescript-eslint/no-empty-interface
-interface ConversionEvent {}
+interface ConversionEvent {
+  type: 'conversion';
+  timestamp: number;
+  uuid: string;
+  user: {
+    id: string;
+    attributes: VisitorAttribute[];
+  };
+  context: EventContext;
+  experiment: {
+    id: string;
+    key: string;
+  };
+  event: {
+    id: string;
+    key: string;
+ };
+  revenue: number | null;
+  value: number | null;
+  tags: EventTags;
+}
 
 /**
  * Creates an ImpressionEvent object from decision data
