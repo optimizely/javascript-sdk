@@ -33,7 +33,7 @@ import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
 import { buildImpressionEvent, buildConversionEvent } from '../core/event_builder/event_helpers';
 import { isSafeInteger } from '../utils/fns'
 import { validate } from '../utils/attributes_validator';
-import * as eventProcessor from '@optimizely/js-sdk-event-processor';
+import { EventProcessor, LogTierV1EventProcessor } from '@optimizely/js-sdk-event-processor';
 import * as enums from '../utils/enums';
 import * as eventTagsValidator from '../utils/event_tags_validator';
 import * as projectConfig from '../core/project_config';
@@ -54,8 +54,6 @@ const MODULE_NAME = 'OPTIMIZELY';
 const DEFAULT_ONREADY_TIMEOUT = 30000;
 
 interface configObj {
-  revision: string;
-  projectId: string;
   clientEngine: string;
   clientVersion?: string;
   errorHandler: ErrorHandler;
@@ -105,7 +103,7 @@ export default class Optimizely {
   private projectConfigManager: ProjectConfigManager;
   private notificationCenter: NotificationCenter;
   private decisionService: DecisionService;
-  private eventProcessor: eventProcessor.EventProcessor;
+  private eventProcessor: EventProcessor;
 
   constructor(config: configObj) {
     let clientEngine = config.clientEngine;
@@ -166,7 +164,7 @@ export default class Optimizely {
       errorHandler: this.errorHandler,
     });
 
-    this.eventProcessor = new eventProcessor.LogTierV1EventProcessor({
+    this.eventProcessor = new LogTierV1EventProcessor({
       dispatcher: this.eventDispatcher,
       flushInterval: config.eventFlushInterval,
       batchSize: config.eventBatchSize,
@@ -312,10 +310,7 @@ export default class Optimizely {
       logger: this.logger,
     };
     const impressionEvent = getImpressionEvent(impressionEventOptions);
-    let experiment;
-    if (configObj.experimentKeyMap) {
-      experiment = configObj.experimentKeyMap[experimentKey];
-    }
+    const experiment = configObj.experimentKeyMap[experimentKey];
     let variation;
     if (experiment && experiment.variationKeyMap) {
       variation = experiment.variationKeyMap[variationKey];
@@ -446,11 +441,7 @@ export default class Optimizely {
           return null;
         }
 
-        let experiment;
-        if (configObj.experimentKeyMap) {
-          experiment = configObj.experimentKeyMap[experimentKey];
-        }
-
+        const experiment = configObj.experimentKeyMap[experimentKey];
         if (!experiment) {
           this.logger.log(
             LOG_LEVEL.DEBUG,
@@ -729,15 +720,14 @@ export default class Optimizely {
       if (!configObj) {
         return enabledFeatures;
       }
-      if (configObj.featureKeyMap) {
-        objectValues(configObj.featureKeyMap).forEach(
-          (feature: FeatureFlag) => {
-            if (this.isFeatureEnabled(feature.key, userId, attributes)) {
-              enabledFeatures.push(feature.key);
-            }
+
+      objectValues(configObj.featureKeyMap).forEach(
+        (feature: FeatureFlag) => {
+          if (this.isFeatureEnabled(feature.key, userId, attributes)) {
+            enabledFeatures.push(feature.key);
           }
-        );
-      }
+        }
+      );
 
       return enabledFeatures;
     } catch (e) {

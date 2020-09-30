@@ -13,8 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ProjectConfig } from '../project_config';
-import { OptimizelyConfig } from '../../shared_types'
+import { OptimizelyConfig, DatafileOptions } from '../../shared_types'
+import { ProjectConfig } from '../project_config'
+
+interface ProjectConfigManagerConfig {
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
+  datafile: object | string,
+  datafileOptions?: DatafileOptions,
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
+  jsonSchemaValidator?: object,
+  sdkKey?: string,
+}
 
 /**
 * ProjectConfigManager provides project config objects via its methods
@@ -27,7 +38,7 @@ import { OptimizelyConfig } from '../../shared_types'
 * @param     {Object}               config.jsonSchemaValidator
 * @param     {string}               config.sdkKey
 */
-export function createProjectConfigManager(config: ProjectConfig): ProjectConfigManager;
+export function createProjectConfigManager(config: ProjectConfigManagerConfig): ProjectConfigManager;
 
 export interface ProjectConfigManager {
 
