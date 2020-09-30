@@ -21,7 +21,6 @@ import {
   UserAttributes,
   EventTags,
   OptimizelyConfig,
-  LogTierV1EventProcessorConfig,
   UserProfileService,
   DatafileOptions
 } from '../shared_types';
@@ -164,13 +163,15 @@ export default class Optimizely {
       errorHandler: this.errorHandler,
     });
 
-    this.eventProcessor = new LogTierV1EventProcessor({
+    const eventProcessorConfig = {
       dispatcher: this.eventDispatcher,
       flushInterval: config.eventFlushInterval,
       batchSize: config.eventBatchSize,
-      maxQueueSize: config.eventMaxQueueSize, // TODO: update event-processor to include maxQueueSize
+      maxQueueSize: config.eventMaxQueueSize,
       notificationCenter: this.notificationCenter,
-    } as LogTierV1EventProcessorConfig);
+    }
+
+    this.eventProcessor = new LogTierV1EventProcessor(eventProcessorConfig);
 
     const eventProcessorStartedPromise = this.eventProcessor.start();
 
