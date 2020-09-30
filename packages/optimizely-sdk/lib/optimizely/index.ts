@@ -209,7 +209,7 @@ export default class Optimizely {
           return variationKey;
         }
 
-        this._sendImpressionEvent(experimentKey, variationKey, userId, attributes);
+        this.sendImpressionEvent(experimentKey, variationKey, userId, attributes);
 
         return variationKey;
       } catch (ex) {
@@ -240,7 +240,7 @@ export default class Optimizely {
    * @param {string}         userId         ID of user to whom the variation was shown
    * @param {UserAttributes} attributes     Optional user attributes
    */
-  _sendImpressionEvent(experimentKey: string, variationKey: string, userId: string, attributes?: UserAttributes): void {
+  private sendImpressionEvent(experimentKey: string, variationKey: string, userId: string, attributes?: UserAttributes): void {
     const configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return;
@@ -631,7 +631,7 @@ export default class Optimizely {
             variationKey: decision.variation.key,
           };
           // got a variation from the exp, so we track the impression
-          this._sendImpressionEvent(decision.experiment.key, decision.variation.key, userId, attributes);
+          this.sendImpressionEvent(decision.experiment.key, decision.variation.key, userId, attributes);
         }
       }
 
@@ -740,7 +740,7 @@ export default class Optimizely {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariable'));
         return null;
       }
-      return this._getFeatureVariableForType(featureKey, variableKey, null, userId, attributes);
+      return this.getFeatureVariableForType(featureKey, variableKey, null, userId, attributes);
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
@@ -770,7 +770,7 @@ export default class Optimizely {
    *                                                key is invalid, or there is a mismatch with the type of
    *                                                the variable
    */
-  _getFeatureVariableForType(
+  private getFeatureVariableForType(
     featureKey: string,
     variableKey: string,
     variableType: string | null,
@@ -805,7 +805,7 @@ export default class Optimizely {
 
     const decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
     const featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;
-    const variableValue = this._getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
+    const variableValue = this.getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
     let sourceInfo = {};
     if (
       decision.decisionSource === DECISION_SOURCES.FEATURE_TEST &&
@@ -851,7 +851,7 @@ export default class Optimizely {
    * @return {unknown}                              Value of the variable or null if the
    *                                                config Obj is null
    */
-  _getFeatureVariableValueFromVariation(
+  private getFeatureVariableValueFromVariation(
     featureKey: string,
     featureEnabled: boolean,
     variation: Variation | null,
@@ -942,7 +942,7 @@ export default class Optimizely {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableBoolean'));
         return null;
       }
-      return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.BOOLEAN, userId, attributes) as boolean | null;
+      return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.BOOLEAN, userId, attributes) as boolean | null;
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
@@ -975,7 +975,7 @@ export default class Optimizely {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableDouble'));
         return null;
       }
-      return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.DOUBLE, userId, attributes) as number | null;
+      return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.DOUBLE, userId, attributes) as number | null;
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
@@ -1008,7 +1008,7 @@ export default class Optimizely {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableInteger'));
         return null;
       }
-      return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.INTEGER, userId, attributes) as number | null;
+      return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.INTEGER, userId, attributes) as number | null;
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
@@ -1041,7 +1041,7 @@ export default class Optimizely {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableString'));
         return null;
       }
-      return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.STRING, userId, attributes) as string | null;
+      return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.STRING, userId, attributes) as string | null;
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
@@ -1074,7 +1074,7 @@ export default class Optimizely {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableJSON'));
         return null;
       }
-      return this._getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.JSON, userId, attributes);
+      return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.JSON, userId, attributes);
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
@@ -1122,7 +1122,7 @@ export default class Optimizely {
       const allVariables = {};
 
       featureFlag.variables.forEach((variable: FeatureVariable) => {
-        allVariables[variable.key] = this._getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
+        allVariables[variable.key] = this.getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
       });
 
       let sourceInfo = {};
