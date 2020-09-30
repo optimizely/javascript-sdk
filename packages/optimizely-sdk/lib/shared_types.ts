@@ -23,6 +23,13 @@ export interface UserProfileService {
   save(profile: UserProfile): void;
 }
 
+export interface DatafileOptions {
+  autoUpdate?: boolean;
+  updateInterval?: number;
+  urlTemplate?: string;
+  datafileAccessToken?: string;
+}
+
 /**
  * Optimizely Config Entities
  */

@@ -27,7 +27,7 @@ import { OptimizelyConfig } from '../../shared_types'
 * @param     {Object}               config.jsonSchemaValidator
 * @param     {string}               config.sdkKey
 */
-export function createProjectConfigManager(config: Partial<ProjectConfig>): ProjectConfigManager;
+export function createProjectConfigManager(config: ProjectConfig): ProjectConfigManager;
 
 export interface ProjectConfigManager {
 
