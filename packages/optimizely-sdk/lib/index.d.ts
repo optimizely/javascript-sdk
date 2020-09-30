@@ -31,7 +31,6 @@ declare module '@optimizely/optimizely-sdk' {
 
   export const eventDispatcher: EventDispatcher;
 
-  // The options object given to Optimizely.createInstance.
   export interface Config {
     // TODO[OASIS-6649]: Don't use object type
     // eslint-disable-next-line  @typescript-eslint/ban-types
