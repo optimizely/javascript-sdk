@@ -14,22 +14,13 @@
  * limitations under the License.
  */
 import { LogHandler } from '@optimizely/js-sdk-logging';
-import { DatafileOptions } from '../../shared_types';
 import { FeatureFlag, FeatureVariable, Experiment, Variation  } from './entities';
 
 export interface ProjectConfig {
-  revision?: string;
-  projectId?: string;
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  datafile: object | string;
-  datafileOptions?: DatafileOptions;
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  jsonSchemaValidator?: object;
-  sdkKey?: string;
-  experimentKeyMap?:{[key: string]: Experiment};
-  featureKeyMap?: {
+  revision: string;
+  projectId: string;
+  experimentKeyMap:{[key: string]: Experiment};
+  featureKeyMap: {
     [key: string]: FeatureFlag
   };
 }
