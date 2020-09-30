@@ -59,5 +59,5 @@ export interface Experiment {
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
   forcedVariations: object;
-  variationKeyMap?: {[key: string]: Variation}
+  variationKeyMap: {[key: string]: Variation}
 }

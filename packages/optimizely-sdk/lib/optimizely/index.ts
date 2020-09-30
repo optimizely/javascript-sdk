@@ -165,7 +165,7 @@ export default class Optimizely {
    * constructor was also valid.
    * @return {boolean}
    */
-  __isValidInstance(): boolean {
+  private isValidInstance(): boolean {
     return this.isOptimizelyConfigValid && !!this.projectConfigManager.getConfig();
   }
 
@@ -178,13 +178,13 @@ export default class Optimizely {
    */
   activate(experimentKey: string, userId: string, attributes?: UserAttributes): string | null {
     try {
-      if (!this.__isValidInstance()) {
+      if (!this.isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'activate'));
         return null;
       }
 
-      if (!this.__validateInputs({ experiment_key: experimentKey, user_id: userId }, attributes)) {
-        return this.__notActivatingExperiment(experimentKey, userId);
+      if (!this.validateInputs({ experiment_key: experimentKey, user_id: userId }, attributes)) {
+        return this.notActivatingExperiment(experimentKey, userId);
       }
 
       const configObj = this.projectConfigManager.getConfig();
@@ -195,7 +195,7 @@ export default class Optimizely {
       try {
         const variationKey = this.getVariation(experimentKey, userId, attributes);
         if (variationKey === null) {
-          return this.__notActivatingExperiment(experimentKey, userId);
+          return this.notActivatingExperiment(experimentKey, userId);
         }
 
         // If experiment is not set to 'Running' status, log accordingly and return variation key
@@ -257,7 +257,7 @@ export default class Optimizely {
     });
     // TODO is it okay to not pass a projectConfig as second argument
     this.eventProcessor.process(impressionEvent);
-    this.__emitNotificationCenterActivate(experimentKey, variationKey, userId, attributes);
+    this.emitNotificationCenterActivate(experimentKey, variationKey, userId, attributes);
   }
 
   /**
@@ -267,7 +267,7 @@ export default class Optimizely {
    * @param {string}         userId         ID of user to whom the variation was shown
    * @param {UserAttributes} attributes     Optional user attributes
    */
-  __emitNotificationCenterActivate(experimentKey: string, variationKey: string, userId: string, attributes?: UserAttributes): void {
+  private emitNotificationCenterActivate(experimentKey: string, variationKey: string, userId: string, attributes?: UserAttributes): void {
     const configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return;
@@ -309,12 +309,12 @@ export default class Optimizely {
    */
   track(eventKey: string, userId: string, attributes?: UserAttributes, eventTags?: EventTags): void {
     try {
-      if (!this.__isValidInstance()) {
+      if (!this.isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'track'));
         return;
       }
 
-      if (!this.__validateInputs({ user_id: userId, event_key: eventKey }, attributes, eventTags)) {
+      if (!this.validateInputs({ user_id: userId, event_key: eventKey }, attributes, eventTags)) {
         return;
       }
 
@@ -333,7 +333,7 @@ export default class Optimizely {
       }
 
       // remove null values from eventTags
-      eventTags = this.__filterEmptyValues(eventTags);
+      eventTags = this.filterEmptyValues(eventTags);
       const conversionEvent = buildConversionEvent({
         eventKey: eventKey,
         eventTags: eventTags,
@@ -346,7 +346,7 @@ export default class Optimizely {
       this.logger.log(LOG_LEVEL.INFO, sprintf(enums.LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId));
       // TODO is it okay to not pass a projectConfig as second argument
       this.eventProcessor.process(conversionEvent);
-      this.__emitNotificationCenterTrack(eventKey, userId, attributes, eventTags);
+      this.emitNotificationCenterTrack(eventKey, userId, attributes, eventTags);
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
@@ -361,7 +361,7 @@ export default class Optimizely {
    * @param  {UserAttributes} attributes
    * @param  {EventTags}      eventTags Values associated with the event.
    */
-  __emitNotificationCenterTrack(eventKey: string, userId: string, attributes?: UserAttributes, eventTags?: EventTags): void {
+  private emitNotificationCenterTrack(eventKey: string, userId: string, attributes?: UserAttributes, eventTags?: EventTags): void {
     try {
       const configObj = this.projectConfigManager.getConfig();
       if (!configObj) {
@@ -402,13 +402,13 @@ export default class Optimizely {
    */
   getVariation(experimentKey: string, userId: string, attributes?: UserAttributes): string | null {
     try {
-      if (!this.__isValidInstance()) {
+      if (!this.isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getVariation'));
         return null;
       }
 
       try {
-        if (!this.__validateInputs({ experiment_key: experimentKey, user_id: userId }, attributes)) {
+        if (!this.validateInputs({ experiment_key: experimentKey, user_id: userId }, attributes)) {
           return null;
         }
 
@@ -463,7 +463,7 @@ export default class Optimizely {
    * @return {boolean}                    A boolean value that indicates if the set completed successfully.
    */
   setForcedVariation(experimentKey: string, userId: string, variationKey: string | null): boolean {
-    if (!this.__validateInputs({ experiment_key: experimentKey, user_id: userId })) {
+    if (!this.validateInputs({ experiment_key: experimentKey, user_id: userId })) {
       return false;
     }
 
@@ -488,7 +488,7 @@ export default class Optimizely {
    * @return {string|null} The forced variation key.
    */
   getForcedVariation(experimentKey: string, userId: string): string | null {
-    if (!this.__validateInputs({ experiment_key: experimentKey, user_id: userId })) {
+    if (!this.validateInputs({ experiment_key: experimentKey, user_id: userId })) {
       return null;
     }
 
@@ -514,7 +514,7 @@ export default class Optimizely {
    * @return {boolean}                 True if inputs are valid
    *
    */
-  __validateInputs(
+  private validateInputs(
     stringInputs?: unknown,
     userAttributes?: unknown,
     eventTags?: unknown
@@ -558,7 +558,7 @@ export default class Optimizely {
    * @param  {string} userId
    * @return {null}
    */
-  __notActivatingExperiment(experimentKey: string, userId: string): null {
+  private notActivatingExperiment(experimentKey: string, userId: string): null {
     const failedActivationLogMessage = sprintf(
       LOG_MESSAGES.NOT_ACTIVATING_USER,
       MODULE_NAME,
@@ -574,7 +574,7 @@ export default class Optimizely {
    * @param   {EventTags | undefined} map
    * @returns {EventTags | undefined}
    */
-  __filterEmptyValues(map: EventTags | undefined): EventTags | undefined {
+  private filterEmptyValues(map: EventTags | undefined): EventTags | undefined {
     for (const key in map) {
       if (map.hasOwnProperty(key) && (map[key] === null || map[key] === undefined)) {
         delete map[key];
@@ -592,7 +592,7 @@ export default class Optimizely {
    */
   isFeatureEnabled(featureKey: string, userId: string, attributes?: UserAttributes): boolean {
     try {
-      if (!this.__isValidInstance()) {
+      if (!this.isValidInstance()) {
         this.logger.log(
           LOG_LEVEL.ERROR,
           sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'isFeatureEnabled')
@@ -600,7 +600,7 @@ export default class Optimizely {
         return false;
       }
 
-      if (!this.__validateInputs({ feature_key: featureKey, user_id: userId }, attributes)) {
+      if (!this.validateInputs({ feature_key: featureKey, user_id: userId }, attributes)) {
         return false;
       }
 
@@ -680,7 +680,7 @@ export default class Optimizely {
   getEnabledFeatures(userId: string, attributes?: UserAttributes): string[] {
     try {
       const enabledFeatures: string[] = [];
-      if (!this.__isValidInstance()) {
+      if (!this.isValidInstance()) {
         this.logger.log(
           LOG_LEVEL.ERROR,
           sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getEnabledFeatures')
@@ -688,7 +688,7 @@ export default class Optimizely {
         return enabledFeatures;
       }
 
-      if (!this.__validateInputs({ user_id: userId })) {
+      if (!this.validateInputs({ user_id: userId })) {
         return enabledFeatures;
       }
 
@@ -736,7 +736,7 @@ export default class Optimizely {
     attributes?: UserAttributes
   ): unknown {
     try {
-      if (!this.__isValidInstance()) {
+      if (!this.isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariable'));
         return null;
       }
@@ -776,7 +776,7 @@ export default class Optimizely {
     variableType: string | null,
     userId: string,
     attributes?: UserAttributes): unknown {
-    if (!this.__validateInputs({ feature_key: featureKey, variable_key: variableKey, user_id: userId }, attributes)) {
+    if (!this.validateInputs({ feature_key: featureKey, variable_key: variableKey, user_id: userId }, attributes)) {
       return null;
     }
 
@@ -938,7 +938,7 @@ export default class Optimizely {
     attributes?: UserAttributes
   ): boolean | null {
     try {
-      if (!this.__isValidInstance()) {
+      if (!this.isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableBoolean'));
         return null;
       }
@@ -971,7 +971,7 @@ export default class Optimizely {
     attributes?: UserAttributes
   ): number | null {
     try {
-      if (!this.__isValidInstance()) {
+      if (!this.isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableDouble'));
         return null;
       }
@@ -1004,7 +1004,7 @@ export default class Optimizely {
     attributes?: UserAttributes
   ): number | null {
     try {
-      if (!this.__isValidInstance()) {
+      if (!this.isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableInteger'));
         return null;
       }
@@ -1037,7 +1037,7 @@ export default class Optimizely {
     attributes?: UserAttributes
   ): string | null {
     try {
-      if (!this.__isValidInstance()) {
+      if (!this.isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableString'));
         return null;
       }
@@ -1070,7 +1070,7 @@ export default class Optimizely {
     attributes: UserAttributes
   ): unknown {
     try {
-      if (!this.__isValidInstance()) {
+      if (!this.isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableJSON'));
         return null;
       }
@@ -1098,12 +1098,12 @@ export default class Optimizely {
     attributes?: UserAttributes
   ): { [variableKey: string]: unknown } | null {
     try {
-      if (!this.__isValidInstance()) {
+      if (!this.isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getAllFeatureVariables'));
         return null;
       }
 
-      if (!this.__validateInputs({ feature_key: featureKey, user_id: userId }, attributes)) {
+      if (!this.validateInputs({ feature_key: featureKey, user_id: userId }, attributes)) {
         return null;
       }
 
