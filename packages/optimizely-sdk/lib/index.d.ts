@@ -31,19 +31,12 @@ declare module '@optimizely/optimizely-sdk' {
 
   export const eventDispatcher: EventDispatcher;
 
-  export interface DatafileOptions {
-    autoUpdate?: boolean;
-    updateInterval?: number;
-    urlTemplate?: string;
-    datafileAccessToken?: string;
-  }
-
   // The options object given to Optimizely.createInstance.
   export interface Config {
     // TODO[OASIS-6649]: Don't use object type
     // eslint-disable-next-line  @typescript-eslint/ban-types
     datafile?: object | string;
-    datafileOptions?: DatafileOptions;
+    datafileOptions?: import('./shared_types').DatafileOptions;
     errorHandler?: ErrorHandler;
     eventDispatcher?: EventDispatcher;
     logger?: LogHandler;

@@ -21,7 +21,9 @@ import {
   UserAttributes,
   EventTags,
   OptimizelyConfig,
-  LogTierV1EventProcessorConfig
+  LogTierV1EventProcessorConfig,
+  UserProfileService,
+  DatafileOptions
 } from '../shared_types';
 import { Variation } from '../core/project_config/entities';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
@@ -50,6 +52,30 @@ import {
 const MODULE_NAME = 'OPTIMIZELY';
 
 const DEFAULT_ONREADY_TIMEOUT = 30000;
+
+interface configObj {
+  revision: string;
+  projectId: string;
+  clientEngine: string;
+  clientVersion?: string;
+  errorHandler: ErrorHandler;
+  eventDispatcher: EventDispatcher;
+  isValidInstance: boolean;
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
+  datafile: object | string;
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
+  jsonSchemaValidator?: object;
+  sdkKey?: string;
+  userProfileService?: UserProfileService | null;
+  UNSTABLE_conditionEvaluators?: unknown;
+  eventFlushInterval?: number;
+  eventBatchSize?: number;
+  datafileOptions?: DatafileOptions;
+  eventMaxQueueSize?: number;
+  logger: LogHandler;
+}
 
 /**
  * The Optimizely class
@@ -81,7 +107,7 @@ export default class Optimizely {
   private decisionService: DecisionService;
   private eventProcessor: eventProcessor.EventProcessor;
 
-  constructor(config: projectConfig.ProjectConfig) {
+  constructor(config: configObj) {
     let clientEngine = config.clientEngine;
     if (enums.VALID_CLIENT_ENGINES.indexOf(clientEngine) === -1) {
       config.logger.log(
@@ -286,7 +312,10 @@ export default class Optimizely {
       logger: this.logger,
     };
     const impressionEvent = getImpressionEvent(impressionEventOptions);
-    const experiment = configObj.experimentKeyMap[experimentKey];
+    let experiment;
+    if (configObj.experimentKeyMap) {
+      experiment = configObj.experimentKeyMap[experimentKey];
+    }
     let variation;
     if (experiment && experiment.variationKeyMap) {
       variation = experiment.variationKeyMap[variationKey];
@@ -417,7 +446,11 @@ export default class Optimizely {
           return null;
         }
 
-        const experiment = configObj.experimentKeyMap[experimentKey];
+        let experiment;
+        if (configObj.experimentKeyMap) {
+          experiment = configObj.experimentKeyMap[experimentKey];
+        }
+
         if (!experiment) {
           this.logger.log(
             LOG_LEVEL.DEBUG,
