@@ -162,7 +162,7 @@ declare module '@optimizely/optimizely-sdk' {
   }
 
   export type EventTags = {
-    [key: string]: string | number | boolean;
+    [key: string]: string | number | null;
   };
 
   // NotificationCenter-related types
