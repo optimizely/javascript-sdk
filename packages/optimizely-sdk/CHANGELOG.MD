@@ -15,8 +15,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Add datafile accessor [564] (https://github.com/optimizely/javascript-sdk/pull/564)
 
-- Update to use TypeScript (multiple PRs)
-
 ## [4.2.1] - August 10, 2020
 
 ### Bug fixes
