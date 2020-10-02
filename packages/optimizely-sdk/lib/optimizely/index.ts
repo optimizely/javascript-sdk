@@ -15,7 +15,6 @@
  ***************************************************************************/
 import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
-// import {EventDispatcher} from '@optimizely/js-sdk-event-processor';
 import { FeatureFlag, FeatureVariable } from '../core/project_config/entities';
 import {
   UserAttributes,
@@ -23,7 +22,8 @@ import {
   OptimizelyConfig,
   UserProfileService,
   DatafileOptions,
-  EventDispatcher
+  EventDispatcher,
+  OnReadyResult
 } from '../shared_types';
 import { Variation } from '../core/project_config/entities';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
@@ -540,8 +540,7 @@ export default class Optimizely {
    */
   private validateInputs(
     // TODO: Make feature_key, user_id, variable_key, experiment_key camelCase
-    // stringInputs: Record<'feature_key' | 'user_id' | 'variable_key' | 'experiment_key', unknown>,
-    stringInputs: unknown,
+    stringInputs: Partial<Record<'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 'event_key', unknown>>,
     userAttributes?: unknown,
     eventTags?: unknown
   ): boolean {
@@ -1330,7 +1329,7 @@ export default class Optimizely {
    * @param  {number|undefined} options.timeout
    * @return {Promise}
    */
-  onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }> {
+  onReady(options?: { timeout?: number }): Promise<OnReadyResult> {
     let timeoutValue: number | undefined;
     if (typeof options === 'object' && options !== null) {
       if (options.timeout !== undefined) {
@@ -1341,9 +1340,9 @@ export default class Optimizely {
       timeoutValue = DEFAULT_ONREADY_TIMEOUT;
     }
 
-    let resolveTimeoutPromise: (value?: { success: boolean; reason?: string | undefined; }) => void;
-    const timeoutPromise = new Promise(
-      function(resolve: (value?: { success: boolean; reason?: string | undefined; }) => void) {
+    let resolveTimeoutPromise: (value: OnReadyResult) => void;
+    const timeoutPromise = new Promise<OnReadyResult>(
+      (resolve) => {
       resolveTimeoutPromise = resolve;
       }
     );
@@ -1357,7 +1356,7 @@ export default class Optimizely {
         success: false,
         reason: sprintf('onReady timeout expired after %s ms', timeoutValue),
       });
-    }).bind(this);
+    });
     const readyTimeout = setTimeout(onReadyTimeout, timeoutValue);
     const onClose = function() {
       resolveTimeoutPromise({

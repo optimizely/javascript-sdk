@@ -29,9 +29,9 @@ interface ProjectConfigManagerConfig {
 * ProjectConfigManager provides project config objects via its methods
 * getConfig and onUpdate. It uses a DatafileManager to fetch datafiles. It is
 * responsible for parsing and validating datafiles, and converting datafile
-* JSON objects into project config objects.
+* string into project config objects.
 * @param     {ProjectConfig}        config
-* @param     {Object|string}        config.datafile
+* @param     {string}               config.datafile
 * @param     {Object}               config.datafileOptions
 * @param     {Object}               config.jsonSchemaValidator
 * @param     {string}               config.sdkKey
