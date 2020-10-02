@@ -132,7 +132,7 @@ declare module '@optimizely/optimizely-sdk' {
       userId: string,
       attributes?: UserAttributes
     ): { [variableKey: string]: unknown } | null;
-    getOptimizelyConfig(): import('./shared_types').OptimizelyConfig | null;
+    getOptimizelyConfig(): OptimizelyConfig | null;
     onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
     close(): Promise<{ success: boolean; reason?: string }>;
   }
@@ -154,6 +154,55 @@ declare module '@optimizely/optimizely-sdk' {
     // TODO[OASIS-6649]: Don't use any type
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     [name: string]: any;
+  }
+
+  /**
+   * Optimizely Config Entities
+   */
+  export interface OptimizelyExperiment {
+    id: string;
+    key: string;
+    variationsMap: {
+      [variationKey: string]: OptimizelyVariation;
+    };
+  }
+
+  export interface OptimizelyVariable {
+    id: string;
+    key: string;
+    type: string;
+    value: string;
+  }
+
+  export interface OptimizelyFeature {
+    id: string;
+    key: string;
+    experimentsMap: {
+      [experimentKey: string]: OptimizelyExperiment;
+    };
+    variablesMap: {
+      [variableKey: string]: OptimizelyVariable;
+    };
+  }
+
+  export interface OptimizelyVariation {
+    id: string;
+    key: string;
+    featureEnabled?: boolean;
+    variablesMap: {
+      [variableKey: string]: OptimizelyVariable;
+    };
+  }
+
+  export interface OptimizelyConfig {
+    experimentsMap: {
+      [experimentKey: string]: OptimizelyExperiment;
+    };
+    featuresMap: {
+      [featureKey: string]: OptimizelyFeature;
+    };
+    revision: string;
+    getDatafile(): string;
   }
 
   export interface EventDispatcher {
@@ -186,7 +235,7 @@ declare module '@optimizely/optimizely-sdk' {
 
   export interface ListenerPayload {
     userId: string;
-    attributes: import('./shared_types').UserAttributes;
+    attributes: UserAttributes;
   }
 
   export interface ActivateListenerPayload extends ListenerPayload {
