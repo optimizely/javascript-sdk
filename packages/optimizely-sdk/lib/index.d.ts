@@ -67,70 +67,70 @@ declare module '@optimizely/optimizely-sdk' {
     activate(
       experimentKey: string,
       userId: string,
-      attributes?: import('./shared_types').UserAttributes
+      attributes?: UserAttributes
     ): string | null;
     track(
       eventKey: string,
       userId: string,
-      attributes?: import('./shared_types').UserAttributes,
+      attributes?: UserAttributes,
       eventTags?: EventTags
     ): void;
     getVariation(
       experimentKey: string,
       userId: string,
-      attributes?: import('./shared_types').UserAttributes
+      attributes?: UserAttributes
     ): string | null;
     setForcedVariation(experimentKey: string, userId: string, variationKey: string | null): boolean;
     getForcedVariation(experimentKey: string, userId: string): string | null;
     isFeatureEnabled(
       featureKey: string,
       userId: string,
-      attributes?: import('./shared_types').UserAttributes
+      attributes?: UserAttributes
     ): boolean;
     getEnabledFeatures(
       userId: string,
-      attributes?: import('./shared_types').UserAttributes
+      attributes?: UserAttributes
     ): string[];
     getFeatureVariable(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: import('./shared_types').UserAttributes
+      attributes?: UserAttributes
     ): unknown;
     getFeatureVariableBoolean(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: import('./shared_types').UserAttributes
+      attributes?: UserAttributes
     ): boolean | null;
     getFeatureVariableDouble(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: import('./shared_types').UserAttributes
+      attributes?: UserAttributes
     ): number | null;
     getFeatureVariableInteger(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: import('./shared_types').UserAttributes
+      attributes?: UserAttributes
     ): number | null;
     getFeatureVariableString(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: import('./shared_types').UserAttributes
+      attributes?: UserAttributes
     ): string | null;
     getFeatureVariableJSON(
       featureKey: string,
       variableKey: string,
       userId: string,
-      attributes?: import('./shared_types').UserAttributes
+      attributes?: UserAttributes
     ): unknown;
     getAllFeatureVariables(
       featureKey: string,
       userId: string,
-      attributes?: import('./shared_types').UserAttributes
+      attributes?: UserAttributes
     ): { [variableKey: string]: unknown } | null;
     getOptimizelyConfig(): import('./shared_types').OptimizelyConfig | null;
     onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
@@ -148,6 +148,12 @@ declare module '@optimizely/optimizely-sdk' {
     // TODO[OASIS-6649]: Don't use any type
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     params: any;
+  }
+
+  export type UserAttributes = {
+    // TODO[OASIS-6649]: Don't use any type
+    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+    [name: string]: any;
   }
 
   export interface EventDispatcher {
