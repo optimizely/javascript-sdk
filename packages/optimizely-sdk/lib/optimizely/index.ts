@@ -53,7 +53,7 @@ const MODULE_NAME = 'OPTIMIZELY';
 
 const DEFAULT_ONREADY_TIMEOUT = 30000;
 
-interface configObj {
+export interface configObj {
   clientEngine: string;
   clientVersion?: string;
   errorHandler: ErrorHandler;
