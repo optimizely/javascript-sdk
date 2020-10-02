@@ -13,50 +13,57 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { 
+import {
   getLogger,
   setLogHandler,
   setLogLevel,
   setErrorHandler,
   getErrorHandler,
   LogLevel,
+  ErrorHandler,
+  LogHandler,
 } from '@optimizely/js-sdk-logging';
-import { LocalStoragePendingEventsDispatcher } from '@optimizely/js-sdk-event-processor';
 
+import { LocalStoragePendingEventsDispatcher } from '@optimizely/js-sdk-event-processor';
 import { assign } from './utils/fns';
 import * as configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import * as enums from './utils/enums';
 import loggerPlugin from './plugins/logger';
-import Optimizely from './optimizely';
+import { configObj, Optimizely } from './optimizely';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
+import { EventDispatcher, UserProfileService } from './shared_types';
 
-var logger = getLogger();
+const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
 setLogLevel(LogLevel.INFO);
 
-var MODULE_NAME = 'INDEX_BROWSER';
-var DEFAULT_EVENT_BATCH_SIZE = 10;
-var DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
+const MODULE_NAME = 'INDEX_BROWSER';
+const DEFAULT_EVENT_BATCH_SIZE = 10;
+const DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
 
-var hasRetriedEvents = false;
+let hasRetriedEvents = false;
+
+interface Config {
+  datafile?: string;
+  errorHandler?: ErrorHandler;
+  eventDispatcher?: EventDispatcher;
+  logger?: LogHandler;
+  logLevel?: LogLevel;
+  userProfileService?: UserProfileService;
+  eventBatchSize?: number;
+  eventFlushInterval?: number;
+  sdkKey?: string;
+  isValidInstance?: boolean;
+}
 
 /**
  * Creates an instance of the Optimizely class
- * @param  {Object}         config
- * @param  {Object|string}  config.datafile
- * @param  {Object}         config.errorHandler
- * @param  {Object}         config.eventDispatcher
- * @param  {Object}         config.logger
- * @param  {Object}         config.logLevel
- * @param  {Object}         config.userProfileService
- * @param  {Object}         config.eventBatchSize
- * @param  {Object}         config.eventFlushInterval
- * @param  {string}         config.sdkKey
- * @return {Object}         the Optimizely object
+ * @param  {Config} config
+ * @return {Optimizely} the Optimizely object
  */
-var createInstance = function(config) {
+const createInstance = function (config: Config): Optimizely | null {
   try {
     config = config || {};
 
@@ -81,7 +88,7 @@ var createInstance = function(config) {
       config.isValidInstance = false;
     }
 
-    var eventDispatcher;
+    let eventDispatcher;
     // prettier-ignore
     if (config.eventDispatcher == null) { // eslint-disable-line eqeqeq
       // only wrap the event dispatcher with pending events retry if the user didnt override
@@ -97,7 +104,7 @@ var createInstance = function(config) {
       eventDispatcher = config.eventDispatcher;
     }
 
-    config = assign(
+    const optimizelyConfig = assign(
       {
         clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
         eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
@@ -110,11 +117,11 @@ var createInstance = function(config) {
         logger: logger,
         errorHandler: getErrorHandler(),
       }
-    );
+    ) as configObj;
 
     if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
       logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
-      config.eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
+      optimizelyConfig.eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
     }
     if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
       logger.warn(
@@ -122,17 +129,17 @@ var createInstance = function(config) {
         config.eventFlushInterval,
         DEFAULT_EVENT_FLUSH_INTERVAL
       );
-      config.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
+      optimizelyConfig.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
     }
 
-    var optimizely = new Optimizely(config);
+    const optimizely = new Optimizely(optimizelyConfig);
 
     try {
       if (typeof window.addEventListener === 'function') {
-        var unloadEvent = 'onpagehide' in window ? 'pagehide' : 'unload';
+        const unloadEvent = 'onpagehide' in window ? 'pagehide' : 'unload';
         window.addEventListener(
           unloadEvent,
-          function() {
+          function () {
             optimizely.close();
           },
           false
@@ -149,7 +156,7 @@ var createInstance = function(config) {
   }
 };
 
-var __internalResetRetryState = function() {
+const __internalResetRetryState = function (): void {
   hasRetriedEvents = false;
 };
 
@@ -164,8 +171,8 @@ export {
   setLogHandler as setLogger,
   setLogLevel,
   createInstance,
-  __internalResetRetryState,  
-}
+  __internalResetRetryState,
+};
 
 export default {
   logging: loggerPlugin,
