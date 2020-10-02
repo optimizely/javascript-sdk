@@ -30,6 +30,28 @@ export interface DatafileOptions {
   datafileAccessToken?: string;
 }
 
+export interface Event {
+  // URL to which to send the HTTP request.
+  url: string;
+  // HTTP method with which to send the event.
+  httpVerb: 'POST';
+  // Value to send in the request body, JSON-serialized.
+  // TODO[OASIS-6649]: Don't use any type
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  params: any;
+}
+
+export interface EventDispatcher {
+  /**
+   * @param event
+   *        Event being submitted for eventual dispatch.
+   * @param callback
+   *        After the event has at least been queued for dispatch, call this function to return
+   *        control back to the Client.
+   */
+  dispatchEvent: (event: Event, callback: () => void) => void;
+}
+
 /**
  * Optimizely Config Entities
  */
