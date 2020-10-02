@@ -87,7 +87,7 @@ export interface configObj {
  * @param {Object}        config.eventFlushInterval
  * @param {string}        config.sdkKey
  */
-export default class Optimizely {
+export class Optimizely {
   private isOptimizelyConfigValid: boolean;
   private disposeOnUpdate: (() => void ) | null;
   private readyPromise: Promise<{ success: boolean; reason?: string }>;

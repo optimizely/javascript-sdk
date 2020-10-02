@@ -25,7 +25,7 @@ import {
 } from '@optimizely/js-sdk-logging';
 
 import { assign } from './utils/fns';
-import * as Optimizely from './optimizely';
+import { configObj, Optimizely } from './optimizely';
 import * as enums from './utils/enums';
 import loggerPlugin from './plugins/logger';
 import configValidator from './utils/config_validator';
@@ -58,7 +58,7 @@ interface Config {
  * @param  {Config} config
  * @return {Optimizely} the Optimizely object
  */
-const createInstance = function (config: Config): Optimizely.default | null {
+const createInstance = function (config: Config): Optimizely | null {
   try {
     let hasLogger = false;
     config = config || {};
@@ -102,7 +102,7 @@ const createInstance = function (config: Config): Optimizely.default | null {
         logger: logger,
         errorHandler: getErrorHandler(),
       }
-    ) as Optimizely.configObj;
+    ) as configObj;
 
     if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
       logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
@@ -117,7 +117,7 @@ const createInstance = function (config: Config): Optimizely.default | null {
       optimizelyConfig.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
     }
 
-    return new Optimizely.default(optimizelyConfig);
+    return new Optimizely(optimizelyConfig);
   } catch (e) {
     logger.error(e);
     return null;
