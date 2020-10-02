@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2016-2020, Optimizely, Inc. and contributors                   *
+ * Copyright 2020, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -15,14 +15,15 @@
  ***************************************************************************/
 import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
+// import {EventDispatcher} from '@optimizely/js-sdk-event-processor';
 import { FeatureFlag, FeatureVariable } from '../core/project_config/entities';
-import { EventDispatcher } from '@optimizely/js-sdk-event-processor';
 import {
   UserAttributes,
   EventTags,
   OptimizelyConfig,
   UserProfileService,
-  DatafileOptions
+  DatafileOptions,
+  EventDispatcher
 } from '../shared_types';
 import { Variation } from '../core/project_config/entities';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
@@ -58,9 +59,7 @@ interface configObj {
   errorHandler: ErrorHandler;
   eventDispatcher: EventDispatcher;
   isValidInstance: boolean;
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  datafile: object | string;
+  datafile?: string;
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
   jsonSchemaValidator?: object;
@@ -540,7 +539,9 @@ export default class Optimizely {
    *
    */
   private validateInputs(
-    stringInputs?: unknown,
+    // TODO: Make feature_key, user_id, variable_key, experiment_key camelCase
+    // stringInputs: Record<'feature_key' | 'user_id' | 'variable_key' | 'experiment_key', unknown>,
+    stringInputs: unknown,
     userAttributes?: unknown,
     eventTags?: unknown
   ): boolean {

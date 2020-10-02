@@ -110,7 +110,7 @@ export function getVariableForFeature(configObj: ProjectConfig, featureKey: stri
  * @returns {unknown}                         Variable value of the appropriate type, or
  *                                            null if the type cast failed
  */
-//TODO:[OASIS-7189] define type as enum
+// TODO:[OASIS-7189] define type as enum
 export function getTypeCastValue(variableValue: string, type: string, logger: LogHandler): unknown;
 
 /**

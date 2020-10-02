@@ -48,16 +48,5 @@ export interface VariationVariable {
 export interface Experiment {
   id: string;
   key: string;
-  status: string;
-  layerId: string;
-  variations: Variation[];
-  trafficAllocation: Array<{
-    entityId: string;
-    endOfRange: number;
-  }>;
-  audienceIds: string[];
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  forcedVariations: object;
   variationKeyMap: {[key: string]: Variation}
 }
