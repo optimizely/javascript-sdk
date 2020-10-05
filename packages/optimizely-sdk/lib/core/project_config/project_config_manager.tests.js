@@ -56,7 +56,7 @@ describe('lib/core/project_config/project_config_manager', function() {
   });
 
   it('should call the error handler and fulfill onReady with an unsuccessful result if neither datafile nor sdkKey are passed into the constructor', function() {
-    var manager = new projectConfigManager.ProjectConfigManager({
+    var manager = projectConfigManager.createProjectConfigManager({
     });
     sinon.assert.calledOnce(globalStubErrorHandler.handleError);
     var errorMessage = globalStubErrorHandler.handleError.lastCall.args[0].message;
@@ -70,7 +70,7 @@ describe('lib/core/project_config/project_config_manager', function() {
 
   it('should call the error handler and fulfill onReady with an unsuccessful result if the datafile JSON is malformed', function() {
     var invalidDatafileJSON = 'abc';
-    var manager = new projectConfigManager.ProjectConfigManager({
+    var manager = projectConfigManager.createProjectConfigManager({
       datafile: invalidDatafileJSON,
     });
     sinon.assert.calledOnce(globalStubErrorHandler.handleError);
@@ -86,7 +86,7 @@ describe('lib/core/project_config/project_config_manager', function() {
   it('should call the error handler and fulfill onReady with an unsuccessful result if the datafile is not valid', function() {
     var invalidDatafile = testData.getTestProjectConfig();
     delete invalidDatafile['projectId'];
-    var manager = new projectConfigManager.ProjectConfigManager({
+    var manager = projectConfigManager.createProjectConfigManager({
       datafile: invalidDatafile,
       jsonSchemaValidator: jsonSchemaValidator,
     });
@@ -104,7 +104,7 @@ describe('lib/core/project_config/project_config_manager', function() {
   });
 
   it('should call the error handler and fulfill onReady with an unsuccessful result if the datafile version is not supported', function() {
-    var manager = new projectConfigManager.ProjectConfigManager({
+    var manager = projectConfigManager.createProjectConfigManager({
       datafile: testData.getUnsupportedVersionConfig(),
       jsonSchemaValidator: jsonSchemaValidator,
     });
@@ -128,7 +128,7 @@ describe('lib/core/project_config/project_config_manager', function() {
     });
 
     it('should skip JSON schema validation if jsonSchemaValidator is not provided', function() {
-      var manager = new projectConfigManager.ProjectConfigManager({
+      var manager = projectConfigManager.createProjectConfigManager({
         datafile: testData.getTestProjectConfig(),
       });
       sinon.assert.notCalled(jsonSchemaValidator.validate);
@@ -136,7 +136,7 @@ describe('lib/core/project_config/project_config_manager', function() {
     });
 
     it('should not skip JSON schema validation if jsonSchemaValidator is provided', function() {
-      var manager = new projectConfigManager.ProjectConfigManager({
+      var manager = projectConfigManager.createProjectConfigManager({
         datafile: testData.getTestProjectConfig(),
         jsonSchemaValidator: jsonSchemaValidator,
       });
@@ -151,7 +151,7 @@ describe('lib/core/project_config/project_config_manager', function() {
 
   it('should return a valid datafile from getConfig and resolve onReady with a successful result', function() {
     var configWithFeatures = testData.getTestProjectConfigWithFeatures();
-    var manager = new projectConfigManager.ProjectConfigManager({
+    var manager = projectConfigManager.createProjectConfigManager({
       datafile: cloneDeep(configWithFeatures),
     });
     assert.deepEqual(manager.getConfig(), projectConfig.createProjectConfig(configWithFeatures));
@@ -164,7 +164,7 @@ describe('lib/core/project_config/project_config_manager', function() {
 
   it('does not call onUpdate listeners after becoming ready when constructed with a valid datafile and without sdkKey', function() {
     var configWithFeatures = testData.getTestProjectConfigWithFeatures();
-    var manager = new projectConfigManager.ProjectConfigManager({
+    var manager = projectConfigManager.createProjectConfigManager({
       datafile: configWithFeatures,
     });
     var onUpdateSpy = sinon.spy();
@@ -177,7 +177,7 @@ describe('lib/core/project_config/project_config_manager', function() {
   describe('with a datafile manager', function() {
     it('passes the correct options to datafile manager', function() {
       var config = testData.getTestProjectConfig()
-      new projectConfigManager.ProjectConfigManager({
+      projectConfigManager.createProjectConfigManager({
         datafile: config,
         sdkKey: '12345',
         datafileOptions: {
@@ -207,7 +207,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           on: sinon.stub().returns(function() {}),
           onReady: sinon.stub().returns(Promise.resolve()),
         });
-        var manager = new projectConfigManager.ProjectConfigManager({
+        var manager = projectConfigManager.createProjectConfigManager({
           sdkKey: '12345',
         });
         assert.isNull(manager.getConfig());
@@ -245,7 +245,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           on: sinon.stub().returns(function() {}),
           onReady: sinon.stub().returns(Promise.resolve()),
         });
-        var manager = new projectConfigManager.ProjectConfigManager({
+        var manager = projectConfigManager.createProjectConfigManager({
           sdkKey: '12345',
         });
         var onUpdateSpy = sinon.spy();
@@ -272,7 +272,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           on: sinon.stub().returns(function() {}),
           onReady: sinon.stub().returns(Promise.resolve()),
         });
-        var manager = new projectConfigManager.ProjectConfigManager({
+        var manager = projectConfigManager.createProjectConfigManager({
           sdkKey: '12345',
         });
         return manager.onReady().then(function() {
@@ -310,7 +310,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           on: sinon.stub().returns(function() {}),
           onReady: sinon.stub().returns(Promise.resolve()),
         });
-        var manager = new projectConfigManager.ProjectConfigManager({
+        var manager = projectConfigManager.createProjectConfigManager({
           jsonSchemaValidator: jsonSchemaValidator,
           sdkKey: '12345',
         });
@@ -329,7 +329,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           on: sinon.stub().returns(function() {}),
           onReady: sinon.stub().returns(Promise.reject(new Error('Failed to become ready'))),
         });
-        var manager = new projectConfigManager.ProjectConfigManager({
+        var manager = projectConfigManager.createProjectConfigManager({
           jsonSchemaValidator: jsonSchemaValidator,
           sdkKey: '12345',
         });
@@ -341,7 +341,7 @@ describe('lib/core/project_config/project_config_manager', function() {
       });
 
       it('calls stop on its datafile manager when its stop method is called', function() {
-        var manager = new projectConfigManager.ProjectConfigManager({
+        var manager = projectConfigManager.createProjectConfigManager({
           sdkKey: '12345',
         });
         manager.stop();
@@ -359,7 +359,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           onReady: sinon.stub().returns(Promise.resolve()),
         });
         var configWithFeatures = testData.getTestProjectConfigWithFeatures();
-        var manager = new projectConfigManager.ProjectConfigManager({
+        var manager = projectConfigManager.createProjectConfigManager({
           datafile: configWithFeatures,
           sdkKey: '12345',
         });
@@ -386,7 +386,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           onReady: sinon.stub().returns(Promise.resolve()),
         });
         var configWithFeatures = testData.getTestProjectConfigWithFeatures();
-        var manager = new projectConfigManager.ProjectConfigManager({
+        var manager = projectConfigManager.createProjectConfigManager({
           datafile: JSON.stringify(configWithFeatures),
           sdkKey: '12345',
         });
@@ -413,7 +413,7 @@ describe('lib/core/project_config/project_config_manager', function() {
       });
 
       it('should return the same config until revision is changed', function() {
-        var manager = new projectConfigManager.ProjectConfigManager({
+        var manager = projectConfigManager.createProjectConfigManager({
           datafile: testData.getTestProjectConfig(),
           sdkKey: '12345',
         });

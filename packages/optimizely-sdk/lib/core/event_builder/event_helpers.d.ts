@@ -13,41 +13,97 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { ProjectConfig } from '../project_config';
+import { EventTags, UserAttributes } from '../../shared_types';
 
-declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
-  import { ProjectConfig } from '@optimizely/optimizely-sdk/lib/core/project_config';
-
-  interface ImpressionConfig {
-    experimentKey: string;
-    variationKey: string;
-    userId: string;
-    userAttributes: import('../../shared_types').UserAttributes;
-    clientEngine: string;
-    clientVersion: string;
-    configObj: ProjectConfig;
-  }
-
-  interface ConversionConfig {
-    eventKey: string;
-    eventTags: import('../../shared_types').EventTags;
-    userId: string;
-    userAttributes: import('../../shared_types').UserAttributes;
-    clientEngine: string;
-    clientVersion: string;
-    configObj: ProjectConfig;
-  }
-
-  /**
-   * Creates an ImpressionEvent object from decision data
-   * @param {ImpressionConfig} config
-   * @return {ImpressionEvent} an ImpressionEvent object
-   */
-  export function buildImpressionEvent(config: ImpressionConfig): import('@optimizely/js-sdk-event-processor').ImpressionEvent;
-
-  /**
-   * Creates a ConversionEvent object from track
-   * @param {ConversionConfig} config
-   * @return {ConversionEvent} a ConversionEvent object
-   */
-  export function buildConversionEvent(config: ConversionConfig): import('@optimizely/js-sdk-event-processor').ConversionEvent;
+interface ImpressionConfig {
+  experimentKey: string;
+  variationKey: string;
+  userId: string;
+  userAttributes?: UserAttributes;
+  clientEngine: string;
+  clientVersion: string;
+  configObj: ProjectConfig;
 }
+type  VisitorAttribute = {
+  entityId: string;
+  key: string;
+  value: string | number | boolean;
+}
+type EventContext = {
+  accountId: string;
+  projectId: string;
+  revision: string;
+  clientName: string;
+  clientVersion: string;
+  anonymizeIP: boolean;
+  botFiltering: boolean | undefined;
+}
+
+interface ImpressionEvent {
+  type: 'impression';
+  timestamp: number;
+  uuid: string;
+  user: {
+      id: string;
+      attributes: VisitorAttribute[];
+  };
+  context: EventContext;
+  layer: {
+      id: string;
+  };
+  experiment: {
+      id: string;
+      key: string;
+  } | null;
+  variation: {
+      id: string;
+      key: string;
+  } | null;
+}
+
+interface ConversionConfig {
+  eventKey: string;
+  eventTags?: EventTags;
+  userId: string;
+  userAttributes?: UserAttributes;
+  clientEngine: string;
+  clientVersion: string;
+  configObj: ProjectConfig;
+}
+
+interface ConversionEvent {
+  type: 'conversion';
+  timestamp: number;
+  uuid: string;
+  user: {
+    id: string;
+    attributes: VisitorAttribute[];
+  };
+  context: EventContext;
+  experiment: {
+    id: string;
+    key: string;
+  };
+  event: {
+    id: string;
+    key: string;
+ };
+  revenue: number | null;
+  value: number | null;
+  tags: EventTags;
+}
+
+/**
+ * Creates an ImpressionEvent object from decision data
+ * @param {ImpressionConfig} config
+ * @return {ImpressionEvent} an ImpressionEvent object
+ */
+export function buildImpressionEvent(config: ImpressionConfig): ImpressionEvent;
+
+/**
+ * Creates a ConversionEvent object from track
+ * @param {ConversionConfig} config
+ * @return {ConversionEvent} a ConversionEvent object
+ */
+export function buildConversionEvent(config: ConversionConfig): ConversionEvent;

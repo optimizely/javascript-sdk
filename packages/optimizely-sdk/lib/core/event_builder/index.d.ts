@@ -13,46 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { ProjectConfig } from '../project_config';
+import { LogHandler } from '@optimizely/js-sdk-logging';
+import { EventTags, UserAttributes, Event as EventLoggingEndpoint } from '../../shared_types';
 
-declare module '@optimizely/optimizely-sdk/lib/core/event_builder' {
-  import { ProjectConfig } from '@optimizely/optimizely-sdk/lib/core/project_config';
-  import { LogHandler } from '@optimizely/js-sdk-logging';
-  import { Event as EventLoggingEndpoint } from '@optimizely/optimizely-sdk';
-
-  interface ImpressionOptions {
-    attributes?: import('../../shared_types').UserAttributes;
-    clientEngine: string;
-    clientVersion: string;
-    configObj: ProjectConfig;
-    experimentId: string;
-    eventKey?: string;
-    variationId: string;
-    logger?: LogHandler;
-    userId: string;
-  }
-
-  interface ConversionEventOptions {
-    attributes?: import('../../shared_types').UserAttributes;
-    clientEngine: string;
-    clientVersion: string;
-    configObj: ProjectConfig;
-    eventKey: string;
-    logger: LogHandler;
-    userId: string;
-    eventTags?: import('../../shared_types').EventTags;
-  }
-
-  /**
-   * Create impression event params to be sent to the logging endpoint
-   * @param  {ImpressionOptions} options Object containing values needed to build impression event
-   * @return {EventLoggingEndpoint} Params to be used in impression event logging endpoint call
-   */
-  export function getImpressionEvent(options: ImpressionOptions): EventLoggingEndpoint;
-  
-  /**
-   * Create conversion event params to be sent to the logging endpoint
-   * @param  {ConversionEventOptions} options  Object containing values needed to build conversion event
-   * @return {EventLoggingEndpoint} Params to be used in conversion event logging endpoint call
-   */
-  export function getConversionEvent(options: ConversionEventOptions): EventLoggingEndpoint;
+interface ImpressionOptions {
+  attributes?: UserAttributes;
+  clientEngine: string;
+  clientVersion: string;
+  configObj: ProjectConfig;
+  experimentId: string;
+  eventKey?: string;
+  variationId: string;
+  logger?: LogHandler;
+  userId: string;
 }
+
+interface ConversionEventOptions {
+  attributes?: UserAttributes;
+  clientEngine: string;
+  clientVersion: string;
+  configObj: ProjectConfig;
+  eventKey: string;
+  logger: LogHandler;
+  userId: string;
+  eventTags?: EventTags;
+}
+
+/**
+ * Create impression event params to be sent to the logging endpoint
+ * @param  {ImpressionOptions} options Object containing values needed to build impression event
+ * @return {EventLoggingEndpoint} Params to be used in impression event logging endpoint call
+ */
+export function getImpressionEvent(options: ImpressionOptions): EventLoggingEndpoint;
+
+/**
+ * Create conversion event params to be sent to the logging endpoint
+ * @param  {ConversionEventOptions} options  Object containing values needed to build conversion event
+ * @return {EventLoggingEndpoint} Params to be used in conversion event logging endpoint call
+ */
+export function getConversionEvent(options: ConversionEventOptions): EventLoggingEndpoint;

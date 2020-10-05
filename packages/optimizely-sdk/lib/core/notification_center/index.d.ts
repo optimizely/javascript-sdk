@@ -14,79 +14,72 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
+import { EventTags, UserAttributes, Event } from '../../shared_types';
+import { Experiment, Variation } from '../project_config/entities';
 
-declare module '@optimizely/optimizely-sdk/lib/core/notification_center' {
-  import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
+export type NOTIFICATION_TYPES = import('@optimizely/js-sdk-utils').NOTIFICATION_TYPES;
 
-  export enum NOTIFICATION_TYPES {
-    ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
-    DECISION = 'DECISION:type, userId, attributes, decisionInfo',
-    LOG_EVENT = 'LOG_EVENT:logEvent',
-    OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
-    TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
-  }
-
-  export enum DECISION_NOTIFICATION_TYPES {
-    AB_TEST = 'ab-test',
-    FEATURE = 'feature',
-    FEATURE_TEST = 'feature-test',
-    FEATURE_VARIABLE = 'feature-variable',
-    ALL_FEATURE_VARIABLES = 'all-feature-variables',
-  }
-
-  export type Options = {
-    logger: LogHandler;
-    errorHandler: ErrorHandler;
-  };
-
-  export type SourceInfo = {
-    experimentKey?: string;
-    variationKey?: string;
-  };
-
-  export type VariableValues = {
-    [name: string]: unknown;
-  };
-
-  export type DecisionInfo = {
-    experimentKey?: string;
-    variationKey?: string;
-    featureKey?: string;
-    featureEnabled?: boolean;
-    source?: string;
-    sourceInfo?: SourceInfo;
-    variableKey?: string;
-    variableValue?: unknown;
-    variableValues?: VariableValues;
-    variableType?: string;
-  };
-
-  export interface NotificationData {
-    type?: string;
-    userId?: string;
-    attributes?: import('../../shared_types').UserAttributes;
-    decisionInfo?: DecisionInfo;
-    experiment?: import('../../shared_types').Experiment;
-    variation?: import('../../shared_types').Variation;
-    logEvent?: import('../../shared_types').Event;
-    eventKey?: string;
-    eventTags?: import('../../shared_types').EventTags;
-  }
-
-  export interface NotificationCenter {
-    /**
-     * Fires notifications for the argument type. All registered callbacks for this type will be
-     * called. The notificationData object will be passed on to callbacks called.
-     * @param {NOTIFICATION_TYPES} notificationType One of NOTIFICATION_TYPES
-     * @param {NotificationData} notificationData Will be passed to callbacks called
-     */
-    sendNotifications(notificationType: NOTIFICATION_TYPES, notificationData: NotificationData): void;
-  }
-
-  /**
-   * Create an instance of NotificationCenter
-   * @param {Options} options
-   * @returns {NotificationCenter} An instance of NotificationCenter
-   */
-  export function createNotificationCenter(options: Options): NotificationCenter;
+export enum DECISION_NOTIFICATION_TYPES {
+  AB_TEST = 'ab-test',
+  FEATURE = 'feature',
+  FEATURE_TEST = 'feature-test',
+  FEATURE_VARIABLE = 'feature-variable',
+  ALL_FEATURE_VARIABLES = 'all-feature-variables',
 }
+
+export type Options = {
+  logger: LogHandler;
+  errorHandler: ErrorHandler;
+};
+
+export type SourceInfo = {
+  experimentKey?: string;
+  variationKey?: string;
+};
+
+export type VariableValues = {
+  [name: string]: unknown;
+};
+
+export type DecisionInfo = {
+  experimentKey?: string;
+  variationKey?: string | null;
+  featureKey?: string;
+  featureEnabled?: boolean;
+  source?: string;
+  sourceInfo?: SourceInfo;
+  variableKey?: string;
+  variableValue?: unknown;
+  variableValues?: VariableValues;
+  variableType?: string;
+};
+
+export interface NotificationData {
+  type?: string;
+  userId?: string;
+  attributes?: UserAttributes;
+  decisionInfo?: DecisionInfo;
+  experiment?: Experiment;
+  variation?: Variation;
+  logEvent?: Event;
+  eventKey?: string;
+  eventTags?: EventTags;
+}
+
+export interface NotificationCenter {
+  /**
+   * Fires notifications for the argument type. All registered callbacks for this type will be
+   * called. The notificationData object will be passed on to callbacks called.
+   * @param {NOTIFICATION_TYPES} notificationType One of NOTIFICATION_TYPES
+   * @param {NotificationData} notificationData Will be passed to callbacks called
+   */
+  sendNotifications(notificationType: NOTIFICATION_TYPES, notificationData?: NotificationData): void;
+}
+
+/**
+ * Create an instance of NotificationCenter
+ * @param {Options} options
+ * @returns {NotificationCenter} An instance of NotificationCenter
+ */
+export function createNotificationCenter(options: Options): NotificationCenter;
