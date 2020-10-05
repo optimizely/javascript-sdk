@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Bug fixes
 
-- Added `OptimizelyConfig` interface and `UserAttributes ` type in TypeScript type definitions ([--](https://github.com/optimizely/javascript-sdk/pull/--))
+- Added `OptimizelyConfig` interface and `UserAttributes` type in TypeScript type definitions ([#587](https://github.com/optimizely/javascript-sdk/pull/587))
 
 ## [4.2.1] - August 10, 2020
 
