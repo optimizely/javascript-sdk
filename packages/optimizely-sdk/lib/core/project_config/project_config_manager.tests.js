@@ -347,6 +347,13 @@ describe('lib/core/project_config/project_config_manager', function() {
         manager.stop();
         sinon.assert.calledOnce(datafileManager.HttpPollingDatafileManager.getCall(0).returnValue.stop);
       });
+
+      it('does not log an error message', function() {
+        projectConfigManager.createProjectConfigManager({
+          sdkKey: '12345',
+        });
+        sinon.assert.notCalled(stubLogHandler.log);
+      });
     });
 
     describe('when constructed with sdkKey and with a valid datafile object', function() {
