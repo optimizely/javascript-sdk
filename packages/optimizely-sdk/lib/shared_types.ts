@@ -49,7 +49,12 @@ export interface EventDispatcher {
    *        After the event has at least been queued for dispatch, call this function to return
    *        control back to the Client.
    */
-  dispatchEvent: (event: Event, callback: () => void) => void;
+  dispatchEvent: (event: Event, callback: (response: { statusCode: number; }) => void) => void;
+}
+
+export interface OnReadyResult {
+  success: boolean;
+  reason?: string;
 }
 
 /**

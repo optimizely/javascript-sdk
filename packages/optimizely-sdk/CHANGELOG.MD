@@ -9,7 +9,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Bug fixes
 
-  - Fixed return type of `getAllFeatureVariables` method in TypeScript type definitions ([#576](https://github.com/optimizely/javascript-sdk/pull/576))
+- Fixed return type of `getAllFeatureVariables` method and `dispatchEvent ` method signature of `EventDispatcher` interface in TypeScript type definitions ([#576](https://github.com/optimizely/javascript-sdk/pull/576))
+
+## [4.3.0] - October 1, 2020
+
+### New Features
+
+- Added support for version audience evaluation ([#517](https://github.com/optimizely/javascript-sdk/pull/571))
+- Add datafile accessor ([#564](https://github.com/optimizely/javascript-sdk/pull/564))
 
 ## [4.2.1] - August 10, 2020
 
@@ -19,11 +26,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [4.2.0] - July 31, 2020
 
 ### New Features
+
   - Better offline support in React Native apps:
     - Persist downloaded datafiles in local storage for use in subsequent SDK initializations ([#430](https://github.com/optimizely/javascript-sdk/pull/430))
     - Persist pending impression & conversion events in local storage ([#517](https://github.com/optimizely/javascript-sdk/pull/517), [#532](https://github.com/optimizely/javascript-sdk/pull/532))
 
 ### Bug fixes
+
   - Fixed log messages for Targeted Rollouts ([#515](https://github.com/optimizely/javascript-sdk/pull/515))
 
 ## [4.1.0] - July 7, 2020
