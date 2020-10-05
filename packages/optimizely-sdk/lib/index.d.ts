@@ -39,12 +39,9 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type Event = import ('./shared_types').Event;
 
-  export interface DatafileOptions {
-    autoUpdate?: boolean;
-    updateInterval?: number;
-    urlTemplate?: string;
-    datafileAccessToken?: string;
-  }
+  export type EventDispatcher = import ('./shared_types').EventDispatcher;
+
+  export type DatafileOptions = import ('./shared_types').DatafileOptions;
 
   // The options object given to Optimizely.createInstance.
   export interface Config {
@@ -143,17 +140,6 @@ declare module '@optimizely/optimizely-sdk' {
     getOptimizelyConfig(): OptimizelyConfig | null;
     onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
     close(): Promise<{ success: boolean; reason?: string }>;
-  }
-
-  export interface EventDispatcher {
-    /**
-     * @param event
-     *        Event being submitted for eventual dispatch.
-     * @param callback
-     *        After the event has at least been queued for dispatch, call this function to return
-     *        control back to the Client.
-     */
-    dispatchEvent: (event: Event, callback: (response: { statusCode: number; }) => void) => void;
   }
 
   // NotificationCenter-related types
