@@ -173,7 +173,7 @@ export const CONTROL_ATTRIBUTES = {
 export const JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 export const NODE_CLIENT_ENGINE = 'node-sdk';
 export const REACT_CLIENT_ENGINE = 'react-sdk';
-export const NODE_CLIENT_VERSION = '4.3.0';
+export const NODE_CLIENT_VERSION = '4.3.1';
 
 export const VALID_CLIENT_ENGINES = [
   NODE_CLIENT_ENGINE,
