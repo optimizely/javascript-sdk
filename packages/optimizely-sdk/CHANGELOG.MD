@@ -7,16 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.3.1] - October 5, 2020
+
+### Bug fixes
+
+-  Exported `OptimizelyConfig` and `UserAttributes` type in TypeScript type definitions ([#587](https://github.com/optimizely/javascript-sdk/pull/587))
+
 ## [4.3.0] - October 5, 2020
 
 ### New Features
 
 - Added support for version audience evaluation ([#517](https://github.com/optimizely/javascript-sdk/pull/571))
 - Add datafile accessor ([#564](https://github.com/optimizely/javascript-sdk/pull/564))
-
-### Bug fixes
-
-- Added `OptimizelyConfig` interface and `UserAttributes` type in TypeScript type definitions ([#587](https://github.com/optimizely/javascript-sdk/pull/587))
 
 ## [4.2.1] - August 10, 2020
 
