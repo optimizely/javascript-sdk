@@ -545,22 +545,19 @@ export default class Optimizely {
     eventTags?: unknown
   ): boolean {
     try {
-      // Null, undefined or non-string user Id is invalid.
-      if (typeof stringInputs === 'object' && stringInputs !== null) {
-        if (stringInputs.hasOwnProperty('user_id')) {
-          const userId = stringInputs['user_id'];
-          if (typeof userId !== 'string' || userId === null || userId === 'undefined') {
-            throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, 'user_id'));
-          }
-
-          delete stringInputs['user_id'];
+      if (stringInputs.hasOwnProperty('user_id')) {
+        const userId = stringInputs['user_id'];
+        if (typeof userId !== 'string' || userId === null || userId === 'undefined') {
+          throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, 'user_id'));
         }
-        Object.keys(stringInputs).forEach(key => {
-          if (!stringValidator.validate(stringInputs[key])) {
-            throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, key));
-          }
-        })
+
+        delete stringInputs['user_id'];
       }
+      Object.keys(stringInputs).forEach(key => {
+        if (!stringValidator.validate(stringInputs[key])) {
+          throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, key));
+        }
+      })
       if (userAttributes) {
         validate(userAttributes);
       }
@@ -1343,7 +1340,7 @@ export default class Optimizely {
     let resolveTimeoutPromise: (value: OnReadyResult) => void;
     const timeoutPromise = new Promise<OnReadyResult>(
       (resolve) => {
-      resolveTimeoutPromise = resolve;
+        resolveTimeoutPromise = resolve;
       }
     );
 
