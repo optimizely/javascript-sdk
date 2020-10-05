@@ -89,7 +89,7 @@ const umdBundle = {
     }),
     typescript(typescriptPluginOptions),
   ],
-  input: 'lib/index.browser.js',
+  input: 'lib/index.browser.ts',
   output: [
     {
       name: 'optimizelySdk',
