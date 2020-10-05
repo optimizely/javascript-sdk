@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 -  Exported `OptimizelyConfig` and `UserAttributes` type in TypeScript type definitions ([#587](https://github.com/optimizely/javascript-sdk/pull/587))
 
-## [4.3.0] - October 5, 2020
+## [4.3.0] - October 1, 2020
 
 ### New Features
 
