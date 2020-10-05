@@ -26,14 +26,13 @@ import {
 
 import * as enums from './utils/enums';
 import { assign } from './utils/fns';
-import { Optimizely, configObj } from './optimizely';
+import Optimizely from './optimizely';
 import * as configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
-import * as projectConfig from './core/project_config';
-import { EventDispatcher, UserProfileService } from './shared_types';
+import { EventDispatcher, UserProfileService, OptimizelyConfig } from './shared_types';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -100,7 +99,7 @@ const createInstance = function (config: Config): Optimizely | null {
         logger: logger,
         errorHandler: getErrorHandler(),
       }
-    ) as configObj;
+    ) as OptimizelyConfig;
 
     if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
       logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);

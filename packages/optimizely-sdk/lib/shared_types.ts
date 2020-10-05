@@ -1,3 +1,5 @@
+import { ErrorHandler, LogHandler } from "@optimizely/js-sdk-logging";
+
 export type UserAttributes = {
   // TODO[OASIS-6649]: Don't use any type
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
@@ -55,6 +57,26 @@ export interface EventDispatcher {
 export interface OnReadyResult {
   success: boolean;
   reason?: string;
+}
+
+export interface OptimizelyConfig {
+  clientEngine: string;
+  clientVersion?: string;
+  errorHandler: ErrorHandler;
+  eventDispatcher: EventDispatcher;
+  isValidInstance: boolean;
+  datafile?: string;
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
+  jsonSchemaValidator?: object;
+  sdkKey?: string;
+  userProfileService?: UserProfileService | null;
+  UNSTABLE_conditionEvaluators?: unknown;
+  eventFlushInterval?: number;
+  eventBatchSize?: number;
+  datafileOptions?: DatafileOptions;
+  eventMaxQueueSize?: number;
+  logger: LogHandler;
 }
 
 /**

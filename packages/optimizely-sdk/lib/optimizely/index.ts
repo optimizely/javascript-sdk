@@ -53,7 +53,7 @@ const MODULE_NAME = 'OPTIMIZELY';
 
 const DEFAULT_ONREADY_TIMEOUT = 30000;
 
-export interface configObj {
+interface configObj {
   clientEngine: string;
   clientVersion?: string;
   errorHandler: ErrorHandler;
@@ -87,7 +87,7 @@ export interface configObj {
  * @param {Object}        config.eventFlushInterval
  * @param {string}        config.sdkKey
  */
-export class Optimizely {
+export default class Optimizely {
   private isOptimizelyConfigValid: boolean;
   private disposeOnUpdate: (() => void ) | null;
   private readyPromise: Promise<{ success: boolean; reason?: string }>;
