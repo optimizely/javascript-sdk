@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { 
+import {
   getLogger,
   setLogHandler,
   setLogLevel,
   setErrorHandler,
   getErrorHandler,
   LogLevel,
+  ErrorHandler,
+  LogHandler,
 } from '@optimizely/js-sdk-logging';
 
 import { assign } from './utils/fns';
@@ -30,30 +32,35 @@ import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
+import { EventDispatcher, UserProfileService, OptimizelyConfig } from './shared_types';
 
-var logger = getLogger();
+const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
 
-var DEFAULT_EVENT_BATCH_SIZE = 10;
-var DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
+const DEFAULT_EVENT_BATCH_SIZE = 10;
+const DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
+
+interface Config {
+  datafile?: string;
+  errorHandler?: ErrorHandler;
+  eventDispatcher?: EventDispatcher;
+  logger?: LogHandler;
+  logLevel?: LogLevel;
+  userProfileService?: UserProfileService | null;
+  eventBatchSize?: number;
+  eventFlushInterval?: number;
+  sdkKey?: string;
+  isValidInstance?: boolean;
+}
 
 /**
  * Creates an instance of the Optimizely class
- * @param  {Object}         config
- * @param  {Object|string}  config.datafile
- * @param  {Object}         config.errorHandler
- * @param  {Object}         config.eventDispatcher
- * @param  {Object}         config.logger
- * @param  {Object}         config.logLevel
- * @param  {Object}         config.userProfileService
- * @param  {Object}         config.eventBatchSize
- * @param  {Object}         config.eventFlushInterval
- * @param  {string}         config.sdkKey
- * @return {Object}         the Optimizely object
+ * @param  {Config} config
+ * @return {Optimizely} the Optimizely object
  */
-var createInstance = function(config) {
+const createInstance = function (config: Config): Optimizely | null {
   try {
-    var hasLogger = false;
+    let hasLogger = false;
     config = config || {};
 
     // TODO warn about setting per instance errorHandler / logger / logLevel
@@ -70,7 +77,6 @@ var createInstance = function(config) {
     if (config.logLevel !== undefined) {
       setLogLevel(config.logLevel);
     }
-
     try {
       configValidator.validate(config);
       config.isValidInstance = true;
@@ -83,7 +89,7 @@ var createInstance = function(config) {
       config.isValidInstance = false;
     }
 
-    config = assign(
+    const optimizelyConfig = assign(
       {
         clientEngine: enums.NODE_CLIENT_ENGINE,
         eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
@@ -96,11 +102,11 @@ var createInstance = function(config) {
         logger: logger,
         errorHandler: getErrorHandler(),
       }
-    );
+    ) as OptimizelyConfig;
 
     if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
       logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
-      config.eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
+      optimizelyConfig.eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
     }
     if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
       logger.warn(
@@ -108,10 +114,10 @@ var createInstance = function(config) {
         config.eventFlushInterval,
         DEFAULT_EVENT_FLUSH_INTERVAL
       );
-      config.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
+      optimizelyConfig.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
     }
 
-    return new Optimizely(config);
+    return new Optimizely(optimizelyConfig);
   } catch (e) {
     logger.error(e);
     return null;
@@ -129,7 +135,7 @@ export {
   setLogHandler as setLogger,
   setLogLevel,
   createInstance,
-}
+};
 
 export default {
   logging: loggerPlugin,
