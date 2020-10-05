@@ -35,6 +35,10 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type OptimizelyConfig = import('./shared_types').OptimizelyConfig;
 
+  export type EventTags = import ('./shared_types').EventTags;
+
+  export type Event = import ('./shared_types').Event;
+
   export interface DatafileOptions {
     autoUpdate?: boolean;
     updateInterval?: number;
@@ -141,19 +145,6 @@ declare module '@optimizely/optimizely-sdk' {
     close(): Promise<{ success: boolean; reason?: string }>;
   }
 
-  // An event to be submitted to Optimizely, enabling tracking the reach and impact of
-  // tests and feature rollouts.
-  export interface Event {
-    // URL to which to send the HTTP request.
-    url: string;
-    // HTTP method with which to send the event.
-    httpVerb: 'POST';
-    // Value to send in the request body, JSON-serialized.
-    // TODO[OASIS-6649]: Don't use any type
-    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    params: any;
-  }
-
   export interface EventDispatcher {
     /**
      * @param event
@@ -164,10 +155,6 @@ declare module '@optimizely/optimizely-sdk' {
      */
     dispatchEvent: (event: Event, callback: (response: { statusCode: number; }) => void) => void;
   }
-
-  export type EventTags = {
-    [key: string]: string | number | null;
-  };
 
   // NotificationCenter-related types
   export interface NotificationCenter {

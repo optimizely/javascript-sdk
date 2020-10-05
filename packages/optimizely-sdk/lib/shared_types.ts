@@ -30,6 +30,8 @@ export interface DatafileOptions {
   datafileAccessToken?: string;
 }
 
+// An event to be submitted to Optimizely, enabling tracking the reach and impact of
+// tests and feature rollouts.
 export interface Event {
   // URL to which to send the HTTP request.
   url: string;
