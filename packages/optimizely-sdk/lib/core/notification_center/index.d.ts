@@ -18,13 +18,7 @@ import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
 import { EventTags, UserAttributes, Event } from '../../shared_types';
 import { Experiment, Variation } from '../project_config/entities';
 
-export enum NOTIFICATION_TYPES {
-  ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
-  DECISION = 'DECISION:type, userId, attributes, decisionInfo',
-  LOG_EVENT = 'LOG_EVENT:logEvent',
-  OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
-  TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
-}
+export type NOTIFICATION_TYPES = import('@optimizely/js-sdk-utils').NOTIFICATION_TYPES;
 
 export enum DECISION_NOTIFICATION_TYPES {
   AB_TEST = 'ab-test',
