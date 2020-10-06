@@ -47,7 +47,6 @@ let hasRetriedEvents = false;
  * @param  {Config} config
  * @return {Optimizely} the Optimizely object
  */
-const createInstance = function (config: Config): Optimizely | null {
 const createInstance = function(config: Config): Optimizely | null {
   try {
     config = config || {};
