@@ -196,7 +196,6 @@ describe('lib/core/audience_evaluator', function() {
             var userAttributes = { device_model: 'android' };
             var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
             sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
-            console.log('args: ', customAttributeConditionEvaluator.evaluate.firstCall.args);
             sinon.assert.calledWithExactly(
               customAttributeConditionEvaluator.evaluate,
               iphoneUserAudience.conditions[1],
@@ -273,7 +272,6 @@ describe('lib/core/audience_evaluator', function() {
             var userAttributes = { device_model: 'android' };
             var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
             sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
-            console.log('args: ', customAttributeConditionEvaluator.evaluate.firstCall.args);
             sinon.assert.calledWithExactly(
               customAttributeConditionEvaluator.evaluate,
               iphoneUserAudience.conditions[1],
