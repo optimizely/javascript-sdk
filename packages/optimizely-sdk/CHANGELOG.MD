@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Bug fixes
 
 - Fixed return type of `getAllFeatureVariables` method and `dispatchEvent ` method signature of `EventDispatcher` interface in TypeScript type definitions ([#576](https://github.com/optimizely/javascript-sdk/pull/576))
+- Don't log an error message when initialized with `sdkKey`, but no `datafile` ([#589](https://github.com/optimizely/javascript-sdk/pull/589))
 
 ## [4.3.1] - October 5, 2020
 
