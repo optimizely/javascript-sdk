@@ -19,11 +19,8 @@ import {
   setLogLevel,
   setErrorHandler,
   getErrorHandler,
-  LogLevel,
-  ErrorHandler,
-  LogHandler,
+  LogLevel
 } from '@optimizely/js-sdk-logging';
-
 import * as enums from './utils/enums';
 import { assign } from './utils/fns';
 import Optimizely from './optimizely';
@@ -32,7 +29,7 @@ import defaultErrorHandler from './plugins/error_handler';
 import loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
-import { EventDispatcher, UserProfileService, OptimizelyConfig } from './shared_types';
+import { OptimizelyConfig, Config } from './shared_types';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -41,19 +38,6 @@ setLogLevel(LogLevel.INFO);
 const DEFAULT_EVENT_BATCH_SIZE = 10;
 const DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
 const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
-
-interface Config {
-  datafile?: string;
-  errorHandler?: ErrorHandler;
-  eventDispatcher?: EventDispatcher;
-  logger?: LogHandler;
-  logLevel?: LogLevel;
-  userProfileService?: UserProfileService;
-  eventBatchSize?: number;
-  eventFlushInterval?: number;
-  sdkKey?: string;
-  isValidInstance?: boolean;
-}
 
 /**
  * Creates an instance of the Optimizely class

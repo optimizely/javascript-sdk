@@ -19,11 +19,8 @@ import {
   setLogLevel,
   setErrorHandler,
   getErrorHandler,
-  LogLevel,
-  ErrorHandler,
-  LogHandler,
+  LogLevel
 } from '@optimizely/js-sdk-logging';
-
 import { LocalStoragePendingEventsDispatcher } from '@optimizely/js-sdk-event-processor';
 import { assign } from './utils/fns';
 import * as configValidator from './utils/config_validator';
@@ -33,7 +30,7 @@ import * as enums from './utils/enums';
 import loggerPlugin from './plugins/logger';
 import Optimizely from './optimizely';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
-import { EventDispatcher, UserProfileService, OptimizelyConfig } from './shared_types';
+import { OptimizelyConfig, Config } from './shared_types';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -45,25 +42,13 @@ const DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
 
 let hasRetriedEvents = false;
 
-interface Config {
-  datafile?: string;
-  errorHandler?: ErrorHandler;
-  eventDispatcher?: EventDispatcher;
-  logger?: LogHandler;
-  logLevel?: LogLevel;
-  userProfileService?: UserProfileService;
-  eventBatchSize?: number;
-  eventFlushInterval?: number;
-  sdkKey?: string;
-  isValidInstance?: boolean;
-}
-
 /**
  * Creates an instance of the Optimizely class
  * @param  {Config} config
  * @return {Optimizely} the Optimizely object
  */
 const createInstance = function (config: Config): Optimizely | null {
+const createInstance = function(config: Config): Optimizely | null {
   try {
     config = config || {};
 

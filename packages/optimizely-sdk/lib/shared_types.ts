@@ -1,4 +1,4 @@
-import { ErrorHandler, LogHandler } from "@optimizely/js-sdk-logging";
+import { ErrorHandler, LogHandler, LogLevel } from "@optimizely/js-sdk-logging";
 
 export type UserAttributes = {
   // TODO[OASIS-6649]: Don't use any type
@@ -77,6 +77,19 @@ export interface OptimizelyVariable {
   key: string;
   type: string;
   value: string;
+}
+
+export interface Config {
+  datafile?: string;
+  errorHandler?: ErrorHandler;
+  eventDispatcher?: EventDispatcher;
+  logger?: LogHandler;
+  logLevel?: LogLevel;
+  userProfileService?: UserProfileService;
+  eventBatchSize?: number;
+  eventFlushInterval?: number;
+  sdkKey?: string;
+  isValidInstance?: boolean;
 }
 
 export interface OptimizelyConfig {

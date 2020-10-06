@@ -19,11 +19,8 @@ import {
   setLogLevel,
   setErrorHandler,
   getErrorHandler,
-  LogLevel,
-  ErrorHandler,
-  LogHandler,
+  LogLevel
 } from '@optimizely/js-sdk-logging';
-
 import { assign } from './utils/fns';
 import Optimizely from './optimizely';
 import * as enums from './utils/enums';
@@ -32,26 +29,13 @@ import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
-import { EventDispatcher, UserProfileService, OptimizelyConfig } from './shared_types';
+import { OptimizelyConfig, Config } from './shared_types';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
 
 const DEFAULT_EVENT_BATCH_SIZE = 10;
 const DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
-
-interface Config {
-  datafile?: string;
-  errorHandler?: ErrorHandler;
-  eventDispatcher?: EventDispatcher;
-  logger?: LogHandler;
-  logLevel?: LogLevel;
-  userProfileService?: UserProfileService | null;
-  eventBatchSize?: number;
-  eventFlushInterval?: number;
-  sdkKey?: string;
-  isValidInstance?: boolean;
-}
 
 /**
  * Creates an instance of the Optimizely class
