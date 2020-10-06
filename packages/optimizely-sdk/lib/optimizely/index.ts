@@ -20,10 +20,9 @@ import {
   UserAttributes,
   EventTags,
   OptimizelyConfig,
-  UserProfileService,
-  DatafileOptions,
   EventDispatcher,
-  OnReadyResult
+  OnReadyResult, 
+  configObj
 } from '../shared_types';
 import { Variation } from '../core/project_config/entities';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
@@ -52,26 +51,6 @@ import {
 const MODULE_NAME = 'OPTIMIZELY';
 
 const DEFAULT_ONREADY_TIMEOUT = 30000;
-
-interface configObj {
-  clientEngine: string;
-  clientVersion?: string;
-  errorHandler: ErrorHandler;
-  eventDispatcher: EventDispatcher;
-  isValidInstance: boolean;
-  datafile?: string;
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  jsonSchemaValidator?: object;
-  sdkKey?: string;
-  userProfileService?: UserProfileService | null;
-  UNSTABLE_conditionEvaluators?: unknown;
-  eventFlushInterval?: number;
-  eventBatchSize?: number;
-  datafileOptions?: DatafileOptions;
-  eventMaxQueueSize?: number;
-  logger: LogHandler;
-}
 
 /**
  * The Optimizely class

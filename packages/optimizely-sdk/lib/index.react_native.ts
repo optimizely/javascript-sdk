@@ -29,7 +29,7 @@ import defaultErrorHandler from './plugins/error_handler';
 import loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
-import { OptimizelyConfig, Config } from './shared_types';
+import { configObj, Config } from './shared_types';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -69,7 +69,7 @@ const createInstance = function(config: Config): Optimizely | null {
       config.isValidInstance = false;
     }
 
-    const optimizelyConfig = assign(
+    const internalConfig = assign(
       {
         clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
         eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
@@ -83,11 +83,11 @@ const createInstance = function(config: Config): Optimizely | null {
         logger: logger,
         errorHandler: getErrorHandler(),
       }
-    ) as OptimizelyConfig;
+    ) as configObj;
 
     if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
       logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
-      optimizelyConfig.eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
+      internalConfig.eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
     }
     if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
       logger.warn(
@@ -95,10 +95,10 @@ const createInstance = function(config: Config): Optimizely | null {
         config.eventFlushInterval,
         DEFAULT_EVENT_FLUSH_INTERVAL
       );
-      optimizelyConfig.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
+      internalConfig.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
     }
 
-    return new Optimizely(optimizelyConfig);
+    return new Optimizely(internalConfig);
   } catch (e) {
     logger.error(e);
     return null;

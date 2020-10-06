@@ -92,7 +92,7 @@ export interface Config {
   isValidInstance?: boolean;
 }
 
-export interface OptimizelyConfig {
+export interface configObj {
   clientEngine: string;
   clientVersion?: string;
   errorHandler: ErrorHandler;
