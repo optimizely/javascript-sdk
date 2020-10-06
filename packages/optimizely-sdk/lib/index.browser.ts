@@ -30,7 +30,7 @@ import * as enums from './utils/enums';
 import loggerPlugin from './plugins/logger';
 import Optimizely from './optimizely';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
-import { configObj, Config } from './shared_types';
+import { ConfigObj, Config } from './shared_types';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -101,7 +101,7 @@ const createInstance = function(config: Config): Optimizely | null {
         logger: logger,
         errorHandler: getErrorHandler(),
       }
-    ) as configObj;
+    ) as ConfigObj;
 
     if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
       logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);

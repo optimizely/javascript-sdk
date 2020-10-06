@@ -29,7 +29,7 @@ import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
-import { configObj, Config } from './shared_types';
+import { ConfigObj, Config } from './shared_types';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
@@ -86,7 +86,7 @@ const createInstance = function(config: Config): Optimizely | null {
         logger: logger,
         errorHandler: getErrorHandler(),
       }
-    ) as configObj;
+    ) as ConfigObj;
 
     if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
       logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);

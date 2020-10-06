@@ -92,7 +92,7 @@ export interface Config {
   isValidInstance?: boolean;
 }
 
-export interface configObj {
+export interface ConfigObj {
   clientEngine: string;
   clientVersion?: string;
   errorHandler: ErrorHandler;

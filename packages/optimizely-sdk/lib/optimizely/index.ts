@@ -22,7 +22,7 @@ import {
   OptimizelyConfig,
   EventDispatcher,
   OnReadyResult, 
-  configObj
+  ConfigObj
 } from '../shared_types';
 import { Variation } from '../core/project_config/entities';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
@@ -82,7 +82,7 @@ export default class Optimizely {
   private decisionService: DecisionService;
   private eventProcessor: EventProcessor;
 
-  constructor(config: configObj) {
+  constructor(config: ConfigObj) {
     let clientEngine = config.clientEngine;
     if (enums.VALID_CLIENT_ENGINES.indexOf(clientEngine) === -1) {
       config.logger.log(
