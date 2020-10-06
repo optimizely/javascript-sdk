@@ -91,8 +91,13 @@ ProjectConfigManager.prototype.__initialize = function(config) {
     return;
   }
 
-  var handleNewDatafileException = this.__handleNewDatafile(config.datafile);
-  if (handleNewDatafileException) {
+  let handleNewDatafileException;
+  if (config.datafile) {
+    handleNewDatafileException = this.__handleNewDatafile(config.datafile);
+    if (handleNewDatafileException) {
+      this.__configObj = null;
+    }
+  } else {
     this.__configObj = null;
   }
 
