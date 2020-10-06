@@ -42,7 +42,7 @@ const DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
  * @param  {Config} config
  * @return {Optimizely} the Optimizely object
  */
-const createInstance = function (config: Config): Optimizely | null {
+const createInstance = function(config: Config): Optimizely | null {
   try {
     let hasLogger = false;
     config = config || {};

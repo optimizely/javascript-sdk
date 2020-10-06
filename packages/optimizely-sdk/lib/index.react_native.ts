@@ -44,7 +44,7 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
  * @param  {Config} config
  * @return {Optimizely} the Optimizely object
  */
-const createInstance = function (config: Config): Optimizely | null {
+const createInstance = function(config: Config): Optimizely | null {
   try {
     config = config || {};
 
