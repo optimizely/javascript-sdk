@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.3.3] - October 7, 2020
+
+### Bug fixes
+- Exported `OptimizelyVariable`, `OptimizelyVariation`, `OptimizelyExperiment`, `OptimizelyFeature`, `UserProfileService`, and `UserProfile` types from TypeScript type definitions ([#594](https://github.com/optimizely/javascript-sdk/pull/594))
+
 ## [4.3.2] - October 6, 2020
 
 ### Bug fixes
