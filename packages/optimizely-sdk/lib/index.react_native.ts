@@ -24,7 +24,7 @@ import {
 import * as enums from './utils/enums';
 import { assign } from './utils/fns';
 import Optimizely from './optimizely';
-import * as configValidator from './utils/config_validator';
+import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';

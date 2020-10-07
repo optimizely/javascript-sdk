@@ -79,6 +79,9 @@ export interface OptimizelyVariable {
   value: string;
 }
 
+/**
+ * Entry level Config Entities
+ */
 export interface Config {
   datafile?: string;
   errorHandler?: ErrorHandler;
@@ -92,6 +95,9 @@ export interface Config {
   isValidInstance?: boolean;
 }
 
+/**
+ * Config required to create optimizely object
+ */
 export interface ConfigObj {
   clientEngine: string;
   clientVersion?: string;

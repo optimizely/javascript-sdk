@@ -23,7 +23,7 @@ import {
 } from '@optimizely/js-sdk-logging';
 import { LocalStoragePendingEventsDispatcher } from '@optimizely/js-sdk-event-processor';
 import { assign } from './utils/fns';
-import * as configValidator from './utils/config_validator';
+import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import * as enums from './utils/enums';
@@ -140,7 +140,7 @@ const createInstance = function(config: Config): Optimizely | null {
   }
 };
 
-const __internalResetRetryState = function (): void {
+const __internalResetRetryState = function(): void {
   hasRetriedEvents = false;
 };
 
