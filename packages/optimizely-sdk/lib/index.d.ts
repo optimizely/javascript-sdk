@@ -43,6 +43,8 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type DatafileOptions = import ('./shared_types').DatafileOptions;
 
+  export type UserProfileService = import('./shared_types').UserProfileService;
+
   // The options object given to Optimizely.createInstance.
   export interface Config {
     // TODO[OASIS-6649]: Don't use object type
@@ -61,7 +63,7 @@ declare module '@optimizely/optimizely-sdk' {
     // TODO[OASIS-6649]: Don't use object type
     // eslint-disable-next-line  @typescript-eslint/ban-types
     jsonSchemaValidator?: object;
-    userProfileService?: import('./shared_types').UserProfileService | null;
+    userProfileService?: UserProfileService | null;
     eventBatchSize?: number;
     eventFlushInterval?: number;
     sdkKey?: string;
