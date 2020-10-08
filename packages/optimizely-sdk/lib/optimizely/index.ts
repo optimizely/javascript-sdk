@@ -21,8 +21,8 @@ import {
   EventTags,
   OptimizelyConfig,
   EventDispatcher,
-  OnReadyResult, 
-  ConfigObj
+  OnReadyResult,
+  OptimizelyOptions
 } from '../shared_types';
 import { Variation } from '../core/project_config/entities';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
@@ -54,17 +54,17 @@ const DEFAULT_ONREADY_TIMEOUT = 30000;
 
 /**
  * The Optimizely class
- * @param {Object}        config
- * @param {string}        config.clientEngine
- * @param {string}        config.clientVersion
- * @param {Object|string} config.datafile
- * @param {Object}        config.errorHandler
- * @param {Object}        config.eventDispatcher
- * @param {Object}        config.logger
- * @param {Object}        config.userProfileService
- * @param {Object}        config.eventBatchSize
- * @param {Object}        config.eventFlushInterval
- * @param {string}        config.sdkKey
+ * @param {OptimizelyOptions} config
+ * @param {string}            config.clientEngine
+ * @param {string}            config.clientVersion
+ * @param {Object|string}     config.datafile
+ * @param {Object}            config.errorHandler
+ * @param {Object}            config.eventDispatcher
+ * @param {Object}            config.logger
+ * @param {Object}            config.userProfileService
+ * @param {Object}            config.eventBatchSize
+ * @param {Object}            config.eventFlushInterval
+ * @param {string}            config.sdkKey
  */
 export default class Optimizely {
   private isOptimizelyConfigValid: boolean;
@@ -82,7 +82,7 @@ export default class Optimizely {
   private decisionService: DecisionService;
   private eventProcessor: EventProcessor;
 
-  constructor(config: ConfigObj) {
+  constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;
     if (enums.VALID_CLIENT_ENGINES.indexOf(clientEngine) === -1) {
       config.logger.log(

@@ -82,7 +82,7 @@ export interface OptimizelyVariable {
 /**
  * Entry level Config Entities
  */
-export interface Config {
+export interface SDKOptions {
   datafile?: string;
   errorHandler?: ErrorHandler;
   eventDispatcher?: EventDispatcher;
@@ -98,7 +98,7 @@ export interface Config {
 /**
  * Config required to create optimizely object
  */
-export interface ConfigObj {
+export interface OptimizelyOptions {
   clientEngine: string;
   clientVersion?: string;
   errorHandler: ErrorHandler;
