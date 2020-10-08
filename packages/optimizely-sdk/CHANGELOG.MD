@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.3.4] - October 8, 2020
+
+### Bug fixes
+- The prior version (4.3.3) was erroneously published with the wrong content. This version contains up-to-date content, with no new changes.
+
 ## [4.3.3] - October 7, 2020
 
 ### Bug fixes
