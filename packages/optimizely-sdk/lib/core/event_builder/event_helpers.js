@@ -15,7 +15,7 @@
  */
 import { getLogger } from '@optimizely/js-sdk-logging';
 
-import { currentTimestamp, uuid } from '../../utils/fns';
+import fns from '../../utils/fns';
 import projectConfig from '../project_config';
 import * as eventTagUtils from '../../utils/event_tag_utils';
 import * as attributesValidator from'../../utils/attributes_validator';
@@ -49,8 +49,8 @@ export var buildImpressionEvent = function(config) {
 
   return {
     type: 'impression',
-    timestamp: currentTimestamp(),
-    uuid: uuid(),
+    timestamp: fns.currentTimestamp(),
+    uuid: fns.uuid(),
 
     user: {
       id: userId,
@@ -116,8 +116,8 @@ export var buildConversionEvent = function(config) {
 
   return {
     type: 'conversion',
-    timestamp: currentTimestamp(),
-    uuid: uuid(),
+    timestamp: fns.currentTimestamp(),
+    uuid: fns.uuid(),
 
     user: {
       id: userId,

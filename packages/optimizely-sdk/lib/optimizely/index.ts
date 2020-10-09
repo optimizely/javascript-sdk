@@ -31,7 +31,7 @@ import { createNotificationCenter, NotificationCenter } from '../core/notificati
 import { createDecisionService, DecisionService } from '../core/decision_service';
 import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
 import { buildImpressionEvent, buildConversionEvent } from '../core/event_builder/event_helpers';
-import { isSafeInteger } from '../utils/fns'
+import fns from '../utils/fns'
 import { validate } from '../utils/attributes_validator';
 import { EventProcessor, LogTierV1EventProcessor } from '@optimizely/js-sdk-event-processor';
 import * as enums from '../utils/enums';
@@ -1333,7 +1333,7 @@ export default class Optimizely {
         timeoutValue = options.timeout;
       }
     }
-    if (!isSafeInteger(timeoutValue)) {
+    if (!fns.isSafeInteger(timeoutValue)) {
       timeoutValue = DEFAULT_ONREADY_TIMEOUT;
     }
 

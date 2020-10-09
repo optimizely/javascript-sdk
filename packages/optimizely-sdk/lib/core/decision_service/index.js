@@ -15,7 +15,7 @@
  ***************************************************************************/
 import { sprintf } from'@optimizely/js-sdk-utils';
 
-import { assign } from '../../utils/fns';
+import fns from '../../utils/fns';
 import bucketer from '../bucketer';
 import * as enums from '../../utils/enums';
 import projectConfig from '../project_config';
@@ -139,7 +139,7 @@ DecisionService.prototype.__resolveExperimentBucketMap = function(userId, attrib
   attributes = attributes || {};
   var userProfile = this.__getUserProfile(userId) || {};
   var attributeExperimentBucketMap = attributes[enums.CONTROL_ATTRIBUTES.STICKY_BUCKETING_KEY];
-  return assign({}, userProfile.experiment_bucket_map, attributeExperimentBucketMap);
+  return fns.assign({}, userProfile.experiment_bucket_map, attributeExperimentBucketMap);
 };
 
 /**

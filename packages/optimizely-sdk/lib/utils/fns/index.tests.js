@@ -15,7 +15,7 @@
  */
 import { assert } from 'chai';
 
-import * as fns from './';
+import fns from './';
 
 describe('lib/utils/fns', function() {
   describe('APIs', function() {

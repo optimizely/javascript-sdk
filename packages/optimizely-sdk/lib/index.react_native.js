@@ -23,7 +23,7 @@ import {
 } from '@optimizely/js-sdk-logging';
 
 import * as enums from './utils/enums';
-import { assign } from './utils/fns';
+import fns from './utils/fns';
 import Optimizely from './optimizely';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
@@ -78,7 +78,7 @@ var createInstance = function(config) {
       config.isValidInstance = false;
     }
 
-    config = assign(
+    config = fns.assign(
       {
         clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
         eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
