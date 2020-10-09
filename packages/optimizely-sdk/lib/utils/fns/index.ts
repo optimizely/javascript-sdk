@@ -60,11 +60,11 @@ const isNumber = function(value: unknown): boolean {
   return typeof value === 'number';
 }
 
- export default {
+export default {
   assign: assign,
   currentTimestamp: currentTimestamp,
   isSafeInteger: isSafeInteger,
   keyBy: keyBy,
   uuid: uuid,
   isNumber: isNumber,
- }
+}
