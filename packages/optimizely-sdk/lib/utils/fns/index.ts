@@ -61,10 +61,10 @@ const isNumber = function(value: unknown): boolean {
 }
 
 export default {
-  assign: assign,
-  currentTimestamp: currentTimestamp,
-  isSafeInteger: isSafeInteger,
-  keyBy: keyBy,
-  uuid: uuid,
-  isNumber: isNumber,
+  assign,
+  currentTimestamp,
+  isSafeInteger,
+  keyBy,
+  uuid,
+  isNumber,
 }
