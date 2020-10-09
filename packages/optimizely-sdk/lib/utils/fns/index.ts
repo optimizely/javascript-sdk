@@ -56,8 +56,6 @@ const keyBy = function<K>(arr: K[], key: string): { [key: string]: K } {
   });
 }
 
-// export { uuid };
-
 const isNumber = function(value: unknown): boolean {
   return typeof value === 'number';
 }
