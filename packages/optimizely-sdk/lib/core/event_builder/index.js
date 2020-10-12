@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { currentTimestamp, uuid } from '../../utils/fns';
+import fns from '../../utils/fns';
 import { CONTROL_ATTRIBUTES, RESERVED_EVENT_KEYWORDS } from '../../utils/enums';
 import projectConfig from '../project_config';
 import * as eventTagUtils from '../../utils/event_tag_utils';
@@ -106,9 +106,9 @@ function getImpressionEventParams(configObj, experimentId, variationId) {
     events: [
       {
         entity_id: projectConfig.getLayerId(configObj, experimentId),
-        timestamp: currentTimestamp(),
+        timestamp: fns.currentTimestamp(),
         key: ACTIVATE_EVENT_KEY,
-        uuid: uuid(),
+        uuid: fns.uuid(),
       },
     ],
   };
@@ -130,8 +130,8 @@ function getVisitorSnapshot(configObj, eventKey, eventTags, logger) {
 
   var eventDict = {
     entity_id: projectConfig.getEventId(configObj, eventKey),
-    timestamp: currentTimestamp(),
-    uuid: uuid(),
+    timestamp: fns.currentTimestamp(),
+    uuid: fns.uuid(),
     key: eventKey,
   };
 

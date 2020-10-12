@@ -28,7 +28,7 @@ import * as enums from '../utils/enums';
 import * as eventBuilder from '../core/event_builder';
 import eventDispatcher from '../plugins/event_dispatcher/index.node';
 import errorHandler from '../plugins/error_handler';
-import * as fns from '../utils/fns';
+import fns from '../utils/fns';
 import logger from '../plugins/logger';
 import * as decisionService from '../core/decision_service';
 import * as jsonSchemaValidator from '../utils/json_schema_validator';

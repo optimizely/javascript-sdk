@@ -16,7 +16,7 @@
 import { getLogger } from '@optimizely/js-sdk-logging';
 import { UserAttributes } from '../../shared_types';
 
-import { isNumber, isSafeInteger } from '../../utils/fns';
+import fns from '../../utils/fns';
 import { LOG_MESSAGES } from '../../utils/enums';
 import { compareVersion } from '../../utils/semantic_version';
 
@@ -117,7 +117,7 @@ export function evaluate(condition: Condition, userAttributes: UserAttributes): 
  * @returns {boolean}
  */
 function isValueTypeValidForExactConditions(value: unknown): boolean {
-  return typeof value === 'string' || typeof value === 'boolean' || isNumber(value);
+  return typeof value === 'string' || typeof value === 'boolean' || fns.isNumber(value);
 }
 
 /**
@@ -140,7 +140,7 @@ function exactEvaluator(condition: Condition, userAttributes: UserAttributes): b
 
   if (
     !isValueTypeValidForExactConditions(conditionValue) ||
-    (isNumber(conditionValue) && !isSafeInteger(conditionValue))
+    (fns.isNumber(conditionValue) && !fns.isSafeInteger(conditionValue))
   ) {
     logger.warn(
       LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
@@ -162,7 +162,7 @@ function exactEvaluator(condition: Condition, userAttributes: UserAttributes): b
     return null;
   }
 
-  if (isNumber(userValue) && !isSafeInteger(userValue)) {
+  if (fns.isNumber(userValue) && !fns.isSafeInteger(userValue)) {
     logger.warn(
       LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName
     );
@@ -199,7 +199,7 @@ function validateValuesForNumericCondition(condition: Condition, userAttributes:
   const userValueType = typeof userValue;
   const conditionValue = condition.value;
 
-  if (conditionValue === null || !isSafeInteger(conditionValue)) {
+  if (conditionValue === null || !fns.isSafeInteger(conditionValue)) {
     logger.warn(
       LOG_MESSAGES.UNEXPECTED_CONDITION_VALUE, MODULE_NAME, JSON.stringify(condition)
     );
@@ -213,14 +213,14 @@ function validateValuesForNumericCondition(condition: Condition, userAttributes:
     return false;
   }
 
-  if (!isNumber(userValue)) {
+  if (!fns.isNumber(userValue)) {
     logger.warn(
       LOG_MESSAGES.UNEXPECTED_TYPE, MODULE_NAME, JSON.stringify(condition), userValueType, conditionName
     );
     return false;
   }
 
-  if (!isSafeInteger(userValue)) {
+  if (!fns.isSafeInteger(userValue)) {
     logger.warn(
       LOG_MESSAGES.OUT_OF_BOUNDS, MODULE_NAME, JSON.stringify(condition), conditionName
     );

@@ -16,7 +16,7 @@
 import sinon from 'sinon';
 import { assert } from 'chai';
 
-import * as fns from '../../utils/fns';
+import fns from '../../utils/fns';
 import projectConfig from '../project_config';
 import { buildImpressionEvent, buildConversionEvent } from './event_helpers';
 

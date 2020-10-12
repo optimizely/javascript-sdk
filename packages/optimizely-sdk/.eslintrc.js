@@ -14,9 +14,9 @@ module.exports = {
     Promise: 'readonly',
   },
   parserOptions: {
-    // Note: The TS compiler determines what syntax is accepted. We're using TS version 3.3.3333.
-    // This seems to roughly correspond to "2018" for this setting.
-    ecmaVersion: 2018,
+    // Note: The TS compiler determines what syntax is accepted. We're using TS version 4.0.3.
+    // This seems to correspond to "2020" for this setting.
+    ecmaVersion: 2020,
     sourceType: 'module',
   },
   overrides: [
