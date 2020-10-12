@@ -122,7 +122,7 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
         const unloadEvent = 'onpagehide' in window ? 'pagehide' : 'unload';
         window.addEventListener(
           unloadEvent,
-          function () {
+          () => {
             optimizely.close();
           },
           false
