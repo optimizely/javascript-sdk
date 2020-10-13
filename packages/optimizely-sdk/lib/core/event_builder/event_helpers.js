@@ -38,15 +38,25 @@ export var buildImpressionEvent = function(config) {
   var configObj = config.configObj;
   var experimentKey = config.experimentKey;
   var variationKey = config.variationKey;
+  var flagKey = config.flagKey;
+  var ruleType = config.ruleType;
   var userId = config.userId;
   var userAttributes = config.userAttributes;
   var clientEngine = config.clientEngine;
   var clientVersion = config.clientVersion;
 
-  var variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
-  var experimentId = projectConfig.getExperimentId(configObj, experimentKey);
-  var layerId = projectConfig.getLayerId(configObj, experimentId);
-
+  let variationId = null;
+  if (experimentKey !=='' && variationKey !== '') {
+    variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
+  }
+  let experimentId = null;
+  if (experimentKey !== '') {
+    experimentId = projectConfig.getExperimentId(configObj, experimentKey);
+  }
+  let layerId = null;
+  if (experimentId !== null) {
+    layerId = projectConfig.getLayerId(configObj, experimentId);
+  }
   return {
     type: 'impression',
     timestamp: fns.currentTimestamp(),
@@ -80,6 +90,10 @@ export var buildImpressionEvent = function(config) {
       id: variationId,
       key: variationKey,
     },
+
+    ruleKey: experimentKey,
+    flagKey: flagKey,
+    ruleType: ruleType,
   };
 };
 

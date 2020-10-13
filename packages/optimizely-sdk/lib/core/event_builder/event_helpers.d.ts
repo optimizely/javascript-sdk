@@ -18,7 +18,9 @@ import { EventTags, UserAttributes } from '../../shared_types';
 
 interface ImpressionConfig {
   experimentKey: string;
-  variationKey: string;
+  variationKey: string | null;
+  flagKey: string;
+  ruleType: string;
   userId: string;
   userAttributes?: UserAttributes;
   clientEngine: string;
@@ -60,6 +62,10 @@ interface ImpressionEvent {
       id: string;
       key: string;
   } | null;
+
+  ruleKey: string,
+  flagKey: string,
+  ruleType: string,
 }
 
 interface ConversionConfig {

@@ -233,7 +233,14 @@ export default class Optimizely {
           return variationKey;
         }
 
-        this.sendImpressionEvent(experimentKey, variationKey, userId, attributes);
+        this.sendImpressionEvent(
+          experimentKey,
+          variationKey,
+          '',
+          enums.DECISION_SOURCES.EXPERIMENT,
+          userId,
+          attributes
+        );
 
         return variationKey;
       } catch (ex) {
@@ -262,9 +269,19 @@ export default class Optimizely {
    * @param {string}         experimentKey  Key of experiment that was activated
    * @param {string}         variationKey   Key of variation shown in experiment that was activated
    * @param {string}         userId         ID of user to whom the variation was shown
+   * @param {string}         flagKey        Key for a feature flag
+   * @param {string}         ruleKey        Key for an experiment
+   * @param {string}         ruleType       Type for the decision source
    * @param {UserAttributes} attributes     Optional user attributes
    */
-  private sendImpressionEvent(experimentKey: string, variationKey: string, userId: string, attributes?: UserAttributes): void {
+  private sendImpressionEvent(
+    experimentKey: string,
+    variationKey: string,
+    flagKey: string,
+    ruleType: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): void {
     const configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return;
@@ -273,6 +290,8 @@ export default class Optimizely {
     const impressionEvent = buildImpressionEvent({
       experimentKey: experimentKey,
       variationKey: variationKey,
+      flagKey: flagKey,
+      ruleType: ruleType,
       userId: userId,
       userAttributes: attributes,
       clientEngine: this.clientEngine,
@@ -281,30 +300,47 @@ export default class Optimizely {
     });
     // TODO is it okay to not pass a projectConfig as second argument
     this.eventProcessor.process(impressionEvent);
-    this.emitNotificationCenterActivate(experimentKey, variationKey, userId, attributes);
+    this.emitNotificationCenterActivate(experimentKey, variationKey, flagKey, ruleType, userId, attributes);
   }
 
   /**
    * Emit the ACTIVATE notification on the notificationCenter
-   * @param {string}         experimentKey  Key of experiment that was activated
-   * @param {string}         variationKey   Key of variation shown in experiment that was activated
-   * @param {string}         userId         ID of user to whom the variation was shown
-   * @param {UserAttributes} attributes     Optional user attributes
+   * @param  {string}         experimentKey  Key of experiment that was activated
+   * @param  {string}         variationKey   Key of variation shown in experiment that was activated
+   * @param  {string}         flagKey        Key for a feature flag
+   * @param  {string}         ruleType       Type for the decision source
+   * @param  {string}         userId         ID of user to whom the variation was shown
+   * @param  {UserAttributes} attributes     Optional user attributes
    */
-  private emitNotificationCenterActivate(experimentKey: string, variationKey: string, userId: string, attributes?: UserAttributes): void {
+  private emitNotificationCenterActivate(
+    experimentKey: string,
+    variationKey: string,
+    flagKey: string,
+    ruleType: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): void {
     const configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return;
     }
 
-    const variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
-    const experimentId = projectConfig.getExperimentId(configObj, experimentKey);
+    let variationId = null;
+    let experimentId = null;
+    if (experimentKey !=='' && variationKey !== '') {
+      variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
+      experimentId = projectConfig.getExperimentId(configObj, experimentKey);
+    }
+
     const impressionEventOptions = {
       attributes: attributes,
       clientEngine: this.clientEngine,
       clientVersion: this.clientVersion,
       configObj: configObj,
       experimentId: experimentId,
+      ruleKey: experimentKey,
+      flagKey: flagKey,
+      ruleType: ruleType,
       userId: userId,
       variationId: variationId,
       logger: this.logger,
@@ -312,7 +348,7 @@ export default class Optimizely {
     const impressionEvent = getImpressionEvent(impressionEventOptions);
     const experiment = configObj.experimentKeyMap[experimentKey];
     let variation;
-    if (experiment && experiment.variationKeyMap) {
+    if (experiment && experiment.variationKeyMap && variationKey) {
       variation = experiment.variationKeyMap[variationKey];
     }
     this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.ACTIVATE, {
@@ -641,6 +677,29 @@ export default class Optimizely {
       const decision = this.decisionService.getVariationForFeature(configObj, feature, userId, attributes);
       const variation = decision.variation;
 
+      if (
+        decision.decisionSource === DECISION_SOURCES.ROLLOUT &&
+        projectConfig.getSendFlagDecisionsValue(configObj) === true
+      ) {
+        let experimentKey = '';
+        if (decision.experiment !== null) {
+          experimentKey = decision.experiment.key;
+        }
+
+        let variationKey = '';
+        if (variation) {
+          variationKey = variation.key
+        }
+        this.sendImpressionEvent(
+          experimentKey,
+          variationKey,
+          feature.key,
+          decision.decisionSource,
+          userId,
+          attributes
+        );
+      }
+
       if (variation) {
         featureEnabled = variation.featureEnabled;
         if (
@@ -653,7 +712,14 @@ export default class Optimizely {
             variationKey: decision.variation.key,
           };
           // got a variation from the exp, so we track the impression
-          this.sendImpressionEvent(decision.experiment.key, decision.variation.key, userId, attributes);
+          this.sendImpressionEvent(
+            decision.experiment.key,
+            decision.variation.key,
+            feature.key,
+            decision.decisionSource,
+            userId,
+            attributes
+          );
         }
       }
 

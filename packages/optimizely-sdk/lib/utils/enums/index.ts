@@ -200,6 +200,7 @@ export const DECISION_NOTIFICATION_TYPES = {
 export const DECISION_SOURCES = {
   FEATURE_TEST: 'feature-test',
   ROLLOUT: 'rollout',
+  EXPERIMENT: 'experiment',
 };
 
 export const AUDIENCE_EVALUATION_TYPES = {

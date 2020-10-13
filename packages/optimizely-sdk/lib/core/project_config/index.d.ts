@@ -19,6 +19,7 @@ import { FeatureFlag, FeatureVariable, Experiment, Variation  } from './entities
 export interface ProjectConfig {
   revision: string;
   projectId: string;
+  sendFlagDecisions?: boolean;
   experimentKeyMap:{[key: string]: Experiment};
   featureKeyMap: {
     [key: string]: FeatureFlag
@@ -41,7 +42,11 @@ export function isRunning(configObj: ProjectConfig, experimentKey: string): bool
  * @param  {string}        variationKey     The variation key
  * @return {string}                         the variation ID
  */
-export function getVariationIdFromExperimentAndVariationKey(configObj: ProjectConfig, experimentKey: string, variationKey: string): string;
+export function getVariationIdFromExperimentAndVariationKey(
+  configObj: ProjectConfig,
+  experimentKey: string,
+  variationKey: string | null
+): string;
 
 /**
  * Get experiment ID for the provided experiment key
@@ -131,3 +136,10 @@ export function getVariableValueForVariation(
   variation: Variation,
   logger: LogHandler
 ): string | null;
+
+/**
+ * Get the send flag decisions value
+ * @param  {ProjectConfig}   projectConfig
+ * @return {boolean}         A boolean value that indicates if we should send flag decisions
+ */
+export function getSendFlagDecisionsValue(configObj: ProjectConfig): boolean;
