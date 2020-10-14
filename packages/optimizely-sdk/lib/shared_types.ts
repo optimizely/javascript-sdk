@@ -92,7 +92,7 @@ export interface SDKOptions {
   eventBatchSize?: number;
   eventFlushInterval?: number;
   sdkKey?: string;
-  isValidInstance?: boolean;
+  isValidInstance: boolean;
 }
 
 /**

@@ -85,7 +85,7 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       errorHandler: getErrorHandler(),
     };
 
-    const modifiedConfig = {...additionalEntities, ...config, ...optimizelyLoggers}  as OptimizelyOptions;
+    const modifiedConfig = {...additionalEntities, ...config, ...optimizelyLoggers};
 
     if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
       logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
