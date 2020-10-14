@@ -21,8 +21,6 @@ import {
   getErrorHandler,
   LogLevel
 } from '@optimizely/js-sdk-logging';
-
-import * as fns from './utils/fns';
 import Optimizely from './optimizely';
 import * as enums from './utils/enums';
 import loggerPlugin from './plugins/logger';
