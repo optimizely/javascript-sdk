@@ -89,29 +89,15 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
     } else {
       eventDispatcher = config.eventDispatcher;
     }
-
-    config = fns.assign(
-      {
-        clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
-        eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
-        eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
-      },
-      config,
-      {
-        eventDispatcher: eventDispatcher,
-        // always get the OptimizelyLogger facade from logging
-        logger: logger,
-        errorHandler: getErrorHandler(),
-      }
-    );
+    
     const additionalEntities = {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
-      eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
-      eventDispatcher: eventDispatcher
+      eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL
     };
 
     const optimizelyLoggers = {
+      eventDispatcher: eventDispatcher,
       logger: logger,
       errorHandler: getErrorHandler(),
     };

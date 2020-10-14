@@ -75,20 +75,6 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       config.isValidInstance = false;
     }
 
-    config = fns.assign(
-      {
-        clientEngine: enums.NODE_CLIENT_ENGINE,
-        eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
-        eventDispatcher: defaultEventDispatcher,
-        eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
-      },
-      config,
-      {
-        // always get the OptimizelyLogger facade from logging
-        logger: logger,
-        errorHandler: getErrorHandler(),
-      }
-    );
     const additionalEntities = {
       clientEngine: enums.NODE_CLIENT_ENGINE,
       eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
