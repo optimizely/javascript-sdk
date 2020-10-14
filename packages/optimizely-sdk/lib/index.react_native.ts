@@ -46,8 +46,6 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
  */
 const createInstance = function(config: SDKOptions): Optimizely | null {
   try {
-    config = config || {};
-
     // TODO warn about setting per instance errorHandler / logger / logLevel
     if (config.errorHandler) {
       setErrorHandler(config.errorHandler);

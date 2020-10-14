@@ -45,7 +45,6 @@ const DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
 const createInstance = function(config: SDKOptions): Optimizely | null {
   try {
     let hasLogger = false;
-    config = config || {};
 
     // TODO warn about setting per instance errorHandler / logger / logLevel
     if (config.errorHandler) {

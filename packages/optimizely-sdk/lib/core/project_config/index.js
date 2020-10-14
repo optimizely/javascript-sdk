@@ -15,7 +15,7 @@
  */
 import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 
-import { assign, keyBy } from '../../utils/fns';
+import fns from '../../utils/fns';
 import {
   ERROR_MESSAGES,
   LOG_LEVEL,
@@ -29,27 +29,27 @@ var RESERVED_ATTRIBUTE_PREFIX = '$opt_';
 var MODULE_NAME = 'PROJECT_CONFIG';
 
 function createMutationSafeDatafileCopy(datafile) {
-  var datafileCopy = assign({}, datafile);
+  var datafileCopy = fns.assign({}, datafile);
   datafileCopy.audiences = (datafile.audiences || []).map(function(audience) {
-    return assign({}, audience);
+    return fns.assign({}, audience);
   });
   datafileCopy.experiments = (datafile.experiments || []).map(function(experiment) {
-    return assign({}, experiment);
+    return fns.assign({}, experiment);
   });
   datafileCopy.featureFlags = (datafile.featureFlags || []).map(function(featureFlag) {
-    return assign({}, featureFlag);
+    return fns.assign({}, featureFlag);
   });
   datafileCopy.groups = (datafile.groups || []).map(function(group) {
-    var groupCopy = assign({}, group);
+    var groupCopy = fns.assign({}, group);
     groupCopy.experiments = (group.experiments || []).map(function(experiment) {
-      return assign({}, experiment);
+      return fns.assign({}, experiment);
     });
     return groupCopy;
   });
   datafileCopy.rollouts = (datafile.rollouts || []).map(function(rollout) {
-    var rolloutCopy = assign({}, rollout);
+    var rolloutCopy = fns.assign({}, rollout);
     rolloutCopy.experiments = (rollout.experiments || []).map(function(experiment) {
-      return assign({}, experiment);
+      return fns.assign({}, experiment);
     });
     return rolloutCopy;
   });
@@ -74,44 +74,44 @@ export var createProjectConfig = function(datafileObj, datafileStr=null) {
   (projectConfig.audiences || []).forEach(function(audience) {
     audience.conditions = JSON.parse(audience.conditions);
   });
-  projectConfig.audiencesById = keyBy(projectConfig.audiences, 'id');
-  assign(projectConfig.audiencesById, keyBy(projectConfig.typedAudiences, 'id'));
+  projectConfig.audiencesById = fns.keyBy(projectConfig.audiences, 'id');
+  fns.assign(projectConfig.audiencesById, fns.keyBy(projectConfig.typedAudiences, 'id'));
 
-  projectConfig.attributeKeyMap = keyBy(projectConfig.attributes, 'key');
-  projectConfig.eventKeyMap = keyBy(projectConfig.events, 'key');
-  projectConfig.groupIdMap = keyBy(projectConfig.groups, 'id');
+  projectConfig.attributeKeyMap = fns.keyBy(projectConfig.attributes, 'key');
+  projectConfig.eventKeyMap = fns.keyBy(projectConfig.events, 'key');
+  projectConfig.groupIdMap = fns.keyBy(projectConfig.groups, 'id');
 
   var experiments;
   Object.keys(projectConfig.groupIdMap || {}).forEach(function(Id) {
     experiments = projectConfig.groupIdMap[Id].experiments;
     (experiments || []).forEach(function(experiment) {
-      projectConfig.experiments.push(assign(experiment, { groupId: Id }));
+      projectConfig.experiments.push(fns.assign(experiment, { groupId: Id }));
     });
   });
 
-  projectConfig.rolloutIdMap = keyBy(projectConfig.rollouts || [], 'id');
+  projectConfig.rolloutIdMap = fns.keyBy(projectConfig.rollouts || [], 'id');
   objectValues(projectConfig.rolloutIdMap || {}).forEach(function (rollout) {
     (rollout.experiments || []).forEach(function(experiment) {
       projectConfig.experiments.push(experiment);
       // Creates { <variationKey>: <variation> } map inside of the experiment
-      experiment.variationKeyMap = keyBy(experiment.variations, 'key');
+      experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
     });
   });
 
-  projectConfig.experimentKeyMap = keyBy(projectConfig.experiments, 'key');
-  projectConfig.experimentIdMap = keyBy(projectConfig.experiments, 'id');
+  projectConfig.experimentKeyMap = fns.keyBy(projectConfig.experiments, 'key');
+  projectConfig.experimentIdMap = fns.keyBy(projectConfig.experiments, 'id');
 
   projectConfig.variationIdMap = {};
   projectConfig.variationVariableUsageMap = {};
   (projectConfig.experiments || []).forEach(function(experiment) {
     // Creates { <variationKey>: <variation> } map inside of the experiment
-    experiment.variationKeyMap = keyBy(experiment.variations, 'key');
+    experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
 
     // Creates { <variationId>: { key: <variationKey>, id: <variationId> } } mapping for quick lookup
-    assign(projectConfig.variationIdMap, keyBy(experiment.variations, 'id'));
+    fns.assign(projectConfig.variationIdMap, fns.keyBy(experiment.variations, 'id'));
     objectValues(experiment.variationKeyMap || {}).forEach(function(variation) {
       if (variation.variables) {
-        projectConfig.variationVariableUsageMap[variation.id] = keyBy(variation.variables, 'id');
+        projectConfig.variationVariableUsageMap[variation.id] = fns.keyBy(variation.variables, 'id');
       }
     });
   });
@@ -120,7 +120,7 @@ export var createProjectConfig = function(datafileObj, datafileStr=null) {
   // for checking that experiment is a feature experiment or not.
   projectConfig.experimentFeatureMap = {};
 
-  projectConfig.featureKeyMap = keyBy(projectConfig.featureFlags || [], 'key');
+  projectConfig.featureKeyMap = fns.keyBy(projectConfig.featureFlags || [], 'key');
   objectValues(projectConfig.featureKeyMap || {}).forEach(function(feature) {
     // Json type is represented in datafile as a subtype of string for the sake of backwards compatibility.
     // Converting it to a first-class json type while creating Project Config
@@ -131,7 +131,7 @@ export var createProjectConfig = function(datafileObj, datafileStr=null) {
       }
     });
 
-    feature.variableKeyMap = keyBy(feature.variables, 'key');
+    feature.variableKeyMap = fns.keyBy(feature.variables, 'key');
     (feature.experimentIds || []).forEach(function(experimentId) {
       // Add this experiment in experiment-feature map.
       if (projectConfig.experimentFeatureMap[experimentId]) {

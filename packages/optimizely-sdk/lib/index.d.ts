@@ -35,6 +35,14 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type OptimizelyConfig = import('./shared_types').OptimizelyConfig;
 
+  export type OptimizelyVariable = import('./shared_types').OptimizelyVariable;
+
+  export type OptimizelyVariation = import('./shared_types').OptimizelyVariation;
+
+  export type OptimizelyExperiment = import('./shared_types').OptimizelyExperiment;
+
+  export type OptimizelyFeature = import('./shared_types').OptimizelyFeature;
+
   export type EventTags = import ('./shared_types').EventTags;
 
   export type Event = import ('./shared_types').Event;
@@ -44,8 +52,10 @@ declare module '@optimizely/optimizely-sdk' {
   export type DatafileOptions = import ('./shared_types').DatafileOptions;
 
   export type SDKOptions = import ('./shared_types').SDKOptions;
+  
+  export type UserProfileService = import('./shared_types').UserProfileService;
 
-  export type OptimizelyOptions = import ('./shared_types').OptimizelyOptions;
+  export type UserProfile = import('./shared_types').UserProfile;
 
   // The options object given to Optimizely.createInstance.
   export interface Config {
@@ -65,7 +75,7 @@ declare module '@optimizely/optimizely-sdk' {
     // TODO[OASIS-6649]: Don't use object type
     // eslint-disable-next-line  @typescript-eslint/ban-types
     jsonSchemaValidator?: object;
-    userProfileService?: import('./shared_types').UserProfileService | null;
+    userProfileService?: UserProfileService | null;
     eventBatchSize?: number;
     eventFlushInterval?: number;
     sdkKey?: string;

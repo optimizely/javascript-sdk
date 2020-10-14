@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/optimizely-sdk",
-  "version": "4.3.1",
+  "version": "4.3.4",
   "description": "JavaScript SDK for Optimizely X Full Stack",
   "module": "dist/optimizely.browser.es.min.js",
   "main": "dist/optimizely.node.min.js",
@@ -78,7 +78,7 @@
     "sinon": "^2.3.1",
     "ts-loader": "^7.0.5",
     "ts-node": "^8.10.2",
-    "typescript": "^3.3.3333",
+    "typescript": "^4.0.3",
     "webpack": "^4.42.1"
   },
   "publishConfig": {

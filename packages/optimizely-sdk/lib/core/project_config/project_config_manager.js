@@ -17,7 +17,7 @@ import { sprintf } from '@optimizely/js-sdk-utils';
 import { getLogger } from '@optimizely/js-sdk-logging';
 import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager';
 
-import { assign } from '../../utils/fns';
+import fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../../utils/enums';
 import projectConfig from '../../core/project_config';
 import optimizelyConfig from '../optimizely_config';
@@ -91,8 +91,13 @@ ProjectConfigManager.prototype.__initialize = function(config) {
     return;
   }
 
-  var handleNewDatafileException = this.__handleNewDatafile(config.datafile);
-  if (handleNewDatafileException) {
+  let handleNewDatafileException;
+  if (config.datafile) {
+    handleNewDatafileException = this.__handleNewDatafile(config.datafile);
+    if (handleNewDatafileException) {
+      this.__configObj = null;
+    }
+  } else {
     this.__configObj = null;
   }
 
@@ -101,7 +106,7 @@ ProjectConfigManager.prototype.__initialize = function(config) {
       sdkKey: config.sdkKey,
     };
     if (this.__validateDatafileOptions(config.datafileOptions)) {
-      assign(datafileManagerConfig, config.datafileOptions);
+      fns.assign(datafileManagerConfig, config.datafileOptions);
     }
     if (this.__configObj) {
       datafileManagerConfig.datafile = projectConfig.toDatafile(this.__configObj)

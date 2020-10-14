@@ -854,7 +854,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       }
     });
 
-    it('should return false if the user-provided version is not greater than the condition version', function() {   
+    it('should return false if the user-provided version is not greater than the condition version', function() {
       var versions = [
         ['2.0.1', '2.0.1'],
         ['2.0', '2.0.0'],
@@ -896,7 +896,6 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       assert.isNull(result);
 
       assert.strictEqual(2, stubLogHandler.log.callCount);
-      console.log(stubLogHandler.log.args);
       assert.strictEqual(
         stubLogHandler.log.args[0][1],
         'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_gt","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a value of type "number" was passed for user attribute "app_version".'
@@ -996,7 +995,6 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       assert.isNull(result);
 
       assert.strictEqual(2, stubLogHandler.log.callCount);
-      console.log(stubLogHandler.log.args);
       assert.strictEqual(
         stubLogHandler.log.args[0][1],
         'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_lt","name":"app_version","type":"custom_attribute","value":"2.0.0"} evaluated to UNKNOWN because a value of type "number" was passed for user attribute "app_version".'
@@ -1095,7 +1093,6 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       assert.isNull(result);
 
       assert.strictEqual(2, stubLogHandler.log.callCount);
-      console.log(stubLogHandler.log.args);
       assert.strictEqual(
         stubLogHandler.log.args[0][1],
         'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR: Audience condition {"match":"semver_eq","name":"app_version","type":"custom_attribute","value":"2.0"} evaluated to UNKNOWN because a value of type "number" was passed for user attribute "app_version".'
@@ -1199,7 +1196,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
         ['2.0.0', '2.0.1'],
         ['2.0.1', '2.0.1'],
         ['1.9', '1.9.1']
-      ];     
+      ];
       for (let [targetVersion, userVersion] of versions) {
         var customSemvereqCondition = {
           match: 'semver_ge',
@@ -1221,7 +1218,7 @@ describe('lib/core/custom_attribute_condition_evaluator', function() {
       var versions = [
         ['2.0.1', '2.0.0'],
         ['1.9.1', '1.9']
-      ];    
+      ];
       for (let [targetVersion, userVersion] of versions) {
         var customSemvereqCondition = {
           match: 'semver_ge',

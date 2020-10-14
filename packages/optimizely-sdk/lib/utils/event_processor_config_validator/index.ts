@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { isSafeInteger } from '../fns';
+import fns from '../fns';
 
 /**
  * Return true if the argument is a valid event batch size, false otherwise
@@ -21,7 +21,7 @@ import { isSafeInteger } from '../fns';
  * @returns {boolean}
  */
 const validateEventBatchSize = function(eventBatchSize: unknown): boolean {
-  if (typeof eventBatchSize === 'number' && isSafeInteger(eventBatchSize)) {
+  if (typeof eventBatchSize === 'number' && fns.isSafeInteger(eventBatchSize)) {
     return eventBatchSize >= 1;
   }
   return false;
@@ -33,7 +33,7 @@ const validateEventBatchSize = function(eventBatchSize: unknown): boolean {
  * @returns {boolean}
  */
 const validateEventFlushInterval = function(eventFlushInterval: unknown): boolean {
-  if (typeof eventFlushInterval === 'number' && isSafeInteger(eventFlushInterval)) {
+  if (typeof eventFlushInterval === 'number' && fns.isSafeInteger(eventFlushInterval)) {
     return eventFlushInterval > 0;
   }
   return false;

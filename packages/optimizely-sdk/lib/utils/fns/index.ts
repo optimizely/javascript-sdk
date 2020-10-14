@@ -18,7 +18,7 @@ import { generateUUID as uuid, keyBy as keyByUtil } from '@optimizely/js-sdk-uti
 const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
 // eslint-disable-next-line
-export function assign(target: any, ...sources: any[]): any {
+function assign(target: any, ...sources: any[]): any {
   if (!target) {
     return {};
   }
@@ -41,23 +41,30 @@ export function assign(target: any, ...sources: any[]): any {
   }
 }
 
-export function currentTimestamp(): number {
+function currentTimestamp(): number {
   return Math.round(new Date().getTime());
 }
 
-export function isSafeInteger(number: unknown): boolean {
+function isSafeInteger(number: unknown): boolean {
   return typeof number == 'number' && Math.abs(number) <= MAX_SAFE_INTEGER_LIMIT;
 }
 
-export function keyBy<K>(arr: K[], key: string): { [key: string]: K } {
+function keyBy<K>(arr: K[], key: string): { [key: string]: K } {
   if (!arr) return {};
   return keyByUtil(arr, function (item) {
     return item[key];
   });
 }
 
-export { uuid };
-
-export function isNumber(value: unknown): boolean {
+function isNumber(value: unknown): boolean {
   return typeof value === 'number';
+}
+
+export default {
+  assign,
+  currentTimestamp,
+  isSafeInteger,
+  keyBy,
+  uuid,
+  isNumber,
 }
