@@ -43,6 +43,10 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type DatafileOptions = import ('./shared_types').DatafileOptions;
 
+  export type SDKOptions = import ('./shared_types').SDKOptions;
+
+  export type OptimizelyOptions = import ('./shared_types').OptimizelyOptions;
+
   // The options object given to Optimizely.createInstance.
   export interface Config {
     // TODO[OASIS-6649]: Don't use object type
