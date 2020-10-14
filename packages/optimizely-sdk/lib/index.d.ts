@@ -187,6 +187,7 @@ declare module '@optimizely/optimizely-sdk/lib/utils/enums' {
     DECISION = 'DECISION:type, userId, attributes, decisionInfo',
     OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
     TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
+    LOG_EVENT = "LOG_EVENT:logEvent"
   }
 }
 
