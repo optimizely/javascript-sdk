@@ -1,3 +1,5 @@
+import { ErrorHandler, LogHandler, LogLevel } from "@optimizely/js-sdk-logging";
+
 export type UserAttributes = {
   // TODO[OASIS-6649]: Don't use any type
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
@@ -75,6 +77,45 @@ export interface OptimizelyVariable {
   key: string;
   type: string;
   value: string;
+}
+
+/**
+ * Entry level Config Entities
+ */
+export interface SDKOptions {
+  datafile?: string;
+  errorHandler?: ErrorHandler;
+  eventDispatcher?: EventDispatcher;
+  logger?: LogHandler;
+  logLevel?: LogLevel;
+  userProfileService?: UserProfileService;
+  eventBatchSize?: number;
+  eventFlushInterval?: number;
+  sdkKey?: string;
+  isValidInstance: boolean;
+}
+
+/**
+ * Config required to create optimizely object
+ */
+export interface OptimizelyOptions {
+  clientEngine: string;
+  clientVersion?: string;
+  errorHandler: ErrorHandler;
+  eventDispatcher: EventDispatcher;
+  isValidInstance: boolean;
+  datafile?: string;
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
+  jsonSchemaValidator?: object;
+  sdkKey?: string;
+  userProfileService?: UserProfileService | null;
+  UNSTABLE_conditionEvaluators?: unknown;
+  eventFlushInterval?: number;
+  eventBatchSize?: number;
+  datafileOptions?: DatafileOptions;
+  eventMaxQueueSize?: number;
+  logger: LogHandler;
 }
 
 export interface OptimizelyFeature {
