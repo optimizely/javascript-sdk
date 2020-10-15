@@ -87,23 +87,12 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       eventDispatcher = config.eventDispatcher;
     }
 
-    const additionalEntities = {
-      clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
-      eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
-      eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL,
-      eventDispatcher: eventDispatcher
-    };
-
-    const optimizelyLoggers = {
-      logger: logger,
-      errorHandler: getErrorHandler(),
-    };
-
-    const modifiedConfig = {...additionalEntities, ...config, ...optimizelyLoggers};
+    let eventBatchSize = config.eventBatchSize;
+    let eventFlushInterval = config.eventFlushInterval;
 
     if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
       logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
-      modifiedConfig.eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
+      eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
     }
     if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
       logger.warn(
@@ -111,19 +100,27 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
         config.eventFlushInterval,
         DEFAULT_EVENT_FLUSH_INTERVAL
       );
-      modifiedConfig.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
+      eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
     }
 
-    const optimizely = new Optimizely(modifiedConfig);
+    const optimizelyOptions = {
+      clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
+      eventDispatcher: eventDispatcher,
+      ...config,
+      eventBatchSize: eventBatchSize,
+      eventFlushInterval: eventFlushInterval,
+      logger: logger,
+      errorHandler: getErrorHandler()
+    };
+
+    const optimizely = new Optimizely(optimizelyOptions);
 
     try {
       if (typeof window.addEventListener === 'function') {
         const unloadEvent = 'onpagehide' in window ? 'pagehide' : 'unload';
         window.addEventListener(
           unloadEvent,
-          () => {
-            optimizely.close();
-          },
+          optimizely.close,
           false
         );
       }
@@ -160,9 +157,9 @@ export default {
   logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
-  enums: enums,
+  enums,
   setLogger: setLogHandler,
-  setLogLevel: setLogLevel,
-  createInstance: createInstance,
-  __internalResetRetryState: __internalResetRetryState,
+  setLogLevel,
+  createInstance,
+  __internalResetRetryState,
 };

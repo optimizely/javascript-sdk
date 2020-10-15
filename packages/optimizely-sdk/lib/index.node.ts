@@ -28,7 +28,7 @@ import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
-import { OptimizelyOptions, SDKOptions } from './shared_types';
+import { SDKOptions } from './shared_types';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
@@ -72,23 +72,12 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       config.isValidInstance = false;
     }
 
-    const additionalEntities = {
-      clientEngine: enums.NODE_CLIENT_ENGINE,
-      eventBatchSize: DEFAULT_EVENT_BATCH_SIZE,
-      eventDispatcher: defaultEventDispatcher,
-      eventFlushInterval: DEFAULT_EVENT_FLUSH_INTERVAL
-    };
-
-    const optimizelyLoggers = {
-      logger: logger,
-      errorHandler: getErrorHandler(),
-    };
-
-    const modifiedConfig = {...additionalEntities, ...config, ...optimizelyLoggers};
+    let eventBatchSize = config.eventBatchSize;
+    let eventFlushInterval = config.eventFlushInterval;
 
     if (!eventProcessorConfigValidator.validateEventBatchSize(config.eventBatchSize)) {
       logger.warn('Invalid eventBatchSize %s, defaulting to %s', config.eventBatchSize, DEFAULT_EVENT_BATCH_SIZE);
-      modifiedConfig.eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
+      eventBatchSize = DEFAULT_EVENT_BATCH_SIZE;
     }
     if (!eventProcessorConfigValidator.validateEventFlushInterval(config.eventFlushInterval)) {
       logger.warn(
@@ -96,10 +85,20 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
         config.eventFlushInterval,
         DEFAULT_EVENT_FLUSH_INTERVAL
       );
-      modifiedConfig.eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
+      eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
     }
 
-    return new Optimizely(modifiedConfig);
+    const optimizelyOptions = {
+      clientEngine: enums.NODE_CLIENT_ENGINE,
+      eventDispatcher: defaultEventDispatcher,
+      ...config,
+      eventBatchSize: eventBatchSize,
+      eventFlushInterval: eventFlushInterval,
+      logger: logger,
+      errorHandler: getErrorHandler()
+    };
+
+    return new Optimizely(optimizelyOptions);
   } catch (e) {
     logger.error(e);
     return null;
@@ -123,8 +122,8 @@ export default {
   logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
-  enums: enums,
+  enums,
   setLogger: setLogHandler,
-  setLogLevel: setLogLevel,
-  createInstance: createInstance,
+  setLogLevel,
+  createInstance,
 };

@@ -83,39 +83,49 @@ export interface OptimizelyVariable {
  * Entry level Config Entities
  */
 export interface SDKOptions {
+  // Datafile string
   datafile?: string;
+  // errorHandler object for logging error
   errorHandler?: ErrorHandler;
-  eventDispatcher?: EventDispatcher;
-  logger?: LogHandler;
-  logLevel?: LogLevel;
-  userProfileService?: UserProfileService;
+  // limit of events to dispatch in a batch
   eventBatchSize?: number;
+  // event dispatcher function
+  eventDispatcher?: EventDispatcher;
+  // maximum time for an event to stay in the queue
   eventFlushInterval?: number;
-  sdkKey?: string;
+  // flag to validate if this instance is valid
   isValidInstance: boolean;
+  // level of logging i.e debug, info, error, warning etc
+  logLevel?: LogLevel;
+  // LogHandler object for logging
+  logger?: LogHandler;
+  // sdk key
+  sdkKey?: string;
+  // user profile that contains user information
+  userProfileService?: UserProfileService;
 }
 
 /**
- * Config required to create optimizely object
+ * options required to create optimizely object
  */
 export interface OptimizelyOptions {
+  UNSTABLE_conditionEvaluators?: unknown;
   clientEngine: string;
   clientVersion?: string;
-  errorHandler: ErrorHandler;
-  eventDispatcher: EventDispatcher;
-  isValidInstance: boolean;
   datafile?: string;
+  datafileOptions?: DatafileOptions;
+  errorHandler: ErrorHandler;
+  eventBatchSize?: number;
+  eventDispatcher: EventDispatcher;
+  eventFlushInterval?: number;
+  eventMaxQueueSize?: number;
+  isValidInstance: boolean;
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
   jsonSchemaValidator?: object;
+  logger: LogHandler;
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
-  UNSTABLE_conditionEvaluators?: unknown;
-  eventFlushInterval?: number;
-  eventBatchSize?: number;
-  datafileOptions?: DatafileOptions;
-  eventMaxQueueSize?: number;
-  logger: LogHandler;
 }
 
 export interface OptimizelyFeature {
