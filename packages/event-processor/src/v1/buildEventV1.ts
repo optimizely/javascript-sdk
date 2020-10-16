@@ -44,6 +44,14 @@ namespace Visitor {
     campaign_id: string | null
     experiment_id: string | null
     variation_id: string | null
+    metadata: Metadata
+  }
+
+  type Metadata = {
+    flag_key: string;
+    rule_key: string;
+    rule_type: string;
+    variation_key: string;
   }
 
   export type SnapshotEvent = {
@@ -135,10 +143,11 @@ function makeConversionSnapshot(conversion: ConversionEvent): Visitor.Snapshot {
 }
 
 function makeDecisionSnapshot(event: ImpressionEvent): Visitor.Snapshot {
-  const { layer, experiment, variation } = event
+  const { layer, experiment, variation, ruleKey, flagKey, ruleType } = event
   let layerId = layer ? layer.id : null
   let experimentId = experiment ? experiment.id : null
   let variationId = variation ? variation.id : null
+  let variationKey = variation ? variation.key : ''
 
   return {
     decisions: [
@@ -146,6 +155,12 @@ function makeDecisionSnapshot(event: ImpressionEvent): Visitor.Snapshot {
         campaign_id: layerId,
         experiment_id: experimentId,
         variation_id: variationId,
+        metadata: {
+          flag_key: flagKey,
+          rule_key: ruleKey,
+          rule_type: ruleType,
+          variation_key: variationKey,
+        },
       },
     ],
     events: [
