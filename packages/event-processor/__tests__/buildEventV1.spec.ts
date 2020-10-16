@@ -24,7 +24,7 @@ import { ImpressionEvent, ConversionEvent } from '../src/events'
 
 describe('buildEventV1', () => {
   describe('buildImpressionEventV1', () => {
-    it('should build an build an ImpressionEventV1', () => {
+    it('should build an ImpressionEventV1 when experiment and variation are defined', () => {
       const impressionEvent: ImpressionEvent = {
         type: 'impression',
         timestamp: 69,
@@ -58,6 +58,10 @@ describe('buildEventV1', () => {
           id: 'varId',
           key: 'varKey',
         },
+
+        ruleKey: 'expKey',
+        flagKey: 'flagKey1',
+        ruleType: 'experiment',
       }
 
       const result = buildImpressionEventV1(impressionEvent)
@@ -79,11 +83,114 @@ describe('buildEventV1', () => {
                     campaign_id: 'layerId',
                     experiment_id: 'expId',
                     variation_id: 'varId',
+                    metadata: {
+                      flag_key: 'flagKey1',
+                      rule_key: 'expKey',
+                      rule_type: 'experiment',
+                      variation_key: 'varKey',
+                    },
                   },
                 ],
                 events: [
                   {
                     entity_id: 'layerId',
+                    timestamp: 69,
+                    key: 'campaign_activated',
+                    uuid: 'uuid',
+                  },
+                ],
+              },
+            ],
+            visitor_id: 'userId',
+            attributes: [
+              {
+                entity_id: 'attr1-id',
+                key: 'attr1-key',
+                type: 'custom',
+                value: 'attr1-value',
+              },
+              {
+                entity_id: '$opt_bot_filtering',
+                key: '$opt_bot_filtering',
+                type: 'custom',
+                value: true,
+              },
+            ],
+          },
+        ],
+      })
+    })
+
+    it('should build an ImpressionEventV1 when experiment and variation are not defined', () => {
+      const impressionEvent: ImpressionEvent = {
+        type: 'impression',
+        timestamp: 69,
+        uuid: 'uuid',
+
+        context: {
+          accountId: 'accountId',
+          projectId: 'projectId',
+          clientName: 'node-sdk',
+          clientVersion: '3.0.0',
+          revision: 'revision',
+          botFiltering: true,
+          anonymizeIP: true,
+        },
+
+        user: {
+          id: 'userId',
+          attributes: [{ entityId: 'attr1-id', key: 'attr1-key', value: 'attr1-value' }],
+        },
+
+        layer: {
+          id: null,
+        },
+
+        experiment: {
+          id: null,
+          key: '',
+        },
+
+        variation: {
+          id: null,
+          key: '',
+        },
+
+        ruleKey: '',
+        flagKey: 'flagKey1',
+        ruleType: 'rollout',
+      }
+
+      const result = buildImpressionEventV1(impressionEvent)
+      expect(result).toEqual({
+        client_name: 'node-sdk',
+        client_version: '3.0.0',
+        account_id: 'accountId',
+        project_id: 'projectId',
+        revision: 'revision',
+        anonymize_ip: true,
+        enrich_decisions: true,
+
+        visitors: [
+          {
+            snapshots: [
+              {
+                decisions: [
+                  {
+                    campaign_id: null,
+                    experiment_id: null,
+                    variation_id: null,
+                    metadata: {
+                      flag_key: 'flagKey1',
+                      rule_key: '',
+                      rule_type: 'rollout',
+                      variation_key: '',
+                    },
+                  },
+                ],
+                events: [
+                  {
+                    entity_id: null,
                     timestamp: 69,
                     key: 'campaign_activated',
                     uuid: 'uuid',
@@ -438,6 +545,10 @@ describe('buildEventV1', () => {
           id: 'varId',
           key: 'varKey',
         },
+
+        ruleKey: 'expKey',
+        flagKey: 'flagKey1',
+        ruleType: 'experiment',
       }
 
       const result = makeBatchedEventV1([impressionEvent, conversionEvent])
@@ -460,6 +571,12 @@ describe('buildEventV1', () => {
                     campaign_id: 'layerId',
                     experiment_id: 'expId',
                     variation_id: 'varId',
+                    metadata: {
+                      flag_key: 'flagKey1',
+                      rule_key: 'expKey',
+                      rule_type: 'experiment',
+                      variation_key: 'varKey',
+                    },
                   },
                 ],
                 events: [

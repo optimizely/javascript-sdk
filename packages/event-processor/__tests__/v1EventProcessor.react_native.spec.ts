@@ -62,6 +62,10 @@ function createImpressionEvent() {
       id: 'varId',
       key: 'varKey',
     },
+
+    ruleKey: 'expKey',
+    flagKey: 'flagKey1',
+    ruleType: 'experiment',
   }
 }
 

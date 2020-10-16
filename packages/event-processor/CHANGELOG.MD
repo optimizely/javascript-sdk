@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 Changes that have landed but are not yet released.
+- Update `Visitor.Snapshot` to include metadata object to support sending flag decisions.
 
 ## [0.6.0] - July 28, 2020
 
