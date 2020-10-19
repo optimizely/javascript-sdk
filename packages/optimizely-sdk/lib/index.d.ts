@@ -53,7 +53,7 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type SDKOptions = import ('./shared_types').SDKOptions;
 
-  export type OptimizelyOptions = import ('./shared_types').OptimizelyOptions;
+  export type OptimizelyOptions = import ('./optimizely').OptimizelyOptions;
 
   export type UserProfileService = import('./shared_types').UserProfileService;
 
