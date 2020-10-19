@@ -51,6 +51,10 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type DatafileOptions = import ('./shared_types').DatafileOptions;
 
+  export type SDKOptions = import ('./shared_types').SDKOptions;
+
+  export type OptimizelyOptions = import ('./optimizely').OptimizelyOptions;
+
   export type UserProfileService = import('./shared_types').UserProfileService;
 
   export type UserProfile = import('./shared_types').UserProfile;
@@ -195,6 +199,7 @@ declare module '@optimizely/optimizely-sdk/lib/utils/enums' {
     DECISION = 'DECISION:type, userId, attributes, decisionInfo',
     OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
     TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
+    LOG_EVENT = "LOG_EVENT:logEvent"
   }
 }
 

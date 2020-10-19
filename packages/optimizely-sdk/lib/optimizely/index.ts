@@ -20,10 +20,10 @@ import {
   UserAttributes,
   EventTags,
   OptimizelyConfig,
-  UserProfileService,
-  DatafileOptions,
   EventDispatcher,
-  OnReadyResult
+  OnReadyResult,
+  UserProfileService,
+  DatafileOptions
 } from '../shared_types';
 import { Variation } from '../core/project_config/entities';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
@@ -53,39 +53,42 @@ const MODULE_NAME = 'OPTIMIZELY';
 
 const DEFAULT_ONREADY_TIMEOUT = 30000;
 
-interface configObj {
+/**
+ * options required to create optimizely object
+ */
+export interface OptimizelyOptions {
+  UNSTABLE_conditionEvaluators?: unknown;
   clientEngine: string;
   clientVersion?: string;
-  errorHandler: ErrorHandler;
-  eventDispatcher: EventDispatcher;
-  isValidInstance: boolean;
   datafile?: string;
+  datafileOptions?: DatafileOptions;
+  errorHandler: ErrorHandler;
+  eventBatchSize?: number;
+  eventDispatcher: EventDispatcher;
+  eventFlushInterval?: number;
+  eventMaxQueueSize?: number;
+  isValidInstance: boolean;
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
   jsonSchemaValidator?: object;
+  logger: LogHandler;
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
-  UNSTABLE_conditionEvaluators?: unknown;
-  eventFlushInterval?: number;
-  eventBatchSize?: number;
-  datafileOptions?: DatafileOptions;
-  eventMaxQueueSize?: number;
-  logger: LogHandler;
 }
 
 /**
  * The Optimizely class
- * @param {Object}        config
- * @param {string}        config.clientEngine
- * @param {string}        config.clientVersion
- * @param {Object|string} config.datafile
- * @param {Object}        config.errorHandler
- * @param {Object}        config.eventDispatcher
- * @param {Object}        config.logger
- * @param {Object}        config.userProfileService
- * @param {Object}        config.eventBatchSize
- * @param {Object}        config.eventFlushInterval
- * @param {string}        config.sdkKey
+ * @param {OptimizelyOptions} config
+ * @param {string}            config.clientEngine
+ * @param {string}            config.clientVersion
+ * @param {Object|string}     config.datafile
+ * @param {Object}            config.errorHandler
+ * @param {Object}            config.eventDispatcher
+ * @param {Object}            config.logger
+ * @param {Object}            config.userProfileService
+ * @param {Object}            config.eventBatchSize
+ * @param {Object}            config.eventFlushInterval
+ * @param {string}            config.sdkKey
  */
 export default class Optimizely {
   private isOptimizelyConfigValid: boolean;
@@ -103,7 +106,7 @@ export default class Optimizely {
   private decisionService: DecisionService;
   private eventProcessor: EventProcessor;
 
-  constructor(config: configObj) {
+  constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;
     if (enums.VALID_CLIENT_ENGINES.indexOf(clientEngine) === -1) {
       config.logger.log(

@@ -43,7 +43,7 @@ const cjsBundleFor = (platform) => ({
     typescript(typescriptPluginOptions),
   ],
   external: ['https', 'http', 'url'].concat(Object.keys(dependencies || {})),
-  input: `lib/index.${platform}.js`,
+  input: `lib/index.${platform}.ts`,
   output: {
     exports: 'named',
     format: 'cjs',
@@ -89,7 +89,7 @@ const umdBundle = {
     }),
     typescript(typescriptPluginOptions),
   ],
-  input: 'lib/index.browser.js',
+  input: 'lib/index.browser.ts',
   output: [
     {
       name: 'optimizelySdk',
