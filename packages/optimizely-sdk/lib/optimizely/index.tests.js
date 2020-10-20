@@ -16,7 +16,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import { sprintf } from '@optimizely/js-sdk-utils';
-import * as eventProcessor from '@optimizely/js-sdk-event-processor';
+import eventProcessor from '../core/event_processor';
 import * as logging from '@optimizely/js-sdk-logging';
 
 import Optimizely from './';
@@ -7730,11 +7730,11 @@ describe('lib/optimizely', function() {
           start: sinon.stub(),
           stop: sinon.stub(),
         };
-        sinon.stub(eventProcessor, 'LogTierV1EventProcessor').returns(mockEventProcessor);
+        sinon.stub(eventProcessor, 'createEventProcessor').returns(mockEventProcessor);
       });
 
       afterEach(function() {
-        eventProcessor.LogTierV1EventProcessor.restore();
+        eventProcessor.createEventProcessor.restore();
       });
 
       describe('when the event processor stop method returns a promise that fulfills', function() {
@@ -7813,13 +7813,13 @@ describe('lib/optimizely', function() {
     beforeEach(function() {
       sinon.stub(errorHandler, 'handleError');
       sinon.stub(createdLogger, 'log');
-      sinon.spy(eventProcessor, 'LogTierV1EventProcessor');
+      sinon.spy(eventProcessor, 'createEventProcessor');
     });
 
     afterEach(function() {
       errorHandler.handleError.restore();
       createdLogger.log.restore();
-      eventProcessor.LogTierV1EventProcessor.restore();
+      eventProcessor.createEventProcessor.restore();
     });
 
     it('should instantiate the eventProcessor with the provided event flush interval and event batch size', function() {
@@ -7836,7 +7836,7 @@ describe('lib/optimizely', function() {
       });
 
       sinon.assert.calledWithExactly(
-        eventProcessor.LogTierV1EventProcessor,
+        eventProcessor.createEventProcessor,
         sinon.match({
           dispatcher: eventDispatcher,
           flushInterval: 20000,

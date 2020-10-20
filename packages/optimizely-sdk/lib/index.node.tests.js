@@ -15,7 +15,7 @@
  */
 import { assert } from 'chai';
 import sinon from 'sinon';
-import * as eventProcessor from '@optimizely/js-sdk-event-processor';
+import eventProcessor from './core/event_processor';
 
 import * as enums from './utils/enums';
 import Optimizely from './optimizely';
@@ -96,11 +96,11 @@ describe('optimizelyFactory', function() {
       describe('event processor configuration', function() {
         var eventProcessorSpy;
         beforeEach(function() {
-          eventProcessorSpy = sinon.stub(eventProcessor, 'LogTierV1EventProcessor').callThrough();
+          eventProcessorSpy = sinon.stub(eventProcessor, 'createEventProcessor').callThrough();
         });
 
         afterEach(function() {
-          eventProcessor.LogTierV1EventProcessor.restore();
+          eventProcessor.createEventProcessor.restore();
         });
 
         it('should ignore invalid event flush interval and use default instead', function() {
