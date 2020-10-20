@@ -348,7 +348,7 @@ export default class Optimizely {
     const impressionEvent = getImpressionEvent(impressionEventOptions);
     const experiment = configObj.experimentKeyMap[experimentKey];
     let variation;
-    if (experiment && experiment.variationKeyMap && variationKey) {
+    if (experiment && experiment.variationKeyMap && variationKey !== '') {
       variation = experiment.variationKeyMap[variationKey];
     }
     this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.ACTIVATE, {
@@ -522,7 +522,7 @@ export default class Optimizely {
    *                                      then clear the existing experiment-to-variation mapping.
    * @return {boolean}                    A boolean value that indicates if the set completed successfully.
    */
-  setForcedVariation(experimentKey: string, userId: string, variationKey: string | null): boolean {
+  setForcedVariation(experimentKey: string, userId: string, variationKey: string): boolean {
     if (!this.validateInputs({ experiment_key: experimentKey, user_id: userId })) {
       return false;
     }

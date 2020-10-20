@@ -45,7 +45,7 @@ export function isRunning(configObj: ProjectConfig, experimentKey: string): bool
 export function getVariationIdFromExperimentAndVariationKey(
   configObj: ProjectConfig,
   experimentKey: string,
-  variationKey: string | null
+  variationKey: string
 ): string;
 
 /**
