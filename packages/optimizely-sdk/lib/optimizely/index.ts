@@ -54,6 +54,7 @@ const MODULE_NAME = 'OPTIMIZELY';
 const DEFAULT_ONREADY_TIMEOUT = 30000;
 
 /**
+ * @private
  * options required to create optimizely object
  */
 export interface OptimizelyOptions {
@@ -78,17 +79,17 @@ export interface OptimizelyOptions {
 
 /**
  * The Optimizely class
- * @param {OptimizelyOptions} config
- * @param {string}            config.clientEngine
- * @param {string}            config.clientVersion
- * @param {Object|string}     config.datafile
- * @param {Object}            config.errorHandler
- * @param {Object}            config.eventDispatcher
- * @param {Object}            config.logger
- * @param {Object}            config.userProfileService
- * @param {Object}            config.eventBatchSize
- * @param {Object}            config.eventFlushInterval
- * @param {string}            config.sdkKey
+ * @param {OptimizelyOptions} config                      config
+ * @param {string}            config.clientEngine         config.clientEngine
+ * @param {string}            config.clientVersion        config.clientVersion
+ * @param {Object|string}     config.datafile             config.datafile
+ * @param {Object}            config.errorHandler         config.errorHandler
+ * @param {Object}            config.eventDispatcher      config.eventDispatcher
+ * @param {Object}            config.logger               config.logger
+ * @param {Object}            config.userProfileService   config.userProfileService
+ * @param {Object}            config.eventBatchSize       config.eventBatchSize
+ * @param {Object}            config.eventFlushInterval   config.eventFlushInterval
+ * @param {string}            config.sdkKey               config.sdkKey
  */
 export default class Optimizely {
   private isOptimizelyConfigValid: boolean;
