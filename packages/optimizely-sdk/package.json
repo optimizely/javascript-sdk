@@ -18,7 +18,7 @@
     "prebuild": "npm run clean",
     "build": "rollup -c",
     "build-browser-umd": "rollup -c --config-umd",
-    "build-docs": "typedoc --options typedoc.json",
+    "build-docs": "typedoc --options typedoc.json --excludeNotDocumented",
     "precover": "nyc npm test",
     "cover": "nyc report -r lcov",
     "precoveralls": "npm run cover",

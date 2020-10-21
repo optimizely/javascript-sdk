@@ -25,7 +25,7 @@ import {
   Variation,
   FeatureFlag,
   FeatureVariable,
-  OptimizelyOptions
+  DatafileOptions
 } from '../shared_types';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
@@ -62,18 +62,42 @@ export type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_
 export type StringInputs = Partial<Record<InputKey, unknown>>;
 
 /**
+ * @private
+ * options required to create optimizely object
+ */
+export interface OptimizelyOptions {
+  UNSTABLE_conditionEvaluators?: unknown;
+  clientEngine: string;
+  clientVersion?: string;
+  datafile?: string;
+  datafileOptions?: DatafileOptions;
+  errorHandler: ErrorHandler;
+  eventBatchSize?: number;
+  eventDispatcher: EventDispatcher;
+  eventFlushInterval?: number;
+  eventMaxQueueSize?: number;
+  isValidInstance: boolean;
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
+  jsonSchemaValidator?: object;
+  logger: LogHandler;
+  sdkKey?: string;
+  userProfileService?: UserProfileService | null;
+}
+
+/**
  * The Optimizely class
- * @param {OptimizelyOptions} config
- * @param {string}            config.clientEngine
- * @param {string}            config.clientVersion
- * @param {Object|string}     config.datafile
- * @param {Object}            config.errorHandler
- * @param {Object}            config.eventDispatcher
- * @param {Object}            config.logger
- * @param {Object}            config.userProfileService
- * @param {Object}            config.eventBatchSize
- * @param {Object}            config.eventFlushInterval
- * @param {string}            config.sdkKey
+ * @param {OptimizelyOptions} config                      config
+ * @param {string}            config.clientEngine         config.clientEngine
+ * @param {string}            config.clientVersion        config.clientVersion
+ * @param {Object|string}     config.datafile             config.datafile
+ * @param {Object}            config.errorHandler         config.errorHandler
+ * @param {Object}            config.eventDispatcher      config.eventDispatcher
+ * @param {Object}            config.logger               config.logger
+ * @param {Object}            config.userProfileService   config.userProfileService
+ * @param {Object}            config.eventBatchSize       config.eventBatchSize
+ * @param {Object}            config.eventFlushInterval   config.eventFlushInterval
+ * @param {string}            config.sdkKey               config.sdkKey
  */
 export default class Optimizely {
   private isOptimizelyConfigValid: boolean;
