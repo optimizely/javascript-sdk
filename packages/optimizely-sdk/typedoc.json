@@ -1,11 +1,12 @@
 {
   "inputFiles": ["./lib/optimizely/index.ts"],
-  "mode": "file",
   "out": "./docs/out",
   "exclude": "**/*+(.spec|.d|.tests).(ts/js)",
   "excludePrivate": true,
   "excludeProtected": true,
   "excludeExternals": true,
   "readme": "README.md",
-  "name": "Optimizely JavaScript SDK"
+  "name": "Optimizely JavaScript SDK",
+  "includeVersion": true,
+  "theme": "minimal"
 }
