@@ -676,51 +676,39 @@ export default class Optimizely {
       let featureEnabled = false;
       const decision = this.decisionService.getVariationForFeature(configObj, feature, userId, attributes);
       const variation = decision.variation;
+      const decisionSource = decision.decisionSource;
 
-      if (
-        decision.decisionSource === DECISION_SOURCES.ROLLOUT &&
-        projectConfig.getSendFlagDecisionsValue(configObj) === true
-      ) {
-        let experimentKey = '';
-        if (decision.experiment !== null) {
-          experimentKey = decision.experiment.key;
-        }
+      let variationKey = '';
+      let experimentKey = '';
 
-        let variationKey = '';
-        if (variation) {
-          variationKey = variation.key
-        }
-        this.sendImpressionEvent(
-          experimentKey,
-          variationKey,
-          feature.key,
-          decision.decisionSource,
-          userId,
-          attributes
-        );
+      if (decision.experiment !== null) {
+        experimentKey = decision.experiment.key;
       }
 
       if (variation) {
         featureEnabled = variation.featureEnabled;
-        if (
-          decision.decisionSource === DECISION_SOURCES.FEATURE_TEST &&
-          decision.experiment !== null &&
-          decision.variation !== null
-        ) {
-          sourceInfo = {
-            experimentKey: decision.experiment.key,
-            variationKey: decision.variation.key,
-          };
-          // got a variation from the exp, so we track the impression
-          this.sendImpressionEvent(
-            decision.experiment.key,
-            decision.variation.key,
-            feature.key,
-            decision.decisionSource,
-            userId,
-            attributes
-          );
-        }
+        variationKey = variation.key;
+      }
+
+      if (decisionSource === DECISION_SOURCES.FEATURE_TEST) {
+        sourceInfo = {
+          experimentKey: experimentKey,
+          variationKey: variationKey,
+        };
+      }
+
+      if (
+        decisionSource === DECISION_SOURCES.FEATURE_TEST ||
+        decisionSource === DECISION_SOURCES.ROLLOUT && projectConfig.getSendFlagDecisionsValue(configObj)
+      ) {
+        this.sendImpressionEvent(
+          experimentKey,
+          variationKey,
+          feature.key,
+          decisionSource,
+          userId,
+          attributes
+        );
       }
 
       if (featureEnabled === true) {
