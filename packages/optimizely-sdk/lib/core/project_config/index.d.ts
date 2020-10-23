@@ -143,3 +143,12 @@ export function getVariableValueForVariation(
  * @return {boolean}         A boolean value that indicates if we should send flag decisions
  */
 export function getSendFlagDecisionsValue(configObj: ProjectConfig): boolean;
+
+/**
+ * Get experiment from provided experiment key
+ * @param  {ProjectConfig}   projectConfig  Object representing project configuration
+ * @param  {string}          experimentKey  Event key for which experiment IDs are to be retrieved
+ * @return {Experiment}      experiment
+ * @throws                   If experiment key is not in datafile
+ */
+export function getExperimentFromKey(configObj: ProjectConfig, experimentKey: string): Experiment;

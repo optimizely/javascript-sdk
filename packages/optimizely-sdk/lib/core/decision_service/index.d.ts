@@ -99,7 +99,7 @@ interface Options {
   UNSTABLE_conditionEvaluators: unknown;
 }
 
-interface Decision {
+export interface Decision {
   experiment: Experiment | null;
   variation: Variation | null;
   decisionSource: string;

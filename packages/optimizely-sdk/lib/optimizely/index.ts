@@ -28,7 +28,7 @@ import {
 import { Variation } from '../core/project_config/entities';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
-import { createDecisionService, DecisionService } from '../core/decision_service';
+import { createDecisionService, DecisionService, Decision } from '../core/decision_service';
 import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
 import { buildImpressionEvent, buildConversionEvent } from '../core/event_builder/event_helpers';
 import fns from '../utils/fns'
@@ -233,11 +233,17 @@ export default class Optimizely {
           return variationKey;
         }
 
+        const experiment = projectConfig.getExperimentFromKey(configObj, experimentKey);
+        const variation = experiment.variationKeyMap[variationKey];
+        const decisionObj = {
+          experiment: experiment,
+          variation: variation,
+          decisionSource: enums.DECISION_SOURCES.EXPERIMENT
+        }
+
         this.sendImpressionEvent(
-          experimentKey,
-          variationKey,
+          decisionObj,
           '',
-          enums.DECISION_SOURCES.EXPERIMENT,
           userId,
           attributes
         );
@@ -266,19 +272,14 @@ export default class Optimizely {
    * Create an impression event and call the event dispatcher's dispatch method to
    * send this event to Optimizely. Then use the notification center to trigger
    * any notification listeners for the ACTIVATE notification type.
-   * @param {string}         experimentKey  Key of experiment that was activated
-   * @param {string}         variationKey   Key of variation shown in experiment that was activated
-   * @param {string}         userId         ID of user to whom the variation was shown
+   * @param {Decision}       decisionObj    Decision Object
    * @param {string}         flagKey        Key for a feature flag
-   * @param {string}         ruleKey        Key for an experiment
-   * @param {string}         ruleType       Type for the decision source
+   * @param {string}         userId         ID of user to whom the variation was shown
    * @param {UserAttributes} attributes     Optional user attributes
    */
   private sendImpressionEvent(
-    experimentKey: string,
-    variationKey: string,
+    decisionObj: Decision,
     flagKey: string,
-    ruleType: string,
     userId: string,
     attributes?: UserAttributes
   ): void {
@@ -288,10 +289,8 @@ export default class Optimizely {
     }
 
     const impressionEvent = buildImpressionEvent({
-      experimentKey: experimentKey,
-      variationKey: variationKey,
+      decisionObj: decisionObj,
       flagKey: flagKey,
-      ruleType: ruleType,
       userId: userId,
       userAttributes: attributes,
       clientEngine: this.clientEngine,
@@ -300,23 +299,19 @@ export default class Optimizely {
     });
     // TODO is it okay to not pass a projectConfig as second argument
     this.eventProcessor.process(impressionEvent);
-    this.emitNotificationCenterActivate(experimentKey, variationKey, flagKey, ruleType, userId, attributes);
+    this.emitNotificationCenterActivate(decisionObj, flagKey, userId, attributes);
   }
 
   /**
    * Emit the ACTIVATE notification on the notificationCenter
-   * @param  {string}         experimentKey  Key of experiment that was activated
-   * @param  {string}         variationKey   Key of variation shown in experiment that was activated
+   * @param  {Decision}       decisionObj    Decision object
    * @param  {string}         flagKey        Key for a feature flag
-   * @param  {string}         ruleType       Type for the decision source
    * @param  {string}         userId         ID of user to whom the variation was shown
    * @param  {UserAttributes} attributes     Optional user attributes
    */
   private emitNotificationCenterActivate(
-    experimentKey: string,
-    variationKey: string,
+    decisionObj: Decision,
     flagKey: string,
-    ruleType: string,
     userId: string,
     attributes?: UserAttributes
   ): void {
@@ -325,8 +320,19 @@ export default class Optimizely {
       return;
     }
 
-    let variationId = null;
+    const ruleType = decisionObj.decisionSource;
     let experimentId = null;
+    let variationId = null;
+    let experimentKey = '';
+    let variationKey = '';
+
+    if (decisionObj.experiment) {
+      experimentKey = decisionObj.experiment.key;
+    }
+    if (decisionObj.variation) {
+      variationKey = decisionObj.variation.key;
+    }
+
     if (experimentKey !=='' && variationKey !== '') {
       variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
       experimentId = projectConfig.getExperimentId(configObj, experimentKey);
@@ -702,10 +708,8 @@ export default class Optimizely {
         decisionSource === DECISION_SOURCES.ROLLOUT && projectConfig.getSendFlagDecisionsValue(configObj)
       ) {
         this.sendImpressionEvent(
-          experimentKey,
-          variationKey,
+          decision,
           feature.key,
-          decisionSource,
           userId,
           attributes
         );

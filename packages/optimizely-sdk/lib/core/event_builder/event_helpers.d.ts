@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 import { ProjectConfig } from '../project_config';
+import { Decision } from '../decision_service';
 import { EventTags, UserAttributes } from '../../shared_types';
 
 interface ImpressionConfig {
-  experimentKey: string;
-  variationKey: string;
-  flagKey: string;
-  ruleType: string;
+  decisionObj: Decision;
   userId: string;
+  flagKey: string;
   userAttributes?: UserAttributes;
   clientEngine: string;
   clientVersion: string;

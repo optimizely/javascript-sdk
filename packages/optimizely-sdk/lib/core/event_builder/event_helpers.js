@@ -25,9 +25,7 @@ var logger = getLogger('EVENT_BUILDER');
 /**
  * Creates an ImpressionEvent object from decision data
  * @param {Object} config
- * @param {Object} config.configObj
- * @param {String} config.experimentKey
- * @param {String} config.variationKey
+ * @param {Object} config.decisionObj
  * @param {String} config.userId
  * @param {Object} config.userAttributes
  * @param {String} config.clientEngine
@@ -36,20 +34,28 @@ var logger = getLogger('EVENT_BUILDER');
  */
 export var buildImpressionEvent = function(config) {
   var configObj = config.configObj;
-  var experimentKey = config.experimentKey;
-  var variationKey = config.variationKey;
-  var flagKey = config.flagKey;
-  var ruleType = config.ruleType;
+  var decisionObj = config.decisionObj;
   var userId = config.userId;
+  var flagKey = config.flagKey;
   var userAttributes = config.userAttributes;
   var clientEngine = config.clientEngine;
   var clientVersion = config.clientVersion;
+  var ruleType = decisionObj.decisionSource;
 
+  let experimentId = null;
   let variationId = null;
+  let experimentKey = '';
+  let variationKey = '';
+
+  if (decisionObj.experiment) {
+    experimentKey = decisionObj.experiment.key;
+  }
+  if (decisionObj.variation) {
+    variationKey = decisionObj.variation.key;
+  }
   if (experimentKey !=='' && variationKey !== '') {
     variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
   }
-  let experimentId = null;
   if (experimentKey !== '') {
     experimentId = projectConfig.getExperimentId(configObj, experimentKey);
   }

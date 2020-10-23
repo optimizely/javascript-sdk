@@ -56,6 +56,29 @@ describe('lib/event_builder/event_helpers', function() {
   describe('buildImpressionEvent', function() {
     describe('when botFiltering and anonymizeIP are true', function() {
       it('should build an ImpressionEvent with the correct attributes', function() {
+        var decision = {
+          experiment: {
+            key: 'exp1',
+            status: 'Running',
+            forcedVariations: {},
+            audienceIds: [],
+            layerId: '253442',
+            trafficAllocation: [],
+            variationKeyMap: {
+              'variation': {
+                key: 'var1',
+                id: 'var1-id',
+              }
+            },
+            id: '1237847778',
+            variations: [{ key: 'var1', id: 'var1-id' }],
+          },
+          variation: {
+            key: 'var1',
+            id: 'var1-id',
+          },
+          decisionSource: 'experiment',
+        }
         projectConfig.getVariationIdFromExperimentAndVariationKey
           .withArgs(configObj, 'exp1', 'var1')
           .returns('var1-id');
@@ -66,10 +89,8 @@ describe('lib/event_builder/event_helpers', function() {
 
         var result = buildImpressionEvent({
           configObj: configObj,
-          experimentKey: 'exp1',
+          decisionObj: decision,
           flagKey: 'flagkey1',
-          ruleType: 'experiment',
-          variationKey: 'var1',
           userId: 'user1',
           userAttributes: {
             plan_type: 'bronze',
@@ -125,6 +146,29 @@ describe('lib/event_builder/event_helpers', function() {
 
     describe('when botFiltering and anonymizeIP are undefined', function() {
       it('should create an ImpressionEvent with the correct attributes', function() {
+        var decision = {
+          experiment: {
+            key: 'exp1',
+            status: 'Running',
+            forcedVariations: {},
+            audienceIds: [],
+            layerId: '253442',
+            trafficAllocation: [],
+            variationKeyMap: {
+              'variation': {
+                key: 'var1',
+                id: 'var1-id',
+              }
+            },
+            id: '1237847778',
+            variations: [{ key: 'var1', id: 'var1-id' }],
+          },
+          variation: {
+            key: 'var1',
+            id: 'var1-id',
+          },
+          decisionSource: 'experiment',
+        }
         projectConfig.getVariationIdFromExperimentAndVariationKey
           .withArgs(configObj, 'exp1', 'var1')
           .returns('var1-id');
@@ -138,10 +182,8 @@ describe('lib/event_builder/event_helpers', function() {
 
         var result = buildImpressionEvent({
           configObj: configObj,
-          experimentKey: 'exp1',
+          decisionObj: decision,
           flagKey: 'flagkey1',
-          ruleType: 'experiment',
-          variationKey: 'var1',
           userId: 'user1',
           userAttributes: {
             plan_type: 'bronze',
