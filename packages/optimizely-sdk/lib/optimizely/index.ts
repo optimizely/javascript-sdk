@@ -528,7 +528,7 @@ export default class Optimizely {
    *                                      then clear the existing experiment-to-variation mapping.
    * @return {boolean}                    A boolean value that indicates if the set completed successfully.
    */
-  setForcedVariation(experimentKey: string, userId: string, variationKey: string): boolean {
+  setForcedVariation(experimentKey: string, userId: string, variationKey: string | null): boolean {
     if (!this.validateInputs({ experiment_key: experimentKey, user_id: userId })) {
       return false;
     }
