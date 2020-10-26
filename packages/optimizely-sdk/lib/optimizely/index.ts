@@ -321,17 +321,11 @@ export default class Optimizely {
     }
 
     const ruleType = decisionObj.decisionSource;
+    const experimentKey = decisionObj.experiment?.key ?? '';
+    const variationKey = decisionObj.variation?.key ?? '';
+
     let experimentId = null;
     let variationId = null;
-    let experimentKey = '';
-    let variationKey = '';
-
-    if (decisionObj.experiment) {
-      experimentKey = decisionObj.experiment.key;
-    }
-    if (decisionObj.variation) {
-      variationKey = decisionObj.variation.key;
-    }
 
     if (experimentKey !=='' && variationKey !== '') {
       variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
