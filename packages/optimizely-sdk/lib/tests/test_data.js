@@ -2708,13 +2708,13 @@ export var featureTestDecisionObj = {
         key: 'variation',
         id: '594096',
         featureEnabled: true,
-        variables: []
+        variables: [],
       },
       control: {
         key: 'control',
         id: '594097',
         featureEnabled: true,
-        variables: []
+        variables: [],
       },
     },
   },
