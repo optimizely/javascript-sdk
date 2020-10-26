@@ -97,7 +97,7 @@ declare module '@optimizely/optimizely-sdk' {
       userId: string,
       attributes?: UserAttributes
     ): string | null;
-    setForcedVariation(experimentKey: string, userId: string, variationKey: string): boolean;
+    setForcedVariation(experimentKey: string, userId: string, variationKey: string | null): boolean;
     getForcedVariation(experimentKey: string, userId: string): string | null;
     isFeatureEnabled(
       featureKey: string,

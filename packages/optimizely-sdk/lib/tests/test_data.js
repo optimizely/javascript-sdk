@@ -2671,6 +2671,62 @@ export var getMutexFeatureTestsConfig = function() {
   return cloneDeep(mutexFeatureTestsConfig);
 };
 
+export var rolloutDecisionObj = {
+  experiment: null,
+  variation: null,
+  decisionSource: 'rollout',
+}
+
+export var featureTestDecisionObj = {
+  experiment: {
+    trafficAllocation: [
+      { endOfRange: 5000, entityId: '594096' },
+      { endOfRange: 10000, entityId: '594097' }
+    ],
+    layerId: '594093',
+    forcedVariations: {},
+    audienceIds: [],
+    variations: [
+      {
+        key: 'variation',
+        id: '594096',
+        featureEnabled: true,
+        variables: [],
+      },
+      {
+        key: 'control',
+        id: '594097',
+        featureEnabled: true,
+        variables: [],
+      },
+    ],
+    status: 'Running',
+    key: 'testing_my_feature',
+    id: '594098',
+    variationKeyMap: {
+      variation: {
+        key: 'variation',
+        id: '594096',
+        featureEnabled: true,
+        variables: []
+      },
+      control: {
+        key: 'control',
+        id: '594097',
+        featureEnabled: true,
+        variables: []
+      },
+    },
+  },
+  variation: {
+    key: 'variation',
+    id: '594096',
+    featureEnabled: true,
+    variables: [],
+  },
+  decisionSource: 'feature-test',
+}
+
 export default {
   getTestProjectConfig: getTestProjectConfig,
   getParsedAudiences: getParsedAudiences,

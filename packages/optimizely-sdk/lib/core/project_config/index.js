@@ -297,7 +297,7 @@ export var getVariationKeyFromId = function(projectConfig, variationId) {
  */
 export var getVariationIdFromExperimentAndVariationKey = function(projectConfig, experimentKey, variationKey) {
   var experiment = projectConfig.experimentKeyMap[experimentKey];
-  if (variationKey !== '' && experiment.variationKeyMap.hasOwnProperty(variationKey)) {
+  if (experiment.variationKeyMap.hasOwnProperty(variationKey)) {
     return experiment.variationKeyMap[variationKey].id;
   }
   return null;
