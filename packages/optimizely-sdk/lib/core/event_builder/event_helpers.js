@@ -19,6 +19,7 @@ import fns from '../../utils/fns';
 import projectConfig from '../project_config';
 import * as eventTagUtils from '../../utils/event_tag_utils';
 import * as attributesValidator from'../../utils/attributes_validator';
+import * as decision from '../decision';
 
 var logger = getLogger('EVENT_BUILDER');
 
@@ -41,19 +42,13 @@ export var buildImpressionEvent = function(config) {
   var clientEngine = config.clientEngine;
   var clientVersion = config.clientVersion;
   var ruleType = decisionObj.decisionSource;
+  var experimentKey = decision.getExperimentKey(decisionObj);
+  var variationKey = decision.getVariationKey(decisionObj);
 
   let experimentId = null;
   let variationId = null;
-  let experimentKey = '';
-  let variationKey = '';
 
-  if (decisionObj.experiment) {
-    experimentKey = decisionObj.experiment.key;
-  }
-  if (decisionObj.variation) {
-    variationKey = decisionObj.variation.key;
-  }
-  if (experimentKey !=='' && variationKey !== '') {
+  if (experimentKey !== '' && variationKey !== '') {
     variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
   }
   if (experimentKey !== '') {

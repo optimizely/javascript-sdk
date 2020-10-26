@@ -28,7 +28,7 @@ import {
 import { Variation } from '../core/project_config/entities';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
-import { createDecisionService, DecisionService, Decision } from '../core/decision_service';
+import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
 import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
 import { buildImpressionEvent, buildConversionEvent } from '../core/event_builder/event_helpers';
 import fns from '../utils/fns'
@@ -39,6 +39,7 @@ import * as eventTagsValidator from '../utils/event_tags_validator';
 import * as projectConfig from '../core/project_config';
 import * as userProfileServiceValidator from '../utils/user_profile_service_validator';
 import * as stringValidator from '../utils/string_value_validator';
+import * as decision from '../core/decision';
 import {
   ERROR_MESSAGES,
   LOG_LEVEL,
@@ -272,13 +273,13 @@ export default class Optimizely {
    * Create an impression event and call the event dispatcher's dispatch method to
    * send this event to Optimizely. Then use the notification center to trigger
    * any notification listeners for the ACTIVATE notification type.
-   * @param {Decision}       decisionObj    Decision Object
+   * @param {DecisionObj}    decisionObj    Decision Object
    * @param {string}         flagKey        Key for a feature flag
    * @param {string}         userId         ID of user to whom the variation was shown
    * @param {UserAttributes} attributes     Optional user attributes
    */
   private sendImpressionEvent(
-    decisionObj: Decision,
+    decisionObj: DecisionObj,
     flagKey: string,
     userId: string,
     attributes?: UserAttributes
@@ -304,13 +305,13 @@ export default class Optimizely {
 
   /**
    * Emit the ACTIVATE notification on the notificationCenter
-   * @param  {Decision}       decisionObj    Decision object
+   * @param  {DecisionObj}    decisionObj    Decision object
    * @param  {string}         flagKey        Key for a feature flag
    * @param  {string}         userId         ID of user to whom the variation was shown
    * @param  {UserAttributes} attributes     Optional user attributes
    */
   private emitNotificationCenterActivate(
-    decisionObj: Decision,
+    decisionObj: DecisionObj,
     flagKey: string,
     userId: string,
     attributes?: UserAttributes
@@ -321,8 +322,8 @@ export default class Optimizely {
     }
 
     const ruleType = decisionObj.decisionSource;
-    const experimentKey = decisionObj.experiment?.key ?? '';
-    const variationKey = decisionObj.variation?.key ?? '';
+    const experimentKey = decision.getExperimentKey(decisionObj);
+    const variationKey = decision.getVariationKey(decisionObj);
 
     let experimentId = null;
     let variationId = null;
@@ -673,22 +674,12 @@ export default class Optimizely {
       }
 
       let sourceInfo = {};
-      let featureEnabled = false;
-      const decision = this.decisionService.getVariationForFeature(configObj, feature, userId, attributes);
-      const variation = decision.variation;
-      const decisionSource = decision.decisionSource;
+      const decisionObj = this.decisionService.getVariationForFeature(configObj, feature, userId, attributes);
+      const decisionSource = decisionObj.decisionSource;
+      const experimentKey = decision.getExperimentKey(decisionObj);
+      const variationKey = decision.getVariationKey(decisionObj);
 
-      let variationKey = '';
-      let experimentKey = '';
-
-      if (decision.experiment !== null) {
-        experimentKey = decision.experiment.key;
-      }
-
-      if (variation) {
-        featureEnabled = variation.featureEnabled;
-        variationKey = variation.key;
-      }
+      let featureEnabled = decision.getFeatureEnabledFromVariation(decisionObj);
 
       if (decisionSource === DECISION_SOURCES.FEATURE_TEST) {
         sourceInfo = {
@@ -702,7 +693,7 @@ export default class Optimizely {
         decisionSource === DECISION_SOURCES.ROLLOUT && projectConfig.getSendFlagDecisionsValue(configObj)
       ) {
         this.sendImpressionEvent(
-          decision,
+          decisionObj,
           feature.key,
           userId,
           attributes
@@ -725,7 +716,7 @@ export default class Optimizely {
       const featureInfo = {
         featureKey: featureKey,
         featureEnabled: featureEnabled,
-        source: decision.decisionSource,
+        source: decisionObj.decisionSource,
         sourceInfo: sourceInfo,
       };
 
@@ -876,18 +867,18 @@ export default class Optimizely {
       return null;
     }
 
-    const decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
-    const featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;
-    const variableValue = this.getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
+    const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
+    const featureEnabled = decision.getFeatureEnabledFromVariation(decisionObj);
+    const variableValue = this.getFeatureVariableValueFromVariation(featureKey, featureEnabled, decisionObj.variation, variable, userId);
     let sourceInfo = {};
     if (
-      decision.decisionSource === DECISION_SOURCES.FEATURE_TEST &&
-      decision.experiment !== null &&
-      decision.variation !== null
+      decisionObj.decisionSource === DECISION_SOURCES.FEATURE_TEST &&
+      decisionObj.experiment !== null &&
+      decisionObj.variation !== null
     ) {
       sourceInfo = {
-        experimentKey: decision.experiment.key,
-        variationKey: decision.variation.key,
+        experimentKey: decisionObj.experiment.key,
+        variationKey: decisionObj.variation.key,
       };
     }
 
@@ -898,7 +889,7 @@ export default class Optimizely {
       decisionInfo: {
         featureKey: featureKey,
         featureEnabled: featureEnabled,
-        source: decision.decisionSource,
+        source: decisionObj.decisionSource,
         variableKey: variableKey,
         variableValue: variableValue,
         variableType: variable.type,
@@ -1190,22 +1181,22 @@ export default class Optimizely {
         return null;
       }
 
-      const decision = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
-      const featureEnabled = decision.variation !== null ? decision.variation.featureEnabled : false;
+      const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
+      const featureEnabled = decision.getFeatureEnabledFromVariation(decisionObj);
       const allVariables = {};
 
       featureFlag.variables.forEach((variable: FeatureVariable) => {
-        allVariables[variable.key] = this.getFeatureVariableValueFromVariation(featureKey, featureEnabled, decision.variation, variable, userId);
+        allVariables[variable.key] = this.getFeatureVariableValueFromVariation(featureKey, featureEnabled, decisionObj.variation, variable, userId);
       });
 
       let sourceInfo = {};
-      if (decision.decisionSource === DECISION_SOURCES.FEATURE_TEST &&
-          decision.experiment !== null &&
-          decision.variation !== null
+      if (decisionObj.decisionSource === DECISION_SOURCES.FEATURE_TEST &&
+        decisionObj.experiment !== null &&
+        decisionObj.variation !== null
       ) {
         sourceInfo = {
-          experimentKey: decision.experiment.key,
-          variationKey: decision.variation.key,
+          experimentKey: decisionObj.experiment.key,
+          variationKey: decisionObj.variation.key,
         };
       }
       this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.DECISION, {
@@ -1215,7 +1206,7 @@ export default class Optimizely {
         decisionInfo: {
           featureKey: featureKey,
           featureEnabled: featureEnabled,
-          source: decision.decisionSource,
+          source: decisionObj.decisionSource,
           variableValues: allVariables,
           sourceInfo: sourceInfo,
         },

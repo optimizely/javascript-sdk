@@ -53,7 +53,7 @@ export interface DecisionService {
    * @param   {FeatureFlag}   feature        A feature flag object from project configuration
    * @param   {string}        userId         A string identifying the user, for bucketing
    * @param   {unknown}       attributes     Optional user attributes
-   * @return  {Decision}      An object with experiment, variation, and decisionSource
+   * @return  {DecisionObj}   An object with experiment, variation, and decisionSource
    * properties. If the user was not bucketed into a variation, the variation
    * property is null.
    */
@@ -62,7 +62,7 @@ export interface DecisionService {
     feature: FeatureFlag,
     userId: string,
     attributes: unknown
-  ): Decision;
+  ): DecisionObj;
 
   /**
    * Removes forced variation for given userId and experimentKey
@@ -99,7 +99,7 @@ interface Options {
   UNSTABLE_conditionEvaluators: unknown;
 }
 
-export interface Decision {
+export interface DecisionObj {
   experiment: Experiment | null;
   variation: Variation | null;
   decisionSource: string;
