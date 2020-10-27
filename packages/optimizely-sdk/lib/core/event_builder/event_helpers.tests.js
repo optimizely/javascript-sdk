@@ -62,7 +62,7 @@ describe('lib/event_builder/event_helpers', function() {
             status: 'Running',
             forcedVariations: {},
             audienceIds: [],
-            layerId: '253442',
+            layerId: 'layer-id',
             trafficAllocation: [],
             variationKeyMap: {
               'variation': {
@@ -70,7 +70,7 @@ describe('lib/event_builder/event_helpers', function() {
                 id: 'var1-id',
               }
             },
-            id: '1237847778',
+            id: 'exp1-id',
             variations: [{ key: 'var1', id: 'var1-id' }],
           },
           variation: {
