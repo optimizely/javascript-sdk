@@ -103,6 +103,12 @@ function getImpressionEventParams(configObj, experimentId, variationId, ruleKey,
   if (experimentId !== null) {
     campaignId = projectConfig.getLayerId(configObj, experimentId);
   }
+
+  let variationKey = projectConfig.getVariationKeyFromId(configObj, variationId);
+  if (variationKey === null) {
+    variationKey = '';
+  }
+
   var impressionEventParams = {
     decisions: [
       {
@@ -113,7 +119,7 @@ function getImpressionEventParams(configObj, experimentId, variationId, ruleKey,
           flag_key: flagKey,
           rule_key: ruleKey,
           rule_type: ruleType,
-          variation_key: projectConfig.getVariationKeyFromId(configObj, variationId),
+          variation_key: variationKey,
         }
       },
     ],

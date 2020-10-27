@@ -279,7 +279,7 @@ export var getExperimentAudienceConditions = function(projectConfig, experimentK
  * Get variation key given experiment key and variation ID
  * @param  {Object} projectConfig Object representing project configuration
  * @param  {string} variationId   ID of the variation
- * @return {string} Variation key or null if the variation ID is not found
+ * @return {string|null} Variation key or null if the variation ID is not found
  */
 export var getVariationKeyFromId = function(projectConfig, variationId) {
   if (projectConfig.variationIdMap.hasOwnProperty(variationId)) {
