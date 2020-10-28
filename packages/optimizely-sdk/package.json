@@ -19,6 +19,7 @@
     "build": "rollup -c",
     "build-browser-umd": "rollup -c --config-umd",
     "build-docs": "typedoc --options typedoc.json --excludeNotDocumented --mode file --includeVersion",
+    "clean-docs": "rm -rf docs/",
     "precover": "nyc npm test",
     "cover": "nyc report -r lcov",
     "precoveralls": "npm run cover",
