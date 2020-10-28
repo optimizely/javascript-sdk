@@ -19,6 +19,7 @@ import { FeatureFlag, FeatureVariable, Experiment, Variation  } from './entities
 export interface ProjectConfig {
   revision: string;
   projectId: string;
+  sendFlagDecisions?: boolean;
   experimentKeyMap:{[key: string]: Experiment};
   featureKeyMap: {
     [key: string]: FeatureFlag
@@ -41,7 +42,11 @@ export function isRunning(configObj: ProjectConfig, experimentKey: string): bool
  * @param  {string}        variationKey     The variation key
  * @return {string}                         the variation ID
  */
-export function getVariationIdFromExperimentAndVariationKey(configObj: ProjectConfig, experimentKey: string, variationKey: string): string;
+export function getVariationIdFromExperimentAndVariationKey(
+  configObj: ProjectConfig,
+  experimentKey: string,
+  variationKey: string
+): string;
 
 /**
  * Get experiment ID for the provided experiment key
@@ -131,3 +136,19 @@ export function getVariableValueForVariation(
   variation: Variation,
   logger: LogHandler
 ): string | null;
+
+/**
+ * Get the send flag decisions value
+ * @param  {ProjectConfig}   projectConfig
+ * @return {boolean}         A boolean value that indicates if we should send flag decisions
+ */
+export function getSendFlagDecisionsValue(configObj: ProjectConfig): boolean;
+
+/**
+ * Get experiment from provided experiment key
+ * @param  {ProjectConfig}   projectConfig  Object representing project configuration
+ * @param  {string}          experimentKey  Event key for which experiment IDs are to be retrieved
+ * @return {Experiment}      experiment
+ * @throws                   If experiment key is not in datafile
+ */
+export function getExperimentFromKey(configObj: ProjectConfig, experimentKey: string): Experiment;

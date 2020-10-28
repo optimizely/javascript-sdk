@@ -663,11 +663,11 @@ DecisionService.prototype.getForcedVariation = function(configObj, experimentKey
 
 /**
  * Sets the forced variation for a user in a given experiment
- * @param  {Object} configObj      Object representing project configuration
- * @param  {string} experimentKey  Key for experiment.
- * @param  {string} userId         The user Id.
- * @param  {string} variationKey   Key for variation. If null, then clear the existing experiment-to-variation mapping
- * @return {boolean}               A boolean value that indicates if the set completed successfully.
+ * @param  {Object}      configObj      Object representing project configuration
+ * @param  {string}      experimentKey  Key for experiment.
+ * @param  {string}      userId         The user Id.
+ * @param  {string|null} variationKey   Key for variation. If null, then clear the existing experiment-to-variation mapping
+ * @return {boolean}     A boolean value that indicates if the set completed successfully.
  */
 DecisionService.prototype.setForcedVariation = function(configObj, experimentKey, userId, variationKey) {
   if (variationKey != null && !stringValidator.validate(variationKey)) {

@@ -279,7 +279,7 @@ export var getExperimentAudienceConditions = function(projectConfig, experimentK
  * Get variation key given experiment key and variation ID
  * @param  {Object} projectConfig Object representing project configuration
  * @param  {string} variationId   ID of the variation
- * @return {string} Variation key or null if the variation ID is not found
+ * @return {string|null} Variation key or null if the variation ID is not found
  */
 export var getVariationKeyFromId = function(projectConfig, variationId) {
   if (projectConfig.variationIdMap.hasOwnProperty(variationId)) {
@@ -603,6 +603,15 @@ export var tryCreatingProjectConfig = function(config) {
   };
 };
 
+/**
+ * Get the send flag decisions value
+ * @param  {ProjectConfig}   projectConfig
+ * @return {boolean}         A boolean value that indicates if we should send flag decisions
+ */
+export var getSendFlagDecisionsValue = function(projectConfig) {
+  return !!projectConfig.sendFlagDecisions;
+}
+
 export default {
   createProjectConfig: createProjectConfig,
   getExperimentId: getExperimentId,
@@ -622,6 +631,7 @@ export default {
   getVariableForFeature: getVariableForFeature,
   getVariableValueForVariation: getVariableValueForVariation,
   getTypeCastValue: getTypeCastValue,
+  getSendFlagDecisionsValue: getSendFlagDecisionsValue,
   getAudiencesById: getAudiencesById,
   eventWithKeyExists: eventWithKeyExists,
   isFeatureExperiment: isFeatureExperiment,

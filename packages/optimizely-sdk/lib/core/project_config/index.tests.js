@@ -392,6 +392,32 @@ describe('lib/core/project_config', function() {
       });
     });
 
+    describe('#getSendFlagDecisionsValue', function() {
+      it('should return false when sendFlagDecisions is undefined', function() {
+        configObj.sendFlagDecisions = undefined;
+        assert.deepEqual(
+          projectConfig.getSendFlagDecisionsValue(configObj),
+          false
+        );
+      });
+
+      it('should return false when sendFlagDecisions is set to false', function() {
+        configObj.sendFlagDecisions = false;
+        assert.deepEqual(
+          projectConfig.getSendFlagDecisionsValue(configObj),
+          false
+        );
+      });
+
+      it('should return true when sendFlagDecisions is set to true', function() {
+        configObj.sendFlagDecisions = true;
+        assert.deepEqual(
+          projectConfig.getSendFlagDecisionsValue(configObj),
+          true
+        );
+      });
+    });
+
     describe('feature management', function() {
       var featureManagementLogger = loggerPlugin.createLogger({ logLevel: LOG_LEVEL.INFO });
       beforeEach(function() {

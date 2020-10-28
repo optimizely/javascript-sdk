@@ -61,6 +61,12 @@ describe('lib/core/event_builder', function() {
                         variation_id: '111128',
                         experiment_id: '111127',
                         campaign_id: '4',
+                        metadata: {
+                          flag_key: 'flagKey1',
+                          rule_key: 'exp1',
+                          rule_type: 'experiment',
+                          variation_key: 'control',
+                        },
                       },
                     ],
                     events: [
@@ -88,6 +94,9 @@ describe('lib/core/event_builder', function() {
           clientVersion: packageJSON.version,
           configObj: configObj,
           experimentId: '111127',
+          ruleKey: 'exp1',
+          flagKey: 'flagKey1',
+          ruleType: 'experiment',
           variationId: '111128',
           userId: 'testUser',
         };
@@ -122,6 +131,12 @@ describe('lib/core/event_builder', function() {
                         variation_id: '111128',
                         experiment_id: '111127',
                         campaign_id: '4',
+                        metadata: {
+                          flag_key: 'flagKey1',
+                          rule_key: 'exp1',
+                          rule_type: 'experiment',
+                          variation_key: 'control',
+                        },
                       },
                     ],
                     events: [
@@ -150,6 +165,9 @@ describe('lib/core/event_builder', function() {
           configObj: configObj,
           experimentId: '111127',
           variationId: '111128',
+          ruleKey: 'exp1',
+          flagKey: 'flagKey1',
+          ruleType: 'experiment',
           userId: 'testUser',
         };
 
@@ -183,6 +201,12 @@ describe('lib/core/event_builder', function() {
                         variation_id: '111128',
                         experiment_id: '111127',
                         campaign_id: '4',
+                        metadata: {
+                          flag_key: 'flagKey1',
+                          rule_key: 'exp1',
+                          rule_type: 'experiment',
+                          variation_key: 'control',
+                        },
                       },
                     ],
                     events: [
@@ -211,6 +235,9 @@ describe('lib/core/event_builder', function() {
           clientVersion: packageJSON.version,
           configObj: configObj,
           experimentId: '111127',
+          ruleKey: 'exp1',
+          flagKey: 'flagKey1',
+          ruleType: 'experiment',
           variationId: '111128',
           userId: 'testUser',
         };
@@ -245,6 +272,12 @@ describe('lib/core/event_builder', function() {
                         variation_id: '111128',
                         experiment_id: '111127',
                         campaign_id: '4',
+                        metadata: {
+                          flag_key: 'flagKey1',
+                          rule_key: 'exp1',
+                          rule_type: 'experiment',
+                          variation_key: 'control',
+                        },
                       },
                     ],
                     events: [
@@ -273,6 +306,9 @@ describe('lib/core/event_builder', function() {
           clientVersion: packageJSON.version,
           configObj: configObj,
           experimentId: '111127',
+          ruleKey: 'exp1',
+          flagKey: 'flagKey1',
+          ruleType: 'experiment',
           variationId: '111128',
           userId: 'testUser',
         };
@@ -300,6 +336,12 @@ describe('lib/core/event_builder', function() {
                         variation_id: '111128',
                         experiment_id: '111127',
                         campaign_id: '4',
+                        metadata: {
+                          flag_key: 'flagKey1',
+                          rule_key: 'exp1',
+                          rule_type: 'experiment',
+                          variation_key: 'control',
+                        },
                       },
                     ],
                     events: [
@@ -328,6 +370,9 @@ describe('lib/core/event_builder', function() {
           clientVersion: packageJSON.version,
           configObj: configObj,
           experimentId: '111127',
+          ruleKey: 'exp1',
+          flagKey: 'flagKey1',
+          ruleType: 'experiment',
           variationId: '111128',
           userId: 'testUser',
           logger: mockLogger,
@@ -370,6 +415,12 @@ describe('lib/core/event_builder', function() {
                         variation_id: '595008',
                         experiment_id: '595010',
                         campaign_id: '595005',
+                        metadata: {
+                          flag_key: 'flagKey2',
+                          rule_key: 'exp2',
+                          rule_type: 'experiment',
+                          variation_key: 'var',
+                        },
                       },
                     ],
                     events: [
@@ -398,6 +449,9 @@ describe('lib/core/event_builder', function() {
           clientVersion: packageJSON.version,
           configObj: v4ConfigObj,
           experimentId: '595010',
+          ruleKey: 'exp2',
+          flagKey: 'flagKey2',
+          ruleType: 'experiment',
           variationId: '595008',
           userId: 'testUser',
         };
@@ -440,6 +494,12 @@ describe('lib/core/event_builder', function() {
                         variation_id: '595008',
                         experiment_id: '595010',
                         campaign_id: '595005',
+                        metadata: {
+                          flag_key: 'flagKey2',
+                          rule_key: 'exp2',
+                          rule_type: 'experiment',
+                          variation_key: 'var',
+                        },
                       },
                     ],
                     events: [
@@ -468,6 +528,9 @@ describe('lib/core/event_builder', function() {
           clientVersion: packageJSON.version,
           configObj: v4ConfigObj,
           experimentId: '595010',
+          ruleKey: 'exp2',
+          flagKey: 'flagKey2',
+          ruleType: 'experiment',
           variationId: '595008',
           userId: 'testUser',
         };
@@ -520,6 +583,12 @@ describe('lib/core/event_builder', function() {
                         variation_id: '111128',
                         experiment_id: '111127',
                         campaign_id: '4',
+                        metadata: {
+                          flag_key: 'flagKey1',
+                          rule_key: 'exp1',
+                          rule_type: 'experiment',
+                          variation_key: 'control',
+                        },
                       },
                     ],
                     events: [
@@ -553,6 +622,9 @@ describe('lib/core/event_builder', function() {
           clientVersion: packageJSON.version,
           configObj: configObj,
           experimentId: '111127',
+          ruleKey: 'exp1',
+          flagKey: 'flagKey1',
+          ruleType: 'experiment',
           variationId: '111128',
           userId: 'testUser',
         };
@@ -599,6 +671,12 @@ describe('lib/core/event_builder', function() {
                         variation_id: '111128',
                         experiment_id: '111127',
                         campaign_id: '4',
+                        metadata: {
+                          flag_key: 'flagKey1',
+                          rule_key: 'exp1',
+                          rule_type: 'experiment',
+                          variation_key: 'control',
+                        },
                       },
                     ],
                     events: [
@@ -633,6 +711,9 @@ describe('lib/core/event_builder', function() {
           clientVersion: packageJSON.version,
           configObj: configObj,
           experimentId: '111127',
+          ruleKey: 'exp1',
+          flagKey: 'flagKey1',
+          ruleType: 'experiment',
           variationId: '111128',
           userId: 'testUser',
         };

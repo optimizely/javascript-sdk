@@ -19,15 +19,14 @@ import fns from '../../utils/fns';
 import projectConfig from '../project_config';
 import * as eventTagUtils from '../../utils/event_tag_utils';
 import * as attributesValidator from'../../utils/attributes_validator';
+import * as decision from '../decision';
 
 var logger = getLogger('EVENT_BUILDER');
 
 /**
  * Creates an ImpressionEvent object from decision data
  * @param {Object} config
- * @param {Object} config.configObj
- * @param {String} config.experimentKey
- * @param {String} config.variationKey
+ * @param {Object} config.decisionObj
  * @param {String} config.userId
  * @param {Object} config.userAttributes
  * @param {String} config.clientEngine
@@ -36,17 +35,29 @@ var logger = getLogger('EVENT_BUILDER');
  */
 export var buildImpressionEvent = function(config) {
   var configObj = config.configObj;
-  var experimentKey = config.experimentKey;
-  var variationKey = config.variationKey;
+  var decisionObj = config.decisionObj;
   var userId = config.userId;
+  var flagKey = config.flagKey;
   var userAttributes = config.userAttributes;
   var clientEngine = config.clientEngine;
   var clientVersion = config.clientVersion;
+  var ruleType = decisionObj.decisionSource;
+  var experimentKey = decision.getExperimentKey(decisionObj);
+  var variationKey = decision.getVariationKey(decisionObj);
 
-  var variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
-  var experimentId = projectConfig.getExperimentId(configObj, experimentKey);
-  var layerId = projectConfig.getLayerId(configObj, experimentId);
+  let experimentId = null;
+  let variationId = null;
 
+  if (experimentKey !== '' && variationKey !== '') {
+    variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
+  }
+  if (experimentKey !== '') {
+    experimentId = projectConfig.getExperimentId(configObj, experimentKey);
+  }
+  let layerId = null;
+  if (experimentId !== null) {
+    layerId = projectConfig.getLayerId(configObj, experimentId);
+  }
   return {
     type: 'impression',
     timestamp: fns.currentTimestamp(),
@@ -80,6 +91,10 @@ export var buildImpressionEvent = function(config) {
       id: variationId,
       key: variationKey,
     },
+
+    ruleKey: experimentKey,
+    flagKey: flagKey,
+    ruleType: ruleType,
   };
 };
 

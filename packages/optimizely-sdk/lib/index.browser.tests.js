@@ -16,7 +16,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as logging from '@optimizely/js-sdk-logging';
-import * as eventProcessor from '@optimizely/js-sdk-event-processor';
+import eventProcessor from './core/event_processor';
 
 import Optimizely from './optimizely';
 import testData from './tests/test_data';
@@ -391,11 +391,11 @@ describe('javascript-sdk', function() {
       describe('event processor configuration', function() {
         var eventProcessorSpy;
         beforeEach(function() {
-          eventProcessorSpy = sinon.spy(eventProcessor, 'LogTierV1EventProcessor');
+          eventProcessorSpy = sinon.spy(eventProcessor, 'createEventProcessor');
         });
 
         afterEach(function() {
-          eventProcessor.LogTierV1EventProcessor.restore();
+          eventProcessor.createEventProcessor.restore();
         });
 
         it('should use default event flush interval when none is provided', function() {

@@ -16,7 +16,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import { sprintf } from '@optimizely/js-sdk-utils';
-import * as eventProcessor from '@optimizely/js-sdk-event-processor';
+import eventProcessor from '../core/event_processor';
 import * as logging from '@optimizely/js-sdk-logging';
 
 import Optimizely from './';
@@ -330,6 +330,12 @@ describe('lib/optimizely', function() {
                         campaign_id: '4',
                         experiment_id: '111127',
                         variation_id: '111129',
+                        metadata: {
+                          flag_key: '',
+                          rule_key: 'testExperiment',
+                          rule_type: 'experiment',
+                          variation_key: 'variation',
+                        },
                       },
                     ],
                     events: [
@@ -383,6 +389,13 @@ describe('lib/optimizely', function() {
                         campaign_id: '5',
                         experiment_id: '122227',
                         variation_id: '122229',
+                        metadata: {
+                          flag_key: '',
+                          rule_key: 'testExperimentWithAudiences',
+                          rule_type: 'experiment',
+                          variation_key: 'variationWithAudience',
+                        },
+
                       },
                     ],
                     events: [
@@ -441,6 +454,12 @@ describe('lib/optimizely', function() {
                         campaign_id: '5',
                         experiment_id: '122227',
                         variation_id: '122229',
+                        metadata: {
+                          flag_key: '',
+                          rule_key: 'testExperimentWithAudiences',
+                          rule_type: 'experiment',
+                          variation_key: 'variationWithAudience',
+                        },
                       },
                     ],
                     events: [
@@ -504,6 +523,12 @@ describe('lib/optimizely', function() {
                         campaign_id: '5',
                         experiment_id: '122227',
                         variation_id: '122229',
+                        metadata: {
+                          flag_key: '',
+                          rule_key: 'testExperimentWithAudiences',
+                          rule_type: 'experiment',
+                          variation_key: 'variationWithAudience',
+                        },
                       },
                     ],
                     events: [
@@ -596,6 +621,12 @@ describe('lib/optimizely', function() {
                         campaign_id: '2',
                         experiment_id: '443',
                         variation_id: '662',
+                        metadata: {
+                          flag_key: '',
+                          rule_key: 'groupExperiment2',
+                          rule_type: 'experiment',
+                          variation_key: 'var2exp2',
+                        },
                       },
                     ],
                     events: [
@@ -647,6 +678,12 @@ describe('lib/optimizely', function() {
                         campaign_id: '1',
                         experiment_id: '442',
                         variation_id: '552',
+                        metadata: {
+                          flag_key: '',
+                          rule_key: 'groupExperiment1',
+                          rule_type: 'experiment',
+                          variation_key: 'var2exp1',
+                        },
                       },
                     ],
                     events: [
@@ -2298,6 +2335,12 @@ describe('lib/optimizely', function() {
                         campaign_id: '4',
                         experiment_id: '111127',
                         variation_id: '111129',
+                        metadata: {
+                          flag_key: '',
+                          rule_key: "testExperiment",
+                          rule_type: "experiment",
+                          variation_key: "variation",
+                        },
                       },
                     ],
                     events: [
@@ -2353,6 +2396,12 @@ describe('lib/optimizely', function() {
                         campaign_id: '4',
                         experiment_id: '111127',
                         variation_id: '111129',
+                        metadata: {
+                          flag_key: '',
+                          rule_key: "testExperiment",
+                          rule_type: "experiment",
+                          variation_key: "variation",
+                        },
                       },
                     ],
                     events: [
@@ -4413,6 +4462,12 @@ describe('lib/optimizely', function() {
                             campaign_id: '594093',
                             experiment_id: '594098',
                             variation_id: '594096',
+                            metadata: {
+                              flag_key: 'test_feature_for_experiment',
+                              rule_key: 'testing_my_feature',
+                              rule_type: 'feature-test',
+                              variation_key: 'variation',
+                            },
                           },
                         ],
                         events: [
@@ -4626,6 +4681,12 @@ describe('lib/optimizely', function() {
                             campaign_id: '599023',
                             experiment_id: '599028',
                             variation_id: '599027',
+                            metadata: {
+                              flag_key: 'shared_feature',
+                              rule_key: 'test_shared_feature',
+                              rule_type: 'feature-test',
+                              variation_key: 'control',
+                            },
                           },
                         ],
                         events: [
@@ -4758,7 +4819,10 @@ describe('lib/optimizely', function() {
           });
         });
 
-        it('returns false and does not dispatch an event', function() {
+        it('returns false and does not dispatch an event when sendFlagDecisions is not defined', function() {
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.sendFlagDecisions = undefined;
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
           var result = optlyInstance.isFeatureEnabled('test_feature', 'user1');
           assert.strictEqual(result, false);
           sinon.assert.notCalled(eventDispatcher.dispatchEvent);
@@ -4767,6 +4831,82 @@ describe('lib/optimizely', function() {
             LOG_LEVEL.INFO,
             'OPTIMIZELY: Feature test_feature is not enabled for user user1.'
           );
+        });
+
+        it('returns false and does not dispatch an event when sendFlagDecisions is set to false', function() {
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.sendFlagDecisions = false;
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var result = optlyInstance.isFeatureEnabled('test_feature', 'user1');
+          assert.strictEqual(result, false);
+          sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+          sinon.assert.calledWith(
+            createdLogger.log,
+            LOG_LEVEL.INFO,
+            'OPTIMIZELY: Feature test_feature is not enabled for user user1.'
+          );
+        });
+
+        it('returns false and dispatch an event when sendFlagDecisions is set to true', function() {
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.sendFlagDecisions = true;
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var result = optlyInstance.isFeatureEnabled('test_feature', 'user1');
+          assert.strictEqual(result, false);
+          sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
+          var expectedImpressionEvent = {
+            httpVerb: 'POST',
+            url: 'https://logx.optimizely.com/v1/events',
+            params: {
+              account_id: '572018',
+              project_id: '594001',
+              visitors: [
+                {
+                  snapshots: [
+                    {
+                      decisions: [
+                        {
+                          campaign_id: null,
+                          experiment_id: null,
+                          variation_id: null,
+                          metadata: {
+                            flag_key: 'test_feature',
+                            rule_key: '',
+                            rule_type: 'rollout',
+                            variation_key: '',
+                          },
+                        },
+                      ],
+                      events: [
+                        {
+                          entity_id: null,
+                          timestamp: 1509489766569,
+                          key: 'campaign_activated',
+                          uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        },
+                      ],
+                    },
+                  ],
+                  visitor_id: 'user1',
+                  attributes: [
+                    {
+                      entity_id: '$opt_bot_filtering',
+                      key: '$opt_bot_filtering',
+                      type: 'custom',
+                      value: true,
+                    },
+                  ],
+                },
+              ],
+              revision: '35',
+              client_name: 'node-sdk',
+              client_version: enums.NODE_CLIENT_VERSION,
+              anonymize_ip: true,
+              enrich_decisions: true,
+            },
+          };
+          var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
+          assert.deepEqual(callArgs[0], expectedImpressionEvent);
         });
       });
     });
@@ -7359,6 +7499,12 @@ describe('lib/optimizely', function() {
                         campaign_id: '4',
                         experiment_id: '111127',
                         variation_id: '111129',
+                        metadata: {
+                          flag_key: '',
+                          rule_key: 'testExperiment',
+                          rule_type: 'experiment',
+                          variation_key: 'variation',
+                        },
                       },
                     ],
                     events: [
@@ -7447,6 +7593,12 @@ describe('lib/optimizely', function() {
                         campaign_id: '4',
                         experiment_id: '111127',
                         variation_id: '111129',
+                        metadata: {
+                          flag_key: '',
+                          rule_key: 'testExperiment',
+                          rule_type: 'experiment',
+                          variation_key: 'variation',
+                        },
                       },
                     ],
                     events: [
@@ -7518,6 +7670,12 @@ describe('lib/optimizely', function() {
                         campaign_id: '4',
                         experiment_id: '111127',
                         variation_id: '111129',
+                        metadata: {
+                          flag_key: '',
+                          rule_key: 'testExperiment',
+                          rule_type: 'experiment',
+                          variation_key: 'variation',
+                        },
                       },
                     ],
                     events: [
@@ -7572,11 +7730,11 @@ describe('lib/optimizely', function() {
           start: sinon.stub(),
           stop: sinon.stub(),
         };
-        sinon.stub(eventProcessor, 'LogTierV1EventProcessor').returns(mockEventProcessor);
+        sinon.stub(eventProcessor, 'createEventProcessor').returns(mockEventProcessor);
       });
 
       afterEach(function() {
-        eventProcessor.LogTierV1EventProcessor.restore();
+        eventProcessor.createEventProcessor.restore();
       });
 
       describe('when the event processor stop method returns a promise that fulfills', function() {
@@ -7655,13 +7813,13 @@ describe('lib/optimizely', function() {
     beforeEach(function() {
       sinon.stub(errorHandler, 'handleError');
       sinon.stub(createdLogger, 'log');
-      sinon.spy(eventProcessor, 'LogTierV1EventProcessor');
+      sinon.spy(eventProcessor, 'createEventProcessor');
     });
 
     afterEach(function() {
       errorHandler.handleError.restore();
       createdLogger.log.restore();
-      eventProcessor.LogTierV1EventProcessor.restore();
+      eventProcessor.createEventProcessor.restore();
     });
 
     it('should instantiate the eventProcessor with the provided event flush interval and event batch size', function() {
@@ -7678,7 +7836,7 @@ describe('lib/optimizely', function() {
       });
 
       sinon.assert.calledWithExactly(
-        eventProcessor.LogTierV1EventProcessor,
+        eventProcessor.createEventProcessor,
         sinon.match({
           dispatcher: eventDispatcher,
           flushInterval: 20000,

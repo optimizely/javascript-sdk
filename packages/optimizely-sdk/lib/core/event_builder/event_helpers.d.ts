@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 import { ProjectConfig } from '../project_config';
+import { DecisionObj } from '../decision_service';
 import { EventTags, UserAttributes } from '../../shared_types';
 
 interface ImpressionConfig {
-  experimentKey: string;
-  variationKey: string;
+  decisionObj: DecisionObj;
   userId: string;
+  flagKey: string;
   userAttributes?: UserAttributes;
   clientEngine: string;
   clientVersion: string;
@@ -60,6 +61,10 @@ interface ImpressionEvent {
       id: string;
       key: string;
   } | null;
+
+  ruleKey: string,
+  flagKey: string,
+  ruleType: string,
 }
 
 interface ConversionConfig {

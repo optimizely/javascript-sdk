@@ -39,6 +39,7 @@ function getCommonEventParams(options) {
   var configObj = options.configObj;
   var anonymize_ip = configObj.anonymizeIP;
   var botFiltering = configObj.botFiltering;
+
   if (anonymize_ip === null || anonymize_ip === undefined) {
     anonymize_ip = false;
   }
@@ -92,26 +93,46 @@ function getCommonEventParams(options) {
  * @param  {Object} configObj    Object representing project configuration
  * @param  {string} experimentId ID of experiment for which impression needs to be recorded
  * @param  {string} variationId  ID for variation which would be presented to user
+ * @param  {string} ruleKey      Key of experiment for which impression needs to be recorded
+ * @param  {string} ruleType     Type for the decision source
+ * @param  {string} flagKey      Key for a feature flag
  * @return {Object}              Impression event params
  */
-function getImpressionEventParams(configObj, experimentId, variationId) {
+function getImpressionEventParams(configObj, experimentId, variationId, ruleKey, ruleType, flagKey) {
+  let campaignId = null;
+  if (experimentId !== null) {
+    campaignId = projectConfig.getLayerId(configObj, experimentId);
+  }
+
+  let variationKey = projectConfig.getVariationKeyFromId(configObj, variationId);
+  if (variationKey === null) {
+    variationKey = '';
+  }
+
   var impressionEventParams = {
     decisions: [
       {
-        campaign_id: projectConfig.getLayerId(configObj, experimentId),
+        campaign_id: campaignId,
         experiment_id: experimentId,
         variation_id: variationId,
+        metadata: {
+          flag_key: flagKey,
+          rule_key: ruleKey,
+          rule_type: ruleType,
+          variation_key: variationKey,
+        }
       },
     ],
     events: [
       {
-        entity_id: projectConfig.getLayerId(configObj, experimentId),
+        entity_id: campaignId,
         timestamp: fns.currentTimestamp(),
         key: ACTIVATE_EVENT_KEY,
         uuid: fns.uuid(),
       },
     ],
   };
+
   return impressionEventParams;
 }
 
@@ -163,6 +184,9 @@ function getVisitorSnapshot(configObj, eventKey, eventTags, logger) {
  * @param  {string} options.experimentId  Experiment for which impression needs to be recorded
  * @param  {string} options.userId        ID for user
  * @param  {string} options.variationId   ID for variation which would be presented to user
+ * @param  {string} options.ruleKey       Key of an experiment for which impression needs to be recorded
+ * @param  {string} options.ruleType      Type for the decision source
+ * @param  {string} options.flagKey       Key for a feature flag
  * @return {Object}                       Params to be used in impression event logging endpoint call
  */
 export var getImpressionEvent = function(options) {
@@ -173,7 +197,14 @@ export var getImpressionEvent = function(options) {
   var commonParams = getCommonEventParams(options);
   impressionEvent.url = ENDPOINT;
 
-  var impressionEventParams = getImpressionEventParams(options.configObj, options.experimentId, options.variationId);
+  var impressionEventParams = getImpressionEventParams(
+    options.configObj,
+    options.experimentId,
+    options.variationId,
+    options.ruleKey,
+    options.ruleType,
+    options.flagKey
+  );
   // combine Event params into visitor obj
   commonParams.visitors[0].snapshots.push(impressionEventParams);
 

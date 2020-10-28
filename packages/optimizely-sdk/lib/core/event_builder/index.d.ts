@@ -22,9 +22,12 @@ interface ImpressionOptions {
   clientEngine: string;
   clientVersion: string;
   configObj: ProjectConfig;
-  experimentId: string;
+  experimentId: string | null;
+  ruleKey: string;
+  flagKey: string;
+  ruleType: string;
   eventKey?: string;
-  variationId: string;
+  variationId: string | null;
   logger?: LogHandler;
   userId: string;
 }
