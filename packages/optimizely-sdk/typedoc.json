@@ -11,24 +11,5 @@
   "readme": "README.md",
   "name": "Optimizely JavaScript SDK",
   "includeVersion": true,
-  "includeDeclarations": true,
-  "theme": "./node_modules/typedoc-neo-theme/bin/default",
-  "links": [
-    {
-    "label": "GitHub",
-    "url": "https://github.com/optimizely/javascript-sdk"
-    },
-    {
-    "label": "Contributing",
-    "url": "https://github.com/optimizely/javascript-sdk/blob/master/CONTRIBUTING.md"
-    }
-  ],
-  "outline": [{
-    "API Reference": {
-      "Optimizely's APIs": "classes/optimizely"
-    },
-    "Configuration Data": {
-      "ProjectConfigManager": "interfaces/projectconfigmanager"
-    }
-  }]
+  "includeDeclarations": true
 }

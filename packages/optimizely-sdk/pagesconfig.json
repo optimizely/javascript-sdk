@@ -1,0 +1,31 @@
+{
+  "groups": [
+    {
+      "title": "API Reference",
+      "pages": [
+        {
+          "title": "Optimizely APIs",
+          "source": "./docs/src/classes/optimizely.md"
+        }
+      ]
+    },
+    {
+      "title": "Configuration Data",
+      "pages": [
+        {
+          "title": "ProjectConfigManager",
+          "source": "./docs/src/interfaces/projectconfigmanager.md"
+        }
+      ]
+    },
+    {
+      "title": "Help",
+      "pages": [
+        {
+          "title": "Contributing",
+          "source": "../../CONTRIBUTING.md"
+        }
+      ]
+    }
+  ]
+}
