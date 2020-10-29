@@ -1,5 +1,8 @@
 {
-  "inputFiles": ["./lib/optimizely/index.ts"],
+  "inputFiles": [
+    "./lib/optimizely/index.ts",
+    "./lib/core/project_config/project_config_manager.d.ts"
+  ],
   "out": "./docs/out",
   "exclude": "**/*+(.spec|.d|.tests).(ts/js)",
   "excludePrivate": true,
@@ -8,14 +11,16 @@
   "readme": "README.md",
   "name": "Optimizely JavaScript SDK",
   "includeVersion": true,
+  "includeDeclarations": true,
   "theme": "./node_modules/typedoc-neo-theme/bin/default",
   "links": [{
     "label": "GitHub",
     "url": "https://github.com/optimizely/javascript-sdk"
   }],
-  "outline": [{
-    "API Reference": {
-      "Optimizely's APIs": "classes/optimizely"
+  "outline": [
+    {
+    "API Reference": { "Optimizely's APIs": "classes/optimizely" },
+    "Configuration Data": { "ProjectConfigManager": "interfaces/projectconfigmanager" }
     }
-  }]
+  ]
 }

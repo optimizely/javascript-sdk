@@ -38,6 +38,9 @@ interface ProjectConfigManagerConfig {
 */
 export function createProjectConfigManager(config: ProjectConfigManagerConfig): ProjectConfigManager;
 
+/**
+ * @class ProjectConfigManager
+ */
 export interface ProjectConfigManager {
 
   /**
