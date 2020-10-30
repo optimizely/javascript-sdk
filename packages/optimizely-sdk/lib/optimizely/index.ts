@@ -62,26 +62,40 @@ export type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_
 export type StringInputs = Partial<Record<InputKey, unknown>>;
 
 /**
- * @private
- * options required to create optimizely object
+ * Options required to create optimizely object
  */
 export interface OptimizelyOptions {
+  /** A map of condition evaluators provided by the consumer */
   UNSTABLE_conditionEvaluators?: unknown;
+  /** The client used */
   clientEngine: string;
+   /** Version of the client */
   clientVersion?: string;
+  /** datafile */
   datafile?: string;
+  /** datafileOptions */
   datafileOptions?: DatafileOptions;
+  /** errorHandler */
   errorHandler: ErrorHandler;
+  /** eventBatchSize number */
   eventBatchSize?: number;
+  /** eventDispatcher */
   eventDispatcher: EventDispatcher;
+  /** eventFlushInterval number */
   eventFlushInterval?: number;
+  /** eventMaxQueueSize number */
   eventMaxQueueSize?: number;
+  /** isValidInstance */
   isValidInstance: boolean;
+  /** jsonSchemaValidator */
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
   jsonSchemaValidator?: object;
+  /** logger */
   logger: LogHandler;
+  /** sdkKey */
   sdkKey?: string;
+  /** userProfileService */
   userProfileService?: UserProfileService | null;
 }
 
@@ -117,6 +131,9 @@ export default class Optimizely {
   private decisionService: DecisionService;
   private eventProcessor: EventProcessor;
 
+  /**
+   * Constructor
+   */
   constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;
     if (enums.VALID_CLIENT_ENGINES.indexOf(clientEngine) === -1) {
