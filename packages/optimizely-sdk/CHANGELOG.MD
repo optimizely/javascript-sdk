@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [4.4.0] - November 2, 2020
+
+### New Features
+
 - Added support sending impression events every time a decision is made ([#599](https://github.com/optimizely/javascript-sdk/pull/599))
 
 ## [4.3.4] - October 8, 2020
