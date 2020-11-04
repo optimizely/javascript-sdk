@@ -143,7 +143,7 @@ export default class Optimizely {
 
     const projectConfigManagerReadyPromise = this.projectConfigManager.onReady();
 
-    let userProfileService = null;
+    let userProfileService: UserProfileService | null = null;
     if (config.userProfileService) {
       try {
         if (userProfileServiceValidator.validate(config.userProfileService)) {
@@ -328,8 +328,8 @@ export default class Optimizely {
     const experimentKey = decision.getExperimentKey(decisionObj);
     const variationKey = decision.getVariationKey(decisionObj);
 
-    let experimentId = null;
-    let variationId = null;
+    let experimentId: string | null = null;
+    let variationId: string | null = null;
 
     if (experimentKey !=='' && variationKey !== '') {
       variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
