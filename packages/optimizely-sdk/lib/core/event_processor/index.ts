@@ -22,6 +22,6 @@ export function createEventProcessor(
   return new LogTierV1EventProcessor(...args);
 }
 
-export { EventProcessor, LocalStoragePendingEventsDispatcher } from '@optimizely/js-sdk-event-processor';
+export type { EventProcessor, LocalStoragePendingEventsDispatcher } from '@optimizely/js-sdk-event-processor';
 
 export default { createEventProcessor, LocalStoragePendingEventsDispatcher };
