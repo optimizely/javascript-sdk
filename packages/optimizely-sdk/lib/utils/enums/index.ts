@@ -189,6 +189,7 @@ export const DECISION_NOTIFICATION_TYPES = {
   FEATURE_TEST: 'feature-test',
   FEATURE_VARIABLE: 'feature-variable',
   ALL_FEATURE_VARIABLES: 'all-feature-variables',
+  FLAG: 'flag',
 };
 
 /*
@@ -229,8 +230,8 @@ export const DATAFILE_VERSIONS = {
 };
 
 /*
-* Pre-Release and Build symbols
-*/
+ * Pre-Release and Build symbols
+ */
 export const enum VERSION_TYPE {
   PRE_RELEASE_VERSION_DELIMITER = '-',
   BUILD_VERSION_DELIMITER = '+'

@@ -30,7 +30,6 @@ import Optimizely from '../../optimizely';
 import projectConfig from '../project_config';
 import AudienceEvaluator from '../audience_evaluator';
 import errorHandler from '../../plugins/error_handler';
-import eventBuilder from '../../core/event_builder/index.js';
 import eventDispatcher from '../../plugins/event_dispatcher/index.node';
 import * as jsonSchemaValidator from '../../utils/json_schema_validator';
 import {
@@ -951,7 +950,6 @@ describe('lib/core/decision_service', function() {
         jsonSchemaValidator: jsonSchemaValidator,
         isValidInstance: true,
         logger: createdLogger,
-        eventBuilder: eventBuilder,
         eventDispatcher: eventDispatcher,
         errorHandler: errorHandler,
       });
