@@ -11,8 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Bug fixes
 
-- Allow using `--isolatedModules` flag in TSConfig file by fixing exports in event processor ([#610](https://github.com/optimizely/javascript-sdk/pull/610))
-- Fix strictNullChecks type errors ([#611](https://github.com/optimizely/javascript-sdk/pull/611))
+- Allowed using `--isolatedModules` flag in TSConfig file by fixing exports in event processor ([#610](https://github.com/optimizely/javascript-sdk/pull/610))
+- Fixed strictNullChecks type errors ([#611](https://github.com/optimizely/javascript-sdk/pull/611))
 
 ## [4.4.0] - November 2, 2020
 
