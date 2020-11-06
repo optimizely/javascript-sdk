@@ -27,6 +27,8 @@ import {
   FeatureVariable,
   OptimizelyOptions
 } from '../shared_types';
+// temporary placeholders
+import { OptimizelyUserContext, OptimizelyDecideOption, OptimizelyDecision } from '../optimizely_user_context';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
@@ -1414,5 +1416,19 @@ export default class Optimizely {
     });
 
     return Promise.race([this.readyPromise, timeoutPromise]);
+  }
+
+  //============ decide ============//
+
+  createUserContext(userId: string, attributes?: UserAttributes): OptimizelyUserContext {
+    return new OptimizelyUserContext(this, userId, attributes);
+  }
+
+  decide(
+    user: OptimizelyUserContext,
+    key: string,
+    options?: OptimizelyDecideOption
+  ): OptimizelyDecision {
+    return {};
   }
 }

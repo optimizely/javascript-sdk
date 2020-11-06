@@ -15,6 +15,10 @@
  ***************************************************************************/
 import Optimizely from '../optimizely';
 import { UserAttributes } from '../shared_types';
+// import optimizely_config from '../core/optimizely_config';
+
+export interface OptimizelyDecideOption {};
+export interface OptimizelyDecision {};
 
 
 export default class OptimizelyUserContext {
@@ -38,16 +42,23 @@ export default class OptimizelyUserContext {
 
   /**
    * Sets an attribute for a given key.
-   * @param  {string}   key   An attribute key
-   * @param  {any}      value An attribute value
+   * @param     {string}                     key         An attribute key
+   * @param     {any}                        value       An attribute value
    *
    */
   setAttribute(key: string, value: any): void {
     this.attributes[key] = value;
   }
 
-  decide() {
-
+  /**
+   * Returns a decision result for a given flag key and a user context, which contains all data required to deliver the flag.
+   * If the SDK finds an error, it will return a decision with null for variationKey. The decision will include an error message in reasons.
+   * @param     {string}                     key         A flag key for which a decision will be made.
+   * @param     {OptimizelyDecideOption}     options     A list of options for decision-making.
+   * @return    {OptimizelyDecision}                     A decision result.
+   */
+  decide(key: string, options?: OptimizelyDecideOption): OptimizelyDecision {
+    return this.optimizely.decide(this, key, options);
   }
 
   decideForKeys() {
