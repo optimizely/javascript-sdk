@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import Optimizely from '../optimizely';
-import { UserAttributes } from '../shared_types';
+import Optimizely from '../../lib/optimizely';
+import OptimizelyDecision from '../optimizely_decision';
+import { UserAttributes } from '../../lib/shared_types';
 // import optimizely_config from '../core/optimizely_config';
 
 export interface OptimizelyDecideOption {};
-export interface OptimizelyDecision {};
 
 
-export default class OptimizelyUserContext {
+export class OptimizelyUserContext {
   private optimizely: Optimizely;
   private userId: string;
   private attributes: UserAttributes;
@@ -44,10 +44,17 @@ export default class OptimizelyUserContext {
    * Sets an attribute for a given key.
    * @param     {string}                     key         An attribute key
    * @param     {any}                        value       An attribute value
-   *
    */
   setAttribute(key: string, value: any): void {
     this.attributes[key] = value;
+  }
+
+  getUserId(): string {
+    return this.userId;
+  }
+
+  getAttributes(): UserAttributes {
+    return this.attributes;
   }
 
   /**

@@ -28,7 +28,8 @@ import {
   OptimizelyOptions
 } from '../shared_types';
 // temporary placeholders
-import { OptimizelyUserContext, OptimizelyDecideOption, OptimizelyDecision } from '../optimizely_user_context';
+import OptimizelyDecision from '../optimizely_decision';
+import { OptimizelyUserContext, OptimizelyDecideOption } from '../optimizely_user_context';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
@@ -1420,8 +1421,37 @@ export default class Optimizely {
 
   //============ decide ============//
 
-  createUserContext(userId: string, attributes?: UserAttributes): OptimizelyUserContext {
-    return new OptimizelyUserContext(this, userId, attributes);
+  /**
+   * Creates a context of the user for which decision APIs will be called.
+   *
+   * A user context will be created successfully even when the SDK is not fully configured yet.
+   *
+   * @param  {string}          userId      The user ID to be used for bucketing.
+   * @param  {UserAttributes}  attributes  Optional user attributes.
+   * @return {OptimizelyUserContext|null}  An OptimizelyUserContext associated with this OptimizelyClient or
+   *                                       null if client instance or provided inputs are invalid
+   */
+  createUserContext(userId: string, attributes?: UserAttributes): OptimizelyUserContext | null {
+    try {
+      if (!this.isValidInstance()) {
+        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'createUserContext'));
+        return null;
+      };
+
+      if (!this.validateInputs({ user_id: userId }, attributes)) {
+        return null;
+      };
+
+      return new OptimizelyUserContext({
+        optimizely: this,
+        userId,
+        attributes
+      });
+    } catch (e) {
+      this.logger.log(LOG_LEVEL.ERROR, e.message);
+      this.errorHandler.handleError(e);
+      return null;
+    }
   }
 
   decide(
@@ -1429,6 +1459,22 @@ export default class Optimizely {
     key: string,
     options?: OptimizelyDecideOption
   ): OptimizelyDecision {
-    return {};
+
+    const projectConfig = this.projectConfigManager.getConfig();
+    if (projectConfig === null) {
+      return OptimizelyDecision.newErrorDecision(key, user, "no config message");
+    }
+
+    const feature = projectConfig.featureKeyMap[key];
+    if (!feature) {
+      return OptimizelyDecision.newErrorDecision(key, user, "no feature message");
+    }
+
+    const userId = user.getUserId();
+    const attributes = user.getAttributes();
+    // if (Object.keys(attributes).length === 0) {
+    // }
+    const decisionEventDispatched = false;
+
   }
 }
