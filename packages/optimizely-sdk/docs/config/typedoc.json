@@ -1,7 +1,7 @@
 {
   "inputFiles": [
     "./lib/optimizely/index.ts",
-    "./lib/core/project_config/project_config_manager.d.ts"
+    "./lib/core/notification_center/index.d.ts"
   ],
   "out": "./docs/out",
   "exclude": "**/*+(.spec|.d|.tests).(ts/js)",
@@ -20,7 +20,7 @@
   "outline": [
     {
     "API Reference": { "Optimizely's APIs": "classes/optimizely" },
-    "Configuration Data": { "ProjectConfigManager": "interfaces/projectconfigmanager" }
+    "Configuration Data": { "Notification Center": "interfaces/notificationcenter" }
     }
   ]
 }
