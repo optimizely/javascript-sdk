@@ -52,7 +52,7 @@ function isSafeInteger(number: unknown): boolean {
 function keyBy<K>(arr: K[], key: string): { [key: string]: K } {
   if (!arr) return {};
   return keyByUtil(arr, function (item) {
-    return item[key];
+    return item[key as keyof unknown];
   });
 }
 

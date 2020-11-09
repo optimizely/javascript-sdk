@@ -30,7 +30,7 @@ const MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
 export function validate(attributes: unknown): boolean {
   if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
     Object.keys(attributes).forEach(function(key) {
-      if (typeof attributes[key] === 'undefined') {
+      if (typeof attributes[key as keyof unknown] === 'undefined') {
         throw new Error(sprintf(ERROR_MESSAGES.UNDEFINED_ATTRIBUTE, MODULE_NAME, key));
       }
     });

@@ -34,13 +34,16 @@ const SUPPORTED_VERSIONS = [DATAFILE_VERSIONS.V2, DATAFILE_VERSIONS.V3, DATAFILE
  */
 export const validate = function(config: unknown): boolean {
   if (typeof config === 'object' && config !== null) {
-    if (config['errorHandler'] && typeof config['errorHandler'].handleError !== 'function') {
+    const errorHandler = config['errorHandler' as keyof unknown];
+    const eventDispatcher = config['eventDispatcher' as keyof unknown];
+    const logger = config['logger' as keyof unknown];
+    if (errorHandler && typeof errorHandler['handleError'] !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_ERROR_HANDLER, MODULE_NAME));
     }
-    if (config['eventDispatcher'] && typeof config['eventDispatcher'].dispatchEvent !== 'function') {
+    if (eventDispatcher && typeof eventDispatcher['dispatchEvent'] !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_DISPATCHER, MODULE_NAME));
     }
-    if (config['logger'] && typeof config['logger'].log !== 'function') {
+    if (logger && typeof logger['log'] !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_LOGGER, MODULE_NAME));
     }
     return true;
@@ -71,8 +74,8 @@ export const validateDatafile = function(datafile: unknown): any {
     }
   }
   if (typeof datafile === 'object' && !Array.isArray(datafile) && datafile !== null) {
-    if (SUPPORTED_VERSIONS.indexOf(datafile['version']) === -1) {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, MODULE_NAME, datafile['version']));
+    if (SUPPORTED_VERSIONS.indexOf(datafile['version' as keyof unknown]) === -1) {
+      throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, MODULE_NAME, datafile['version' as keyof unknown]));
     }
   }
 

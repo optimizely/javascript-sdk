@@ -603,7 +603,7 @@ export default class Optimizely {
         delete stringInputs['user_id'];
       }
       Object.keys(stringInputs).forEach(key => {
-        if (!stringValidator.validate(stringInputs[key])) {
+        if (!stringValidator.validate(stringInputs[key as keyof unknown])) {
           throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, key));
         }
       })
@@ -1196,7 +1196,7 @@ export default class Optimizely {
 
       const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
       const featureEnabled = decision.getFeatureEnabledFromVariation(decisionObj);
-      const allVariables = {};
+      const allVariables: { [variableKey: string]: unknown } = {};
 
       featureFlag.variables.forEach((variable: FeatureVariable) => {
         allVariables[variable.key] = this.getFeatureVariableValueFromVariation(featureKey, featureEnabled, decisionObj.variation, variable, userId);

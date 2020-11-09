@@ -33,9 +33,9 @@ const MODULE_NAME = 'USER_PROFILE_SERVICE_VALIDATOR';
 
 export function validate(userProfileServiceInstance: unknown): boolean {
   if (typeof userProfileServiceInstance === 'object' && userProfileServiceInstance !== null) {
-    if (typeof userProfileServiceInstance['lookup'] !== 'function') {
+    if (typeof userProfileServiceInstance['lookup' as keyof unknown] !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'lookup'"));
-    } else if (typeof userProfileServiceInstance['save'] !== 'function') {
+    } else if (typeof userProfileServiceInstance['save' as keyof unknown] !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_PROFILE_SERVICE, MODULE_NAME, "Missing function 'save'"));
     }
     return true;
