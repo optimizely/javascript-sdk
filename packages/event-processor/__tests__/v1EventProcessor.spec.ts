@@ -63,6 +63,7 @@ function createImpressionEvent() {
     ruleKey: 'expKey',
     flagKey: 'flagKey1',
     ruleType: 'experiment',
+    enabled: true,
   }
 }
 

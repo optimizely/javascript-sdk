@@ -62,6 +62,7 @@ describe('buildEventV1', () => {
         ruleKey: 'expKey',
         flagKey: 'flagKey1',
         ruleType: 'experiment',
+        enabled: true,
       }
 
       const result = buildImpressionEventV1(impressionEvent)
@@ -88,6 +89,7 @@ describe('buildEventV1', () => {
                       rule_key: 'expKey',
                       rule_type: 'experiment',
                       variation_key: 'varKey',
+                      enabled: true,
                     },
                   },
                 ],
@@ -159,6 +161,7 @@ describe('buildEventV1', () => {
         ruleKey: '',
         flagKey: 'flagKey1',
         ruleType: 'rollout',
+        enabled: true,
       }
 
       const result = buildImpressionEventV1(impressionEvent)
@@ -185,6 +188,7 @@ describe('buildEventV1', () => {
                       rule_key: '',
                       rule_type: 'rollout',
                       variation_key: '',
+                      enabled: true,
                     },
                   },
                 ],
@@ -549,6 +553,7 @@ describe('buildEventV1', () => {
         ruleKey: 'expKey',
         flagKey: 'flagKey1',
         ruleType: 'experiment',
+        enabled: true,
       }
 
       const result = makeBatchedEventV1([impressionEvent, conversionEvent])
@@ -576,6 +581,7 @@ describe('buildEventV1', () => {
                       rule_key: 'expKey',
                       rule_type: 'experiment',
                       variation_key: 'varKey',
+                      enabled: true,
                     },
                   },
                 ],
