@@ -61,6 +61,7 @@ export interface ImpressionEvent extends BaseEvent {
   ruleKey: string
   flagKey: string
   ruleType: string
+  enabled: boolean
 }
 
 export interface ConversionEvent extends BaseEvent {
