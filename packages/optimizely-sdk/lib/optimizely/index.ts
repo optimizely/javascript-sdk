@@ -251,9 +251,9 @@ export default class Optimizely {
           decisionObj,
           '',
           userId,
+          true,
           attributes
         );
-
         return variationKey;
       } catch (ex) {
         this.logger.log(LOG_LEVEL.ERROR, ex.message);
@@ -287,7 +287,8 @@ export default class Optimizely {
     decisionObj: DecisionObj,
     flagKey: string,
     userId: string,
-    attributes?: UserAttributes
+    enabled: boolean,
+    attributes?: UserAttributes,
   ): void {
     const configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
@@ -297,6 +298,7 @@ export default class Optimizely {
     const impressionEvent = buildImpressionEvent({
       decisionObj: decisionObj,
       flagKey: flagKey,
+      enabled: enabled,
       userId: userId,
       userAttributes: attributes,
       clientEngine: this.clientEngine,
@@ -305,7 +307,7 @@ export default class Optimizely {
     });
     // TODO is it okay to not pass a projectConfig as second argument
     this.eventProcessor.process(impressionEvent);
-    this.emitNotificationCenterActivate(decisionObj, flagKey, userId, attributes);
+    this.emitNotificationCenterActivate(decisionObj, flagKey, userId, enabled, attributes);
   }
 
   /**
@@ -319,6 +321,7 @@ export default class Optimizely {
     decisionObj: DecisionObj,
     flagKey: string,
     userId: string,
+    enabled: boolean,
     attributes?: UserAttributes
   ): void {
     const configObj = this.projectConfigManager.getConfig();
@@ -348,6 +351,7 @@ export default class Optimizely {
       flagKey: flagKey,
       ruleType: ruleType,
       userId: userId,
+      enabled: enabled,
       variationId: variationId,
       logger: this.logger,
     };
@@ -701,6 +705,7 @@ export default class Optimizely {
           decisionObj,
           feature.key,
           userId,
+          featureEnabled,
           attributes
         );
       }

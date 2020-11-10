@@ -28,6 +28,8 @@ var logger = getLogger('EVENT_BUILDER');
  * @param {Object} config
  * @param {Object} config.decisionObj
  * @param {String} config.userId
+ * @param {String} config.flagKey
+ * @param {boolean} config.enabled
  * @param {Object} config.userAttributes
  * @param {String} config.clientEngine
  * @param {String} config.clientVersion
@@ -38,6 +40,7 @@ export var buildImpressionEvent = function(config) {
   var decisionObj = config.decisionObj;
   var userId = config.userId;
   var flagKey = config.flagKey;
+  var enabled = config.enabled;
   var userAttributes = config.userAttributes;
   var clientEngine = config.clientEngine;
   var clientVersion = config.clientVersion;
@@ -95,6 +98,7 @@ export var buildImpressionEvent = function(config) {
     ruleKey: experimentKey,
     flagKey: flagKey,
     ruleType: ruleType,
+    enabled: enabled,
   };
 };
 

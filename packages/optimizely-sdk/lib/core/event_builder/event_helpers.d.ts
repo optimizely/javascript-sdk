@@ -21,6 +21,7 @@ interface ImpressionConfig {
   decisionObj: DecisionObj;
   userId: string;
   flagKey: string;
+  enabled: boolean;
   userAttributes?: UserAttributes;
   clientEngine: string;
   clientVersion: string;
@@ -65,6 +66,7 @@ interface ImpressionEvent {
   ruleKey: string,
   flagKey: string,
   ruleType: string,
+  enabled: boolean,
 }
 
 interface ConversionConfig {

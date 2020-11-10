@@ -98,7 +98,7 @@ function getCommonEventParams(options) {
  * @param  {string} flagKey      Key for a feature flag
  * @return {Object}              Impression event params
  */
-function getImpressionEventParams(configObj, experimentId, variationId, ruleKey, ruleType, flagKey) {
+function getImpressionEventParams(configObj, experimentId, variationId, ruleKey, ruleType, flagKey, enabled) {
   let campaignId = null;
   if (experimentId !== null) {
     campaignId = projectConfig.getLayerId(configObj, experimentId);
@@ -120,6 +120,7 @@ function getImpressionEventParams(configObj, experimentId, variationId, ruleKey,
           rule_key: ruleKey,
           rule_type: ruleType,
           variation_key: variationKey,
+          enabled: enabled,
         }
       },
     ],
@@ -187,6 +188,7 @@ function getVisitorSnapshot(configObj, eventKey, eventTags, logger) {
  * @param  {string} options.ruleKey       Key of an experiment for which impression needs to be recorded
  * @param  {string} options.ruleType      Type for the decision source
  * @param  {string} options.flagKey       Key for a feature flag
+ * @param  {string} options.enabled       Boolean enabled for a feature
  * @return {Object}                       Params to be used in impression event logging endpoint call
  */
 export var getImpressionEvent = function(options) {
@@ -203,7 +205,8 @@ export var getImpressionEvent = function(options) {
     options.variationId,
     options.ruleKey,
     options.ruleType,
-    options.flagKey
+    options.flagKey,
+    options.enabled,
   );
   // combine Event params into visitor obj
   commonParams.visitors[0].snapshots.push(impressionEventParams);
