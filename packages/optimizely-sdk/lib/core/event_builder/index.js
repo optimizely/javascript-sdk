@@ -90,13 +90,14 @@ function getCommonEventParams(options) {
 
 /**
  * Creates object of params specific to impression events
- * @param  {Object} configObj    Object representing project configuration
- * @param  {string} experimentId ID of experiment for which impression needs to be recorded
- * @param  {string} variationId  ID for variation which would be presented to user
- * @param  {string} ruleKey      Key of experiment for which impression needs to be recorded
- * @param  {string} ruleType     Type for the decision source
- * @param  {string} flagKey      Key for a feature flag
- * @return {Object}              Impression event params
+ * @param  {Object}  configObj    Object representing project configuration
+ * @param  {string}  experimentId ID of experiment for which impression needs to be recorded
+ * @param  {string}  variationId  ID for variation which would be presented to user
+ * @param  {string}  ruleKey      Key of experiment for which impression needs to be recorded
+ * @param  {string}  ruleType     Type for the decision source
+ * @param  {string}  flagKey      Key for a feature flag
+ * @param  {boolean} enabled      Boolean representing if feature is enabled
+ * @return {Object}               Impression event params
  */
 function getImpressionEventParams(configObj, experimentId, variationId, ruleKey, ruleType, flagKey, enabled) {
   let campaignId = null;
@@ -177,19 +178,19 @@ function getVisitorSnapshot(configObj, eventKey, eventTags, logger) {
 
 /**
  * Create impression event params to be sent to the logging endpoint
- * @param  {Object} options               Object containing values needed to build impression event
- * @param  {Object} options.attributes    Object representing user attributes and values which need to be recorded
- * @param  {string} options.clientEngine  The client we are using: node or javascript
- * @param  {string} options.clientVersion The version of the client
- * @param  {Object} options.configObj     Object representing project configuration, including datafile information and mappings for quick lookup
- * @param  {string} options.experimentId  Experiment for which impression needs to be recorded
- * @param  {string} options.userId        ID for user
- * @param  {string} options.variationId   ID for variation which would be presented to user
- * @param  {string} options.ruleKey       Key of an experiment for which impression needs to be recorded
- * @param  {string} options.ruleType      Type for the decision source
- * @param  {string} options.flagKey       Key for a feature flag
- * @param  {string} options.enabled       Boolean enabled for a feature
- * @return {Object}                       Params to be used in impression event logging endpoint call
+ * @param  {Object}  options               Object containing values needed to build impression event
+ * @param  {Object}  options.attributes    Object representing user attributes and values which need to be recorded
+ * @param  {string}  options.clientEngine  The client we are using: node or javascript
+ * @param  {string}  options.clientVersion The version of the client
+ * @param  {Object}  options.configObj     Object representing project configuration, including datafile information and mappings for quick lookup
+ * @param  {string}  options.experimentId  Experiment for which impression needs to be recorded
+ * @param  {string}  options.userId        ID for user
+ * @param  {string}  options.variationId   ID for variation which would be presented to user
+ * @param  {string}  options.ruleKey       Key of an experiment for which impression needs to be recorded
+ * @param  {string}  options.ruleType      Type for the decision source
+ * @param  {string}  options.flagKey       Key for a feature flag
+ * @param  {boolean} options.enabled       Boolean representing if feature is enabled
+ * @return {Object}                        Params to be used in impression event logging endpoint call
  */
 export var getImpressionEvent = function(options) {
   var impressionEvent = {

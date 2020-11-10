@@ -282,6 +282,7 @@ export default class Optimizely {
    * @param {string}         flagKey        Key for a feature flag
    * @param {string}         userId         ID of user to whom the variation was shown
    * @param {UserAttributes} attributes     Optional user attributes
+   * @param {boolean}        enabled        Boolean representing if feature is enabled
    */
   private sendImpressionEvent(
     decisionObj: DecisionObj,
@@ -315,6 +316,7 @@ export default class Optimizely {
    * @param  {DecisionObj}    decisionObj    Decision object
    * @param  {string}         flagKey        Key for a feature flag
    * @param  {string}         userId         ID of user to whom the variation was shown
+   * @param  {boolean}        enabled        Boolean representing if feature is enabled
    * @param  {UserAttributes} attributes     Optional user attributes
    */
   private emitNotificationCenterActivate(
