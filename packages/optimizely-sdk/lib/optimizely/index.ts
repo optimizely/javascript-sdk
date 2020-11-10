@@ -581,15 +581,14 @@ export default class Optimizely {
 
   /**
    * Validate string inputs, user attributes and event tags.
-   * @param  {unknown}  stringInputs   Map of string keys and associated values
-   * @param  {unknown}  userAttributes Optional parameter for user's attributes
-   * @param  {unknown}  eventTags      Optional parameter for event tags
-   * @return {boolean}                 True if inputs are valid
+   * @param  {StringInputs}  stringInputs   Map of string keys and associated values
+   * @param  {unknown}       userAttributes Optional parameter for user's attributes
+   * @param  {unknown}       eventTags      Optional parameter for event tags
+   * @return {boolean}                      True if inputs are valid
    *
    */
   private validateInputs(
-    // TODO: Make feature_key, user_id, variable_key, experiment_key camelCase
-    stringInputs: Partial<Record<'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 'event_key', unknown>>,
+    stringInputs: StringInputs,
     userAttributes?: unknown,
     eventTags?: unknown
   ): boolean {
@@ -603,7 +602,7 @@ export default class Optimizely {
         delete stringInputs['user_id'];
       }
       Object.keys(stringInputs).forEach(key => {
-        if (!stringValidator.validate(stringInputs[key as keyof unknown])) {
+        if (!stringValidator.validate(stringInputs[key as InputKey])) {
           throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, key));
         }
       })
