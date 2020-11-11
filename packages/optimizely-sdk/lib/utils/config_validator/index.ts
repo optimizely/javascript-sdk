@@ -34,16 +34,16 @@ const SUPPORTED_VERSIONS = [DATAFILE_VERSIONS.V2, DATAFILE_VERSIONS.V3, DATAFILE
  */
 export const validate = function(config: unknown): boolean {
   if (typeof config === 'object' && config !== null) {
-    const errorHandler = config['errorHandler' as keyof unknown];
-    const eventDispatcher = config['eventDispatcher' as keyof unknown];
-    const logger = config['logger' as keyof unknown];
-    if (errorHandler && typeof errorHandler['handleError'] !== 'function') {
+    const errorHandler = (config as { [key: string]: unknown })['errorHandler'];
+    const eventDispatcher = (config as { [key: string]: unknown })['eventDispatcher'];
+    const logger = (config as { [key: string]: unknown })['logger'];
+    if (errorHandler && typeof (errorHandler as { [key: string]: unknown })['handleError'] !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_ERROR_HANDLER, MODULE_NAME));
     }
-    if (eventDispatcher && typeof eventDispatcher['dispatchEvent'] !== 'function') {
+    if (eventDispatcher && typeof (eventDispatcher as { [key: string]: unknown })['dispatchEvent'] !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_DISPATCHER, MODULE_NAME));
     }
-    if (logger && typeof logger['log'] !== 'function') {
+    if (logger && typeof (logger as { [key: string]: unknown })['log'] !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_LOGGER, MODULE_NAME));
     }
     return true;
