@@ -63,12 +63,13 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       setLogLevel(config.logLevel);
     }
 
+    let isValidInstance;
     try {
       configValidator.validate(config);
-      config.isValidInstance = true;
+      isValidInstance = true;
     } catch (ex) {
       logger.error(ex);
-      config.isValidInstance = false;
+      isValidInstance = false;
     }
 
     let eventDispatcher;
@@ -103,14 +104,15 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
     }
 
-    const optimizelyOptions = {
+    let optimizelyOptions = {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       eventDispatcher: eventDispatcher,
       ...config,
       eventBatchSize: eventBatchSize,
       eventFlushInterval: eventFlushInterval,
       logger: logger,
-      errorHandler: getErrorHandler()
+      errorHandler: getErrorHandler(),
+      isValidInstance
     };
 
     const optimizely = new Optimizely(optimizelyOptions);

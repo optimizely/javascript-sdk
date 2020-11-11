@@ -1,4 +1,5 @@
 import { ErrorHandler, LogHandler, LogLevel } from "@optimizely/js-sdk-logging";
+import { enums } from "@optimizely/optimizely-sdk";
 
 export type UserAttributes = {
   // TODO[OASIS-6649]: Don't use any type
@@ -80,29 +81,30 @@ export interface OptimizelyVariable {
 }
 
 /**
+ * The options object given to Optimizely.createInstance.
  * Entry level Config Entities
  */
 export interface SDKOptions {
-  // Datafile string
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
   datafile?: string;
-  // errorHandler object for logging error
+  datafileOptions?: DatafileOptions;
   errorHandler?: ErrorHandler;
-  // limit of events to dispatch in a batch
-  eventBatchSize?: number;
-  // event dispatcher function
   eventDispatcher?: EventDispatcher;
-  // maximum time for an event to stay in the queue
-  eventFlushInterval?: number;
-  // flag to validate if this instance is valid
-  isValidInstance: boolean;
-  // level of logging i.e debug, info, error, warning etc
-  logLevel?: LogLevel;
-  // LogHandler object for logging
   logger?: LogHandler;
-  // sdk key
+  logLevel?:
+    | enums.LOG_LEVEL.DEBUG
+    | enums.LOG_LEVEL.ERROR
+    | enums.LOG_LEVEL.INFO
+    | enums.LOG_LEVEL.NOTSET
+    | enums.LOG_LEVEL.WARNING;
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
+  jsonSchemaValidator?: object;
+  userProfileService?: UserProfileService | null;
+  eventBatchSize?: number;
+  eventFlushInterval?: number;
   sdkKey?: string;
-  // user profile that contains user information
-  userProfileService?: UserProfileService;
 }
 
 export interface OptimizelyFeature {

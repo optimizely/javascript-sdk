@@ -59,30 +59,6 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type UserProfile = import('./shared_types').UserProfile;
 
-  // The options object given to Optimizely.createInstance.
-  export interface Config {
-    // TODO[OASIS-6649]: Don't use object type
-    // eslint-disable-next-line  @typescript-eslint/ban-types
-    datafile?: object | string;
-    datafileOptions?: DatafileOptions;
-    errorHandler?: ErrorHandler;
-    eventDispatcher?: EventDispatcher;
-    logger?: LogHandler;
-    logLevel?:
-      | enums.LOG_LEVEL.DEBUG
-      | enums.LOG_LEVEL.ERROR
-      | enums.LOG_LEVEL.INFO
-      | enums.LOG_LEVEL.NOTSET
-      | enums.LOG_LEVEL.WARNING;
-    // TODO[OASIS-6649]: Don't use object type
-    // eslint-disable-next-line  @typescript-eslint/ban-types
-    jsonSchemaValidator?: object;
-    userProfileService?: UserProfileService | null;
-    eventBatchSize?: number;
-    eventFlushInterval?: number;
-    sdkKey?: string;
-  }
-
   export interface Client {
     notificationCenter: NotificationCenter;
     activate(
