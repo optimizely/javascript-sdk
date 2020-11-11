@@ -104,7 +104,7 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
     }
 
-    let optimizelyOptions = {
+    const optimizelyOptions = {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       eventDispatcher: eventDispatcher,
       ...config,

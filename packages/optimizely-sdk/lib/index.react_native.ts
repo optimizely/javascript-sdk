@@ -94,7 +94,7 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       eventFlushInterval: eventFlushInterval,
       logger: logger,
       errorHandler: getErrorHandler(),
-      isValidInstance: true
+      isValidInstance
     };
 
     return new Optimizely(optimizelyOptions);

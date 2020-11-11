@@ -1,4 +1,4 @@
-import { ErrorHandler, LogHandler, LogLevel } from "@optimizely/js-sdk-logging";
+import { ErrorHandler, LogHandler } from "@optimizely/js-sdk-logging";
 import { enums } from "@optimizely/optimizely-sdk";
 
 export type UserAttributes = {
