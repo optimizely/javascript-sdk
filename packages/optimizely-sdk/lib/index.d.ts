@@ -25,7 +25,7 @@ declare module '@optimizely/optimizely-sdk' {
 
   export function setLogLevel(level: enums.LOG_LEVEL | string): void;
 
-  export function createInstance(config: Config): Client;
+  export function createInstance(config: SDKOptions): Client;
 
   export const errorHandler: ErrorHandler;
 
