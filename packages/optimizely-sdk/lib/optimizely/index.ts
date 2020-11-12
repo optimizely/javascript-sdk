@@ -95,7 +95,9 @@ export default class Optimizely {
   private isOptimizelyConfigValid: boolean;
   private disposeOnUpdate: (() => void ) | null;
   private readyPromise: Promise<{ success: boolean; reason?: string }>;
-  private readyTimeouts: { [key: string]: {readyTimeout: number; onClose:() => void} };
+  // readyTimeout is specified as any to make this work in both browser & Node
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private readyTimeouts: { [key: string]: {readyTimeout: any; onClose:() => void} };
   private nextReadyTimeoutId: number;
   private clientEngine: string;
   private clientVersion: string;
