@@ -52,7 +52,8 @@ function isSafeInteger(number: unknown): boolean {
 function keyBy<K>(arr: K[], key: string): { [key: string]: K } {
   if (!arr) return {};
   return keyByUtil(arr, function (item) {
-    return item[key as keyof unknown];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (item as any)[key];
   });
 }
 
