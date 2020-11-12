@@ -84,7 +84,7 @@ export interface OptimizelyVariable {
  * The options object given to Optimizely.createInstance.
  * Entry level Config Entities
  */
-export interface SDKOptions {
+export interface Config {
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
   datafile?: string;

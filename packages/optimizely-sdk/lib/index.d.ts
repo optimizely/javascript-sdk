@@ -25,7 +25,7 @@ declare module '@optimizely/optimizely-sdk' {
 
   export function setLogLevel(level: enums.LOG_LEVEL | string): void;
 
-  export function createInstance(config: SDKOptions): Client;
+  export function createInstance(config: Config): Client;
 
   export const errorHandler: ErrorHandler;
 
@@ -51,7 +51,7 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type DatafileOptions = import ('./shared_types').DatafileOptions;
 
-  export type SDKOptions = import ('./shared_types').SDKOptions;
+  export type Config = import ('./shared_types').Config;
 
   export type OptimizelyOptions = import ('./optimizely').OptimizelyOptions;
 
