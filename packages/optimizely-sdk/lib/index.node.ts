@@ -38,7 +38,7 @@ const DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
 
 /**
  * Creates an instance of the Optimizely class
- * @param  {SDKOptions} config
+ * @param  {Config} config
  * @return {Optimizely|null} the Optimizely object
  *                           null on error 
  */

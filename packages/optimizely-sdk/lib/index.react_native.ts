@@ -28,7 +28,7 @@ import defaultErrorHandler from './plugins/error_handler';
 import loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
-import { SDKOptions } from './shared_types';
+import { Config } from './shared_types';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -40,11 +40,11 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
 
 /**
  * Creates an instance of the Optimizely class
- * @param  {SDKOptions} config
+ * @param  {Config} config
  * @return {Optimizely|null} the Optimizely object
  *                           null on error 
  */
-const createInstance = function(config: SDKOptions): Optimizely | null {
+const createInstance = function(config: Config): Optimizely | null {
   try {
     // TODO warn about setting per instance errorHandler / logger / logLevel
     if (config.errorHandler) {
