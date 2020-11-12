@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Bug fixes
+
+- In `Optimizely` class, use `any` type when assigning the return value of `setTimeout`. This is to allow it to type check regardless of whether it uses the browser or Node version of `setTimeout` ([PR #623](https://github.com/optimizely/javascript-sdk/pull/623)), ([Issue #622](https://github.com/optimizely/javascript-sdk/issues/622))
 
 ## [4.4.1] - November 5, 2020
 
