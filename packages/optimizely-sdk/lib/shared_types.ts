@@ -99,11 +99,6 @@ export interface OnReadyResult {
   reason?: string;
 }
 
-// TODO: Make feature_key, user_id, variable_key, experiment_key, event_key camelCase
-export type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 'event_key' | 'variation_id';
-
-export type StringInputs = Partial<Record<InputKey, unknown>>;
-
 /**
  * Optimizely Config Entities
  */
