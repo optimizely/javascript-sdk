@@ -177,8 +177,8 @@ declare module '@optimizely/optimizely-sdk' {
   }
 
   export interface ActivateListenerPayload extends ListenerPayload {
-    experiment: import('./core/project_config/entities').Experiment;
-    variation: import('./core/project_config/entities').Variation;
+    experiment: import('./shared_types').Experiment;
+    variation: import('./shared_types').Variation;
     logEvent: Event;
   }
 
