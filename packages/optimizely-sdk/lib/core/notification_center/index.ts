@@ -55,6 +55,8 @@ export interface ListenerPayload {
 export class NotificationCenter {
   private logger: LogHandler;
   private errorHandler: ErrorHandler;
+  //TODO: define notificationListeners type
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   private notificationListeners: any;
   private listenerId: number;
 
@@ -102,10 +104,12 @@ export class NotificationCenter {
   
       let callbackAlreadyAdded = false;
       (this.notificationListeners[notificationType] || []).forEach(
-        (listenerEntry: any): boolean | void => {
+        //TODO: remove any after notificationListeners type is defined
+        // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+        (listenerEntry: any) => {
           if (listenerEntry.callback === callback) {
             callbackAlreadyAdded = true;
-            return false;
+            return;
           }
         });
       if (callbackAlreadyAdded) {
@@ -141,7 +145,9 @@ export class NotificationCenter {
       Object.keys(this.notificationListeners).some(
         (notificationType: string): boolean | void => {
           const listenersForType = this.notificationListeners[notificationType];
-          (listenersForType || []).every((listenerEntry: any, i: number): boolean => {
+          //TODO: remove any after notificationListeners type is defined
+          // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+          (listenersForType || []).every((listenerEntry: any, i: number) => {
             if (listenerEntry.id === listenerId) {
               indexToRemove = i;
               typeToRemove = notificationType;
@@ -204,7 +210,9 @@ export class NotificationCenter {
   sendNotifications<T extends ListenerPayload>(notificationType: string, notificationData?: T): void {
     try {
       (this.notificationListeners[notificationType] || []).forEach(
-        (listenerEntry: any): void => {
+        //TODO: remove any after notificationListeners type is defined
+        // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+        (listenerEntry: any) => {
           const callback = listenerEntry.callback;
           try {
             callback(notificationData as T);
