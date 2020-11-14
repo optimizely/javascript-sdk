@@ -103,6 +103,7 @@ export class NotificationCenter {
             return;
           }
         });
+
       if (callbackAlreadyAdded) {
         return -1;
       }
@@ -142,8 +143,10 @@ export class NotificationCenter {
               typeToRemove = notificationType;
               return false;
             }
+
             return true;
           });
+
           if (indexToRemove !== undefined && typeToRemove !== undefined) {
             return true;
           }
@@ -160,6 +163,7 @@ export class NotificationCenter {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
     }
+
     return false;
   }
 
