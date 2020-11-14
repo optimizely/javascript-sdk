@@ -59,6 +59,10 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type UserProfile = import('./shared_types').UserProfile;
 
+  export type ListenerPayload = import('./shared_types').ListenerPayload;
+
+  export type NotificationListener<T extends ListenerPayload> = import('./shared_types').NotificationListener<T>;
+
   // The options object given to Optimizely.createInstance.
   export interface Config {
     // TODO[OASIS-6649]: Don't use object type
@@ -167,13 +171,6 @@ declare module '@optimizely/optimizely-sdk' {
     removeNotificationListener(listenerId: number): boolean;
     clearAllNotificationListeners(): void;
     clearNotificationListeners(notificationType: enums.NOTIFICATION_TYPES): void;
-  }
-
-  export type NotificationListener<T extends ListenerPayload> = (notificationData: T) => void;
-
-  export interface ListenerPayload {
-    userId: string;
-    attributes: UserAttributes;
   }
 
   export interface ActivateListenerPayload extends ListenerPayload {

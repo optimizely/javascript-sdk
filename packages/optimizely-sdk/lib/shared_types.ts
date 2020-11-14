@@ -32,6 +32,13 @@ export interface DatafileOptions {
   datafileAccessToken?: string;
 }
 
+export interface ListenerPayload {
+  userId: string;
+  attributes?: UserAttributes;
+}
+
+export type NotificationListener<T extends ListenerPayload> = (notificationData: T) => void;
+
 // An event to be submitted to Optimizely, enabling tracking the reach and impact of
 // tests and feature rollouts.
 export interface Event {

@@ -16,7 +16,7 @@
 import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
 import { NOTIFICATION_TYPES as notificationTypesEnum } from '@optimizely/js-sdk-utils';
-import { UserAttributes } from '../../shared_types';
+import { NotificationListener, ListenerPayload } from '../../shared_types';
 
 import {
   LOG_LEVEL,
@@ -31,19 +31,14 @@ export interface NotificationCenterOptions {
   errorHandler: ErrorHandler;
 }
 
-export type NotificationListener<T extends ListenerPayload> = (notificationData: T) => void;
+export interface ListenerEntry {
+  id: number;
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  callback: (notificationData: any) => void;
+}
 
-// export interface ListenerEntry {
-//   id: number;
-//   callback: NotificationListener;
-// }
-// export type NotificationListeners = {
-//   [key: string]: ListenerEntry[];
-// }
-
-export interface ListenerPayload {
-  userId: string;
-  attributes?: UserAttributes;
+export type NotificationListeners = {
+  [key: string]: ListenerEntry[];
 }
 
 /**
@@ -55,9 +50,7 @@ export interface ListenerPayload {
 export class NotificationCenter {
   private logger: LogHandler;
   private errorHandler: ErrorHandler;
-  //TODO: define notificationListeners type
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  private notificationListeners: any;
+  private notificationListeners: NotificationListeners;
   private listenerId: number;
 
   /**
@@ -104,9 +97,7 @@ export class NotificationCenter {
   
       let callbackAlreadyAdded = false;
       (this.notificationListeners[notificationType] || []).forEach(
-        //TODO: remove any after notificationListeners type is defined
-        // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-        (listenerEntry: any) => {
+        (listenerEntry) => {
           if (listenerEntry.callback === callback) {
             callbackAlreadyAdded = true;
             return;
@@ -143,11 +134,9 @@ export class NotificationCenter {
       let typeToRemove: string | undefined;
   
       Object.keys(this.notificationListeners).some(
-        (notificationType: string): boolean | void => {
+        (notificationType) => {
           const listenersForType = this.notificationListeners[notificationType];
-          //TODO: remove any after notificationListeners type is defined
-          // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-          (listenersForType || []).every((listenerEntry: any, i: number) => {
+          (listenersForType || []).every((listenerEntry, i) => {
             if (listenerEntry.id === listenerId) {
               indexToRemove = i;
               typeToRemove = notificationType;
@@ -158,6 +147,8 @@ export class NotificationCenter {
           if (indexToRemove !== undefined && typeToRemove !== undefined) {
             return true;
           }
+
+          return false;
         }
       );
   
@@ -178,7 +169,7 @@ export class NotificationCenter {
   clearAllNotificationListeners(): void {
     try {
       objectValues(NOTIFICATION_TYPES).forEach(
-        (notificationTypeEnum: notificationTypesEnum) => {
+        (notificationTypeEnum) => {
           this.notificationListeners[notificationTypeEnum] = [];
         }
       );
@@ -207,15 +198,16 @@ export class NotificationCenter {
    * @param {string} notificationType One of NOTIFICATION_TYPES
    * @param {Object} notificationData Will be passed to callbacks called
    */
-  sendNotifications<T extends ListenerPayload>(notificationType: string, notificationData?: T): void {
+  sendNotifications<T extends ListenerPayload>(
+    notificationType: string,
+    notificationData?: T
+  ): void {
     try {
       (this.notificationListeners[notificationType] || []).forEach(
-        //TODO: remove any after notificationListeners type is defined
-        // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-        (listenerEntry: any) => {
+        (listenerEntry) => {
           const callback = listenerEntry.callback;
           try {
-            callback(notificationData as T);
+            callback(notificationData);
           } catch (ex) {
             this.logger.log(
               LOG_LEVEL.ERROR,
