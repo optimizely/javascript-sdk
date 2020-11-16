@@ -15,7 +15,6 @@
  ***************************************************************************/
 import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
-import { FeatureFlag, FeatureVariable } from '../core/project_config/entities';
 import {
   UserAttributes,
   EventTags,
@@ -23,9 +22,11 @@ import {
   EventDispatcher,
   OnReadyResult,
   UserProfileService,
-  DatafileOptions
+  DatafileOptions,
+  Variation,
+  FeatureFlag,
+  FeatureVariable
 } from '../shared_types';
-import { Variation } from '../core/project_config/entities';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';

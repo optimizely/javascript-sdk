@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 import { LogHandler } from '@optimizely/js-sdk-logging';
-import { FeatureFlag, FeatureVariable, Experiment, Variation  } from './entities';
+import {
+  FeatureFlag,
+  FeatureVariable,
+  Experiment,
+  Variation
+} from '../../shared_types';
 
 export interface ProjectConfig {
   revision: string;

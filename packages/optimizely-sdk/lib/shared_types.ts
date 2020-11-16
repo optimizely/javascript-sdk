@@ -56,6 +56,44 @@ export interface EventDispatcher {
   dispatchEvent: (event: Event, callback: (response: { statusCode: number; }) => void) => void;
 }
 
+export interface VariationVariable {
+  id: string;
+  value: string;
+}
+
+export interface Variation {
+  id: string;
+  key: string;
+  featureEnabled: boolean;
+  variables: VariationVariable[];
+}
+
+export interface Experiment {
+  id: string;
+  key: string;
+  variationKeyMap: {[key: string]: Variation}
+}
+
+export interface FeatureVariable {
+  type: string;
+  key: string;
+  id: string;
+  defaultValue: string;
+}
+
+export interface FeatureFlag {
+  rolloutId: string;
+  key: string;
+  id: string;
+  experimentIds: string[],
+  variables: FeatureVariable[],
+  variableKeyMap: {[key: string]: FeatureVariable}
+}
+
+export interface FeatureKeyMap {
+  [key: string]: FeatureFlag
+}
+
 export interface OnReadyResult {
   success: boolean;
   reason?: string;
