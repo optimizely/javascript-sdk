@@ -86,7 +86,8 @@ export class NotificationCenter {
     callback: NotificationListener<T>
   ): number {
     try {
-      const isNotificationTypeValid = objectValues(NOTIFICATION_TYPES).indexOf(notificationType as notificationTypesEnum) > -1;
+      const notificationTypeValues: string[] = objectValues(NOTIFICATION_TYPES);
+      const isNotificationTypeValid = notificationTypeValues.indexOf(notificationType) > -1;
       if (!isNotificationTypeValid) {
         return -1;
       }
