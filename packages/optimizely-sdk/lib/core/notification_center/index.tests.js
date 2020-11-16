@@ -16,7 +16,7 @@
 import sinon from 'sinon';
 import { assert } from 'chai';
 
-import NotificationCenter from './';
+import { createNotificationCenter } from './';
 import * as enums from '../../utils/enums';
 import logger from '../../plugins/logger';
 import errorHandler from '../../plugins/error_handler';
@@ -37,7 +37,7 @@ describe('lib/core/notification_center', function() {
       mockLoggerStub = sandbox.stub(mockLogger, 'log');
       mockErrorHandlerStub = sandbox.stub(mockErrorHandler, 'handleError');
 
-      notificationCenterInstance = NotificationCenter.createNotificationCenter({
+      notificationCenterInstance = createNotificationCenter({
         logger: mockLoggerStub,
         errorHandler: mockErrorHandlerStub,
       });
