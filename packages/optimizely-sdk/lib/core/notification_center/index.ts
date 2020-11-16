@@ -26,18 +26,18 @@ import {
 
 const MODULE_NAME = 'NOTIFICATION_CENTER';
 
-export interface NotificationCenterOptions {
+interface NotificationCenterOptions {
   logger: LogHandler;
   errorHandler: ErrorHandler;
 }
 
-export interface ListenerEntry {
+interface ListenerEntry {
   id: number;
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   callback: (notificationData: any) => void;
 }
 
-export type NotificationListeners = {
+type NotificationListeners = {
   [key: string]: ListenerEntry[];
 }
 
@@ -86,7 +86,7 @@ export class NotificationCenter {
     callback: NotificationListener<T>
   ): number {
     try {
-      const isNotificationTypeValid = objectValues(NOTIFICATION_TYPES ).indexOf(notificationType as notificationTypesEnum) > -1;
+      const isNotificationTypeValid = objectValues(NOTIFICATION_TYPES).indexOf(notificationType as notificationTypesEnum) > -1;
       if (!isNotificationTypeValid) {
         return -1;
       }
