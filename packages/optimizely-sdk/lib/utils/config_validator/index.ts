@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { sprintf } from '@optimizely/js-sdk-utils';
+import { ObjectWithUnknownProperties } from '../../shared_types';
 
 import { 
   ERROR_MESSAGES, 
@@ -34,16 +35,17 @@ const SUPPORTED_VERSIONS = [DATAFILE_VERSIONS.V2, DATAFILE_VERSIONS.V3, DATAFILE
  */
 export const validate = function(config: unknown): boolean {
   if (typeof config === 'object' && config !== null) {
-    const errorHandler = (config as { [key: string]: unknown })['errorHandler'];
-    const eventDispatcher = (config as { [key: string]: unknown })['eventDispatcher'];
-    const logger = (config as { [key: string]: unknown })['logger'];
-    if (errorHandler && typeof (errorHandler as { [key: string]: unknown })['handleError'] !== 'function') {
+    const configObj = config as ObjectWithUnknownProperties;
+    const errorHandler = configObj['errorHandler'];
+    const eventDispatcher = configObj['eventDispatcher'];
+    const logger = configObj['logger'];
+    if (errorHandler && typeof (errorHandler as ObjectWithUnknownProperties)['handleError'] !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_ERROR_HANDLER, MODULE_NAME));
     }
-    if (eventDispatcher && typeof (eventDispatcher as { [key: string]: unknown })['dispatchEvent'] !== 'function') {
+    if (eventDispatcher && typeof (eventDispatcher as ObjectWithUnknownProperties)['dispatchEvent'] !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_DISPATCHER, MODULE_NAME));
     }
-    if (logger && typeof (logger as { [key: string]: unknown })['log'] !== 'function') {
+    if (logger && typeof (logger as ObjectWithUnknownProperties)['log'] !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_LOGGER, MODULE_NAME));
     }
     return true;
