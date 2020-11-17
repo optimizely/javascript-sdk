@@ -87,7 +87,7 @@ export interface OptimizelyVariable {
 export interface Config {
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
-  datafile?: string;
+  datafile?: object | string;
   datafileOptions?: DatafileOptions;
   errorHandler?: ErrorHandler;
   eventDispatcher?: EventDispatcher;
