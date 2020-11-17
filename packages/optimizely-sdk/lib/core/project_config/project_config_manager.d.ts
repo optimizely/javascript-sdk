@@ -17,6 +17,8 @@ import { OptimizelyConfig, DatafileOptions } from '../../shared_types'
 import { ProjectConfig } from '../project_config'
 
 interface ProjectConfigManagerConfig {
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
   datafile?: object | string,
   datafileOptions?: DatafileOptions,
   // TODO[OASIS-6649]: Don't use object type

@@ -62,6 +62,8 @@ export interface OptimizelyOptions {
   UNSTABLE_conditionEvaluators?: unknown;
   clientEngine: string;
   clientVersion?: string;
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
   datafile?: object | string;
   datafileOptions?: DatafileOptions;
   errorHandler: ErrorHandler;
