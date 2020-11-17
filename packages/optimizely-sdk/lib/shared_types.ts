@@ -11,7 +11,7 @@ export interface UserProfile {
   user_id: string;
   experiment_bucket_map: {
     [experiment_id: string]: {
-        variation_id: string;
+      variation_id: string;
     };
   };
 }
@@ -78,7 +78,7 @@ export interface Variation {
 export interface Experiment {
   id: string;
   key: string;
-  variationKeyMap: {[key: string]: Variation}
+  variationKeyMap: { [key: string]: Variation }
 }
 
 export interface FeatureVariable {
@@ -94,7 +94,7 @@ export interface FeatureFlag {
   id: string;
   experimentIds: string[],
   variables: FeatureVariable[],
-  variableKeyMap: {[key: string]: FeatureVariable}
+  variableKeyMap: { [key: string]: FeatureVariable }
 }
 
 export interface FeatureKeyMap {
@@ -104,6 +104,10 @@ export interface FeatureKeyMap {
 export interface OnReadyResult {
   success: boolean;
   reason?: string;
+}
+
+export type ObjectWithUnknownProperties = {
+  [key: string]: unknown;
 }
 
 /**
