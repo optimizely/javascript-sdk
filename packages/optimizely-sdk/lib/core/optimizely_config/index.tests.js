@@ -16,7 +16,7 @@
 import { assert } from 'chai';
 import { cloneDeep } from 'lodash';
 
-import { OptimizelyConfig } from './index';
+import OptimizelyConfig from './index';
 import { createProjectConfig } from '../project_config';
 import { getTestProjectConfigWithFeatures } from '../../tests/test_data';
 
