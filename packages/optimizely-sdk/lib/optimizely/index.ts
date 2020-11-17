@@ -15,7 +15,6 @@
  ***************************************************************************/
 import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
-import { FeatureFlag, FeatureVariable } from '../core/project_config/entities';
 import {
   UserAttributes,
   EventTags,
@@ -23,9 +22,11 @@ import {
   EventDispatcher,
   OnReadyResult,
   UserProfileService,
-  DatafileOptions
+  DatafileOptions,
+  Variation,
+  FeatureFlag,
+  FeatureVariable
 } from '../shared_types';
-import { Variation } from '../core/project_config/entities';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
@@ -95,7 +96,9 @@ export default class Optimizely {
   private isOptimizelyConfigValid: boolean;
   private disposeOnUpdate: (() => void ) | null;
   private readyPromise: Promise<{ success: boolean; reason?: string }>;
-  private readyTimeouts: { [key: string]: {readyTimeout: number; onClose:() => void} };
+  // readyTimeout is specified as any to make this work in both browser & Node
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private readyTimeouts: { [key: string]: {readyTimeout: any; onClose:() => void} };
   private nextReadyTimeoutId: number;
   private clientEngine: string;
   private clientVersion: string;
@@ -249,9 +252,9 @@ export default class Optimizely {
           decisionObj,
           '',
           userId,
+          true,
           attributes
         );
-
         return variationKey;
       } catch (ex) {
         this.logger.log(LOG_LEVEL.ERROR, ex.message);
@@ -280,12 +283,14 @@ export default class Optimizely {
    * @param {string}         flagKey        Key for a feature flag
    * @param {string}         userId         ID of user to whom the variation was shown
    * @param {UserAttributes} attributes     Optional user attributes
+   * @param {boolean}        enabled        Boolean representing if feature is enabled
    */
   private sendImpressionEvent(
     decisionObj: DecisionObj,
     flagKey: string,
     userId: string,
-    attributes?: UserAttributes
+    enabled: boolean,
+    attributes?: UserAttributes,
   ): void {
     const configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
@@ -295,6 +300,7 @@ export default class Optimizely {
     const impressionEvent = buildImpressionEvent({
       decisionObj: decisionObj,
       flagKey: flagKey,
+      enabled: enabled,
       userId: userId,
       userAttributes: attributes,
       clientEngine: this.clientEngine,
@@ -303,7 +309,7 @@ export default class Optimizely {
     });
     // TODO is it okay to not pass a projectConfig as second argument
     this.eventProcessor.process(impressionEvent);
-    this.emitNotificationCenterActivate(decisionObj, flagKey, userId, attributes);
+    this.emitNotificationCenterActivate(decisionObj, flagKey, userId, enabled, attributes);
   }
 
   /**
@@ -311,12 +317,14 @@ export default class Optimizely {
    * @param  {DecisionObj}    decisionObj    Decision object
    * @param  {string}         flagKey        Key for a feature flag
    * @param  {string}         userId         ID of user to whom the variation was shown
+   * @param  {boolean}        enabled        Boolean representing if feature is enabled
    * @param  {UserAttributes} attributes     Optional user attributes
    */
   private emitNotificationCenterActivate(
     decisionObj: DecisionObj,
     flagKey: string,
     userId: string,
+    enabled: boolean,
     attributes?: UserAttributes
   ): void {
     const configObj = this.projectConfigManager.getConfig();
@@ -346,6 +354,7 @@ export default class Optimizely {
       flagKey: flagKey,
       ruleType: ruleType,
       userId: userId,
+      enabled: enabled,
       variationId: variationId,
       logger: this.logger,
     };
@@ -699,6 +708,7 @@ export default class Optimizely {
           decisionObj,
           feature.key,
           userId,
+          featureEnabled,
           attributes
         );
       }

@@ -25,6 +25,7 @@ interface ImpressionOptions {
   experimentId: string | null;
   ruleKey: string;
   flagKey: string;
+  enabled: boolean;
   ruleType: string;
   eventKey?: string;
   variationId: string | null;

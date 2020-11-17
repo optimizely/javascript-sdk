@@ -15,8 +15,13 @@
  */
 import { LogHandler } from '@optimizely/js-sdk-logging';
 import { ProjectConfig } from '../project_config';
-import { UserAttributes, UserProfileService } from '../../shared_types';
-import { FeatureFlag, Experiment, Variation } from '../project_config/entities';
+import {
+  UserAttributes,
+  UserProfileService,
+  FeatureFlag,
+  Experiment,
+  Variation
+} from '../../shared_types';
 
 /**
  * Creates an instance of the DecisionService.

@@ -59,6 +59,10 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type UserProfile = import('./shared_types').UserProfile;
 
+  export type ListenerPayload = import('./shared_types').ListenerPayload;
+
+  export type NotificationListener<T extends ListenerPayload> = import('./shared_types').NotificationListener<T>;
+
   export interface Client {
     notificationCenter: NotificationCenter;
     activate(
@@ -145,16 +149,9 @@ declare module '@optimizely/optimizely-sdk' {
     clearNotificationListeners(notificationType: enums.NOTIFICATION_TYPES): void;
   }
 
-  export type NotificationListener<T extends ListenerPayload> = (notificationData: T) => void;
-
-  export interface ListenerPayload {
-    userId: string;
-    attributes: UserAttributes;
-  }
-
   export interface ActivateListenerPayload extends ListenerPayload {
-    experiment: import('./core/project_config/entities').Experiment;
-    variation: import('./core/project_config/entities').Variation;
+    experiment: import('./shared_types').Experiment;
+    variation: import('./shared_types').Variation;
     logEvent: Event;
   }
 

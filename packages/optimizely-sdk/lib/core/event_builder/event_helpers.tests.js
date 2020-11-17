@@ -90,6 +90,7 @@ describe('lib/event_builder/event_helpers', function() {
         var result = buildImpressionEvent({
           configObj: configObj,
           decisionObj: decision,
+          enabled: true,
           flagKey: 'flagkey1',
           userId: 'user1',
           userAttributes: {
@@ -140,6 +141,7 @@ describe('lib/event_builder/event_helpers', function() {
           ruleKey: "exp1",
           flagKey: 'flagkey1',
           ruleType: 'experiment',
+          enabled: true,
         });
       });
     });
@@ -184,6 +186,7 @@ describe('lib/event_builder/event_helpers', function() {
           configObj: configObj,
           decisionObj: decision,
           flagKey: 'flagkey1',
+          enabled: false,
           userId: 'user1',
           userAttributes: {
             plan_type: 'bronze',
@@ -233,6 +236,7 @@ describe('lib/event_builder/event_helpers', function() {
           ruleKey: "exp1",
           flagKey: 'flagkey1',
           ruleType: 'experiment',
+          enabled: false,
         });
       });
     });

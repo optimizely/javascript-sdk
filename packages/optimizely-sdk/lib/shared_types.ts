@@ -33,6 +33,13 @@ export interface DatafileOptions {
   datafileAccessToken?: string;
 }
 
+export interface ListenerPayload {
+  userId: string;
+  attributes?: UserAttributes;
+}
+
+export type NotificationListener<T extends ListenerPayload> = (notificationData: T) => void;
+
 // An event to be submitted to Optimizely, enabling tracking the reach and impact of
 // tests and feature rollouts.
 export interface Event {
@@ -55,6 +62,44 @@ export interface EventDispatcher {
    *        control back to the Client.
    */
   dispatchEvent: (event: Event, callback: (response: { statusCode: number; }) => void) => void;
+}
+
+export interface VariationVariable {
+  id: string;
+  value: string;
+}
+
+export interface Variation {
+  id: string;
+  key: string;
+  featureEnabled: boolean;
+  variables: VariationVariable[];
+}
+
+export interface Experiment {
+  id: string;
+  key: string;
+  variationKeyMap: {[key: string]: Variation}
+}
+
+export interface FeatureVariable {
+  type: string;
+  key: string;
+  id: string;
+  defaultValue: string;
+}
+
+export interface FeatureFlag {
+  rolloutId: string;
+  key: string;
+  id: string;
+  experimentIds: string[],
+  variables: FeatureVariable[],
+  variableKeyMap: {[key: string]: FeatureVariable}
+}
+
+export interface FeatureKeyMap {
+  [key: string]: FeatureFlag
 }
 
 export interface OnReadyResult {
