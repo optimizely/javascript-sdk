@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - In `Optimizely` class, use `any` type when assigning the return value of `setTimeout`. This is to allow it to type check regardless of whether it uses the browser or Node version of `setTimeout` ([PR #623](https://github.com/optimizely/javascript-sdk/pull/623)), ([Issue #622](https://github.com/optimizely/javascript-sdk/issues/622))
 
+- Allow to pass string type `logLevel` to `createInstance`. ([Issue #614](https://github.com/optimizely/javascript-sdk/issues/614))
+
 ### New Features
 
 - Added `enabled` field to decision metadata structure to support upcoming application-controlled introduction of tracking for non-experiment Flag decisions ([#619](https://github.com/optimizely/javascript-sdk/pull/619))

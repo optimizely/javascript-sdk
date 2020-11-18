@@ -145,7 +145,7 @@ export interface SDKOptions {
   // flag to validate if this instance is valid
   isValidInstance: boolean;
   // level of logging i.e debug, info, error, warning etc
-  logLevel?: LogLevel;
+  logLevel?: LogLevel | string;
   // LogHandler object for logging
   logger?: LogHandler;
   // sdk key
