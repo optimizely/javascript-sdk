@@ -64,7 +64,7 @@ interface VariationMap {
  * @param {OptimizelyConfigOptions} configObj
  * @param {string} datafile
  */
-export default class OptimizelyConfig {
+export class OptimizelyConfig {
   private experimentsMap: ExperimentsMap;
   private featuresMap: FeaturesMap;
   private revision: string;
@@ -191,7 +191,8 @@ export default class OptimizelyConfig {
           };
 
           return variablesMap;
-        }, {}
+        },
+        {},
       );
     }
 
@@ -218,7 +219,7 @@ export default class OptimizelyConfig {
             experiments[experimentKey] = allExperiments[experimentKey];
             return experiments;
           },
-          {}
+          {},
         ),
         variablesMap: (feature.variables || []).reduce(
           (variables: VariablesMap, variable) => {
@@ -238,4 +239,14 @@ export default class OptimizelyConfig {
       return features;
     }, {});
   }
+}
+
+/**
+ * Create an instance of OptimizelyConfig
+ * @param   {OptimizelyConfigOptions}   configObj
+ * @param   {datafile}                  string
+ * @returns {OptimizelyConfig}        An instance of OptimizelyConfig
+ */
+export function createOptimizelyConfig(configObj: OptimizelyConfigOptions, datafile: string): OptimizelyConfig {
+  return new OptimizelyConfig(configObj, datafile);
 }

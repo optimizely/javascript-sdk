@@ -23,8 +23,8 @@ import * as datafileManager from '@optimizely/js-sdk-datafile-manager';
 import projectConfig from './index';
 import { ERROR_MESSAGES, LOG_MESSAGES } from '../../utils/enums';
 import testData from '../../tests/test_data';
-import optimizelyConfig from '../optimizely_config/index';
 import projectConfigManager from './project_config_manager';
+import * as optimizelyConfig from '../optimizely_config';
 import * as jsonSchemaValidator from '../../utils/json_schema_validator';
 
 describe('lib/core/project_config/project_config_manager', function() {
@@ -412,11 +412,11 @@ describe('lib/core/project_config/project_config_manager', function() {
 
     describe('test caching of optimizely config', function() {
       beforeEach(function() {
-        sinon.stub(optimizelyConfig, 'OptimizelyConfig');
+        sinon.stub(optimizelyConfig, 'createOptimizelyConfig');
       });
 
       afterEach(function() {
-        optimizelyConfig.OptimizelyConfig.restore();
+        optimizelyConfig.createOptimizelyConfig.restore();
       });
 
       it('should return the same config until revision is changed', function() {
@@ -425,10 +425,10 @@ describe('lib/core/project_config/project_config_manager', function() {
           sdkKey: '12345',
         });
         // creating optimizely config once project config manager for the first time
-        sinon.assert.calledOnce(optimizelyConfig.OptimizelyConfig);
+        sinon.assert.calledOnce(optimizelyConfig.createOptimizelyConfig);
         // validate it should return the existing optimizely config
         manager.getOptimizelyConfig();
-        sinon.assert.calledOnce(optimizelyConfig.OptimizelyConfig);
+        sinon.assert.calledOnce(optimizelyConfig.createOptimizelyConfig);
         // create config with new revision
         var fakeDatafileManager = datafileManager.HttpPollingDatafileManager.getCall(0).returnValue;
         var updateListener = fakeDatafileManager.on.getCall(0).args[1];
@@ -437,7 +437,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         fakeDatafileManager.get.returns(newDatafile);
         updateListener({ datafile: newDatafile });
         // verify the optimizely config is updated
-        sinon.assert.calledTwice(optimizelyConfig.OptimizelyConfig);
+        sinon.assert.calledTwice(optimizelyConfig.createOptimizelyConfig);
       });
     });
   });
