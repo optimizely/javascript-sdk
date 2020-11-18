@@ -71,13 +71,15 @@ export interface VariationVariable {
 export interface Variation {
   id: string;
   key: string;
-  featureEnabled: boolean;
-  variables: VariationVariable[];
+  featureEnabled?: boolean;
+  variablesMap: VariablesMap;
+  variables?: VariationVariable[];
 }
 
 export interface Experiment {
   id: string;
   key: string;
+  variations: Variation[];
   variationKeyMap: { [key: string]: Variation }
 }
 
@@ -154,33 +156,35 @@ export interface SDKOptions {
   userProfileService?: UserProfileService;
 }
 
+export type ExperimentsMap = {
+  [experimentKey: string]: OptimizelyExperiment;
+}
+
+export type VariablesMap = {
+  [variableKey: string]: OptimizelyVariable;
+}
+
+export type FeaturesMap = {
+  [featureKey: string]: OptimizelyFeature;
+}
+
 export interface OptimizelyFeature {
   id: string;
   key: string;
-  experimentsMap: {
-    [experimentKey: string]: OptimizelyExperiment;
-  };
-  variablesMap: {
-    [variableKey: string]: OptimizelyVariable;
-  };
+  experimentsMap: ExperimentsMap;
+  variablesMap: VariablesMap;
 }
 
 export interface OptimizelyVariation {
   id: string;
   key: string;
   featureEnabled?: boolean;
-  variablesMap: {
-    [variableKey: string]: OptimizelyVariable;
-  };
+  variablesMap: VariablesMap;
 }
 
 export interface OptimizelyConfig {
-  experimentsMap: {
-    [experimentKey: string]: OptimizelyExperiment;
-  };
-  featuresMap: {
-    [featureKey: string]: OptimizelyFeature;
-  };
+  experimentsMap: ExperimentsMap;
+  featuresMap: FeaturesMap;
   revision: string;
   getDatafile(): string;
 }

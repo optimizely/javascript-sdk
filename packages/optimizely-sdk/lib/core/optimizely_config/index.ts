@@ -14,19 +14,63 @@
  * limitations under the License.
  */
 import { isFeatureExperiment } from '../project_config';
+import {
+  ExperimentsMap,
+  FeaturesMap,
+  VariablesMap,
+  FeatureFlag,
+  Experiment,
+  FeatureVariable,
+  VariationVariable,
+  Variation,
+} from '../../shared_types';
+
+interface OptimizelyConfigOptions {
+  projectId: string;
+  revision: string;
+  rollouts: Rollout[];
+  featureFlags: FeatureFlag[];
+  experiments: Experiment[];
+  experimentIdMap: { [id: string]: Experiment };
+  experimentFeatureMap: { [key: string]: string[] };
+  experimentKeyMap: { [key: string]: Experiment };
+  featureKeyMap: { [key: string]: FeatureFlag };
+}
+
+interface ExperimentIds {
+  [key: string]: boolean;
+}
+
+interface Rollout {
+  id: string;
+  experiments: Experiment[];
+}
+
+interface FeatureVariablesMap {
+  [key: string]: FeatureVariable[];
+}
+
+interface VariationVariableMap {
+  [key: string]: VariationVariable;
+}
+
+interface VariationMap {
+  [key: string]: Variation;
+}
+
 
 /**
  * The OptimizelyConfig class
- * @param {Object} configObj
+ * @param {OptimizelyConfigOptions} configObj
  * @param {string} datafile
  */
 export default class OptimizelyConfig {
-  private experimentsMap: any;
-  private featuresMap: any;
-  private revision: any;
-  private datafile: any;
+  private experimentsMap: ExperimentsMap;
+  private featuresMap: FeaturesMap;
+  private revision: string;
+  private datafile: string;
 
-  constructor(configObj: any, datafile: any) {
+  constructor(configObj: OptimizelyConfigOptions, datafile: string) {
     this.experimentsMap = this.getExperimentsMap(configObj);
     this.featuresMap = this.getFeaturesMap(configObj, this.experimentsMap);
     this.revision = configObj.revision;
@@ -41,34 +85,45 @@ export default class OptimizelyConfig {
     return this.datafile;
   }
 
-  // Get Experiment Ids which are part of rollouts
-  private getRolloutExperimentIds(rollouts: any): any {
-    return (rollouts || []).reduce((experimentIds: any, rollout: any) => {
-      rollout.experiments.forEach((e: any) => {
-        experimentIds[e.id] = true;
+  /**
+   * Get Experiment Ids which are part of rollout
+   * @param       {Rollout[]}                  rollouts
+   * @returns     {ExperimentIds}               Experiment Ids which are part of rollout
+   */
+  private getRolloutExperimentIds(rollouts: Rollout[]): ExperimentIds {
+    return (rollouts || []).reduce((experimentIds: ExperimentIds, rollout) => {
+      rollout.experiments.forEach((e) => {
+        (experimentIds)[e.id] = true;
       });
 
       return experimentIds;
     }, {});
   }
 
-  // Gets Map of all experiments except rollouts
-  private getExperimentsMap(configObj: any): any {
+  /**
+   * Gets Map of all experiments except rollouts
+   * @param       {OptimizelyConfigOptions}    configObj
+   * @returns     {ExperimentsMap}             Map of experiments excluding rollouts
+   */
+  private getExperimentsMap(configObj: OptimizelyConfigOptions): ExperimentsMap {
     const rolloutExperimentIds = this.getRolloutExperimentIds(configObj.rollouts);
-    const featureVariablesMap = (configObj.featureFlags || []).reduce((resultMap: any, feature: any) => {
-      resultMap[feature.id] = feature.variables;
-      return resultMap;
-    }, {});
+    const featureVariablesMap = (configObj.featureFlags || []).reduce(
+      (resultMap: FeatureVariablesMap, feature) => {
+        resultMap[feature.id] = feature.variables;
+        return resultMap;
+      },
+      {},
+    );
 
     return (configObj.experiments || []).reduce(
-      (experiments: any, experiment: any) => {
+      (experiments: ExperimentsMap, experiment) => {
         // skip experiments that are part of a rollout
         if (!rolloutExperimentIds[experiment.id]) {
           experiments[experiment.key] = {
             id: experiment.id,
             key: experiment.key,
             variationsMap: (experiment.variations || []).reduce(
-              (variations: any, variation: any) => {
+              (variations: VariationMap, variation) => {
                 variations[variation.key] = {
                   id: variation.id,
                   key: variation.key,
@@ -80,44 +135,55 @@ export default class OptimizelyConfig {
 
                 return variations;
               },
-              {}
+              {},
             ),
           };
         }
 
         return experiments;
-      }, {}
+      },
+      {},
     )
   }
-  // Merges feature key and type from feature variables to variation variables.
+
+  /**
+   * Merges feature key and type from feature variables to variation variables
+   * @param       {OptimizelyConfigOptions}    configObj
+   * @param       {Variation}                  variation
+   * @param       {string}                     experimentId
+   * @param       {FeatureVariablesMap}        featureVariablesMap
+   * @returns     {VariablesMap}               Map of variables
+   */
   private getMergedVariablesMap(
-    configObj: any,
-    variation: any,
-    experimentId: any,
-    featureVariablesMap: any
-  ): any {
+    configObj: OptimizelyConfigOptions,
+    variation: Variation,
+    experimentId: string,
+    featureVariablesMap: FeatureVariablesMap,
+  ): VariablesMap {
     const featureId = configObj.experimentFeatureMap[experimentId];
 
     let variablesObject = {};
     if (featureId) {
-      const experimentFeatureVariables = featureVariablesMap[featureId];
+      // TODO: temporary solution. featureId is an array of feature Ids and is not a string.
+      const experimentFeatureVariables = featureVariablesMap[featureId[0]];
       // Temporary variation variables map to get values to merge.
       const tempVariablesIdMap = (variation.variables || []).reduce(
-        (variablesMap: any, variable: any) => {
+        (variablesMap: VariationVariableMap, variable) => {
           variablesMap[variable.id] = {
             id: variable.id,
             value: variable.value,
           };
 
           return variablesMap;
-        }, {}
+        },
+        {},
       );
       variablesObject = (experimentFeatureVariables || []).reduce(
-        (variablesMap: any, featureVariable: any) => {
+        (variablesMap: VariablesMap, featureVariable) => {
           const variationVariable = tempVariablesIdMap[featureVariable.id];
           const variableValue =
             variation.featureEnabled && variationVariable ? variationVariable.value : featureVariable.defaultValue;
-          variablesMap[featureVariable.key] = {
+            variablesMap[featureVariable.key] = {
             id: featureVariable.id,
             key: featureVariable.key,
             type: featureVariable.type,
@@ -132,30 +198,41 @@ export default class OptimizelyConfig {
     return variablesObject;
   }
 
-  // Gets map of all experiments
-  private getFeaturesMap(configObj: any, allExperiments: any): any {
-    return (configObj.featureFlags || []).reduce((features: any, feature: any) => {
+  /**
+   * Gets map of all experiments
+   * @param       {OptimizelyConfigOptions}    configObj
+   * @param       {ExperimentsMap}             allExperiments
+   * @returns     {FeaturesMap}                Map of all experiments
+   */
+  private getFeaturesMap(
+    configObj: OptimizelyConfigOptions,
+    allExperiments: ExperimentsMap
+  ): FeaturesMap {
+    return (configObj.featureFlags || []).reduce((features: FeaturesMap, feature) => {
       features[feature.key] = {
         id: feature.id,
         key: feature.key,
         experimentsMap: (feature.experimentIds || []).reduce(
-          (experiments: any, experimentId: any) => {
+          (experiments: ExperimentsMap, experimentId) => {
             const experimentKey = configObj.experimentIdMap[experimentId].key;
             experiments[experimentKey] = allExperiments[experimentKey];
             return experiments;
           },
           {}
         ),
-        variablesMap: (feature.variables || []).reduce((variables: any, variable: any) => {
-          variables[variable.key] = {
-            id: variable.id,
-            key: variable.key,
-            type: variable.type,
-            value: variable.defaultValue,
-          };
+        variablesMap: (feature.variables || []).reduce(
+          (variables: VariablesMap, variable) => {
+            variables[variable.key] = {
+              id: variable.id,
+              key: variable.key,
+              type: variable.type,
+              value: variable.defaultValue,
+            };
 
-          return variables;
-        }, {}),
+            return variables;
+          },
+          {},
+        ),
       };
 
       return features;
