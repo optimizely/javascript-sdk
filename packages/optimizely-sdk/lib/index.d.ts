@@ -73,6 +73,7 @@ declare module '@optimizely/optimizely-sdk' {
     eventDispatcher?: EventDispatcher;
     logger?: LogHandler;
     logLevel?:
+      | string
       | enums.LOG_LEVEL.DEBUG
       | enums.LOG_LEVEL.ERROR
       | enums.LOG_LEVEL.INFO
