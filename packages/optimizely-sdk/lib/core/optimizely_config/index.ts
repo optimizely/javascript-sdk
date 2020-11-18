@@ -64,9 +64,9 @@ interface VariationMap {
  * @param {string} datafile
  */
 export class OptimizelyConfig {
-  private experimentsMap: OptimizelyExperimentsMap;
-  private featuresMap: OptimizelyFeaturesMap;
-  private revision: string;
+  public experimentsMap: OptimizelyExperimentsMap;
+  public featuresMap: OptimizelyFeaturesMap;
+  public revision: string;
   private datafile: string;
 
   constructor(configObj: OptimizelyConfigOptions, datafile: string) {
@@ -183,7 +183,7 @@ export class OptimizelyConfig {
           const variationVariable = tempVariablesIdMap[featureVariable.id];
           const variableValue =
             variation.featureEnabled && variationVariable ? variationVariable.value : featureVariable.defaultValue;
-            variablesMap[featureVariable.key] = {
+          variablesMap[featureVariable.key] = {
             id: featureVariable.id,
             key: featureVariable.key,
             type: featureVariable.type,
