@@ -163,8 +163,9 @@ export class OptimizelyConfig {
 
     let variablesObject = {};
     if (featureId) {
-      // TODO: temporary solution. featureId is an array of feature Ids and is not a string.
-      const experimentFeatureVariables = featureVariablesMap[featureId[0]];
+      // TODO: avoid using any
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+      const experimentFeatureVariables = featureVariablesMap[featureId as any];
       // Temporary variation variables map to get values to merge.
       const tempVariablesIdMap = (variation.variables || []).reduce(
         (variablesMap: VariationVariablesMap, variable) => {
