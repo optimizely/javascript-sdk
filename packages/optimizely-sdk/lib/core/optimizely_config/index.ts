@@ -67,13 +67,13 @@ export class OptimizelyConfig {
   public experimentsMap: OptimizelyExperimentsMap;
   public featuresMap: OptimizelyFeaturesMap;
   public revision: string;
-  private __datafile: string;
+  private datafile: string;
 
   constructor(configObj: OptimizelyConfigOptions, datafile: string) {
     this.experimentsMap = this.getExperimentsMap(configObj);
     this.featuresMap = this.getFeaturesMap(configObj, this.experimentsMap);
     this.revision = configObj.revision;
-    this.__datafile = datafile;
+    this.datafile = datafile;
   }
 
   /**
@@ -81,7 +81,7 @@ export class OptimizelyConfig {
    * @returns {string} JSON string representation of the datafile that was used to create the current config object
    */
   getDatafile(): string {
-    return this.__datafile;
+    return this.datafile;
   }
 
   /**
