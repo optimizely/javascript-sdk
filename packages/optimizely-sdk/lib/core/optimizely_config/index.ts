@@ -54,7 +54,7 @@ interface VariationVariablesMap {
   [key: string]: VariationVariable;
 }
 
-interface VariationMap {
+interface VariationsMap {
   [key: string]: Variation;
 }
 
@@ -67,13 +67,13 @@ export class OptimizelyConfig {
   public experimentsMap: OptimizelyExperimentsMap;
   public featuresMap: OptimizelyFeaturesMap;
   public revision: string;
-  private datafile: string;
+  private __datafile: string;
 
   constructor(configObj: OptimizelyConfigOptions, datafile: string) {
     this.experimentsMap = this.getExperimentsMap(configObj);
     this.featuresMap = this.getFeaturesMap(configObj, this.experimentsMap);
     this.revision = configObj.revision;
-    this.datafile = datafile;
+    this.__datafile = datafile;
   }
 
   /**
@@ -81,7 +81,7 @@ export class OptimizelyConfig {
    * @returns {string} JSON string representation of the datafile that was used to create the current config object
    */
   getDatafile(): string {
-    return this.datafile;
+    return this.__datafile;
   }
 
   /**
@@ -122,7 +122,7 @@ export class OptimizelyConfig {
             id: experiment.id,
             key: experiment.key,
             variationsMap: (experiment.variations || []).reduce(
-              (variations: VariationMap, variation) => {
+              (variations: VariationsMap, variation) => {
                 variations[variation.key] = {
                   id: variation.id,
                   key: variation.key,
