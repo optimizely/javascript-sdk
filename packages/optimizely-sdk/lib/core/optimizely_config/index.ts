@@ -163,9 +163,7 @@ export class OptimizelyConfig {
 
     let variablesObject = {};
     if (featureId) {
-      // TODO: avoid using any
-      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-      const experimentFeatureVariables = featureVariablesMap[featureId as any];
+      const experimentFeatureVariables = featureVariablesMap[featureId.toString()];
       // Temporary variation variables map to get values to merge.
       const tempVariablesIdMap = (variation.variables || []).reduce(
         (variablesMap: VariationVariablesMap, variable) => {
@@ -244,7 +242,7 @@ export class OptimizelyConfig {
 /**
  * Create an instance of OptimizelyConfig
  * @param   {OptimizelyConfigOptions}   configObj
- * @param   {datafile}                  string
+ * @param   {string}                    datafile
  * @returns {OptimizelyConfig}          An instance of OptimizelyConfig
  */
 export function createOptimizelyConfig(configObj: OptimizelyConfigOptions, datafile: string): OptimizelyConfig {
