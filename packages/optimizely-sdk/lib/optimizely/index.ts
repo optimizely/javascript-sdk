@@ -27,9 +27,8 @@ import {
   FeatureVariable,
   OptimizelyOptions
 } from '../shared_types';
-// temporary placeholders
 import OptimizelyDecision from '../optimizely_decision';
-import { OptimizelyUserContext, OptimizelyDecideOption } from '../optimizely_user_context';
+import OptimizelyUserContext from '../optimizely_user_context';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
@@ -59,10 +58,18 @@ const MODULE_NAME = 'OPTIMIZELY';
 const DEFAULT_ONREADY_TIMEOUT = 30000;
 
 
-// TODO: Make feature_key, user_id, variable_key, experiment_key, event_key camelCase
-export type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 'event_key' | 'variation_id';
+enum OptimizelyDecideOptions {
+  DISABLE_DECISION_EVENT = 'DISABLE_DECISION_EVENT',
+  ENABLED_FLAGS_ONLY =  'ENABLED_FLAGS_ONLY',
+  IGNORE_USER_PROFILE_SERVICE = 'IGNORE_USER_PROFILE_SERVICE',
+  INCLUDE_REASONS = 'INCLUDE_REASONS',
+  EXCLUDE_VARIABLES = 'EXCLUDE_VARIABLES'
+}
 
-export type StringInputs = Partial<Record<InputKey, unknown>>;
+// TODO: Make feature_key, user_id, variable_key, experiment_key, event_key camelCase
+type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 'event_key' | 'variation_id';
+
+type StringInputs = Partial<Record<InputKey, unknown>>;
 
 /**
  * The Optimizely class
@@ -95,6 +102,7 @@ export default class Optimizely {
   private notificationCenter: NotificationCenter;
   private decisionService: DecisionService;
   private eventProcessor: EventProcessor;
+  private defaultDecideOptions: OptimizelyDecideOptions[];
 
   constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;
@@ -112,6 +120,7 @@ export default class Optimizely {
     this.eventDispatcher = config.eventDispatcher;
     this.isOptimizelyConfigValid = config.isValidInstance;
     this.logger = config.logger;
+    this.defaultDecideOptions = config.defaultDecideOptions;
 
     this.projectConfigManager = createProjectConfigManager({
       datafile: config.datafile,
@@ -1454,11 +1463,31 @@ export default class Optimizely {
     }
   }
 
+  /**
+   *
+   * Get all decide options.
+   *
+   * @param  {OptimizelyDecideOptions[]}          options     Optional decide options
+   * @return {OptimizelyDecideOptions[]}          Array of all provided decide options
+   */
+  private getAllDecideOptions(options?: OptimizelyDecideOptions[]): OptimizelyDecideOptions[] {
+    let allDecideOptions = this.defaultDecideOptions;
+    if (options !== undefined) {
+      options.forEach((option) => {
+        if (!allDecideOptions.includes(option)) {
+          allDecideOptions.push(option);
+        }
+      });
+    }
+
+    return allDecideOptions;
+  }
+
   decide(
     user: OptimizelyUserContext,
     key: string,
-    options?: OptimizelyDecideOption
-  ): OptimizelyDecision {
+    options?: OptimizelyDecideOptions[]
+  ): OptimizelyDecisions {
 
     const projectConfig = this.projectConfigManager.getConfig();
     if (projectConfig === null) {
