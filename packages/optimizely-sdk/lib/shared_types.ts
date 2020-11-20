@@ -111,6 +111,29 @@ export type ObjectWithUnknownProperties = {
 }
 
 /**
+ * options required to create optimizely object
+ */
+export interface OptimizelyOptions {
+  UNSTABLE_conditionEvaluators?: unknown;
+  clientEngine: string;
+  clientVersion?: string;
+  datafile?: string;
+  datafileOptions?: DatafileOptions;
+  errorHandler: ErrorHandler;
+  eventBatchSize?: number;
+  eventDispatcher: EventDispatcher;
+  eventFlushInterval?: number;
+  eventMaxQueueSize?: number;
+  isValidInstance: boolean;
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
+  jsonSchemaValidator?: object;
+  logger: LogHandler;
+  sdkKey?: string;
+  userProfileService?: UserProfileService | null;
+}
+
+/**
  * Optimizely Config Entities
  */
 export interface OptimizelyExperiment {
