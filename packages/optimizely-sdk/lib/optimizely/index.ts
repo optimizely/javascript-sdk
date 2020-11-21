@@ -22,10 +22,10 @@ import {
   EventDispatcher,
   OnReadyResult,
   UserProfileService,
-  DatafileOptions,
   Variation,
   FeatureFlag,
-  FeatureVariable
+  FeatureVariable,
+  OptimizelyOptions
 } from '../shared_types';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
@@ -55,28 +55,6 @@ const MODULE_NAME = 'OPTIMIZELY';
 
 const DEFAULT_ONREADY_TIMEOUT = 30000;
 
-/**
- * options required to create optimizely object
- */
-export interface OptimizelyOptions {
-  UNSTABLE_conditionEvaluators?: unknown;
-  clientEngine: string;
-  clientVersion?: string;
-  datafile?: string;
-  datafileOptions?: DatafileOptions;
-  errorHandler: ErrorHandler;
-  eventBatchSize?: number;
-  eventDispatcher: EventDispatcher;
-  eventFlushInterval?: number;
-  eventMaxQueueSize?: number;
-  isValidInstance: boolean;
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  jsonSchemaValidator?: object;
-  logger: LogHandler;
-  sdkKey?: string;
-  userProfileService?: UserProfileService | null;
-}
 
 // TODO: Make feature_key, user_id, variable_key, experiment_key, event_key camelCase
 export type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 'event_key' | 'variation_id';
