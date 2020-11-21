@@ -18,10 +18,9 @@ import OptimizelyDecision from '../optimizely_decision';
 import { UserAttributes } from '../../lib/shared_types';
 // import optimizely_config from '../core/optimizely_config';
 
-export interface OptimizelyDecideOption {};
 
 
-export class OptimizelyUserContext {
+export default class OptimizelyUserContext {
   private optimizely: Optimizely;
   private userId: string;
   private attributes: UserAttributes;

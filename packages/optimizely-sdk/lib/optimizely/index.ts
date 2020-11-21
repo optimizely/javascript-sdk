@@ -1487,7 +1487,7 @@ export default class Optimizely {
     user: OptimizelyUserContext,
     key: string,
     options?: OptimizelyDecideOptions[]
-  ): OptimizelyDecisions {
+  ): OptimizelyDecision {
 
     const projectConfig = this.projectConfigManager.getConfig();
     if (projectConfig === null) {
@@ -1501,9 +1501,26 @@ export default class Optimizely {
 
     const userId = user.getUserId();
     const attributes = user.getAttributes();
-    // if (Object.keys(attributes).length === 0) {
-    // }
     const decisionEventDispatched = false;
+    const allDecideOptions = this.getAllDecideOptions(options);
+    const decisionObj = this.decisionService.getVariationForFeature(
+      projectConfig,
+      feature,
+      userId,
+      attributes
+    );
 
+    const flagEnabled: boolean = decision.getFeatureEnabledFromVariation(decisionObj);
+    if (flagEnabled === true) {
+      this.logger.log(
+        LOG_LEVEL.INFO,
+        sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, key, userId)
+      );
+    } else {
+      this.logger.log(
+        LOG_LEVEL.INFO,
+        sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, key, userId)
+      );
+    }
   }
 }
