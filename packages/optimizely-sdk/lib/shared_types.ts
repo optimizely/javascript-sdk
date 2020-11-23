@@ -22,7 +22,7 @@ export type EventTags = {
 };
 
 export interface UserProfileService {
-  lookup(userId: string): UserProfile;
+  lookup(userId: string): UserProfile | undefined;
   save(profile: UserProfile): void;
 }
 
