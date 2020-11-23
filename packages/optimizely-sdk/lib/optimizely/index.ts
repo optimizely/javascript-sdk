@@ -22,10 +22,10 @@ import {
   EventDispatcher,
   OnReadyResult,
   UserProfileService,
-  DatafileOptions,
   Variation,
   FeatureFlag,
-  FeatureVariable
+  FeatureVariable,
+  OptimizelyOptions
 } from '../shared_types';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
@@ -55,30 +55,11 @@ const MODULE_NAME = 'OPTIMIZELY';
 
 const DEFAULT_ONREADY_TIMEOUT = 30000;
 
-/**
- * options required to create optimizely object
- */
-export interface OptimizelyOptions {
-  UNSTABLE_conditionEvaluators?: unknown;
-  clientEngine: string;
-  clientVersion?: string;
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  datafile?: object | string;
-  datafileOptions?: DatafileOptions;
-  errorHandler: ErrorHandler;
-  eventBatchSize?: number;
-  eventDispatcher: EventDispatcher;
-  eventFlushInterval?: number;
-  eventMaxQueueSize?: number;
-  isValidInstance: boolean;
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  jsonSchemaValidator?: object;
-  logger: LogHandler;
-  sdkKey?: string;
-  userProfileService?: UserProfileService | null;
-}
+
+// TODO: Make feature_key, user_id, variable_key, experiment_key, event_key camelCase
+export type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 'event_key' | 'variation_id';
+
+export type StringInputs = Partial<Record<InputKey, unknown>>;
 
 /**
  * The Optimizely class
@@ -583,15 +564,14 @@ export default class Optimizely {
 
   /**
    * Validate string inputs, user attributes and event tags.
-   * @param  {unknown}  stringInputs   Map of string keys and associated values
-   * @param  {unknown}  userAttributes Optional parameter for user's attributes
-   * @param  {unknown}  eventTags      Optional parameter for event tags
-   * @return {boolean}                 True if inputs are valid
+   * @param  {StringInputs}  stringInputs   Map of string keys and associated values
+   * @param  {unknown}       userAttributes Optional parameter for user's attributes
+   * @param  {unknown}       eventTags      Optional parameter for event tags
+   * @return {boolean}                      True if inputs are valid
    *
    */
   private validateInputs(
-    // TODO: Make feature_key, user_id, variable_key, experiment_key camelCase
-    stringInputs: Partial<Record<'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 'event_key', unknown>>,
+    stringInputs: StringInputs,
     userAttributes?: unknown,
     eventTags?: unknown
   ): boolean {
@@ -605,7 +585,7 @@ export default class Optimizely {
         delete stringInputs['user_id'];
       }
       Object.keys(stringInputs).forEach(key => {
-        if (!stringValidator.validate(stringInputs[key])) {
+        if (!stringValidator.validate(stringInputs[key as InputKey])) {
           throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, key));
         }
       })
@@ -1198,7 +1178,7 @@ export default class Optimizely {
 
       const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
       const featureEnabled = decision.getFeatureEnabledFromVariation(decisionObj);
-      const allVariables = {};
+      const allVariables: { [variableKey: string]: unknown } = {};
 
       featureFlag.variables.forEach((variable: FeatureVariable) => {
         allVariables[variable.key] = this.getFeatureVariableValueFromVariation(featureKey, featureEnabled, decisionObj.variation, variable, userId);

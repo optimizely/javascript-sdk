@@ -12,7 +12,7 @@ export interface UserProfile {
   user_id: string;
   experiment_bucket_map: {
     [experiment_id: string]: {
-        variation_id: string;
+      variation_id: string;
     };
   };
 }
@@ -79,7 +79,7 @@ export interface Variation {
 export interface Experiment {
   id: string;
   key: string;
-  variationKeyMap: {[key: string]: Variation}
+  variationKeyMap: { [key: string]: Variation }
 }
 
 export interface FeatureVariable {
@@ -95,7 +95,7 @@ export interface FeatureFlag {
   id: string;
   experimentIds: string[],
   variables: FeatureVariable[],
-  variableKeyMap: {[key: string]: FeatureVariable}
+  variableKeyMap: { [key: string]: FeatureVariable }
 }
 
 export interface FeatureKeyMap {
@@ -105,6 +105,33 @@ export interface FeatureKeyMap {
 export interface OnReadyResult {
   success: boolean;
   reason?: string;
+}
+
+export type ObjectWithUnknownProperties = {
+  [key: string]: unknown;
+}
+
+/**
+ * options required to create optimizely object
+ */
+export interface OptimizelyOptions {
+  UNSTABLE_conditionEvaluators?: unknown;
+  clientEngine: string;
+  clientVersion?: string;
+  datafile?: string;
+  datafileOptions?: DatafileOptions;
+  errorHandler: ErrorHandler;
+  eventBatchSize?: number;
+  eventDispatcher: EventDispatcher;
+  eventFlushInterval?: number;
+  eventMaxQueueSize?: number;
+  isValidInstance: boolean;
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
+  jsonSchemaValidator?: object;
+  logger: LogHandler;
+  sdkKey?: string;
+  userProfileService?: UserProfileService | null;
 }
 
 /**

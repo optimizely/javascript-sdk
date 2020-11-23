@@ -6,9 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+-  Refactored TypeScript type definitions to have `OptimizelyOptions` imported from `shared_types` to provide isolation from internal modules ([#629](https://github.com/optimizely/javascript-sdk/pull/629))
+
+## [4.4.2] - November 19, 2020
+
 ### Bug fixes
 
 - In `Optimizely` class, use `any` type when assigning the return value of `setTimeout`. This is to allow it to type check regardless of whether it uses the browser or Node version of `setTimeout` ([PR #623](https://github.com/optimizely/javascript-sdk/pull/623)), ([Issue #622](https://github.com/optimizely/javascript-sdk/issues/622))
+- Allowed to pass string type `logLevel` to `createInstance`. ([PR #627](https://github.com/optimizely/javascript-sdk/pull/627)), ([Issue #614](https://github.com/optimizely/javascript-sdk/issues/614))
+- Excluded `suppressImplicitAnyIndexErrors` from TSconfig and resolved reported TS compiler issues ([PR #616](https://github.com/optimizely/javascript-sdk/pull/616)), ([Issue #613](https://github.com/optimizely/javascript-sdk/issues/613))
+- Refactored TypeScript type definitions to only import from `shared_types` to provide isolation from internal modules ([#625](https://github.com/optimizely/javascript-sdk/pull/625))
 
 ### New Features
 

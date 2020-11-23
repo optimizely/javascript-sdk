@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { sprintf } from '@optimizely/js-sdk-utils';
+import { ObjectWithUnknownProperties } from '../../shared_types';
 
 import fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../enums';
@@ -30,7 +31,7 @@ const MODULE_NAME = 'ATTRIBUTES_VALIDATOR';
 export function validate(attributes: unknown): boolean {
   if (typeof attributes === 'object' && !Array.isArray(attributes) && attributes !== null) {
     Object.keys(attributes).forEach(function(key) {
-      if (typeof attributes[key] === 'undefined') {
+      if (typeof (attributes as ObjectWithUnknownProperties)[key] === 'undefined') {
         throw new Error(sprintf(ERROR_MESSAGES.UNDEFINED_ATTRIBUTE, MODULE_NAME, key));
       }
     });

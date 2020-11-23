@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { sprintf } from '@optimizely/js-sdk-utils';
+import { ObjectWithUnknownProperties } from '../../shared_types';
 
 import { 
   ERROR_MESSAGES, 
@@ -34,13 +35,17 @@ const SUPPORTED_VERSIONS = [DATAFILE_VERSIONS.V2, DATAFILE_VERSIONS.V3, DATAFILE
  */
 export const validate = function(config: unknown): boolean {
   if (typeof config === 'object' && config !== null) {
-    if (config['errorHandler'] && typeof config['errorHandler'].handleError !== 'function') {
+    const configObj = config as ObjectWithUnknownProperties;
+    const errorHandler = configObj['errorHandler'];
+    const eventDispatcher = configObj['eventDispatcher'];
+    const logger = configObj['logger'];
+    if (errorHandler && typeof (errorHandler as ObjectWithUnknownProperties)['handleError'] !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_ERROR_HANDLER, MODULE_NAME));
     }
-    if (config['eventDispatcher'] && typeof config['eventDispatcher'].dispatchEvent !== 'function') {
+    if (eventDispatcher && typeof (eventDispatcher as ObjectWithUnknownProperties)['dispatchEvent'] !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_EVENT_DISPATCHER, MODULE_NAME));
     }
-    if (config['logger'] && typeof config['logger'].log !== 'function') {
+    if (logger && typeof (logger as ObjectWithUnknownProperties)['log'] !== 'function') {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_LOGGER, MODULE_NAME));
     }
     return true;
@@ -71,8 +76,8 @@ export const validateDatafile = function(datafile: unknown): any {
     }
   }
   if (typeof datafile === 'object' && !Array.isArray(datafile) && datafile !== null) {
-    if (SUPPORTED_VERSIONS.indexOf(datafile['version']) === -1) {
-      throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, MODULE_NAME, datafile['version']));
+    if (SUPPORTED_VERSIONS.indexOf(datafile['version' as keyof unknown]) === -1) {
+      throw new Error(sprintf(ERROR_MESSAGES.INVALID_DATAFILE_VERSION, MODULE_NAME, datafile['version' as keyof unknown]));
     }
   }
 
