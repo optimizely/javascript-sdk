@@ -15,7 +15,7 @@
  ***************************************************************************/
 import Optimizely from '../../lib/optimizely';
 import OptimizelyDecision from '../optimizely_decision';
-import { UserAttributes } from '../../lib/shared_types';
+import { UserAttributes, OptimizelyDecideOptions } from '../../lib/shared_types';
 // import optimizely_config from '../core/optimizely_config';
 
 
@@ -44,7 +44,8 @@ export default class OptimizelyUserContext {
    * @param     {string}                     key         An attribute key
    * @param     {any}                        value       An attribute value
    */
-  setAttribute(key: string, value: any): void {
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  setAttribute(key: string, value: unknown): void {
     this.attributes[key] = value;
   }
 
@@ -63,12 +64,12 @@ export default class OptimizelyUserContext {
    * @param     {OptimizelyDecideOption}     options     A list of options for decision-making.
    * @return    {OptimizelyDecision}                     A decision result.
    */
-  decide(key: string, options?: OptimizelyDecideOption): OptimizelyDecision {
+  decide(key: string, options?: OptimizelyDecideOptions[]): OptimizelyDecision {
     return this.optimizely.decide(this, key, options);
   }
 
-  decideForKeys() {
-
+  decideForKeys(): void {
+    return;
   }
 
 }

@@ -50,7 +50,7 @@ export default class OptimizelyDecision {
     this.reasons = reasons;
   }
 
-  static newErrorDecision(key: string, user: OptimizelyUserContext, error: string): OptimizelyDecision {
+  static newErrorDecision(key: string, user: OptimizelyUserContext, error: string[]): OptimizelyDecision {
     return new OptimizelyDecision({
       variationKey: null,
       enabled: false,
@@ -58,8 +58,8 @@ export default class OptimizelyDecision {
       ruleKey: null,
       flagKey: key,
       userContext: user,
-      //convert to '[error]'
-      reasons: [error]
+      //TODO: implement reasons
+      reasons: error
     });
   }
 }
