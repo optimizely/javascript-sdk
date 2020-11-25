@@ -26,14 +26,14 @@ export interface ProjectConfig {
   revision: string;
   projectId: string;
   sendFlagDecisions?: boolean;
-  experimentKeyMap:{[key: string]: Experiment};
+  experimentKeyMap:{ [key: string]: Experiment };
   featureKeyMap: {
     [key: string]: FeatureFlag
   };
   rollouts: Rollout[];
   featureFlags: FeatureFlag[];
-  experimentIdMap: {[id: string]: Experiment};
-  experimentFeatureMap: {[key: string]: string[]};
+  experimentIdMap: { [id: string]: Experiment };
+  experimentFeatureMap: { [key: string]: string[] };
   experiments: Experiment[];
 }
 /**

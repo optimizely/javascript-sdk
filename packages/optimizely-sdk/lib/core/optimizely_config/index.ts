@@ -26,20 +26,8 @@ import {
 
 import { ProjectConfig } from '../project_config';
 
-interface ExperimentIds {
-  [key: string]: boolean;
-}
-
 interface FeatureVariablesMap {
   [key: string]: FeatureVariable[];
-}
-
-interface VariationVariablesMap {
-  [key: string]: VariationVariable;
-}
-
-interface VariationsMap {
-  [key: string]: Variation;
 }
 
 /**
@@ -54,8 +42,8 @@ export class OptimizelyConfig {
   private datafile: string;
 
   constructor(configObj: ProjectConfig, datafile: string) {
-    this.experimentsMap = this.getExperimentsMap(configObj);
-    this.featuresMap = this.getFeaturesMap(configObj, this.experimentsMap);
+    this.experimentsMap = OptimizelyConfig.getExperimentsMap(configObj);
+    this.featuresMap = OptimizelyConfig.getFeaturesMap(configObj, this.experimentsMap);
     this.revision = configObj.revision;
     this.datafile = datafile;
   }
@@ -71,10 +59,10 @@ export class OptimizelyConfig {
   /**
    * Get Experiment Ids which are part of rollout
    * @param       {Rollout[]}                  rollouts
-   * @returns     {ExperimentIds}              Experiment Ids which are part of rollout
+   * @returns     {[key: string]: boolean}     Map of experiment Ids to boolean
    */
-  private getRolloutExperimentIds(rollouts: Rollout[]): ExperimentIds {
-    return (rollouts || []).reduce((experimentIds: ExperimentIds, rollout) => {
+  static getRolloutExperimentIds(rollouts: Rollout[]): { [key: string]: boolean } {
+    return (rollouts || []).reduce((experimentIds: { [key: string]: boolean }, rollout) => {
       rollout.experiments.forEach((e) => {
         (experimentIds)[e.id] = true;
       });
@@ -88,7 +76,7 @@ export class OptimizelyConfig {
    * @param       {ProjectConfig}              configObj
    * @returns     {OptimizelyExperimentsMap}   Map of experiments excluding rollouts
    */
-  private getExperimentsMap(configObj: ProjectConfig): OptimizelyExperimentsMap {
+  static getExperimentsMap(configObj: ProjectConfig): OptimizelyExperimentsMap {
     const rolloutExperimentIds = this.getRolloutExperimentIds(configObj.rollouts);
     const featureVariablesMap = (configObj.featureFlags || []).reduce(
       (resultMap: FeatureVariablesMap, feature) => {
@@ -106,7 +94,7 @@ export class OptimizelyConfig {
             id: experiment.id,
             key: experiment.key,
             variationsMap: (experiment.variations || []).reduce(
-              (variations: VariationsMap, variation) => {
+              (variations: { [key: string]: Variation }, variation) => {
                 variations[variation.key] = {
                   id: variation.id,
                   key: variation.key,
@@ -137,7 +125,7 @@ export class OptimizelyConfig {
    * @param       {FeatureVariablesMap}        featureVariablesMap
    * @returns     {OptimizelyVariablesMap}     Map of variables
    */
-  private getMergedVariablesMap(
+  static getMergedVariablesMap(
     configObj: ProjectConfig,
     variation: Variation,
     experimentId: string,
@@ -150,7 +138,7 @@ export class OptimizelyConfig {
       const experimentFeatureVariables = featureVariablesMap[featureId.toString()];
       // Temporary variation variables map to get values to merge.
       const tempVariablesIdMap = (variation.variables || []).reduce(
-        (variablesMap: VariationVariablesMap, variable) => {
+        (variablesMap: { [key: string]: VariationVariable }, variable) => {
           variablesMap[variable.id] = {
             id: variable.id,
             value: variable.value,
@@ -187,7 +175,7 @@ export class OptimizelyConfig {
    * @param       {OptimizelyExperimentsMap}   allExperiments
    * @returns     {OptimizelyFeaturesMap}      Map of all experiments
    */
-  private getFeaturesMap(
+  static getFeaturesMap(
     configObj: ProjectConfig,
     allExperiments: OptimizelyExperimentsMap
   ): OptimizelyFeaturesMap {
