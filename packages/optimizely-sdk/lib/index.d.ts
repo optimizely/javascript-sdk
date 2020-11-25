@@ -203,8 +203,9 @@ declare module '@optimizely/optimizely-sdk/lib/utils/enums' {
 
 declare module '@optimizely/optimizely-sdk/lib/plugins/logger' {
   import * as enums from '@optimizely/optimizely-sdk/lib/utils/enums';
-  export type LogHandler = import('@optimizely/js-sdk-logging').LogHandler;
+  import { LogHandler } from '@optimizely/js-sdk-logging';
 
+  export type myLogger = LogHandler;
   export interface LoggerConfig {
     logLevel?: enums.LOG_LEVEL | string;
     logToConsole?: boolean;
