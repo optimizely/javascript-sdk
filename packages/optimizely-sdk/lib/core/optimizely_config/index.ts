@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { isFeatureExperiment } from '../project_config';
+import { isFeatureExperiment, ProjectConfig } from '../project_config';
 import {
   OptimizelyExperimentsMap,
   OptimizelyFeaturesMap,
@@ -23,8 +23,6 @@ import {
   Variation,
   Rollout,
 } from '../../shared_types';
-
-import { ProjectConfig } from '../project_config';
 
 interface FeatureVariablesMap {
   [key: string]: FeatureVariable[];
