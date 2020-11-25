@@ -18,7 +18,8 @@ import {
   FeatureFlag,
   FeatureVariable,
   Experiment,
-  Variation
+  Variation,
+  Rollout,
 } from '../../shared_types';
 
 export interface ProjectConfig {
@@ -29,6 +30,11 @@ export interface ProjectConfig {
   featureKeyMap: {
     [key: string]: FeatureFlag
   };
+  rollouts: Rollout[];
+  featureFlags: FeatureFlag[];
+  experimentIdMap: {[id: string]: Experiment};
+  experimentFeatureMap: {[key: string]: string[]};
+  experiments: Experiment[];
 }
 /**
  * Determine for given experiment if event is running, which determines whether should be dispatched or not

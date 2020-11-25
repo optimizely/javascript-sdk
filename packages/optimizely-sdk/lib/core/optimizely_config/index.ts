@@ -18,32 +18,16 @@ import {
   OptimizelyExperimentsMap,
   OptimizelyFeaturesMap,
   OptimizelyVariablesMap,
-  FeatureFlag,
-  Experiment,
   FeatureVariable,
   VariationVariable,
   Variation,
+  Rollout,
 } from '../../shared_types';
 
-interface OptimizelyConfigOptions {
-  projectId: string;
-  revision: string;
-  rollouts: Rollout[];
-  featureFlags: FeatureFlag[];
-  experiments: Experiment[];
-  experimentIdMap: { [id: string]: Experiment };
-  experimentFeatureMap: { [key: string]: string[] };
-  experimentKeyMap: { [key: string]: Experiment };
-  featureKeyMap: { [key: string]: FeatureFlag };
-}
+import { ProjectConfig } from '../project_config';
 
 interface ExperimentIds {
   [key: string]: boolean;
-}
-
-interface Rollout {
-  id: string;
-  experiments: Experiment[];
 }
 
 interface FeatureVariablesMap {
@@ -60,8 +44,8 @@ interface VariationsMap {
 
 /**
  * The OptimizelyConfig class
- * @param {OptimizelyConfigOptions} configObj
- * @param {string} datafile
+ * @param {ProjectConfig} configObj
+ * @param {string}        datafile
  */
 export class OptimizelyConfig {
   public experimentsMap: OptimizelyExperimentsMap;
@@ -69,7 +53,7 @@ export class OptimizelyConfig {
   public revision: string;
   private datafile: string;
 
-  constructor(configObj: OptimizelyConfigOptions, datafile: string) {
+  constructor(configObj: ProjectConfig, datafile: string) {
     this.experimentsMap = this.getExperimentsMap(configObj);
     this.featuresMap = this.getFeaturesMap(configObj, this.experimentsMap);
     this.revision = configObj.revision;
@@ -101,10 +85,10 @@ export class OptimizelyConfig {
 
   /**
    * Get Map of all experiments except rollouts
-   * @param       {OptimizelyConfigOptions}    configObj
+   * @param       {ProjectConfig}              configObj
    * @returns     {OptimizelyExperimentsMap}   Map of experiments excluding rollouts
    */
-  private getExperimentsMap(configObj: OptimizelyConfigOptions): OptimizelyExperimentsMap {
+  private getExperimentsMap(configObj: ProjectConfig): OptimizelyExperimentsMap {
     const rolloutExperimentIds = this.getRolloutExperimentIds(configObj.rollouts);
     const featureVariablesMap = (configObj.featureFlags || []).reduce(
       (resultMap: FeatureVariablesMap, feature) => {
@@ -147,14 +131,14 @@ export class OptimizelyConfig {
 
   /**
    * Merge feature key and type from feature variables to variation variables
-   * @param       {OptimizelyConfigOptions}    configObj
+   * @param       {ProjectConfig}              configObj
    * @param       {Variation}                  variation
    * @param       {string}                     experimentId
    * @param       {FeatureVariablesMap}        featureVariablesMap
    * @returns     {OptimizelyVariablesMap}     Map of variables
    */
   private getMergedVariablesMap(
-    configObj: OptimizelyConfigOptions,
+    configObj: ProjectConfig,
     variation: Variation,
     experimentId: string,
     featureVariablesMap: FeatureVariablesMap,
@@ -199,12 +183,12 @@ export class OptimizelyConfig {
 
   /**
    * Get map of all experiments
-   * @param       {OptimizelyConfigOptions}    configObj
+   * @param       {ProjectConfig}              configObj
    * @param       {OptimizelyExperimentsMap}   allExperiments
    * @returns     {OptimizelyFeaturesMap}      Map of all experiments
    */
   private getFeaturesMap(
-    configObj: OptimizelyConfigOptions,
+    configObj: ProjectConfig,
     allExperiments: OptimizelyExperimentsMap
   ): OptimizelyFeaturesMap {
     return (configObj.featureFlags || []).reduce((features: OptimizelyFeaturesMap, feature) => {
@@ -241,10 +225,10 @@ export class OptimizelyConfig {
 
 /**
  * Create an instance of OptimizelyConfig
- * @param   {OptimizelyConfigOptions}   configObj
+ * @param   {ProjectConfig}             configObj
  * @param   {string}                    datafile
  * @returns {OptimizelyConfig}          An instance of OptimizelyConfig
  */
-export function createOptimizelyConfig(configObj: OptimizelyConfigOptions, datafile: string): OptimizelyConfig {
+export function createOptimizelyConfig(configObj: ProjectConfig, datafile: string): OptimizelyConfig {
   return new OptimizelyConfig(configObj, datafile);
 }

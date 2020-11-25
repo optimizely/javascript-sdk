@@ -112,6 +112,11 @@ export type ObjectWithUnknownProperties = {
   [key: string]: unknown;
 }
 
+export interface Rollout {
+  id: string;
+  experiments: Experiment[];
+}
+
 /**
  * Optimizely Config Entities
  */
