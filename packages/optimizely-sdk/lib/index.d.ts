@@ -206,6 +206,7 @@ declare module '@optimizely/optimizely-sdk/lib/plugins/logger' {
   import * as logger from '@optimizely/js-sdk-logging';
 
   export type LogHandler = logger.LogHandler;
+  export function getLogger(name?: string | undefined): logger.LoggerFacade;
   export interface LoggerConfig {
     logLevel?: enums.LOG_LEVEL | string;
     logToConsole?: boolean;
