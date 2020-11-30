@@ -44,7 +44,6 @@ export default class OptimizelyUserContext {
    * @param     {string}                     key         An attribute key
    * @param     {any}                        value       An attribute value
    */
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   setAttribute(key: string, value: unknown): void {
     this.attributes[key] = value;
   }

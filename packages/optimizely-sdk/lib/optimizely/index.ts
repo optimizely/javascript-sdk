@@ -49,6 +49,7 @@ import {
   LOG_LEVEL,
   LOG_MESSAGES,
   DECISION_SOURCES,
+  DECISION_MESSAGES,
   FEATURE_VARIABLE_TYPES,
   DECISION_NOTIFICATION_TYPES,
   NOTIFICATION_TYPES
@@ -112,8 +113,13 @@ export default class Optimizely {
     this.eventDispatcher = config.eventDispatcher;
     this.isOptimizelyConfigValid = config.isValidInstance;
     this.logger = config.logger;
-    this.defaultDecideOptions = config.defaultDecideOptions;
 
+    let defaultDecideOptions = config.defaultDecideOptions ?? [];
+    if (!Array.isArray(defaultDecideOptions)) {
+      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DEFAULT_DECIDE_OPTIONS, MODULE_NAME));
+      defaultDecideOptions = [];
+    }
+    this.defaultDecideOptions = defaultDecideOptions;
     this.projectConfigManager = createProjectConfigManager({
       datafile: config.datafile,
       datafileOptions: config.datafileOptions,
@@ -1481,15 +1487,18 @@ export default class Optimizely {
     options?: OptimizelyDecideOptions[]
   ): OptimizelyDecision {
     const configObj = this.projectConfigManager.getConfig();
-    if (configObj === null) {
-      //TODO: construct messages
-      return OptimizelyDecision.newErrorDecision(key, user, ["no config message"]);
+    const reasons: string[] = [];
+    if (!this.isValidInstance() || !configObj) {
+      reasons.push(DECISION_MESSAGES.SDK_NOT_READY);
+      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decide'));
+      return OptimizelyDecision.newErrorDecision(key, user, reasons);
     }
 
     const feature = configObj.featureKeyMap[key];
     if (!feature) {
-      //TODO: construct messages
-      return OptimizelyDecision.newErrorDecision(key, user, ["no feature message"]);
+      reasons.push(sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, key));
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, key));
+      return OptimizelyDecision.newErrorDecision(key, user, reasons);
     }
 
     let sourceInfo = {};
@@ -1546,7 +1555,7 @@ export default class Optimizely {
       )
       decisionEventDispatched = true;
     }
-    // TODO: include decision reasons when impelented
+
     const featureInfo = {
       featureKey: key,
       featureEnabled: flagEnabled,
@@ -1570,7 +1579,7 @@ export default class Optimizely {
       ruleKey: experimentKey,
       flagKey: key,
       userContext: user,
-      reasons: [],
+      reasons: reasons,
     });
   }
 }
