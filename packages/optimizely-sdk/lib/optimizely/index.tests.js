@@ -20,12 +20,12 @@ import eventProcessor from '../core/event_processor';
 import * as logging from '@optimizely/js-sdk-logging';
 
 import Optimizely from './';
+import OptimizelyUserContext from '../optimizely_user_context';
 import AudienceEvaluator from '../core/audience_evaluator';
 import bluebird from 'bluebird';
 import bucketer from '../core/bucketer';
 import * as projectConfigManager from '../core/project_config/project_config_manager';
 import * as enums from '../utils/enums';
-import * as eventBuilder from '../core/event_builder';
 import eventDispatcher from '../plugins/event_dispatcher/index.node';
 import errorHandler from '../plugins/error_handler';
 import fns from '../utils/fns';
@@ -210,7 +210,6 @@ describe('lib/optimizely', function() {
         it('should not log an error when sdkKey is provided and datafile is not provided', function() {
           new Optimizely({
             clientEngine: 'node-sdk',
-            eventBuilder: eventBuilder,
             errorHandler: stubErrorHandler,
             eventDispatcher: eventDispatcher,
             isValidInstance: true,
@@ -2626,7 +2625,6 @@ describe('lib/optimizely', function() {
             optlyInstance = new Optimizely({
               clientEngine: 'node-sdk',
               datafile: testData.getTestProjectConfig(),
-              eventBuilder: eventBuilder,
               errorHandler: errorHandler,
               eventDispatcher: eventDispatcher,
               jsonSchemaValidator: jsonSchemaValidator,
@@ -2676,7 +2674,6 @@ describe('lib/optimizely', function() {
             optlyInstance = new Optimizely({
               clientEngine: 'node-sdk',
               datafile: testData.getTestProjectConfig(),
-              eventBuilder: eventBuilder,
               errorHandler: errorHandler,
               eventDispatcher: eventDispatcher,
               jsonSchemaValidator: jsonSchemaValidator,
@@ -2723,7 +2720,6 @@ describe('lib/optimizely', function() {
             var optly = new Optimizely({
               clientEngine: 'node-sdk',
               datafile: testData.getTestProjectConfigWithFeatures(),
-              eventBuilder: eventBuilder,
               errorHandler: errorHandler,
               eventDispatcher: eventDispatcher,
               jsonSchemaValidator: jsonSchemaValidator,
@@ -4349,6 +4345,7 @@ describe('lib/optimizely', function() {
         var userId = "testUser1";
         var attributes = { test_attribute: 'test_value' };
         var user = optlyInstance.createUserContext(userId, attributes);
+        assert.instanceOf(user, OptimizelyUserContext);
         assert.deepEqual(optlyInstance, user.getOptimizely());
         assert.deepEqual(attributes, user.getAttributes());
         assert.deepEqual(userId, user.getUserId());
@@ -4357,6 +4354,7 @@ describe('lib/optimizely', function() {
       it('should create OptimizelyUserContext when no attirbutes provided', function() {
         var userId = "testUser2";
         var user = optlyInstance.createUserContext(userId);
+        assert.instanceOf(user, OptimizelyUserContext);
         assert.deepEqual(optlyInstance, user.getOptimizely());
         assert.deepEqual({}, user.getAttributes());
         assert.deepEqual(userId, user.getUserId());
@@ -4368,12 +4366,14 @@ describe('lib/optimizely', function() {
         var attributes1 = { test_attribute: 'test_value' };
         var user1 = optlyInstance.createUserContext(userId1, attributes1);
         var user2 = optlyInstance.createUserContext(userId2);
-        assert.deepEqual(optlyInstance, user1.getOptimizely());
-        assert.deepEqual(attributes1, user1.getAttributes());
-        assert.deepEqual(userId1, user1.getUserId());
-        assert.deepEqual(optlyInstance, user2.getOptimizely());
-        assert.deepEqual({}, user2.getAttributes());
-        assert.deepEqual(userId2, user2.getUserId());
+        assert.instanceOf(user1, OptimizelyUserContext);
+        assert.deepEqual(user1.getOptimizely(), optlyInstance);
+        assert.deepEqual(user1.getAttributes(), attributes1);
+        assert.deepEqual(user1.getUserId(), userId1);
+        assert.instanceOf(user2, OptimizelyUserContext);
+        assert.deepEqual(user2.getOptimizely(), optlyInstance);
+        assert.deepEqual(user2.getAttributes(), {});
+        assert.deepEqual(user2.getUserId(), userId2);
       });
 
       it('should throw an error for invalid user ID', function() {
@@ -4382,8 +4382,8 @@ describe('lib/optimizely', function() {
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
         assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
         sinon.assert.calledOnce(createdLogger.log);
-        var errorMessage = createdLogger.log.args[0][1];
-        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
     });
   });
@@ -4399,7 +4399,6 @@ describe('lib/optimizely', function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
         datafile: testData.getTestProjectConfig(),
-        eventBuilder: eventBuilder,
         errorHandler: errorHandler,
         eventDispatcher: eventDispatcher,
         jsonSchemaValidator: jsonSchemaValidator,
@@ -4454,7 +4453,6 @@ describe('lib/optimizely', function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
         datafile: testData.getTestProjectConfigWithFeatures(),
-        eventBuilder: eventBuilder,
         errorHandler: errorHandler,
         eventDispatcher: eventDispatcher,
         jsonSchemaValidator: jsonSchemaValidator,
@@ -4487,7 +4485,6 @@ describe('lib/optimizely', function() {
             lasers: 300,
             message: 'this is not a valid datafile',
           },
-          eventBuilder: eventBuilder,
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
           jsonSchemaValidator: jsonSchemaValidator,
@@ -5011,7 +5008,6 @@ describe('lib/optimizely', function() {
             lasers: 300,
             message: 'this is not a valid datafile',
           },
-          eventBuilder: eventBuilder,
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
           jsonSchemaValidator: jsonSchemaValidator,
@@ -5051,7 +5047,6 @@ describe('lib/optimizely', function() {
         optlyInstance = new Optimizely({
           clientEngine: 'node-sdk',
           datafile: testData.getTestProjectConfigWithFeatures(),
-          eventBuilder: eventBuilder,
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
           jsonSchemaValidator: jsonSchemaValidator,
@@ -7222,7 +7217,6 @@ describe('lib/optimizely', function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
         datafile: testData.getTypedAudiencesConfig(),
-        eventBuilder: eventBuilder,
         errorHandler: errorHandler,
         eventDispatcher: eventDispatcher,
         jsonSchemaValidator: jsonSchemaValidator,
@@ -7354,7 +7348,6 @@ describe('lib/optimizely', function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
         datafile: testData.getTypedAudiencesConfig(),
-        eventBuilder: eventBuilder,
         errorHandler: errorHandler,
         eventDispatcher: eventDispatcher,
         jsonSchemaValidator: jsonSchemaValidator,
@@ -7545,7 +7538,6 @@ describe('lib/optimizely', function() {
         optlyInstance = new Optimizely({
           clientEngine: 'node-sdk',
           datafile: testData.getTestProjectConfig(),
-          eventBuilder: eventBuilder,
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
           jsonSchemaValidator: jsonSchemaValidator,
@@ -7833,7 +7825,6 @@ describe('lib/optimizely', function() {
           optlyInstance = new Optimizely({
             clientEngine: 'node-sdk',
             datafile: testData.getTestProjectConfig(),
-            eventBuilder: eventBuilder,
             errorHandler: errorHandler,
             eventDispatcher: eventDispatcher,
             jsonSchemaValidator: jsonSchemaValidator,
@@ -7864,7 +7855,6 @@ describe('lib/optimizely', function() {
           optlyInstance = new Optimizely({
             clientEngine: 'node-sdk',
             datafile: testData.getTestProjectConfig(),
-            eventBuilder: eventBuilder,
             errorHandler: errorHandler,
             eventDispatcher: eventDispatcher,
             jsonSchemaValidator: jsonSchemaValidator,
@@ -8244,7 +8234,6 @@ describe('lib/optimizely', function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
         datafile: testData.getTestProjectConfig(),
-        eventBuilder: eventBuilder,
         errorHandler: {
           handleError: function() {},
         },
