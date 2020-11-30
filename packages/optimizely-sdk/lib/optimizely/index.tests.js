@@ -4313,6 +4313,81 @@ describe('lib/optimizely', function() {
     });
   });
 
+  describe('decide APIs', function() {
+    var optlyInstance;
+    var bucketStub;
+    var createdLogger = logger.createLogger({
+      logLevel: LOG_LEVEL.INFO,
+      logToConsole: false,
+    });
+    beforeEach(function() {
+      optlyInstance = new Optimizely({
+        clientEngine: 'node-sdk',
+        datafile: testData.getTestProjectConfig(),
+        errorHandler: errorHandler,
+        eventDispatcher: eventDispatcher,
+        jsonSchemaValidator: jsonSchemaValidator,
+        logger: createdLogger,
+        isValidInstance: true,
+        eventBatchSize: 1,
+      });
+
+      bucketStub = sinon.stub(bucketer, 'bucket');
+      sinon.stub(errorHandler, 'handleError');
+      sinon.stub(createdLogger, 'log');
+      sinon.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
+    });
+
+    afterEach(function() {
+      bucketer.bucket.restore();
+      errorHandler.handleError.restore();
+      createdLogger.log.restore();
+      fns.uuid.restore();
+    });
+    describe('#createUserContext', function() {
+      it('should create OptimizelyUserContext with provided attributes and userId', function() {
+        var userId = "testUser1";
+        var attributes = { test_attribute: 'test_value' };
+        var user = optlyInstance.createUserContext(userId, attributes);
+        assert.deepEqual(optlyInstance, user.getOptimizely());
+        assert.deepEqual(attributes, user.getAttributes());
+        assert.deepEqual(userId, user.getUserId());
+      });
+
+      it('should create OptimizelyUserContext when no attirbutes provided', function() {
+        var userId = "testUser2";
+        var user = optlyInstance.createUserContext(userId);
+        assert.deepEqual(optlyInstance, user.getOptimizely());
+        assert.deepEqual({}, user.getAttributes());
+        assert.deepEqual(userId, user.getUserId());
+      });
+
+      it('should create multiple instances of OptimizelyUserContext', function() {
+        var userId1 = "testUser1";
+        var userId2 = "testUser2";
+        var attributes1 = { test_attribute: 'test_value' };
+        var user1 = optlyInstance.createUserContext(userId1, attributes1);
+        var user2 = optlyInstance.createUserContext(userId2);
+        assert.deepEqual(optlyInstance, user1.getOptimizely());
+        assert.deepEqual(attributes1, user1.getAttributes());
+        assert.deepEqual(userId1, user1.getUserId());
+        assert.deepEqual(optlyInstance, user2.getOptimizely());
+        assert.deepEqual({}, user2.getAttributes());
+        assert.deepEqual(userId2, user2.getUserId());
+      });
+
+      it('should throw an error for invalid user ID', function() {
+        assert.isNull(optlyInstance.createUserContext(null));
+        sinon.assert.calledOnce(errorHandler.handleError);
+        var errorMessage = errorHandler.handleError.lastCall.args[0].message;
+        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
+        sinon.assert.calledOnce(createdLogger.log);
+        var errorMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
+      });
+    });
+  });
+
   //tests separated out from APIs because of mock bucketing
   describe('getVariationBucketingIdAttribute', function() {
     var optlyInstance;

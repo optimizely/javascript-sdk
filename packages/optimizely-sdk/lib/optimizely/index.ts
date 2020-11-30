@@ -1556,6 +1556,7 @@ export default class Optimizely {
       decisionEventDispatched = true;
     }
 
+    const shouldIncludeReasons = allDecideOptions.includes(OptimizelyDecideOptions.INCLUDE_REASONS);
     const featureInfo = {
       featureKey: key,
       featureEnabled: flagEnabled,
@@ -1579,7 +1580,7 @@ export default class Optimizely {
       ruleKey: experimentKey,
       flagKey: key,
       userContext: user,
-      reasons: reasons,
+      reasons: shouldIncludeReasons ? reasons: [],
     });
   }
 }

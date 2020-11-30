@@ -20,7 +20,7 @@ import sinon from 'sinon';
 import OptimizelyUserContext from './';
 
 
-describe('lib/optimizely', function() {
+describe('lib/optimizely_user_context', function() {
    beforeEach(function() {
 
    });

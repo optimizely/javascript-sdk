@@ -56,6 +56,10 @@ export default class OptimizelyUserContext {
     return this.attributes;
   }
 
+  getOptimizely(): Optimizely {
+    return this.optimizely;
+  }
+
   /**
    * Returns a decision result for a given flag key and a user context, which contains all data required to deliver the flag.
    * If the SDK finds an error, it will return a decision with null for variationKey. The decision will include an error message in reasons.
