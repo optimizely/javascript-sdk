@@ -16,9 +16,6 @@
 import Optimizely from '../../lib/optimizely';
 import OptimizelyDecision from '../optimizely_decision';
 import { UserAttributes, OptimizelyDecideOptions } from '../../lib/shared_types';
-// import optimizely_config from '../core/optimizely_config';
-
-
 
 export default class OptimizelyUserContext {
   private optimizely: Optimizely;

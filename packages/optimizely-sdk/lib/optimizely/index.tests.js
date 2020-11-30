@@ -4342,7 +4342,7 @@ describe('lib/optimizely', function() {
     });
     describe('#createUserContext', function() {
       it('should create OptimizelyUserContext with provided attributes and userId', function() {
-        var userId = "testUser1";
+        var userId = 'testUser1';
         var attributes = { test_attribute: 'test_value' };
         var user = optlyInstance.createUserContext(userId, attributes);
         assert.instanceOf(user, OptimizelyUserContext);
@@ -4351,8 +4351,8 @@ describe('lib/optimizely', function() {
         assert.deepEqual(userId, user.getUserId());
       });
 
-      it('should create OptimizelyUserContext when no attirbutes provided', function() {
-        var userId = "testUser2";
+      it('should create OptimizelyUserContext when no atrirbutes provided', function() {
+        var userId = 'testUser2';
         var user = optlyInstance.createUserContext(userId);
         assert.instanceOf(user, OptimizelyUserContext);
         assert.deepEqual(optlyInstance, user.getOptimizely());
@@ -4361,8 +4361,8 @@ describe('lib/optimizely', function() {
       });
 
       it('should create multiple instances of OptimizelyUserContext', function() {
-        var userId1 = "testUser1";
-        var userId2 = "testUser2";
+        var userId1 = 'testUser1'
+        var userId2 = 'testUser2';
         var attributes1 = { test_attribute: 'test_value' };
         var user1 = optlyInstance.createUserContext(userId1, attributes1);
         var user2 = optlyInstance.createUserContext(userId2);

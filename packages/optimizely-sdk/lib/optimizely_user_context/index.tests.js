@@ -37,7 +37,7 @@ describe('lib/optimizely_user_context', function() {
   describe('APIs', function() {
     var optlyInstance;
     var createdLogger = logger.createLogger({
-        logLevel: LOG_LEVEL.DEBUG,
+      logLevel: LOG_LEVEL.DEBUG,
     });
     beforeEach(function() {
       optlyInstance = new Optimizely({
@@ -57,6 +57,7 @@ describe('lib/optimizely_user_context', function() {
       eventDispatcher.dispatchEvent.restore();
       errorHandler.handleError.restore();
     });
+
     describe('#setAttribute', function() {
       it('should set provided user attributes', function() {
         var userId = 'user1';
@@ -68,8 +69,8 @@ describe('lib/optimizely_user_context', function() {
         user.setAttribute('k4', 3.5);
         assert.deepEqual(user.getOptimizely(), optlyInstance);
         assert.deepEqual(user.getUserId(), userId);
+
         var newAttributes = user.getAttributes();
-        console.log('newAttributes', newAttributes);
         assert.deepEqual(newAttributes['test_attribute'], 'test_value');
         assert.deepEqual(newAttributes['k1'], {'hello': 'there'});
         assert.deepEqual(newAttributes['k2'], true);
