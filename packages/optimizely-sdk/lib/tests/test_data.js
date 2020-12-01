@@ -557,176 +557,52 @@ var decideConfig = {
   audiences: [
     {
       id: '13389141123',
-      conditions: [
-        'and',
-        [
-          'or',
-          [
-            'or',
-            {
-              match: 'exact',
-              name: 'gender',
-              type: 'custom_attribute',
-              value: 'f'
-            }
-          ]
-        ]
-      ],
+      conditions: '["and",["or",["or",{ "match": "exact", "name": "gender", "type": "custom_attribute", "value": "f"}]]]',
       name: 'gender'
     },
     {
       id: '13389130056',
-      conditions: [
-        'and',
-        [
-          'or',
-          [
-            'or',
-            {
-              match: 'exact',
-              name: 'country',
-              type: 'custom_attribute',
-              value: 'US'
-            }
-          ]
-        ]
-      ],
+      conditions: '["and",["or",["or",{ "match": "exact","name": "country","type": "custom_attribute","value": "US"}]]]',
       name: 'US'
     },
     {
       id: '12208130097',
-      conditions: [
-        'and',
-        [
-          'or',
-          [
-            'or',
-            {
-              match: 'exact',
-              name: 'browser',
-              type: 'custom_attribute',
-              value: 'safari'
-            }
-          ]
-        ]
-      ],
+      conditions: '["and",["or",["or",{"match": "exact","name": "browser","type": "custom_attribute","value": "safari"}]]]',
       name: 'safari'
     },
     {
-      id: 'age_18',
-      conditions: [
-        'and',
-        [
-          'or',
-          [
-            'or',
-            {
-              match: 'gt',
-              name: 'age',
-              type: 'custom_attribute',
-              value: 18
-            }
-          ]
-        ]
-      ],
+      id: "age_18",
+      conditions: '["and",["or",["or",{"match": "gt","name": "age","type": "custom_attribute","value": 18}]]]',
       name: 'age_18'
     },
     {
       id: 'invalid_format',
-      conditions: [],
+      conditions: '[]',
       name: 'invalid_format'
     },
     {
       id: 'invalid_condition',
-      conditions: [
-        'and',
-        [
-          'or',
-          [
-            'or',
-            {
-              match: 'gt',
-              name: 'age',
-              type: 'custom_attribute',
-              value: 'US'
-            }
-          ]
-        ]
-      ],
+      conditions: '["and",["or",["or",{"match": "gt","name": "age","type": "custom_attribute","value": "US"}]]]',
       name: 'invalid_condition'
     },
     {
       id: 'invalid_type',
-      conditions: [
-        'and',
-        [
-          'or',
-          [
-            'or',
-            {
-              match: 'gt',
-              name: 'age',
-              type: 'invalid',
-              value: 18
-            }
-          ]
-        ]
-      ],
+      conditions: '["and",["or",["or",{"match": "gt","name": "age","type": "invalid","value": 18}]]]',
       name: 'invalid_type'
     },
     {
       id: 'invalid_match',
-      conditions: [
-        'and',
-        [
-          'or',
-          [
-            'or',
-            {
-              match: 'invalid',
-              name: 'age',
-              type: 'custom_attribute',
-              value: 18
-            }
-          ]
-        ]
-      ],
+      conditions: '["and",["or",["or",{"match": "invalid","name": "age","type": "custom_attribute","value": 18}]]]',
       name: 'invalid_match'
     },
     {
       id: 'nil_value',
-      conditions: [
-        'and',
-        [
-          'or',
-          [
-            'or',
-            {
-              match: 'gt',
-              name: 'age',
-              type: 'custom_attribute'
-            }
-          ]
-        ]
-      ],
+      conditions: '["and",["or",["or",{"match": "gt","name": "age","type": "custom_attribute"}]]]',
       name: 'nil_value'
     },
     {
       id: 'invalid_name',
-      conditions: [
-        'and',
-        [
-          'or',
-          [
-            'or',
-            {
-              match: 'gt',
-              type: 'custom_attribute',
-              value: 18
-            }
-          ]
-        ]
-      ],
+      conditions: '["and",["or",["or",{"match": "gt","type": "custom_attribute","value": 18}]]]',
       name: 'invalid_name'
     }
   ],

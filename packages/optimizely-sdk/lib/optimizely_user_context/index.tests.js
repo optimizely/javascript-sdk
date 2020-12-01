@@ -14,7 +14,6 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import { assert } from 'chai';
-import cloneDeep from 'lodash/cloneDeep';
 import sinon from 'sinon';
 
 
@@ -138,7 +137,27 @@ describe('lib/optimizely_user_context', function() {
     });
 
     describe('#decide', function() {
-
+      var userId = 'tester';
+      it('should make a decision for feature_test', function() {
+        var flagKey = "feature_2";
+        var experimentKey = "exp_no_audience";
+        var variationKey = "variation_with_traffic";
+        var experimentId = "10420810910";
+        var variationId = "10418551353";
+        var variablesExpected = optimizely.getAllFeatureVariables(flagKey, userId);
+        var user = new OptimizelyUserContext({
+          optimizely,
+          userId,
+        });
+        var decision = user.decide(flagKey);
+        assert.deepEqual(decision.variationKey, variationKey);
+        assert.isTrue(decision.enabled);
+        assert.deepEqual(decision.variables, variablesExpected);
+        assert.deepEqual(decision.ruleKey, experimentKey);
+        assert.deepEqual(decision.flagKey, flagKey);
+        assert.deepEqual(decision.userContext, user);
+        assert.deepEqual(decision.reasons.length, 0);
+      });
     });
   });
 });

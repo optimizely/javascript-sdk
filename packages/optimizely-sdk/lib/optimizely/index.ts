@@ -1535,13 +1535,13 @@ export default class Optimizely {
       );
     }
 
-    const variablesMap: { [key: string]: string } = {};
+    const variablesMap: { [key: string]: unknown } = {};
     let decisionEventDispatched = false;
 
     if (!allDecideOptions.includes(OptimizelyDecideOptions.EXCLUDE_VARIABLES)) {
       const featureFlag = projectConfig.getFeatureFromKey(configObj, key, this.logger);
       featureFlag?.variables.forEach(variable => {
-        variablesMap[variable.key] = variable.defaultValue;
+        variablesMap[variable.key] = this.getFeatureVariableValueFromVariation(key, flagEnabled, decisionObj.variation, variable, userId);
       });
     }
 
