@@ -336,6 +336,489 @@ var config = {
   projectId: '111001',
 };
 
+var decideConfig = {
+  version: '4',
+  sendFlagDecisions: true,
+  rollouts: [
+    {
+      experiments: [
+        {
+          audienceIds: [
+            '13389130056'
+          ],
+          forcedVariations: {},
+          id: '3332020515',
+          key: '3332020515',
+          layerId: '3319450668',
+          status: 'Running',
+          trafficAllocation: [
+            {
+              endOfRange: 10000,
+              entityId: '3324490633'
+            }
+          ],
+          variations: [
+            {
+              featureEnabled: true,
+              id: '3324490633',
+              key: '3324490633',
+              variables: []
+            }
+          ]
+        },
+        {
+          audienceIds: [
+            '12208130097'
+          ],
+          forcedVariations: {},
+          id: '3332020494',
+          key: '3332020494',
+          layerId: '3319450668',
+          status: 'Running',
+          trafficAllocation: [
+            {
+              endOfRange: 0,
+              entityId: '3324490562'
+            }
+          ],
+          variations: [
+            {
+              featureEnabled: true,
+              id: '3324490562',
+              key: '3324490562',
+              variables: []
+            }
+          ]
+        },
+        {
+          status: 'Running',
+          audienceIds: [],
+          variations: [
+            {
+              variables: [],
+              id: '18257766532',
+              key: '18257766532',
+              featureEnabled: true
+            }
+          ],
+          id: '18322080788',
+          key: '18322080788',
+          layerId: '18263344648',
+          trafficAllocation: [
+            {
+              entityId: '18257766532',
+              endOfRange: 10000
+            }
+          ],
+          forcedVariations: {}
+        }
+      ],
+      id: '3319450668'
+    }
+  ],
+  anonymizeIP: true,
+  botFiltering: true,
+  projectId: '10431130345',
+  variables: [],
+  featureFlags: [
+    {
+      experimentIds: [
+        '10390977673'
+      ],
+      id: '4482920077',
+      key: 'feature_1',
+      rolloutId: '3319450668',
+      variables: [
+        {
+          defaultValue: '42',
+          id: '2687470095',
+          key: 'i_42',
+          type: 'integer'
+        },
+        {
+          defaultValue: '4.2',
+          id: '2689280165',
+          key: 'd_4_2',
+          type: 'double'
+        },
+        {
+          defaultValue: 'true',
+          id: '2689660112',
+          key: 'b_true',
+          type: 'boolean'
+        },
+        {
+          defaultValue: 'foo',
+          id: '2696150066',
+          key: 's_foo',
+          type: 'string'
+        },
+        {
+          defaultValue: {
+            value: 1
+          },
+          id: '2696150067',
+          key: 'j_1',
+          type: 'string',
+          subType: 'json'
+        },
+        {
+          defaultValue: 'invalid',
+          id: '2696150068',
+          key: 'i_1',
+          type: 'invalid',
+          subType: ''
+        }
+      ]
+    },
+    {
+      experimentIds: [
+        '10420810910'
+      ],
+      id: '4482920078',
+      key: 'feature_2',
+      rolloutId: '',
+      variables: [
+        {
+          defaultValue: '42',
+          id: '2687470095',
+          key: 'i_42',
+          type: 'integer'
+        }
+      ]
+    },
+    {
+      experimentIds: [],
+      id: '44829230000',
+      key: 'feature_3',
+      rolloutId: '',
+      variables: []
+    }
+  ],
+  experiments: [
+    {
+      status: 'Running',
+      key: 'exp_with_audience',
+      layerId: '10420273888',
+      trafficAllocation: [
+        {
+          entityId: '10389729780',
+          endOfRange: 10000
+        }
+      ],
+      audienceIds: [
+        '13389141123'
+      ],
+      variations: [
+        {
+          variables: [],
+          featureEnabled: true,
+          id: '10389729780',
+          key: 'a'
+        },
+        {
+          variables: [],
+          id: '10416523121',
+          key: 'b'
+        }
+      ],
+      forcedVariations: {},
+      id: '10390977673'
+    },
+    {
+      status: 'Running',
+      key: 'exp_no_audience',
+      layerId: '10417730432',
+      trafficAllocation: [
+        {
+          entityId: '10418551353',
+          endOfRange: 10000
+        }
+      ],
+      audienceIds: [],
+      variations: [
+        {
+          variables: [],
+          featureEnabled: true,
+          id: '10418551353',
+          key: 'variation_with_traffic'
+        },
+        {
+          variables: [],
+          featureEnabled: false,
+          id: '10418510624',
+          key: 'variation_no_traffic'
+        }
+      ],
+      forcedVariations: {},
+      id: '10420810910'
+    }
+  ],
+  audiences: [
+    {
+      id: '13389141123',
+      conditions: [
+        'and',
+        [
+          'or',
+          [
+            'or',
+            {
+              match: 'exact',
+              name: 'gender',
+              type: 'custom_attribute',
+              value: 'f'
+            }
+          ]
+        ]
+      ],
+      name: 'gender'
+    },
+    {
+      id: '13389130056',
+      conditions: [
+        'and',
+        [
+          'or',
+          [
+            'or',
+            {
+              match: 'exact',
+              name: 'country',
+              type: 'custom_attribute',
+              value: 'US'
+            }
+          ]
+        ]
+      ],
+      name: 'US'
+    },
+    {
+      id: '12208130097',
+      conditions: [
+        'and',
+        [
+          'or',
+          [
+            'or',
+            {
+              match: 'exact',
+              name: 'browser',
+              type: 'custom_attribute',
+              value: 'safari'
+            }
+          ]
+        ]
+      ],
+      name: 'safari'
+    },
+    {
+      id: 'age_18',
+      conditions: [
+        'and',
+        [
+          'or',
+          [
+            'or',
+            {
+              match: 'gt',
+              name: 'age',
+              type: 'custom_attribute',
+              value: 18
+            }
+          ]
+        ]
+      ],
+      name: 'age_18'
+    },
+    {
+      id: 'invalid_format',
+      conditions: [],
+      name: 'invalid_format'
+    },
+    {
+      id: 'invalid_condition',
+      conditions: [
+        'and',
+        [
+          'or',
+          [
+            'or',
+            {
+              match: 'gt',
+              name: 'age',
+              type: 'custom_attribute',
+              value: 'US'
+            }
+          ]
+        ]
+      ],
+      name: 'invalid_condition'
+    },
+    {
+      id: 'invalid_type',
+      conditions: [
+        'and',
+        [
+          'or',
+          [
+            'or',
+            {
+              match: 'gt',
+              name: 'age',
+              type: 'invalid',
+              value: 18
+            }
+          ]
+        ]
+      ],
+      name: 'invalid_type'
+    },
+    {
+      id: 'invalid_match',
+      conditions: [
+        'and',
+        [
+          'or',
+          [
+            'or',
+            {
+              match: 'invalid',
+              name: 'age',
+              type: 'custom_attribute',
+              value: 18
+            }
+          ]
+        ]
+      ],
+      name: 'invalid_match'
+    },
+    {
+      id: 'nil_value',
+      conditions: [
+        'and',
+        [
+          'or',
+          [
+            'or',
+            {
+              match: 'gt',
+              name: 'age',
+              type: 'custom_attribute'
+            }
+          ]
+        ]
+      ],
+      name: 'nil_value'
+    },
+    {
+      id: 'invalid_name',
+      conditions: [
+        'and',
+        [
+          'or',
+          [
+            'or',
+            {
+              match: 'gt',
+              type: 'custom_attribute',
+              value: 18
+            }
+          ]
+        ]
+      ],
+      name: 'invalid_name'
+    }
+  ],
+  groups: [
+    {
+      policy: 'random',
+      trafficAllocation: [
+        {
+          entityId: '10390965532',
+          endOfRange: 10000
+        }
+      ],
+      experiments: [
+        {
+          status: 'Running',
+          key: 'group_exp_1',
+          layerId: '10420222423',
+          trafficAllocation: [
+            {
+              entityId: '10389752311',
+              endOfRange: 10000
+            }
+          ],
+          audienceIds: [],
+          variations: [
+            {
+              variables: [],
+              featureEnabled: false,
+              id: '10389752311',
+              key: 'a'
+            }
+          ],
+          forcedVariations: {},
+          id: '10390965532'
+        },
+        {
+          status: 'Running',
+          key: 'group_exp_2',
+          layerId: '10417730432',
+          trafficAllocation: [
+            {
+              entityId: '10418524243',
+              endOfRange: 10000
+            }
+          ],
+          audienceIds: [],
+          variations: [
+            {
+              variables: [],
+              featureEnabled: false,
+              id: '10418524243',
+              key: 'a'
+            }
+          ],
+          forcedVariations: {},
+          id: '10420843432'
+        }
+      ],
+      id: '13142870430'
+    }
+  ],
+  attributes: [
+    {
+      id: '10401066117',
+      key: 'gender'
+    },
+    {
+      id: '10401066170',
+      key: 'testvar'
+    }
+  ],
+  accountId: '10367498574',
+  events: [
+    {
+      experimentIds: [
+        '10420810910'
+      ],
+      id: '10404198134',
+      key: 'event1'
+    },
+    {
+      experimentIds: [
+        '10420810910',
+        '10390977673'
+      ],
+      id: '10404198135',
+      key: 'event_multiple_running_exp_attached'
+    }
+  ],
+  revision: '241'
+};
+
 export var getParsedAudiences = [
   {
     name: 'Firefox users',
@@ -346,6 +829,10 @@ export var getParsedAudiences = [
 
 export var getTestProjectConfig = function() {
   return cloneDeep(config);
+};
+
+export var getTestDecideProjectConfig = function() {
+  return cloneDeep(decideConfig);
 };
 
 var configWithFeatures = {
@@ -2729,6 +3216,7 @@ export var featureTestDecisionObj = {
 
 export default {
   getTestProjectConfig: getTestProjectConfig,
+  getTestDecideProjectConfig: getTestDecideProjectConfig,
   getParsedAudiences: getParsedAudiences,
   getTestProjectConfigWithFeatures: getTestProjectConfigWithFeatures,
   datafileWithFeaturesExpectedData: datafileWithFeaturesExpectedData,

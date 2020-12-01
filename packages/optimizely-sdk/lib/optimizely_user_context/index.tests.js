@@ -25,14 +25,13 @@ import logger from '../plugins/logger';
 import eventDispatcher from '../plugins/event_dispatcher/index.node';
 import errorHandler from '../plugins/error_handler';
 import * as jsonSchemaValidator from '../utils/json_schema_validator';
-import { getTestProjectConfig } from '../tests/test_data';
+import { getTestDecideProjectConfig } from '../tests/test_data';
 import {
    LOG_LEVEL,
    LOG_MESSAGES,
    DECISION_SOURCES,
  } from '../utils/enums';
 
-var testData = getTestProjectConfig();
 
 describe('lib/optimizely_user_context', function() {
   describe('APIs', function() {
@@ -43,7 +42,7 @@ describe('lib/optimizely_user_context', function() {
     beforeEach(function() {
       optimizely = new Optimizely({
         clientEngine: 'node-sdk',
-        datafile: cloneDeep(testData),
+        datafile: getTestDecideProjectConfig(),
         errorHandler: errorHandler,
         eventDispatcher: eventDispatcher,
         jsonSchemaValidator: jsonSchemaValidator,
