@@ -44,8 +44,8 @@ type NotificationListeners = {
 /**
  * NotificationCenter allows registration and triggering of callback functions using
  * notification event types defined in NOTIFICATION_TYPES of utils/enums/index.js:
- * - ACTIVATE: An impression event will be sent to Optimizely.
- * - TRACK a conversion event will be sent to Optimizely
+ * - ACTIVATE: an impression event will be sent to Optimizely.
+ * - TRACK: a conversion event will be sent to Optimizely.
  */
 export class NotificationCenter {
   private logger: LogHandler;

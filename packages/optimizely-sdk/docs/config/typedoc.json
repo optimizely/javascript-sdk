@@ -1,7 +1,8 @@
 {
   "inputFiles": [
     "./lib/optimizely/index.ts",
-    "./lib/core/notification_center/index.d.ts"
+    "./lib/core/optimizely_config/index.ts",
+    "./lib/core/notification_center/index.ts"
   ],
   "out": "./docs/out",
   "exclude": "**/*+(.spec|.d|.tests).(ts/js)",
@@ -19,8 +20,11 @@
   }],
   "outline": [
     {
-    "API Reference": { "Optimizely's APIs": "classes/optimizely" },
-    "Configuration Data": { "Notification Center": "interfaces/notificationcenter" }
+      "API Reference": { "Optimizely's APIs": "classes/optimizely" },
+      "Configuration Data": {
+        "Optimizely Config": "classes/optimizelyconfig",
+        "Notification Center": "classes/notificationcenter"
+      }
     }
   ]
 }

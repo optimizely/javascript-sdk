@@ -30,8 +30,8 @@ interface FeatureVariablesMap {
 
 /**
  * The OptimizelyConfig class
- * @param {ProjectConfig} configObj
- * @param {string}        datafile
+ * @param {ProjectConfig} configObj   config
+ * @param {string}        datafile    datafile
  */
 export class OptimizelyConfig {
   public experimentsMap: OptimizelyExperimentsMap;
@@ -55,6 +55,8 @@ export class OptimizelyConfig {
   }
 
   /**
+   * @private method
+   *
    * Get Experiment Ids which are part of rollout
    * @param       {Rollout[]}                  rollouts
    * @returns     {[key: string]: boolean}     Map of experiment Ids to boolean
@@ -70,6 +72,8 @@ export class OptimizelyConfig {
   }
 
   /**
+   * @private method
+   *
    * Get Map of all experiments except rollouts
    * @param       {ProjectConfig}              configObj
    * @returns     {OptimizelyExperimentsMap}   Map of experiments excluding rollouts
@@ -116,6 +120,8 @@ export class OptimizelyConfig {
   }
 
   /**
+   * @private method
+   *
    * Merge feature key and type from feature variables to variation variables
    * @param       {ProjectConfig}              configObj
    * @param       {Variation}                  variation
@@ -168,6 +174,8 @@ export class OptimizelyConfig {
   }
 
   /**
+   * @private method
+   *
    * Get map of all experiments
    * @param       {ProjectConfig}              configObj
    * @param       {OptimizelyExperimentsMap}   allExperiments
