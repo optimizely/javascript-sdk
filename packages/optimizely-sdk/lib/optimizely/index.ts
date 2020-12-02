@@ -116,7 +116,7 @@ export default class Optimizely {
 
     let defaultDecideOptions = config.defaultDecideOptions ?? [];
     if (!Array.isArray(defaultDecideOptions)) {
-      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DEFAULT_DECIDE_OPTIONS, MODULE_NAME));
+      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DECIDE_OPTIONS, MODULE_NAME));
       defaultDecideOptions = [];
     }
     this.defaultDecideOptions = defaultDecideOptions;
@@ -1461,13 +1461,14 @@ export default class Optimizely {
     const allDecideOptions = this.defaultDecideOptions ?? [];
     if (options !== undefined) {
       if (!Array.isArray(options)) {
-        throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, 'decide_options'))
+        this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DECIDE_OPTIONS, MODULE_NAME));
+      } else {
+        options.forEach((option) => {
+          if (!allDecideOptions.includes(option) && OptimizelyDecideOptions[option]) {
+            allDecideOptions.push(option);
+          }
+        });
       }
-      options.forEach((option) => {
-        if (!allDecideOptions.includes(option)) {
-          allDecideOptions.push(option);
-        }
-      });
     }
 
     return allDecideOptions;
