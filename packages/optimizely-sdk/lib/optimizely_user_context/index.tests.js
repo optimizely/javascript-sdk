@@ -152,7 +152,7 @@ describe('lib/optimizely_user_context', function() {
         errorHandler.handleError.restore();
       });
 
-      describe('with empty defaultDecideOptions', function() {
+      describe('with empty decide options', function() {
         it('it should return error decision object when provided flagKey is invalid and do not dispatch an event', function() {
           var flagKey = 'invalid_flag_key';
           var variablesExpected = optimizely.getAllFeatureVariables(flagKey, userId);
@@ -162,10 +162,10 @@ describe('lib/optimizely_user_context', function() {
           });
           var decision = user.decide(flagKey);
           var expectedDecisionObj = {
-            variationKey: '',
+            variationKey: null,
             enabled: false,
             variables: variablesExpected,
-            ruleKey: '',
+            ruleKey: null,
             flagKey: flagKey,
             userContext: user,
             reasons: [ sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, flagKey) ],
@@ -186,10 +186,10 @@ describe('lib/optimizely_user_context', function() {
           });
           var decision = user.decide(flagKey);
           var expectedDecisionObj = {
-            variationKey: '',
+            variationKey: null,
             enabled: false,
             variables: variablesExpected,
-            ruleKey: '',
+            ruleKey: null,
             flagKey: flagKey,
             userContext: user,
             reasons: [ DECISION_MESSAGES.SDK_NOT_READY ],
@@ -265,7 +265,7 @@ describe('lib/optimizely_user_context', function() {
         });
       });
 
-      describe('with EXCLUDE_VARIABLES flag in defaultDecideOptions', function() {
+      describe('with EXCLUDE_VARIABLES flag in decide options', function() {
         it('should exclude variables in decision object and dispatch an event', function() {
           var flagKey = 'feature_2';
           var user = new OptimizelyUserContext({
@@ -288,7 +288,7 @@ describe('lib/optimizely_user_context', function() {
         });
       });
 
-      describe('with DISABLE_DECISION_EVENT flag in defaultDecideOptions', function() {
+      describe('with DISABLE_DECISION_EVENT flag in decide options', function() {
         it('should not send an event', function() {
           var flagKey = 'feature_2';
           var user = new OptimizelyUserContext({

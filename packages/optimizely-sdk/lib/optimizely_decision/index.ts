@@ -33,10 +33,10 @@ export default class OptimizelyDecision {
     userContext,
     reasons,
   }: {
-    variationKey?: string;
+    variationKey?: string | null;
     enabled: boolean;
     variables: { [variableKey: string]: unknown } | null;
-    ruleKey?: string;
+    ruleKey?: string | null;
     flagKey: string;
     userContext: OptimizelyUserContext;
     reasons: string[];
@@ -52,10 +52,10 @@ export default class OptimizelyDecision {
 
   static newErrorDecision(key: string, user: OptimizelyUserContext, reasons: string[]): OptimizelyDecision {
     return new OptimizelyDecision({
-      variationKey: '',
+      variationKey: null,
       enabled: false,
       variables: null,
-      ruleKey: '',
+      ruleKey: null,
       flagKey: key,
       userContext: user,
       reasons: reasons,
