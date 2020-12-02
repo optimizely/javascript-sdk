@@ -4319,7 +4319,7 @@ describe('lib/optimizely', function() {
     beforeEach(function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
-        datafile: testData.getTestProjectConfig(),
+        datafile: testData.getTestDecideProjectConfig(),
         errorHandler: errorHandler,
         eventDispatcher: eventDispatcher,
         jsonSchemaValidator: jsonSchemaValidator,
@@ -4376,7 +4376,7 @@ describe('lib/optimizely', function() {
         assert.deepEqual(user2.getUserId(), userId2);
       });
 
-      it('should throw an error for invalid user ID', function() {
+      it('should throw an error for invalid user ID and return null', function() {
         assert.isNull(optlyInstance.createUserContext(null));
         sinon.assert.calledOnce(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
@@ -4384,6 +4384,16 @@ describe('lib/optimizely', function() {
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
+      });
+
+      it('should throw an error for invalid attributes and return null', function() {
+        assert.isNull(optlyInstance.createUserContext('user1', 'invalid_attributes'));
+        sinon.assert.calledOnce(errorHandler.handleError);
+        var errorMessage = errorHandler.handleError.lastCall.args[0].message;
+        assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
+        sinon.assert.calledOnce(createdLogger.log);
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
       });
     });
   });

@@ -1439,26 +1439,15 @@ export default class Optimizely {
    *                                       null if client instance or provided inputs are invalid
    */
   createUserContext(userId: string, attributes?: UserAttributes): OptimizelyUserContext | null {
-    try {
-      if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'createUserContext'));
-        return null;
-      }
-
-      if (!this.validateInputs({ user_id: userId }, attributes)) {
-        return null;
-      }
-
-      return new OptimizelyUserContext({
-        optimizely: this,
-        userId,
-        attributes
-      });
-    } catch (e) {
-      this.logger.log(LOG_LEVEL.ERROR, e.message);
-      this.errorHandler.handleError(e);
+    if (!this.validateInputs({ user_id: userId }, attributes)) {
       return null;
     }
+
+    return new OptimizelyUserContext({
+      optimizely: this,
+      userId,
+      attributes
+    });
   }
 
   /**

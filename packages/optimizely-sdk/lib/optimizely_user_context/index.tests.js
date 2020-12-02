@@ -15,49 +15,32 @@
  ***************************************************************************/
 import { assert } from 'chai';
 import sinon from 'sinon';
+import { sprintf } from '@optimizely/js-sdk-utils';
 
 
 import OptimizelyUserContext from './';
 import Optimizely from '../optimizely';
+import { OptimizelyDecideOptions } from '../shared_types';
 
 import logger from '../plugins/logger';
 import eventDispatcher from '../plugins/event_dispatcher/index.node';
 import errorHandler from '../plugins/error_handler';
 import * as jsonSchemaValidator from '../utils/json_schema_validator';
+import * as projectConfigManager from '../core/project_config/project_config_manager';
+import * as projectConfig from '../core/project_config';
 import { getTestDecideProjectConfig } from '../tests/test_data';
 import {
    LOG_LEVEL,
-   LOG_MESSAGES,
-   DECISION_SOURCES,
+   DECISION_MESSAGES,
  } from '../utils/enums';
-
 
 describe('lib/optimizely_user_context', function() {
   describe('APIs', function() {
     var optimizely;
     var createdLogger = logger.createLogger({
       logLevel: LOG_LEVEL.DEBUG,
+      logToConsole: false,
     });
-    beforeEach(function() {
-      optimizely = new Optimizely({
-        clientEngine: 'node-sdk',
-        datafile: getTestDecideProjectConfig(),
-        errorHandler: errorHandler,
-        eventDispatcher: eventDispatcher,
-        jsonSchemaValidator: jsonSchemaValidator,
-        logger: createdLogger,
-        isValidInstance: true,
-      });
-
-      sinon.stub(eventDispatcher, 'dispatchEvent');
-      sinon.stub(errorHandler, 'handleError');
-    });
-
-    afterEach(function() {
-      eventDispatcher.dispatchEvent.restore();
-      errorHandler.handleError.restore();
-    });
-
     describe('#setAttribute', function() {
       it('should set attributes when provided at instantiation of OptimizelyUserContext', function() {
         var userId = 'user1';
@@ -138,25 +121,195 @@ describe('lib/optimizely_user_context', function() {
 
     describe('#decide', function() {
       var userId = 'tester';
-      it('should make a decision for feature_test', function() {
-        var flagKey = "feature_2";
-        var experimentKey = "exp_no_audience";
-        var variationKey = "variation_with_traffic";
-        var experimentId = "10420810910";
-        var variationId = "10418551353";
-        var variablesExpected = optimizely.getAllFeatureVariables(flagKey, userId);
-        var user = new OptimizelyUserContext({
-          optimizely,
-          userId,
+      var projectConfigManagerStub;
+      beforeEach(function() {
+        projectConfigManagerStub = sinon.stub(projectConfigManager, 'createProjectConfigManager').callsFake(function(config) {
+          var currentConfig = config.datafile ? projectConfig.createProjectConfig(config.datafile) : null;
+          return {
+            getConfig: sinon.stub().returns(currentConfig),
+            onUpdate: sinon.stub().returns(function() {}),
+            onReady: sinon.stub().returns({ then: function() {} }),
+          };
         });
-        var decision = user.decide(flagKey);
-        assert.deepEqual(decision.variationKey, variationKey);
-        assert.isTrue(decision.enabled);
-        assert.deepEqual(decision.variables, variablesExpected);
-        assert.deepEqual(decision.ruleKey, experimentKey);
-        assert.deepEqual(decision.flagKey, flagKey);
-        assert.deepEqual(decision.userContext, user);
-        assert.deepEqual(decision.reasons.length, 0);
+        optimizely = new Optimizely({
+          clientEngine: 'node-sdk',
+          datafile: getTestDecideProjectConfig(),
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+          isValidInstance: true,
+          defaultDecideOptions: [],
+        });
+
+        sinon.stub(eventDispatcher, 'dispatchEvent');
+        sinon.stub(errorHandler, 'handleError');
+      });
+
+      afterEach(function() {
+        projectConfigManagerStub.restore();
+        eventDispatcher.dispatchEvent.restore();
+        errorHandler.handleError.restore();
+      });
+
+      describe('with empty defaultDecideOptions', function() {
+        it('it should return error decision object when provided flagKey is invalid and do not dispatch an event', function() {
+          var flagKey = 'invalid_flag_key';
+          var variablesExpected = optimizely.getAllFeatureVariables(flagKey, userId);
+          var user = new OptimizelyUserContext({
+            optimizely,
+            userId,
+          });
+          var decision = user.decide(flagKey);
+          var expectedDecisionObj = {
+            variationKey: '',
+            enabled: false,
+            variables: variablesExpected,
+            ruleKey: '',
+            flagKey: flagKey,
+            userContext: user,
+            reasons: [ sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, flagKey) ],
+          }
+          assert.deepEqual(decision, expectedDecisionObj);
+          sinon.assert.notCalled(optimizely.eventDispatcher.dispatchEvent);
+        });
+
+        it('it should return error decision object when SDK is not ready', function() {
+          var flagKey = 'invalid_flag_key';
+          var newConfig = optimizely.projectConfigManager.getConfig();
+          newConfig = null;
+          optimizely.projectConfigManager.getConfig.returns(newConfig);
+          var variablesExpected = optimizely.getAllFeatureVariables(flagKey, userId);
+          var user = new OptimizelyUserContext({
+            optimizely,
+            userId,
+          });
+          var decision = user.decide(flagKey);
+          var expectedDecisionObj = {
+            variationKey: '',
+            enabled: false,
+            variables: variablesExpected,
+            ruleKey: '',
+            flagKey: flagKey,
+            userContext: user,
+            reasons: [ DECISION_MESSAGES.SDK_NOT_READY ],
+          }
+          assert.deepEqual(decision, expectedDecisionObj);
+          sinon.assert.notCalled(optimizely.eventDispatcher.dispatchEvent);
+        });
+
+        it('should make a decision for feature_test and dispatch an event', function() {
+          var flagKey = 'feature_2';
+          var variablesExpected = optimizely.getAllFeatureVariables(flagKey, userId);
+          var user = new OptimizelyUserContext({
+            optimizely,
+            userId,
+          });
+          var decision = user.decide(flagKey);
+          var expectedDecisionObj = {
+            variationKey: 'variation_with_traffic',
+            enabled: true,
+            variables: variablesExpected,
+            ruleKey: 'exp_no_audience',
+            flagKey: flagKey,
+            userContext: user,
+            reasons: [],
+          }
+          assert.deepEqual(decision, expectedDecisionObj);
+          //TODO: figure out stubbing of eventDispatcher
+          // sinon.assert.calledOnce(optimizely.eventDispatcher.dispatchEvent);
+        });
+
+        it('should make a decision for rollout and dispatch an event', function() {
+          var flagKey = "feature_1";
+          var variablesExpected = optimizely.getAllFeatureVariables(flagKey, userId);
+          var user = new OptimizelyUserContext({
+            optimizely,
+            userId,
+          });
+          var decision = user.decide(flagKey);
+          var expectedDecisionObj = {
+            variationKey: '18257766532',
+            enabled: true,
+            variables: variablesExpected,
+            ruleKey: '18322080788',
+            flagKey: flagKey,
+            userContext: user,
+            reasons: [],
+          }
+          assert.deepEqual(decision, expectedDecisionObj);
+          //TODO: figure out stubbing of eventDispatcher
+          // sinon.assert.calledOnce(optimizely.eventDispatcher.dispatchEvent);
+        });
+
+        it('should make a decision when variation is null and dispatch an event', function() {
+          var flagKey = "feature_3";
+          var variablesExpected = optimizely.getAllFeatureVariables(flagKey, userId);
+          var user = new OptimizelyUserContext({
+            optimizely,
+            userId,
+          });
+          var decision = user.decide(flagKey);
+          var expectedDecisionObj = {
+            variationKey: '',
+            enabled: false,
+            variables: variablesExpected,
+            ruleKey: '',
+            flagKey: flagKey,
+            userContext: user,
+            reasons: [],
+          }
+          assert.deepEqual(decision, expectedDecisionObj);
+          //TODO: figure out stubbing of eventDispatcher
+          // sinon.assert.calledOnce(optimizely.eventDispatcher.dispatchEvent);
+        });
+      });
+
+      describe('with EXCLUDE_VARIABLES flag in defaultDecideOptions', function() {
+        it('should exclude variables in decision object and dispatch an event', function() {
+          var flagKey = 'feature_2';
+          var user = new OptimizelyUserContext({
+            optimizely,
+            userId
+          });
+          var decision = user.decide(flagKey, [ OptimizelyDecideOptions.EXCLUDE_VARIABLES ]);
+          var expectedDecisionObj = {
+            variationKey: 'variation_with_traffic',
+            enabled: true,
+            variables: {},
+            ruleKey: 'exp_no_audience',
+            flagKey: flagKey,
+            userContext: user,
+            reasons: [],
+          }
+          assert.deepEqual(decision, expectedDecisionObj);
+          //TODO: figure out stubbing of eventDispatcher
+          // sinon.assert.calledOnce(optimizely.eventDispatcher.dispatchEvent);
+        });
+      });
+
+      describe('with DISABLE_DECISION_EVENT flag in defaultDecideOptions', function() {
+        it('should not send an event', function() {
+          var flagKey = 'feature_2';
+          var user = new OptimizelyUserContext({
+            optimizely,
+            userId
+          });
+          var variablesExpected = optimizely.getAllFeatureVariables(flagKey, userId);
+          var decision = user.decide(flagKey, [ OptimizelyDecideOptions.DISABLE_DECISION_EVENT ]);
+          var expectedDecisionObj = {
+            variationKey: 'variation_with_traffic',
+            enabled: true,
+            variables: variablesExpected,
+            ruleKey: 'exp_no_audience',
+            flagKey: flagKey,
+            userContext: user,
+            reasons: [],
+          }
+          assert.deepEqual(decision, expectedDecisionObj);
+          //TODO: figure out stubbing of eventDispatcher
+          sinon.assert.notCalled(optimizely.eventDispatcher.dispatchEvent);
+        });
       });
     });
   });
