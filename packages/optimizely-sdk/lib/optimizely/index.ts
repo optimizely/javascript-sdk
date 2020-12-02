@@ -1460,6 +1460,9 @@ export default class Optimizely {
   private getAllDecideOptions(options?: OptimizelyDecideOptions[]): OptimizelyDecideOptions[] {
     const allDecideOptions = this.defaultDecideOptions ?? [];
     if (options !== undefined) {
+      if (!Array.isArray(options)) {
+        throw new Error(sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, MODULE_NAME, 'decide_options'))
+      }
       options.forEach((option) => {
         if (!allDecideOptions.includes(option)) {
           allDecideOptions.push(option);
