@@ -1534,7 +1534,11 @@ export default class Optimizely {
       });
     }
 
-    if (!allDecideOptions.includes(OptimizelyDecideOptions.DISABLE_DECISION_EVENT)) {
+    if (
+      !allDecideOptions.includes(OptimizelyDecideOptions.DISABLE_DECISION_EVENT) && (
+      decisionSource === DECISION_SOURCES.FEATURE_TEST ||
+      decisionSource === DECISION_SOURCES.ROLLOUT && projectConfig.getSendFlagDecisionsValue(configObj))
+    ) {
       this.sendImpressionEvent(
         decisionObj,
         key,

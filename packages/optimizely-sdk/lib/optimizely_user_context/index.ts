@@ -69,7 +69,12 @@ export default class OptimizelyUserContext {
   }
 
   decideForKeys(): void {
+    //TODO: implement
     return;
   }
 
+  decideAll(): void {
+    //TODO: implement
+    return;
+  }
 }
