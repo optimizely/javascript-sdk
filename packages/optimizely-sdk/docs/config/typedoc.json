@@ -1,18 +1,19 @@
 {
   "inputFiles": [
-    "./lib/optimizely/index.ts",
-    "./lib/core/optimizely_config/index.ts",
-    "./lib/core/notification_center/index.ts"
+    "./lib/optimizely",
+    "./lib/core/optimizely_config",
+    "./lib/core/notification_center",
   ],
   "out": "./docs/out",
-  "exclude": "**/*+(.spec|.d|.tests).(ts/js)",
+  "mode": "modules",
   "excludePrivate": true,
   "excludeProtected": true,
+  "excludeNotDocumented": true,
   "excludeExternals": true,
+  "hideGenerator": true,
   "readme": "README.md",
   "name": "Optimizely JavaScript SDK",
   "includeVersion": true,
-  "includeDeclarations": true,
   "theme": "./node_modules/typedoc-neo-theme/bin/default",
   "links": [{
     "label": "GitHub",
@@ -20,10 +21,10 @@
   }],
   "outline": [
     {
-      "API Reference": { "Optimizely's APIs": "classes/optimizely" },
+      "API Reference": { "Optimizely's APIs": "modules/_optimizely_index_" },
       "Configuration Data": {
-        "Optimizely Config": "classes/optimizelyconfig",
-        "Notification Center": "classes/notificationcenter"
+        "Optimizely Config": "modules/_core_optimizely_config_index_",
+        "Notification Center": "modules/_core_notification_center_index_"
       }
     }
   ]
