@@ -25,8 +25,10 @@ import {
   Variation,
   FeatureFlag,
   FeatureVariable,
-  OptimizelyOptions
+  OptimizelyOptions,
+  OptimizelyDecideOptions
 } from '../shared_types';
+import { OptimizelyDecision, newErrorDecision } from '../optimizely_decision/optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
@@ -47,6 +49,7 @@ import {
   LOG_LEVEL,
   LOG_MESSAGES,
   DECISION_SOURCES,
+  DECISION_MESSAGES,
   FEATURE_VARIABLE_TYPES,
   DECISION_NOTIFICATION_TYPES,
   NOTIFICATION_TYPES
@@ -92,6 +95,7 @@ export default class Optimizely {
   private notificationCenter: NotificationCenter;
   private decisionService: DecisionService;
   private eventProcessor: EventProcessor;
+  private defaultDecideOptions: OptimizelyDecideOptions[];
 
   constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;
@@ -110,6 +114,12 @@ export default class Optimizely {
     this.isOptimizelyConfigValid = config.isValidInstance;
     this.logger = config.logger;
 
+    let defaultDecideOptions = config.defaultDecideOptions ?? [];
+    if (!Array.isArray(defaultDecideOptions)) {
+      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DECIDE_OPTIONS, MODULE_NAME));
+      defaultDecideOptions = [];
+    }
+    this.defaultDecideOptions = defaultDecideOptions;
     this.projectConfigManager = createProjectConfigManager({
       datafile: config.datafile,
       datafileOptions: config.datafileOptions,
@@ -1439,5 +1449,112 @@ export default class Optimizely {
       userId,
       attributes
     });
+  }
+
+  decide(
+    user: OptimizelyUserContext,
+    key: string,
+    options: OptimizelyDecideOptions[] = []
+  ): OptimizelyDecision {
+    const configObj = this.projectConfigManager.getConfig();
+    const reasons: string[] = [];
+    if (!this.isValidInstance() || !configObj) {
+      reasons.push(DECISION_MESSAGES.SDK_NOT_READY);
+      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decide'));
+      return newErrorDecision(key, user, reasons);
+    }
+
+    const feature = configObj.featureKeyMap[key];
+    if (!feature) {
+      reasons.push(sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, key));
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, key));
+      return newErrorDecision(key, user, reasons);
+    }
+
+    let sourceInfo = {};
+    const userId = user.getUserId();
+    const attributes = user.getAttributes();
+    const allDecideOptions = Array.from(new Set([...this.defaultDecideOptions, ...options]));
+    const decisionObj = this.decisionService.getVariationForFeature(
+      configObj,
+      feature,
+      userId,
+      attributes
+    );
+    const decisionSource = decisionObj.decisionSource;
+    const experimentKey = decision.getExperimentKey(decisionObj);
+    const variationKey = decision.getVariationKey(decisionObj);
+
+    if (decisionSource === DECISION_SOURCES.FEATURE_TEST) {
+      sourceInfo = {
+        experimentKey: experimentKey,
+        variationKey: variationKey,
+      };
+    }
+
+    const flagEnabled: boolean = decision.getFeatureEnabledFromVariation(decisionObj);
+    if (flagEnabled === true) {
+      this.logger.log(
+        LOG_LEVEL.INFO,
+        sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, key, userId)
+      );
+    } else {
+      this.logger.log(
+        LOG_LEVEL.INFO,
+        sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, key, userId)
+      );
+    }
+
+    const variablesMap: { [key: string]: unknown } = {};
+    let decisionEventDispatched = false;
+
+    if (!allDecideOptions.includes(OptimizelyDecideOptions.EXCLUDE_VARIABLES)) {
+      const featureFlag = projectConfig.getFeatureFromKey(configObj, key, this.logger);
+      featureFlag?.variables.forEach(variable => {
+        variablesMap[variable.key] = this.getFeatureVariableValueFromVariation(key, flagEnabled, decisionObj.variation, variable, userId);
+      });
+    }
+
+    if (
+      !allDecideOptions.includes(OptimizelyDecideOptions.DISABLE_DECISION_EVENT) && (
+      decisionSource === DECISION_SOURCES.FEATURE_TEST ||
+      decisionSource === DECISION_SOURCES.ROLLOUT && projectConfig.getSendFlagDecisionsValue(configObj))
+    ) {
+      this.sendImpressionEvent(
+        decisionObj,
+        key,
+        userId,
+        flagEnabled,
+        attributes
+      )
+      decisionEventDispatched = true;
+    }
+
+    const shouldIncludeReasons = allDecideOptions.includes(OptimizelyDecideOptions.INCLUDE_REASONS);
+    const featureInfo = {
+      featureKey: key,
+      featureEnabled: flagEnabled,
+      source: decisionObj.decisionSource,
+      sourceInfo: sourceInfo,
+      variables: variablesMap
+    };
+
+    this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.DECISION, {
+      type: DECISION_NOTIFICATION_TYPES.FLAG,
+      userId: userId,
+      attributes: attributes,
+      decisionInfo: featureInfo,
+      decisionEventDispatched: decisionEventDispatched,
+    });
+
+    return {
+      variationKey: variationKey,
+      enabled: flagEnabled,
+      variables: variablesMap,
+      ruleKey: experimentKey,
+      flagKey: key,
+      userContext: user,
+      reasons: shouldIncludeReasons ? reasons: [],
+    };
   }
 }
