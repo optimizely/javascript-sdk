@@ -47,7 +47,6 @@ describe('lib/optimizely_user_context', function() {
         jsonSchemaValidator: jsonSchemaValidator,
         logger: createdLogger,
         isValidInstance: true,
-        defaultDecideOptions: [],
       });
     });
     describe('#setAttribute', function() {
