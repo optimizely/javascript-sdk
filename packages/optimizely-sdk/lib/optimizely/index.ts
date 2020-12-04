@@ -26,9 +26,9 @@ import {
   FeatureFlag,
   FeatureVariable,
   OptimizelyOptions,
-  OptimizelyDecideOptions
+  OptimizelyDecideOptions,
 } from '../shared_types';
-import OptimizelyDecision from '../optimizely_decision';
+import { OptimizelyDecision, newErrorDecision } from '../optimizely_decision/optimizelyDecision';
 import OptimizelyUserContext from '../optimizely_user_context';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
@@ -95,7 +95,7 @@ export default class Optimizely {
   private notificationCenter: NotificationCenter;
   private decisionService: DecisionService;
   private eventProcessor: EventProcessor;
-  private defaultDecideOptions?: OptimizelyDecideOptions[];
+  private defaultDecideOptions: OptimizelyDecideOptions[];
 
   constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;
@@ -1457,18 +1457,16 @@ export default class Optimizely {
    * @param  {OptimizelyDecideOptions[]}          options     Optional decide options
    * @return {OptimizelyDecideOptions[]}          Array of all provided decide options
    */
-  private getAllDecideOptions(options?: OptimizelyDecideOptions[]): OptimizelyDecideOptions[] {
-    const allDecideOptions = this.defaultDecideOptions ?? [];
-    if (options !== undefined) {
-      if (!Array.isArray(options)) {
-        this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DECIDE_OPTIONS, MODULE_NAME));
-      } else {
-        options.forEach((option) => {
-          if (!allDecideOptions.includes(option) && OptimizelyDecideOptions[option]) {
-            allDecideOptions.push(option);
-          }
-        });
-      }
+  private getAllDecideOptions(options: OptimizelyDecideOptions[]): OptimizelyDecideOptions[] {
+    const allDecideOptions = [...this.defaultDecideOptions];
+    if (!Array.isArray(options)) {
+      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DECIDE_OPTIONS, MODULE_NAME));
+    } else {
+      options.forEach((option) => {
+        if (!allDecideOptions.includes(option) && OptimizelyDecideOptions[option]) {
+          allDecideOptions.push(option);
+        }
+      });
     }
 
     return allDecideOptions;
@@ -1477,21 +1475,21 @@ export default class Optimizely {
   decide(
     user: OptimizelyUserContext,
     key: string,
-    options?: OptimizelyDecideOptions[]
+    options: OptimizelyDecideOptions[] = []
   ): OptimizelyDecision {
     const configObj = this.projectConfigManager.getConfig();
     const reasons: string[] = [];
     if (!this.isValidInstance() || !configObj) {
       reasons.push(DECISION_MESSAGES.SDK_NOT_READY);
       this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decide'));
-      return OptimizelyDecision.newErrorDecision(key, user, reasons);
+      return newErrorDecision(key, user, reasons);
     }
 
     const feature = configObj.featureKeyMap[key];
     if (!feature) {
       reasons.push(sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, key));
       this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, key));
-      return OptimizelyDecision.newErrorDecision(key, user, reasons);
+      return newErrorDecision(key, user, reasons);
     }
 
     let sourceInfo = {};
@@ -1570,7 +1568,7 @@ export default class Optimizely {
       decisionEventDispatched: decisionEventDispatched,
     });
 
-    return new OptimizelyDecision({
+    return {
       variationKey: variationKey,
       enabled: flagEnabled,
       variables: variablesMap,
@@ -1578,6 +1576,6 @@ export default class Optimizely {
       flagKey: key,
       userContext: user,
       reasons: shouldIncludeReasons ? reasons: [],
-    });
+    };
   }
 }

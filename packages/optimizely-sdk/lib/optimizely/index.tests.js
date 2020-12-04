@@ -4376,7 +4376,7 @@ describe('lib/optimizely', function() {
         assert.deepEqual(user2.getUserId(), userId2);
       });
 
-      it('should throw an error for invalid user ID and return null', function() {
+      it('should call the error handler for invalid user ID and return null', function() {
         assert.isNull(optlyInstance.createUserContext(null));
         sinon.assert.calledOnce(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
@@ -4386,7 +4386,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
 
-      it('should throw an error for invalid attributes and return null', function() {
+      it('should call the error handler for invalid attributes and return null', function() {
         assert.isNull(optlyInstance.createUserContext('user1', 'invalid_attributes'));
         sinon.assert.calledOnce(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;

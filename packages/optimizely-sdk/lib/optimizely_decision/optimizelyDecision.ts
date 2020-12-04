@@ -15,50 +15,24 @@
  ***************************************************************************/
 import OptimizelyUserContext from '../optimizely_user_context';
 
-export default class OptimizelyDecision {
-  private variationKey?: string | null;
-  private enabled: boolean;
-  private variables: { [variableKey: string]: unknown } | null;
-  private ruleKey?: string | null;
-  private flagKey: string;
-  private userContext: OptimizelyUserContext;
-  private reasons: string[];
+export interface OptimizelyDecision {
+  variationKey: string | null;
+  enabled: boolean;
+  variables: { [variableKey: string]: unknown } | null;
+  ruleKey: string | null;
+  flagKey: string;
+  userContext: OptimizelyUserContext;
+  reasons: string[];
+}
 
-  constructor({
-    variationKey,
-    enabled,
-    variables,
-    ruleKey,
-    flagKey,
-    userContext,
-    reasons,
-  }: {
-    variationKey?: string | null;
-    enabled: boolean;
-    variables: { [variableKey: string]: unknown } | null;
-    ruleKey?: string | null;
-    flagKey: string;
-    userContext: OptimizelyUserContext;
-    reasons: string[];
-  }) {
-    this.variationKey = variationKey;
-    this.enabled = enabled;
-    this.variables = variables;
-    this.ruleKey = ruleKey;
-    this.flagKey = flagKey;
-    this.userContext = userContext;
-    this.reasons = reasons;
-  }
-
-  static newErrorDecision(key: string, user: OptimizelyUserContext, reasons: string[]): OptimizelyDecision {
-    return new OptimizelyDecision({
-      variationKey: null,
-      enabled: false,
-      variables: null,
-      ruleKey: null,
-      flagKey: key,
-      userContext: user,
-      reasons: reasons,
-    });
-  }
+export function newErrorDecision(key: string, user: OptimizelyUserContext, reasons: string[]): OptimizelyDecision {
+  return {
+    variationKey: null,
+    enabled: false,
+    variables: null,
+    ruleKey: null,
+    flagKey: key,
+    userContext: user,
+    reasons: reasons,
+  };
 }
