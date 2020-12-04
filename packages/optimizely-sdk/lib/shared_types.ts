@@ -117,6 +117,15 @@ export interface Rollout {
   experiments: Experiment[];
 }
 
+//TODO: Move OptimizelyDecideOptions to @optimizely/optimizely-sdk/lib/utils/enums
+export enum OptimizelyDecideOptions {
+  DISABLE_DECISION_EVENT = 'DISABLE_DECISION_EVENT',
+  ENABLED_FLAGS_ONLY =  'ENABLED_FLAGS_ONLY',
+  IGNORE_USER_PROFILE_SERVICE = 'IGNORE_USER_PROFILE_SERVICE',
+  INCLUDE_REASONS = 'INCLUDE_REASONS',
+  EXCLUDE_VARIABLES = 'EXCLUDE_VARIABLES'
+}
+
 /**
  * options required to create optimizely object
  */
@@ -138,6 +147,7 @@ export interface OptimizelyOptions {
   logger: LogHandler;
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
+  defaultDecideOptions?: OptimizelyDecideOptions[]
 }
 
 /**

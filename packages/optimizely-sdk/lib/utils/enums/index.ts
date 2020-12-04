@@ -81,6 +81,7 @@ export const LOG_MESSAGES = {
   FORCED_BUCKETING_FAILED: '%s: Variation key %s is not in datafile. Not activating user %s.',
   INVALID_OBJECT: '%s: Optimizely object is not valid. Failing %s.',
   INVALID_CLIENT_ENGINE: '%s: Invalid client engine passed: %s. Defaulting to node-sdk.',
+  INVALID_DECIDE_OPTIONS: '%s: Provided decide options is not an array.',
   INVALID_VARIATION_ID: '%s: Bucketed into an invalid variation ID. Returning null.',
   NOTIFICATION_LISTENER_EXCEPTION: '%s: Notification listener for (%s) threw exception: %s',
   NO_ROLLOUT_EXISTS: '%s: There is no rollout of feature %s.',
@@ -234,4 +235,10 @@ export const DATAFILE_VERSIONS = {
 export const enum VERSION_TYPE {
   PRE_RELEASE_VERSION_DELIMITER = '-',
   BUILD_VERSION_DELIMITER = '+'
+}
+
+export const DECISION_MESSAGES = {
+  SDK_NOT_READY: 'Optimizely SDK not configured properly yet.',
+  FLAG_KEY_INVALID: 'No flag was found for key "%s".',
+  VARIABLE_VALUE_INVALID: 'Variable value for key "%s" is invalid or wrong type.',
 }
