@@ -1450,28 +1450,6 @@ export default class Optimizely {
     });
   }
 
-  /**
-   *
-   * Get all decide options.
-   *
-   * @param  {OptimizelyDecideOptions[]}          options     Optional decide options
-   * @return {OptimizelyDecideOptions[]}          Array of all provided decide options
-   */
-  private getAllDecideOptions(options: OptimizelyDecideOptions[]): OptimizelyDecideOptions[] {
-    const allDecideOptions = [...this.defaultDecideOptions];
-    if (!Array.isArray(options)) {
-      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DECIDE_OPTIONS, MODULE_NAME));
-    } else {
-      options.forEach((option) => {
-        if (!allDecideOptions.includes(option) && OptimizelyDecideOptions[option]) {
-          allDecideOptions.push(option);
-        }
-      });
-    }
-
-    return allDecideOptions;
-  }
-
   decide(
     user: OptimizelyUserContext,
     key: string,
@@ -1495,7 +1473,7 @@ export default class Optimizely {
     let sourceInfo = {};
     const userId = user.getUserId();
     const attributes = user.getAttributes();
-    const allDecideOptions = this.getAllDecideOptions(options);
+    const allDecideOptions = Array.from(new Set([...this.defaultDecideOptions, ...options]));
     const decisionObj = this.decisionService.getVariationForFeature(
       configObj,
       feature,
