@@ -17,8 +17,6 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 import { sprintf } from '@optimizely/js-sdk-utils';
 import { OptimizelyDecideOptions } from '../shared_types';
-
-
 import OptimizelyUserContext from './';
 import Optimizely from '../optimizely';
 
@@ -52,7 +50,7 @@ describe('lib/optimizely_user_context', function() {
         };
       });
 
-      // TODO: replace with fakeOptimizely
+      // TODO: replace with fakeOptimizely (if possible)
       optimizely = new Optimizely({
         clientEngine: 'node-sdk',
         datafile: getTestDecideProjectConfig(),
@@ -180,7 +178,7 @@ describe('lib/optimizely_user_context', function() {
     describe('#decide', function() {
       var userId = 'tester';
       describe('with empty decide options', function() {
-        it('it should return error decision object when provided flagKey is invalid', function() {
+        it('should return error decision object when provided flagKey is invalid', function() {
           var flagKey = 'invalid_flag_key';
           var variablesExpected = optimizely.getAllFeatureVariables(flagKey, userId);
           var user = new OptimizelyUserContext({
@@ -200,7 +198,7 @@ describe('lib/optimizely_user_context', function() {
           assert.deepEqual(decision, expectedDecisionObj);
         });
 
-        it('it should return error decision object when SDK is not ready', function() {
+        it('should return error decision object when SDK is not ready', function() {
           var flagKey = 'invalid_flag_key';
           var variablesExpected = optimizely.getAllFeatureVariables(flagKey, userId);
           optimizely.projectConfigManager.getConfig.returns(null);
