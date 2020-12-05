@@ -189,7 +189,6 @@ export const DECISION_NOTIFICATION_TYPES = {
   FEATURE_TEST: 'feature-test',
   FEATURE_VARIABLE: 'feature-variable',
   ALL_FEATURE_VARIABLES: 'all-feature-variables',
-  FLAG: 'flag',
 };
 
 /*
