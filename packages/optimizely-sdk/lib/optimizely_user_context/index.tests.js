@@ -125,6 +125,38 @@ describe('lib/optimizely_user_context', function() {
         var newAttributes = user.getAttributes();
         assert.deepEqual(newAttributes['null_attribute'], null);
       });
+
+      it('should set attributes by value in constructor', function() {
+        var userId = 'user1';
+        var attributes = { initial_attribute: 'initial_value' };
+        var user = new OptimizelyUserContext({
+          optimizely,
+          userId,
+          attributes,
+        });
+        attributes["attribute2"] = 100;
+        assert.deepEqual(user.getAttributes(), { initial_attribute: 'initial_value' });
+        user.setAttribute("attribute3", "hello");
+        assert.deepEqual(attributes, { initial_attribute: 'initial_value', 'attribute2': 100});
+      });
+
+      it('should not change user attributes if returned by getAttributes object is updated', function() {
+        var userId = 'user1';
+        var attributes = { initial_attribute: 'initial_value' };
+        var user = new OptimizelyUserContext({
+          optimizely,
+          userId,
+          attributes,
+        });
+        var attributes2 = user.getAttributes();
+        attributes2['new_attribute'] = { "value": 100 };
+        assert.deepEqual(user.getAttributes(), attributes);
+        var expectedAttributes = {
+          initial_attribute: 'initial_value',
+          new_attribute: { "value": 100 }
+        }
+        assert.deepEqual(attributes2, expectedAttributes);
+      });
     });
   });
 });

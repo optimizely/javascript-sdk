@@ -32,7 +32,7 @@ export default class OptimizelyUserContext {
   }) {
     this.optimizely = optimizely;
     this.userId = userId;
-    this.attributes = attributes ?? {};
+    this.attributes = {...attributes} ?? {};
   }
 
   /**
@@ -49,7 +49,7 @@ export default class OptimizelyUserContext {
   }
 
   getAttributes(): UserAttributes {
-    return this.attributes;
+    return {...this.attributes};
   }
 
   getOptimizely(): Optimizely {
