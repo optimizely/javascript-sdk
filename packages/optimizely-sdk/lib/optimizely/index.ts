@@ -95,7 +95,7 @@ export default class Optimizely {
   private notificationCenter: NotificationCenter;
   private decisionService: DecisionService;
   private eventProcessor: EventProcessor;
-  private defaultDecideOptions: OptimizelyDecideOptions[];
+  private defaultDecideOptions: { [key: string]: boolean };
 
   constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;
@@ -114,11 +114,19 @@ export default class Optimizely {
     this.isOptimizelyConfigValid = config.isValidInstance;
     this.logger = config.logger;
 
-    let defaultDecideOptions = config.defaultDecideOptions ?? [];
-    if (!Array.isArray(defaultDecideOptions)) {
-      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DECIDE_OPTIONS, MODULE_NAME));
-      defaultDecideOptions = [];
+    let decideOptionsArray = config.defaultDecideOptions ?? [];
+    if (!Array.isArray(decideOptionsArray)) {
+      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DEFAULT_DECIDE_OPTIONS, MODULE_NAME));
+      decideOptionsArray = [];
     }
+
+    const defaultDecideOptions: { [key: string]: boolean } = {};
+    decideOptionsArray.forEach((option) => {
+      // Filter out all provided default decide options that are not in OptimizelyDecideOptions[]
+      if (OptimizelyDecideOptions[option]) {
+        defaultDecideOptions[option] = true;
+      }
+    });
     this.defaultDecideOptions = defaultDecideOptions;
     this.projectConfigManager = createProjectConfigManager({
       datafile: config.datafile,
@@ -797,7 +805,6 @@ export default class Optimizely {
    *                                                type, or null if the feature key is invalid or
    *                                                the variable key is invalid
    */
-
   getFeatureVariable(
     featureKey: string,
     variableKey: string,
@@ -1474,7 +1481,7 @@ export default class Optimizely {
     let sourceInfo = {};
     const userId = user.getUserId();
     const attributes = user.getAttributes();
-    const allDecideOptions = Array.from(new Set([...this.defaultDecideOptions, ...options]));
+    const allDecideOptions = this.getAllDecideOptions(options);
     const decisionObj = this.decisionService.getVariationForFeature(
       configObj,
       feature,
@@ -1556,5 +1563,27 @@ export default class Optimizely {
       userContext: user,
       reasons: shouldIncludeReasons ? reasons: [],
     };
+  }
+
+  /**
+   * Get all decide options.
+   * @param  {OptimizelyDecideOptions[]}          options   decide options
+   * @return {OptimizelyDecideOptions[]}          Array of all provided decide options including default decide options
+   */
+  private getAllDecideOptions(options: OptimizelyDecideOptions[]): OptimizelyDecideOptions[] {
+    const allDecideOptions = [...Object.keys(this.defaultDecideOptions) as OptimizelyDecideOptions[]];
+    if (!Array.isArray(options)) {
+      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DECIDE_OPTIONS, MODULE_NAME));
+    } else {
+      options.forEach((option) => {
+        // Filter out all provided decide options that are not in OptimizelyDecideOptions[] and
+        // are not in the defaultDecideOptions
+        if (!this.defaultDecideOptions[option] && OptimizelyDecideOptions[option]) {
+          allDecideOptions.push(option);
+        }
+      });
+    }
+
+    return allDecideOptions;
   }
 }
