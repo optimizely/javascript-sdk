@@ -50,7 +50,7 @@ describe('lib/optimizely_user_context', function() {
         };
       });
 
-      // TODO: replace with fakeOptimizely (if possible)
+      // TODO: replace with fakeOptimizely
       optimizely = new Optimizely({
         clientEngine: 'node-sdk',
         datafile: getTestDecideProjectConfig(),

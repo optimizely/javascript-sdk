@@ -39,6 +39,7 @@ var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
 var LOG_MESSAGES = enums.LOG_MESSAGES;
 var DECISION_SOURCES = enums.DECISION_SOURCES;
+var DECISION_MESSAGES = enums.DECISION_MESSAGES;
 var DECISION_NOTIFICATION_TYPES = enums.DECISION_NOTIFICATION_TYPES;
 var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
 
@@ -132,6 +133,21 @@ describe('lib/optimizely', function() {
         sinon.assert.called(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, 'OPTIMIZELY', 'undefined'));
+      });
+
+      it('should log if the defaultDecideOptions passed in are invalid', function() {
+        new Optimizely({
+          clientEngine: 'node-sdk',
+          datafile: testData.getTestProjectConfig(),
+          errorHandler: stubErrorHandler,
+          eventDispatcher: stubEventDispatcher,
+          logger: createdLogger,
+          defaultDecideOptions: 'invalid_options',
+        });
+
+        sinon.assert.called(createdLogger.log);
+        var logMessage = createdLogger.log.args[0][1];
+        assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_DEFAULT_DECIDE_OPTIONS, 'OPTIMIZELY'));
       });
 
       it('should allow passing `react-sdk` as the clientEngine', function() {
@@ -4316,31 +4332,33 @@ describe('lib/optimizely', function() {
       logLevel: LOG_LEVEL.INFO,
       logToConsole: false,
     });
-    beforeEach(function() {
-      optlyInstance = new Optimizely({
-        clientEngine: 'node-sdk',
-        datafile: testData.getTestDecideProjectConfig(),
-        errorHandler: errorHandler,
-        eventDispatcher: eventDispatcher,
-        jsonSchemaValidator: jsonSchemaValidator,
-        logger: createdLogger,
-        isValidInstance: true,
-        eventBatchSize: 1,
+
+    describe('#createUserContext', function() {
+      beforeEach(function() {
+        optlyInstance = new Optimizely({
+          clientEngine: 'node-sdk',
+          datafile: testData.getTestDecideProjectConfig(),
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+          isValidInstance: true,
+          eventBatchSize: 1,
+        });
+
+        bucketStub = sinon.stub(bucketer, 'bucket');
+        sinon.stub(errorHandler, 'handleError');
+        sinon.stub(createdLogger, 'log');
+        sinon.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
       });
 
-      bucketStub = sinon.stub(bucketer, 'bucket');
-      sinon.stub(errorHandler, 'handleError');
-      sinon.stub(createdLogger, 'log');
-      sinon.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
-    });
+      afterEach(function() {
+        bucketer.bucket.restore();
+        errorHandler.handleError.restore();
+        createdLogger.log.restore();
+        fns.uuid.restore();
+      });
 
-    afterEach(function() {
-      bucketer.bucket.restore();
-      errorHandler.handleError.restore();
-      createdLogger.log.restore();
-      fns.uuid.restore();
-    });
-    describe('#createUserContext', function() {
       it('should create OptimizelyUserContext with provided attributes and userId', function() {
         var userId = 'testUser1';
         var attributes = { test_attribute: 'test_value' };
@@ -4394,6 +4412,151 @@ describe('lib/optimizely', function() {
         sinon.assert.calledOnce(createdLogger.log);
         var logMessage = createdLogger.log.args[0][1];
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
+      });
+    });
+
+    describe('#decide', function() {
+      var userId = 'tester';
+      describe('with empty default decide options', function() {
+        beforeEach(function() {
+          optlyInstance = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestDecideProjectConfig(),
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            isValidInstance: true,
+            eventBatchSize: 1,
+            defaultDecideOptions: [],
+          });
+
+          sinon.stub(errorHandler, 'handleError');
+          sinon.stub(createdLogger, 'log');
+          sinon.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
+        });
+
+        afterEach(function() {
+          errorHandler.handleError.restore();
+          createdLogger.log.restore();
+          fns.uuid.restore();
+        });
+
+        it('should return error decision object when provided flagKey is invalid and do not dispatch an event', function() {
+          var flagKey = 'invalid_flag_key';
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          var expectedDecision = {
+            variationKey: null,
+            enabled: false,
+            variables: null,
+            ruleKey: null,
+            flagKey: flagKey,
+            userContext: user,
+            reasons: [ sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, flagKey) ],
+          }
+          assert.deepEqual(decision, expectedDecision);
+          sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+        });
+
+        it('should return error decision object when SDK is not ready and do not dispatch an event', function() {
+          optlyInstance.projectConfigManager.getConfig.returns(null);
+          var flagKey = 'feature_2';
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          var expectedDecision = {
+            variationKey: null,
+            enabled: false,
+            variables: null,
+            ruleKey: null,
+            flagKey: flagKey,
+            userContext: user,
+            reasons: [ DECISION_MESSAGES.SDK_NOT_READY ],
+          }
+          assert.deepEqual(decision, expectedDecision);
+          sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+        });
+
+        it('should make a decision for feature_test and dispatch an event', function() {
+          var flagKey = 'feature_2';
+          var variablesExpected = optlyInstance.getAllFeatureVariables(flagKey, userId);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+          });
+          var decision = user.decide(flagKey);
+          var expectedDecision = {
+            variationKey: 'variation_with_traffic',
+            enabled: true,
+            variables: variablesExpected,
+            ruleKey: 'exp_no_audience',
+            flagKey: flagKey,
+            userContext: user,
+            reasons: [],
+          }
+          assert.deepEqual(decision, expectedDecision);
+          sinon.assert.calledOnce(optlyInstance.eventDispatcher.dispatchEvent);
+          var expectedImpressionEvent = {
+            httpVerb: 'POST',
+            url: 'https://logx.optimizely.com/v1/events',
+            params: {
+              account_id: '10367498574',
+              project_id: '10431130345',
+              visitors: [
+                {
+                  snapshots: [
+                    {
+                      decisions: [
+                        {
+                          campaign_id: '10417730432',
+                          experiment_id: '10420810910',
+                          variation_id: '10418551353',
+                          metadata: {
+                            flag_key: 'feature_2',
+                            rule_key: 'exp_no_audience',
+                            rule_type: 'feature-test',
+                            variation_key: 'variation_with_traffic',
+                            enabled: true,
+                          },
+                        },
+                      ],
+                      events: [
+                        {
+                          entity_id: '10417730432',
+                          timestamp: Math.round(new Date().getTime()),
+                          key: 'campaign_activated',
+                          uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        },
+                      ],
+                    },
+                  ],
+                  visitor_id: 'tester',
+                  attributes: [
+                    {
+                      entity_id: '$opt_bot_filtering',
+                      key: '$opt_bot_filtering',
+                      type: 'custom',
+                      value: true,
+                    },
+                  ],
+                },
+              ],
+              revision: '241',
+              client_name: 'node-sdk',
+              client_version: enums.NODE_CLIENT_VERSION,
+              anonymize_ip: true,
+              enrich_decisions: true,
+            },
+          };
+          var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
+          assert.deepEqual(callArgs[0], expectedImpressionEvent);
+        });
       });
     });
   });
