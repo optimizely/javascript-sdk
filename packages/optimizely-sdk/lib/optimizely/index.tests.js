@@ -4889,9 +4889,9 @@ describe('lib/optimizely', function() {
           });
           var decision = optlyInstance.decide(user, flagKey);
           var expectedDecisionObj = {
-            variationKey: expectedVariables,
+            variationKey: 'variation_with_traffic',
             enabled: true,
-            variables: {},
+            variables: expectedVariables,
             ruleKey: 'exp_no_audience',
             flagKey: flagKey,
             userContext: user,
