@@ -229,8 +229,8 @@ export const DATAFILE_VERSIONS = {
 };
 
 /*
-* Pre-Release and Build symbols
-*/
+ * Pre-Release and Build symbols
+ */
 export const enum VERSION_TYPE {
   PRE_RELEASE_VERSION_DELIMITER = '-',
   BUILD_VERSION_DELIMITER = '+'

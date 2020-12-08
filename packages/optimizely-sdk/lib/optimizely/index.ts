@@ -27,6 +27,7 @@ import {
   FeatureVariable,
   OptimizelyOptions
 } from '../shared_types';
+import OptimizelyUserContext from '../optimizely_user_context';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
@@ -55,11 +56,10 @@ const MODULE_NAME = 'OPTIMIZELY';
 
 const DEFAULT_ONREADY_TIMEOUT = 30000;
 
-
 // TODO: Make feature_key, user_id, variable_key, experiment_key, event_key camelCase
-export type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 'event_key' | 'variation_id';
+type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 'event_key' | 'variation_id';
 
-export type StringInputs = Partial<Record<InputKey, unknown>>;
+type StringInputs = Partial<Record<InputKey, unknown>>;
 
 /**
  * The Optimizely class
@@ -1414,5 +1414,30 @@ export default class Optimizely {
     });
 
     return Promise.race([this.readyPromise, timeoutPromise]);
+  }
+
+  //============ decide ============//
+
+  /**
+   * Creates a context of the user for which decision APIs will be called.
+   *
+   * A user context will be created successfully even when the SDK is not fully configured yet, so no
+   * this.isValidInstance() check is performed here.
+   *
+   * @param  {string}          userId      The user ID to be used for bucketing.
+   * @param  {UserAttributes}  attributes  Optional user attributes.
+   * @return {OptimizelyUserContext|null}  An OptimizelyUserContext associated with this OptimizelyClient or
+   *                                       null if provided inputs are invalid
+   */
+  createUserContext(userId: string, attributes?: UserAttributes): OptimizelyUserContext | null {
+    if (!this.validateInputs({ user_id: userId }, attributes)) {
+      return null;
+    }
+
+    return new OptimizelyUserContext({
+      optimizely: this,
+      userId,
+      attributes
+    });
   }
 }
