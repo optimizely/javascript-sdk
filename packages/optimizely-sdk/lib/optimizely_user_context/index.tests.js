@@ -15,62 +15,20 @@
  ***************************************************************************/
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { sprintf } from '@optimizely/js-sdk-utils';
-import { OptimizelyDecideOptions } from '../shared_types';
 import OptimizelyUserContext from './';
-import Optimizely from '../optimizely';
-
-import logger from '../plugins/logger';
-import eventDispatcher from '../plugins/event_dispatcher/index.node';
-import errorHandler from '../plugins/error_handler';
-import * as jsonSchemaValidator from '../utils/json_schema_validator';
-import * as projectConfigManager from '../core/project_config/project_config_manager';
-import * as projectConfig from '../core/project_config';
-import { getTestDecideProjectConfig } from '../tests/test_data';
-import {
-   LOG_LEVEL,
-   DECISION_MESSAGES,
- } from '../utils/enums';
 
 describe('lib/optimizely_user_context', function() {
   describe('APIs', function() {
-    var createdLogger = logger.createLogger({
-      logLevel: LOG_LEVEL.DEBUG,
-      logToConsole: false,
-    });
-    var optimizely;
-    var projectConfigManagerStub;
-    beforeEach(function() {
-      projectConfigManagerStub = sinon.stub(projectConfigManager, 'createProjectConfigManager').callsFake(function(config) {
-        var currentConfig = config.datafile ? projectConfig.createProjectConfig(config.datafile) : null;
-        return {
-          getConfig: sinon.stub().returns(currentConfig),
-          onUpdate: sinon.stub().returns(function() {}),
-          onReady: sinon.stub().returns({ then: function() {} }),
-        };
-      });
-
-      // TODO: replace with fakeOptimizely
-      optimizely = new Optimizely({
-        clientEngine: 'node-sdk',
-        datafile: getTestDecideProjectConfig(),
-        errorHandler: errorHandler,
-        eventDispatcher: eventDispatcher,
-        jsonSchemaValidator: jsonSchemaValidator,
-        logger: createdLogger,
-        isValidInstance: true,
-      });
-    });
-
-    afterEach(function() {
-      projectConfigManagerStub.restore();
-    })
+    var fakeOptimizely;
     describe('#setAttribute', function() {
+      fakeOptimizely = {
+        decide: sinon.stub().returns({})
+      }
       it('should set attributes when provided at instantiation of OptimizelyUserContext', function() {
         var userId = 'user1';
         var attributes = { test_attribute: 'test_value' };
         var user = new OptimizelyUserContext({
-          optimizely,
+          optimizely: fakeOptimizely,
           userId,
           attributes
         });
@@ -78,7 +36,7 @@ describe('lib/optimizely_user_context', function() {
         user.setAttribute('k2', true);
         user.setAttribute('k3', 100);
         user.setAttribute('k4', 3.5);
-        assert.deepEqual(user.getOptimizely(), optimizely);
+        assert.deepEqual(user.getOptimizely(), fakeOptimizely);
         assert.deepEqual(user.getUserId(), userId);
 
         var newAttributes = user.getAttributes();
@@ -92,14 +50,14 @@ describe('lib/optimizely_user_context', function() {
       it('should set attributes when none provided at instantiation of OptimizelyUserContext', function() {
         var userId = 'user2';
         var user = new OptimizelyUserContext({
-          optimizely,
+          optimizely: fakeOptimizely,
           userId,
         });
         user.setAttribute('k1', {'hello': 'there'});
         user.setAttribute('k2', true);
         user.setAttribute('k3', 100);
         user.setAttribute('k4', 3.5);
-        assert.deepEqual(user.getOptimizely(), optimizely);
+        assert.deepEqual(user.getOptimizely(), fakeOptimizely);
         assert.deepEqual(user.getUserId(), userId);
 
         var newAttributes = user.getAttributes();
@@ -113,13 +71,13 @@ describe('lib/optimizely_user_context', function() {
         var userId = 'user3';
         var attributes = { test_attribute: 'test_value' };
         var user = new OptimizelyUserContext({
-          optimizely,
+          optimizely: fakeOptimizely,
           userId,
           attributes,
         });
         user.setAttribute('k1', {'hello': 'there'});
         user.setAttribute('test_attribute', 'overwritten_value');
-        assert.deepEqual(user.getOptimizely(), optimizely);
+        assert.deepEqual(user.getOptimizely(), fakeOptimizely);
         assert.deepEqual(user.getUserId(), userId);
 
         var newAttributes = user.getAttributes();
@@ -131,11 +89,11 @@ describe('lib/optimizely_user_context', function() {
       it('should allow to set attributes with value of null', function() {
         var userId = 'user4';
         var user = new OptimizelyUserContext({
-          optimizely,
+          optimizely: fakeOptimizely,
           userId,
         });
         user.setAttribute('null_attribute', null);
-        assert.deepEqual(user.getOptimizely(), optimizely);
+        assert.deepEqual(user.getOptimizely(), fakeOptimizely);
         assert.deepEqual(user.getUserId(), userId);
 
         var newAttributes = user.getAttributes();
@@ -146,7 +104,7 @@ describe('lib/optimizely_user_context', function() {
         var userId = 'user1';
         var attributes = { initial_attribute: 'initial_value' };
         var user = new OptimizelyUserContext({
-          optimizely,
+          optimizely: fakeOptimizely,
           userId,
           attributes,
         });
@@ -160,7 +118,7 @@ describe('lib/optimizely_user_context', function() {
         var userId = 'user1';
         var attributes = { initial_attribute: 'initial_value' };
         var user = new OptimizelyUserContext({
-          optimizely,
+          optimizely: fakeOptimizely,
           userId,
           attributes,
         });
@@ -177,129 +135,26 @@ describe('lib/optimizely_user_context', function() {
 
     describe('#decide', function() {
       var userId = 'tester';
-      describe('with empty decide options', function() {
-        it('should return error decision object when provided flagKey is invalid', function() {
-          var flagKey = 'invalid_flag_key';
-          var variablesExpected = optimizely.getAllFeatureVariables(flagKey, userId);
-          var user = new OptimizelyUserContext({
-            optimizely,
-            userId,
-          });
-          var decision = user.decide(flagKey);
-          var expectedDecisionObj = {
-            variationKey: null,
-            enabled: false,
-            variables: variablesExpected,
-            ruleKey: null,
-            flagKey: flagKey,
-            userContext: user,
-            reasons: [ sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, flagKey) ],
-          }
-          assert.deepEqual(decision, expectedDecisionObj);
+      it('should return an expected decision object', function() {
+        var flagKey = 'feature_1';
+        var fakeDecision = {
+          variationKey: 'variation_with_traffic',
+          enabled: true,
+          variables: {},
+          ruleKey: 'exp_no_audience',
+          flagKey: flagKey,
+          userContext: user,
+          reasons: [],
+        };
+        fakeOptimizely = {
+          decide: sinon.stub().returns(fakeDecision)
+        };
+        var user = new OptimizelyUserContext({
+          optimizely: fakeOptimizely,
+          userId,
         });
-
-        it('should return error decision object when SDK is not ready', function() {
-          var flagKey = 'invalid_flag_key';
-          var variablesExpected = optimizely.getAllFeatureVariables(flagKey, userId);
-          optimizely.projectConfigManager.getConfig.returns(null);
-          var user = new OptimizelyUserContext({
-            optimizely,
-            userId,
-          });
-
-          var decision = user.decide(flagKey);
-          var expectedDecisionObj = {
-            variationKey: null,
-            enabled: false,
-            variables: variablesExpected,
-            ruleKey: null,
-            flagKey: flagKey,
-            userContext: user,
-            reasons: [ DECISION_MESSAGES.SDK_NOT_READY ],
-          }
-          assert.deepEqual(decision, expectedDecisionObj);
-        });
-
-        it('should make a decision for feature_test', function() {
-          var flagKey = 'feature_2';
-          var variablesExpected = optimizely.getAllFeatureVariables(flagKey, userId);
-          var user = new OptimizelyUserContext({
-            optimizely,
-            userId,
-          });
-          var decision = user.decide(flagKey);
-          var expectedDecisionObj = {
-            variationKey: 'variation_with_traffic',
-            enabled: true,
-            variables: variablesExpected,
-            ruleKey: 'exp_no_audience',
-            flagKey: flagKey,
-            userContext: user,
-            reasons: [],
-          }
-          assert.deepEqual(decision, expectedDecisionObj);
-        });
-
-        it('should make a decision for rollout', function() {
-          var flagKey = "feature_1";
-          var variablesExpected = optimizely.getAllFeatureVariables(flagKey, userId);
-          var user = new OptimizelyUserContext({
-            optimizely,
-            userId,
-          });
-          var decision = user.decide(flagKey);
-          var expectedDecisionObj = {
-            variationKey: '18257766532',
-            enabled: true,
-            variables: variablesExpected,
-            ruleKey: '18322080788',
-            flagKey: flagKey,
-            userContext: user,
-            reasons: [],
-          }
-          assert.deepEqual(decision, expectedDecisionObj);
-        });
-
-        it('should make a decision when variation is null', function() {
-          var flagKey = "feature_3";
-          var variablesExpected = optimizely.getAllFeatureVariables(flagKey, userId);
-          var user = new OptimizelyUserContext({
-            optimizely,
-            userId,
-          });
-          var decision = user.decide(flagKey);
-          var expectedDecisionObj = {
-            variationKey: '',
-            enabled: false,
-            variables: variablesExpected,
-            ruleKey: '',
-            flagKey: flagKey,
-            userContext: user,
-            reasons: [],
-          }
-          assert.deepEqual(decision, expectedDecisionObj);
-        });
-      });
-
-      describe('with EXCLUDE_VARIABLES flag in decide options', function() {
-        it('should exclude variables in decision object', function() {
-          var flagKey = 'feature_2';
-          var user = new OptimizelyUserContext({
-            optimizely,
-            userId
-          });
-          var decision = user.decide(flagKey, [ OptimizelyDecideOptions.EXCLUDE_VARIABLES ]);
-          var expectedDecisionObj = {
-            variationKey: 'variation_with_traffic',
-            enabled: true,
-            variables: {},
-            ruleKey: 'exp_no_audience',
-            flagKey: flagKey,
-            userContext: user,
-            reasons: [],
-          }
-          assert.deepEqual(decision, expectedDecisionObj);
-        });
+        var decision = user.decide(flagKey);
+        assert.deepEqual(decision, fakeDecision);
       });
     });
   });
