@@ -4490,7 +4490,7 @@ describe('lib/optimizely', function() {
             optimizely: optlyInstance,
             userId,
           });
-          var decision = user.decide(flagKey);
+          var decision = optlyInstance.decide(user, flagKey);
           var expectedDecision = {
             variationKey: 'variation_with_traffic',
             enabled: true,
@@ -4529,6 +4529,180 @@ describe('lib/optimizely', function() {
                       events: [
                         {
                           entity_id: '10417730432',
+                          timestamp: Math.round(new Date().getTime()),
+                          key: 'campaign_activated',
+                          uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        },
+                      ],
+                    },
+                  ],
+                  visitor_id: 'tester',
+                  attributes: [
+                    {
+                      entity_id: '$opt_bot_filtering',
+                      key: '$opt_bot_filtering',
+                      type: 'custom',
+                      value: true,
+                    },
+                  ],
+                },
+              ],
+              revision: '241',
+              client_name: 'node-sdk',
+              client_version: enums.NODE_CLIENT_VERSION,
+              anonymize_ip: true,
+              enrich_decisions: true,
+            },
+          };
+          var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
+          assert.deepEqual(callArgs[0], expectedImpressionEvent);
+        });
+
+        it('should make a decision for rollout and dispatch an event when sendFlagDecisions is set to true', function() {
+          var flagKey = 'feature_1';
+          var variablesExpected = optlyInstance.getAllFeatureVariables(flagKey, userId);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          var expectedDecision = {
+            variationKey: '18257766532',
+            enabled: true,
+            variables: variablesExpected,
+            ruleKey: '18322080788',
+            flagKey: flagKey,
+            userContext: user,
+            reasons: [],
+          }
+          assert.deepEqual(decision, expectedDecision);
+          sinon.assert.calledOnce(optlyInstance.eventDispatcher.dispatchEvent);
+          var expectedImpressionEvent = {
+            httpVerb: 'POST',
+            url: 'https://logx.optimizely.com/v1/events',
+            params: {
+              account_id: '10367498574',
+              project_id: '10431130345',
+              visitors: [
+                {
+                  snapshots: [
+                    {
+                      decisions: [
+                        {
+                          campaign_id: '18263344648',
+                          experiment_id: '18322080788',
+                          variation_id: '18257766532',
+                          metadata: {
+                            flag_key: 'feature_1',
+                            rule_key: '18322080788',
+                            rule_type: 'rollout',
+                            variation_key: '18257766532',
+                            enabled: true,
+                          },
+                        },
+                      ],
+                      events: [
+                        {
+                          entity_id: '18263344648',
+                          timestamp: Math.round(new Date().getTime()),
+                          key: 'campaign_activated',
+                          uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
+                        },
+                      ],
+                    },
+                  ],
+                  visitor_id: 'tester',
+                  attributes: [
+                    {
+                      entity_id: '$opt_bot_filtering',
+                      key: '$opt_bot_filtering',
+                      type: 'custom',
+                      value: true,
+                    },
+                  ],
+                },
+              ],
+              revision: '241',
+              client_name: 'node-sdk',
+              client_version: enums.NODE_CLIENT_VERSION,
+              anonymize_ip: true,
+              enrich_decisions: true,
+            },
+          };
+          var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
+          assert.deepEqual(callArgs[0], expectedImpressionEvent);
+        });
+
+        it('should make a decision for rollout and do not dispatch an event when sendFlagDecisions is set to false', function() {
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.sendFlagDecisions = false;
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var flagKey = 'feature_1';
+          var variablesExpected = optlyInstance.getAllFeatureVariables(flagKey, userId);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          var expectedDecision = {
+            variationKey: '18257766532',
+            enabled: true,
+            variables: variablesExpected,
+            ruleKey: '18322080788',
+            flagKey: flagKey,
+            userContext: user,
+            reasons: [],
+          }
+          assert.deepEqual(decision, expectedDecision);
+          sinon.assert.notCalled(optlyInstance.eventDispatcher.dispatchEvent);
+        });
+
+        it('should make a decision when variation is null and dispatch an event', function() {
+          var flagKey = 'feature_3';
+          var variablesExpected = optlyInstance.getAllFeatureVariables(flagKey, userId);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          var expectedDecision = {
+            variationKey: '',
+            enabled: false,
+            variables: variablesExpected,
+            ruleKey: '',
+            flagKey: flagKey,
+            userContext: user,
+            reasons: [],
+          }
+          assert.deepEqual(decision, expectedDecision);
+          sinon.assert.calledOnce(optlyInstance.eventDispatcher.dispatchEvent);
+          var expectedImpressionEvent = {
+            httpVerb: 'POST',
+            url: 'https://logx.optimizely.com/v1/events',
+            params: {
+              account_id: '10367498574',
+              project_id: '10431130345',
+              visitors: [
+                {
+                  snapshots: [
+                    {
+                      decisions: [
+                        {
+                          campaign_id: null,
+                          experiment_id: null,
+                          variation_id: null,
+                          metadata: {
+                            flag_key: 'feature_3',
+                            rule_key: '',
+                            rule_type: 'rollout',
+                            variation_key: '',
+                            enabled: false,
+                          },
+                        },
+                      ],
+                      events: [
+                        {
+                          entity_id: null,
                           timestamp: Math.round(new Date().getTime()),
                           key: 'campaign_activated',
                           uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
