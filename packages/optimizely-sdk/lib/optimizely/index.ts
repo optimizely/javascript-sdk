@@ -1515,7 +1515,7 @@ export default class Optimizely {
     const variablesMap: { [key: string]: unknown } = {};
     let decisionEventDispatched = false;
 
-    if (!allDecideOptions.includes(OptimizelyDecideOptions.EXCLUDE_VARIABLES)) {
+    if (!allDecideOptions[OptimizelyDecideOptions.EXCLUDE_VARIABLES]) {
       const featureFlag = projectConfig.getFeatureFromKey(configObj, key, this.logger);
       featureFlag?.variables.forEach(variable => {
         variablesMap[variable.key] = this.getFeatureVariableValueFromVariation(key, flagEnabled, decisionObj.variation, variable, userId);
@@ -1523,7 +1523,7 @@ export default class Optimizely {
     }
 
     if (
-      !allDecideOptions.includes(OptimizelyDecideOptions.DISABLE_DECISION_EVENT) && (
+      !allDecideOptions[OptimizelyDecideOptions.DISABLE_DECISION_EVENT] && (
       decisionSource === DECISION_SOURCES.FEATURE_TEST ||
       decisionSource === DECISION_SOURCES.ROLLOUT && projectConfig.getSendFlagDecisionsValue(configObj))
     ) {
@@ -1537,7 +1537,7 @@ export default class Optimizely {
       decisionEventDispatched = true;
     }
 
-    const shouldIncludeReasons = allDecideOptions.includes(OptimizelyDecideOptions.INCLUDE_REASONS);
+    const shouldIncludeReasons = allDecideOptions[OptimizelyDecideOptions.INCLUDE_REASONS];
     const featureInfo = {
       featureKey: key,
       featureEnabled: flagEnabled,
@@ -1568,18 +1568,17 @@ export default class Optimizely {
   /**
    * Get all decide options.
    * @param  {OptimizelyDecideOptions[]}          options   decide options
-   * @return {OptimizelyDecideOptions[]}          Array of all provided decide options including default decide options
+   * @return {[key: string]: boolean}             Map of all provided decide options including default decide options
    */
-  private getAllDecideOptions(options: OptimizelyDecideOptions[]): OptimizelyDecideOptions[] {
-    const allDecideOptions = [...Object.keys(this.defaultDecideOptions) as OptimizelyDecideOptions[]];
+  private getAllDecideOptions(options: OptimizelyDecideOptions[]): { [key: string]: boolean } {
+    const allDecideOptions = {...this.defaultDecideOptions};
     if (!Array.isArray(options)) {
       this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DECIDE_OPTIONS, MODULE_NAME));
     } else {
       options.forEach((option) => {
-        // Filter out all provided decide options that are not in OptimizelyDecideOptions[] and
-        // are not in the defaultDecideOptions
-        if (!this.defaultDecideOptions[option] && OptimizelyDecideOptions[option]) {
-          allDecideOptions.push(option);
+        // Filter out all provided decide options that are not in OptimizelyDecideOptions[]
+        if (OptimizelyDecideOptions[option]) {
+          allDecideOptions[option] = true;
         }
       });
     }
