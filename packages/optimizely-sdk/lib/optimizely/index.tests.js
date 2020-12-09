@@ -4567,13 +4567,15 @@ describe('lib/optimizely', function() {
               userId: 'tester',
               attributes: {},
               decisionInfo: {
-                featureKey: 'feature_2',
-                featureEnabled: true,
+                flagKey: 'feature_2',
+                enabled: true,
                 source: 'feature-test',
-                sourceInfo: { experimentKey: "exp_no_audience", variationKey: "variation_with_traffic" },
+                ruleKey: "exp_no_audience",
+                variationKey: "variation_with_traffic",
                 variables: { i_42: 42 },
+                decisionEventDispatched: true,
+                reasons: [],
               },
-              decisionEventDispatched: true
             }
           ]
           assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
@@ -4599,13 +4601,30 @@ describe('lib/optimizely', function() {
           assert.deepEqual(decision, expectedDecision);
           sinon.assert.notCalled(optlyInstance.eventDispatcher.dispatchEvent);
           sinon.assert.calledTwice(optlyInstance.notificationCenter.sendNotifications);
-          var decisionEventDispatched = optlyInstance.notificationCenter.sendNotifications.getCall(1).args[1].decisionEventDispatched;
-          assert.deepEqual(decisionEventDispatched, false);
+          var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(1).args;
+          var expectedNotificationCallArgs = [
+            NOTIFICATION_TYPES.DECISION,
+            {
+              type: 'flag',
+              userId: 'tester',
+              attributes: {},
+              decisionInfo: {
+                flagKey: 'feature_2',
+                enabled: true,
+                source: 'feature-test',
+                ruleKey: "exp_no_audience",
+                variationKey: "variation_with_traffic",
+                variables: { i_42: 42 },
+                decisionEventDispatched: false,
+                reasons: [],
+              },
+            }
+          ]
+          assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
 
         it('should make a decision with excluded variables and do not dispatch an event with DISABLE_DECISION_EVENT and EXCLUDE_VARIABLES passed in decide options', function() {
           var flagKey = 'feature_2';
-          var expectedVariables = optlyInstance.getAllFeatureVariables(flagKey, userId);
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
             userId,
@@ -4622,9 +4641,27 @@ describe('lib/optimizely', function() {
           }
           assert.deepEqual(decision, expectedDecision);
           sinon.assert.notCalled(optlyInstance.eventDispatcher.dispatchEvent);
-          sinon.assert.calledTwice(optlyInstance.notificationCenter.sendNotifications);
-          var decisionEventDispatched = optlyInstance.notificationCenter.sendNotifications.getCall(1).args[1].decisionEventDispatched;
-          assert.deepEqual(decisionEventDispatched, false);
+          sinon.assert.calledOnce(optlyInstance.notificationCenter.sendNotifications);
+          var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(0).args;
+          var expectedNotificationCallArgs = [
+            NOTIFICATION_TYPES.DECISION,
+            {
+              type: 'flag',
+              userId: 'tester',
+              attributes: {},
+              decisionInfo: {
+                flagKey: 'feature_2',
+                enabled: true,
+                source: 'feature-test',
+                ruleKey: 'exp_no_audience',
+                variationKey: "variation_with_traffic",
+                variables: {},
+                decisionEventDispatched: false,
+                reasons: [],
+              },
+            }
+          ]
+          assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
 
         it('should make a decision for rollout and dispatch an event when sendFlagDecisions is set to true', function() {
@@ -4647,8 +4684,26 @@ describe('lib/optimizely', function() {
           assert.deepEqual(decision, expectedDecision);
           sinon.assert.calledOnce(optlyInstance.eventDispatcher.dispatchEvent);
           sinon.assert.callCount(optlyInstance.notificationCenter.sendNotifications, 4);
-          var decisionEventDispatched = optlyInstance.notificationCenter.sendNotifications.getCall(3).args[1].decisionEventDispatched;
-          assert.deepEqual(decisionEventDispatched, true);
+          var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(3).args;
+          var expectedNotificationCallArgs = [
+            NOTIFICATION_TYPES.DECISION,
+            {
+              type: 'flag',
+              userId: 'tester',
+              attributes: {},
+              decisionInfo: {
+                flagKey: 'feature_1',
+                enabled: true,
+                source: 'rollout',
+                ruleKey: '18322080788',
+                variationKey: '18257766532',
+                variables: expectedVariables,
+                decisionEventDispatched: true,
+                reasons: [],
+              },
+            }
+          ]
+          assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
 
         it('should make a decision for rollout and do not dispatch an event when sendFlagDecisions is set to false', function() {
@@ -4674,8 +4729,26 @@ describe('lib/optimizely', function() {
           assert.deepEqual(decision, expectedDecision);
           sinon.assert.notCalled(optlyInstance.eventDispatcher.dispatchEvent);
           sinon.assert.calledTwice(optlyInstance.notificationCenter.sendNotifications);
-          var decisionEventDispatched = optlyInstance.notificationCenter.sendNotifications.getCall(1).args[1].decisionEventDispatched;
-          assert.deepEqual(decisionEventDispatched, false);
+          var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(1).args;
+          var expectedNotificationCallArgs = [
+            NOTIFICATION_TYPES.DECISION,
+            {
+              type: 'flag',
+              userId: 'tester',
+              attributes: {},
+              decisionInfo: {
+                flagKey: 'feature_1',
+                enabled: true,
+                source: 'rollout',
+                ruleKey: '18322080788',
+                variationKey: '18257766532',
+                variables: expectedVariables,
+                decisionEventDispatched: false,
+                reasons: [],
+              },
+            }
+          ]
+          assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
 
         it('should make a decision when variation is null and dispatch an event', function() {
@@ -4698,8 +4771,26 @@ describe('lib/optimizely', function() {
           assert.deepEqual(decision, expectedDecision);
           sinon.assert.calledOnce(optlyInstance.eventDispatcher.dispatchEvent);
           sinon.assert.callCount(optlyInstance.notificationCenter.sendNotifications, 4);
-          var decisionEventDispatched = optlyInstance.notificationCenter.sendNotifications.getCall(3).args[1].decisionEventDispatched;
-          assert.deepEqual(decisionEventDispatched, true);
+          var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(3).args;
+          var expectedNotificationCallArgs = [
+            NOTIFICATION_TYPES.DECISION,
+            {
+              type: 'flag',
+              userId: 'tester',
+              attributes: {},
+              decisionInfo: {
+                flagKey: 'feature_3',
+                enabled: false,
+                source: 'rollout',
+                ruleKey: '',
+                variationKey: '',
+                variables: expectedVariables,
+                decisionEventDispatched: true,
+                reasons: [],
+              },
+            }
+          ]
+          assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
       });
 
@@ -4749,8 +4840,26 @@ describe('lib/optimizely', function() {
           assert.deepEqual(decision, expectedDecisionObj);
           sinon.assert.calledOnce(optlyInstance.eventDispatcher.dispatchEvent);
           sinon.assert.calledThrice(optlyInstance.notificationCenter.sendNotifications);
-          var decisionEventDispatched = optlyInstance.notificationCenter.sendNotifications.getCall(2).args[1].decisionEventDispatched;
-          assert.deepEqual(decisionEventDispatched, true);
+          var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(2).args;
+          var expectedNotificationCallArgs = [
+            NOTIFICATION_TYPES.DECISION,
+            {
+              type: 'flag',
+              userId: 'tester',
+              attributes: {},
+              decisionInfo: {
+                flagKey: 'feature_2',
+                enabled: true,
+                source: 'feature-test',
+                ruleKey: 'exp_no_audience',
+                variationKey: 'variation_with_traffic',
+                variables: {},
+                decisionEventDispatched: true,
+                reasons: [],
+              },
+            }
+          ]
+          assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
 
         it('should exclude variables in decision object and do not dispatch an event when DISABLE_DECISION_EVENT is passed in decide options', function() {
@@ -4772,8 +4881,26 @@ describe('lib/optimizely', function() {
           assert.deepEqual(decision, expectedDecisionObj);
           sinon.assert.notCalled(optlyInstance.eventDispatcher.dispatchEvent);
           sinon.assert.calledOnce(optlyInstance.notificationCenter.sendNotifications);
-          var decisionEventDispatched = optlyInstance.notificationCenter.sendNotifications.getCall(0).args[1].decisionEventDispatched;
-          assert.deepEqual(decisionEventDispatched, false);
+          var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(0).args;
+          var expectedNotificationCallArgs = [
+            NOTIFICATION_TYPES.DECISION,
+            {
+              type: 'flag',
+              userId: 'tester',
+              attributes: {},
+              decisionInfo: {
+                flagKey: 'feature_2',
+                enabled: true,
+                source: 'feature-test',
+                ruleKey: 'exp_no_audience',
+                variationKey: 'variation_with_traffic',
+                variables: {},
+                decisionEventDispatched: false,
+                reasons: [],
+              },
+            }
+          ]
+          assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
       });
 
@@ -4824,8 +4951,26 @@ describe('lib/optimizely', function() {
           assert.deepEqual(decision, expectedDecisionObj);
           sinon.assert.notCalled(optlyInstance.eventDispatcher.dispatchEvent);
           sinon.assert.calledTwice(optlyInstance.notificationCenter.sendNotifications);
-          var decisionEventDispatched = optlyInstance.notificationCenter.sendNotifications.getCall(1).args[1].decisionEventDispatched;
-          assert.deepEqual(decisionEventDispatched, false);
+          var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(1).args;
+          var expectedNotificationCallArgs = [
+            NOTIFICATION_TYPES.DECISION,
+            {
+              type: 'flag',
+              userId: 'tester',
+              attributes: {},
+              decisionInfo: {
+                flagKey: 'feature_2',
+                enabled: true,
+                source: 'feature-test',
+                ruleKey: 'exp_no_audience',
+                variationKey: 'variation_with_traffic',
+                variables: expectedVariables,
+                decisionEventDispatched: false,
+                reasons: [],
+              },
+            }
+          ]
+          assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
       });
     });

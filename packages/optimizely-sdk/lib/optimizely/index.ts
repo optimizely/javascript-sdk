@@ -1483,7 +1483,6 @@ export default class Optimizely {
       return newErrorDecision(key, user, reasons);
     }
 
-    let sourceInfo = {};
     const userId = user.getUserId();
     const attributes = user.getAttributes();
     const allDecideOptions = this.getAllDecideOptions(options);
@@ -1496,14 +1495,6 @@ export default class Optimizely {
     const decisionSource = decisionObj.decisionSource;
     const experimentKey = decision.getExperimentKey(decisionObj);
     const variationKey = decision.getVariationKey(decisionObj);
-
-    if (decisionSource === DECISION_SOURCES.FEATURE_TEST) {
-      sourceInfo = {
-        experimentKey: experimentKey,
-        variationKey: variationKey,
-      };
-    }
-
     const flagEnabled: boolean = decision.getFeatureEnabledFromVariation(decisionObj);
     if (flagEnabled === true) {
       this.logger.log(
@@ -1550,11 +1541,14 @@ export default class Optimizely {
 
     const shouldIncludeReasons = allDecideOptions[OptimizelyDecideOptions.INCLUDE_REASONS];
     const featureInfo = {
-      featureKey: key,
-      featureEnabled: flagEnabled,
+      flagKey: key,
+      enabled: flagEnabled,
       source: decisionObj.decisionSource,
-      sourceInfo: sourceInfo,
-      variables: variablesMap
+      variationKey: variationKey,
+      ruleKey: experimentKey,
+      variables: variablesMap,
+      reasons: reasons,
+      decisionEventDispatched: decisionEventDispatched,
     };
 
     this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.DECISION, {
@@ -1562,7 +1556,6 @@ export default class Optimizely {
       userId: userId,
       attributes: attributes,
       decisionInfo: featureInfo,
-      decisionEventDispatched: decisionEventDispatched,
     });
 
     return {
