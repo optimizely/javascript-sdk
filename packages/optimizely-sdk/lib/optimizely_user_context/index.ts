@@ -14,7 +14,8 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import Optimizely from '../../lib/optimizely';
-import { UserAttributes } from '../../lib/shared_types';
+import { UserAttributes, OptimizelyDecideOptions } from '../../lib/shared_types';
+import { OptimizelyDecision } from '../optimizely_decision';
 
 export default class OptimizelyUserContext {
   private optimizely: Optimizely;
@@ -63,9 +64,12 @@ export default class OptimizelyUserContext {
    * @param     {OptimizelyDecideOption}     options     A list of options for decision-making.
    * @return    {OptimizelyDecision}                     A decision result.
    */
-  decide(): void {
-      //TODO: implement
-      return;
+  decide(
+    key: string,
+    options: OptimizelyDecideOptions[] = []
+  ): OptimizelyDecision {
+
+    return this.optimizely.decide(this, key, options);
   }
 
   decideForKeys(): void {

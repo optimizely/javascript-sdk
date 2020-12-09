@@ -15,46 +15,20 @@
  ***************************************************************************/
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { sprintf } from '@optimizely/js-sdk-utils';
-
-
 import OptimizelyUserContext from './';
-import Optimizely from '../optimizely';
-
-import logger from '../plugins/logger';
-import eventDispatcher from '../plugins/event_dispatcher/index.node';
-import errorHandler from '../plugins/error_handler';
-import * as jsonSchemaValidator from '../utils/json_schema_validator';;
-import { getTestDecideProjectConfig } from '../tests/test_data';
-import {
-   LOG_LEVEL,
- } from '../utils/enums';
 
 describe('lib/optimizely_user_context', function() {
   describe('APIs', function() {
-    var createdLogger = logger.createLogger({
-      logLevel: LOG_LEVEL.DEBUG,
-      logToConsole: false,
-    });
-    var optimizely;
-    beforeEach(function() {
-      // TODO: replace with fakeOptimizely
-      optimizely = new Optimizely({
-        clientEngine: 'node-sdk',
-        datafile: getTestDecideProjectConfig(),
-        errorHandler: errorHandler,
-        eventDispatcher: eventDispatcher,
-        jsonSchemaValidator: jsonSchemaValidator,
-        logger: createdLogger,
-        isValidInstance: true,
-      });
-    });
+    var fakeOptimizely;
     describe('#setAttribute', function() {
+      fakeOptimizely = {
+        decide: sinon.stub().returns({})
+      }
       it('should set attributes when provided at instantiation of OptimizelyUserContext', function() {
         var userId = 'user1';
         var attributes = { test_attribute: 'test_value' };
         var user = new OptimizelyUserContext({
-          optimizely,
+          optimizely: fakeOptimizely,
           userId,
           attributes
         });
@@ -62,7 +36,7 @@ describe('lib/optimizely_user_context', function() {
         user.setAttribute('k2', true);
         user.setAttribute('k3', 100);
         user.setAttribute('k4', 3.5);
-        assert.deepEqual(user.getOptimizely(), optimizely);
+        assert.deepEqual(user.getOptimizely(), fakeOptimizely);
         assert.deepEqual(user.getUserId(), userId);
 
         var newAttributes = user.getAttributes();
@@ -76,14 +50,14 @@ describe('lib/optimizely_user_context', function() {
       it('should set attributes when none provided at instantiation of OptimizelyUserContext', function() {
         var userId = 'user2';
         var user = new OptimizelyUserContext({
-          optimizely,
+          optimizely: fakeOptimizely,
           userId,
         });
         user.setAttribute('k1', {'hello': 'there'});
         user.setAttribute('k2', true);
         user.setAttribute('k3', 100);
         user.setAttribute('k4', 3.5);
-        assert.deepEqual(user.getOptimizely(), optimizely);
+        assert.deepEqual(user.getOptimizely(), fakeOptimizely);
         assert.deepEqual(user.getUserId(), userId);
 
         var newAttributes = user.getAttributes();
@@ -97,13 +71,13 @@ describe('lib/optimizely_user_context', function() {
         var userId = 'user3';
         var attributes = { test_attribute: 'test_value' };
         var user = new OptimizelyUserContext({
-          optimizely,
+          optimizely: fakeOptimizely,
           userId,
           attributes,
         });
         user.setAttribute('k1', {'hello': 'there'});
         user.setAttribute('test_attribute', 'overwritten_value');
-        assert.deepEqual(user.getOptimizely(), optimizely);
+        assert.deepEqual(user.getOptimizely(), fakeOptimizely);
         assert.deepEqual(user.getUserId(), userId);
 
         var newAttributes = user.getAttributes();
@@ -115,11 +89,11 @@ describe('lib/optimizely_user_context', function() {
       it('should allow to set attributes with value of null', function() {
         var userId = 'user4';
         var user = new OptimizelyUserContext({
-          optimizely,
+          optimizely: fakeOptimizely,
           userId,
         });
         user.setAttribute('null_attribute', null);
-        assert.deepEqual(user.getOptimizely(), optimizely);
+        assert.deepEqual(user.getOptimizely(), fakeOptimizely);
         assert.deepEqual(user.getUserId(), userId);
 
         var newAttributes = user.getAttributes();
@@ -130,7 +104,7 @@ describe('lib/optimizely_user_context', function() {
         var userId = 'user1';
         var attributes = { initial_attribute: 'initial_value' };
         var user = new OptimizelyUserContext({
-          optimizely,
+          optimizely: fakeOptimizely,
           userId,
           attributes,
         });
@@ -144,7 +118,7 @@ describe('lib/optimizely_user_context', function() {
         var userId = 'user1';
         var attributes = { initial_attribute: 'initial_value' };
         var user = new OptimizelyUserContext({
-          optimizely,
+          optimizely: fakeOptimizely,
           userId,
           attributes,
         });
@@ -156,6 +130,31 @@ describe('lib/optimizely_user_context', function() {
           new_attribute: { "value": 100 }
         }
         assert.deepEqual(attributes2, expectedAttributes);
+      });
+    });
+
+    describe('#decide', function() {
+      var userId = 'tester';
+      it('should return an expected decision object', function() {
+        var flagKey = 'feature_1';
+        var fakeDecision = {
+          variationKey: 'variation_with_traffic',
+          enabled: true,
+          variables: {},
+          ruleKey: 'exp_no_audience',
+          flagKey: flagKey,
+          userContext: user,
+          reasons: [],
+        };
+        fakeOptimizely = {
+          decide: sinon.stub().returns(fakeDecision)
+        };
+        var user = new OptimizelyUserContext({
+          optimizely: fakeOptimizely,
+          userId,
+        });
+        var decision = user.decide(flagKey);
+        assert.deepEqual(decision, fakeDecision);
       });
     });
   });

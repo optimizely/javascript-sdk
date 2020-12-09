@@ -81,6 +81,8 @@ export const LOG_MESSAGES = {
   FORCED_BUCKETING_FAILED: '%s: Variation key %s is not in datafile. Not activating user %s.',
   INVALID_OBJECT: '%s: Optimizely object is not valid. Failing %s.',
   INVALID_CLIENT_ENGINE: '%s: Invalid client engine passed: %s. Defaulting to node-sdk.',
+  INVALID_DEFAULT_DECIDE_OPTIONS: '%s: Provided default decide options is not an array.',
+  INVALID_DECIDE_OPTIONS: '%s: Provided decide options is not an array. Using default decide options.',
   INVALID_VARIATION_ID: '%s: Bucketed into an invalid variation ID. Returning null.',
   NOTIFICATION_LISTENER_EXCEPTION: '%s: Notification listener for (%s) threw exception: %s',
   NO_ROLLOUT_EXISTS: '%s: There is no rollout of feature %s.',
@@ -97,6 +99,7 @@ export const LOG_MESSAGES = {
   SHOULD_NOT_DISPATCH_ACTIVATE: '%s: Experiment %s is not in "Running" state. Not activating user.',
   SKIPPING_JSON_VALIDATION: '%s: Skipping JSON schema validation.',
   TRACK_EVENT: '%s: Tracking event %s for user %s.',
+  UNRECOGNIZED_DECIDE_OPTION: '%s: Unrecognized decide option %s provided.',
   USER_ASSIGNED_TO_EXPERIMENT_BUCKET: '%s: Assigned bucket %s to user with bucketing ID %s.',
   USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP: '%s: User %s is in experiment %s of group %s.',
   USER_BUCKETED_INTO_TARGETING_RULE: '%s: User %s bucketed into targeting rule %s.',
@@ -189,6 +192,7 @@ export const DECISION_NOTIFICATION_TYPES = {
   FEATURE_TEST: 'feature-test',
   FEATURE_VARIABLE: 'feature-variable',
   ALL_FEATURE_VARIABLES: 'all-feature-variables',
+  FLAG: 'flag',
 };
 
 /*
@@ -234,4 +238,10 @@ export const DATAFILE_VERSIONS = {
 export const enum VERSION_TYPE {
   PRE_RELEASE_VERSION_DELIMITER = '-',
   BUILD_VERSION_DELIMITER = '+'
+}
+
+export const DECISION_MESSAGES = {
+  SDK_NOT_READY: 'Optimizely SDK not configured properly yet.',
+  FLAG_KEY_INVALID: 'No flag was found for key "%s".',
+  VARIABLE_VALUE_INVALID: 'Variable value for key "%s" is invalid or wrong type.',
 }

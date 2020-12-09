@@ -25,8 +25,10 @@ import {
   Variation,
   FeatureFlag,
   FeatureVariable,
-  OptimizelyOptions
+  OptimizelyOptions,
+  OptimizelyDecideOptions
 } from '../shared_types';
+import { OptimizelyDecision, newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
@@ -47,6 +49,7 @@ import {
   LOG_LEVEL,
   LOG_MESSAGES,
   DECISION_SOURCES,
+  DECISION_MESSAGES,
   FEATURE_VARIABLE_TYPES,
   DECISION_NOTIFICATION_TYPES,
   NOTIFICATION_TYPES
@@ -92,6 +95,7 @@ export default class Optimizely {
   private notificationCenter: NotificationCenter;
   private decisionService: DecisionService;
   private eventProcessor: EventProcessor;
+  private defaultDecideOptions: { [key: string]: boolean };
 
   constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;
@@ -110,6 +114,25 @@ export default class Optimizely {
     this.isOptimizelyConfigValid = config.isValidInstance;
     this.logger = config.logger;
 
+    let decideOptionsArray = config.defaultDecideOptions ?? [];
+    if (!Array.isArray(decideOptionsArray)) {
+      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DEFAULT_DECIDE_OPTIONS, MODULE_NAME));
+      decideOptionsArray = [];
+    }
+
+    const defaultDecideOptions: { [key: string]: boolean } = {};
+    decideOptionsArray.forEach((option) => {
+      // Filter out all provided default decide options that are not in OptimizelyDecideOptions[]
+      if (OptimizelyDecideOptions[option]) {
+        defaultDecideOptions[option] = true;
+      } else {
+        this.logger.log(
+          LOG_LEVEL.WARNING,
+          sprintf(LOG_MESSAGES.UNRECOGNIZED_DECIDE_OPTION, MODULE_NAME, option)
+        );
+      }
+    });
+    this.defaultDecideOptions = defaultDecideOptions;
     this.projectConfigManager = createProjectConfigManager({
       datafile: config.datafile,
       datafileOptions: config.datafileOptions,
@@ -787,7 +810,6 @@ export default class Optimizely {
    *                                                type, or null if the feature key is invalid or
    *                                                the variable key is invalid
    */
-
   getFeatureVariable(
     featureKey: string,
     variableKey: string,
@@ -1439,5 +1461,136 @@ export default class Optimizely {
       userId,
       attributes
     });
+  }
+
+  decide(
+    user: OptimizelyUserContext,
+    key: string,
+    options: OptimizelyDecideOptions[] = []
+  ): OptimizelyDecision {
+    const configObj = this.projectConfigManager.getConfig();
+    const reasons: string[] = [];
+    if (!this.isValidInstance() || !configObj) {
+      reasons.push(DECISION_MESSAGES.SDK_NOT_READY);
+      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decide'));
+      return newErrorDecision(key, user, reasons);
+    }
+
+    const feature = configObj.featureKeyMap[key];
+    if (!feature) {
+      reasons.push(sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, key));
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, key));
+      return newErrorDecision(key, user, reasons);
+    }
+
+    const userId = user.getUserId();
+    const attributes = user.getAttributes();
+    const allDecideOptions = this.getAllDecideOptions(options);
+    const decisionObj = this.decisionService.getVariationForFeature(
+      configObj,
+      feature,
+      userId,
+      attributes
+    );
+    const decisionSource = decisionObj.decisionSource;
+    const experimentKey = decision.getExperimentKey(decisionObj);
+    const variationKey = decision.getVariationKey(decisionObj);
+    const flagEnabled: boolean = decision.getFeatureEnabledFromVariation(decisionObj);
+    if (flagEnabled === true) {
+      this.logger.log(
+        LOG_LEVEL.INFO,
+        sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, key, userId)
+      );
+    } else {
+      this.logger.log(
+        LOG_LEVEL.INFO,
+        sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, key, userId)
+      );
+    }
+
+    const variablesMap: { [key: string]: unknown } = {};
+    let decisionEventDispatched = false;
+
+    if (!allDecideOptions[OptimizelyDecideOptions.EXCLUDE_VARIABLES]) {
+      feature.variables.forEach(variable => {
+        variablesMap[variable.key] =
+        this.getFeatureVariableValueFromVariation(
+          key,
+          flagEnabled,
+          decisionObj.variation,
+          variable,
+          userId
+        );
+      });
+    }
+
+    if (
+      !allDecideOptions[OptimizelyDecideOptions.DISABLE_DECISION_EVENT] && (
+      decisionSource === DECISION_SOURCES.FEATURE_TEST ||
+      decisionSource === DECISION_SOURCES.ROLLOUT && projectConfig.getSendFlagDecisionsValue(configObj))
+    ) {
+      this.sendImpressionEvent(
+        decisionObj,
+        key,
+        userId,
+        flagEnabled,
+        attributes
+      )
+      decisionEventDispatched = true;
+    }
+
+    const shouldIncludeReasons = allDecideOptions[OptimizelyDecideOptions.INCLUDE_REASONS];
+    const featureInfo = {
+      flagKey: key,
+      enabled: flagEnabled,
+      variationKey: variationKey,
+      ruleKey: experimentKey,
+      variables: variablesMap,
+      reasons: reasons,
+      decisionEventDispatched: decisionEventDispatched,
+    };
+
+    this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.DECISION, {
+      type: DECISION_NOTIFICATION_TYPES.FLAG,
+      userId: userId,
+      attributes: attributes,
+      decisionInfo: featureInfo,
+    });
+
+    return {
+      variationKey: variationKey,
+      enabled: flagEnabled,
+      variables: variablesMap,
+      ruleKey: experimentKey,
+      flagKey: key,
+      userContext: user,
+      reasons: shouldIncludeReasons ? reasons: [],
+    };
+  }
+
+  /**
+   * Get all decide options.
+   * @param  {OptimizelyDecideOptions[]}          options   decide options
+   * @return {[key: string]: boolean}             Map of all provided decide options including default decide options
+   */
+  private getAllDecideOptions(options: OptimizelyDecideOptions[]): { [key: string]: boolean } {
+    const allDecideOptions = {...this.defaultDecideOptions};
+    if (!Array.isArray(options)) {
+      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DECIDE_OPTIONS, MODULE_NAME));
+    } else {
+      options.forEach((option) => {
+        // Filter out all provided decide options that are not in OptimizelyDecideOptions[]
+        if (OptimizelyDecideOptions[option]) {
+          allDecideOptions[option] = true;
+        } else {
+          this.logger.log(
+            LOG_LEVEL.WARNING,
+            sprintf(LOG_MESSAGES.UNRECOGNIZED_DECIDE_OPTION, MODULE_NAME, option)
+          );
+        }
+      });
+    }
+
+    return allDecideOptions;
   }
 }
