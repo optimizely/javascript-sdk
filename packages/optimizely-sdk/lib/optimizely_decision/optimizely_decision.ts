@@ -18,7 +18,7 @@ import OptimizelyUserContext from '../optimizely_user_context';
 export interface OptimizelyDecision {
   variationKey: string | null;
   enabled: boolean;
-  variables: { [variableKey: string]: unknown } | null;
+  variables: { [variableKey: string]: unknown };
   ruleKey: string | null;
   flagKey: string;
   userContext: OptimizelyUserContext;
@@ -29,7 +29,7 @@ export function newErrorDecision(key: string, user: OptimizelyUserContext, reaso
   return {
     variationKey: null,
     enabled: false,
-    variables: null,
+    variables: {},
     ruleKey: null,
     flagKey: key,
     userContext: user,

@@ -15,7 +15,7 @@
  ***************************************************************************/
 import { assert } from 'chai';
 import sinon from 'sinon';
-import { sprintf } from '@optimizely/js-sdk-utils';
+import { sprintf, NOTIFICATION_TYPES } from '@optimizely/js-sdk-utils';
 import eventProcessor from '../core/event_processor';
 import * as logging from '@optimizely/js-sdk-logging';
 
@@ -4333,7 +4333,6 @@ describe('lib/optimizely', function() {
       logLevel: LOG_LEVEL.INFO,
       logToConsole: false,
     });
-
     describe('#createUserContext', function() {
       beforeEach(function() {
         optlyInstance = new Optimizely({
@@ -4432,6 +4431,7 @@ describe('lib/optimizely', function() {
             defaultDecideOptions: [],
           });
 
+          sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
           sinon.stub(errorHandler, 'handleError');
           sinon.stub(createdLogger, 'log');
           sinon.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
@@ -4441,6 +4441,7 @@ describe('lib/optimizely', function() {
           errorHandler.handleError.restore();
           createdLogger.log.restore();
           fns.uuid.restore();
+          optlyInstance.notificationCenter.sendNotifications.restore();
         });
 
         it('should return error decision object when provided flagKey is invalid and do not dispatch an event', function() {
@@ -4453,7 +4454,7 @@ describe('lib/optimizely', function() {
           var expectedDecision = {
             variationKey: null,
             enabled: false,
-            variables: null,
+            variables: {},
             ruleKey: null,
             flagKey: flagKey,
             userContext: user,
@@ -4474,7 +4475,7 @@ describe('lib/optimizely', function() {
           var expectedDecision = {
             variationKey: null,
             enabled: false,
-            variables: null,
+            variables: {},
             ruleKey: null,
             flagKey: flagKey,
             userContext: user,
@@ -4557,6 +4558,25 @@ describe('lib/optimizely', function() {
           };
           var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
           assert.deepEqual(callArgs[0], expectedImpressionEvent);
+          sinon.assert.callCount(optlyInstance.notificationCenter.sendNotifications, 4)
+          var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(3).args;
+          var expectedNotificationCallArgs = [
+            NOTIFICATION_TYPES.DECISION,
+            {
+              type: 'flag',
+              userId: 'tester',
+              attributes: {},
+              decisionInfo: {
+                featureKey: 'feature_2',
+                featureEnabled: true,
+                source: 'feature-test',
+                sourceInfo: { experimentKey: "exp_no_audience", variationKey: "variation_with_traffic" },
+                variables: { i_42: 42 },
+              },
+              decisionEventDispatched: true
+            }
+          ]
+          assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
 
         it('should make a decision for feature_test and do not dispatch an event with DISABLE_DECISION_EVENT passed in decide options ', function() {
@@ -4578,6 +4598,9 @@ describe('lib/optimizely', function() {
           }
           assert.deepEqual(decision, expectedDecision);
           sinon.assert.notCalled(optlyInstance.eventDispatcher.dispatchEvent);
+          sinon.assert.calledTwice(optlyInstance.notificationCenter.sendNotifications);
+          var decisionEventDispatched = optlyInstance.notificationCenter.sendNotifications.getCall(1).args[1].decisionEventDispatched;
+          assert.deepEqual(decisionEventDispatched, false);
         });
 
         it('should make a decision for rollout and dispatch an event when sendFlagDecisions is set to true', function() {
@@ -4599,60 +4622,9 @@ describe('lib/optimizely', function() {
           }
           assert.deepEqual(decision, expectedDecision);
           sinon.assert.calledOnce(optlyInstance.eventDispatcher.dispatchEvent);
-          var expectedImpressionEvent = {
-            httpVerb: 'POST',
-            url: 'https://logx.optimizely.com/v1/events',
-            params: {
-              account_id: '10367498574',
-              project_id: '10431130345',
-              visitors: [
-                {
-                  snapshots: [
-                    {
-                      decisions: [
-                        {
-                          campaign_id: '18263344648',
-                          experiment_id: '18322080788',
-                          variation_id: '18257766532',
-                          metadata: {
-                            flag_key: 'feature_1',
-                            rule_key: '18322080788',
-                            rule_type: 'rollout',
-                            variation_key: '18257766532',
-                            enabled: true,
-                          },
-                        },
-                      ],
-                      events: [
-                        {
-                          entity_id: '18263344648',
-                          timestamp: Math.round(new Date().getTime()),
-                          key: 'campaign_activated',
-                          uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                        },
-                      ],
-                    },
-                  ],
-                  visitor_id: 'tester',
-                  attributes: [
-                    {
-                      entity_id: '$opt_bot_filtering',
-                      key: '$opt_bot_filtering',
-                      type: 'custom',
-                      value: true,
-                    },
-                  ],
-                },
-              ],
-              revision: '241',
-              client_name: 'node-sdk',
-              client_version: enums.NODE_CLIENT_VERSION,
-              anonymize_ip: true,
-              enrich_decisions: true,
-            },
-          };
-          var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
-          assert.deepEqual(callArgs[0], expectedImpressionEvent);
+          sinon.assert.callCount(optlyInstance.notificationCenter.sendNotifications, 4);
+          var decisionEventDispatched = optlyInstance.notificationCenter.sendNotifications.getCall(3).args[1].decisionEventDispatched;
+          assert.deepEqual(decisionEventDispatched, true);
         });
 
         it('should make a decision for rollout and do not dispatch an event when sendFlagDecisions is set to false', function() {
@@ -4677,6 +4649,9 @@ describe('lib/optimizely', function() {
           }
           assert.deepEqual(decision, expectedDecision);
           sinon.assert.notCalled(optlyInstance.eventDispatcher.dispatchEvent);
+          sinon.assert.calledTwice(optlyInstance.notificationCenter.sendNotifications);
+          var decisionEventDispatched = optlyInstance.notificationCenter.sendNotifications.getCall(1).args[1].decisionEventDispatched;
+          assert.deepEqual(decisionEventDispatched, false);
         });
 
         it('should make a decision when variation is null and dispatch an event', function() {
@@ -4698,60 +4673,9 @@ describe('lib/optimizely', function() {
           }
           assert.deepEqual(decision, expectedDecision);
           sinon.assert.calledOnce(optlyInstance.eventDispatcher.dispatchEvent);
-          var expectedImpressionEvent = {
-            httpVerb: 'POST',
-            url: 'https://logx.optimizely.com/v1/events',
-            params: {
-              account_id: '10367498574',
-              project_id: '10431130345',
-              visitors: [
-                {
-                  snapshots: [
-                    {
-                      decisions: [
-                        {
-                          campaign_id: null,
-                          experiment_id: null,
-                          variation_id: null,
-                          metadata: {
-                            flag_key: 'feature_3',
-                            rule_key: '',
-                            rule_type: 'rollout',
-                            variation_key: '',
-                            enabled: false,
-                          },
-                        },
-                      ],
-                      events: [
-                        {
-                          entity_id: null,
-                          timestamp: Math.round(new Date().getTime()),
-                          key: 'campaign_activated',
-                          uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                        },
-                      ],
-                    },
-                  ],
-                  visitor_id: 'tester',
-                  attributes: [
-                    {
-                      entity_id: '$opt_bot_filtering',
-                      key: '$opt_bot_filtering',
-                      type: 'custom',
-                      value: true,
-                    },
-                  ],
-                },
-              ],
-              revision: '241',
-              client_name: 'node-sdk',
-              client_version: enums.NODE_CLIENT_VERSION,
-              anonymize_ip: true,
-              enrich_decisions: true,
-            },
-          };
-          var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
-          assert.deepEqual(callArgs[0], expectedImpressionEvent);
+          sinon.assert.callCount(optlyInstance.notificationCenter.sendNotifications, 4);
+          var decisionEventDispatched = optlyInstance.notificationCenter.sendNotifications.getCall(3).args[1].decisionEventDispatched;
+          assert.deepEqual(decisionEventDispatched, true);
         });
       });
 
@@ -4769,12 +4693,14 @@ describe('lib/optimizely', function() {
             defaultDecideOptions: [ OptimizelyDecideOptions.EXCLUDE_VARIABLES ],
           });
 
+          sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
           sinon.stub(errorHandler, 'handleError');
           sinon.stub(createdLogger, 'log');
           sinon.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
         });
 
         afterEach(function() {
+          optlyInstance.notificationCenter.sendNotifications.restore();
           errorHandler.handleError.restore();
           createdLogger.log.restore();
           fns.uuid.restore();
@@ -4798,60 +4724,9 @@ describe('lib/optimizely', function() {
           }
           assert.deepEqual(decision, expectedDecisionObj);
           sinon.assert.calledOnce(optlyInstance.eventDispatcher.dispatchEvent);
-          var expectedImpressionEvent = {
-            httpVerb: 'POST',
-            url: 'https://logx.optimizely.com/v1/events',
-            params: {
-              account_id: '10367498574',
-              project_id: '10431130345',
-              visitors: [
-                {
-                  snapshots: [
-                    {
-                      decisions: [
-                        {
-                          campaign_id: '10417730432',
-                          experiment_id: '10420810910',
-                          variation_id: '10418551353',
-                          metadata: {
-                            flag_key: 'feature_2',
-                            rule_key: 'exp_no_audience',
-                            rule_type: 'feature-test',
-                            variation_key: 'variation_with_traffic',
-                            enabled: true,
-                          },
-                        },
-                      ],
-                      events: [
-                        {
-                          entity_id: '10417730432',
-                          timestamp: Math.round(new Date().getTime()),
-                          key: 'campaign_activated',
-                          uuid: 'a68cf1ad-0393-4e18-af87-efe8f01a7c9c',
-                        },
-                      ],
-                    },
-                  ],
-                  visitor_id: 'tester',
-                  attributes: [
-                    {
-                      entity_id: '$opt_bot_filtering',
-                      key: '$opt_bot_filtering',
-                      type: 'custom',
-                      value: true,
-                    },
-                  ],
-                },
-              ],
-              revision: '241',
-              client_name: 'node-sdk',
-              client_version: enums.NODE_CLIENT_VERSION,
-              anonymize_ip: true,
-              enrich_decisions: true,
-            },
-          };
-          var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
-          assert.deepEqual(callArgs[0], expectedImpressionEvent);
+          sinon.assert.calledThrice(optlyInstance.notificationCenter.sendNotifications);
+          var decisionEventDispatched = optlyInstance.notificationCenter.sendNotifications.getCall(2).args[1].decisionEventDispatched;
+          assert.deepEqual(decisionEventDispatched, true);
         });
       });
 
@@ -4869,12 +4744,14 @@ describe('lib/optimizely', function() {
             defaultDecideOptions: [ OptimizelyDecideOptions.DISABLE_DECISION_EVENT ],
           });
 
+          sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
           sinon.stub(errorHandler, 'handleError');
           sinon.stub(createdLogger, 'log');
           sinon.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
         });
 
         afterEach(function() {
+          optlyInstance.notificationCenter.sendNotifications.restore();
           errorHandler.handleError.restore();
           createdLogger.log.restore();
           fns.uuid.restore();
@@ -4899,6 +4776,9 @@ describe('lib/optimizely', function() {
           }
           assert.deepEqual(decision, expectedDecisionObj);
           sinon.assert.notCalled(optlyInstance.eventDispatcher.dispatchEvent);
+          sinon.assert.calledTwice(optlyInstance.notificationCenter.sendNotifications);
+          var decisionEventDispatched = optlyInstance.notificationCenter.sendNotifications.getCall(1).args[1].decisionEventDispatched;
+          assert.deepEqual(decisionEventDispatched, false);
         });
       });
     });
