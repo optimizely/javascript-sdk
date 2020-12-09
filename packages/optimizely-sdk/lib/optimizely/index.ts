@@ -125,6 +125,11 @@ export default class Optimizely {
       // Filter out all provided default decide options that are not in OptimizelyDecideOptions[]
       if (OptimizelyDecideOptions[option]) {
         defaultDecideOptions[option] = true;
+      } else {
+        this.logger.log(
+          LOG_LEVEL.WARNING,
+          sprintf(LOG_MESSAGES.UNRECOGNIZED_DECIDE_OPTION, MODULE_NAME, option)
+        );
       }
     });
     this.defaultDecideOptions = defaultDecideOptions;
@@ -1579,6 +1584,11 @@ export default class Optimizely {
         // Filter out all provided decide options that are not in OptimizelyDecideOptions[]
         if (OptimizelyDecideOptions[option]) {
           allDecideOptions[option] = true;
+        } else {
+          this.logger.log(
+            LOG_LEVEL.WARNING,
+            sprintf(LOG_MESSAGES.UNRECOGNIZED_DECIDE_OPTION, MODULE_NAME, option)
+          );
         }
       });
     }
