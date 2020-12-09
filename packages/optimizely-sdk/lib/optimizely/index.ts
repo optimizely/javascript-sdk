@@ -1543,7 +1543,6 @@ export default class Optimizely {
     const featureInfo = {
       flagKey: key,
       enabled: flagEnabled,
-      source: decisionObj.decisionSource,
       variationKey: variationKey,
       ruleKey: experimentKey,
       variables: variablesMap,

@@ -4569,7 +4569,6 @@ describe('lib/optimizely', function() {
               decisionInfo: {
                 flagKey: 'feature_2',
                 enabled: true,
-                source: 'feature-test',
                 ruleKey: "exp_no_audience",
                 variationKey: "variation_with_traffic",
                 variables: { i_42: 42 },
@@ -4611,7 +4610,6 @@ describe('lib/optimizely', function() {
               decisionInfo: {
                 flagKey: 'feature_2',
                 enabled: true,
-                source: 'feature-test',
                 ruleKey: "exp_no_audience",
                 variationKey: "variation_with_traffic",
                 variables: { i_42: 42 },
@@ -4652,7 +4650,6 @@ describe('lib/optimizely', function() {
               decisionInfo: {
                 flagKey: 'feature_2',
                 enabled: true,
-                source: 'feature-test',
                 ruleKey: 'exp_no_audience',
                 variationKey: "variation_with_traffic",
                 variables: {},
@@ -4694,7 +4691,6 @@ describe('lib/optimizely', function() {
               decisionInfo: {
                 flagKey: 'feature_1',
                 enabled: true,
-                source: 'rollout',
                 ruleKey: '18322080788',
                 variationKey: '18257766532',
                 variables: expectedVariables,
@@ -4739,7 +4735,6 @@ describe('lib/optimizely', function() {
               decisionInfo: {
                 flagKey: 'feature_1',
                 enabled: true,
-                source: 'rollout',
                 ruleKey: '18322080788',
                 variationKey: '18257766532',
                 variables: expectedVariables,
@@ -4781,7 +4776,6 @@ describe('lib/optimizely', function() {
               decisionInfo: {
                 flagKey: 'feature_3',
                 enabled: false,
-                source: 'rollout',
                 ruleKey: '',
                 variationKey: '',
                 variables: expectedVariables,
@@ -4850,7 +4844,6 @@ describe('lib/optimizely', function() {
               decisionInfo: {
                 flagKey: 'feature_2',
                 enabled: true,
-                source: 'feature-test',
                 ruleKey: 'exp_no_audience',
                 variationKey: 'variation_with_traffic',
                 variables: {},
@@ -4891,7 +4884,6 @@ describe('lib/optimizely', function() {
               decisionInfo: {
                 flagKey: 'feature_2',
                 enabled: true,
-                source: 'feature-test',
                 ruleKey: 'exp_no_audience',
                 variationKey: 'variation_with_traffic',
                 variables: {},
@@ -4961,7 +4953,6 @@ describe('lib/optimizely', function() {
               decisionInfo: {
                 flagKey: 'feature_2',
                 enabled: true,
-                source: 'feature-test',
                 ruleKey: 'exp_no_audience',
                 variationKey: 'variation_with_traffic',
                 variables: expectedVariables,
