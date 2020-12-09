@@ -1521,9 +1521,15 @@ export default class Optimizely {
     let decisionEventDispatched = false;
 
     if (!allDecideOptions[OptimizelyDecideOptions.EXCLUDE_VARIABLES]) {
-      const featureFlag = projectConfig.getFeatureFromKey(configObj, key, this.logger);
-      featureFlag?.variables.forEach(variable => {
-        variablesMap[variable.key] = this.getFeatureVariableValueFromVariation(key, flagEnabled, decisionObj.variation, variable, userId);
+      feature.variables.forEach(variable => {
+        variablesMap[variable.key] =
+        this.getFeatureVariableValueFromVariation(
+          key,
+          flagEnabled,
+          decisionObj.variation,
+          variable,
+          userId
+        );
       });
     }
 
