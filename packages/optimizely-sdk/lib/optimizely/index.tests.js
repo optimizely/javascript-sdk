@@ -4579,7 +4579,7 @@ describe('lib/optimizely', function() {
           assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
 
-        it('should make a decision for feature_test and do not dispatch an event with DISABLE_DECISION_EVENT passed in decide options ', function() {
+        it('should make a decision and do not dispatch an event with DISABLE_DECISION_EVENT passed in decide options', function() {
           var flagKey = 'feature_2';
           var expectedVariables = optlyInstance.getAllFeatureVariables(flagKey, userId);
           var user = new OptimizelyUserContext({
@@ -4591,6 +4591,30 @@ describe('lib/optimizely', function() {
             variationKey: 'variation_with_traffic',
             enabled: true,
             variables: expectedVariables,
+            ruleKey: 'exp_no_audience',
+            flagKey: flagKey,
+            userContext: user,
+            reasons: [],
+          }
+          assert.deepEqual(decision, expectedDecision);
+          sinon.assert.notCalled(optlyInstance.eventDispatcher.dispatchEvent);
+          sinon.assert.calledTwice(optlyInstance.notificationCenter.sendNotifications);
+          var decisionEventDispatched = optlyInstance.notificationCenter.sendNotifications.getCall(1).args[1].decisionEventDispatched;
+          assert.deepEqual(decisionEventDispatched, false);
+        });
+
+        it('should make a decision with excluded variables and do not dispatch an event with DISABLE_DECISION_EVENT and EXCLUDE_VARIABLES passed in decide options', function() {
+          var flagKey = 'feature_2';
+          var expectedVariables = optlyInstance.getAllFeatureVariables(flagKey, userId);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+          });
+          var decision = optlyInstance.decide(user, flagKey, [ OptimizelyDecideOptions.DISABLE_DECISION_EVENT, OptimizelyDecideOptions.EXCLUDE_VARIABLES ]);
+          var expectedDecision = {
+            variationKey: 'variation_with_traffic',
+            enabled: true,
+            variables: {},
             ruleKey: 'exp_no_audience',
             flagKey: flagKey,
             userContext: user,
@@ -4727,6 +4751,29 @@ describe('lib/optimizely', function() {
           sinon.assert.calledThrice(optlyInstance.notificationCenter.sendNotifications);
           var decisionEventDispatched = optlyInstance.notificationCenter.sendNotifications.getCall(2).args[1].decisionEventDispatched;
           assert.deepEqual(decisionEventDispatched, true);
+        });
+
+        it('should exclude variables in decision object and do not dispatch an event when DISABLE_DECISION_EVENT is passed in decide options', function() {
+          var flagKey = 'feature_2';
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          var decision = optlyInstance.decide(user, flagKey, [ OptimizelyDecideOptions.DISABLE_DECISION_EVENT ]);
+          var expectedDecisionObj = {
+            variationKey: 'variation_with_traffic',
+            enabled: true,
+            variables: {},
+            ruleKey: 'exp_no_audience',
+            flagKey: flagKey,
+            userContext: user,
+            reasons: [],
+          }
+          assert.deepEqual(decision, expectedDecisionObj);
+          sinon.assert.notCalled(optlyInstance.eventDispatcher.dispatchEvent);
+          sinon.assert.calledOnce(optlyInstance.notificationCenter.sendNotifications);
+          var decisionEventDispatched = optlyInstance.notificationCenter.sendNotifications.getCall(0).args[1].decisionEventDispatched;
+          assert.deepEqual(decisionEventDispatched, false);
         });
       });
 
