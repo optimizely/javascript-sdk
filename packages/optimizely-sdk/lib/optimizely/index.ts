@@ -1609,9 +1609,8 @@ export default class Optimizely {
     keys: string[],
     options: OptimizelyDecideOptions[] = []
   ): { [key: string]: OptimizelyDecision } {
-    const configObj = this.projectConfigManager.getConfig();
     const decisionMap: { [key: string]: OptimizelyDecision } = {};
-    if (!this.isValidInstance() || !configObj) {
+    if (!this.isValidInstance()) {
       this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decideForKeys'));
       return decisionMap;
     }
