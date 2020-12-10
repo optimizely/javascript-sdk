@@ -1643,7 +1643,7 @@ export default class Optimizely {
     const configObj = this.projectConfigManager.getConfig();
     const decisionMap: { [key: string]: OptimizelyDecision } = {};
     if (!this.isValidInstance() || !configObj) {
-      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decideForKeys'));
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decideAll'));
       return decisionMap;
     }
 

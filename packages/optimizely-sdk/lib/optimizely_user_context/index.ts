@@ -97,6 +97,6 @@ export default class OptimizelyUserContext {
     options: OptimizelyDecideOptions[] = []
   ): { [key: string]: OptimizelyDecision } {
 
-    return this.optimizely.decideForKeys(this, options);
+    return this.optimizely.decideAll(this, options);
   }
 }

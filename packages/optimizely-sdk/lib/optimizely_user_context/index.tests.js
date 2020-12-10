@@ -233,10 +233,8 @@ describe('lib/optimizely_user_context', function() {
             reasons: [],
           },
         };
-        var fakeDecideForKeys = sinon.stub().returns(fakeDecisionMap);
         fakeOptimizely = {
-          decideAll: sinon.stub().call(fakeDecideForKeys),
-          decideForKeys: fakeDecideForKeys
+          decideAll: sinon.stub().returns(fakeDecisionMap)
         };
         var user = new OptimizelyUserContext({
           optimizely: fakeOptimizely,
