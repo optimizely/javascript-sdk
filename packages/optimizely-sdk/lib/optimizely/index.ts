@@ -1593,4 +1593,31 @@ export default class Optimizely {
 
     return allDecideOptions;
   }
+
+  decideForKeys(
+    user: OptimizelyUserContext,
+    keys: string[],
+    options: OptimizelyDecideOptions[] = []
+  ): { [key: string]: OptimizelyDecision } {
+    const configObj = this.projectConfigManager.getConfig();
+    const decisionMap: { [key: string]: OptimizelyDecision } = {};
+    if (!this.isValidInstance() || !configObj) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decideForKeys'));
+      return decisionMap;
+    }
+    if (keys.length === 0) {
+      return decisionMap;
+    }
+
+    const allDecideOptions = this.getAllDecideOptions(options);
+    let decision: OptimizelyDecision;
+    keys.forEach(key => {
+      decision = this.decide(user, key, options);
+      if (!allDecideOptions[OptimizelyDecideOptions.ENABLED_FLAGS_ONLY] || decision.enabled) {
+        decisionMap[key] = decision;
+      }
+    });
+
+    return decisionMap;
+  }
 }
