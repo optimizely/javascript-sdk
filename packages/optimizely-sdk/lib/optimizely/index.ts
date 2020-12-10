@@ -1603,7 +1603,6 @@ export default class Optimizely {
    * @param     {OptimizelyDecideOptions[]}  options     An array of options for decision-making.
    * @return    {[key: string]: OptimizelyDecision}      An object of decision results mapped by flag keys.
    */
-
   decideForKeys(
     user: OptimizelyUserContext,
     keys: string[],
