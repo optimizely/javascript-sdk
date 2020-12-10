@@ -1594,6 +1594,16 @@ export default class Optimizely {
     return allDecideOptions;
   }
 
+  /**
+   * Returns a key-map of decision results for multiple flag keys and a user context.
+   * If the SDK finds an error for a key, the response will include a decision for the key showing reasons for the error.
+   * The SDK will always return key-mapped decisions. When it cannot process requests, it will return an empty map after logging the errors.
+   * @param     {OptimizelyUserContext}      user        A user context associated with this OptimizelyClient
+   * @param     {string[]}                   keys        An array of flag keys for which decisions will be made.
+   * @param     {OptimizelyDecideOptions[]}  options     An array of options for decision-making.
+   * @return    {[key: string]: OptimizelyDecision}      All decision results mapped by flag keys.
+   */
+
   decideForKeys(
     user: OptimizelyUserContext,
     keys: string[],
@@ -1610,14 +1620,36 @@ export default class Optimizely {
     }
 
     const allDecideOptions = this.getAllDecideOptions(options);
-    let decision: OptimizelyDecision;
+    let optimizelyDecision: OptimizelyDecision;
     keys.forEach(key => {
-      decision = this.decide(user, key, options);
-      if (!allDecideOptions[OptimizelyDecideOptions.ENABLED_FLAGS_ONLY] || decision.enabled) {
-        decisionMap[key] = decision;
+      optimizelyDecision = this.decide(user, key, options);
+      if (!allDecideOptions[OptimizelyDecideOptions.ENABLED_FLAGS_ONLY] || optimizelyDecision.enabled) {
+        decisionMap[key] = optimizelyDecision;
       }
     });
 
     return decisionMap;
+  }
+
+  /**
+   * Returns a key-map of decision results for all active flag keys.
+   * @param     {OptimizelyUserContext}      user        A user context associated with this OptimizelyClient
+   * @param     {OptimizelyDecideOptions[]}  options     An array of options for decision-making.
+   * @return    {[key: string]: OptimizelyDecision}      All decision results mapped by flag keys.
+   */
+  decideAll(
+    user: OptimizelyUserContext,
+    options: OptimizelyDecideOptions[] = []
+  ): { [key: string]: OptimizelyDecision } {
+    const configObj = this.projectConfigManager.getConfig();
+    const decisionMap: { [key: string]: OptimizelyDecision } = {};
+    if (!this.isValidInstance() || !configObj) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decideForKeys'));
+      return decisionMap;
+    }
+
+    const allFlagKeys = Object.keys(configObj.featureKeyMap);
+
+    return this.decideForKeys(user, allFlagKeys, options);
   }
 }

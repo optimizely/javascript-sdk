@@ -61,7 +61,7 @@ export default class OptimizelyUserContext {
    * Returns a decision result for a given flag key and a user context, which contains all data required to deliver the flag.
    * If the SDK finds an error, it will return a decision with null for variationKey. The decision will include an error message in reasons.
    * @param     {string}                     key         A flag key for which a decision will be made.
-   * @param     {OptimizelyDecideOption}     options     A list of options for decision-making.
+   * @param     {OptimizelyDecideOption}     options     An array of options for decision-making.
    * @return    {OptimizelyDecision}                     A decision result.
    */
   decide(
@@ -72,13 +72,31 @@ export default class OptimizelyUserContext {
     return this.optimizely.decide(this, key, options);
   }
 
-  decideForKeys(): void {
-    //TODO: implement
-    return;
+  /**
+   * Returns a key-map of decision results for multiple flag keys and a user context.
+   * If the SDK finds an error for a key, the response will include a decision for the key showing reasons for the error.
+   * The SDK will always return key-mapped decisions. When it cannot process requests, it will return an empty map after logging the errors.
+   * @param     {string[]}                   keys        An array of flag keys for which decisions will be made.
+   * @param     {OptimizelyDecideOptions[]}  options     An array of options for decision-making.
+   * @return    {[key: string]: OptimizelyDecision}      All decision results mapped by flag keys.
+   */
+  decideForKeys(
+    keys: string[],
+    options: OptimizelyDecideOptions[] = [],
+  ): { [key: string]: OptimizelyDecision } {
+
+    return this.optimizely.decideForKeys(this, keys, options);
   }
 
-  decideAll(): void {
-    //TODO: implement
-    return;
+  /**
+   * Returns a key-map of decision results for all active flag keys.
+   * @param     {OptimizelyDecideOptions[]}  options     An array of options for decision-making.
+   * @return    {[key: string]: OptimizelyDecision}      All decision results mapped by flag keys.
+   */
+  decideAll(
+    options: OptimizelyDecideOptions[] = []
+  ): { [key: string]: OptimizelyDecision } {
+
+    return this.optimizely.decideForKeys(this, options);
   }
 }
