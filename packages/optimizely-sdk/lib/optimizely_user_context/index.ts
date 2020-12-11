@@ -73,12 +73,12 @@ export default class OptimizelyUserContext {
   }
 
   /**
-   * Returns a key-map of decision results for multiple flag keys and a user context.
+   * Returns an object of decision results for multiple flag keys and a user context.
    * If the SDK finds an error for a key, the response will include a decision for the key showing reasons for the error.
    * The SDK will always return key-mapped decisions. When it cannot process requests, it will return an empty map after logging the errors.
    * @param     {string[]}                   keys        An array of flag keys for which decisions will be made.
    * @param     {OptimizelyDecideOptions[]}  options     An array of options for decision-making.
-   * @return    {[key: string]: OptimizelyDecision}      All decision results mapped by flag keys.
+   * @return    {[key: string]: OptimizelyDecision}      An object of decision results mapped by flag keys.
    */
   decideForKeys(
     keys: string[],
@@ -89,9 +89,9 @@ export default class OptimizelyUserContext {
   }
 
   /**
-   * Returns a key-map of decision results for all active flag keys.
+   * Returns an object of decision results for all active flag keys.
    * @param     {OptimizelyDecideOptions[]}  options     An array of options for decision-making.
-   * @return    {[key: string]: OptimizelyDecision}      All decision results mapped by flag keys.
+   * @return    {[key: string]: OptimizelyDecision}      An object of all decision results mapped by flag keys.
    */
   decideAll(
     options: OptimizelyDecideOptions[] = []
