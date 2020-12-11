@@ -143,7 +143,7 @@ describe('lib/optimizely_user_context', function() {
           variables: {},
           ruleKey: 'exp_no_audience',
           flagKey: flagKey,
-          userContext: user,
+          userContext: 'fakeUserContext',
           reasons: [],
         };
         fakeOptimizely = {
@@ -170,7 +170,7 @@ describe('lib/optimizely_user_context', function() {
               variables: {},
               ruleKey: '18322080788',
               flagKey: flagKey1,
-              userContext: user,
+              userContext: 'fakeUserContext',
               reasons: [],
             },
           flagKey2:
@@ -180,7 +180,7 @@ describe('lib/optimizely_user_context', function() {
               variables: {},
               ruleKey: 'exp_no_audience',
               flagKey: flagKey2,
-              userContext: user,
+              userContext: 'fakeUserContext',
               reasons: [],
             },
         };
@@ -209,7 +209,7 @@ describe('lib/optimizely_user_context', function() {
               variables: {},
               ruleKey: '18322080788',
               flagKey: flagKey1,
-              userContext: user,
+              userContext: 'fakeUserContext',
               reasons: [],
             },
           flagKey2:
@@ -219,7 +219,7 @@ describe('lib/optimizely_user_context', function() {
               variables: {},
               ruleKey: 'exp_no_audience',
               flagKey: flagKey2,
-              userContext: user,
+              userContext: 'fakeUserContext',
               reasons: [],
             },
           flagKey3:
