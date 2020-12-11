@@ -1595,13 +1595,13 @@ export default class Optimizely {
   }
 
   /**
-   * Returns a key-map of decision results for multiple flag keys and a user context.
+   * Returns an object of decision results for multiple flag keys and a user context.
    * If the SDK finds an error for a key, the response will include a decision for the key showing reasons for the error.
-   * The SDK will always return key-mapped decisions. When it cannot process requests, it will return an empty map after logging the errors.
+   * The SDK will always return an object of decisions. When it cannot process requests, it will return an empty object after logging the errors.
    * @param     {OptimizelyUserContext}      user        A user context associated with this OptimizelyClient
    * @param     {string[]}                   keys        An array of flag keys for which decisions will be made.
    * @param     {OptimizelyDecideOptions[]}  options     An array of options for decision-making.
-   * @return    {[key: string]: OptimizelyDecision}      All decision results mapped by flag keys.
+   * @return    {[key: string]: OptimizelyDecision}      An object of decision results mapped by flag keys.
    */
 
   decideForKeys(
@@ -1619,9 +1619,8 @@ export default class Optimizely {
     }
 
     const allDecideOptions = this.getAllDecideOptions(options);
-    let optimizelyDecision: OptimizelyDecision;
     keys.forEach(key => {
-      optimizelyDecision = this.decide(user, key, options);
+      const optimizelyDecision: OptimizelyDecision = this.decide(user, key, options);
       if (!allDecideOptions[OptimizelyDecideOptions.ENABLED_FLAGS_ONLY] || optimizelyDecision.enabled) {
         decisionMap[key] = optimizelyDecision;
       }
@@ -1631,10 +1630,10 @@ export default class Optimizely {
   }
 
   /**
-   * Returns a key-map of decision results for all active flag keys.
+   * Returns an object of decision results for all active flag keys.
    * @param     {OptimizelyUserContext}      user        A user context associated with this OptimizelyClient
    * @param     {OptimizelyDecideOptions[]}  options     An array of options for decision-making.
-   * @return    {[key: string]: OptimizelyDecision}      All decision results mapped by flag keys.
+   * @return    {[key: string]: OptimizelyDecision}      An object of all decision results mapped by flag keys.
    */
   decideAll(
     user: OptimizelyUserContext,
