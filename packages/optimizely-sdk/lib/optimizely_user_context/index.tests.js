@@ -21,6 +21,7 @@ describe('lib/optimizely_user_context', function() {
   describe('APIs', function() {
     var fakeOptimizely;
     var userId = 'tester';
+    var options = 'fakeOption';
     describe('#setAttribute', function() {
       fakeOptimizely = {
         decide: sinon.stub().returns({})
@@ -153,13 +154,19 @@ describe('lib/optimizely_user_context', function() {
           optimizely: fakeOptimizely,
           userId,
         });
-        var decision = user.decide(flagKey);
+        var decision = user.decide(flagKey, options);
+        sinon.assert.calledWithExactly(
+          fakeOptimizely.decide,
+          user,
+          flagKey,
+          options
+        );
         assert.deepEqual(decision, fakeDecision);
       });
     });
 
-    describe('##decideForKeys', function() {
-      it('should return an expected decision results map', function() {
+    describe('#decideForKeys', function() {
+      it('should return an expected decision results object', function() {
         var flagKey1 = 'feature_1';
         var flagKey2 = 'feature_2';
         var fakeDecisionMap = {
@@ -191,13 +198,19 @@ describe('lib/optimizely_user_context', function() {
           optimizely: fakeOptimizely,
           userId,
         });
-        var decisionMap = user.decideForKeys([ flagKey1, flagKey2 ]);
+        var decisionMap = user.decideForKeys([ flagKey1, flagKey2 ], options);
+        sinon.assert.calledWithExactly(
+          fakeOptimizely.decideForKeys,
+          user,
+          [ flagKey1, flagKey2 ],
+          options
+        );
         assert.deepEqual(decisionMap, fakeDecisionMap);
       });
     });
 
-    describe('##decideAll', function() {
-      it('should return an expected decision results map', function() {
+    describe('#decideAll', function() {
+      it('should return an expected decision results object', function() {
         var flagKey1 = 'feature_1';
         var flagKey2 = 'feature_2';
         var flagKey3 = 'feature_3';
@@ -240,7 +253,12 @@ describe('lib/optimizely_user_context', function() {
           optimizely: fakeOptimizely,
           userId,
         });
-        var decisionMap = user.decideAll();
+        var decisionMap = user.decideAll(options);
+        sinon.assert.calledWithExactly(
+          fakeOptimizely.decideAll,
+          user,
+          options
+        );
         assert.deepEqual(decisionMap, fakeDecisionMap);
       });
     });
