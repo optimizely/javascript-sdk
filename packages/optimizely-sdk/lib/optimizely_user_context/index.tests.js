@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2020, Optimizely, Inc. and contributors                   *
+ * Copyright 2020, Optimizely, Inc. and contributors                        *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -20,6 +20,8 @@ import OptimizelyUserContext from './';
 describe('lib/optimizely_user_context', function() {
   describe('APIs', function() {
     var fakeOptimizely;
+    var userId = 'tester';
+    var options = 'fakeOption';
     describe('#setAttribute', function() {
       fakeOptimizely = {
         decide: sinon.stub().returns({})
@@ -134,7 +136,6 @@ describe('lib/optimizely_user_context', function() {
     });
 
     describe('#decide', function() {
-      var userId = 'tester';
       it('should return an expected decision object', function() {
         var flagKey = 'feature_1';
         var fakeDecision = {
@@ -143,7 +144,7 @@ describe('lib/optimizely_user_context', function() {
           variables: {},
           ruleKey: 'exp_no_audience',
           flagKey: flagKey,
-          userContext: user,
+          userContext: 'fakeUserContext',
           reasons: [],
         };
         fakeOptimizely = {
@@ -153,8 +154,112 @@ describe('lib/optimizely_user_context', function() {
           optimizely: fakeOptimizely,
           userId,
         });
-        var decision = user.decide(flagKey);
+        var decision = user.decide(flagKey, options);
+        sinon.assert.calledWithExactly(
+          fakeOptimizely.decide,
+          user,
+          flagKey,
+          options
+        );
         assert.deepEqual(decision, fakeDecision);
+      });
+    });
+
+    describe('#decideForKeys', function() {
+      it('should return an expected decision results object', function() {
+        var flagKey1 = 'feature_1';
+        var flagKey2 = 'feature_2';
+        var fakeDecisionMap = {
+          flagKey1:
+            {
+              variationKey: '18257766532',
+              enabled: true,
+              variables: {},
+              ruleKey: '18322080788',
+              flagKey: flagKey1,
+              userContext: 'fakeUserContext',
+              reasons: [],
+            },
+          flagKey2:
+            {
+              variationKey: 'variation_with_traffic',
+              enabled: true,
+              variables: {},
+              ruleKey: 'exp_no_audience',
+              flagKey: flagKey2,
+              userContext: 'fakeUserContext',
+              reasons: [],
+            },
+        };
+        fakeOptimizely = {
+          decideForKeys: sinon.stub().returns(fakeDecisionMap)
+        };
+        var user = new OptimizelyUserContext({
+          optimizely: fakeOptimizely,
+          userId,
+        });
+        var decisionMap = user.decideForKeys([ flagKey1, flagKey2 ], options);
+        sinon.assert.calledWithExactly(
+          fakeOptimizely.decideForKeys,
+          user,
+          [ flagKey1, flagKey2 ],
+          options
+        );
+        assert.deepEqual(decisionMap, fakeDecisionMap);
+      });
+    });
+
+    describe('#decideAll', function() {
+      it('should return an expected decision results object', function() {
+        var flagKey1 = 'feature_1';
+        var flagKey2 = 'feature_2';
+        var flagKey3 = 'feature_3';
+        var fakeDecisionMap = {
+          flagKey1:
+            {
+              variationKey: '18257766532',
+              enabled: true,
+              variables: {},
+              ruleKey: '18322080788',
+              flagKey: flagKey1,
+              userContext: 'fakeUserContext',
+              reasons: [],
+            },
+          flagKey2:
+            {
+              variationKey: 'variation_with_traffic',
+              enabled: true,
+              variables: {},
+              ruleKey: 'exp_no_audience',
+              flagKey: flagKey2,
+              userContext: 'fakeUserContext',
+              reasons: [],
+            },
+          flagKey3:
+          {
+            variationKey: '',
+            enabled: false,
+            variables: {},
+            ruleKey: '',
+            flagKey: flagKey3,
+            userContext: user,
+            reasons: [],
+          },
+        };
+        fakeOptimizely = {
+          decideAll: sinon.stub().returns(fakeDecisionMap)
+        };
+        var user = new OptimizelyUserContext({
+          optimizely: fakeOptimizely,
+          userId,
+        });
+        var decisionMap = user.decideAll(options);
+        sinon.assert.calledWithExactly(
+          fakeOptimizely.decideAll,
+          user,
+          options
+        );
+        assert.deepEqual(decisionMap, fakeDecisionMap);
       });
     });
   });

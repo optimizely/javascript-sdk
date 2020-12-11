@@ -4333,6 +4333,7 @@ describe('lib/optimizely', function() {
       logLevel: LOG_LEVEL.INFO,
       logToConsole: false,
     });
+
     describe('#createUserContext', function() {
       beforeEach(function() {
         optlyInstance = new Optimizely({
@@ -4911,16 +4912,10 @@ describe('lib/optimizely', function() {
           });
 
           sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
-          sinon.stub(errorHandler, 'handleError');
-          sinon.stub(createdLogger, 'log');
-          sinon.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
         });
 
         afterEach(function() {
           optlyInstance.notificationCenter.sendNotifications.restore();
-          errorHandler.handleError.restore();
-          createdLogger.log.restore();
-          fns.uuid.restore();
         });
 
         it('should make a decision and do not dispatch an event', function() {
@@ -4962,6 +4957,295 @@ describe('lib/optimizely', function() {
             }
           ]
           assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
+        });
+      });
+    });
+
+    describe('#decideForKeys', function() {
+      var userId = 'tester';
+      beforeEach(function() {
+        optlyInstance = new Optimizely({
+          clientEngine: 'node-sdk',
+          datafile: testData.getTestDecideProjectConfig(),
+          errorHandler: errorHandler,
+          eventDispatcher: eventDispatcher,
+          jsonSchemaValidator: jsonSchemaValidator,
+          logger: createdLogger,
+          isValidInstance: true,
+          eventBatchSize: 1,
+          defaultDecideOptions: [],
+        });
+
+        sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
+      });
+
+      afterEach(function() {
+        optlyInstance.notificationCenter.sendNotifications.restore();
+      });
+
+      it('should return decision results map with single flag key provided for feature_test and dispatch an event', function() {
+        var flagKey = 'feature_2';
+        var user = optlyInstance.createUserContext(userId);
+        var expectedVariables = optlyInstance.getAllFeatureVariables(flagKey, userId);
+        var decisionsMap = optlyInstance.decideForKeys(user, [ flagKey ]);
+        var decision = decisionsMap[flagKey];
+        var expectedDecision = {
+          variationKey: 'variation_with_traffic',
+          enabled: true,
+          variables: expectedVariables,
+          ruleKey: 'exp_no_audience',
+          flagKey: flagKey,
+          userContext: user,
+          reasons: [],
+        }
+        assert.deepEqual(Object.values(decisionsMap).length, 1);
+        assert.deepEqual(decision, expectedDecision);
+        sinon.assert.calledOnce(optlyInstance.eventDispatcher.dispatchEvent);
+        sinon.assert.callCount(optlyInstance.notificationCenter.sendNotifications, 4)
+        var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(3).args;
+        var decisionEventDispatched = notificationCallArgs[1].decisionInfo.decisionEventDispatched;
+        assert.deepEqual(decisionEventDispatched, true);
+      });
+
+      it('should return decision results map with two flag keys provided and dispatch events', function() {
+        var flagKeysArray = ['feature_1', 'feature_2'];
+        var user = optlyInstance.createUserContext(userId);
+        var expectedVariables1 = optlyInstance.getAllFeatureVariables(flagKeysArray[0], userId);
+        var expectedVariables2 = optlyInstance.getAllFeatureVariables(flagKeysArray[1], userId);
+        var decisionsMap = optlyInstance.decideForKeys(user, flagKeysArray);
+        var decision1 = decisionsMap[flagKeysArray[0]];
+        var decision2 = decisionsMap[flagKeysArray[1]];
+        var expectedDecision1 = {
+          variationKey: '18257766532',
+          enabled: true,
+          variables: expectedVariables1,
+          ruleKey: '18322080788',
+          flagKey: flagKeysArray[0],
+          userContext: user,
+          reasons: [],
+        }
+        var expectedDecision2 = {
+          variationKey: 'variation_with_traffic',
+          enabled: true,
+          variables: expectedVariables2,
+          ruleKey: 'exp_no_audience',
+          flagKey: flagKeysArray[1],
+          userContext: user,
+          reasons: [],
+        }
+        assert.deepEqual(Object.values(decisionsMap).length, 2);
+        assert.deepEqual(decision1, expectedDecision1);
+        assert.deepEqual(decision2, expectedDecision2);
+        sinon.assert.calledTwice(optlyInstance.eventDispatcher.dispatchEvent);
+      });
+
+      it('should return decision results map with only enabled flags when ENABLED_FLAGS_ONLY flag is passed in and dispatch events', function() {
+        var flagKey1 = 'feature_2';
+        var flagKey2 = 'feature_3';
+        var user = optlyInstance.createUserContext(userId, {"gender": "female"});
+        var expectedVariables = optlyInstance.getAllFeatureVariables(flagKey1, userId);
+        var decisionsMap = optlyInstance.decideForKeys(user, [ flagKey1, flagKey2 ], [ OptimizelyDecideOptions.ENABLED_FLAGS_ONLY ]);
+        var decision = decisionsMap[flagKey1];
+        var expectedDecision = {
+          variationKey: 'variation_with_traffic',
+          enabled: true,
+          variables: expectedVariables,
+          ruleKey: 'exp_no_audience',
+          flagKey: flagKey1,
+          userContext: user,
+          reasons: [],
+        }
+        assert.deepEqual(Object.values(decisionsMap).length, 1);
+        assert.deepEqual(decision, expectedDecision);
+        sinon.assert.calledTwice(optlyInstance.eventDispatcher.dispatchEvent);
+      });
+    });
+
+    describe('#decideAll', function() {
+      var userId = 'tester';
+      describe('with empty default decide options', function() {
+        beforeEach(function() {
+          optlyInstance = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestDecideProjectConfig(),
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            isValidInstance: true,
+            eventBatchSize: 1,
+            defaultDecideOptions: [],
+          });
+
+          sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
+        });
+
+        afterEach(function() {
+          optlyInstance.notificationCenter.sendNotifications.restore();
+        });
+
+        it('should return decision results map with all flag keys provided and dispatch events', function() {
+          var configObj = optlyInstance.projectConfigManager.getConfig();
+          var allFlagKeysArray = Object.keys(configObj.featureKeyMap);
+          var user = optlyInstance.createUserContext(userId);
+          var expectedVariables1 = optlyInstance.getAllFeatureVariables(allFlagKeysArray[0], userId);
+          var expectedVariables2 = optlyInstance.getAllFeatureVariables(allFlagKeysArray[1], userId);
+          var expectedVariables3 = optlyInstance.getAllFeatureVariables(allFlagKeysArray[2], userId);
+          var decisionsMap = user.decideAll(allFlagKeysArray);
+          var decision1 = decisionsMap[allFlagKeysArray[0]];
+          var decision2 = decisionsMap[allFlagKeysArray[1]];
+          var decision3 = decisionsMap[allFlagKeysArray[2]];
+          var expectedDecision1 = {
+            variationKey: '18257766532',
+            enabled: true,
+            variables: expectedVariables1,
+            ruleKey: '18322080788',
+            flagKey: allFlagKeysArray[0],
+            userContext: user,
+            reasons: [],
+          }
+          var expectedDecision2 = {
+            variationKey: 'variation_with_traffic',
+            enabled: true,
+            variables: expectedVariables2,
+            ruleKey: 'exp_no_audience',
+            flagKey: allFlagKeysArray[1],
+            userContext: user,
+            reasons: [],
+          }
+          var expectedDecision3 = {
+            variationKey: '',
+            enabled: false,
+            variables: expectedVariables3,
+            ruleKey: '',
+            flagKey: allFlagKeysArray[2],
+            userContext: user,
+            reasons: [],
+          }
+          assert.deepEqual(Object.values(decisionsMap).length, allFlagKeysArray.length);
+          assert.deepEqual(decision1, expectedDecision1);
+          assert.deepEqual(decision2, expectedDecision2);
+          assert.deepEqual(decision3, expectedDecision3);
+          sinon.assert.calledThrice(optlyInstance.eventDispatcher.dispatchEvent);
+        });
+
+        it('should return decision results map with only enabled flags when ENABLED_FLAGS_ONLY flag is passed in and dispatch events', function() {
+          var flagKey1 = 'feature_1';
+          var flagKey2 = 'feature_2';
+          var user = optlyInstance.createUserContext(userId, {"gender": "female"});
+          var expectedVariables1 = optlyInstance.getAllFeatureVariables(flagKey1, userId);
+          var expectedVariables2 = optlyInstance.getAllFeatureVariables(flagKey2, userId);
+          var decisionsMap = optlyInstance.decideAll(user, [ OptimizelyDecideOptions.ENABLED_FLAGS_ONLY ]);
+          var decision1 = decisionsMap[flagKey1];
+          var decision2 = decisionsMap[flagKey2];
+          var expectedDecision1 = {
+            variationKey: '18257766532',
+            enabled: true,
+            variables: expectedVariables1,
+            ruleKey: '18322080788',
+            flagKey: flagKey1,
+            userContext: user,
+            reasons: [],
+          }
+          var expectedDecision2 = {
+            variationKey: 'variation_with_traffic',
+            enabled: true,
+            variables: expectedVariables2,
+            ruleKey: 'exp_no_audience',
+            flagKey: flagKey2,
+            userContext: user,
+            reasons: [],
+          }
+          assert.deepEqual(Object.values(decisionsMap).length, 2);
+          assert.deepEqual(decision1, expectedDecision1);
+          assert.deepEqual(decision2, expectedDecision2);
+          sinon.assert.calledThrice(optlyInstance.eventDispatcher.dispatchEvent);
+        });
+      });
+
+      describe('with ENABLED_FLAGS_ONLY flag in default decide options', function() {
+        beforeEach(function() {
+          optlyInstance = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestDecideProjectConfig(),
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            isValidInstance: true,
+            eventBatchSize: 1,
+            defaultDecideOptions: [ OptimizelyDecideOptions.ENABLED_FLAGS_ONLY ],
+          });
+
+          sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
+        });
+
+        afterEach(function() {
+          optlyInstance.notificationCenter.sendNotifications.restore();
+        });
+
+        it('should return decision results map with only enabled flags and dispatch events', function() {
+          var flagKey1 = 'feature_1';
+          var flagKey2 = 'feature_2';
+          var user = optlyInstance.createUserContext(userId, {"gender": "female"});
+          var expectedVariables1 = optlyInstance.getAllFeatureVariables(flagKey1, userId);
+          var expectedVariables2 = optlyInstance.getAllFeatureVariables(flagKey2, userId);
+          var decisionsMap = optlyInstance.decideAll(user);
+          var decision1 = decisionsMap[flagKey1];
+          var decision2 = decisionsMap[flagKey2];
+          var expectedDecision1 = {
+            variationKey: '18257766532',
+            enabled: true,
+            variables: expectedVariables1,
+            ruleKey: '18322080788',
+            flagKey: flagKey1,
+            userContext: user,
+            reasons: [],
+          }
+          var expectedDecision2 = {
+            variationKey: 'variation_with_traffic',
+            enabled: true,
+            variables: expectedVariables2,
+            ruleKey: 'exp_no_audience',
+            flagKey: flagKey2,
+            userContext: user,
+            reasons: [],
+          }
+          assert.deepEqual(Object.values(decisionsMap).length, 2);
+          assert.deepEqual(decision1, expectedDecision1);
+          assert.deepEqual(decision2, expectedDecision2);
+          sinon.assert.calledThrice(optlyInstance.eventDispatcher.dispatchEvent);
+        });
+
+        it('should return decision results map with only enabled flags and excluded variables when EXCLUDE_VARIABLES_FLAG is passed in', function() {
+          var flagKey1 = 'feature_1';
+          var flagKey2 = 'feature_2';
+          var user = optlyInstance.createUserContext(userId, {"gender": "female"});
+          var decisionsMap = optlyInstance.decideAll(user, [ OptimizelyDecideOptions.EXCLUDE_VARIABLES ]);
+          var decision1 = decisionsMap[flagKey1];
+          var decision2 = decisionsMap[flagKey2];
+          var expectedDecision1 = {
+            variationKey: '18257766532',
+            enabled: true,
+            variables: {},
+            ruleKey: '18322080788',
+            flagKey: flagKey1,
+            userContext: user,
+            reasons: [],
+          }
+          var expectedDecision2 = {
+            variationKey: 'variation_with_traffic',
+            enabled: true,
+            variables: {},
+            ruleKey: 'exp_no_audience',
+            flagKey: flagKey2,
+            userContext: user,
+            reasons: [],
+          }
+          assert.deepEqual(Object.values(decisionsMap).length, 2);
+          assert.deepEqual(decision1, expectedDecision1);
+          assert.deepEqual(decision2, expectedDecision2);
+          sinon.assert.calledThrice(optlyInstance.eventDispatcher.dispatchEvent);
         });
       });
     });
