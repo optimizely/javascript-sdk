@@ -262,5 +262,19 @@ describe('lib/optimizely_user_context', function() {
         assert.deepEqual(decisionMap, fakeDecisionMap);
       });
     });
+
+    describe('#trackEvent', function() {
+      it('should call track from optimizely client', function() {
+        fakeOptimizely = {
+          track: sinon.stub()
+        };
+        var user = new OptimizelyUserContext({
+          optimizely: fakeOptimizely,
+          userId,
+        });
+        user.trackEvent('event1');
+        sinon.assert.called(fakeOptimizely.track);
+      });
+    });
   });
 });
