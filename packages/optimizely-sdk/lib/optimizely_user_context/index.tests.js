@@ -268,12 +268,20 @@ describe('lib/optimizely_user_context', function() {
         fakeOptimizely = {
           track: sinon.stub()
         };
+        var eventName = 'myEvent';
+        var eventTags = { 'eventTag1': 1000 }
         var user = new OptimizelyUserContext({
           optimizely: fakeOptimizely,
           userId,
         });
-        user.trackEvent('event1');
-        sinon.assert.called(fakeOptimizely.track);
+        user.trackEvent(eventName, eventTags);
+        sinon.assert.calledWithExactly(
+          fakeOptimizely.track,
+          eventName,
+          user.getUserId(),
+          user.getAttributes(),
+          eventTags,
+        );
       });
     });
   });
