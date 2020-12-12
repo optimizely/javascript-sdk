@@ -37,6 +37,7 @@ export interface DecisionService {
    * @param   {ProjectConfig}  configObj      The parsed project configuration object
    * @param   {string}         experimentKey
    * @param   {string}         userId
+   * @param   {string[]}       decideReasons
    * @param   {UserAttributes} attributes
    * @return  {string|null}    The variation the user is bucketed into.
    */
@@ -44,6 +45,7 @@ export interface DecisionService {
     configObj: ProjectConfig,
     experimentKey: string,
     userId: string,
+    decideReasons: string[],
     attributes?: UserAttributes
   ): string | null;
 
@@ -57,6 +59,7 @@ export interface DecisionService {
    * @param   {ProjectConfig} configObj      The parsed project configuration object
    * @param   {FeatureFlag}   feature        A feature flag object from project configuration
    * @param   {string}        userId         A string identifying the user, for bucketing
+   * @param   {string[]}      decideReasons  An array of decide reasons
    * @param   {unknown}       attributes     Optional user attributes
    * @return  {DecisionObj}   An object with experiment, variation, and decisionSource
    * properties. If the user was not bucketed into a variation, the variation
@@ -66,6 +69,7 @@ export interface DecisionService {
     configObj: ProjectConfig,
     feature: FeatureFlag,
     userId: string,
+    decideReasons: string[],
     attributes: unknown
   ): DecisionObj;
 
@@ -74,18 +78,30 @@ export interface DecisionService {
    * @param  {unknown}        userId         String representing the user id
    * @param  {string}         experimentId   Number representing the experiment id
    * @param  {string}         experimentKey  Key representing the experiment id
+   * @param  {string[]}       decideReasons  An array of decide reasons
    * @throws If the user id is not valid or not in the forced variation map
    */
-  removeForcedVariation(userId: unknown, experimentId: string, experimentKey: string): void;
+  removeForcedVariation(
+    userId: unknown,
+    experimentId: string,
+    experimentKey: string,
+    decideReasons: string[]
+  ): void;
 
   /**
    * Gets the forced variation key for the given user and experiment.
    * @param  {ProjectConfig}  configObj      Object representing project configuration
    * @param  {string}         experimentKey  Key for experiment.
    * @param  {string}         userId         The user Id.
+   * @param  {string[]}       decideReasons  An array of decide reasons
    * @return {string|null}    Variation key that specifies the variation which the given user and experiment should be forced into.
    */
-  getForcedVariation(configObj: ProjectConfig, experimentKey: string, userId: string): string | null;
+  getForcedVariation(
+    configObj: ProjectConfig,
+    experimentKey: string,
+    userId: string,
+    decideReasons: string[]
+  ): string | null;
 
   /**
    * Sets the forced variation for a user in a given experiment
@@ -93,9 +109,16 @@ export interface DecisionService {
    * @param  {string}         experimentKey  Key for experiment.
    * @param  {string}         userId         The user Id.
    * @param  {unknown}        variationKey   Key for variation. If null, then clear the existing experiment-to-variation mapping
+   * @param  {string[]}       decideReasons  An array of decide reasons
    * @return {boolean}        A boolean value that indicates if the set completed successfully.
    */
-  setForcedVariation(configObj: ProjectConfig, experimentKey: string, userId: string, variationKey: unknown): boolean;
+  setForcedVariation(
+    configObj: ProjectConfig,
+    experimentKey: string,
+    userId: string,
+    variationKey: unknown,
+    decideReasons: string[]
+  ): boolean;
 }
 
 interface Options {
