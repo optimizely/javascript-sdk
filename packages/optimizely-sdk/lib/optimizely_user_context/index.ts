@@ -101,7 +101,7 @@ export default class OptimizelyUserContext {
   }
 
   /**
-   * Track an event.
+   * Tracks an event.
    * @param     {string}                     eventName The event name.
    * @param     {EventTags}                  eventTags An optional map of event tag names to event tag values.
    */
