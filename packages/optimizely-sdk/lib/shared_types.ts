@@ -72,13 +72,15 @@ export interface VariationVariable {
 export interface Variation {
   id: string;
   key: string;
-  featureEnabled: boolean;
-  variables: VariationVariable[];
+  featureEnabled?: boolean;
+  variablesMap: OptimizelyVariablesMap;
+  variables?: VariationVariable[];
 }
 
 export interface Experiment {
   id: string;
   key: string;
+  variations: Variation[];
   variationKeyMap: { [key: string]: Variation }
 }
 
@@ -111,6 +113,20 @@ export type ObjectWithUnknownProperties = {
   [key: string]: unknown;
 }
 
+export interface Rollout {
+  id: string;
+  experiments: Experiment[];
+}
+
+//TODO: Move OptimizelyDecideOptions to @optimizely/optimizely-sdk/lib/utils/enums
+export enum OptimizelyDecideOptions {
+  DISABLE_DECISION_EVENT = 'DISABLE_DECISION_EVENT',
+  ENABLED_FLAGS_ONLY =  'ENABLED_FLAGS_ONLY',
+  IGNORE_USER_PROFILE_SERVICE = 'IGNORE_USER_PROFILE_SERVICE',
+  INCLUDE_REASONS = 'INCLUDE_REASONS',
+  EXCLUDE_VARIABLES = 'EXCLUDE_VARIABLES'
+}
+
 /**
  * options required to create optimizely object
  */
@@ -134,6 +150,7 @@ export interface OptimizelyOptions {
   logger: LogHandler;
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
+  defaultDecideOptions?: OptimizelyDecideOptions[]
 }
 
 /**
@@ -181,33 +198,35 @@ export interface Config {
   sdkKey?: string;
 }
 
+export type OptimizelyExperimentsMap = {
+  [experimentKey: string]: OptimizelyExperiment;
+}
+
+export type OptimizelyVariablesMap = {
+  [variableKey: string]: OptimizelyVariable;
+}
+
+export type OptimizelyFeaturesMap = {
+  [featureKey: string]: OptimizelyFeature;
+}
+
 export interface OptimizelyFeature {
   id: string;
   key: string;
-  experimentsMap: {
-    [experimentKey: string]: OptimizelyExperiment;
-  };
-  variablesMap: {
-    [variableKey: string]: OptimizelyVariable;
-  };
+  experimentsMap: OptimizelyExperimentsMap;
+  variablesMap: OptimizelyVariablesMap;
 }
 
 export interface OptimizelyVariation {
   id: string;
   key: string;
   featureEnabled?: boolean;
-  variablesMap: {
-    [variableKey: string]: OptimizelyVariable;
-  };
+  variablesMap: OptimizelyVariablesMap;
 }
 
 export interface OptimizelyConfig {
-  experimentsMap: {
-    [experimentKey: string]: OptimizelyExperiment;
-  };
-  featuresMap: {
-    [featureKey: string]: OptimizelyFeature;
-  };
+  experimentsMap: OptimizelyExperimentsMap;
+  featuresMap: OptimizelyFeaturesMap;
   revision: string;
   getDatafile(): string;
 }

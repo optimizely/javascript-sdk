@@ -25,8 +25,11 @@ import {
   Variation,
   FeatureFlag,
   FeatureVariable,
-  OptimizelyOptions
+  OptimizelyOptions,
+  OptimizelyDecideOptions
 } from '../shared_types';
+import { OptimizelyDecision, newErrorDecision } from '../optimizely_decision';
+import OptimizelyUserContext from '../optimizely_user_context';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
@@ -46,6 +49,7 @@ import {
   LOG_LEVEL,
   LOG_MESSAGES,
   DECISION_SOURCES,
+  DECISION_MESSAGES,
   FEATURE_VARIABLE_TYPES,
   DECISION_NOTIFICATION_TYPES,
   NOTIFICATION_TYPES
@@ -55,11 +59,10 @@ const MODULE_NAME = 'OPTIMIZELY';
 
 const DEFAULT_ONREADY_TIMEOUT = 30000;
 
-
 // TODO: Make feature_key, user_id, variable_key, experiment_key, event_key camelCase
-export type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 'event_key' | 'variation_id';
+type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 'event_key' | 'variation_id';
 
-export type StringInputs = Partial<Record<InputKey, unknown>>;
+type StringInputs = Partial<Record<InputKey, unknown>>;
 
 /**
  * The Optimizely class
@@ -92,6 +95,7 @@ export default class Optimizely {
   private notificationCenter: NotificationCenter;
   private decisionService: DecisionService;
   private eventProcessor: EventProcessor;
+  private defaultDecideOptions: { [key: string]: boolean };
 
   constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;
@@ -110,6 +114,25 @@ export default class Optimizely {
     this.isOptimizelyConfigValid = config.isValidInstance;
     this.logger = config.logger;
 
+    let decideOptionsArray = config.defaultDecideOptions ?? [];
+    if (!Array.isArray(decideOptionsArray)) {
+      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DEFAULT_DECIDE_OPTIONS, MODULE_NAME));
+      decideOptionsArray = [];
+    }
+
+    const defaultDecideOptions: { [key: string]: boolean } = {};
+    decideOptionsArray.forEach((option) => {
+      // Filter out all provided default decide options that are not in OptimizelyDecideOptions[]
+      if (OptimizelyDecideOptions[option]) {
+        defaultDecideOptions[option] = true;
+      } else {
+        this.logger.log(
+          LOG_LEVEL.WARNING,
+          sprintf(LOG_MESSAGES.UNRECOGNIZED_DECIDE_OPTION, MODULE_NAME, option)
+        );
+      }
+    });
+    this.defaultDecideOptions = defaultDecideOptions;
     this.projectConfigManager = createProjectConfigManager({
       datafile: config.datafile,
       datafileOptions: config.datafileOptions,
@@ -787,7 +810,6 @@ export default class Optimizely {
    *                                                type, or null if the feature key is invalid or
    *                                                the variable key is invalid
    */
-
   getFeatureVariable(
     featureKey: string,
     variableKey: string,
@@ -1414,5 +1436,218 @@ export default class Optimizely {
     });
 
     return Promise.race([this.readyPromise, timeoutPromise]);
+  }
+
+  //============ decide ============//
+
+  /**
+   * Creates a context of the user for which decision APIs will be called.
+   *
+   * A user context will be created successfully even when the SDK is not fully configured yet, so no
+   * this.isValidInstance() check is performed here.
+   *
+   * @param  {string}          userId      The user ID to be used for bucketing.
+   * @param  {UserAttributes}  attributes  Optional user attributes.
+   * @return {OptimizelyUserContext|null}  An OptimizelyUserContext associated with this OptimizelyClient or
+   *                                       null if provided inputs are invalid
+   */
+  createUserContext(userId: string, attributes?: UserAttributes): OptimizelyUserContext | null {
+    if (!this.validateInputs({ user_id: userId }, attributes)) {
+      return null;
+    }
+
+    return new OptimizelyUserContext({
+      optimizely: this,
+      userId,
+      attributes
+    });
+  }
+
+  decide(
+    user: OptimizelyUserContext,
+    key: string,
+    options: OptimizelyDecideOptions[] = []
+  ): OptimizelyDecision {
+    const configObj = this.projectConfigManager.getConfig();
+    const reasons: string[] = [];
+    if (!this.isValidInstance() || !configObj) {
+      reasons.push(DECISION_MESSAGES.SDK_NOT_READY);
+      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decide'));
+      return newErrorDecision(key, user, reasons);
+    }
+
+    const feature = configObj.featureKeyMap[key];
+    if (!feature) {
+      reasons.push(sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, key));
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, key));
+      return newErrorDecision(key, user, reasons);
+    }
+
+    const userId = user.getUserId();
+    const attributes = user.getAttributes();
+    const allDecideOptions = this.getAllDecideOptions(options);
+    const decisionObj = this.decisionService.getVariationForFeature(
+      configObj,
+      feature,
+      userId,
+      attributes
+    );
+    const decisionSource = decisionObj.decisionSource;
+    const experimentKey = decision.getExperimentKey(decisionObj);
+    const variationKey = decision.getVariationKey(decisionObj);
+    const flagEnabled: boolean = decision.getFeatureEnabledFromVariation(decisionObj);
+    if (flagEnabled === true) {
+      this.logger.log(
+        LOG_LEVEL.INFO,
+        sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, key, userId)
+      );
+    } else {
+      this.logger.log(
+        LOG_LEVEL.INFO,
+        sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, key, userId)
+      );
+    }
+
+    const variablesMap: { [key: string]: unknown } = {};
+    let decisionEventDispatched = false;
+
+    if (!allDecideOptions[OptimizelyDecideOptions.EXCLUDE_VARIABLES]) {
+      feature.variables.forEach(variable => {
+        variablesMap[variable.key] =
+        this.getFeatureVariableValueFromVariation(
+          key,
+          flagEnabled,
+          decisionObj.variation,
+          variable,
+          userId
+        );
+      });
+    }
+
+    if (
+      !allDecideOptions[OptimizelyDecideOptions.DISABLE_DECISION_EVENT] && (
+      decisionSource === DECISION_SOURCES.FEATURE_TEST ||
+      decisionSource === DECISION_SOURCES.ROLLOUT && projectConfig.getSendFlagDecisionsValue(configObj))
+    ) {
+      this.sendImpressionEvent(
+        decisionObj,
+        key,
+        userId,
+        flagEnabled,
+        attributes
+      )
+      decisionEventDispatched = true;
+    }
+
+    const shouldIncludeReasons = allDecideOptions[OptimizelyDecideOptions.INCLUDE_REASONS];
+    const featureInfo = {
+      flagKey: key,
+      enabled: flagEnabled,
+      variationKey: variationKey,
+      ruleKey: experimentKey,
+      variables: variablesMap,
+      reasons: reasons,
+      decisionEventDispatched: decisionEventDispatched,
+    };
+
+    this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.DECISION, {
+      type: DECISION_NOTIFICATION_TYPES.FLAG,
+      userId: userId,
+      attributes: attributes,
+      decisionInfo: featureInfo,
+    });
+
+    return {
+      variationKey: variationKey,
+      enabled: flagEnabled,
+      variables: variablesMap,
+      ruleKey: experimentKey,
+      flagKey: key,
+      userContext: user,
+      reasons: shouldIncludeReasons ? reasons: [],
+    };
+  }
+
+  /**
+   * Get all decide options.
+   * @param  {OptimizelyDecideOptions[]}          options   decide options
+   * @return {[key: string]: boolean}             Map of all provided decide options including default decide options
+   */
+  private getAllDecideOptions(options: OptimizelyDecideOptions[]): { [key: string]: boolean } {
+    const allDecideOptions = {...this.defaultDecideOptions};
+    if (!Array.isArray(options)) {
+      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DECIDE_OPTIONS, MODULE_NAME));
+    } else {
+      options.forEach((option) => {
+        // Filter out all provided decide options that are not in OptimizelyDecideOptions[]
+        if (OptimizelyDecideOptions[option]) {
+          allDecideOptions[option] = true;
+        } else {
+          this.logger.log(
+            LOG_LEVEL.WARNING,
+            sprintf(LOG_MESSAGES.UNRECOGNIZED_DECIDE_OPTION, MODULE_NAME, option)
+          );
+        }
+      });
+    }
+
+    return allDecideOptions;
+  }
+
+  /**
+   * Returns an object of decision results for multiple flag keys and a user context.
+   * If the SDK finds an error for a key, the response will include a decision for the key showing reasons for the error.
+   * The SDK will always return an object of decisions. When it cannot process requests, it will return an empty object after logging the errors.
+   * @param     {OptimizelyUserContext}      user        A user context associated with this OptimizelyClient
+   * @param     {string[]}                   keys        An array of flag keys for which decisions will be made.
+   * @param     {OptimizelyDecideOptions[]}  options     An array of options for decision-making.
+   * @return    {[key: string]: OptimizelyDecision}      An object of decision results mapped by flag keys.
+   */
+
+  decideForKeys(
+    user: OptimizelyUserContext,
+    keys: string[],
+    options: OptimizelyDecideOptions[] = []
+  ): { [key: string]: OptimizelyDecision } {
+    const decisionMap: { [key: string]: OptimizelyDecision } = {};
+    if (!this.isValidInstance()) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decideForKeys'));
+      return decisionMap;
+    }
+    if (keys.length === 0) {
+      return decisionMap;
+    }
+
+    const allDecideOptions = this.getAllDecideOptions(options);
+    keys.forEach(key => {
+      const optimizelyDecision: OptimizelyDecision = this.decide(user, key, options);
+      if (!allDecideOptions[OptimizelyDecideOptions.ENABLED_FLAGS_ONLY] || optimizelyDecision.enabled) {
+        decisionMap[key] = optimizelyDecision;
+      }
+    });
+
+    return decisionMap;
+  }
+
+  /**
+   * Returns an object of decision results for all active flag keys.
+   * @param     {OptimizelyUserContext}      user        A user context associated with this OptimizelyClient
+   * @param     {OptimizelyDecideOptions[]}  options     An array of options for decision-making.
+   * @return    {[key: string]: OptimizelyDecision}      An object of all decision results mapped by flag keys.
+   */
+  decideAll(
+    user: OptimizelyUserContext,
+    options: OptimizelyDecideOptions[] = []
+  ): { [key: string]: OptimizelyDecision } {
+    const configObj = this.projectConfigManager.getConfig();
+    const decisionMap: { [key: string]: OptimizelyDecision } = {};
+    if (!this.isValidInstance() || !configObj) {
+      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decideAll'));
+      return decisionMap;
+    }
+
+    const allFlagKeys = Object.keys(configObj.featureKeyMap);
+
+    return this.decideForKeys(user, allFlagKeys, options);
   }
 }
