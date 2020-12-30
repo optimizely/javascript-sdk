@@ -1,5 +1,4 @@
-import { ErrorHandler, LogHandler } from "@optimizely/js-sdk-logging";
-import { enums } from "@optimizely/optimizely-sdk";
+import { ErrorHandler, LogHandler, LogLevel } from "@optimizely/js-sdk-logging";
 
 export type UserAttributes = {
   // TODO[OASIS-6649]: Don't use any type
@@ -184,11 +183,11 @@ export interface Config {
   eventDispatcher?: EventDispatcher;
   logger?: LogHandler;
   logLevel?:
-    | enums.LOG_LEVEL.DEBUG
-    | enums.LOG_LEVEL.ERROR
-    | enums.LOG_LEVEL.INFO
-    | enums.LOG_LEVEL.NOTSET
-    | enums.LOG_LEVEL.WARNING;
+    | LogLevel.DEBUG
+    | LogLevel.ERROR
+    | LogLevel.INFO
+    | LogLevel.NOTSET
+    | LogLevel.WARNING;
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
   jsonSchemaValidator?: object;
