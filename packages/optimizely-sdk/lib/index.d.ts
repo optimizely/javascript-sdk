@@ -61,6 +61,12 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type ListenerPayload = import('./shared_types').ListenerPayload;
 
+  export type OptimizelyUserContext = import('./optimizely_user_context').default;
+
+  export type OptimizelyDecision = import('./optimizely_decision').OptimizelyDecision;
+
+  export type OptimizelyDecideOptions = import('./shared_types').OptimizelyDecideOptions;
+
   export type NotificationListener<T extends ListenerPayload> = import('./shared_types').NotificationListener<T>;
 
   // The options object given to Optimizely.createInstance.
@@ -90,6 +96,10 @@ declare module '@optimizely/optimizely-sdk' {
 
   export interface Client {
     notificationCenter: NotificationCenter;
+    createUserContext(
+      userId: string,
+      attributes?: UserAttributes
+    ): OptimizelyUserContext | null;
     activate(
       experimentKey: string,
       userId: string,
