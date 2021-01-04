@@ -25,6 +25,11 @@ export interface OptimizelyDecision {
   reasons: string[];
 }
 
+export interface DecisionResponse<T> {
+  result: T;
+  reasons: string[];
+}
+
 export function newErrorDecision(key: string, user: OptimizelyUserContext, reasons: string[]): OptimizelyDecision {
   return {
     variationKey: null,
