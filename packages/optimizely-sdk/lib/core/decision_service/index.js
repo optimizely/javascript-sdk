@@ -21,6 +21,7 @@ import * as enums from '../../utils/enums';
 import projectConfig from '../project_config';
 import AudienceEvaluator from '../audience_evaluator';
 import * as stringValidator from '../../utils/string_value_validator';
+import { OptimizelyDecideOptions } from '../../shared_types';
 
 var MODULE_NAME = 'DECISION_SERVICE';
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
@@ -55,14 +56,15 @@ function DecisionService(options) {
 
 /**
  * Gets variation where visitor will be bucketed.
- * @param  {Object}                configObj         The parsed project configuration object
- * @param  {string}                experimentKey
- * @param  {string}                userId
- * @param  {Object}                attributes
- * @return {Object}                DecisionResonse   DecisionResonse containing the variation the user is bucketed into
- *                                                   and the decide reasons.
+ * @param  {Object}                                 configObj         The parsed project configuration object
+ * @param  {string}                                 experimentKey
+ * @param  {string}                                 userId
+ * @param  {Object}                                 attributes
+ * @param  {OptimizelyDecideOptions[]}              options           Decide options
+ * @return {Object}                                 DecisionResonse   DecisionResonse containing the variation the user is bucketed into
+ *                                                                    and the decide reasons.
  */
-DecisionService.prototype.getVariation = function(configObj, experimentKey, userId, attributes) {
+DecisionService.prototype.getVariation = function(configObj, experimentKey, userId, attributes, options = {}) {
   // by default, the bucketing ID should be the user ID
   var bucketingId = this._getBucketingId(userId, attributes);
   var decideReasons = [];
@@ -98,26 +100,30 @@ DecisionService.prototype.getVariation = function(configObj, experimentKey, user
     };
   }
 
-  // check for sticky bucketing
-  var experimentBucketMap = this.__resolveExperimentBucketMap(userId, attributes);
-  variation = this.__getStoredVariation(configObj, experiment, userId, experimentBucketMap);
-  if (variation) {
-    var returningStoredVariationMessage = sprintf(
-      LOG_MESSAGES.RETURNING_STORED_VARIATION,
-      MODULE_NAME,
-      variation.key,
-      experimentKey,
-      userId
-    );
-    this.logger.log(
-      LOG_LEVEL.INFO,
-      returningStoredVariationMessage
-    );
-    decideReasons.push(returningStoredVariationMessage);
-    return {
-      result: variation.key,
-      reasons: decideReasons,
-    };
+  var shouldIgnoreUPS = options[OptimizelyDecideOptions.IGNORE_USER_PROFILE_SERVICE];
+
+  // check for sticky bucketing if decide options do not include shouldIgnoreUPS
+  if (!shouldIgnoreUPS) {
+    var experimentBucketMap = this.__resolveExperimentBucketMap(userId, attributes);
+    variation = this.__getStoredVariation(configObj, experiment, userId, experimentBucketMap);
+    if (variation) {
+      var returningStoredVariationMessage = sprintf(
+        LOG_MESSAGES.RETURNING_STORED_VARIATION,
+        MODULE_NAME,
+        variation.key,
+        experimentKey,
+        userId
+      );
+      this.logger.log(
+        LOG_LEVEL.INFO,
+        returningStoredVariationMessage
+      );
+      decideReasons.push(returningStoredVariationMessage);
+      return {
+        result: variation.key,
+        reasons: decideReasons,
+      };
+    }
   }
 
   // Perform regular targeting and bucketing
@@ -418,13 +424,14 @@ DecisionService.prototype.__saveUserProfile = function(experiment, variation, us
  * @param   {Object}            feature           A feature flag object from project configuration
  * @param   {String}            userId            A string identifying the user, for bucketing
  * @param   {Object}            attributes        Optional user attributes
+ * @param   {Object}            options           Map of decide options
  * @return  {Object}            DecisionResponse  DecisionResponse containing an object with experiment, variation, and decisionSource
  *                                                properties and decide reasons. If the user was not bucketed into a variation, the variation
  *                                                property in decision object is null.
  */
-DecisionService.prototype.getVariationForFeature = function(configObj, feature, userId, attributes) {
+DecisionService.prototype.getVariationForFeature = function(configObj, feature, userId, attributes, options = {}) {
   var decideReasons = [];
-  var decisionVariation = this._getVariationForFeatureExperiment(configObj, feature, userId, attributes);
+  var decisionVariation = this._getVariationForFeatureExperiment(configObj, feature, userId, attributes, options);
   decideReasons.push(...decisionVariation.reasons);
   var experimentDecision = decisionVariation.result;
 
@@ -457,7 +464,8 @@ DecisionService.prototype.getVariationForFeature = function(configObj, feature, 
   };
 };
 
-DecisionService.prototype._getVariationForFeatureExperiment = function(configObj, feature, userId, attributes) {
+
+DecisionService.prototype._getVariationForFeatureExperiment = function(configObj, feature, userId, attributes, options) {
   var decideReasons = [];
   var experiment = null;
   var variationKey = null;
@@ -468,7 +476,7 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(configObj
     if (group) {
       experiment = this._getExperimentInGroup(configObj, group, userId);
       if (experiment && feature.experimentIds.indexOf(experiment.id) !== -1) {
-        decisionVariation = this.getVariation(configObj, experiment.key, userId, attributes);
+        decisionVariation = this.getVariation(configObj, experiment.key, userId, attributes, options);
         decideReasons.push(...decisionVariation.reasons);
         variationKey = decisionVariation.result;
       }
@@ -478,7 +486,7 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(configObj
     // with one experiment, so we look at the first experiment ID only
     experiment = projectConfig.getExperimentFromId(configObj, feature.experimentIds[0], this.logger);
     if (experiment) {
-      decisionVariation = this.getVariation(configObj, experiment.key, userId, attributes);
+      decisionVariation = this.getVariation(configObj, experiment.key, userId, attributes, options);
       decideReasons.push(...decisionVariation.reasons);
       variationKey = decisionVariation.result;
     }

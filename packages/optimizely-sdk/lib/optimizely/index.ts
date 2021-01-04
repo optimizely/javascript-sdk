@@ -1490,7 +1490,8 @@ export default class Optimizely {
       configObj,
       feature,
       userId,
-      attributes
+      attributes,
+      allDecideOptions,
     );
     reasons.push(...decisionVariation.reasons);
     const decisionObj = decisionVariation.result;

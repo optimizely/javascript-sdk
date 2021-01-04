@@ -1364,9 +1364,15 @@ describe('lib/core/decision_service', function() {
               decisionSource: DECISION_SOURCES.FEATURE_TEST,
             };
             assert.deepEqual(decision, expectedDecision);
-            sinon.assert.calledWithExactly(getVariationStub, configObj, 'testing_my_feature', 'user1', {
-              test_attribute: 'test_value',
-            });
+            sinon.assert.calledWithExactly(
+              getVariationStub,
+              configObj,
+              'testing_my_feature', 'user1',
+              {
+                test_attribute: 'test_value',
+              },
+              {}
+            );
           });
         });
 

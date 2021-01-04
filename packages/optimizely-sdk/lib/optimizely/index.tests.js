@@ -5621,6 +5621,50 @@ describe('lib/optimizely', function() {
           );
         });
       });
+
+      describe('with IGNORE_USER_PROFILE_SERVICE flag in decide options', function() {
+        it('should bypass user profile service', function() {
+          var flagKey = 'feature_2';           // embedding experiment: 'exp_no_audience'
+          var variationId1 = '10418551353';
+          var variationId2 = '10418510624';
+          var variationKey1 = 'variation_with_traffic';
+          var variationKey2 = 'variation_no_traffic';
+          var mockUserProfileServiceInstance = {
+            lookup: sinon.stub().returns({
+              user_id: userId,
+              experiment_bucket_map: {
+                '10420810910': { // 'exp_no_audience'
+                  variation_id: variationId2,
+                },
+              },
+            }),
+            save: sinon.stub()
+          };
+          var optlyInstanceWithUserProfile = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestDecideProjectConfig(),
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            jsonSchemaValidator: jsonSchemaValidator,
+            userProfileService: mockUserProfileServiceInstance,
+            logger: createdLogger,
+            isValidInstance: true,
+            eventBatchSize: 1,
+          });
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstanceWithUserProfile,
+            userId
+          });
+          var decision1 = optlyInstanceWithUserProfile.decide(user, flagKey);
+          // should return variationId2 set by UPS
+          assert.equal(variationKey2, decision1.variationKey);
+          var decision2 = optlyInstanceWithUserProfile.decide(user, flagKey, [ OptimizelyDecideOptions.IGNORE_USER_PROFILE_SERVICE ]);
+          // should ignore variationId2 set by UPS and return variationId1
+          assert.equal(variationKey1, decision2.variationKey);
+          // also should not save either
+          sinon.assert.notCalled(mockUserProfileServiceInstance.save);
+        });
+      });
     });
 
     describe('#decideForKeys', function() {
@@ -5704,7 +5748,7 @@ describe('lib/optimizely', function() {
       it('should return decision results map with only enabled flags when ENABLED_FLAGS_ONLY flag is passed in and dispatch events', function() {
         var flagKey1 = 'feature_2';
         var flagKey2 = 'feature_3';
-        var user = optlyInstance.createUserContext(userId, {"gender": "female"});
+        var user = optlyInstance.createUserContext(userId, { gender: 'female' });
         var expectedVariables = optlyInstance.getAllFeatureVariables(flagKey1, userId);
         var decisionsMap = optlyInstance.decideForKeys(user, [ flagKey1, flagKey2 ], [ OptimizelyDecideOptions.ENABLED_FLAGS_ONLY ]);
         var decision = decisionsMap[flagKey1];
@@ -5794,7 +5838,7 @@ describe('lib/optimizely', function() {
         it('should return decision results map with only enabled flags when ENABLED_FLAGS_ONLY flag is passed in and dispatch events', function() {
           var flagKey1 = 'feature_1';
           var flagKey2 = 'feature_2';
-          var user = optlyInstance.createUserContext(userId, {"gender": "female"});
+          var user = optlyInstance.createUserContext(userId, { gender: 'female' });
           var expectedVariables1 = optlyInstance.getAllFeatureVariables(flagKey1, userId);
           var expectedVariables2 = optlyInstance.getAllFeatureVariables(flagKey2, userId);
           var decisionsMap = optlyInstance.decideAll(user, [ OptimizelyDecideOptions.ENABLED_FLAGS_ONLY ]);
@@ -5849,7 +5893,7 @@ describe('lib/optimizely', function() {
         it('should return decision results map with only enabled flags and dispatch events', function() {
           var flagKey1 = 'feature_1';
           var flagKey2 = 'feature_2';
-          var user = optlyInstance.createUserContext(userId, {"gender": "female"});
+          var user = optlyInstance.createUserContext(userId, { gender: 'female' });
           var expectedVariables1 = optlyInstance.getAllFeatureVariables(flagKey1, userId);
           var expectedVariables2 = optlyInstance.getAllFeatureVariables(flagKey2, userId);
           var decisionsMap = optlyInstance.decideAll(user);
@@ -5882,7 +5926,7 @@ describe('lib/optimizely', function() {
         it('should return decision results map with only enabled flags and excluded variables when EXCLUDE_VARIABLES_FLAG is passed in', function() {
           var flagKey1 = 'feature_1';
           var flagKey2 = 'feature_2';
-          var user = optlyInstance.createUserContext(userId, {"gender": "female"});
+          var user = optlyInstance.createUserContext(userId, { gender: 'female' });
           var decisionsMap = optlyInstance.decideAll(user, [ OptimizelyDecideOptions.EXCLUDE_VARIABLES ]);
           var decision1 = decisionsMap[flagKey1];
           var decision2 = decisionsMap[flagKey2];

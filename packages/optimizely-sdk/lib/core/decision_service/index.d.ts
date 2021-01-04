@@ -60,19 +60,21 @@ export interface DecisionService {
    * experiment properties (both objects), as well as a decisionSource property.
    * decisionSource indicates whether the decision was due to a rollout or an
    * experiment.
-   * @param   {ProjectConfig}     configObj         The parsed project configuration object
-   * @param   {FeatureFlag}       feature           A feature flag object from project configuration
-   * @param   {string}            userId            A string identifying the user, for bucketing
-   * @param   {unknown}           attributes        Optional user attributes
-   * @return  {DecisionResponse}  DecisionResponse  DecisionResponse containing an object with experiment, variation, and decisionSource
-   *                                                properties and the decide reasons. If the user was not bucketed into a variation, the
-   *                                                variation property in decision object is null.
+   * @param   {ProjectConfig}             configObj         The parsed project configuration object
+   * @param   {FeatureFlag}               feature           A feature flag object from project configuration
+   * @param   {string}                    userId            A string identifying the user, for bucketing
+   * @param   {unknown}                   attributes        Optional user attributes
+   * @param   {[key: string]: boolean}    options           Map of decide options
+   * @return  {DecisionResponse}          DecisionResponse  DecisionResponse containing an object with experiment, variation, and decisionSource
+   *                                                        properties and the decide reasons. If the user was not bucketed into a variation, the
+   *                                                        variation property in decision object is null.
    */
   getVariationForFeature(
     configObj: ProjectConfig,
     feature: FeatureFlag,
     userId: string,
-    attributes: unknown
+    attributes: unknown,
+    options?: { [key: string]: boolean }
   ): DecisionResponse<DecisionObj>;
 
   /**
