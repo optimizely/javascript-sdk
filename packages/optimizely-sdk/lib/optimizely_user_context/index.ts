@@ -14,7 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import Optimizely from '../../lib/optimizely';
-import { UserAttributes, OptimizelyDecideOptions } from '../../lib/shared_types';
+import { UserAttributes, OptimizelyDecideOptions, EventTags } from '../../lib/shared_types';
 import { OptimizelyDecision } from '../optimizely_decision';
 
 export default class OptimizelyUserContext {
@@ -98,5 +98,14 @@ export default class OptimizelyUserContext {
   ): { [key: string]: OptimizelyDecision } {
 
     return this.optimizely.decideAll(this, options);
+  }
+
+  /**
+   * Tracks an event.
+   * @param     {string}                     eventName The event name.
+   * @param     {EventTags}                  eventTags An optional map of event tag names to event tag values.
+   */
+  trackEvent(eventName: string, eventTags?: EventTags): void {
+    this.optimizely.track(eventName, this.userId, this.attributes, eventTags);
   }
 }
