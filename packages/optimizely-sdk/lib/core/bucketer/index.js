@@ -45,15 +45,19 @@ var RANDOM_POLICY = 'random';
  * @param  {string}         bucketerParams.varationIdMap[].key
  * @param  {Object}         bucketerParams.logger
  * @param  {string}         bucketerParams.bucketingId
- * @return Variation ID that user has been bucketed into, null if user is not bucketed into any experiment
+ * @return {Object}         DecisionResponse                           An object containing variation ID that user has been bucketed into,
+ *                                                                     null if user is not bucketed into any experiment and decide reasons.
  */
 export var bucket = function(bucketerParams) {
+  var decideReasons = [];
   // Check if user is in a random group; if so, check if user is bucketed into a specific experiment
   var experiment = bucketerParams.experimentKeyMap[bucketerParams.experimentKey];
   var groupId = experiment['groupId'];
   if (groupId) {
     var group = bucketerParams.groupIdMap[groupId];
     if (!group) {
+      var invalidGroupIdMessage = sprintf(ERROR_MESSAGES.INVALID_GROUP_ID, MODULE_NAME, groupId);
+      decideReasons.push(invalidGroupIdMessage);
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_GROUP_ID, MODULE_NAME, groupId));
     }
     if (group.policy === RANDOM_POLICY) {
@@ -73,7 +77,11 @@ export var bucket = function(bucketerParams) {
           groupId
         );
         bucketerParams.logger.log(LOG_LEVEL.INFO, notbucketedInAnyExperimentLogMessage);
-        return null;
+        decideReasons.push(notbucketedInAnyExperimentLogMessage);
+        return {
+          result: null,
+          reasons: decideReasons,
+        };
       }
 
       // Return if user is bucketed into a different experiment than the one specified
@@ -86,7 +94,11 @@ export var bucket = function(bucketerParams) {
           groupId
         );
         bucketerParams.logger.log(LOG_LEVEL.INFO, notBucketedIntoExperimentOfGroupLogMessage);
-        return null;
+        decideReasons.push(notBucketedIntoExperimentOfGroupLogMessage);
+        return {
+          result: null,
+          reasons: decideReasons,
+        };
       }
 
       // Continue bucketing if user is bucketed into specified experiment
@@ -98,6 +110,7 @@ export var bucket = function(bucketerParams) {
         groupId
       );
       bucketerParams.logger.log(LOG_LEVEL.INFO, bucketedIntoExperimentOfGroupLogMessage);
+      decideReasons.push(bucketedIntoExperimentOfGroupLogMessage);
     }
   }
   var bucketingId = sprintf('%s%s', bucketerParams.bucketingId, bucketerParams.experimentId);
@@ -110,6 +123,7 @@ export var bucket = function(bucketerParams) {
     bucketerParams.userId
   );
   bucketerParams.logger.log(LOG_LEVEL.DEBUG, bucketedUserLogMessage);
+  decideReasons.push(bucketedUserLogMessage);
 
   var entityId = this._findBucket(bucketValue, bucketerParams.trafficAllocationConfig);
 
@@ -117,11 +131,18 @@ export var bucket = function(bucketerParams) {
     if (entityId) {
       var invalidVariationIdLogMessage = sprintf(LOG_MESSAGES.INVALID_VARIATION_ID, MODULE_NAME);
       bucketerParams.logger.log(LOG_LEVEL.WARNING, invalidVariationIdLogMessage);
+      decideReasons.push(invalidVariationIdLogMessage);
     }
-    return null;
+    return {
+      result: null,
+      reasons: decideReasons,
+    };
   }
 
-  return entityId;
+  return {
+    result: entityId,
+    reasons: decideReasons,
+  };
 };
 
 /**
