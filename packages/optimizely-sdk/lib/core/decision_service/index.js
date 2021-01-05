@@ -21,6 +21,7 @@ import * as enums from '../../utils/enums';
 import projectConfig from '../project_config';
 import AudienceEvaluator from '../audience_evaluator';
 import * as stringValidator from '../../utils/string_value_validator';
+import DecisionResponse from '../decision_response';
 
 var MODULE_NAME = 'DECISION_SERVICE';
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
@@ -55,12 +56,12 @@ function DecisionService(options) {
 
 /**
  * Gets variation where visitor will be bucketed.
- * @param  {Object}      configObj         The parsed project configuration object
- * @param  {string}      experimentKey
- * @param  {string}      userId
- * @param  {Object}      attributes
- * @return {Object}      DecisionResonse   An object containing the variation the user is bucketed into
- *                                         and the decide reasons.
+ * @param  {Object}                configObj         The parsed project configuration object
+ * @param  {string}                experimentKey
+ * @param  {string}                userId
+ * @param  {Object}                attributes
+ * @return {DecisionResponse}      DecisionResonse   DecisionResonse containing the variation the user is bucketed into
+ *                                                   and the decide reasons.
  */
 DecisionService.prototype.getVariation = function(configObj, experimentKey, userId, attributes) {
   // by default, the bucketing ID should be the user ID
@@ -71,38 +72,29 @@ DecisionService.prototype.getVariation = function(configObj, experimentKey, user
     var experimentNotRunningLogMessage = sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey);
     this.logger.log(LOG_LEVEL.INFO, experimentNotRunningLogMessage);
     decideReasons.push(experimentNotRunningLogMessage);
-    return {
-      result: null,
-      reasons: decideReasons,
-    };
+    return new DecisionResponse(null, reasons);
   }
   var experiment = configObj.experimentKeyMap[experimentKey];
   var decisionForcedVariation = this.getForcedVariation(configObj, experimentKey, userId);
-  decideReasons.push(...decisionForcedVariation.reasons);
-  var forcedVariationKey = decisionForcedVariation.result;
+  decideReasons.push(...decisionForcedVariation.getReasons());
+  var forcedVariationKey = decisionForcedVariation.getResult();
 
   if (forcedVariationKey) {
-    return {
-      result: forcedVariationKey,
-      reasons: decideReasons,
-    };
+    return new DecisionResponse(forcedVariationKey, decideReasons);
   }
   var decisionWhitelistedVariation = this.__getWhitelistedVariation(experiment, userId);
-  decideReasons.push(...decisionWhitelistedVariation.reasons);
-  var variation = decisionWhitelistedVariation.result;
+  decideReasons.push(...decisionWhitelistedVariation.getReasons());
+  var variation = decisionWhitelistedVariation.getResult();
 
   if (variation) {
-    return {
-      result: variation.key,
-      reasons: decideReasons,
-    };
+    return new DecisionResponse(variation.key, decideReasons);
   }
 
   // check for sticky bucketing
   var experimentBucketMap = this.__resolveExperimentBucketMap(userId, attributes);
   var decisionStoredVariation = this.__getStoredVariation(configObj, experiment, userId, experimentBucketMap);
-  variation = decisionStoredVariation.result;
-  decideReasons.push(...decisionStoredVariation.reasons);
+  variation = decisionStoredVariation.getResult();
+  decideReasons.push(...decisionStoredVariation.getReasons());
   if (variation) {
     var returningStoredVariationMessage = sprintf(
       LOG_MESSAGES.RETURNING_STORED_VARIATION,
@@ -116,10 +108,7 @@ DecisionService.prototype.getVariation = function(configObj, experimentKey, user
       returningStoredVariationMessage
     );
     decideReasons.push(returningStoredVariationMessage);
-    return {
-      result: variation.key,
-      reasons: decideReasons,
-    };
+    return new DecisionResponse(variation.key, decideReasons);
   }
 
   // Perform regular targeting and bucketing
@@ -132,16 +121,13 @@ DecisionService.prototype.getVariation = function(configObj, experimentKey, user
     );
     this.logger.log(LOG_LEVEL.INFO, userDoesNotMeetConditionsLogMessage);
     decideReasons.push(userDoesNotMeetConditionsLogMessage);
-    return {
-      result: null,
-      reasons: decideReasons,
-    };
+    return new DecisionResponse(null, decideReasons);
   }
 
   var bucketerParams = this.__buildBucketerParams(configObj, experimentKey, bucketingId, userId);
   var decisionVariation = bucketer.bucket(bucketerParams);
-  decideReasons.push(...decisionVariation.reasons);
-  var variationId = decisionVariation.result;
+  decideReasons.push(...decisionVariation.getReasons());
+  var variationId = decisionVariation.getResult();
   variation = configObj.variationIdMap[variationId];
   if (!variation) {
     var userHasNoVariationLogMessage = sprintf(
@@ -152,10 +138,7 @@ DecisionService.prototype.getVariation = function(configObj, experimentKey, user
     );
     this.logger.log(LOG_LEVEL.DEBUG, userHasNoVariationLogMessage);
     decideReasons.push(userHasNoVariationLogMessage);
-    return {
-      result: null,
-      reasons: decideReasons,
-    };
+    return new DecisionResponse(null, decideReasons);
   }
 
   var userInVariationLogMessage = sprintf(
@@ -170,10 +153,7 @@ DecisionService.prototype.getVariation = function(configObj, experimentKey, user
   // persist bucketing
   this.__saveUserProfile(experiment, variation, userId, experimentBucketMap);
 
-  return {
-    result: variation.key,
-    reasons: decideReasons,
-  };
+  return new DecisionResponse(variation.key, decideReasons);
 };
 
 /**
@@ -201,10 +181,10 @@ DecisionService.prototype.__checkIfExperimentIsActive = function(configObj, expe
 
 /**
  * Checks if user is whitelisted into any variation and return that variation if so
- * @param  {Object} experiment
- * @param  {string} userId
- * @return {Object} DecisionResponse  An object containing the forced variation if it exists
- *                                    for user ID and the decide reasons.
+ * @param  {Object}           experiment
+ * @param  {string}           userId
+ * @return {DecisionResponse} DecisionResponse containing the forced variation if it exists
+ *                            for user ID and the decide reasons.
  */
 DecisionService.prototype.__getWhitelistedVariation = function(experiment, userId) {
   var decideReasons = [];
@@ -219,10 +199,7 @@ DecisionService.prototype.__getWhitelistedVariation = function(experiment, userI
       );
       this.logger.log(LOG_LEVEL.INFO, forcedBucketingSucceededMessageLog);
       decideReasons.push(forcedBucketingSucceededMessageLog);
-      return {
-        result: experiment.variationKeyMap[forcedVariationKey],
-        reasons: decideReasons,
-      }
+      return new DecisionResponse(experiment.variationKeyMap[forcedVariationKey], decideReasons);
     } else {
       var forcedBucketingFailedMessageLog = sprintf(
         LOG_MESSAGES.FORCED_BUCKETING_FAILED,
@@ -232,17 +209,11 @@ DecisionService.prototype.__getWhitelistedVariation = function(experiment, userI
       );
       this.logger.log(LOG_LEVEL.ERROR, forcedBucketingFailedMessageLog);
       decideReasons.push(forcedBucketingFailedMessageLog);
-      return {
-        result: null,
-        reasons: decideReasons,
-      };
+      return new DecisionResponse(null, decideReasons);
     }
   }
 
-  return {
-    result: null,
-    reasons: decideReasons,
-  };
+  return new DecisionResponse(null, decideReasons);
 };
 
 /**
@@ -307,13 +278,13 @@ DecisionService.prototype.__buildBucketerParams = function(configObj, experiment
 
 /**
  * Pull the stored variation out of the experimentBucketMap for an experiment/userId
- * @param  {Object} configObj           The parsed project configuration object
- * @param  {Object} experiment
- * @param  {String} userId
- * @param  {Object} experimentBucketMap mapping experiment => { variation_id: <variationId> }
- * @return {Object} DecisionResponse    An object containing the stored variation or null if the
- *                                      user profile does not have one for the given experiment
- *                                      and the decide reasons.
+ * @param  {Object}            configObj            The parsed project configuration object
+ * @param  {Object}            experiment
+ * @param  {String}            userId
+ * @param  {Object}            experimentBucketMap  mapping experiment => { variation_id: <variationId> }
+ * @return {DecisionResponse}  DecisionResponse     DecisionResponse containing the stored variation or null if the
+ *                                                  user profile does not have one for the given experiment
+ *                                                  and the decide reasons.
  */
 DecisionService.prototype.__getStoredVariation = function(configObj, experiment, userId, experimentBucketMap) {
   var decideReasons = [];
@@ -321,10 +292,10 @@ DecisionService.prototype.__getStoredVariation = function(configObj, experiment,
     var decision = experimentBucketMap[experiment.id];
     var variationId = decision.variation_id;
     if (configObj.variationIdMap.hasOwnProperty(variationId)) {
-      return {
-        result: configObj.variationIdMap[decision.variation_id],
-        reasons: decideReasons,
-      };
+      return new DecisionResponse(
+        configObj.variationIdMap[decision.variation_id],
+        decideReasons
+      );
     } else {
       var savedVariationNotFoundMessage = sprintf(
         LOG_MESSAGES.SAVED_VARIATION_NOT_FOUND,
@@ -336,13 +307,11 @@ DecisionService.prototype.__getStoredVariation = function(configObj, experiment,
         LOG_LEVEL.INFO,
         savedVariationNotFoundMessage
       );
+      decideReasons.push(savedVariationNotFoundMessage);
     }
   }
 
-  return {
-    result: null,
-    reasons: decideReasons,
-  };
+  return new DecisionResponse(null, decideReasons);
 };
 
 /**
@@ -438,13 +407,16 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(configObj
   var decideReasons = [];
   var experiment = null;
   var variationKey = null;
+  let decisionVariation;
 
   if (feature.hasOwnProperty('groupId')) {
     var group = configObj.groupIdMap[feature.groupId];
     if (group) {
       experiment = this._getExperimentInGroup(configObj, group, userId);
       if (experiment && feature.experimentIds.indexOf(experiment.id) !== -1) {
-        variationKey = this.getVariation(configObj, experiment.key, userId, attributes);
+        decisionVariation = this.getVariation(configObj, experiment.key, userId, attributes);
+        decideReasons.push(...decisionVariation.getReasons());
+        variationKey = decisionVariation.getResult();
       }
     }
   } else if (feature.experimentIds.length > 0) {
@@ -452,7 +424,9 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(configObj
     // with one experiment, so we look at the first experiment ID only
     experiment = projectConfig.getExperimentFromId(configObj, feature.experimentIds[0], this.logger);
     if (experiment) {
-      variationKey = this.getVariation(configObj, experiment.key, userId, attributes);
+      decisionVariation = this.getVariation(configObj, experiment.key, userId, attributes);
+      decideReasons.push(...decisionVariation.getReasons());
+      variationKey = decisionVariation.getResult();
     }
   } else {
     var featureHasNoExperimentsMessage = sprintf(LOG_MESSAGES.FEATURE_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.key);
@@ -471,10 +445,7 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(configObj
     decisionSource: DECISION_SOURCES.FEATURE_TEST,
   };
 
-  return {
-    result: variationForFeatureExperiment,
-    reasons: decideReasons,
-  };
+  return new DecisionResponse(variationForFeatureExperiment, decideReasons);
 };
 
 DecisionService.prototype._getExperimentInGroup = function(configObj, group, userId) {
@@ -684,11 +655,11 @@ DecisionService.prototype.__setInForcedVariationMap = function(userId, experimen
 
 /**
  * Gets the forced variation key for the given user and experiment.
- * @param  {Object} configObj         Object representing project configuration
- * @param  {string} experimentKey     Key for experiment.
- * @param  {string} userId            The user Id.
- * @return {Object} DecisionResponse  An object containing variation which the given user and experiment
- *                                    should be forced into and the decide reasons.
+ * @param  {Object}           configObj         Object representing project configuration
+ * @param  {string}           experimentKey     Key for experiment.
+ * @param  {string}           userId            The user Id.
+ * @return {DecisionResponse} DecisionResponse  DecisionResponse containing variation which the given user and experiment
+ *                                              should be forced into and the decide reasons.
  */
 DecisionService.prototype.getForcedVariation = function(configObj, experimentKey, userId) {
   var decideReasons = [];
@@ -698,10 +669,7 @@ DecisionService.prototype.getForcedVariation = function(configObj, experimentKey
     this.logger.log(LOG_LEVEL.DEBUG, userHasNoForcedVariationMessage);
     decideReasons.push(userHasNoForcedVariationMessage);
 
-    return {
-      result: null,
-      reasons: decideReasons,
-    };
+    return new DecisionResponse(null, decideReasons);
   }
 
   var experimentId;
@@ -719,20 +687,14 @@ DecisionService.prototype.getForcedVariation = function(configObj, experimentKey
       this.logger.log(LOG_LEVEL.ERROR, improperlyFormattedExperimentMessage);
       decideReasons.push(improperlyFormattedExperimentMessage);
 
-      return {
-        result: null,
-        reasons: decideReasons,
-      };
+      return new DecisionResponse(null, decideReasons);
     }
   } catch (ex) {
     // catching experiment not in datafile
     this.logger.log(LOG_LEVEL.ERROR, ex.message);
     decideReasons.push(ex.message);
 
-    return {
-      result: null,
-      reasons: decideReasons,
-    };
+    return new DecisionResponse(null, decideReasons);
   }
 
   var variationId = experimentToVariationMap[experimentId];
@@ -748,10 +710,7 @@ DecisionService.prototype.getForcedVariation = function(configObj, experimentKey
       userHasNoForcedVariationForExperimentMessage
     );
     decideReasons.push(userHasNoForcedVariationForExperimentMessage);
-    return {
-      result: null,
-      reasons: decideReasons,
-    };
+    return new DecisionResponse(null, decideReasons);
   }
 
   var variationKey = projectConfig.getVariationKeyFromId(configObj, variationId);
@@ -779,10 +738,7 @@ DecisionService.prototype.getForcedVariation = function(configObj, experimentKey
     decideReasons.push(userHasNoForcedVariationForExperimentMessage);
   }
 
-  return {
-    result: variationKey,
-    reasons: decideReasons,
-  };
+  return new DecisionResponse(variationKey, decideReasons);
 };
 
 /**

@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2020, Optimizely, Inc. and contributors                   *
+ * Copyright 2021, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -13,26 +13,26 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import OptimizelyUserContext from '../optimizely_user_context';
+export default class DecisionResponse<T> {
+  private result: T;
+  private reasons: string[];
 
-export interface OptimizelyDecision {
-  variationKey: string | null;
-  enabled: boolean;
-  variables: { [variableKey: string]: unknown };
-  ruleKey: string | null;
-  flagKey: string;
-  userContext: OptimizelyUserContext;
-  reasons: string[];
-}
+  constructor({
+    result,
+    reasons,
+  }: {
+    result: T;
+    reasons: string[];
+  }) {
+    this.result = result;
+    this.reasons = reasons;
+  }
 
-export function newErrorDecision(key: string, user: OptimizelyUserContext, reasons: string[]): OptimizelyDecision {
-  return {
-    variationKey: null,
-    enabled: false,
-    variables: {},
-    ruleKey: null,
-    flagKey: key,
-    userContext: user,
-    reasons: reasons,
-  };
+  getResult(): T {
+    return this.result;
+  }
+
+  getReasons(): string[] {
+    return this.reasons;
+  }
 }
