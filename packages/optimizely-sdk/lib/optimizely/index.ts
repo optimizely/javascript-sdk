@@ -577,7 +577,7 @@ export default class Optimizely {
     }
 
     try {
-      return this.decisionService.getForcedVariation(configObj, experimentKey, userId);
+      return this.decisionService.getForcedVariation(configObj, experimentKey, userId).getResult();
     } catch (ex) {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       this.errorHandler.handleError(ex);

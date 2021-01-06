@@ -87,7 +87,11 @@ export interface DecisionService {
    * @param  {string}         userId         The user Id.
    * @return {string|null}    Variation key that specifies the variation which the given user and experiment should be forced into.
    */
-  getForcedVariation(configObj: ProjectConfig, experimentKey: string, userId: string): string | null;
+  getForcedVariation(
+    configObj: ProjectConfig,
+    experimentKey: string,
+    userId: string
+  ): DecisionResponse<string | null>;
 
   /**
    * Sets the forced variation for a user in a given experiment

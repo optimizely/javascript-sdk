@@ -46,8 +46,8 @@ var RANDOM_POLICY = 'random';
  * @param  {string}             bucketerParams.varationIdMap[].key
  * @param  {Object}             bucketerParams.logger
  * @param  {string}             bucketerParams.bucketingId
- * @return {DecisionResponse}   DecisionResponse                           DecisionResponse containing variation ID that user has been bucketed into,
- *                                                                         null if user is not bucketed into any experiment and decide reasons.
+ * @return {DecisionResponse}   DecisionResponse                         DecisionResponse containing variation ID that user has been bucketed into,
+ *                                                                       null if user is not bucketed into any experiment and the decide reasons.
  */
 export var bucket = function(bucketerParams) {
   var decideReasons = [];
