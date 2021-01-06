@@ -28,7 +28,7 @@ import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
-import { SDKOptions } from './shared_types';
+import { SDKOptions, OptimizelyDecideOptions } from './shared_types';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
@@ -116,6 +116,7 @@ export {
   setLogHandler as setLogger,
   setLogLevel,
   createInstance,
+  OptimizelyDecideOptions,
 };
 
 export default {
@@ -126,4 +127,5 @@ export default {
   setLogger: setLogHandler,
   setLogLevel,
   createInstance,
+  OptimizelyDecideOptions,
 };

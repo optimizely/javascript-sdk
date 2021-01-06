@@ -28,7 +28,7 @@ import defaultErrorHandler from './plugins/error_handler';
 import loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
-import { SDKOptions } from './shared_types';
+import { SDKOptions, OptimizelyDecideOptions } from './shared_types';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -112,6 +112,7 @@ export {
   setLogHandler as setLogger,
   setLogLevel,
   createInstance,
+  OptimizelyDecideOptions,
 };
 
 export default {
@@ -122,4 +123,5 @@ export default {
   setLogger: setLogHandler,
   setLogLevel,
   createInstance,
+  OptimizelyDecideOptions,
 };
