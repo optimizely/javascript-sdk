@@ -46,6 +46,7 @@ describe('lib/core/decision_service', function() {
     var decisionServiceInstance;
     var mockLogger = logger.createLogger({ logLevel: LOG_LEVEL.INFO });
     var bucketerStub;
+    var fakeDecisionResponse;
 
     beforeEach(function() {
       bucketerStub = sinon.stub(bucketer, 'bucket');
@@ -62,10 +63,14 @@ describe('lib/core/decision_service', function() {
 
     describe('#getVariation', function() {
       it('should return the correct variation for the given experiment key and user ID for a running experiment', function() {
-        bucketerStub.returns('111128'); // ID of the 'control' variation from `test_data`
+        fakeDecisionResponse = {
+          getResult: sinon.stub().returns('111128'),
+          getReasons: sinon.stub().returns([])
+        }
+        bucketerStub.returns(fakeDecisionResponse); // contains variation ID of the 'control' variation from `test_data`
         assert.strictEqual(
           'control',
-          decisionServiceInstance.getVariation(configObj, 'testExperiment', 'decision_service_user')
+          decisionServiceInstance.getVariation(configObj, 'testExperiment', 'decision_service_user').getResult()
         );
         sinon.assert.calledOnce(bucketerStub);
       });

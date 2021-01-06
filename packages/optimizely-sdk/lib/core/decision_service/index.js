@@ -72,7 +72,7 @@ DecisionService.prototype.getVariation = function(configObj, experimentKey, user
     var experimentNotRunningLogMessage = sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey);
     this.logger.log(LOG_LEVEL.INFO, experimentNotRunningLogMessage);
     decideReasons.push(experimentNotRunningLogMessage);
-    return new DecisionResponse(null, reasons);
+    return new DecisionResponse(null, decideReasons);
   }
   var experiment = configObj.experimentKeyMap[experimentKey];
   var decisionForcedVariation = this.getForcedVariation(configObj, experimentKey, userId);
@@ -615,7 +615,7 @@ DecisionService.prototype._getVariationForRollout = function(configObj, feature,
       LOG_LEVEL.DEBUG,
       userMeetsConditionsForEveryoneTargetingRuleMessage
     );
-    decideReasons.push(userMeetsConditionsForEveryoneElseTargetingRuleMessage);
+    decideReasons.push(userMeetsConditionsForEveryoneTargetingRuleMessage);
     bucketerParams = this.__buildBucketerParams(configObj, everyoneElseRule.key, bucketingId, userId);
     decisionVariation = bucketer.bucket(bucketerParams);
     decideReasons.push(...decisionVariation.getReasons());
@@ -776,7 +776,7 @@ DecisionService.prototype.getForcedVariation = function(configObj, experimentKey
 
   var variationId = experimentToVariationMap[experimentId];
   if (!variationId) {
-    var userHasNoForcedVariationForExperimentMessage = sprintf(
+    userHasNoForcedVariationForExperimentMessage = sprintf(
       LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
       MODULE_NAME,
       experimentKey,

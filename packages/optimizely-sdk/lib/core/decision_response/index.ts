@@ -17,13 +17,10 @@ export default class DecisionResponse<T> {
   private result: T;
   private reasons: string[];
 
-  constructor({
-    result,
-    reasons,
-  }: {
-    result: T;
-    reasons: string[];
-  }) {
+  constructor(
+    result: T,
+    reasons: string[],
+  ) {
     this.result = result;
     this.reasons = reasons;
   }
