@@ -5080,7 +5080,7 @@ describe('lib/optimizely', function() {
       });
 
       describe('with INCLUDE_REASONS flag in default decide options', function() {
-        it('should include reason of experiment is not running', function() {
+        it('should include reason when experiment is not running', function() {
           optlyInstance = new Optimizely({
             clientEngine: 'node-sdk',
             datafile: testData.getTestDecideProjectConfig(),
@@ -5092,8 +5092,6 @@ describe('lib/optimizely', function() {
             eventBatchSize: 1,
             defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
           });
-
-          sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
 
           var newConfig = optlyInstance.projectConfigManager.getConfig();
           newConfig.experiments[0].status = "NotRunning";
@@ -5107,7 +5105,7 @@ describe('lib/optimizely', function() {
           expect(decision.reasons).to.include(sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'exp_with_audience'));
         });
 
-        it('should include reason of returning stored variation', function() {
+        it('should include reason when returning stored variation from user profile', function() {
           var flagKey = 'feature_2';
           var variationKey2 = 'variation_no_traffic';
           var variationId2 = '10418510624';
@@ -5135,18 +5133,52 @@ describe('lib/optimizely', function() {
             eventBatchSize: 1,
             defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
           });
+
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
             userId
           });
           var decision = optlyInstance.decide(user, flagKey);
-          console.log('***decision****', decision);
           expect(decision.reasons).to.include(sprintf(
             LOG_MESSAGES.RETURNING_STORED_VARIATION,
             'DECISION_SERVICE',
             variationKey2,
             experimentKey,
-            userId)
+            userId
+          )
+          );
+        });
+
+        it('should include reason when user is in forced variation', function() {
+          var flagKey = 'feature_1';
+          var variationKey = 'b';
+
+          optlyInstance = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestDecideProjectConfig(),
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            isValidInstance: true,
+            eventBatchSize: 1,
+            defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
+          });
+
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].forcedVariations[userId] = variationKey;
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(sprintf(
+            LOG_MESSAGES.USER_FORCED_IN_VARIATION,
+            'DECISION_SERVICE',
+            userId,
+            variationKey
+          )
           );
         });
       });
