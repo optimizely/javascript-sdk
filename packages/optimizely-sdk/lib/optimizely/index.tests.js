@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { assert } from 'chai';
+import { assert, expect } from 'chai';
 import sinon from 'sinon';
 import { sprintf, NOTIFICATION_TYPES } from '@optimizely/js-sdk-utils';
 import eventProcessor from '../core/event_processor';
@@ -5076,6 +5076,41 @@ describe('lib/optimizely', function() {
             }
           ]
           assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
+        });
+      });
+
+      describe('with INCLUDE_REASONS flag in default decide options', function() {
+        beforeEach(function() {
+          optlyInstance = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestDecideProjectConfig(),
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            isValidInstance: true,
+            eventBatchSize: 1,
+            defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
+          });
+
+          sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
+        });
+
+        afterEach(function() {
+          optlyInstance.notificationCenter.sendNotifications.restore();
+        });
+
+        it('should include reason when experiment is not running', function() {
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].status = "NotRunning";
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var flagKey = "feature_1";
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'exp_with_audience'));
         });
       });
     });

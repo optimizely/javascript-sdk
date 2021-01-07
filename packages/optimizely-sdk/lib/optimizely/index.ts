@@ -1486,12 +1486,14 @@ export default class Optimizely {
     const userId = user.getUserId();
     const attributes = user.getAttributes();
     const allDecideOptions = this.getAllDecideOptions(options);
-    const decisionObj = this.decisionService.getVariationForFeature(
+    const decisionVariation = this.decisionService.getVariationForFeature(
       configObj,
       feature,
       userId,
       attributes
-    ).getResult();
+    );
+    reasons.push(...decisionVariation.getReasons());
+    const decisionObj = decisionVariation.getResult();
     const decisionSource = decisionObj.decisionSource;
     const experimentKey = decision.getExperimentKey(decisionObj);
     const variationKey = decision.getVariationKey(decisionObj);
@@ -1540,13 +1542,15 @@ export default class Optimizely {
     }
 
     const shouldIncludeReasons = allDecideOptions[OptimizelyDecideOptions.INCLUDE_REASONS];
+    const reportedReasons = shouldIncludeReasons ? reasons: [];
+
     const featureInfo = {
       flagKey: key,
       enabled: flagEnabled,
       variationKey: variationKey,
       ruleKey: experimentKey,
       variables: variablesMap,
-      reasons: reasons,
+      reasons: reportedReasons,
       decisionEventDispatched: decisionEventDispatched,
     };
 
@@ -1564,7 +1568,7 @@ export default class Optimizely {
       ruleKey: experimentKey,
       flagKey: key,
       userContext: user,
-      reasons: shouldIncludeReasons ? reasons: [],
+      reasons: reportedReasons,
     };
   }
 
