@@ -5330,6 +5330,35 @@ describe('lib/optimizely', function() {
           )
           );
         });
+
+        it('should include reason when user is not bucketed into targeting rule', function() {
+          var flagKey = 'feature_1';
+
+          optlyInstance = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestDecideProjectConfig(),
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            isValidInstance: true,
+            eventBatchSize: 1,
+            defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
+          });
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          user.setAttribute('browser', 'safari');
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(sprintf(
+            LOG_MESSAGES.USER_NOT_BUCKETED_INTO_TARGETING_RULE,
+            'DECISION_SERVICE',
+            userId,
+            '2'
+          )
+          );
+        });
       });
     });
 

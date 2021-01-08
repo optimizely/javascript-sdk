@@ -264,7 +264,7 @@ DecisionService.prototype.__checkIfUserIsInAudience = function(configObj, experi
     LOG_LEVEL.INFO,
     audienceEvaluationResultCombinedMessage
   );
-  decideReasons.push(evaluatingAudiencesCombinedMessage);
+  decideReasons.push(audienceEvaluationResultCombinedMessage);
 
   return new DecisionResponse(result, decideReasons);
 };
