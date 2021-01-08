@@ -5181,6 +5181,155 @@ describe('lib/optimizely', function() {
           )
           );
         });
+
+        it('should include reason when invalid forced variation found', function() {
+          var flagKey = 'feature_1';
+          var variationKey = 'invalid-key';
+
+          optlyInstance = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestDecideProjectConfig(),
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            isValidInstance: true,
+            eventBatchSize: 1,
+            defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
+          });
+
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].forcedVariations[userId] = variationKey;
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(sprintf(
+            LOG_MESSAGES.FORCED_BUCKETING_FAILED,
+            'DECISION_SERVICE',
+            variationKey,
+            userId
+          )
+          );
+        });
+
+        it('should include reason when user meets conditions for targeting rule', function() {
+          var flagKey = 'feature_1';
+
+          optlyInstance = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestDecideProjectConfig(),
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            isValidInstance: true,
+            eventBatchSize: 1,
+            defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
+          });
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          user.setAttribute('country', 'US');
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(sprintf(
+            LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
+            'DECISION_SERVICE',
+            userId,
+            '1'
+          )
+          );
+        });
+
+        it('should include reason when user does not meet conditions for targeting rule', function() {
+          var flagKey = 'feature_1';
+
+          optlyInstance = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestDecideProjectConfig(),
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            isValidInstance: true,
+            eventBatchSize: 1,
+            defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
+          });
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          user.setAttribute('country', 'CA');
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(sprintf(
+            LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
+            'DECISION_SERVICE',
+            userId,
+            '1'
+          )
+          );
+        });
+
+        it('should include reason when user is bucketed into targeting rule', function() {
+          var flagKey = 'feature_1';
+
+          optlyInstance = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestDecideProjectConfig(),
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            isValidInstance: true,
+            eventBatchSize: 1,
+            defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
+          });
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          user.setAttribute('country', 'US');
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(sprintf(
+            LOG_MESSAGES.USER_IN_ROLLOUT,
+            'DECISION_SERVICE',
+            userId,
+            flagKey
+          )
+          );
+        });
+
+        it('should include reason when user is bucketed into everyone targeting rule', function() {
+          var flagKey = 'feature_1';
+
+          optlyInstance = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestDecideProjectConfig(),
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            isValidInstance: true,
+            eventBatchSize: 1,
+            defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
+          });
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          user.setAttribute('country', 'KO');
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(sprintf(
+            LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
+            'DECISION_SERVICE',
+            userId,
+            'Everyone Else'
+          )
+          );
+        });
       });
     });
 
