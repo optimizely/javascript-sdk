@@ -5110,7 +5110,13 @@ describe('lib/optimizely', function() {
             userId
           });
           var decision = optlyInstance.decide(user, flagKey);
-          expect(decision.reasons).to.include(sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'exp_with_audience'));
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.EXPERIMENT_NOT_RUNNING,
+              'DECISION_SERVICE',
+              'exp_with_audience'
+            )
+          );
         });
 
         it('should include reason when returning stored variation from user profile', function() {
@@ -5146,13 +5152,14 @@ describe('lib/optimizely', function() {
             userId
           });
           var decision = optlyInstanceWithUserProfile.decide(user, flagKey);
-          expect(decision.reasons).to.include(sprintf(
-            LOG_MESSAGES.RETURNING_STORED_VARIATION,
-            'DECISION_SERVICE',
-            variationKey2,
-            experimentKey,
-            userId
-          )
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.RETURNING_STORED_VARIATION,
+              'DECISION_SERVICE',
+              variationKey2,
+              experimentKey,
+              userId
+            )
           );
         });
 
@@ -5167,12 +5174,13 @@ describe('lib/optimizely', function() {
             userId
           });
           var decision = optlyInstance.decide(user, flagKey);
-          expect(decision.reasons).to.include(sprintf(
-            LOG_MESSAGES.USER_FORCED_IN_VARIATION,
-            'DECISION_SERVICE',
-            userId,
-            variationKey
-          )
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_FORCED_IN_VARIATION,
+              'DECISION_SERVICE',
+              userId,
+              variationKey
+            )
           );
         });
 
@@ -5187,12 +5195,13 @@ describe('lib/optimizely', function() {
             userId
           });
           var decision = optlyInstance.decide(user, flagKey);
-          expect(decision.reasons).to.include(sprintf(
-            LOG_MESSAGES.FORCED_BUCKETING_FAILED,
-            'DECISION_SERVICE',
-            variationKey,
-            userId
-          )
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.FORCED_BUCKETING_FAILED,
+              'DECISION_SERVICE',
+              variationKey,
+              userId
+            )
           );
         });
 
@@ -5204,12 +5213,13 @@ describe('lib/optimizely', function() {
           });
           user.setAttribute('country', 'US');
           var decision = optlyInstance.decide(user, flagKey);
-          expect(decision.reasons).to.include(sprintf(
-            LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
-            'DECISION_SERVICE',
-            userId,
-            '1'
-          )
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
+              'DECISION_SERVICE',
+              userId,
+              '1'
+            )
           );
         });
 
@@ -5221,12 +5231,13 @@ describe('lib/optimizely', function() {
           });
           user.setAttribute('country', 'CA');
           var decision = optlyInstance.decide(user, flagKey);
-          expect(decision.reasons).to.include(sprintf(
-            LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
-            'DECISION_SERVICE',
-            userId,
-            '1'
-          )
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
+              'DECISION_SERVICE',
+              userId,
+              '1'
+            )
           );
         });
 
@@ -5238,12 +5249,13 @@ describe('lib/optimizely', function() {
           });
           user.setAttribute('country', 'US');
           var decision = optlyInstance.decide(user, flagKey);
-          expect(decision.reasons).to.include(sprintf(
-            LOG_MESSAGES.USER_IN_ROLLOUT,
-            'DECISION_SERVICE',
-            userId,
-            flagKey
-          )
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_IN_ROLLOUT,
+              'DECISION_SERVICE',
+              userId,
+              flagKey
+            )
           );
         });
 
@@ -5255,12 +5267,13 @@ describe('lib/optimizely', function() {
           });
           user.setAttribute('country', 'KO');
           var decision = optlyInstance.decide(user, flagKey);
-          expect(decision.reasons).to.include(sprintf(
-            LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
-            'DECISION_SERVICE',
-            userId,
-            'Everyone Else'
-          )
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
+              'DECISION_SERVICE',
+              userId,
+              'Everyone Else'
+            )
           );
         });
 
@@ -5272,12 +5285,13 @@ describe('lib/optimizely', function() {
           });
           user.setAttribute('browser', 'safari');
           var decision = optlyInstance.decide(user, flagKey);
-          expect(decision.reasons).to.include(sprintf(
-            LOG_MESSAGES.USER_NOT_BUCKETED_INTO_TARGETING_RULE,
-            'DECISION_SERVICE',
-            userId,
-            '2'
-          )
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_NOT_BUCKETED_INTO_TARGETING_RULE,
+              'DECISION_SERVICE',
+              userId,
+              '2'
+            )
           );
         });
 
@@ -5290,13 +5304,14 @@ describe('lib/optimizely', function() {
             userId
           });
           var decision = optlyInstance.decide(user, flagKey);
-          expect(decision.reasons).to.include(sprintf(
-            LOG_MESSAGES.USER_HAS_VARIATION,
-            'DECISION_SERVICE',
-            userId,
-            variationKey,
-            experimentKey,
-          )
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_HAS_VARIATION,
+              'DECISION_SERVICE',
+              userId,
+              variationKey,
+              experimentKey,
+            )
           );
         });
 
@@ -5313,12 +5328,13 @@ describe('lib/optimizely', function() {
             attributes: { 'age': 25 },
           });
           var decision = optlyInstance.decide(user, flagKey);
-          expect(decision.reasons).to.include(sprintf(
-            LOG_MESSAGES.USER_HAS_NO_VARIATION,
-            'DECISION_SERVICE',
-            userId,
-            experimentKey,
-          )
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_HAS_NO_VARIATION,
+              'DECISION_SERVICE',
+              userId,
+              experimentKey,
+            )
           );
         });
 
@@ -5335,13 +5351,249 @@ describe('lib/optimizely', function() {
             userId,
           });
           var decision = optlyInstance.decide(user, flagKey);
-          expect(decision.reasons).to.include(sprintf(
-            LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
-            'BUCKETER',
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
+              'BUCKETER',
+              userId,
+              experimentKey,
+              groupId
+            )
+          );
+        });
+
+        it('should include reason when user is not attached to any experiment', function() {
+          var flagKey = 'feature_3';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.groups[0].trafficAllocation = [];
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
             userId,
-            experimentKey,
-            groupId
-          )
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.FEATURE_HAS_NO_EXPERIMENTS,
+              'DECISION_SERVICE',
+              flagKey
+            )
+          );
+        });
+
+        it('should include reason when user is not in experiment', function() {
+          var flagKey = 'feature_1';
+          var experimentKey = 'exp_with_audience';
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_NOT_IN_EXPERIMENT,
+              'DECISION_SERVICE',
+              userId,
+              experimentKey
+            )
+          );
+        });
+
+        it('should include reason when condition does not match the audience', function() {
+          var flagKey = 'feature_1';
+          var audienceId = 'invalid_id';
+          var experimentKey = 'exp_with_audience';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].audienceIds = [];
+          newConfig.experiments[0].audienceIds.push(audienceId);
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+              'DECISION_SERVICE',
+              'experiment',
+              experimentKey,
+              'FALSE'
+            )
+          );
+        });
+
+        it('should include reason when evaluating attribute with invalid type', function() {
+          var flagKey = 'feature_1';
+          var audienceId = '13389130056';
+          var experimentKey = 'exp_with_audience';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].audienceIds = [];
+          newConfig.experiments[0].audienceIds.push(audienceId);
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+            attirutes: { 'country': 25 }
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+              'DECISION_SERVICE',
+              'experiment',
+              experimentKey,
+              'FALSE'
+            )
+          );
+        });
+
+        it('should include reason when attribute value is out of range', function() {
+          var flagKey = 'feature_1';
+          var audienceId = 'age_18';
+          var experimentKey = 'exp_with_audience';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].audienceIds = [];
+          newConfig.experiments[0].audienceIds.push(audienceId);
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+            attirutes: { 'age': 10000 }
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+              'DECISION_SERVICE',
+              'experiment',
+              experimentKey,
+              'FALSE'
+            )
+          );
+        });
+
+        it('should include reason when provided invalid type user attribute', function() {
+          var flagKey = 'feature_1';
+          var audienceId = 'invalid_type';
+          var experimentKey = 'exp_with_audience';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].audienceIds = [];
+          newConfig.experiments[0].audienceIds.push(audienceId);
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+            attirutes: { 'age': 25 }
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+              'DECISION_SERVICE',
+              'experiment',
+              experimentKey,
+              'FALSE'
+            )
+          );
+        });
+
+        it('should include reason when audience id is invalid_type', function() {
+          var flagKey = 'feature_1';
+          var audienceId = 'invalid_type';
+          var experimentKey = 'exp_with_audience';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].audienceIds = [];
+          newConfig.experiments[0].audienceIds.push(audienceId);
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+            attirutes: { 'age': 25 }
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+              'DECISION_SERVICE',
+              'experiment',
+              experimentKey,
+              'FALSE'
+            )
+          );
+        });
+
+        it('should include reason when audience id is invalid_match', function() {
+          var flagKey = 'feature_1';
+          var audienceId = 'invalid_match';
+          var experimentKey = 'exp_with_audience';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].audienceIds = [];
+          newConfig.experiments[0].audienceIds.push(audienceId);
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+            attirutes: { 'age': 25 }
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+              'DECISION_SERVICE',
+              'experiment',
+              experimentKey,
+              'FALSE'
+            )
+          );
+        });
+
+        it('should include reason when audience id is nil_value', function() {
+          var flagKey = 'feature_1';
+          var audienceId = 'nil_value';
+          var experimentKey = 'exp_with_audience';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].audienceIds = [];
+          newConfig.experiments[0].audienceIds.push(audienceId);
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+            attirutes: { 'age': 25 }
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+              'DECISION_SERVICE',
+              'experiment',
+              experimentKey,
+              'FALSE'
+            )
+          );
+        });
+
+        it('should include reason when user attributes is missing', function() {
+          var flagKey = 'feature_1';
+          var audienceId = 'age_18';
+          var experimentKey = 'exp_with_audience';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].audienceIds = [];
+          newConfig.experiments[0].audienceIds.push(audienceId);
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+              'DECISION_SERVICE',
+              'experiment',
+              experimentKey,
+              'FALSE'
+            )
           );
         });
       });
