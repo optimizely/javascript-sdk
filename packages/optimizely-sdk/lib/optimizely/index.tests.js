@@ -5290,7 +5290,6 @@ describe('lib/optimizely', function() {
             userId
           });
           var decision = optlyInstance.decide(user, flagKey);
-          console.log(decision.reasons);
           expect(decision.reasons).to.include(sprintf(
             LOG_MESSAGES.USER_HAS_VARIATION,
             'DECISION_SERVICE',
@@ -5314,12 +5313,34 @@ describe('lib/optimizely', function() {
             attributes: { 'age': 25 },
           });
           var decision = optlyInstance.decide(user, flagKey);
-          console.log(decision.reasons);
           expect(decision.reasons).to.include(sprintf(
             LOG_MESSAGES.USER_HAS_NO_VARIATION,
             'DECISION_SERVICE',
             userId,
             experimentKey,
+          )
+          );
+        });
+
+        it('should include reason when user is bucketed into experiment in group', function() {
+          var flagKey = 'feature_3';
+          var experimentId = '10390965532';
+          var experimentKey = 'group_exp_1';
+          var groupId = '13142870430';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.featureFlags[2].experimentIds.push(experimentId);
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(sprintf(
+            LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
+            'BUCKETER',
+            userId,
+            experimentKey,
+            groupId
           )
           );
         });
