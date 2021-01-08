@@ -5080,7 +5080,7 @@ describe('lib/optimizely', function() {
       });
 
       describe('with INCLUDE_REASONS flag in default decide options', function() {
-        it('should include reason when experiment is not running', function() {
+        beforeEach(function() {
           optlyInstance = new Optimizely({
             clientEngine: 'node-sdk',
             datafile: testData.getTestDecideProjectConfig(),
@@ -5093,6 +5093,14 @@ describe('lib/optimizely', function() {
             defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
           });
 
+          sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
+        });
+
+        afterEach(function() {
+          optlyInstance.notificationCenter.sendNotifications.restore();
+        });
+
+        it('should include reason when experiment is not running', function() {
           var newConfig = optlyInstance.projectConfigManager.getConfig();
           newConfig.experiments[0].status = "NotRunning";
           optlyInstance.projectConfigManager.getConfig.returns(newConfig);
@@ -5121,7 +5129,7 @@ describe('lib/optimizely', function() {
             }),
             save: sinon.stub()
           };
-          optlyInstance = new Optimizely({
+          var optlyInstanceWithUserProfile = new Optimizely({
             clientEngine: 'node-sdk',
             datafile: testData.getTestDecideProjectConfig(),
             errorHandler: errorHandler,
@@ -5133,12 +5141,11 @@ describe('lib/optimizely', function() {
             eventBatchSize: 1,
             defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
           });
-
           var user = new OptimizelyUserContext({
-            optimizely: optlyInstance,
+            optimizely: optlyInstanceWithUserProfile,
             userId
           });
-          var decision = optlyInstance.decide(user, flagKey);
+          var decision = optlyInstanceWithUserProfile.decide(user, flagKey);
           expect(decision.reasons).to.include(sprintf(
             LOG_MESSAGES.RETURNING_STORED_VARIATION,
             'DECISION_SERVICE',
@@ -5152,19 +5159,6 @@ describe('lib/optimizely', function() {
         it('should include reason when user is in forced variation', function() {
           var flagKey = 'feature_1';
           var variationKey = 'b';
-
-          optlyInstance = new Optimizely({
-            clientEngine: 'node-sdk',
-            datafile: testData.getTestDecideProjectConfig(),
-            errorHandler: errorHandler,
-            eventDispatcher: eventDispatcher,
-            jsonSchemaValidator: jsonSchemaValidator,
-            logger: createdLogger,
-            isValidInstance: true,
-            eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
-          });
-
           var newConfig = optlyInstance.projectConfigManager.getConfig();
           newConfig.experiments[0].forcedVariations[userId] = variationKey;
           optlyInstance.projectConfigManager.getConfig.returns(newConfig);
@@ -5185,19 +5179,6 @@ describe('lib/optimizely', function() {
         it('should include reason when invalid forced variation found', function() {
           var flagKey = 'feature_1';
           var variationKey = 'invalid-key';
-
-          optlyInstance = new Optimizely({
-            clientEngine: 'node-sdk',
-            datafile: testData.getTestDecideProjectConfig(),
-            errorHandler: errorHandler,
-            eventDispatcher: eventDispatcher,
-            jsonSchemaValidator: jsonSchemaValidator,
-            logger: createdLogger,
-            isValidInstance: true,
-            eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
-          });
-
           var newConfig = optlyInstance.projectConfigManager.getConfig();
           newConfig.experiments[0].forcedVariations[userId] = variationKey;
           optlyInstance.projectConfigManager.getConfig.returns(newConfig);
@@ -5217,18 +5198,6 @@ describe('lib/optimizely', function() {
 
         it('should include reason when user meets conditions for targeting rule', function() {
           var flagKey = 'feature_1';
-
-          optlyInstance = new Optimizely({
-            clientEngine: 'node-sdk',
-            datafile: testData.getTestDecideProjectConfig(),
-            errorHandler: errorHandler,
-            eventDispatcher: eventDispatcher,
-            jsonSchemaValidator: jsonSchemaValidator,
-            logger: createdLogger,
-            isValidInstance: true,
-            eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
-          });
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
             userId
@@ -5246,18 +5215,6 @@ describe('lib/optimizely', function() {
 
         it('should include reason when user does not meet conditions for targeting rule', function() {
           var flagKey = 'feature_1';
-
-          optlyInstance = new Optimizely({
-            clientEngine: 'node-sdk',
-            datafile: testData.getTestDecideProjectConfig(),
-            errorHandler: errorHandler,
-            eventDispatcher: eventDispatcher,
-            jsonSchemaValidator: jsonSchemaValidator,
-            logger: createdLogger,
-            isValidInstance: true,
-            eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
-          });
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
             userId
@@ -5275,18 +5232,6 @@ describe('lib/optimizely', function() {
 
         it('should include reason when user is bucketed into targeting rule', function() {
           var flagKey = 'feature_1';
-
-          optlyInstance = new Optimizely({
-            clientEngine: 'node-sdk',
-            datafile: testData.getTestDecideProjectConfig(),
-            errorHandler: errorHandler,
-            eventDispatcher: eventDispatcher,
-            jsonSchemaValidator: jsonSchemaValidator,
-            logger: createdLogger,
-            isValidInstance: true,
-            eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
-          });
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
             userId
@@ -5304,18 +5249,6 @@ describe('lib/optimizely', function() {
 
         it('should include reason when user is bucketed into everyone targeting rule', function() {
           var flagKey = 'feature_1';
-
-          optlyInstance = new Optimizely({
-            clientEngine: 'node-sdk',
-            datafile: testData.getTestDecideProjectConfig(),
-            errorHandler: errorHandler,
-            eventDispatcher: eventDispatcher,
-            jsonSchemaValidator: jsonSchemaValidator,
-            logger: createdLogger,
-            isValidInstance: true,
-            eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
-          });
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
             userId
@@ -5333,18 +5266,6 @@ describe('lib/optimizely', function() {
 
         it('should include reason when user is not bucketed into targeting rule', function() {
           var flagKey = 'feature_1';
-
-          optlyInstance = new Optimizely({
-            clientEngine: 'node-sdk',
-            datafile: testData.getTestDecideProjectConfig(),
-            errorHandler: errorHandler,
-            eventDispatcher: eventDispatcher,
-            jsonSchemaValidator: jsonSchemaValidator,
-            logger: createdLogger,
-            isValidInstance: true,
-            eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
-          });
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
             userId
@@ -5356,6 +5277,49 @@ describe('lib/optimizely', function() {
             'DECISION_SERVICE',
             userId,
             '2'
+          )
+          );
+        });
+
+        it('should include reason when user is bucketed into variation of experiment', function() {
+          var flagKey = 'feature_2';
+          var experimentKey = 'exp_no_audience';
+          var variationKey = 'variation_with_traffic';
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          console.log(decision.reasons);
+          expect(decision.reasons).to.include(sprintf(
+            LOG_MESSAGES.USER_HAS_VARIATION,
+            'DECISION_SERVICE',
+            userId,
+            variationKey,
+            experimentKey,
+          )
+          );
+        });
+
+        it('should include reason when user is not bucketed into variation of experiment', function() {
+          var flagKey = 'feature_2';
+          var experimentKey = 'exp_no_audience';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[1].trafficAllocation = [];
+          newConfig.experiments[1].trafficAllocation.push({ endOfRange: 0, entityId: 'any' })
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+            attributes: { 'age': 25 },
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          console.log(decision.reasons);
+          expect(decision.reasons).to.include(sprintf(
+            LOG_MESSAGES.USER_HAS_NO_VARIATION,
+            'DECISION_SERVICE',
+            userId,
+            experimentKey,
           )
           );
         });
