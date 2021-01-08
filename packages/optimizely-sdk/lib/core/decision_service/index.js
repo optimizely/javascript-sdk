@@ -112,7 +112,16 @@ DecisionService.prototype.getVariation = function(configObj, experimentKey, user
   }
 
   // Perform regular targeting and bucketing
-  if (!this.__checkIfUserIsInAudience(configObj, experimentKey, AUDIENCE_EVALUATION_TYPES.EXPERIMENT, userId, attributes, '')) {
+  var decisionifUserIsInAudience = this.__checkIfUserIsInAudience(
+    configObj,
+    experimentKey,
+    AUDIENCE_EVALUATION_TYPES.EXPERIMENT,
+    userId,
+    attributes,
+    ''
+  );
+  decideReasons.push(...decisionifUserIsInAudience.getReasons());
+  if (!decisionifUserIsInAudience.getResult()) {
     var userDoesNotMeetConditionsLogMessage = sprintf(
       LOG_MESSAGES.USER_NOT_IN_EXPERIMENT,
       MODULE_NAME,
@@ -218,40 +227,46 @@ DecisionService.prototype.__getWhitelistedVariation = function(experiment, userI
 
 /**
  * Checks whether the user is included in experiment audience
- * @param  {Object}  configObj            The parsed project configuration object
- * @param  {string}  experimentKey        Key of experiment being validated
- * @param  {string}  evaluationAttribute  String representing experiment key or rule
- * @param  {string}  userId               ID of user
- * @param  {Object}  attributes           Optional parameter for user's attributes
- * @param  {string}  loggingKey           String representing experiment key or rollout rule. To be used in log messages only.
- * @return {boolean} True if user meets audience conditions
+ * @param  {Object}           configObj            The parsed project configuration object
+ * @param  {string}           experimentKey        Key of experiment being validated
+ * @param  {string}           evaluationAttribute  String representing experiment key or rule
+ * @param  {string}           userId               ID of user
+ * @param  {Object}           attributes           Optional parameter for user's attributes
+ * @param  {string}           loggingKey           String representing experiment key or rollout rule. To be used in log messages only.
+ * @return {DecisionResponse} DecisionResponse     DecisionResponse containing result true if user meets audience conditions and
+ *                                                 the decide reasons.
  */
 DecisionService.prototype.__checkIfUserIsInAudience = function(configObj, experimentKey, evaluationAttribute, userId, attributes, loggingKey) {
+  var decideReasons = [];
   var experimentAudienceConditions = projectConfig.getExperimentAudienceConditions(configObj, experimentKey);
   var audiencesById = projectConfig.getAudiencesById(configObj);
+  var evaluatingAudiencesCombinedMessage = sprintf(
+    LOG_MESSAGES.EVALUATING_AUDIENCES_COMBINED,
+    MODULE_NAME,
+    evaluationAttribute,
+    loggingKey || experimentKey,
+    JSON.stringify(experimentAudienceConditions)
+  );
   this.logger.log(
     LOG_LEVEL.DEBUG,
-    sprintf(
-      LOG_MESSAGES.EVALUATING_AUDIENCES_COMBINED,
-      MODULE_NAME,
-      evaluationAttribute,
-      loggingKey || experimentKey,
-      JSON.stringify(experimentAudienceConditions)
-    )
+    evaluatingAudiencesCombinedMessage
   );
+  decideReasons.push(evaluatingAudiencesCombinedMessage);
   var result = this.audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, attributes);
+  var audienceEvaluationResultCombinedMessage = sprintf(
+    LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+    MODULE_NAME,
+    evaluationAttribute,
+    loggingKey || experimentKey,
+    result.toString().toUpperCase()
+  );
   this.logger.log(
     LOG_LEVEL.INFO,
-    sprintf(
-      LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
-      MODULE_NAME,
-      evaluationAttribute,
-      loggingKey || experimentKey,
-      result.toString().toUpperCase()
-    )
+    audienceEvaluationResultCombinedMessage
   );
+  decideReasons.push(evaluatingAudiencesCombinedMessage);
 
-  return result;
+  return new DecisionResponse(result, decideReasons);
 };
 
 /**
@@ -537,11 +552,20 @@ DecisionService.prototype._getVariationForRollout = function(configObj, feature,
   var variation;
   var loggingKey;
   var decisionVariation;
+  var decisionifUserIsInAudience;
   for (index = 0; index < endIndex; index++) {
     rolloutRule = configObj.experimentKeyMap[rollout.experiments[index].key];
     loggingKey = index + 1;
-
-    if (!this.__checkIfUserIsInAudience(configObj, rolloutRule.key, AUDIENCE_EVALUATION_TYPES.RULE, userId, attributes, loggingKey)) {
+    decisionifUserIsInAudience = this.__checkIfUserIsInAudience(
+      configObj,
+      rolloutRule.key,
+      AUDIENCE_EVALUATION_TYPES.RULE,
+      userId,
+      attributes,
+      loggingKey
+    );
+    decideReasons.push(...decisionifUserIsInAudience.getReasons());
+    if (!decisionifUserIsInAudience.getResult()) {
       var userDoesNotMeetConditionsForTargetingRuleMessage = sprintf(
         LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
         MODULE_NAME,
@@ -605,7 +629,16 @@ DecisionService.prototype._getVariationForRollout = function(configObj, feature,
   }
 
   var everyoneElseRule = configObj.experimentKeyMap[rollout.experiments[endIndex].key];
-  if (this.__checkIfUserIsInAudience(configObj, everyoneElseRule.key, AUDIENCE_EVALUATION_TYPES.RULE, userId, attributes, 'Everyone Else')) {
+  var decisionifUserIsInEveryoneRule = this.__checkIfUserIsInAudience(
+    configObj,
+    everyoneElseRule.key,
+    AUDIENCE_EVALUATION_TYPES.RULE,
+    userId,
+    attributes,
+    'Everyone Else'
+  );
+  decideReasons.push(...decisionifUserIsInEveryoneRule.getReasons());
+  if (decisionifUserIsInEveryoneRule.getResult()) {
     var userMeetsConditionsForEveryoneTargetingRuleMessage = sprintf(
       LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
       MODULE_NAME, userId,

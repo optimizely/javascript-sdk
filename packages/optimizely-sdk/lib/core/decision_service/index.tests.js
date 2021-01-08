@@ -565,7 +565,7 @@ describe('lib/core/decision_service', function() {
         __audienceEvaluateSpy.restore();
       });
 
-      it('should return true when audience conditions are met', function() {
+      it('should return decision response with result true when audience conditions are met', function() {
         assert.isTrue(
           decisionServiceInstance.__checkIfUserIsInAudience(
             configObj,
@@ -574,7 +574,7 @@ describe('lib/core/decision_service', function() {
             'testUser',
             { browser_type: 'firefox' },
             ''
-          )
+          ).getResult()
         );
         assert.strictEqual(2, mockLogger.log.callCount);
         assert.strictEqual(
@@ -587,7 +587,7 @@ describe('lib/core/decision_service', function() {
         );
       });
 
-      it('should return true when experiment has no audience', function() {
+      it('should return decision response with result true when experiment has no audience', function() {
         assert.isTrue(
           decisionServiceInstance.__checkIfUserIsInAudience(
             configObj,
@@ -596,7 +596,7 @@ describe('lib/core/decision_service', function() {
             'testUser',
             {},
             ''
-          )
+          ).getResult()
         );
         assert.isTrue(__audienceEvaluateSpy.alwaysReturned(true));
 
@@ -611,7 +611,7 @@ describe('lib/core/decision_service', function() {
         );
       });
 
-      it('should return false when audience conditions can not be evaluated', function() {
+      it('should return decision response with result false when audience conditions can not be evaluated', function() {
         assert.isFalse(
           decisionServiceInstance.__checkIfUserIsInAudience(
             configObj,
@@ -620,7 +620,7 @@ describe('lib/core/decision_service', function() {
             'testUser',
             {},
             ''
-          )
+          ).getResult()
         );
         assert.isTrue(__audienceEvaluateSpy.alwaysReturned(false));
 
@@ -635,7 +635,7 @@ describe('lib/core/decision_service', function() {
         );
       });
 
-      it('should return false when audience conditions are not met', function() {
+      it('should return decision response with result false when audience conditions are not met', function() {
         assert.isFalse(
           decisionServiceInstance.__checkIfUserIsInAudience(
             configObj,
@@ -644,7 +644,7 @@ describe('lib/core/decision_service', function() {
             'testUser',
             { browser_type: 'chrome' },
             ''
-          )
+          ).getResult()
         );
         assert.isTrue(__audienceEvaluateSpy.alwaysReturned(false));
 
