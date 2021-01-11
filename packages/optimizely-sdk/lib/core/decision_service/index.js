@@ -304,15 +304,14 @@ DecisionService.prototype.__getStoredVariation = function(configObj, experiment,
     if (configObj.variationIdMap.hasOwnProperty(variationId)) {
       return configObj.variationIdMap[decision.variation_id];
     } else {
-      var savedVariationNotFoundMessage = sprintf(
-        LOG_MESSAGES.SAVED_VARIATION_NOT_FOUND,
-        MODULE_NAME, userId,
-        variationId,
-        experiment.key
-      );
       this.logger.log(
         LOG_LEVEL.INFO,
-        savedVariationNotFoundMessage
+        sprintf(
+          LOG_MESSAGES.SAVED_VARIATION_NOT_FOUND,
+          MODULE_NAME, userId,
+          variationId,
+          experiment.key
+        )
       );
     }
   }

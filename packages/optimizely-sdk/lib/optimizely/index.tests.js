@@ -5163,7 +5163,7 @@ describe('lib/optimizely', function() {
           );
         });
 
-        it('should include reason when user is in forced variation', function() {
+        it('should include reason when user is forced in variation', function() {
           var flagKey = 'feature_1';
           var variationKey = 'b';
           var newConfig = optlyInstance.projectConfigManager.getConfig();
@@ -5180,6 +5180,30 @@ describe('lib/optimizely', function() {
               'DECISION_SERVICE',
               userId,
               variationKey
+            )
+          );
+        });
+
+        it('should include reason when user has forced variation', function() {
+          var flagKey = 'feature_1';
+          var variationKey = 'b';
+          var experimentKey = 'exp_with_audience';
+          optlyInstance.decisionService.forcedVariationMap[userId] = { '10390977673': variationKey };
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.variationIdMap[variationKey] = { key: variationKey };
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_HAS_FORCED_VARIATION,
+              'DECISION_SERVICE',
+              variationKey,
+              experimentKey,
+              userId
             )
           );
         });
