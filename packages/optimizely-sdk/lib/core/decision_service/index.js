@@ -92,9 +92,7 @@ DecisionService.prototype.getVariation = function(configObj, experimentKey, user
 
   // check for sticky bucketing
   var experimentBucketMap = this.__resolveExperimentBucketMap(userId, attributes);
-  var decisionStoredVariation = this.__getStoredVariation(configObj, experiment, userId, experimentBucketMap);
-  variation = decisionStoredVariation.getResult();
-  decideReasons.push(...decisionStoredVariation.getReasons());
+  variation = this.__getStoredVariation(configObj, experiment, userId, experimentBucketMap);
   if (variation) {
     var returningStoredVariationMessage = sprintf(
       LOG_MESSAGES.RETURNING_STORED_VARIATION,
@@ -297,20 +295,14 @@ DecisionService.prototype.__buildBucketerParams = function(configObj, experiment
  * @param  {Object}            experiment
  * @param  {String}            userId
  * @param  {Object}            experimentBucketMap  mapping experiment => { variation_id: <variationId> }
- * @return {DecisionResponse}  DecisionResponse     DecisionResponse containing the stored variation or null if the
- *                                                  user profile does not have one for the given experiment
- *                                                  and the decide reasons.
+ * @return {Object}            the stored variation or null if the user profile does not have one for the given experiment
  */
 DecisionService.prototype.__getStoredVariation = function(configObj, experiment, userId, experimentBucketMap) {
-  var decideReasons = [];
   if (experimentBucketMap.hasOwnProperty(experiment.id)) {
     var decision = experimentBucketMap[experiment.id];
     var variationId = decision.variation_id;
     if (configObj.variationIdMap.hasOwnProperty(variationId)) {
-      return new DecisionResponse(
-        configObj.variationIdMap[decision.variation_id],
-        decideReasons
-      );
+      return configObj.variationIdMap[decision.variation_id];
     } else {
       var savedVariationNotFoundMessage = sprintf(
         LOG_MESSAGES.SAVED_VARIATION_NOT_FOUND,
@@ -322,11 +314,10 @@ DecisionService.prototype.__getStoredVariation = function(configObj, experiment,
         LOG_LEVEL.INFO,
         savedVariationNotFoundMessage
       );
-      decideReasons.push(savedVariationNotFoundMessage);
     }
   }
 
-  return new DecisionResponse(null, decideReasons);
+  return null;
 };
 
 /**
@@ -775,9 +766,13 @@ DecisionService.prototype.getForcedVariation = function(configObj, experimentKey
   var decideReasons = [];
   var experimentToVariationMap = this.forcedVariationMap[userId];
   if (!experimentToVariationMap) {
-    var userHasNoForcedVariationMessage = sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, MODULE_NAME, userId);
-    this.logger.log(LOG_LEVEL.DEBUG, userHasNoForcedVariationMessage);
-    decideReasons.push(userHasNoForcedVariationMessage);
+    this.logger.log(LOG_LEVEL.DEBUG,
+      sprintf(
+      LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,
+      MODULE_NAME,
+      userId
+      )
+    );
 
     return new DecisionResponse(null, decideReasons);
   }
@@ -809,17 +804,15 @@ DecisionService.prototype.getForcedVariation = function(configObj, experimentKey
 
   var variationId = experimentToVariationMap[experimentId];
   if (!variationId) {
-    userHasNoForcedVariationForExperimentMessage = sprintf(
-      LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
-      MODULE_NAME,
-      experimentKey,
-      userId
-    );
     this.logger.log(
       LOG_LEVEL.DEBUG,
-      userHasNoForcedVariationForExperimentMessage
+      sprintf(
+        LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
+        MODULE_NAME,
+        experimentKey,
+        userId
+      )
     );
-    decideReasons.push(userHasNoForcedVariationForExperimentMessage);
     return new DecisionResponse(null, decideReasons);
   }
 
@@ -835,17 +828,15 @@ DecisionService.prototype.getForcedVariation = function(configObj, experimentKey
     this.logger.log(LOG_LEVEL.DEBUG, userHasForcedVariationMessage);
     decideReasons.push(userHasForcedVariationMessage);
   } else {
-    var userHasNoForcedVariationForExperimentMessage = sprintf(
-      LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
-      MODULE_NAME,
-      experimentKey,
-      userId
-    );
     this.logger.log(
       LOG_LEVEL.DEBUG,
-      userHasNoForcedVariationForExperimentMessage
+      sprintf(
+        LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
+        MODULE_NAME,
+        experimentKey,
+        userId
+      )
     );
-    decideReasons.push(userHasNoForcedVariationForExperimentMessage);
   }
 
   return new DecisionResponse(variationKey, decideReasons);

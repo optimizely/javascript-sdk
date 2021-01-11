@@ -57,8 +57,6 @@ export var bucket = function(bucketerParams) {
   if (groupId) {
     var group = bucketerParams.groupIdMap[groupId];
     if (!group) {
-      var invalidGroupIdMessage = sprintf(ERROR_MESSAGES.INVALID_GROUP_ID, MODULE_NAME, groupId);
-      decideReasons.push(invalidGroupIdMessage);
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_GROUP_ID, MODULE_NAME, groupId));
     }
     if (group.policy === RANDOM_POLICY) {
