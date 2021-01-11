@@ -326,8 +326,8 @@ describe('lib/optimizely', function() {
     describe('#activate', function() {
       it('should call bucketer and dispatchEvent with proper args and return variation key', function() {
         fakeDecisionResponse = {
-          getResult: sinon.stub().returns('111129'),
-          getReasons: sinon.stub().returns([])
+          result: '111129',
+          reasons: [],
         };
         bucketStub.returns(fakeDecisionResponse);
         var variation = optlyInstance.activate('testExperiment', 'testUser');
@@ -387,8 +387,8 @@ describe('lib/optimizely', function() {
 
       it('should dispatch proper params for null value attributes', function() {
         fakeDecisionResponse = {
-          getResult: sinon.stub().returns('122229'),
-          getReasons: sinon.stub().returns([])
+          result: '122229',
+          reasons: [],
         };
         bucketStub.returns(fakeDecisionResponse);
         var activate = optlyInstance.activate('testExperimentWithAudiences', 'testUser', {
@@ -460,8 +460,8 @@ describe('lib/optimizely', function() {
 
       it('should call bucketer and dispatchEvent with proper args and return variation key if user is in audience', function() {
         fakeDecisionResponse = {
-          getResult: sinon.stub().returns('122229'),
-          getReasons: sinon.stub().returns([])
+          result: '122229',
+          reasons: [],
         };
         bucketStub.returns(fakeDecisionResponse);
         var activate = optlyInstance.activate('testExperimentWithAudiences', 'testUser', { browser_type: 'firefox' });
@@ -529,8 +529,8 @@ describe('lib/optimizely', function() {
 
       it('should call activate and dispatchEvent with typed attributes and return variation key', function() {
         fakeDecisionResponse = {
-          getResult: sinon.stub().returns('122229'),
-          getReasons: sinon.stub().returns([])
+          result: '122229',
+          reasons: [],
         };
         bucketStub.returns(fakeDecisionResponse);
         var activate = optlyInstance.activate('testExperimentWithAudiences', 'testUser', {
@@ -622,8 +622,8 @@ describe('lib/optimizely', function() {
       describe('when experiment_bucket_map attribute is present', function() {
         it('should call activate and respect attribute experiment_bucket_map', function() {
           fakeDecisionResponse = {
-            getResult: sinon.stub().returns('111128'), // id of "control" variation
-            getReasons: sinon.stub().returns([])
+            result: '111128', // id of "control" variation
+            reasons: [],
           };
           bucketStub.returns(fakeDecisionResponse);
           var activate = optlyInstance.activate('testExperiment', 'testUser', {
@@ -641,8 +641,8 @@ describe('lib/optimizely', function() {
 
       it('should call bucketer and dispatchEvent with proper args and return variation key if user is in grouped experiment', function() {
         fakeDecisionResponse = {
-          getResult: sinon.stub().returns('662'),
-          getReasons: sinon.stub().returns([])
+          result: '662',
+          reasons: [],
         };
         bucketStub.returns(fakeDecisionResponse);
         var activate = optlyInstance.activate('groupExperiment2', 'testUser');
@@ -703,8 +703,8 @@ describe('lib/optimizely', function() {
 
       it('should call bucketer and dispatchEvent with proper args and return variation key if user is in grouped experiment and is in audience', function() {
         fakeDecisionResponse = {
-          getResult: sinon.stub().returns('552'),
-          getReasons: sinon.stub().returns([])
+          result: '552',
+          reasons: [],
         };
         bucketStub.returns(fakeDecisionResponse);
         var activate = optlyInstance.activate('groupExperiment1', 'testUser', { browser_type: 'firefox' });
@@ -772,8 +772,8 @@ describe('lib/optimizely', function() {
 
       it('should not make a dispatch event call if variation ID is null', function() {
         fakeDecisionResponse = {
-          getResult: sinon.stub().returns(null),
-          getReasons: sinon.stub().returns([])
+          result: null,
+          reasons: [],
         };
         bucketStub.returns(fakeDecisionResponse);
         assert.isNull(optlyInstance.activate('testExperiment', 'testUser'));
@@ -911,8 +911,8 @@ describe('lib/optimizely', function() {
 
       it('should activate when logger is in DEBUG mode', function() {
         fakeDecisionResponse = {
-          getResult: sinon.stub().returns('111129'),
-          getReasons: sinon.stub().returns([])
+          result: '111129',
+          reasons: [],
         };
         bucketStub.returns(fakeDecisionResponse);
         var instance = new Optimizely({
@@ -1723,8 +1723,8 @@ describe('lib/optimizely', function() {
     describe('#getVariation', function() {
       it('should call bucketer and return variation key', function() {
         fakeDecisionResponse = {
-          getResult: sinon.stub().returns('111129'),
-          getReasons: sinon.stub().returns([])
+          result: '111129',
+          reasons: [],
         };
         bucketStub.returns(fakeDecisionResponse);
         var variation = optlyInstance.getVariation('testExperiment', 'testUser');
@@ -1743,8 +1743,8 @@ describe('lib/optimizely', function() {
 
       it('should call bucketer and return variation key with attributes', function() {
         fakeDecisionResponse = {
-          getResult: sinon.stub().returns('122229'),
-          getReasons: sinon.stub().returns([])
+          result: '122229',
+          reasons: [],
         };
         bucketStub.returns(fakeDecisionResponse);
         var getVariation = optlyInstance.getVariation('testExperimentWithAudiences', 'testUser', {
@@ -1879,8 +1879,8 @@ describe('lib/optimizely', function() {
         it('should properly follow the order of bucketing operations', function() {
           // Order of operations is preconditions > experiment is running > whitelisting > audience eval > variation bucketing
           fakeDecisionResponse = {
-            getResult: sinon.stub().returns('122228'), // returns the control variation
-            getReasons: sinon.stub().returns([])
+            result: '122228', // returns the control variation
+            reasons: [],
           };
           bucketStub.returns(fakeDecisionResponse);
 
@@ -2275,8 +2275,8 @@ describe('lib/optimizely', function() {
         activateListener2 = sinon.spy();
         trackListener2 = sinon.spy();
         fakeDecisionResponse = {
-          getResult: sinon.stub().returns('111129'),
-          getReasons: sinon.stub().returns([])
+          result: '111129',
+          reasons: [],
         };
         bucketStub.returns(fakeDecisionResponse);
         sinon.stub(fns, 'currentTimestamp').returns(1509489766569);
@@ -2710,8 +2710,8 @@ describe('lib/optimizely', function() {
 
           it('should send notification with actual variation key when activate returns variation', function() {
             fakeDecisionResponse = {
-              getResult: sinon.stub().returns('111129'),
-              getReasons: sinon.stub().returns([])
+              result: '111129',
+              reasons: [],
             };
             bucketStub.returns(fakeDecisionResponse);
             var variation = optlyInstance.activate('testExperiment', 'testUser');
@@ -2729,8 +2729,8 @@ describe('lib/optimizely', function() {
 
           it('should send notification with null variation key when activate returns null', function() {
             fakeDecisionResponse = {
-              getResult: sinon.stub().returns(null),
-              getReasons: sinon.stub().returns([])
+              result: null,
+              reasons: [],
             };
             bucketStub.returns(fakeDecisionResponse);
             var variation = optlyInstance.activate('testExperiment', 'testUser');
@@ -2767,8 +2767,8 @@ describe('lib/optimizely', function() {
 
           it('should send notification with actual variation key when getVariation returns variation', function() {
             fakeDecisionResponse = {
-              getResult: sinon.stub().returns('111129'),
-              getReasons: sinon.stub().returns([])
+              result: '111129',
+              reasons: [],
             };
             bucketStub.returns(fakeDecisionResponse);
             var variation = optlyInstance.getVariation('testExperiment', 'testUser');
@@ -2812,8 +2812,8 @@ describe('lib/optimizely', function() {
             optly.notificationCenter.addNotificationListener(enums.NOTIFICATION_TYPES.DECISION, decisionListener);
 
             fakeDecisionResponse = {
-              getResult: sinon.stub().returns('594099'),
-              getReasons: sinon.stub().returns([])
+              result: '594099',
+              reasons: [],
             };
             bucketStub.returns(fakeDecisionResponse);
             var variation = optly.getVariation('testing_my_feature', 'testUser');
@@ -2868,8 +2868,8 @@ describe('lib/optimizely', function() {
                     decisionSource: DECISION_SOURCES.FEATURE_TEST,
                   };
                   fakeDecisionResponse = {
-                    getResult: sinon.stub().returns(decisionObj),
-                    getReasons: sinon.stub().returns([])
+                    result: decisionObj,
+                    reasons: [],
                   };
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
                 });
@@ -2904,8 +2904,8 @@ describe('lib/optimizely', function() {
                     decisionSource: DECISION_SOURCES.FEATURE_TEST,
                   };
                   fakeDecisionResponse = {
-                    getResult: sinon.stub().returns(decisionObj),
-                    getReasons: sinon.stub().returns([])
+                    result: decisionObj,
+                    reasons: [],
                   };
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
                 });
@@ -2943,8 +2943,8 @@ describe('lib/optimizely', function() {
                     decisionSource: DECISION_SOURCES.ROLLOUT,
                   };
                   fakeDecisionResponse = {
-                    getResult: sinon.stub().returns(decisionObj),
-                    getReasons: sinon.stub().returns([])
+                    result: decisionObj,
+                    reasons: [],
                   };
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
                 });
@@ -2979,8 +2979,8 @@ describe('lib/optimizely', function() {
                     decisionSource: DECISION_SOURCES.ROLLOUT,
                   };
                   fakeDecisionResponse = {
-                    getResult: sinon.stub().returns(decisionObj),
-                    getReasons: sinon.stub().returns([])
+                    result: decisionObj,
+                    reasons: [],
                   };
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
                 });
@@ -3020,8 +3020,8 @@ describe('lib/optimizely', function() {
                   decisionSource: DECISION_SOURCES.ROLLOUT,
                 };
                 fakeDecisionResponse = {
-                  getResult: sinon.stub().returns(decisionObj),
-                  getReasons: sinon.stub().returns([])
+                  result: decisionObj,
+                  reasons: [],
                 };
                 sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
               });
@@ -3059,8 +3059,8 @@ describe('lib/optimizely', function() {
                     decisionSource: DECISION_SOURCES.FEATURE_TEST,
                   };
                   fakeDecisionResponse = {
-                    getResult: sinon.stub().returns(decisionObj),
-                    getReasons: sinon.stub().returns([])
+                    result: decisionObj,
+                    reasons: [],
                   };
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
                 });
@@ -3394,8 +3394,8 @@ describe('lib/optimizely', function() {
                     decisionSource: DECISION_SOURCES.FEATURE_TEST,
                   };
                   fakeDecisionResponse = {
-                    getResult: sinon.stub().returns(decisionObj),
-                    getReasons: sinon.stub().returns([])
+                    result: decisionObj,
+                    reasons: [],
                   };
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
                 });
@@ -3599,8 +3599,8 @@ describe('lib/optimizely', function() {
                     decisionSource: DECISION_SOURCES.ROLLOUT,
                   };
                   fakeDecisionResponse = {
-                    getResult: sinon.stub().returns(decisionObj),
-                    getReasons: sinon.stub().returns([])
+                    result: decisionObj,
+                    reasons: [],
                   };
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
                 });
@@ -3880,8 +3880,8 @@ describe('lib/optimizely', function() {
                     decisionSource: DECISION_SOURCES.ROLLOUT,
                   };
                   fakeDecisionResponse = {
-                    getResult: sinon.stub().returns(decisionObj),
-                    getReasons: sinon.stub().returns([])
+                    result: decisionObj,
+                    reasons: [],
                   };
                   sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
                 });
@@ -4154,8 +4154,8 @@ describe('lib/optimizely', function() {
                   decisionSource: DECISION_SOURCES.ROLLOUT,
                 };
                 fakeDecisionResponse = {
-                  getResult: sinon.stub().returns(decisionObj),
-                  getReasons: sinon.stub().returns([])
+                  result: decisionObj,
+                  reasons: [],
                 };
                 sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
               });
@@ -6038,8 +6038,8 @@ describe('lib/optimizely', function() {
               decisionSource: DECISION_SOURCES.FEATURE_TEST,
             };
             fakeDecisionResponse = {
-              getResult: sinon.stub().returns(decisionObj),
-              getReasons: sinon.stub().returns([])
+              result: decisionObj,
+              reasons: [],
             };
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
           });
@@ -6261,8 +6261,8 @@ describe('lib/optimizely', function() {
               decisionSource: DECISION_SOURCES.FEATURE_TEST,
             };
             fakeDecisionResponse = {
-              getResult: sinon.stub().returns(decisionObj),
-              getReasons: sinon.stub().returns([])
+              result: decisionObj,
+              reasons: [],
             };
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
             result = optlyInstance.isFeatureEnabled('shared_feature', 'user1', attributes);
@@ -6387,8 +6387,8 @@ describe('lib/optimizely', function() {
               decisionSource: DECISION_SOURCES.ROLLOUT,
             };
             fakeDecisionResponse = {
-              getResult: sinon.stub().returns(decisionObj),
-              getReasons: sinon.stub().returns([])
+              result: decisionObj,
+              reasons: [],
             };
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
           });
@@ -6418,8 +6418,8 @@ describe('lib/optimizely', function() {
               decisionSource: DECISION_SOURCES.ROLLOUT,
             };
             fakeDecisionResponse = {
-              getResult: sinon.stub().returns(decisionObj),
-              getReasons: sinon.stub().returns([])
+              result: decisionObj,
+              reasons: [],
             };
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
           });
@@ -6446,8 +6446,8 @@ describe('lib/optimizely', function() {
             decisionSource: DECISION_SOURCES.ROLLOUT,
           };
           fakeDecisionResponse = {
-            getResult: sinon.stub().returns(decisionObj),
-            getReasons: sinon.stub().returns([])
+            result: decisionObj,
+            reasons: [],
           };
           sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
         });
@@ -6713,8 +6713,8 @@ describe('lib/optimizely', function() {
               decisionSource: DECISION_SOURCES.FEATURE_TEST,
             };
             fakeDecisionResponse = {
-              getResult: sinon.stub().returns(decisionObj),
-              getReasons: sinon.stub().returns([])
+              result: decisionObj,
+              reasons: [],
             };
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
           });
@@ -7103,8 +7103,8 @@ describe('lib/optimizely', function() {
               decisionSource: DECISION_SOURCES.FEATURE_TEST,
             };
             fakeDecisionResponse = {
-              getResult: sinon.stub().returns(decisionObj),
-              getReasons: sinon.stub().returns([])
+              result: decisionObj,
+              reasons: [],
             };
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
           });
@@ -7304,8 +7304,8 @@ describe('lib/optimizely', function() {
               decisionSource: DECISION_SOURCES.ROLLOUT,
             };
             fakeDecisionResponse = {
-              getResult: sinon.stub().returns(decisionObj),
-              getReasons: sinon.stub().returns([])
+              result: decisionObj,
+              reasons: [],
             };
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
           });
@@ -7664,8 +7664,8 @@ describe('lib/optimizely', function() {
               decisionSource: DECISION_SOURCES.ROLLOUT,
             };
             fakeDecisionResponse = {
-              getResult: sinon.stub().returns(decisionObj),
-              getReasons: sinon.stub().returns([])
+              result: decisionObj,
+              reasons: [],
             };
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
           });
@@ -7847,8 +7847,8 @@ describe('lib/optimizely', function() {
             decisionSource: null,
           };
           fakeDecisionResponse = {
-            getResult: sinon.stub().returns(decisionObj),
-            getReasons: sinon.stub().returns([])
+            result: decisionObj,
+            reasons: [],
           };
           sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
         });
@@ -9131,8 +9131,8 @@ describe('lib/optimizely', function() {
 
       it('should send batched events when the maxQueueSize is reached', function() {
         fakeDecisionResponse = {
-          getResult: sinon.stub().returns('111129'),
-          getReasons: sinon.stub().returns([])
+          result: '111129',
+          reasons: [],
         };
         bucketStub.returns(fakeDecisionResponse);
         var activate = optlyInstance.activate('testExperiment', 'testUser');
@@ -9227,8 +9227,8 @@ describe('lib/optimizely', function() {
       it('should flush the queue when the flushInterval occurs', function() {
         var timestamp = new Date().getTime();
         fakeDecisionResponse = {
-          getResult: sinon.stub().returns('111129'),
-          getReasons: sinon.stub().returns([])
+          result: '111129',
+          reasons: [],
         };
         bucketStub.returns(fakeDecisionResponse);
         var activate = optlyInstance.activate('testExperiment', 'testUser');
@@ -9309,8 +9309,8 @@ describe('lib/optimizely', function() {
 
       it('should flush the queue when optimizely.close() is called', function() {
         fakeDecisionResponse = {
-          getResult: sinon.stub().returns('111129'),
-          getReasons: sinon.stub().returns([])
+          result: '111129',
+          reasons: [],
         };
         bucketStub.returns(fakeDecisionResponse);
         var activate = optlyInstance.activate('testExperiment', 'testUser');
@@ -9850,8 +9850,8 @@ describe('lib/optimizely', function() {
         notificationListener
       );
       fakeDecisionResponse = {
-        getResult: sinon.stub().returns('111129'),
-        getReasons: sinon.stub().returns([])
+        result: '111129',
+        reasons: [],
       };
       bucketStub.returns(fakeDecisionResponse);
       var activate = optlyInstance.activate('testExperiment', 'testUser');

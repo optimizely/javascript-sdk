@@ -20,9 +20,13 @@ import {
   UserProfileService,
   FeatureFlag,
   Experiment,
-  Variation,
-  DecisionResponse
+  Variation
 } from '../../shared_types';
+
+interface DecisionResponse<T> {
+  readonly result: T;
+  readonly reasons: string[];
+}
 
 /**
  * Creates an instance of the DecisionService.
@@ -82,10 +86,11 @@ export interface DecisionService {
 
   /**
    * Gets the forced variation key for the given user and experiment.
-   * @param  {ProjectConfig}  configObj      Object representing project configuration
-   * @param  {string}         experimentKey  Key for experiment.
-   * @param  {string}         userId         The user Id.
-   * @return {string|null}    Variation key that specifies the variation which the given user and experiment should be forced into.
+   * @param  {ProjectConfig}        configObj          Object representing project configuration
+   * @param  {string}               experimentKey      Key for experiment.
+   * @param  {string}               userId             The user Id.
+   * @return {DecisionResponse}     DecisionResponse   DecisionResponse contaning variation key that specifies the variation which
+   *                                                   the given user and experiment should be forced into and decide options.
    */
   getForcedVariation(
     configObj: ProjectConfig,

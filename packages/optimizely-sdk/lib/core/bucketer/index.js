@@ -19,7 +19,6 @@
  */
 import { sprintf } from '@optimizely/js-sdk-utils';
 import murmurhash from 'murmurhash';
-import DecisionResponse from '../decision_response';
 
 import {
   ERROR_MESSAGES,
@@ -46,7 +45,7 @@ var RANDOM_POLICY = 'random';
  * @param  {string}             bucketerParams.varationIdMap[].key
  * @param  {Object}             bucketerParams.logger
  * @param  {string}             bucketerParams.bucketingId
- * @return {DecisionResponse}   DecisionResponse                         DecisionResponse containing variation ID that user has been bucketed into,
+ * @return {Object}             DecisionResponse                         DecisionResponse containing variation ID that user has been bucketed into,
  *                                                                       null if user is not bucketed into any experiment and the decide reasons.
  */
 export var bucket = function(bucketerParams) {
@@ -77,7 +76,10 @@ export var bucket = function(bucketerParams) {
         );
         bucketerParams.logger.log(LOG_LEVEL.INFO, notbucketedInAnyExperimentLogMessage);
         decideReasons.push(notbucketedInAnyExperimentLogMessage);
-        return new DecisionResponse(null, decideReasons);
+        return {
+          result: null,
+          reasons: decideReasons,
+        };
       }
 
       // Return if user is bucketed into a different experiment than the one specified
@@ -91,7 +93,10 @@ export var bucket = function(bucketerParams) {
         );
         bucketerParams.logger.log(LOG_LEVEL.INFO, notBucketedIntoExperimentOfGroupLogMessage);
         decideReasons.push(notBucketedIntoExperimentOfGroupLogMessage);
-        return new DecisionResponse(null, decideReasons);
+        return {
+          result: null,
+          reasons: decideReasons,
+        };
       }
 
       // Continue bucketing if user is bucketed into specified experiment
@@ -126,10 +131,16 @@ export var bucket = function(bucketerParams) {
       bucketerParams.logger.log(LOG_LEVEL.WARNING, invalidVariationIdLogMessage);
       decideReasons.push(invalidVariationIdLogMessage);
     }
-    return new DecisionResponse(null, decideReasons);
+    return {
+      result: null,
+      reasons: decideReasons,
+    };
   }
 
-  return new DecisionResponse(entityId, decideReasons);
+  return {
+    result: entityId,
+    reasons: decideReasons,
+  };
 };
 
 /**

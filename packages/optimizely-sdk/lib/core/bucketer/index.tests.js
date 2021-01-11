@@ -27,7 +27,6 @@ import {
 import logger from '../../plugins/logger';
 import projectConfig from '../project_config';
 import { getTestProjectConfig } from '../../tests/test_data';
-import DecisionResponse from '../decision_response';
 
 var testData = getTestProjectConfig();
 
@@ -74,8 +73,7 @@ describe('lib/core/bucketer', function() {
           var bucketerParamsTest1 = cloneDeep(bucketerParams);
           bucketerParamsTest1.userId = 'ppid1';
           var decisionResponse = bucketer.bucket(bucketerParamsTest1);
-          assert.instanceOf(decisionResponse, DecisionResponse);
-          expect(decisionResponse.getResult()).to.equal('111128');
+          expect(decisionResponse.result).to.equal('111128');
 
           var bucketedUser_log1 = createdLogger.log.args[0][1];
           expect(bucketedUser_log1).to.equal(
@@ -84,7 +82,7 @@ describe('lib/core/bucketer', function() {
 
           var bucketerParamsTest2 = cloneDeep(bucketerParams);
           bucketerParamsTest2.userId = 'ppid2';
-          expect(bucketer.bucket(bucketerParamsTest2).getResult()).to.equal(null);
+          expect(bucketer.bucket(bucketerParamsTest2).result).to.equal(null);
 
           var notBucketedUser_log1 = createdLogger.log.args[1][1];
 
@@ -134,8 +132,7 @@ describe('lib/core/bucketer', function() {
             bucketerStub.onSecondCall().returns(50);
 
             var decisionResponse = bucketer.bucket(bucketerParams);
-            assert.instanceOf(decisionResponse, DecisionResponse);
-            expect(decisionResponse.getResult()).to.equal('551');
+            expect(decisionResponse.result).to.equal('551');
 
             sinon.assert.calledTwice(bucketerStub);
             sinon.assert.callCount(createdLogger.log, 3);
@@ -166,8 +163,7 @@ describe('lib/core/bucketer', function() {
             bucketerStub.returns(5000);
 
             var decisionResponse = bucketer.bucket(bucketerParams);
-            assert.instanceOf(decisionResponse, DecisionResponse);
-            expect(decisionResponse.getResult()).to.equal(null);
+            expect(decisionResponse.result).to.equal(null);
 
             sinon.assert.calledOnce(bucketerStub);
             sinon.assert.calledTwice(createdLogger.log);
@@ -192,8 +188,7 @@ describe('lib/core/bucketer', function() {
             bucketerStub.returns(50000);
 
             var decisionResponse = bucketer.bucket(bucketerParams);
-            assert.instanceOf(decisionResponse, DecisionResponse);
-            expect(decisionResponse.getResult()).to.equal(null);
+            expect(decisionResponse.result).to.equal(null);
 
             sinon.assert.calledOnce(bucketerStub);
             sinon.assert.calledTwice(createdLogger.log);
@@ -210,8 +205,7 @@ describe('lib/core/bucketer', function() {
             bucketerStub.returns(9000);
 
             var decisionResponse = bucketer.bucket(bucketerParams);
-            assert.instanceOf(decisionResponse, DecisionResponse);
-            expect(decisionResponse.getResult()).to.equal(null);
+            expect(decisionResponse.result).to.equal(null);
 
             sinon.assert.calledOnce(bucketerStub);
             sinon.assert.calledTwice(createdLogger.log);
@@ -253,8 +247,7 @@ describe('lib/core/bucketer', function() {
             bucketerStub.returns(0);
 
             var decisionResponse = bucketer.bucket(bucketerParams);
-            assert.instanceOf(decisionResponse, DecisionResponse);
-            expect(decisionResponse.getResult()).to.equal('553');
+            expect(decisionResponse.result).to.equal('553');
 
             sinon.assert.calledOnce(bucketerStub);
             sinon.assert.calledOnce(createdLogger.log);
@@ -267,8 +260,7 @@ describe('lib/core/bucketer', function() {
             bucketerStub.returns(3000);
 
             var decisionResponse = bucketer.bucket(bucketerParams);
-            assert.instanceOf(decisionResponse, DecisionResponse);
-            expect(decisionResponse.getResult()).to.equal(null);
+            expect(decisionResponse.result).to.equal(null);
           });
         });
       });
@@ -300,8 +292,7 @@ describe('lib/core/bucketer', function() {
           var bucketerParamsTest1 = cloneDeep(bucketerParams);
           bucketerParamsTest1.userId = 'ppid1';
           var decisionResponse = bucketer.bucket(bucketerParamsTest1);
-          assert.instanceOf(decisionResponse, DecisionResponse);
-          expect(decisionResponse.getResult()).to.equal(null);
+          expect(decisionResponse.result).to.equal(null);
         });
 
         it('should not log an invalid variation ID warning', function() {
@@ -341,8 +332,7 @@ describe('lib/core/bucketer', function() {
           var bucketerParamsTest1 = cloneDeep(bucketerParams);
           bucketerParamsTest1.userId = 'ppid1';
           var decisionResponse = bucketer.bucket(bucketerParamsTest1);
-          assert.instanceOf(decisionResponse, DecisionResponse);
-          expect(decisionResponse.getResult()).to.equal(null);
+          expect(decisionResponse.result).to.equal(null);
         });
       });
     });
@@ -392,7 +382,7 @@ describe('lib/core/bucketer', function() {
         bucketerParams1['bucketingId'] = '123456789';
         bucketerParams1['experimentKey'] = 'testExperiment';
         bucketerParams1['experimentId'] = '111127';
-        expect(bucketer.bucket(bucketerParams1).getResult()).to.equal('111129');
+        expect(bucketer.bucket(bucketerParams1).result).to.equal('111129');
       });
 
       it('check that a null bucketing ID defaults to bucketing with the userId', function() {
@@ -401,7 +391,7 @@ describe('lib/core/bucketer', function() {
         bucketerParams2['bucketingId'] = null;
         bucketerParams2['experimentKey'] = 'testExperiment';
         bucketerParams2['experimentId'] = '111127';
-        expect(bucketer.bucket(bucketerParams2).getResult()).to.equal('111128');
+        expect(bucketer.bucket(bucketerParams2).result).to.equal('111128');
       });
 
       it('check that bucketing works with an experiment in group', function() {
@@ -410,7 +400,7 @@ describe('lib/core/bucketer', function() {
         bucketerParams4['bucketingId'] = '123456789';
         bucketerParams4['experimentKey'] = 'groupExperiment2';
         bucketerParams4['experimentId'] = '443';
-        expect(bucketer.bucket(bucketerParams4).getResult()).to.equal('111128');
+        expect(bucketer.bucket(bucketerParams4).result).to.equal('111128');
       });
     });
   });

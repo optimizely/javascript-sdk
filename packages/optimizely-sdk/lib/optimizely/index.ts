@@ -505,7 +505,7 @@ export default class Optimizely {
           return null;
         }
 
-        const variationKey = this.decisionService.getVariation(configObj, experimentKey, userId, attributes).getResult();
+        const variationKey = this.decisionService.getVariation(configObj, experimentKey, userId, attributes).result;
         const decisionNotificationType = projectConfig.isFeatureExperiment(configObj, experiment.id)
           ? DECISION_NOTIFICATION_TYPES.FEATURE_TEST
           : DECISION_NOTIFICATION_TYPES.AB_TEST;
@@ -577,7 +577,7 @@ export default class Optimizely {
     }
 
     try {
-      return this.decisionService.getForcedVariation(configObj, experimentKey, userId).getResult();
+      return this.decisionService.getForcedVariation(configObj, experimentKey, userId).result;
     } catch (ex) {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       this.errorHandler.handleError(ex);
@@ -691,7 +691,7 @@ export default class Optimizely {
       }
 
       let sourceInfo = {};
-      const decisionObj = this.decisionService.getVariationForFeature(configObj, feature, userId, attributes).getResult();
+      const decisionObj = this.decisionService.getVariationForFeature(configObj, feature, userId, attributes).result;
       const decisionSource = decisionObj.decisionSource;
       const experimentKey = decision.getExperimentKey(decisionObj);
       const variationKey = decision.getVariationKey(decisionObj);
@@ -884,7 +884,7 @@ export default class Optimizely {
       return null;
     }
 
-    const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes).getResult();
+    const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes).result;
     const featureEnabled = decision.getFeatureEnabledFromVariation(decisionObj);
     const variableValue = this.getFeatureVariableValueFromVariation(featureKey, featureEnabled, decisionObj.variation, variable, userId);
     let sourceInfo = {};
@@ -1198,7 +1198,7 @@ export default class Optimizely {
         return null;
       }
 
-      const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes).getResult();
+      const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes).result;
       const featureEnabled = decision.getFeatureEnabledFromVariation(decisionObj);
       const allVariables: { [variableKey: string]: unknown } = {};
 
@@ -1492,8 +1492,8 @@ export default class Optimizely {
       userId,
       attributes
     );
-    reasons.push(...decisionVariation.getReasons());
-    const decisionObj = decisionVariation.getResult();
+    reasons.push(...decisionVariation.reasons);
+    const decisionObj = decisionVariation.result;
     const decisionSource = decisionObj.decisionSource;
     const experimentKey = decision.getExperimentKey(decisionObj);
     const variationKey = decision.getVariationKey(decisionObj);

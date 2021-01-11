@@ -141,11 +141,6 @@ export enum OptimizelyDecideOptions {
   EXCLUDE_VARIABLES = 'EXCLUDE_VARIABLES'
 }
 
-export interface DecisionResponse<T> {
-  getResult(): T;
-  getReasons(): string[];
-}
-
 /**
  * options required to create optimizely object
  */
