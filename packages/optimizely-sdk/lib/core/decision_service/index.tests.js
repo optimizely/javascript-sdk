@@ -1155,7 +1155,6 @@ describe('lib/core/decision_service', function() {
               test_attribute: 'test_value',
             }).result;
 
-            console.log('***decision***', decision);
             var expectedDecision = {
               experiment: {
                 forcedVariations: {},
