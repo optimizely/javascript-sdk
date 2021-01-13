@@ -52,7 +52,7 @@ export interface DecisionService {
     experimentKey: string,
     userId: string,
     attributes?: UserAttributes,
-    options?: { [key: string]: boolean },
+    options?: { [key: string]: boolean }
   ): DecisionResponse<string | null>;
 
   /**
