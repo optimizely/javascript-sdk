@@ -180,8 +180,10 @@ DecisionService.prototype.getVariation = function(configObj, experimentKey, user
   );
   this.logger.log(LOG_LEVEL.INFO, userInVariationLogMessage);
   decideReasons.push(userInVariationLogMessage);
-  // persist bucketing
-  this.__saveUserProfile(experiment, variation, userId, experimentBucketMap);
+  // persist bucketing if decide options do not include shouldIgnoreUPS
+  if (!shouldIgnoreUPS) {
+    this.__saveUserProfile(experiment, variation, userId, experimentBucketMap);
+  }
 
   return {
     result: variation.key,
