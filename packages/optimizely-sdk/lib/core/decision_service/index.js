@@ -420,14 +420,14 @@ DecisionService.prototype.__saveUserProfile = function(experiment, variation, us
  * experiment properties (both objects), as well as a decisionSource property.
  * decisionSource indicates whether the decision was due to a rollout or an
  * experiment.
- * @param   {Object}            configObj         The parsed project configuration object
- * @param   {Object}            feature           A feature flag object from project configuration
- * @param   {String}            userId            A string identifying the user, for bucketing
- * @param   {Object}            attributes        Optional user attributes
- * @param   {Object}            options           Map of decide options
- * @return  {Object}            DecisionResponse  DecisionResponse containing an object with experiment, variation, and decisionSource
- *                                                properties and decide reasons. If the user was not bucketed into a variation, the variation
- *                                                property in decision object is null.
+ * @param   {Object}                      configObj         The parsed project configuration object
+ * @param   {Object}                      feature           A feature flag object from project configuration
+ * @param   {String}                      userId            A string identifying the user, for bucketing
+ * @param   {Object}                      attributes        Optional user attributes
+ * @param   {[key: string]: boolean}      options           Map of decide options
+ * @return  {Object}                      DecisionResponse  DecisionResponse containing an object with experiment, variation, and decisionSource
+ *                                                          properties and decide reasons. If the user was not bucketed into a variation, the variation
+ *                                                          property in decision object is null.
  */
 DecisionService.prototype.getVariationForFeature = function(configObj, feature, userId, attributes, options = {}) {
   var decideReasons = [];
@@ -465,7 +465,7 @@ DecisionService.prototype.getVariationForFeature = function(configObj, feature, 
 };
 
 
-DecisionService.prototype._getVariationForFeatureExperiment = function(configObj, feature, userId, attributes, options) {
+DecisionService.prototype._getVariationForFeatureExperiment = function(configObj, feature, userId, attributes, options = {}) {
   var decideReasons = [];
   var experiment = null;
   var variationKey = null;
