@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2020, Optimizely, Inc. and contributors                   *
+ * Copyright 2020-2021, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -505,7 +505,7 @@ export default class Optimizely {
           return null;
         }
 
-        const variationKey = this.decisionService.getVariation(configObj, experimentKey, userId, attributes);
+        const variationKey = this.decisionService.getVariation(configObj, experimentKey, userId, attributes).result;
         const decisionNotificationType = projectConfig.isFeatureExperiment(configObj, experiment.id)
           ? DECISION_NOTIFICATION_TYPES.FEATURE_TEST
           : DECISION_NOTIFICATION_TYPES.AB_TEST;
@@ -577,7 +577,7 @@ export default class Optimizely {
     }
 
     try {
-      return this.decisionService.getForcedVariation(configObj, experimentKey, userId);
+      return this.decisionService.getForcedVariation(configObj, experimentKey, userId).result;
     } catch (ex) {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       this.errorHandler.handleError(ex);
@@ -691,7 +691,7 @@ export default class Optimizely {
       }
 
       let sourceInfo = {};
-      const decisionObj = this.decisionService.getVariationForFeature(configObj, feature, userId, attributes);
+      const decisionObj = this.decisionService.getVariationForFeature(configObj, feature, userId, attributes).result;
       const decisionSource = decisionObj.decisionSource;
       const experimentKey = decision.getExperimentKey(decisionObj);
       const variationKey = decision.getVariationKey(decisionObj);
@@ -884,7 +884,7 @@ export default class Optimizely {
       return null;
     }
 
-    const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
+    const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes).result;
     const featureEnabled = decision.getFeatureEnabledFromVariation(decisionObj);
     const variableValue = this.getFeatureVariableValueFromVariation(featureKey, featureEnabled, decisionObj.variation, variable, userId);
     let sourceInfo = {};
@@ -1198,7 +1198,7 @@ export default class Optimizely {
         return null;
       }
 
-      const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes);
+      const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes).result;
       const featureEnabled = decision.getFeatureEnabledFromVariation(decisionObj);
       const allVariables: { [variableKey: string]: unknown } = {};
 
@@ -1486,12 +1486,14 @@ export default class Optimizely {
     const userId = user.getUserId();
     const attributes = user.getAttributes();
     const allDecideOptions = this.getAllDecideOptions(options);
-    const decisionObj = this.decisionService.getVariationForFeature(
+    const decisionVariation = this.decisionService.getVariationForFeature(
       configObj,
       feature,
       userId,
       attributes
     );
+    reasons.push(...decisionVariation.reasons);
+    const decisionObj = decisionVariation.result;
     const decisionSource = decisionObj.decisionSource;
     const experimentKey = decision.getExperimentKey(decisionObj);
     const variationKey = decision.getVariationKey(decisionObj);
@@ -1540,13 +1542,15 @@ export default class Optimizely {
     }
 
     const shouldIncludeReasons = allDecideOptions[OptimizelyDecideOptions.INCLUDE_REASONS];
+    const reportedReasons = shouldIncludeReasons ? reasons: [];
+
     const featureInfo = {
       flagKey: key,
       enabled: flagEnabled,
       variationKey: variationKey,
       ruleKey: experimentKey,
       variables: variablesMap,
-      reasons: reasons,
+      reasons: reportedReasons,
       decisionEventDispatched: decisionEventDispatched,
     };
 
@@ -1564,7 +1568,7 @@ export default class Optimizely {
       ruleKey: experimentKey,
       flagKey: key,
       userContext: user,
-      reasons: shouldIncludeReasons ? reasons: [],
+      reasons: reportedReasons,
     };
   }
 
