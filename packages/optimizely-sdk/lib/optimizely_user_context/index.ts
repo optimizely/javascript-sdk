@@ -69,7 +69,7 @@ export default class OptimizelyUserContext {
     options: OptimizelyDecideOptions[] = []
   ): OptimizelyDecision {
 
-    return this.optimizely.decide(this, key, options);
+    return this.optimizely.decide(this.cloneUserContext(), key, options);
   }
 
   /**
@@ -85,7 +85,7 @@ export default class OptimizelyUserContext {
     options: OptimizelyDecideOptions[] = [],
   ): { [key: string]: OptimizelyDecision } {
 
-    return this.optimizely.decideForKeys(this, keys, options);
+    return this.optimizely.decideForKeys(this.cloneUserContext(), keys, options);
   }
 
   /**
@@ -97,7 +97,7 @@ export default class OptimizelyUserContext {
     options: OptimizelyDecideOptions[] = []
   ): { [key: string]: OptimizelyDecision } {
 
-    return this.optimizely.decideAll(this, options);
+    return this.optimizely.decideAll(this.cloneUserContext(), options);
   }
 
   /**
@@ -107,5 +107,13 @@ export default class OptimizelyUserContext {
    */
   trackEvent(eventName: string, eventTags?: EventTags): void {
     this.optimizely.track(eventName, this.userId, this.attributes, eventTags);
+  }
+
+  private cloneUserContext(): OptimizelyUserContext {
+    return new OptimizelyUserContext({
+      optimizely: this.getOptimizely(),
+      userId: this.getUserId(),
+      attributes: this.getAttributes(),
+    })
   }
 }
