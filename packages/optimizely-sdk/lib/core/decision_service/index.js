@@ -60,7 +60,7 @@ function DecisionService(options) {
  * @param  {string}                                 experimentKey
  * @param  {string}                                 userId
  * @param  {Object}                                 attributes
- * @param  {OptimizelyDecideOptions[]}              options           Decide options
+ * @param  {[key: string]: boolean}                 options           Optional map of decide options
  * @return {Object}                                 DecisionResonse   DecisionResonse containing the variation the user is bucketed into
  *                                                                    and the decide reasons.
  */

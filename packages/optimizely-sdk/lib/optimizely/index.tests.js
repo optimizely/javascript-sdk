@@ -5665,6 +5665,46 @@ describe('lib/optimizely', function() {
           sinon.assert.notCalled(mockUserProfileServiceInstance.save);
         });
       });
+
+      describe('with IGNORE_USER_PROFILE_SERVICE flag in default decide options', function() {
+        it('should bypass user profile service', function() {
+          var flagKey = 'feature_2';           // embedding experiment: 'exp_no_audience'
+          var variationId2 = '10418510624';
+          var variationKey1 = 'variation_with_traffic';
+          var mockUserProfileServiceInstance = {
+            lookup: sinon.stub().returns({
+              user_id: userId,
+              experiment_bucket_map: {
+                '10420810910': { // 'exp_no_audience'
+                  variation_id: variationId2,
+                },
+              },
+            }),
+            save: sinon.stub()
+          };
+          var optlyInstanceWithUserProfile = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestDecideProjectConfig(),
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            jsonSchemaValidator: jsonSchemaValidator,
+            userProfileService: mockUserProfileServiceInstance,
+            logger: createdLogger,
+            isValidInstance: true,
+            eventBatchSize: 1,
+            defaultDecideOptions: [ OptimizelyDecideOptions.IGNORE_USER_PROFILE_SERVICE ]
+          });
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstanceWithUserProfile,
+            userId
+          });
+          var decision = optlyInstanceWithUserProfile.decide(user, flagKey);
+          // should ignore variationId2 set by UPS and return variationId1
+          assert.equal(variationKey1, decision.variationKey);
+          // also should not save either
+          sinon.assert.notCalled(mockUserProfileServiceInstance.save);
+        });
+      });
     });
 
     describe('#decideForKeys', function() {
