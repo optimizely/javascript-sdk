@@ -155,8 +155,8 @@ describe('lib/core/decision_service', function() {
         var userProfileLookupStub;
         var userProfileSaveStub;
         var fakeDecisionWhitelistedVariation = {
-          getResult: sinon.stub().returns(null),
-          getReasons: sinon.stub().returns([])
+          result: null,
+          reasons: [],
         }
         beforeEach(function() {
           userProfileServiceInstance = {
