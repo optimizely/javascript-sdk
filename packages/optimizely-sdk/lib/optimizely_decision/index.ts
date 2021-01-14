@@ -17,11 +17,17 @@ import OptimizelyUserContext from '../optimizely_user_context';
 
 export interface OptimizelyDecision {
   variationKey: string | null;
+  // The boolean value indicating if the flag is enabled or not
   enabled: boolean;
+  // The collection of variables associated with the decision
   variables: { [variableKey: string]: unknown };
+  // The rule key of the decision
   ruleKey: string | null;
+  // The flag key for which the decision has been made for
   flagKey: string;
+  // A copy of the user context for which the decision has been made for
   userContext: OptimizelyUserContext;
+  // An array of error/info messages describing why the decision has been made.
   reasons: string[];
 }
 
