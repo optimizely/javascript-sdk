@@ -1496,8 +1496,8 @@ export default class Optimizely {
     reasons.push(...decisionVariation.reasons);
     const decisionObj = decisionVariation.result;
     const decisionSource = decisionObj.decisionSource;
-    const experimentKey = decision.getExperimentKey(decisionObj);
-    const variationKey = decision.getVariationKey(decisionObj);
+    const experimentKey = decisionObj.experiment?.key ?? null;
+    const variationKey = decisionObj.variation?.key ?? null;
     const flagEnabled: boolean = decision.getFeatureEnabledFromVariation(decisionObj);
     if (flagEnabled === true) {
       this.logger.log(
