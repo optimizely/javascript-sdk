@@ -21,7 +21,7 @@ import * as enums from '../../utils/enums';
 import projectConfig from '../project_config';
 import AudienceEvaluator from '../audience_evaluator';
 import * as stringValidator from '../../utils/string_value_validator';
-import { OptimizelyDecideOptions } from '../../shared_types';
+import { OptimizelyDecideOption } from '../../shared_types';
 
 var MODULE_NAME = 'DECISION_SERVICE';
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
@@ -100,7 +100,7 @@ DecisionService.prototype.getVariation = function(configObj, experimentKey, user
     };
   }
 
-  var shouldIgnoreUPS = options[OptimizelyDecideOptions.IGNORE_USER_PROFILE_SERVICE];
+  var shouldIgnoreUPS = options[OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE];
 
   // check for sticky bucketing if decide options do not include shouldIgnoreUPS
   if (!shouldIgnoreUPS) {

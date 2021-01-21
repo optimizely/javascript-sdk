@@ -14,7 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import Optimizely from '../../lib/optimizely';
-import { UserAttributes, OptimizelyDecideOptions, EventTags } from '../../lib/shared_types';
+import { UserAttributes, OptimizelyDecideOption, EventTags } from '../../lib/shared_types';
 import { OptimizelyDecision } from '../optimizely_decision';
 
 export default class OptimizelyUserContext {
@@ -66,7 +66,7 @@ export default class OptimizelyUserContext {
    */
   decide(
     key: string,
-    options: OptimizelyDecideOptions[] = []
+    options: OptimizelyDecideOption[] = []
   ): OptimizelyDecision {
 
     return this.optimizely.decide(this.cloneUserContext(), key, options);
@@ -77,12 +77,12 @@ export default class OptimizelyUserContext {
    * If the SDK finds an error for a key, the response will include a decision for the key showing reasons for the error.
    * The SDK will always return key-mapped decisions. When it cannot process requests, it will return an empty map after logging the errors.
    * @param     {string[]}                   keys        An array of flag keys for which decisions will be made.
-   * @param     {OptimizelyDecideOptions[]}  options     An array of options for decision-making.
+   * @param     {OptimizelyDecideOption[]}   options     An array of options for decision-making.
    * @return    {[key: string]: OptimizelyDecision}      An object of decision results mapped by flag keys.
    */
   decideForKeys(
     keys: string[],
-    options: OptimizelyDecideOptions[] = [],
+    options: OptimizelyDecideOption[] = [],
   ): { [key: string]: OptimizelyDecision } {
 
     return this.optimizely.decideForKeys(this.cloneUserContext(), keys, options);
@@ -90,11 +90,11 @@ export default class OptimizelyUserContext {
 
   /**
    * Returns an object of decision results for all active flag keys.
-   * @param     {OptimizelyDecideOptions[]}  options     An array of options for decision-making.
+   * @param     {OptimizelyDecideOption[]}   options     An array of options for decision-making.
    * @return    {[key: string]: OptimizelyDecision}      An object of all decision results mapped by flag keys.
    */
   decideAll(
-    options: OptimizelyDecideOptions[] = []
+    options: OptimizelyDecideOption[] = []
   ): { [key: string]: OptimizelyDecision } {
 
     return this.optimizely.decideAll(this.cloneUserContext(), options);
