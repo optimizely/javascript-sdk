@@ -29,7 +29,7 @@ import * as enums from './utils/enums';
 import loggerPlugin from './plugins/logger';
 import Optimizely from './optimizely';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
-import { SDKOptions, OptimizelyDecideOptions } from './shared_types';
+import { SDKOptions, OptimizelyDecideOption } from './shared_types';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -153,7 +153,7 @@ export {
   setLogLevel,
   createInstance,
   __internalResetRetryState,
-  OptimizelyDecideOptions,
+  OptimizelyDecideOption,
 };
 
 export default {
@@ -165,5 +165,5 @@ export default {
   setLogLevel,
   createInstance,
   __internalResetRetryState,
-  OptimizelyDecideOptions,
+  OptimizelyDecideOption,
 };

@@ -26,7 +26,7 @@ import {
   FeatureFlag,
   FeatureVariable,
   OptimizelyOptions,
-  OptimizelyDecideOptions
+  OptimizelyDecideOption
 } from '../shared_types';
 import { OptimizelyDecision, newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
@@ -122,8 +122,8 @@ export default class Optimizely {
 
     const defaultDecideOptions: { [key: string]: boolean } = {};
     decideOptionsArray.forEach((option) => {
-      // Filter out all provided default decide options that are not in OptimizelyDecideOptions[]
-      if (OptimizelyDecideOptions[option]) {
+      // Filter out all provided default decide options that are not in OptimizelyDecideOption[]
+      if (OptimizelyDecideOption[option]) {
         defaultDecideOptions[option] = true;
       } else {
         this.logger.log(
@@ -1466,7 +1466,7 @@ export default class Optimizely {
   decide(
     user: OptimizelyUserContext,
     key: string,
-    options: OptimizelyDecideOptions[] = []
+    options: OptimizelyDecideOption[] = []
   ): OptimizelyDecision {
     const configObj = this.projectConfigManager.getConfig();
     const reasons: string[] = [];
@@ -1496,8 +1496,8 @@ export default class Optimizely {
     reasons.push(...decisionVariation.reasons);
     const decisionObj = decisionVariation.result;
     const decisionSource = decisionObj.decisionSource;
-    const experimentKey = decision.getExperimentKey(decisionObj);
-    const variationKey = decision.getVariationKey(decisionObj);
+    const experimentKey = decisionObj.experiment?.key ?? null;
+    const variationKey = decisionObj.variation?.key ?? null;
     const flagEnabled: boolean = decision.getFeatureEnabledFromVariation(decisionObj);
     if (flagEnabled === true) {
       this.logger.log(
@@ -1514,7 +1514,7 @@ export default class Optimizely {
     const variablesMap: { [key: string]: unknown } = {};
     let decisionEventDispatched = false;
 
-    if (!allDecideOptions[OptimizelyDecideOptions.EXCLUDE_VARIABLES]) {
+    if (!allDecideOptions[OptimizelyDecideOption.EXCLUDE_VARIABLES]) {
       feature.variables.forEach(variable => {
         variablesMap[variable.key] =
         this.getFeatureVariableValueFromVariation(
@@ -1528,7 +1528,7 @@ export default class Optimizely {
     }
 
     if (
-      !allDecideOptions[OptimizelyDecideOptions.DISABLE_DECISION_EVENT] && (
+      !allDecideOptions[OptimizelyDecideOption.DISABLE_DECISION_EVENT] && (
       decisionSource === DECISION_SOURCES.FEATURE_TEST ||
       decisionSource === DECISION_SOURCES.ROLLOUT && projectConfig.getSendFlagDecisionsValue(configObj))
     ) {
@@ -1542,7 +1542,7 @@ export default class Optimizely {
       decisionEventDispatched = true;
     }
 
-    const shouldIncludeReasons = allDecideOptions[OptimizelyDecideOptions.INCLUDE_REASONS];
+    const shouldIncludeReasons = allDecideOptions[OptimizelyDecideOption.INCLUDE_REASONS];
     const reportedReasons = shouldIncludeReasons ? reasons: [];
 
     const featureInfo = {
@@ -1575,17 +1575,17 @@ export default class Optimizely {
 
   /**
    * Get all decide options.
-   * @param  {OptimizelyDecideOptions[]}          options   decide options
+   * @param  {OptimizelyDecideOption[]}          options   decide options
    * @return {[key: string]: boolean}             Map of all provided decide options including default decide options
    */
-  private getAllDecideOptions(options: OptimizelyDecideOptions[]): { [key: string]: boolean } {
+  private getAllDecideOptions(options: OptimizelyDecideOption[]): { [key: string]: boolean } {
     const allDecideOptions = {...this.defaultDecideOptions};
     if (!Array.isArray(options)) {
       this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DECIDE_OPTIONS, MODULE_NAME));
     } else {
       options.forEach((option) => {
-        // Filter out all provided decide options that are not in OptimizelyDecideOptions[]
-        if (OptimizelyDecideOptions[option]) {
+        // Filter out all provided decide options that are not in OptimizelyDecideOption[]
+        if (OptimizelyDecideOption[option]) {
           allDecideOptions[option] = true;
         } else {
           this.logger.log(
@@ -1605,13 +1605,13 @@ export default class Optimizely {
    * The SDK will always return an object of decisions. When it cannot process requests, it will return an empty object after logging the errors.
    * @param     {OptimizelyUserContext}      user        A user context associated with this OptimizelyClient
    * @param     {string[]}                   keys        An array of flag keys for which decisions will be made.
-   * @param     {OptimizelyDecideOptions[]}  options     An array of options for decision-making.
+   * @param     {OptimizelyDecideOption[]}  options     An array of options for decision-making.
    * @return    {[key: string]: OptimizelyDecision}      An object of decision results mapped by flag keys.
    */
   decideForKeys(
     user: OptimizelyUserContext,
     keys: string[],
-    options: OptimizelyDecideOptions[] = []
+    options: OptimizelyDecideOption[] = []
   ): { [key: string]: OptimizelyDecision } {
     const decisionMap: { [key: string]: OptimizelyDecision } = {};
     if (!this.isValidInstance()) {
@@ -1625,7 +1625,7 @@ export default class Optimizely {
     const allDecideOptions = this.getAllDecideOptions(options);
     keys.forEach(key => {
       const optimizelyDecision: OptimizelyDecision = this.decide(user, key, options);
-      if (!allDecideOptions[OptimizelyDecideOptions.ENABLED_FLAGS_ONLY] || optimizelyDecision.enabled) {
+      if (!allDecideOptions[OptimizelyDecideOption.ENABLED_FLAGS_ONLY] || optimizelyDecision.enabled) {
         decisionMap[key] = optimizelyDecision;
       }
     });
@@ -1636,12 +1636,12 @@ export default class Optimizely {
   /**
    * Returns an object of decision results for all active flag keys.
    * @param     {OptimizelyUserContext}      user        A user context associated with this OptimizelyClient
-   * @param     {OptimizelyDecideOptions[]}  options     An array of options for decision-making.
+   * @param     {OptimizelyDecideOption[]}  options     An array of options for decision-making.
    * @return    {[key: string]: OptimizelyDecision}      An object of all decision results mapped by flag keys.
    */
   decideAll(
     user: OptimizelyUserContext,
-    options: OptimizelyDecideOptions[] = []
+    options: OptimizelyDecideOption[] = []
   ): { [key: string]: OptimizelyDecision } {
     const configObj = this.projectConfigManager.getConfig();
     const decisionMap: { [key: string]: OptimizelyDecision } = {};

@@ -65,7 +65,7 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type OptimizelyDecision = import('./optimizely_decision').OptimizelyDecision;
 
-  export enum OptimizelyDecideOptions {
+  export enum OptimizelyDecideOption {
     DISABLE_DECISION_EVENT = 'DISABLE_DECISION_EVENT',
     ENABLED_FLAGS_ONLY =  'ENABLED_FLAGS_ONLY',
     IGNORE_USER_PROFILE_SERVICE = 'IGNORE_USER_PROFILE_SERVICE',

@@ -21,7 +21,7 @@ import * as logging from '@optimizely/js-sdk-logging';
 
 import Optimizely from './';
 import OptimizelyUserContext from '../optimizely_user_context';
-import { OptimizelyDecideOptions } from '../shared_types';
+import { OptimizelyDecideOption } from '../shared_types';
 import AudienceEvaluator from '../core/audience_evaluator';
 import bluebird from 'bluebird';
 import bucketer from '../core/bucketer';
@@ -4707,7 +4707,7 @@ describe('lib/optimizely', function() {
             optimizely: optlyInstance,
             userId,
           });
-          var decision = optlyInstance.decide(user, flagKey, [ OptimizelyDecideOptions.DISABLE_DECISION_EVENT ]);
+          var decision = optlyInstance.decide(user, flagKey, [ OptimizelyDecideOption.DISABLE_DECISION_EVENT ]);
           var expectedDecision = {
             variationKey: 'variation_with_traffic',
             enabled: true,
@@ -4747,7 +4747,7 @@ describe('lib/optimizely', function() {
             optimizely: optlyInstance,
             userId,
           });
-          var decision = optlyInstance.decide(user, flagKey, [ OptimizelyDecideOptions.DISABLE_DECISION_EVENT, OptimizelyDecideOptions.EXCLUDE_VARIABLES ]);
+          var decision = optlyInstance.decide(user, flagKey, [ OptimizelyDecideOption.DISABLE_DECISION_EVENT, OptimizelyDecideOption.EXCLUDE_VARIABLES ]);
           var expectedDecision = {
             variationKey: 'variation_with_traffic',
             enabled: true,
@@ -4875,10 +4875,10 @@ describe('lib/optimizely', function() {
           });
           var decision = optlyInstance.decide(user, flagKey);
           var expectedDecision = {
-            variationKey: '',
+            variationKey: null,
             enabled: false,
             variables: expectedVariables,
-            ruleKey: '',
+            ruleKey: null,
             flagKey: flagKey,
             userContext: user,
             reasons: [],
@@ -4896,8 +4896,8 @@ describe('lib/optimizely', function() {
               decisionInfo: {
                 flagKey: 'feature_3',
                 enabled: false,
-                ruleKey: '',
-                variationKey: '',
+                ruleKey: null,
+                variationKey: null,
                 variables: expectedVariables,
                 decisionEventDispatched: true,
                 reasons: [],
@@ -4919,7 +4919,7 @@ describe('lib/optimizely', function() {
             logger: createdLogger,
             isValidInstance: true,
             eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOptions.EXCLUDE_VARIABLES ],
+            defaultDecideOptions: [ OptimizelyDecideOption.EXCLUDE_VARIABLES ],
           });
 
           sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
@@ -4981,7 +4981,7 @@ describe('lib/optimizely', function() {
             optimizely: optlyInstance,
             userId
           });
-          var decision = optlyInstance.decide(user, flagKey, [ OptimizelyDecideOptions.DISABLE_DECISION_EVENT ]);
+          var decision = optlyInstance.decide(user, flagKey, [ OptimizelyDecideOption.DISABLE_DECISION_EVENT ]);
           var expectedDecisionObj = {
             variationKey: 'variation_with_traffic',
             enabled: true,
@@ -5027,7 +5027,7 @@ describe('lib/optimizely', function() {
             logger: createdLogger,
             isValidInstance: true,
             eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOptions.DISABLE_DECISION_EVENT ],
+            defaultDecideOptions: [ OptimizelyDecideOption.DISABLE_DECISION_EVENT ],
           });
 
           sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
@@ -5090,7 +5090,7 @@ describe('lib/optimizely', function() {
             logger: createdLogger,
             isValidInstance: true,
             eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
+            defaultDecideOptions: [ OptimizelyDecideOption.INCLUDE_REASONS ],
           });
 
           sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
@@ -5145,7 +5145,7 @@ describe('lib/optimizely', function() {
             logger: createdLogger,
             isValidInstance: true,
             eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOptions.INCLUDE_REASONS ],
+            defaultDecideOptions: [ OptimizelyDecideOption.INCLUDE_REASONS ],
           });
           var user = new OptimizelyUserContext({
             optimizely: optlyInstanceWithUserProfile,
@@ -5694,7 +5694,7 @@ describe('lib/optimizely', function() {
             var decision1 = optlyInstanceWithUserProfile.decide(user, flagKey);
             // should return variationId2 set by UPS
             assert.equal(variationKey2, decision1.variationKey);
-            var decision2 = optlyInstanceWithUserProfile.decide(user, flagKey, [ OptimizelyDecideOptions.IGNORE_USER_PROFILE_SERVICE ]);
+            var decision2 = optlyInstanceWithUserProfile.decide(user, flagKey, [ OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE ]);
             // should ignore variationId2 set by UPS and return variationId1
             assert.equal(variationKey1, decision2.variationKey);
             // also should not save either
@@ -5728,7 +5728,7 @@ describe('lib/optimizely', function() {
               logger: createdLogger,
               isValidInstance: true,
               eventBatchSize: 1,
-              defaultDecideOptions: [ OptimizelyDecideOptions.IGNORE_USER_PROFILE_SERVICE ]
+              defaultDecideOptions: [ OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE ]
             });
             var user = new OptimizelyUserContext({
               optimizely: optlyInstanceWithUserProfile,
@@ -5827,7 +5827,7 @@ describe('lib/optimizely', function() {
         var flagKey2 = 'feature_3';
         var user = optlyInstance.createUserContext(userId, { gender: 'female' });
         var expectedVariables = optlyInstance.getAllFeatureVariables(flagKey1, userId);
-        var decisionsMap = optlyInstance.decideForKeys(user, [ flagKey1, flagKey2 ], [ OptimizelyDecideOptions.ENABLED_FLAGS_ONLY ]);
+        var decisionsMap = optlyInstance.decideForKeys(user, [ flagKey1, flagKey2 ], [ OptimizelyDecideOption.ENABLED_FLAGS_ONLY ]);
         var decision = decisionsMap[flagKey1];
         var expectedDecision = {
           variationKey: 'variation_with_traffic',
@@ -5897,10 +5897,10 @@ describe('lib/optimizely', function() {
             reasons: [],
           }
           var expectedDecision3 = {
-            variationKey: '',
+            variationKey: null,
             enabled: false,
             variables: expectedVariables3,
-            ruleKey: '',
+            ruleKey: null,
             flagKey: allFlagKeysArray[2],
             userContext: user,
             reasons: [],
@@ -5918,7 +5918,7 @@ describe('lib/optimizely', function() {
           var user = optlyInstance.createUserContext(userId, { gender: 'female' });
           var expectedVariables1 = optlyInstance.getAllFeatureVariables(flagKey1, userId);
           var expectedVariables2 = optlyInstance.getAllFeatureVariables(flagKey2, userId);
-          var decisionsMap = optlyInstance.decideAll(user, [ OptimizelyDecideOptions.ENABLED_FLAGS_ONLY ]);
+          var decisionsMap = optlyInstance.decideAll(user, [ OptimizelyDecideOption.ENABLED_FLAGS_ONLY ]);
           var decision1 = decisionsMap[flagKey1];
           var decision2 = decisionsMap[flagKey2];
           var expectedDecision1 = {
@@ -5957,7 +5957,7 @@ describe('lib/optimizely', function() {
             logger: createdLogger,
             isValidInstance: true,
             eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOptions.ENABLED_FLAGS_ONLY ],
+            defaultDecideOptions: [ OptimizelyDecideOption.ENABLED_FLAGS_ONLY ],
           });
 
           sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
@@ -6004,7 +6004,7 @@ describe('lib/optimizely', function() {
           var flagKey1 = 'feature_1';
           var flagKey2 = 'feature_2';
           var user = optlyInstance.createUserContext(userId, { gender: 'female' });
-          var decisionsMap = optlyInstance.decideAll(user, [ OptimizelyDecideOptions.EXCLUDE_VARIABLES ]);
+          var decisionsMap = optlyInstance.decideAll(user, [ OptimizelyDecideOption.EXCLUDE_VARIABLES ]);
           var decision1 = decisionsMap[flagKey1];
           var decision2 = decisionsMap[flagKey2];
           var expectedDecision1 = {
