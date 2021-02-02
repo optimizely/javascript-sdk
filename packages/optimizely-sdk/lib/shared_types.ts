@@ -207,7 +207,7 @@ export interface SDKOptions {
   sdkKey?: string;
   // user profile that contains user information
   userProfileService?: UserProfileService;
-  // dafailt options for decide API
+  // dafault options for decide API
   defaultDecideOptions?: OptimizelyDecideOption[] | undefined
 }
 
