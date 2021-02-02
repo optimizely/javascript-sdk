@@ -208,7 +208,7 @@ export interface SDKOptions {
   // user profile that contains user information
   userProfileService?: UserProfileService;
   // dafault options for decide API
-  defaultDecideOptions?: OptimizelyDecideOption[] | undefined
+  defaultDecideOptions?: OptimizelyDecideOption[];
 }
 
 export type OptimizelyExperimentsMap = {
