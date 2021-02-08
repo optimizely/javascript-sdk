@@ -1,3 +1,18 @@
+/**
+ * Copyright 2020-2021, Optimizely
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import { ErrorHandler, LogHandler, LogLevel } from "@optimizely/js-sdk-logging";
 
 export type UserAttributes = {
@@ -117,8 +132,8 @@ export interface Rollout {
   experiments: Experiment[];
 }
 
-//TODO: Move OptimizelyDecideOptions to @optimizely/optimizely-sdk/lib/utils/enums
-export enum OptimizelyDecideOptions {
+//TODO: Move OptimizelyDecideOption to @optimizely/optimizely-sdk/lib/utils/enums
+export enum OptimizelyDecideOption {
   DISABLE_DECISION_EVENT = 'DISABLE_DECISION_EVENT',
   ENABLED_FLAGS_ONLY =  'ENABLED_FLAGS_ONLY',
   IGNORE_USER_PROFILE_SERVICE = 'IGNORE_USER_PROFILE_SERVICE',
@@ -149,7 +164,7 @@ export interface OptimizelyOptions {
   logger: LogHandler;
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
-  defaultDecideOptions?: OptimizelyDecideOptions[]
+  defaultDecideOptions?: OptimizelyDecideOption[]
 }
 
 /**
@@ -191,10 +206,13 @@ export interface Config {
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
   jsonSchemaValidator?: object;
-  userProfileService?: UserProfileService | null;
   eventBatchSize?: number;
   eventFlushInterval?: number;
   sdkKey?: string;
+  // user profile that contains user information
+  userProfileService?: UserProfileService;
+  // dafault options for decide API
+  defaultDecideOptions?: OptimizelyDecideOption[];
 }
 
 export type OptimizelyExperimentsMap = {

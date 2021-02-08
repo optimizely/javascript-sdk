@@ -29,7 +29,7 @@ import * as enums from './utils/enums';
 import loggerPlugin from './plugins/logger';
 import Optimizely from './optimizely';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
-import { Config } from './shared_types';
+import { SDKOptions, OptimizelyDecideOption } from './shared_types';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -47,7 +47,7 @@ let hasRetriedEvents = false;
  * @return {Optimizely|null} the Optimizely object
  *                           null on error 
  */
-const createInstance = function(config: Config): Optimizely | null {
+const createInstance = function(config: SDKOptions): Optimizely | null {
   try {
 
     // TODO warn about setting per instance errorHandler / logger / logLevel
@@ -155,6 +155,7 @@ export {
   setLogLevel,
   createInstance,
   __internalResetRetryState,
+  OptimizelyDecideOption,
 };
 
 export default {
@@ -166,4 +167,5 @@ export default {
   setLogLevel,
   createInstance,
   __internalResetRetryState,
+  OptimizelyDecideOption,
 };

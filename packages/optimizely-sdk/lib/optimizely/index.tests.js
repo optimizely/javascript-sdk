@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2016-2020, Optimizely, Inc. and contributors                   *
+ * Copyright 2016-2021, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { assert } from 'chai';
+import { assert, expect } from 'chai';
 import sinon from 'sinon';
 import { sprintf, NOTIFICATION_TYPES } from '@optimizely/js-sdk-utils';
 import eventProcessor from '../core/event_processor';
@@ -21,7 +21,7 @@ import * as logging from '@optimizely/js-sdk-logging';
 
 import Optimizely from './';
 import OptimizelyUserContext from '../optimizely_user_context';
-import { OptimizelyDecideOptions } from '../shared_types';
+import { OptimizelyDecideOption } from '../shared_types';
 import AudienceEvaluator from '../core/audience_evaluator';
 import bluebird from 'bluebird';
 import bucketer from '../core/bucketer';
@@ -293,6 +293,7 @@ describe('lib/optimizely', function() {
   describe('APIs', function() {
     var optlyInstance;
     var bucketStub;
+    var fakeDecisionResponse;
     var createdLogger = logger.createLogger({
       logLevel: LOG_LEVEL.INFO,
       logToConsole: false,
@@ -324,7 +325,11 @@ describe('lib/optimizely', function() {
 
     describe('#activate', function() {
       it('should call bucketer and dispatchEvent with proper args and return variation key', function() {
-        bucketStub.returns('111129');
+        fakeDecisionResponse = {
+          result: '111129',
+          reasons: [],
+        };
+        bucketStub.returns(fakeDecisionResponse);
         var variation = optlyInstance.activate('testExperiment', 'testUser');
         assert.strictEqual(variation, 'variation');
 
@@ -381,7 +386,11 @@ describe('lib/optimizely', function() {
       });
 
       it('should dispatch proper params for null value attributes', function() {
-        bucketStub.returns('122229');
+        fakeDecisionResponse = {
+          result: '122229',
+          reasons: [],
+        };
+        bucketStub.returns(fakeDecisionResponse);
         var activate = optlyInstance.activate('testExperimentWithAudiences', 'testUser', {
           browser_type: 'firefox',
           test_null_attribute: null,
@@ -450,7 +459,11 @@ describe('lib/optimizely', function() {
       });
 
       it('should call bucketer and dispatchEvent with proper args and return variation key if user is in audience', function() {
-        bucketStub.returns('122229');
+        fakeDecisionResponse = {
+          result: '122229',
+          reasons: [],
+        };
+        bucketStub.returns(fakeDecisionResponse);
         var activate = optlyInstance.activate('testExperimentWithAudiences', 'testUser', { browser_type: 'firefox' });
         assert.strictEqual(activate, 'variationWithAudience');
 
@@ -515,7 +528,11 @@ describe('lib/optimizely', function() {
       });
 
       it('should call activate and dispatchEvent with typed attributes and return variation key', function() {
-        bucketStub.returns('122229');
+        fakeDecisionResponse = {
+          result: '122229',
+          reasons: [],
+        };
+        bucketStub.returns(fakeDecisionResponse);
         var activate = optlyInstance.activate('testExperimentWithAudiences', 'testUser', {
           browser_type: 'firefox',
           boolean_key: true,
@@ -604,7 +621,11 @@ describe('lib/optimizely', function() {
 
       describe('when experiment_bucket_map attribute is present', function() {
         it('should call activate and respect attribute experiment_bucket_map', function() {
-          bucketStub.returns('111128'); // id of "control" variation
+          fakeDecisionResponse = {
+            result: '111128', // id of "control" variation
+            reasons: [],
+          };
+          bucketStub.returns(fakeDecisionResponse);
           var activate = optlyInstance.activate('testExperiment', 'testUser', {
             $opt_experiment_bucket_map: {
               '111127': {
@@ -619,7 +640,11 @@ describe('lib/optimizely', function() {
       });
 
       it('should call bucketer and dispatchEvent with proper args and return variation key if user is in grouped experiment', function() {
-        bucketStub.returns('662');
+        fakeDecisionResponse = {
+          result: '662',
+          reasons: [],
+        };
+        bucketStub.returns(fakeDecisionResponse);
         var activate = optlyInstance.activate('groupExperiment2', 'testUser');
         assert.strictEqual(activate, 'var2exp2');
 
@@ -677,7 +702,11 @@ describe('lib/optimizely', function() {
       });
 
       it('should call bucketer and dispatchEvent with proper args and return variation key if user is in grouped experiment and is in audience', function() {
-        bucketStub.returns('552');
+        fakeDecisionResponse = {
+          result: '552',
+          reasons: [],
+        };
+        bucketStub.returns(fakeDecisionResponse);
         var activate = optlyInstance.activate('groupExperiment1', 'testUser', { browser_type: 'firefox' });
         assert.strictEqual(activate, 'var2exp1');
 
@@ -742,7 +771,11 @@ describe('lib/optimizely', function() {
       });
 
       it('should not make a dispatch event call if variation ID is null', function() {
-        bucketStub.returns(null);
+        fakeDecisionResponse = {
+          result: null,
+          reasons: [],
+        };
+        bucketStub.returns(fakeDecisionResponse);
         assert.isNull(optlyInstance.activate('testExperiment', 'testUser'));
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
         sinon.assert.called(createdLogger.log);
@@ -877,7 +910,11 @@ describe('lib/optimizely', function() {
       });
 
       it('should activate when logger is in DEBUG mode', function() {
-        bucketStub.returns('111129');
+        fakeDecisionResponse = {
+          result: '111129',
+          reasons: [],
+        };
+        bucketStub.returns(fakeDecisionResponse);
         var instance = new Optimizely({
           datafile: testData.getTestProjectConfig(),
           errorHandler: errorHandler,
@@ -1685,7 +1722,11 @@ describe('lib/optimizely', function() {
 
     describe('#getVariation', function() {
       it('should call bucketer and return variation key', function() {
-        bucketStub.returns('111129');
+        fakeDecisionResponse = {
+          result: '111129',
+          reasons: [],
+        };
+        bucketStub.returns(fakeDecisionResponse);
         var variation = optlyInstance.getVariation('testExperiment', 'testUser');
 
         assert.strictEqual(variation, 'variation');
@@ -1701,7 +1742,11 @@ describe('lib/optimizely', function() {
       });
 
       it('should call bucketer and return variation key with attributes', function() {
-        bucketStub.returns('122229');
+        fakeDecisionResponse = {
+          result: '122229',
+          reasons: [],
+        };
+        bucketStub.returns(fakeDecisionResponse);
         var getVariation = optlyInstance.getVariation('testExperimentWithAudiences', 'testUser', {
           browser_type: 'firefox',
         });
@@ -1833,7 +1878,11 @@ describe('lib/optimizely', function() {
       describe('order of bucketing operations', function() {
         it('should properly follow the order of bucketing operations', function() {
           // Order of operations is preconditions > experiment is running > whitelisting > audience eval > variation bucketing
-          bucketStub.returns('122228'); // returns the control variation
+          fakeDecisionResponse = {
+            result: '122228', // returns the control variation
+            reasons: [],
+          };
+          bucketStub.returns(fakeDecisionResponse);
 
           // invalid user, running experiment
           assert.isNull(optlyInstance.activate('testExperiment', 123));
@@ -2225,7 +2274,11 @@ describe('lib/optimizely', function() {
         trackListener = sinon.spy();
         activateListener2 = sinon.spy();
         trackListener2 = sinon.spy();
-        bucketStub.returns('111129');
+        fakeDecisionResponse = {
+          result: '111129',
+          reasons: [],
+        };
+        bucketStub.returns(fakeDecisionResponse);
         sinon.stub(fns, 'currentTimestamp').returns(1509489766569);
       });
 
@@ -2656,7 +2709,11 @@ describe('lib/optimizely', function() {
           });
 
           it('should send notification with actual variation key when activate returns variation', function() {
-            bucketStub.returns('111129');
+            fakeDecisionResponse = {
+              result: '111129',
+              reasons: [],
+            };
+            bucketStub.returns(fakeDecisionResponse);
             var variation = optlyInstance.activate('testExperiment', 'testUser');
             assert.strictEqual(variation, 'variation');
             sinon.assert.calledWith(decisionListener, {
@@ -2671,7 +2728,11 @@ describe('lib/optimizely', function() {
           });
 
           it('should send notification with null variation key when activate returns null', function() {
-            bucketStub.returns(null);
+            fakeDecisionResponse = {
+              result: null,
+              reasons: [],
+            };
+            bucketStub.returns(fakeDecisionResponse);
             var variation = optlyInstance.activate('testExperiment', 'testUser');
             assert.isNull(variation);
             sinon.assert.calledWith(decisionListener, {
@@ -2705,7 +2766,11 @@ describe('lib/optimizely', function() {
           });
 
           it('should send notification with actual variation key when getVariation returns variation', function() {
-            bucketStub.returns('111129');
+            fakeDecisionResponse = {
+              result: '111129',
+              reasons: [],
+            };
+            bucketStub.returns(fakeDecisionResponse);
             var variation = optlyInstance.getVariation('testExperiment', 'testUser');
             assert.strictEqual(variation, 'variation');
             sinon.assert.calledWith(decisionListener, {
@@ -2746,7 +2811,11 @@ describe('lib/optimizely', function() {
 
             optly.notificationCenter.addNotificationListener(enums.NOTIFICATION_TYPES.DECISION, decisionListener);
 
-            bucketStub.returns('594099');
+            fakeDecisionResponse = {
+              result: '594099',
+              reasons: [],
+            };
+            bucketStub.returns(fakeDecisionResponse);
             var variation = optly.getVariation('testing_my_feature', 'testUser');
             assert.strictEqual(variation, 'variation2');
             sinon.assert.calledWith(decisionListener, {
@@ -2793,11 +2862,16 @@ describe('lib/optimizely', function() {
                 beforeEach(function() {
                   var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.testing_my_feature;
                   var variation = experiment.variations[0];
-                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+                  var decisionObj = {
                     experiment: experiment,
                     variation: variation,
                     decisionSource: DECISION_SOURCES.FEATURE_TEST,
-                  });
+                  };
+                  fakeDecisionResponse = {
+                    result: decisionObj,
+                    reasons: [],
+                  };
+                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
                 });
 
                 it('should return true and send notification', function() {
@@ -2824,11 +2898,16 @@ describe('lib/optimizely', function() {
                 beforeEach(function() {
                   var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.test_shared_feature;
                   var variation = experiment.variations[1];
-                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+                  var decisionObj = {
                     experiment: experiment,
                     variation: variation,
                     decisionSource: DECISION_SOURCES.FEATURE_TEST,
-                  });
+                  };
+                  fakeDecisionResponse = {
+                    result: decisionObj,
+                    reasons: [],
+                  };
+                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
                 });
 
                 it('should return false and send notification', function() {
@@ -2858,11 +2937,16 @@ describe('lib/optimizely', function() {
                   // This experiment is the first audience targeting rule in the rollout of feature 'test_feature'
                   var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap['594031'];
                   var variation = experiment.variations[0];
-                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+                  var decisionObj = {
                     experiment: experiment,
                     variation: variation,
                     decisionSource: DECISION_SOURCES.ROLLOUT,
-                  });
+                  };
+                  fakeDecisionResponse = {
+                    result: decisionObj,
+                    reasons: [],
+                  };
+                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
                 });
 
                 it('should return true and send notification', function() {
@@ -2889,11 +2973,16 @@ describe('lib/optimizely', function() {
                   // This experiment is the second audience targeting rule in the rollout of feature 'test_feature'
                   var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap['594037'];
                   var variation = experiment.variations[0];
-                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+                  var decisionObj = {
                     experiment: experiment,
                     variation: variation,
                     decisionSource: DECISION_SOURCES.ROLLOUT,
-                  });
+                  };
+                  fakeDecisionResponse = {
+                    result: decisionObj,
+                    reasons: [],
+                  };
+                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
                 });
 
                 it('should return false and send notification', function() {
@@ -2925,11 +3014,16 @@ describe('lib/optimizely', function() {
 
             describe('user not bucketed into an experiment or a rollout', function() {
               beforeEach(function() {
-                sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+                var decisionObj = {
                   experiment: null,
                   variation: null,
                   decisionSource: DECISION_SOURCES.ROLLOUT,
-                });
+                };
+                fakeDecisionResponse = {
+                  result: decisionObj,
+                  reasons: [],
+                };
+                sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
               });
 
               it('should return false and send notification', function() {
@@ -2959,11 +3053,16 @@ describe('lib/optimizely', function() {
                     'testing_my_feature'
                   );
                   var variation = experiment.variations[0];
-                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+                  var decisionObj = {
                     experiment: experiment,
                     variation: variation,
                     decisionSource: DECISION_SOURCES.FEATURE_TEST,
-                  });
+                  };
+                  fakeDecisionResponse = {
+                    result: decisionObj,
+                    reasons: [],
+                  };
+                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
                 });
 
                 it('returns the right value from getFeatureVariable when variable type is boolean and send notification with featureEnabled true', function() {
@@ -3289,11 +3388,16 @@ describe('lib/optimizely', function() {
                     'testing_my_feature'
                   );
                   var variation = experiment.variations[2];
-                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+                  var decisionObj = {
                     experiment: experiment,
                     variation: variation,
                     decisionSource: DECISION_SOURCES.FEATURE_TEST,
-                  });
+                  };
+                  fakeDecisionResponse = {
+                    result: decisionObj,
+                    reasons: [],
+                  };
+                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
                 });
 
                 it('returns the default value from getFeatureVariableBoolean and send notification with featureEnabled false', function() {
@@ -3489,11 +3593,16 @@ describe('lib/optimizely', function() {
                     '594031'
                   );
                   var variation = experiment.variations[0];
-                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+                  var decisionObj = {
                     experiment: experiment,
                     variation: variation,
                     decisionSource: DECISION_SOURCES.ROLLOUT,
-                  });
+                  };
+                  fakeDecisionResponse = {
+                    result: decisionObj,
+                    reasons: [],
+                  };
+                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
                 });
 
                 it('should return the right value from getFeatureVariable when variable type is boolean and send notification with featureEnabled true', function() {
@@ -3765,11 +3874,16 @@ describe('lib/optimizely', function() {
                     '594037'
                   );
                   var variation = experiment.variations[0];
-                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+                  var decisionObj = {
                     experiment: experiment,
                     variation: variation,
                     decisionSource: DECISION_SOURCES.ROLLOUT,
-                  });
+                  };
+                  fakeDecisionResponse = {
+                    result: decisionObj,
+                    reasons: [],
+                  };
+                  sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
                 });
 
                 it('should return the default value from getFeatureVariable when variable type is boolean and send notification with featureEnabled false', function() {
@@ -4034,11 +4148,16 @@ describe('lib/optimizely', function() {
 
             describe('not bucketed into an experiment or a rollout', function() {
               beforeEach(function() {
-                sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+                var decisionObj = {
                   experiment: null,
                   variation: null,
                   decisionSource: DECISION_SOURCES.ROLLOUT,
-                });
+                };
+                fakeDecisionResponse = {
+                  result: decisionObj,
+                  reasons: [],
+                };
+                sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
               });
 
               it('returns the variable default value from getFeatureVariable when variable type is boolean and send notification with featureEnabled false', function() {
@@ -4588,7 +4707,7 @@ describe('lib/optimizely', function() {
             optimizely: optlyInstance,
             userId,
           });
-          var decision = optlyInstance.decide(user, flagKey, [ OptimizelyDecideOptions.DISABLE_DECISION_EVENT ]);
+          var decision = optlyInstance.decide(user, flagKey, [ OptimizelyDecideOption.DISABLE_DECISION_EVENT ]);
           var expectedDecision = {
             variationKey: 'variation_with_traffic',
             enabled: true,
@@ -4628,7 +4747,7 @@ describe('lib/optimizely', function() {
             optimizely: optlyInstance,
             userId,
           });
-          var decision = optlyInstance.decide(user, flagKey, [ OptimizelyDecideOptions.DISABLE_DECISION_EVENT, OptimizelyDecideOptions.EXCLUDE_VARIABLES ]);
+          var decision = optlyInstance.decide(user, flagKey, [ OptimizelyDecideOption.DISABLE_DECISION_EVENT, OptimizelyDecideOption.EXCLUDE_VARIABLES ]);
           var expectedDecision = {
             variationKey: 'variation_with_traffic',
             enabled: true,
@@ -4756,10 +4875,10 @@ describe('lib/optimizely', function() {
           });
           var decision = optlyInstance.decide(user, flagKey);
           var expectedDecision = {
-            variationKey: '',
+            variationKey: null,
             enabled: false,
             variables: expectedVariables,
-            ruleKey: '',
+            ruleKey: null,
             flagKey: flagKey,
             userContext: user,
             reasons: [],
@@ -4777,8 +4896,8 @@ describe('lib/optimizely', function() {
               decisionInfo: {
                 flagKey: 'feature_3',
                 enabled: false,
-                ruleKey: '',
-                variationKey: '',
+                ruleKey: null,
+                variationKey: null,
                 variables: expectedVariables,
                 decisionEventDispatched: true,
                 reasons: [],
@@ -4800,7 +4919,7 @@ describe('lib/optimizely', function() {
             logger: createdLogger,
             isValidInstance: true,
             eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOptions.EXCLUDE_VARIABLES ],
+            defaultDecideOptions: [ OptimizelyDecideOption.EXCLUDE_VARIABLES ],
           });
 
           sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
@@ -4862,7 +4981,7 @@ describe('lib/optimizely', function() {
             optimizely: optlyInstance,
             userId
           });
-          var decision = optlyInstance.decide(user, flagKey, [ OptimizelyDecideOptions.DISABLE_DECISION_EVENT ]);
+          var decision = optlyInstance.decide(user, flagKey, [ OptimizelyDecideOption.DISABLE_DECISION_EVENT ]);
           var expectedDecisionObj = {
             variationKey: 'variation_with_traffic',
             enabled: true,
@@ -4908,7 +5027,7 @@ describe('lib/optimizely', function() {
             logger: createdLogger,
             isValidInstance: true,
             eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOptions.DISABLE_DECISION_EVENT ],
+            defaultDecideOptions: [ OptimizelyDecideOption.DISABLE_DECISION_EVENT ],
           });
 
           sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
@@ -4957,6 +5076,670 @@ describe('lib/optimizely', function() {
             }
           ]
           assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
+        });
+      });
+
+      describe('with INCLUDE_REASONS flag in default decide options', function() {
+        beforeEach(function() {
+          optlyInstance = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestDecideProjectConfig(),
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            jsonSchemaValidator: jsonSchemaValidator,
+            logger: createdLogger,
+            isValidInstance: true,
+            eventBatchSize: 1,
+            defaultDecideOptions: [ OptimizelyDecideOption.INCLUDE_REASONS ],
+          });
+
+          sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
+        });
+
+        afterEach(function() {
+          optlyInstance.notificationCenter.sendNotifications.restore();
+        });
+
+        it('should include reason when experiment is not running', function() {
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].status = "NotRunning";
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var flagKey = "feature_1";
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.EXPERIMENT_NOT_RUNNING,
+              'DECISION_SERVICE',
+              'exp_with_audience'
+            )
+          );
+        });
+
+        it('should include reason when returning stored variation from user profile', function() {
+          var flagKey = 'feature_2';
+          var variationKey2 = 'variation_no_traffic';
+          var variationId2 = '10418510624';
+          var experimentKey = 'exp_no_audience';
+          var mockUserProfileServiceInstance = {
+            lookup: sinon.stub().returns({
+              user_id: userId,
+              experiment_bucket_map: {
+                '10420810910': { // "exp_no_audience"
+                  variation_id: variationId2,
+                },
+              },
+            }),
+            save: sinon.stub()
+          };
+          var optlyInstanceWithUserProfile = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestDecideProjectConfig(),
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            jsonSchemaValidator: jsonSchemaValidator,
+            userProfileService: mockUserProfileServiceInstance,
+            logger: createdLogger,
+            isValidInstance: true,
+            eventBatchSize: 1,
+            defaultDecideOptions: [ OptimizelyDecideOption.INCLUDE_REASONS ],
+          });
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstanceWithUserProfile,
+            userId
+          });
+          var decision = optlyInstanceWithUserProfile.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.RETURNING_STORED_VARIATION,
+              'DECISION_SERVICE',
+              variationKey2,
+              experimentKey,
+              userId
+            )
+          );
+        });
+
+        it('should include reason when user is forced in variation', function() {
+          var flagKey = 'feature_1';
+          var variationKey = 'b';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].forcedVariations[userId] = variationKey;
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_FORCED_IN_VARIATION,
+              'DECISION_SERVICE',
+              userId,
+              variationKey
+            )
+          );
+        });
+
+        it('should include reason when user has forced variation', function() {
+          var flagKey = 'feature_1';
+          var variationKey = 'b';
+          var experimentKey = 'exp_with_audience';
+          optlyInstance.decisionService.forcedVariationMap[userId] = { '10390977673': variationKey };
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.variationIdMap[variationKey] = { key: variationKey };
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_HAS_FORCED_VARIATION,
+              'DECISION_SERVICE',
+              variationKey,
+              experimentKey,
+              userId
+            )
+          );
+        });
+
+        it('should include reason when invalid forced variation found', function() {
+          var flagKey = 'feature_1';
+          var variationKey = 'invalid-key';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].forcedVariations[userId] = variationKey;
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.FORCED_BUCKETING_FAILED,
+              'DECISION_SERVICE',
+              variationKey,
+              userId
+            )
+          );
+        });
+
+        it('should include reason when user meets conditions for targeting rule', function() {
+          var flagKey = 'feature_1';
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          user.setAttribute('country', 'US');
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
+              'DECISION_SERVICE',
+              userId,
+              '1'
+            )
+          );
+        });
+
+        it('should include reason when user does not meet conditions for targeting rule', function() {
+          var flagKey = 'feature_1';
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          user.setAttribute('country', 'CA');
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
+              'DECISION_SERVICE',
+              userId,
+              '1'
+            )
+          );
+        });
+
+        it('should include reason when user is bucketed into targeting rule', function() {
+          var flagKey = 'feature_1';
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          user.setAttribute('country', 'US');
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_IN_ROLLOUT,
+              'DECISION_SERVICE',
+              userId,
+              flagKey
+            )
+          );
+        });
+
+        it('should include reason when user is bucketed into everyone targeting rule', function() {
+          var flagKey = 'feature_1';
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          user.setAttribute('country', 'KO');
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
+              'DECISION_SERVICE',
+              userId,
+              'Everyone Else'
+            )
+          );
+        });
+
+        it('should include reason when user is not bucketed into targeting rule', function() {
+          var flagKey = 'feature_1';
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          user.setAttribute('browser', 'safari');
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_NOT_BUCKETED_INTO_TARGETING_RULE,
+              'DECISION_SERVICE',
+              userId,
+              '2'
+            )
+          );
+        });
+
+        it('should include reason when user is bucketed into variation of experiment', function() {
+          var flagKey = 'feature_2';
+          var experimentKey = 'exp_no_audience';
+          var variationKey = 'variation_with_traffic';
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_HAS_VARIATION,
+              'DECISION_SERVICE',
+              userId,
+              variationKey,
+              experimentKey,
+            )
+          );
+        });
+
+        it('should include reason when user is not bucketed into variation of experiment', function() {
+          var flagKey = 'feature_2';
+          var experimentKey = 'exp_no_audience';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[1].trafficAllocation = [];
+          newConfig.experiments[1].trafficAllocation.push({ endOfRange: 0, entityId: 'any' })
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+            attributes: { 'age': 25 },
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_HAS_NO_VARIATION,
+              'DECISION_SERVICE',
+              userId,
+              experimentKey,
+            )
+          );
+        });
+
+        it('should include reason when user is bucketed into experiment in group', function() {
+          var flagKey = 'feature_3';
+          var experimentId = '10390965532';
+          var experimentKey = 'group_exp_1';
+          var groupId = '13142870430';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.featureFlags[2].experimentIds.push(experimentId);
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
+              'BUCKETER',
+              userId,
+              experimentKey,
+              groupId
+            )
+          );
+        });
+
+        it('should include reason when user is not attached to any experiment', function() {
+          var flagKey = 'feature_3';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.groups[0].trafficAllocation = [];
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.FEATURE_HAS_NO_EXPERIMENTS,
+              'DECISION_SERVICE',
+              flagKey
+            )
+          );
+        });
+
+        it('should include reason when user is not in experiment', function() {
+          var flagKey = 'feature_1';
+          var experimentKey = 'exp_with_audience';
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.USER_NOT_IN_EXPERIMENT,
+              'DECISION_SERVICE',
+              userId,
+              experimentKey
+            )
+          );
+        });
+
+        it('should include reason when condition does not match the audience', function() {
+          var flagKey = 'feature_1';
+          var audienceId = 'invalid_id';
+          var experimentKey = 'exp_with_audience';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].audienceIds = [];
+          newConfig.experiments[0].audienceIds.push(audienceId);
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+              'DECISION_SERVICE',
+              'experiment',
+              experimentKey,
+              'FALSE'
+            )
+          );
+        });
+
+        it('should include reason when evaluating attribute with invalid type', function() {
+          var flagKey = 'feature_1';
+          var audienceId = '13389130056';
+          var experimentKey = 'exp_with_audience';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].audienceIds = [];
+          newConfig.experiments[0].audienceIds.push(audienceId);
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+            attirutes: { 'country': 25 }
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+              'DECISION_SERVICE',
+              'experiment',
+              experimentKey,
+              'FALSE'
+            )
+          );
+        });
+
+        it('should include reason when attribute value is out of range', function() {
+          var flagKey = 'feature_1';
+          var audienceId = 'age_18';
+          var experimentKey = 'exp_with_audience';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].audienceIds = [];
+          newConfig.experiments[0].audienceIds.push(audienceId);
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+            attirutes: { 'age': 10000 }
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+              'DECISION_SERVICE',
+              'experiment',
+              experimentKey,
+              'FALSE'
+            )
+          );
+        });
+
+        it('should include reason when provided invalid type user attribute', function() {
+          var flagKey = 'feature_1';
+          var audienceId = 'invalid_type';
+          var experimentKey = 'exp_with_audience';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].audienceIds = [];
+          newConfig.experiments[0].audienceIds.push(audienceId);
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+            attirutes: { 'age': 25 }
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+              'DECISION_SERVICE',
+              'experiment',
+              experimentKey,
+              'FALSE'
+            )
+          );
+        });
+
+        it('should include reason when audience id is invalid_type', function() {
+          var flagKey = 'feature_1';
+          var audienceId = 'invalid_type';
+          var experimentKey = 'exp_with_audience';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].audienceIds = [];
+          newConfig.experiments[0].audienceIds.push(audienceId);
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+            attirutes: { 'age': 25 }
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+              'DECISION_SERVICE',
+              'experiment',
+              experimentKey,
+              'FALSE'
+            )
+          );
+        });
+
+        it('should include reason when audience id is invalid_match', function() {
+          var flagKey = 'feature_1';
+          var audienceId = 'invalid_match';
+          var experimentKey = 'exp_with_audience';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].audienceIds = [];
+          newConfig.experiments[0].audienceIds.push(audienceId);
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+            attirutes: { 'age': 25 }
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+              'DECISION_SERVICE',
+              'experiment',
+              experimentKey,
+              'FALSE'
+            )
+          );
+        });
+
+        it('should include reason when audience id is nil_value', function() {
+          var flagKey = 'feature_1';
+          var audienceId = 'nil_value';
+          var experimentKey = 'exp_with_audience';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].audienceIds = [];
+          newConfig.experiments[0].audienceIds.push(audienceId);
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId,
+            attirutes: { 'age': 25 }
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+              'DECISION_SERVICE',
+              'experiment',
+              experimentKey,
+              'FALSE'
+            )
+          );
+        });
+
+        it('should include reason when user attributes is missing', function() {
+          var flagKey = 'feature_1';
+          var audienceId = 'age_18';
+          var experimentKey = 'exp_with_audience';
+          var newConfig = optlyInstance.projectConfigManager.getConfig();
+          newConfig.experiments[0].audienceIds = [];
+          newConfig.experiments[0].audienceIds.push(audienceId);
+          optlyInstance.projectConfigManager.getConfig.returns(newConfig);
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstance,
+            userId
+          });
+          var decision = optlyInstance.decide(user, flagKey);
+          expect(decision.reasons).to.include(
+            sprintf(
+              LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
+              'DECISION_SERVICE',
+              'experiment',
+              experimentKey,
+              'FALSE'
+            )
+          );
+        });
+      });
+
+      describe('when user profile service provided', function() {
+        var mockUserProfileServiceInstance;
+        var optlyInstanceWithUserProfile;
+        it('should bucket if there was no previously bucketed variation and save bucketing decision to the user profile', function() {
+          var flagKey = 'feature_2';           // embedding experiment: 'exp_no_audience'
+          var variationId1 = '10418551353';
+          var variationKey1 = 'variation_with_traffic';
+          mockUserProfileServiceInstance = {
+            lookup: sinon.stub().returns({
+              user_id: userId,
+              experiment_bucket_map: {},
+            }),
+            save: sinon.stub()
+          };
+          optlyInstanceWithUserProfile = new Optimizely({
+            clientEngine: 'node-sdk',
+            datafile: testData.getTestDecideProjectConfig(),
+            errorHandler: errorHandler,
+            eventDispatcher: eventDispatcher,
+            jsonSchemaValidator: jsonSchemaValidator,
+            userProfileService: mockUserProfileServiceInstance,
+            logger: createdLogger,
+            isValidInstance: true,
+            eventBatchSize: 1,
+          });
+          var user = new OptimizelyUserContext({
+            optimizely: optlyInstanceWithUserProfile,
+            userId
+          });
+          var decision1 = optlyInstanceWithUserProfile.decide(user, flagKey);
+          // should return variationId1 as no stored variation exists
+          assert.equal(variationKey1, decision1.variationKey);
+          // also should call mockUserProfileServiceInstance.save to save bucketing decision
+          sinon.assert.calledOnce(mockUserProfileServiceInstance.save);
+        });
+
+        describe('with IGNORE_USER_PROFILE_SERVICE flag in decide options', function() {
+          it('should bypass user profile service', function() {
+            var flagKey = 'feature_2';           // embedding experiment: 'exp_no_audience'
+            var variationId1 = '10418551353';
+            var variationId2 = '10418510624';
+            var variationKey1 = 'variation_with_traffic';
+            var variationKey2 = 'variation_no_traffic';
+            mockUserProfileServiceInstance = {
+              lookup: sinon.stub().returns({
+                user_id: userId,
+                experiment_bucket_map: {
+                  '10420810910': { // 'exp_no_audience'
+                    variation_id: variationId2,
+                  },
+                },
+              }),
+              save: sinon.stub()
+            };
+            optlyInstanceWithUserProfile = new Optimizely({
+              clientEngine: 'node-sdk',
+              datafile: testData.getTestDecideProjectConfig(),
+              errorHandler: errorHandler,
+              eventDispatcher: eventDispatcher,
+              jsonSchemaValidator: jsonSchemaValidator,
+              userProfileService: mockUserProfileServiceInstance,
+              logger: createdLogger,
+              isValidInstance: true,
+              eventBatchSize: 1,
+            });
+            var user = new OptimizelyUserContext({
+              optimizely: optlyInstanceWithUserProfile,
+              userId
+            });
+            var decision1 = optlyInstanceWithUserProfile.decide(user, flagKey);
+            // should return variationId2 set by UPS
+            assert.equal(variationKey2, decision1.variationKey);
+            var decision2 = optlyInstanceWithUserProfile.decide(user, flagKey, [ OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE ]);
+            // should ignore variationId2 set by UPS and return variationId1
+            assert.equal(variationKey1, decision2.variationKey);
+            // also should not save either
+            sinon.assert.notCalled(mockUserProfileServiceInstance.save);
+          });
+        });
+
+        describe('with IGNORE_USER_PROFILE_SERVICE flag in default decide options', function() {
+          it('should bypass user profile service', function() {
+            var flagKey = 'feature_2';           // embedding experiment: 'exp_no_audience'
+            var variationId2 = '10418510624';
+            var variationKey1 = 'variation_with_traffic';
+            mockUserProfileServiceInstance = {
+              lookup: sinon.stub().returns({
+                user_id: userId,
+                experiment_bucket_map: {
+                  '10420810910': { // 'exp_no_audience'
+                    variation_id: variationId2,
+                  },
+                },
+              }),
+              save: sinon.stub()
+            };
+            optlyInstanceWithUserProfile = new Optimizely({
+              clientEngine: 'node-sdk',
+              datafile: testData.getTestDecideProjectConfig(),
+              errorHandler: errorHandler,
+              eventDispatcher: eventDispatcher,
+              jsonSchemaValidator: jsonSchemaValidator,
+              userProfileService: mockUserProfileServiceInstance,
+              logger: createdLogger,
+              isValidInstance: true,
+              eventBatchSize: 1,
+              defaultDecideOptions: [ OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE ]
+            });
+            var user = new OptimizelyUserContext({
+              optimizely: optlyInstanceWithUserProfile,
+              userId
+            });
+            var decision = optlyInstanceWithUserProfile.decide(user, flagKey);
+            // should ignore variationId2 set by UPS and return variationId1
+            assert.equal(variationKey1, decision.variationKey);
+            // also should not save either
+            sinon.assert.notCalled(mockUserProfileServiceInstance.save);
+          });
         });
       });
     });
@@ -5042,9 +5825,9 @@ describe('lib/optimizely', function() {
       it('should return decision results map with only enabled flags when ENABLED_FLAGS_ONLY flag is passed in and dispatch events', function() {
         var flagKey1 = 'feature_2';
         var flagKey2 = 'feature_3';
-        var user = optlyInstance.createUserContext(userId, {"gender": "female"});
+        var user = optlyInstance.createUserContext(userId, { gender: 'female' });
         var expectedVariables = optlyInstance.getAllFeatureVariables(flagKey1, userId);
-        var decisionsMap = optlyInstance.decideForKeys(user, [ flagKey1, flagKey2 ], [ OptimizelyDecideOptions.ENABLED_FLAGS_ONLY ]);
+        var decisionsMap = optlyInstance.decideForKeys(user, [ flagKey1, flagKey2 ], [ OptimizelyDecideOption.ENABLED_FLAGS_ONLY ]);
         var decision = decisionsMap[flagKey1];
         var expectedDecision = {
           variationKey: 'variation_with_traffic',
@@ -5114,10 +5897,10 @@ describe('lib/optimizely', function() {
             reasons: [],
           }
           var expectedDecision3 = {
-            variationKey: '',
+            variationKey: null,
             enabled: false,
             variables: expectedVariables3,
-            ruleKey: '',
+            ruleKey: null,
             flagKey: allFlagKeysArray[2],
             userContext: user,
             reasons: [],
@@ -5132,10 +5915,10 @@ describe('lib/optimizely', function() {
         it('should return decision results map with only enabled flags when ENABLED_FLAGS_ONLY flag is passed in and dispatch events', function() {
           var flagKey1 = 'feature_1';
           var flagKey2 = 'feature_2';
-          var user = optlyInstance.createUserContext(userId, {"gender": "female"});
+          var user = optlyInstance.createUserContext(userId, { gender: 'female' });
           var expectedVariables1 = optlyInstance.getAllFeatureVariables(flagKey1, userId);
           var expectedVariables2 = optlyInstance.getAllFeatureVariables(flagKey2, userId);
-          var decisionsMap = optlyInstance.decideAll(user, [ OptimizelyDecideOptions.ENABLED_FLAGS_ONLY ]);
+          var decisionsMap = optlyInstance.decideAll(user, [ OptimizelyDecideOption.ENABLED_FLAGS_ONLY ]);
           var decision1 = decisionsMap[flagKey1];
           var decision2 = decisionsMap[flagKey2];
           var expectedDecision1 = {
@@ -5174,7 +5957,7 @@ describe('lib/optimizely', function() {
             logger: createdLogger,
             isValidInstance: true,
             eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOptions.ENABLED_FLAGS_ONLY ],
+            defaultDecideOptions: [ OptimizelyDecideOption.ENABLED_FLAGS_ONLY ],
           });
 
           sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
@@ -5187,7 +5970,7 @@ describe('lib/optimizely', function() {
         it('should return decision results map with only enabled flags and dispatch events', function() {
           var flagKey1 = 'feature_1';
           var flagKey2 = 'feature_2';
-          var user = optlyInstance.createUserContext(userId, {"gender": "female"});
+          var user = optlyInstance.createUserContext(userId, { gender: 'female' });
           var expectedVariables1 = optlyInstance.getAllFeatureVariables(flagKey1, userId);
           var expectedVariables2 = optlyInstance.getAllFeatureVariables(flagKey2, userId);
           var decisionsMap = optlyInstance.decideAll(user);
@@ -5220,8 +6003,8 @@ describe('lib/optimizely', function() {
         it('should return decision results map with only enabled flags and excluded variables when EXCLUDE_VARIABLES_FLAG is passed in', function() {
           var flagKey1 = 'feature_1';
           var flagKey2 = 'feature_2';
-          var user = optlyInstance.createUserContext(userId, {"gender": "female"});
-          var decisionsMap = optlyInstance.decideAll(user, [ OptimizelyDecideOptions.EXCLUDE_VARIABLES ]);
+          var user = optlyInstance.createUserContext(userId, { gender: 'female' });
+          var decisionsMap = optlyInstance.decideAll(user, [ OptimizelyDecideOption.EXCLUDE_VARIABLES ]);
           var decision1 = decisionsMap[flagKey1];
           var decision2 = decisionsMap[flagKey2];
           var expectedDecision1 = {
@@ -5311,6 +6094,7 @@ describe('lib/optimizely', function() {
       logToConsole: false,
     });
     var optlyInstance;
+    var fakeDecisionResponse;
 
     beforeEach(function() {
       optlyInstance = new Optimizely({
@@ -5369,11 +6153,16 @@ describe('lib/optimizely', function() {
           beforeEach(function() {
             var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.testing_my_feature;
             var variation = experiment.variations[0];
-            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+            var decisionObj = {
               experiment: experiment,
               variation: variation,
               decisionSource: DECISION_SOURCES.FEATURE_TEST,
-            });
+            };
+            fakeDecisionResponse = {
+              result: decisionObj,
+              reasons: [],
+            };
+            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
           });
 
           it('returns true and dispatches an impression event', function() {
@@ -5587,11 +6376,16 @@ describe('lib/optimizely', function() {
           beforeEach(function() {
             var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.test_shared_feature;
             var variation = experiment.variations[1];
-            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+            var decisionObj = {
               experiment: experiment,
               variation: variation,
               decisionSource: DECISION_SOURCES.FEATURE_TEST,
-            });
+            };
+            fakeDecisionResponse = {
+              result: decisionObj,
+              reasons: [],
+            };
+            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
             result = optlyInstance.isFeatureEnabled('shared_feature', 'user1', attributes);
           });
 
@@ -5708,11 +6502,16 @@ describe('lib/optimizely', function() {
             // This experiment is the first audience targeting rule in the rollout of feature 'test_feature'
             var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap['594031'];
             var variation = experiment.variations[0];
-            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+            var decisionObj = {
               experiment: experiment,
               variation: variation,
               decisionSource: DECISION_SOURCES.ROLLOUT,
-            });
+            };
+            fakeDecisionResponse = {
+              result: decisionObj,
+              reasons: [],
+            };
+            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
           });
 
           it('returns true and does not dispatch an event', function() {
@@ -5734,11 +6533,16 @@ describe('lib/optimizely', function() {
             // This experiment is the second audience targeting rule in the rollout of feature 'test_feature'
             var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap['594037'];
             var variation = experiment.variations[0];
-            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+            var decisionObj = {
               experiment: experiment,
               variation: variation,
               decisionSource: DECISION_SOURCES.ROLLOUT,
-            });
+            };
+            fakeDecisionResponse = {
+              result: decisionObj,
+              reasons: [],
+            };
+            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
           });
 
           it('returns false', function() {
@@ -5757,11 +6561,16 @@ describe('lib/optimizely', function() {
 
       describe('user not bucketed into an experiment or a rollout', function() {
         beforeEach(function() {
-          sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+          var decisionObj = {
             experiment: null,
             variation: null,
             decisionSource: DECISION_SOURCES.ROLLOUT,
-          });
+          };
+          fakeDecisionResponse = {
+            result: decisionObj,
+            reasons: [],
+          };
+          sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
         });
 
         it('returns false and does not dispatch an event when sendFlagDecisions is not defined', function() {
@@ -6019,11 +6828,16 @@ describe('lib/optimizely', function() {
               'testing_my_feature'
             );
             var variation = experiment.variations[0];
-            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+            var decisionObj = {
               experiment: experiment,
               variation: variation,
               decisionSource: DECISION_SOURCES.FEATURE_TEST,
-            });
+            };
+            fakeDecisionResponse = {
+              result: decisionObj,
+              reasons: [],
+            };
+            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
           });
 
           it('returns the right value from getFeatureVariable when variable type is boolean', function() {
@@ -6404,11 +7218,16 @@ describe('lib/optimizely', function() {
               'testing_my_feature'
             );
             var variation = experiment.variations[2];
-            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+            var decisionObj = {
               experiment: experiment,
               variation: variation,
               decisionSource: DECISION_SOURCES.FEATURE_TEST,
-            });
+            };
+            fakeDecisionResponse = {
+              result: decisionObj,
+              reasons: [],
+            };
+            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
           });
 
           it('returns the variable default value from getFeatureVariable when variable type is boolean', function() {
@@ -6600,11 +7419,16 @@ describe('lib/optimizely', function() {
               '594031'
             );
             var variation = experiment.variations[0];
-            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+            var decisionObj = {
               experiment: experiment,
               variation: variation,
               decisionSource: DECISION_SOURCES.ROLLOUT,
-            });
+            };
+            fakeDecisionResponse = {
+              result: decisionObj,
+              reasons: [],
+            };
+            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
           });
 
           it('returns the right value from getFeatureVariable when variable type is boolean', function() {
@@ -6955,11 +7779,16 @@ describe('lib/optimizely', function() {
               '594037'
             );
             var variation = experiment.variations[0];
-            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+            var decisionObj = {
               experiment: experiment,
               variation: variation,
               decisionSource: DECISION_SOURCES.ROLLOUT,
-            });
+            };
+            fakeDecisionResponse = {
+              result: decisionObj,
+              reasons: [],
+            };
+            sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
           });
 
           it('returns the variable default value from getFeatureVariable when variable type is boolean', function() {
@@ -7133,11 +7962,16 @@ describe('lib/optimizely', function() {
 
       describe('not bucketed into an experiment or a rollout ', function() {
         beforeEach(function() {
-          sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
+          var decisionObj = {
             experiment: null,
             variation: null,
             decisionSource: null,
-          });
+          };
+          fakeDecisionResponse = {
+            result: decisionObj,
+            reasons: [],
+          };
+          sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns(fakeDecisionResponse);
         });
 
         it('returns the variable default value from getFeatureVariable when variable type is boolean', function() {
@@ -8373,6 +9207,7 @@ describe('lib/optimizely', function() {
 
   describe('event batching', function() {
     var bucketStub;
+    var fakeDecisionResponse;
 
     var createdLogger = logger.createLogger({
       logLevel: LOG_LEVEL.INFO,
@@ -8416,7 +9251,11 @@ describe('lib/optimizely', function() {
       });
 
       it('should send batched events when the maxQueueSize is reached', function() {
-        bucketStub.returns('111129');
+        fakeDecisionResponse = {
+          result: '111129',
+          reasons: [],
+        };
+        bucketStub.returns(fakeDecisionResponse);
         var activate = optlyInstance.activate('testExperiment', 'testUser');
         assert.strictEqual(activate, 'variation');
 
@@ -8508,7 +9347,11 @@ describe('lib/optimizely', function() {
 
       it('should flush the queue when the flushInterval occurs', function() {
         var timestamp = new Date().getTime();
-        bucketStub.returns('111129');
+        fakeDecisionResponse = {
+          result: '111129',
+          reasons: [],
+        };
+        bucketStub.returns(fakeDecisionResponse);
         var activate = optlyInstance.activate('testExperiment', 'testUser');
         assert.strictEqual(activate, 'variation');
 
@@ -8586,7 +9429,11 @@ describe('lib/optimizely', function() {
       });
 
       it('should flush the queue when optimizely.close() is called', function() {
-        bucketStub.returns('111129');
+        fakeDecisionResponse = {
+          result: '111129',
+          reasons: [],
+        };
+        bucketStub.returns(fakeDecisionResponse);
         var activate = optlyInstance.activate('testExperiment', 'testUser');
         assert.strictEqual(activate, 'variation');
 
@@ -9090,6 +9937,7 @@ describe('lib/optimizely', function() {
   describe('log event notification', function() {
     var optlyInstance;
     var bucketStub;
+    var fakeDecisionResponse;
     var eventDispatcherSpy;
     beforeEach(function() {
       bucketStub = sinon.stub(bucketer, 'bucket');
@@ -9122,7 +9970,11 @@ describe('lib/optimizely', function() {
         enums.NOTIFICATION_TYPES.LOG_EVENT,
         notificationListener
       );
-      bucketStub.returns('111129');
+      fakeDecisionResponse = {
+        result: '111129',
+        reasons: [],
+      };
+      bucketStub.returns(fakeDecisionResponse);
       var activate = optlyInstance.activate('testExperiment', 'testUser');
       assert.strictEqual(activate, 'variation');
       sinon.assert.calledOnce(eventDispatcherSpy);

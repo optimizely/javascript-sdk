@@ -28,7 +28,7 @@ import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
-import { Config } from './shared_types';
+import { SDKOptions, OptimizelyDecideOption } from './shared_types';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
@@ -42,7 +42,7 @@ const DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
  * @return {Optimizely|null} the Optimizely object
  *                           null on error 
  */
-const createInstance = function(config: Config): Optimizely | null {
+const createInstance = function(config: SDKOptions): Optimizely | null {
   try {
     let hasLogger = false;
 
@@ -120,6 +120,7 @@ export {
   setLogHandler as setLogger,
   setLogLevel,
   createInstance,
+  OptimizelyDecideOption,
 };
 
 export default {
@@ -130,4 +131,5 @@ export default {
   setLogger: setLogHandler,
   setLogLevel,
   createInstance,
+  OptimizelyDecideOption,
 };

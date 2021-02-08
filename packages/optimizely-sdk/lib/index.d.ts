@@ -63,10 +63,26 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type ListenerPayload = import('./shared_types').ListenerPayload;
 
+  export type OptimizelyUserContext = import('./optimizely_user_context').default;
+
+  export type OptimizelyDecision = import('./optimizely_decision').OptimizelyDecision;
+
+  export enum OptimizelyDecideOption {
+    DISABLE_DECISION_EVENT = 'DISABLE_DECISION_EVENT',
+    ENABLED_FLAGS_ONLY =  'ENABLED_FLAGS_ONLY',
+    IGNORE_USER_PROFILE_SERVICE = 'IGNORE_USER_PROFILE_SERVICE',
+    INCLUDE_REASONS = 'INCLUDE_REASONS',
+    EXCLUDE_VARIABLES = 'EXCLUDE_VARIABLES'
+  }
+
   export type NotificationListener<T extends ListenerPayload> = import('./shared_types').NotificationListener<T>;
 
   export interface Client {
     notificationCenter: NotificationCenter;
+    createUserContext(
+      userId: string,
+      attributes?: UserAttributes
+    ): OptimizelyUserContext | null;
     activate(
       experimentKey: string,
       userId: string,
