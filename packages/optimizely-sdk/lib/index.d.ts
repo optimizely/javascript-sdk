@@ -98,6 +98,7 @@ declare module '@optimizely/optimizely-sdk' {
     eventBatchSize?: number;
     eventFlushInterval?: number;
     sdkKey?: string;
+    defaultDecideOptions?: OptimizelyDecideOption[]
   }
 
   export interface Client {
