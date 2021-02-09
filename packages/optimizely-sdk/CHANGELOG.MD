@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - For details, refer to our documentation page:
   - browser version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-sdk](https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-sdk).
-  - Node version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-sdk-node](https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-sdk).
+  - Node version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-node-sdk](https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-node-sdk).
 
 ## [4.4.3] - November 23, 2020
 
