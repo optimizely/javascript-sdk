@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.5.0-beta] - February 10, 2021
+
+### New Features
+
+- Introducing a new primary interface for retrieving feature flag status, configuration and associated experiment decisions for users ([#632](https://github.com/optimizely/javascript-sdk/pull/632), [#634](https://github.com/optimizely/javascript-sdk/pull/634), [#635](https://github.com/optimizely/javascript-sdk/pull/635), [#636](https://github.com/optimizely/javascript-sdk/pull/636), [#640](https://github.com/optimizely/javascript-sdk/pull/640), [#642](https://github.com/optimizely/javascript-sdk/pull/642), [#643](https://github.com/optimizely/javascript-sdk/pull/643), [#644](https://github.com/optimizely/javascript-sdk/pull/644), [#647](https://github.com/optimizely/javascript-sdk/pull/647), [#648](https://github.com/optimizely/javascript-sdk/pull/648)). The new `OptimizelyUserContext` class is instantiated with `createUserContext` and exposes the following APIs to get `OptimizelyDecision`:
+
+	- setAttribute
+	- decide
+	- decideAll
+	- decideForKeys
+	- trackEvent
+
+- For details, refer to our documentation page:
+  - browser version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-sdk](https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-sdk).
+  - Node version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-node-sdk](https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-node-sdk).
+
 ## [4.4.3] - November 23, 2020
 
 ### Bug fixes
