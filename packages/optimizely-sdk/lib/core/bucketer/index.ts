@@ -241,6 +241,4 @@ export const _generateBucketValue = function(bucketingKey: string): number {
 export default {
   bucket: bucket,
   bucketUserIntoExperiment: bucketUserIntoExperiment,
-  _findBucket: _findBucket,
-  _generateBucketValue: _generateBucketValue,
 };
