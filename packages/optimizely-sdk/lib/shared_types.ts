@@ -100,7 +100,8 @@ export interface Experiment {
   id: string;
   key: string;
   variations: Variation[];
-  variationKeyMap: { [key: string]: Variation }
+  variationKeyMap: { [key: string]: Variation };
+  groupId?: string;
 }
 
 export interface FeatureVariable {
