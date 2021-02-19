@@ -79,7 +79,7 @@ interface BucketerParams {
  *                                                                       null if user is not bucketed into any experiment and the decide reasons.
  */
 export const bucket = function(bucketerParams: BucketerParams):  DecisionResponse<string | null> {
-  const decideReasons = [];
+  const decideReasons: string[] = [];
   // Check if user is in a random group; if so, check if user is bucketed into a specific experiment
   const experiment = bucketerParams.experimentKeyMap[bucketerParams.experimentKey];
   const groupId = experiment['groupId'];
