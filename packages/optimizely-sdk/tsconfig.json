@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "noImplicitAny": false,
+    "types": ["./typings"],
     "allowJs": true,
     "declaration": false,
     "module": "esnext",
