@@ -111,3 +111,7 @@ AudienceEvaluator.prototype.evaluateConditionWithUserAttributes = function(userA
 };
 
 export default AudienceEvaluator;
+
+export var createAudienceEvaluator = function(UNSTABLE_conditionEvaluators) {
+  return new AudienceEvaluator(UNSTABLE_conditionEvaluators);
+};

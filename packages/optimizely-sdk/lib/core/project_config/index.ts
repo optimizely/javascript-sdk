@@ -1,5 +1,5 @@
 /**
- * Copyright 2021, Optimizely
+ * Copyright 2016-2021, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -654,7 +654,7 @@ export const toDatafile = function(projectConfig: ProjectConfig): string {
 }
 
 /**
- * @typedef   {Object}      TryCreatingProjectConfigResult
+ * @typedef   {Object}
  * @property  {Object|null} configObj
  * @property  {Error|null}  error
  */
@@ -674,7 +674,6 @@ export const toDatafile = function(projectConfig: ProjectConfig): string {
 export const tryCreatingProjectConfig = function(
   config: TryCreatingProjectConfigConfig
 ): { configObj: ProjectConfig | null; error: Error | null } {
-
   let newDatafileObj;
   try {
     newDatafileObj = configValidator.validateDatafile(config.datafile);

@@ -22,8 +22,7 @@ import murmurhash from 'murmurhash';
 import { LogHandler } from '@optimizely/js-sdk-logging';
 import {
   DecisionResponse,
-  Experiment,
-  Variation,
+  BucketerParams,
   TrafficAllocation,
   Group,
 } from '../../shared_types';
@@ -39,19 +38,6 @@ const MAX_HASH_VALUE = Math.pow(2, 32);
 const MAX_TRAFFIC_VALUE = 10000;
 const MODULE_NAME = 'BUCKETER';
 const RANDOM_POLICY = 'random';
-
-interface BucketerParams {
-  experimentId: string;
-  experimentKey: string;
-  userId: string;
-  trafficAllocationConfig: TrafficAllocation[];
-  experimentKeyMap: { [key: string]: Experiment };
-  groupIdMap: { [key: string]: Group };
-  variationIdMap: { [id: string]: Variation } ;
-  varationIdMapKey: string;
-  logger: LogHandler;
-  bucketingId: string;
-}
 
 /**
  * Determines ID of variation to be shown for the given input params
