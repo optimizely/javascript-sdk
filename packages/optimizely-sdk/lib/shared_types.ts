@@ -103,6 +103,7 @@ export interface FeatureVariable {
   key: string;
   id: string;
   defaultValue: string;
+  subType?: string;
 }
 
 export interface FeatureFlag {
@@ -112,6 +113,24 @@ export interface FeatureFlag {
   experimentIds: string[],
   variables: FeatureVariable[],
   variableKeyMap: { [key: string]: FeatureVariable }
+  groupId?: string; //check
+}
+
+export interface Audience {
+ name: string;
+ conditions: string;
+}
+
+export interface TrafficAllocation {
+  entityId: string;
+  endOfRange: number;
+}
+
+export interface Group {
+  id: string;
+  policy: string;
+  trafficAllocation: TrafficAllocation[];
+  experiments: Experiment[];
 }
 
 export interface FeatureKeyMap {
