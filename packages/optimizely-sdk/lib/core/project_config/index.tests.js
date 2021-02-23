@@ -317,7 +317,7 @@ describe('lib/core/project_config', function() {
       assert.strictEqual(projectConfig.getAttributeId(configObj, '$opt_some_reserved_attribute', createdLogger), '42');
       sinon.assert.calledWithExactly(
         createdLogger.log,
-        LOG_LEVEL.WARN,
+        LOG_LEVEL.WARNING,
         'Attribute $opt_some_reserved_attribute unexpectedly has reserved prefix $opt_; using attribute ID instead of reserved attribute name.'
       );
     });

@@ -24,16 +24,37 @@ import {
 } from '../../utils/enums';
 import configValidator from '../../utils/config_validator';
 
+import { LogHandler } from '@optimizely/js-sdk-logging';
 import {
   Experiment,
   FeatureFlag,
   Group,
   Audience,
   Rollout,
+  TrafficAllocation,
+  FeatureVariable,
+  Variation
 } from '../../shared_types';
 
-interface ProjectConfig {
-  
+export interface ProjectConfig {
+  revision: string;
+  projectId: string;
+  sendFlagDecisions?: boolean;
+  experimentKeyMap:{ [key: string]: Experiment };
+  featureKeyMap: {
+    [key: string]: FeatureFlag
+  };
+  rollouts: Rollout[];
+  featureFlags: FeatureFlag[];
+  experimentIdMap: { [id: string]: Experiment };
+  experimentFeatureMap: { [key: string]: string[] };
+  experiments: Experiment[];
+  eventKeyMap: any;
+  attributeKeyMap: any;
+  variationIdMap: any;
+  variationVariableUsageMap: any;
+  audiencesById: any;
+  __datafileStr: string;
 }
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -74,7 +95,7 @@ function createMutationSafeDatafileCopy(datafile: any): any {
  * @param  {string=}  datafileStr   JSON string representation of the datafile
  * @return {Object}   Object representing project configuration
  */
-export const createProjectConfig = function(datafileObj: object, datafileStr=null): object {
+export const createProjectConfig = function(datafileObj?: object, datafileStr: string | null = null): object {
   const projectConfig = createMutationSafeDatafileCopy(datafileObj);
 
   projectConfig.__datafileStr = datafileStr === null ? JSON.stringify(datafileObj) : datafileStr;
@@ -169,12 +190,12 @@ export const createProjectConfig = function(datafileObj: object, datafileStr=nul
 
 /**
  * Get experiment ID for the provided experiment key
- * @param  {Object} projectConfig Object representing project configuration
- * @param  {string} experimentKey Experiment key for which ID is to be determined
- * @return {string} Experiment ID corresponding to the provided experiment key
+ * @param  {ProjectConfig}    projectConfig   Object representing project configuration
+ * @param  {string}           experimentKey   Experiment key for which ID is to be determined
+ * @return {string}                           Experiment ID corresponding to the provided experiment key
  * @throws If experiment key is not in datafile
  */
-export const getExperimentId = function(projectConfig: any, experimentKey: string): string {
+export const getExperimentId = function(projectConfig: ProjectConfig, experimentKey: string): string {
   const experiment = projectConfig.experimentKeyMap[experimentKey];
   if (!experiment) {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
@@ -184,12 +205,12 @@ export const getExperimentId = function(projectConfig: any, experimentKey: strin
 
 /**
  * Get layer ID for the provided experiment key
- * @param  {Object} projectConfig Object representing project configuration
- * @param  {string} experimentId Experiment ID for which layer ID is to be determined
- * @return {string} Layer ID corresponding to the provided experiment key
+ * @param  {ProjectConfig}    projectConfig   Object representing project configuration
+ * @param  {string}           experimentId    Experiment ID for which layer ID is to be determined
+ * @return {string}                           Layer ID corresponding to the provided experiment key
  * @throws If experiment key is not in datafile
  */
-export const getLayerId = function(projectConfig: any, experimentId: string): string {
+export const getLayerId = function(projectConfig: ProjectConfig, experimentId: string): string {
   const experiment = projectConfig.experimentIdMap[experimentId];
   if (!experiment) {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
@@ -199,18 +220,22 @@ export const getLayerId = function(projectConfig: any, experimentId: string): st
 
 /**
  * Get attribute ID for the provided attribute key
- * @param  {Object}      projectConfig Object representing project configuration
- * @param  {string}      attributeKey  Attribute key for which ID is to be determined
- * @param  {Object}      logger
- * @return {string|null} Attribute ID corresponding to the provided attribute key. Attribute key if it is a reserved attribute.
+ * @param  {ProjectConfig}   projectConfig    Object representing project configuration
+ * @param  {string}          attributeKey     Attribute key for which ID is to be determined
+ * @param  {LogHandler}      logger
+ * @return {string|null}     Attribute ID corresponding to the provided attribute key. Attribute key if it is a reserved attribute.
  */
-export var getAttributeId = function(projectConfig, attributeKey, logger) {
-  var attribute = projectConfig.attributeKeyMap[attributeKey];
-  var hasReservedPrefix = attributeKey.indexOf(RESERVED_ATTRIBUTE_PREFIX) === 0;
+export const getAttributeId = function(
+  projectConfig: ProjectConfig,
+  attributeKey: string,
+  logger: LogHandler
+  ): string | null {
+  const attribute = projectConfig.attributeKeyMap[attributeKey];
+  const hasReservedPrefix = attributeKey.indexOf(RESERVED_ATTRIBUTE_PREFIX) === 0;
   if (attribute) {
     if (hasReservedPrefix) {
       logger.log(
-        LOG_LEVEL.WARN,
+        LOG_LEVEL.WARNING,
         sprintf(
           'Attribute %s unexpectedly has reserved prefix %s; using attribute ID instead of reserved attribute name.',
           attributeKey,
@@ -229,12 +254,12 @@ export var getAttributeId = function(projectConfig, attributeKey, logger) {
 
 /**
  * Get event ID for the provided
- * @param  {Object}      projectConfig Object representing project configuration
- * @param  {string}      eventKey      Event key for which ID is to be determined
- * @return {string|null} Event ID corresponding to the provided event key
+ * @param  {ProjectConfig}   projectConfig  Object representing project configuration
+ * @param  {string}          eventKey       Event key for which ID is to be determined
+ * @return {string|null}     Event ID corresponding to the provided event key
  */
-export var getEventId = function(projectConfig, eventKey) {
-  var event = projectConfig.eventKeyMap[eventKey];
+export const getEventId = function(projectConfig: ProjectConfig, eventKey: string): string | null {
+  const event = projectConfig.eventKeyMap[eventKey];
   if (event) {
     return event.id;
   }
@@ -243,13 +268,13 @@ export var getEventId = function(projectConfig, eventKey) {
 
 /**
  * Get experiment status for the provided experiment key
- * @param  {Object} projectConfig Object representing project configuration
- * @param  {string} experimentKey Experiment key for which status is to be determined
- * @return {string} Experiment status corresponding to the provided experiment key
+ * @param  {ProjectConfig}  projectConfig   Object representing project configuration
+ * @param  {string}         experimentKey   Experiment key for which status is to be determined
+ * @return {string}         Experiment status corresponding to the provided experiment key
  * @throws If experiment key is not in datafile
  */
-export var getExperimentStatus = function(projectConfig, experimentKey) {
-  var experiment = projectConfig.experimentKeyMap[experimentKey];
+export const getExperimentStatus = function(projectConfig: ProjectConfig, experimentKey: string): string {
+  const experiment = projectConfig.experimentKeyMap[experimentKey];
   if (!experiment) {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
   }
@@ -258,32 +283,40 @@ export var getExperimentStatus = function(projectConfig, experimentKey) {
 
 /**
  * Returns whether experiment has a status of 'Running'
- * @param  {Object}  projectConfig Object representing project configuration
- * @param  {string}  experimentKey Experiment key for which status is to be compared with 'Running'
- * @return {Boolean}               true if experiment status is set to 'Running', false otherwise
+ * @param  {ProjectConfig}  projectConfig   Object representing project configuration
+ * @param  {string}         experimentKey   Experiment key for which status is to be compared with 'Running'
+ * @return {boolean}                        True if experiment status is set to 'Running', false otherwise
  */
-export var isActive = function(projectConfig, experimentKey) {
+export const isActive = function(projectConfig: ProjectConfig, experimentKey: string): boolean {
   return getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_RUNNING_STATUS;
 };
 
 /**
  * Determine for given experiment if event is running, which determines whether should be dispatched or not
+ * @param  {ProjectConfig}  configObj       Object representing project configuration
+ * @param  {string}         experimentKey   Experiment key for which the status is to be determined
+ * @return {boolean}                        True is the experiment is running
+ *                                          False is the experiment is not running
+ *
  */
-export var isRunning = function(projectConfig, experimentKey) {
+export const isRunning = function(projectConfig: ProjectConfig, experimentKey: string): boolean {
   return getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_RUNNING_STATUS;
 };
 
 /**
  * Get audience conditions for the experiment
- * @param  {Object}         projectConfig Object representing project configuration
- * @param  {string}         experimentKey Experiment key for which audience conditions are to be determined
- * @return {Array}          Audience conditions for the experiment - can be an array of audience IDs, or a
- *                          nested array of conditions
- *                          Examples: ["5", "6"], ["and", ["or", "1", "2"], "3"]
+ * @param  {ProjectConfig}  projectConfig   Object representing project configuration
+ * @param  {string}         experimentKey   Experiment key for which audience conditions are to be determined
+ * @return {Array<string|string[]>}         Audience conditions for the experiment - can be an array of audience IDs, or a
+ *                                          nested array of conditions
+ *                                          Examples: ["5", "6"], ["and", ["or", "1", "2"], "3"]
  * @throws If experiment key is not in datafile
  */
-export var getExperimentAudienceConditions = function(projectConfig, experimentKey) {
-  var experiment = projectConfig.experimentKeyMap[experimentKey];
+export const getExperimentAudienceConditions = function(
+  projectConfig: ProjectConfig,
+  experimentKey: string
+): Array<string | string[]> {
+  const experiment = projectConfig.experimentKeyMap[experimentKey];
   if (!experiment) {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
   }
@@ -293,42 +326,48 @@ export var getExperimentAudienceConditions = function(projectConfig, experimentK
 
 /**
  * Get variation key given experiment key and variation ID
- * @param  {Object} projectConfig Object representing project configuration
- * @param  {string} variationId   ID of the variation
- * @return {string|null} Variation key or null if the variation ID is not found
+ * @param  {ProjectConfig}  projectConfig   Object representing project configuration
+ * @param  {string}         variationId     ID of the variation
+ * @return {string|null}    Variation key or null if the variation ID is not found
  */
-export var getVariationKeyFromId = function(projectConfig, variationId) {
+export const getVariationKeyFromId = function(projectConfig: ProjectConfig, variationId: string): string | null {
   if (projectConfig.variationIdMap.hasOwnProperty(variationId)) {
     return projectConfig.variationIdMap[variationId].key;
   }
+
   return null;
 };
 
 /**
  * Get the variation ID given the experiment key and variation key
- * @param  {Object} projectConfig Object representing project configuration
- * @param  {string} experimentKey Key of the experiment the variation belongs to
- * @param  {string} variationKey  The variation key
- * @return {string} the variation ID
+ * @param  {ProjectConfig}  projectConfig   Object representing project configuration
+ * @param  {string}         experimentKey   Key of the experiment the variation belongs to
+ * @param  {string}         variationKey    The variation key
+ * @return {string|null}    Variation ID or null
  */
-export var getVariationIdFromExperimentAndVariationKey = function(projectConfig, experimentKey, variationKey) {
-  var experiment = projectConfig.experimentKeyMap[experimentKey];
+export const getVariationIdFromExperimentAndVariationKey = function(
+  projectConfig: ProjectConfig,
+  experimentKey: string,
+  variationKey: string
+  ): string | null {
+  const experiment = projectConfig.experimentKeyMap[experimentKey];
   if (experiment.variationKeyMap.hasOwnProperty(variationKey)) {
     return experiment.variationKeyMap[variationKey].id;
   }
+
   return null;
 };
 
 /**
  * Get experiment from provided experiment key
- * @param  {Object} projectConfig  Object representing project configuration
- * @param  {string} experimentKey  Event key for which experiment IDs are to be retrieved
- * @return {Object} experiment
+ * @param  {ProjectConfig}  projectConfig  Object representing project configuration
+ * @param  {string}         experimentKey  Event key for which experiment IDs are to be retrieved
+ * @return {Experiment}         Experiment
  * @throws If experiment key is not in datafile
  */
-export var getExperimentFromKey = function(projectConfig, experimentKey) {
+export const getExperimentFromKey = function(projectConfig: ProjectConfig, experimentKey: string): Experiment {
   if (projectConfig.experimentKeyMap.hasOwnProperty(experimentKey)) {
-    var experiment = projectConfig.experimentKeyMap[experimentKey];
+    const experiment = projectConfig.experimentKeyMap[experimentKey];
     if (experiment) {
       return experiment;
     }
@@ -339,13 +378,13 @@ export var getExperimentFromKey = function(projectConfig, experimentKey) {
 
 /**
  * Given an experiment key, returns the traffic allocation within that experiment
- * @param  {Object} projectConfig Object representing project configuration
- * @param  {string} experimentKey Key representing the experiment
- * @return {Array<Object>}        Traffic allocation for the experiment
+ * @param  {ProjectConfig}  projectConfig  Object representing project configuration
+ * @param  {string}         experimentKey  Key representing the experiment
+ * @return {TrafficAllocation}             Traffic allocation for the experiment
  * @throws If experiment key is not in datafile
  */
-export var getTrafficAllocation = function(projectConfig, experimentKey) {
-  var experiment = projectConfig.experimentKeyMap[experimentKey];
+export const getTrafficAllocation = function(projectConfig: ProjectConfig, experimentKey: string):  TrafficAllocation[]{
+  const experiment = projectConfig.experimentKeyMap[experimentKey];
   if (!experiment) {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
   }
@@ -355,13 +394,18 @@ export var getTrafficAllocation = function(projectConfig, experimentKey) {
 /**
  * Get experiment from provided experiment id. Log an error if no experiment
  * exists in the project config with the given ID.
- * @param  {Object} projectConfig  Object representing project configuration
- * @param  {string} experimentId  ID of desired experiment object
- * @return {Object} Experiment object
+ * @param  {ProjectConfig}  projectConfig  Object representing project configuration
+ * @param  {string}         experimentId   ID of desired experiment object
+ * @param  {LogHandler}     logger
+ * @return {Experiment|null}               Experiment object or null
  */
-export var getExperimentFromId = function(projectConfig, experimentId, logger) {
+export const getExperimentFromId = function(
+  projectConfig: ProjectConfig,
+  experimentId: string,
+  logger: LogHandler
+): Experiment | null {
   if (projectConfig.experimentIdMap.hasOwnProperty(experimentId)) {
-    var experiment = projectConfig.experimentIdMap[experimentId];
+    const experiment = projectConfig.experimentIdMap[experimentId];
     if (experiment) {
       return experiment;
     }
@@ -374,15 +418,19 @@ export var getExperimentFromId = function(projectConfig, experimentId, logger) {
 /**
  * Get feature from provided feature key. Log an error if no feature exists in
  * the project config with the given key.
- * @param {Object} projectConfig
- * @param {string} featureKey
- * @param {Object} logger
- * @return {Object|null} Feature object, or null if no feature with the given
- * key exists
+ * @param  {ProjectConfig}    projectConfig
+ * @param  {string}           featureKey
+ * @param  {LogHandler}       logger
+ * @return {FeatureFlag|null} Feature object, or null if no feature with the given
+ *                            key exists
  */
-export var getFeatureFromKey = function(projectConfig, featureKey, logger) {
+export const getFeatureFromKey = function(
+  projectConfig: ProjectConfig,
+  featureKey: string,
+  logger: LogHandler
+): FeatureFlag | null {
   if (projectConfig.featureKeyMap.hasOwnProperty(featureKey)) {
-    var feature = projectConfig.featureKeyMap[featureKey];
+    const feature = projectConfig.featureKeyMap[featureKey];
     if (feature) {
       return feature;
     }
@@ -396,21 +444,26 @@ export var getFeatureFromKey = function(projectConfig, featureKey, logger) {
  * Get the variable with the given key associated with the feature with the
  * given key. If the feature key or the variable key are invalid, log an error
  * message.
- * @param {Object} projectConfig
- * @param {string} featureKey
- * @param {string} variableKey
- * @param {Object} logger
- * @return {Object|null} Variable object, or null one or both of the given
+ * @param  {ProjectConfig}        projectConfig
+ * @param  {string}               featureKey
+ * @param  {string}               variableKey
+ * @param  {LogHandler}           logger
+ * @return {FeatureVariable|null} Variable object, or null one or both of the given
  * feature and variable keys are invalid
  */
-export var getVariableForFeature = function(projectConfig, featureKey, variableKey, logger) {
-  var feature = projectConfig.featureKeyMap[featureKey];
+export const getVariableForFeature = function(
+  projectConfig: ProjectConfig,
+  featureKey: string,
+  variableKey: string,
+  logger: LogHandler
+  ): FeatureVariable | null {
+  const feature = projectConfig.featureKeyMap[featureKey];
   if (!feature) {
     logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, featureKey));
     return null;
   }
 
-  var variable = feature.variableKeyMap[variableKey];
+  const variable = feature.variableKeyMap[variableKey];
   if (!variable) {
     logger.log(
       LOG_LEVEL.ERROR,
@@ -426,15 +479,20 @@ export var getVariableForFeature = function(projectConfig, featureKey, variableK
  * Get the value of the given variable for the given variation. If the given
  * variable has no value for the given variation, return null. Log an error message if the variation is invalid. If the
  * variable or variation are invalid, return null.
- * @param {Object} projectConfig
- * @param {Object} variable
- * @param {Object} variation
- * @param {Object} logger
- * @return {string|null} The value of the given variable for the given
+ * @param  {ProjectConfig}     projectConfig
+ * @param  {FeatureVariable}   variable
+ * @param  {Variation}         variation
+ * @param  {LogHandler}        logger
+ * @return {string|null}       The value of the given variable for the given
  * variation, or null if the given variable has no value
  * for the given variation or if the variation or variable are invalid
  */
-export var getVariableValueForVariation = function(projectConfig, variable, variation, logger) {
+export const getVariableValueForVariation = function(
+  projectConfig: ProjectConfig,
+  variable: FeatureVariable,
+  variation: Variation,
+  logger: LogHandler
+  ): string | null {
   if (!variable || !variation) {
     return null;
   }
@@ -447,8 +505,8 @@ export var getVariableValueForVariation = function(projectConfig, variable, vari
     return null;
   }
 
-  var variableUsages = projectConfig.variationVariableUsageMap[variation.id];
-  var variableUsage = variableUsages[variable.id];
+  const variableUsages = projectConfig.variationVariableUsageMap[variation.id];
+  const variableUsage = variableUsages[variable.id];
 
   return variableUsage ? variableUsage.value : null;
 };
@@ -457,20 +515,24 @@ export var getVariableValueForVariation = function(projectConfig, variable, vari
  * Given a variable value in string form, try to cast it to the argument type.
  * If the type cast succeeds, return the type casted value, otherwise log an
  * error and return null.
- * @param {string} variableValue  Variable value in string form
- * @param {string} variableType   Type of the variable whose value was passed
- *                                in the first argument. Must be one of
- *                                FEATURE_VARIABLE_TYPES in
- *                                lib/utils/enums/index.js. The return value's
- *                                type is determined by this argument (boolean
- *                                for BOOLEAN, number for INTEGER or DOUBLE,
- *                                and string for STRING).
- * @param {Object} logger         Logger instance
- * @returns {*}                   Variable value of the appropriate type, or
- *                                null if the type cast failed
+ * @param {string}     variableValue  Variable value in string form
+ * @param {string}     variableType   Type of the variable whose value was passed
+ *                                    in the first argument. Must be one of
+ *                                    FEATURE_VARIABLE_TYPES in
+ *                                    lib/utils/enums/index.js. The return value's
+ *                                    type is determined by this argument (boolean
+ *                                    for BOOLEAN, number for INTEGER or DOUBLE,
+ *                                    and string for STRING).
+ * @param {LogHandler} logger         Logger instance
+ * @returns {*}                       Variable value of the appropriate type, or
+ *                                    null if the type cast failed
  */
-export var getTypeCastValue = function(variableValue, variableType, logger) {
-  var castValue;
+export const getTypeCastValue = function(
+  variableValue: string,
+  variableType: string,
+  logger: LogHandler
+): unknown {
+  let castValue;
 
   switch (variableType) {
     case FEATURE_VARIABLE_TYPES.BOOLEAN:
@@ -531,39 +593,39 @@ export var getTypeCastValue = function(variableValue, variableType, logger) {
 /**
  * Returns an object containing all audiences in the project config. Keys are audience IDs
  * and values are audience objects.
- * @param   {Object} projectConfig
+ * @param   {ProjectConfig}     projectConfig
  * @returns {Object}
  */
-export var getAudiencesById = function(projectConfig) {
+export const getAudiencesById = function(projectConfig: ProjectConfig): any {
   return projectConfig.audiencesById;
 };
 
 /**
  * Returns true if an event with the given key exists in the datafile, and false otherwise
- * @param   {Object} projectConfig
- * @param   {string} eventKey
+ * @param   {ProjectConfig}     projectConfig
+ * @param   {string}            eventKey
  * @returns {boolean}
  */
-export var eventWithKeyExists = function(projectConfig, eventKey) {
+export const eventWithKeyExists = function(projectConfig: ProjectConfig, eventKey: string): boolean {
   return projectConfig.eventKeyMap.hasOwnProperty(eventKey);
 };
 
 /**
  * Returns true if experiment belongs to any feature, false otherwise.
- * @param {Object} projectConfig
- * @param {string} experimentId
+ * @param   {ProjectConfig}       projectConfig
+ * @param   {string}              experimentId
  * @returns {boolean} 
  */
-export var isFeatureExperiment = function(projectConfig, experimentId) {
+export const isFeatureExperiment = function(projectConfig: ProjectConfig, experimentId: string): boolean {
   return projectConfig.experimentFeatureMap.hasOwnProperty(experimentId);
 };
 
 /**
  * Returns the JSON string representation of the datafile
- * @param   {Object} projectConfig
+ * @param   {ProjectConfig}       projectConfig
  * @returns {string}
  */
-export var toDatafile = function(projectConfig) {
+export const toDatafile = function(projectConfig: ProjectConfig): string {
   return projectConfig.__datafileStr;
 }
 
@@ -585,9 +647,9 @@ export var toDatafile = function(projectConfig) {
  * @param   {Object}         config.logger
  * @returns {TryCreatingProjectConfigResult}
  */
-export var tryCreatingProjectConfig = function(config) {
+export const tryCreatingProjectConfig = function(config: any): any {
 
-  var newDatafileObj;
+  let newDatafileObj;
   try {
     newDatafileObj = configValidator.validateDatafile(config.datafile);
   } catch (error) {
@@ -605,13 +667,13 @@ export var tryCreatingProjectConfig = function(config) {
     config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
   }
 
-  var createProjectConfigArgs = [newDatafileObj];
+  const createProjectConfigArgs = [newDatafileObj];
   if (typeof config.datafile === 'string') {
     // Since config.datafile was validated above, we know that it is a valid JSON string
     createProjectConfigArgs.push(config.datafile);
   }
 
-  var newConfigObj = createProjectConfig(...createProjectConfigArgs);
+  const newConfigObj = createProjectConfig(...createProjectConfigArgs);
 
   return {
     configObj: newConfigObj,
@@ -624,7 +686,7 @@ export var tryCreatingProjectConfig = function(config) {
  * @param  {ProjectConfig}   projectConfig
  * @return {boolean}         A boolean value that indicates if we should send flag decisions
  */
-export var getSendFlagDecisionsValue = function(projectConfig) {
+export const getSendFlagDecisionsValue = function(projectConfig: ProjectConfig): boolean {
   return !!projectConfig.sendFlagDecisions;
 }
 
