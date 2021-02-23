@@ -96,12 +96,19 @@ export interface Variation {
   variables?: VariationVariable[];
 }
 
+export type ConditionTree<Leaf> = Leaf | unknown[];
+
 export interface Experiment {
   id: string;
   key: string;
   variations: Variation[];
   variationKeyMap: { [key: string]: Variation };
   groupId?: string;
+  layerId: string;
+  status: string;
+  audienceConditions: Array<string | string[]>;
+  audienceIds: string[];
+  trafficAllocation: any; //check this
 }
 
 export interface FeatureVariable {
@@ -119,7 +126,7 @@ export interface FeatureFlag {
   experimentIds: string[],
   variables: FeatureVariable[],
   variableKeyMap: { [key: string]: FeatureVariable }
-  groupId?: string; //check
+  groupId?: string; //check this
 }
 
 export interface Audience {
