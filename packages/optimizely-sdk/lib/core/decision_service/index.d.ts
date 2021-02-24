@@ -20,13 +20,9 @@ import {
   UserProfileService,
   FeatureFlag,
   Experiment,
-  Variation
+  Variation,
+  DecisionResponse
 } from '../../shared_types';
-
-interface DecisionResponse<T> {
-  readonly result: T;
-  readonly reasons: string[];
-}
 
 /**
  * Creates an instance of the DecisionService.

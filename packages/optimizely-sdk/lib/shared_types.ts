@@ -15,6 +15,11 @@
  */
 import { ErrorHandler, LogHandler, LogLevel } from "@optimizely/js-sdk-logging";
 
+export interface DecisionResponse<T> {
+  readonly result: T;
+  readonly reasons: string[];
+}
+
 export type UserAttributes = {
   // TODO[OASIS-6649]: Don't use any type
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
@@ -95,7 +100,8 @@ export interface Experiment {
   id: string;
   key: string;
   variations: Variation[];
-  variationKeyMap: { [key: string]: Variation }
+  variationKeyMap: { [key: string]: Variation };
+  groupId?: string;
 }
 
 export interface FeatureVariable {
