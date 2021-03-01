@@ -61,8 +61,6 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type ListenerPayload = import('./shared_types').ListenerPayload;
 
-  // export type OptimizelyUserContext = import('./optimizely_user_context').default;
-
   export interface OptimizelyUserContext {
     setAttribute(key: string, value: unknown): void;
     decide(
@@ -78,8 +76,6 @@ declare module '@optimizely/optimizely-sdk' {
     ): { [key: string]: OptimizelyDecision };
     trackEvent(eventName: string, eventTags?: EventTags): void;
   }
-
-  // export type OptimizelyDecision = import('./optimizely_decision').OptimizelyDecision;
 
   export interface OptimizelyDecision {
     variationKey: string | null;
