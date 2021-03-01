@@ -62,6 +62,8 @@ declare module '@optimizely/optimizely-sdk' {
   export type ListenerPayload = import('./shared_types').ListenerPayload;
 
   export interface OptimizelyUserContext {
+    getUserId(): string;
+    getAttributes(): UserAttributes;
     setAttribute(key: string, value: unknown): void;
     decide(
       key: string,
