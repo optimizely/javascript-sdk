@@ -43,17 +43,17 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type OptimizelyFeature = import('./shared_types').OptimizelyFeature;
 
-  export type EventTags = import ('./shared_types').EventTags;
+  export type EventTags = import('./shared_types').EventTags;
 
-  export type Event = import ('./shared_types').Event;
+  export type Event = import('./shared_types').Event;
 
-  export type EventDispatcher = import ('./shared_types').EventDispatcher;
+  export type EventDispatcher = import('./shared_types').EventDispatcher;
 
-  export type DatafileOptions = import ('./shared_types').DatafileOptions;
+  export type DatafileOptions = import('./shared_types').DatafileOptions;
 
-  export type SDKOptions = import ('./shared_types').SDKOptions;
+  export type SDKOptions = import('./shared_types').SDKOptions;
 
-  export type OptimizelyOptions = import ('./shared_types').OptimizelyOptions;
+  export type OptimizelyOptions = import('./shared_types').OptimizelyOptions;
 
   export type UserProfileService = import('./shared_types').UserProfileService;
 
@@ -61,13 +61,39 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type ListenerPayload = import('./shared_types').ListenerPayload;
 
-  export type OptimizelyUserContext = import('./optimizely_user_context').default;
+  // export type OptimizelyUserContext = import('./optimizely_user_context').default;
 
-  export type OptimizelyDecision = import('./optimizely_decision').OptimizelyDecision;
+  export interface OptimizelyUserContext {
+    setAttribute(key: string, value: unknown): void;
+    decide(
+      key: string,
+      options: OptimizelyDecideOption[]
+    ): OptimizelyDecision;
+    decideForKeys(
+      keys: string[],
+      options: OptimizelyDecideOption[],
+    ): { [key: string]: OptimizelyDecision };
+    decideAll(
+      options: OptimizelyDecideOption[],
+    ): { [key: string]: OptimizelyDecision };
+    trackEvent(eventName: string, eventTags?: EventTags): void;
+  }
+
+  // export type OptimizelyDecision = import('./optimizely_decision').OptimizelyDecision;
+
+  export interface OptimizelyDecision {
+    variationKey: string | null;
+    enabled: boolean;
+    variables: { [variableKey: string]: unknown };
+    ruleKey: string | null;
+    flagKey: string;
+    userContext: OptimizelyUserContext;
+    reasons: string[];
+  }
 
   export enum OptimizelyDecideOption {
     DISABLE_DECISION_EVENT = 'DISABLE_DECISION_EVENT',
-    ENABLED_FLAGS_ONLY =  'ENABLED_FLAGS_ONLY',
+    ENABLED_FLAGS_ONLY = 'ENABLED_FLAGS_ONLY',
     IGNORE_USER_PROFILE_SERVICE = 'IGNORE_USER_PROFILE_SERVICE',
     INCLUDE_REASONS = 'INCLUDE_REASONS',
     EXCLUDE_VARIABLES = 'EXCLUDE_VARIABLES'
