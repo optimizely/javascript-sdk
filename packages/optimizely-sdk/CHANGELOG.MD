@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.5.1] - March 2, 2021
+
+### Bug fixes
+-  Refactored TypeScript type definitions to have `OptimizelyUserContext` and `OptimizelyDecision` imported from `shared_types` to provide isolation from internal modules ([#655](https://github.com/optimizely/javascript-sdk/pull/655))
+
 ## [4.5.0] - February 17, 2021
 
 ### New Features

@@ -148,7 +148,7 @@ describe('javascript-sdk', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.5.0');
+        assert.equal(optlyInstance.clientVersion, '4.5.1');
       });
 
       it('should set the JavaScript client engine and version', function() {
