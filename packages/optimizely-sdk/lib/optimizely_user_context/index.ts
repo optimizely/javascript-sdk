@@ -14,8 +14,12 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import Optimizely from '../../lib/optimizely';
-import { UserAttributes, OptimizelyDecideOption, EventTags } from '../../lib/shared_types';
-import { OptimizelyDecision } from '../optimizely_decision';
+import {
+  UserAttributes,
+  OptimizelyDecideOption,
+  OptimizelyDecision,
+  EventTags
+} from '../../lib/shared_types';
 
 export default class OptimizelyUserContext {
   private optimizely: Optimizely;

@@ -61,33 +61,9 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type ListenerPayload = import('./shared_types').ListenerPayload;
 
-  export interface OptimizelyUserContext {
-    getUserId(): string;
-    getAttributes(): UserAttributes;
-    setAttribute(key: string, value: unknown): void;
-    decide(
-      key: string,
-      options: OptimizelyDecideOption[]
-    ): OptimizelyDecision;
-    decideForKeys(
-      keys: string[],
-      options: OptimizelyDecideOption[],
-    ): { [key: string]: OptimizelyDecision };
-    decideAll(
-      options: OptimizelyDecideOption[],
-    ): { [key: string]: OptimizelyDecision };
-    trackEvent(eventName: string, eventTags?: EventTags): void;
-  }
+  export type OptimizelyDecision = import('./shared_types').OptimizelyDecision;
 
-  export interface OptimizelyDecision {
-    variationKey: string | null;
-    enabled: boolean;
-    variables: { [variableKey: string]: unknown };
-    ruleKey: string | null;
-    flagKey: string;
-    userContext: OptimizelyUserContext;
-    reasons: string[];
-  }
+  export type OptimizelyUserContext = import('./shared_types').OptimizelyUserContext;
 
   export enum OptimizelyDecideOption {
     DISABLE_DECISION_EVENT = 'DISABLE_DECISION_EVENT',
