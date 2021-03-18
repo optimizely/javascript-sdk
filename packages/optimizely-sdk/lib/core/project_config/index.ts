@@ -79,6 +79,7 @@ const EXPERIMENT_RUNNING_STATUS = 'Running';
 const RESERVED_ATTRIBUTE_PREFIX = '$opt_';
 const MODULE_NAME = 'PROJECT_CONFIG';
 
+// eslint-disable-next-line  @typescript-eslint/no-explicit-any
 function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
   const datafileCopy = fns.assign({}, datafile);
   datafileCopy.audiences = (datafile.audiences || []).map((audience: Audience) => {
@@ -612,9 +613,9 @@ export const getTypeCastValue = function(
  * Returns an object containing all audiences in the project config. Keys are audience IDs
  * and values are audience objects.
  * @param   {ProjectConfig}     projectConfig
- * @returns {Object}
+ * @returns {{ [id: string]: Audience }}
  */
-export const getAudiencesById = function(projectConfig: ProjectConfig): any {
+export const getAudiencesById = function(projectConfig: ProjectConfig): { [id: string]: Audience } {
   return projectConfig.audiencesById;
 };
 
@@ -665,7 +666,7 @@ export const toDatafile = function(projectConfig: ProjectConfig): string {
  * @param   {Object}         config.logger
  * @returns {TryCreatingProjectConfigResult}
  */
-export const tryCreatingProjectConfig = function(config: any): any {
+export const tryCreatingProjectConfig = function(config: any): ProjectConfig {
 
   let newDatafileObj;
   try {
