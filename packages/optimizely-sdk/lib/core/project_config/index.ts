@@ -33,8 +33,15 @@ import {
   Rollout,
   TrafficAllocation,
   FeatureVariable,
-  Variation
+  Variation,
+  OptimizelyVariation,
+  VariationVariable,
 } from '../../shared_types';
+
+interface Event {
+  key: string;
+  id: string;
+}
 
 export interface ProjectConfig {
   revision: string;
@@ -49,19 +56,26 @@ export interface ProjectConfig {
   experimentIdMap: { [id: string]: Experiment };
   experimentFeatureMap: { [key: string]: string[] };
   experiments: Experiment[];
-  eventKeyMap: any;
-  attributeKeyMap: any;
-  variationIdMap: any;
-  variationVariableUsageMap: any;
-  audiencesById: any;
+  eventKeyMap: { [key: string]: Event };
+  audiences: Audience[];
+  attributeKeyMap: { [key: string]: { id: string } };
+  variationIdMap: { [id: string]: OptimizelyVariation };
+  variationVariableUsageMap: { [id: string]: { [id: string]: VariationVariable } };
+  audiencesById: { [id: string]: Audience };
   __datafileStr: string;
+  groupIdMap: any;
+  groups: any;
+  events: any;
+  attributes: any;
+  typedAudiences: any;
+  rolloutIdMap: any;
 }
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';
 const RESERVED_ATTRIBUTE_PREFIX = '$opt_';
 const MODULE_NAME = 'PROJECT_CONFIG';
 
-function createMutationSafeDatafileCopy(datafile: any): any {
+function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
   const datafileCopy = fns.assign({}, datafile);
   datafileCopy.audiences = (datafile.audiences || []).map((audience: Audience) => {
     return fns.assign({}, audience);
@@ -95,7 +109,7 @@ function createMutationSafeDatafileCopy(datafile: any): any {
  * @param  {string=}  datafileStr   JSON string representation of the datafile
  * @return {Object}   Object representing project configuration
  */
-export const createProjectConfig = function(datafileObj?: object, datafileStr: string | null = null): object {
+export const createProjectConfig = function(datafileObj?: ProjectConfig, datafileStr: string | null = null): ProjectConfig {
   const projectConfig = createMutationSafeDatafileCopy(datafileObj);
 
   projectConfig.__datafileStr = datafileStr === null ? JSON.stringify(datafileObj) : datafileStr;
