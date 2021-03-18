@@ -43,6 +43,10 @@ interface Event {
   id: string;
 }
 
+interface VariableUsageMap {
+  [id: string]: VariationVariable;
+}
+
 export interface ProjectConfig {
   revision: string;
   projectId: string;
@@ -60,15 +64,15 @@ export interface ProjectConfig {
   audiences: Audience[];
   attributeKeyMap: { [key: string]: { id: string } };
   variationIdMap: { [id: string]: OptimizelyVariation };
-  variationVariableUsageMap: { [id: string]: { [id: string]: VariationVariable } };
+  variationVariableUsageMap: { [id: string]: VariableUsageMap };
   audiencesById: { [id: string]: Audience };
   __datafileStr: string;
-  groupIdMap: any;
-  groups: any;
-  events: any;
-  attributes: any;
-  typedAudiences: any;
-  rolloutIdMap: any;
+  groupIdMap: { [id: string]: Group };
+  groups: Group[];
+  events: Event[];
+  attributes: Array<{ id: string }>;
+  typedAudiences: Audience[];
+  rolloutIdMap: { [id: string]: Rollout };
 }
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';
