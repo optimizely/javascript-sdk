@@ -108,7 +108,7 @@ export interface Experiment {
   status: string;
   audienceConditions: Array<string | string[]>;
   audienceIds: string[];
-  trafficAllocation: any; //check this
+  trafficAllocation: TrafficAllocation[];
 }
 
 export interface FeatureVariable {
@@ -188,9 +188,9 @@ export interface OptimizelyOptions {
   eventFlushInterval?: number;
   eventMaxQueueSize?: number;
   isValidInstance: boolean;
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  jsonSchemaValidator?: object;
+  jsonSchemaValidator?: {
+    validate(jsonObject: unknown): boolean,
+  };
   logger: LogHandler;
   sdkKey?: string;
   userProfileService?: UserProfileService | null;

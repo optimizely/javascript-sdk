@@ -38,6 +38,21 @@ import {
   VariationVariable,
 } from '../../shared_types';
 
+interface TryCreatingProjectConfigConfig {
+  datafile: string;
+  jsonSchemaValidator?: {
+    validate(jsonObject: unknown): boolean,
+  };
+  logger: LogHandler;
+}
+
+interface TryCreatingProjectConfigResult {
+  configObj: ProjectConfig | null;
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
+  error: object | null;
+}
+
 interface Event {
   key: string;
   id: string;
@@ -114,7 +129,10 @@ function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
  * @param  {string=}  datafileStr   JSON string representation of the datafile
  * @return {Object}   Object representing project configuration
  */
-export const createProjectConfig = function(datafileObj?: ProjectConfig, datafileStr: string | null = null): ProjectConfig {
+export const createProjectConfig = function(
+  datafileObj?: ProjectConfig,
+  datafileStr: string | null = null
+): ProjectConfig {
   const projectConfig = createMutationSafeDatafileCopy(datafileObj);
 
   projectConfig.__datafileStr = datafileStr === null ? JSON.stringify(datafileObj) : datafileStr;
@@ -666,7 +684,9 @@ export const toDatafile = function(projectConfig: ProjectConfig): string {
  * @param   {Object}         config.logger
  * @returns {TryCreatingProjectConfigResult}
  */
-export const tryCreatingProjectConfig = function(config: any): ProjectConfig {
+export const tryCreatingProjectConfig = function(
+  config: TryCreatingProjectConfigConfig
+): TryCreatingProjectConfigResult {
 
   let newDatafileObj;
   try {

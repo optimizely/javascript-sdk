@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 import { OptimizelyConfig, DatafileOptions } from '../../shared_types'
-import { ProjectConfig } from '../project_config'
+import { ProjectConfig } from '../project_config';
 
 interface ProjectConfigManagerConfig {
   datafile?: string,
   datafileOptions?: DatafileOptions,
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  jsonSchemaValidator?: object,
+  jsonSchemaValidator?: {
+    validate(jsonObject: unknown): boolean,
+  };
   sdkKey?: string,
 }
 
