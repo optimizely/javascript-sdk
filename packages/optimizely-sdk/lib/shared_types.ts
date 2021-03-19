@@ -96,8 +96,6 @@ export interface Variation {
   variables?: VariationVariable[];
 }
 
-export type ConditionTree<Leaf> = Leaf | unknown[];
-
 export interface Experiment {
   id: string;
   key: string;
@@ -126,7 +124,7 @@ export interface FeatureFlag {
   experimentIds: string[],
   variables: FeatureVariable[],
   variableKeyMap: { [key: string]: FeatureVariable }
-  groupId?: string; //check this
+  groupId?: string;
 }
 
 export interface Audience {

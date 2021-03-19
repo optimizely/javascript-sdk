@@ -48,8 +48,7 @@ interface TryCreatingProjectConfigConfig {
 
 interface TryCreatingProjectConfigResult {
   configObj: ProjectConfig | null;
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
+  // eslint-disable-next-line
   error: object | null;
 }
 
@@ -125,12 +124,12 @@ function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
 
 /**
  * Creates projectConfig object to be used for quick project property lookup
- * @param  {Object}   datafileObj   JSON datafile representing the project
- * @param  {string=}  datafileStr   JSON string representation of the datafile
- * @return {Object}   Object representing project configuration
+ * @param  {Object}        datafileObj   JSON datafile representing the project
+ * @param  {string|null}   datafileStr   JSON string representation of the datafile
+ * @return {ProjectConfig} Object representing project configuration
  */
 export const createProjectConfig = function(
-  datafileObj?: ProjectConfig,
+  datafileObj?: JSON,
   datafileStr: string | null = null
 ): ProjectConfig {
   const projectConfig = createMutationSafeDatafileCopy(datafileObj);
@@ -141,7 +140,7 @@ export const createProjectConfig = function(
    * Conditions of audiences in projectConfig.typedAudiences are not
    * expected to be string-encoded as they are here in projectConfig.audiences.
    */
-  (projectConfig.audiences || []).forEach(function(audience: Audience) {
+  (projectConfig.audiences || []).forEach((audience) => {
     audience.conditions = JSON.parse(audience.conditions);
   });
   projectConfig.audiencesById = fns.keyBy(projectConfig.audiences, 'id');
@@ -154,15 +153,15 @@ export const createProjectConfig = function(
   let experiments;
   Object.keys(projectConfig.groupIdMap || {}).forEach((Id) => {
     experiments = projectConfig.groupIdMap[Id].experiments;
-    (experiments || []).forEach(function(experiment: Experiment) {
+    (experiments || []).forEach((experiment) => {
       projectConfig.experiments.push(fns.assign(experiment, { groupId: Id }));
     });
   });
 
   projectConfig.rolloutIdMap = fns.keyBy(projectConfig.rollouts || [], 'id');
-  objectValues(projectConfig.rolloutIdMap as {[key: string]: Rollout} || {}).forEach(
+  objectValues(projectConfig.rolloutIdMap || {}).forEach(
     (rollout) => {
-      (rollout.experiments || []).forEach((experiment: Experiment) => {
+      (rollout.experiments || []).forEach((experiment) => {
         projectConfig.experiments.push(experiment);
         // Creates { <variationKey>: <variation> } map inside of the experiment
         experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
@@ -175,7 +174,7 @@ export const createProjectConfig = function(
 
   projectConfig.variationIdMap = {};
   projectConfig.variationVariableUsageMap = {};
-  (projectConfig.experiments || []).forEach((experiment: Experiment) => {
+  (projectConfig.experiments || []).forEach((experiment) => {
     // Creates { <variationKey>: <variation> } map inside of the experiment
     experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
 
@@ -193,7 +192,7 @@ export const createProjectConfig = function(
   projectConfig.experimentFeatureMap = {};
 
   projectConfig.featureKeyMap = fns.keyBy(projectConfig.featureFlags || [], 'key');
-  objectValues(projectConfig.featureKeyMap as {[key: string]: FeatureFlag} || {}).forEach(
+  objectValues(projectConfig.featureKeyMap || {}).forEach(
     (feature) => {
     // Json type is represented in datafile as a subtype of string for the sake of backwards compatibility.
     // Converting it to a first-class json type while creating Project Config
@@ -399,7 +398,7 @@ export const getVariationIdFromExperimentAndVariationKey = function(
  * Get experiment from provided experiment key
  * @param  {ProjectConfig}  projectConfig  Object representing project configuration
  * @param  {string}         experimentKey  Event key for which experiment IDs are to be retrieved
- * @return {Experiment}         Experiment
+ * @return {Experiment}     Experiment
  * @throws If experiment key is not in datafile
  */
 export const getExperimentFromKey = function(projectConfig: ProjectConfig, experimentKey: string): Experiment {
@@ -417,7 +416,7 @@ export const getExperimentFromKey = function(projectConfig: ProjectConfig, exper
  * Given an experiment key, returns the traffic allocation within that experiment
  * @param  {ProjectConfig}  projectConfig  Object representing project configuration
  * @param  {string}         experimentKey  Key representing the experiment
- * @return {TrafficAllocation}             Traffic allocation for the experiment
+ * @return {TrafficAllocation[]}           Traffic allocation for the experiment
  * @throws If experiment key is not in datafile
  */
 export const getTrafficAllocation = function(projectConfig: ProjectConfig, experimentKey: string):  TrafficAllocation[]{
