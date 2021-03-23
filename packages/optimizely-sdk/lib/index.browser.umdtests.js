@@ -18,7 +18,7 @@ import sinon from 'sinon';
 
 import configValidator from './utils/config_validator';
 import * as enums from './utils/enums';
-import logger from './plugins/logger';
+import * as logger from './plugins/logger';
 import Optimizely from './optimizely';
 import testData from './tests/test_data';
 import packageJSON from '../package.json';

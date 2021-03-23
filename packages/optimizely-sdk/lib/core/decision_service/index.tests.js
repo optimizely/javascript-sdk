@@ -24,7 +24,7 @@ import {
   LOG_LEVEL,
   DECISION_SOURCES,
 } from '../../utils/enums';
-import logger from '../../plugins/logger';
+import * as logger from '../../plugins/logger';
 import Optimizely from '../../optimizely';
 import projectConfig from '../project_config';
 import AudienceEvaluator from '../audience_evaluator';

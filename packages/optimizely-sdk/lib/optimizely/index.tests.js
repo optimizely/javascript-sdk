@@ -30,7 +30,7 @@ import * as enums from '../utils/enums';
 import eventDispatcher from '../plugins/event_dispatcher/index.node';
 import errorHandler from '../plugins/error_handler';
 import fns from '../utils/fns';
-import logger from '../plugins/logger';
+import * as logger from '../plugins/logger';
 import * as decisionService from '../core/decision_service';
 import * as jsonSchemaValidator from '../utils/json_schema_validator';
 import * as projectConfig from '../core/project_config';

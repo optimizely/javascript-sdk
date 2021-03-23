@@ -18,7 +18,7 @@ import { assert } from 'chai';
 
 import { createNotificationCenter } from './';
 import * as enums from '../../utils/enums';
-import logger from '../../plugins/logger';
+import * as logger from '../../plugins/logger';
 import errorHandler from '../../plugins/error_handler';
 
 var LOG_LEVEL = enums.LOG_LEVEL;

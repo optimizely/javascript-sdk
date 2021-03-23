@@ -24,7 +24,7 @@ import {
   LOG_MESSAGES,
   LOG_LEVEL,
 } from '../../utils/enums';
-import logger from '../../plugins/logger';
+import * as logger from '../../plugins/logger';
 import projectConfig from '../project_config';
 import { getTestProjectConfig } from '../../tests/test_data';
 
