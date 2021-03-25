@@ -30,6 +30,7 @@
     "access": "public"
   },
   "devDependencies": {
+    "@react-native-async-storage/async-storage": "^1.14.1",
     "@types/jest": "^24.0.9",
     "@types/nise": "^1.4.0",
     "@types/nock": "^9.3.1",
@@ -44,8 +45,7 @@
     "nock": "^10.0.6",
     "prettier": "^1.19.1",
     "ts-jest": "^24.0.0",
-    "typescript": "3.3.3333",
-    "@react-native-community/async-storage": "^1.2.0"
+    "typescript": "3.3.3333"
   },
   "dependencies": {
     "@optimizely/js-sdk-logging": "^0.1.0",
@@ -53,7 +53,7 @@
     "decompress-response": "^4.2.1"
   },
   "peerDependencies": {
-    "@react-native-community/async-storage": "^1.2.0"
+    "@react-native-async-storage/async-storage": "^1.14.1"
   },
   "scripts": {
     "lint": "tsc --noEmit && eslint --fix 'src/**/*.ts' '__test__/**/*.ts'",
