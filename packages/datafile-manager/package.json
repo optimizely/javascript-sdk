@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/js-sdk-datafile-manager",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Optimizely Full Stack Datafile Manager",
   "repository": {
     "type": "git",
