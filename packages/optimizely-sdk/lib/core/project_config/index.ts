@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2020, Optimizely
+ * Copyright 2021, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,8 +48,7 @@ interface TryCreatingProjectConfigConfig {
 
 interface TryCreatingProjectConfigResult {
   configObj: ProjectConfig | null;
-  // eslint-disable-next-line
-  error: object | null;
+  error: Error | null;
 }
 
 interface Event {
@@ -102,7 +101,7 @@ function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
   datafileCopy.experiments = (datafile.experiments || []).map((experiment: Experiment) => {
     return fns.assign({}, experiment);
   });
-  datafileCopy.featureFlags = (datafile.featureFlags || []).map(function(featureFlag: FeatureFlag) {
+  datafileCopy.featureFlags = (datafile.featureFlags || []).map((featureFlag: FeatureFlag) => {
     return fns.assign({}, featureFlag);
   });
   datafileCopy.groups = (datafile.groups || []).map((group: Group) => {
@@ -196,7 +195,7 @@ export const createProjectConfig = function(
     (feature) => {
     // Json type is represented in datafile as a subtype of string for the sake of backwards compatibility.
     // Converting it to a first-class json type while creating Project Config
-      feature.variables.forEach(function(variable) {
+      feature.variables.forEach((variable) => {
         if (variable.type === FEATURE_VARIABLE_TYPES.STRING && variable.subType === FEATURE_VARIABLE_TYPES.JSON) {
           variable.type = FEATURE_VARIABLE_TYPES.JSON;
           delete variable.subType;
@@ -204,7 +203,7 @@ export const createProjectConfig = function(
       });
 
       feature.variableKeyMap = fns.keyBy(feature.variables, 'key');
-      (feature.experimentIds || []).forEach(function(experimentId) {
+      (feature.experimentIds || []).forEach((experimentId) => {
         // Add this experiment in experiment-feature map.
         if (projectConfig.experimentFeatureMap[experimentId]) {
           projectConfig.experimentFeatureMap[experimentId].push(feature.id);
