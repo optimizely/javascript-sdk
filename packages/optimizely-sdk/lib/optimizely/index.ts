@@ -26,9 +26,10 @@ import {
   FeatureFlag,
   FeatureVariable,
   OptimizelyOptions,
-  OptimizelyDecideOption
+  OptimizelyDecideOption,
+  OptimizelyDecision
 } from '../shared_types';
-import { OptimizelyDecision, newErrorDecision } from '../optimizely_decision';
+import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
 import { createNotificationCenter, NotificationCenter } from '../core/notification_center';

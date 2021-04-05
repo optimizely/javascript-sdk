@@ -43,19 +43,19 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type OptimizelyFeature = import('./shared_types').OptimizelyFeature;
 
-  export type EventTags = import ('./shared_types').EventTags;
+  export type EventTags = import('./shared_types').EventTags;
 
-  export type Event = import ('./shared_types').Event;
+  export type Event = import('./shared_types').Event;
 
-  export type EventDispatcher = import ('./shared_types').EventDispatcher;
+  export type EventDispatcher = import('./shared_types').EventDispatcher;
 
-  export type DatafileOptions = import ('./shared_types').DatafileOptions;
+  export type DatafileOptions = import('./shared_types').DatafileOptions;
 
   export type Config = import ('./shared_types').Config;
 
   export type SDKOptions = Config;
 
-  export type OptimizelyOptions = import ('./shared_types').OptimizelyOptions;
+  export type OptimizelyOptions = import('./shared_types').OptimizelyOptions;
 
   export type UserProfileService = import('./shared_types').UserProfileService;
 
@@ -63,13 +63,13 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type ListenerPayload = import('./shared_types').ListenerPayload;
 
-  export type OptimizelyUserContext = import('./optimizely_user_context').default;
+  export type OptimizelyDecision = import('./shared_types').OptimizelyDecision;
 
-  export type OptimizelyDecision = import('./optimizely_decision').OptimizelyDecision;
+  export type OptimizelyUserContext = import('./shared_types').OptimizelyUserContext;
 
   export enum OptimizelyDecideOption {
     DISABLE_DECISION_EVENT = 'DISABLE_DECISION_EVENT',
-    ENABLED_FLAGS_ONLY =  'ENABLED_FLAGS_ONLY',
+    ENABLED_FLAGS_ONLY = 'ENABLED_FLAGS_ONLY',
     IGNORE_USER_PROFILE_SERVICE = 'IGNORE_USER_PROFILE_SERVICE',
     INCLUDE_REASONS = 'INCLUDE_REASONS',
     EXCLUDE_VARIABLES = 'EXCLUDE_VARIABLES'
