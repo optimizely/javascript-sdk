@@ -91,9 +91,9 @@ declare module '@optimizely/optimizely-sdk' {
       | enums.LOG_LEVEL.INFO
       | enums.LOG_LEVEL.NOTSET
       | enums.LOG_LEVEL.WARNING;
-    // TODO[OASIS-6649]: Don't use object type
-    // eslint-disable-next-line  @typescript-eslint/ban-types
-    jsonSchemaValidator?: object;
+    jsonSchemaValidator?: {
+      validate(jsonObject: unknown): boolean,
+    };
     userProfileService?: UserProfileService | null;
     eventBatchSize?: number;
     eventFlushInterval?: number;

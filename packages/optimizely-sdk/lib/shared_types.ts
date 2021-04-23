@@ -102,6 +102,11 @@ export interface Experiment {
   variations: Variation[];
   variationKeyMap: { [key: string]: Variation };
   groupId?: string;
+  layerId: string;
+  status: string;
+  audienceConditions: Array<string | string[]>;
+  audienceIds: string[];
+  trafficAllocation: TrafficAllocation[];
 }
 
 export interface FeatureVariable {
@@ -109,6 +114,7 @@ export interface FeatureVariable {
   key: string;
   id: string;
   defaultValue: string;
+  subType?: string;
 }
 
 export interface FeatureFlag {
@@ -118,6 +124,24 @@ export interface FeatureFlag {
   experimentIds: string[],
   variables: FeatureVariable[],
   variableKeyMap: { [key: string]: FeatureVariable }
+  groupId?: string;
+}
+
+export interface Audience {
+ name: string;
+ conditions: string;
+}
+
+export interface TrafficAllocation {
+  entityId: string;
+  endOfRange: number;
+}
+
+export interface Group {
+  id: string;
+  policy: string;
+  trafficAllocation: TrafficAllocation[];
+  experiments: Experiment[];
 }
 
 export interface FeatureKeyMap {
@@ -162,9 +186,9 @@ export interface OptimizelyOptions {
   eventFlushInterval?: number;
   eventMaxQueueSize?: number;
   isValidInstance: boolean;
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  jsonSchemaValidator?: object;
+  jsonSchemaValidator?: {
+    validate(jsonObject: unknown): boolean,
+  };
   logger: LogHandler;
   sdkKey?: string;
   userProfileService?: UserProfileService | null;

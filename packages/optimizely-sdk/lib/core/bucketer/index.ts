@@ -23,7 +23,9 @@ import { LogHandler } from '@optimizely/js-sdk-logging';
 import {
   DecisionResponse,
   Experiment,
-  Variation
+  Variation,
+  TrafficAllocation,
+  Group,
 } from '../../shared_types';
 
 import {
@@ -37,17 +39,6 @@ const MAX_HASH_VALUE = Math.pow(2, 32);
 const MAX_TRAFFIC_VALUE = 10000;
 const MODULE_NAME = 'BUCKETER';
 const RANDOM_POLICY = 'random';
-
-interface TrafficAllocation {
-  entityId: string;
-  endOfRange: number;
-}
-
-interface Group {
-  id: string;
-  policy: string;
-  trafficAllocation: TrafficAllocation[];
-}
 
 interface BucketerParams {
   experimentId: string;
