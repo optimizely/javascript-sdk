@@ -24,7 +24,7 @@ import {
   LOG_LEVEL,
   DECISION_SOURCES,
 } from '../../utils/enums';
-import * as logger from '../../plugins/logger';
+import { createLogger }  from '../../plugins/logger';
 import Optimizely from '../../optimizely';
 import projectConfig from '../project_config';
 import AudienceEvaluator from '../audience_evaluator';
@@ -43,7 +43,7 @@ describe('lib/core/decision_service', function() {
   describe('APIs', function() {
     var configObj = projectConfig.createProjectConfig(cloneDeep(testData));
     var decisionServiceInstance;
-    var mockLogger = logger.createLogger({ logLevel: LOG_LEVEL.INFO });
+    var mockLogger = createLogger({ logLevel: LOG_LEVEL.INFO });
     var bucketerStub;
 
     beforeEach(function() {
@@ -946,7 +946,7 @@ describe('lib/core/decision_service', function() {
   // TODO: Move tests that test methods of Optimizely to lib/optimizely/index.tests.js
   describe('when a bucketingID is provided', function() {
     var configObj = projectConfig.createProjectConfig(cloneDeep(testData));
-    var createdLogger = logger.createLogger({
+    var createdLogger = createLogger({
       logLevel: LOG_LEVEL.DEBUG,
       logToConsole: false,
     });
@@ -1064,7 +1064,7 @@ describe('lib/core/decision_service', function() {
   describe('_getBucketingId', function() {
     var configObj;
     var decisionService;
-    var mockLogger = logger.createLogger({ logLevel: LOG_LEVEL.INFO });
+    var mockLogger = createLogger({ logLevel: LOG_LEVEL.INFO });
     var userId = 'testUser1';
     var userAttributesWithBucketingId = {
       browser_type: 'firefox',
@@ -1113,7 +1113,7 @@ describe('lib/core/decision_service', function() {
       var configObj;
       var decisionServiceInstance;
       var sandbox;
-      var mockLogger = logger.createLogger({ logLevel: LOG_LEVEL.INFO });
+      var mockLogger = createLogger({ logLevel: LOG_LEVEL.INFO });
       var fakeDecisionResponseWithArgs;
       var fakeDecisionResponse = {
         result: null,
@@ -2105,7 +2105,7 @@ describe('lib/core/decision_service', function() {
         configObj = projectConfig.createProjectConfig(cloneDeep(testDataWithFeatures));
         feature = configObj.featureKeyMap.test_feature;
         decisionService = DecisionService.createDecisionService({
-          logger: logger.createLogger({ logLevel: LOG_LEVEL.INFO }),
+          logger: createLogger({ logLevel: LOG_LEVEL.INFO }),
         });
         __buildBucketerParamsSpy = sinon.spy(decisionService, '__buildBucketerParams');
       });

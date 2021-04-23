@@ -18,14 +18,14 @@ import { assert } from 'chai';
 
 import { createNotificationCenter } from './';
 import * as enums from '../../utils/enums';
-import * as logger from '../../plugins/logger';
+import { createLogger } from '../../plugins/logger';
 import errorHandler from '../../plugins/error_handler';
 
 var LOG_LEVEL = enums.LOG_LEVEL;
 
 describe('lib/core/notification_center', function() {
   describe('APIs', function() {
-    var mockLogger = logger.createLogger({ logLevel: LOG_LEVEL.INFO });
+    var mockLogger = createLogger({ logLevel: LOG_LEVEL.INFO });
     var mockErrorHandler = errorHandler.handleError;
     var mockLoggerStub;
     var mockErrorHandlerStub;
