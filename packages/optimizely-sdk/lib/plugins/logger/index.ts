@@ -22,9 +22,7 @@ type ConsoleLogHandlerConfig = {
 }
 
 export class NoOpLogger {
-  log(): void {
-    () => {};
-  } 
+  log(): void { }
 }
 
 export function createLogger(opts?: ConsoleLogHandlerConfig): ConsoleLogHandler {  
