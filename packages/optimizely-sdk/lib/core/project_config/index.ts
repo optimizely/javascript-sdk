@@ -46,11 +46,6 @@ interface TryCreatingProjectConfigConfig {
   logger: LogHandler;
 }
 
-interface TryCreatingProjectConfigResult {
-  configObj: ProjectConfig | null;
-  error: Error | null;
-}
-
 interface Event {
   key: string;
   id: string;
@@ -330,8 +325,8 @@ export const isActive = function(projectConfig: ProjectConfig, experimentKey: st
  * Determine for given experiment if event is running, which determines whether should be dispatched or not
  * @param  {ProjectConfig}  configObj       Object representing project configuration
  * @param  {string}         experimentKey   Experiment key for which the status is to be determined
- * @return {boolean}                        True is the experiment is running
- *                                          False is the experiment is not running
+ * @return {boolean}                        True if the experiment is running
+ *                                          False if the experiment is not running
  *
  */
 export const isRunning = function(projectConfig: ProjectConfig, experimentKey: string): boolean {
@@ -680,11 +675,11 @@ export const toDatafile = function(projectConfig: ProjectConfig): string {
  * @param   {Object|string}  config.datafile
  * @param   {Object}         config.jsonSchemaValidator
  * @param   {Object}         config.logger
- * @returns {TryCreatingProjectConfigResult}
+ * @returns {Object}         Object containing configObj and error properties
  */
 export const tryCreatingProjectConfig = function(
   config: TryCreatingProjectConfigConfig
-): TryCreatingProjectConfigResult {
+): { configObj: ProjectConfig | null; error: Error | null } {
 
   let newDatafileObj;
   try {
