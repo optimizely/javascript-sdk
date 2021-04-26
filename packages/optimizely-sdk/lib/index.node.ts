@@ -23,7 +23,7 @@ import {
 } from '@optimizely/js-sdk-logging';
 import Optimizely from './optimizely';
 import * as enums from './utils/enums';
-import loggerPlugin from './plugins/logger';
+import * as loggerPlugin from './plugins/logger';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.node';

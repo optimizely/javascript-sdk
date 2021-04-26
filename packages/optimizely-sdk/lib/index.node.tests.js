@@ -20,7 +20,7 @@ import eventProcessor from './core/event_processor';
 import * as enums from './utils/enums';
 import Optimizely from './optimizely';
 import testData from './tests/test_data';
-import loggerPlugin from './plugins/logger';
+import * as loggerPlugin from './plugins/logger';
 import optimizelyFactory from './index.node';
 import configValidator from './utils/config_validator';
 

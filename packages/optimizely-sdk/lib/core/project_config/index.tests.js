@@ -26,7 +26,7 @@ import {
   FEATURE_VARIABLE_TYPES,
   LOG_LEVEL,
 } from '../../utils/enums';
-import loggerPlugin from '../../plugins/logger';
+import * as loggerPlugin from '../../plugins/logger';
 import testDatafile from '../../tests/test_data';
 import configValidator from '../../utils/config_validator';
 

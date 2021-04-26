@@ -25,7 +25,7 @@ import * as enums from './utils/enums';
 import Optimizely from './optimizely';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
-import loggerPlugin from './plugins/logger/index.react_native';
+import * as loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { SDKOptions, OptimizelyDecideOption } from './shared_types';

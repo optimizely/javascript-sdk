@@ -24,7 +24,7 @@ import {
   LOG_MESSAGES,
   LOG_LEVEL,
 } from '../../utils/enums';
-import logger from '../../plugins/logger';
+import { createLogger } from '../../plugins/logger';
 import projectConfig from '../project_config';
 import { getTestProjectConfig } from '../../tests/test_data';
 
@@ -34,7 +34,7 @@ describe('lib/core/bucketer', function() {
   describe('APIs', function() {
     describe('bucket', function() {
       var configObj;
-      var createdLogger = logger.createLogger({ logLevel: LOG_LEVEL.INFO });
+      var createdLogger = createLogger({ logLevel: LOG_LEVEL.INFO });
       var bucketerParams;
 
       beforeEach(function() {
@@ -360,7 +360,7 @@ describe('lib/core/bucketer', function() {
 
     describe('testBucketWithBucketingId', function() {
       var bucketerParams;
-      var createdLogger = logger.createLogger({
+      var createdLogger = createLogger({
         logLevel: LOG_LEVEL.INFO,
         logToConsole: false,
       });
