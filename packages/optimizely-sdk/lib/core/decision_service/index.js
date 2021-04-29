@@ -469,9 +469,7 @@ DecisionService.prototype.getVariationForFeature = function(configObj, feature, 
 
 DecisionService.prototype._getVariationForFeatureExperiment = function(configObj, feature, userId, attributes, options = {}) {
   var decideReasons = [];
-  var experiment = null;
   var variationKey = null;
-  var variation = null;
   var decisionVariation;
   var index;
   var variationForFeatureExperiment;
@@ -480,13 +478,13 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(configObj
   if (feature.experimentIds.length > 0) {
     // Evaluate each experiment ID and return the first bucketed experiment variation
     for (index = 0; index < feature.experimentIds.length; index++) {
-      experiment = projectConfig.getExperimentFromId(configObj, feature.experimentIds[index], this.logger);
+      var experiment = projectConfig.getExperimentFromId(configObj, feature.experimentIds[index], this.logger);
       if (experiment) {
         decisionVariation = this.getVariation(configObj, experiment.key, userId, attributes, options);
         decideReasons.push(...decisionVariation.reasons);
         variationKey = decisionVariation.result;
         if (variationKey) {
-          variation = experiment.variationKeyMap[variationKey];
+          var variation = experiment.variationKeyMap[variationKey];
           variationForFeatureExperiment = {
             experiment: experiment,
             variation: variation,
@@ -507,8 +505,8 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(configObj
   }
 
   variationForFeatureExperiment = {
-    experiment: experiment,
-    variation: variation,
+    experiment: null,
+    variation: null,
     decisionSource: DECISION_SOURCES.FEATURE_TEST,
   };
 
