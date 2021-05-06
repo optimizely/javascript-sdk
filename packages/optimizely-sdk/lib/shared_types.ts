@@ -124,7 +124,6 @@ export interface FeatureFlag {
   experimentIds: string[],
   variables: FeatureVariable[],
   variableKeyMap: { [key: string]: FeatureVariable }
-  groupId?: string;
 }
 
 export interface Audience {

@@ -2143,7 +2143,6 @@ export var datafileWithFeaturesExpectedData = {
       key: 'feature_with_group',
       id: '595001',
       variableKeyMap: {},
-      groupId: '595024',
     },
     shared_feature: {
       rolloutId: '599055',
@@ -2194,7 +2193,6 @@ export var datafileWithFeaturesExpectedData = {
       experimentIds: ['12115595439'],
       variables: [],
       variableKeyMap: {},
-      groupId: '595025',
     },
   },
 };
