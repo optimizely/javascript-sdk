@@ -871,6 +871,20 @@ var configWithFeatures = {
       experimentIds: ['12115595439'],
       variables: [],
     },
+    {
+      id: '91115',
+      key: 'test_feature_in_exclusion_group',
+      experimentIds: ['42222', '42223', '42224'],
+      rolloutId: '211111',
+      variables: [],
+    },
+    {
+      id: '91116',
+      key: 'test_feature_in_multiple_experiments',
+      experimentIds: ['111134', '111135', '111136'],
+      rolloutId: '211111',
+      variables: [],
+    },
   ],
   experiments: [
     {
@@ -1024,6 +1038,105 @@ var configWithFeatures = {
       key: 'test_shared_feature',
       id: '599028',
     },
+    {
+      key: 'test_experiment3',
+      status: 'Running',
+      layerId: '6',
+      audienceConditions : [
+        "or",
+        "11160"
+      ],
+      audienceIds: ['11160'],
+      id: '111134',
+      forcedVariations: {},
+      trafficAllocation: [
+        {
+          entityId: '222239',
+          endOfRange: 2500
+        },
+        {
+          entityId: '',
+          endOfRange: 5000
+        },
+        {
+          entityId: '',
+          endOfRange: 7500
+        },
+        {
+          entityId: '',
+          endOfRange: 10000
+        }
+      ],
+      variations: [
+        {
+          id: '222239',
+          key: 'control',
+          variables: [],
+        }
+      ],
+    },
+    {
+      key: 'test_experiment4',
+      status: 'Running',
+      layerId: '7',
+      audienceConditions: [
+        "or",
+        "11160"
+      ],
+      audienceIds: ['11160'],
+      id: '111135',
+      forcedVariations: {},
+      trafficAllocation: [
+        {
+          entityId: '222240',
+          endOfRange: 5000
+        },
+        {
+          entityId: '',
+          endOfRange: 7500
+        },
+        {
+          entityId: '',
+          endOfRange: 10000
+        }
+      ],
+      variations: [
+        {
+          id: '222240',
+          key: 'control',
+          variables: [],
+        }
+      ],
+    },
+    {
+      key: 'test_experiment5',
+      status: 'Running',
+      layerId: '8',
+      audienceConditions: [
+          "or",
+          "11160"
+      ],
+      audienceIds: ['11160'],
+      id: '111136',
+      forcedVariations: {},
+      trafficAllocation: [
+        {
+          entityId: '222241',
+          endOfRange: 7500
+        },
+        {
+          entityId: '',
+          endOfRange: 10000
+        }
+      ],
+      variations: [
+        {
+          id: '222241',
+          key: 'control',
+          variables: [],
+        }
+      ],
+    },
   ],
   anonymizeIP: true,
   botFiltering: true,
@@ -1034,6 +1147,12 @@ var configWithFeatures = {
       conditions:
         '["and", ["or", ["or", {"type": "custom_attribute", "name": "test_attribute", "value": "test_value"}]]]',
     },
+    {
+      id: '11160',
+      name: 'Test attribute users 3',
+      conditions:
+      '["and", ["or", ["or", {"match": "exact", "name": "experiment_attr", "type": "custom_attribute", "value": "group_experiment"}]]]',
+  }
   ],
   revision: '35',
   groups: [
@@ -1181,6 +1300,102 @@ var configWithFeatures = {
         },
       ],
     },
+    {
+      id: '19229',
+      policy: 'random',
+      experiments: [
+        {
+          id: '42222',
+          key: 'group_2_exp_1',
+          status: 'Running',
+          audienceConditions: [
+              "or",
+              "11160"
+          ],
+          audienceIds: ['11160'],
+          layerId: '211183',
+          variations: [
+              {
+                key: 'var_1',
+                id: '38901'
+              },
+          ],
+          forcedVariations: {},
+          trafficAllocation: [
+            {
+              entityId: '38901',
+              endOfRange: 10000
+            }
+          ],
+        },
+        {
+          id: '42223',
+          key: 'group_2_exp_2',
+          status: 'Running',
+          audienceConditions: [
+              "or",
+              "11160"
+          ],
+          audienceIds: ['11160'],
+          layerId: '211184',
+          variations: [
+            {
+              key: 'var_1',
+              id: '38905'
+            },
+          ],
+          forcedVariations: {},
+          trafficAllocation: [
+            {
+              entityId: '38905',
+              endOfRange: 10000
+            }
+          ],
+        },
+        {
+          id: '42224',
+          key: 'group_2_exp_3',
+          status: 'Running',
+          audienceConditions: [
+              "or",
+              "11160"
+          ],
+          audienceIds: ['11160'],
+          layerId: '211185',
+          variations: [
+            {
+              key: 'var_1',
+              id: '38906'
+            },
+          ],
+          forcedVariations: {},
+          trafficAllocation: [
+            {
+              entityId: '38906',
+              endOfRange: 10000
+            }
+          ],
+        }
+      ],
+      trafficAllocation: [
+        {
+          entityId: '42222',
+          endOfRange: 2500
+        },
+        {
+          entityId: '42223',
+          endOfRange: 5000
+        },
+        {
+          entityId: '42224',
+          endOfRange: 7500
+        },
+        {
+          entityId: '',
+          endOfRange: 10000
+        },
+      ],
+    }
   ],
   attributes: [
     {
