@@ -1965,6 +1965,9 @@ export var datafileWithFeaturesExpectedData = {
   },
 
   variationVariableUsageMap: {
+    222239: {},
+    222240: {},
+    222241: {},
     594032: {
       4919852825313280: {
         id: '4919852825313280',
@@ -2408,6 +2411,22 @@ export var datafileWithFeaturesExpectedData = {
       experimentIds: ['12115595439'],
       variables: [],
       variableKeyMap: {},
+    },
+    test_feature_in_exclusion_group: {
+      experimentIds: ['42222', '42223', '42224'],
+      id: '91115',
+      key: 'test_feature_in_exclusion_group',
+      rolloutId: '211111',
+      variableKeyMap: {},
+      variables: [],
+    },
+    test_feature_in_multiple_experiments: {
+      experimentIds: ['111134', '111135', '111136'],
+      id: '91116',
+      key: 'test_feature_in_multiple_experiments',
+      rolloutId: '211111',
+      variableKeyMap: {},
+      variables: [],
     },
   },
 };

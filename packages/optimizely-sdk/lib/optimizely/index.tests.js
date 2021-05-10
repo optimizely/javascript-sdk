@@ -6700,7 +6700,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(result.length, 2);
         assert.isAbove(result.indexOf('test_feature'), -1);
         assert.isAbove(result.indexOf('test_feature_for_experiment'), -1);
-        sinon.assert.callCount(optlyInstance.isFeatureEnabled, 7);
+        sinon.assert.callCount(optlyInstance.isFeatureEnabled, 9);
         sinon.assert.calledWithExactly(optlyInstance.isFeatureEnabled, 'test_feature', 'user1', attributes);
         sinon.assert.calledWithExactly(optlyInstance.isFeatureEnabled, 'test_feature_2', 'user1', attributes);
         sinon.assert.calledWithExactly(

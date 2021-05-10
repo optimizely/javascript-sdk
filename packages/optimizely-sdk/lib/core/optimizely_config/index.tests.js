@@ -47,7 +47,7 @@ describe('lib/core/optimizely_config', function() {
     it('should return all experiments except rollouts', function() {
       var experimentsMap = optimizelyConfigObject.experimentsMap;
       var experimentsCount = Object.keys(optimizelyConfigObject.experimentsMap).length;
-      assert.equal(experimentsCount, 6);
+      assert.equal(experimentsCount, 12);
 
       var allExperiments = getAllExperimentsFromDatafile(datafile);
       allExperiments.forEach(function(experiment) {
@@ -67,7 +67,7 @@ describe('lib/core/optimizely_config', function() {
 
     it('should return all the feature flags', function() {
       var featureFlagsCount = Object.keys(optimizelyConfigObject.featuresMap).length;
-      assert.equal(featureFlagsCount, 7);
+      assert.equal(featureFlagsCount, 9);
 
       var featuresMap = optimizelyConfigObject.featuresMap;
       datafile.featureFlags.forEach(function(featureFlag) {
