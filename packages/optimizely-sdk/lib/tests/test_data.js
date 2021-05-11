@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2020, Optimizely
+ * Copyright 2016-2021, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1317,7 +1317,8 @@ var configWithFeatures = {
           variations: [
               {
                 key: 'var_1',
-                id: '38901'
+                id: '38901',
+                featureEnabled: false,
               },
           ],
           forcedVariations: {},
@@ -1327,6 +1328,13 @@ var configWithFeatures = {
               endOfRange: 10000
             }
           ],
+          variationKeyMap: {
+            var_1: {
+              key: 'var_1',
+              id: '38901',
+              featureEnabled: false,
+            }
+          }
         },
         {
           id: '42223',

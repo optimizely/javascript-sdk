@@ -232,4 +232,5 @@ export const _generateBucketValue = function(bucketingKey: string): number {
 export default {
   bucket: bucket,
   bucketUserIntoExperiment: bucketUserIntoExperiment,
+  _generateBucketValue: _generateBucketValue,
 };
