@@ -1072,6 +1072,7 @@ var configWithFeatures = {
           id: '222239',
           key: 'control',
           variables: [],
+          featureEnabled: false,
         }
       ],
     },
@@ -1105,6 +1106,7 @@ var configWithFeatures = {
           id: '222240',
           key: 'control',
           variables: [],
+          featureEnabled: false,
         }
       ],
     },
@@ -1134,6 +1136,7 @@ var configWithFeatures = {
           id: '222241',
           key: 'control',
           variables: [],
+          featureEnabled: false,
         }
       ],
     },
@@ -1349,7 +1352,8 @@ var configWithFeatures = {
           variations: [
             {
               key: 'var_1',
-              id: '38905'
+              id: '38905',
+              featureEnabled: false,
             },
           ],
           forcedVariations: {},
@@ -1373,7 +1377,8 @@ var configWithFeatures = {
           variations: [
             {
               key: 'var_1',
-              id: '38906'
+              id: '38906',
+              featureEnabled: false,
             },
           ],
           forcedVariations: {},
