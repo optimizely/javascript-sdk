@@ -19,8 +19,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import { sprintf } from '@optimizely/js-sdk-utils';
 
 import DecisionService from './';
-import bucketer from '../bucketer';
-import * as bucketerModule from '../bucketer';
+import * as bucketer from '../bucketer';
 import {
   LOG_LEVEL,
   DECISION_SOURCES,
@@ -2072,7 +2071,7 @@ describe('lib/core/decision_service', function() {
         var generateBucketValueStub;
         beforeEach(function() {
           feature = configObj.featureKeyMap.test_feature_in_exclusion_group;
-          generateBucketValueStub = sandbox.stub(bucketerModule, '_generateBucketValue');
+          generateBucketValueStub = sandbox.stub(bucketer, '_generateBucketValue');
         });
 
         it('returns a decision with a variation in mutex group bucket less than 2500', function() {
@@ -2247,7 +2246,7 @@ describe('lib/core/decision_service', function() {
         var generateBucketValueStub;
         beforeEach(function() {
           feature = configObj.featureKeyMap.test_feature_in_multiple_experiments;
-          generateBucketValueStub = sandbox.stub(bucketerModule, '_generateBucketValue');
+          generateBucketValueStub = sandbox.stub(bucketer, '_generateBucketValue');
         });
 
         it('returns a decision with a variation in mutex group bucket less than 2500', function() {

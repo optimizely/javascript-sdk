@@ -16,7 +16,7 @@
 import { sprintf } from'@optimizely/js-sdk-utils';
 
 import fns from '../../utils/fns';
-import bucketer from '../bucketer';
+import * as bucketer from '../bucketer';
 import * as enums from '../../utils/enums';
 import projectConfig from '../project_config';
 import AudienceEvaluator from '../audience_evaluator';

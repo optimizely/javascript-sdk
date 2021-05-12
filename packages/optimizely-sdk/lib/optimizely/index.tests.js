@@ -24,7 +24,7 @@ import OptimizelyUserContext from '../optimizely_user_context';
 import { OptimizelyDecideOption } from '../shared_types';
 import AudienceEvaluator from '../core/audience_evaluator';
 import bluebird from 'bluebird';
-import bucketer from '../core/bucketer';
+import * as bucketer from '../core/bucketer';
 import * as projectConfigManager from '../core/project_config/project_config_manager';
 import * as enums from '../utils/enums';
 import eventDispatcher from '../plugins/event_dispatcher/index.node';
