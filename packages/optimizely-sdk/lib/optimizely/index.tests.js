@@ -6730,8 +6730,16 @@ describe('lib/optimizely', function() {
         var attributes = { test_attribute: 'test_value' };
         optlyInstance.notificationCenter.addNotificationListener(enums.NOTIFICATION_TYPES.DECISION, decisionListener);
         var result = optlyInstance.getEnabledFeatures('test_user', attributes);
-        assert.strictEqual(result.length, 3);
-        assert.deepEqual(result, ['test_feature_2', 'test_feature_for_experiment', 'shared_feature']);
+        assert.strictEqual(result.length, 5);
+        assert.deepEqual(result,
+          [
+            'test_feature_2',
+            'test_feature_for_experiment',
+            'shared_feature',
+            'test_feature_in_exclusion_group',
+            'test_feature_in_multiple_experiments'
+          ]
+        );
 
         sinon.assert.calledWithExactly(decisionListener.getCall(0), {
           type: DECISION_NOTIFICATION_TYPES.FEATURE,
