@@ -16,7 +16,7 @@
 import { sprintf } from'@optimizely/js-sdk-utils';
 
 import fns from '../../utils/fns';
-import bucketer from '../bucketer';
+import * as bucketer from '../bucketer';
 import * as enums from '../../utils/enums';
 import projectConfig from '../project_config';
 import AudienceEvaluator from '../audience_evaluator';
@@ -469,28 +469,34 @@ DecisionService.prototype.getVariationForFeature = function(configObj, feature, 
 
 DecisionService.prototype._getVariationForFeatureExperiment = function(configObj, feature, userId, attributes, options = {}) {
   var decideReasons = [];
-  var experiment = null;
   var variationKey = null;
-  let decisionVariation;
+  var decisionVariation;
+  var index;
+  var variationForFeatureExperiment;
 
-  if (feature.hasOwnProperty('groupId')) {
-    var group = configObj.groupIdMap[feature.groupId];
-    if (group) {
-      experiment = this._getExperimentInGroup(configObj, group, userId);
-      if (experiment && feature.experimentIds.indexOf(experiment.id) !== -1) {
+  // Check if the feature flag is under an experiment and the the user is bucketed into one of these experiments
+  if (feature.experimentIds.length > 0) {
+    // Evaluate each experiment ID and return the first bucketed experiment variation
+    for (index = 0; index < feature.experimentIds.length; index++) {
+      var experiment = projectConfig.getExperimentFromId(configObj, feature.experimentIds[index], this.logger);
+      if (experiment) {
         decisionVariation = this.getVariation(configObj, experiment.key, userId, attributes, options);
         decideReasons.push(...decisionVariation.reasons);
         variationKey = decisionVariation.result;
+        if (variationKey) {
+          var variation = experiment.variationKeyMap[variationKey];
+          variationForFeatureExperiment = {
+            experiment: experiment,
+            variation: variation,
+            decisionSource: DECISION_SOURCES.FEATURE_TEST,
+          };
+
+          return {
+            result: variationForFeatureExperiment,
+            reasons: decideReasons,
+          }
+        }
       }
-    }
-  } else if (feature.experimentIds.length > 0) {
-    // If the feature does not have a group ID, then it can only be associated
-    // with one experiment, so we look at the first experiment ID only
-    experiment = projectConfig.getExperimentFromId(configObj, feature.experimentIds[0], this.logger);
-    if (experiment) {
-      decisionVariation = this.getVariation(configObj, experiment.key, userId, attributes, options);
-      decideReasons.push(...decisionVariation.reasons);
-      variationKey = decisionVariation.result;
     }
   } else {
     var featureHasNoExperimentsMessage = sprintf(LOG_MESSAGES.FEATURE_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.key);
@@ -498,14 +504,9 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(configObj
     decideReasons.push(featureHasNoExperimentsMessage);
   }
 
-  var variation = null;
-  if (variationKey !== null && experiment !== null) {
-    variation = experiment.variationKeyMap[variationKey];
-  }
-
-  var variationForFeatureExperiment = {
-    experiment: experiment,
-    variation: variation,
+  variationForFeatureExperiment = {
+    experiment: null,
+    variation: null,
     decisionSource: DECISION_SOURCES.FEATURE_TEST,
   };
 
@@ -513,26 +514,6 @@ DecisionService.prototype._getVariationForFeatureExperiment = function(configObj
     result: variationForFeatureExperiment,
     reasons: decideReasons,
   };
-};
-
-DecisionService.prototype._getExperimentInGroup = function(configObj, group, userId) {
-  var experimentId = bucketer.bucketUserIntoExperiment(group, userId, userId, this.logger);
-  if (experimentId) {
-    this.logger.log(
-      LOG_LEVEL.INFO,
-      sprintf(LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP, MODULE_NAME, userId, experimentId, group.id)
-    );
-    var experiment = projectConfig.getExperimentFromId(configObj, experimentId, this.logger);
-    if (experiment) {
-      return experiment;
-    }
-  }
-
-  this.logger.log(
-    LOG_LEVEL.INFO,
-    sprintf(LOG_MESSAGES.USER_NOT_BUCKETED_INTO_ANY_EXPERIMENT_IN_GROUP, MODULE_NAME, userId, group.id)
-  );
-  return null;
 };
 
 DecisionService.prototype._getVariationForRollout = function(configObj, feature, userId, attributes) {

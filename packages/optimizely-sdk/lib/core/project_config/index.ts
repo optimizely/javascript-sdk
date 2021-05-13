@@ -205,12 +205,6 @@ export const createProjectConfig = function(
         } else {
           projectConfig.experimentFeatureMap[experimentId] = [feature.id];
         }
-
-        const experimentInFeature = projectConfig.experimentIdMap[experimentId];
-        // Experiments in feature can only belong to one mutex group.
-        if (experimentInFeature.groupId && !feature.groupId) {
-          feature.groupId = experimentInFeature.groupId;
-        }
       });
     }
   );

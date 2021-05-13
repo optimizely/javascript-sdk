@@ -24,7 +24,7 @@ import OptimizelyUserContext from '../optimizely_user_context';
 import { OptimizelyDecideOption } from '../shared_types';
 import AudienceEvaluator from '../core/audience_evaluator';
 import bluebird from 'bluebird';
-import bucketer from '../core/bucketer';
+import * as bucketer from '../core/bucketer';
 import * as projectConfigManager from '../core/project_config/project_config_manager';
 import * as enums from '../utils/enums';
 import eventDispatcher from '../plugins/event_dispatcher/index.node';
@@ -6700,7 +6700,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(result.length, 2);
         assert.isAbove(result.indexOf('test_feature'), -1);
         assert.isAbove(result.indexOf('test_feature_for_experiment'), -1);
-        sinon.assert.callCount(optlyInstance.isFeatureEnabled, 7);
+        sinon.assert.callCount(optlyInstance.isFeatureEnabled, 9);
         sinon.assert.calledWithExactly(optlyInstance.isFeatureEnabled, 'test_feature', 'user1', attributes);
         sinon.assert.calledWithExactly(optlyInstance.isFeatureEnabled, 'test_feature_2', 'user1', attributes);
         sinon.assert.calledWithExactly(
@@ -6730,8 +6730,16 @@ describe('lib/optimizely', function() {
         var attributes = { test_attribute: 'test_value' };
         optlyInstance.notificationCenter.addNotificationListener(enums.NOTIFICATION_TYPES.DECISION, decisionListener);
         var result = optlyInstance.getEnabledFeatures('test_user', attributes);
-        assert.strictEqual(result.length, 3);
-        assert.deepEqual(result, ['test_feature_2', 'test_feature_for_experiment', 'shared_feature']);
+        assert.strictEqual(result.length, 5);
+        assert.deepEqual(result,
+          [
+            'test_feature_2',
+            'test_feature_for_experiment',
+            'shared_feature',
+            'test_feature_in_exclusion_group',
+            'test_feature_in_multiple_experiments'
+          ]
+        );
 
         sinon.assert.calledWithExactly(decisionListener.getCall(0), {
           type: DECISION_NOTIFICATION_TYPES.FEATURE,

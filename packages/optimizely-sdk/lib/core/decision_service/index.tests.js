@@ -19,12 +19,12 @@ import cloneDeep from 'lodash/cloneDeep';
 import { sprintf } from '@optimizely/js-sdk-utils';
 
 import DecisionService from './';
-import bucketer from '../bucketer';
+import * as bucketer from '../bucketer';
 import {
   LOG_LEVEL,
   DECISION_SOURCES,
 } from '../../utils/enums';
-import { createLogger }  from '../../plugins/logger';
+import { createLogger } from '../../plugins/logger';
 import Optimizely from '../../optimizely';
 import projectConfig from '../project_config';
 import AudienceEvaluator from '../audience_evaluator';
@@ -1458,11 +1458,6 @@ describe('lib/core/decision_service', function() {
               decisionSource: DECISION_SOURCES.FEATURE_TEST,
             };
             assert.deepEqual(decision, expectedDecision);
-            sinon.assert.calledWithExactly(
-              mockLogger.log,
-              LOG_LEVEL.DEBUG,
-              'BUCKETER: Assigned bucket 593 to user with bucketing ID user1.'
-            );
           });
         });
 
@@ -1501,29 +1496,6 @@ describe('lib/core/decision_service', function() {
               mockLogger.log,
               LOG_LEVEL.DEBUG,
               'DECISION_SERVICE: There is no rollout of feature feature_exp_no_traffic.'
-            );
-          });
-        });
-
-        describe('user not bucketed into the group', function() {
-          var bucketUserIntoExperimentStub;
-          beforeEach(function() {
-            bucketUserIntoExperimentStub = sandbox.stub(bucketer, 'bucketUserIntoExperiment');
-            bucketUserIntoExperimentStub.returns(null);
-          });
-
-          it('returns a decision with no experiment, no variation and source rollout', function() {
-            var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1').result;
-            var expectedDecision = {
-              experiment: null,
-              variation: null,
-              decisionSource: DECISION_SOURCES.ROLLOUT,
-            };
-            assert.deepEqual(decision, expectedDecision);
-            sinon.assert.calledWithExactly(
-              mockLogger.log,
-              LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE: There is no rollout of feature feature_with_group.'
             );
           });
         });
@@ -2080,7 +2052,7 @@ describe('lib/core/decision_service', function() {
             variation: null,
             decisionSource: DECISION_SOURCES.ROLLOUT,
           };
-          var expectedDecision = assert.deepEqual(decision, expectedDecision);
+          assert.deepEqual(decision, expectedDecision);
           sinon.assert.calledWithExactly(
             mockLogger.log,
             LOG_LEVEL.DEBUG,
@@ -2090,6 +2062,359 @@ describe('lib/core/decision_service', function() {
             mockLogger.log,
             LOG_LEVEL.DEBUG,
             'DECISION_SERVICE: There is no rollout of feature unused_flag.'
+          );
+        });
+      });
+
+      describe('feature attached to exclusion group', function() {
+        var feature;
+        var generateBucketValueStub;
+        beforeEach(function() {
+          feature = configObj.featureKeyMap.test_feature_in_exclusion_group;
+          generateBucketValueStub = sandbox.stub(bucketer, '_generateBucketValue');
+        });
+
+        it('returns a decision with a variation in mutex group bucket less than 2500', function() {
+          generateBucketValueStub.returns(2400);
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
+            experiment_attr: 'group_experiment',
+          }).result;
+          var expectedExperiment = projectConfig.getExperimentFromKey(configObj, 'group_2_exp_1');
+          var expectedDecision = {
+            experiment: expectedExperiment,
+            variation: {
+              id: '38901',
+              key: 'var_1',
+              featureEnabled: false,
+            },
+            decisionSource: DECISION_SOURCES.FEATURE_TEST,
+          };
+          assert.deepEqual(decision, expectedDecision);
+          assert.strictEqual(
+            mockLogger.log.args[3][1],
+            'BUCKETER: Assigned bucket 2400 to user with bucketing ID user1.'
+          );
+          sinon.assert.calledWithExactly(
+            generateBucketValueStub,
+            'user142222'
+          );
+        });
+
+        it('returns a decision with a variation in mutex group bucket range 2500 to 5000', function() {
+          generateBucketValueStub.returns(4000);
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
+            experiment_attr: 'group_experiment',
+          }).result;
+          var expectedExperiment = projectConfig.getExperimentFromKey(configObj, 'group_2_exp_2');
+          var expectedDecision = {
+            experiment: expectedExperiment,
+            variation: {
+              id: '38905',
+              key: 'var_1',
+              featureEnabled: false,
+            },
+            decisionSource: DECISION_SOURCES.FEATURE_TEST,
+          };
+          assert.deepEqual(decision, expectedDecision);
+          assert.strictEqual(
+            mockLogger.log.args[3][1],
+            'BUCKETER: Assigned bucket 4000 to user with bucketing ID user1.'
+          );
+          sinon.assert.calledWithExactly(
+            generateBucketValueStub,
+            'user142223'
+          );
+        });
+
+        it('returns a decision with a variation in mutex group bucket range 5000 to 7500', function() {
+          generateBucketValueStub.returns(6500);
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
+            experiment_attr: 'group_experiment',
+          }).result;
+          var expectedExperiment = projectConfig.getExperimentFromKey(configObj, 'group_2_exp_3');
+          var expectedDecision = {
+            experiment: expectedExperiment,
+            variation: {
+              id: '38906',
+              key: 'var_1',
+              featureEnabled: false,
+            },
+            decisionSource: DECISION_SOURCES.FEATURE_TEST,
+          };
+          assert.deepEqual(decision, expectedDecision);
+          assert.strictEqual(
+            mockLogger.log.args[3][1],
+            'BUCKETER: Assigned bucket 6500 to user with bucketing ID user1.'
+          );
+          sinon.assert.calledWithExactly(
+            generateBucketValueStub,
+            'user142224'
+          );
+        });
+
+        it('returns a decision with variation and source rollout in mutex group bucket greater than 7500', function() {
+          generateBucketValueStub.returns(8000);
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
+            experiment_attr: 'group_experiment',
+          }).result;
+          var expectedExperiment = projectConfig.getExperimentFromId(configObj, '594066');
+          var expectedDecision = {
+            experiment: expectedExperiment,
+            variation: {
+              id: '594067',
+              key: '594067',
+              featureEnabled: true,
+              variables: [
+                {
+                  id: '5060590313668608',
+                  value: '30.34'
+                },
+                {
+                  id: '5342065290379264',
+                  value: 'Winter is coming definitely'
+                },
+                {
+                  id: '6186490220511232',
+                  value: '500'
+                },
+                {
+                  id: '6467965197221888',
+                  value: 'true'
+                },
+              ],
+            },
+            decisionSource: DECISION_SOURCES.ROLLOUT,
+          }
+          assert.deepEqual(decision, expectedDecision);
+          assert.strictEqual(
+            mockLogger.log.args[3][1],
+            'BUCKETER: Assigned bucket 8000 to user with bucketing ID user1.'
+          );
+          sinon.assert.calledWithExactly(
+            generateBucketValueStub,
+            'user1594066'
+          );
+        });
+
+        it('returns a decision with variation for rollout in mutex group with audience mismatch', function() {
+          generateBucketValueStub.returns(2400);
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
+            experiment_attr: 'group_experiment_invalid',
+          }).result;
+          var expectedExperiment = projectConfig.getExperimentFromId(configObj, '594066', mockLogger);
+          var expectedDecision = {
+            experiment: expectedExperiment,
+            variation: {
+              id: '594067',
+              key: '594067',
+              featureEnabled: true,
+              variables: [
+                {
+                  id: '5060590313668608',
+                  value: '30.34'
+                },
+                {
+                  id: '5342065290379264',
+                  value: 'Winter is coming definitely'
+                },
+                {
+                  id: '6186490220511232',
+                  value: '500'
+                },
+                {
+                  id: '6467965197221888',
+                  value: 'true'
+                },
+              ],
+            },
+            decisionSource: DECISION_SOURCES.ROLLOUT,
+          }
+          assert.deepEqual(decision, expectedDecision);
+          assert.strictEqual(
+            mockLogger.log.args[18][1],
+            'BUCKETER: Assigned bucket 2400 to user with bucketing ID user1.'
+          );
+          sinon.assert.calledWithExactly(
+            generateBucketValueStub,
+            'user1594066'
+          );
+        });
+      });
+
+      describe('feature attached to multiple experiments', function() {
+        var feature;
+        var generateBucketValueStub;
+        beforeEach(function() {
+          feature = configObj.featureKeyMap.test_feature_in_multiple_experiments;
+          generateBucketValueStub = sandbox.stub(bucketer, '_generateBucketValue');
+        });
+
+        it('returns a decision with a variation in mutex group bucket less than 2500', function() {
+          generateBucketValueStub.returns(2400);
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
+            experiment_attr: 'group_experiment',
+          }).result;
+          var expectedExperiment = projectConfig.getExperimentFromKey(configObj, 'test_experiment3');
+          var expectedDecision = {
+            experiment: expectedExperiment,
+            variation: {
+              id: '222239',
+              key: 'control',
+              featureEnabled: false,
+              variables: [],
+            },
+            decisionSource: DECISION_SOURCES.FEATURE_TEST,
+          };
+          assert.deepEqual(decision, expectedDecision);
+          assert.strictEqual(
+            mockLogger.log.args[3][1],
+            'BUCKETER: Assigned bucket 2400 to user with bucketing ID user1.'
+          );
+          sinon.assert.calledWithExactly(
+            generateBucketValueStub,
+            'user1111134'
+          );
+        });
+
+        it('returns a decision with a variation in mutex group bucket range 2500 to 5000', function() {
+          generateBucketValueStub.returns(4000);
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
+            experiment_attr: 'group_experiment',
+          }).result;
+          var expectedExperiment = projectConfig.getExperimentFromKey(configObj, 'test_experiment4');
+          var expectedDecision = {
+            experiment: expectedExperiment,
+            variation: {
+              id: '222240',
+              key: 'control',
+              featureEnabled: false,
+              variables: [],
+            },
+            decisionSource: DECISION_SOURCES.FEATURE_TEST,
+          };
+          assert.deepEqual(decision, expectedDecision);
+          assert.strictEqual(
+            mockLogger.log.args[3][1],
+            'BUCKETER: Assigned bucket 4000 to user with bucketing ID user1.'
+          );
+          sinon.assert.calledWithExactly(
+            generateBucketValueStub,
+            'user1111135'
+          );
+        });
+
+        it('returns a decision with a variation in mutex group bucket range 5000 to 7500', function() {
+          generateBucketValueStub.returns(6500);
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
+            experiment_attr: 'group_experiment',
+          }).result;
+          var expectedExperiment = projectConfig.getExperimentFromKey(configObj, 'test_experiment5');
+          var expectedDecision = {
+            experiment: expectedExperiment,
+            variation: {
+              id: '222241',
+              key: 'control',
+              featureEnabled: false,
+              variables: [],
+            },
+            decisionSource: DECISION_SOURCES.FEATURE_TEST,
+          };
+          assert.deepEqual(decision, expectedDecision);
+          assert.strictEqual(
+            mockLogger.log.args[3][1],
+            'BUCKETER: Assigned bucket 6500 to user with bucketing ID user1.'
+          );
+          sinon.assert.calledWithExactly(
+            generateBucketValueStub,
+            'user1111136'
+          );
+        });
+
+        it('returns a decision with variation and source rollout in mutex group bucket greater than 7500', function() {
+          generateBucketValueStub.returns(8000);
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
+            experiment_attr: 'group_experiment',
+          }).result;
+          var expectedExperiment = projectConfig.getExperimentFromId(configObj, '594066');
+          var expectedDecision = {
+            experiment: expectedExperiment,
+            variation: {
+              id: '594067',
+              key: '594067',
+              featureEnabled: true,
+              variables: [
+                {
+                  id: '5060590313668608',
+                  value: '30.34'
+                },
+                {
+                  id: '5342065290379264',
+                  value: 'Winter is coming definitely'
+                },
+                {
+                  id: '6186490220511232',
+                  value: '500'
+                },
+                {
+                  id: '6467965197221888',
+                  value: 'true'
+                },
+              ],
+            },
+            decisionSource: DECISION_SOURCES.ROLLOUT,
+          }
+          assert.deepEqual(decision, expectedDecision);
+          assert.strictEqual(
+            mockLogger.log.args[3][1],
+            'BUCKETER: Assigned bucket 8000 to user with bucketing ID user1.'
+          );
+          sinon.assert.calledWithExactly(
+            generateBucketValueStub,
+            'user1594066'
+          );
+        });
+
+        it('returns a decision with variation for rollout in mutex group bucket range 2500 to 5000', function() {
+          generateBucketValueStub.returns(4000);
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
+            experiment_attr: 'group_experiment_invalid',
+          }).result;
+          var expectedExperiment = projectConfig.getExperimentFromId(configObj, '594066', mockLogger);
+          var expectedDecision = {
+            experiment: expectedExperiment,
+            variation: {
+              id: '594067',
+              key: '594067',
+              featureEnabled: true,
+              variables: [
+                {
+                  id: '5060590313668608',
+                  value: '30.34'
+                },
+                {
+                  id: '5342065290379264',
+                  value: 'Winter is coming definitely'
+                },
+                {
+                  id: '6186490220511232',
+                  value: '500'
+                },
+                {
+                  id: '6467965197221888',
+                  value: 'true'
+                },
+              ],
+            },
+            decisionSource: DECISION_SOURCES.ROLLOUT,
+          }
+          assert.deepEqual(decision, expectedDecision);
+          assert.strictEqual(
+            mockLogger.log.args[18][1],
+            'BUCKETER: Assigned bucket 4000 to user with bucketing ID user1.'
+          );
+          sinon.assert.calledWithExactly(
+            generateBucketValueStub,
+            'user1594066'
           );
         });
       });
