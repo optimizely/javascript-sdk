@@ -27,16 +27,16 @@ import {
   LOG_MESSAGES,
 } from '../../utils/enums';
 import {
-  ProjectConfig,
-  isActive,
-  getExperimentAudienceConditions,
   getAudiencesById,
-  getExperimentId,
-  getExperimentFromKey,
+  getExperimentAudienceConditions,
   getExperimentFromId,
+  getExperimentFromKey,
+  getExperimentId,
   getTrafficAllocation,
-  getVariationKeyFromId,
   getVariationIdFromExperimentAndVariationKey,
+  getVariationKeyFromId,
+  isActive,
+  ProjectConfig,
 } from '../project_config';
 import { AudienceEvaluator, createAudienceEvaluator } from '../audience_evaluator';
 import * as stringValidator from '../../utils/string_value_validator';
