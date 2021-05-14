@@ -17,8 +17,15 @@ import { sprintf } from '@optimizely/js-sdk-utils';
 import { LogHandler } from '@optimizely/js-sdk-logging';
 
 import fns from '../../utils/fns';
-import * as bucketer from '../bucketer';
-import * as enums from '../../utils/enums';
+import { bucket } from '../bucketer';
+import {
+  AUDIENCE_EVALUATION_TYPES,
+  CONTROL_ATTRIBUTES,
+  DECISION_SOURCES,
+  ERROR_MESSAGES,
+  LOG_LEVEL,
+  LOG_MESSAGES,
+} from '../../utils/enums';
 import {
   ProjectConfig,
   isActive,
@@ -31,7 +38,7 @@ import {
   getVariationKeyFromId,
   getVariationIdFromExperimentAndVariationKey,
 } from '../project_config';
-import { AudienceEvaluator, createAudienceEvaluator }  from '../audience_evaluator';
+import { AudienceEvaluator, createAudienceEvaluator } from '../audience_evaluator';
 import * as stringValidator from '../../utils/string_value_validator';
 import {
   Variation,
@@ -47,11 +54,6 @@ import {
 } from '../../shared_types';
 
 const MODULE_NAME = 'DECISION_SERVICE';
-const ERROR_MESSAGES = enums.ERROR_MESSAGES;
-const LOG_LEVEL = enums.LOG_LEVEL;
-const LOG_MESSAGES = enums.LOG_MESSAGES;
-const DECISION_SOURCES = enums.DECISION_SOURCES;
-const AUDIENCE_EVALUATION_TYPES = enums.AUDIENCE_EVALUATION_TYPES;
 
 export interface DecisionObj {
   experiment: Experiment | null;
@@ -83,7 +85,7 @@ interface DecisionServiceOptions {
 export class DecisionService {
   private logger: LogHandler;
   private audienceEvaluator: AudienceEvaluator;
-  private forcedVariationMap: { [key: string]: { [id: string]: string} };
+  private forcedVariationMap: { [key: string]: { [id: string]: string } };
   private userProfileService: UserProfileService | null;
 
   constructor(options: DecisionServiceOptions) {
@@ -197,7 +199,7 @@ export class DecisionService {
     }
 
     const bucketerParams = this.buildBucketerParams(configObj, experimentKey, bucketingId, userId);
-    const decisionVariation = bucketer.bucket(bucketerParams);
+    const decisionVariation = bucket(bucketerParams);
     decideReasons.push(...decisionVariation.reasons);
     const variationId = decisionVariation.result;
     if (variationId) {
@@ -251,7 +253,7 @@ export class DecisionService {
     attributes = attributes || {};
 
     const userProfile = this.getUserProfile(userId) || {} as UserProfile;
-    const attributeExperimentBucketMap = attributes[enums.CONTROL_ATTRIBUTES.STICKY_BUCKETING_KEY];
+    const attributeExperimentBucketMap = attributes[CONTROL_ATTRIBUTES.STICKY_BUCKETING_KEY];
     return fns.assign({}, userProfile.experiment_bucket_map, attributeExperimentBucketMap);
   }
 
@@ -382,17 +384,17 @@ export class DecisionService {
     bucketingId: string,
     userId: string
   ): BucketerParams {
-    const bucketerParams = {} as BucketerParams;
-    bucketerParams.experimentKey = experimentKey;
-    bucketerParams.experimentId = getExperimentId(configObj, experimentKey);
-    bucketerParams.userId = userId;
-    bucketerParams.trafficAllocationConfig = getTrafficAllocation(configObj, experimentKey);
-    bucketerParams.experimentKeyMap = configObj.experimentKeyMap;
-    bucketerParams.groupIdMap = configObj.groupIdMap;
-    bucketerParams.variationIdMap = configObj.variationIdMap;
-    bucketerParams.logger = this.logger;
-    bucketerParams.bucketingId = bucketingId;
-    return bucketerParams;
+    return {
+      bucketingId,
+      experimentId: getExperimentId(configObj, experimentKey),
+      experimentKey,
+      experimentKeyMap: configObj.experimentKeyMap,
+      groupIdMap: configObj.groupIdMap,
+      logger: this.logger,
+      trafficAllocationConfig: getTrafficAllocation(configObj, experimentKey),
+      userId,
+      variationIdMap: configObj.variationIdMap,
+    }
   }
 
   /**
@@ -435,7 +437,7 @@ export class DecisionService {
    * @param  {string} userId
    * @return {UserProfile|undefined} the stored user profile or undefined if one isn't found
    */
-  private getUserProfile(userId: string): UserProfile | undefined {
+  private getUserProfile(userId: string): UserProfile | null {
     const userProfile = {
       user_id: userId,
       experiment_bucket_map: {},
@@ -452,16 +454,16 @@ export class DecisionService {
         LOG_LEVEL.ERROR,
         sprintf(ERROR_MESSAGES.USER_PROFILE_LOOKUP_ERROR, MODULE_NAME, userId, ex.message)
       );
-
-      return;
     }
+
+    return null;
   }
 
   /**
    * Saves the bucketing decision to the user profile
-   * @param {UserProfile}         userProfile
    * @param {Experiment}          experiment
    * @param {Variation}           variation
+   * @param {string}              userId
    * @param {ExperimentBucketMap} experimentBucketMap
    */
   private saveUserProfile(
@@ -503,7 +505,7 @@ export class DecisionService {
    * @param   {ProjectConfig}               configObj         The parsed project configuration object
    * @param   {FeatureFlag}                 feature           A feature flag object from project configuration
    * @param   {string}                      userId            A string identifying the user, for bucketing
-   * @param   {unknown}                     attributes        Optional user attributes
+   * @param   {UserAttributes}              attributes        Optional user attributes
    * @param   {[key: string]: boolean}      options           Map of decide options
    * @return  {DecisionResponse}            DecisionResponse  DecisionResponse containing an object with experiment, variation, and decisionSource
    *                                                          properties and decide reasons. If the user was not bucketed into a variation, the variation
@@ -532,7 +534,7 @@ export class DecisionService {
     const decisionRolloutVariation = this.getVariationForRollout(configObj, feature, userId, attributes);
     decideReasons.push(...decisionRolloutVariation.reasons);
     const rolloutDecision = decisionRolloutVariation.result;
-    if (rolloutDecision.variation !== null) {
+    if (rolloutDecision.variation) {
       const userInRolloutMessage = sprintf(LOG_MESSAGES.USER_IN_ROLLOUT, MODULE_NAME, userId, feature.key);
       this.logger.log(LOG_LEVEL.DEBUG, userInRolloutMessage);
       decideReasons.push(userInRolloutMessage);
@@ -542,9 +544,9 @@ export class DecisionService {
       };
     }
 
-    const userNotnRolloutMessage = sprintf(LOG_MESSAGES.USER_NOT_IN_ROLLOUT, MODULE_NAME, userId, feature.key);
-    this.logger.log(LOG_LEVEL.DEBUG, userNotnRolloutMessage);
-    decideReasons.push(userNotnRolloutMessage);
+    const userNotInRolloutMessage = sprintf(LOG_MESSAGES.USER_NOT_IN_ROLLOUT, MODULE_NAME, userId, feature.key);
+    this.logger.log(LOG_LEVEL.DEBUG, userNotInRolloutMessage);
+    decideReasons.push(userNotInRolloutMessage);
     return {
       result: rolloutDecision,
       reasons: decideReasons,
@@ -559,46 +561,6 @@ export class DecisionService {
     options: { [key: string]: boolean } = {}
   ): DecisionResponse<DecisionObj> {
 
-    // const decideReasons = [];
-    // let experiment = null;
-    // let variationKey = null;
-    // let decisionVariation;
-
-    // if (feature.groupId) {
-    //   const group = configObj.groupIdMap[feature.groupId];
-    //   if (group) {
-    //     experiment = this.getExperimentInGroup(configObj, group, userId);
-    //     if (experiment && feature.experimentIds.indexOf(experiment.id) !== -1) {
-    //       decisionVariation = this.getVariation(configObj, experiment.key, userId, attributes, options);
-    //       decideReasons.push(...decisionVariation.reasons);
-    //       variationKey = decisionVariation.result;
-    //     }
-    //   }
-    // } else if (feature.experimentIds.length > 0) {
-    //   // If the feature does not have a group ID, then it can only be associated
-    //   // with one experiment, so we look at the first experiment ID only
-    //   experiment = getExperimentFromId(configObj, feature.experimentIds[0], this.logger);
-    //   if (experiment) {
-    //     decisionVariation = this.getVariation(configObj, experiment.key, userId, attributes, options);
-    //     decideReasons.push(...decisionVariation.reasons);
-    //     variationKey = decisionVariation.result;
-    //   }
-    // } else {
-    //   const featureHasNoExperimentsMessage = sprintf(LOG_MESSAGES.FEATURE_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.key);
-    //   this.logger.log(LOG_LEVEL.DEBUG, featureHasNoExperimentsMessage);
-    //   decideReasons.push(featureHasNoExperimentsMessage);
-    // }
-
-    // let variation = null;
-    // if (variationKey !== null && experiment !== null) {
-    //   variation = experiment.variationKeyMap[variationKey];
-    // }
-
-    // const variationForFeatureExperiment = {
-    //   experiment: experiment,
-    //   variation: variation,
-    //   decisionSource: DECISION_SOURCES.FEATURE_TEST,
-    // };
     const decideReasons = [];
     let variationKey = null;
     let decisionVariation;
@@ -762,7 +724,7 @@ export class DecisionService {
       );
       decideReasons.push(userMeetsConditionsForTargetingRuleMessage);
       bucketerParams = this.buildBucketerParams(configObj, rolloutRule.key, bucketingId, userId);
-      decisionVariation = bucketer.bucket(bucketerParams);
+      decisionVariation = bucket(bucketerParams);
       decideReasons.push(...decisionVariation.reasons);
       variationId = decisionVariation.result;
       if (variationId) {
@@ -825,7 +787,7 @@ export class DecisionService {
       );
       decideReasons.push(userMeetsConditionsForEveryoneTargetingRuleMessage);
       bucketerParams = this.buildBucketerParams(configObj, everyoneElseRule.key, bucketingId, userId);
-      decisionVariation = bucketer.bucket(bucketerParams);
+      decisionVariation = bucket(bucketerParams);
       decideReasons.push(...decisionVariation.reasons);
       variationId = decisionVariation.result;
       if (variationId) {
@@ -889,10 +851,10 @@ export class DecisionService {
     if (
       attributes != null &&
       typeof attributes === 'object' &&
-      attributes.hasOwnProperty(enums.CONTROL_ATTRIBUTES.BUCKETING_ID)
+      attributes.hasOwnProperty(CONTROL_ATTRIBUTES.BUCKETING_ID)
     ) {
-      if (typeof attributes[enums.CONTROL_ATTRIBUTES.BUCKETING_ID] === 'string') {
-        bucketingId = attributes[enums.CONTROL_ATTRIBUTES.BUCKETING_ID];
+      if (typeof attributes[CONTROL_ATTRIBUTES.BUCKETING_ID] === 'string') {
+        bucketingId = attributes[CONTROL_ATTRIBUTES.BUCKETING_ID];
         this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.VALID_BUCKETING_ID, MODULE_NAME, bucketingId));
       } else {
         this.logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.BUCKETING_ID_NOT_STRING, MODULE_NAME));

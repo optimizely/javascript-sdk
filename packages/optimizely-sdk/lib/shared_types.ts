@@ -22,8 +22,7 @@ export interface BucketerParams {
   trafficAllocationConfig: TrafficAllocation[];
   experimentKeyMap: { [key: string]: Experiment };
   groupIdMap: { [key: string]: Group };
-  variationIdMap: { [id: string]: Variation } ;
-  varationIdMapKey: string;
+  variationIdMap: { [id: string]: Variation };
   logger: LogHandler;
   bucketingId: string;
 }
