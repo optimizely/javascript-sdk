@@ -16,13 +16,13 @@
 /// <reference types="jest" />
 
 import { ReactNativeEventsStore } from '../src/reactNativeEventsStore'
-import AsyncStorage from '../__mocks__/@react-native-community/async-storage'
+import AsyncStorage from '../__mocks__/@react-native-async-storage/async-storage'
 
 const STORE_KEY = 'test-store'
 
 describe('ReactNativeEventsStore', () => {
   let store: ReactNativeEventsStore<any>
-  
+
   beforeEach(() => {
     store = new ReactNativeEventsStore(5, STORE_KEY)
   })
@@ -32,7 +32,7 @@ describe('ReactNativeEventsStore', () => {
       await store.set('event1', {'name': 'event1'})
       await store.set('event2', {'name': 'event2'})
       await store.set('event3', {'name': 'event3'})
-      await store.set('event4', {'name': 'event4'})    
+      await store.set('event4', {'name': 'event4'})
       const storedPendingEvents = JSON.parse(AsyncStorage.dumpItems()[STORE_KEY])
       expect(storedPendingEvents).toEqual({
         "event1": { "name": "event1" },
@@ -41,7 +41,7 @@ describe('ReactNativeEventsStore', () => {
         "event4": { "name": "event4" },
       })
     })
-  
+
     it('should store all the events when set asynchronously', async (done) => {
       const promises = []
       promises.push(store.set('event1', {'name': 'event1'}))
@@ -130,7 +130,7 @@ describe('ReactNativeEventsStore', () => {
 
       await store.remove('event2')
       storedPendingEvents = JSON.parse(AsyncStorage.dumpItems()[STORE_KEY])
-      expect(storedPendingEvents).toEqual({      
+      expect(storedPendingEvents).toEqual({
         "event3": { "name": "event3" },
         "event4": { "name": "event4" },
       })

@@ -24,7 +24,7 @@ import {
 } from '../src/eventDispatcher'
 import { EventProcessor, ProcessableEvent } from '../src/eventProcessor'
 import { buildImpressionEventV1, makeBatchedEventV1 } from '../src/v1/buildEventV1'
-import AsyncStorage from '../__mocks__/@react-native-community/async-storage'
+import AsyncStorage from '../__mocks__/@react-native-async-storage/async-storage'
 import { triggerInternetState } from '../__mocks__/@react-native-community/netinfo'
 import { DefaultEventQueue } from '../src/eventQueue'
 
@@ -112,7 +112,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
     let stubDispatcher: EventDispatcher
     let dispatchStub: jest.Mock
 
-    beforeEach(() => {      
+    beforeEach(() => {
       dispatchStub = jest.fn()
 
       stubDispatcher = {
@@ -132,7 +132,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
       let localCallback: EventDispatcherCallback
       beforeEach(async () => {
         stubDispatcher = {
-          dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {          
+          dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
             dispatchStub(event)
             localCallback = callback
           },
@@ -145,7 +145,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
           flushInterval: 100,
           batchSize: 100,
         })
-        
+
         await processor.start()
 
         await processor.stop()
@@ -219,7 +219,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
         impressionEvent2.context.revision = '2'
         processor.process(impressionEvent1)
         processor.process(impressionEvent2)
-        
+
         await new Promise(resolve => setTimeout(resolve, 150))
         await processor.stop()
         expect(dispatchStub).toBeCalledTimes(2)
@@ -332,7 +332,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
             impressionEvent2,
             impressionEvent3,
           ]),
-        })      
+        })
       })
 
       it('should flush the current batch when it receives an event with a different context revision than the current batch', async () => {
@@ -359,10 +359,10 @@ describe('LogTierV1EventProcessorReactNative', () => {
           url: 'https://logx.optimizely.com/v1/events',
           httpVerb: 'POST',
           params: makeBatchedEventV1([impressionEvent1, conversionEvent]),
-        })      
+        })
       })
 
-      it('should flush the current batch when it receives an event with a different context projectId than the current batch', async () => {      
+      it('should flush the current batch when it receives an event with a different context projectId than the current batch', async () => {
         const impressionEvent1 = createImpressionEvent()
         const conversionEvent = createConversionEvent()
         const impressionEvent2 = createImpressionEvent()
@@ -418,7 +418,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
         const notificationCenter: NotificationCenter = {
           sendNotifications: jest.fn()
         }
-        
+
         const processor = new LogTierV1EventProcessor({
           dispatcher,
           notificationCenter,
@@ -470,7 +470,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
 
   describe('Pending Events', () => {
     let stubDispatcher: EventDispatcher
-    let dispatchStub: jest.Mock    
+    let dispatchStub: jest.Mock
 
     beforeEach(() => {
       dispatchStub = jest.fn()
@@ -487,7 +487,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
           let receivedEvents: EventV1Request[] = []
 
           stubDispatcher = {
-            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {              
+            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
               dispatchStub(event)
               callback({ statusCode: 400 })
             },
@@ -571,7 +571,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
           event2.uuid = 'user2'
 
           processor.process(event1)
-          processor.process(event2)          
+          processor.process(event2)
 
           await new Promise(resolve => setTimeout(resolve, 100))
 
@@ -599,7 +599,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
           expect(dispatchStub).toBeCalledTimes(1)
           expect(receivedEvents.length).toEqual(1)
           const receivedEvent = receivedEvents[0]
-          
+
           receivedEvent.params.visitors.forEach((v, i) => {
             expect(v.visitor_id).toEqual(`user${i+1}`)
           })
@@ -622,26 +622,26 @@ describe('LogTierV1EventProcessorReactNative', () => {
           })
 
           await processor.start()
-          
+
           for (let i = 0; i < 8; i++) {
             let event = createConversionEvent()
             event.user.id = `user${i}`
             event.uuid = `user${i}`
             processor.process(event)
           }
-          
+
           await new Promise(resolve => setTimeout(resolve, 50))
 
-          expect(dispatchStub).toBeCalledTimes(2)          
+          expect(dispatchStub).toBeCalledTimes(2)
 
           ;(processor.queue as DefaultEventQueue<ProcessableEvent>).timer.stop()
-          
+
           jest.clearAllMocks()
 
           const visitorIds: string[] = []
           stubDispatcher = {
             dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
-              dispatchStub(event)              
+              dispatchStub(event)
               event.params.visitors.forEach(visitor => visitorIds.push(visitor.visitor_id))
               callback({ statusCode: 200 })
             },
@@ -668,7 +668,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
           let receivedVisitorIds: string[] = []
           let dispatchCount = 0
           stubDispatcher = {
-            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {              
+            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
               dispatchStub(event)
               dispatchCount++
               if (dispatchCount > 4) {
@@ -676,7 +676,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
                 callback({ statusCode: 200 })
               } else {
                 callback({ statusCode: 400 })
-              }              
+              }
             },
           }
 
@@ -717,7 +717,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
           expect(dispatchStub).toBeCalledTimes(5)
           expect(receivedVisitorIds).toEqual(['user1', 'user2', 'user3', 'user4', 'user5'])
           await processor.stop()
-        })        
+        })
 
         it('should skip dispatching subsequent events if an event fails to dispatch', async () => {
           let receivedVisitorIds: string[] = []
@@ -776,7 +776,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
           let receivedVisitorIds: string[] = []
           let dispatchCount = 0
           stubDispatcher = {
-            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {              
+            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
               dispatchStub(event)
               dispatchCount++
               if (dispatchCount > 4) {
@@ -784,7 +784,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
                 callback({ statusCode: 200 })
               } else {
                 callback({ statusCode: 400 })
-              }              
+              }
             },
           }
 
@@ -817,7 +817,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
 
           jest.resetAllMocks()
 
-          triggerInternetState(true)          
+          triggerInternetState(true)
           await new Promise(resolve => setTimeout(resolve, 50))
           expect(dispatchStub).toBeCalledTimes(4)
           expect(receivedVisitorIds).toEqual(['user1', 'user2', 'user3', 'user4'])
@@ -828,7 +828,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
           let receivedVisitorIds: string[] = []
           let dispatchCount = 0
           stubDispatcher = {
-            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {              
+            dispatchEvent(event: EventV1Request, callback: EventDispatcherCallback): void {
               dispatchStub(event)
               dispatchCount++
               if (dispatchCount > 4) {
@@ -836,7 +836,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
                 callback({ statusCode: 200 })
               } else {
                 callback({ statusCode: 400 })
-              }              
+              }
             },
           }
 
