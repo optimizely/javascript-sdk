@@ -43,7 +43,7 @@
     "@optimizely/js-sdk-utils": "^0.4.0"
   },
   "devDependencies": {
-    "@react-native-community/async-storage": "^1.2.0",
+    "@react-native-async-storage/async-storage": "^1.15.4",
     "@react-native-community/netinfo": "^5.9.4",
     "@types/jest": "^24.0.9",
     "jest": "^23.6.0",
@@ -53,6 +53,6 @@
   },
   "peerDependencies": {
     "@react-native-community/netinfo": "5.9.4",
-    "@react-native-community/async-storage": "^1.2.0"
+    "@react-native-async-storage/async-storage": "^1.15.4"
   }
 }
