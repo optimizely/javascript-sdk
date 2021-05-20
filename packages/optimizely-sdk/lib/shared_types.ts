@@ -15,6 +15,18 @@
  */
 import { ErrorHandler, LogHandler, LogLevel } from "@optimizely/js-sdk-logging";
 
+export interface BucketerParams {
+  experimentId: string;
+  experimentKey: string;
+  userId: string;
+  trafficAllocationConfig: TrafficAllocation[];
+  experimentKeyMap: { [key: string]: Experiment };
+  groupIdMap: { [key: string]: Group };
+  variationIdMap: { [id: string]: Variation };
+  logger: LogHandler;
+  bucketingId: string;
+}
+
 export interface DecisionResponse<T> {
   readonly result: T;
   readonly reasons: string[];
@@ -26,14 +38,15 @@ export type UserAttributes = {
   [name: string]: any;
 }
 
+export interface ExperimentBucketMap {
+  [experiment_id: string]:
+  { variation_id: string }
+}
+
 // Information about past bucketing decisions for a user.
 export interface UserProfile {
   user_id: string;
-  experiment_bucket_map: {
-    [experiment_id: string]: {
-      variation_id: string;
-    };
-  };
+  experiment_bucket_map: ExperimentBucketMap;
 }
 
 export type EventTags = {
@@ -107,6 +120,7 @@ export interface Experiment {
   audienceConditions: Array<string | string[]>;
   audienceIds: string[];
   trafficAllocation: TrafficAllocation[];
+  forcedVariations?: { [key: string]: string };
 }
 
 export interface FeatureVariable {
@@ -124,6 +138,24 @@ export interface FeatureFlag {
   experimentIds: string[],
   variables: FeatureVariable[],
   variableKeyMap: { [key: string]: FeatureVariable }
+  groupId?: string;
+}
+
+export interface Audience {
+ name: string;
+ conditions: string;
+}
+
+export interface TrafficAllocation {
+  entityId: string;
+  endOfRange: number;
+}
+
+export interface Group {
+  id: string;
+  policy: string;
+  trafficAllocation: TrafficAllocation[];
+  experiments: Experiment[];
 }
 
 export interface Audience {

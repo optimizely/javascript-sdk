@@ -17,7 +17,7 @@ import sinon from 'sinon';
 import { assert } from 'chai';
 import { getLogger } from '@optimizely/js-sdk-logging';
 
-import AudienceEvaluator from './index';
+import { createAudienceEvaluator } from './index';
 import * as conditionTreeEvaluator from '../condition_tree_evaluator';
 import * as customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
 
@@ -85,7 +85,7 @@ describe('lib/core/audience_evaluator', function() {
   describe('APIs', function() {
     context('with default condition evaluator', function() {
       beforeEach(function() {
-        audienceEvaluator = new AudienceEvaluator();
+        audienceEvaluator = createAudienceEvaluator();
       });
       describe('evaluate', function() {
         it('should return true if there are no audiences', function() {
@@ -296,7 +296,7 @@ describe('lib/core/audience_evaluator', function() {
           const mockEnvironment = {
             special: true,
           };
-          audienceEvaluator = new AudienceEvaluator({
+          audienceEvaluator = createAudienceEvaluator({
             special_condition_type: {
               evaluate: function(condition, userAttributes, logger) {
                 const result = mockEnvironment[condition.value] && userAttributes[condition.match] > 0;
@@ -322,7 +322,7 @@ describe('lib/core/audience_evaluator', function() {
 
       describe('when passing an invalid additional evaluator', function() {
         beforeEach(function() {
-          audienceEvaluator = new AudienceEvaluator({
+          audienceEvaluator = createAudienceEvaluator({
             custom_attribute: {
               evaluate: function() {
                 return false;
