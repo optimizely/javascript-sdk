@@ -435,7 +435,7 @@ export class DecisionService {
   /**
    * Get the user profile with the given user ID
    * @param  {string} userId
-   * @return {UserProfile|undefined} the stored user profile or undefined if one isn't found
+   * @return {UserProfile|null} the stored user profile or null if one isn't found
    */
   private getUserProfile(userId: string): UserProfile | null {
     const userProfile = {
