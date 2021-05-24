@@ -24,7 +24,7 @@ import {
 } from '../src/eventDispatcher'
 import { EventProcessor, ProcessableEvent } from '../src/eventProcessor'
 import { buildImpressionEventV1, makeBatchedEventV1 } from '../src/v1/buildEventV1'
-import AsyncStorage from '../__mocks__/@react-native-community/async-storage'
+import AsyncStorage from '../__mocks__/@react-native-async-storage/async-storage'
 import { triggerInternetState } from '../__mocks__/@react-native-community/netinfo'
 import { DefaultEventQueue } from '../src/eventQueue'
 
