@@ -17,8 +17,7 @@ import sinon from 'sinon';
 import { assert } from 'chai';
 import cloneDeep from 'lodash/cloneDeep';
 import { sprintf } from '@optimizely/js-sdk-utils';
-
-import DecisionService from './';
+import { createDecisionService } from './';
 import * as bucketer from '../bucketer';
 import {
   LOG_LEVEL,
@@ -49,7 +48,7 @@ describe('lib/core/decision_service', function() {
     beforeEach(function() {
       bucketerStub = sinon.stub(bucketer, 'bucket');
       sinon.stub(mockLogger, 'log');
-      decisionServiceInstance = DecisionService.createDecisionService({
+      decisionServiceInstance = createDecisionService({
         logger: mockLogger,
       });
     });
@@ -164,19 +163,19 @@ describe('lib/core/decision_service', function() {
             save: function() {},
           };
 
-          decisionServiceInstance = DecisionService.createDecisionService({
+          decisionServiceInstance = createDecisionService({
             logger: mockLogger,
             userProfileService: userProfileServiceInstance,
           });
           userProfileLookupStub = sinon.stub(userProfileServiceInstance, 'lookup');
           userProfileSaveStub = sinon.stub(userProfileServiceInstance, 'save');
-          sinon.stub(decisionServiceInstance, '__getWhitelistedVariation').returns(fakeDecisionWhitelistedVariation);
+          sinon.stub(decisionServiceInstance, 'getWhitelistedVariation').returns(fakeDecisionWhitelistedVariation);
         });
 
         afterEach(function() {
           userProfileServiceInstance.lookup.restore();
           userProfileServiceInstance.save.restore();
-          decisionServiceInstance.__getWhitelistedVariation.restore();
+          decisionServiceInstance.getWhitelistedVariation.restore();
         });
 
         it('should return the previously bucketed variation', function() {
@@ -508,9 +507,9 @@ describe('lib/core/decision_service', function() {
       });
     });
 
-    describe('__buildBucketerParams', function() {
+    describe('buildBucketerParams', function() {
       it('should return params object with correct properties', function() {
-        var bucketerParams = decisionServiceInstance.__buildBucketerParams(
+        var bucketerParams = decisionServiceInstance.buildBucketerParams(
           configObj,
           'testExperiment',
           'testUser',
@@ -544,17 +543,17 @@ describe('lib/core/decision_service', function() {
       });
     });
 
-    describe('__checkIfExperimentIsActive', function() {
+    describe('checkIfExperimentIsActive', function() {
       it('should return true if experiment is running', function() {
-        assert.isTrue(decisionServiceInstance.__checkIfExperimentIsActive(configObj, 'testExperiment'));
+        assert.isTrue(decisionServiceInstance.checkIfExperimentIsActive(configObj, 'testExperiment'));
       });
 
       it('should return false when experiment is not running', function() {
-        assert.isFalse(decisionServiceInstance.__checkIfExperimentIsActive(configObj, 'testExperimentNotRunning'));
+        assert.isFalse(decisionServiceInstance.checkIfExperimentIsActive(configObj, 'testExperimentNotRunning'));
       });
     });
 
-    describe('__checkIfUserIsInAudience', function() {
+    describe('checkIfUserIsInAudience', function() {
       var __audienceEvaluateSpy;
 
       beforeEach(function() {
@@ -567,7 +566,7 @@ describe('lib/core/decision_service', function() {
 
       it('should return decision response with result true when audience conditions are met', function() {
         assert.isTrue(
-          decisionServiceInstance.__checkIfUserIsInAudience(
+          decisionServiceInstance.checkIfUserIsInAudience(
             configObj,
             'testExperimentWithAudiences',
             "experiment",
@@ -589,7 +588,7 @@ describe('lib/core/decision_service', function() {
 
       it('should return decision response with result true when experiment has no audience', function() {
         assert.isTrue(
-          decisionServiceInstance.__checkIfUserIsInAudience(
+          decisionServiceInstance.checkIfUserIsInAudience(
             configObj,
             'testExperiment',
             "experiment",
@@ -613,7 +612,7 @@ describe('lib/core/decision_service', function() {
 
       it('should return decision response with result false when audience conditions can not be evaluated', function() {
         assert.isFalse(
-          decisionServiceInstance.__checkIfUserIsInAudience(
+          decisionServiceInstance.checkIfUserIsInAudience(
             configObj,
             'testExperimentWithAudiences',
             "experiment",
@@ -637,7 +636,7 @@ describe('lib/core/decision_service', function() {
 
       it('should return decision response with result false when audience conditions are not met', function() {
         assert.isFalse(
-          decisionServiceInstance.__checkIfUserIsInAudience(
+          decisionServiceInstance.checkIfUserIsInAudience(
             configObj,
             'testExperimentWithAudiences',
             "experiment",
@@ -660,19 +659,19 @@ describe('lib/core/decision_service', function() {
       });
     });
 
-    describe('__getWhitelistedVariation', function() {
+    describe('getWhitelistedVariation', function() {
       it('should return forced variation ID if forced variation is provided for the user ID', function() {
         var testExperiment = configObj.experimentKeyMap['testExperiment'];
         var expectedVariation = configObj.variationIdMap['111128'];
         assert.strictEqual(
-          decisionServiceInstance.__getWhitelistedVariation(testExperiment, 'user1').result,
+          decisionServiceInstance.getWhitelistedVariation(testExperiment, 'user1').result,
           expectedVariation
         );
       });
 
       it('should return null if forced variation is not provided for the user ID', function() {
         var testExperiment = configObj.experimentKeyMap['testExperiment'];
-        assert.isNull(decisionServiceInstance.__getWhitelistedVariation(testExperiment, 'notInForcedVariations').result);
+        assert.isNull(decisionServiceInstance.getWhitelistedVariation(testExperiment, 'notInForcedVariations').result);
       });
     });
 
@@ -1048,7 +1047,7 @@ describe('lib/core/decision_service', function() {
         },
       });
 
-      var decisionServiceInstance = DecisionService.createDecisionService({
+      var decisionServiceInstance = createDecisionService({
         logger: createdLogger,
         userProfileService: userProfileServiceInstance,
       });
@@ -1061,7 +1060,7 @@ describe('lib/core/decision_service', function() {
     });
   });
 
-  describe('_getBucketingId', function() {
+  describe('getBucketingId', function() {
     var configObj;
     var decisionService;
     var mockLogger = createLogger({ logLevel: LOG_LEVEL.INFO });
@@ -1078,7 +1077,7 @@ describe('lib/core/decision_service', function() {
     beforeEach(function() {
       sinon.stub(mockLogger, 'log');
       configObj = projectConfig.createProjectConfig(cloneDeep(testData));
-      decisionService = DecisionService.createDecisionService({
+      decisionService = createDecisionService({
         logger: mockLogger,
       });
     });
@@ -1088,12 +1087,12 @@ describe('lib/core/decision_service', function() {
     });
 
     it('should return userId if bucketingId is not defined in user attributes', function() {
-      assert.strictEqual(userId, decisionService._getBucketingId(userId, null));
-      assert.strictEqual(userId, decisionService._getBucketingId(userId, { browser_type: 'safari' }));
+      assert.strictEqual(userId, decisionService.getBucketingId(userId, null));
+      assert.strictEqual(userId, decisionService.getBucketingId(userId, { browser_type: 'safari' }));
     });
 
     it('should log warning in case of invalid bucketingId', function() {
-      assert.strictEqual(userId, decisionService._getBucketingId(userId, userAttributesWithInvalidBucketingId));
+      assert.strictEqual(userId, decisionService.getBucketingId(userId, userAttributesWithInvalidBucketingId));
       assert.strictEqual(1, mockLogger.log.callCount);
       assert.strictEqual(
         mockLogger.log.args[0][1],
@@ -1102,7 +1101,7 @@ describe('lib/core/decision_service', function() {
     });
 
     it('should return correct bucketingId when provided in attributes', function() {
-      assert.strictEqual('123456789', decisionService._getBucketingId(userId, userAttributesWithBucketingId));
+      assert.strictEqual('123456789', decisionService.getBucketingId(userId, userAttributesWithBucketingId));
       assert.strictEqual(1, mockLogger.log.callCount);
       assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: BucketingId is valid: "123456789"');
     });
@@ -1123,7 +1122,7 @@ describe('lib/core/decision_service', function() {
         configObj = projectConfig.createProjectConfig(cloneDeep(testDataWithFeatures));
         sandbox = sinon.sandbox.create();
         sandbox.stub(mockLogger, 'log');
-        decisionServiceInstance = DecisionService.createDecisionService({
+        decisionServiceInstance = createDecisionService({
           logger: mockLogger,
         });
       });
@@ -2420,44 +2419,44 @@ describe('lib/core/decision_service', function() {
       });
     });
 
-    describe('_getVariationForRollout', function() {
+    describe('getVariationForRollout', function() {
       var feature;
       var configObj;
       var decisionService;
-      var __buildBucketerParamsSpy;
+      var buildBucketerParamsSpy;
 
       beforeEach(function() {
         configObj = projectConfig.createProjectConfig(cloneDeep(testDataWithFeatures));
         feature = configObj.featureKeyMap.test_feature;
-        decisionService = DecisionService.createDecisionService({
+        decisionService = createDecisionService({
           logger: createLogger({ logLevel: LOG_LEVEL.INFO }),
         });
-        __buildBucketerParamsSpy = sinon.spy(decisionService, '__buildBucketerParams');
+        buildBucketerParamsSpy = sinon.spy(decisionService, 'buildBucketerParams');
       });
 
       afterEach(function() {
-        __buildBucketerParamsSpy.restore();
+        buildBucketerParamsSpy.restore();
       });
 
-      it('should call __buildBucketerParams with user Id when bucketing Id is not provided in the attributes', function() {
+      it('should call buildBucketerParams with user Id when bucketing Id is not provided in the attributes', function() {
         var attributes = { test_attribute: 'test_value' };
-        decisionService._getVariationForRollout(configObj, feature, 'testUser', attributes).result;
+        decisionService.getVariationForRollout(configObj, feature, 'testUser', attributes).result;
 
-        sinon.assert.callCount(__buildBucketerParamsSpy, 2);
-        sinon.assert.calledWithExactly(__buildBucketerParamsSpy, configObj, '594031', 'testUser', 'testUser');
-        sinon.assert.calledWithExactly(__buildBucketerParamsSpy, configObj, '594037', 'testUser', 'testUser');
+        sinon.assert.callCount(buildBucketerParamsSpy, 2);
+        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, '594031', 'testUser', 'testUser');
+        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, '594037', 'testUser', 'testUser');
       });
 
-      it('should call __buildBucketerParams with bucketing Id when bucketing Id is provided in the attributes', function() {
+      it('should call buildBucketerParams with bucketing Id when bucketing Id is provided in the attributes', function() {
         var attributes = {
           test_attribute: 'test_value',
           $opt_bucketing_id: 'abcdefg',
         };
-        decisionService._getVariationForRollout(configObj, feature, 'testUser', attributes).result;
+        decisionService.getVariationForRollout(configObj, feature, 'testUser', attributes).result;
 
-        sinon.assert.callCount(__buildBucketerParamsSpy, 2);
-        sinon.assert.calledWithExactly(__buildBucketerParamsSpy, configObj, '594031', 'abcdefg', 'testUser');
-        sinon.assert.calledWithExactly(__buildBucketerParamsSpy, configObj, '594037', 'abcdefg', 'testUser');
+        sinon.assert.callCount(buildBucketerParamsSpy, 2);
+        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, '594031', 'abcdefg', 'testUser');
+        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, '594037', 'abcdefg', 'testUser');
       });
     });
   });
