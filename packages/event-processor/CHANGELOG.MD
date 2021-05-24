@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 Changes that have landed but are not yet released.
+- Replaced the deprecated `@react-native-community/async-storage` with `@react-native-async-storage/async-storage`.
 
 ## [0.8.0] - November 10th, 2020
 

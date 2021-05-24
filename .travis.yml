@@ -82,7 +82,7 @@ jobs:
     - <<: *packagetest
       before_install: cd packages/logging
     - <<: *packagetest
-      before_script: npm install "@react-native-community/async-storage"
+      before_script: npm install "@react-native-asyn-storage/async-storage"
       before_install: cd packages/datafile-manager
 
     - stage: 'Source Clear'
