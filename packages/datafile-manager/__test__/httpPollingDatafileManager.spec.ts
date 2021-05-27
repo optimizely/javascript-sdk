@@ -297,6 +297,7 @@ describe('httpPollingDatafileManager', () => {
               headers: {},
             });
             await responsePromise;
+            await advanceTimersByTime(0);
             expect(makeGetRequestSpy).toBeCalledTimes(2);
           });
         });
@@ -334,7 +335,7 @@ describe('httpPollingDatafileManager', () => {
           await manager.onReady();
           expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
 
-          advanceTimersByTime(1000);
+          await advanceTimersByTime(1000);
 
           expect(manager.responsePromises.length).toBe(2);
           manager.stop();
@@ -409,7 +410,7 @@ describe('httpPollingDatafileManager', () => {
             // First response promise was for the initial 200 response
             expect(manager.responsePromises.length).toBe(1);
             // Trigger the queued update
-            advanceTimersByTime(1000);
+            await advanceTimersByTime(1000);
             // Second response promise is for the 304 response
             expect(manager.responsePromises.length).toBe(2);
             await manager.responsePromises[1];
@@ -436,7 +437,7 @@ describe('httpPollingDatafileManager', () => {
             manager.start();
             await manager.onReady();
             const makeGetRequestSpy = jest.spyOn(manager, 'makeGetRequest');
-            advanceTimersByTime(1000);
+            await advanceTimersByTime(1000);
             expect(makeGetRequestSpy).toBeCalledTimes(1);
             const firstCall = makeGetRequestSpy.mock.calls[0];
             const headers = firstCall[1];
@@ -468,7 +469,7 @@ describe('httpPollingDatafileManager', () => {
             expect(makeGetRequestSpy).toBeCalledTimes(1);
 
             // But after another 5 seconds, another request should be made
-            advanceTimersByTime(5000);
+            await advanceTimersByTime(5000);
             expect(makeGetRequestSpy).toBeCalledTimes(2);
           });
 
