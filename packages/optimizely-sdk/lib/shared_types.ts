@@ -150,9 +150,7 @@ export type Condition = {
 
 export interface Audience {
   name: string;
-  //TODO: define conditions type
-  // eslint-disable-next-line
-  conditions: any;
+  conditions: unknown[] | string;
 }
 
 export interface TrafficAllocation {

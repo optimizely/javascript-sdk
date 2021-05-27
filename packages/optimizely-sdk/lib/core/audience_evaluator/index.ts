@@ -57,7 +57,7 @@ export class AudienceEvaluator {
    * @param  {[id: string]: Audience}       audiencesById         Object providing access to full audience objects for audience IDs
    *                                                              contained in audienceConditions. Keys should be audience IDs, values
    *                                                              should be full audience objects with conditions properties
-   * @param  {UserAttributes}               [userAttributes]      User attributes which will be used in determining if audience conditions
+   * @param  {UserAttributes}               userAttributes        User attributes which will be used in determining if audience conditions
    *                                                              are met. If not provided, defaults to an empty object
    * @return {boolean}                                            true if the user attributes match the given audience conditions, false
    *                                                              otherwise
@@ -65,13 +65,13 @@ export class AudienceEvaluator {
   evaluate(
     audienceConditions: Array<string | string[]>,
     audiencesById: { [id: string]: Audience },
-    userAttributes: UserAttributes = {})
-  : boolean {
+    userAttributes: UserAttributes = {}
+  ): boolean {
     // if there are no audiences, return true because that means ALL users are included in the experiment
     if (!audienceConditions || audienceConditions.length === 0) {
       return true;
     }
-  
+
     const evaluateAudience = (audienceId: string) => {
       const audience = audiencesById[audienceId];
       if (audience) {
@@ -80,7 +80,7 @@ export class AudienceEvaluator {
           sprintf(LOG_MESSAGES.EVALUATING_AUDIENCE, MODULE_NAME, audienceId, JSON.stringify(audience.conditions))
         );
         const result = conditionTreeEvaluator.evaluate(
-          audience.conditions,
+          audience.conditions as unknown[] ,
           this.evaluateConditionWithUserAttributes.bind(this, userAttributes)
         );
         const resultText = result === null ? 'UNKNOWN' : result.toString().toUpperCase();
@@ -89,7 +89,7 @@ export class AudienceEvaluator {
       }
       return null;
     };
-  
+
     return conditionTreeEvaluator.evaluate(audienceConditions, evaluateAudience) || false;
   }
 
@@ -98,7 +98,7 @@ export class AudienceEvaluator {
    * Evaluates the condition provided given the user attributes if an evaluator has been defined for the condition type.
    * @param  {UserAttributes}       userAttributes     A map of user attributes.
    * @param  {Condition}            condition          A single condition object to evaluate.
-   * @return {boolean|null}              true if the condition is satisfied, null if a matcher is not found.
+   * @return {boolean|null}                            true if the condition is satisfied, null if a matcher is not found.
    */
   evaluateConditionWithUserAttributes(userAttributes: UserAttributes, condition: Condition): boolean | null {
     const evaluator = this.typeToEvaluatorMap[condition.type];

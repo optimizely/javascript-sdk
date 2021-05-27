@@ -59,7 +59,7 @@ export interface ProjectConfig {
   revision: string;
   projectId: string;
   sendFlagDecisions?: boolean;
-  experimentKeyMap:{ [key: string]: Experiment };
+  experimentKeyMap: { [key: string]: Experiment };
   featureKeyMap: {
     [key: string]: FeatureFlag
   };
@@ -135,7 +135,7 @@ export const createProjectConfig = function(
    * expected to be string-encoded as they are here in projectConfig.audiences.
    */
   (projectConfig.audiences || []).forEach((audience) => {
-    audience.conditions = JSON.parse(audience.conditions);
+    audience.conditions = JSON.parse(audience.conditions as string);
   });
   projectConfig.audiencesById = fns.keyBy(projectConfig.audiences, 'id');
   fns.assign(projectConfig.audiencesById, fns.keyBy(projectConfig.typedAudiences, 'id'));
@@ -188,8 +188,8 @@ export const createProjectConfig = function(
   projectConfig.featureKeyMap = fns.keyBy(projectConfig.featureFlags || [], 'key');
   objectValues(projectConfig.featureKeyMap || {}).forEach(
     (feature) => {
-    // Json type is represented in datafile as a subtype of string for the sake of backwards compatibility.
-    // Converting it to a first-class json type while creating Project Config
+      // Json type is represented in datafile as a subtype of string for the sake of backwards compatibility.
+      // Converting it to a first-class json type while creating Project Config
       feature.variables.forEach((variable) => {
         if (variable.type === FEATURE_VARIABLE_TYPES.STRING && variable.subType === FEATURE_VARIABLE_TYPES.JSON) {
           variable.type = FEATURE_VARIABLE_TYPES.JSON;
@@ -253,7 +253,7 @@ export const getAttributeId = function(
   projectConfig: ProjectConfig,
   attributeKey: string,
   logger: LogHandler
-  ): string | null {
+): string | null {
   const attribute = projectConfig.attributeKeyMap[attributeKey];
   const hasReservedPrefix = attributeKey.indexOf(RESERVED_ATTRIBUTE_PREFIX) === 0;
   if (attribute) {
@@ -373,7 +373,7 @@ export const getVariationIdFromExperimentAndVariationKey = function(
   projectConfig: ProjectConfig,
   experimentKey: string,
   variationKey: string
-  ): string | null {
+): string | null {
   const experiment = projectConfig.experimentKeyMap[experimentKey];
   if (experiment.variationKeyMap.hasOwnProperty(variationKey)) {
     return experiment.variationKeyMap[variationKey].id;
@@ -480,7 +480,7 @@ export const getVariableForFeature = function(
   featureKey: string,
   variableKey: string,
   logger: LogHandler
-  ): FeatureVariable | null {
+): FeatureVariable | null {
   const feature = projectConfig.featureKeyMap[featureKey];
   if (!feature) {
     logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, featureKey));
@@ -516,7 +516,7 @@ export const getVariableValueForVariation = function(
   variable: FeatureVariable,
   variation: Variation,
   logger: LogHandler
-  ): string | null {
+): string | null {
   if (!variable || !variation) {
     return null;
   }
