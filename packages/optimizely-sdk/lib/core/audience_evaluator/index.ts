@@ -90,7 +90,7 @@ export class AudienceEvaluator {
       return null;
     };
 
-    return conditionTreeEvaluator.evaluate(audienceConditions, evaluateAudience) || false;
+    return !!conditionTreeEvaluator.evaluate(audienceConditions, evaluateAudience);
   }
 
   /**
