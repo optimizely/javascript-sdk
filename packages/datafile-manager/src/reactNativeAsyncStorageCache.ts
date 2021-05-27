@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import AsyncStorage from '@react-native-community/async-storage';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import PersistentKeyValueCache from './persistentKeyValueCache';
 
 export default class ReactNativeAsyncStorageCache implements PersistentKeyValueCache {
