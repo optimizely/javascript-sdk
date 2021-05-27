@@ -14,7 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import { getLogger } from '@optimizely/js-sdk-logging';
-import { UserAttributes } from '../../shared_types';
+import { UserAttributes, Condition } from '../../shared_types';
 
 import fns from '../../utils/fns';
 import { LOG_MESSAGES } from '../../utils/enums';
@@ -51,13 +51,6 @@ const MATCH_TYPES = [
   SEMVER_GREATER_THAN_MATCH_TYPE,
   SEMVER_GREATER_OR_EQUAL_THAN_MATCH_TYPE
 ];
-
-type Condition = {
-  name: string;
-  type: string;
-  match?: string;
-  value: string | number | boolean | null;
-}
 
 type ConditionEvaluator = (condition: Condition, userAttributes: UserAttributes) => boolean | null;
 

@@ -141,9 +141,16 @@ export interface FeatureFlag {
   groupId?: string;
 }
 
+export type Condition = {
+  name: string;
+  type: string;
+  match?: string;
+  value: string | number | boolean | null;
+}
+
 export interface Audience {
- name: string;
- conditions: string;
+  name: string;
+  conditions: unknown[] | string;
 }
 
 export interface TrafficAllocation {
@@ -156,11 +163,6 @@ export interface Group {
   policy: string;
   trafficAllocation: TrafficAllocation[];
   experiments: Experiment[];
-}
-
-export interface Audience {
- name: string;
- conditions: string;
 }
 
 export interface TrafficAllocation {
@@ -196,7 +198,7 @@ export interface Rollout {
 //TODO: Move OptimizelyDecideOption to @optimizely/optimizely-sdk/lib/utils/enums
 export enum OptimizelyDecideOption {
   DISABLE_DECISION_EVENT = 'DISABLE_DECISION_EVENT',
-  ENABLED_FLAGS_ONLY =  'ENABLED_FLAGS_ONLY',
+  ENABLED_FLAGS_ONLY = 'ENABLED_FLAGS_ONLY',
   IGNORE_USER_PROFILE_SERVICE = 'IGNORE_USER_PROFILE_SERVICE',
   INCLUDE_REASONS = 'INCLUDE_REASONS',
   EXCLUDE_VARIABLES = 'EXCLUDE_VARIABLES'
