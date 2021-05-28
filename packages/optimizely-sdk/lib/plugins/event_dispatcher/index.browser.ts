@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, 2020, Optimizely
+ * Copyright 2016-2017, 2020-2021, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var POST_METHOD = 'POST';
-var GET_METHOD = 'GET';
-var READYSTATE_COMPLETE = 4;
+const POST_METHOD = 'POST';
+const GET_METHOD = 'GET';
+const READYSTATE_COMPLETE = 4;
+
+interface Event {
+  url: string;
+  httpVerb: 'POST' | 'GET';
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  params: any;
+}
+
 
 /**
  * Sample event dispatcher implementation for tracking impression and conversions
  * Users of the SDK can provide their own implementation
- * @param  {Object} eventObj
+ * @param  {Event}    eventObj
  * @param  {Function} callback
  */
-export var dispatchEvent = function(eventObj, callback) {
-  var url = eventObj.url;
-  var params = eventObj.params;
-  var req;
+export const dispatchEvent = function(
+  eventObj: Event,
+  callback: (response: { statusCode: number; }) => void
+): void {
+  const params = eventObj.params;
+  let url = eventObj.url;
+  let req: XMLHttpRequest;
   if (eventObj.httpVerb === POST_METHOD) {
     req = new XMLHttpRequest();
     req.open(POST_METHOD, url, true);
@@ -53,7 +64,7 @@ export var dispatchEvent = function(eventObj, callback) {
     req.onreadystatechange = function() {
       if (req.readyState === READYSTATE_COMPLETE && callback && typeof callback === 'function') {
         try {
-          callback();
+          callback({ statusCode: req.status });
         } catch (e) {
           // TODO: Log this somehow (consider adding a logger to the EventDispatcher interface)
         }
@@ -63,7 +74,8 @@ export var dispatchEvent = function(eventObj, callback) {
   }
 }
 
-var toQueryString = function(obj) {
+// eslint-disable-next-line  @typescript-eslint/no-explicit-any
+const toQueryString = function(obj: any): string {
   return Object.keys(obj)
     .map(function(k) {
       return encodeURIComponent(k) + '=' + encodeURIComponent(obj[k]);
