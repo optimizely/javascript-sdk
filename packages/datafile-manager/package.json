@@ -58,6 +58,7 @@
   "scripts": {
     "lint": "tsc --noEmit && eslint --fix 'src/**/*.ts' '__test__/**/*.ts'",
     "test": "jest",
+    "posttest": "npm run lint",
     "tsc": "rm -rf lib && tsc",
     "prepublishOnly": "npm run lint && npm test && npm run tsc"
   }
