@@ -36,7 +36,7 @@ export const dispatchEvent = function(
   callback: (response: { statusCode: number; }) => void
 ): void {
   const params = eventObj.params;
-  let url = eventObj.url;
+  let url: string = eventObj.url;
   let req: XMLHttpRequest;
   if (eventObj.httpVerb === POST_METHOD) {
     req = new XMLHttpRequest();
