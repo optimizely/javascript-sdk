@@ -30,12 +30,13 @@
     "access": "public"
   },
   "devDependencies": {
+    "@react-native-async-storage/async-storage": "^1.2.0",
     "@types/jest": "^26.0.3",
     "@types/nise": "^1.4.0",
     "@types/nock": "^9.3.1",
     "@types/node": "^11.11.7",
-    "@typescript-eslint/eslint-plugin": "^2.23.0",
-    "@typescript-eslint/parser": "^2.23.0",
+    "@typescript-eslint/eslint-plugin": "^3.3.0",
+    "@typescript-eslint/parser": "^3.3.0",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-prettier": "^3.1.2",
@@ -44,8 +45,7 @@
     "nock": "^10.0.6",
     "prettier": "^1.19.1",
     "ts-jest": "^27.0.1",
-    "typescript": "^4.0.3",
-    "@react-native-async-storage/async-storage": "^1.2.0"
+    "typescript": "^4.0.3"
   },
   "dependencies": {
     "@optimizely/js-sdk-logging": "^0.1.0",
@@ -58,6 +58,7 @@
   "scripts": {
     "lint": "tsc --noEmit && eslint --fix 'src/**/*.ts' '__test__/**/*.ts'",
     "test": "jest",
+    "posttest": "npm run lint",
     "tsc": "rm -rf lib && tsc",
     "prepublishOnly": "npm run lint && npm test && npm run tsc"
   }
