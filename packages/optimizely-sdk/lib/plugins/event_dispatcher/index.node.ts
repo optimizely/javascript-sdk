@@ -26,7 +26,7 @@ import { Event } from '../../shared_types';
  * @param  {Object}   eventObj.params    parameters to pass to the request (i.e. in the POST body)
  * @param  {string}   eventObj.httpVerb  the HTTP request method type. only POST is supported.
  * @param  {function} callback           callback to execute
- * @return {ClientRequest|undefined}    ClientRequest object which made the request, or undefined if no request was made (error)
+ * @return {ClientRequest|undefined}     ClientRequest object which made the request, or undefined if no request was made (error)
  */
 export const dispatchEvent = function(
   eventObj: Event,
@@ -57,7 +57,8 @@ export const dispatchEvent = function(
     }
   };
 
-  const req = (parsedUrl.protocol === 'http:' ? http : https).request(requestOptions, requestCallback as (res: http.IncomingMessage) => void);
+  const req = (parsedUrl.protocol === 'http:' ? http : https)
+    .request(requestOptions, requestCallback as (res: http.IncomingMessage) => void);
   // Add no-op error listener to prevent this from throwing
   req.on('error', function() {});
   req.write(dataString);
