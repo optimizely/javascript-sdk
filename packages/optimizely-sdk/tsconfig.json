@@ -1,7 +1,10 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "types": ["./typings"],
+    "baseUrl": "./",
+    "paths": {
+      "*" : ["*", "./typings/*"]
+    },
     "allowJs": true,
     "declaration": false,
     "module": "esnext",
