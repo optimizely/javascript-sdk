@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018, 2020, Optimizely
+ * Copyright 2016-2018, 2020-2021, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ import http from 'http';
 import https from 'https';
 import url from 'url';
 
+import { Event } from '../../shared_types';
+
 /**
  * Dispatch an HTTP request to the given url and the specified options
  * @param {Object}  eventObj          Event object containing
@@ -26,17 +28,20 @@ import url from 'url';
  * @param {function} callback         callback to execute
  * @return {ClientRequest|undefined}          ClientRequest object which made the request, or undefined if no request was made (error)
  */
-export var dispatchEvent = function(eventObj, callback) {
+export const dispatchEvent = function(
+  eventObj: Event,
+  callback: (response: { statusCode: number; }) => void
+  ): http.ClientRequest | void {
   // Non-POST requests not supported
   if (eventObj.httpVerb !== 'POST') {
     return;
   }
 
-  var parsedUrl = url.parse(eventObj.url);
+  const parsedUrl = url.parse(eventObj.url);
 
-  var dataString = JSON.stringify(eventObj.params);
+  const dataString = JSON.stringify(eventObj.params);
 
-  var requestOptions = {
+  const requestOptions = {
     host: parsedUrl.host,
     path: parsedUrl.path,
     method: 'POST',
@@ -46,13 +51,13 @@ export var dispatchEvent = function(eventObj, callback) {
     },
   };
 
-  var requestCallback = function(response) {
+  const requestCallback = function(response?: { statusCode: number }): http.ClientRequest | void {
     if (response && response.statusCode && response.statusCode >= 200 && response.statusCode < 400) {
       callback(response);
     }
   };
 
-  var req = (parsedUrl.protocol === 'http:' ? http : https).request(requestOptions, requestCallback);
+  const req = (parsedUrl.protocol === 'http:' ? http : https).request(requestOptions, requestCallback);
   // Add no-op error listener to prevent this from throwing
   req.on('error', function() {});
   req.write(dataString);
