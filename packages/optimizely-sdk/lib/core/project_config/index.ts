@@ -81,8 +81,8 @@ export interface ProjectConfig {
   attributes: Array<{ id: string }>;
   typedAudiences: Audience[];
   rolloutIdMap: { [id: string]: Rollout };
-  anonymizeIP: boolean | null | undefined;
-  botFiltering: boolean | undefined;
+  anonymizeIP?: boolean | null;
+  botFiltering?: boolean;
   accountId: string;
 }
 
