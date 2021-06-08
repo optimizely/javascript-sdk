@@ -81,6 +81,9 @@ export interface ProjectConfig {
   attributes: Array<{ id: string }>;
   typedAudiences: Audience[];
   rolloutIdMap: { [id: string]: Rollout };
+  anonymizeIP: boolean | null | undefined;
+  botFiltering: boolean | undefined;
+  accountId: string;
 }
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';

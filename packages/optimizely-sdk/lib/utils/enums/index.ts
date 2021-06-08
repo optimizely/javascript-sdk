@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2016-2020, Optimizely, Inc. and contributors                   *
+ * Copyright 2016-2021, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -161,10 +161,10 @@ export const LOG_MESSAGES = {
   UNABLE_TO_ATTACH_UNLOAD: '%s: unable to bind optimizely.close() to page unload event: "%s"',
 };
 
-export const RESERVED_EVENT_KEYWORDS = {
-  REVENUE: 'revenue',
-  VALUE: 'value',
-};
+export const enum RESERVED_EVENT_KEYWORDS {
+  REVENUE = 'revenue',
+  VALUE = 'value',
+}
 
 export const CONTROL_ATTRIBUTES = {
   BOT_FILTERING: '$opt_bot_filtering',

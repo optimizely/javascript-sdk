@@ -14,7 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
-import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
+import { LoggerFacade, ErrorHandler } from '@optimizely/js-sdk-logging';
 import {
   UserAttributes,
   EventTags,
@@ -91,7 +91,7 @@ export default class Optimizely {
   private clientVersion: string;
   private errorHandler: ErrorHandler;
   private eventDispatcher: EventDispatcher;
-  private logger: LogHandler;
+  private logger: LoggerFacade;
   private projectConfigManager: ProjectConfigManager;
   private notificationCenter: NotificationCenter;
   private decisionService: DecisionService;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ErrorHandler, LogHandler, LogLevel } from "@optimizely/js-sdk-logging";
+import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from '@optimizely/js-sdk-logging';
 
 export interface BucketerParams {
   experimentId: string;
@@ -222,7 +222,7 @@ export interface OptimizelyOptions {
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean,
   };
-  logger: LogHandler;
+  logger: LoggerFacade;
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
   defaultDecideOptions?: OptimizelyDecideOption[]
