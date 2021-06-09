@@ -16,12 +16,105 @@
 import { getLogger } from '@optimizely/js-sdk-logging';
 
 import fns from '../../utils/fns';
-import projectConfig from '../project_config';
 import * as eventTagUtils from '../../utils/event_tag_utils';
 import * as attributesValidator from'../../utils/attributes_validator';
 import * as decision from '../decision';
 
-var logger = getLogger('EVENT_BUILDER');
+import { EventTags, UserAttributes } from '../../shared_types';
+import { DecisionObj } from '../decision_service';
+import {
+  getAttributeId,
+  getEventId,
+  getExperimentId,
+  getLayerId,
+  getVariationIdFromExperimentAndVariationKey,
+  ProjectConfig,
+} from '../project_config';
+
+const logger = getLogger('EVENT_BUILDER');
+
+interface ImpressionConfig {
+  decisionObj: DecisionObj;
+  userId: string;
+  flagKey: string;
+  enabled: boolean;
+  userAttributes?: UserAttributes;
+  clientEngine: string;
+  clientVersion: string;
+  configObj: ProjectConfig;
+}
+
+type  VisitorAttribute = {
+  entityId: string;
+  key: string;
+  value: string | number | boolean;
+}
+
+interface ImpressionEvent {
+  type: 'impression';
+  timestamp: number;
+  uuid: string;
+  user: {
+      id: string;
+      attributes: VisitorAttribute[];
+  };
+  context: EventContext;
+  layer: {
+      id: string | null;
+  };
+  experiment: {
+      id: string | null;
+      key: string;
+  } | null;
+  variation: {
+      id: string | null;
+      key: string;
+  } | null;
+
+  ruleKey: string,
+  flagKey: string,
+  ruleType: string,
+  enabled: boolean,
+}
+
+type EventContext = {
+  accountId: string;
+  projectId: string;
+  revision: string;
+  clientName: string;
+  clientVersion: string;
+  anonymizeIP: boolean;
+  botFiltering: boolean | undefined;
+}
+
+interface ConversionConfig {
+  eventKey: string;
+  eventTags: EventTags | undefined;
+  userId: string;
+  userAttributes?: UserAttributes;
+  clientEngine: string;
+  clientVersion: string;
+  configObj: ProjectConfig;
+}
+
+interface ConversionEvent {
+  type: 'conversion';
+  timestamp: number;
+  uuid: string;
+  user: {
+    id: string;
+    attributes: VisitorAttribute[];
+  };
+  context: EventContext;
+  event: {
+    id: string | null; //conflict
+    key: string;
+ };
+  revenue: number | null;
+  value: number | null;
+  tags: EventTags | undefined; //conflict
+}
+
 
 /**
  * Creates an ImpressionEvent object from decision data
@@ -35,31 +128,31 @@ var logger = getLogger('EVENT_BUILDER');
  * @param  {String}  config.clientVersion
  * @return {Object}  an ImpressionEvent object
  */
-export var buildImpressionEvent = function(config) {
-  var configObj = config.configObj;
-  var decisionObj = config.decisionObj;
-  var userId = config.userId;
-  var flagKey = config.flagKey;
-  var enabled = config.enabled;
-  var userAttributes = config.userAttributes;
-  var clientEngine = config.clientEngine;
-  var clientVersion = config.clientVersion;
-  var ruleType = decisionObj.decisionSource;
-  var experimentKey = decision.getExperimentKey(decisionObj);
-  var variationKey = decision.getVariationKey(decisionObj);
+export const buildImpressionEvent = function(config: ImpressionConfig): ImpressionEvent {
+  const configObj = config.configObj;
+  const decisionObj = config.decisionObj;
+  const userId = config.userId;
+  const flagKey = config.flagKey;
+  const enabled = config.enabled;
+  const userAttributes = config.userAttributes;
+  const clientEngine = config.clientEngine;
+  const clientVersion = config.clientVersion;
+  const ruleType = decisionObj.decisionSource;
+  const experimentKey = decision.getExperimentKey(decisionObj);
+  const variationKey = decision.getVariationKey(decisionObj);
 
   let experimentId = null;
   let variationId = null;
 
   if (experimentKey !== '' && variationKey !== '') {
-    variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
+    variationId = getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
   }
   if (experimentKey !== '') {
-    experimentId = projectConfig.getExperimentId(configObj, experimentKey);
+    experimentId = getExperimentId(configObj, experimentKey);
   }
   let layerId = null;
   if (experimentId !== null) {
-    layerId = projectConfig.getLayerId(configObj, experimentId);
+    layerId = getLayerId(configObj, experimentId);
   }
   return {
     type: 'impression',
@@ -114,16 +207,16 @@ export var buildImpressionEvent = function(config) {
  * @param {String} config.clientVersion
  * @return {Object} a ConversionEvent object
  */
-export var buildConversionEvent = function(config) {
-  var configObj = config.configObj;
-  var userId = config.userId;
-  var userAttributes = config.userAttributes;
-  var clientEngine = config.clientEngine;
-  var clientVersion = config.clientVersion;
+export const buildConversionEvent = function(config: ConversionConfig): ConversionEvent {
+  const configObj = config.configObj;
+  const userId = config.userId;
+  const userAttributes = config.userAttributes;
+  const clientEngine = config.clientEngine;
+  const clientVersion = config.clientVersion;
 
-  var eventKey = config.eventKey;
-  var eventTags = config.eventTags;
-  var eventId = projectConfig.getEventId(configObj, eventKey);
+  const eventKey = config.eventKey;
+  const eventTags = config.eventTags;
+  const eventId = getEventId(configObj, eventKey);
 
   let revenue = null;
   let eventValue = null;
@@ -164,13 +257,13 @@ export var buildConversionEvent = function(config) {
   };
 };
 
-function buildVisitorAttributes(configObj, attributes) {
-  var builtAttributes = [];
+function buildVisitorAttributes(configObj: ProjectConfig, attributes: any): VisitorAttribute[] {
+  const builtAttributes: any = [];
   // Omit attribute values that are not supported by the log endpoint.
   Object.keys(attributes || {}).forEach(function(attributeKey) {
-    var attributeValue = attributes[attributeKey];
+    const attributeValue = attributes[attributeKey];
     if (attributesValidator.isAttributeValid(attributeKey, attributeValue)) {
-      var attributeId = projectConfig.getAttributeId(configObj, attributeKey, logger);
+      const attributeId = getAttributeId(configObj, attributeKey, logger);
       if (attributeId) {
         builtAttributes.push({
           entityId: attributeId,
