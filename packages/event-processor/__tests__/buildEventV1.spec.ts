@@ -224,7 +224,7 @@ describe('buildEventV1', () => {
   })
 
   describe('buildConversionEventV1', () => {
-    it('should build an build a ConversionEventV1 when tags object is defined', () => {
+    it('should build a ConversionEventV1 when tags object is defined', () => {
       const conversionEvent: ConversionEvent = {
         type: 'conversion',
         timestamp: 69,
@@ -311,7 +311,7 @@ describe('buildEventV1', () => {
       })
     })
 
-    it('should build an build a ConversionEventV1 when tags object is undefined', () => {
+    it('should build a ConversionEventV1 when tags object is undefined', () => {
       const conversionEvent: ConversionEvent = {
         type: 'conversion',
         timestamp: 69,
@@ -390,7 +390,7 @@ describe('buildEventV1', () => {
       })
     })
 
-    it('should build an build a ConversionEventV1 when event id is null', () => {
+    it('should build a ConversionEventV1 when event id is null', () => {
       const conversionEvent: ConversionEvent = {
         type: 'conversion',
         timestamp: 69,
