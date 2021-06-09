@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020, Optimizely
+ * Copyright 2019-2021, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ import { getLogger } from '@optimizely/js-sdk-logging';
 
 import fns from '../../utils/fns';
 import * as eventTagUtils from '../../utils/event_tag_utils';
-import * as attributesValidator from'../../utils/attributes_validator';
+import * as attributesValidator from '../../utils/attributes_validator';
 import * as decision from '../decision';
 
 import { EventTags, UserAttributes } from '../../shared_types';
@@ -44,7 +44,7 @@ interface ImpressionConfig {
   configObj: ProjectConfig;
 }
 
-type  VisitorAttribute = {
+type VisitorAttribute = {
   entityId: string;
   key: string;
   value: string | number | boolean;
@@ -55,20 +55,20 @@ interface ImpressionEvent {
   timestamp: number;
   uuid: string;
   user: {
-      id: string;
-      attributes: VisitorAttribute[];
+    id: string;
+    attributes: VisitorAttribute[];
   };
   context: EventContext;
   layer: {
-      id: string | null;
+    id: string | null;
   };
   experiment: {
-      id: string | null;
-      key: string;
+    id: string | null;
+    key: string;
   } | null;
   variation: {
-      id: string | null;
-      key: string;
+    id: string | null;
+    key: string;
   } | null;
 
   ruleKey: string,
@@ -89,7 +89,7 @@ type EventContext = {
 
 interface ConversionConfig {
   eventKey: string;
-  eventTags: EventTags | undefined;
+  eventTags?: EventTags;
   userId: string;
   userAttributes?: UserAttributes;
   clientEngine: string;
@@ -107,26 +107,19 @@ interface ConversionEvent {
   };
   context: EventContext;
   event: {
-    id: string | null; //conflict
+    id: string | null;
     key: string;
- };
+  };
   revenue: number | null;
   value: number | null;
-  tags: EventTags | undefined; //conflict
+  tags: EventTags | undefined;
 }
 
 
 /**
  * Creates an ImpressionEvent object from decision data
- * @param  {Object}  config
- * @param  {Object}  config.decisionObj
- * @param  {String}  config.userId
- * @param  {String}  config.flagKey
- * @param  {boolean} config.enabled
- * @param  {Object}  config.userAttributes
- * @param  {String}  config.clientEngine
- * @param  {String}  config.clientVersion
- * @return {Object}  an ImpressionEvent object
+ * @param  {ImpressionConfig}  config
+ * @return {ImpressionEvent}   an ImpressionEvent object
  */
 export const buildImpressionEvent = function(config: ImpressionConfig): ImpressionEvent {
   const configObj = config.configObj;
@@ -197,15 +190,8 @@ export const buildImpressionEvent = function(config: ImpressionConfig): Impressi
 
 /**
  * Creates a ConversionEvent object from track
- * @param {Object} config
- * @param {Object} config.configObj
- * @param {String} config.eventKey
- * @param {Object|undefined} config.eventTags
- * @param {String} config.userId
- * @param {Object} config.userAttributes
- * @param {String} config.clientEngine
- * @param {String} config.clientVersion
- * @return {Object} a ConversionEvent object
+ * @param  {ConversionConfig} config
+ * @return {ConversionEvent}  a ConversionEvent object
  */
 export const buildConversionEvent = function(config: ConversionConfig): ConversionEvent {
   const configObj = config.configObj;
@@ -257,22 +243,27 @@ export const buildConversionEvent = function(config: ConversionConfig): Conversi
   };
 };
 
-function buildVisitorAttributes(configObj: ProjectConfig, attributes: any): VisitorAttribute[] {
-  const builtAttributes: any = [];
+function buildVisitorAttributes(
+  configObj: ProjectConfig,
+  attributes?: UserAttributes
+): VisitorAttribute[] {
+  const builtAttributes: VisitorAttribute[] = [];
   // Omit attribute values that are not supported by the log endpoint.
-  Object.keys(attributes || {}).forEach(function(attributeKey) {
-    const attributeValue = attributes[attributeKey];
-    if (attributesValidator.isAttributeValid(attributeKey, attributeValue)) {
-      const attributeId = getAttributeId(configObj, attributeKey, logger);
-      if (attributeId) {
-        builtAttributes.push({
-          entityId: attributeId,
-          key: attributeKey,
-          value: attributes[attributeKey],
-        });
+  if (attributes) {
+    Object.keys(attributes || {}).forEach(function(attributeKey) {
+      const attributeValue = attributes[attributeKey];
+      if (attributesValidator.isAttributeValid(attributeKey, attributeValue)) {
+        const attributeId = getAttributeId(configObj, attributeKey, logger);
+        if (attributeId) {
+          builtAttributes.push({
+            entityId: attributeId,
+            key: attributeKey,
+            value: attributes[attributeKey],
+          });
+        }
       }
-    }
-  });
+    });
+  }
 
   return builtAttributes;
 }
