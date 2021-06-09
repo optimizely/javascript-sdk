@@ -1143,6 +1143,8 @@ var configWithFeatures = {
   ],
   anonymizeIP: true,
   botFiltering: true,
+  sdkKey: 'ValidProjectConfigWithFeatures',
+  environmentKey: 'development',
   audiences: [
     {
       id: '594017',
