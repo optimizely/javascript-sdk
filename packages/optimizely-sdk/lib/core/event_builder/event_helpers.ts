@@ -134,19 +134,11 @@ export const buildImpressionEvent = function(config: ImpressionConfig): Impressi
   const experimentKey = decision.getExperimentKey(decisionObj);
   const variationKey = decision.getVariationKey(decisionObj);
 
-  let experimentId = null;
-  let variationId = null;
 
-  if (experimentKey !== '' && variationKey !== '') {
-    variationId = getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
-  }
-  if (experimentKey !== '') {
-    experimentId = getExperimentId(configObj, experimentKey);
-  }
-  let layerId = null;
-  if (experimentId !== null) {
-    layerId = getLayerId(configObj, experimentId);
-  }
+  const variationId = experimentKey !== '' && variationKey !== '' ? getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey) : null;
+  const experimentId = experimentKey !== '' ? getExperimentId(configObj, experimentKey) : null;
+  const layerId = experimentId !== null ? getLayerId(configObj, experimentId) : null;
+
   return {
     type: 'impression',
     timestamp: fns.currentTimestamp(),
@@ -204,13 +196,8 @@ export const buildConversionEvent = function(config: ConversionConfig): Conversi
   const eventTags = config.eventTags;
   const eventId = getEventId(configObj, eventKey);
 
-  let revenue = null;
-  let eventValue = null;
-
-  if (eventTags) {
-    revenue = eventTagUtils.getRevenueValue(eventTags, logger);
-    eventValue = eventTagUtils.getEventValue(eventTags, logger);
-  }
+  const revenue = eventTags ? eventTagUtils.getRevenueValue(eventTags, logger) : null;
+  const eventValue = eventTags ? eventTagUtils.getEventValue(eventTags, logger) : null;
 
   return {
     type: 'conversion',
