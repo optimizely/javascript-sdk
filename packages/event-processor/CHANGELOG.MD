@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+### Fixed
+- Update `ConversionEvent` interface to allow event `id` type null and `tags` type undefined.
+
 ## [0.8.1] - May 25th, 2021
 
 ### Fixed
