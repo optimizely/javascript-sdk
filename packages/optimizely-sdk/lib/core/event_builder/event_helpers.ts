@@ -121,15 +121,17 @@ interface ConversionEvent {
  * @param  {ImpressionConfig}  config
  * @return {ImpressionEvent}   an ImpressionEvent object
  */
-export const buildImpressionEvent = function(config: ImpressionConfig): ImpressionEvent {
-  const configObj = config.configObj;
-  const decisionObj = config.decisionObj;
-  const userId = config.userId;
-  const flagKey = config.flagKey;
-  const enabled = config.enabled;
-  const userAttributes = config.userAttributes;
-  const clientEngine = config.clientEngine;
-  const clientVersion = config.clientVersion;
+export const buildImpressionEvent = function({
+  configObj,
+  decisionObj,
+  userId,
+  flagKey,
+  enabled,
+  userAttributes,
+  clientEngine,
+  clientVersion,
+}: ImpressionConfig): ImpressionEvent {
+
   const ruleType = decisionObj.decisionSource;
   const experimentKey = decision.getExperimentKey(decisionObj);
   const variationKey = decision.getVariationKey(decisionObj);
@@ -185,15 +187,16 @@ export const buildImpressionEvent = function(config: ImpressionConfig): Impressi
  * @param  {ConversionConfig} config
  * @return {ConversionEvent}  a ConversionEvent object
  */
-export const buildConversionEvent = function(config: ConversionConfig): ConversionEvent {
-  const configObj = config.configObj;
-  const userId = config.userId;
-  const userAttributes = config.userAttributes;
-  const clientEngine = config.clientEngine;
-  const clientVersion = config.clientVersion;
+export const buildConversionEvent = function({
+  configObj,
+  userId,
+  userAttributes,
+  clientEngine,
+  clientVersion,
+  eventKey,
+  eventTags,
+}: ConversionConfig): ConversionEvent {
 
-  const eventKey = config.eventKey;
-  const eventTags = config.eventTags;
   const eventId = getEventId(configObj, eventKey);
 
   const revenue = eventTags ? eventTagUtils.getRevenueValue(eventTags, logger) : null;

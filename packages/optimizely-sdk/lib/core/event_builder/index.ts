@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { LoggerFacade } from '@optimizely/js-sdk-logging';
+import { EventV1 as CommonEventParams } from '@optimizely/js-sdk-event-processor';
+
 import fns from '../../utils/fns';
 import { CONTROL_ATTRIBUTES, RESERVED_EVENT_KEYWORDS } from '../../utils/enums';
 import {
@@ -25,8 +28,6 @@ import {
 import * as eventTagUtils from '../../utils/event_tag_utils';
 import { isAttributeValid } from '../../utils/attributes_validator';
 import { EventTags, UserAttributes, Event as EventLoggingEndpoint } from '../../shared_types';
-import { LoggerFacade } from '@optimizely/js-sdk-logging';
-import { EventV1 as CommonEventParams} from '@optimizely/js-sdk-event-processor';
 
 const ACTIVATE_EVENT_KEY = 'campaign_activated';
 const CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom';
@@ -116,15 +117,21 @@ interface Snapshot {
  * @param  {ImpressionOptions|ConversionEventOptions} options    Object containing values needed to build impression/conversion event
  * @return {CommonEventParams}                                   Common params with properties that are used in both conversion and impression events
  */
-function getCommonEventParams(options: ImpressionOptions | ConversionEventOptions): CommonEventParams {
-  const attributes = options.attributes;
-  const configObj = options.configObj;
+function getCommonEventParams({
+  attributes,
+  userId,
+  clientEngine,
+  clientVersion,
+  configObj,
+  logger,
+}: ImpressionOptions | ConversionEventOptions): CommonEventParams {
+
   const anonymize_ip = configObj.anonymizeIP ? configObj.anonymizeIP : false;
   const botFiltering = configObj.botFiltering;
 
   const visitor = {
     snapshots: [],
-    visitor_id: options.userId,
+    visitor_id: userId,
     attributes: [],
   };
 
@@ -133,8 +140,8 @@ function getCommonEventParams(options: ImpressionOptions | ConversionEventOption
     project_id: configObj.projectId,
     visitors: [visitor],
     revision: configObj.revision,
-    client_name: options.clientEngine,
-    client_version: options.clientVersion,
+    client_name: clientEngine,
+    client_version: clientVersion,
     anonymize_ip: anonymize_ip,
     enrich_decisions: true,
   };
@@ -144,7 +151,7 @@ function getCommonEventParams(options: ImpressionOptions | ConversionEventOption
     Object.keys(attributes || {}).forEach(function(attributeKey) {
       const attributeValue = attributes[attributeKey];
       if (isAttributeValid(attributeKey, attributeValue)) {
-        const attributeId = getAttributeId(options.configObj, attributeKey, options.logger);
+        const attributeId = getAttributeId(configObj, attributeKey, logger);
         if (attributeId) {
           commonParams.visitors[0].attributes.push({
             entity_id: attributeId,
@@ -194,7 +201,7 @@ function getImpressionEventParams(
   const campaignId = experimentId ? getLayerId(configObj, experimentId) : null;
 
   let variationKey = variationId ? getVariationKeyFromId(configObj, variationId) : null;
-  variationKey = variationKey ? variationKey: '';
+  variationKey = variationKey || '';
 
   const impressionEventParams = {
     decisions: [
