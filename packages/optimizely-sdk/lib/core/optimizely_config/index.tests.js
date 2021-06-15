@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020, Optimizely
+ * Copyright 2019-2021, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,6 +136,14 @@ describe('lib/core/optimizely_config', function() {
 
     it('should return correct config revision', function() {
       assert.equal(optimizelyConfigObject.revision, datafile.revision);
+    });
+
+    it('should return correct config sdkKey ', function() {
+      assert.equal(optimizelyConfigObject.sdkKey, datafile.sdkKey);
+    });
+
+    it('should return correct config environmentKey ', function() {
+      assert.equal(optimizelyConfigObject.environmentKey, datafile.environmentKey);
     });
   });
 });

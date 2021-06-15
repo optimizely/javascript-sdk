@@ -37,8 +37,8 @@ export class OptimizelyConfig {
   public experimentsMap: OptimizelyExperimentsMap;
   public featuresMap: OptimizelyFeaturesMap;
   public revision: string;
-  private sdkKey: string;
-  private environmentKey: string;
+  public sdkKey: string;
+  public environmentKey: string;
   private datafile: string;
 
   constructor(configObj: ProjectConfig, datafile: string) {
@@ -56,22 +56,6 @@ export class OptimizelyConfig {
    */
   getDatafile(): string {
     return this.datafile;
-  }
-
-  /**
-   * Get the sdkKey
-   * @returns {string} sdkKey
-   */
-   getSdkKey(): string {
-    return this.sdkKey;
-  }
-
-  /**
-   * Get the environmentKey
-   * @returns {string} environmentKey
-   */
-   getEnvironmentKey(): string {
-    return this.environmentKey;
   }
 
   /**

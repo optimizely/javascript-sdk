@@ -118,6 +118,10 @@ function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
     });
     return rolloutCopy;
   });
+
+  datafileCopy.environmentKey = datafile.environmentKey || '';
+  datafileCopy.sdkKey = datafile.sdkKey || '';
+
   return datafileCopy;
 }
 

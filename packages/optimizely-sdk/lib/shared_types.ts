@@ -304,8 +304,8 @@ export interface OptimizelyConfig {
   experimentsMap: OptimizelyExperimentsMap;
   featuresMap: OptimizelyFeaturesMap;
   revision: string;
-  sdkKey: string,
-  environmentKey: string,
+  sdkKey: string;
+  environmentKey: string;
   getDatafile(): string;
 }
 

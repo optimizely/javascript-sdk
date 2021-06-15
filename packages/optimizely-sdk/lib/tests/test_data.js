@@ -418,6 +418,8 @@ var decideConfig = {
   ],
   anonymizeIP: true,
   botFiltering: true,
+  sdkKey: 'ValidProjectConfigV4',
+  environmentKey: 'production',
   projectId: '10431130345',
   variables: [],
   featureFlags: [
@@ -1143,7 +1145,7 @@ var configWithFeatures = {
   ],
   anonymizeIP: true,
   botFiltering: true,
-  sdkKey: 'ValidProjectConfigWithFeatures',
+  sdkKey: 'ValidProjectConfigV4',
   environmentKey: 'development',
   audiences: [
     {

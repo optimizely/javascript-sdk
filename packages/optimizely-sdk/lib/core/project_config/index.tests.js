@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2020, Optimizely
+ * Copyright 2016-2021, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import sinon from 'sinon';
-import { assert, expect, config } from 'chai';
+import { assert } from 'chai';
 import { forEach, cloneDeep } from 'lodash';
 import { getLogger } from '@optimizely/js-sdk-logging';
 import { sprintf } from '@optimizely/js-sdk-utils';
@@ -41,7 +41,10 @@ describe('lib/core/project_config', function() {
       forEach(testData.audiences, function(audience) {
         audience.conditions = JSON.parse(audience.conditions);
       });
-
+      // since v2 datafile testData does not contain sdkKey, configObj will have an empty string as sdkKey
+      assert.strictEqual(configObj.sdkKey, '');
+      // since v2 datafile testData does not contain environmentKey, configObj will have an empty string as environmentKey
+      assert.strictEqual(configObj.environmentKey, '');
       assert.strictEqual(configObj.accountId, testData.accountId);
       assert.strictEqual(configObj.projectId, testData.projectId);
       assert.strictEqual(configObj.revision, testData.revision);
