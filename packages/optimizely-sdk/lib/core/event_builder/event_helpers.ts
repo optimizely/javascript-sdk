@@ -136,7 +136,6 @@ export const buildImpressionEvent = function({
   const experimentKey = decision.getExperimentKey(decisionObj);
   const variationKey = decision.getVariationKey(decisionObj);
 
-
   const variationId = experimentKey !== '' && variationKey !== '' ? getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey) : null;
   const experimentId = experimentKey !== '' ? getExperimentId(configObj, experimentKey) : null;
   const layerId = experimentId !== null ? getLayerId(configObj, experimentId) : null;
