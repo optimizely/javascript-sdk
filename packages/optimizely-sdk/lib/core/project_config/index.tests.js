@@ -41,10 +41,6 @@ describe('lib/core/project_config', function() {
       forEach(testData.audiences, function(audience) {
         audience.conditions = JSON.parse(audience.conditions);
       });
-      // since v2 datafile testData does not contain sdkKey, configObj will have an empty string as sdkKey
-      assert.strictEqual(configObj.sdkKey, '');
-      // since v2 datafile testData does not contain environmentKey, configObj will have an empty string as environmentKey
-      assert.strictEqual(configObj.environmentKey, '');
       assert.strictEqual(configObj.accountId, testData.accountId);
       assert.strictEqual(configObj.projectId, testData.projectId);
       assert.strictEqual(configObj.revision, testData.revision);
