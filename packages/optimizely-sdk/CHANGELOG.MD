@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Bug fixes
+- Bumped `event-processor` packages to version `0.8.2`.
+
 ## [4.6.0] - May 27, 2021
 
 ### New Features
