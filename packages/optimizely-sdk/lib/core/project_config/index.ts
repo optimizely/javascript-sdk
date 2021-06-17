@@ -119,10 +119,8 @@ function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
     return rolloutCopy;
   });
 
-  if (datafile.environmentKey) {
+  if (datafile.environmentKey && datafile.sdkKey) {
     datafileCopy.environmentKey = datafile.environmentKey;
-  }
-  if (datafile.sdkKey) {
     datafileCopy.sdkKey = datafile.sdkKey;
   }
 

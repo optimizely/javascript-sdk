@@ -47,10 +47,8 @@ export class OptimizelyConfig {
     this.revision = configObj.revision;
     this.datafile = datafile;
 
-    if (configObj.sdkKey) {
+    if (configObj.sdkKey && configObj.environmentKey) {
       this.sdkKey = configObj.sdkKey;
-    }
-    if (configObj.environmentKey) {
       this.environmentKey = configObj.environmentKey;
     }
   }
