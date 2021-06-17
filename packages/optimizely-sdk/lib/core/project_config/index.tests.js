@@ -41,6 +41,7 @@ describe('lib/core/project_config', function() {
       forEach(testData.audiences, function(audience) {
         audience.conditions = JSON.parse(audience.conditions);
       });
+
       assert.strictEqual(configObj.accountId, testData.accountId);
       assert.strictEqual(configObj.projectId, testData.projectId);
       assert.strictEqual(configObj.revision, testData.revision);

@@ -46,6 +46,7 @@ export class OptimizelyConfig {
     this.featuresMap = OptimizelyConfig.getFeaturesMap(configObj, this.experimentsMap);
     this.revision = configObj.revision;
     this.datafile = datafile;
+
     if (configObj.sdkKey) {
       this.sdkKey = configObj.sdkKey;
     }
