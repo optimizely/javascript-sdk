@@ -58,6 +58,8 @@ interface VariableUsageMap {
 export interface ProjectConfig {
   revision: string;
   projectId: string;
+  sdkKey?: string;
+  environmentKey?: string;
   sendFlagDecisions?: boolean;
   experimentKeyMap: { [key: string]: Experiment };
   featureKeyMap: {
@@ -116,6 +118,12 @@ function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
     });
     return rolloutCopy;
   });
+
+  if (datafile.environmentKey && datafile.sdkKey) {
+    datafileCopy.environmentKey = datafile.environmentKey;
+    datafileCopy.sdkKey = datafile.sdkKey;
+  }
+
   return datafileCopy;
 }
 
