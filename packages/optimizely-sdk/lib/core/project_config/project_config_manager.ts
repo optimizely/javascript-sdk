@@ -68,8 +68,8 @@ export class ProjectConfigManager {
   private configObj: ProjectConfig | null;
   private optimizelyConfigObj: OptimizelyConfig | null;
   private readyPromise: Promise<{ success: boolean; reason?: string }>;
-  private jsonSchemaValidator: { validate(jsonObject: unknown): boolean } | undefined;
-  private datafileManager: DefaultHttpPollingDatafileManager | null;
+  public jsonSchemaValidator: { validate(jsonObject: unknown): boolean } | undefined;
+  public datafileManager: DefaultHttpPollingDatafileManager | null;
 
   constructor(config: ProjectConfigManagerConfig) {
     try {
