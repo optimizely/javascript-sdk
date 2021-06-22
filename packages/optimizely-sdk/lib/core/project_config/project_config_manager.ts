@@ -15,14 +15,12 @@
  */
 import { sprintf } from '@optimizely/js-sdk-utils';
 import { getLogger } from '@optimizely/js-sdk-logging';
-import * as datafileManager from '../datafile_manager';
 
-
+import { DefaultHttpPollingDatafileManager, createHttpPollingDatafileManager } from '../datafile_manager';
 import fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../../utils/enums';
 import projectConfig from '../../core/project_config';
 import { createOptimizelyConfig } from '../optimizely_config';
-
 import { OptimizelyConfig, DatafileOptions } from '../../shared_types';
 import { ProjectConfig } from '../project_config';
 
@@ -47,8 +45,8 @@ interface DatafileManagerConfig {
  * Return an error message derived from a thrown value. If the thrown value is
  * an error, return the error's message property. Otherwise, return a default
  * provided by the second argument.
- * @param {Error|null} maybeError
- * @param {string} defaultMessage
+ * @param  {Error|null}                   maybeError
+ * @param  {string}                       defaultMessage
  * @return {string}
  */
 function getErrorMessage(maybeError: Error | null, defaultMessage?: string): string {
@@ -63,31 +61,27 @@ function getErrorMessage(maybeError: Error | null, defaultMessage?: string): str
  * getConfig and onUpdate. It uses a DatafileManager to fetch datafiles. It is
  * responsible for parsing and validating datafiles, and converting datafile
  * string into project config objects.
- * @param {Object}         config
- * @param {string}         config.datafile
- * @param {Object=}        config.datafileOptions
- * @param {Object=}        config.jsonSchemaValidator
- * @param {string=}        config.sdkKey
+ * @param {ProjectConfigManagerConfig}    config
  */
 export class ProjectConfigManager {
-  private __updateListeners: Array<(config: ProjectConfig) => void>;
-  private __configObj: ProjectConfig | null;
-  private __optimizelyConfigObj: OptimizelyConfig | null;
-  private __readyPromise: Promise<{ success: boolean; reason?: string }>;
-  private jsonSchemaValidator:  { validate(jsonObject: unknown): boolean } | undefined;
-  private datafileManager: any;
+  private updateListeners: Array<(config: ProjectConfig) => void>;
+  private configObj: ProjectConfig | null;
+  private optimizelyConfigObj: OptimizelyConfig | null;
+  private readyPromise: Promise<{ success: boolean; reason?: string }>;
+  private jsonSchemaValidator: { validate(jsonObject: unknown): boolean } | undefined;
+  private datafileManager: DefaultHttpPollingDatafileManager | null;
 
   constructor(config: ProjectConfigManagerConfig) {
     try {
-      this.__configObj = null;
-      this.__optimizelyConfigObj = null;
-      this.__updateListeners = [];
+      this.configObj = null;
+      this.optimizelyConfigObj = null;
+      this.updateListeners = [];
       this.jsonSchemaValidator = config.jsonSchemaValidator;
+      this.datafileManager = null;
 
       if (!config.datafile && !config.sdkKey) {
-        this.__configObj = null;
         const datafileAndSdkKeyMissingError = new Error(sprintf(ERROR_MESSAGES.DATAFILE_AND_SDK_KEY_MISSING, MODULE_NAME));
-        this.__readyPromise = Promise.resolve({
+        this.readyPromise = Promise.resolve({
           success: false,
           reason: getErrorMessage(datafileAndSdkKeyMissingError),
         });
@@ -97,46 +91,42 @@ export class ProjectConfigManager {
 
       let handleNewDatafileException = null;
       if (config.datafile) {
-        handleNewDatafileException = this.__handleNewDatafile(config.datafile);
-        if (handleNewDatafileException) {
-          this.__configObj = null;
-        }
-      } else {
-        this.__configObj = null;
+        handleNewDatafileException = this.handleNewDatafile(config.datafile);
       }
 
       if (config.sdkKey) {
         const datafileManagerConfig: DatafileManagerConfig = {
           sdkKey: config.sdkKey,
         };
-        if (this.__validateDatafileOptions(config.datafileOptions)) {
+        if (this.validateDatafileOptions(config.datafileOptions)) {
           fns.assign(datafileManagerConfig, config.datafileOptions);
         }
-        if (this.__configObj) {
-          datafileManagerConfig.datafile = projectConfig.toDatafile(this.__configObj)
+        if (this.configObj) {
+          datafileManagerConfig.datafile = projectConfig.toDatafile(this.configObj)
         }
-        this.datafileManager = datafileManager.createHttpPollingDatafileManager(datafileManagerConfig);
+        this.datafileManager = createHttpPollingDatafileManager(datafileManagerConfig);
         this.datafileManager.start();
-        this.__readyPromise = this.datafileManager
+        this.readyPromise = this.datafileManager
           .onReady()
-          .then(this.__onDatafileManagerReadyFulfill.bind(this), this.__onDatafileManagerReadyReject.bind(this));
-        this.datafileManager.on('update', this.__onDatafileManagerUpdate.bind(this));
-      } else if (this.__configObj) {
-        this.__readyPromise = Promise.resolve({
+          .then(this.onDatafileManagerReadyFulfill.bind(this), this.onDatafileManagerReadyReject.bind(this));
+        this.datafileManager.on('update', this.onDatafileManagerUpdate.bind(this));
+      } else if (this.configObj) {
+        this.readyPromise = Promise.resolve({
           success: true,
         });
       } else {
-        this.__readyPromise = Promise.resolve({
+        this.readyPromise = Promise.resolve({
           success: false,
           reason: getErrorMessage(handleNewDatafileException, 'Invalid datafile'),
         });
       }
     } catch (ex) {
       logger.error(ex);
-      this.__updateListeners = [];
-      this.__configObj = null;
-      this.__optimizelyConfigObj = null;
-      this.__readyPromise = Promise.resolve({
+      this.updateListeners = [];
+      this.configObj = null;
+      this.optimizelyConfigObj = null;
+      this.datafileManager = null;
+      this.readyPromise = Promise.resolve({
         success: false,
         reason: getErrorMessage(ex, 'Error in initialize'),
       });
@@ -151,15 +141,22 @@ export class ProjectConfigManager {
    * config object from the new datafile, and its ready promise is resolved with a
    * successful result.
    */
-  __onDatafileManagerReadyFulfill(): { success: boolean; reason?: string } {
-    const newDatafileError = this.__handleNewDatafile(this.datafileManager.get());
-    if (newDatafileError) {
-      return {
-        success: false,
-        reason: getErrorMessage(newDatafileError),
-      };
+  private onDatafileManagerReadyFulfill(): { success: boolean; reason?: string } {
+    if (this.datafileManager) {
+      const newDatafileError = this.handleNewDatafile(this.datafileManager.get());
+      if (newDatafileError) {
+        return {
+          success: false,
+          reason: getErrorMessage(newDatafileError),
+        };
+      }
+      return { success: true };
     }
-    return { success: true };
+
+    return {
+      success: false,
+      reason: getErrorMessage(null, 'Datafile manager is not provided'),
+    }
   }
 
   /**
@@ -167,10 +164,10 @@ export class ProjectConfigManager {
    * When DatafileManager's onReady promise is rejected, there is no possibility
    * of obtaining a datafile. In this case, ProjectConfigManager's ready promise
    * is fulfilled with an unsuccessful result.
-   * @param {Error} err
+   * @param   {Error}   err
    * @returns {Object}
    */
-  __onDatafileManagerReadyReject(err: Error): { success: boolean; reason: string } {
+  private onDatafileManagerReadyReject(err: Error): { success: boolean; reason: string } {
     return {
       success: false,
       reason: getErrorMessage(err, 'Failed to become ready'),
@@ -182,16 +179,18 @@ export class ProjectConfigManager {
    * object using latest datafile from datafile manager. Call own registered
    * update listeners if successful
    */
-  __onDatafileManagerUpdate(): void {
-    this.__handleNewDatafile(this.datafileManager.get());
+  private onDatafileManagerUpdate(): void {
+    if (this.datafileManager) {
+      this.handleNewDatafile(this.datafileManager.get());
+    }
   }
 
   /**
    * Validate user-provided datafileOptions. It should be an object or undefined.
-   * @param {DatafileOptions | undefined} datafileOptions
+   * @param {DatafileOptions|undefined} datafileOptions
    * @returns {boolean}
    */
-  __validateDatafileOptions(datafileOptions: DatafileOptions | undefined): boolean {
+  private validateDatafileOptions(datafileOptions: DatafileOptions | undefined): boolean {
     if (typeof datafileOptions === 'undefined') {
       return true;
     }
@@ -211,7 +210,7 @@ export class ProjectConfigManager {
    * @param   {string}        newDatafile
    * @returns {Error|null}    error
    */
-  __handleNewDatafile(newDatafile: string): Error | null {
+  private handleNewDatafile(newDatafile: string): Error | null {
     const { configObj, error } = projectConfig.tryCreatingProjectConfig({
       datafile: newDatafile,
       jsonSchemaValidator: this.jsonSchemaValidator,
@@ -221,11 +220,11 @@ export class ProjectConfigManager {
     if (error) {
       logger.error(error);
     } else {
-      const oldRevision = this.__configObj ? this.__configObj.revision : 'null';
+      const oldRevision = this.configObj ? this.configObj.revision : 'null';
       if (configObj && oldRevision !== configObj.revision) {
-        this.__configObj = configObj;
-        this.__optimizelyConfigObj = createOptimizelyConfig(this.__configObj, projectConfig.toDatafile(this.__configObj));
-        this.__updateListeners.forEach((listener) => {
+        this.configObj = configObj;
+        this.optimizelyConfigObj = createOptimizelyConfig(this.configObj, projectConfig.toDatafile(this.configObj));
+        this.updateListeners.forEach((listener) => {
           listener(configObj);
         });
       }
@@ -240,15 +239,15 @@ export class ProjectConfigManager {
    * @return {ProjectConfig|null}
    */
   getConfig(): ProjectConfig | null {
-    return this.__configObj;
+    return this.configObj;
   }
 
   /**
-   * Returns the optimizely config object
-   * @return {OptimizelyConfig}
+   * Returns the optimizely config object or null
+   * @return {OptimizelyConfig|null}
    */
   getOptimizelyConfig(): OptimizelyConfig | null {
-    return this.__optimizelyConfigObj;
+    return this.optimizelyConfigObj;
   }
 
   /**
@@ -272,22 +271,22 @@ export class ProjectConfigManager {
    * @return {Promise}
    */
   onReady(): Promise<{ success: boolean; reason?: string }> {
-    return this.__readyPromise;
+    return this.readyPromise;
   }
 
   /**
    * Add a listener for project config updates. The listener will be called
    * whenever this instance has a new project config object available.
    * Returns a dispose function that removes the subscription
-   * @param {Function} listener
+   * @param  {Function} listener
    * @return {Function}
    */
-  onUpdate(listener: (config: ProjectConfig) => void): (() => void) | null {
-    this.__updateListeners.push(listener);
+  onUpdate(listener: (config: ProjectConfig) => void): (() => void) {
+    this.updateListeners.push(listener);
     return () => {
-      const index = this.__updateListeners.indexOf(listener);
+      const index = this.updateListeners.indexOf(listener);
       if (index > -1) {
-        this.__updateListeners.splice(index, 1);
+        this.updateListeners.splice(index, 1);
       }
     };
   }
@@ -299,7 +298,7 @@ export class ProjectConfigManager {
     if (this.datafileManager) {
       this.datafileManager.stop();
     }
-    this.__updateListeners = [];
+    this.updateListeners = [];
   }
 }
 

@@ -13,40 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import HttpPollingDatafileManager from '../../../node_modules/@optimizely/js-sdk-datafile-manager/lib/HttpPollingDatafileManager';
-// import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager';
+import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager';
 
 interface DatafileManagerConfig {
   sdkKey: string,
   datafile?: string;
-}
-
-interface DatafileUpdate {
-  datafile: string;
-}
-
-interface DatafileUpdateListener {
-  (datafileUpdate: DatafileUpdate): void;
-}
-
-export interface DatafileManager {
-  start(): void;
-  get: () => string;
-  on: (eventName: string, listener: DatafileUpdateListener) => () => void;
-  onReady: () => Promise<void>;
-  stop(): Promise<any>;
+  autoUpdate?: boolean;
 }
 
 export class DefaultHttpPollingDatafileManager extends HttpPollingDatafileManager {
-  protected makeGetRequest(): any {
-  }
+  protected makeGetRequest: undefined;
 
-  protected getConfigDefaults(): any {
-  }
+  protected getConfigDefaults: undefined;
 }
 
 export function createHttpPollingDatafileManager(
   config: DatafileManagerConfig
-): DatafileManager {
+): DefaultHttpPollingDatafileManager {
   return new DefaultHttpPollingDatafileManager(config);
 }
