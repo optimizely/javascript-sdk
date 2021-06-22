@@ -31,7 +31,7 @@ describe('lib/core/project_config/project_config_manager', function() {
   var globalStubErrorHandler;
   var stubLogHandler;
   beforeEach(function() {
-    sinon.stub(datafileManager, 'createHttpPollingDatafileManager').returns({
+    sinon.stub(datafileManager, 'createDefaultHttpPollingDatafileManager').returns({
       start: sinon.stub(),
       stop: sinon.stub(),
       get: sinon.stub().returns(null),
@@ -50,7 +50,7 @@ describe('lib/core/project_config/project_config_manager', function() {
   });
 
   afterEach(function() {
-    datafileManager.createHttpPollingDatafileManager.restore();
+    datafileManager.createDefaultHttpPollingDatafileManager.restore();
     logging.resetErrorHandler();
     logging.resetLogger();
   });
@@ -185,9 +185,9 @@ describe('lib/core/project_config/project_config_manager', function() {
           updateInterval: 10000,
         },
       });
-      sinon.assert.calledOnce(datafileManager.createHttpPollingDatafileManager);
+      sinon.assert.calledOnce(datafileManager.createDefaultHttpPollingDatafileManager);
       sinon.assert.calledWithExactly(
-        datafileManager.createHttpPollingDatafileManager,
+        datafileManager.createDefaultHttpPollingDatafileManager,
         sinon.match({
           datafile: JSON.stringify(config),
           sdkKey: '12345',
@@ -200,7 +200,7 @@ describe('lib/core/project_config/project_config_manager', function() {
     describe('when constructed with sdkKey and without datafile', function() {
       it('updates itself when the datafile manager is ready, fulfills its onReady promise with a successful result, and then emits updates', function() {
         var configWithFeatures = testData.getTestProjectConfigWithFeatures();
-        datafileManager.createHttpPollingDatafileManager.returns({
+        datafileManager.createDefaultHttpPollingDatafileManager.returns({
           start: sinon.stub(),
           stop: sinon.stub(),
           get: sinon.stub().returns(JSON.stringify(cloneDeep(configWithFeatures))),
@@ -229,7 +229,7 @@ describe('lib/core/project_config/project_config_manager', function() {
             variations: [{ key: 'variation', id: '99977477477747747' }],
           });
           nextDatafile.revision = '36';
-          var fakeDatafileManager = datafileManager.createHttpPollingDatafileManager.getCall(0).returnValue;
+          var fakeDatafileManager = datafileManager.createDefaultHttpPollingDatafileManager.getCall(0).returnValue;
           fakeDatafileManager.get.returns(cloneDeep(nextDatafile));
           var updateListener = fakeDatafileManager.on.getCall(0).args[1];
           updateListener({ datafile: nextDatafile });
@@ -238,7 +238,7 @@ describe('lib/core/project_config/project_config_manager', function() {
       });
 
       it('calls onUpdate listeners after becoming ready, and after the datafile manager emits updates', function() {
-        datafileManager.createHttpPollingDatafileManager.returns({
+        datafileManager.createDefaultHttpPollingDatafileManager.returns({
           start: sinon.stub(),
           stop: sinon.stub(),
           get: sinon.stub().returns(JSON.stringify(testData.getTestProjectConfigWithFeatures())),
@@ -253,7 +253,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         return manager.onReady().then(function() {
           sinon.assert.calledOnce(onUpdateSpy);
 
-          var fakeDatafileManager = datafileManager.createHttpPollingDatafileManager.getCall(0).returnValue;
+          var fakeDatafileManager = datafileManager.createDefaultHttpPollingDatafileManager.getCall(0).returnValue;
           var updateListener = fakeDatafileManager.on.getCall(0).args[1];
           var newDatafile = testData.getTestProjectConfigWithFeatures();
           newDatafile.revision = '36';
@@ -265,7 +265,7 @@ describe('lib/core/project_config/project_config_manager', function() {
       });
 
       it('can remove onUpdate listeners using the function returned from onUpdate', function() {
-        datafileManager.createHttpPollingDatafileManager.returns({
+        datafileManager.createDefaultHttpPollingDatafileManager.returns({
           start: sinon.stub(),
           stop: sinon.stub(),
           get: sinon.stub().returns(JSON.stringify(testData.getTestProjectConfigWithFeatures())),
@@ -279,7 +279,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           var onUpdateSpy = sinon.spy();
           var unsubscribe = manager.onUpdate(onUpdateSpy);
 
-          var fakeDatafileManager = datafileManager.createHttpPollingDatafileManager.getCall(0).returnValue;
+          var fakeDatafileManager = datafileManager.createDefaultHttpPollingDatafileManager.getCall(0).returnValue;
           var updateListener = fakeDatafileManager.on.getCall(0).args[1];
           var newDatafile = testData.getTestProjectConfigWithFeatures();
           newDatafile.revision = '36';
@@ -303,7 +303,7 @@ describe('lib/core/project_config/project_config_manager', function() {
       it('fulfills its ready promise with an unsuccessful result when the datafile manager emits an invalid datafile', function() {
         var invalidDatafile = testData.getTestProjectConfig();
         delete invalidDatafile['projectId'];
-        datafileManager.createHttpPollingDatafileManager.returns({
+        datafileManager.createDefaultHttpPollingDatafileManager.returns({
           start: sinon.stub(),
           stop: sinon.stub(),
           get: sinon.stub().returns(JSON.stringify(invalidDatafile)),
@@ -322,7 +322,7 @@ describe('lib/core/project_config/project_config_manager', function() {
       });
 
       it('fullfils its ready promise with an unsuccessful result when the datafile manager onReady promise rejects', function() {
-        datafileManager.createHttpPollingDatafileManager.returns({
+        datafileManager.createDefaultHttpPollingDatafileManager.returns({
           start: sinon.stub(),
           stop: sinon.stub(),
           get: sinon.stub().returns(null),
@@ -345,7 +345,7 @@ describe('lib/core/project_config/project_config_manager', function() {
           sdkKey: '12345',
         });
         manager.stop();
-        sinon.assert.calledOnce(datafileManager.createHttpPollingDatafileManager.getCall(0).returnValue.stop);
+        sinon.assert.calledOnce(datafileManager.createDefaultHttpPollingDatafileManager.getCall(0).returnValue.stop);
       });
 
       it('does not log an error message', function() {
@@ -358,7 +358,7 @@ describe('lib/core/project_config/project_config_manager', function() {
 
     describe('when constructed with sdkKey and with a valid datafile object', function() {
       it('fulfills its onReady promise with a successful result, and does not call onUpdate listeners after becoming ready', function() {
-        datafileManager.createHttpPollingDatafileManager.returns({
+        datafileManager.createDefaultHttpPollingDatafileManager.returns({
           start: sinon.stub(),
           stop: sinon.stub(),
           get: sinon.stub().returns(JSON.stringify(testData.getTestProjectConfigWithFeatures())),
@@ -385,7 +385,7 @@ describe('lib/core/project_config/project_config_manager', function() {
 
     describe('when constructed with sdkKey and with a valid datafile string', function() {
       it('fulfills its onReady promise with a successful result, and does not call onUpdate listeners after becoming ready', function() {
-        datafileManager.createHttpPollingDatafileManager.returns({
+        datafileManager.createDefaultHttpPollingDatafileManager.returns({
           start: sinon.stub(),
           stop: sinon.stub(),
           get: sinon.stub().returns(JSON.stringify(testData.getTestProjectConfigWithFeatures())),
@@ -430,7 +430,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         manager.getOptimizelyConfig();
         sinon.assert.calledOnce(optimizelyConfig.createOptimizelyConfig);
         // create config with new revision
-        var fakeDatafileManager = datafileManager.createHttpPollingDatafileManager.getCall(0).returnValue;
+        var fakeDatafileManager = datafileManager.createDefaultHttpPollingDatafileManager.getCall(0).returnValue;
         var updateListener = fakeDatafileManager.on.getCall(0).args[1];
         var newDatafile = testData.getTestProjectConfigWithFeatures();
         newDatafile.revision = '36';

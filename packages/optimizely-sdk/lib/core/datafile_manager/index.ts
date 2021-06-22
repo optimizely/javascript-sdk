@@ -27,7 +27,7 @@ export class DefaultHttpPollingDatafileManager extends HttpPollingDatafileManage
   protected getConfigDefaults: undefined;
 }
 
-export function createHttpPollingDatafileManager(
+export function createDefaultHttpPollingDatafileManager(
   config: DatafileManagerConfig
 ): DefaultHttpPollingDatafileManager {
   return new DefaultHttpPollingDatafileManager(config);

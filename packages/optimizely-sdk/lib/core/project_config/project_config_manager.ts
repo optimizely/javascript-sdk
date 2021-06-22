@@ -16,7 +16,7 @@
 import { sprintf } from '@optimizely/js-sdk-utils';
 import { getLogger } from '@optimizely/js-sdk-logging';
 
-import { DefaultHttpPollingDatafileManager, createHttpPollingDatafileManager } from '../datafile_manager';
+import { DefaultHttpPollingDatafileManager, createDefaultHttpPollingDatafileManager } from '../datafile_manager';
 import fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../../utils/enums';
 import projectConfig from '../../core/project_config';
@@ -104,7 +104,7 @@ export class ProjectConfigManager {
         if (this.configObj) {
           datafileManagerConfig.datafile = projectConfig.toDatafile(this.configObj)
         }
-        this.datafileManager = createHttpPollingDatafileManager(datafileManagerConfig);
+        this.datafileManager = createDefaultHttpPollingDatafileManager(datafileManagerConfig);
         this.datafileManager.start();
         this.readyPromise = this.datafileManager
           .onReady()
