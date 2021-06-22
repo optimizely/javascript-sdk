@@ -59,6 +59,11 @@ export interface UserProfileService {
   save(profile: UserProfile): void;
 }
 
+export interface DatafileManagerConfig {
+  sdkKey: string,
+  datafile?: string;
+}
+
 export interface DatafileOptions {
   autoUpdate?: boolean;
   updateInterval?: number;

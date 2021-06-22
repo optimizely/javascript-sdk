@@ -15,11 +15,7 @@
  */
 import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager';
 
-interface DatafileManagerConfig {
-  sdkKey: string,
-  datafile?: string;
-  autoUpdate?: boolean;
-}
+import { DatafileManagerConfig } from '../../shared_types';
 
 export class DefaultHttpPollingDatafileManager extends HttpPollingDatafileManager {
   protected makeGetRequest: undefined;

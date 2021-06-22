@@ -21,7 +21,7 @@ import fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../../utils/enums';
 import projectConfig from '../../core/project_config';
 import { createOptimizelyConfig } from '../optimizely_config';
-import { OptimizelyConfig, DatafileOptions } from '../../shared_types';
+import { OptimizelyConfig, DatafileOptions, DatafileManagerConfig } from '../../shared_types';
 import { ProjectConfig } from '../project_config';
 
 const logger = getLogger();
@@ -34,11 +34,6 @@ interface ProjectConfigManagerConfig {
     validate(jsonObject: unknown): boolean,
   };
   sdkKey?: string,
-}
-
-interface DatafileManagerConfig {
-  sdkKey: string,
-  datafile?: string;
 }
 
 /**
