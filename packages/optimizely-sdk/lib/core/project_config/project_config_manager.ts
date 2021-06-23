@@ -16,7 +16,7 @@
 import { sprintf } from '@optimizely/js-sdk-utils';
 import { getLogger } from '@optimizely/js-sdk-logging';
 
-import { DefaultHttpPollingDatafileManager, createDefaultHttpPollingDatafileManager } from '../datafile_manager';
+import { HttpPollingDatafileManager, createHttpPollingDatafileManager } from '../datafile_manager';
 import fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../../utils/enums';
 import projectConfig from '../../core/project_config';
@@ -64,7 +64,7 @@ export class ProjectConfigManager {
   private optimizelyConfigObj: OptimizelyConfig | null;
   private readyPromise: Promise<{ success: boolean; reason?: string }>;
   public jsonSchemaValidator: { validate(jsonObject: unknown): boolean } | undefined;
-  public datafileManager: DefaultHttpPollingDatafileManager | null;
+  public datafileManager: HttpPollingDatafileManager | null;
 
   constructor(config: ProjectConfigManagerConfig) {
     try {
@@ -99,7 +99,7 @@ export class ProjectConfigManager {
         if (this.configObj) {
           datafileManagerConfig.datafile = projectConfig.toDatafile(this.configObj)
         }
-        this.datafileManager = createDefaultHttpPollingDatafileManager(datafileManagerConfig);
+        this.datafileManager = createHttpPollingDatafileManager(datafileManagerConfig);
         this.datafileManager.start();
         this.readyPromise = this.datafileManager
           .onReady()

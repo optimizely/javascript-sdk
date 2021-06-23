@@ -17,18 +17,11 @@ import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager'
 
 import { DatafileManagerConfig } from '../../shared_types';
 
-export class DefaultHttpPollingDatafileManager extends HttpPollingDatafileManager {
-  // TODO: define makeGetRequest method
-  // eslint-disable-next-line
-  protected makeGetRequest(): any {};
 
-  // TODO: define getConfigDefaults method
-  // eslint-disable-next-line
-  protected getConfigDefaults(): any {};
-}
-
-export function createDefaultHttpPollingDatafileManager(
+export function createHttpPollingDatafileManager(
   config: DatafileManagerConfig
-): DefaultHttpPollingDatafileManager {
-  return new DefaultHttpPollingDatafileManager(config);
+): HttpPollingDatafileManager {
+  return new HttpPollingDatafileManager(config);
 }
+
+export type { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager';
