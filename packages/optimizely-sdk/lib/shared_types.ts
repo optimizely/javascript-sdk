@@ -121,6 +121,7 @@ export interface Experiment {
   audienceIds: string[];
   trafficAllocation: TrafficAllocation[];
   forcedVariations?: { [key: string]: string };
+  audiences: unknown[] | string;
 }
 
 export interface FeatureVariable {
@@ -149,6 +150,7 @@ export type Condition = {
 }
 
 export interface Audience {
+  id: string;
   name: string;
   conditions: unknown[] | string;
 }
@@ -234,6 +236,7 @@ export interface OptimizelyOptions {
 export interface OptimizelyExperiment {
   id: string;
   key: string;
+  audiences: unknown[] | string;
   variationsMap: {
     [variationKey: string]: OptimizelyVariation;
   };
@@ -286,11 +289,30 @@ export type OptimizelyFeaturesMap = {
   [featureKey: string]: OptimizelyFeature;
 }
 
+export type OptimizelyAttribute = {
+  name: string;
+  key: string;
+}
+
+export type OptimizelyAudience = {
+  id: string;
+  name: string;
+  conditions: unknown[] | string;
+}
+
+export type OptimizelyEvents = {
+  id: string;
+  key: string;
+  experimentsIds: string;
+}
+
 export interface OptimizelyFeature {
   id: string;
   key: string;
   experimentsMap: OptimizelyExperimentsMap;
   variablesMap: OptimizelyVariablesMap;
+  experimentRules: OptimizelyExperiment[];
+  deliveryRules: OptimizelyExperiment[];
 }
 
 export interface OptimizelyVariation {
@@ -303,6 +325,9 @@ export interface OptimizelyVariation {
 export interface OptimizelyConfig {
   experimentsMap: OptimizelyExperimentsMap;
   featuresMap: OptimizelyFeaturesMap;
+  attributes: OptimizelyAttribute[];
+  audiences: OptimizelyAudience[];
+  events: [OptimizelyEvents];
   revision: string;
   sdkKey?: string;
   environmentKey?: string;

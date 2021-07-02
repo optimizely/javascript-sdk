@@ -145,5 +145,13 @@ describe('lib/core/optimizely_config', function() {
     it('should return correct config environmentKey ', function() {
       assert.equal(optimizelyConfigObject.environmentKey, datafile.environmentKey);
     });
+
+    it('should return correct config attributes', function() {
+      assert.deepEqual(datafile.attributes, optimizelyConfigObject.attributes);
+    });
+
+    it('should return correct config events', function() {
+      assert.deepEqual(datafile.events, optimizelyConfigObject.events);
+    });
   });
 });

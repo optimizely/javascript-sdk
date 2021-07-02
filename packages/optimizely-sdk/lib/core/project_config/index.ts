@@ -49,6 +49,7 @@ interface TryCreatingProjectConfigConfig {
 interface Event {
   key: string;
   id: string;
+  experimentsIds: string;
 }
 
 interface VariableUsageMap {
@@ -80,7 +81,7 @@ export interface ProjectConfig {
   groupIdMap: { [id: string]: Group };
   groups: Group[];
   events: Event[];
-  attributes: Array<{ id: string }>;
+  attributes: Array<{ id: string, key:string, name:string }>;
   typedAudiences: Audience[];
   rolloutIdMap: { [id: string]: Rollout };
   anonymizeIP?: boolean | null;
