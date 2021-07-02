@@ -238,7 +238,7 @@ export class OptimizelyConfig {
       const filteredRollout = rollouts.filter((rollout) => {
         console.log("Rollout:", rollout.id, "Feature:", feature.id)
         return rollout.id == feature.id;
-      });
+      })[0];
       console.log("FILTERED ROLLOUTS ", filteredRollout)
       features[feature.key] = {
         id: feature.id,
@@ -260,7 +260,7 @@ export class OptimizelyConfig {
         }, {}),
         deliveryRules: Object.values(allExperiments),
         experimentRules: filteredRollout
-          ? filteredRollout[0].experiments.map((experiment) => {
+          ? filteredRollout.experiments.map((experiment) => {
               return {
                 id: experiment.id,
                 key: experiment.key,
