@@ -233,7 +233,7 @@ export const createProjectConfig = function(
 export const getExperimentId = function(projectConfig: ProjectConfig, experimentKey: string): string {
   const experiment = projectConfig.experimentKeyMap[experimentKey];
   if (!experiment) {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentKey));
+    throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
   }
   return experiment.id;
 };

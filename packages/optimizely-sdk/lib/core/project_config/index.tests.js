@@ -368,15 +368,15 @@ describe('lib/core/project_config', function() {
 
     it('should retrieve traffic allocation given valid experiment key in getTrafficAllocation', function() {
       assert.deepEqual(
-        projectConfig.getTrafficAllocation(configObj, testData.experiments[0].key),
+        projectConfig.getTrafficAllocation(configObj, testData.experiments[0].id),
         testData.experiments[0].trafficAllocation
       );
     });
 
     it('should throw error for invalid experient key in getTrafficAllocation', function() {
       assert.throws(function() {
-        projectConfig.getTrafficAllocation(configObj, 'invalidExperimentKey');
-      }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'invalidExperimentKey'));
+        projectConfig.getTrafficAllocation(configObj, 'invalidExperimentId');
+      }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, 'PROJECT_CONFIG', 'invalidExperimentId'));
     });
 
     describe('#getVariationIdFromExperimentAndVariationKey', function() {
@@ -670,7 +670,7 @@ describe('lib/core/project_config', function() {
     describe('#getExperimentAudienceConditions', function() {
       it('should retrieve audiences for valid experiment key', function() {
         configObj = projectConfig.createProjectConfig(cloneDeep(testData));
-        assert.deepEqual(projectConfig.getExperimentAudienceConditions(configObj, testData.experiments[1].key), [
+        assert.deepEqual(projectConfig.getExperimentAudienceConditions(configObj, testData.experiments[1].id), [
           '11154',
         ]);
       });
@@ -678,13 +678,13 @@ describe('lib/core/project_config', function() {
       it('should throw error for invalid experiment key', function() {
         configObj = projectConfig.createProjectConfig(cloneDeep(testData));
         assert.throws(function() {
-          projectConfig.getExperimentAudienceConditions(configObj, 'invalidExperimentKey');
-        }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'invalidExperimentKey'));
+          projectConfig.getExperimentAudienceConditions(configObj, 'invalidExperimentId');
+        }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, 'PROJECT_CONFIG', 'invalidExperimentId'));
       });
 
       it('should return experiment audienceIds if experiment has no audienceConditions', function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
-        var result = projectConfig.getExperimentAudienceConditions(configObj, 'feat_with_var_test');
+        var result = projectConfig.getExperimentAudienceConditions(configObj, '11564051718');
         assert.deepEqual(result, [
           '3468206642',
           '3988293898',
@@ -700,7 +700,7 @@ describe('lib/core/project_config', function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
         // audience_combinations_experiment has both audienceConditions and audienceIds
         // audienceConditions should be preferred over audienceIds
-        var result = projectConfig.getExperimentAudienceConditions(configObj, 'audience_combinations_experiment');
+        var result = projectConfig.getExperimentAudienceConditions(configObj, '1323241598');
         assert.deepEqual(result, [
           'and',
           ['or', '3468206642', '3988293898'],
