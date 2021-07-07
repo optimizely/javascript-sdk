@@ -384,6 +384,7 @@ export class DecisionService {
       experimentId: experiment.id,
       experimentKey: experiment.key,
       experimentIdMap: configObj.experimentIdMap,
+      experimentKeyMap: configObj.experimentKeyMap,
       groupIdMap: configObj.groupIdMap,
       logger: this.logger,
       trafficAllocationConfig: getTrafficAllocation(configObj, experiment.id),

@@ -556,6 +556,7 @@ describe('lib/core/decision_service', function() {
           variationIdMap: configObj.variationIdMap,
           logger: mockLogger,
           experimentIdMap: configObj.experimentIdMap,
+          experimentKeyMap: configObj.experimentKeyMap,
           groupIdMap: configObj.groupIdMap,
         };
 
