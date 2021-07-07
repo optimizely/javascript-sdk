@@ -613,8 +613,8 @@ describe('lib/core/decision_service', function() {
         assert.isTrue(
           decisionServiceInstance.checkIfUserIsInAudience(
             configObj,
-            'testExperiment',
             experiment,
+            'experiment',
             {},
             ''
           ).result
@@ -1068,6 +1068,7 @@ describe('lib/core/decision_service', function() {
           },
         },
       });
+      var experiment = configObj.experimentIdMap['111127'];
 
       var decisionServiceInstance = createDecisionService({
         logger: createdLogger,
@@ -1076,7 +1077,7 @@ describe('lib/core/decision_service', function() {
 
       assert.strictEqual(
         'control',
-        decisionServiceInstance.getVariation(configObj, 'testExperiment', 'test_user', userAttributesWithBucketingId).result
+        decisionServiceInstance.getVariation(configObj, experiment, 'test_user', userAttributesWithBucketingId).result
       );
       sinon.assert.calledWithExactly(userProfileLookupStub, 'test_user');
     });
@@ -1161,14 +1162,16 @@ describe('lib/core/decision_service', function() {
 
         describe('user bucketed into this experiment', function() {
           var getVariationStub;
+          var experiment;
           beforeEach(function() {
             fakeDecisionResponseWithArgs = {
               result: 'variation',
               reasons: [],
             };
+            experiment = configObj.experimentIdMap['594098'];
             getVariationStub = sandbox.stub(decisionServiceInstance, 'getVariation');
             getVariationStub.returns(fakeDecisionResponse);
-            getVariationStub.withArgs(configObj, 'testing_my_feature', 'user1').returns(fakeDecisionResponseWithArgs);
+            getVariationStub.withArgs(configObj, experiment, 'user1').returns(fakeDecisionResponseWithArgs);
           });
 
           it('returns a decision with a variation in the experiment the feature is attached to', function() {
@@ -1388,7 +1391,8 @@ describe('lib/core/decision_service', function() {
             sinon.assert.calledWithExactly(
               getVariationStub,
               configObj,
-              'testing_my_feature', 'user1',
+              experiment,
+              'user1',
               {
                 test_attribute: 'test_value',
               },
@@ -2465,8 +2469,8 @@ describe('lib/core/decision_service', function() {
         decisionService.getVariationForRollout(configObj, feature, 'testUser', attributes).result;
 
         sinon.assert.callCount(buildBucketerParamsSpy, 2);
-        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, '594031', 'testUser', 'testUser');
-        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, '594037', 'testUser', 'testUser');
+        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, configObj.experimentIdMap['594031'], 'testUser', 'testUser');
+        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, configObj.experimentIdMap['594037'], 'testUser', 'testUser');
       });
 
       it('should call buildBucketerParams with bucketing Id when bucketing Id is provided in the attributes', function() {
@@ -2477,8 +2481,8 @@ describe('lib/core/decision_service', function() {
         decisionService.getVariationForRollout(configObj, feature, 'testUser', attributes).result;
 
         sinon.assert.callCount(buildBucketerParamsSpy, 2);
-        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, '594031', 'abcdefg', 'testUser');
-        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, '594037', 'abcdefg', 'testUser');
+        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, configObj.experimentIdMap['594031'], 'abcdefg', 'testUser');
+        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, configObj.experimentIdMap['594037'], 'abcdefg', 'testUser');
       });
     });
   });
