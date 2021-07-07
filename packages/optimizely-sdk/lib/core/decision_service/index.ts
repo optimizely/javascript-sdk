@@ -115,7 +115,6 @@ export class DecisionService {
     const bucketingId = this.getBucketingId(userId, attributes);
     const decideReasons = [];
     const experimentKey = experiment.key;
-
     if (!this.checkIfExperimentIsActive(configObj, experimentKey)) {
       const experimentNotRunningLogMessage = sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey);
       this.logger.log(LOG_LEVEL.INFO, experimentNotRunningLogMessage);
@@ -138,7 +137,6 @@ export class DecisionService {
     const decisionWhitelistedVariation = this.getWhitelistedVariation(experiment, userId);
     decideReasons.push(...decisionWhitelistedVariation.reasons);
     let variation = decisionWhitelistedVariation.result;
-
     if (variation) {
       return {
         result: variation.key,
@@ -175,10 +173,10 @@ export class DecisionService {
     // Perform regular targeting and bucketing
     const decisionifUserIsInAudience = this.checkIfUserIsInAudience(
       configObj,
-      experimentKey,
+      experiment,
       AUDIENCE_EVALUATION_TYPES.EXPERIMENT,
-      '',
-      attributes
+      attributes,
+      ''
     );
     decideReasons.push(...decisionifUserIsInAudience.reasons);
     if (!decisionifUserIsInAudience.result) {
@@ -327,19 +325,19 @@ export class DecisionService {
    */
   private checkIfUserIsInAudience(
     configObj: ProjectConfig,
-    experimentId: string,
+    experiment: Experiment,
     evaluationAttribute: string,
-    loggingKey: string | number,
     attributes?: UserAttributes,
+    loggingKey?: string | number,
   ): DecisionResponse<boolean> {
     const decideReasons: string[] = [];
-    const experimentAudienceConditions = getExperimentAudienceConditions(configObj, experimentId);
+    const experimentAudienceConditions = getExperimentAudienceConditions(configObj, experiment.id);
     const audiencesById = getAudiencesById(configObj);
     const evaluatingAudiencesCombinedMessage = sprintf(
       LOG_MESSAGES.EVALUATING_AUDIENCES_COMBINED,
       MODULE_NAME,
       evaluationAttribute,
-      loggingKey,
+      loggingKey || experiment.key,
       JSON.stringify(experimentAudienceConditions)
     );
     this.logger.log(
@@ -352,7 +350,7 @@ export class DecisionService {
       LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
       MODULE_NAME,
       evaluationAttribute,
-      loggingKey,
+      loggingKey || experiment.key,
       result.toString().toUpperCase()
     );
     this.logger.log(
@@ -687,10 +685,10 @@ export class DecisionService {
       loggingKey = index + 1;
       decisionifUserIsInAudience = this.checkIfUserIsInAudience(
         configObj,
-        rolloutRule.id,
+        rolloutRule,
         AUDIENCE_EVALUATION_TYPES.RULE,
-        loggingKey,
-        attributes
+        attributes,
+        loggingKey
       );
       decideReasons.push(...decisionifUserIsInAudience.reasons);
       if (!decisionifUserIsInAudience.result) {
@@ -764,10 +762,10 @@ export class DecisionService {
     const everyoneElseRule = configObj.experimentKeyMap[rollout.experiments[endIndex].key];
     const decisionifUserIsInEveryoneRule = this.checkIfUserIsInAudience(
       configObj,
-      everyoneElseRule.key,
+      everyoneElseRule,
       AUDIENCE_EVALUATION_TYPES.RULE,
-      'Everyone Else',
-      attributes
+      attributes,
+      'Everyone Else'
     );
     decideReasons.push(...decisionifUserIsInEveryoneRule.reasons);
     if (decisionifUserIsInEveryoneRule.result) {
