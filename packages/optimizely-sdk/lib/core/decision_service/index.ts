@@ -31,7 +31,6 @@ import {
   getExperimentAudienceConditions,
   getExperimentFromId,
   getExperimentFromKey,
-  getExperimentId,
   getTrafficAllocation,
   getVariationIdFromExperimentAndVariationKey,
   getVariationKeyFromId,
@@ -107,7 +106,7 @@ export class DecisionService {
    */
   getVariation(
     configObj: ProjectConfig,
-    experimentKey: string,
+    experiment: Experiment,
     userId: string,
     attributes?: UserAttributes,
     options: { [key: string]: boolean } = {}
@@ -115,6 +114,7 @@ export class DecisionService {
     // by default, the bucketing ID should be the user ID
     const bucketingId = this.getBucketingId(userId, attributes);
     const decideReasons = [];
+    const experimentKey = experiment.key;
 
     if (!this.checkIfExperimentIsActive(configObj, experimentKey)) {
       const experimentNotRunningLogMessage = sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey);
@@ -125,7 +125,6 @@ export class DecisionService {
         reasons: decideReasons,
       };
     }
-    const experiment = configObj.experimentKeyMap[experimentKey];
     const decisionForcedVariation = this.getForcedVariation(configObj, experimentKey, userId);
     decideReasons.push(...decisionForcedVariation.reasons);
     const forcedVariationKey = decisionForcedVariation.result;
@@ -178,9 +177,8 @@ export class DecisionService {
       configObj,
       experimentKey,
       AUDIENCE_EVALUATION_TYPES.EXPERIMENT,
-      userId,
-      attributes,
-      ''
+      '',
+      attributes
     );
     decideReasons.push(...decisionifUserIsInAudience.reasons);
     if (!decisionifUserIsInAudience.result) {
@@ -198,7 +196,7 @@ export class DecisionService {
       };
     }
 
-    const bucketerParams = this.buildBucketerParams(configObj, experimentKey, bucketingId, userId);
+    const bucketerParams = this.buildBucketerParams(configObj, experiment, bucketingId, userId);
     const decisionVariation = bucket(bucketerParams);
     decideReasons.push(...decisionVariation.reasons);
     const variationId = decisionVariation.result;
@@ -329,20 +327,19 @@ export class DecisionService {
    */
   private checkIfUserIsInAudience(
     configObj: ProjectConfig,
-    experimentKey: string,
+    experimentId: string,
     evaluationAttribute: string,
-    userId: string,
+    loggingKey: string | number,
     attributes?: UserAttributes,
-    loggingKey?: string | number
   ): DecisionResponse<boolean> {
     const decideReasons: string[] = [];
-    const experimentAudienceConditions = getExperimentAudienceConditions(configObj, experimentKey);
+    const experimentAudienceConditions = getExperimentAudienceConditions(configObj, experimentId);
     const audiencesById = getAudiencesById(configObj);
     const evaluatingAudiencesCombinedMessage = sprintf(
       LOG_MESSAGES.EVALUATING_AUDIENCES_COMBINED,
       MODULE_NAME,
       evaluationAttribute,
-      loggingKey || experimentKey,
+      loggingKey,
       JSON.stringify(experimentAudienceConditions)
     );
     this.logger.log(
@@ -355,7 +352,7 @@ export class DecisionService {
       LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
       MODULE_NAME,
       evaluationAttribute,
-      loggingKey || experimentKey,
+      loggingKey,
       result.toString().toUpperCase()
     );
     this.logger.log(
@@ -380,18 +377,18 @@ export class DecisionService {
    */
   private buildBucketerParams(
     configObj: ProjectConfig,
-    experimentKey: string,
+    experiment: Experiment,
     bucketingId: string,
     userId: string
   ): BucketerParams {
     return {
       bucketingId,
-      experimentId: getExperimentId(configObj, experimentKey),
-      experimentKey,
-      experimentKeyMap: configObj.experimentKeyMap,
+      experimentId: experiment.id,
+      experimentKey: experiment.key,
+      experimentIdMap: configObj.experimentIdMap,
       groupIdMap: configObj.groupIdMap,
       logger: this.logger,
-      trafficAllocationConfig: getTrafficAllocation(configObj, experimentKey),
+      trafficAllocationConfig: getTrafficAllocation(configObj, experiment.id),
       userId,
       variationIdMap: configObj.variationIdMap,
     }
@@ -573,7 +570,7 @@ export class DecisionService {
       for (index = 0; index < feature.experimentIds.length; index++) {
         const experiment = getExperimentFromId(configObj, feature.experimentIds[index], this.logger);
         if (experiment) {
-          decisionVariation = this.getVariation(configObj, experiment.key, userId, attributes, options);
+          decisionVariation = this.getVariation(configObj, experiment, userId, attributes, options);
           decideReasons.push(...decisionVariation.reasons);
           variationKey = decisionVariation.result;
           if (variationKey) {
@@ -686,15 +683,14 @@ export class DecisionService {
     let decisionVariation;
     let decisionifUserIsInAudience;
     for (let index = 0; index < endIndex; index++) {
-      rolloutRule = configObj.experimentKeyMap[rollout.experiments[index].key];
+      rolloutRule = configObj.experimentIdMap[rollout.experiments[index].id];
       loggingKey = index + 1;
       decisionifUserIsInAudience = this.checkIfUserIsInAudience(
         configObj,
-        rolloutRule.key,
+        rolloutRule.id,
         AUDIENCE_EVALUATION_TYPES.RULE,
-        userId,
-        attributes,
-        loggingKey
+        loggingKey,
+        attributes
       );
       decideReasons.push(...decisionifUserIsInAudience.reasons);
       if (!decisionifUserIsInAudience.result) {
@@ -723,7 +719,7 @@ export class DecisionService {
         userMeetsConditionsForTargetingRuleMessage
       );
       decideReasons.push(userMeetsConditionsForTargetingRuleMessage);
-      bucketerParams = this.buildBucketerParams(configObj, rolloutRule.key, bucketingId, userId);
+      bucketerParams = this.buildBucketerParams(configObj, rolloutRule, bucketingId, userId);
       decisionVariation = bucket(bucketerParams);
       decideReasons.push(...decisionVariation.reasons);
       variationId = decisionVariation.result;
@@ -770,9 +766,8 @@ export class DecisionService {
       configObj,
       everyoneElseRule.key,
       AUDIENCE_EVALUATION_TYPES.RULE,
-      userId,
-      attributes,
-      'Everyone Else'
+      'Everyone Else',
+      attributes
     );
     decideReasons.push(...decisionifUserIsInEveryoneRule.reasons);
     if (decisionifUserIsInEveryoneRule.result) {
@@ -786,7 +781,7 @@ export class DecisionService {
         userMeetsConditionsForEveryoneTargetingRuleMessage
       );
       decideReasons.push(userMeetsConditionsForEveryoneTargetingRuleMessage);
-      bucketerParams = this.buildBucketerParams(configObj, everyoneElseRule.key, bucketingId, userId);
+      bucketerParams = this.buildBucketerParams(configObj, everyoneElseRule, bucketingId, userId);
       decisionVariation = bucket(bucketerParams);
       decideReasons.push(...decisionVariation.reasons);
       variationId = decisionVariation.result;
