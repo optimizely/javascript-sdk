@@ -7,8 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.6.1] - July 8, 2021
+
 ### Bug fixes
-- Bumped `event-processor` packages to version `0.8.2`.
+- Bumped `event-processor` packages to version `0.8.2`
+- Fixed serving incorrect variation issue in projects containing multiple flags with same key rules.([#687](https://github.com/optimizely/javascript-sdk/pull/687))
 
 ## [4.6.0] - May 27, 2021
 
