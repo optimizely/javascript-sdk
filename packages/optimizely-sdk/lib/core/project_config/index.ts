@@ -333,7 +333,7 @@ export const isRunning = function(projectConfig: ProjectConfig, experimentKey: s
 /**
  * Get audience conditions for the experiment
  * @param  {ProjectConfig}  projectConfig   Object representing project configuration
- * @param  {string}         experimentKey   Experiment key for which audience conditions are to be determined
+ * @param  {string}         experimentId    Experiment id for which audience conditions are to be determined
  * @return {Array<string|string[]>}         Audience conditions for the experiment - can be an array of audience IDs, or a
  *                                          nested array of conditions
  *                                          Examples: ["5", "6"], ["and", ["or", "1", "2"], "3"]
@@ -341,11 +341,11 @@ export const isRunning = function(projectConfig: ProjectConfig, experimentKey: s
  */
 export const getExperimentAudienceConditions = function(
   projectConfig: ProjectConfig,
-  experimentKey: string
+  experimentId: string
 ): Array<string | string[]> {
-  const experiment = projectConfig.experimentKeyMap[experimentKey];
+  const experiment = projectConfig.experimentIdMap[experimentId];
   if (!experiment) {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
+    throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
   }
 
   return experiment.audienceConditions || experiment.audienceIds;
@@ -404,16 +404,16 @@ export const getExperimentFromKey = function(projectConfig: ProjectConfig, exper
 };
 
 /**
- * Given an experiment key, returns the traffic allocation within that experiment
+ * Given an experiment id, returns the traffic allocation within that experiment
  * @param  {ProjectConfig}  projectConfig  Object representing project configuration
- * @param  {string}         experimentKey  Key representing the experiment
+ * @param  {string}         experimentId   Id representing the experiment
  * @return {TrafficAllocation[]}           Traffic allocation for the experiment
  * @throws If experiment key is not in datafile
  */
-export const getTrafficAllocation = function(projectConfig: ProjectConfig, experimentKey: string):  TrafficAllocation[]{
-  const experiment = projectConfig.experimentKeyMap[experimentKey];
+export const getTrafficAllocation = function(projectConfig: ProjectConfig, experimentId: string): TrafficAllocation[] {
+  const experiment = projectConfig.experimentIdMap[experimentId];
   if (!experiment) {
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
+    throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
   }
   return experiment.trafficAllocation;
 };

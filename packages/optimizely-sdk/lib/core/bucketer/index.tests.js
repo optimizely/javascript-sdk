@@ -53,7 +53,7 @@ describe('lib/core/bucketer', function() {
             experimentKey: configObj.experiments[0].key,
             trafficAllocationConfig: configObj.experiments[0].trafficAllocation,
             variationIdMap: configObj.variationIdMap,
-            experimentKeyMap: configObj.experimentKeyMap,
+            experimentIdMap: configObj.experimentIdMap,
             groupIdMap: configObj.groupIdMap,
             logger: createdLogger,
           };
@@ -101,7 +101,7 @@ describe('lib/core/bucketer', function() {
             experimentKey: configObj.experiments[0].key,
             trafficAllocationConfig: configObj.experiments[0].trafficAllocation,
             variationIdMap: configObj.variationIdMap,
-            experimentKeyMap: configObj.experimentKeyMap,
+            experimentIdMap: configObj.experimentIdMap,
             groupIdMap: configObj.groupIdMap,
             logger: createdLogger,
           };
@@ -120,7 +120,7 @@ describe('lib/core/bucketer', function() {
               experimentKey: configObj.experiments[4].key,
               trafficAllocationConfig: configObj.experiments[4].trafficAllocation,
               variationIdMap: configObj.variationIdMap,
-              experimentKeyMap: configObj.experimentKeyMap,
+              experimentIdMap: configObj.experimentIdMap,
               groupIdMap: configObj.groupIdMap,
               logger: createdLogger,
               userId: 'testUser',
@@ -220,7 +220,7 @@ describe('lib/core/bucketer', function() {
 
           it('should throw an error if group ID is not in the datafile', function() {
             var bucketerParamsWithInvalidGroupId = cloneDeep(bucketerParams);
-            bucketerParamsWithInvalidGroupId.experimentKeyMap[configObj.experiments[4].key].groupId = '6969';
+            bucketerParamsWithInvalidGroupId.experimentIdMap[configObj.experiments[4].id].groupId = '6969';
 
             assert.throws(function() {
               bucketer.bucket(bucketerParamsWithInvalidGroupId);
@@ -236,7 +236,7 @@ describe('lib/core/bucketer', function() {
               experimentKey: configObj.experiments[6].key,
               trafficAllocationConfig: configObj.experiments[6].trafficAllocation,
               variationIdMap: configObj.variationIdMap,
-              experimentKeyMap: configObj.experimentKeyMap,
+              experimentIdMap: configObj.experimentIdMap,
               groupIdMap: configObj.groupIdMap,
               logger: createdLogger,
               userId: 'testUser',
@@ -282,7 +282,7 @@ describe('lib/core/bucketer', function() {
               },
             ],
             variationIdMap: configObj.variationIdMap,
-            experimentKeyMap: configObj.experimentKeyMap,
+            experimentIdMap: configObj.experimentIdMap,
             groupIdMap: configObj.groupIdMap,
             logger: createdLogger,
           };
@@ -322,7 +322,7 @@ describe('lib/core/bucketer', function() {
               },
             ],
             variationIdMap: configObj.variationIdMap,
-            experimentKeyMap: configObj.experimentKeyMap,
+            experimentIdMap: configObj.experimentIdMap,
             groupIdMap: configObj.groupIdMap,
             logger: createdLogger,
           };
@@ -370,7 +370,7 @@ describe('lib/core/bucketer', function() {
         bucketerParams = {
           trafficAllocationConfig: configObj.experiments[0].trafficAllocation,
           variationIdMap: configObj.variationIdMap,
-          experimentKeyMap: configObj.experimentKeyMap,
+          experimentIdMap: configObj.experimentIdMap,
           groupIdMap: configObj.groupIdMap,
           logger: createdLogger,
         };
