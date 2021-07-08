@@ -21,6 +21,7 @@ export interface BucketerParams {
   userId: string;
   trafficAllocationConfig: TrafficAllocation[];
   experimentKeyMap: { [key: string]: Experiment };
+  experimentIdMap: { [id: string]: Experiment };
   groupIdMap: { [key: string]: Group };
   variationIdMap: { [id: string]: Variation };
   logger: LogHandler;

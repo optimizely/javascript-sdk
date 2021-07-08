@@ -81,11 +81,11 @@ type StringInputs = Partial<Record<InputKey, unknown>>;
  */
 export default class Optimizely {
   private isOptimizelyConfigValid: boolean;
-  private disposeOnUpdate: (() => void ) | null;
+  private disposeOnUpdate: (() => void) | null;
   private readyPromise: Promise<{ success: boolean; reason?: string }>;
   // readyTimeout is specified as any to make this work in both browser & Node
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private readyTimeouts: { [key: string]: {readyTimeout: any; onClose:() => void} };
+  private readyTimeouts: { [key: string]: { readyTimeout: any; onClose: () => void } };
   private nextReadyTimeoutId: number;
   private clientEngine: string;
   private clientVersion: string;
@@ -346,7 +346,7 @@ export default class Optimizely {
     let experimentId: string | null = null;
     let variationId: string | null = null;
 
-    if (experimentKey !=='' && variationKey !== '') {
+    if (experimentKey !== '' && variationKey !== '') {
       variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
       experimentId = projectConfig.getExperimentId(configObj, experimentKey);
     }
@@ -506,7 +506,7 @@ export default class Optimizely {
           return null;
         }
 
-        const variationKey = this.decisionService.getVariation(configObj, experimentKey, userId, attributes).result;
+        const variationKey = this.decisionService.getVariation(configObj, experiment, userId, attributes).result;
         const decisionNotificationType = projectConfig.isFeatureExperiment(configObj, experiment.id)
           ? DECISION_NOTIFICATION_TYPES.FEATURE_TEST
           : DECISION_NOTIFICATION_TYPES.AB_TEST;
@@ -1047,7 +1047,7 @@ export default class Optimizely {
    *                                       of the variable
    */
   getFeatureVariableDouble(
-    featureKey:string,
+    featureKey: string,
     variableKey: string,
     userId: string,
     attributes?: UserAttributes
@@ -1518,20 +1518,20 @@ export default class Optimizely {
     if (!allDecideOptions[OptimizelyDecideOption.EXCLUDE_VARIABLES]) {
       feature.variables.forEach(variable => {
         variablesMap[variable.key] =
-        this.getFeatureVariableValueFromVariation(
-          key,
-          flagEnabled,
-          decisionObj.variation,
-          variable,
-          userId
-        );
+          this.getFeatureVariableValueFromVariation(
+            key,
+            flagEnabled,
+            decisionObj.variation,
+            variable,
+            userId
+          );
       });
     }
 
     if (
       !allDecideOptions[OptimizelyDecideOption.DISABLE_DECISION_EVENT] && (
-      decisionSource === DECISION_SOURCES.FEATURE_TEST ||
-      decisionSource === DECISION_SOURCES.ROLLOUT && projectConfig.getSendFlagDecisionsValue(configObj))
+        decisionSource === DECISION_SOURCES.FEATURE_TEST ||
+        decisionSource === DECISION_SOURCES.ROLLOUT && projectConfig.getSendFlagDecisionsValue(configObj))
     ) {
       this.sendImpressionEvent(
         decisionObj,
@@ -1544,7 +1544,7 @@ export default class Optimizely {
     }
 
     const shouldIncludeReasons = allDecideOptions[OptimizelyDecideOption.INCLUDE_REASONS];
-    const reportedReasons = shouldIncludeReasons ? reasons: [];
+    const reportedReasons = shouldIncludeReasons ? reasons : [];
 
     const featureInfo = {
       flagKey: key,
@@ -1580,7 +1580,7 @@ export default class Optimizely {
    * @return {[key: string]: boolean}             Map of all provided decide options including default decide options
    */
   private getAllDecideOptions(options: OptimizelyDecideOption[]): { [key: string]: boolean } {
-    const allDecideOptions = {...this.defaultDecideOptions};
+    const allDecideOptions = { ...this.defaultDecideOptions };
     if (!Array.isArray(options)) {
       this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DECIDE_OPTIONS, MODULE_NAME));
     } else {
