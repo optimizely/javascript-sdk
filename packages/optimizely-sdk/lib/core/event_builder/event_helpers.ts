@@ -25,9 +25,8 @@ import { DecisionObj } from '../decision_service';
 import {
   getAttributeId,
   getEventId,
-  getExperimentId,
   getLayerId,
-  getVariationIdFromExperimentAndVariationKey,
+  getVariationIdFromExperimentIdAndVariationKey,
   ProjectConfig,
 } from '../project_config';
 
@@ -134,10 +133,10 @@ export const buildImpressionEvent = function({
 
   const ruleType = decisionObj.decisionSource;
   const experimentKey = decision.getExperimentKey(decisionObj);
+  const experimentId = decision.getExperimentId(decisionObj);
   const variationKey = decision.getVariationKey(decisionObj);
 
-  const variationId = experimentKey !== '' && variationKey !== '' ? getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey) : null;
-  const experimentId = experimentKey !== '' ? getExperimentId(configObj, experimentKey) : null;
+  const variationId = experimentId !== null && variationKey !== '' ? getVariationIdFromExperimentIdAndVariationKey(configObj, experimentId, variationKey) : null;
   const layerId = experimentId !== null ? getLayerId(configObj, experimentId) : null;
 
   return {

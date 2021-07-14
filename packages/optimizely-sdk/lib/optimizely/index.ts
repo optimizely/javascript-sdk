@@ -341,14 +341,13 @@ export default class Optimizely {
 
     const ruleType = decisionObj.decisionSource;
     const experimentKey = decision.getExperimentKey(decisionObj);
+    const experimentId = decision.getExperimentId(decisionObj);
     const variationKey = decision.getVariationKey(decisionObj);
 
-    let experimentId: string | null = null;
     let variationId: string | null = null;
 
-    if (experimentKey !== '' && variationKey !== '') {
-      variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
-      experimentId = projectConfig.getExperimentId(configObj, experimentKey);
+    if (experimentId !== null && variationKey !== '') {
+      variationId = projectConfig.getVariationIdFromExperimentIdAndVariationKey(configObj, experimentId, variationKey);
     }
 
     const impressionEventOptions = {
