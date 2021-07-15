@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/optimizely-sdk",
-  "version": "4.6.1",
+  "version": "4.6.2",
   "description": "JavaScript SDK for Optimizely X Full Stack",
   "module": "dist/optimizely.browser.es.min.js",
   "main": "dist/optimizely.node.min.js",
