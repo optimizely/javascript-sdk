@@ -42,3 +42,12 @@ export function getVariationKey(decisionObj: DecisionObj): string {
 export function getFeatureEnabledFromVariation(decisionObj: DecisionObj): boolean {
    return decisionObj.variation?.featureEnabled ?? false;
 }
+
+/**
+ * Get experiment id from the provided decision object
+ * @param   {DecisionObj} decisionObj       Object representing decision
+ * @returns {string}                        Experiment id or null if experiment is null
+ */
+export function getExperimentId(decisionObj: DecisionObj): string | null {
+   return decisionObj.experiment?.id ?? null;
+}
