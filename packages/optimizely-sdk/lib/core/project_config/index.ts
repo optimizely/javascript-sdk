@@ -386,6 +386,26 @@ export const getVariationIdFromExperimentAndVariationKey = function(
 };
 
 /**
+ * Get the variation ID given the experiment id and variation key
+ * @param  {ProjectConfig}  projectConfig   Object representing project configuration
+ * @param  {string}         experimentId    Id of the experiment the variation belongs to
+ * @param  {string}         variationKey    The variation key
+ * @return {string|null}    Variation ID or null
+ */
+export const getVariationIdFromExperimentIdAndVariationKey = function(
+  projectConfig: ProjectConfig,
+  experimentId: string,
+  variationKey: string
+): string | null {
+  const experiment = projectConfig.experimentIdMap[experimentId];
+  if (experiment.variationKeyMap.hasOwnProperty(variationKey)) {
+    return experiment.variationKeyMap[variationKey].id;
+  }
+
+  return null;
+};
+
+/**
  * Get experiment from provided experiment key
  * @param  {ProjectConfig}  projectConfig  Object representing project configuration
  * @param  {string}         experimentKey  Event key for which experiment IDs are to be retrieved
@@ -719,28 +739,29 @@ export const getSendFlagDecisionsValue = function(projectConfig: ProjectConfig):
 }
 
 export default {
-  createProjectConfig: createProjectConfig,
-  getExperimentId: getExperimentId,
-  getLayerId: getLayerId,
-  getAttributeId: getAttributeId,
-  getEventId: getEventId,
-  getExperimentStatus: getExperimentStatus,
-  isActive: isActive,
-  isRunning: isRunning,
-  getExperimentAudienceConditions: getExperimentAudienceConditions,
-  getVariationKeyFromId: getVariationKeyFromId,
-  getVariationIdFromExperimentAndVariationKey: getVariationIdFromExperimentAndVariationKey,
-  getExperimentFromKey: getExperimentFromKey,
-  getTrafficAllocation: getTrafficAllocation,
-  getExperimentFromId: getExperimentFromId,
-  getFeatureFromKey: getFeatureFromKey,
-  getVariableForFeature: getVariableForFeature,
-  getVariableValueForVariation: getVariableValueForVariation,
-  getTypeCastValue: getTypeCastValue,
-  getSendFlagDecisionsValue: getSendFlagDecisionsValue,
-  getAudiencesById: getAudiencesById,
-  eventWithKeyExists: eventWithKeyExists,
-  isFeatureExperiment: isFeatureExperiment,
-  toDatafile: toDatafile,
-  tryCreatingProjectConfig: tryCreatingProjectConfig,
+  createProjectConfig,
+  getExperimentId,
+  getLayerId,
+  getAttributeId,
+  getEventId,
+  getExperimentStatus,
+  isActive,
+  isRunning,
+  getExperimentAudienceConditions,
+  getVariationKeyFromId,
+  getVariationIdFromExperimentAndVariationKey,
+  getVariationIdFromExperimentIdAndVariationKey,
+  getExperimentFromKey,
+  getTrafficAllocation,
+  getExperimentFromId,
+  getFeatureFromKey,
+  getVariableForFeature,
+  getVariableValueForVariation,
+  getTypeCastValue,
+  getSendFlagDecisionsValue,
+  getAudiencesById,
+  eventWithKeyExists,
+  isFeatureExperiment,
+  toDatafile,
+  tryCreatingProjectConfig,
 };

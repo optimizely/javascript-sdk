@@ -392,6 +392,19 @@ describe('lib/core/project_config', function() {
       });
     });
 
+    describe('#getVariationIdFromExperimentIdAndVariationKey', function() {
+      it('should return the variation id for the given experiment id and variation key', function() {
+        assert.strictEqual(
+          projectConfig.getVariationIdFromExperimentIdAndVariationKey(
+            configObj,
+            testData.experiments[0].id,
+            testData.experiments[0].variations[0].key
+          ),
+          testData.experiments[0].variations[0].id
+        );
+      });
+    });
+
     describe('#getSendFlagDecisionsValue', function() {
       it('should return false when sendFlagDecisions is undefined', function() {
         configObj.sendFlagDecisions = undefined;
