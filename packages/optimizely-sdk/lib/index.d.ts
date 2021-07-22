@@ -202,6 +202,11 @@ declare module '@optimizely/optimizely-sdk' {
     eventTags: EventTags;
     logEvent: Event;
   }
+
+  export interface DecisionListenerPayload extends ListenerPayload {
+    type: string;
+    decisionInfo: OptimizelyDecision;
+  }
 }
 
 declare module '@optimizely/optimizely-sdk/lib/utils/enums' {
