@@ -182,10 +182,10 @@ export class ProjectConfigManager {
 
   /**
    * Validate user-provided datafileOptions. It should be an object or undefined.
-   * @param {DatafileOptions|undefined} datafileOptions
+   * @param {DatafileOptions} datafileOptions
    * @returns {boolean}
    */
-  private validateDatafileOptions(datafileOptions: DatafileOptions | undefined): boolean {
+  private validateDatafileOptions(datafileOptions?: DatafileOptions): boolean {
     if (typeof datafileOptions === 'undefined') {
       return true;
     }
@@ -203,7 +203,7 @@ export class ProjectConfigManager {
    * and optimizely config object instance variables and returns null for the error. If unsuccessful,
    * the project config and optimizely config objects will not be updated, and the error is returned.
    * @param   {string}        newDatafile
-   * @returns {Error|null}    error
+   * @returns {Error|null}    error or null
    */
   private handleNewDatafile(newDatafile: string): Error | null {
     const { configObj, error } = tryCreatingProjectConfig({
