@@ -15,11 +15,11 @@
  */
 import { sprintf } from '@optimizely/js-sdk-utils';
 import { getLogger } from '@optimizely/js-sdk-logging';
+import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager';
 
-import { HttpPollingDatafileManager, createHttpPollingDatafileManager } from '../datafile_manager';
 import fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../../utils/enums';
-import projectConfig from '../../core/project_config';
+import { toDatafile, tryCreatingProjectConfig } from '../../core/project_config';
 import { createOptimizelyConfig } from '../optimizely_config';
 import { OptimizelyConfig, DatafileOptions, DatafileManagerConfig } from '../../shared_types';
 import { ProjectConfig } from '../project_config';
@@ -97,9 +97,9 @@ export class ProjectConfigManager {
           fns.assign(datafileManagerConfig, config.datafileOptions);
         }
         if (this.configObj) {
-          datafileManagerConfig.datafile = projectConfig.toDatafile(this.configObj)
+          datafileManagerConfig.datafile = toDatafile(this.configObj)
         }
-        this.datafileManager = createHttpPollingDatafileManager(datafileManagerConfig);
+        this.datafileManager = new HttpPollingDatafileManager(datafileManagerConfig);
         this.datafileManager.start();
         this.readyPromise = this.datafileManager
           .onReady()
@@ -206,7 +206,7 @@ export class ProjectConfigManager {
    * @returns {Error|null}    error
    */
   private handleNewDatafile(newDatafile: string): Error | null {
-    const { configObj, error } = projectConfig.tryCreatingProjectConfig({
+    const { configObj, error } = tryCreatingProjectConfig({
       datafile: newDatafile,
       jsonSchemaValidator: this.jsonSchemaValidator,
       logger: logger
@@ -218,7 +218,7 @@ export class ProjectConfigManager {
       const oldRevision = this.configObj ? this.configObj.revision : 'null';
       if (configObj && oldRevision !== configObj.revision) {
         this.configObj = configObj;
-        this.optimizelyConfigObj = createOptimizelyConfig(this.configObj, projectConfig.toDatafile(this.configObj));
+        this.optimizelyConfigObj = createOptimizelyConfig(this.configObj, toDatafile(this.configObj));
         this.updateListeners.forEach((listener) => {
           listener(configObj);
         });

@@ -3,7 +3,9 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "*" : ["*", "./typings/*"]
+      "*": [
+        "./typings/*"
+      ]
     },
     "allowJs": true,
     "declaration": false,
@@ -23,4 +25,4 @@
     "./lib/**/*.ts",
     "./lib/**/*.js"
   ]
- }
+}

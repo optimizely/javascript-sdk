@@ -55,7 +55,7 @@ const RANDOM_POLICY = 'random';
  * @return {Object}             DecisionResponse                         DecisionResponse containing variation ID that user has been bucketed into,
  *                                                                       null if user is not bucketed into any experiment and the decide reasons.
  */
-export const bucket = function(bucketerParams: BucketerParams):  DecisionResponse<string | null> {
+export const bucket = function(bucketerParams: BucketerParams): DecisionResponse<string | null> {
   const decideReasons: string[] = [];
   // Check if user is in a random group; if so, check if user is bucketed into a specific experiment
   const experiment = bucketerParams.experimentIdMap[bucketerParams.experimentId];
@@ -164,7 +164,7 @@ export const bucketUserIntoExperiment = function(
   bucketingId: string,
   userId: string,
   logger: LogHandler
-  ): string | null {
+): string | null {
   const bucketingKey = sprintf('%s%s', bucketingId, group.id);
   const bucketValue = _generateBucketValue(bucketingKey);
   logger.log(
@@ -187,7 +187,7 @@ export const bucketUserIntoExperiment = function(
 export const _findBucket = function(
   bucketValue: number,
   trafficAllocationConfig: TrafficAllocation[]
-  ): string | null {
+): string | null {
   for (let i = 0; i < trafficAllocationConfig.length; i++) {
     if (bucketValue < trafficAllocationConfig[i].endOfRange) {
       return trafficAllocationConfig[i].entityId;
