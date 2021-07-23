@@ -124,8 +124,16 @@ export interface Experiment {
   forcedVariations?: { [key: string]: string };
 }
 
+export enum VariableType {
+  BOOLEAN = 'boolean',
+  DOUBLE = 'double',
+  INTEGER = 'integer',
+  STRING = 'string',
+  JSON = 'json',
+}
+
 export interface FeatureVariable {
-  type: string;
+  type: VariableType;
   key: string;
   id: string;
   defaultValue: string;

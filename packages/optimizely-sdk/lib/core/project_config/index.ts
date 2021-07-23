@@ -35,7 +35,8 @@ import {
   FeatureVariable,
   Variation,
   OptimizelyVariation,
-  VariationVariable,
+  VariableType,
+  VariationVariable
 } from '../../shared_types';
 
 interface TryCreatingProjectConfigConfig {
@@ -203,7 +204,7 @@ export const createProjectConfig = function(
       // Converting it to a first-class json type while creating Project Config
       feature.variables.forEach((variable) => {
         if (variable.type === FEATURE_VARIABLE_TYPES.STRING && variable.subType === FEATURE_VARIABLE_TYPES.JSON) {
-          variable.type = FEATURE_VARIABLE_TYPES.JSON;
+          variable.type = FEATURE_VARIABLE_TYPES.JSON as VariableType;
           delete variable.subType;
         }
       });
@@ -582,9 +583,10 @@ export const getVariableValueForVariation = function(
  * @returns {*}                       Variable value of the appropriate type, or
  *                                    null if the type cast failed
  */
+
 export const getTypeCastValue = function(
   variableValue: string,
-  variableType: string,
+  variableType: VariableType,
   logger: LogHandler
 ): unknown {
   let castValue;
