@@ -19,10 +19,9 @@ import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager'
 
 import fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../../utils/enums';
-import { toDatafile, tryCreatingProjectConfig } from '../../core/project_config';
 import { createOptimizelyConfig } from '../optimizely_config';
 import { OptimizelyConfig, DatafileOptions, DatafileManagerConfig } from '../../shared_types';
-import { ProjectConfig } from '../project_config';
+import { ProjectConfig, toDatafile, tryCreatingProjectConfig } from '../project_config';
 
 const logger = getLogger();
 const MODULE_NAME = 'PROJECT_CONFIG_MANAGER';
@@ -59,20 +58,16 @@ function getErrorMessage(maybeError: Error | null, defaultMessage?: string): str
  * @param {ProjectConfigManagerConfig}    config
  */
 export class ProjectConfigManager {
-  private updateListeners: Array<(config: ProjectConfig) => void>;
-  private configObj: ProjectConfig | null;
-  private optimizelyConfigObj: OptimizelyConfig | null;
+  private updateListeners: Array<(config: ProjectConfig) => void> = [];
+  private configObj: ProjectConfig | null = null;
+  private optimizelyConfigObj: OptimizelyConfig | null = null;
   private readyPromise: Promise<{ success: boolean; reason?: string }>;
   public jsonSchemaValidator: { validate(jsonObject: unknown): boolean } | undefined;
-  public datafileManager: HttpPollingDatafileManager | null;
+  public datafileManager: HttpPollingDatafileManager | null = null;
 
   constructor(config: ProjectConfigManagerConfig) {
     try {
-      this.configObj = null;
-      this.optimizelyConfigObj = null;
-      this.updateListeners = [];
       this.jsonSchemaValidator = config.jsonSchemaValidator;
-      this.datafileManager = null;
 
       if (!config.datafile && !config.sdkKey) {
         const datafileAndSdkKeyMissingError = new Error(sprintf(ERROR_MESSAGES.DATAFILE_AND_SDK_KEY_MISSING, MODULE_NAME));
@@ -117,10 +112,6 @@ export class ProjectConfigManager {
       }
     } catch (ex) {
       logger.error(ex);
-      this.updateListeners = [];
-      this.configObj = null;
-      this.optimizelyConfigObj = null;
-      this.datafileManager = null;
       this.readyPromise = Promise.resolve({
         success: false,
         reason: getErrorMessage(ex, 'Error in initialize'),
@@ -219,9 +210,7 @@ export class ProjectConfigManager {
       if (configObj && oldRevision !== configObj.revision) {
         this.configObj = configObj;
         this.optimizelyConfigObj = createOptimizelyConfig(this.configObj, toDatafile(this.configObj));
-        this.updateListeners.forEach((listener) => {
-          listener(configObj);
-        });
+        this.updateListeners.forEach((listener) => listener(configObj));
       }
     }
 
