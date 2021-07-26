@@ -20,7 +20,12 @@ import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager'
 import fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../../utils/enums';
 import { createOptimizelyConfig } from '../optimizely_config';
-import { OptimizelyConfig, DatafileOptions, DatafileManagerConfig } from '../../shared_types';
+import {
+  DatafileManagerConfig,
+  DatafileOptions,
+  OnReadyResult,
+  OptimizelyConfig
+} from '../../shared_types';
 import { ProjectConfig, toDatafile, tryCreatingProjectConfig } from '../project_config';
 
 const logger = getLogger();
@@ -61,7 +66,7 @@ export class ProjectConfigManager {
   private updateListeners: Array<(config: ProjectConfig) => void> = [];
   private configObj: ProjectConfig | null = null;
   private optimizelyConfigObj: OptimizelyConfig | null = null;
-  private readyPromise: Promise<{ success: boolean; reason?: string }>;
+  private readyPromise: Promise<OnReadyResult>;
   public jsonSchemaValidator: { validate(jsonObject: unknown): boolean } | undefined;
   public datafileManager: HttpPollingDatafileManager | null = null;
 
@@ -127,7 +132,7 @@ export class ProjectConfigManager {
    * config object from the new datafile, and its ready promise is resolved with a
    * successful result.
    */
-  private onDatafileManagerReadyFulfill(): { success: boolean; reason?: string } {
+  private onDatafileManagerReadyFulfill(): OnReadyResult {
     if (this.datafileManager) {
       const newDatafileError = this.handleNewDatafile(this.datafileManager.get());
       if (newDatafileError) {
@@ -153,7 +158,7 @@ export class ProjectConfigManager {
    * @param   {Error}   err
    * @returns {Object}
    */
-  private onDatafileManagerReadyReject(err: Error): { success: boolean; reason: string } {
+  private onDatafileManagerReadyReject(err: Error): OnReadyResult {
     return {
       success: false,
       reason: getErrorMessage(err, 'Failed to become ready'),
@@ -254,7 +259,7 @@ export class ProjectConfigManager {
    *                         an explanatory message.
    * @return {Promise}
    */
-  onReady(): Promise<{ success: boolean; reason?: string }> {
+  onReady(): Promise<OnReadyResult> {
     return this.readyPromise;
   }
 
