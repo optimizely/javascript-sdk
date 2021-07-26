@@ -583,7 +583,6 @@ export const getVariableValueForVariation = function(
  * @returns {*}                       Variable value of the appropriate type, or
  *                                    null if the type cast failed
  */
-
 export const getTypeCastValue = function(
   variableValue: string,
   variableType: VariableType,
