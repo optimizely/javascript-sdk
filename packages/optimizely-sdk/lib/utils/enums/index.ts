@@ -176,12 +176,16 @@ export const CONTROL_ATTRIBUTES = {
 export const JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
 export const NODE_CLIENT_ENGINE = 'node-sdk';
 export const REACT_CLIENT_ENGINE = 'react-sdk';
+export const REACT_NATIVE_CLIENT_ENGINE = 'react-native-sdk';
+export const REACT_NATIVE_JS_CLIENT_ENGINE = 'react-native-js-sdk';
 export const NODE_CLIENT_VERSION = '4.6.2';
 
 export const VALID_CLIENT_ENGINES = [
   NODE_CLIENT_ENGINE,
   REACT_CLIENT_ENGINE,
   JAVASCRIPT_CLIENT_ENGINE,
+  REACT_NATIVE_CLIENT_ENGINE,
+  REACT_NATIVE_JS_CLIENT_ENGINE,
 ];
 
 export const NOTIFICATION_TYPES = notificationTypesEnum;

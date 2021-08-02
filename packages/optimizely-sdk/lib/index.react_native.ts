@@ -84,7 +84,7 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
     }
 
     const optimizelyOptions = {
-      clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
+      clientEngine: enums.REACT_NATIVE_JS_CLIENT_ENGINE,
       eventDispatcher: defaultEventDispatcher,
       eventMaxQueueSize: DEFAULT_EVENT_MAX_QUEUE_SIZE,
       ...config,
@@ -93,6 +93,11 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       logger: logger,
       errorHandler: getErrorHandler()
     };
+
+    // If client engine is react, convert it to react native.
+    if (optimizelyOptions.clientEngine === enums.REACT_CLIENT_ENGINE) {
+      optimizelyOptions.clientEngine = enums.REACT_NATIVE_CLIENT_ENGINE;
+    }
 
     return new Optimizely(optimizelyOptions);
   } catch (e) {
