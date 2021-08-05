@@ -36,7 +36,8 @@ import {
   Variation,
   OptimizelyVariation,
   VariableType,
-  VariationVariable
+  VariationVariable,
+  OptimizelyAttribute
 } from '../../shared_types';
 
 interface TryCreatingProjectConfigConfig {
@@ -50,6 +51,7 @@ interface TryCreatingProjectConfigConfig {
 interface Event {
   key: string;
   id: string;
+  experimentsIds: string[];
 }
 
 interface VariableUsageMap {
@@ -59,8 +61,8 @@ interface VariableUsageMap {
 export interface ProjectConfig {
   revision: string;
   projectId: string;
-  sdkKey?: string;
-  environmentKey?: string;
+  sdkKey: string;
+  environmentKey: string;
   sendFlagDecisions?: boolean;
   experimentKeyMap: { [key: string]: Experiment };
   featureKeyMap: {
@@ -81,7 +83,7 @@ export interface ProjectConfig {
   groupIdMap: { [id: string]: Group };
   groups: Group[];
   events: Event[];
-  attributes: Array<{ id: string }>;
+  attributes: OptimizelyAttribute[];
   typedAudiences: Audience[];
   rolloutIdMap: { [id: string]: Rollout };
   anonymizeIP?: boolean | null;
@@ -120,10 +122,8 @@ function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
     return rolloutCopy;
   });
 
-  if (datafile.environmentKey && datafile.sdkKey) {
-    datafileCopy.environmentKey = datafile.environmentKey;
-    datafileCopy.sdkKey = datafile.sdkKey;
-  }
+  datafileCopy.environmentKey = datafile.environmentKey ? datafile.environmentKey : ""
+  datafileCopy.sdkKey = datafile.sdkKey ? datafile.sdkKey : ""
 
   return datafileCopy;
 }

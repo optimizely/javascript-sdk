@@ -163,6 +163,7 @@ export type Condition = {
 }
 
 export interface Audience {
+  id: string;
   name: string;
   conditions: unknown[] | string;
 }
@@ -248,6 +249,7 @@ export interface OptimizelyOptions {
 export interface OptimizelyExperiment {
   id: string;
   key: string;
+  audiences: unknown[] | string;
   variationsMap: {
     [variationKey: string]: OptimizelyVariation;
   };
@@ -288,7 +290,7 @@ export interface SDKOptions {
   defaultDecideOptions?: OptimizelyDecideOption[];
 }
 
-export type OptimizelyExperimentsMap = {
+export type   OptimizelyExperimentsMap = {
   [experimentKey: string]: OptimizelyExperiment;
 }
 
@@ -300,11 +302,30 @@ export type OptimizelyFeaturesMap = {
   [featureKey: string]: OptimizelyFeature;
 }
 
+export type OptimizelyAttribute = {
+  id: string;
+  key: string;
+}
+
+export type OptimizelyAudience = {
+  id: string;
+  name: string;
+  conditions: unknown[] | string;
+}
+
+export type OptimizelyEvent = {
+  id: string;
+  key: string;
+  experimentsIds: string[];
+}
+
 export interface OptimizelyFeature {
   id: string;
   key: string;
   experimentsMap: OptimizelyExperimentsMap;
   variablesMap: OptimizelyVariablesMap;
+  experimentRules: OptimizelyExperiment[];
+  deliveryRules: OptimizelyExperiment[];
 }
 
 export interface OptimizelyVariation {
@@ -317,9 +338,12 @@ export interface OptimizelyVariation {
 export interface OptimizelyConfig {
   experimentsMap: OptimizelyExperimentsMap;
   featuresMap: OptimizelyFeaturesMap;
+  attributes: OptimizelyAttribute[];
+  audiences: OptimizelyAudience[];
+  events: OptimizelyEvent[];
   revision: string;
-  sdkKey?: string;
-  environmentKey?: string;
+  sdkKey: string;
+  environmentKey: string;
   getDatafile(): string;
 }
 
