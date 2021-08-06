@@ -23,6 +23,7 @@ import {
   Variation,
   Rollout,
   Experiment,
+  Audience,
   OptimizelyAttribute,
   OptimizelyAudience,
   OptimizelyEvent,
@@ -50,23 +51,25 @@ export class OptimizelyConfig {
   public audiences: OptimizelyAudience[];
   public events: OptimizelyEvent[];
   private datafile: string;
+  private static audienceConditionalOperators: {[operator:string]:boolean} = {"and": true, "or": true, "not": true}
 
   constructor(configObj: ProjectConfig, datafile: string) {
+    this.sdkKey = configObj.sdkKey ? configObj.sdkKey : '';
+    this.environmentKey = configObj.environmentKey ? configObj.environmentKey : '';
+    this.attributes = configObj.attributes;
+    this.audiences = OptimizelyConfig.getAudiences(configObj);
+    this.events = configObj.events;
+    this.revision = configObj.revision;
+
     const featureIdVariablesMap = (configObj.featureFlags || []).reduce((resultMap: FeatureVariablesMap, feature) => {
       resultMap[feature.id] = feature.variables;
       return resultMap;
     }, {});
+
     const experimentsMapById = OptimizelyConfig.getExperimentsMapById(configObj, featureIdVariablesMap);
     this.experimentsMap = OptimizelyConfig.getExperimentsKeyMap(experimentsMapById);
-    this.featuresMap = OptimizelyConfig.getFeaturesMap(featureIdVariablesMap, configObj, experimentsMapById);
-    this.revision = configObj.revision;
-    this.attributes = configObj.attributes;
-
-    this.audiences = OptimizelyConfig.getAudiences(configObj);
-    this.events = configObj.events;
+    this.featuresMap = OptimizelyConfig.getFeaturesMap(configObj,featureIdVariablesMap, experimentsMapById);
     this.datafile = datafile;
-    this.sdkKey = configObj.sdkKey ? configObj.sdkKey : '';
-    this.environmentKey = configObj.environmentKey ? configObj.environmentKey : '';
   }
 
   /**
@@ -84,16 +87,16 @@ export class OptimizelyConfig {
    */
   static getAudiences(configObj: ProjectConfig): OptimizelyAudience[] {
     var finalAudiences: OptimizelyAudience[] = [];
-    var typedAudiencesMap = new Map();
+    var typedAudienceIds: {[id: string]: boolean} = {};
 
     (configObj.typedAudiences || []).forEach((typedAudience) => {
-      finalAudiences.push(typedAudience);
-      typedAudiencesMap.set(typedAudience.id, typedAudience);
+      finalAudiences.push({id: typedAudience.id, conditions: JSON.stringify(typedAudience.conditions), name: typedAudience.name});
+      typedAudienceIds[typedAudience.id] = true;
     });
 
     (configObj.audiences || []).forEach((oldAudience) => {
-      if (!typedAudiencesMap.has(oldAudience.id) && oldAudience.id != '$opt_dummy_audience') {
-        finalAudiences.push(oldAudience);
+      if (!typedAudienceIds[oldAudience.id] && oldAudience.id != '$opt_dummy_audience') {
+        finalAudiences.push({id: oldAudience.id, conditions: JSON.stringify(oldAudience.conditions), name: oldAudience.name});
       }
     });
 
@@ -104,14 +107,53 @@ export class OptimizelyConfig {
     if (!experiment.audienceConditions || experiment.audienceConditions.length === 0) {
       return '';
     }
-    return '';
+    return OptimizelyConfig.GetSerializedAudiences(experiment.audienceConditions,configObj.audiencesById);  
   }
 
-  static GetSerializedAudiences(experiment: Experiment, configObj: ProjectConfig): string {
-    if (!experiment.audienceConditions || experiment.audienceConditions.length === 0) {
-      return '';
+  static GetSerializedAudiences(conditions: Array<string | string[]>, audiencesById: {[id:string]:Audience}): string {
+    var serializedAudience = ""
+    if (conditions) {
+      var cond = ""
+      conditions.forEach(item => {
+        var subAudience = ""
+        // Checks if item is list of conditions means if it is sub audience
+        if (Array.isArray(item)) {
+          subAudience = OptimizelyConfig.GetSerializedAudiences(item,audiencesById)
+          subAudience = `(${subAudience})`
+        } else if (OptimizelyConfig.audienceConditionalOperators[item.toString()]) {
+          cond = item.toString().toUpperCase()
+        } else {
+          // Checks if item is audience id
+          const itemStr = item.toString()
+          var audienceName = audiencesById[itemStr] ? audiencesById[itemStr].name : itemStr
+          // if audience condition is "NOT" then add "NOT" at start. Otherwise check if there is already audience id in sAudience then append condition between saudience and item
+          if (serializedAudience || cond == "NOT") {
+            cond = cond ? cond : "OR"
+            if (serializedAudience) {
+              serializedAudience = serializedAudience.concat(` ${cond} "${audienceName}"`)
+            } else {
+              serializedAudience = `"${audiencesById[itemStr].name}"`
+            }
+          } else {
+            serializedAudience = `"${audienceName}"`
+          }
+        }
+        // Checks if sub audience is empty or not
+        if(subAudience) {
+          if (serializedAudience || cond == "NOT") { 
+            cond = cond ? cond : "OR"
+            if (serializedAudience) {
+              serializedAudience = `  ${cond} ${subAudience}`
+            } else {
+              serializedAudience = `${cond} ${subAudience}`
+            }
+          } else {
+            serializedAudience = serializedAudience.concat(subAudience)
+          }
+        }
+      });
     }
-    return '';
+    return serializedAudience;
   }
 
   /**
@@ -130,20 +172,20 @@ export class OptimizelyConfig {
   }
 
   static getExperimentsKeyMap(experimentsMapById: OptimizelyExperimentsMap): OptimizelyExperimentsMap {
-    var experimentKeyMaps: OptimizelyExperimentsMap = {};
+    var experimentKeysMap: OptimizelyExperimentsMap = {};
 
-    for (let key in experimentsMapById) {
-      let experiment = experimentsMapById[key];
-      experimentKeyMaps[experiment.key] = experiment;
+    for (let id in experimentsMapById) {
+      let experiment = experimentsMapById[id];
+      experimentKeysMap[experiment.key] = experiment;
     }
-    return experimentKeyMaps;
+    return experimentKeysMap;
   }
 
   static getExperimentsMapById(
     configObj: ProjectConfig,
     featureIdVariableMap: FeatureVariablesMap
-  ): OptimizelyExperimentsMap {
-    var experimentsMap: OptimizelyExperimentsMap = {};
+  ): {[id:string]: OptimizelyExperiment} {
+    var experimentsMap: {[id:string]: OptimizelyExperiment} = {};
     const variableIdMap = OptimizelyConfig.getVariableIdMap(configObj);
     const rolloutExperimentIds = this.getRolloutExperimentIds(configObj.rollouts);
 
@@ -166,12 +208,11 @@ export class OptimizelyConfig {
           featureId.toString()
         );
 
-        // TODO: fix audiences here
         experimentsMap[experiment.id] = {
           id: experiment.id,
           key: experiment.key,
+          audiences: OptimizelyConfig.getExperimentAudiences(experiment,configObj),
           variationsMap: variationsMap,
-          audiences: '',
         };
       }
     });
@@ -254,10 +295,10 @@ export class OptimizelyConfig {
   }
 
   static getDeliveryRules(
+    configObj: ProjectConfig,
     featureVariableIdMap: FeatureVariablesMap,
     featureId: string,
     experiments: Experiment[] | undefined,
-    configObj: ProjectConfig
   ): OptimizelyExperiment[] {
     var deliveryRules: OptimizelyExperiment[] = [];
     if (!experiments) {
@@ -266,12 +307,11 @@ export class OptimizelyConfig {
 
     const variableIdMap = OptimizelyConfig.getVariableIdMap(configObj);
 
-    // TODO: fix audiences here
     experiments.forEach((experiment) => {
       deliveryRules.push({
         id: experiment.id,
         key: experiment.key,
-        audiences: '',
+        audiences: OptimizelyConfig.getExperimentAudiences(experiment,configObj),
         variationsMap: OptimizelyConfig.GetVariationsMap(
           experiment.variations,
           featureVariableIdMap,
@@ -284,9 +324,9 @@ export class OptimizelyConfig {
   }
 
   static getFeaturesMap(
-    featureVariableIdMap: FeatureVariablesMap,
     configObj: ProjectConfig,
-    experimentsMapById: OptimizelyExperimentsMap
+    featureVariableIdMap: FeatureVariablesMap,
+    experimentsMapById: OptimizelyExperimentsMap,
   ): OptimizelyFeaturesMap {
     var featuresMap: OptimizelyFeaturesMap = {};
     configObj.featureFlags.forEach((featureFlag) => {
@@ -311,10 +351,10 @@ export class OptimizelyConfig {
       const rollout = configObj.rolloutIdMap[featureFlag.rolloutId];
       if (rollout) {
         deliveryRules = OptimizelyConfig.getDeliveryRules(
+          configObj,
           featureVariableIdMap,
           featureFlag.id,
           rollout.experiments,
-          configObj
         );
       }
       featuresMap[featureFlag.key] = {
@@ -328,145 +368,6 @@ export class OptimizelyConfig {
     });
     return featuresMap;
   }
-
-  /**
-   * Get Map of all experiments except rollouts
-   * @param       {ProjectConfig}              configObj
-   * @returns     {OptimizelyExperimentsMap}   Map of experiments excluding rollouts
-   */
-  // static getExperimentsMap(configObj: ProjectConfig): OptimizelyExperimentsMap {
-  //   const rolloutExperimentIds = this.getRolloutExperimentIds(configObj.rollouts);
-  //   const featureVariablesMap = (configObj.featureFlags || []).reduce(
-  //     (resultMap: FeatureVariablesMap, feature) => {
-  //       resultMap[feature.id] = feature.variables;
-  //       return resultMap;
-  //     },
-  //     {},
-  //   );
-
-  //   return (configObj.experiments || []).reduce(
-  //     (experiments: OptimizelyExperimentsMap, experiment) => {
-  //       // skip experiments that are part of a rollout
-  //       if (!rolloutExperimentIds[experiment.id]) {
-  //         experiments[experiment.key] = {
-  //           id: experiment.id,
-  //           key: experiment.key,
-  //           variationsMap: (experiment.variations || []).reduce(
-  //             (variations: { [key: string]: Variation }, variation) => {
-  //               variations[variation.key] = {
-  //                 id: variation.id,
-  //                 key: variation.key,
-  //                 variablesMap: this.getMergedVariablesMap(configObj, variation, experiment.id, featureVariablesMap),
-  //               };
-  //               if (isFeatureExperiment(configObj, experiment.id)) {
-  //                 variations[variation.key].featureEnabled = variation.featureEnabled;
-  //               }
-
-  //               return variations;
-  //             },
-  //             {},
-  //           ),
-  //         };
-  //       }
-
-  //       return experiments;
-  //     },
-  //     {},
-  //   )
-  // }
-
-  // /**
-  //  * Merge feature key and type from feature variables to variation variables
-  //  * @param       {ProjectConfig}              configObj
-  //  * @param       {Variation}                  variation
-  //  * @param       {string}                     experimentId
-  //  * @param       {FeatureVariablesMap}        featureVariablesMap
-  //  * @returns     {OptimizelyVariablesMap}     Map of variables
-  //  */
-  // static getMergedVariablesMap(
-  //   configObj: ProjectConfig,
-  //   variation: Variation,
-  //   experimentId: string,
-  //   featureVariablesMap: FeatureVariablesMap,
-  // ): OptimizelyVariablesMap {
-  //   const featureId = configObj.experimentFeatureMap[experimentId];
-
-  //   let variablesObject = {};
-  //   if (featureId) {
-  //     const experimentFeatureVariables = featureVariablesMap[featureId.toString()];
-  //     // Temporary variation variables map to get values to merge.
-  //     const tempVariablesIdMap = (variation.variables || []).reduce(
-  //       (variablesMap: { [key: string]: VariationVariable }, variable) => {
-  //         variablesMap[variable.id] = {
-  //           id: variable.id,
-  //           value: variable.value,
-  //         };
-
-  //         return variablesMap;
-  //       },
-  //       {},
-  //     );
-  //     variablesObject = (experimentFeatureVariables || []).reduce(
-  //       (variablesMap: OptimizelyVariablesMap, featureVariable) => {
-  //         const variationVariable = tempVariablesIdMap[featureVariable.id];
-  //         const variableValue =
-  //           variation.featureEnabled && variationVariable ? variationVariable.value : featureVariable.defaultValue;
-  //         variablesMap[featureVariable.key] = {
-  //           id: featureVariable.id,
-  //           key: featureVariable.key,
-  //           type: featureVariable.type,
-  //           value: variableValue,
-  //         };
-
-  //         return variablesMap;
-  //       },
-  //       {},
-  //     );
-  //   }
-
-  //   return variablesObject;
-  // }
-
-  /**
-   * Get map of all experiments
-   * @param       {ProjectConfig}              configObj
-   * @param       {OptimizelyExperimentsMap}   allExperiments
-   * @returns     {OptimizelyFeaturesMap}      Map of all experiments
-   */
-  // static getFeaturesMap(
-  //   configObj: ProjectConfig,
-  //   allExperiments: OptimizelyExperimentsMap
-  // ): OptimizelyFeaturesMap {
-  //   return (configObj.featureFlags || []).reduce((features: OptimizelyFeaturesMap, feature) => {
-  //     features[feature.key] = {
-  //       id: feature.id,
-  //       key: feature.key,
-  //       experimentsMap: (feature.experimentIds || []).reduce(
-  //         (experiments: OptimizelyExperimentsMap, experimentId) => {
-  //           const experimentKey = configObj.experimentIdMap[experimentId].key;
-  //           experiments[experimentKey] = allExperiments[experimentKey];
-  //           return experiments;
-  //         },
-  //         {},
-  //       ),
-  //       variablesMap: (feature.variables || []).reduce(
-  //         (variables: OptimizelyVariablesMap, variable) => {
-  //           variables[variable.key] = {
-  //             id: variable.id,
-  //             key: variable.key,
-  //             type: variable.type,
-  //             value: variable.defaultValue,
-  //           };
-
-  //           return variables;
-  //         },
-  //         {},
-  //       ),
-  //     };
-
-  //     return features;
-  //   }, {});
-  // }
 }
 
 /**
