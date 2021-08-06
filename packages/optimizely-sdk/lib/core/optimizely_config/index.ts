@@ -140,7 +140,7 @@ export class OptimizelyConfig {
         }
         // Checks if sub audience is empty or not
         if(subAudience) {
-          if (serializedAudience || cond == "NOT") { 
+          if (serializedAudience || cond == "NOT") {
             cond = cond ? cond : "OR"
             if (serializedAudience) {
               serializedAudience = `  ${cond} ${subAudience}`
@@ -334,7 +334,10 @@ export class OptimizelyConfig {
       var experimentRules: OptimizelyExperiment[] = [];
       for (let key in experimentsMapById) {
         if (featureFlag.experimentIds.includes(key)) {
-          featureExperimentMap[key] = experimentsMapById[key];
+          var experiment = experimentsMapById[key];
+          if (experiment) {
+            featureExperimentMap[experiment.key] = experiment;
+          }
           experimentRules.push(experimentsMapById[key]);
         }
       }
