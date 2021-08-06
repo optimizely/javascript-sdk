@@ -51,7 +51,7 @@ export class OptimizelyConfig {
   public audiences: OptimizelyAudience[];
   public events: OptimizelyEvent[];
   private datafile: string;
-  private static audienceConditionalOperators: {[operator:string]:boolean} = {"and": true, "or": true, "not": true}
+  private static audienceConditionalOperators: string[] = ['and', 'or', 'not'];
 
   constructor(configObj: ProjectConfig, datafile: string) {
     this.sdkKey = configObj.sdkKey ? configObj.sdkKey : '';
@@ -117,10 +117,10 @@ export class OptimizelyConfig {
       conditions.forEach(item => {
         var subAudience = ""
         // Checks if item is list of conditions means if it is sub audience
-        if (Array.isArray(item)) {
+        if (item instanceof Array) {
           subAudience = OptimizelyConfig.GetSerializedAudiences(item,audiencesById)
           subAudience = `(${subAudience})`
-        } else if (OptimizelyConfig.audienceConditionalOperators[item.toString()]) {
+        } else if (OptimizelyConfig.audienceConditionalOperators.includes(item)) {
           cond = item.toString().toUpperCase()
         } else {
           // Checks if item is audience id
@@ -156,20 +156,20 @@ export class OptimizelyConfig {
     return serializedAudience;
   }
 
-  /**
-   * Get Experiment Ids which are part of rollout
-   * @param       {Rollout[]}                  rollouts
-   * @returns     {[key: string]: boolean}     Map of experiment Ids to boolean
-   */
-  static getRolloutExperimentIds(rollouts: Rollout[]): { [key: string]: boolean } {
-    return (rollouts || []).reduce((experimentIds: { [key: string]: boolean }, rollout) => {
-      rollout.experiments.forEach((e) => {
-        experimentIds[e.id] = true;
-      });
+  // /**
+  //  * Get Experiment Ids which are part of rollout
+  //  * @param       {Rollout[]}                  rollouts
+  //  * @returns     {[key: string]: boolean}     Map of experiment Ids to boolean
+  //  */
+  // static getRolloutExperimentIds(rollouts: Rollout[]): { [key: string]: boolean } {
+  //   return (rollouts || []).reduce((experimentIds: { [key: string]: boolean }, rollout) => {
+  //     rollout.experiments.forEach((e) => {
+  //       experimentIds[e.id] = true;
+  //     });
 
-      return experimentIds;
-    }, {});
-  }
+  //     return experimentIds;
+  //   }, {});
+  // }
 
   static getExperimentsKeyMap(experimentsMapById: OptimizelyExperimentsMap): OptimizelyExperimentsMap {
     var experimentKeysMap: OptimizelyExperimentsMap = {};
@@ -185,37 +185,31 @@ export class OptimizelyConfig {
     configObj: ProjectConfig,
     featureIdVariableMap: FeatureVariablesMap
   ): {[id:string]: OptimizelyExperiment} {
-    var experimentsMap: {[id:string]: OptimizelyExperiment} = {};
     const variableIdMap = OptimizelyConfig.getVariableIdMap(configObj);
-    const rolloutExperimentIds = this.getRolloutExperimentIds(configObj.rollouts);
 
     const experiments = configObj.experiments;
     configObj.groups.forEach((group) => {
       experiments.concat(group.experiments);
     });
+    let experimentsMap = experiments.reduce(( experimentsMap: { [id: string]: OptimizelyExperiment }, experiment) => {
+      var featureIds = configObj.experimentFeatureMap[experiment.id] || [];
+      var featureId = featureIds.length > 0 ? featureIds[0] :  '';
 
-    experiments.forEach((experiment) => {
-      if (!rolloutExperimentIds[experiment.id]) {
-        var featureIds = configObj.experimentFeatureMap[experiment.id];
-        var featureId = '';
-        if (featureIds && featureIds.length > 0) {
-          featureId = featureIds[0];
-        }
-        const variationsMap = OptimizelyConfig.GetVariationsMap(
-          experiment.variations,
-          featureIdVariableMap,
-          variableIdMap,
-          featureId.toString()
-        );
+      const variationsMap = OptimizelyConfig.GetVariationsMap(
+        experiment.variations,
+        featureIdVariableMap,
+        variableIdMap,
+        featureId.toString()
+      );
 
-        experimentsMap[experiment.id] = {
-          id: experiment.id,
-          key: experiment.key,
-          audiences: OptimizelyConfig.getExperimentAudiences(experiment,configObj),
-          variationsMap: variationsMap,
-        };
-      }
-    });
+      experimentsMap[experiment.id] = {
+        id: experiment.id,
+        key: experiment.key,
+        audiences: OptimizelyConfig.getExperimentAudiences(experiment,configObj),
+        variationsMap: variationsMap,
+      };
+      return experimentsMap;
+    }, {});
     return experimentsMap;
   }
 
@@ -226,21 +220,24 @@ export class OptimizelyConfig {
     featureId: string
   ): { [key: string]: Variation } {
     var variationsMap: { [key: string]: OptimizelyVariation } = {};
-    variations.forEach((variation) => {
-      const variablesMap = OptimizelyConfig.mergeFeatureVariables(
-        featureIdVariableMap,
-        variableIdMap,
-        featureId,
-        variation.variables,
-        variation.featureEnabled
-      );
-      variationsMap[variation.key] = {
-        id: variation.id,
-        key: variation.key,
-        featureEnabled: variation.featureEnabled,
-        variablesMap: variablesMap,
-      };
-    });
+    variationsMap = variations.reduce(
+      (variationsMap: {[key:string]: OptimizelyVariation}, variation) => {
+        const variablesMap = OptimizelyConfig.mergeFeatureVariables(
+          featureIdVariableMap,
+          variableIdMap,
+          featureId,
+          variation.variables,
+          variation.featureEnabled
+        );
+        variationsMap[variation.key] = {
+          id: variation.id,
+          key: variation.key,
+          featureEnabled: variation.featureEnabled,
+          variablesMap: variablesMap,
+        };
+        return variationsMap;
+    }, {});
+
     return variationsMap;
   }
 
