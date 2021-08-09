@@ -290,7 +290,7 @@ export interface SDKOptions {
   defaultDecideOptions?: OptimizelyDecideOption[];
 }
 
-export type   OptimizelyExperimentsMap = {
+export type OptimizelyExperimentsMap = {
   [experimentKey: string]: OptimizelyExperiment;
 }
 
@@ -305,19 +305,19 @@ export type OptimizelyFeaturesMap = {
 export type OptimizelyAttribute = {
   id: string;
   key: string;
-}
+};
 
 export type OptimizelyAudience = {
   id: string;
   name: string;
   conditions: unknown[] | string;
-}
+};
 
 export type OptimizelyEvent = {
   id: string;
   key: string;
   experimentsIds: string[];
-}
+};
 
 export interface OptimizelyFeature {
   id: string;

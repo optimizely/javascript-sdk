@@ -26,18 +26,18 @@ import configValidator from '../../utils/config_validator';
 
 import { LogHandler } from '@optimizely/js-sdk-logging';
 import {
+  Audience,
   Experiment,
   FeatureFlag,
+  FeatureVariable,
   Group,
-  Audience,
+  OptimizelyVariation,
+  OptimizelyAttribute,
   Rollout,
   TrafficAllocation,
-  FeatureVariable,
   Variation,
-  OptimizelyVariation,
   VariableType,
   VariationVariable,
-  OptimizelyAttribute
 } from '../../shared_types';
 
 interface TryCreatingProjectConfigConfig {
@@ -122,8 +122,8 @@ function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
     return rolloutCopy;
   });
 
-  datafileCopy.environmentKey = datafile.environmentKey ? datafile.environmentKey : ""
-  datafileCopy.sdkKey = datafile.sdkKey ? datafile.sdkKey : ""
+  datafileCopy.environmentKey = datafile.environmentKey ? datafile.environmentKey : '';
+  datafileCopy.sdkKey = datafile.sdkKey ? datafile.sdkKey : '';
 
   return datafileCopy;
 }
