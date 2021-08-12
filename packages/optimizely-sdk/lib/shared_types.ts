@@ -249,7 +249,7 @@ export interface OptimizelyOptions {
 export interface OptimizelyExperiment {
   id: string;
   key: string;
-  audiences: unknown[] | string;
+  audiences: string;
   variationsMap: {
     [variationKey: string]: OptimizelyVariation;
   };
@@ -310,7 +310,7 @@ export type OptimizelyAttribute = {
 export type OptimizelyAudience = {
   id: string;
   name: string;
-  conditions: unknown[] | string;
+  conditions: string;
 };
 
 export type OptimizelyEvent = {
@@ -322,10 +322,14 @@ export type OptimizelyEvent = {
 export interface OptimizelyFeature {
   id: string;
   key: string;
-  experimentsMap: OptimizelyExperimentsMap;
-  variablesMap: OptimizelyVariablesMap;
   experimentRules: OptimizelyExperiment[];
   deliveryRules: OptimizelyExperiment[];
+  variablesMap: OptimizelyVariablesMap;
+
+  /**
+   * @deprecated Use experimentRules and deliveryRules
+   */
+  experimentsMap: OptimizelyExperimentsMap;
 }
 
 export interface OptimizelyVariation {
@@ -336,14 +340,22 @@ export interface OptimizelyVariation {
 }
 
 export interface OptimizelyConfig {
+  environmentKey: string;
+  sdkKey: string;
+  revision: string;
+
+  /**
+   * This experimentsMap is for experiments of legacy projects only
+   * For flag projects, experiment keys are not guaranteed to be unique
+   * across multiple flags, so this map may not include all experiments
+   * when keys conflict.
+   */
   experimentsMap: OptimizelyExperimentsMap;
+
   featuresMap: OptimizelyFeaturesMap;
   attributes: OptimizelyAttribute[];
   audiences: OptimizelyAudience[];
   events: OptimizelyEvent[];
-  revision: string;
-  sdkKey: string;
-  environmentKey: string;
   getDatafile(): string;
 }
 

@@ -18,7 +18,7 @@ const AND_CONDITION = 'and';
 const OR_CONDITION = 'or';
 const NOT_CONDITION = 'not';
 
-const DEFAULT_OPERATOR_TYPES = [AND_CONDITION, OR_CONDITION, NOT_CONDITION];
+export const DEFAULT_OPERATOR_TYPES = [AND_CONDITION, OR_CONDITION, NOT_CONDITION];
 export type ConditionTree<Leaf> = Leaf | unknown[];
 
 type LeafEvaluator<Leaf> = (leaf: Leaf) => boolean | null;
