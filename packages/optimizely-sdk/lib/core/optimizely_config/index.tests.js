@@ -856,7 +856,7 @@ describe('lib/core/optimizely_config', function() {
       ];
 
       for (let testNo = 0; testNo < audienceConditions.length; testNo++) {
-        const serializedAudiences = OptimizelyConfig.GetSerializedAudiences(audienceConditions[testNo], audiencesById);
+        const serializedAudiences = OptimizelyConfig.getSerializedAudiences(audienceConditions[testNo], audiencesById);
         assert.equal(serializedAudiences, expectedAudienceOutputs[testNo]);
       }
     });
