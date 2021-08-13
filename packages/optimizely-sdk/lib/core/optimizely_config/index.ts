@@ -205,14 +205,14 @@ export class OptimizelyConfig {
     isFeatureEnabled: boolean | undefined
   ): OptimizelyVariablesMap {
     const variablesMap = (featureIdVariableMap[featureId] || []).reduce(
-      (OptlyVariablesMap: OptimizelyVariablesMap, featureVariable) => {
-        OptlyVariablesMap[featureVariable.key] = {
+      (optlyVariablesMap: OptimizelyVariablesMap, featureVariable) => {
+        optlyVariablesMap[featureVariable.key] = {
           id: featureVariable.id,
           key: featureVariable.key,
           type: featureVariable.type,
           value: featureVariable.defaultValue,
         };
-        return OptlyVariablesMap;
+        return optlyVariablesMap;
       },
       {}
     );
@@ -245,7 +245,7 @@ export class OptimizelyConfig {
     featureId: string
   ): { [key: string]: Variation } {
     let variationsMap: { [key: string]: OptimizelyVariation } = {};
-    variationsMap = variations.reduce((OptlyVariationsMap: { [key: string]: OptimizelyVariation }, variation) => {
+    variationsMap = variations.reduce((optlyVariationsMap: { [key: string]: OptimizelyVariation }, variation) => {
       const variablesMap = OptimizelyConfig.mergeFeatureVariables(
         featureIdVariableMap,
         variableIdMap,
@@ -253,13 +253,13 @@ export class OptimizelyConfig {
         variation.variables,
         variation.featureEnabled
       );
-      OptlyVariationsMap[variation.key] = {
+      optlyVariationsMap[variation.key] = {
         id: variation.id,
         key: variation.key,
         featureEnabled: variation.featureEnabled,
         variablesMap: variablesMap,
       };
-      return OptlyVariationsMap;
+      return optlyVariationsMap;
     }, {});
 
     return variationsMap;
