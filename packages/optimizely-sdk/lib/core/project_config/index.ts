@@ -26,17 +26,17 @@ import configValidator from '../../utils/config_validator';
 
 import { LogHandler } from '@optimizely/js-sdk-logging';
 import {
+  Audience,
   Experiment,
   FeatureFlag,
+  FeatureVariable,
   Group,
-  Audience,
+  OptimizelyVariation,
   Rollout,
   TrafficAllocation,
-  FeatureVariable,
   Variation,
-  OptimizelyVariation,
   VariableType,
-  VariationVariable
+  VariationVariable,
 } from '../../shared_types';
 
 interface TryCreatingProjectConfigConfig {
@@ -50,6 +50,7 @@ interface TryCreatingProjectConfigConfig {
 interface Event {
   key: string;
   id: string;
+  experimentsIds: string[];
 }
 
 interface VariableUsageMap {
@@ -59,12 +60,12 @@ interface VariableUsageMap {
 export interface ProjectConfig {
   revision: string;
   projectId: string;
-  sdkKey?: string;
-  environmentKey?: string;
+  sdkKey: string;
+  environmentKey: string;
   sendFlagDecisions?: boolean;
   experimentKeyMap: { [key: string]: Experiment };
   featureKeyMap: {
-    [key: string]: FeatureFlag
+    [key: string]: FeatureFlag;
   };
   rollouts: Rollout[];
   featureFlags: FeatureFlag[];
@@ -81,7 +82,7 @@ export interface ProjectConfig {
   groupIdMap: { [id: string]: Group };
   groups: Group[];
   events: Event[];
-  attributes: Array<{ id: string }>;
+  attributes: Array<{ id: string; key: string }>;
   typedAudiences: Audience[];
   rolloutIdMap: { [id: string]: Rollout };
   anonymizeIP?: boolean | null;
@@ -120,10 +121,8 @@ function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
     return rolloutCopy;
   });
 
-  if (datafile.environmentKey && datafile.sdkKey) {
-    datafileCopy.environmentKey = datafile.environmentKey;
-    datafileCopy.sdkKey = datafile.sdkKey;
-  }
+  datafileCopy.environmentKey = datafile.environmentKey ?? '';
+  datafileCopy.sdkKey = datafile.sdkKey ?? '';
 
   return datafileCopy;
 }
