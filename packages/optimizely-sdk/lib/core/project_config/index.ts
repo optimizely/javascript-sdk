@@ -32,7 +32,6 @@ import {
   FeatureVariable,
   Group,
   OptimizelyVariation,
-  OptimizelyAttribute,
   Rollout,
   TrafficAllocation,
   Variation,
@@ -66,7 +65,7 @@ export interface ProjectConfig {
   sendFlagDecisions?: boolean;
   experimentKeyMap: { [key: string]: Experiment };
   featureKeyMap: {
-    [key: string]: FeatureFlag
+    [key: string]: FeatureFlag;
   };
   rollouts: Rollout[];
   featureFlags: FeatureFlag[];
@@ -83,7 +82,7 @@ export interface ProjectConfig {
   groupIdMap: { [id: string]: Group };
   groups: Group[];
   events: Event[];
-  attributes: OptimizelyAttribute[];
+  attributes: Array<{ id: string; key: string }>;
   typedAudiences: Audience[];
   rolloutIdMap: { [id: string]: Rollout };
   anonymizeIP?: boolean | null;

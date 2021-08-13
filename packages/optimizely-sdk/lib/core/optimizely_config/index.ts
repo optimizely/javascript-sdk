@@ -43,11 +43,19 @@ interface FeatureVariablesMap {
  * @param {string}        datafile
  */
 export class OptimizelyConfig {
-  public experimentsMap: OptimizelyExperimentsMap;
-  public featuresMap: OptimizelyFeaturesMap;
-  public revision: string;
-  public sdkKey: string;
   public environmentKey: string;
+  public sdkKey: string;
+  public revision: string;
+
+  /**
+   * This experimentsMap is for experiments of legacy projects only
+   * For flag projects, experiment keys are not guaranteed to be unique
+   * across multiple flags, so this map may not include all experiments
+   * when keys conflict.
+   */
+  public experimentsMap: OptimizelyExperimentsMap;
+
+  public featuresMap: OptimizelyFeaturesMap;
   public attributes: OptimizelyAttribute[];
   public audiences: OptimizelyAudience[];
   public events: OptimizelyEvent[];
@@ -99,7 +107,7 @@ export class OptimizelyConfig {
     });
 
     (configObj.audiences || []).forEach((audience) => {
-      if (!typedAudienceIds.includes(audience.id) && audience.id != '$opt_dummy_audience') {
+      if (typedAudienceIds.indexOf(audience.id) === -1 && audience.id != '$opt_dummy_audience') {
         audiences.push({
           id: audience.id,
           conditions: JSON.stringify(audience.conditions),
@@ -140,7 +148,7 @@ export class OptimizelyConfig {
         if (item instanceof Array) {
           subAudience = OptimizelyConfig.getSerializedAudiences(item, audiencesById);
           subAudience = `(${subAudience})`;
-        } else if (DEFAULT_OPERATOR_TYPES.includes(item)) {
+        } else if (DEFAULT_OPERATOR_TYPES.indexOf(item) > -1) {
           cond = item.toUpperCase();
         } else {
           // Checks if item is audience id
@@ -343,7 +351,7 @@ export class OptimizelyConfig {
     const experiments = configObj.experiments;
 
     return (experiments || []).reduce((experimentsMap: { [id: string]: OptimizelyExperiment }, experiment) => {
-      if (!rolloutExperimentIds.includes(experiment.id)) {
+      if (rolloutExperimentIds.indexOf(experiment.id) === -1) {
         const featureIds = configObj.experimentFeatureMap[experiment.id];
         let featureId = '';
         if (featureIds && featureIds.length > 0) {
@@ -398,7 +406,7 @@ export class OptimizelyConfig {
       const featureExperimentMap: OptimizelyExperimentsMap = {};
       const experimentRules: OptimizelyExperiment[] = [];
       for (const key in experimentsMapById) {
-        if (featureFlag.experimentIds.includes(key)) {
+        if (featureFlag.experimentIds.indexOf(key) > -1) {
           const experiment = experimentsMapById[key];
           if (experiment) {
             featureExperimentMap[experiment.key] = experiment;
