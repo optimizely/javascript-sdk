@@ -345,7 +345,7 @@ export interface OptimizelyConfig {
   revision: string;
 
   /**
-   * This experimentsMap is for experiments of legacy projects only
+   * This experimentsMap is for experiments of legacy projects only.
    * For flag projects, experiment keys are not guaranteed to be unique
    * across multiple flags, so this map may not include all experiments
    * when keys conflict.
