@@ -139,6 +139,7 @@ export default class Optimizely {
       datafileOptions: config.datafileOptions,
       jsonSchemaValidator: config.jsonSchemaValidator,
       sdkKey: config.sdkKey,
+      datafileManager: config.datafileManager
     });
 
     this.disposeOnUpdate = this.projectConfigManager.onUpdate(

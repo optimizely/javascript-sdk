@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from '@optimizely/js-sdk-logging';
+import { DatafileManager } from './core/datafile_manager/datafile_manager';
 
 export interface BucketerParams {
   experimentId: string;
@@ -240,6 +241,7 @@ export interface OptimizelyOptions {
   logger: LoggerFacade;
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
+  datafileManager: DatafileManager | null;
   defaultDecideOptions?: OptimizelyDecideOption[]
 }
 
