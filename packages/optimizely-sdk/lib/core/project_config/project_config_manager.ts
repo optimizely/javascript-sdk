@@ -19,7 +19,6 @@ import { getLogger } from '@optimizely/js-sdk-logging';
 import { ERROR_MESSAGES } from '../../utils/enums';
 import { createOptimizelyConfig } from '../optimizely_config';
 import {
-  DatafileOptions,
   OnReadyResult,
   OptimizelyConfig
 } from '../../shared_types';
@@ -31,7 +30,6 @@ const MODULE_NAME = 'PROJECT_CONFIG_MANAGER';
 
 interface ProjectConfigManagerConfig {
   datafile?: string,
-  datafileOptions?: DatafileOptions,
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean,
   };

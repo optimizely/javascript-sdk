@@ -25,7 +25,7 @@ export interface DatafileUpdateListener {
 interface Managed {
   start(): void;
 
-  stop(): Promise<any>;
+  stop(): Promise<unknown>;
 }
 
 export interface DatafileManager extends Managed {
@@ -36,6 +36,7 @@ export interface DatafileManager extends Managed {
 
 export class NoOpDatafileManager implements DatafileManager {
 
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   on(_eventName: string, _listener: DatafileUpdateListener): () => void {
       return (): void => {}
   }

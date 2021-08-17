@@ -261,10 +261,6 @@ describe('lib/optimizely', function() {
           sinon.assert.calledOnce(projectConfigManager.createProjectConfigManager);
           sinon.assert.calledWithExactly(projectConfigManager.createProjectConfigManager, {
             datafile: config,
-            datafileOptions: {
-              autoUpdate: true,
-              updateInterval: 2 * 60 * 1000,
-            },
             jsonSchemaValidator: jsonSchemaValidator,
             sdkKey: '12345',
             datafileManager: datafileManager

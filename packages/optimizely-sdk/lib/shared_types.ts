@@ -228,7 +228,7 @@ export interface OptimizelyOptions {
   clientEngine: string;
   clientVersion?: string;
   datafile?: string;
-  datafileOptions?: DatafileOptions;
+  datafileManager?: DatafileManager;
   errorHandler: ErrorHandler;
   eventBatchSize?: number;
   eventDispatcher: EventDispatcher;
@@ -241,7 +241,6 @@ export interface OptimizelyOptions {
   logger: LoggerFacade;
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
-  datafileManager?: DatafileManager;
   defaultDecideOptions?: OptimizelyDecideOption[]
 }
 
@@ -270,6 +269,8 @@ export interface OptimizelyVariable {
 export interface SDKOptions {
   // Datafile string
   datafile?: string;
+  // options for Datafile Manager
+  datafileOptions?: DatafileOptions;
   // errorHandler object for logging error
   errorHandler?: ErrorHandler;
   // limit of events to dispatch in a batch

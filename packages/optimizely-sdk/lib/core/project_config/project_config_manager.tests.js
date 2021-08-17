@@ -196,7 +196,6 @@ describe('lib/core/project_config/project_config_manager', function() {
       projectConfigManager.createProjectConfigManager({
         datafile: config,
         sdkKey: '12345',
-        datafileOptions: datafileOptions,
         datafileManager: getDatafileManagerForConfig({datafile: config, sdkKey: '12345'}, logger, datafileOptions)
       });
       sinon.assert.calledOnce(datafileManager.HttpPollingDatafileManager);

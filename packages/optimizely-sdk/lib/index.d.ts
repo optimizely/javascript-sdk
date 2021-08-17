@@ -82,8 +82,12 @@ declare module '@optimizely/optimizely-sdk' {
     datafile?: object | string;
     datafileOptions?: DatafileOptions;
     errorHandler?: ErrorHandler;
+    eventBatchSize?: number;
     eventDispatcher?: EventDispatcher;
-    logger?: LogHandler;
+    eventFlushInterval?: number;
+    jsonSchemaValidator?: {
+      validate(jsonObject: unknown): boolean,
+    };
     logLevel?:
       | string
       | enums.LOG_LEVEL.DEBUG
@@ -91,13 +95,9 @@ declare module '@optimizely/optimizely-sdk' {
       | enums.LOG_LEVEL.INFO
       | enums.LOG_LEVEL.NOTSET
       | enums.LOG_LEVEL.WARNING;
-    jsonSchemaValidator?: {
-      validate(jsonObject: unknown): boolean,
-    };
-    userProfileService?: UserProfileService | null;
-    eventBatchSize?: number;
-    eventFlushInterval?: number;
+    logger?: LogHandler;
     sdkKey?: string;
+    userProfileService?: UserProfileService | null;
     defaultDecideOptions?: OptimizelyDecideOption[]
   }
 

@@ -137,7 +137,6 @@ export default class Optimizely {
     this.defaultDecideOptions = defaultDecideOptions;
     this.projectConfigManager = createProjectConfigManager({
       datafile: config.datafile,
-      datafileOptions: config.datafileOptions,
       jsonSchemaValidator: config.jsonSchemaValidator,
       sdkKey: config.sdkKey,
       datafileManager: config.datafileManager
