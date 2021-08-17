@@ -130,6 +130,7 @@ const bundles = {
   'cjs-node': cjsBundleFor('node'),
   'cjs-browser': cjsBundleFor('browser'),
   'cjs-react-native': cjsBundleFor('react_native'),
+  'cjs-edge': cjsBundleFor('edge'),
   esm: esmBundle,
   'json-schema': jsonSchemaBundle,
   umd: umdBundle,

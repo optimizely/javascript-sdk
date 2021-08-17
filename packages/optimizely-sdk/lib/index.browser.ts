@@ -30,6 +30,7 @@ import * as loggerPlugin from './plugins/logger';
 import Optimizely from './optimizely';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { SDKOptions, OptimizelyDecideOption } from './shared_types';
+import { getDatafileManagerForConfig } from './shared_methods';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -47,9 +48,8 @@ let hasRetriedEvents = false;
  * @return {Optimizely|null} the Optimizely object
  *                           null on error 
  */
-const createInstance = function(config: SDKOptions): Optimizely | null {
+const createInstance = function (config: SDKOptions): Optimizely | null {
   try {
-
     // TODO warn about setting per instance errorHandler / logger / logLevel
     if (config.errorHandler) {
       setErrorHandler(config.errorHandler);
@@ -110,7 +110,8 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       eventBatchSize: eventBatchSize,
       eventFlushInterval: eventFlushInterval,
       logger: logger,
-      errorHandler: getErrorHandler()
+      errorHandler: getErrorHandler(),
+      datafileManager: getDatafileManagerForConfig(config, logger),
     };
 
     const optimizely = new Optimizely(optimizelyOptions);

@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2016-2017, 2019-2020 Optimizely, Inc. and contributors        *
+ * Copyright 2016-2017, 2019-2021 Optimizely, Inc. and contributors        *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -22,17 +22,14 @@ import {
   LogLevel
 } from '@optimizely/js-sdk-logging';
 import Optimizely from './optimizely';
-import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager';
-import { ProjectConfig, toDatafile, tryCreatingProjectConfig } from './core/project_config';
 import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
-import { SDKOptions, OptimizelyDecideOption, DatafileManagerConfig } from './shared_types';
-import { DatafileManager } from './core/datafile_manager/datafile_manager';
-import fns from './utils/fns';
+import { SDKOptions, OptimizelyDecideOption } from './shared_types';
+import { getDatafileManagerForConfig } from './shared_methods';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
@@ -92,31 +89,6 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
     }
 
-    let datafileManager: DatafileManager | null = null
-
-    if(config.sdkKey) {
-      const datafileManagerConfig: DatafileManagerConfig = {
-        sdkKey: config.sdkKey,
-      };
-      fns.assign(datafileManagerConfig, undefined);
-
-      if(config.datafile) {
-        const { configObj, error } = tryCreatingProjectConfig({
-          datafile: config.datafile,
-          jsonSchemaValidator: undefined,
-          logger: logger
-        });
-
-        if (error) {
-          logger.error(error);
-        }
-        if (configObj) {
-          datafileManagerConfig.datafile = toDatafile(configObj)
-        }
-        datafileManager = new HttpPollingDatafileManager(datafileManagerConfig)
-      }
-    }
-
     const optimizelyOptions = {
       clientEngine: enums.NODE_CLIENT_ENGINE,
       eventDispatcher: defaultEventDispatcher,
@@ -125,7 +97,7 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       eventFlushInterval: eventFlushInterval,
       logger: logger,
       errorHandler: getErrorHandler(),
-      datafileManager: datafileManager,
+      datafileManager: getDatafileManagerForConfig(config, logger),
     };
 
     return new Optimizely(optimizelyOptions);

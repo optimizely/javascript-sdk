@@ -27,6 +27,9 @@ import testData from '../../tests/test_data';
 import * as projectConfigManager from './project_config_manager';
 import * as optimizelyConfig from '../optimizely_config';
 import * as jsonSchemaValidator from '../../utils/json_schema_validator';
+import { getDatafileManagerForConfig } from '../../shared_methods';
+
+const logger = logging.getLogger();
 
 describe('lib/core/project_config/project_config_manager', function() {
   var globalStubErrorHandler;
@@ -58,6 +61,7 @@ describe('lib/core/project_config/project_config_manager', function() {
 
   it('should call the error handler and fulfill onReady with an unsuccessful result if neither datafile nor sdkKey are passed into the constructor', function() {
     var manager = projectConfigManager.createProjectConfigManager({
+      datafileManager: getDatafileManagerForConfig({}, logger)
     });
     sinon.assert.calledOnce(globalStubErrorHandler.handleError);
     var errorMessage = globalStubErrorHandler.handleError.lastCall.args[0].message;
@@ -73,6 +77,7 @@ describe('lib/core/project_config/project_config_manager', function() {
     var invalidDatafileJSON = 'abc';
     var manager = projectConfigManager.createProjectConfigManager({
       datafile: invalidDatafileJSON,
+      datafileManager: getDatafileManagerForConfig({datafile: invalidDatafileJSON}, logger)
     });
     sinon.assert.calledOnce(globalStubErrorHandler.handleError);
     var errorMessage = globalStubErrorHandler.handleError.lastCall.args[0].message;
@@ -90,6 +95,7 @@ describe('lib/core/project_config/project_config_manager', function() {
     var manager = projectConfigManager.createProjectConfigManager({
       datafile: invalidDatafile,
       jsonSchemaValidator: jsonSchemaValidator,
+      datafileManager: getDatafileManagerForConfig({datafile: invalidDatafile}, logger)
     });
     sinon.assert.calledOnce(globalStubErrorHandler.handleError);
     var errorMessage = globalStubErrorHandler.handleError.lastCall.args[0].message;
@@ -108,6 +114,7 @@ describe('lib/core/project_config/project_config_manager', function() {
     var manager = projectConfigManager.createProjectConfigManager({
       datafile: testData.getUnsupportedVersionConfig(),
       jsonSchemaValidator: jsonSchemaValidator,
+      datafileManager: getDatafileManagerForConfig({datafile: testData.getUnsupportedVersionConfig()}, logger)
     });
     sinon.assert.calledOnce(globalStubErrorHandler.handleError);
     var errorMessage = globalStubErrorHandler.handleError.lastCall.args[0].message;
@@ -131,6 +138,7 @@ describe('lib/core/project_config/project_config_manager', function() {
     it('should skip JSON schema validation if jsonSchemaValidator is not provided', function() {
       var manager = projectConfigManager.createProjectConfigManager({
         datafile: testData.getTestProjectConfig(),
+        datafileManager: getDatafileManagerForConfig({datafile: testData.getTestProjectConfig()}, logger)
       });
       sinon.assert.notCalled(jsonSchemaValidator.validate);
       return manager.onReady();
@@ -140,6 +148,7 @@ describe('lib/core/project_config/project_config_manager', function() {
       var manager = projectConfigManager.createProjectConfigManager({
         datafile: testData.getTestProjectConfig(),
         jsonSchemaValidator: jsonSchemaValidator,
+        datafileManager: getDatafileManagerForConfig({datafile: testData.getTestProjectConfig()}, logger)
       });
       sinon.assert.calledOnce(jsonSchemaValidator.validate);
       sinon.assert.calledOnce(stubLogHandler.log);
@@ -154,6 +163,7 @@ describe('lib/core/project_config/project_config_manager', function() {
     var configWithFeatures = testData.getTestProjectConfigWithFeatures();
     var manager = projectConfigManager.createProjectConfigManager({
       datafile: cloneDeep(configWithFeatures),
+      datafileManager: getDatafileManagerForConfig({datafile: cloneDeep(configWithFeatures)}, logger)
     });
     assert.deepEqual(manager.getConfig(), projectConfig.createProjectConfig(configWithFeatures));
     return manager.onReady().then(function(result) {
@@ -167,6 +177,7 @@ describe('lib/core/project_config/project_config_manager', function() {
     var configWithFeatures = testData.getTestProjectConfigWithFeatures();
     var manager = projectConfigManager.createProjectConfigManager({
       datafile: configWithFeatures,
+      datafileManager: getDatafileManagerForConfig({datafile: configWithFeatures}, logger)
     });
     var onUpdateSpy = sinon.spy();
     manager.onUpdate(onUpdateSpy);
@@ -178,13 +189,15 @@ describe('lib/core/project_config/project_config_manager', function() {
   describe('with a datafile manager', function() {
     it('passes the correct options to datafile manager', function() {
       var config = testData.getTestProjectConfig()
+      let datafileOptions = {
+        autoUpdate: true,
+        updateInterval: 10000,
+      }
       projectConfigManager.createProjectConfigManager({
         datafile: config,
         sdkKey: '12345',
-        datafileOptions: {
-          autoUpdate: true,
-          updateInterval: 10000,
-        },
+        datafileOptions: datafileOptions,
+        datafileManager: getDatafileManagerForConfig({datafile: config, sdkKey: '12345'}, logger, datafileOptions)
       });
       sinon.assert.calledOnce(datafileManager.HttpPollingDatafileManager);
       sinon.assert.calledWithExactly(
@@ -210,6 +223,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         });
         var manager = projectConfigManager.createProjectConfigManager({
           sdkKey: '12345',
+          datafileManager: getDatafileManagerForConfig({sdkKey: '12345'}, logger)
         });
         assert.isNull(manager.getConfig());
         return manager.onReady().then(function(result) {
@@ -248,6 +262,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         });
         var manager = projectConfigManager.createProjectConfigManager({
           sdkKey: '12345',
+          datafileManager: getDatafileManagerForConfig({sdkKey: '12345'}, logger)
         });
         var onUpdateSpy = sinon.spy();
         manager.onUpdate(onUpdateSpy);
@@ -275,6 +290,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         });
         var manager = projectConfigManager.createProjectConfigManager({
           sdkKey: '12345',
+          datafileManager: getDatafileManagerForConfig({sdkKey: '12345'}, logger)
         });
         return manager.onReady().then(function() {
           var onUpdateSpy = sinon.spy();
@@ -314,6 +330,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         var manager = projectConfigManager.createProjectConfigManager({
           jsonSchemaValidator: jsonSchemaValidator,
           sdkKey: '12345',
+          datafileManager:  getDatafileManagerForConfig({sdkKey: '12345'}, logger)
         });
         return manager.onReady().then(function(result) {
           assert.include(result, {
@@ -333,6 +350,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         var manager = projectConfigManager.createProjectConfigManager({
           jsonSchemaValidator: jsonSchemaValidator,
           sdkKey: '12345',
+          datafileManager: getDatafileManagerForConfig({sdkKey: '12345'}, logger)
         });
         return manager.onReady().then(function(result) {
           assert.include(result, {
@@ -344,6 +362,7 @@ describe('lib/core/project_config/project_config_manager', function() {
       it('calls stop on its datafile manager when its stop method is called', function() {
         var manager = projectConfigManager.createProjectConfigManager({
           sdkKey: '12345',
+          datafileManager: getDatafileManagerForConfig({sdkKey: '12345'}, logger)
         });
         manager.stop();
         sinon.assert.calledOnce(datafileManager.HttpPollingDatafileManager.getCall(0).returnValue.stop);
@@ -352,6 +371,7 @@ describe('lib/core/project_config/project_config_manager', function() {
       it('does not log an error message', function() {
         projectConfigManager.createProjectConfigManager({
           sdkKey: '12345',
+          datafileManager: getDatafileManagerForConfig({sdkKey: '12345'}, logger)
         });
         sinon.assert.notCalled(stubLogHandler.log);
       });
@@ -370,6 +390,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         var manager = projectConfigManager.createProjectConfigManager({
           datafile: configWithFeatures,
           sdkKey: '12345',
+          datafileManager: getDatafileManagerForConfig({datafile: configWithFeatures, sdkKey: '12345'}, logger)
         });
         var onUpdateSpy = sinon.spy();
         manager.onUpdate(onUpdateSpy);
@@ -397,6 +418,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         var manager = projectConfigManager.createProjectConfigManager({
           datafile: JSON.stringify(configWithFeatures),
           sdkKey: '12345',
+          datafileManager: getDatafileManagerForConfig({datafile: JSON.stringify(configWithFeatures), sdkKey: '12345'}, logger)
         });
         var onUpdateSpy = sinon.spy();
         manager.onUpdate(onUpdateSpy);
@@ -424,6 +446,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         var manager = projectConfigManager.createProjectConfigManager({
           datafile: testData.getTestProjectConfig(),
           sdkKey: '12345',
+          datafileManager: getDatafileManagerForConfig({datafile: testData.getTestProjectConfig(), sdkKey: '12345'}, logger)
         });
         // creating optimizely config once project config manager for the first time
         sinon.assert.calledOnce(optimizelyConfig.createOptimizelyConfig);

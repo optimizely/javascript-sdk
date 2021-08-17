@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020 Optimizely
+ * Copyright 2019-2021 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import * as loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { SDKOptions, OptimizelyDecideOption } from './shared_types';
+import { getDatafileManagerForConfig } from './shared_methods';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -91,7 +92,8 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       eventBatchSize: eventBatchSize,
       eventFlushInterval: eventFlushInterval,
       logger: logger,
-      errorHandler: getErrorHandler()
+      errorHandler: getErrorHandler(),
+      datafileManager: getDatafileManagerForConfig(config, logger)
     };
 
     // If client engine is react, convert it to react native.

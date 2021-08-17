@@ -241,7 +241,7 @@ export interface OptimizelyOptions {
   logger: LoggerFacade;
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
-  datafileManager: DatafileManager | null;
+  datafileManager?: DatafileManager;
   defaultDecideOptions?: OptimizelyDecideOption[]
 }
 

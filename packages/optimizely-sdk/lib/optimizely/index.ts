@@ -78,6 +78,7 @@ type StringInputs = Partial<Record<InputKey, unknown>>;
  * @param {Object}            config.eventBatchSize
  * @param {Object}            config.eventFlushInterval
  * @param {string}            config.sdkKey
+ * @param {Object}            config.datafileManager
  */
 export default class Optimizely {
   private isOptimizelyConfigValid: boolean;

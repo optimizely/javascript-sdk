@@ -1,3 +1,18 @@
+/**
+ * Copyright 2021, Optimizely
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 export interface DatafileUpdate {
   datafile: string;
 }
@@ -19,23 +34,23 @@ export interface DatafileManager extends Managed {
   onReady: () => Promise<void>;
 }
 
-// export class EdgeDatafileManager implements DatafileManager {
+export class NoOpDatafileManager implements DatafileManager {
 
-//   on(_eventName: string, _listener: DatafileUpdateListener): () => void {
-//       return (): void => {}
-//   }
+  on(_eventName: string, _listener: DatafileUpdateListener): () => void {
+      return (): void => {}
+  }
 
-//   get(): string {
-//     return '';
-//   }
+  get(): string {
+    return '';
+  }
 
-//   onReady(): Promise<void> {
-//     return Promise.resolve();
-//   }
+  onReady(): Promise<void> {
+    return Promise.resolve();
+  }
 
-//   start(): void {}
+  start(): void {}
 
-//   stop(): Promise<void> {
-//     return Promise.resolve();
-//   }
-// }
+  stop(): Promise<void> {
+    return Promise.resolve();
+  }
+}

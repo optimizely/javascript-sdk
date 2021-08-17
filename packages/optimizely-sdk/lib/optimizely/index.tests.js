@@ -35,6 +35,7 @@ import * as decisionService from '../core/decision_service';
 import * as jsonSchemaValidator from '../utils/json_schema_validator';
 import * as projectConfig from '../core/project_config';
 import testData from '../tests/test_data';
+import { getDatafileManagerForConfig } from '../shared_methods';
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
@@ -233,25 +234,29 @@ describe('lib/optimizely', function() {
             jsonSchemaValidator: jsonSchemaValidator,
             logger: createdLogger,
             sdkKey: '12345',
+            datafileManager: getDatafileManagerForConfig({sdkKey: '12345'}, createdLogger)
           });
           sinon.assert.notCalled(stubErrorHandler.handleError);
         });
 
         it('passes datafile, datafileOptions, sdkKey, and other options to the project config manager', function() {
           var config = testData.getTestProjectConfig();
+          let datafileOptions = {
+            autoUpdate: true,
+            updateInterval: 2 * 60 * 1000,
+          }
+          let datafileManager = getDatafileManagerForConfig({sdkKey: '12345'}, createdLogger, datafileOptions)
           new Optimizely({
             clientEngine: 'node-sdk',
             datafile: config,
-            datafileOptions: {
-              autoUpdate: true,
-              updateInterval: 2 * 60 * 1000,
-            },
+            datafileOptions: datafileOptions,
             errorHandler: errorHandler,
             eventDispatcher: eventDispatcher,
             isValidInstance: true,
             jsonSchemaValidator: jsonSchemaValidator,
             logger: createdLogger,
             sdkKey: '12345',
+            datafileManager: datafileManager
           });
           sinon.assert.calledOnce(projectConfigManager.createProjectConfigManager);
           sinon.assert.calledWithExactly(projectConfigManager.createProjectConfigManager, {
@@ -262,6 +267,7 @@ describe('lib/optimizely', function() {
             },
             jsonSchemaValidator: jsonSchemaValidator,
             sdkKey: '12345',
+            datafileManager: datafileManager
           });
         });
       });

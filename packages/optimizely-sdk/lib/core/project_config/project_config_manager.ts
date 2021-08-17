@@ -36,7 +36,7 @@ interface ProjectConfigManagerConfig {
     validate(jsonObject: unknown): boolean,
   };
   sdkKey?: string,
-  datafileManager: DatafileManager | null
+  datafileManager?: DatafileManager
 }
 
 /**
