@@ -8,7 +8,6 @@ node_js:
 branches:
   only:
   - master
-  - "sohail/removetokens"
   - /^\d+\.\d+\.(\d|[x])
 env:
   global:
