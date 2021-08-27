@@ -53,22 +53,22 @@ const cjsBundleFor = (platform) => ({
   },
 });
 
-const esmBundle = {
-  ...cjsBundleFor('browser'),
+const esmBundleFor = (platform) => ({
+  ...cjsBundleFor(platform),
   output: [
     {
       format: 'es',
-      file: 'dist/optimizely.browser.es.js',
+      file: `dist/optimizely.${platform}.es.js`,
       sourcemap: true,
     },
     {
       format: 'es',
-      file: 'dist/optimizely.browser.es.min.js',
+      file: `dist/optimizely.${platform}.es.min.js`,
       plugins: [terser()],
       sourcemap: true,
     },
   ],
-};
+})
 
 const umdBundle = {
   plugins: [
@@ -131,7 +131,8 @@ const bundles = {
   'cjs-browser': cjsBundleFor('browser'),
   'cjs-react-native': cjsBundleFor('react_native'),
   'cjs-edge': cjsBundleFor('edge'),
-  esm: esmBundle,
+  esm: esmBundleFor('browser'),
+  'esm-edge': esmBundleFor('edge'),
   'json-schema': jsonSchemaBundle,
   umd: umdBundle,
 };
