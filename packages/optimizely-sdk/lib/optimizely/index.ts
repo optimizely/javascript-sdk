@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { sprintf, objectValues, NotificationCenter } from '@optimizely/js-sdk-utils';
+import { find, sprintf, objectValues, NotificationCenter } from '@optimizely/js-sdk-utils';
 import { LoggerFacade, ErrorHandler } from '@optimizely/js-sdk-logging';
 import { EventProcessor } from '@optimizely/js-sdk-event-processor';
 
@@ -26,6 +26,7 @@ import {
   Variation,
   FeatureFlag,
   FeatureVariable,
+  OptimizelyVariation,
   OptimizelyOptions,
   OptimizelyDecideOption,
   OptimizelyDecision
@@ -282,7 +283,6 @@ export default class Optimizely {
     if (!configObj) {
       return;
     }
-
     const impressionEvent = buildImpressionEvent({
       decisionObj: decisionObj,
       flagKey: flagKey,
@@ -322,12 +322,11 @@ export default class Optimizely {
     const experimentKey = decision.getExperimentKey(decisionObj);
     const experimentId = decision.getExperimentId(decisionObj);
     const variationKey = decision.getVariationKey(decisionObj);
+    const variationId = decision.getVariationId(decisionObj);
 
-    let variationId = null;
     let experiment;
 
     if (experimentId !== null && variationKey !== '') {
-      variationId = projectConfig.getVariationIdFromExperimentIdAndVariationKey(configObj, experimentId, variationKey);
       experiment = configObj.experimentIdMap[experimentId];
     }
 
@@ -488,7 +487,15 @@ export default class Optimizely {
           return null;
         }
 
-        const variationKey = this.decisionService.getVariation(configObj, experiment, userId, attributes).result;
+        let variationKey = null;
+        const variation = this.decisionService.getVariation(
+          configObj,
+          experiment,
+          this.createUserContext(userId, attributes) as OptimizelyUserContext
+        ).result;
+        if (variation) {
+          variationKey = variation.key;
+        }
         const decisionNotificationType = projectConfig.isFeatureExperiment(configObj, experiment.id)
           ? DECISION_NOTIFICATION_TYPES.FEATURE_TEST
           : DECISION_NOTIFICATION_TYPES.AB_TEST;
@@ -560,7 +567,13 @@ export default class Optimizely {
     }
 
     try {
-      return this.decisionService.getForcedVariation(configObj, experimentKey, userId).result;
+      let variationKey = null;
+      const variation = this.decisionService.getForcedVariation(configObj, experimentKey, userId).result;
+      if (variation) {
+        variationKey = variation.key;
+      }
+
+      return variationKey;
     } catch (ex) {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       this.errorHandler.handleError(ex);
@@ -676,7 +689,8 @@ export default class Optimizely {
       }
 
       let sourceInfo = {};
-      const decisionObj = this.decisionService.getVariationForFeature(configObj, feature, userId, attributes).result;
+      const user = this.createUserContext(userId, attributes) as OptimizelyUserContext;
+      const decisionObj = this.decisionService.getVariationForFeature(configObj, feature, user).result;
       const decisionSource = decisionObj.decisionSource;
       const experimentKey = decision.getExperimentKey(decisionObj);
       const variationKey = decision.getVariationKey(decisionObj);
@@ -880,7 +894,8 @@ export default class Optimizely {
       return null;
     }
 
-    const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes).result;
+    const user = this.createUserContext(userId, attributes) as OptimizelyUserContext;
+    const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, user).result;
     const featureEnabled = decision.getFeatureEnabledFromVariation(decisionObj);
     const variableValue = this.getFeatureVariableValueFromVariation(featureKey, featureEnabled, decisionObj.variation, variable, userId);
     let sourceInfo = {};
@@ -1186,7 +1201,9 @@ export default class Optimizely {
         return null;
       }
 
-      const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes).result;
+      const user = this.createUserContext(userId, attributes) as OptimizelyUserContext;
+
+      const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, user).result;
       const featureEnabled = decision.getFeatureEnabledFromVariation(decisionObj);
       const allVariables: { [variableKey: string]: unknown } = {};
 
@@ -1456,8 +1473,11 @@ export default class Optimizely {
     key: string,
     options: OptimizelyDecideOption[] = []
   ): OptimizelyDecision {
+    const userId = user.getUserId();
+    const attributes = user.getAttributes();
     const configObj = this.projectConfigManager.getConfig();
     const reasons: (string | number)[][] = [];
+    let decisionObj: DecisionObj;
     if (!this.isValidInstance() || !configObj) {
       this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decide');
       return newErrorDecision(key, user, [DECISION_MESSAGES.SDK_NOT_READY]);
@@ -1469,18 +1489,27 @@ export default class Optimizely {
       return newErrorDecision(key, user, [sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, key)]);
     }
 
-    const userId = user.getUserId();
-    const attributes = user.getAttributes();
     const allDecideOptions = this.getAllDecideOptions(options);
-    const decisionVariation = this.decisionService.getVariationForFeature(
-      configObj,
-      feature,
-      userId,
-      attributes,
-      allDecideOptions,
-    );
-    reasons.push(...decisionVariation.reasons);
-    const decisionObj = decisionVariation.result;
+
+    const forcedDecisionResponse = user.findValidatedForcedDecision(key);
+    reasons.push(...forcedDecisionResponse.reasons);
+    const variation = forcedDecisionResponse.result;
+    if (variation) {
+      decisionObj = {
+        experiment: null,
+        variation: variation,
+        decisionSource: DECISION_SOURCES.FEATURE_TEST
+      }
+    } else {
+      const decisionVariation = this.decisionService.getVariationForFeature(
+        configObj,
+        feature,
+        user,
+        allDecideOptions,
+      );
+      reasons.push(...decisionVariation.reasons);
+      decisionObj = decisionVariation.result;
+    }
     const decisionSource = decisionObj.decisionSource;
     const experimentKey = decisionObj.experiment?.key ?? null;
     const variationKey = decisionObj.variation?.key ?? null;
@@ -1651,5 +1680,26 @@ export default class Optimizely {
     const allFlagKeys = Object.keys(configObj.featureKeyMap);
 
     return this.decideForKeys(user, allFlagKeys, options);
+  }
+
+  /**
+   * Returns flag variation for specified flagKey and variationKey
+   * @param  {flagKey}        string
+   * @param  {variationKey}   string
+   * @return {OptimizelyVariation|null}
+   */
+  getFlagVariationByKey(flagKey: string, variationKey: string): OptimizelyVariation | null {
+    const configObj = this.projectConfigManager.getConfig();
+    if (!configObj) {
+      return null;
+    }
+
+    const variations = configObj.flagVariationsMap[flagKey];
+    const result = find(variations, item => item.key === variationKey)
+    if (result) {
+      return result;
+    }
+
+    return null;
   }
 }

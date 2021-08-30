@@ -34,7 +34,6 @@ describe('lib/event_builder/event_helpers', function() {
     };
 
     sinon.stub(projectConfig, 'getEventId');
-    sinon.stub(projectConfig, 'getVariationIdFromExperimentIdAndVariationKey');
     sinon.stub(projectConfig, 'getLayerId');
     sinon.stub(projectConfig, 'getAttributeId');
 
@@ -48,7 +47,6 @@ describe('lib/event_builder/event_helpers', function() {
     decision.getExperimentId.restore();
 
     projectConfig.getEventId.restore();
-    projectConfig.getVariationIdFromExperimentIdAndVariationKey.restore();
     projectConfig.getLayerId.restore();
     projectConfig.getAttributeId.restore();
 
@@ -84,9 +82,6 @@ describe('lib/event_builder/event_helpers', function() {
         }
         decision.getExperimentId.withArgs(decisionObj).returns('exp1-id');
 
-        projectConfig.getVariationIdFromExperimentIdAndVariationKey
-          .withArgs(configObj, 'exp1-id', 'var1')
-          .returns('var1-id');
         projectConfig.getLayerId.withArgs(configObj, 'exp1-id').returns('layer-id');
 
         projectConfig.getAttributeId.withArgs(configObj, 'plan_type').returns('plan_type_id');
@@ -178,9 +173,6 @@ describe('lib/event_builder/event_helpers', function() {
         }
         decision.getExperimentId.withArgs(decisionObj).returns('exp1-id');
 
-        projectConfig.getVariationIdFromExperimentIdAndVariationKey
-          .withArgs(configObj, 'exp1-id', 'var1')
-          .returns('var1-id');
         projectConfig.getLayerId.withArgs(configObj, 'exp1-id').returns('layer-id');
 
         projectConfig.getAttributeId.withArgs(configObj, 'plan_type').returns('plan_type_id');

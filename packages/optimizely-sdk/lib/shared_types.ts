@@ -380,6 +380,14 @@ export interface OptimizelyUserContext {
     options: OptimizelyDecideOption[],
   ): { [key: string]: OptimizelyDecision };
   trackEvent(eventName: string, eventTags?: EventTags): void;
+  findValidatedForcedDecision(
+    flagKey: string,
+    ruleKey?: string,
+  ): DecisionResponse<Variation | null>;
+  setForcedDecision(key: OptimizelyDecisionKey, variationKey: string): boolean;
+  getForcedDecision(key: OptimizelyDecisionKey): string | null;
+  removeForcedDecision(key: OptimizelyDecisionKey): boolean;
+  removeAllForcedDecisions(): boolean;
 }
 
 export interface OptimizelyDecision {
@@ -417,4 +425,21 @@ export interface DatafileManager extends Managed {
   get: () => string;
   on(eventName: string, listener: DatafileUpdateListener): () => void;
   onReady: () => Promise<void>;
+}
+
+export interface FeatureDecision {
+  experiment?: Experiment;
+  variation: Variation;
+  source: string;
+}
+
+export interface ForcedDecision {
+  flagKey: string;
+  variationKey: string;
+  ruleKey?: string;
+}
+
+export interface OptimizelyDecisionKey {
+  flagKey: string;
+  ruleKey?: string;
 }

@@ -983,7 +983,7 @@ describe('lib/optimizely', function() {
           var activate = optlyInstance.activate('testExperiment', 'user1');
           assert.strictEqual(activate, 'control');
 
-          sinon.assert.calledTwice(Optimizely.prototype.validateInputs);
+          sinon.assert.calledThrice(Optimizely.prototype.validateInputs);
 
           var logMessage0 = buildLogMessageFromArgs(createdLogger.log.args[0]);
           assert.strictEqual(
@@ -1882,7 +1882,7 @@ describe('lib/optimizely', function() {
           var getVariation = optlyInstance.getVariation('testExperiment', 'user1');
           assert.strictEqual(getVariation, 'control');
 
-          sinon.assert.calledOnce(Optimizely.prototype.validateInputs);
+          sinon.assert.calledTwice(Optimizely.prototype.validateInputs);
 
           sinon.assert.calledTwice(createdLogger.log);
 
@@ -6267,6 +6267,7 @@ describe('lib/optimizely', function() {
           });
 
           it('returns true and dispatches an impression event', function() {
+            var user = optlyInstance.createUserContext('user1', attributes);
             var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user1', attributes);
             assert.strictEqual(result, true);
             sinon.assert.calledOnce(optlyInstance.decisionService.getVariationForFeature);
@@ -6275,8 +6276,7 @@ describe('lib/optimizely', function() {
               optlyInstance.decisionService.getVariationForFeature,
               optlyInstance.projectConfigManager.getConfig(),
               feature,
-              'user1',
-              attributes
+              user
             );
 
             sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
@@ -6493,12 +6493,12 @@ describe('lib/optimizely', function() {
             assert.strictEqual(result, false);
             sinon.assert.calledOnce(optlyInstance.decisionService.getVariationForFeature);
             var feature = optlyInstance.projectConfigManager.getConfig().featureKeyMap.shared_feature;
+            var user = optlyInstance.createUserContext('user1', attributes);
             sinon.assert.calledWithExactly(
               optlyInstance.decisionService.getVariationForFeature,
               optlyInstance.projectConfigManager.getConfig(),
               feature,
-              'user1',
-              attributes
+              user
             );
           });
 
@@ -6582,6 +6582,7 @@ describe('lib/optimizely', function() {
 
           it('should return false', function() {
             var result = optlyInstance.isFeatureEnabled('shared_feature', 'user1', attributes);
+            var user = optlyInstance.createUserContext('user1', attributes);
             assert.strictEqual(result, false);
             sinon.assert.calledOnce(optlyInstance.decisionService.getVariationForFeature);
             var feature = optlyInstance.projectConfigManager.getConfig().featureKeyMap.shared_feature;
@@ -6589,8 +6590,7 @@ describe('lib/optimizely', function() {
               optlyInstance.decisionService.getVariationForFeature,
               optlyInstance.projectConfigManager.getConfig(),
               feature,
-              'user1',
-              attributes
+              user
             );
           });
         });
