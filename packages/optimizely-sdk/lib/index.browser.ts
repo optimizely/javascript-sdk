@@ -29,6 +29,8 @@ import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
 import Optimizely from './optimizely';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
+import { createNotificationCenter } from './core/notification_center';
+import { createEventProcessor } from './core/event_processor';
 import { SDKOptions, OptimizelyDecideOption } from './shared_types';
 import { getDatafileManagerForConfig } from './shared_methods';
 
@@ -39,6 +41,7 @@ setLogLevel(LogLevel.INFO);
 const MODULE_NAME = 'INDEX_BROWSER';
 const DEFAULT_EVENT_BATCH_SIZE = 10;
 const DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
+const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
 
 let hasRetriedEvents = false;
 
@@ -103,14 +106,25 @@ const createInstance = function (config: SDKOptions): Optimizely | null {
       eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
     }
 
+    const errorHandler = getErrorHandler();
+    const notificationCenter = createNotificationCenter({ logger: logger, errorHandler: errorHandler });
+
+    const eventProcessorConfig = {
+      dispatcher: eventDispatcher,
+      flushInterval: eventFlushInterval,
+      batchSize: eventBatchSize,
+      maxQueueSize:  config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
+      notificationCenter,
+    }
+
+    const eventProcessor = createEventProcessor(eventProcessorConfig);
+
     const optimizelyOptions = {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
-      eventDispatcher: eventDispatcher,
       ...config,
-      eventBatchSize: eventBatchSize,
-      eventFlushInterval: eventFlushInterval,
+      eventProcessor,
       logger: logger,
-      errorHandler: getErrorHandler(),
+      errorHandler: errorHandler,
       datafileManager: getDatafileManagerForConfig(config, logger, config.datafileOptions),
     };
 

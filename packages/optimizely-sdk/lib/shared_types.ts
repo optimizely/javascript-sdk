@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from '@optimizely/js-sdk-logging';
+import { EventProcessor } from '@optimizely/js-sdk-event-processor';
+
 import { DatafileManager } from './core/datafile_manager/datafile_manager';
 
 export interface BucketerParams {
@@ -230,10 +232,7 @@ export interface OptimizelyOptions {
   datafile?: string;
   datafileManager?: DatafileManager;
   errorHandler: ErrorHandler;
-  eventBatchSize?: number;
-  eventDispatcher: EventDispatcher;
-  eventFlushInterval?: number;
-  eventMaxQueueSize?: number;
+  eventProcessor: EventProcessor;
   isValidInstance: boolean;
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean,
@@ -279,6 +278,8 @@ export interface SDKOptions {
   eventDispatcher?: EventDispatcher;
   // maximum time for an event to stay in the queue
   eventFlushInterval?: number;
+  // maximum size for the event queue
+  eventMaxQueueSize?: number;
   // flag to validate if this instance is valid
   isValidInstance: boolean;
   // level of logging i.e debug, info, error, warning etc

@@ -19,7 +19,6 @@ import {
   UserAttributes,
   EventTags,
   OptimizelyConfig,
-  EventDispatcher,
   OnReadyResult,
   UserProfileService,
   Variation,
@@ -38,7 +37,7 @@ import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
 import { buildImpressionEvent, buildConversionEvent } from '../core/event_builder/event_helpers';
 import fns from '../utils/fns'
 import { validate } from '../utils/attributes_validator';
-import { EventProcessor, default as eventProcessor } from '../core/event_processor';
+import { EventProcessor } from '../core/event_processor';
 import * as enums from '../utils/enums';
 import * as eventTagsValidator from '../utils/event_tags_validator';
 import * as projectConfig from '../core/project_config';
@@ -91,7 +90,6 @@ export default class Optimizely {
   private clientEngine: string;
   private clientVersion: string;
   private errorHandler: ErrorHandler;
-  private eventDispatcher: EventDispatcher;
   private logger: LoggerFacade;
   private projectConfigManager: ProjectConfigManager;
   private notificationCenter: NotificationCenter;
@@ -112,7 +110,6 @@ export default class Optimizely {
     this.clientEngine = clientEngine;
     this.clientVersion = config.clientVersion || enums.NODE_CLIENT_VERSION;
     this.errorHandler = config.errorHandler;
-    this.eventDispatcher = config.eventDispatcher;
     this.isOptimizelyConfigValid = config.isValidInstance;
     this.logger = config.logger;
 
@@ -177,15 +174,7 @@ export default class Optimizely {
       errorHandler: this.errorHandler,
     });
 
-    const eventProcessorConfig = {
-      dispatcher: this.eventDispatcher,
-      flushInterval: config.eventFlushInterval,
-      batchSize: config.eventBatchSize,
-      maxQueueSize: config.eventMaxQueueSize,
-      notificationCenter: this.notificationCenter,
-    }
-
-    this.eventProcessor = eventProcessor.createEventProcessor(eventProcessorConfig);
+    this.eventProcessor = config.eventProcessor;
 
     const eventProcessorStartedPromise = this.eventProcessor.start();
 

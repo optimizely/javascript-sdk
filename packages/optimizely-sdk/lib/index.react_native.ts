@@ -28,6 +28,8 @@ import defaultErrorHandler from './plugins/error_handler';
 import * as loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
+import { createNotificationCenter } from './core/notification_center';
+import { createEventProcessor } from './core/event_processor';
 import { SDKOptions, OptimizelyDecideOption } from './shared_types';
 import { getDatafileManagerForConfig } from './shared_methods';
 
@@ -84,15 +86,25 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
     }
 
+    const errorHandler = getErrorHandler();
+    const notificationCenter = createNotificationCenter({ logger: logger, errorHandler: errorHandler });
+
+    const eventProcessorConfig = {
+      dispatcher: defaultEventDispatcher,
+      flushInterval: config.eventFlushInterval,
+      batchSize: config.eventBatchSize,
+      maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
+      notificationCenter,
+    }
+
+    const eventProcessor = createEventProcessor(eventProcessorConfig);
+
     const optimizelyOptions = {
       clientEngine: enums.REACT_NATIVE_JS_CLIENT_ENGINE,
-      eventDispatcher: defaultEventDispatcher,
-      eventMaxQueueSize: DEFAULT_EVENT_MAX_QUEUE_SIZE,
       ...config,
-      eventBatchSize: eventBatchSize,
-      eventFlushInterval: eventFlushInterval,
-      logger: logger,
-      errorHandler: getErrorHandler(),
+      eventProcessor: eventProcessor,
+      logger,
+      errorHandler,
       datafileManager: getDatafileManagerForConfig(config, logger, config.datafileOptions)
     };
 
