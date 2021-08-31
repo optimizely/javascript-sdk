@@ -83,6 +83,7 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       errorHandler,
       datafileManager: new NoOpDatafileManager(),
       eventProcessor,
+      notificationCenter,
     };
 
     const optimizely = new Optimizely(optimizelyOptions);

@@ -17,6 +17,7 @@ import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from '@optimizely/js
 import { EventProcessor } from '@optimizely/js-sdk-event-processor';
 
 import { DatafileManager } from './core/datafile_manager/datafile_manager';
+import { NotificationCenter } from '@optimizely/js-sdk-utils';
 
 export interface BucketerParams {
   experimentId: string;
@@ -240,7 +241,8 @@ export interface OptimizelyOptions {
   logger: LoggerFacade;
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
-  defaultDecideOptions?: OptimizelyDecideOption[]
+  defaultDecideOptions?: OptimizelyDecideOption[];
+  notificationCenter: NotificationCenter;
 }
 
 /**

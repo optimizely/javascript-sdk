@@ -105,7 +105,8 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       eventProcessor: eventProcessor,
       logger,
       errorHandler,
-      datafileManager: getDatafileManagerForConfig(config, logger, config.datafileOptions)
+      datafileManager: getDatafileManagerForConfig(config, logger, config.datafileOptions),
+      notificationCenter,
     };
 
     // If client engine is react, convert it to react native.

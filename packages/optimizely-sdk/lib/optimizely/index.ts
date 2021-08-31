@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
+import { sprintf, objectValues, NotificationCenter } from '@optimizely/js-sdk-utils';
 import { LoggerFacade, ErrorHandler } from '@optimizely/js-sdk-logging';
 import {
   UserAttributes,
@@ -31,7 +31,7 @@ import {
 import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
-import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
+import { createNotificationCenter } from '../core/notification_center';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
 import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
 import { buildImpressionEvent, buildConversionEvent } from '../core/event_builder/event_helpers';
@@ -169,10 +169,7 @@ export default class Optimizely {
       UNSTABLE_conditionEvaluators: config.UNSTABLE_conditionEvaluators,
     });
 
-    this.notificationCenter = createNotificationCenter({
-      logger: this.logger,
-      errorHandler: this.errorHandler,
-    });
+    this.notificationCenter = config.notificationCenter;
 
     this.eventProcessor = config.eventProcessor;
 
