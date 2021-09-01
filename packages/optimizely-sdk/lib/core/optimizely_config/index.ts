@@ -405,15 +405,13 @@ export class OptimizelyConfig {
     configObj.featureFlags.forEach((featureFlag) => {
       const featureExperimentMap: OptimizelyExperimentsMap = {};
       const experimentRules: OptimizelyExperiment[] = [];
-      for (const key in experimentsMapById) {
-        if (featureFlag.experimentIds.indexOf(key) > -1) {
-          const experiment = experimentsMapById[key];
-          if (experiment) {
-            featureExperimentMap[experiment.key] = experiment;
-          }
-          experimentRules.push(experimentsMapById[key]);
+      featureFlag.experimentIds.forEach(experimentId => {
+        const experiment = experimentsMapById[experimentId];
+        if (experiment) {
+          featureExperimentMap[experiment.key] = experiment;
         }
-      }
+        experimentRules.push(experimentsMapById[experimentId]);
+      });
       const featureVariableMap = (featureFlag.variables || []).reduce((variables: OptimizelyVariablesMap, variable) => {
         variables[variable.key] = {
           id: variable.id,
