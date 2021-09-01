@@ -29,9 +29,9 @@ import * as loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
-import { createEventProcessor } from './core/event_processor';
+import { createEventProcessor } from './plugins/event_processor';
 import { SDKOptions, OptimizelyDecideOption } from './shared_types';
-import { getDatafileManagerForConfig } from './shared_methods';
+import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -105,7 +105,7 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       eventProcessor: eventProcessor,
       logger,
       errorHandler,
-      datafileManager: getDatafileManagerForConfig(config, logger, config.datafileOptions),
+      datafileManager:  !!config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
       notificationCenter,
     };
 

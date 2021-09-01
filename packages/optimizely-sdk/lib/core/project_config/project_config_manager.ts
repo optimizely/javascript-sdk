@@ -20,10 +20,10 @@ import { ERROR_MESSAGES } from '../../utils/enums';
 import { createOptimizelyConfig } from '../optimizely_config';
 import {
   OnReadyResult,
-  OptimizelyConfig
+  OptimizelyConfig,
+  DatafileManager,
 } from '../../shared_types';
 import { ProjectConfig, toDatafile, tryCreatingProjectConfig } from '../project_config';
-import { DatafileManager } from '../datafile_manager/datafile_manager';
 
 const logger = getLogger();
 const MODULE_NAME = 'PROJECT_CONFIG_MANAGER';

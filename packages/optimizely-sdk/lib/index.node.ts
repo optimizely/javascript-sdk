@@ -29,9 +29,9 @@ import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
-import { createEventProcessor } from './core/event_processor';
+import { createEventProcessor } from './plugins/event_processor';
 import { SDKOptions, OptimizelyDecideOption } from './shared_types';
-import { getDatafileManagerForConfig } from './shared_methods';
+import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
@@ -111,8 +111,8 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       eventProcessor,
       logger,
       errorHandler,
-      datafileManager: getDatafileManagerForConfig(config, logger, config.datafileOptions),
-      notificationCenter
+      datafileManager: !!config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
+      notificationCenter,
     };
 
     return new Optimizely(optimizelyOptions);

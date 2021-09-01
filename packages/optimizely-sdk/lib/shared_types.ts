@@ -16,7 +16,6 @@
 import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from '@optimizely/js-sdk-logging';
 import { EventProcessor } from '@optimizely/js-sdk-event-processor';
 
-import { DatafileManager } from './core/datafile_manager/datafile_manager';
 import { NotificationCenter } from '@optimizely/js-sdk-utils';
 
 export interface BucketerParams {
@@ -397,4 +396,25 @@ export interface OptimizelyDecision {
   userContext: OptimizelyUserContext;
   // An array of error/info messages describing why the decision has been made.
   reasons: string[];
+}
+
+export interface DatafileUpdate {
+  datafile: string;
+}
+
+export interface DatafileUpdateListener {
+  (datafileUpdate: DatafileUpdate): void;
+}
+
+// TODO: Replace this with the one from js-sdk-models
+interface Managed {
+  start(): void;
+
+  stop(): Promise<unknown>;
+}
+
+export interface DatafileManager extends Managed {
+  get: () => string;
+  on(eventName: string, listener: DatafileUpdateListener): () => void;
+  onReady: () => Promise<void>;
 }

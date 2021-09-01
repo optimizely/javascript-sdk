@@ -28,9 +28,9 @@ import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
 import Optimizely from './optimizely';
 import { createNotificationCenter } from './core/notification_center';
-import { ForwardingEventProcessor } from './core/event_processor/forwarding_event_processor';
+import { createForwardingEventProcessor } from './plugins/event_processor/forwarding_event_processor';
 import { SDKOptions, OptimizelyDecideOption } from './shared_types';
-import { NoOpDatafileManager } from './core/datafile_manager/datafile_manager';
+import { createNoOpDatafileManager } from './plugins/datafile_manager/no_op_datafile_manager';
   
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -68,20 +68,15 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
 
     const errorHandler = getErrorHandler();
     const notificationCenter = createNotificationCenter({ logger: logger, errorHandler: errorHandler });
-
-    const eventProcessorConfig = {
-      dispatcher: config.eventDispatcher || noOpEventDispatcher,
-      notificationCenters:notificationCenter,
-    }
-
-    const eventProcessor = new ForwardingEventProcessor(eventProcessorConfig);
+    const eventDispatcher = config.eventDispatcher || noOpEventDispatcher;
+    const eventProcessor = createForwardingEventProcessor(eventDispatcher, notificationCenter);
 
     const optimizelyOptions = {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       ...config,
       logger,
       errorHandler,
-      datafileManager: new NoOpDatafileManager(),
+      datafileManager: createNoOpDatafileManager(),
       eventProcessor,
       notificationCenter,
     };
