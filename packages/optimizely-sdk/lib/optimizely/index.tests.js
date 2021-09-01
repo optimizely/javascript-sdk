@@ -16,7 +16,7 @@
 import { assert, expect } from 'chai';
 import sinon from 'sinon';
 import { sprintf, NOTIFICATION_TYPES } from '@optimizely/js-sdk-utils';
-import eventProcessor from '../core/event_processor';
+import eventProcessor from '../plugins/event_processor';
 import * as logging from '@optimizely/js-sdk-logging';
 
 import Optimizely from './';
@@ -35,7 +35,6 @@ import * as decisionService from '../core/decision_service';
 import * as jsonSchemaValidator from '../utils/json_schema_validator';
 import * as projectConfig from '../core/project_config';
 import testData from '../tests/test_data';
-import { getDatafileManagerForConfig } from '../shared_methods';
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;

@@ -15,7 +15,7 @@
  */
 import { assert } from 'chai';
 import sinon from 'sinon';
-import eventProcessor from './core/event_processor';
+import eventProcessor from './plugins/event_processor';
 
 import * as enums from './utils/enums';
 import Optimizely from './optimizely';
