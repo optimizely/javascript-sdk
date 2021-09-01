@@ -31,7 +31,6 @@ import {
 import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
-import { createNotificationCenter } from '../core/notification_center';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
 import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
 import { buildImpressionEvent, buildConversionEvent } from '../core/event_builder/event_helpers';

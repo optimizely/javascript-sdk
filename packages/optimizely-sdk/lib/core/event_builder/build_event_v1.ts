@@ -24,55 +24,51 @@ export type EventV1 = {
 }
 
 type Visitor = {
-  snapshots: Visitor.Snapshot[]
+  snapshots: Snapshot[]
   visitor_id: string
-  attributes: Visitor.Attribute[]
+  attributes: Attribute[]
 }
 
-namespace Visitor {
-  type AttributeType = 'custom'
+type AttributeType = 'custom'
 
-  export type Attribute = {
-    // attribute id
-    entity_id: string
-    // attribute key
-    key: string
-    type: AttributeType
-    value: string | number | boolean
-  }
-
-  export type Snapshot = {
-    decisions?: Decision[]
-    events: SnapshotEvent[]
-  }
-
-  type Decision = {
-    campaign_id: string | null
-    experiment_id: string | null
-    variation_id: string | null
-    metadata: Metadata
-  }
-
-  type Metadata = {
-    flag_key: string;
-    rule_key: string;
-    rule_type: string;
-    variation_key: string;
-    enabled: boolean;
-  }
-
-  export type SnapshotEvent = {
-    entity_id: string | null
-    timestamp: number
-    uuid: string
-    key: string
-    revenue?: number
-    value?: number
-    tags?: EventTags
-  }
+export type Attribute = {
+  // attribute id
+  entity_id: string
+  // attribute key
+  key: string
+  type: AttributeType
+  value: string | number | boolean
 }
 
+export type Snapshot = {
+  decisions?: Decision[]
+  events: SnapshotEvent[]
+}
 
+type Decision = {
+  campaign_id: string | null
+  experiment_id: string | null
+  variation_id: string | null
+  metadata: Metadata
+}
+
+type Metadata = {
+  flag_key: string;
+  rule_key: string;
+  rule_type: string;
+  variation_key: string;
+  enabled: boolean;
+}
+
+export type SnapshotEvent = {
+  entity_id: string | null
+  timestamp: number
+  uuid: string
+  key: string
+  revenue?: number
+  value?: number
+  tags?: EventTags
+}
 
 type Attributes = {
   [key: string]: string | number | boolean
@@ -91,7 +87,7 @@ export function makeBatchedEventV1(events: ProcessableEvent[]): EventV1 {
 
   events.forEach(event => {
     if (event.type === 'conversion' || event.type === 'impression') {
-      let visitor = makeVisitor(event)
+      const visitor = makeVisitor(event)
 
       if (event.type === 'impression') {
         visitor.snapshots.push(makeDecisionSnapshot(event))
@@ -117,15 +113,15 @@ export function makeBatchedEventV1(events: ProcessableEvent[]): EventV1 {
   }
 }
 
-function makeConversionSnapshot(conversion: ConversionEvent): Visitor.Snapshot {
-  let tags: EventTags = {
+function makeConversionSnapshot(conversion: ConversionEvent): Snapshot {
+  const tags: EventTags = {
     ...conversion.tags,
   }
 
   delete tags['revenue']
   delete tags['value']
 
-  const event: Visitor.SnapshotEvent = {
+  const event: SnapshotEvent = {
     entity_id: conversion.event.id,
     key: conversion.event.key,
     timestamp: conversion.timestamp,
@@ -149,12 +145,12 @@ function makeConversionSnapshot(conversion: ConversionEvent): Visitor.Snapshot {
   }
 }
 
-function makeDecisionSnapshot(event: ImpressionEvent): Visitor.Snapshot {
+function makeDecisionSnapshot(event: ImpressionEvent): Snapshot {
   const { layer, experiment, variation, ruleKey, flagKey, ruleType, enabled } = event
-  let layerId = layer ? layer.id : null
-  let experimentId = experiment ? experiment.id : null
-  let variationId = variation ? variation.id : null
-  let variationKey = variation ? variation.key : ''
+  const layerId = layer ? layer.id : null
+  const experimentId = experiment ? experiment.id : null
+  const variationId = variation ? variation.id : null
+  const variationKey = variation ? variation.key : ''
 
   return {
     decisions: [
@@ -193,7 +189,7 @@ function makeVisitor(data: ImpressionEvent | ConversionEvent): Visitor {
     visitor.attributes.push({
       entity_id: attr.entityId,
       key: attr.key,
-      type: 'custom' as 'custom', // tell the compiler this is always string "custom"
+      type: 'custom' as const, // tell the compiler this is always string "custom"
       value: attr.value,
     })
   })

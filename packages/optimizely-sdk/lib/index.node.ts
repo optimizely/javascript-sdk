@@ -111,7 +111,7 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       eventProcessor,
       logger,
       errorHandler,
-      datafileManager: !!config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
+      datafileManager: config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
       notificationCenter,
     };
 

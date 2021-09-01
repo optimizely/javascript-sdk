@@ -21,6 +21,7 @@ import { Event } from '../../shared_types';
  * @param  {Event}    eventObj
  * @param  {Function} callback
  */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 export const dispatchEvent = function(
   eventObj: Event,
   callback: (response: { statusCode: number; }) => void

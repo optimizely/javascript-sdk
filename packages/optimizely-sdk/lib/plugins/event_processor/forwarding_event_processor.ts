@@ -46,7 +46,7 @@ class ForwardingEventProcessor implements EventProcessor {
   
   start(): void {}
   
-  stop(): Promise<any> {
+  stop(): Promise<unknown> {
     return Promise.resolve();
   }
 }

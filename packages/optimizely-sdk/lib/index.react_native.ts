@@ -90,9 +90,9 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
     const notificationCenter = createNotificationCenter({ logger: logger, errorHandler: errorHandler });
 
     const eventProcessorConfig = {
-      dispatcher: defaultEventDispatcher,
-      flushInterval: config.eventFlushInterval,
-      batchSize: config.eventBatchSize,
+      dispatcher: config.eventDispatcher || defaultEventDispatcher,
+      flushInterval: eventFlushInterval,
+      batchSize: eventBatchSize,
       maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
       notificationCenter,
     }
@@ -105,7 +105,7 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       eventProcessor: eventProcessor,
       logger,
       errorHandler,
-      datafileManager:  !!config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
+      datafileManager:  config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
       notificationCenter,
     };
 
