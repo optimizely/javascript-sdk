@@ -16,7 +16,8 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as logging from '@optimizely/js-sdk-logging';
-import eventProcessor from './plugins/event_processor';
+import * as eventProcessor from './plugins/event_processor';
+import eventProcessorDefault from './plugins/event_processor';
 
 import Optimizely from './optimizely';
 import testData from './tests/test_data';
@@ -25,7 +26,7 @@ import optimizelyFactory from './index.browser';
 import configValidator from './utils/config_validator';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
-var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
+var LocalStoragePendingEventsDispatcher = eventProcessorDefault.LocalStoragePendingEventsDispatcher;
 
 describe('javascript-sdk', function() {
   var clock;
@@ -404,7 +405,7 @@ describe('javascript-sdk', function() {
             errorHandler: fakeErrorHandler,
             eventDispatcher: fakeEventDispatcher,
             logger: silentLogger,
-          });
+          });          
           sinon.assert.calledWithExactly(
             eventProcessorSpy,
             sinon.match({
