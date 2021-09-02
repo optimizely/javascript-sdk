@@ -15,6 +15,8 @@
  ***************************************************************************/
 import { sprintf, objectValues, NotificationCenter } from '@optimizely/js-sdk-utils';
 import { LoggerFacade, ErrorHandler } from '@optimizely/js-sdk-logging';
+import { EventProcessor } from '@optimizely/js-sdk-event-processor';
+
 import {
   UserAttributes,
   EventTags,
@@ -36,7 +38,6 @@ import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
 import { buildImpressionEvent, buildConversionEvent } from '../core/event_builder/event_helpers';
 import fns from '../utils/fns'
 import { validate } from '../utils/attributes_validator';
-import { EventProcessor } from '../plugins/event_processor';
 import * as enums from '../utils/enums';
 import * as eventTagsValidator from '../utils/event_tags_validator';
 import * as projectConfig from '../core/project_config';

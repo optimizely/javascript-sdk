@@ -30,7 +30,7 @@ import * as loggerPlugin from './plugins/logger';
 import Optimizely from './optimizely';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
-import { createEventProcessor } from './plugins/event_processor';
+import { default as eventProcessor } from './plugins/event_processor';
 import { SDKOptions, OptimizelyDecideOption } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
 
@@ -117,12 +117,10 @@ const createInstance = function (config: SDKOptions): Optimizely | null {
       notificationCenter,
     }
 
-    const eventProcessor = createEventProcessor(eventProcessorConfig);
-
     const optimizelyOptions = {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       ...config,
-      eventProcessor,
+      eventProcessor: eventProcessor.createEventProcessor(eventProcessorConfig),
       logger: logger,
       errorHandler: errorHandler,
       datafileManager: config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
