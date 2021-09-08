@@ -84,5 +84,22 @@ describe('lib/utils/fns', function() {
         assert.isFalse(fns.isNumber(null));
       });
     });
+
+    describe('assign', function() {      
+      it('should return empty object when target is not provided', function() {
+        assert.deepEqual(fns.assign(), {});        
+      });
+
+      it('should copy correctly when Object.assign is available in environment', function() {        
+        assert.deepEqual(fns.assign({ a: 'a'}, {b: 'b'}), { a: 'a', b: 'b' });        
+      });
+
+      it('should copy correctly when Object.assign is not available in environment', function() {
+        var originalAssign = Object.assign;
+        Object.assign = null;
+        assert.deepEqual(fns.assign({ a: 'a'}, {b: 'b'}), { a: 'a', b: 'b' });        
+        Object.assign = originalAssign;
+      });
+    });
   });
 });
