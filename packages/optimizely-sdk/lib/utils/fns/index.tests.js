@@ -97,7 +97,7 @@ describe('lib/utils/fns', function() {
       it('should copy correctly when Object.assign is not available in environment', function() {
         var originalAssign = Object.assign;
         Object.assign = null;
-        assert.deepEqual(fns.assign({ a: 'a'}, {b: 'b'}), { a: 'a', b: 'b' });        
+        assert.deepEqual(fns.assign({ a: 'a'}, {b: 'b'}, {c: 'c'}), { a: 'a', b: 'b', c: 'c' });
         Object.assign = originalAssign;
       });
     });
