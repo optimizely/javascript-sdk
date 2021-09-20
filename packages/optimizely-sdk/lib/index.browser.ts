@@ -51,7 +51,7 @@ let hasRetriedEvents = false;
  * @return {Optimizely|null} the Optimizely object
  *                           null on error 
  */
-const createInstance = function (config: SDKOptions): Optimizely | null {
+const createInstance = function(config: SDKOptions): Optimizely | null {
   try {
     // TODO warn about setting per instance errorHandler / logger / logLevel
     if (config.errorHandler) {
@@ -121,8 +121,8 @@ const createInstance = function (config: SDKOptions): Optimizely | null {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       ...config,
       eventProcessor: eventProcessor.createEventProcessor(eventProcessorConfig),
-      logger: logger,
-      errorHandler: errorHandler,
+      logger,
+      errorHandler,
       datafileManager: config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
       notificationCenter,
     };

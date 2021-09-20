@@ -102,7 +102,7 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
     const optimizelyOptions = {
       clientEngine: enums.REACT_NATIVE_JS_CLIENT_ENGINE,
       ...config,
-      eventProcessor: eventProcessor,
+      eventProcessor,
       logger,
       errorHandler,
       datafileManager:  config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,

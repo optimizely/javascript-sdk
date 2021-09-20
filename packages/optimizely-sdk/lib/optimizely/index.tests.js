@@ -90,7 +90,7 @@ describe('lib/optimizely', function() {
       dispatchEvent: function() {
         return bluebird.resolve(null);
       },
-    };    
+    };
     var createdLogger = logger.createLogger({ logLevel: LOG_LEVEL.INFO });
     var notificationCenter = createNotificationCenter({ logger: createdLogger, errorHandler: stubErrorHandler });
     var eventProcessor = createForwardingEventProcessor(stubEventDispatcher);
