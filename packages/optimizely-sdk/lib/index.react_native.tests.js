@@ -89,7 +89,7 @@ describe('javascript-sdk/react-native', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.6.2');
+        assert.equal(optlyInstance.clientVersion, '4.7.0');
       });
 
       it('should set the React Native JS client engine and javascript SDK version', function() {

@@ -185,7 +185,7 @@ export class ProjectConfigManager {
       const oldRevision = this.configObj ? this.configObj.revision : 'null';
       if (configObj && oldRevision !== configObj.revision) {
         this.configObj = configObj;
-        this.optimizelyConfigObj = createOptimizelyConfig(this.configObj, toDatafile(this.configObj));
+        this.optimizelyConfigObj = null;
         this.updateListeners.forEach((listener) => listener(configObj));
       }
     }
@@ -207,6 +207,9 @@ export class ProjectConfigManager {
    * @return {OptimizelyConfig|null}
    */
   getOptimizelyConfig(): OptimizelyConfig | null {
+    if (!this.optimizelyConfigObj && this.configObj) {
+      this.optimizelyConfigObj = createOptimizelyConfig(this.configObj, toDatafile(this.configObj));
+    }
     return this.optimizelyConfigObj;
   }
 

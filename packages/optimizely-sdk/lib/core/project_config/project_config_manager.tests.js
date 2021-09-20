@@ -438,8 +438,6 @@ describe('lib/core/project_config/project_config_manager', function() {
           sdkKey: '12345',
           datafileManager: createHttpPollingDatafileManager('12345', logger, testData.getTestProjectConfig()),
         });
-        // creating optimizely config once project config manager for the first time
-        sinon.assert.calledOnce(optimizelyConfig.createOptimizelyConfig);
         // validate it should return the existing optimizely config
         manager.getOptimizelyConfig();
         sinon.assert.calledOnce(optimizelyConfig.createOptimizelyConfig);
@@ -450,6 +448,7 @@ describe('lib/core/project_config/project_config_manager', function() {
         newDatafile.revision = '36';
         fakeDatafileManager.get.returns(newDatafile);
         updateListener({ datafile: newDatafile });
+        manager.getOptimizelyConfig();        
         // verify the optimizely config is updated
         sinon.assert.calledTwice(optimizelyConfig.createOptimizelyConfig);
       });

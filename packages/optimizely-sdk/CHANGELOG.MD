@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.7.0] - September 15, 2021
+
+### New Features
+- Added new public properties to `OptimizelyConfig`. ([#683](https://github.com/optimizely/javascript-sdk/pull/683), [#698](https://github.com/optimizely/javascript-sdk/pull/698))
+	- sdkKey
+	- environmentKey
+	- attributes
+	- audiences
+	- events
+	- experimentRules and deliveryRules to `OptimizelyFeature`
+	- audiences to `OptimizelyExperiment`
+- For details, refer to our documentation page:
+  - Node version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyconfig-javascript-node](https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyconfig-javascript-node).
+  - Browser version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyconfig-javascript](https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyconfig-javascript).
+
+### Bug fixes
+- Followed experimentIds order of experiments inside featuresMap of OptimizelyConfig ([#701](https://github.com/optimizely/javascript-sdk/pull/701))
+
+### Deprecated
+
+- `OptimizelyFeature.experimentsMap` of `OptimizelyConfig` is deprecated as of this release. Please use `OptimizelyFeature.experimentRules` and `OptimizelyFeature.deliveryRules` ([#698](https://github.com/optimizely/javascript-sdk/pull/698))
+
 ## [4.6.2] - July 15, 2021
 
 ### Bug fixes
