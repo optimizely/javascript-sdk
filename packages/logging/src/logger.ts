@@ -52,7 +52,7 @@ function coerceLogLevel(level: any): LogLevel {
 }
 
 type LogData = {
-  message: string
+  message: string | Function
   splat: any[]
   error?: Error
 }
@@ -218,32 +218,32 @@ class OptimizelyLogger implements LoggerFacade {
    * @param {string} [message]
    * @memberof OptimizelyLogger
    */
-  log(level: LogLevel | string, message: string): void {
+  log(level: LogLevel | string, message: string | Function): void {
     this.internalLog(coerceLogLevel(level), {
       message,
       splat: [],
     })
   }
 
-  info(message: string | Error, ...splat: any[]): void {
+  info(message: string | Function | Error, ...splat: any[]): void {
     this.namedLog(LogLevel.INFO, message, splat)
   }
 
-  debug(message: string | Error, ...splat: any[]): void {
+  debug(message: string | Function | Error, ...splat: any[]): void {
     this.namedLog(LogLevel.DEBUG, message, splat)
   }
 
-  warn(message: string | Error, ...splat: any[]): void {
+  warn(message: string | Function | Error, ...splat: any[]): void {
     this.namedLog(LogLevel.WARNING, message, splat)
   }
 
-  error(message: string | Error, ...splat: any[]): void {
+  error(message: string | Function | Error, ...splat: any[]): void {
     this.namedLog(LogLevel.ERROR, message, splat)
   }
 
   private format(data: LogData): string {
     return `${this.messagePrefix ? this.messagePrefix + ': ' : ''}${sprintf(
-      data.message,
+      data.message as string,
       ...data.splat,
     )}`
   }
@@ -257,6 +257,8 @@ class OptimizelyLogger implements LoggerFacade {
       return
     }
 
+    data.message = typeof data.message === 'function' ? data.message() : data.message;
+
     globalLogHandler.log(level, this.format(data))
 
     if (data.error && data.error instanceof Error) {
@@ -264,7 +266,7 @@ class OptimizelyLogger implements LoggerFacade {
     }
   }
 
-  private namedLog(level: LogLevel, message: string | Error, splat: any[]): void {
+  private namedLog(level: LogLevel, message: string | Function | Error, splat: any[]): void {
     let error: Error | undefined
 
     if (message instanceof Error) {
