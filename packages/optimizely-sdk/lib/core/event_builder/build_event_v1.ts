@@ -70,10 +70,6 @@ export type SnapshotEvent = {
   tags?: EventTags
 }
 
-type Attributes = {
-  [key: string]: string | number | boolean
-}
-
 /**
  * Given an array of batchable Decision or ConversionEvent events it returns
  * a single EventV1 with proper batching
@@ -211,7 +207,6 @@ function makeVisitor(data: ImpressionEvent | ConversionEvent): Visitor {
  * @export
  * @interface EventBuilderV1
  */
-
 export function buildImpressionEventV1(data: ImpressionEvent): EventV1 {
   const visitor = makeVisitor(data)
   visitor.snapshots.push(makeDecisionSnapshot(data))

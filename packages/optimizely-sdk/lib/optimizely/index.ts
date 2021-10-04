@@ -64,21 +64,6 @@ type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 
 
 type StringInputs = Partial<Record<InputKey, unknown>>;
 
-/**
- * The Optimizely class
- * @param {OptimizelyOptions} config
- * @param {string}            config.clientEngine
- * @param {string}            config.clientVersion
- * @param {Object|string}     config.datafile
- * @param {Object}            config.errorHandler
- * @param {Object}            config.eventDispatcher
- * @param {Object}            config.logger
- * @param {Object}            config.userProfileService
- * @param {Object}            config.eventBatchSize
- * @param {Object}            config.eventFlushInterval
- * @param {string}            config.sdkKey
- * @param {Object}            config.datafileManager
- */
 export default class Optimizely {
   private isOptimizelyConfigValid: boolean;
   private disposeOnUpdate: (() => void) | null;
