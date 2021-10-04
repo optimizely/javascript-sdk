@@ -271,7 +271,7 @@ export const getAttributeId = function(
     if (hasReservedPrefix) {
       logger.log(
         LOG_LEVEL.WARNING,
-        sprintf(
+        fns.sprintfRef(
           'Attribute %s unexpectedly has reserved prefix %s; using attribute ID instead of reserved attribute name.',
           attributeKey,
           RESERVED_ATTRIBUTE_PREFIX
@@ -283,7 +283,7 @@ export const getAttributeId = function(
     return attributeKey;
   }
 
-  logger.log(LOG_LEVEL.DEBUG, sprintf(ERROR_MESSAGES.UNRECOGNIZED_ATTRIBUTE, MODULE_NAME, attributeKey));
+  logger.log(LOG_LEVEL.DEBUG, fns.sprintfRef(ERROR_MESSAGES.UNRECOGNIZED_ATTRIBUTE, MODULE_NAME, attributeKey));
   return null;
 };
 
@@ -466,7 +466,7 @@ export const getExperimentFromId = function(
     }
   }
 
-  logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
+  logger.log(LOG_LEVEL.ERROR, fns.sprintfRef(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
   return null;
 };
 
@@ -491,7 +491,7 @@ export const getFeatureFromKey = function(
     }
   }
 
-  logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, featureKey));
+  logger.log(LOG_LEVEL.ERROR, fns.sprintfRef(ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, featureKey));
   return null;
 };
 
@@ -514,7 +514,7 @@ export const getVariableForFeature = function(
 ): FeatureVariable | null {
   const feature = projectConfig.featureKeyMap[featureKey];
   if (!feature) {
-    logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, featureKey));
+    logger.log(LOG_LEVEL.ERROR, fns.sprintfRef(ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, featureKey));
     return null;
   }
 
@@ -522,7 +522,7 @@ export const getVariableForFeature = function(
   if (!variable) {
     logger.log(
       LOG_LEVEL.ERROR,
-      sprintf(ERROR_MESSAGES.VARIABLE_KEY_NOT_IN_DATAFILE, MODULE_NAME, variableKey, featureKey)
+      fns.sprintfRef(ERROR_MESSAGES.VARIABLE_KEY_NOT_IN_DATAFILE, MODULE_NAME, variableKey, featureKey)
     );
     return null;
   }
@@ -555,7 +555,7 @@ export const getVariableValueForVariation = function(
   if (!projectConfig.variationVariableUsageMap.hasOwnProperty(variation.id)) {
     logger.log(
       LOG_LEVEL.ERROR,
-      sprintf(ERROR_MESSAGES.VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT, MODULE_NAME, variation.id)
+      fns.sprintfRef(ERROR_MESSAGES.VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT, MODULE_NAME, variation.id)
     );
     return null;
   }
@@ -594,7 +594,7 @@ export const getTypeCastValue = function(
       if (variableValue !== 'true' && variableValue !== 'false') {
         logger.log(
           LOG_LEVEL.ERROR,
-          sprintf(ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType)
+          fns.sprintfRef(ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType)
         );
         castValue = null;
       } else {
@@ -607,7 +607,7 @@ export const getTypeCastValue = function(
       if (isNaN(castValue)) {
         logger.log(
           LOG_LEVEL.ERROR,
-          sprintf(ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType)
+          fns.sprintfRef(ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType)
         );
         castValue = null;
       }
@@ -618,7 +618,7 @@ export const getTypeCastValue = function(
       if (isNaN(castValue)) {
         logger.log(
           LOG_LEVEL.ERROR,
-          sprintf(ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType)
+          fns.sprintfRef(ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType)
         );
         castValue = null;
       }
@@ -630,7 +630,7 @@ export const getTypeCastValue = function(
       } catch (e) {
         logger.log(
           LOG_LEVEL.ERROR,
-          sprintf(ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType)
+          fns.sprintfRef(ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType)
         );
         castValue = null;
       }
@@ -715,12 +715,12 @@ export const tryCreatingProjectConfig = function(
   if (config.jsonSchemaValidator) {
     try {
       config.jsonSchemaValidator.validate(newDatafileObj);
-      config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
+      config.logger.log(LOG_LEVEL.INFO, fns.sprintfRef(LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME));
     } catch (error) {
       return { configObj: null, error };
     }
   } else {
-    config.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
+    config.logger.log(LOG_LEVEL.INFO, fns.sprintfRef(LOG_MESSAGES.SKIPPING_JSON_VALIDATION, MODULE_NAME));
   }
 
   const createProjectConfigArgs = [newDatafileObj];

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { generateUUID as uuid, keyBy as keyByUtil } from '@optimizely/js-sdk-utils';
+import { generateUUID as uuid, keyBy as keyByUtil, sprintf } from '@optimizely/js-sdk-utils';
 
 const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
@@ -61,6 +61,10 @@ function isNumber(value: unknown): boolean {
   return typeof value === 'number';
 }
 
+export function sprintfRef(format: string, ...args: any[]) {
+  return sprintf.bind(null, format, ... args);
+}
+
 export default {
   assign,
   currentTimestamp,
@@ -68,4 +72,5 @@ export default {
   keyBy,
   uuid,
   isNumber,
+  sprintfRef,
 }

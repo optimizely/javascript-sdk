@@ -33,6 +33,8 @@ import {
   LOG_MESSAGES,
 } from '../../utils/enums';
 
+import { sprintfRef } from '../../utils/fns';
+
 const HASH_SEED = 1;
 const MAX_HASH_VALUE = Math.pow(2, 32);
 const MAX_TRAFFIC_VALUE = 10000;
@@ -56,7 +58,7 @@ const RANDOM_POLICY = 'random';
  *                                                                       null if user is not bucketed into any experiment and the decide reasons.
  */
 export const bucket = function(bucketerParams: BucketerParams): DecisionResponse<string | null> {
-  const decideReasons: string[] = [];
+  const decideReasons: (string | Function)[] = [];
   // Check if user is in a random group; if so, check if user is bucketed into a specific experiment
   const experiment = bucketerParams.experimentIdMap[bucketerParams.experimentId];
   const groupId = experiment['groupId'];
@@ -75,7 +77,7 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
 
       // Return if user is not bucketed into any experiment
       if (bucketedExperimentId === null) {
-        const notbucketedInAnyExperimentLogMessage = sprintf(
+        const notbucketedInAnyExperimentLogMessage = sprintfRef(
           LOG_MESSAGES.USER_NOT_IN_ANY_EXPERIMENT,
           MODULE_NAME,
           bucketerParams.userId,
@@ -91,7 +93,7 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
 
       // Return if user is bucketed into a different experiment than the one specified
       if (bucketedExperimentId !== bucketerParams.experimentId) {
-        const notBucketedIntoExperimentOfGroupLogMessage = sprintf(
+        const notBucketedIntoExperimentOfGroupLogMessage = sprintfRef(
           LOG_MESSAGES.USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
           MODULE_NAME,
           bucketerParams.userId,
@@ -107,7 +109,7 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
       }
 
       // Continue bucketing if user is bucketed into specified experiment
-      const bucketedIntoExperimentOfGroupLogMessage = sprintf(
+      const bucketedIntoExperimentOfGroupLogMessage = sprintfRef(
         LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
         MODULE_NAME,
         bucketerParams.userId,
@@ -118,10 +120,10 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
       decideReasons.push(bucketedIntoExperimentOfGroupLogMessage);
     }
   }
-  const bucketingId = sprintf('%s%s', bucketerParams.bucketingId, bucketerParams.experimentId);
+  const bucketingId = `${bucketerParams.bucketingId}${bucketerParams.experimentId}`;
   const bucketValue = _generateBucketValue(bucketingId);
 
-  const bucketedUserLogMessage = sprintf(
+  const bucketedUserLogMessage = sprintfRef(
     LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
     MODULE_NAME,
     bucketValue,
@@ -134,7 +136,7 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
   if (entityId !== null) {
     if (!bucketerParams.variationIdMap[entityId]) {
       if (entityId) {
-        const invalidVariationIdLogMessage = sprintf(LOG_MESSAGES.INVALID_VARIATION_ID, MODULE_NAME);
+        const invalidVariationIdLogMessage = sprintfRef(LOG_MESSAGES.INVALID_VARIATION_ID, MODULE_NAME);
         bucketerParams.logger.log(LOG_LEVEL.WARNING, invalidVariationIdLogMessage);
         decideReasons.push(invalidVariationIdLogMessage);
       }
@@ -165,11 +167,11 @@ export const bucketUserIntoExperiment = function(
   userId: string,
   logger: LogHandler
 ): string | null {
-  const bucketingKey = sprintf('%s%s', bucketingId, group.id);
+  const bucketingKey = `${bucketingId}${group.id}`;
   const bucketValue = _generateBucketValue(bucketingKey);
   logger.log(
     LOG_LEVEL.DEBUG,
-    sprintf(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, MODULE_NAME, bucketValue, userId)
+    sprintfRef(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, MODULE_NAME, bucketValue, userId)
   );
   const trafficAllocationConfig = group.trafficAllocation;
   const bucketedExperimentId = _findBucket(bucketValue, trafficAllocationConfig);

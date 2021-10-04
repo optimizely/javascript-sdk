@@ -116,7 +116,7 @@ export class DecisionService {
     const decideReasons = [];
     const experimentKey = experiment.key;
     if (!this.checkIfExperimentIsActive(configObj, experimentKey)) {
-      const experimentNotRunningLogMessage = sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey);
+      const experimentNotRunningLogMessage = fns.sprintfRef(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey);
       this.logger.log(LOG_LEVEL.INFO, experimentNotRunningLogMessage);
       decideReasons.push(experimentNotRunningLogMessage);
       return {
@@ -151,7 +151,7 @@ export class DecisionService {
     if (!shouldIgnoreUPS) {
       variation = this.getStoredVariation(configObj, experiment, userId, experimentBucketMap);
       if (variation) {
-        const returningStoredVariationMessage = sprintf(
+        const returningStoredVariationMessage = fns.sprintfRef(
           LOG_MESSAGES.RETURNING_STORED_VARIATION,
           MODULE_NAME,
           variation.key,
@@ -180,7 +180,7 @@ export class DecisionService {
     );
     decideReasons.push(...decisionifUserIsInAudience.reasons);
     if (!decisionifUserIsInAudience.result) {
-      const userDoesNotMeetConditionsLogMessage = sprintf(
+      const userDoesNotMeetConditionsLogMessage = fns.sprintfRef(
         LOG_MESSAGES.USER_NOT_IN_EXPERIMENT,
         MODULE_NAME,
         userId,
@@ -202,7 +202,7 @@ export class DecisionService {
       variation = configObj.variationIdMap[variationId];
     }
     if (!variation) {
-      const userHasNoVariationLogMessage = sprintf(
+      const userHasNoVariationLogMessage = fns.sprintfRef(
         LOG_MESSAGES.USER_HAS_NO_VARIATION,
         MODULE_NAME,
         userId,
@@ -216,7 +216,7 @@ export class DecisionService {
       };
     }
 
-    const userInVariationLogMessage = sprintf(
+    const userInVariationLogMessage = fns.sprintfRef(
       LOG_MESSAGES.USER_HAS_VARIATION,
       MODULE_NAME,
       userId,
@@ -274,11 +274,11 @@ export class DecisionService {
     experiment: Experiment,
     userId: string
   ): DecisionResponse<Variation | null> {
-    const decideReasons: string[] = [];
+    const decideReasons: (string | Function)[] = [];
     if (experiment.forcedVariations && experiment.forcedVariations.hasOwnProperty(userId)) {
       const forcedVariationKey = experiment.forcedVariations[userId];
       if (experiment.variationKeyMap.hasOwnProperty(forcedVariationKey)) {
-        const forcedBucketingSucceededMessageLog = sprintf(
+        const forcedBucketingSucceededMessageLog = fns.sprintfRef(
           LOG_MESSAGES.USER_FORCED_IN_VARIATION,
           MODULE_NAME,
           userId,
@@ -291,7 +291,7 @@ export class DecisionService {
           reasons: decideReasons,
         };
       } else {
-        const forcedBucketingFailedMessageLog = sprintf(
+        const forcedBucketingFailedMessageLog = fns.sprintfRef(
           LOG_MESSAGES.FORCED_BUCKETING_FAILED,
           MODULE_NAME,
           forcedVariationKey,
@@ -330,10 +330,10 @@ export class DecisionService {
     attributes?: UserAttributes,
     loggingKey?: string | number,
   ): DecisionResponse<boolean> {
-    const decideReasons: string[] = [];
+    const decideReasons: (string | Function)[] = [];
     const experimentAudienceConditions = getExperimentAudienceConditions(configObj, experiment.id);
     const audiencesById = getAudiencesById(configObj);
-    const evaluatingAudiencesCombinedMessage = sprintf(
+    const evaluatingAudiencesCombinedMessage = fns.sprintfRef(
       LOG_MESSAGES.EVALUATING_AUDIENCES_COMBINED,
       MODULE_NAME,
       evaluationAttribute,
@@ -346,7 +346,7 @@ export class DecisionService {
     );
     decideReasons.push(evaluatingAudiencesCombinedMessage);
     const result = this.audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, attributes);
-    const audienceEvaluationResultCombinedMessage = sprintf(
+    const audienceEvaluationResultCombinedMessage = fns.sprintfRef(
       LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
       MODULE_NAME,
       evaluationAttribute,
@@ -415,7 +415,7 @@ export class DecisionService {
       } else {
         this.logger.log(
           LOG_LEVEL.INFO,
-          sprintf(
+          fns.sprintfRef(
             LOG_MESSAGES.SAVED_VARIATION_NOT_FOUND,
             MODULE_NAME, userId,
             variationId,
@@ -448,7 +448,7 @@ export class DecisionService {
     } catch (ex) {
       this.logger.log(
         LOG_LEVEL.ERROR,
-        sprintf(ERROR_MESSAGES.USER_PROFILE_LOOKUP_ERROR, MODULE_NAME, userId, ex.message)
+        fns.sprintfRef(ERROR_MESSAGES.USER_PROFILE_LOOKUP_ERROR, MODULE_NAME, userId, ex.message)
       );
     }
 
@@ -484,10 +484,10 @@ export class DecisionService {
 
       this.logger.log(
         LOG_LEVEL.INFO,
-        sprintf(LOG_MESSAGES.SAVED_VARIATION, MODULE_NAME, variation.key, experiment.key, userId)
+        fns.sprintfRef(LOG_MESSAGES.SAVED_VARIATION, MODULE_NAME, variation.key, experiment.key, userId)
       );
     } catch (ex) {
-      this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.USER_PROFILE_SAVE_ERROR, MODULE_NAME, userId, ex.message));
+      this.logger.log(LOG_LEVEL.ERROR, fns.sprintfRef(ERROR_MESSAGES.USER_PROFILE_SAVE_ERROR, MODULE_NAME, userId, ex.message));
     }
   }
 
@@ -531,7 +531,7 @@ export class DecisionService {
     decideReasons.push(...decisionRolloutVariation.reasons);
     const rolloutDecision = decisionRolloutVariation.result;
     if (rolloutDecision.variation) {
-      const userInRolloutMessage = sprintf(LOG_MESSAGES.USER_IN_ROLLOUT, MODULE_NAME, userId, feature.key);
+      const userInRolloutMessage = fns.sprintfRef(LOG_MESSAGES.USER_IN_ROLLOUT, MODULE_NAME, userId, feature.key);
       this.logger.log(LOG_LEVEL.DEBUG, userInRolloutMessage);
       decideReasons.push(userInRolloutMessage);
       return {
@@ -540,7 +540,7 @@ export class DecisionService {
       };
     }
 
-    const userNotInRolloutMessage = sprintf(LOG_MESSAGES.USER_NOT_IN_ROLLOUT, MODULE_NAME, userId, feature.key);
+    const userNotInRolloutMessage = fns.sprintfRef(LOG_MESSAGES.USER_NOT_IN_ROLLOUT, MODULE_NAME, userId, feature.key);
     this.logger.log(LOG_LEVEL.DEBUG, userNotInRolloutMessage);
     decideReasons.push(userNotInRolloutMessage);
     return {
@@ -588,7 +588,7 @@ export class DecisionService {
         }
       }
     } else {
-      const featureHasNoExperimentsMessage = sprintf(LOG_MESSAGES.FEATURE_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.key);
+      const featureHasNoExperimentsMessage = fns.sprintfRef(LOG_MESSAGES.FEATURE_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.key);
       this.logger.log(LOG_LEVEL.DEBUG, featureHasNoExperimentsMessage);
       decideReasons.push(featureHasNoExperimentsMessage);
     }
@@ -614,7 +614,7 @@ export class DecisionService {
     const decideReasons = [];
     let decisionObj: DecisionObj;
     if (!feature.rolloutId) {
-      const noRolloutExistsMessage = sprintf(LOG_MESSAGES.NO_ROLLOUT_EXISTS, MODULE_NAME, feature.key);
+      const noRolloutExistsMessage = fns.sprintfRef(LOG_MESSAGES.NO_ROLLOUT_EXISTS, MODULE_NAME, feature.key);
       this.logger.log(LOG_LEVEL.DEBUG, noRolloutExistsMessage);
       decideReasons.push(noRolloutExistsMessage);
       decisionObj = {
@@ -631,7 +631,7 @@ export class DecisionService {
 
     const rollout = configObj.rolloutIdMap[feature.rolloutId];
     if (!rollout) {
-      const invalidRolloutIdMessage = sprintf(
+      const invalidRolloutIdMessage = fns.sprintfRef(
         ERROR_MESSAGES.INVALID_ROLLOUT_ID,
         MODULE_NAME,
         feature.rolloutId,
@@ -651,7 +651,7 @@ export class DecisionService {
     }
 
     if (rollout.experiments.length === 0) {
-      const rolloutHasNoExperimentsMessage = sprintf(
+      const rolloutHasNoExperimentsMessage = fns.sprintfRef(
         LOG_MESSAGES.ROLLOUT_HAS_NO_EXPERIMENTS,
         MODULE_NAME,
         feature.rolloutId
@@ -693,7 +693,7 @@ export class DecisionService {
       );
       decideReasons.push(...decisionifUserIsInAudience.reasons);
       if (!decisionifUserIsInAudience.result) {
-        const userDoesNotMeetConditionsForTargetingRuleMessage = sprintf(
+        const userDoesNotMeetConditionsForTargetingRuleMessage = fns.sprintfRef(
           LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
           MODULE_NAME,
           userId,
@@ -707,7 +707,7 @@ export class DecisionService {
         continue;
       }
 
-      const userMeetsConditionsForTargetingRuleMessage = sprintf(
+      const userMeetsConditionsForTargetingRuleMessage = fns.sprintfRef(
         LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
         MODULE_NAME,
         userId,
@@ -726,7 +726,7 @@ export class DecisionService {
         variation = configObj.variationIdMap[variationId];
       }
       if (variation) {
-        const userBucketeredIntoTargetingRuleMessage = sprintf(
+        const userBucketeredIntoTargetingRuleMessage = fns.sprintfRef(
           LOG_MESSAGES.USER_BUCKETED_INTO_TARGETING_RULE,
           MODULE_NAME, userId,
           loggingKey
@@ -746,7 +746,7 @@ export class DecisionService {
           reasons: decideReasons,
         };
       } else {
-        const userNotBucketeredIntoTargetingRuleMessage = sprintf(
+        const userNotBucketeredIntoTargetingRuleMessage = fns.sprintfRef(
           LOG_MESSAGES.USER_NOT_BUCKETED_INTO_TARGETING_RULE,
           MODULE_NAME, userId,
           loggingKey
@@ -770,7 +770,7 @@ export class DecisionService {
     );
     decideReasons.push(...decisionifUserIsInEveryoneRule.reasons);
     if (decisionifUserIsInEveryoneRule.result) {
-      const userMeetsConditionsForEveryoneTargetingRuleMessage = sprintf(
+      const userMeetsConditionsForEveryoneTargetingRuleMessage = fns.sprintfRef(
         LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
         MODULE_NAME, userId,
         'Everyone Else'
@@ -788,7 +788,7 @@ export class DecisionService {
         variation = configObj.variationIdMap[variationId];
       }
       if (variation) {
-        const userBucketeredIntoEveryoneTargetingRuleMessage = sprintf(
+        const userBucketeredIntoEveryoneTargetingRuleMessage = fns.sprintfRef(
           LOG_MESSAGES.USER_BUCKETED_INTO_EVERYONE_TARGETING_RULE,
           MODULE_NAME,
           userId
@@ -808,7 +808,7 @@ export class DecisionService {
           reasons: decideReasons,
         };
       } else {
-        const userNotBucketeredIntoEveryoneTargetingRuleMessage = sprintf(
+        const userNotBucketeredIntoEveryoneTargetingRuleMessage = fns.sprintfRef(
           LOG_MESSAGES.USER_NOT_BUCKETED_INTO_EVERYONE_TARGETING_RULE,
           MODULE_NAME,
           userId
@@ -849,9 +849,9 @@ export class DecisionService {
     ) {
       if (typeof attributes[CONTROL_ATTRIBUTES.BUCKETING_ID] === 'string') {
         bucketingId = attributes[CONTROL_ATTRIBUTES.BUCKETING_ID];
-        this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.VALID_BUCKETING_ID, MODULE_NAME, bucketingId));
+        this.logger.log(LOG_LEVEL.DEBUG, fns.sprintfRef(LOG_MESSAGES.VALID_BUCKETING_ID, MODULE_NAME, bucketingId));
       } else {
-        this.logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.BUCKETING_ID_NOT_STRING, MODULE_NAME));
+        this.logger.log(LOG_LEVEL.WARNING, fns.sprintfRef(LOG_MESSAGES.BUCKETING_ID_NOT_STRING, MODULE_NAME));
       }
     }
 
@@ -874,7 +874,7 @@ export class DecisionService {
       delete this.forcedVariationMap[userId][experimentId];
       this.logger.log(
         LOG_LEVEL.DEBUG,
-        sprintf(LOG_MESSAGES.VARIATION_REMOVED_FOR_USER, MODULE_NAME, experimentKey, userId)
+        fns.sprintfRef(LOG_MESSAGES.VARIATION_REMOVED_FOR_USER, MODULE_NAME, experimentKey, userId)
       );
     } else {
       throw new Error(sprintf(ERROR_MESSAGES.USER_NOT_IN_FORCED_VARIATION, MODULE_NAME, userId));
@@ -898,7 +898,7 @@ export class DecisionService {
 
     this.logger.log(
       LOG_LEVEL.DEBUG,
-      sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, MODULE_NAME, variationId, experimentId, userId)
+      fns.sprintfRef(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, MODULE_NAME, variationId, experimentId, userId)
     );
   }
 
@@ -915,11 +915,11 @@ export class DecisionService {
     experimentKey: string,
     userId: string
   ): DecisionResponse<string | null> {
-    const decideReasons: string[] = [];
+    const decideReasons: (string | Function)[] = [];
     const experimentToVariationMap = this.forcedVariationMap[userId];
     if (!experimentToVariationMap) {
       this.logger.log(LOG_LEVEL.DEBUG,
-        sprintf(
+        fns.sprintfRef(
           LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,
           MODULE_NAME,
           userId
@@ -939,7 +939,7 @@ export class DecisionService {
         experimentId = experiment['id'];
       } else {
         // catching improperly formatted experiments
-        const improperlyFormattedExperimentMessage = sprintf(
+        const improperlyFormattedExperimentMessage = fns.sprintfRef(
           ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT,
           MODULE_NAME,
           experimentKey
@@ -967,7 +967,7 @@ export class DecisionService {
     if (!variationId) {
       this.logger.log(
         LOG_LEVEL.DEBUG,
-        sprintf(
+        fns.sprintfRef(
           LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
           MODULE_NAME,
           experimentKey,
@@ -982,7 +982,7 @@ export class DecisionService {
 
     const variationKey = getVariationKeyFromId(configObj, variationId);
     if (variationKey) {
-      const userHasForcedVariationMessage = sprintf(
+      const userHasForcedVariationMessage = fns.sprintfRef(
         LOG_MESSAGES.USER_HAS_FORCED_VARIATION,
         MODULE_NAME,
         variationKey,
@@ -994,7 +994,7 @@ export class DecisionService {
     } else {
       this.logger.log(
         LOG_LEVEL.DEBUG,
-        sprintf(
+        fns.sprintfRef(
           LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
           MODULE_NAME,
           experimentKey,
@@ -1024,7 +1024,7 @@ export class DecisionService {
     variationKey: string | null
   ): boolean {
     if (variationKey != null && !stringValidator.validate(variationKey)) {
-      this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.INVALID_VARIATION_KEY, MODULE_NAME));
+      this.logger.log(LOG_LEVEL.ERROR, fns.sprintfRef(ERROR_MESSAGES.INVALID_VARIATION_KEY, MODULE_NAME));
       return false;
     }
 
@@ -1037,7 +1037,7 @@ export class DecisionService {
         // catching improperly formatted experiments
         this.logger.log(
           LOG_LEVEL.ERROR,
-          sprintf(ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT, MODULE_NAME, experimentKey)
+          fns.sprintfRef(ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT, MODULE_NAME, experimentKey)
         );
         return false;
       }
@@ -1062,7 +1062,7 @@ export class DecisionService {
     if (!variationId) {
       this.logger.log(
         LOG_LEVEL.ERROR,
-        sprintf(ERROR_MESSAGES.NO_VARIATION_FOR_EXPERIMENT_KEY, MODULE_NAME, variationKey, experimentKey)
+        fns.sprintfRef(ERROR_MESSAGES.NO_VARIATION_FOR_EXPERIMENT_KEY, MODULE_NAME, variationKey, experimentKey)
       );
       return false;
     }
