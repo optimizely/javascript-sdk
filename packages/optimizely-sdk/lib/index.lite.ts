@@ -34,7 +34,7 @@ import { createNoOpDatafileManager } from './plugins/datafile_manager/no_op_data
   
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
-setLogLevel(LogLevel.INFO);
+setLogLevel(LogLevel.ERROR);
 
 /**
  * Creates an instance of the Optimizely class
@@ -89,9 +89,6 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
   }
 };
 
-/**
- * Entry point into the Optimizely Browser SDK
- */
 export {
   loggerPlugin as logging,
   defaultErrorHandler as errorHandler,
