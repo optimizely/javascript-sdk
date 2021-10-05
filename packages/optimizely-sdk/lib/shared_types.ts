@@ -33,7 +33,7 @@ export interface BucketerParams {
 
 export interface DecisionResponse<T> {
   readonly result: T;
-  readonly reasons: (string | Function)[];
+  readonly reasons: any[][];
 }
 
 export type UserAttributes = {

@@ -18,7 +18,6 @@ import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
 import { NOTIFICATION_TYPES as notificationTypesEnum } from '@optimizely/js-sdk-utils';
 import { NotificationListener, ListenerPayload } from '../../shared_types';
 
-import { sprintfRef } from '../../utils/fns';
 import {
   LOG_LEVEL,
   LOG_MESSAGES,
@@ -217,7 +216,10 @@ export class NotificationCenter {
           } catch (ex) {
             this.logger.log(
               LOG_LEVEL.ERROR,
-              sprintfRef(LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION, MODULE_NAME, notificationType, ex.message)
+              LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION,
+              MODULE_NAME,
+              notificationType,
+              ex.message,
             );
           }
         }

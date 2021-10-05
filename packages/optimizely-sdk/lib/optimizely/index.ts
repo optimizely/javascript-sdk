@@ -87,7 +87,9 @@ export default class Optimizely {
     if (enums.VALID_CLIENT_ENGINES.indexOf(clientEngine) === -1) {
       config.logger.log(
         LOG_LEVEL.INFO,
-        fns.sprintfRef(LOG_MESSAGES.INVALID_CLIENT_ENGINE, MODULE_NAME, clientEngine)
+        LOG_MESSAGES.INVALID_CLIENT_ENGINE,
+        MODULE_NAME,
+        clientEngine,
       );
       clientEngine = enums.NODE_CLIENT_ENGINE;
     }
@@ -100,7 +102,7 @@ export default class Optimizely {
 
     let decideOptionsArray = config.defaultDecideOptions ?? [];
     if (!Array.isArray(decideOptionsArray)) {
-      this.logger.log(LOG_LEVEL.DEBUG, fns.sprintfRef(LOG_MESSAGES.INVALID_DEFAULT_DECIDE_OPTIONS, MODULE_NAME));
+      this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.INVALID_DEFAULT_DECIDE_OPTIONS, MODULE_NAME);
       decideOptionsArray = [];
     }
 
@@ -112,7 +114,9 @@ export default class Optimizely {
       } else {
         this.logger.log(
           LOG_LEVEL.WARNING,
-          fns.sprintfRef(LOG_MESSAGES.UNRECOGNIZED_DECIDE_OPTION, MODULE_NAME, option)
+          LOG_MESSAGES.UNRECOGNIZED_DECIDE_OPTION,
+          MODULE_NAME,
+          option,
         );
       }
     });
@@ -128,7 +132,10 @@ export default class Optimizely {
       (configObj: projectConfig.ProjectConfig) => {
         this.logger.log(
           LOG_LEVEL.INFO,
-          fns.sprintfRef(LOG_MESSAGES.UPDATED_OPTIMIZELY_CONFIG, MODULE_NAME, configObj.revision, configObj.projectId)
+          LOG_MESSAGES.UPDATED_OPTIMIZELY_CONFIG,
+          MODULE_NAME,
+          configObj.revision,
+          configObj.projectId,
         );
         this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE);
       }
@@ -141,7 +148,7 @@ export default class Optimizely {
       try {
         if (userProfileServiceValidator.validate(config.userProfileService)) {
           userProfileService = config.userProfileService;
-          this.logger.log(LOG_LEVEL.INFO, fns.sprintfRef(LOG_MESSAGES.VALID_USER_PROFILE_SERVICE, MODULE_NAME));
+          this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.VALID_USER_PROFILE_SERVICE, MODULE_NAME);
         }
       } catch (ex) {
         this.logger.log(LOG_LEVEL.WARNING, ex.message);
@@ -189,7 +196,7 @@ export default class Optimizely {
   activate(experimentKey: string, userId: string, attributes?: UserAttributes): string | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, fns.sprintfRef(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'activate'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'activate');
         return null;
       }
 
@@ -210,12 +217,12 @@ export default class Optimizely {
 
         // If experiment is not set to 'Running' status, log accordingly and return variation key
         if (!projectConfig.isRunning(configObj, experimentKey)) {
-          const shouldNotDispatchActivateLogMessage = fns.sprintfRef(
+          this.logger.log(
+            LOG_LEVEL.DEBUG,
             LOG_MESSAGES.SHOULD_NOT_DISPATCH_ACTIVATE,
             MODULE_NAME,
-            experimentKey
+            experimentKey,
           );
-          this.logger.log(LOG_LEVEL.DEBUG, shouldNotDispatchActivateLogMessage);
           return variationKey;
         }
 
@@ -237,13 +244,13 @@ export default class Optimizely {
         return variationKey;
       } catch (ex) {
         this.logger.log(LOG_LEVEL.ERROR, ex.message);
-        const failedActivationLogMessage = fns.sprintfRef(
+        this.logger.log(
+          LOG_LEVEL.INFO,
           LOG_MESSAGES.NOT_ACTIVATING_USER,
           MODULE_NAME,
           userId,
-          experimentKey
+          experimentKey,
         );
-        this.logger.log(LOG_LEVEL.INFO, failedActivationLogMessage);
         this.errorHandler.handleError(ex);
         return null;
       }
@@ -362,7 +369,7 @@ export default class Optimizely {
   track(eventKey: string, userId: string, attributes?: UserAttributes, eventTags?: EventTags): void {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, fns.sprintfRef(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'track'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'track');
         return;
       }
 
@@ -378,9 +385,11 @@ export default class Optimizely {
       if (!projectConfig.eventWithKeyExists(configObj, eventKey)) {
         this.logger.log(
           LOG_LEVEL.WARNING,
-          fns.sprintfRef(enums.LOG_MESSAGES.EVENT_KEY_NOT_FOUND, MODULE_NAME, eventKey)
+          enums.LOG_MESSAGES.EVENT_KEY_NOT_FOUND,
+          MODULE_NAME,
+          eventKey,
         );
-        this.logger.log(LOG_LEVEL.WARNING, fns.sprintfRef(LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId));
+        this.logger.log(LOG_LEVEL.WARNING, LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId);
         return;
       }
 
@@ -395,15 +404,14 @@ export default class Optimizely {
         clientVersion: this.clientVersion,
         configObj: configObj,
       });
-      this.logger.log(LOG_LEVEL.INFO, fns.sprintfRef(enums.LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId));
+      this.logger.log(LOG_LEVEL.INFO, enums.LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId);
       // TODO is it okay to not pass a projectConfig as second argument
       this.eventProcessor.process(conversionEvent);
       this.emitNotificationCenterTrack(eventKey, userId, attributes, eventTags);
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
-      this.errorHandler.handleError(e);
-      const failedTrackLogMessage = fns.sprintfRef(LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId);
-      this.logger.log(LOG_LEVEL.ERROR, failedTrackLogMessage);
+      this.errorHandler.handleError(e);      
+      this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId);
     }
   }
   /**
@@ -455,7 +463,7 @@ export default class Optimizely {
   getVariation(experimentKey: string, userId: string, attributes?: UserAttributes): string | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, fns.sprintfRef(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getVariation'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getVariation');
         return null;
       }
 
@@ -473,7 +481,9 @@ export default class Optimizely {
         if (!experiment) {
           this.logger.log(
             LOG_LEVEL.DEBUG,
-            fns.sprintfRef(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey)
+            ERROR_MESSAGES.INVALID_EXPERIMENT_KEY,
+            MODULE_NAME,
+            experimentKey,
           );
           return null;
         }
@@ -608,13 +618,13 @@ export default class Optimizely {
    * @return {null}
    */
   private notActivatingExperiment(experimentKey: string, userId: string): null {
-    const failedActivationLogMessage = fns.sprintfRef(
+    this.logger.log(
+      LOG_LEVEL.INFO,
       LOG_MESSAGES.NOT_ACTIVATING_USER,
       MODULE_NAME,
       userId,
-      experimentKey
+      experimentKey,
     );
-    this.logger.log(LOG_LEVEL.INFO, failedActivationLogMessage);
     return null;
   }
 
@@ -644,7 +654,9 @@ export default class Optimizely {
       if (!this.isValidInstance()) {
         this.logger.log(
           LOG_LEVEL.ERROR,
-          fns.sprintfRef(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'isFeatureEnabled')
+          LOG_MESSAGES.INVALID_OBJECT,
+          MODULE_NAME,
+          'isFeatureEnabled',
         );
         return false;
       }
@@ -694,12 +706,18 @@ export default class Optimizely {
       if (featureEnabled === true) {
         this.logger.log(
           LOG_LEVEL.INFO,
-          fns.sprintfRef(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId)
+          LOG_MESSAGES.FEATURE_ENABLED_FOR_USER,
+          MODULE_NAME,
+          featureKey,
+          userId,
         );
       } else {
         this.logger.log(
           LOG_LEVEL.INFO,
-          fns.sprintfRef(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId)
+          LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER,
+          MODULE_NAME,
+          featureKey,
+          userId,
         );
         featureEnabled = false;
       }
@@ -739,7 +757,9 @@ export default class Optimizely {
       if (!this.isValidInstance()) {
         this.logger.log(
           LOG_LEVEL.ERROR,
-          fns.sprintfRef(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getEnabledFeatures')
+          LOG_MESSAGES.INVALID_OBJECT,
+          MODULE_NAME,
+          'getEnabledFeatures',
         );
         return enabledFeatures;
       }
@@ -791,7 +811,7 @@ export default class Optimizely {
   ): unknown {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, fns.sprintfRef(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariable'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariable');
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, null, userId, attributes);
@@ -852,7 +872,10 @@ export default class Optimizely {
     if (variableType && variable.type !== variableType) {
       this.logger.log(
         LOG_LEVEL.WARNING,
-        fns.sprintfRef(LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE, MODULE_NAME, variableType, variable.type)
+        LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE,
+        MODULE_NAME,
+        variableType,
+        variable.type,
       );
       return null;
     }
@@ -925,47 +948,39 @@ export default class Optimizely {
           variableValue = value;
           this.logger.log(
             LOG_LEVEL.INFO,
-            fns.sprintfRef(
-              LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE,
-              MODULE_NAME,
-              variableValue,
-              variable.key,
-              featureKey
-            )
+            LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE,
+            MODULE_NAME,
+            variableValue,
+            variable.key,
+            featureKey,
           );
         } else {
           this.logger.log(
             LOG_LEVEL.INFO,
-            fns.sprintfRef(
-              LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE,
-              MODULE_NAME,
-              featureKey,
-              userId,
-              variableValue
-            )
+            LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE,
+            MODULE_NAME,
+            featureKey,
+            userId,
+            variableValue,
           );
         }
       } else {
         this.logger.log(
           LOG_LEVEL.INFO,
-          fns.sprintfRef(
-            LOG_MESSAGES.VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
-            MODULE_NAME,
-            variable.key,
-            variation.key
-          )
+          LOG_MESSAGES.VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
+          MODULE_NAME,
+          variable.key,
+          variation.key,
         );
       }
     } else {
       this.logger.log(
         LOG_LEVEL.INFO,
-        fns.sprintfRef(
-          LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE,
-          MODULE_NAME,
-          userId,
-          variable.key,
-          featureKey
-        )
+        LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE,
+        MODULE_NAME,
+        userId,
+        variable.key,
+        featureKey,
       );
     }
 
@@ -993,7 +1008,7 @@ export default class Optimizely {
   ): boolean | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, fns.sprintfRef(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableBoolean'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableBoolean');
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.BOOLEAN, userId, attributes) as boolean | null;
@@ -1026,7 +1041,7 @@ export default class Optimizely {
   ): number | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, fns.sprintfRef(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableDouble'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableDouble');
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.DOUBLE, userId, attributes) as number | null;
@@ -1059,7 +1074,7 @@ export default class Optimizely {
   ): number | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, fns.sprintfRef(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableInteger'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableInteger');
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.INTEGER, userId, attributes) as number | null;
@@ -1092,7 +1107,7 @@ export default class Optimizely {
   ): string | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, fns.sprintfRef(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableString'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableString');
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.STRING, userId, attributes) as string | null;
@@ -1125,7 +1140,7 @@ export default class Optimizely {
   ): unknown {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, fns.sprintfRef(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableJSON'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableJSON');
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.JSON, userId, attributes);
@@ -1153,7 +1168,7 @@ export default class Optimizely {
   ): { [variableKey: string]: unknown } | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, fns.sprintfRef(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getAllFeatureVariables'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getAllFeatureVariables');
         return null;
       }
 
@@ -1442,15 +1457,15 @@ export default class Optimizely {
     options: OptimizelyDecideOption[] = []
   ): OptimizelyDecision {
     const configObj = this.projectConfigManager.getConfig();
-    const reasons: (string | Function)[] = [];
+    const reasons: any[][] = [];
     if (!this.isValidInstance() || !configObj) {
-      this.logger.log(LOG_LEVEL.INFO, fns.sprintfRef(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decide'));
+      this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decide');
       return newErrorDecision(key, user, [DECISION_MESSAGES.SDK_NOT_READY]);
     }
 
     const feature = configObj.featureKeyMap[key];
     if (!feature) {
-      this.logger.log(LOG_LEVEL.ERROR, fns.sprintfRef(ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, key));
+      this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, key);
       return newErrorDecision(key, user, [sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, key)]);
     }
 
@@ -1473,12 +1488,18 @@ export default class Optimizely {
     if (flagEnabled === true) {
       this.logger.log(
         LOG_LEVEL.INFO,
-        fns.sprintfRef(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, key, userId)
+        LOG_MESSAGES.FEATURE_ENABLED_FOR_USER,
+        MODULE_NAME,
+        key,
+        userId,
       );
     } else {
       this.logger.log(
         LOG_LEVEL.INFO,
-        fns.sprintfRef(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, key, userId)
+        LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER,
+        MODULE_NAME,
+        key,
+        userId,
       );
     }
 
@@ -1517,7 +1538,7 @@ export default class Optimizely {
 
     let reportedReasons: string[] = [];
     if (shouldIncludeReasons) {
-      reportedReasons = reasons.map((reason: string | Function) => (typeof reason === 'function') ? reason() : reason);
+      reportedReasons = reasons.map((reason: any[]) => sprintf(reason[0], ...reason.slice(1)));
     }
 
     const featureInfo = {
@@ -1556,7 +1577,7 @@ export default class Optimizely {
   private getAllDecideOptions(options: OptimizelyDecideOption[]): { [key: string]: boolean } {
     const allDecideOptions = { ...this.defaultDecideOptions };
     if (!Array.isArray(options)) {
-      this.logger.log(LOG_LEVEL.DEBUG, fns.sprintfRef(LOG_MESSAGES.INVALID_DECIDE_OPTIONS, MODULE_NAME));
+      this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.INVALID_DECIDE_OPTIONS, MODULE_NAME);
     } else {
       options.forEach((option) => {
         // Filter out all provided decide options that are not in OptimizelyDecideOption[]
@@ -1565,7 +1586,9 @@ export default class Optimizely {
         } else {
           this.logger.log(
             LOG_LEVEL.WARNING,
-            fns.sprintfRef(LOG_MESSAGES.UNRECOGNIZED_DECIDE_OPTION, MODULE_NAME, option)
+            LOG_MESSAGES.UNRECOGNIZED_DECIDE_OPTION,
+            MODULE_NAME,
+            option,
           );
         }
       });
@@ -1590,7 +1613,7 @@ export default class Optimizely {
   ): { [key: string]: OptimizelyDecision } {
     const decisionMap: { [key: string]: OptimizelyDecision } = {};
     if (!this.isValidInstance()) {
-      this.logger.log(LOG_LEVEL.ERROR, fns.sprintfRef(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decideForKeys'));
+      this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decideForKeys');
       return decisionMap;
     }
     if (keys.length === 0) {
@@ -1621,7 +1644,7 @@ export default class Optimizely {
     const configObj = this.projectConfigManager.getConfig();
     const decisionMap: { [key: string]: OptimizelyDecision } = {};
     if (!this.isValidInstance() || !configObj) {
-      this.logger.log(LOG_LEVEL.ERROR, fns.sprintfRef(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decideAll'));
+      this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decideAll');
       return decisionMap;
     }
 

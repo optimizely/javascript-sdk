@@ -61,10 +61,6 @@ function isNumber(value: unknown): boolean {
   return typeof value === 'number';
 }
 
-export function sprintfRef(format: string, ...args: any[]) {
-  return sprintf.bind(null, format, ... args);
-}
-
 export default {
   assign,
   currentTimestamp,
@@ -72,5 +68,4 @@ export default {
   keyBy,
   uuid,
   isNumber,
-  sprintfRef,
 }

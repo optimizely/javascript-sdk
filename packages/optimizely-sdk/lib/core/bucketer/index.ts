@@ -33,8 +33,6 @@ import {
   LOG_MESSAGES,
 } from '../../utils/enums';
 
-import { sprintfRef } from '../../utils/fns';
-
 const HASH_SEED = 1;
 const MAX_HASH_VALUE = Math.pow(2, 32);
 const MAX_TRAFFIC_VALUE = 10000;
@@ -58,7 +56,7 @@ const RANDOM_POLICY = 'random';
  *                                                                       null if user is not bucketed into any experiment and the decide reasons.
  */
 export const bucket = function(bucketerParams: BucketerParams): DecisionResponse<string | null> {
-  const decideReasons: (string | Function)[] = [];
+  const decideReasons: any[][] = [];
   // Check if user is in a random group; if so, check if user is bucketed into a specific experiment
   const experiment = bucketerParams.experimentIdMap[bucketerParams.experimentId];
   const groupId = experiment['groupId'];
@@ -77,14 +75,19 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
 
       // Return if user is not bucketed into any experiment
       if (bucketedExperimentId === null) {
-        const notbucketedInAnyExperimentLogMessage = sprintfRef(
+        bucketerParams.logger.log(
+          LOG_LEVEL.INFO,
           LOG_MESSAGES.USER_NOT_IN_ANY_EXPERIMENT,
           MODULE_NAME,
           bucketerParams.userId,
-          groupId
+          groupId,
         );
-        bucketerParams.logger.log(LOG_LEVEL.INFO, notbucketedInAnyExperimentLogMessage);
-        decideReasons.push(notbucketedInAnyExperimentLogMessage);
+        decideReasons.push([
+          LOG_MESSAGES.USER_NOT_IN_ANY_EXPERIMENT,
+          MODULE_NAME,
+          bucketerParams.userId,
+          groupId,
+        ]);
         return {
           result: null,
           reasons: decideReasons,
@@ -92,53 +95,69 @@ export const bucket = function(bucketerParams: BucketerParams): DecisionResponse
       }
 
       // Return if user is bucketed into a different experiment than the one specified
-      if (bucketedExperimentId !== bucketerParams.experimentId) {
-        const notBucketedIntoExperimentOfGroupLogMessage = sprintfRef(
+      if (bucketedExperimentId !== bucketerParams.experimentId) {        
+        bucketerParams.logger.log(
+          LOG_LEVEL.INFO,
           LOG_MESSAGES.USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
           MODULE_NAME,
           bucketerParams.userId,
           bucketerParams.experimentKey,
-          groupId
+          groupId,
         );
-        bucketerParams.logger.log(LOG_LEVEL.INFO, notBucketedIntoExperimentOfGroupLogMessage);
-        decideReasons.push(notBucketedIntoExperimentOfGroupLogMessage);
+        decideReasons.push([
+          LOG_MESSAGES.USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
+          MODULE_NAME,
+          bucketerParams.userId,
+          bucketerParams.experimentKey,
+          groupId,
+        ]);
         return {
           result: null,
           reasons: decideReasons,
         };
       }
 
-      // Continue bucketing if user is bucketed into specified experiment
-      const bucketedIntoExperimentOfGroupLogMessage = sprintfRef(
+      // Continue bucketing if user is bucketed into specified experiment      
+      bucketerParams.logger.log(
+        LOG_LEVEL.INFO,
         LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
         MODULE_NAME,
         bucketerParams.userId,
         bucketerParams.experimentKey,
-        groupId
+        groupId,
       );
-      bucketerParams.logger.log(LOG_LEVEL.INFO, bucketedIntoExperimentOfGroupLogMessage);
-      decideReasons.push(bucketedIntoExperimentOfGroupLogMessage);
+      decideReasons.push([
+        LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
+        MODULE_NAME,
+        bucketerParams.userId,
+        bucketerParams.experimentKey,
+        groupId,
+      ]);
     }
   }
   const bucketingId = `${bucketerParams.bucketingId}${bucketerParams.experimentId}`;
   const bucketValue = _generateBucketValue(bucketingId);
-
-  const bucketedUserLogMessage = sprintfRef(
+  
+  bucketerParams.logger.log(
+    LOG_LEVEL.DEBUG,
     LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
     MODULE_NAME,
     bucketValue,
-    bucketerParams.userId
+    bucketerParams.userId,
   );
-  bucketerParams.logger.log(LOG_LEVEL.DEBUG, bucketedUserLogMessage);
-  decideReasons.push(bucketedUserLogMessage);
+  decideReasons.push([
+    LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
+    MODULE_NAME,
+    bucketValue,
+    bucketerParams.userId,
+  ]);
 
   const entityId = _findBucket(bucketValue, bucketerParams.trafficAllocationConfig);
   if (entityId !== null) {
     if (!bucketerParams.variationIdMap[entityId]) {
-      if (entityId) {
-        const invalidVariationIdLogMessage = sprintfRef(LOG_MESSAGES.INVALID_VARIATION_ID, MODULE_NAME);
-        bucketerParams.logger.log(LOG_LEVEL.WARNING, invalidVariationIdLogMessage);
-        decideReasons.push(invalidVariationIdLogMessage);
+      if (entityId) {        
+        bucketerParams.logger.log(LOG_LEVEL.WARNING, LOG_MESSAGES.INVALID_VARIATION_ID, MODULE_NAME);
+        decideReasons.push([LOG_MESSAGES.INVALID_VARIATION_ID, MODULE_NAME]);
       }
       return {
         result: null,
@@ -171,7 +190,10 @@ export const bucketUserIntoExperiment = function(
   const bucketValue = _generateBucketValue(bucketingKey);
   logger.log(
     LOG_LEVEL.DEBUG,
-    sprintfRef(LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET, MODULE_NAME, bucketValue, userId)
+    LOG_MESSAGES.USER_ASSIGNED_TO_EXPERIMENT_BUCKET,
+    MODULE_NAME,
+    bucketValue,
+    userId,
   );
   const trafficAllocationConfig = group.trafficAllocation;
   const bucketedExperimentId = _findBucket(bucketValue, trafficAllocationConfig);
