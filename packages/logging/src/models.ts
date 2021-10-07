@@ -22,7 +22,7 @@ export enum LogLevel {
 }
 
 export interface LoggerFacade {
-  log(level: LogLevel | string, message: string, ...splat: any[]): void
+  log(level: LogLevel | string, message: string): void
 
   info(message: string | Error, ...splat: any[]): void
 
@@ -38,5 +38,5 @@ export interface LogManager {
 }
 
 export interface LogHandler {
-  log(level: LogLevel, message: string, ...splat: any[]): void
+  log(level: LogLevel, message: string): void
 }
