@@ -218,10 +218,10 @@ class OptimizelyLogger implements LoggerFacade {
    * @param {string} [message]
    * @memberof OptimizelyLogger
    */
-  log(level: LogLevel | string, message: string): void {
+  log(level: LogLevel | string, message: string, ...splat: any[]): void {
     this.internalLog(coerceLogLevel(level), {
       message,
-      splat: [],
+      splat,
     })
   }
 
