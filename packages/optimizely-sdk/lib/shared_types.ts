@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from '@optimizely/js-sdk-logging';
+import { EventProcessor } from '@optimizely/js-sdk-event-processor';
+
+import { NotificationCenter } from '@optimizely/js-sdk-utils';
 
 export interface BucketerParams {
   experimentId: string;
@@ -227,12 +230,9 @@ export interface OptimizelyOptions {
   clientEngine: string;
   clientVersion?: string;
   datafile?: string;
-  datafileOptions?: DatafileOptions;
+  datafileManager?: DatafileManager;
   errorHandler: ErrorHandler;
-  eventBatchSize?: number;
-  eventDispatcher: EventDispatcher;
-  eventFlushInterval?: number;
-  eventMaxQueueSize?: number;
+  eventProcessor: EventProcessor;
   isValidInstance: boolean;
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean,
@@ -240,7 +240,8 @@ export interface OptimizelyOptions {
   logger: LoggerFacade;
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
-  defaultDecideOptions?: OptimizelyDecideOption[]
+  defaultDecideOptions?: OptimizelyDecideOption[];
+  notificationCenter: NotificationCenter;
 }
 
 /**
@@ -268,6 +269,8 @@ export interface OptimizelyVariable {
 export interface SDKOptions {
   // Datafile string
   datafile?: string;
+  // options for Datafile Manager
+  datafileOptions?: DatafileOptions;
   // errorHandler object for logging error
   errorHandler?: ErrorHandler;
   // limit of events to dispatch in a batch
@@ -276,6 +279,8 @@ export interface SDKOptions {
   eventDispatcher?: EventDispatcher;
   // maximum time for an event to stay in the queue
   eventFlushInterval?: number;
+  // maximum size for the event queue
+  eventMaxQueueSize?: number;
   // flag to validate if this instance is valid
   isValidInstance: boolean;
   // level of logging i.e debug, info, error, warning etc
@@ -391,4 +396,25 @@ export interface OptimizelyDecision {
   userContext: OptimizelyUserContext;
   // An array of error/info messages describing why the decision has been made.
   reasons: string[];
+}
+
+export interface DatafileUpdate {
+  datafile: string;
+}
+
+export interface DatafileUpdateListener {
+  (datafileUpdate: DatafileUpdate): void;
+}
+
+// TODO: Replace this with the one from js-sdk-models
+interface Managed {
+  start(): void;
+
+  stop(): Promise<unknown>;
+}
+
+export interface DatafileManager extends Managed {
+  get: () => string;
+  on(eventName: string, listener: DatafileUpdateListener): () => void;
+  onReady: () => Promise<void>;
 }

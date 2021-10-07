@@ -24,6 +24,8 @@ import {
   DECISION_SOURCES,
 } from '../../utils/enums';
 import { createLogger } from '../../plugins/logger';
+import { createForwardingEventProcessor } from '../../plugins/event_processor/forwarding_event_processor';
+import { createNotificationCenter } from '../notification_center';
 import Optimizely from '../../optimizely';
 import projectConfig from '../project_config';
 import AudienceEvaluator from '../audience_evaluator';
@@ -980,7 +982,8 @@ describe('lib/core/decision_service', function() {
         jsonSchemaValidator: jsonSchemaValidator,
         isValidInstance: true,
         logger: createdLogger,
-        eventDispatcher: eventDispatcher,
+        eventProcessor: createForwardingEventProcessor(eventDispatcher),
+        notificationCenter: createNotificationCenter(createdLogger, errorHandler),
         errorHandler: errorHandler,
       });
 

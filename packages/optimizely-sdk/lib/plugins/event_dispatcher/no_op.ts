@@ -1,5 +1,5 @@
 /**
- * Copyright 2020, Optimizely
+ * Copyright 2021, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,21 @@
  * limitations under the License.
  */
 
-import { LogTierV1EventProcessor, LocalStoragePendingEventsDispatcher } from '@optimizely/js-sdk-event-processor';
+import { Event } from '../../shared_types';
 
-export function createEventProcessor(
-  ...args: ConstructorParameters<typeof LogTierV1EventProcessor>
-): LogTierV1EventProcessor {
-  return new LogTierV1EventProcessor(...args);
+/**
+ * No Op Event dispatcher for non standard platforms like edge workers etc
+ * @param  {Event}    eventObj
+ * @param  {Function} callback
+ */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+export const dispatchEvent = function(
+  eventObj: Event,
+  callback: (response: { statusCode: number; }) => void
+): void {
+  // NoOp Event dispatcher. It does nothing really.
 }
 
-export type { EventProcessor } from '@optimizely/js-sdk-event-processor';
-
-export default { createEventProcessor, LocalStoragePendingEventsDispatcher };
+export default {
+  dispatchEvent,
+};

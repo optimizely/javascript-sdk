@@ -15,16 +15,13 @@
  */
 import { sprintf } from '@optimizely/js-sdk-utils';
 import { getLogger } from '@optimizely/js-sdk-logging';
-import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager';
 
-import fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../../utils/enums';
 import { createOptimizelyConfig } from '../optimizely_config';
 import {
-  DatafileManagerConfig,
-  DatafileOptions,
   OnReadyResult,
-  OptimizelyConfig
+  OptimizelyConfig,
+  DatafileManager,
 } from '../../shared_types';
 import { ProjectConfig, toDatafile, tryCreatingProjectConfig } from '../project_config';
 
@@ -33,11 +30,11 @@ const MODULE_NAME = 'PROJECT_CONFIG_MANAGER';
 
 interface ProjectConfigManagerConfig {
   datafile?: string,
-  datafileOptions?: DatafileOptions,
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean,
   };
   sdkKey?: string,
+  datafileManager?: DatafileManager
 }
 
 /**
@@ -68,7 +65,7 @@ export class ProjectConfigManager {
   private optimizelyConfigObj: OptimizelyConfig | null = null;
   private readyPromise: Promise<OnReadyResult>;
   public jsonSchemaValidator: { validate(jsonObject: unknown): boolean } | undefined;
-  public datafileManager: HttpPollingDatafileManager | null = null;
+  public datafileManager: DatafileManager | null = null;
 
   constructor(config: ProjectConfigManagerConfig) {
     try {
@@ -89,17 +86,8 @@ export class ProjectConfigManager {
         handleNewDatafileException = this.handleNewDatafile(config.datafile);
       }
 
-      if (config.sdkKey) {
-        const datafileManagerConfig: DatafileManagerConfig = {
-          sdkKey: config.sdkKey,
-        };
-        if (this.validateDatafileOptions(config.datafileOptions)) {
-          fns.assign(datafileManagerConfig, config.datafileOptions);
-        }
-        if (this.configObj) {
-          datafileManagerConfig.datafile = toDatafile(this.configObj)
-        }
-        this.datafileManager = new HttpPollingDatafileManager(datafileManagerConfig);
+      if (config.sdkKey &&  config.datafileManager) {
+        this.datafileManager = config.datafileManager;
         this.datafileManager.start();
         this.readyPromise = this.datafileManager
           .onReady()
@@ -174,23 +162,6 @@ export class ProjectConfigManager {
     if (this.datafileManager) {
       this.handleNewDatafile(this.datafileManager.get());
     }
-  }
-
-  /**
-   * Validate user-provided datafileOptions. It should be an object or undefined.
-   * @param {DatafileOptions} datafileOptions
-   * @returns {boolean}
-   */
-  private validateDatafileOptions(datafileOptions?: DatafileOptions): boolean {
-    if (typeof datafileOptions === 'undefined') {
-      return true;
-    }
-
-    if (typeof datafileOptions === 'object') {
-      return datafileOptions !== null;
-    }
-
-    return false;
   }
 
   /**

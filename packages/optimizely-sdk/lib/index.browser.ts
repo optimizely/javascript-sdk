@@ -29,7 +29,10 @@ import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
 import Optimizely from './optimizely';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
+import { createNotificationCenter } from './core/notification_center';
+import { default as eventProcessor } from './plugins/event_processor';
 import { SDKOptions, OptimizelyDecideOption } from './shared_types';
+import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -38,6 +41,7 @@ setLogLevel(LogLevel.INFO);
 const MODULE_NAME = 'INDEX_BROWSER';
 const DEFAULT_EVENT_BATCH_SIZE = 10;
 const DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
+const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
 
 let hasRetriedEvents = false;
 
@@ -49,7 +53,6 @@ let hasRetriedEvents = false;
  */
 const createInstance = function(config: SDKOptions): Optimizely | null {
   try {
-
     // TODO warn about setting per instance errorHandler / logger / logLevel
     if (config.errorHandler) {
       setErrorHandler(config.errorHandler);
@@ -103,14 +106,25 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
     }
 
+    const errorHandler = getErrorHandler();
+    const notificationCenter = createNotificationCenter({ logger: logger, errorHandler: errorHandler });
+
+    const eventProcessorConfig = {
+      dispatcher: eventDispatcher,
+      flushInterval: eventFlushInterval,
+      batchSize: eventBatchSize,
+      maxQueueSize:  config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
+      notificationCenter,
+    }
+
     const optimizelyOptions = {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
-      eventDispatcher: eventDispatcher,
       ...config,
-      eventBatchSize: eventBatchSize,
-      eventFlushInterval: eventFlushInterval,
-      logger: logger,
-      errorHandler: getErrorHandler()
+      eventProcessor: eventProcessor.createEventProcessor(eventProcessorConfig),
+      logger,
+      errorHandler,
+      datafileManager: config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
+      notificationCenter,
     };
 
     const optimizely = new Optimizely(optimizelyOptions);

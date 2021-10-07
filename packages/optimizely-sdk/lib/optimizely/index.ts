@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
+import { sprintf, objectValues, NotificationCenter } from '@optimizely/js-sdk-utils';
 import { LoggerFacade, ErrorHandler } from '@optimizely/js-sdk-logging';
+import { EventProcessor } from '@optimizely/js-sdk-event-processor';
+
 import {
   UserAttributes,
   EventTags,
   OptimizelyConfig,
-  EventDispatcher,
   OnReadyResult,
   UserProfileService,
   Variation,
@@ -32,13 +33,11 @@ import {
 import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
-import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
 import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
 import { buildImpressionEvent, buildConversionEvent } from '../core/event_builder/event_helpers';
 import fns from '../utils/fns'
 import { validate } from '../utils/attributes_validator';
-import { EventProcessor, default as eventProcessor } from '../core/event_processor';
 import * as enums from '../utils/enums';
 import * as eventTagsValidator from '../utils/event_tags_validator';
 import * as projectConfig from '../core/project_config';
@@ -65,20 +64,6 @@ type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 
 
 type StringInputs = Partial<Record<InputKey, unknown>>;
 
-/**
- * The Optimizely class
- * @param {OptimizelyOptions} config
- * @param {string}            config.clientEngine
- * @param {string}            config.clientVersion
- * @param {Object|string}     config.datafile
- * @param {Object}            config.errorHandler
- * @param {Object}            config.eventDispatcher
- * @param {Object}            config.logger
- * @param {Object}            config.userProfileService
- * @param {Object}            config.eventBatchSize
- * @param {Object}            config.eventFlushInterval
- * @param {string}            config.sdkKey
- */
 export default class Optimizely {
   private isOptimizelyConfigValid: boolean;
   private disposeOnUpdate: (() => void) | null;
@@ -90,7 +75,6 @@ export default class Optimizely {
   private clientEngine: string;
   private clientVersion: string;
   private errorHandler: ErrorHandler;
-  private eventDispatcher: EventDispatcher;
   private logger: LoggerFacade;
   private projectConfigManager: ProjectConfigManager;
   private notificationCenter: NotificationCenter;
@@ -111,7 +95,6 @@ export default class Optimizely {
     this.clientEngine = clientEngine;
     this.clientVersion = config.clientVersion || enums.NODE_CLIENT_VERSION;
     this.errorHandler = config.errorHandler;
-    this.eventDispatcher = config.eventDispatcher;
     this.isOptimizelyConfigValid = config.isValidInstance;
     this.logger = config.logger;
 
@@ -136,9 +119,9 @@ export default class Optimizely {
     this.defaultDecideOptions = defaultDecideOptions;
     this.projectConfigManager = createProjectConfigManager({
       datafile: config.datafile,
-      datafileOptions: config.datafileOptions,
       jsonSchemaValidator: config.jsonSchemaValidator,
       sdkKey: config.sdkKey,
+      datafileManager: config.datafileManager
     });
 
     this.disposeOnUpdate = this.projectConfigManager.onUpdate(
@@ -171,20 +154,9 @@ export default class Optimizely {
       UNSTABLE_conditionEvaluators: config.UNSTABLE_conditionEvaluators,
     });
 
-    this.notificationCenter = createNotificationCenter({
-      logger: this.logger,
-      errorHandler: this.errorHandler,
-    });
+    this.notificationCenter = config.notificationCenter;
 
-    const eventProcessorConfig = {
-      dispatcher: this.eventDispatcher,
-      flushInterval: config.eventFlushInterval,
-      batchSize: config.eventBatchSize,
-      maxQueueSize: config.eventMaxQueueSize,
-      notificationCenter: this.notificationCenter,
-    }
-
-    this.eventProcessor = eventProcessor.createEventProcessor(eventProcessorConfig);
+    this.eventProcessor = config.eventProcessor;
 
     const eventProcessorStartedPromise = this.eventProcessor.start();
 

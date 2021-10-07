@@ -16,7 +16,7 @@
 import { assert, expect } from 'chai';
 import sinon from 'sinon';
 import { sprintf, NOTIFICATION_TYPES } from '@optimizely/js-sdk-utils';
-import eventProcessor from '../core/event_processor';
+import eventProcessor from '../plugins/event_processor';
 import * as logging from '@optimizely/js-sdk-logging';
 
 import Optimizely from './';
@@ -35,6 +35,10 @@ import * as decisionService from '../core/decision_service';
 import * as jsonSchemaValidator from '../utils/json_schema_validator';
 import * as projectConfig from '../core/project_config';
 import testData from '../tests/test_data';
+import { createForwardingEventProcessor } from '../plugins/event_processor/forwarding_event_processor';
+import { createEventProcessor } from '../plugins/event_processor';
+import { createNotificationCenter } from '../core/notification_center';
+import { createHttpPollingDatafileManager } from '../plugins/datafile_manager/http_polling_datafile_manager';
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
@@ -88,6 +92,8 @@ describe('lib/optimizely', function() {
       },
     };
     var createdLogger = logger.createLogger({ logLevel: LOG_LEVEL.INFO });
+    var notificationCenter = createNotificationCenter({ logger: createdLogger, errorHandler: stubErrorHandler });
+    var eventProcessor = createForwardingEventProcessor(stubEventDispatcher);
     beforeEach(function() {
       sinon.stub(stubErrorHandler, 'handleError');
       sinon.stub(createdLogger, 'log');
@@ -107,6 +113,8 @@ describe('lib/optimizely', function() {
           eventDispatcher: stubEventDispatcher,
           jsonSchemaValidator: jsonSchemaValidator,
           logger: createdLogger,
+          notificationCenter,
+          eventProcessor,
         });
         assert.instanceOf(optlyInstance, Optimizely);
       });
@@ -119,6 +127,8 @@ describe('lib/optimizely', function() {
           eventDispatcher: stubEventDispatcher,
           jsonSchemaValidator: jsonSchemaValidator,
           logger: createdLogger,
+          notificationCenter,
+          eventProcessor,
         });
         assert.instanceOf(optlyInstance, Optimizely);
       });
@@ -129,6 +139,8 @@ describe('lib/optimizely', function() {
           errorHandler: stubErrorHandler,
           eventDispatcher: stubEventDispatcher,
           logger: createdLogger,
+          notificationCenter,
+          eventProcessor,
         });
 
         sinon.assert.called(createdLogger.log);
@@ -144,6 +156,8 @@ describe('lib/optimizely', function() {
           eventDispatcher: stubEventDispatcher,
           logger: createdLogger,
           defaultDecideOptions: 'invalid_options',
+          notificationCenter,
+          eventProcessor,
         });
 
         sinon.assert.called(createdLogger.log);
@@ -158,6 +172,8 @@ describe('lib/optimizely', function() {
           errorHandler: stubErrorHandler,
           eventDispatcher: stubEventDispatcher,
           logger: createdLogger,
+          notificationCenter,
+          eventProcessor,
         });
 
         assert.strictEqual(instance.clientEngine, 'react-sdk');
@@ -184,6 +200,8 @@ describe('lib/optimizely', function() {
             datafile: testData.getTestProjectConfig(),
             jsonSchemaValidator: jsonSchemaValidator,
             userProfileService: userProfileServiceInstance,
+            notificationCenter,
+            eventProcessor,
           });
 
           sinon.assert.calledWith(decisionService.createDecisionService, {
@@ -207,6 +225,8 @@ describe('lib/optimizely', function() {
             datafile: testData.getTestProjectConfig(),
             jsonSchemaValidator: jsonSchemaValidator,
             userProfileService: invalidUserProfile,
+            notificationCenter,
+            eventProcessor,
           });
 
           sinon.assert.calledWith(decisionService.createDecisionService, {
@@ -233,35 +253,40 @@ describe('lib/optimizely', function() {
             jsonSchemaValidator: jsonSchemaValidator,
             logger: createdLogger,
             sdkKey: '12345',
+            datafileManager: createHttpPollingDatafileManager('12345', createdLogger),
+            notificationCenter,
+            eventProcessor,            
           });
           sinon.assert.notCalled(stubErrorHandler.handleError);
         });
 
         it('passes datafile, datafileOptions, sdkKey, and other options to the project config manager', function() {
           var config = testData.getTestProjectConfig();
+          let datafileOptions = {
+            autoUpdate: true,
+            updateInterval: 2 * 60 * 1000,
+          }
+          let datafileManager = createHttpPollingDatafileManager('12345', createdLogger, undefined, datafileOptions);
           new Optimizely({
             clientEngine: 'node-sdk',
             datafile: config,
-            datafileOptions: {
-              autoUpdate: true,
-              updateInterval: 2 * 60 * 1000,
-            },
+            datafileOptions: datafileOptions,
             errorHandler: errorHandler,
             eventDispatcher: eventDispatcher,
             isValidInstance: true,
             jsonSchemaValidator: jsonSchemaValidator,
             logger: createdLogger,
             sdkKey: '12345',
+            datafileManager: datafileManager,
+            notificationCenter,
+            eventProcessor,
           });
           sinon.assert.calledOnce(projectConfigManager.createProjectConfigManager);
           sinon.assert.calledWithExactly(projectConfigManager.createProjectConfigManager, {
             datafile: config,
-            datafileOptions: {
-              autoUpdate: true,
-              updateInterval: 2 * 60 * 1000,
-            },
             jsonSchemaValidator: jsonSchemaValidator,
             sdkKey: '12345',
+            datafileManager: datafileManager
           });
         });
       });
@@ -275,6 +300,8 @@ describe('lib/optimizely', function() {
           eventDispatcher: stubEventDispatcher,
           jsonSchemaValidator: jsonSchemaValidator,
           logger: createdLogger,
+          notificationCenter,
+          eventProcessor
         });
         assert.instanceOf(optlyInstance, Optimizely);
         var optlyInstance2 = new Optimizely({
@@ -284,6 +311,8 @@ describe('lib/optimizely', function() {
           eventDispatcher: stubEventDispatcher,
           jsonSchemaValidator: jsonSchemaValidator,
           logger: createdLogger,
+          notificationCenter,
+          eventProcessor,
         });
         assert.instanceOf(optlyInstance2, Optimizely);
       });
@@ -294,6 +323,8 @@ describe('lib/optimizely', function() {
     var optlyInstance;
     var bucketStub;
     var fakeDecisionResponse;
+    var notificationCenter = createNotificationCenter({ logger: createdLogger, errorHandler });
+    var eventProcessor = createForwardingEventProcessor(eventDispatcher, notificationCenter);
     var createdLogger = logger.createLogger({
       logLevel: LOG_LEVEL.INFO,
       logToConsole: false,
@@ -308,6 +339,8 @@ describe('lib/optimizely', function() {
         logger: createdLogger,
         isValidInstance: true,
         eventBatchSize: 1,
+        eventProcessor,
+        notificationCenter,
       });
 
       bucketStub = sinon.stub(bucketer, 'bucket');
@@ -926,6 +959,8 @@ describe('lib/optimizely', function() {
           }),
           isValidInstance: true,
           eventBatchSize: 1,
+          eventProcessor,
+          notificationCenter,
         });
 
         var variation = instance.activate('testExperiment', 'testUser');
@@ -1006,6 +1041,8 @@ describe('lib/optimizely', function() {
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
           logger: createdLogger,
+          eventProcessor,
+          notificationCenter,
         });
 
         createdLogger.log.reset();
@@ -1694,6 +1731,8 @@ describe('lib/optimizely', function() {
           }),
           isValidInstance: true,
           eventBatchSize: 1,
+          eventProcessor,
+          notificationCenter,
         });
 
         instance.track('testEvent', 'testUser');
@@ -1706,6 +1745,8 @@ describe('lib/optimizely', function() {
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
           logger: createdLogger,
+          eventProcessor,
+          notificationCenter,
         });
 
         createdLogger.log.reset();
@@ -1862,6 +1903,8 @@ describe('lib/optimizely', function() {
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
           logger: createdLogger,
+          eventProcessor,
+          notificationCenter,
         });
 
         createdLogger.log.reset();
@@ -2700,6 +2743,8 @@ describe('lib/optimizely', function() {
               jsonSchemaValidator: jsonSchemaValidator,
               logger: createdLogger,
               isValidInstance: true,
+              eventProcessor,
+              notificationCenter,
             });
 
             optlyInstance.notificationCenter.addNotificationListener(
@@ -2757,6 +2802,8 @@ describe('lib/optimizely', function() {
               jsonSchemaValidator: jsonSchemaValidator,
               logger: createdLogger,
               isValidInstance: true,
+              eventProcessor,
+              notificationCenter,
             });
 
             optlyInstance.notificationCenter.addNotificationListener(
@@ -2807,6 +2854,8 @@ describe('lib/optimizely', function() {
               jsonSchemaValidator: jsonSchemaValidator,
               logger: createdLogger,
               isValidInstance: true,
+              eventProcessor,
+              notificationCenter,
             });
 
             optly.notificationCenter.addNotificationListener(enums.NOTIFICATION_TYPES.DECISION, decisionListener);
@@ -2842,6 +2891,8 @@ describe('lib/optimizely', function() {
               logger: createdLogger,
               isValidInstance: true,
               eventDispatcher: eventDispatcher,
+              eventProcessor,
+              notificationCenter,
             });
 
             optlyInstance.notificationCenter.addNotificationListener(
@@ -4452,6 +4503,12 @@ describe('lib/optimizely', function() {
       logLevel: LOG_LEVEL.INFO,
       logToConsole: false,
     });
+    var notificationCenter = createNotificationCenter({ logger: createdLogger, errorHandler: errorHandler });
+    var eventProcessor = createEventProcessor({
+      dispatcher: eventDispatcher,
+      batchSize: 1,
+      notificationCenter: notificationCenter,
+    });
 
     describe('#createUserContext', function() {
       beforeEach(function() {
@@ -4464,6 +4521,8 @@ describe('lib/optimizely', function() {
           logger: createdLogger,
           isValidInstance: true,
           eventBatchSize: 1,
+          notificationCenter,
+          eventProcessor,
         });
 
         bucketStub = sinon.stub(bucketer, 'bucket');
@@ -4549,6 +4608,8 @@ describe('lib/optimizely', function() {
             isValidInstance: true,
             eventBatchSize: 1,
             defaultDecideOptions: [],
+            notificationCenter,
+            eventProcessor,
           });
 
           sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
@@ -4623,7 +4684,7 @@ describe('lib/optimizely', function() {
             reasons: [],
           }
           assert.deepEqual(decision, expectedDecision);
-          sinon.assert.calledOnce(optlyInstance.eventDispatcher.dispatchEvent);
+          sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
           var expectedImpressionEvent = {
             httpVerb: 'POST',
             url: 'https://logx.optimizely.com/v1/events',
@@ -4718,7 +4779,7 @@ describe('lib/optimizely', function() {
             reasons: [],
           }
           assert.deepEqual(decision, expectedDecision);
-          sinon.assert.notCalled(optlyInstance.eventDispatcher.dispatchEvent);
+          sinon.assert.notCalled(eventDispatcher.dispatchEvent);
           sinon.assert.calledTwice(optlyInstance.notificationCenter.sendNotifications);
           var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(1).args;
           var expectedNotificationCallArgs = [
@@ -4758,7 +4819,7 @@ describe('lib/optimizely', function() {
             reasons: [],
           }
           assert.deepEqual(decision, expectedDecision);
-          sinon.assert.notCalled(optlyInstance.eventDispatcher.dispatchEvent);
+          sinon.assert.notCalled(eventDispatcher.dispatchEvent);
           sinon.assert.calledOnce(optlyInstance.notificationCenter.sendNotifications);
           var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(0).args;
           var expectedNotificationCallArgs = [
@@ -4799,7 +4860,7 @@ describe('lib/optimizely', function() {
             reasons: [],
           }
           assert.deepEqual(decision, expectedDecision);
-          sinon.assert.calledOnce(optlyInstance.eventDispatcher.dispatchEvent);
+          sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
           sinon.assert.callCount(optlyInstance.notificationCenter.sendNotifications, 4);
           var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(3).args;
           var expectedNotificationCallArgs = [
@@ -4843,7 +4904,7 @@ describe('lib/optimizely', function() {
             reasons: [],
           }
           assert.deepEqual(decision, expectedDecision);
-          sinon.assert.notCalled(optlyInstance.eventDispatcher.dispatchEvent);
+          sinon.assert.notCalled(eventDispatcher.dispatchEvent);
           sinon.assert.calledTwice(optlyInstance.notificationCenter.sendNotifications);
           var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(1).args;
           var expectedNotificationCallArgs = [
@@ -4884,7 +4945,7 @@ describe('lib/optimizely', function() {
             reasons: [],
           }
           assert.deepEqual(decision, expectedDecision);
-          sinon.assert.calledOnce(optlyInstance.eventDispatcher.dispatchEvent);
+          sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
           sinon.assert.callCount(optlyInstance.notificationCenter.sendNotifications, 4);
           var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(3).args;
           var expectedNotificationCallArgs = [
@@ -4920,6 +4981,8 @@ describe('lib/optimizely', function() {
             isValidInstance: true,
             eventBatchSize: 1,
             defaultDecideOptions: [ OptimizelyDecideOption.EXCLUDE_VARIABLES ],
+            eventProcessor,
+            notificationCenter,
           });
 
           sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
@@ -4952,7 +5015,7 @@ describe('lib/optimizely', function() {
             reasons: [],
           }
           assert.deepEqual(decision, expectedDecisionObj);
-          sinon.assert.calledOnce(optlyInstance.eventDispatcher.dispatchEvent);
+          sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
           sinon.assert.calledThrice(optlyInstance.notificationCenter.sendNotifications);
           var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(2).args;
           var expectedNotificationCallArgs = [
@@ -4992,7 +5055,7 @@ describe('lib/optimizely', function() {
             reasons: [],
           }
           assert.deepEqual(decision, expectedDecisionObj);
-          sinon.assert.notCalled(optlyInstance.eventDispatcher.dispatchEvent);
+          sinon.assert.notCalled(eventDispatcher.dispatchEvent);
           sinon.assert.calledOnce(optlyInstance.notificationCenter.sendNotifications);
           var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(0).args;
           var expectedNotificationCallArgs = [
@@ -5028,6 +5091,8 @@ describe('lib/optimizely', function() {
             isValidInstance: true,
             eventBatchSize: 1,
             defaultDecideOptions: [ OptimizelyDecideOption.DISABLE_DECISION_EVENT ],
+            notificationCenter,
+            eventProcessor,
           });
 
           sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
@@ -5055,7 +5120,7 @@ describe('lib/optimizely', function() {
             reasons: [],
           }
           assert.deepEqual(decision, expectedDecisionObj);
-          sinon.assert.notCalled(optlyInstance.eventDispatcher.dispatchEvent);
+          sinon.assert.notCalled(eventDispatcher.dispatchEvent);
           sinon.assert.calledTwice(optlyInstance.notificationCenter.sendNotifications);
           var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(1).args;
           var expectedNotificationCallArgs = [
@@ -5091,6 +5156,8 @@ describe('lib/optimizely', function() {
             isValidInstance: true,
             eventBatchSize: 1,
             defaultDecideOptions: [ OptimizelyDecideOption.INCLUDE_REASONS ],
+            notificationCenter,
+            eventProcessor,
           });
 
           sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
@@ -5146,6 +5213,8 @@ describe('lib/optimizely', function() {
             isValidInstance: true,
             eventBatchSize: 1,
             defaultDecideOptions: [ OptimizelyDecideOption.INCLUDE_REASONS ],
+            notificationCenter,
+            eventProcessor,
           });
           var user = new OptimizelyUserContext({
             optimizely: optlyInstanceWithUserProfile,
@@ -5646,6 +5715,8 @@ describe('lib/optimizely', function() {
             logger: createdLogger,
             isValidInstance: true,
             eventBatchSize: 1,
+            notificationCenter,
+            eventProcessor,
           });
           var user = new OptimizelyUserContext({
             optimizely: optlyInstanceWithUserProfile,
@@ -5686,6 +5757,8 @@ describe('lib/optimizely', function() {
               logger: createdLogger,
               isValidInstance: true,
               eventBatchSize: 1,
+              notificationCenter,
+              eventProcessor,
             });
             var user = new OptimizelyUserContext({
               optimizely: optlyInstanceWithUserProfile,
@@ -5728,7 +5801,9 @@ describe('lib/optimizely', function() {
               logger: createdLogger,
               isValidInstance: true,
               eventBatchSize: 1,
-              defaultDecideOptions: [ OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE ]
+              defaultDecideOptions: [ OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE ],
+              notificationCenter,
+              eventProcessor,
             });
             var user = new OptimizelyUserContext({
               optimizely: optlyInstanceWithUserProfile,
@@ -5757,6 +5832,8 @@ describe('lib/optimizely', function() {
           isValidInstance: true,
           eventBatchSize: 1,
           defaultDecideOptions: [],
+          notificationCenter,
+          eventProcessor,
         });
 
         sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
@@ -5783,7 +5860,7 @@ describe('lib/optimizely', function() {
         }
         assert.deepEqual(Object.values(decisionsMap).length, 1);
         assert.deepEqual(decision, expectedDecision);
-        sinon.assert.calledOnce(optlyInstance.eventDispatcher.dispatchEvent);
+        sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
         sinon.assert.callCount(optlyInstance.notificationCenter.sendNotifications, 4)
         var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(3).args;
         var decisionEventDispatched = notificationCallArgs[1].decisionInfo.decisionEventDispatched;
@@ -5819,7 +5896,7 @@ describe('lib/optimizely', function() {
         assert.deepEqual(Object.values(decisionsMap).length, 2);
         assert.deepEqual(decision1, expectedDecision1);
         assert.deepEqual(decision2, expectedDecision2);
-        sinon.assert.calledTwice(optlyInstance.eventDispatcher.dispatchEvent);
+        sinon.assert.calledTwice(eventDispatcher.dispatchEvent);
       });
 
       it('should return decision results map with only enabled flags when ENABLED_FLAGS_ONLY flag is passed in and dispatch events', function() {
@@ -5840,7 +5917,7 @@ describe('lib/optimizely', function() {
         }
         assert.deepEqual(Object.values(decisionsMap).length, 1);
         assert.deepEqual(decision, expectedDecision);
-        sinon.assert.calledTwice(optlyInstance.eventDispatcher.dispatchEvent);
+        sinon.assert.calledTwice(eventDispatcher.dispatchEvent);
       });
     });
 
@@ -5858,6 +5935,8 @@ describe('lib/optimizely', function() {
             isValidInstance: true,
             eventBatchSize: 1,
             defaultDecideOptions: [],
+            notificationCenter,
+            eventProcessor,
           });
 
           sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
@@ -5909,7 +5988,7 @@ describe('lib/optimizely', function() {
           assert.deepEqual(decision1, expectedDecision1);
           assert.deepEqual(decision2, expectedDecision2);
           assert.deepEqual(decision3, expectedDecision3);
-          sinon.assert.calledThrice(optlyInstance.eventDispatcher.dispatchEvent);
+          sinon.assert.calledThrice(eventDispatcher.dispatchEvent);
         });
 
         it('should return decision results map with only enabled flags when ENABLED_FLAGS_ONLY flag is passed in and dispatch events', function() {
@@ -5942,7 +6021,7 @@ describe('lib/optimizely', function() {
           assert.deepEqual(Object.values(decisionsMap).length, 2);
           assert.deepEqual(decision1, expectedDecision1);
           assert.deepEqual(decision2, expectedDecision2);
-          sinon.assert.calledThrice(optlyInstance.eventDispatcher.dispatchEvent);
+          sinon.assert.calledThrice(eventDispatcher.dispatchEvent);
         });
       });
 
@@ -5958,6 +6037,8 @@ describe('lib/optimizely', function() {
             isValidInstance: true,
             eventBatchSize: 1,
             defaultDecideOptions: [ OptimizelyDecideOption.ENABLED_FLAGS_ONLY ],
+            eventProcessor,
+            notificationCenter,
           });
 
           sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
@@ -5997,7 +6078,7 @@ describe('lib/optimizely', function() {
           assert.deepEqual(Object.values(decisionsMap).length, 2);
           assert.deepEqual(decision1, expectedDecision1);
           assert.deepEqual(decision2, expectedDecision2);
-          sinon.assert.calledThrice(optlyInstance.eventDispatcher.dispatchEvent);
+          sinon.assert.calledThrice(eventDispatcher.dispatchEvent);
         });
 
         it('should return decision results map with only enabled flags and excluded variables when EXCLUDE_VARIABLES_FLAG is passed in', function() {
@@ -6028,7 +6109,7 @@ describe('lib/optimizely', function() {
           assert.deepEqual(Object.values(decisionsMap).length, 2);
           assert.deepEqual(decision1, expectedDecision1);
           assert.deepEqual(decision2, expectedDecision2);
-          sinon.assert.calledThrice(optlyInstance.eventDispatcher.dispatchEvent);
+          sinon.assert.calledThrice(eventDispatcher.dispatchEvent);
         });
       });
     });
@@ -6041,6 +6122,12 @@ describe('lib/optimizely', function() {
       logLevel: LOG_LEVEL.INFO,
       logToConsole: false,
     });
+    var notificationCenter = createNotificationCenter({ logger: createdLogger, errorHandler: errorHandler });
+    var eventProcessor = createEventProcessor({
+      dispatcher: eventDispatcher,
+      batchSize: 1,
+      notificationCenter: notificationCenter,
+    });
     beforeEach(function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
@@ -6050,6 +6137,8 @@ describe('lib/optimizely', function() {
         jsonSchemaValidator: jsonSchemaValidator,
         logger: createdLogger,
         isValidInstance: true,
+        notificationCenter,
+        eventProcessor,
       });
     });
 
@@ -6095,6 +6184,12 @@ describe('lib/optimizely', function() {
     });
     var optlyInstance;
     var fakeDecisionResponse;
+    var notificationCenter = createNotificationCenter({ logger: createdLogger, errorHandler: errorHandler });
+    var eventProcessor = createEventProcessor({
+      dispatcher: eventDispatcher,
+      batchSize: 1,
+      notificationCenter: notificationCenter,
+    });
 
     beforeEach(function() {
       optlyInstance = new Optimizely({
@@ -6106,6 +6201,8 @@ describe('lib/optimizely', function() {
         logger: createdLogger,
         isValidInstance: true,
         eventBatchSize: 1,
+        notificationCenter,
+        eventProcessor,
       });
 
       sandbox.stub(errorHandler, 'handleError');
@@ -6136,6 +6233,8 @@ describe('lib/optimizely', function() {
           eventDispatcher: eventDispatcher,
           jsonSchemaValidator: jsonSchemaValidator,
           logger: createdLogger,
+          eventProcessor,
+          notificationCenter,
         });
         var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user1');
         assert.strictEqual(result, false);
@@ -6684,6 +6783,8 @@ describe('lib/optimizely', function() {
           eventDispatcher: eventDispatcher,
           jsonSchemaValidator: jsonSchemaValidator,
           logger: createdLogger,
+          eventProcessor,
+          notificationCenter,
         });
         var result = optlyInstance.getEnabledFeatures('user1', { test_attribute: 'test_value' });
         assert.deepEqual(result, []);
@@ -6724,6 +6825,8 @@ describe('lib/optimizely', function() {
           jsonSchemaValidator: jsonSchemaValidator,
           logger: createdLogger,
           isValidInstance: true,
+          eventProcessor,
+          notificationCenter,
         });
 
         var decisionListener = sinon.spy();
@@ -8813,6 +8916,8 @@ describe('lib/optimizely', function() {
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
           logger: createdLogger,
+          eventProcessor,
+          notificationCenter,
         });
 
         createdLogger.log.reset();
@@ -8830,6 +8935,8 @@ describe('lib/optimizely', function() {
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
           logger: createdLogger,
+          notificationCenter,
+          eventProcessor,
         });
 
         createdLogger.log.reset();
@@ -8847,6 +8954,8 @@ describe('lib/optimizely', function() {
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
           logger: createdLogger,
+          notificationCenter,
+          eventProcessor,
         });
 
         createdLogger.log.reset();
@@ -8864,6 +8973,8 @@ describe('lib/optimizely', function() {
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
           logger: createdLogger,
+          notificationCenter,
+          eventProcessor,
         });
 
         createdLogger.log.reset();
@@ -8881,6 +8992,8 @@ describe('lib/optimizely', function() {
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
           logger: createdLogger,
+          notificationCenter,
+          eventProcessor,
         });
 
         createdLogger.log.reset();
@@ -8898,6 +9011,8 @@ describe('lib/optimizely', function() {
           errorHandler: errorHandler,
           eventDispatcher: eventDispatcher,
           logger: createdLogger,
+          notificationCenter,
+          eventProcessor,
         });
 
         createdLogger.log.reset();
@@ -8918,6 +9033,12 @@ describe('lib/optimizely', function() {
       logToConsole: false,
     });
     var optlyInstance;
+    var notificationCenter = createNotificationCenter({ logger: createdLogger, errorHandler: errorHandler });
+    var eventProcessor = createEventProcessor({
+      dispatcher: eventDispatcher,
+      batchSize: 1,
+      notificationCenter: notificationCenter,
+    });
     beforeEach(function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
@@ -8928,6 +9049,8 @@ describe('lib/optimizely', function() {
         logger: createdLogger,
         isValidInstance: true,
         eventBatchSize: 1,
+        eventProcessor,
+        notificationCenter,
       });
 
       sandbox.stub(errorHandler, 'handleError');
@@ -9049,6 +9172,12 @@ describe('lib/optimizely', function() {
     });
     var optlyInstance;
     var audienceEvaluator;
+    var notificationCenter = createNotificationCenter({ logger: createdLogger, errorHandler: errorHandler });
+    var eventProcessor = createEventProcessor({
+      dispatcher: eventDispatcher,
+      batchSize: 1,
+      notificationCenter: notificationCenter,
+    });
     beforeEach(function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
@@ -9059,6 +9188,8 @@ describe('lib/optimizely', function() {
         logger: createdLogger,
         isValidInstance: true,
         eventBatchSize: 1,
+        notificationCenter,
+        eventProcessor,
       });
       audienceEvaluator = AudienceEvaluator.prototype;
 
@@ -9216,6 +9347,8 @@ describe('lib/optimizely', function() {
   describe('event batching', function() {
     var bucketStub;
     var fakeDecisionResponse;
+    var notificationCenter;
+    var eventProcessor;
 
     var createdLogger = logger.createLogger({
       logLevel: LOG_LEVEL.INFO,
@@ -9227,7 +9360,13 @@ describe('lib/optimizely', function() {
       sinon.stub(errorHandler, 'handleError');
       sinon.stub(createdLogger, 'log');
       sinon.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
-
+      notificationCenter = createNotificationCenter({ logger: createdLogger, errorHandler: errorHandler });
+      eventProcessor = createEventProcessor({
+        dispatcher: eventDispatcher,
+        batchSize: 3,
+        notificationCenter: notificationCenter,
+        flushInterval: 100,
+      });
     });
 
     afterEach(function() {
@@ -9251,6 +9390,8 @@ describe('lib/optimizely', function() {
           isValidInstance: true,
           eventBatchSize: 3,
           eventFlushInterval: 100,
+          eventProcessor,
+          notificationCenter,
         });
       });
 
@@ -9528,12 +9669,7 @@ describe('lib/optimizely', function() {
           process: sinon.stub(),
           start: sinon.stub(),
           stop: sinon.stub(),
-        };
-        sinon.stub(eventProcessor, 'createEventProcessor').returns(mockEventProcessor);
-      });
-
-      afterEach(function() {
-        eventProcessor.createEventProcessor.restore();
+        };        
       });
 
       describe('when the event processor stop method returns a promise that fulfills', function() {
@@ -9550,6 +9686,8 @@ describe('lib/optimizely', function() {
             isValidInstance: true,
             eventBatchSize: 3,
             eventFlushInterval: 100,
+            eventProcessor: mockEventProcessor,
+            notificationCenter,
           });
         });
 
@@ -9580,6 +9718,8 @@ describe('lib/optimizely', function() {
             isValidInstance: true,
             eventBatchSize: 3,
             eventFlushInterval: 100,
+            eventProcessor: mockEventProcessor,
+            notificationCenter,
           });
         });
 
@@ -9601,52 +9741,17 @@ describe('lib/optimizely', function() {
     });
   });
 
-  describe('event processor configuration', function() {
-    var createdLogger = logger.createLogger({
-      logLevel: LOG_LEVEL.INFO,
-      logToConsole: false,
-    });
-
-    beforeEach(function() {
-      sinon.stub(errorHandler, 'handleError');
-      sinon.stub(createdLogger, 'log');
-      sinon.spy(eventProcessor, 'createEventProcessor');
-    });
-
-    afterEach(function() {
-      errorHandler.handleError.restore();
-      createdLogger.log.restore();
-      eventProcessor.createEventProcessor.restore();
-    });
-
-    it('should instantiate the eventProcessor with the provided event flush interval and event batch size', function() {
-      var optlyInstance = new Optimizely({
-        clientEngine: 'node-sdk',
-        errorHandler: errorHandler,
-        eventDispatcher: eventDispatcher,
-        jsonSchemaValidator: jsonSchemaValidator,
-        logger: createdLogger,
-        sdkKey: '12345',
-        isValidInstance: true,
-        eventBatchSize: 100,
-        eventFlushInterval: 20000,
-      });
-
-      sinon.assert.calledWithExactly(
-        eventProcessor.createEventProcessor,
-        sinon.match({
-          dispatcher: eventDispatcher,
-          flushInterval: 20000,
-          batchSize: 100,
-        })
-      );
-    });
-  });
-
   describe('project config management', function() {
     var createdLogger = logger.createLogger({
       logLevel: LOG_LEVEL.INFO,
       logToConsole: false,
+    });
+
+    var notificationCenter = createNotificationCenter({ logger: createdLogger, errorHandler: errorHandler });
+    var eventProcessor = createEventProcessor({
+      dispatcher: eventDispatcher,
+      batchSize: 1,
+      notificationCenter: notificationCenter,
     });
 
     beforeEach(function() {
@@ -9670,6 +9775,8 @@ describe('lib/optimizely', function() {
         logger: createdLogger,
         sdkKey: '12345',
         isValidInstance: true,
+        eventProcessor,
+        notificationCenter,
       });
       optlyInstance.close();
       var fakeManager = projectConfigManager.createProjectConfigManager.getCall(0).returnValue;
@@ -9686,6 +9793,8 @@ describe('lib/optimizely', function() {
           logger: createdLogger,
           sdkKey: '12345',
           isValidInstance: true,
+          notificationCenter,
+          eventProcessor,
         });
       });
 
@@ -9743,6 +9852,8 @@ describe('lib/optimizely', function() {
           logger: createdLogger,
           sdkKey: '12345',
           isValidInstance: true,
+          notificationCenter,
+          eventProcessor,
         });
         return optlyInstance.onReady().then(function(result) {
           assert.deepEqual(result, { success: true });
@@ -9758,6 +9869,8 @@ describe('lib/optimizely', function() {
           logger: createdLogger,
           sdkKey: '12345',
           isValidInstance: true,
+          notificationCenter,
+          eventProcessor,
         });
         var readyPromise = optlyInstance.onReady({ timeout: 500 });
         clock.tick(501);
@@ -9777,6 +9890,8 @@ describe('lib/optimizely', function() {
           logger: createdLogger,
           sdkKey: '12345',
           isValidInstance: true,
+          notificationCenter,
+          eventProcessor,
         });
         var readyPromise = optlyInstance.onReady();
         clock.tick(300001);
@@ -9796,6 +9911,8 @@ describe('lib/optimizely', function() {
           logger: createdLogger,
           sdkKey: '12345',
           isValidInstance: true,
+          notificationCenter,
+          eventProcessor,
         });
         var readyPromise = optlyInstance.onReady({ timeout: 100 });
         optlyInstance.close();
@@ -9815,6 +9932,8 @@ describe('lib/optimizely', function() {
           logger: createdLogger,
           sdkKey: '12345',
           isValidInstance: true,
+          notificationCenter,
+          eventProcessor,
         });
         var readyPromise1 = optlyInstance.onReady({ timeout: 100 });
         var readyPromise2 = optlyInstance.onReady({ timeout: 200 });
@@ -9850,6 +9969,8 @@ describe('lib/optimizely', function() {
           logger: createdLogger,
           sdkKey: '12345',
           isValidInstance: true,
+          notificationCenter,
+          eventProcessor,
         });
         return optlyInstance.onReady().then(function() {
           sinon.assert.calledOnce(clock.setTimeout);
@@ -9880,6 +10001,8 @@ describe('lib/optimizely', function() {
           sdkKey: '12345',
           isValidInstance: true,
           eventBatchSize: 1,
+          notificationCenter,
+          eventProcessor,
         });
       });
 
@@ -9947,23 +10070,27 @@ describe('lib/optimizely', function() {
     var bucketStub;
     var fakeDecisionResponse;
     var eventDispatcherSpy;
+    var logger = { log: function() {} };
+    var errorHandler = { handleError: function() {} };
+    var notificationCenter = createNotificationCenter({ logger, errorHandler });
+    var eventProcessor;
     beforeEach(function() {
       bucketStub = sinon.stub(bucketer, 'bucket');
       eventDispatcherSpy = sinon.spy();
+      eventProcessor = createEventProcessor({
+        dispatcher: { dispatchEvent: eventDispatcherSpy },
+        batchSize: 1,
+        notificationCenter: notificationCenter,
+      });
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
         datafile: testData.getTestProjectConfig(),
-        errorHandler: {
-          handleError: function() {},
-        },
-        eventDispatcher: {
-          dispatchEvent: eventDispatcherSpy,
-        },
-        logger: {
-          log: function() {},
-        },
+        errorHandler,        
+        logger,
         isValidInstance: true,
         eventBatchSize: 1,
+        notificationCenter,
+        eventProcessor,
       });
     });
 
