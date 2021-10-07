@@ -1457,7 +1457,7 @@ export default class Optimizely {
     options: OptimizelyDecideOption[] = []
   ): OptimizelyDecision {
     const configObj = this.projectConfigManager.getConfig();
-    const reasons: any[][] = [];
+    const reasons: (string | number)[][] = [];
     if (!this.isValidInstance() || !configObj) {
       this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decide');
       return newErrorDecision(key, user, [DECISION_MESSAGES.SDK_NOT_READY]);
@@ -1538,7 +1538,7 @@ export default class Optimizely {
 
     let reportedReasons: string[] = [];
     if (shouldIncludeReasons) {
-      reportedReasons = reasons.map((reason: any[]) => sprintf(reason[0], ...reason.slice(1)));
+      reportedReasons = reasons.map((reason) => sprintf(reason[0] as string, ...reason.slice(1)));
     }
 
     const featureInfo = {

@@ -113,7 +113,7 @@ export class DecisionService {
   ): DecisionResponse<string | null> {
     // by default, the bucketing ID should be the user ID
     const bucketingId = this.getBucketingId(userId, attributes);
-    const decideReasons: any[][] = [];
+    const decideReasons: (string | number)[][] = [];
     const experimentKey = experiment.key;
     if (!this.checkIfExperimentIsActive(configObj, experimentKey)) {
       this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey);
@@ -292,7 +292,7 @@ export class DecisionService {
     experiment: Experiment,
     userId: string
   ): DecisionResponse<Variation | null> {
-    const decideReasons: any[][] = [];
+    const decideReasons: (string | number)[][] = [];
     if (experiment.forcedVariations && experiment.forcedVariations.hasOwnProperty(userId)) {
       const forcedVariationKey = experiment.forcedVariations[userId];
       if (experiment.variationKeyMap.hasOwnProperty(forcedVariationKey)) {
@@ -358,7 +358,7 @@ export class DecisionService {
     attributes?: UserAttributes,
     loggingKey?: string | number,
   ): DecisionResponse<boolean> {
-    const decideReasons: any[][] = [];
+    const decideReasons: (string | number)[][] = [];
     const experimentAudienceConditions = getExperimentAudienceConditions(configObj, experiment.id);
     const audiencesById = getAudiencesById(configObj);
     this.logger.log(
@@ -554,7 +554,7 @@ export class DecisionService {
     options: { [key: string]: boolean } = {}
   ): DecisionResponse<DecisionObj> {
 
-    const decideReasons: any[][] = [];
+    const decideReasons: (string | number)[][] = [];
     const decisionVariation = this.getVariationForFeatureExperiment(configObj, feature, userId, attributes, options);
     decideReasons.push(...decisionVariation.reasons);
     const experimentDecision = decisionVariation.result;
@@ -594,7 +594,7 @@ export class DecisionService {
     options: { [key: string]: boolean } = {}
   ): DecisionResponse<DecisionObj> {
 
-    const decideReasons: any[][] = [];
+    const decideReasons: (string | number)[][] = [];
     let variationKey = null;
     let decisionVariation;
     let index;
@@ -647,7 +647,7 @@ export class DecisionService {
     userId: string,
     attributes?: UserAttributes
   ): DecisionResponse<DecisionObj> {
-    const decideReasons: any[][] = [];
+    const decideReasons: (string | number)[][] = [];
     let decisionObj: DecisionObj;
     if (!feature.rolloutId) {
       this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.NO_ROLLOUT_EXISTS, MODULE_NAME, feature.key);
@@ -966,7 +966,7 @@ export class DecisionService {
     experimentKey: string,
     userId: string
   ): DecisionResponse<string | null> {
-    const decideReasons: any[][] = [];
+    const decideReasons: (string | number)[][] = [];
     const experimentToVariationMap = this.forcedVariationMap[userId];
     if (!experimentToVariationMap) {
       this.logger.log(

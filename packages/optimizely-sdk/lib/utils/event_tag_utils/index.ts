@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf } from '@optimizely/js-sdk-utils';
-
 import { EventTags } from '@optimizely/js-sdk-event-processor';
 import { LoggerFacade } from '@optimizely/js-sdk-logging';
 
