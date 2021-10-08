@@ -43,7 +43,7 @@
   "dependencies": {
     "@optimizely/js-sdk-datafile-manager": "^0.8.1",
     "@optimizely/js-sdk-event-processor": "^0.8.2",
-    "@optimizely/js-sdk-logging": "^0.2.0",
+    "@optimizely/js-sdk-logging": "^0.3.0",
     "@optimizely/js-sdk-utils": "^0.4.0",
     "json-schema": "^0.2.3",
     "murmurhash": "0.0.2"
