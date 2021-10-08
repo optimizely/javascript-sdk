@@ -48,9 +48,7 @@ var DECISION_MESSAGES = enums.DECISION_MESSAGES;
 var DECISION_NOTIFICATION_TYPES = enums.DECISION_NOTIFICATION_TYPES;
 var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
 
-const buildLogMessageFromArgs = (args) => {
-  return sprintf(args[1], ...args.splice(2));
-}
+var buildLogMessageFromArgs = args => sprintf(args[1], ...args.splice(2));
 
 describe('lib/optimizely', function() {
   var ProjectConfigManagerStub;

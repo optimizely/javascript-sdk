@@ -39,6 +39,7 @@ import {
 
 var testData = getTestProjectConfig();
 var testDataWithFeatures = getTestProjectConfigWithFeatures();
+var buildLogMessageFromArgs = args => sprintf(args[1], ...args.splice(2));
 
 describe('lib/core/decision_service', function() {
   describe('APIs', function() {
@@ -85,11 +86,11 @@ describe('lib/core/decision_service', function() {
         sinon.assert.notCalled(bucketerStub);
         assert.strictEqual(2, mockLogger.log.callCount);
         assert.strictEqual(
-          mockLogger.log.args[0][1],
+          buildLogMessageFromArgs(mockLogger.log.args[0]),
           'DECISION_SERVICE: User user2 is not in the forced variation map.'
         );
         assert.strictEqual(
-          mockLogger.log.args[1][1],
+          buildLogMessageFromArgs(mockLogger.log.args[1]),
           'DECISION_SERVICE: User user2 is forced in variation variationWithAudience.'
         );
       });
@@ -101,19 +102,19 @@ describe('lib/core/decision_service', function() {
         );
         assert.strictEqual(4, mockLogger.log.callCount);
         assert.strictEqual(
-          mockLogger.log.args[0][1],
+          buildLogMessageFromArgs(mockLogger.log.args[0]),
           'DECISION_SERVICE: User user3 is not in the forced variation map.'
         );
         assert.strictEqual(
-          mockLogger.log.args[1][1],
+          buildLogMessageFromArgs(mockLogger.log.args[1]),
           'DECISION_SERVICE: Evaluating audiences for experiment "testExperimentWithAudiences": ["11154"].'
         );
         assert.strictEqual(
-          mockLogger.log.args[2][1],
+          buildLogMessageFromArgs(mockLogger.log.args[2]),
           'DECISION_SERVICE: Audiences for experiment testExperimentWithAudiences collectively evaluated to FALSE.'
         );
         assert.strictEqual(
-          mockLogger.log.args[3][1],
+          buildLogMessageFromArgs(mockLogger.log.args[3]),
           'DECISION_SERVICE: User user3 does not meet conditions to be in experiment testExperimentWithAudiences.'
         );
       });
@@ -124,7 +125,7 @@ describe('lib/core/decision_service', function() {
         sinon.assert.notCalled(bucketerStub);
         assert.strictEqual(1, mockLogger.log.callCount);
         assert.strictEqual(
-          mockLogger.log.args[0][1],
+          buildLogMessageFromArgs(mockLogger.log.args[0]),
           'DECISION_SERVICE: Experiment testExperimentNotRunning is not running.'
         );
       });
@@ -204,11 +205,11 @@ describe('lib/core/decision_service', function() {
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
           sinon.assert.notCalled(bucketerStub);
           assert.strictEqual(
-            mockLogger.log.args[0][1],
+            buildLogMessageFromArgs(mockLogger.log.args[0]),
             'DECISION_SERVICE: User decision_service_user is not in the forced variation map.'
           );
           assert.strictEqual(
-            mockLogger.log.args[1][1],
+            buildLogMessageFromArgs(mockLogger.log.args[1]),
             'DECISION_SERVICE: Returning previously activated variation "control" of experiment "testExperiment" for user "decision_service_user" from user profile.'
           );
         });
@@ -279,11 +280,11 @@ describe('lib/core/decision_service', function() {
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
           sinon.assert.calledOnce(bucketerStub);
           assert.strictEqual(
-            mockLogger.log.args[0][1],
+            buildLogMessageFromArgs(mockLogger.log.args[0]),
             'DECISION_SERVICE: User decision_service_user is not in the forced variation map.'
           );
           assert.strictEqual(
-            mockLogger.log.args[1][1],
+            buildLogMessageFromArgs(mockLogger.log.args[1]),
             'DECISION_SERVICE: User decision_service_user was previously bucketed into variation with ID not valid variation for experiment testExperiment, but no matching variation was found.'
           );
           // make sure we save the decision
@@ -321,11 +322,11 @@ describe('lib/core/decision_service', function() {
             },
           });
           assert.strictEqual(
-            mockLogger.log.args[0][1],
+            buildLogMessageFromArgs(mockLogger.log.args[0]),
             'DECISION_SERVICE: User decision_service_user is not in the forced variation map.'
           );
           assert.strictEqual(
-            mockLogger.log.args[4][1],
+            buildLogMessageFromArgs(mockLogger.log.args[4]),
             'DECISION_SERVICE: Saved variation "control" of experiment "testExperiment" for user "decision_service_user".'
           );
         });
@@ -342,11 +343,11 @@ describe('lib/core/decision_service', function() {
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
           sinon.assert.calledOnce(bucketerStub); // should still go through with bucketing
           assert.strictEqual(
-            mockLogger.log.args[0][1],
+            buildLogMessageFromArgs(mockLogger.log.args[0]),
             'DECISION_SERVICE: User decision_service_user is not in the forced variation map.'
           );
           assert.strictEqual(
-            mockLogger.log.args[1][1],
+            buildLogMessageFromArgs(mockLogger.log.args[1]),
             'DECISION_SERVICE: Error while looking up user profile for user ID "decision_service_user": I am an error.'
           );
         });
@@ -366,11 +367,11 @@ describe('lib/core/decision_service', function() {
 
           assert.strictEqual(5, mockLogger.log.callCount);
           assert.strictEqual(
-            mockLogger.log.args[0][1],
+            buildLogMessageFromArgs(mockLogger.log.args[0]),
             'DECISION_SERVICE: User decision_service_user is not in the forced variation map.'
           );
           assert.strictEqual(
-            mockLogger.log.args[4][1],
+            buildLogMessageFromArgs(mockLogger.log.args[4]),
             'DECISION_SERVICE: Error while saving user profile for user ID "decision_service_user": I am an error.'
           );
 
@@ -413,11 +414,11 @@ describe('lib/core/decision_service', function() {
             sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
             sinon.assert.notCalled(bucketerStub);
             assert.strictEqual(
-              mockLogger.log.args[0][1],
+              buildLogMessageFromArgs(mockLogger.log.args[0]),
               'DECISION_SERVICE: User decision_service_user is not in the forced variation map.'
             );
             assert.strictEqual(
-              mockLogger.log.args[1][1],
+              buildLogMessageFromArgs(mockLogger.log.args[1]),
               'DECISION_SERVICE: Returning previously activated variation "variation" of experiment "testExperiment" for user "decision_service_user" from user profile.'
             );
           });
@@ -451,11 +452,11 @@ describe('lib/core/decision_service', function() {
             sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
             sinon.assert.notCalled(bucketerStub);
             assert.strictEqual(
-              mockLogger.log.args[0][1],
+              buildLogMessageFromArgs(mockLogger.log.args[0]),
               'DECISION_SERVICE: User decision_service_user is not in the forced variation map.'
             );
             assert.strictEqual(
-              mockLogger.log.args[1][1],
+              buildLogMessageFromArgs(mockLogger.log.args[1]),
               'DECISION_SERVICE: Returning previously activated variation "control" of experiment "testExperiment" for user "decision_service_user" from user profile.'
             );
           });
@@ -489,11 +490,11 @@ describe('lib/core/decision_service', function() {
             sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
             sinon.assert.notCalled(bucketerStub);
             assert.strictEqual(
-              mockLogger.log.args[0][1],
+              buildLogMessageFromArgs(mockLogger.log.args[0]),
               'DECISION_SERVICE: User decision_service_user is not in the forced variation map.'
             );
             assert.strictEqual(
-              mockLogger.log.args[1][1],
+              buildLogMessageFromArgs(mockLogger.log.args[1]),
               'DECISION_SERVICE: Returning previously activated variation "variation" of experiment "testExperiment" for user "decision_service_user" from user profile.'
             );
           });
@@ -518,11 +519,11 @@ describe('lib/core/decision_service', function() {
             sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
             sinon.assert.notCalled(bucketerStub);
             assert.strictEqual(
-              mockLogger.log.args[0][1],
+              buildLogMessageFromArgs(mockLogger.log.args[0]),
               'DECISION_SERVICE: User decision_service_user is not in the forced variation map.'
             );
             assert.strictEqual(
-              mockLogger.log.args[1][1],
+              buildLogMessageFromArgs(mockLogger.log.args[1]),
               'DECISION_SERVICE: Returning previously activated variation "variation" of experiment "testExperiment" for user "decision_service_user" from user profile.'
             );
           });
@@ -602,11 +603,11 @@ describe('lib/core/decision_service', function() {
         );
         assert.strictEqual(2, mockLogger.log.callCount);
         assert.strictEqual(
-          mockLogger.log.args[0][1],
+          buildLogMessageFromArgs(mockLogger.log.args[0]),
           'DECISION_SERVICE: Evaluating audiences for experiment "testExperimentWithAudiences": ["11154"].'
         );
         assert.strictEqual(
-          mockLogger.log.args[1][1],
+          buildLogMessageFromArgs(mockLogger.log.args[1]),
           'DECISION_SERVICE: Audiences for experiment testExperimentWithAudiences collectively evaluated to TRUE.'
         );
       });
@@ -626,11 +627,11 @@ describe('lib/core/decision_service', function() {
 
         assert.strictEqual(2, mockLogger.log.callCount);
         assert.strictEqual(
-          mockLogger.log.args[0][1],
+          buildLogMessageFromArgs(mockLogger.log.args[0]),
           'DECISION_SERVICE: Evaluating audiences for experiment "testExperiment": [].'
         );
         assert.strictEqual(
-          mockLogger.log.args[1][1],
+          buildLogMessageFromArgs(mockLogger.log.args[1]),
           'DECISION_SERVICE: Audiences for experiment testExperiment collectively evaluated to TRUE.'
         );
       });
@@ -650,11 +651,11 @@ describe('lib/core/decision_service', function() {
 
         assert.strictEqual(2, mockLogger.log.callCount);
         assert.strictEqual(
-          mockLogger.log.args[0][1],
+          buildLogMessageFromArgs(mockLogger.log.args[0]),
           'DECISION_SERVICE: Evaluating audiences for experiment "testExperimentWithAudiences": ["11154"].'
         );
         assert.strictEqual(
-          mockLogger.log.args[1][1],
+          buildLogMessageFromArgs(mockLogger.log.args[1]),
           'DECISION_SERVICE: Audiences for experiment testExperimentWithAudiences collectively evaluated to FALSE.'
         );
       });
@@ -674,11 +675,11 @@ describe('lib/core/decision_service', function() {
 
         assert.strictEqual(2, mockLogger.log.callCount);
         assert.strictEqual(
-          mockLogger.log.args[0][1],
+          buildLogMessageFromArgs(mockLogger.log.args[0]),
           'DECISION_SERVICE: Evaluating audiences for experiment "testExperimentWithAudiences": ["11154"].'
         );
         assert.strictEqual(
-          mockLogger.log.args[1][1],
+          buildLogMessageFromArgs(mockLogger.log.args[1]),
           'DECISION_SERVICE: Audiences for experiment testExperimentWithAudiences collectively evaluated to FALSE.'
         );
       });
@@ -1122,7 +1123,7 @@ describe('lib/core/decision_service', function() {
       assert.strictEqual(userId, decisionService.getBucketingId(userId, userAttributesWithInvalidBucketingId));
       assert.strictEqual(1, mockLogger.log.callCount);
       assert.strictEqual(
-        mockLogger.log.args[0][1],
+        buildLogMessageFromArgs(mockLogger.log.args[0]),
         'DECISION_SERVICE: BucketingID attribute is not a string. Defaulted to userId'
       );
     });
@@ -1130,7 +1131,7 @@ describe('lib/core/decision_service', function() {
     it('should return correct bucketingId when provided in attributes', function() {
       assert.strictEqual('123456789', decisionService.getBucketingId(userId, userAttributesWithBucketingId));
       assert.strictEqual(1, mockLogger.log.callCount);
-      assert.strictEqual(mockLogger.log.args[0][1], 'DECISION_SERVICE: BucketingId is valid: "123456789"');
+      assert.strictEqual(buildLogMessageFromArgs(mockLogger.log.args[0]), 'DECISION_SERVICE: BucketingId is valid: "123456789"');
     });
   });
 
@@ -1420,9 +1421,8 @@ describe('lib/core/decision_service', function() {
               decisionSource: DECISION_SOURCES.ROLLOUT,
             };
             assert.deepEqual(decision, expectedDecision);
-            sinon.assert.calledWithExactly(
-              mockLogger.log,
-              LOG_LEVEL.DEBUG,
+            assert.strictEqual(
+              buildLogMessageFromArgs(mockLogger.log.lastCall.args),
               'DECISION_SERVICE: User user1 is not in rollout of feature test_feature_for_experiment.'
             );
           });
@@ -1505,9 +1505,8 @@ describe('lib/core/decision_service', function() {
               decisionSource: DECISION_SOURCES.ROLLOUT,
             };
             assert.deepEqual(decision, expectedDecision);
-            sinon.assert.calledWithExactly(
-              mockLogger.log,
-              LOG_LEVEL.DEBUG,
+            assert.strictEqual(
+              buildLogMessageFromArgs(mockLogger.log.lastCall.args),
               'DECISION_SERVICE: User user1 is not in rollout of feature feature_with_group.'
             );
           });
@@ -1524,7 +1523,8 @@ describe('lib/core/decision_service', function() {
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE: There is no rollout of feature feature_exp_no_traffic.'
+              '%s: There is no rollout of feature %s.',
+              'DECISION_SERVICE', 'feature_exp_no_traffic'
             );
           });
         });
@@ -1651,17 +1651,21 @@ describe('lib/core/decision_service', function() {
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE: User user1 meets conditions for targeting rule 1.'
+              '%s: User %s meets conditions for targeting rule %s.',
+              'DECISION_SERVICE', 'user1', 1
             );
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE: User user1 bucketed into targeting rule 1.'
+              '%s: User %s bucketed into targeting rule %s.',
+              'DECISION_SERVICE', 'user1', 1
+              
             );
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE: User user1 is in rollout of feature test_feature.'
+              '%s: User %s is in rollout of feature %s.',
+              'DECISION_SERVICE', 'user1', 'test_feature'
             );
           });
         });
@@ -1779,17 +1783,20 @@ describe('lib/core/decision_service', function() {
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE: User user1 does not meet conditions for targeting rule 1.'
+              '%s: User %s does not meet conditions for targeting rule %s.',
+              'DECISION_SERVICE', 'user1', 1
             );
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE: User user1 bucketed into everyone targeting rule.'
+              '%s: User %s bucketed into everyone targeting rule.',
+              'DECISION_SERVICE', 'user1'
             );
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE: User user1 is in rollout of feature test_feature.'
+              '%s: User %s is in rollout of feature %s.',
+              'DECISION_SERVICE', 'user1', 'test_feature'
             );
           });
         });
@@ -1814,12 +1821,14 @@ describe('lib/core/decision_service', function() {
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE: User user1 does not meet conditions for targeting rule 1.'
+              '%s: User %s does not meet conditions for targeting rule %s.',
+              'DECISION_SERVICE', 'user1', 1
             );
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE: User user1 is not in rollout of feature test_feature.'
+              '%s: User %s is not in rollout of feature %s.',
+              'DECISION_SERVICE', 'user1', 'test_feature'
             );
           });
         });
@@ -1948,17 +1957,20 @@ describe('lib/core/decision_service', function() {
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE: User user1 meets conditions for targeting rule 1.'
+              '%s: User %s meets conditions for targeting rule %s.',
+              'DECISION_SERVICE', 'user1', 1
             );
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE User user1 not bucketed into targeting rule 1 due to traffic allocation. Trying everyone rule.'
+              '%s User %s not bucketed into targeting rule %s due to traffic allocation. Trying everyone rule.',
+              'DECISION_SERVICE', 'user1', 1
             );
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              'DECISION_SERVICE: User user1 bucketed into everyone targeting rule.'
+              '%s: User %s bucketed into everyone targeting rule.',
+              'DECISION_SERVICE', 'user1'
             );
           });
         });
@@ -2058,12 +2070,14 @@ describe('lib/core/decision_service', function() {
           sinon.assert.calledWithExactly(
             mockLogger.log,
             LOG_LEVEL.DEBUG,
-            'DECISION_SERVICE: User user1 bucketed into everyone targeting rule.'
+            '%s: User %s bucketed into everyone targeting rule.',
+            'DECISION_SERVICE', 'user1', 
           );
           sinon.assert.calledWithExactly(
             mockLogger.log,
             LOG_LEVEL.DEBUG,
-            'DECISION_SERVICE: User user1 is in rollout of feature shared_feature.'
+            '%s: User %s is in rollout of feature %s.',
+            'DECISION_SERVICE', 'user1', 'shared_feature'
           );
         });
       });
@@ -2085,12 +2099,14 @@ describe('lib/core/decision_service', function() {
           sinon.assert.calledWithExactly(
             mockLogger.log,
             LOG_LEVEL.DEBUG,
-            'DECISION_SERVICE: Feature unused_flag is not attached to any experiments.'
+            '%s: Feature %s is not attached to any experiments.',
+            'DECISION_SERVICE', 'unused_flag'
           );
           sinon.assert.calledWithExactly(
             mockLogger.log,
             LOG_LEVEL.DEBUG,
-            'DECISION_SERVICE: There is no rollout of feature unused_flag.'
+            '%s: There is no rollout of feature %s.',
+            'DECISION_SERVICE', 'unused_flag'
           );
         });
       });
@@ -2120,7 +2136,7 @@ describe('lib/core/decision_service', function() {
           };
           assert.deepEqual(decision, expectedDecision);
           assert.strictEqual(
-            mockLogger.log.args[3][1],
+            buildLogMessageFromArgs(mockLogger.log.args[3]),
             'BUCKETER: Assigned bucket 2400 to user with bucketing ID user1.'
           );
           sinon.assert.calledWithExactly(
@@ -2146,7 +2162,7 @@ describe('lib/core/decision_service', function() {
           };
           assert.deepEqual(decision, expectedDecision);
           assert.strictEqual(
-            mockLogger.log.args[3][1],
+            buildLogMessageFromArgs(mockLogger.log.args[3]),
             'BUCKETER: Assigned bucket 4000 to user with bucketing ID user1.'
           );
           sinon.assert.calledWithExactly(
@@ -2172,7 +2188,7 @@ describe('lib/core/decision_service', function() {
           };
           assert.deepEqual(decision, expectedDecision);
           assert.strictEqual(
-            mockLogger.log.args[3][1],
+            buildLogMessageFromArgs(mockLogger.log.args[3]),
             'BUCKETER: Assigned bucket 6500 to user with bucketing ID user1.'
           );
           sinon.assert.calledWithExactly(
@@ -2216,7 +2232,7 @@ describe('lib/core/decision_service', function() {
           }
           assert.deepEqual(decision, expectedDecision);
           assert.strictEqual(
-            mockLogger.log.args[3][1],
+            buildLogMessageFromArgs(mockLogger.log.args[3]),
             'BUCKETER: Assigned bucket 8000 to user with bucketing ID user1.'
           );
           sinon.assert.calledWithExactly(
@@ -2260,7 +2276,7 @@ describe('lib/core/decision_service', function() {
           }
           assert.deepEqual(decision, expectedDecision);
           assert.strictEqual(
-            mockLogger.log.args[18][1],
+            buildLogMessageFromArgs(mockLogger.log.args[18]),
             'BUCKETER: Assigned bucket 2400 to user with bucketing ID user1.'
           );
           sinon.assert.calledWithExactly(
@@ -2296,7 +2312,7 @@ describe('lib/core/decision_service', function() {
           };
           assert.deepEqual(decision, expectedDecision);
           assert.strictEqual(
-            mockLogger.log.args[3][1],
+            buildLogMessageFromArgs(mockLogger.log.args[3]),
             'BUCKETER: Assigned bucket 2400 to user with bucketing ID user1.'
           );
           sinon.assert.calledWithExactly(
@@ -2323,7 +2339,7 @@ describe('lib/core/decision_service', function() {
           };
           assert.deepEqual(decision, expectedDecision);
           assert.strictEqual(
-            mockLogger.log.args[3][1],
+            buildLogMessageFromArgs(mockLogger.log.args[3]),
             'BUCKETER: Assigned bucket 4000 to user with bucketing ID user1.'
           );
           sinon.assert.calledWithExactly(
@@ -2350,7 +2366,7 @@ describe('lib/core/decision_service', function() {
           };
           assert.deepEqual(decision, expectedDecision);
           assert.strictEqual(
-            mockLogger.log.args[3][1],
+            buildLogMessageFromArgs(mockLogger.log.args[3]),
             'BUCKETER: Assigned bucket 6500 to user with bucketing ID user1.'
           );
           sinon.assert.calledWithExactly(
@@ -2394,7 +2410,7 @@ describe('lib/core/decision_service', function() {
           }
           assert.deepEqual(decision, expectedDecision);
           assert.strictEqual(
-            mockLogger.log.args[3][1],
+            buildLogMessageFromArgs(mockLogger.log.args[3]),
             'BUCKETER: Assigned bucket 8000 to user with bucketing ID user1.'
           );
           sinon.assert.calledWithExactly(
@@ -2438,7 +2454,7 @@ describe('lib/core/decision_service', function() {
           }
           assert.deepEqual(decision, expectedDecision);
           assert.strictEqual(
-            mockLogger.log.args[18][1],
+            buildLogMessageFromArgs(mockLogger.log.args[18]),
             'BUCKETER: Assigned bucket 4000 to user with bucketing ID user1.'
           );
           sinon.assert.calledWithExactly(
