@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.3.0] - October 8, 2021
+
+### New Features
+- Upgraded `@optimizely/js-sdk-utils` package to version `0.4.0`
+
 ## [0.2.0] - October 6, 2021
 
 ### New Features
