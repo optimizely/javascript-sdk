@@ -30,6 +30,7 @@ import * as loggerPlugin from '../../plugins/logger';
 import testDatafile from '../../tests/test_data';
 import configValidator from '../../utils/config_validator';
 
+var buildLogMessageFromArgs = args => sprintf(args[1], ...args.splice(2));
 var logger = getLogger();
 
 describe('lib/core/project_config', function() {
@@ -301,9 +302,8 @@ describe('lib/core/project_config', function() {
 
     it('should return null for invalid attribute key in getAttributeId', function() {
       assert.isNull(projectConfig.getAttributeId(configObj, 'invalidAttributeKey', createdLogger));
-      sinon.assert.calledWithExactly(
-        createdLogger.log,
-        LOG_LEVEL.DEBUG,
+      assert.strictEqual(
+        buildLogMessageFromArgs(createdLogger.log.lastCall.args),
         'PROJECT_CONFIG: Unrecognized attribute invalidAttributeKey provided. Pruning before sending event to Optimizely.'
       );
     });
@@ -315,9 +315,8 @@ describe('lib/core/project_config', function() {
         key: '$opt_some_reserved_attribute',
       };
       assert.strictEqual(projectConfig.getAttributeId(configObj, '$opt_some_reserved_attribute', createdLogger), '42');
-      sinon.assert.calledWithExactly(
-        createdLogger.log,
-        LOG_LEVEL.WARNING,
+      assert.strictEqual(
+        buildLogMessageFromArgs(createdLogger.log.lastCall.args),
         'Attribute $opt_some_reserved_attribute unexpectedly has reserved prefix $opt_; using attribute ID instead of reserved attribute name.'
       );
     });
@@ -461,9 +460,8 @@ describe('lib/core/project_config', function() {
           var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
           assert.strictEqual(result, null);
           sinon.assert.calledOnce(featureManagementLogger.log);
-          sinon.assert.calledWithExactly(
-            featureManagementLogger.log,
-            LOG_LEVEL.ERROR,
+          assert.strictEqual(
+             buildLogMessageFromArgs(featureManagementLogger.log.lastCall.args),
             'PROJECT_CONFIG: Variable with key "notARealVariable____" associated with feature with key "test_feature_for_experiment" is not in datafile.'
           );
         });
@@ -474,9 +472,8 @@ describe('lib/core/project_config', function() {
           var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
           assert.strictEqual(result, null);
           sinon.assert.calledOnce(featureManagementLogger.log);
-          sinon.assert.calledWithExactly(
-            featureManagementLogger.log,
-            LOG_LEVEL.ERROR,
+          assert.strictEqual(
+             buildLogMessageFromArgs(featureManagementLogger.log.lastCall.args),
             'PROJECT_CONFIG: Feature key notARealFeature_____ is not in datafile.'
           );
         });
@@ -487,9 +484,8 @@ describe('lib/core/project_config', function() {
           var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
           assert.strictEqual(result, null);
           sinon.assert.calledOnce(featureManagementLogger.log);
-          sinon.assert.calledWithExactly(
-            featureManagementLogger.log,
-            LOG_LEVEL.ERROR,
+          assert.strictEqual(
+             buildLogMessageFromArgs(featureManagementLogger.log.lastCall.args),
             'PROJECT_CONFIG: Feature key notARealFeature_____ is not in datafile.'
           );
         });
@@ -633,9 +629,8 @@ describe('lib/core/project_config', function() {
             featureManagementLogger
           );
           assert.strictEqual(result, null);
-          sinon.assert.calledWithExactly(
-            featureManagementLogger.log,
-            LOG_LEVEL.ERROR,
+          assert.strictEqual(
+             buildLogMessageFromArgs(featureManagementLogger.log.lastCall.args),
             'PROJECT_CONFIG: Unable to cast value notabool to type boolean, returning null.'
           );
         });
@@ -647,9 +642,8 @@ describe('lib/core/project_config', function() {
             featureManagementLogger
           );
           assert.strictEqual(result, null);
-          sinon.assert.calledWithExactly(
-            featureManagementLogger.log,
-            LOG_LEVEL.ERROR,
+          assert.strictEqual(
+             buildLogMessageFromArgs(featureManagementLogger.log.lastCall.args),
             'PROJECT_CONFIG: Unable to cast value notanint to type integer, returning null.'
           );
         });
@@ -661,9 +655,8 @@ describe('lib/core/project_config', function() {
             featureManagementLogger
           );
           assert.strictEqual(result, null);
-          sinon.assert.calledWithExactly(
-            featureManagementLogger.log,
-            LOG_LEVEL.ERROR,
+          assert.strictEqual(
+             buildLogMessageFromArgs(featureManagementLogger.log.lastCall.args),
             'PROJECT_CONFIG: Unable to cast value notadouble to type double, returning null.'
           );
         });
