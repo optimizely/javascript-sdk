@@ -41,8 +41,8 @@
   },
   "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/optimizely-sdk",
   "dependencies": {
-    "@optimizely/js-sdk-datafile-manager": "^0.8.1",
-    "@optimizely/js-sdk-event-processor": "^0.8.2",
+    "@optimizely/js-sdk-datafile-manager": "^0.9.0",
+    "@optimizely/js-sdk-event-processor": "^0.9.0",
     "@optimizely/js-sdk-logging": "^0.3.0",
     "@optimizely/js-sdk-utils": "^0.4.0",
     "json-schema": "^0.2.3",
