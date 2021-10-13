@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.9.1] - October 13, 2021
+
+### Fixed
+- Update version of logging to `0.3.1` to fix stubbing issue.
+
 ## [0.9.0] - October 8, 2021
 
 ### Changed
