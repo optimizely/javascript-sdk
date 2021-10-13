@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.3.1] - October 13, 2021
+
+### Bug Fixes
+- Downgrade typescript version to `3.8.x` due to stubbing issues.
+
 ## [0.3.0] - October 8, 2021
 
 ### New Features
