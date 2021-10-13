@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/js-sdk-datafile-manager",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Optimizely Full Stack Datafile Manager",
   "repository": {
     "type": "git",
@@ -45,10 +45,10 @@
     "nock": "^10.0.6",
     "prettier": "^1.19.1",
     "ts-jest": "^27.0.1",
-    "typescript": "^4.0.3"
+    "typescript": "3.8.x"
   },
   "dependencies": {
-    "@optimizely/js-sdk-logging": "^0.3.0",
+    "@optimizely/js-sdk-logging": "^0.3.1",
     "@optimizely/js-sdk-utils": "^0.4.0",
     "decompress-response": "^4.2.1"
   },
