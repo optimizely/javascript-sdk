@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
+import { objectValues } from '@optimizely/js-sdk-utils';
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
 import { NOTIFICATION_TYPES as notificationTypesEnum } from '@optimizely/js-sdk-utils';
 import { NotificationListener, ListenerPayload } from '../../shared_types';
@@ -216,7 +216,10 @@ export class NotificationCenter {
           } catch (ex) {
             this.logger.log(
               LOG_LEVEL.ERROR,
-              sprintf(LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION, MODULE_NAME, notificationType, ex.message)
+              LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION,
+              MODULE_NAME,
+              notificationType,
+              ex.message,
             );
           }
         }

@@ -48,6 +48,8 @@ var DECISION_MESSAGES = enums.DECISION_MESSAGES;
 var DECISION_NOTIFICATION_TYPES = enums.DECISION_NOTIFICATION_TYPES;
 var FEATURE_VARIABLE_TYPES = enums.FEATURE_VARIABLE_TYPES;
 
+var buildLogMessageFromArgs = args => sprintf(args[1], ...args.splice(2));
+
 describe('lib/optimizely', function() {
   var ProjectConfigManagerStub;
   var globalStubErrorHandler;
@@ -144,7 +146,7 @@ describe('lib/optimizely', function() {
         });
 
         sinon.assert.called(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, 'OPTIMIZELY', 'undefined'));
       });
 
@@ -161,7 +163,7 @@ describe('lib/optimizely', function() {
         });
 
         sinon.assert.called(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_DEFAULT_DECIDE_OPTIONS, 'OPTIMIZELY'));
       });
 
@@ -210,7 +212,7 @@ describe('lib/optimizely', function() {
             UNSTABLE_conditionEvaluators: undefined,
           });
 
-          var logMessage = createdLogger.log.args[0][1];
+          var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
           assert.strictEqual(logMessage, 'OPTIMIZELY: Valid user profile service provided.');
         });
 
@@ -235,7 +237,7 @@ describe('lib/optimizely', function() {
             UNSTABLE_conditionEvaluators: undefined,
           });
 
-          var logMessage = createdLogger.log.args[0][1];
+          var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
           assert.strictEqual(
             logMessage,
             "USER_PROFILE_SERVICE_VALIDATOR: Provided user profile service instance is in an invalid format: Missing function 'lookup'."
@@ -816,13 +818,13 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.DEBUG,
-          sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
+          LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser'
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'testExperiment')
+          LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'testExperiment'
         );
       });
 
@@ -832,19 +834,19 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.DEBUG,
-          sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
+          LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser'
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'testExperimentWithAudiences')
+          LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'testExperimentWithAudiences'
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'testExperimentWithAudiences')
+          LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'testExperimentWithAudiences'
         );
       });
 
@@ -854,19 +856,19 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.DEBUG,
-          sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
+          LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser'
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'groupExperiment1')
+          LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'groupExperiment1'
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'groupExperiment1')
+          LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'groupExperiment1'
         );
       });
 
@@ -874,12 +876,12 @@ describe('lib/optimizely', function() {
         assert.isNull(optlyInstance.activate('testExperimentNotRunning', 'testUser'));
         sinon.assert.calledTwice(createdLogger.log);
 
-        var logMessage1 = createdLogger.log.args[0][1];
+        var logMessage1 = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(
           logMessage1,
           sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning')
         );
-        var logMessage2 = createdLogger.log.args[1][1];
+        var logMessage2 = buildLogMessageFromArgs(createdLogger.log.args[1]);
         assert.strictEqual(
           logMessage2,
           sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'testExperimentNotRunning')
@@ -897,9 +899,9 @@ describe('lib/optimizely', function() {
 
         sinon.assert.calledTwice(createdLogger.log);
 
-        var logMessage1 = createdLogger.log.args[0][1];
+        var logMessage1 = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage1, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
-        var logMessage2 = createdLogger.log.args[1][1];
+        var logMessage2 = buildLogMessageFromArgs(createdLogger.log.args[1]);
         assert.strictEqual(
           logMessage2,
           sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'null', 'testExperiment')
@@ -912,12 +914,12 @@ describe('lib/optimizely', function() {
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
 
         sinon.assert.calledTwice(createdLogger.log);
-        var logMessage1 = createdLogger.log.args[0][1];
+        var logMessage1 = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(
           logMessage1,
           sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'OPTIMIZELY', 'invalidExperimentKey')
         );
-        var logMessage2 = createdLogger.log.args[1][1];
+        var logMessage2 = buildLogMessageFromArgs(createdLogger.log.args[1]);
         assert.strictEqual(
           logMessage2,
           sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'invalidExperimentKey')
@@ -933,9 +935,9 @@ describe('lib/optimizely', function() {
         assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
 
         sinon.assert.calledTwice(createdLogger.log);
-        var logMessage1 = createdLogger.log.args[0][1];
+        var logMessage1 = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage1, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
-        var logMessage2 = createdLogger.log.args[1][1];
+        var logMessage2 = buildLogMessageFromArgs(createdLogger.log.args[1]);
         assert.strictEqual(
           logMessage2,
           sprintf(LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'testExperimentWithAudiences')
@@ -983,12 +985,12 @@ describe('lib/optimizely', function() {
 
           sinon.assert.calledTwice(Optimizely.prototype.validateInputs);
 
-          var logMessage0 = createdLogger.log.args[0][1];
+          var logMessage0 = buildLogMessageFromArgs(createdLogger.log.args[0]);
           assert.strictEqual(
             logMessage0,
             sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'user1')
           );
-          var logMessage1 = createdLogger.log.args[1][1];
+          var logMessage1 = buildLogMessageFromArgs(createdLogger.log.args[1]);
           assert.strictEqual(
             logMessage1,
             sprintf(LOG_MESSAGES.USER_FORCED_IN_VARIATION, 'DECISION_SERVICE', 'user1', 'control')
@@ -1050,7 +1052,7 @@ describe('lib/optimizely', function() {
         instance.activate('testExperiment', 'testUser');
 
         sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'activate'));
 
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
@@ -1674,7 +1676,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
 
         sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
 
@@ -1687,14 +1689,14 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           logCall1,
           LOG_LEVEL.WARNING,
-          sprintf(LOG_MESSAGES.EVENT_KEY_NOT_FOUND, 'OPTIMIZELY', 'invalidEventKey')
+          LOG_MESSAGES.EVENT_KEY_NOT_FOUND, 'OPTIMIZELY', 'invalidEventKey'
         );
 
         var logCall2 = createdLogger.log.getCall(1);
         sinon.assert.calledWithExactly(
           logCall2,
           LOG_LEVEL.WARNING,
-          sprintf(LOG_MESSAGES.NOT_TRACKING_USER, 'OPTIMIZELY', 'testUser')
+          LOG_MESSAGES.NOT_TRACKING_USER, 'OPTIMIZELY', 'testUser'
         );
 
         sinon.assert.notCalled(errorHandler.handleError);
@@ -1710,7 +1712,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
 
         sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
       });
 
@@ -1754,7 +1756,7 @@ describe('lib/optimizely', function() {
         instance.track('testExperiment', 'testUser');
 
         sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'track'));
 
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
@@ -1778,7 +1780,7 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.DEBUG,
-          sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
+          LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser'
         );
       });
 
@@ -1811,19 +1813,19 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.DEBUG,
-          sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser')
+          LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser'
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'testExperimentWithAudiences')
+          LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'testExperimentWithAudiences'
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning')
+          LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning'
         );
       });
 
@@ -1837,7 +1839,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
 
         sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
 
@@ -1846,7 +1848,7 @@ describe('lib/optimizely', function() {
         assert.isNull(getVariationWithError);
 
         sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(
           logMessage,
           sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'OPTIMIZELY', 'invalidExperimentKey')
@@ -1863,7 +1865,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
 
         sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
       });
 
@@ -1884,12 +1886,12 @@ describe('lib/optimizely', function() {
 
           sinon.assert.calledTwice(createdLogger.log);
 
-          var logMessage0 = createdLogger.log.args[0][1];
+          var logMessage0 = buildLogMessageFromArgs(createdLogger.log.args[0]);
           assert.strictEqual(
             logMessage0,
             sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'user1')
           );
-          var logMessage = createdLogger.log.args[1][1];
+          var logMessage = buildLogMessageFromArgs(createdLogger.log.args[1]);
           assert.strictEqual(
             logMessage,
             sprintf(LOG_MESSAGES.USER_FORCED_IN_VARIATION, 'DECISION_SERVICE', 'user1', 'control')
@@ -1912,7 +1914,7 @@ describe('lib/optimizely', function() {
         instance.getVariation('testExperiment', 'testUser');
 
         sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getVariation'));
 
         sinon.assert.notCalled(eventDispatcher.dispatchEvent);
@@ -1964,7 +1966,7 @@ describe('lib/optimizely', function() {
         var forcedVariation = optlyInstance.getForcedVariation('testExperiment', 'user1');
         assert.strictEqual(forcedVariation, null);
 
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'user1'));
       });
 
@@ -1972,7 +1974,7 @@ describe('lib/optimizely', function() {
         var forcedVariation = optlyInstance.getForcedVariation(null, 'user1');
         assert.strictEqual(forcedVariation, null);
 
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key'));
       });
 
@@ -1980,7 +1982,7 @@ describe('lib/optimizely', function() {
         var forcedVariation = optlyInstance.getForcedVariation(undefined, 'user1');
         assert.strictEqual(forcedVariation, null);
 
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key'));
       });
 
@@ -1988,7 +1990,7 @@ describe('lib/optimizely', function() {
         var forcedVariation = optlyInstance.getForcedVariation('testExperiment', null);
         assert.strictEqual(forcedVariation, null);
 
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
 
@@ -1996,7 +1998,7 @@ describe('lib/optimizely', function() {
         var forcedVariation = optlyInstance.getForcedVariation('testExperiment', undefined);
         assert.strictEqual(forcedVariation, null);
 
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
     });
@@ -2006,7 +2008,7 @@ describe('lib/optimizely', function() {
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'user1', 'control');
         assert.strictEqual(didSetVariation, true);
 
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(
           logMessage,
           sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'DECISION_SERVICE', 111128, 111127, 'user1')
@@ -2042,9 +2044,9 @@ describe('lib/optimizely', function() {
         var forcedVariation2 = optlyInstance.getForcedVariation('testExperiment', 'user1');
         assert.strictEqual(forcedVariation2, null);
 
-        var setVariationLogMessage = createdLogger.log.args[0][1];
-        var variationIsMappedLogMessage = createdLogger.log.args[1][1];
-        var variationMappingRemovedLogMessage = createdLogger.log.args[2][1];
+        var setVariationLogMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
+        var variationIsMappedLogMessage = buildLogMessageFromArgs(createdLogger.log.args[1]);
+        var variationMappingRemovedLogMessage = buildLogMessageFromArgs(createdLogger.log.args[2]);
 
         assert.strictEqual(
           setVariationLogMessage,
@@ -2084,7 +2086,7 @@ describe('lib/optimizely', function() {
         );
         assert.strictEqual(didSetVariation, false);
 
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(
           logMessage,
           sprintf(
@@ -2100,7 +2102,7 @@ describe('lib/optimizely', function() {
         var didSetVariation = optlyInstance.setForcedVariation('definitely_not_valid_exp_key', 'user1', 'control');
         assert.strictEqual(didSetVariation, false);
 
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(
           logMessage,
           sprintf(ERROR_MESSAGES.EXPERIMENT_KEY_NOT_IN_DATAFILE, 'PROJECT_CONFIG', 'definitely_not_valid_exp_key')
@@ -2114,13 +2116,13 @@ describe('lib/optimizely', function() {
         var forcedVariation = optlyInstance.getForcedVariation('testExperimentLaunched', 'user1');
         assert.strictEqual(forcedVariation, null);
 
-        var setVariationLogMessage = createdLogger.log.args[0][1];
+        var setVariationLogMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(
           setVariationLogMessage,
           sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'DECISION_SERVICE', 111128, 111127, 'user1')
         );
 
-        var noVariationToGetLogMessage = createdLogger.log.args[1][1];
+        var noVariationToGetLogMessage = buildLogMessageFromArgs(createdLogger.log.args[1]);
         assert.strictEqual(
           noVariationToGetLogMessage,
           sprintf(
@@ -2136,7 +2138,7 @@ describe('lib/optimizely', function() {
         var didSetVariation = optlyInstance.setForcedVariation(null, 'user1', 'control');
         assert.strictEqual(didSetVariation, false);
 
-        var setVariationLogMessage = createdLogger.log.args[0][1];
+        var setVariationLogMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(
           setVariationLogMessage,
           sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key')
@@ -2147,7 +2149,7 @@ describe('lib/optimizely', function() {
         var didSetVariation = optlyInstance.setForcedVariation(undefined, 'user1', 'control');
         assert.strictEqual(didSetVariation, false);
 
-        var setVariationLogMessage = createdLogger.log.args[0][1];
+        var setVariationLogMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(
           setVariationLogMessage,
           sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key')
@@ -2158,7 +2160,7 @@ describe('lib/optimizely', function() {
         var didSetVariation = optlyInstance.setForcedVariation('', 'user1', 'control');
         assert.strictEqual(didSetVariation, false);
 
-        var setVariationLogMessage = createdLogger.log.args[0][1];
+        var setVariationLogMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(
           setVariationLogMessage,
           sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'experiment_key')
@@ -2169,7 +2171,7 @@ describe('lib/optimizely', function() {
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', null, 'control');
         assert.strictEqual(didSetVariation, false);
 
-        var setVariationLogMessage = createdLogger.log.args[0][1];
+        var setVariationLogMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(
           setVariationLogMessage,
           sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id')
@@ -2180,7 +2182,7 @@ describe('lib/optimizely', function() {
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', undefined, 'control');
         assert.strictEqual(didSetVariation, false);
 
-        var setVariationLogMessage = createdLogger.log.args[0][1];
+        var setVariationLogMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(
           setVariationLogMessage,
           sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id')
@@ -2196,7 +2198,7 @@ describe('lib/optimizely', function() {
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'user1', null);
         assert.strictEqual(didSetVariation, false);
 
-        var setVariationLogMessage = createdLogger.log.args[0][1];
+        var setVariationLogMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(
           setVariationLogMessage,
           sprintf(ERROR_MESSAGES.USER_NOT_IN_FORCED_VARIATION, 'DECISION_SERVICE', 'user1')
@@ -2207,7 +2209,7 @@ describe('lib/optimizely', function() {
         var didSetVariation = optlyInstance.setForcedVariation('testExperiment', 'user1', undefined);
         assert.strictEqual(didSetVariation, false);
 
-        var setVariationLogMessage = createdLogger.log.args[0][1];
+        var setVariationLogMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(
           setVariationLogMessage,
           sprintf(ERROR_MESSAGES.USER_NOT_IN_FORCED_VARIATION, 'DECISION_SERVICE', 'user1')
@@ -2225,13 +2227,13 @@ describe('lib/optimizely', function() {
         var variation = optlyInstance.getVariation('testExperimentNotRunning', 'user1', {});
         assert.strictEqual(variation, null);
 
-        var logMessage0 = createdLogger.log.args[0][1];
+        var logMessage0 = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(
           logMessage0,
           sprintf(LOG_MESSAGES.USER_MAPPED_TO_FORCED_VARIATION, 'DECISION_SERVICE', 133338, 133337, 'user1')
         );
 
-        var logMessage1 = createdLogger.log.args[1][1];
+        var logMessage1 = buildLogMessageFromArgs(createdLogger.log.args[1]);
         assert.strictEqual(
           logMessage1,
           sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning')
@@ -2262,7 +2264,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
 
         sinon.assert.calledThrice(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
 
@@ -2275,7 +2277,7 @@ describe('lib/optimizely', function() {
         assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
 
         sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
       });
     });
@@ -3044,7 +3046,8 @@ describe('lib/optimizely', function() {
                   sinon.assert.calledWith(
                     createdLogger.log,
                     LOG_LEVEL.INFO,
-                    'OPTIMIZELY: Feature test_feature is not enabled for user user1.'
+                    '%s: Feature %s is not enabled for user %s.',
+                    'OPTIMIZELY', 'test_feature', 'user1'
                   );
 
                   var expectedArguments = {
@@ -4579,7 +4582,7 @@ describe('lib/optimizely', function() {
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
         assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
         sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
       });
 
@@ -4589,7 +4592,7 @@ describe('lib/optimizely', function() {
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
         assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
         sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(ERROR_MESSAGES.INVALID_ATTRIBUTES, 'ATTRIBUTES_VALIDATOR'));
       });
     });
@@ -6238,9 +6241,8 @@ describe('lib/optimizely', function() {
         });
         var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user1');
         assert.strictEqual(result, false);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Optimizely object is not valid. Failing isFeatureEnabled.'
         );
       });
@@ -6338,10 +6340,9 @@ describe('lib/optimizely', function() {
             };
             var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
             assert.deepEqual(callArgs[0], expectedImpressionEvent);
-            assert.isFunction(callArgs[1]);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.isFunction(callArgs[1]);            
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature test_feature_for_experiment is enabled for user user1.'
             );
           });
@@ -6619,9 +6620,8 @@ describe('lib/optimizely', function() {
             });
             assert.strictEqual(result, true);
             sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature test_feature is enabled for user user1.'
             );
           });
@@ -6649,9 +6649,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, false);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature test_feature is not enabled for user user1.'
             );
           });
@@ -6679,9 +6678,8 @@ describe('lib/optimizely', function() {
           var result = optlyInstance.isFeatureEnabled('test_feature', 'user1');
           assert.strictEqual(result, false);
           sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-          sinon.assert.calledWith(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
+          assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: Feature test_feature is not enabled for user user1.'
           );
         });
@@ -6693,9 +6691,8 @@ describe('lib/optimizely', function() {
           var result = optlyInstance.isFeatureEnabled('test_feature', 'user1');
           assert.strictEqual(result, false);
           sinon.assert.notCalled(eventDispatcher.dispatchEvent);
-          sinon.assert.calledWith(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
+          assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: Feature test_feature is not enabled for user user1.'
           );
         });
@@ -6788,9 +6785,8 @@ describe('lib/optimizely', function() {
         });
         var result = optlyInstance.getEnabledFeatures('user1', { test_attribute: 'test_value' });
         assert.deepEqual(result, []);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Optimizely object is not valid. Failing getEnabledFeatures.'
         );
       });
@@ -6959,9 +6955,8 @@ describe('lib/optimizely', function() {
               { test_attribute: 'test_value' }
             );
             assert.strictEqual(result, true);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "true" for variable "is_button_animated" of feature flag "test_feature_for_experiment"'
             );
           });
@@ -6971,9 +6966,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 20.25);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "20.25" for variable "button_width" of feature flag "test_feature_for_experiment"'
             );
           });
@@ -6983,9 +6977,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 2);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "2" for variable "num_buttons" of feature flag "test_feature_for_experiment"'
             );
           });
@@ -6995,9 +6988,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 'Buy me NOW');
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "Buy me NOW" for variable "button_txt" of feature flag "test_feature_for_experiment"'
             );
           });
@@ -7010,9 +7002,8 @@ describe('lib/optimizely', function() {
               num_buttons: 1,
               text: 'first variation',
             });
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "{ "num_buttons": 1, "text": "first variation"}" for variable "button_info" of feature flag "test_feature_for_experiment"'
             );
           });
@@ -7025,9 +7016,8 @@ describe('lib/optimizely', function() {
               { test_attribute: 'test_value' }
             );
             assert.strictEqual(result, true);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "true" for variable "is_button_animated" of feature flag "test_feature_for_experiment"'
             );
           });
@@ -7040,9 +7030,8 @@ describe('lib/optimizely', function() {
               { test_attribute: 'test_value' }
             );
             assert.strictEqual(result, 20.25);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "20.25" for variable "button_width" of feature flag "test_feature_for_experiment"'
             );
           });
@@ -7055,9 +7044,8 @@ describe('lib/optimizely', function() {
               { test_attribute: 'test_value' }
             );
             assert.strictEqual(result, 2);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "2" for variable "num_buttons" of feature flag "test_feature_for_experiment"'
             );
           });
@@ -7067,9 +7055,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 'Buy me NOW');
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "Buy me NOW" for variable "button_txt" of feature flag "test_feature_for_experiment"'
             );
           });
@@ -7082,9 +7069,8 @@ describe('lib/optimizely', function() {
               num_buttons: 1,
               text: 'first variation',
             });
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "{ "num_buttons": 1, "text": "first variation"}" for variable "button_info" of feature flag "test_feature_for_experiment"'
             );
           });
@@ -7106,27 +7092,47 @@ describe('lib/optimizely', function() {
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Got variable value "true" for variable "is_button_animated" of feature flag "test_feature_for_experiment"'
+              '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
+              'OPTIMIZELY',
+              '2',
+              'num_buttons',
+              'test_feature_for_experiment',
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Got variable value "20.25" for variable "button_width" of feature flag "test_feature_for_experiment"'
+              '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
+              'OPTIMIZELY',
+              'true',
+              'is_button_animated',
+              'test_feature_for_experiment',
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Got variable value "2" for variable "num_buttons" of feature flag "test_feature_for_experiment"'
+              '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
+              'OPTIMIZELY',
+              'Buy me NOW',
+              'button_txt',
+              'test_feature_for_experiment'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Got variable value "Buy me NOW" for variable "button_txt" of feature flag "test_feature_for_experiment"'
+              '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
+              'OPTIMIZELY',
+              '20.25',
+              'button_width',
+              'test_feature_for_experiment'
             );
             sinon.assert.calledWith(
               createdLogger.log,
               LOG_LEVEL.INFO,
-              'OPTIMIZELY: Got variable value "{ "num_buttons": 1, "text": "first variation"}" for variable "button_info" of feature flag "test_feature_for_experiment"'
+              '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
+              'OPTIMIZELY',
+              '{ "num_buttons": 1, "text": "first variation"}',
+              'button_info',
+              'test_feature_for_experiment'
             );
           });
 
@@ -7143,9 +7149,8 @@ describe('lib/optimizely', function() {
                 { test_attribute: 'test_value' }
               );
               assert.strictEqual(result, false);
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "is_button_animated" is not used in variation "variation". Returning default value.'
               );
             });
@@ -7155,9 +7160,8 @@ describe('lib/optimizely', function() {
                 test_attribute: 'test_value',
               });
               assert.strictEqual(result, 50.55);
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "button_width" is not used in variation "variation". Returning default value.'
               );
             });
@@ -7167,9 +7171,8 @@ describe('lib/optimizely', function() {
                 test_attribute: 'test_value',
               });
               assert.strictEqual(result, 10);
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "num_buttons" is not used in variation "variation". Returning default value.'
               );
             });
@@ -7179,9 +7182,8 @@ describe('lib/optimizely', function() {
                 test_attribute: 'test_value',
               });
               assert.strictEqual(result, 'Buy me');
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "button_txt" is not used in variation "variation". Returning default value.'
               );
             });
@@ -7194,9 +7196,8 @@ describe('lib/optimizely', function() {
                 num_buttons: 0,
                 text: 'default value',
               });
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "button_info" is not used in variation "variation". Returning default value.'
               );
             });
@@ -7209,9 +7210,8 @@ describe('lib/optimizely', function() {
                 { test_attribute: 'test_value' }
               );
               assert.strictEqual(result, false);
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "is_button_animated" is not used in variation "variation". Returning default value.'
               );
             });
@@ -7224,9 +7224,8 @@ describe('lib/optimizely', function() {
                 { test_attribute: 'test_value' }
               );
               assert.strictEqual(result, 50.55);
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "button_width" is not used in variation "variation". Returning default value.'
               );
             });
@@ -7239,9 +7238,8 @@ describe('lib/optimizely', function() {
                 { test_attribute: 'test_value' }
               );
               assert.strictEqual(result, 10);
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "num_buttons" is not used in variation "variation". Returning default value.'
               );
             });
@@ -7254,9 +7252,8 @@ describe('lib/optimizely', function() {
                 { test_attribute: 'test_value' }
               );
               assert.strictEqual(result, 'Buy me');
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "button_txt" is not used in variation "variation". Returning default value.'
               );
             });
@@ -7272,9 +7269,8 @@ describe('lib/optimizely', function() {
                 num_buttons: 0,
                 text: "default value",
               });
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "button_info" is not used in variation "variation". Returning default value.'
               );
             });
@@ -7296,27 +7292,42 @@ describe('lib/optimizely', function() {
               sinon.assert.calledWith(
                 createdLogger.log,
                 LOG_LEVEL.INFO,
-                'OPTIMIZELY: Variable "is_button_animated" is not used in variation "variation". Returning default value.'
+                '%s: Variable "%s" is not used in variation "%s". Returning default value.',
+                'OPTIMIZELY',
+                'num_buttons',
+                'variation'
               );
               sinon.assert.calledWith(
                 createdLogger.log,
                 LOG_LEVEL.INFO,
-                'OPTIMIZELY: Variable "button_width" is not used in variation "variation". Returning default value.'
+                '%s: Variable "%s" is not used in variation "%s". Returning default value.',
+                'OPTIMIZELY',
+                'is_button_animated',
+                'variation'
               );
               sinon.assert.calledWith(
                 createdLogger.log,
                 LOG_LEVEL.INFO,
-                'OPTIMIZELY: Variable "num_buttons" is not used in variation "variation". Returning default value.'
+                '%s: Variable "%s" is not used in variation "%s". Returning default value.',
+                'OPTIMIZELY',
+                'button_txt',
+                'variation'
               );
               sinon.assert.calledWith(
                 createdLogger.log,
                 LOG_LEVEL.INFO,
-                'OPTIMIZELY: Variable "button_txt" is not used in variation "variation". Returning default value.'
+                '%s: Variable "%s" is not used in variation "%s". Returning default value.',
+                'OPTIMIZELY',
+                'button_width',
+                'variation'
               );
               sinon.assert.calledWith(
                 createdLogger.log,
                 LOG_LEVEL.INFO,
-                'OPTIMIZELY: Variable "button_info" is not used in variation "variation". Returning default value.'
+                '%s: Variable "%s" is not used in variation "%s". Returning default value.',
+                'OPTIMIZELY',
+                'button_info',
+                'variation'
               );
             });
           });
@@ -7349,9 +7360,8 @@ describe('lib/optimizely', function() {
               { test_attribute: 'test_value' }
             );
             assert.strictEqual(result, false);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "false".'
             );
           });
@@ -7361,9 +7371,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 50.55);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "50.55".'
             );
           });
@@ -7373,9 +7382,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 10);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "10".'
             );
           });
@@ -7385,9 +7393,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 'Buy me');
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "Buy me".'
             );
           });
@@ -7400,9 +7407,8 @@ describe('lib/optimizely', function() {
               num_buttons: 0,
               text: "default value",
             });
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "{ "num_buttons": 0, "text": "default value"}".'
             );
           });
@@ -7415,9 +7421,8 @@ describe('lib/optimizely', function() {
               { test_attribute: 'test_value' }
             );
             assert.strictEqual(result, false);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "false".'
             );
           });
@@ -7430,9 +7435,8 @@ describe('lib/optimizely', function() {
               { test_attribute: 'test_value' }
             );
             assert.strictEqual(result, 50.55);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "50.55".'
             );
           });
@@ -7445,9 +7449,8 @@ describe('lib/optimizely', function() {
               { test_attribute: 'test_value' }
             );
             assert.strictEqual(result, 10);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "10".'
             );
           });
@@ -7457,9 +7460,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 'Buy me');
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "Buy me".'
             );
           });
@@ -7472,9 +7474,8 @@ describe('lib/optimizely', function() {
               num_buttons: 0,
               text: 'default value',
             });
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "{ "num_buttons": 0, "text": "default value"}".'
             );
           });
@@ -7493,31 +7494,48 @@ describe('lib/optimizely', function() {
                 text: "default value",
               },
             });
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "false".'
-            );
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "50.55".'
-            );
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "10".'
-            );
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "Buy me".'
-            );
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature_for_experiment" is not enabled for user user1. Returning the default variable value "{ "num_buttons": 0, "text": "default value"}".'
-            );
+            assert.deepEqual(createdLogger.log.args, [
+              [
+                LOG_LEVEL.INFO,
+                '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
+                'OPTIMIZELY',
+                'test_feature_for_experiment',
+                'user1',
+                '10'
+              ],
+              [
+                LOG_LEVEL.INFO,
+                '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
+                'OPTIMIZELY',
+                'test_feature_for_experiment',
+                'user1',
+                'false'
+              ],
+              [
+                LOG_LEVEL.INFO,
+                '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
+                'OPTIMIZELY',
+                'test_feature_for_experiment',
+                'user1',
+                'Buy me'
+              ],
+              [
+                LOG_LEVEL.INFO,
+                '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
+                'OPTIMIZELY',
+                'test_feature_for_experiment',
+                'user1',
+                '50.55'
+              ],
+              [
+                LOG_LEVEL.INFO,
+                '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
+                'OPTIMIZELY',
+                'test_feature_for_experiment',
+                'user1',
+                '{ "num_buttons": 0, "text": "default value"}'
+              ]
+            ]);            
           });
         });
       });
@@ -7547,9 +7565,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, true);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "true" for variable "new_content" of feature flag "test_feature"'
             );
           });
@@ -7559,9 +7576,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 4.99);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "4.99" for variable "price" of feature flag "test_feature"'
             );
           });
@@ -7571,9 +7587,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 395);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "395" for variable "lasers" of feature flag "test_feature"'
             );
           });
@@ -7583,9 +7598,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 'Hello audience');
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "Hello audience" for variable "message" of feature flag "test_feature"'
             );
           });
@@ -7598,9 +7612,8 @@ describe('lib/optimizely', function() {
               count: 2,
               message: 'Hello audience',
             });
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "{ "count": 2, "message": "Hello audience" }" for variable "message_info" of feature flag "test_feature"'
             );
           });
@@ -7610,9 +7623,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, true);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "true" for variable "new_content" of feature flag "test_feature"'
             );
           });
@@ -7622,9 +7634,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 4.99);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "4.99" for variable "price" of feature flag "test_feature"'
             );
           });
@@ -7634,9 +7645,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 395);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "395" for variable "lasers" of feature flag "test_feature"'
             );
           });
@@ -7646,9 +7656,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 'Hello audience');
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "Hello audience" for variable "message" of feature flag "test_feature"'
             );
           });
@@ -7661,9 +7670,8 @@ describe('lib/optimizely', function() {
               count: 2,
               message: 'Hello audience',
             });
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Got variable value "{ "count": 2, "message": "Hello audience" }" for variable "message_info" of feature flag "test_feature"'
             );
           });
@@ -7682,31 +7690,51 @@ describe('lib/optimizely', function() {
                 message: 'Hello audience',
               },
             });
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
-              'OPTIMIZELY: Got variable value "true" for variable "new_content" of feature flag "test_feature"'
-            );
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
-              'OPTIMIZELY: Got variable value "4.99" for variable "price" of feature flag "test_feature"'
-            );
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
-              'OPTIMIZELY: Got variable value "395" for variable "lasers" of feature flag "test_feature"'
-            );
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
-              'OPTIMIZELY: Got variable value "Hello audience" for variable "message" of feature flag "test_feature"'
-            );
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
-              'OPTIMIZELY: Got variable value "{ "count": 2, "message": "Hello audience" }" for variable "message_info" of feature flag "test_feature"'
-            );
+            assert.deepEqual(
+              createdLogger.log.args,
+              [
+                [
+                  LOG_LEVEL.INFO,
+                  '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
+                  'OPTIMIZELY',
+                  'true',
+                  'new_content',
+                  'test_feature'
+                ],
+                [
+                  LOG_LEVEL.INFO,
+                  '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
+                  'OPTIMIZELY',
+                  '395',
+                  'lasers',
+                  'test_feature'
+                ],
+                [
+                  LOG_LEVEL.INFO,
+                  '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
+                  'OPTIMIZELY',
+                  '4.99',
+                  'price',
+                  'test_feature'
+                ],
+                [
+                  LOG_LEVEL.INFO,
+                  '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
+                  'OPTIMIZELY',
+                  'Hello audience',
+                  'message',
+                  'test_feature'
+                ],
+                [
+                  LOG_LEVEL.INFO,
+                  '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
+                  'OPTIMIZELY',
+                  '{ "count": 2, "message": "Hello audience" }',
+                  'message_info',
+                  'test_feature'
+                ]
+              ]              
+            )
           });
 
           describe('when the variable is not used in the variation', function() {
@@ -7719,9 +7747,8 @@ describe('lib/optimizely', function() {
                 test_attribute: 'test_value',
               });
               assert.strictEqual(result, false);
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "new_content" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7731,9 +7758,8 @@ describe('lib/optimizely', function() {
                 test_attribute: 'test_value',
               });
               assert.strictEqual(result, 14.99);
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "price" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7743,9 +7769,8 @@ describe('lib/optimizely', function() {
                 test_attribute: 'test_value',
               });
               assert.strictEqual(result, 400);
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "lasers" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7755,9 +7780,8 @@ describe('lib/optimizely', function() {
                 test_attribute: 'test_value',
               });
               assert.strictEqual(result, 'Hello');
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "message" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7770,9 +7794,8 @@ describe('lib/optimizely', function() {
                 count: 1,
                 message: 'Hello',
               });
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "message_info" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7782,9 +7805,8 @@ describe('lib/optimizely', function() {
                 test_attribute: 'test_value',
               });
               assert.strictEqual(result, false);
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "new_content" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7794,9 +7816,8 @@ describe('lib/optimizely', function() {
                 test_attribute: 'test_value',
               });
               assert.strictEqual(result, 14.99);
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "price" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7806,9 +7827,8 @@ describe('lib/optimizely', function() {
                 test_attribute: 'test_value',
               });
               assert.strictEqual(result, 400);
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "lasers" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7818,9 +7838,8 @@ describe('lib/optimizely', function() {
                 test_attribute: 'test_value',
               });
               assert.strictEqual(result, 'Hello');
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "message" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7833,9 +7852,8 @@ describe('lib/optimizely', function() {
                 count: 1,
                 message: 'Hello'
               });
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
+              assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "message_info" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7854,31 +7872,47 @@ describe('lib/optimizely', function() {
                   message: 'Hello',
                 },
               });
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
-                'OPTIMIZELY: Variable "new_content" is not used in variation "594032". Returning default value.'
-              );
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
-                'OPTIMIZELY: Variable "price" is not used in variation "594032". Returning default value.'
-              );
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
-                'OPTIMIZELY: Variable "lasers" is not used in variation "594032". Returning default value.'
-              );
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
-                'OPTIMIZELY: Variable "message" is not used in variation "594032". Returning default value.'
-              );
-              sinon.assert.calledWith(
-                createdLogger.log,
-                LOG_LEVEL.INFO,
-                'OPTIMIZELY: Variable "message_info" is not used in variation "594032". Returning default value.'
-              );
+              assert.deepEqual(
+                createdLogger.log.args,
+                [
+                  [
+                    LOG_LEVEL.INFO,
+                    '%s: Variable "%s" is not used in variation "%s". Returning default value.',
+                    'OPTIMIZELY',
+                    'new_content',
+                    '594032'
+                  ],
+                  [
+                    LOG_LEVEL.INFO,
+                    '%s: Variable "%s" is not used in variation "%s". Returning default value.',
+                    'OPTIMIZELY',
+                    'lasers',
+                    '594032'
+                  ],
+                  [
+                    LOG_LEVEL.INFO,
+                    '%s: Variable "%s" is not used in variation "%s". Returning default value.',
+                    'OPTIMIZELY',
+                    'price',
+                    '594032'
+                  ],
+                  [
+                    LOG_LEVEL.INFO,
+                    '%s: Variable "%s" is not used in variation "%s". Returning default value.',
+                    'OPTIMIZELY',
+                    'message',
+                    '594032'
+                  ],
+                  [
+                    LOG_LEVEL.INFO,
+                    '%s: Variable "%s" is not used in variation "%s". Returning default value.',
+                    'OPTIMIZELY',
+                    'message_info',
+                    '594032'
+                  ]
+                ]
+                
+              )
             });
           });
         });
@@ -7907,9 +7941,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, false);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "false".'
             );
           });
@@ -7919,9 +7952,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 14.99);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "14.99".'
             );
           });
@@ -7931,9 +7963,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 400);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "400".'
             );
           });
@@ -7943,9 +7974,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 'Hello');
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "Hello".'
             );
           });
@@ -7958,9 +7988,8 @@ describe('lib/optimizely', function() {
               count: 1,
               message: 'Hello'
             });
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "{ "count": 1, "message": "Hello" }".'
             );
           });
@@ -7970,9 +7999,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, false);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "false".'
             );
           });
@@ -7982,9 +8010,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 14.99);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "14.99".'
             );
           });
@@ -7994,9 +8021,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 400);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "400".'
             );
           });
@@ -8006,9 +8032,8 @@ describe('lib/optimizely', function() {
               test_attribute: 'test_value',
             });
             assert.strictEqual(result, 'Hello');
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "Hello".'
             );
           });
@@ -8021,9 +8046,8 @@ describe('lib/optimizely', function() {
               count: 1,
               message: 'Hello'
             });
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "{ "count": 1, "message": "Hello" }".'
             );
           });
@@ -8042,31 +8066,51 @@ describe('lib/optimizely', function() {
                 message: 'Hello',
               },
             });
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "false".'
-            );
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "14.99".'
-            );
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "400".'
-            );
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "Hello".'
-            );
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.INFO,
-              'OPTIMIZELY: Feature "test_feature" is not enabled for user user1. Returning the default variable value "{ "count": 1, "message": "Hello" }".'
-            );
+            assert.deepEqual(
+              createdLogger.log.args,
+              [
+                [
+                  LOG_LEVEL.INFO,
+                  '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
+                  'OPTIMIZELY',
+                  'test_feature',
+                  'user1',
+                  'false'
+                ],
+                [
+                  LOG_LEVEL.INFO,
+                  '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
+                  'OPTIMIZELY',
+                  'test_feature',
+                  'user1',
+                  '400'
+                ],
+                [
+                  LOG_LEVEL.INFO,
+                  '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
+                  'OPTIMIZELY',
+                  'test_feature',
+                  'user1',
+                  '14.99'
+                ],
+                [
+                  LOG_LEVEL.INFO,
+                  '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
+                  'OPTIMIZELY',
+                  'test_feature',
+                  'user1',
+                  'Hello'
+                ],
+                [
+                  LOG_LEVEL.INFO,
+                  '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
+                  'OPTIMIZELY',
+                  'test_feature',
+                  'user1',
+                  '{ "count": 1, "message": "Hello" }'
+                ]
+              ]
+            )
           });
         });
       });
@@ -8090,9 +8134,8 @@ describe('lib/optimizely', function() {
             test_attribute: 'test_value',
           });
           assert.strictEqual(result, false);
-          sinon.assert.calledWith(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
+          assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "is_button_animated" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8102,9 +8145,8 @@ describe('lib/optimizely', function() {
             test_attribute: 'test_value',
           });
           assert.strictEqual(result, 50.55);
-          sinon.assert.calledWith(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
+          assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_width" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8114,9 +8156,8 @@ describe('lib/optimizely', function() {
             test_attribute: 'test_value',
           });
           assert.strictEqual(result, 10);
-          sinon.assert.calledWith(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
+          assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "num_buttons" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8126,9 +8167,8 @@ describe('lib/optimizely', function() {
             test_attribute: 'test_value',
           });
           assert.strictEqual(result, 'Buy me');
-          sinon.assert.calledWith(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
+          assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_txt" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8141,9 +8181,8 @@ describe('lib/optimizely', function() {
             num_buttons: 0,
             text: 'default value',
           });
-          sinon.assert.calledWith(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
+          assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_info" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8156,9 +8195,8 @@ describe('lib/optimizely', function() {
             { test_attribute: 'test_value' }
           );
           assert.strictEqual(result, false);
-          sinon.assert.calledWith(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
+          assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "is_button_animated" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8168,9 +8206,8 @@ describe('lib/optimizely', function() {
             test_attribute: 'test_value',
           });
           assert.strictEqual(result, 50.55);
-          sinon.assert.calledWith(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
+          assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_width" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8180,9 +8217,8 @@ describe('lib/optimizely', function() {
             test_attribute: 'test_value',
           });
           assert.strictEqual(result, 10);
-          sinon.assert.calledWith(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
+          assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "num_buttons" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8192,9 +8228,8 @@ describe('lib/optimizely', function() {
             test_attribute: 'test_value',
           });
           assert.strictEqual(result, 'Buy me');
-          sinon.assert.calledWith(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
+          assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_txt" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8207,9 +8242,8 @@ describe('lib/optimizely', function() {
             num_buttons: 0,
             text: 'default value',
           });
-          sinon.assert.calledWith(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
+          assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_info" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8228,30 +8262,50 @@ describe('lib/optimizely', function() {
               text: 'default value',
             },
           });
-          sinon.assert.calledWith(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
-            'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "is_button_animated" of feature flag "test_feature_for_experiment".'
-          );
-          sinon.assert.calledWith(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
-            'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_width" of feature flag "test_feature_for_experiment".'
-          );
-          sinon.assert.calledWith(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
-            'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "num_buttons" of feature flag "test_feature_for_experiment".'
-          );
-          sinon.assert.calledWith(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
-            'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_txt" of feature flag "test_feature_for_experiment".'
-          );
-          sinon.assert.calledWith(
-            createdLogger.log,
-            LOG_LEVEL.INFO,
-            'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_info" of feature flag "test_feature_for_experiment".'
+          assert.deepEqual(
+            createdLogger.log.args,
+            [
+              [
+                LOG_LEVEL.INFO,
+                '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
+                'OPTIMIZELY',
+                'user1',
+                'num_buttons',
+                'test_feature_for_experiment'
+              ],
+              [
+                LOG_LEVEL.INFO,
+                '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
+                'OPTIMIZELY',
+                'user1',
+                'is_button_animated',
+                'test_feature_for_experiment'
+              ],
+              [
+                LOG_LEVEL.INFO,
+                '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
+                'OPTIMIZELY',
+                'user1',
+                'button_txt',
+                'test_feature_for_experiment'
+              ],
+              [
+                LOG_LEVEL.INFO,
+                '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
+                'OPTIMIZELY',
+                'user1',
+                'button_width',
+                'test_feature_for_experiment'
+              ],
+              [
+                LOG_LEVEL.INFO,
+                '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
+                'OPTIMIZELY',
+                'user1',
+                'button_info',
+                'test_feature_for_experiment'
+              ]
+            ]
           );
         });
       });
@@ -8261,9 +8315,8 @@ describe('lib/optimizely', function() {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8273,9 +8326,8 @@ describe('lib/optimizely', function() {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8283,9 +8335,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariable if user id is not provided when variable type is boolean', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'is_button_animated');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8295,9 +8346,8 @@ describe('lib/optimizely', function() {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8307,9 +8357,8 @@ describe('lib/optimizely', function() {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8317,9 +8366,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariable if user id is not provided when variable type is double', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_width');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8329,9 +8377,8 @@ describe('lib/optimizely', function() {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8341,9 +8388,8 @@ describe('lib/optimizely', function() {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8351,9 +8397,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariable if user id is not provided when variable type is integer', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'num_buttons');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8363,9 +8408,8 @@ describe('lib/optimizely', function() {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8375,9 +8419,8 @@ describe('lib/optimizely', function() {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8385,9 +8428,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariable if user id is not provided when variable type is string', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_txt');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8397,9 +8439,8 @@ describe('lib/optimizely', function() {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8409,9 +8450,8 @@ describe('lib/optimizely', function() {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8419,9 +8459,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariable if user id is not provided when variable type is json', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8429,9 +8468,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariableBoolean when called with a non-boolean variable', function() {
         var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'button_width', 'user1');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.WARNING,
+        assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Requested variable type "boolean", but variable is of type "double". Use correct API to retrieve value. Returning None.'
         );
       });
@@ -8443,9 +8481,8 @@ describe('lib/optimizely', function() {
           'user1'
         );
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.WARNING,
+        assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Requested variable type "double", but variable is of type "boolean". Use correct API to retrieve value. Returning None.'
         );
       });
@@ -8453,9 +8490,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariableInteger when called with a non-integer variable', function() {
         var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'button_width', 'user1');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.WARNING,
+        assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Requested variable type "integer", but variable is of type "double". Use correct API to retrieve value. Returning None.'
         );
       });
@@ -8463,9 +8499,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariableString when called with a non-string variable', function() {
         var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'num_buttons', 'user1');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.WARNING,
+        assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Requested variable type "string", but variable is of type "integer". Use correct API to retrieve value. Returning None.'
         );
       });
@@ -8473,9 +8508,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariableJSON when called with a non-json variable', function() {
         var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_txt', 'user1');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.WARNING,
+        assert.equal(
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Requested variable type "json", but variable is of type "string". Use correct API to retrieve value. Returning None.'
         );
       });
@@ -8488,9 +8522,8 @@ describe('lib/optimizely', function() {
           { test_attribute: 'test_value' }
         );
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8503,9 +8536,8 @@ describe('lib/optimizely', function() {
           { test_attribute: 'test_value' }
         );
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8513,9 +8545,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariableBoolean if user id is not provided', function() {
         var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8525,9 +8556,8 @@ describe('lib/optimizely', function() {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8537,9 +8567,8 @@ describe('lib/optimizely', function() {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8547,9 +8576,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariableDouble if user id is not provided', function() {
         var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8559,9 +8587,8 @@ describe('lib/optimizely', function() {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8571,9 +8598,8 @@ describe('lib/optimizely', function() {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8581,9 +8607,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariableInteger if user id is not provided', function() {
         var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8593,9 +8618,8 @@ describe('lib/optimizely', function() {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8605,9 +8629,8 @@ describe('lib/optimizely', function() {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8615,9 +8638,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariableString if user id is not provided', function() {
         var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8627,9 +8649,8 @@ describe('lib/optimizely', function() {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8639,9 +8660,8 @@ describe('lib/optimizely', function() {
           test_attribute: 'test_value',
         });
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8649,9 +8669,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariableJSON if user id is not provided', function() {
         var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_info');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8669,9 +8688,8 @@ describe('lib/optimizely', function() {
               'user1'
             );
             assert.strictEqual(result, null);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.ERROR,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'PROJECT_CONFIG: Unable to cast value falsezzz to type boolean, returning null.'
             );
           });
@@ -8685,9 +8703,8 @@ describe('lib/optimizely', function() {
           it('should return null and log an error', function() {
             var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons', 'user1');
             assert.strictEqual(result, null);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.ERROR,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'PROJECT_CONFIG: Unable to cast value zzz123 to type integer, returning null.'
             );
           });
@@ -8701,9 +8718,8 @@ describe('lib/optimizely', function() {
           it('should return null and log an error', function() {
             var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width', 'user1');
             assert.strictEqual(result, null);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.ERROR,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'PROJECT_CONFIG: Unable to cast value zzz44.55 to type double, returning null.'
             );
           });
@@ -8717,9 +8733,8 @@ describe('lib/optimizely', function() {
           it('should return null and log an error', function() {
             var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_info', 'user1');
             assert.strictEqual(result, null);
-            sinon.assert.calledWith(
-              createdLogger.log,
-              LOG_LEVEL.ERROR,
+            assert.equal(
+              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'PROJECT_CONFIG: Unable to cast value zzz44.55 to type json, returning null.'
             );
           });
@@ -8729,9 +8744,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariable if the argument feature key is invalid when variable type is boolean', function() {
         var result = optlyInstance.getFeatureVariable('thisIsNotAValidKey<><><>', 'is_button_animated', 'user1');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8739,9 +8753,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariable if the argument feature key is invalid when variable type is double', function() {
         var result = optlyInstance.getFeatureVariable('thisIsNotAValidKey<><><>', 'button_width', 'user1');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8749,9 +8762,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariable if the argument feature key is invalid when variable type is integer', function() {
         var result = optlyInstance.getFeatureVariable('thisIsNotAValidKey<><><>', 'num_buttons', 'user1');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8759,9 +8771,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariable if the argument feature key is invalid when variable type is string', function() {
         var result = optlyInstance.getFeatureVariable('thisIsNotAValidKey<><><>', 'button_txt', 'user1');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8769,9 +8780,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariable if the argument feature key is invalid when variable type is json', function() {
         var result = optlyInstance.getFeatureVariable('thisIsNotAValidKey<><><>', 'button_info', 'user1');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8783,9 +8793,8 @@ describe('lib/optimizely', function() {
           'user1'
         );
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.'
         );
       });
@@ -8793,9 +8802,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariableBoolean if the argument feature key is invalid', function() {
         var result = optlyInstance.getFeatureVariableBoolean('thisIsNotAValidKey<><><>', 'is_button_animated', 'user1');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8803,9 +8811,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariableDouble if the argument feature key is invalid', function() {
         var result = optlyInstance.getFeatureVariableDouble('thisIsNotAValidKey<><><>', 'button_width', 'user1');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8813,9 +8820,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariableInteger if the argument feature key is invalid', function() {
         var result = optlyInstance.getFeatureVariableInteger('thisIsNotAValidKey<><><>', 'num_buttons', 'user1');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8823,9 +8829,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariableString if the argument feature key is invalid', function() {
         var result = optlyInstance.getFeatureVariableString('thisIsNotAValidKey<><><>', 'button_txt', 'user1');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8833,9 +8838,8 @@ describe('lib/optimizely', function() {
       it('returns null from getFeatureVariableJSON if the argument feature key is invalid', function() {
         var result = optlyInstance.getFeatureVariableJSON('thisIsNotAValidKey<><><>', 'button_info', 'user1');
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8847,9 +8851,8 @@ describe('lib/optimizely', function() {
           'user1'
         );
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.'
         );
       });
@@ -8861,9 +8864,8 @@ describe('lib/optimizely', function() {
           'user1'
         );
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.'
         );
       });
@@ -8875,9 +8877,8 @@ describe('lib/optimizely', function() {
           'user1'
         );
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.'
         );
       });
@@ -8889,9 +8890,8 @@ describe('lib/optimizely', function() {
           'user1'
         );
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.'
         );
       });
@@ -8903,9 +8903,8 @@ describe('lib/optimizely', function() {
           'user1'
         );
         assert.strictEqual(result, null);
-        sinon.assert.calledWith(
-          createdLogger.log,
-          LOG_LEVEL.ERROR,
+        assert.equal(
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.'
         );
       });
@@ -8925,7 +8924,7 @@ describe('lib/optimizely', function() {
         instance.getFeatureVariable('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
 
         sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariable'));
       });
 
@@ -8944,7 +8943,7 @@ describe('lib/optimizely', function() {
         instance.getFeatureVariableBoolean('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
 
         sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableBoolean'));
       });
 
@@ -8963,7 +8962,7 @@ describe('lib/optimizely', function() {
         instance.getFeatureVariableDouble('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
 
         sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableDouble'));
       });
 
@@ -8982,7 +8981,7 @@ describe('lib/optimizely', function() {
         instance.getFeatureVariableInteger('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
 
         sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableInteger'));
       });
 
@@ -9001,7 +9000,7 @@ describe('lib/optimizely', function() {
         instance.getFeatureVariableString('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
 
         sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableString'));
       });
 
@@ -9020,7 +9019,7 @@ describe('lib/optimizely', function() {
         instance.getFeatureVariableJSON('test_feature_for_experiment', 'thisIsNotAVariableKey****', 'user1');
 
         sinon.assert.calledOnce(createdLogger.log);
-        var logMessage = createdLogger.log.args[0][1];
+        var logMessage = buildLogMessageFromArgs(createdLogger.log.args[0]);
         assert.strictEqual(logMessage, sprintf(LOG_MESSAGES.INVALID_OBJECT, 'OPTIMIZELY', 'getFeatureVariableJSON'));
       });
     });

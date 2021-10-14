@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf } from '@optimizely/js-sdk-utils';
 import { getLogger } from '@optimizely/js-sdk-logging';
 
 import fns from '../../utils/fns';
@@ -77,14 +76,14 @@ export class AudienceEvaluator {
       if (audience) {
         logger.log(
           LOG_LEVEL.DEBUG,
-          sprintf(LOG_MESSAGES.EVALUATING_AUDIENCE, MODULE_NAME, audienceId, JSON.stringify(audience.conditions))
+          LOG_MESSAGES.EVALUATING_AUDIENCE, MODULE_NAME, audienceId, JSON.stringify(audience.conditions)
         );
         const result = conditionTreeEvaluator.evaluate(
           audience.conditions as unknown[] ,
           this.evaluateConditionWithUserAttributes.bind(this, userAttributes)
         );
         const resultText = result === null ? 'UNKNOWN' : result.toString().toUpperCase();
-        logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText));
+        logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText);
         return result;
       }
       return null;
@@ -103,7 +102,7 @@ export class AudienceEvaluator {
   evaluateConditionWithUserAttributes(userAttributes: UserAttributes, condition: Condition): boolean | null {
     const evaluator = this.typeToEvaluatorMap[condition.type];
     if (!evaluator) {
-      logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.UNKNOWN_CONDITION_TYPE, MODULE_NAME, JSON.stringify(condition)));
+      logger.log(LOG_LEVEL.WARNING, LOG_MESSAGES.UNKNOWN_CONDITION_TYPE, MODULE_NAME, JSON.stringify(condition));
       return null;
     }
     try {
@@ -111,7 +110,7 @@ export class AudienceEvaluator {
     } catch (err) {
       logger.log(
         LOG_LEVEL.ERROR,
-        sprintf(ERROR_MESSAGES.CONDITION_EVALUATOR_ERROR, MODULE_NAME, condition.type, err.message)
+        ERROR_MESSAGES.CONDITION_EVALUATOR_ERROR, MODULE_NAME, condition.type, err.message
       );
     }
 
