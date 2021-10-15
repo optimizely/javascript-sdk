@@ -409,7 +409,7 @@ export default class Optimizely {
       this.emitNotificationCenterTrack(eventKey, userId, attributes, eventTags);
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
-      this.errorHandler.handleError(e);      
+      this.errorHandler.handleError(e);
       this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId);
     }
   }
@@ -487,15 +487,11 @@ export default class Optimizely {
           return null;
         }
 
-        let variationKey = null;
-        const variation = this.decisionService.getVariation(
+        const variationKey = this.decisionService.getVariation(
           configObj,
           experiment,
           this.createUserContext(userId, attributes) as OptimizelyUserContext
         ).result;
-        if (variation) {
-          variationKey = variation.key;
-        }
         const decisionNotificationType = projectConfig.isFeatureExperiment(configObj, experiment.id)
           ? DECISION_NOTIFICATION_TYPES.FEATURE_TEST
           : DECISION_NOTIFICATION_TYPES.AB_TEST;
@@ -567,13 +563,7 @@ export default class Optimizely {
     }
 
     try {
-      let variationKey = null;
-      const variation = this.decisionService.getForcedVariation(configObj, experimentKey, userId).result;
-      if (variation) {
-        variationKey = variation.key;
-      }
-
-      return variationKey;
+      return this.decisionService.getForcedVariation(configObj, experimentKey, userId).result;
     } catch (ex) {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       this.errorHandler.handleError(ex);

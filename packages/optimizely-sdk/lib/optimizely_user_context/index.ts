@@ -244,7 +244,6 @@ export default class OptimizelyUserContext {
       variation = this.optimizely.getFlagVariationByKey(flagKey, variationKey);
       if (variation) {
         if (ruleKey) {
-          console.log('***in the right if******');
           logger.info(
             LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
             MODULE_NAME,

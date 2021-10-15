@@ -76,9 +76,9 @@ describe('lib/core/decision_service', function() {
           reasons: [],
         };
         experiment = configObj.experimentIdMap['111127'];
-        bucketerStub.returns(fakeDecisionResponse); // contains variation object of the 'control' variation from `test_data`
-        assert.deepEqual(
-          { key: 'control', id: '111128' },
+        bucketerStub.returns(fakeDecisionResponse); // contains variation ID of the 'control' variation from `test_data`
+        assert.strictEqual(
+          'control',
           decisionServiceInstance.getVariation(configObj, experiment, user).result
         );
         sinon.assert.calledOnce(bucketerStub);
@@ -90,8 +90,8 @@ describe('lib/core/decision_service', function() {
           userId: 'user2'
         });
         experiment = configObj.experimentIdMap['122227'];
-        assert.deepEqual(
-          { key: 'variationWithAudience', id: '122229' },
+        assert.strictEqual(
+          'variationWithAudience',
           decisionServiceInstance.getVariation(configObj, experiment, user).result
         );
         sinon.assert.notCalled(bucketerStub);
@@ -156,7 +156,7 @@ describe('lib/core/decision_service', function() {
             reasons: [],
           };
           experiment = configObj.experimentIdMap['111127'];
-          bucketerStub.returns(fakeDecisionResponse); // ID of the 'variation' variation from `test_data`
+          bucketerStub.returns(fakeDecisionResponse); // ID of the 'control' variation from `test_data`
           var attributes = {
             $opt_experiment_bucket_map: {
               '111127': {
@@ -170,8 +170,8 @@ describe('lib/core/decision_service', function() {
             attributes,
           });
 
-          assert.deepEqual(
-            { key: 'variation', id: '111129' },
+          assert.strictEqual(
+            'variation',
             decisionServiceInstance.getVariation(configObj, experiment, user).result
           );
           sinon.assert.notCalled(bucketerStub);
@@ -226,8 +226,8 @@ describe('lib/core/decision_service', function() {
             userId: 'decision_service_user',
           });
 
-          assert.deepEqual(
-            { key: 'control', id: '111128' },
+          assert.strictEqual(
+            'control',
             decisionServiceInstance.getVariation(configObj, experiment, user).result
           );
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
@@ -254,8 +254,8 @@ describe('lib/core/decision_service', function() {
             userId: 'decision_service_user',
           });
 
-          assert.deepEqual(
-            { key: 'control', id: '111128' },
+          assert.strictEqual(
+            'control',
             decisionServiceInstance.getVariation(configObj, experiment, user).result
           );
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
@@ -279,8 +279,8 @@ describe('lib/core/decision_service', function() {
             optimizely: {},
             userId: 'decision_service_user',
           });
-          assert.deepEqual(
-            { key: 'control', id: '111128' },
+          assert.strictEqual(
+            'control',
             decisionServiceInstance.getVariation(configObj, experiment, user).result
           );
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
@@ -311,8 +311,8 @@ describe('lib/core/decision_service', function() {
             optimizely: {},
             userId: 'decision_service_user',
           });
-          assert.deepEqual(
-            { key: 'control', id: '111128' },
+          assert.strictEqual(
+            'control',
             decisionServiceInstance.getVariation(configObj, experiment, user).result
           );
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
@@ -348,8 +348,8 @@ describe('lib/core/decision_service', function() {
           });
           experiment = configObj.experimentIdMap['111127'];
 
-          assert.deepEqual(
-            { key: 'control', id: '111128' },
+          assert.strictEqual(
+            'control',
             decisionServiceInstance.getVariation(configObj, experiment, user).result
           );
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
@@ -381,8 +381,8 @@ describe('lib/core/decision_service', function() {
             optimizely: {},
             userId: 'decision_service_user',
           });
-          assert.deepEqual(
-            { key: 'control', id: '111128' },
+          assert.strictEqual(
+            'control',
             decisionServiceInstance.getVariation(configObj, experiment, user).result
           );
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
@@ -406,8 +406,8 @@ describe('lib/core/decision_service', function() {
             optimizely: {},
             userId: 'decision_service_user',
           });
-          assert.deepEqual(
-            { key: 'control', id: '111128' },
+          assert.strictEqual(
+            'control',
             decisionServiceInstance.getVariation(configObj, experiment, user).result
           );
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
@@ -461,8 +461,8 @@ describe('lib/core/decision_service', function() {
               attributes,
             });
 
-            assert.deepEqual(
-              { key: 'variation', id: '111129' },
+            assert.strictEqual(
+              'variation',
               decisionServiceInstance.getVariation(configObj, experiment, user).result
             );
             sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
@@ -505,8 +505,8 @@ describe('lib/core/decision_service', function() {
               attributes,
             });
 
-            assert.deepEqual(
-              { key: 'control', id: '111128' },
+            assert.strictEqual(
+              'control',
               decisionServiceInstance.getVariation(configObj, experiment, user).result
             );
             sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
@@ -549,8 +549,8 @@ describe('lib/core/decision_service', function() {
               attributes,
             });
 
-            assert.deepEqual(
-              { key: 'variation', id: '111129' },
+            assert.strictEqual(
+              'variation',
               decisionServiceInstance.getVariation(configObj, experiment, user).result
             );
             sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
@@ -584,8 +584,8 @@ describe('lib/core/decision_service', function() {
               attributes,
             });
 
-            assert.deepEqual(
-              { key: 'variation', id: '111129' },
+            assert.strictEqual(
+              'variation',
               decisionServiceInstance.getVariation(configObj, experiment, user).result
             );
             sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
@@ -811,7 +811,7 @@ describe('lib/core/decision_service', function() {
       it('should return the same variation from getVariation as was set in setVariation', function() {
         decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', 'control');
         var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1').result;
-        assert.deepEqual(variation, { key: 'control', id: '111128' });
+        assert.strictEqual(variation, 'control');
       });
 
       it('should not set for an invalid variation key', function() {
@@ -835,7 +835,7 @@ describe('lib/core/decision_service', function() {
         assert.strictEqual(didSetVariation, true);
 
         var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1').result;
-        assert.deepEqual(variation, { key: 'control', id: '111128' } );
+        assert.strictEqual(variation, 'control' );
 
         var didSetVariationAgain = decisionServiceInstance.setForcedVariation(
           configObj,
@@ -868,8 +868,8 @@ describe('lib/core/decision_service', function() {
 
         var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1').result;
         var variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1').result;
-        assert.deepEqual(variation, { key: 'control', id: '111128' });
-        assert.deepEqual(variation2, { key: 'controlLaunched', id: '144448' });
+        assert.strictEqual(variation, 'control');
+        assert.strictEqual(variation2, 'controlLaunched');
       });
 
       it('should be able to add experiments for multiple users', function() {
@@ -892,8 +892,8 @@ describe('lib/core/decision_service', function() {
         var variationControl = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1').result;
         var variationVariation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user2').result;
 
-        assert.deepEqual(variationControl, { key: 'control', id: '111128' });
-        assert.deepEqual(variationVariation, { key: 'variation', id: '111129' });
+        assert.strictEqual(variationControl, 'control');
+        assert.strictEqual(variationVariation, 'variation');
       });
 
       it('should be able to reset a variation for a user with multiple experiments', function() {
@@ -917,8 +917,8 @@ describe('lib/core/decision_service', function() {
         let variation1 = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1').result;
         let variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1').result;
 
-        assert.deepEqual(variation1, { key: 'control', id: '111128' });
-        assert.deepEqual(variation2, { key: 'controlLaunched', id:'144448' });
+        assert.strictEqual(variation1, 'control');
+        assert.strictEqual(variation2, 'controlLaunched');
 
         //reset for one of the experiments
         var didSetVariationAgain = decisionServiceInstance.setForcedVariation(
@@ -932,8 +932,8 @@ describe('lib/core/decision_service', function() {
         variation1 = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1').result;
         variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1').result;
 
-        assert.deepEqual(variation1, { key: 'variation', id: '111129' });
-        assert.deepEqual(variation2, { key: 'controlLaunched', id: '144448' });
+        assert.strictEqual(variation1, 'variation');
+        assert.strictEqual(variation2, 'controlLaunched');
       });
 
       it('should be able to unset a variation for a user with multiple experiments', function() {
@@ -957,8 +957,8 @@ describe('lib/core/decision_service', function() {
         let variation1 = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1').result;
         let variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1').result;
 
-        assert.deepEqual(variation1, { key: 'control', id: '111128' });
-        assert.deepEqual(variation2, { key: 'controlLaunched', id: '144448' });
+        assert.strictEqual(variation1, 'control');
+        assert.strictEqual(variation2, 'controlLaunched');
 
         //reset for one of the experiments
         decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', null);
@@ -968,7 +968,7 @@ describe('lib/core/decision_service', function() {
         variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1').result;
 
         assert.strictEqual(variation1, null);
-        assert.deepEqual(variation2, { key: 'controlLaunched', id: '144448' });
+        assert.strictEqual(variation2, 'controlLaunched');
       });
 
       it('should return false for an empty variation key', function() {
@@ -1157,8 +1157,8 @@ describe('lib/core/decision_service', function() {
         userProfileService: userProfileServiceInstance,
       });
 
-      assert.deepEqual(
-        { key: 'control', id: '111128' },
+      assert.strictEqual(
+        'control',
         decisionServiceInstance.getVariation(configObj, experiment, user).result
       );
       sinon.assert.calledWithExactly(userProfileLookupStub, 'test_user');
@@ -1246,7 +1246,6 @@ describe('lib/core/decision_service', function() {
         describe('user bucketed into this experiment', function() {
           var getVariationStub;
           var experiment;
-          var variationObj;
           beforeEach(function() {
             user = new OptimizelyUserContext({
               optimizely: {},
@@ -1255,35 +1254,8 @@ describe('lib/core/decision_service', function() {
                 test_attribute: 'test_value',
               },
             });
-            variationObj = {
-              key: 'variation',
-              id: '594096',
-              featureEnabled: true,
-              variables: [
-                {
-                  id: '4792309476491264',
-                  value: '2',
-                },
-                {
-                  id: '5073784453201920',
-                  value: 'true',
-                },
-                {
-                  id: '5636734406623232',
-                  value: 'Buy me NOW',
-                },
-                {
-                  id: '6199684360044544',
-                  value: '20.25',
-                },
-                {
-                  id: '1547854156498475',
-                  value: '{ "num_buttons": 1, "text": "first variation"}',
-                },
-              ],
-            },
             fakeDecisionResponseWithArgs = {
-              result: variationObj,
+              result: 'variation',
               reasons: [],
             };
             experiment = configObj.experimentIdMap['594098'];
@@ -1294,7 +1266,6 @@ describe('lib/core/decision_service', function() {
 
           it('returns a decision with a variation in the experiment the feature is attached to', function() {
             var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
-
             var expectedDecision = {
               experiment: {
                 forcedVariations: {},
@@ -1549,20 +1520,14 @@ describe('lib/core/decision_service', function() {
 
         describe('user bucketed into an experiment in the group', function() {
           var getVariationStub;
-          var variationObj;
           var user;
           beforeEach(function() {
             user = new OptimizelyUserContext({
               optimizely: {},
               userId: 'user1',
             });
-            variationObj = {
-              key: 'var',
-              id: '595008',
-              variables: [],
-            };
             fakeDecisionResponseWithArgs = {
-              result: variationObj,
+              result: 'var',
               reasons: [],
             };
             getVariationStub = sandbox.stub(decisionServiceInstance, 'getVariation');

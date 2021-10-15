@@ -34,6 +34,7 @@ import {
   getTrafficAllocation,
   getVariationIdFromExperimentAndVariationKey,
   getVariationFromId,
+  getVariationKeyFromId,
   isActive,
   ProjectConfig,
 } from '../project_config';
@@ -105,7 +106,7 @@ export class DecisionService {
    * @param  {Experiment}                             experiment
    * @param  {OptimizelyUserContext}                  user              A user context
    * @param  {[key: string]: boolean}                 options           Optional map of decide options
-   * @return {DecisionResponse<Variation|null>}       DecisionResonse   DecisionResonse containing the variation the user is bucketed into
+   * @return {DecisionResponse<string|null>}          DecisionResponse containing the variation the user is bucketed into
    *                                                                    and the decide reasons.
    */
   getVariation(
@@ -113,7 +114,7 @@ export class DecisionService {
     experiment: Experiment,
     user: OptimizelyUserContext,
     options: { [key: string]: boolean } = {}
-  ): DecisionResponse<Variation | null> {
+  ): DecisionResponse<string | null> {
     const userId = user.getUserId();
     const attributes = user.getAttributes();
     // by default, the bucketing ID should be the user ID
@@ -143,7 +144,7 @@ export class DecisionService {
     let variation = decisionWhitelistedVariation.result;
     if (variation) {
       return {
-        result: variation,
+        result: variation.key,
         reasons: decideReasons,
       };
     }
@@ -171,7 +172,7 @@ export class DecisionService {
           userId,
         ]);
         return {
-          result: variation,
+          result: variation.key,
           reasons: decideReasons,
         };
       }
@@ -254,7 +255,7 @@ export class DecisionService {
     }
 
     return {
-      result: variation,
+      result: variation.key,
       reasons: decideReasons,
     };
   }
@@ -598,6 +599,7 @@ export class DecisionService {
   ): DecisionResponse<DecisionObj> {
 
     const decideReasons: (string | number)[][] = [];
+    let variationKey = null;
     let decisionVariation;
     let index;
     let variationForFeatureExperiment;
@@ -610,8 +612,9 @@ export class DecisionService {
         if (experiment) {
           decisionVariation = this.getVariationFromExperimentRule(configObj, feature.key, experiment, user, options);
           decideReasons.push(...decisionVariation.reasons);
-          const variation = decisionVariation.result;
-          if (variation) {
+          variationKey = decisionVariation.result;
+          if (variationKey) {
+            const variation = experiment.variationKeyMap[variationKey];
             variationForFeatureExperiment = {
               experiment: experiment,
               variation: variation,
@@ -824,14 +827,14 @@ export class DecisionService {
    * @param  {ProjectConfig}                  configObj         Object representing project configuration
    * @param  {string}                         experimentKey     Key for experiment.
    * @param  {string}                         userId            The user Id.
-   * @return {DecisionResponse<Variation|null>}                 DecisionResponse  DecisionResponse containing variation which the given user and experiment
+   * @return {DecisionResponse<string|null>}                    DecisionResponse containing variation which the given user and experiment
    *                                                            should be forced into and the decide reasons.
    */
   getForcedVariation(
     configObj: ProjectConfig,
     experimentKey: string,
     userId: string
-  ): DecisionResponse<Variation | null> {
+  ): DecisionResponse<string | null> {
     const decideReasons: (string | number)[][] = [];
     const experimentToVariationMap = this.forcedVariationMap[userId];
     if (!experimentToVariationMap) {
@@ -898,20 +901,20 @@ export class DecisionService {
       };
     }
 
-    const variation = getVariationFromId(configObj, variationId);
-    if (variation) {
+    const variationKey = getVariationKeyFromId(configObj, variationId);
+    if (variationKey) {
       this.logger.log(
         LOG_LEVEL.DEBUG,
         LOG_MESSAGES.USER_HAS_FORCED_VARIATION,
         MODULE_NAME,
-        variation.key,
+        variationKey,
         experimentKey,
         userId,
       );
       decideReasons.push([
         LOG_MESSAGES.USER_HAS_FORCED_VARIATION,
         MODULE_NAME,
-        variation.key,
+        variationKey,
         experimentKey,
         userId,
       ]);
@@ -926,7 +929,7 @@ export class DecisionService {
     }
 
     return {
-      result: variation,
+      result: variationKey,
       reasons: decideReasons,
     };
   }
@@ -1009,7 +1012,7 @@ export class DecisionService {
     rule: Experiment,
     user: OptimizelyUserContext,
     options: { [key: string]: boolean } = {}
-  ): DecisionResponse<Variation | null> {
+  ): DecisionResponse<string | null> {
     const decideReasons: (string | number)[][] = [];
 
     // check forced decision first
@@ -1019,16 +1022,16 @@ export class DecisionService {
     const forcedVariaton = forcedDecisionResponse.result;
     if (forcedVariaton) {
       return {
-        result: forcedVariaton,
+        result: forcedVariaton.key,
         reasons: decideReasons,
       };
     }
     const decisionVariation = this.getVariation(configObj, rule, user, options);
     decideReasons.push(...decisionVariation.reasons);
-    const variation = decisionVariation.result;
+    const variationKey = decisionVariation.result;
 
     return {
-      result: variation,
+      result: variationKey,
       reasons: decideReasons,
     };
   }
