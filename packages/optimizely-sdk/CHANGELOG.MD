@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.8.0-beta] - October 18, 2021
+
+### New Features
+- Added a Lite bundle which does not include Data file manager and Event Processor packages. This reduces the bundle size up to 20% and is helpful for some platforms (such as edge service providers) that do not need extended functionality offered by these packages.
+
+### Performance Improvements
+- Reduced SDK client initialization time by removing `OptimizelyConfig` creation from initialization. The `OptimizelyConfig` object is now created on the first call to `getOptimizelyConfig` API.
+- Made Improvements to logging mechanism. The SDK now no longer concatenates and formats messages which do not qualify for the log level set by the user.
+
 ## [4.7.0] - September 15, 2021
 
 ### New Features

@@ -76,7 +76,7 @@
          optlyInstance.onReady().catch(function() {});
  
          assert.instanceOf(optlyInstance, Optimizely);
-         assert.equal(optlyInstance.clientVersion, '4.7.0');
+         assert.equal(optlyInstance.clientVersion, '4.8.0-beta');
        });
      });
    });
