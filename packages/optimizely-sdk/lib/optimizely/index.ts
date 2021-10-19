@@ -183,7 +183,7 @@ export default class Optimizely {
    * constructor was also valid.
    * @return {boolean}
    */
-  private isValidInstance(): boolean {
+  isValidInstance(): boolean {
     return this.isOptimizelyConfigValid && !!this.projectConfigManager.getConfig();
   }
 

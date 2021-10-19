@@ -316,7 +316,7 @@ describe('lib/optimizely_user_context', function() {
       });
       it('should return false when client is not ready', function() {
         fakeOptimizely = {
-          getOptimizelyConfig: sinon.stub().returns(null)
+          isValidInstance: sinon.stub().returns(false)
         };
         var user = new OptimizelyUserContext({
           optimizely: fakeOptimizely,
@@ -328,9 +328,9 @@ describe('lib/optimizely_user_context', function() {
         assert.strictEqual(stubLogHandler.log.args[0][1], DECISION_MESSAGES.SDK_NOT_READY);
       });
 
-      it('should return fasle when provided empty string flagKey', function() {
+      it('should return false when provided empty string flagKey', function() {
         fakeOptimizely = {
-          getOptimizelyConfig: sinon.stub().returns(!null)
+          isValidInstance: sinon.stub().returns(true)
         };
         var user = new OptimizelyUserContext({
           optimizely: fakeOptimizely,
@@ -343,7 +343,7 @@ describe('lib/optimizely_user_context', function() {
 
       it('should return true when provided flagKey and variationKey', function() {
         fakeOptimizely = {
-          getOptimizelyConfig: sinon.stub().returns(!null)
+          isValidInstance: sinon.stub().returns(true)
         };
         var user = new OptimizelyUserContext({
           optimizely: fakeOptimizely,
@@ -893,7 +893,7 @@ describe('lib/optimizely_user_context', function() {
 
       it('should return false when client is not ready', function() {
         fakeOptimizely = {
-          getOptimizelyConfig: sinon.stub().returns(null)
+          isValidInstance: sinon.stub().returns(false)
         };
         var user = new OptimizelyUserContext({
           optimizely: fakeOptimizely,
@@ -907,7 +907,7 @@ describe('lib/optimizely_user_context', function() {
 
       it('should return true when the forced decision has been removed successfully and false otherwise', function() {
         fakeOptimizely = {
-          getOptimizelyConfig: sinon.stub().returns(!null)
+          isValidInstance: sinon.stub().returns(true)
         };
         var user = new OptimizelyUserContext({
           optimizely: fakeOptimizely,
@@ -925,7 +925,7 @@ describe('lib/optimizely_user_context', function() {
 
       it('should successfully remove forced decision when multiple forced decisions set with same feature key', function() {
         fakeOptimizely = {
-          getOptimizelyConfig: sinon.stub().returns(!null)
+          isValidInstance: sinon.stub().returns(true)
         };
         var user = new OptimizelyUserContext({
           optimizely: fakeOptimizely,
@@ -968,7 +968,7 @@ describe('lib/optimizely_user_context', function() {
 
       it('should return false when client is not ready', function() {
         fakeOptimizely = {
-          getOptimizelyConfig: sinon.stub().returns(null)
+          isValidInstance: sinon.stub().returns(false)
         };
         var user = new OptimizelyUserContext({
           optimizely: fakeOptimizely,
@@ -982,7 +982,7 @@ describe('lib/optimizely_user_context', function() {
 
       it('should return true when all forced decisions have been removed successfully', function() {
         fakeOptimizely = {
-          getOptimizelyConfig: sinon.stub().returns(!null)
+          isValidInstance: sinon.stub().returns(true)
         };
         var user = new OptimizelyUserContext({
           optimizely: fakeOptimizely,

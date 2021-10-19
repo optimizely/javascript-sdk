@@ -133,7 +133,7 @@ export default class OptimizelyUserContext {
    * @return    {boolean}                     true if the forced decision has been set successfully.
    */
   setForcedDecision(key: OptimizelyDecisionKey, variationKey: string): boolean {
-    if (this.optimizely.getOptimizelyConfig() === null) {
+    if (!this.optimizely.isValidInstance()) {
       logger.error(DECISION_MESSAGES.SDK_NOT_READY);
       return false;
     }
@@ -149,12 +149,10 @@ export default class OptimizelyUserContext {
         { flagKey, variationKey } :
         { flagKey, ruleKey, variationKey };
 
-    if (this.forcedDecisionsMap[flagKey]) {
-      this.forcedDecisionsMap[flagKey][ruleKey] = forcedDecision;
-    } else {
+    if (!this.forcedDecisionsMap[flagKey]) {
       this.forcedDecisionsMap[flagKey] = {};
-      this.forcedDecisionsMap[flagKey][ruleKey] = forcedDecision;
     }
+    this.forcedDecisionsMap[flagKey][ruleKey] = forcedDecision;
 
     return true;
   }
@@ -165,7 +163,7 @@ export default class OptimizelyUserContext {
    * @return    {string|null}                A variation key or null if forced decisions are not set for the parameters.
    */
   getForcedDecision(key: OptimizelyDecisionKey): string | null {
-    if (this.optimizely.getOptimizelyConfig() === null) {
+    if (!this.optimizely.isValidInstance()) {
       logger.error(DECISION_MESSAGES.SDK_NOT_READY);
       return null;
     }
@@ -179,7 +177,7 @@ export default class OptimizelyUserContext {
    * @return    {boolean}                    true if the forced decision has been removed successfully
    */
   removeForcedDecision(key: OptimizelyDecisionKey): boolean {
-    if (this.optimizely.getOptimizelyConfig() === null) {
+    if (!this.optimizely.isValidInstance()) {
       logger.error(DECISION_MESSAGES.SDK_NOT_READY);
       return false;
     }
@@ -208,7 +206,7 @@ export default class OptimizelyUserContext {
    * @return    {boolean}                    true if the forced decision has been removed successfully
    */
   removeAllForcedDecisions(): boolean {
-    if (this.optimizely.getOptimizelyConfig() === null) {
+    if (!this.optimizely.isValidInstance()) {
       logger.error(DECISION_MESSAGES.SDK_NOT_READY);
       return false;
 
@@ -217,7 +215,12 @@ export default class OptimizelyUserContext {
     return true;
   }
 
-
+  /**
+   * Finds a forced decision in forcedDecisionsMap for specific flagKey and optional ruleKey.
+   * @param     {string}       flagKey              A flagKey.
+   * @param     {ruleKey}      ruleKey              A ruleKey (optional).
+   * @return    {string|null}                       Forced variation key if exists or null otherwise.
+   */
   private findForcedDecision(flagKey: string, ruleKey: string | undefined): string | null {
     let variationKey = null;
     const validRuleKey = ruleKey ?? '$null-rule-key';
@@ -232,6 +235,12 @@ export default class OptimizelyUserContext {
     return variationKey;
   }
 
+  /**
+   * Finds a validated forced decision for specific flagKey and optional ruleKey.
+   * @param     {string}       flagKey              A flagKey.
+   * @param     {ruleKey}      ruleKey              A ruleKey (optional).
+   * @return    {DecisionResponse<Variation|null>}  DecisionResponse object containing valid variation object and decide reasons.
+   */
   findValidatedForcedDecision(
     flagKey: string,
     ruleKey?: string
