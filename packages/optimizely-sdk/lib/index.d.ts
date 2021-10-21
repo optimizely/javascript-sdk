@@ -45,6 +45,8 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type OptimizelyDecisionContext = import('./shared_types').OptimizelyDecisionContext;
 
+  export type OptimizelyForcedDecision = import('./shared_types').OptimizelyForcedDecision;
+
   export type EventTags = import('./shared_types').EventTags;
 
   export type Event = import('./shared_types').Event;
