@@ -17,12 +17,12 @@ import { getLogger } from '@optimizely/js-sdk-logging';
 
 import Optimizely from '../../lib/optimizely';
 import {
-  EventTags,
-  ForcedDecision,
   DecisionResponse,
+  EventTags,
   OptimizelyDecideOption,
-  OptimizelyDecisionKey,
   OptimizelyDecision,
+  OptimizelyDecisionContext,
+  OptimizelyForcedDecision,
   UserAttributes,
   Variation
 } from '../../lib/shared_types';
@@ -36,7 +36,7 @@ export default class OptimizelyUserContext {
   private optimizely: Optimizely;
   private userId: string;
   private attributes: UserAttributes;
-  private forcedDecisionsMap: { [key: string]: { [key: string]: ForcedDecision } };
+  private forcedDecisionsMap: { [key: string]: { [key: string]: OptimizelyForcedDecision } };
 
   constructor({
     optimizely,
@@ -127,27 +127,25 @@ export default class OptimizelyUserContext {
   }
 
   /**
-   * Sets the forced decision (variation key) for a given flag and an optional rule.
-   * @param     {OptimizelyDecisionKey}       key          OptimizelyDecisionKey containing flagKey and optional ruleKey.
-   * @param     {string}                      variationKey A variation key.
+   * Sets the forced decision for specified optimizely decision context.
+   * @param     {OptimizelyDecisionContext}   context      OptimizelyDecisionContext containing flagKey and optional ruleKey.
+   * @param     {OptimizelyForcedDecision}    decision     OptimizelyForcedDecision containing forced variation key.
    * @return    {boolean}                     true if the forced decision has been set successfully.
    */
-  setForcedDecision(key: OptimizelyDecisionKey, variationKey: string): boolean {
+  setForcedDecision(context: OptimizelyDecisionContext, decision: OptimizelyForcedDecision): boolean {
     if (!this.optimizely.isValidInstance()) {
       logger.error(DECISION_MESSAGES.SDK_NOT_READY);
       return false;
     }
 
-    const flagKey = key.flagKey;
+    const flagKey = context.flagKey;
     if (flagKey === '') {
       return false;
     }
 
-    const ruleKey = key.ruleKey ?? '$null-rule-key';
-    const forcedDecision =
-      ruleKey === '$null-rule-key' ?
-        { flagKey, variationKey } :
-        { flagKey, ruleKey, variationKey };
+    const ruleKey = context.ruleKey ?? '$null-rule-key';
+    const variationKey  = decision.variationKey;
+    const forcedDecision = { variationKey };
 
     if (!this.forcedDecisionsMap[flagKey]) {
       this.forcedDecisionsMap[flagKey] = {};
@@ -158,32 +156,32 @@ export default class OptimizelyUserContext {
   }
 
   /**
-   * Returns the forced decision for a given flag and an optional rule
-   * @param     {OptimizelyDecisionKey}      key  OptimizelyDecisionKey containing flagKey and optional ruleKey.
-   * @return    {string|null}                A variation key or null if forced decisions are not set for the parameters.
+   * Returns the forced decision for specified optimizely decision context.
+   * @param     {OptimizelyDecisionContext}  context  OptimizelyDecisionContext containing flagKey and optional ruleKey.
+   * @return    {OptimizelyForcedDecision|null}       OptimizelyForcedDecision for specified context if exists or null.
    */
-  getForcedDecision(key: OptimizelyDecisionKey): string | null {
+  getForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null {
     if (!this.optimizely.isValidInstance()) {
       logger.error(DECISION_MESSAGES.SDK_NOT_READY);
       return null;
     }
 
-    return this.findForcedDecision(key.flagKey, key.ruleKey);
+    return this.findForcedDecision(context);
   }
 
   /**
-   * Removes the forced decision for a given flag and an optional rule
-   * @param     {OptimizelyDecisionKey}      key  OptimizelyDecisionKey containing flagKey and optional ruleKey.
+   * Removes the forced decision for specified optimizely decision context.
+   * @param     {OptimizelyDecisionContext}  context  OptimizelyDecisionContext containing flagKey and optional ruleKey.
    * @return    {boolean}                    true if the forced decision has been removed successfully
    */
-  removeForcedDecision(key: OptimizelyDecisionKey): boolean {
+  removeForcedDecision(context: OptimizelyDecisionContext): boolean {
     if (!this.optimizely.isValidInstance()) {
       logger.error(DECISION_MESSAGES.SDK_NOT_READY);
       return false;
     }
 
-    const ruleKey = key.ruleKey ?? '$null-rule-key';
-    const flagKey = key.flagKey;
+    const ruleKey = context.ruleKey ?? '$null-rule-key';
+    const flagKey = context.flagKey;
 
     let isForcedDecisionRemoved = false;
 
@@ -216,23 +214,24 @@ export default class OptimizelyUserContext {
   }
 
   /**
-   * Finds a forced decision in forcedDecisionsMap for specific flagKey and optional ruleKey.
-   * @param     {string}       flagKey              A flagKey.
-   * @param     {ruleKey}      ruleKey              A ruleKey (optional).
-   * @return    {string|null}                       Forced variation key if exists or null otherwise.
+   * Finds a forced decision in forcedDecisionsMap for provided optimizely decision context.
+   * @param     {OptimizelyDecisionContext}     context  OptimizelyDecisionContext containing flagKey and optional ruleKey.
+   * @return    {OptimizelyForcedDecision|null}          OptimizelyForcedDecision for specified context if exists or null.
    */
-  private findForcedDecision(flagKey: string, ruleKey: string | undefined): string | null {
-    let variationKey = null;
-    const validRuleKey = ruleKey ?? '$null-rule-key';
+  private findForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null {
+    let variationKey;
+    const validRuleKey = context.ruleKey ?? '$null-rule-key';
+    const flagKey = context.flagKey;
 
-    if (this.forcedDecisionsMap.hasOwnProperty(flagKey)) {
+    if (this.forcedDecisionsMap.hasOwnProperty(context.flagKey)) {
       const forcedDecisionByRuleKey = this.forcedDecisionsMap[flagKey];
       if (forcedDecisionByRuleKey.hasOwnProperty(validRuleKey)) {
         variationKey = forcedDecisionByRuleKey[validRuleKey].variationKey;
+        return { variationKey };
       }
     }
 
-    return variationKey;
+    return null;
   }
 
   /**
@@ -247,9 +246,11 @@ export default class OptimizelyUserContext {
   ): DecisionResponse<Variation | null> {
 
     const decideReasons: (string | number)[][] = [];
-    const variationKey = this.findForcedDecision(flagKey, ruleKey);
+    const forcedDecision = this.findForcedDecision({ flagKey, ruleKey });
     let variation = null;
-    if (variationKey) {
+    let variationKey;
+    if (forcedDecision) {
+      variationKey = forcedDecision.variationKey;
       variation = this.optimizely.getFlagVariationByKey(flagKey, variationKey);
       if (variation) {
         if (ruleKey) {

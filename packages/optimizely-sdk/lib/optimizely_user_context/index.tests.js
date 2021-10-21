@@ -386,7 +386,7 @@ describe('lib/optimizely_user_context', function() {
           var user = optlyInstance.createUserContext(userId);
           var featureKey = 'feature_1';
           var variationKey = '3324490562';
-          user.setForcedDecision({ flagKey: featureKey }, variationKey);
+          user.setForcedDecision({ flagKey: featureKey }, { variationKey });
           var decision = user.decide(
             featureKey,
             [
@@ -399,12 +399,8 @@ describe('lib/optimizely_user_context', function() {
           assert.equal(decision.enabled, true);
           assert.equal(decision.userContext.getUserId(), userId);
           assert.deepEqual(decision.userContext.getAttributes(), {});
-          var expectedForcedDecision = {
-            flagKey: featureKey,
-            variationKey
-          }
           assert.deepEqual(Object.keys(decision.userContext.forcedDecisionsMap).length, 1);
-          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey]['$null-rule-key'], expectedForcedDecision);
+          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey]['$null-rule-key'], { variationKey });
           assert.equal(
             true,
             decision.reasons.includes(
@@ -425,7 +421,7 @@ describe('lib/optimizely_user_context', function() {
           var user = optlyInstance.createUserContext(userId);
           var featureKey = 'feature_1';
           var variationKey = '3324490562';
-          user.setForcedDecision({ flagKey: featureKey }, variationKey);
+          user.setForcedDecision({ flagKey: featureKey }, { variationKey });
           var decision = user.decide(featureKey, [OptimizelyDecideOption.INCLUDE_REASONS]);
 
           assert.equal(decision.variationKey, variationKey);
@@ -433,12 +429,8 @@ describe('lib/optimizely_user_context', function() {
           assert.equal(decision.enabled, true);
           assert.equal(decision.userContext.getUserId(), userId);
           assert.deepEqual(decision.userContext.getAttributes(), {});
-          var expectedForcedDecision = {
-            flagKey: featureKey,
-            variationKey
-          }
           assert.deepEqual(Object.values(decision.userContext.forcedDecisionsMap).length, 1);
-          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey]['$null-rule-key'], expectedForcedDecision);
+          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey]['$null-rule-key'], { variationKey });
           assert.equal(
             true,
             decision.reasons.includes(
@@ -510,7 +502,7 @@ describe('lib/optimizely_user_context', function() {
           var featureKey = 'feature_1';
           var variationKey = 'b';
           var ruleKey = 'exp_with_audience';
-          user.setForcedDecision({ flagKey: featureKey, ruleKey }, variationKey);
+          user.setForcedDecision({ flagKey: featureKey, ruleKey }, { variationKey });
           var decision = user.decide(featureKey, [OptimizelyDecideOption.INCLUDE_REASONS]);
 
           assert.equal(decision.variationKey, variationKey);
@@ -518,14 +510,9 @@ describe('lib/optimizely_user_context', function() {
           assert.equal(decision.enabled, false);
           assert.equal(decision.userContext.getUserId(), userId);
           assert.deepEqual(decision.userContext.getAttributes(), attributes);
-          var expectedForcedDecision = {
-            flagKey: featureKey,
-            variationKey,
-            ruleKey
-          }
           assert.deepEqual(Object.keys(decision.userContext.forcedDecisionsMap).length, 1);
           assert.deepEqual(Object.keys(decision.userContext.forcedDecisionsMap[featureKey]).length, 1);
-          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey][ruleKey], expectedForcedDecision);
+          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey][ruleKey], { variationKey });
           assert.equal(
             true,
             decision.reasons.includes(
@@ -598,7 +585,7 @@ describe('lib/optimizely_user_context', function() {
           var featureKey = 'feature_1';
           var variationKey = '3324490633';
           var ruleKey = '3332020515';
-          user.setForcedDecision({ flagKey: featureKey, ruleKey }, variationKey);
+          user.setForcedDecision({ flagKey: featureKey, ruleKey }, { variationKey });
           var decision = user.decide(featureKey);
 
           assert.equal(decision.variationKey, variationKey);
@@ -606,14 +593,9 @@ describe('lib/optimizely_user_context', function() {
           assert.equal(decision.enabled, true);
           assert.equal(decision.userContext.getUserId(), userId);
           assert.deepEqual(decision.userContext.getAttributes(), {});
-          var expectedForcedDecision = {
-            flagKey: featureKey,
-            variationKey,
-            ruleKey
-          }
           assert.deepEqual(Object.keys(decision.userContext.forcedDecisionsMap).length, 1);
           assert.deepEqual(Object.keys(decision.userContext.forcedDecisionsMap[featureKey]).length, 1);
-          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey][ruleKey], expectedForcedDecision);
+          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey][ruleKey], { variationKey });
 
           sinon.assert.called(stubLogHandler.log);
           var logMessage = stubLogHandler.log.args[4][1];
@@ -698,18 +680,14 @@ describe('lib/optimizely_user_context', function() {
           var user = optlyInstance.createUserContext(userId);
           var featureKey = 'feature_1';
           var variationKey = 'invalid';
-          user.setForcedDecision({ flagKey: featureKey }, variationKey);
+          user.setForcedDecision({ flagKey: featureKey }, { variationKey });
           var decision = user.decide(featureKey, [OptimizelyDecideOption.INCLUDE_REASONS]);
 
           // invalid forced decision will be ignored and regular decision will return
           assert.equal(decision.variationKey, '18257766532');
           assert.equal(decision.ruleKey, '18322080788');
-          var expectedForcedDecision = {
-            flagKey: featureKey,
-            variationKey,
-          }
           assert.deepEqual(Object.keys(decision.userContext.forcedDecisionsMap).length, 1);
-          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey]['$null-rule-key'], expectedForcedDecision);
+          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey]['$null-rule-key'], { variationKey });
           assert.equal(
             true,
             decision.reasons.includes(
@@ -729,20 +707,15 @@ describe('lib/optimizely_user_context', function() {
           var featureKey = 'feature_1';
           var ruleKey = 'exp_with_audience';
           var variationKey = 'invalid';
-          user.setForcedDecision({ flagKey: featureKey, ruleKey }, variationKey);
+          user.setForcedDecision({ flagKey: featureKey, ruleKey }, { variationKey });
           var decision = user.decide(featureKey, [OptimizelyDecideOption.INCLUDE_REASONS]);
 
           // invalid forced-decision will be ignored and regular decision will return
           assert.equal(decision.variationKey, '18257766532');
           assert.equal(decision.ruleKey, '18322080788');
-          var expectedForcedDecision = {
-            flagKey: featureKey,
-            variationKey,
-            ruleKey
-          }
           assert.deepEqual(Object.keys(decision.userContext.forcedDecisionsMap).length, 1);
           assert.deepEqual(Object.keys(decision.userContext.forcedDecisionsMap[featureKey]).length, 1);
-          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey][ruleKey], expectedForcedDecision);
+          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey][ruleKey], { variationKey });
           assert.equal(
             true,
             decision.reasons.includes(
@@ -763,20 +736,15 @@ describe('lib/optimizely_user_context', function() {
           var featureKey = 'feature_1';
           var variationKey = 'invalid';
           var ruleKey = '3332020515';
-          user.setForcedDecision({ flagKey: featureKey, ruleKey }, variationKey);
+          user.setForcedDecision({ flagKey: featureKey, ruleKey }, { variationKey });
           var decision = user.decide(featureKey, [OptimizelyDecideOption.INCLUDE_REASONS]);
 
           // invalid forced decision will be ignored and regular decision will return
           assert.equal(decision.variationKey, '18257766532');
           assert.equal(decision.ruleKey, '18322080788');
-          var expectedForcedDecision = {
-            flagKey: featureKey,
-            variationKey,
-            ruleKey
-          }
           assert.deepEqual(Object.keys(decision.userContext.forcedDecisionsMap).length, 1);
           assert.deepEqual(Object.keys(decision.userContext.forcedDecisionsMap[featureKey]).length, 1);
-          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey][ruleKey], expectedForcedDecision);
+          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey][ruleKey], { variationKey });
           assert.equal(
             true,
             decision.reasons.includes(
@@ -823,8 +791,8 @@ describe('lib/optimizely_user_context', function() {
           var flagVariationKey = '3324490562';
           var experimentRuleVariationKey = 'b';
           var ruleKey = 'exp_with_audience';
-          user.setForcedDecision({ flagKey: featureKey }, flagVariationKey);
-          user.setForcedDecision({ flagKey: featureKey, ruleKey }, experimentRuleVariationKey);
+          user.setForcedDecision({ flagKey: featureKey }, { variationKey: flagVariationKey });
+          user.setForcedDecision({ flagKey: featureKey, ruleKey }, { variationKey: experimentRuleVariationKey });
           var decision = user.decide(featureKey, [OptimizelyDecideOption.INCLUDE_REASONS]);
 
           // flag-to-decision is the 1st priority
@@ -860,21 +828,21 @@ describe('lib/optimizely_user_context', function() {
         var user = optlyInstance.createUserContext(userId);
         var featureKey = 'feature_1';
         var ruleKey = 'r';
-        user.setForcedDecision({ flagKey: featureKey }, 'fv1');
-        assert.equal(user.getForcedDecision({ flagKey: featureKey }), 'fv1');
+        user.setForcedDecision({ flagKey: featureKey }, { variationKey: 'fv1' });
+        assert.deepEqual(user.getForcedDecision({ flagKey: featureKey }), { variationKey: 'fv1' });
 
         // override forced variation
-        user.setForcedDecision({ flagKey: featureKey }, 'fv2');
-        assert.equal(user.getForcedDecision({ flagKey: featureKey }), 'fv2');
+        user.setForcedDecision({ flagKey: featureKey }, { variationKey: 'fv2' });
+        assert.deepEqual(user.getForcedDecision({ flagKey: featureKey }), { variationKey: 'fv2' });
 
-        user.setForcedDecision({ flagKey: featureKey, ruleKey }, 'ev1');
-        assert.equal(user.getForcedDecision({ flagKey: featureKey, ruleKey }), 'ev1');
+        user.setForcedDecision({ flagKey: featureKey, ruleKey }, { variationKey: 'ev1' });
+        assert.deepEqual(user.getForcedDecision({ flagKey: featureKey, ruleKey }), { variationKey: 'ev1' });
 
         // override forced variation
-        user.setForcedDecision({ flagKey: featureKey, ruleKey }, 'ev2');
-        assert.equal(user.getForcedDecision({ flagKey: featureKey, ruleKey }), 'ev2');
+        user.setForcedDecision({ flagKey: featureKey, ruleKey }, { variationKey: 'ev2' });
+        assert.deepEqual(user.getForcedDecision({ flagKey: featureKey, ruleKey }), { variationKey: 'ev2' });
 
-        assert.equal(user.getForcedDecision({ flagKey: featureKey }), 'fv2');
+        assert.deepEqual(user.getForcedDecision({ flagKey: featureKey }), { variationKey: 'fv2' });
       });
     });
 
@@ -935,15 +903,15 @@ describe('lib/optimizely_user_context', function() {
         var featureKey = 'feature_1';
         var ruleKey = 'r';
 
-        user.setForcedDecision({ flagKey: featureKey }, 'fv1');
-        user.setForcedDecision({ flagKey: featureKey, ruleKey }, 'ev1');
+        user.setForcedDecision({ flagKey: featureKey }, { variationKey: 'fv1' });
+        user.setForcedDecision({ flagKey: featureKey, ruleKey }, { variationKey: 'ev1' });
 
-        assert.strictEqual(user.getForcedDecision({ flagKey: featureKey }), 'fv1');
-        assert.strictEqual(user.getForcedDecision({ flagKey: featureKey, ruleKey }), 'ev1');
+        assert.deepEqual(user.getForcedDecision({ flagKey: featureKey }), { variationKey: 'fv1' });
+        assert.deepEqual(user.getForcedDecision({ flagKey: featureKey, ruleKey }), { variationKey: 'ev1' });
 
         assert.strictEqual(user.removeForcedDecision({ flagKey: featureKey }), true);
         assert.strictEqual(user.getForcedDecision({ flagKey: featureKey }), null);
-        assert.strictEqual(user.getForcedDecision({ flagKey: featureKey, ruleKey }), 'ev1');
+        assert.deepEqual(user.getForcedDecision({ flagKey: featureKey, ruleKey }), { variationKey: 'ev1' });
 
         assert.strictEqual(user.removeForcedDecision({ flagKey: featureKey, ruleKey }), true);
         assert.strictEqual(user.getForcedDecision({ flagKey: featureKey }), null);
@@ -988,13 +956,13 @@ describe('lib/optimizely_user_context', function() {
           optimizely: fakeOptimizely,
           userId,
         });
-        user.setForcedDecision({ flagKey: 'feature_1' }, '3324490562');
-        user.setForcedDecision({ flagKey: 'feature_1', ruleKey: 'exp_with_audience' }, 'b');
+        user.setForcedDecision({ flagKey: 'feature_1' }, { variationKey: '3324490562' });
+        user.setForcedDecision({ flagKey: 'feature_1', ruleKey: 'exp_with_audience' }, { variationKey: 'b' });
         assert.deepEqual(Object.keys(user.forcedDecisionsMap).length, 1);
         assert.deepEqual(Object.keys(user.forcedDecisionsMap['feature_1']).length, 2);
 
-        assert.strictEqual(user.getForcedDecision({ flagKey: 'feature_1' }), '3324490562');
-        assert.strictEqual(user.getForcedDecision({ flagKey: 'feature_1', ruleKey: 'exp_with_audience' }), 'b');
+        assert.deepEqual(user.getForcedDecision({ flagKey: 'feature_1' }), { variationKey: '3324490562' });
+        assert.deepEqual(user.getForcedDecision({ flagKey: 'feature_1', ruleKey: 'exp_with_audience' }), { variationKey: 'b' });
 
         var result1 = user.removeAllForcedDecisions();
         assert.strictEqual(result1, true);

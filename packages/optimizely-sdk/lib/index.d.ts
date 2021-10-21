@@ -43,7 +43,7 @@ declare module '@optimizely/optimizely-sdk' {
 
   export type OptimizelyFeature = import('./shared_types').OptimizelyFeature;
 
-  export type OptimizelyDecisionKey = import('./shared_types').OptimizelyDecisionKey;
+  export type OptimizelyDecisionContext = import('./shared_types').OptimizelyDecisionContext;
 
   export type EventTags = import('./shared_types').EventTags;
 

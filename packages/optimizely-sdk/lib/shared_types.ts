@@ -384,9 +384,9 @@ export interface OptimizelyUserContext {
     flagKey: string,
     ruleKey?: string,
   ): DecisionResponse<Variation | null>;
-  setForcedDecision(key: OptimizelyDecisionKey, variationKey: string): boolean;
-  getForcedDecision(key: OptimizelyDecisionKey): string | null;
-  removeForcedDecision(key: OptimizelyDecisionKey): boolean;
+  setForcedDecision(context: OptimizelyDecisionContext, decision: OptimizelyForcedDecision): boolean;
+  getForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null;
+  removeForcedDecision(context: OptimizelyDecisionContext): boolean;
   removeAllForcedDecisions(): boolean;
 }
 
@@ -433,13 +433,11 @@ export interface FeatureDecision {
   source: string;
 }
 
-export interface ForcedDecision {
+export interface OptimizelyDecisionContext {
   flagKey: string;
-  variationKey: string;
   ruleKey?: string;
 }
 
-export interface OptimizelyDecisionKey {
-  flagKey: string;
-  ruleKey?: string;
+export interface OptimizelyForcedDecision {
+  variationKey: string;
 }
