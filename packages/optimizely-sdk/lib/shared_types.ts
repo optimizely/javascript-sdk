@@ -427,12 +427,6 @@ export interface DatafileManager extends Managed {
   onReady: () => Promise<void>;
 }
 
-export interface FeatureDecision {
-  experiment?: Experiment;
-  variation: Variation;
-  source: string;
-}
-
 export interface OptimizelyDecisionContext {
   flagKey: string;
   ruleKey?: string;
