@@ -694,7 +694,6 @@ describe('lib/optimizely_user_context', function() {
               sprintf(
                 LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
                 `OPTIMIZELY_USER_CONTEXT`,
-                variationKey,
                 featureKey,
                 userId,
               )
@@ -722,7 +721,6 @@ describe('lib/optimizely_user_context', function() {
               sprintf(
                 LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
                 `OPTIMIZELY_USER_CONTEXT`,
-                variationKey,
                 featureKey,
                 ruleKey,
                 userId,
@@ -751,7 +749,6 @@ describe('lib/optimizely_user_context', function() {
               sprintf(
                 LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
                 `OPTIMIZELY_USER_CONTEXT`,
-                variationKey,
                 featureKey,
                 ruleKey,
                 userId,

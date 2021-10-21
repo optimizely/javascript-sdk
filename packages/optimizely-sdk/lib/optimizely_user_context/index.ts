@@ -291,7 +291,6 @@ export default class OptimizelyUserContext {
           logger.info(
             LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
             MODULE_NAME,
-            variationKey,
             flagKey,
             ruleKey,
             this.userId
@@ -299,7 +298,6 @@ export default class OptimizelyUserContext {
           decideReasons.push([
             LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
             MODULE_NAME,
-            variationKey,
             flagKey,
             ruleKey,
             this.userId
@@ -308,14 +306,12 @@ export default class OptimizelyUserContext {
           logger.info(
             LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
             MODULE_NAME,
-            variationKey,
             flagKey,
             this.userId
           );
           decideReasons.push([
             LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
             MODULE_NAME,
-            variationKey,
             flagKey,
             this.userId
           ])
