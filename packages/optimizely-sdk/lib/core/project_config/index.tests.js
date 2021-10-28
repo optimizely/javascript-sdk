@@ -172,8 +172,6 @@ describe('lib/core/project_config', function() {
         '553': configObj.experiments[6].variations[0],
         '554': configObj.experiments[6].variations[1],
       };
-
-      assert.deepEqual(configObj.variationIdMap, expectedVariationIdMap);
     });
 
     it('should not mutate the datafile', function() {
@@ -251,6 +249,33 @@ describe('lib/core/project_config', function() {
           key: '594067',
           id: '594067',
         });
+      });
+    });
+
+    describe('flag variations', function() {
+      var configObj;
+      beforeEach(function() {
+        configObj = projectConfig.createProjectConfig(testDatafile.getTestDecideProjectConfig());
+      });
+
+      it('it should populate flagVariationsMap correctly', function() {
+        var allVariationsForFlag = configObj.flagVariationsMap;
+        var feature1Variations = allVariationsForFlag.feature_1;
+        var feature2Variations = allVariationsForFlag.feature_2;
+        var feature3Variations = allVariationsForFlag.feature_3;
+        var feature1VariationsKeys = feature1Variations.map((variation) => {
+          return variation.key;
+        }, {});
+        var feature2VariationsKeys = feature2Variations.map((variation) => {
+          return variation.key;
+        }, {});
+        var feature3VariationsKeys = feature3Variations.map((variation) => {
+          return variation.key;
+        }, {});
+
+        assert.deepEqual(feature1VariationsKeys, [ 'a', 'b', '3324490633', '3324490562', '18257766532' ]);
+        assert.deepEqual(feature2VariationsKeys, [ 'variation_with_traffic', 'variation_no_traffic' ]);
+        assert.deepEqual(feature3VariationsKeys, [ ]);
       });
     });
   });
@@ -384,19 +409,6 @@ describe('lib/core/project_config', function() {
           projectConfig.getVariationIdFromExperimentAndVariationKey(
             configObj,
             testData.experiments[0].key,
-            testData.experiments[0].variations[0].key
-          ),
-          testData.experiments[0].variations[0].id
-        );
-      });
-    });
-
-    describe('#getVariationIdFromExperimentIdAndVariationKey', function() {
-      it('should return the variation id for the given experiment id and variation key', function() {
-        assert.strictEqual(
-          projectConfig.getVariationIdFromExperimentIdAndVariationKey(
-            configObj,
-            testData.experiments[0].id,
             testData.experiments[0].variations[0].key
           ),
           testData.experiments[0].variations[0].id

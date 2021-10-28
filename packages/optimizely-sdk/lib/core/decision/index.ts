@@ -22,7 +22,7 @@ import { DecisionObj } from '../decision_service';
  * @returns {string}                        Experiment key or empty string if experiment is null
  */
 export function getExperimentKey(decisionObj: DecisionObj): string {
-   return decisionObj.experiment?.key ?? '';
+  return decisionObj.experiment?.key ?? '';
 }
 
 /**
@@ -31,7 +31,7 @@ export function getExperimentKey(decisionObj: DecisionObj): string {
  * @returns {string}                        Variation key or empty string if variation is null
  */
 export function getVariationKey(decisionObj: DecisionObj): string {
-   return decisionObj.variation?.key ?? '';
+  return decisionObj.variation?.key ?? '';
 }
 
 /**
@@ -40,7 +40,7 @@ export function getVariationKey(decisionObj: DecisionObj): string {
  * @returns {boolean}                       featureEnabled boolean or false if variation is null
  */
 export function getFeatureEnabledFromVariation(decisionObj: DecisionObj): boolean {
-   return decisionObj.variation?.featureEnabled ?? false;
+  return decisionObj.variation?.featureEnabled ?? false;
 }
 
 /**
@@ -49,5 +49,14 @@ export function getFeatureEnabledFromVariation(decisionObj: DecisionObj): boolea
  * @returns {string}                        Experiment id or null if experiment is null
  */
 export function getExperimentId(decisionObj: DecisionObj): string | null {
-   return decisionObj.experiment?.id ?? null;
+  return decisionObj.experiment?.id ?? null;
+}
+
+/**
+ * Get variation id from the provided decision object
+ * @param   {DecisionObj} decisionObj       Object representing decision
+ * @returns {string}                        Variation id or null if variation is null
+ */
+export function getVariationId(decisionObj: DecisionObj): string | null {
+  return decisionObj.variation?.id ?? null;
 }

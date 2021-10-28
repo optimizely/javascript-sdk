@@ -33,6 +33,7 @@ import {
   getExperimentFromKey,
   getTrafficAllocation,
   getVariationIdFromExperimentAndVariationKey,
+  getVariationFromId,
   getVariationKeyFromId,
   isActive,
   ProjectConfig,
@@ -40,16 +41,17 @@ import {
 import { AudienceEvaluator, createAudienceEvaluator } from '../audience_evaluator';
 import * as stringValidator from '../../utils/string_value_validator';
 import {
-  Variation,
-  Experiment,
-  UserProfile,
-  FeatureFlag,
-  UserAttributes,
   BucketerParams,
   DecisionResponse,
-  UserProfileService,
+  Experiment,
   ExperimentBucketMap,
+  FeatureFlag,
   OptimizelyDecideOption,
+  OptimizelyUserContext,
+  UserAttributes,
+  UserProfile,
+  UserProfileService,
+  Variation,
 } from '../../shared_types';
 
 const MODULE_NAME = 'DECISION_SERVICE';
@@ -64,6 +66,10 @@ interface DecisionServiceOptions {
   userProfileService: UserProfileService | null;
   logger: LogHandler;
   UNSTABLE_conditionEvaluators: unknown;
+}
+
+interface DeliveryRuleResponse<T, K> extends DecisionResponse<T> {
+  skipToEveryoneElse: K;
 }
 
 /**
@@ -97,20 +103,20 @@ export class DecisionService {
   /**
    * Gets variation where visitor will be bucketed.
    * @param  {ProjectConfig}                          configObj         The parsed project configuration object
-   * @param  {string}                                 experimentKey
-   * @param  {string}                                 userId
-   * @param  {UserAttributes}                         attributes
+   * @param  {Experiment}                             experiment
+   * @param  {OptimizelyUserContext}                  user              A user context
    * @param  {[key: string]: boolean}                 options           Optional map of decide options
-   * @return {DecisionResponse<string|null>}          DecisionResonse   DecisionResonse containing the variation the user is bucketed into
+   * @return {DecisionResponse<string|null>}          DecisionResponse containing the variation the user is bucketed into
    *                                                                    and the decide reasons.
    */
   getVariation(
     configObj: ProjectConfig,
     experiment: Experiment,
-    userId: string,
-    attributes?: UserAttributes,
+    user: OptimizelyUserContext,
     options: { [key: string]: boolean } = {}
   ): DecisionResponse<string | null> {
+    const userId = user.getUserId();
+    const attributes = user.getAttributes();
     // by default, the bucketing ID should be the user ID
     const bucketingId = this.getBucketingId(userId, attributes);
     const decideReasons: (string | number)[][] = [];
@@ -448,7 +454,7 @@ export class DecisionService {
         return configObj.variationIdMap[decision.variation_id];
       } else {
         this.logger.log(
-          LOG_LEVEL.INFO,          
+          LOG_LEVEL.INFO,
           LOG_MESSAGES.SAVED_VARIATION_NOT_FOUND,
           MODULE_NAME, userId,
           variationId,
@@ -539,8 +545,7 @@ export class DecisionService {
    * experiment.
    * @param   {ProjectConfig}               configObj         The parsed project configuration object
    * @param   {FeatureFlag}                 feature           A feature flag object from project configuration
-   * @param   {string}                      userId            A string identifying the user, for bucketing
-   * @param   {UserAttributes}              attributes        Optional user attributes
+   * @param   {OptimizelyUserContext}       user              A user context
    * @param   {[key: string]: boolean}      options           Map of decide options
    * @return  {DecisionResponse}            DecisionResponse  DecisionResponse containing an object with experiment, variation, and decisionSource
    *                                                          properties and decide reasons. If the user was not bucketed into a variation, the variation
@@ -549,13 +554,12 @@ export class DecisionService {
   getVariationForFeature(
     configObj: ProjectConfig,
     feature: FeatureFlag,
-    userId: string,
-    attributes?: UserAttributes,
+    user: OptimizelyUserContext,
     options: { [key: string]: boolean } = {}
   ): DecisionResponse<DecisionObj> {
 
     const decideReasons: (string | number)[][] = [];
-    const decisionVariation = this.getVariationForFeatureExperiment(configObj, feature, userId, attributes, options);
+    const decisionVariation = this.getVariationForFeatureExperiment(configObj, feature, user, options);
     decideReasons.push(...decisionVariation.reasons);
     const experimentDecision = decisionVariation.result;
 
@@ -566,9 +570,10 @@ export class DecisionService {
       };
     }
 
-    const decisionRolloutVariation = this.getVariationForRollout(configObj, feature, userId, attributes);
+    const decisionRolloutVariation = this.getVariationForRollout(configObj, feature, user);
     decideReasons.push(...decisionRolloutVariation.reasons);
     const rolloutDecision = decisionRolloutVariation.result;
+    const userId = user.getUserId();
     if (rolloutDecision.variation) {
       this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.USER_IN_ROLLOUT, MODULE_NAME, userId, feature.key);
       decideReasons.push([LOG_MESSAGES.USER_IN_ROLLOUT, MODULE_NAME, userId, feature.key]);
@@ -577,7 +582,7 @@ export class DecisionService {
         reasons: decideReasons,
       };
     }
-    
+
     this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.USER_NOT_IN_ROLLOUT, MODULE_NAME, userId, feature.key);
     decideReasons.push([LOG_MESSAGES.USER_NOT_IN_ROLLOUT, MODULE_NAME, userId, feature.key]);
     return {
@@ -589,8 +594,7 @@ export class DecisionService {
   private getVariationForFeatureExperiment(
     configObj: ProjectConfig,
     feature: FeatureFlag,
-    userId: string,
-    attributes?: UserAttributes,
+    user: OptimizelyUserContext,
     options: { [key: string]: boolean } = {}
   ): DecisionResponse<DecisionObj> {
 
@@ -606,7 +610,7 @@ export class DecisionService {
       for (index = 0; index < feature.experimentIds.length; index++) {
         const experiment = getExperimentFromId(configObj, feature.experimentIds[index], this.logger);
         if (experiment) {
-          decisionVariation = this.getVariation(configObj, experiment, userId, attributes, options);
+          decisionVariation = this.getVariationFromExperimentRule(configObj, feature.key, experiment, user, options);
           decideReasons.push(...decisionVariation.reasons);
           variationKey = decisionVariation.result;
           if (variationKey) {
@@ -644,8 +648,7 @@ export class DecisionService {
   private getVariationForRollout(
     configObj: ProjectConfig,
     feature: FeatureFlag,
-    userId: string,
-    attributes?: UserAttributes
+    user: OptimizelyUserContext,
   ): DecisionResponse<DecisionObj> {
     const decideReasons: (string | number)[][] = [];
     let decisionObj: DecisionObj;
@@ -685,7 +688,8 @@ export class DecisionService {
       };
     }
 
-    if (rollout.experiments.length === 0) {
+    const rolloutRules = rollout.experiments;
+    if (rolloutRules.length === 0) {
       this.logger.log(
         LOG_LEVEL.ERROR,
         LOG_MESSAGES.ROLLOUT_HAS_NO_EXPERIMENTS,
@@ -703,166 +707,30 @@ export class DecisionService {
         reasons: decideReasons,
       };
     }
-
-    const bucketingId = this.getBucketingId(userId, attributes);
-
-    // The end index is length - 1 because the last experiment is assumed to be
-    // "everyone else", which will be evaluated separately outside this loop
-    const endIndex = rollout.experiments.length - 1;
-    let rolloutRule;
-    let bucketerParams;
-    let variationId;
-    let variation;
-    let loggingKey;
     let decisionVariation;
-    let decisionifUserIsInAudience;
-    for (let index = 0; index < endIndex; index++) {
-      rolloutRule = configObj.experimentIdMap[rollout.experiments[index].id];
-      loggingKey = index + 1;
-      decisionifUserIsInAudience = this.checkIfUserIsInAudience(
-        configObj,
-        rolloutRule,
-        AUDIENCE_EVALUATION_TYPES.RULE,
-        attributes,
-        loggingKey
-      );
-      decideReasons.push(...decisionifUserIsInAudience.reasons);
-      if (!decisionifUserIsInAudience.result) {
-        this.logger.log(
-          LOG_LEVEL.DEBUG,
-          LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
-          MODULE_NAME,
-          userId,
-          loggingKey,
-        );
-        decideReasons.push([
-          LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
-          MODULE_NAME,
-          userId,
-          loggingKey,
-        ]);
-        continue;
-      }
-
-      this.logger.log(
-        LOG_LEVEL.DEBUG,
-        LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
-        MODULE_NAME,
-        userId,
-        loggingKey,
-      );
-      decideReasons.push([
-        LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
-        MODULE_NAME,
-        userId,
-        loggingKey,
-      ]);
-      bucketerParams = this.buildBucketerParams(configObj, rolloutRule, bucketingId, userId);
-      decisionVariation = bucket(bucketerParams);
+    let skipToEveryoneElse;
+    let variation;
+    let rolloutRule;
+    let index = 0;
+    while (index < rolloutRules.length) {
+      decisionVariation = this.getVariationFromDeliveryRule(configObj, feature.key, rolloutRules, index, user);
       decideReasons.push(...decisionVariation.reasons);
-      variationId = decisionVariation.result;
-      if (variationId) {
-        variation = configObj.variationIdMap[variationId];
-      }
+      variation = decisionVariation.result;
+      skipToEveryoneElse = decisionVariation.skipToEveryoneElse;
       if (variation) {
-        this.logger.log(
-          LOG_LEVEL.DEBUG,
-          LOG_MESSAGES.USER_BUCKETED_INTO_TARGETING_RULE,
-          MODULE_NAME, userId,
-          loggingKey,
-        );
-        decideReasons.push([
-          LOG_MESSAGES.USER_BUCKETED_INTO_TARGETING_RULE,
-          MODULE_NAME, userId,
-          loggingKey,
-        ]);
+        rolloutRule = configObj.experimentIdMap[rolloutRules[index].id];
         decisionObj = {
           experiment: rolloutRule,
           variation: variation,
-          decisionSource: DECISION_SOURCES.ROLLOUT,
+          decisionSource: DECISION_SOURCES.ROLLOUT
         };
         return {
           result: decisionObj,
           reasons: decideReasons,
         };
-      } else {
-        this.logger.log(
-          LOG_LEVEL.DEBUG,
-          LOG_MESSAGES.USER_NOT_BUCKETED_INTO_TARGETING_RULE,
-          MODULE_NAME, userId,
-          loggingKey,
-        );
-        decideReasons.push([
-          LOG_MESSAGES.USER_NOT_BUCKETED_INTO_TARGETING_RULE,
-          MODULE_NAME, userId,
-          loggingKey,
-        ]);
-        break;
       }
-    }
-
-    const everyoneElseRule = configObj.experimentKeyMap[rollout.experiments[endIndex].key];
-    const decisionifUserIsInEveryoneRule = this.checkIfUserIsInAudience(
-      configObj,
-      everyoneElseRule,
-      AUDIENCE_EVALUATION_TYPES.RULE,
-      attributes,
-      'Everyone Else'
-    );
-    decideReasons.push(...decisionifUserIsInEveryoneRule.reasons);
-    if (decisionifUserIsInEveryoneRule.result) {
-      this.logger.log(
-        LOG_LEVEL.DEBUG,
-        LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
-        MODULE_NAME, userId,
-        'Everyone Else',
-      );
-      decideReasons.push([
-        LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
-        MODULE_NAME, userId,
-        'Everyone Else',
-      ]);
-      bucketerParams = this.buildBucketerParams(configObj, everyoneElseRule, bucketingId, userId);
-      decisionVariation = bucket(bucketerParams);
-      decideReasons.push(...decisionVariation.reasons);
-      variationId = decisionVariation.result;
-      if (variationId) {
-        variation = configObj.variationIdMap[variationId];
-      }
-      if (variation) {
-        this.logger.log(
-          LOG_LEVEL.DEBUG,
-          LOG_MESSAGES.USER_BUCKETED_INTO_EVERYONE_TARGETING_RULE,
-          MODULE_NAME,
-          userId,
-        );
-        decideReasons.push([
-          LOG_MESSAGES.USER_BUCKETED_INTO_EVERYONE_TARGETING_RULE,
-          MODULE_NAME,
-          userId,
-        ]);
-        decisionObj = {
-          experiment: everyoneElseRule,
-          variation: variation,
-          decisionSource: DECISION_SOURCES.ROLLOUT,
-        };
-        return {
-          result: decisionObj,
-          reasons: decideReasons,
-        };
-      } else {
-        this.logger.log(
-          LOG_LEVEL.DEBUG,
-          LOG_MESSAGES.USER_NOT_BUCKETED_INTO_EVERYONE_TARGETING_RULE,
-          MODULE_NAME,
-          userId,
-        );
-        decideReasons.push([
-          LOG_MESSAGES.USER_NOT_BUCKETED_INTO_EVERYONE_TARGETING_RULE,
-          MODULE_NAME,
-          userId,
-        ]);
-      }
+      // the last rule is special for "Everyone Else"
+      index = skipToEveryoneElse ? (rolloutRules.length - 1) : (index + 1);
     }
 
     decisionObj = {
@@ -870,6 +738,7 @@ export class DecisionService {
       variation: null,
       decisionSource: DECISION_SOURCES.ROLLOUT,
     };
+
     return {
       result: decisionObj,
       reasons: decideReasons,
@@ -958,7 +827,7 @@ export class DecisionService {
    * @param  {ProjectConfig}                  configObj         Object representing project configuration
    * @param  {string}                         experimentKey     Key for experiment.
    * @param  {string}                         userId            The user Id.
-   * @return {DecisionResponse<string|null>}                    DecisionResponse  DecisionResponse containing variation which the given user and experiment
+   * @return {DecisionResponse<string|null>}                    DecisionResponse containing variation which the given user and experiment
    *                                                            should be forced into and the decide reasons.
    */
   getForcedVariation(
@@ -1135,6 +1004,155 @@ export class DecisionService {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       return false;
     }
+  }
+
+  getVariationFromExperimentRule(
+    configObj: ProjectConfig,
+    flagKey: string,
+    rule: Experiment,
+    user: OptimizelyUserContext,
+    options: { [key: string]: boolean } = {}
+  ): DecisionResponse<string | null> {
+    const decideReasons: (string | number)[][] = [];
+
+    // check forced decision first
+    const forcedDecisionResponse = user.findValidatedForcedDecision(flagKey, rule.key);
+    decideReasons.push(...forcedDecisionResponse.reasons);
+
+    const forcedVariaton = forcedDecisionResponse.result;
+    if (forcedVariaton) {
+      return {
+        result: forcedVariaton.key,
+        reasons: decideReasons,
+      };
+    }
+    const decisionVariation = this.getVariation(configObj, rule, user, options);
+    decideReasons.push(...decisionVariation.reasons);
+    const variationKey = decisionVariation.result;
+
+    return {
+      result: variationKey,
+      reasons: decideReasons,
+    };
+  }
+
+  getVariationFromDeliveryRule(
+    configObj: ProjectConfig,
+    flagKey: string,
+    rules: Experiment[],
+    ruleIndex: number,
+    user: OptimizelyUserContext
+  ): DeliveryRuleResponse<Variation | null, boolean> {
+    const decideReasons: (string | number)[][] = [];
+    let skipToEveryoneElse = false;
+
+    // check forced decision first
+    const rule = rules[ruleIndex];
+    const forcedDecisionResponse = user.findValidatedForcedDecision(flagKey, rule.key);
+    decideReasons.push(...forcedDecisionResponse.reasons);
+
+    const forcedVariaton = forcedDecisionResponse.result;
+    if (forcedVariaton) {
+      return {
+        result: forcedVariaton,
+        reasons: decideReasons,
+        skipToEveryoneElse,
+      };
+    }
+
+    const userId = user.getUserId();
+    const attributes = user.getAttributes();
+    const bucketingId = this.getBucketingId(userId, attributes);
+    const everyoneElse = ruleIndex === rules.length - 1;
+    const loggingKey = everyoneElse ? "Everyone Else" : ruleIndex + 1;
+
+    let bucketedVariation = null;
+    let bucketerVariationId;
+    let bucketerParams;
+    let decisionVariation;
+    const decisionifUserIsInAudience = this.checkIfUserIsInAudience(
+      configObj,
+      rule,
+      AUDIENCE_EVALUATION_TYPES.RULE,
+      attributes,
+      loggingKey
+    );
+    decideReasons.push(...decisionifUserIsInAudience.reasons);
+    if (decisionifUserIsInAudience.result) {
+      this.logger.log(
+        LOG_LEVEL.DEBUG,
+        LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
+        MODULE_NAME,
+        userId,
+        loggingKey
+      );
+      decideReasons.push([
+        LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
+        MODULE_NAME,
+        userId,
+        loggingKey
+      ]);
+
+      bucketerParams = this.buildBucketerParams(configObj, rule, bucketingId, userId);
+      decisionVariation = bucket(bucketerParams);
+      decideReasons.push(...decisionVariation.reasons);
+      bucketerVariationId = decisionVariation.result;
+      if (bucketerVariationId) {
+        bucketedVariation = getVariationFromId(configObj, bucketerVariationId);
+      }
+      if (bucketedVariation) {
+        this.logger.log(
+          LOG_LEVEL.DEBUG,
+          LOG_MESSAGES.USER_BUCKETED_INTO_TARGETING_RULE,
+          MODULE_NAME,
+          userId,
+          loggingKey
+        );
+        decideReasons.push([
+          LOG_MESSAGES.USER_BUCKETED_INTO_TARGETING_RULE,
+          MODULE_NAME,
+          userId,
+          loggingKey]);
+      } else if (!everyoneElse) {
+        // skip this logging for EveryoneElse since this has a message not for EveryoneElse
+        this.logger.log(
+          LOG_LEVEL.DEBUG,
+          LOG_MESSAGES.USER_NOT_BUCKETED_INTO_TARGETING_RULE,
+          MODULE_NAME,
+          userId,
+          loggingKey
+        );
+        decideReasons.push([
+          LOG_MESSAGES.USER_NOT_BUCKETED_INTO_TARGETING_RULE,
+          MODULE_NAME,
+          userId,
+          loggingKey
+        ]);
+
+        // skip the rest of rollout rules to the everyone-else rule if audience matches but not bucketed
+        skipToEveryoneElse = true;
+      }
+    } else {
+      this.logger.log(
+        LOG_LEVEL.DEBUG,
+        LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
+        MODULE_NAME,
+        userId,
+        loggingKey
+      );
+      decideReasons.push([
+        LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
+        MODULE_NAME,
+        userId,
+        loggingKey
+      ]);
+    }
+
+    return {
+      result: bucketedVariation,
+      reasons: decideReasons,
+      skipToEveryoneElse,
+    };
   }
 }
 

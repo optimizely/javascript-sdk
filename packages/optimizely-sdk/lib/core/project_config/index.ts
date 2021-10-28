@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
+import {
+  find,
+  objectEntries,
+  objectValues,
+  sprintf
+} from '@optimizely/js-sdk-utils';
 
 import fns from '../../utils/fns';
 import {
@@ -88,6 +93,8 @@ export interface ProjectConfig {
   anonymizeIP?: boolean | null;
   botFiltering?: boolean;
   accountId: string;
+  flagRulesMap: { [key: string]: Experiment[] };
+  flagVariationsMap: { [key: string]: Variation[] };
 }
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -217,6 +224,45 @@ export const createProjectConfig = function(
           projectConfig.experimentFeatureMap[experimentId] = [feature.id];
         }
       });
+    }
+  );
+
+  // all rules (experiment rules and delivery rules) for each flag
+  projectConfig.flagRulesMap = {};
+
+  (projectConfig.featureFlags || []).forEach(featureFlag => {
+    const flagRuleExperiments: Experiment[] = [];
+    featureFlag.experimentIds.forEach(experimentId => {
+      const experiment = projectConfig.experimentIdMap[experimentId];
+      if (experiment) {
+        flagRuleExperiments.push(experiment);
+      }
+    });
+
+    const rollout = projectConfig.rolloutIdMap[featureFlag.rolloutId];
+    if (rollout) {
+      flagRuleExperiments.push(...rollout.experiments);
+    }
+
+    projectConfig.flagRulesMap[featureFlag.key] = flagRuleExperiments;
+  });
+
+  // all variations for each flag
+  // - datafile does not contain a separate entity for this.
+  // - we collect variations used in each rule (experiment rules and delivery rules)
+  projectConfig.flagVariationsMap = {};
+
+  objectEntries(projectConfig.flagRulesMap || {}).forEach(
+    ([flagKey, rules]) => {
+      const variations: OptimizelyVariation[] = [];
+      rules.forEach(rule => {
+        rule.variations.forEach(variation => {
+          if (!find(variations, item => item.id === variation.id)) {
+            variations.push(variation);
+          }
+        });
+      });
+      projectConfig.flagVariationsMap[flagKey] = variations;
     }
   );
 
@@ -372,6 +418,20 @@ export const getVariationKeyFromId = function(projectConfig: ProjectConfig, vari
 };
 
 /**
+ * Get variation given variation ID
+ * @param  {ProjectConfig}  projectConfig   Object representing project configuration
+ * @param  {string}         variationId     ID of the variation
+ * @return {Variation|null}    Variation or null if the variation ID is not found
+ */
+ export const getVariationFromId = function(projectConfig: ProjectConfig, variationId: string): Variation | null {
+  if (projectConfig.variationIdMap.hasOwnProperty(variationId)) {
+    return projectConfig.variationIdMap[variationId];
+  }
+
+  return null;
+};
+
+/**
  * Get the variation ID given the experiment key and variation key
  * @param  {ProjectConfig}  projectConfig   Object representing project configuration
  * @param  {string}         experimentKey   Key of the experiment the variation belongs to
@@ -384,26 +444,6 @@ export const getVariationIdFromExperimentAndVariationKey = function(
   variationKey: string
 ): string | null {
   const experiment = projectConfig.experimentKeyMap[experimentKey];
-  if (experiment.variationKeyMap.hasOwnProperty(variationKey)) {
-    return experiment.variationKeyMap[variationKey].id;
-  }
-
-  return null;
-};
-
-/**
- * Get the variation ID given the experiment id and variation key
- * @param  {ProjectConfig}  projectConfig   Object representing project configuration
- * @param  {string}         experimentId    Id of the experiment the variation belongs to
- * @param  {string}         variationKey    The variation key
- * @return {string|null}    Variation ID or null
- */
-export const getVariationIdFromExperimentIdAndVariationKey = function(
-  projectConfig: ProjectConfig,
-  experimentId: string,
-  variationKey: string
-): string | null {
-  const experiment = projectConfig.experimentIdMap[experimentId];
   if (experiment.variationKeyMap.hasOwnProperty(variationKey)) {
     return experiment.variationKeyMap[variationKey].id;
   }
@@ -771,9 +811,9 @@ export default {
   isActive,
   isRunning,
   getExperimentAudienceConditions,
+  getVariationFromId,
   getVariationKeyFromId,
   getVariationIdFromExperimentAndVariationKey,
-  getVariationIdFromExperimentIdAndVariationKey,
   getExperimentFromKey,
   getTrafficAllocation,
   getExperimentFromId,

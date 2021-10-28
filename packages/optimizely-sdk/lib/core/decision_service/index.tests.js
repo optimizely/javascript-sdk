@@ -17,6 +17,7 @@ import sinon from 'sinon';
 import { assert } from 'chai';
 import cloneDeep from 'lodash/cloneDeep';
 import { sprintf } from '@optimizely/js-sdk-utils';
+
 import { createDecisionService } from './';
 import * as bucketer from '../bucketer';
 import {
@@ -27,6 +28,7 @@ import { createLogger } from '../../plugins/logger';
 import { createForwardingEventProcessor } from '../../plugins/event_processor/forwarding_event_processor';
 import { createNotificationCenter } from '../notification_center';
 import Optimizely from '../../optimizely';
+import OptimizelyUserContext from '../../optimizely_user_context';
 import projectConfig from '../project_config';
 import AudienceEvaluator from '../audience_evaluator';
 import errorHandler from '../../plugins/error_handler';
@@ -48,6 +50,7 @@ describe('lib/core/decision_service', function() {
     var mockLogger = createLogger({ logLevel: LOG_LEVEL.INFO });
     var bucketerStub;
     var experiment;
+    var user;
 
     beforeEach(function() {
       bucketerStub = sinon.stub(bucketer, 'bucket');
@@ -64,6 +67,10 @@ describe('lib/core/decision_service', function() {
 
     describe('#getVariation', function() {
       it('should return the correct variation for the given experiment key and user ID for a running experiment', function() {
+        user = new OptimizelyUserContext({
+          optimizely: {},
+          userId: 'tester'
+        });
         var fakeDecisionResponse = {
           result: '111128',
           reasons: [],
@@ -72,16 +79,20 @@ describe('lib/core/decision_service', function() {
         bucketerStub.returns(fakeDecisionResponse); // contains variation ID of the 'control' variation from `test_data`
         assert.strictEqual(
           'control',
-          decisionServiceInstance.getVariation(configObj, experiment, 'decision_service_user').result
+          decisionServiceInstance.getVariation(configObj, experiment, user).result
         );
         sinon.assert.calledOnce(bucketerStub);
       });
 
       it('should return the whitelisted variation if the user is whitelisted', function() {
+        user = new OptimizelyUserContext({
+          optimizely: {},
+          userId: 'user2'
+        });
         experiment = configObj.experimentIdMap['122227'];
         assert.strictEqual(
           'variationWithAudience',
-          decisionServiceInstance.getVariation(configObj, experiment, 'user2').result
+          decisionServiceInstance.getVariation(configObj, experiment, user).result
         );
         sinon.assert.notCalled(bucketerStub);
         assert.strictEqual(2, mockLogger.log.callCount);
@@ -96,9 +107,13 @@ describe('lib/core/decision_service', function() {
       });
 
       it('should return null if the user does not meet audience conditions', function() {
+        user = new OptimizelyUserContext({
+          optimizely: {},
+          userId: 'user3'
+        });
         experiment = configObj.experimentIdMap['122227'];
         assert.isNull(
-          decisionServiceInstance.getVariation(configObj, experiment, 'user3', { foo: 'bar' }).result
+          decisionServiceInstance.getVariation(configObj, experiment, user, { foo: 'bar' }).result
         );
         assert.strictEqual(4, mockLogger.log.callCount);
         assert.strictEqual(
@@ -120,8 +135,12 @@ describe('lib/core/decision_service', function() {
       });
 
       it('should return null if the experiment is not running', function() {
+        user = new OptimizelyUserContext({
+          optimizely: {},
+          userId: 'user1'
+        });
         experiment = configObj.experimentIdMap['133337'];
-        assert.isNull(decisionServiceInstance.getVariation(configObj, experiment, 'user1').result);
+        assert.isNull(decisionServiceInstance.getVariation(configObj, experiment, user).result);
         sinon.assert.notCalled(bucketerStub);
         assert.strictEqual(1, mockLogger.log.callCount);
         assert.strictEqual(
@@ -145,10 +164,15 @@ describe('lib/core/decision_service', function() {
               },
             },
           };
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'decision_service_user',
+            attributes,
+          });
 
           assert.strictEqual(
             'variation',
-            decisionServiceInstance.getVariation(configObj, experiment, 'decision_service_user', attributes).result
+            decisionServiceInstance.getVariation(configObj, experiment, user).result
           );
           sinon.assert.notCalled(bucketerStub);
         });
@@ -197,10 +221,14 @@ describe('lib/core/decision_service', function() {
             },
           });
           experiment = configObj.experimentIdMap['111127'];
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'decision_service_user',
+          });
 
           assert.strictEqual(
             'control',
-            decisionServiceInstance.getVariation(configObj, experiment, 'decision_service_user').result
+            decisionServiceInstance.getVariation(configObj, experiment, user).result
           );
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
           sinon.assert.notCalled(bucketerStub);
@@ -221,10 +249,14 @@ describe('lib/core/decision_service', function() {
             experiment_bucket_map: {},
           });
           experiment = configObj.experimentIdMap['111127'];
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'decision_service_user',
+          });
 
           assert.strictEqual(
             'control',
-            decisionServiceInstance.getVariation(configObj, experiment, 'decision_service_user').result
+            decisionServiceInstance.getVariation(configObj, experiment, user).result
           );
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
           sinon.assert.calledOnce(bucketerStub);
@@ -243,10 +275,13 @@ describe('lib/core/decision_service', function() {
           bucketerStub.returns(fakeDecisionResponse); // ID of the 'control' variation
           userProfileLookupStub.returns(null);
           experiment = configObj.experimentIdMap['111127'];
-
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'decision_service_user',
+          });
           assert.strictEqual(
             'control',
-            decisionServiceInstance.getVariation(configObj, experiment, 'decision_service_user').result
+            decisionServiceInstance.getVariation(configObj, experiment, user).result
           );
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
           sinon.assert.calledOnce(bucketerStub);
@@ -272,10 +307,13 @@ describe('lib/core/decision_service', function() {
             },
           });
           experiment = configObj.experimentIdMap['111127'];
-
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'decision_service_user',
+          });
           assert.strictEqual(
             'control',
-            decisionServiceInstance.getVariation(configObj, experiment, 'decision_service_user').result
+            decisionServiceInstance.getVariation(configObj, experiment, user).result
           );
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
           sinon.assert.calledOnce(bucketerStub);
@@ -304,11 +342,15 @@ describe('lib/core/decision_service', function() {
             user_id: 'decision_service_user',
             experiment_bucket_map: {}, // no decisions for user
           });
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'decision_service_user',
+          });
           experiment = configObj.experimentIdMap['111127'];
 
           assert.strictEqual(
             'control',
-            decisionServiceInstance.getVariation(configObj, experiment, 'decision_service_user').result
+            decisionServiceInstance.getVariation(configObj, experiment, user).result
           );
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
           sinon.assert.calledOnce(bucketerStub);
@@ -335,10 +377,13 @@ describe('lib/core/decision_service', function() {
           bucketerStub.returns(fakeDecisionResponse); // ID of the 'control' variation
           userProfileLookupStub.throws(new Error('I am an error'));
           experiment = configObj.experimentIdMap['111127'];
-
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'decision_service_user',
+          });
           assert.strictEqual(
             'control',
-            decisionServiceInstance.getVariation(configObj, experiment, 'decision_service_user').result
+            decisionServiceInstance.getVariation(configObj, experiment, user).result
           );
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
           sinon.assert.calledOnce(bucketerStub); // should still go through with bucketing
@@ -357,10 +402,13 @@ describe('lib/core/decision_service', function() {
           userProfileLookupStub.returns(null);
           userProfileSaveStub.throws(new Error('I am an error'));
           experiment = configObj.experimentIdMap['111127'];
-
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'decision_service_user',
+          });
           assert.strictEqual(
             'control',
-            decisionServiceInstance.getVariation(configObj, experiment, 'decision_service_user').result
+            decisionServiceInstance.getVariation(configObj, experiment, user).result
           );
           sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
           sinon.assert.calledOnce(bucketerStub); // should still go through with bucketing
@@ -407,9 +455,15 @@ describe('lib/core/decision_service', function() {
 
             experiment = configObj.experimentIdMap['111127'];
 
+            user = new OptimizelyUserContext({
+              optimizely: {},
+              userId: 'decision_service_user',
+              attributes,
+            });
+
             assert.strictEqual(
               'variation',
-              decisionServiceInstance.getVariation(configObj, experiment, 'decision_service_user', attributes).result
+              decisionServiceInstance.getVariation(configObj, experiment, user).result
             );
             sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
             sinon.assert.notCalled(bucketerStub);
@@ -445,9 +499,15 @@ describe('lib/core/decision_service', function() {
               },
             };
 
+            user = new OptimizelyUserContext({
+              optimizely: {},
+              userId: 'decision_service_user',
+              attributes,
+            });
+
             assert.strictEqual(
               'control',
-              decisionServiceInstance.getVariation(configObj, experiment, 'decision_service_user', attributes).result
+              decisionServiceInstance.getVariation(configObj, experiment, user).result
             );
             sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
             sinon.assert.notCalled(bucketerStub);
@@ -483,9 +543,15 @@ describe('lib/core/decision_service', function() {
               },
             };
 
+            user = new OptimizelyUserContext({
+              optimizely: {},
+              userId: 'decision_service_user',
+              attributes,
+            });
+
             assert.strictEqual(
               'variation',
-              decisionServiceInstance.getVariation(configObj, experiment, 'decision_service_user', attributes).result
+              decisionServiceInstance.getVariation(configObj, experiment, user).result
             );
             sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
             sinon.assert.notCalled(bucketerStub);
@@ -512,9 +578,15 @@ describe('lib/core/decision_service', function() {
               },
             };
 
+            user = new OptimizelyUserContext({
+              optimizely: {},
+              userId: 'decision_service_user',
+              attributes,
+            });
+
             assert.strictEqual(
               'variation',
-              decisionServiceInstance.getVariation(configObj, experiment, 'decision_service_user', attributes).result
+              decisionServiceInstance.getVariation(configObj, experiment, user).result
             );
             sinon.assert.calledWith(userProfileLookupStub, 'decision_service_user');
             sinon.assert.notCalled(bucketerStub);
@@ -763,7 +835,7 @@ describe('lib/core/decision_service', function() {
         assert.strictEqual(didSetVariation, true);
 
         var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1').result;
-        assert.strictEqual(variation, 'control');
+        assert.strictEqual(variation, 'control' );
 
         var didSetVariationAgain = decisionServiceInstance.setForcedVariation(
           configObj,
@@ -778,13 +850,13 @@ describe('lib/core/decision_service', function() {
       });
 
       it('should be able to add variations for multiple experiments for one user', function() {
-        var didSetVariation = decisionServiceInstance.setForcedVariation(
+        var didSetVariation1 = decisionServiceInstance.setForcedVariation(
           configObj,
           'testExperiment',
           'user1',
           'control'
         );
-        assert.strictEqual(didSetVariation, true);
+        assert.strictEqual(didSetVariation1, true);
 
         var didSetVariation2 = decisionServiceInstance.setForcedVariation(
           configObj,
@@ -796,27 +868,26 @@ describe('lib/core/decision_service', function() {
 
         var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1').result;
         var variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1').result;
-
         assert.strictEqual(variation, 'control');
         assert.strictEqual(variation2, 'controlLaunched');
       });
 
       it('should be able to add experiments for multiple users', function() {
-        var didSetVariation = decisionServiceInstance.setForcedVariation(
+        var didSetVariation1 = decisionServiceInstance.setForcedVariation(
           configObj,
           'testExperiment',
           'user1',
           'control'
         );
-        assert.strictEqual(didSetVariation, true);
+        assert.strictEqual(didSetVariation1, true);
 
-        var didSetVariation = decisionServiceInstance.setForcedVariation(
+        var didSetVariation2 = decisionServiceInstance.setForcedVariation(
           configObj,
           'testExperiment',
           'user2',
           'variation'
         );
-        assert.strictEqual(didSetVariation, true);
+        assert.strictEqual(didSetVariation2, true);
 
         var variationControl = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1').result;
         var variationVariation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user2').result;
@@ -827,13 +898,13 @@ describe('lib/core/decision_service', function() {
 
       it('should be able to reset a variation for a user with multiple experiments', function() {
         //set the first time
-        var didSetVariation = decisionServiceInstance.setForcedVariation(
+        var didSetVariation1 = decisionServiceInstance.setForcedVariation(
           configObj,
           'testExperiment',
           'user1',
           'control'
         );
-        assert.strictEqual(didSetVariation, true);
+        assert.strictEqual(didSetVariation1, true);
 
         var didSetVariation2 = decisionServiceInstance.setForcedVariation(
           configObj,
@@ -843,10 +914,10 @@ describe('lib/core/decision_service', function() {
         );
         assert.strictEqual(didSetVariation2, true);
 
-        var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1').result;
-        var variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1').result;
+        let variation1 = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1').result;
+        let variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1').result;
 
-        assert.strictEqual(variation, 'control');
+        assert.strictEqual(variation1, 'control');
         assert.strictEqual(variation2, 'controlLaunched');
 
         //reset for one of the experiments
@@ -858,22 +929,22 @@ describe('lib/core/decision_service', function() {
         );
         assert.strictEqual(didSetVariationAgain, true);
 
-        var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1').result;
-        var variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1').result;
+        variation1 = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1').result;
+        variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1').result;
 
-        assert.strictEqual(variation, 'variation');
+        assert.strictEqual(variation1, 'variation');
         assert.strictEqual(variation2, 'controlLaunched');
       });
 
       it('should be able to unset a variation for a user with multiple experiments', function() {
         //set the first time
-        var didSetVariation = decisionServiceInstance.setForcedVariation(
+        var didSetVariation1 = decisionServiceInstance.setForcedVariation(
           configObj,
           'testExperiment',
           'user1',
           'control'
         );
-        assert.strictEqual(didSetVariation, true);
+        assert.strictEqual(didSetVariation1, true);
 
         var didSetVariation2 = decisionServiceInstance.setForcedVariation(
           configObj,
@@ -883,20 +954,20 @@ describe('lib/core/decision_service', function() {
         );
         assert.strictEqual(didSetVariation2, true);
 
-        var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1').result;
-        var variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1').result;
+        let variation1 = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1').result;
+        let variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1').result;
 
-        assert.strictEqual(variation, 'control');
+        assert.strictEqual(variation1, 'control');
         assert.strictEqual(variation2, 'controlLaunched');
 
         //reset for one of the experiments
         decisionServiceInstance.setForcedVariation(configObj, 'testExperiment', 'user1', null);
-        assert.strictEqual(didSetVariation, true);
+        assert.strictEqual(didSetVariation1, true);
 
-        var variation = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1').result;
-        var variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1').result;
+        variation1 = decisionServiceInstance.getForcedVariation(configObj, 'testExperiment', 'user1').result;
+        variation2 = decisionServiceInstance.getForcedVariation(configObj, 'testExperimentLaunched', 'user1').result;
 
-        assert.strictEqual(variation, null);
+        assert.strictEqual(variation1, null);
         assert.strictEqual(variation2, 'controlLaunched');
       });
 
@@ -976,6 +1047,7 @@ describe('lib/core/decision_service', function() {
       logToConsole: false,
     });
     var optlyInstance;
+    var user;
     beforeEach(function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
@@ -1073,6 +1145,11 @@ describe('lib/core/decision_service', function() {
           },
         },
       });
+      user = new OptimizelyUserContext({
+        optimizely: {},
+        userId: 'test_user',
+        attributes: userAttributesWithBucketingId,
+      });
       var experiment = configObj.experimentIdMap['111127'];
 
       var decisionServiceInstance = createDecisionService({
@@ -1082,7 +1159,7 @@ describe('lib/core/decision_service', function() {
 
       assert.strictEqual(
         'control',
-        decisionServiceInstance.getVariation(configObj, experiment, 'test_user', userAttributesWithBucketingId).result
+        decisionServiceInstance.getVariation(configObj, experiment, user).result
       );
       sinon.assert.calledWithExactly(userProfileLookupStub, 'test_user');
     });
@@ -1146,6 +1223,7 @@ describe('lib/core/decision_service', function() {
         result: null,
         reasons: [],
       };
+      var user;
       beforeEach(function() {
         configObj = projectConfig.createProjectConfig(cloneDeep(testDataWithFeatures));
         sandbox = sinon.sandbox.create();
@@ -1169,6 +1247,13 @@ describe('lib/core/decision_service', function() {
           var getVariationStub;
           var experiment;
           beforeEach(function() {
+            user = new OptimizelyUserContext({
+              optimizely: {},
+              userId: 'user1',
+              attributes: {
+                test_attribute: 'test_value',
+              },
+            });
             fakeDecisionResponseWithArgs = {
               result: 'variation',
               reasons: [],
@@ -1176,14 +1261,11 @@ describe('lib/core/decision_service', function() {
             experiment = configObj.experimentIdMap['594098'];
             getVariationStub = sandbox.stub(decisionServiceInstance, 'getVariation');
             getVariationStub.returns(fakeDecisionResponse);
-            getVariationStub.withArgs(configObj, experiment, 'user1').returns(fakeDecisionResponseWithArgs);
+            getVariationStub.withArgs(configObj, experiment, user).returns(fakeDecisionResponseWithArgs);
           });
 
           it('returns a decision with a variation in the experiment the feature is attached to', function() {
-            var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
-              test_attribute: 'test_value',
-            }).result;
-
+            var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
             var expectedDecision = {
               experiment: {
                 forcedVariations: {},
@@ -1397,10 +1479,7 @@ describe('lib/core/decision_service', function() {
               getVariationStub,
               configObj,
               experiment,
-              'user1',
-              {
-                test_attribute: 'test_value',
-              },
+              user,
               {}
             );
           });
@@ -1409,12 +1488,16 @@ describe('lib/core/decision_service', function() {
         describe('user not bucketed into this experiment', function() {
           var getVariationStub;
           beforeEach(function() {
+            user = new OptimizelyUserContext({
+              optimizely: {},
+              userId: 'user1',
+            });
             getVariationStub = sandbox.stub(decisionServiceInstance, 'getVariation');
             getVariationStub.returns(fakeDecisionResponse);
           });
 
           it('returns a decision with no variation and source rollout', function() {
-            var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1').result;
+            var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
             var expectedDecision = {
               experiment: null,
               variation: null,
@@ -1437,18 +1520,23 @@ describe('lib/core/decision_service', function() {
 
         describe('user bucketed into an experiment in the group', function() {
           var getVariationStub;
+          var user;
           beforeEach(function() {
+            user = new OptimizelyUserContext({
+              optimizely: {},
+              userId: 'user1',
+            });
             fakeDecisionResponseWithArgs = {
               result: 'var',
               reasons: [],
             };
             getVariationStub = sandbox.stub(decisionServiceInstance, 'getVariation');
             getVariationStub.returns(fakeDecisionResponseWithArgs);
-            getVariationStub.withArgs(configObj, 'exp_with_group', 'user1').returns(fakeDecisionResponseWithArgs);
+            getVariationStub.withArgs(configObj, 'exp_with_group', user).returns(fakeDecisionResponseWithArgs);
           });
 
           it('returns a decision with a variation in an experiment in a group', function() {
-            var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1').result;
+            var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
             var expectedDecision = {
               experiment: {
                 forcedVariations: {},
@@ -1492,13 +1580,18 @@ describe('lib/core/decision_service', function() {
 
         describe('user not bucketed into an experiment in the group', function() {
           var getVariationStub;
+          var user;
           beforeEach(function() {
+            user = new OptimizelyUserContext({
+              optimizely: {},
+              userId: 'user1',
+            });
             getVariationStub = sandbox.stub(decisionServiceInstance, 'getVariation');
             getVariationStub.returns(fakeDecisionResponse);
           });
 
           it('returns a decision with no experiment, no variation and source rollout', function() {
-            var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1').result;
+            var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
             var expectedDecision = {
               experiment: null,
               variation: null,
@@ -1513,7 +1606,7 @@ describe('lib/core/decision_service', function() {
 
           it('returns null decision for group experiment not referenced by the feature', function() {
             var noTrafficExpFeature = configObj.featureKeyMap.feature_exp_no_traffic;
-            var decision = decisionServiceInstance.getVariationForFeature(configObj, noTrafficExpFeature, 'user1').result;
+            var decision = decisionServiceInstance.getVariationForFeature(configObj, noTrafficExpFeature, user).result;
             var expectedDecision = {
               experiment: null,
               variation: null,
@@ -1548,8 +1641,12 @@ describe('lib/core/decision_service', function() {
           });
 
           it('returns a decision with a variation and experiment from the audience targeting rule', function() {
-            var attributes = { test_attribute: 'test_value' };
-            var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', attributes).result;
+            user = new OptimizelyUserContext({
+              optimizely: {},
+              userId: 'user1',
+              attributes: { test_attribute: 'test_value' },
+            });
+            var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
             var expectedDecision = {
               experiment: {
                 forcedVariations: {},
@@ -1680,8 +1777,12 @@ describe('lib/core/decision_service', function() {
           });
 
           it('returns a decision with a variation and experiment from the everyone else targeting rule', function() {
-            var attributes = {};
-            var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', attributes).result;
+            user = new OptimizelyUserContext({
+              optimizely: {},
+              userId: 'user1',
+              attributes: {},
+            });
+            var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
             var expectedDecision = {
               experiment: {
                 forcedVariations: {},
@@ -1789,8 +1890,8 @@ describe('lib/core/decision_service', function() {
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              '%s: User %s bucketed into everyone targeting rule.',
-              'DECISION_SERVICE', 'user1'
+              '%s: User %s bucketed into targeting rule %s.',
+              'DECISION_SERVICE', 'user1', 'Everyone Else'
             );
             sinon.assert.calledWithExactly(
               mockLogger.log,
@@ -1811,7 +1912,11 @@ describe('lib/core/decision_service', function() {
           });
 
           it('returns a decision with no variation, no experiment and source rollout', function() {
-            var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1').result;
+            user = new OptimizelyUserContext({
+              optimizely: {},
+              userId: 'user1',
+            });
+            var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
             var expectedDecision = {
               experiment: null,
               variation: null,
@@ -1854,8 +1959,12 @@ describe('lib/core/decision_service', function() {
           });
 
           it('returns a decision with a variation and experiment from the everyone else targeting rule', function() {
-            var attributes = { test_attribute: 'test_value' };
-            var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', attributes).result;
+            user = new OptimizelyUserContext({
+              optimizely: {},
+              userId: 'user1',
+              attributes: { test_attribute: 'test_value' }
+            });
+            var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
             var expectedDecision = {
               experiment: {
                 forcedVariations: {},
@@ -1969,8 +2078,8 @@ describe('lib/core/decision_service', function() {
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
-              '%s: User %s bucketed into everyone targeting rule.',
-              'DECISION_SERVICE', 'user1'
+              '%s: User %s bucketed into targeting rule %s.',
+              'DECISION_SERVICE', 'user1', 'Everyone Else'
             );
           });
         });
@@ -1997,9 +2106,13 @@ describe('lib/core/decision_service', function() {
         });
 
         it('can bucket a user into the rollout when the user is not bucketed into the experiment', function() {
-          // No attributes passed, so user is not in the audience for the experiment
+          // No attributes passed to the user context, so user is not in the audience for the experiment
           // It should fall through to the rollout
-          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1').result;
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'user1'
+          });
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
           var expectedDecision = {
             experiment: {
               trafficAllocation: [
@@ -2070,8 +2183,8 @@ describe('lib/core/decision_service', function() {
           sinon.assert.calledWithExactly(
             mockLogger.log,
             LOG_LEVEL.DEBUG,
-            '%s: User %s bucketed into everyone targeting rule.',
-            'DECISION_SERVICE', 'user1', 
+            '%s: User %s bucketed into targeting rule %s.',
+            'DECISION_SERVICE', 'user1', 'Everyone Else' 
           );
           sinon.assert.calledWithExactly(
             mockLogger.log,
@@ -2089,7 +2202,11 @@ describe('lib/core/decision_service', function() {
         });
 
         it('returns a decision with no variation, no experiment and source rollout', function() {
-          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1').result;
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'user1'
+          });
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
           var expectedDecision = {
             experiment: null,
             variation: null,
@@ -2121,9 +2238,12 @@ describe('lib/core/decision_service', function() {
 
         it('returns a decision with a variation in mutex group bucket less than 2500', function() {
           generateBucketValueStub.returns(2400);
-          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
-            experiment_attr: 'group_experiment',
-          }).result;
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'user1',
+            attributes: { experiment_attr: 'group_experiment' }
+          });
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
           var expectedExperiment = projectConfig.getExperimentFromKey(configObj, 'group_2_exp_1');
           var expectedDecision = {
             experiment: expectedExperiment,
@@ -2147,9 +2267,12 @@ describe('lib/core/decision_service', function() {
 
         it('returns a decision with a variation in mutex group bucket range 2500 to 5000', function() {
           generateBucketValueStub.returns(4000);
-          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
-            experiment_attr: 'group_experiment',
-          }).result;
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'user1',
+            attributes: { experiment_attr: 'group_experiment' }
+          });
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
           var expectedExperiment = projectConfig.getExperimentFromKey(configObj, 'group_2_exp_2');
           var expectedDecision = {
             experiment: expectedExperiment,
@@ -2173,9 +2296,12 @@ describe('lib/core/decision_service', function() {
 
         it('returns a decision with a variation in mutex group bucket range 5000 to 7500', function() {
           generateBucketValueStub.returns(6500);
-          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
-            experiment_attr: 'group_experiment',
-          }).result;
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'user1',
+            attributes: { experiment_attr: 'group_experiment' }
+          });
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
           var expectedExperiment = projectConfig.getExperimentFromKey(configObj, 'group_2_exp_3');
           var expectedDecision = {
             experiment: expectedExperiment,
@@ -2199,9 +2325,12 @@ describe('lib/core/decision_service', function() {
 
         it('returns a decision with variation and source rollout in mutex group bucket greater than 7500', function() {
           generateBucketValueStub.returns(8000);
-          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
-            experiment_attr: 'group_experiment',
-          }).result;
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'user1',
+            attributes: { experiment_attr: 'group_experiment' }
+          });
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
           var expectedExperiment = projectConfig.getExperimentFromId(configObj, '594066');
           var expectedDecision = {
             experiment: expectedExperiment,
@@ -2243,9 +2372,12 @@ describe('lib/core/decision_service', function() {
 
         it('returns a decision with variation for rollout in mutex group with audience mismatch', function() {
           generateBucketValueStub.returns(2400);
-          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
-            experiment_attr: 'group_experiment_invalid',
-          }).result;
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'user1',
+            attributes: { experiment_attr: 'group_experiment_invalid' }
+          });
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
           var expectedExperiment = projectConfig.getExperimentFromId(configObj, '594066', mockLogger);
           var expectedDecision = {
             experiment: expectedExperiment,
@@ -2296,9 +2428,12 @@ describe('lib/core/decision_service', function() {
 
         it('returns a decision with a variation in mutex group bucket less than 2500', function() {
           generateBucketValueStub.returns(2400);
-          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
-            experiment_attr: 'group_experiment',
-          }).result;
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'user1',
+            attributes: { experiment_attr: 'group_experiment' }
+          });
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
           var expectedExperiment = projectConfig.getExperimentFromKey(configObj, 'test_experiment3');
           var expectedDecision = {
             experiment: expectedExperiment,
@@ -2323,9 +2458,12 @@ describe('lib/core/decision_service', function() {
 
         it('returns a decision with a variation in mutex group bucket range 2500 to 5000', function() {
           generateBucketValueStub.returns(4000);
-          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
-            experiment_attr: 'group_experiment',
-          }).result;
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'user1',
+            attributes: { experiment_attr: 'group_experiment' }
+          });
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
           var expectedExperiment = projectConfig.getExperimentFromKey(configObj, 'test_experiment4');
           var expectedDecision = {
             experiment: expectedExperiment,
@@ -2350,9 +2488,12 @@ describe('lib/core/decision_service', function() {
 
         it('returns a decision with a variation in mutex group bucket range 5000 to 7500', function() {
           generateBucketValueStub.returns(6500);
-          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
-            experiment_attr: 'group_experiment',
-          }).result;
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'user1',
+            attributes: { experiment_attr: 'group_experiment' }
+          });
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
           var expectedExperiment = projectConfig.getExperimentFromKey(configObj, 'test_experiment5');
           var expectedDecision = {
             experiment: expectedExperiment,
@@ -2377,9 +2518,12 @@ describe('lib/core/decision_service', function() {
 
         it('returns a decision with variation and source rollout in mutex group bucket greater than 7500', function() {
           generateBucketValueStub.returns(8000);
-          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
-            experiment_attr: 'group_experiment',
-          }).result;
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'user1',
+            attributes: { experiment_attr: 'group_experiment' }
+          });
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
           var expectedExperiment = projectConfig.getExperimentFromId(configObj, '594066');
           var expectedDecision = {
             experiment: expectedExperiment,
@@ -2421,9 +2565,12 @@ describe('lib/core/decision_service', function() {
 
         it('returns a decision with variation for rollout in mutex group bucket range 2500 to 5000', function() {
           generateBucketValueStub.returns(4000);
-          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, 'user1', {
-            experiment_attr: 'group_experiment_invalid',
-          }).result;
+          user = new OptimizelyUserContext({
+            optimizely: {},
+            userId: 'user1',
+            attributes: { experiment_attr: 'group_experiment_invalid' }
+          });
+          var decision = decisionServiceInstance.getVariationForFeature(configObj, feature, user).result;
           var expectedExperiment = projectConfig.getExperimentFromId(configObj, '594066', mockLogger);
           var expectedDecision = {
             experiment: expectedExperiment,
@@ -2470,6 +2617,7 @@ describe('lib/core/decision_service', function() {
       var configObj;
       var decisionService;
       var buildBucketerParamsSpy;
+      var user;
 
       beforeEach(function() {
         configObj = projectConfig.createProjectConfig(cloneDeep(testDataWithFeatures));
@@ -2485,8 +2633,12 @@ describe('lib/core/decision_service', function() {
       });
 
       it('should call buildBucketerParams with user Id when bucketing Id is not provided in the attributes', function() {
-        var attributes = { test_attribute: 'test_value' };
-        decisionService.getVariationForRollout(configObj, feature, 'testUser', attributes).result;
+        user = new OptimizelyUserContext({
+          optimizely: {},
+          userId: 'testUser',
+          attributes: { test_attribute: 'test_value' }
+        });
+        decisionService.getVariationForRollout(configObj, feature, user).result;
 
         sinon.assert.callCount(buildBucketerParamsSpy, 2);
         sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, configObj.experimentIdMap['594031'], 'testUser', 'testUser');
@@ -2498,7 +2650,12 @@ describe('lib/core/decision_service', function() {
           test_attribute: 'test_value',
           $opt_bucketing_id: 'abcdefg',
         };
-        decisionService.getVariationForRollout(configObj, feature, 'testUser', attributes).result;
+        user = new OptimizelyUserContext({
+          optimizely: {},
+          userId: 'testUser',
+          attributes,
+        });
+        decisionService.getVariationForRollout(configObj, feature, user).result;
 
         sinon.assert.callCount(buildBucketerParamsSpy, 2);
         sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, configObj.experimentIdMap['594031'], 'abcdefg', 'testUser');

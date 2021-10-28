@@ -105,7 +105,6 @@ export const LOG_MESSAGES = {
   USER_BUCKETED_INTO_TARGETING_RULE: '%s: User %s bucketed into targeting rule %s.',
   USER_IN_FEATURE_EXPERIMENT: '%s: User %s is in variation %s of experiment %s on the feature %s.',
   USER_IN_ROLLOUT: '%s: User %s is in rollout of feature %s.',
-  USER_BUCKETED_INTO_EVERYONE_TARGETING_RULE: '%s: User %s bucketed into everyone targeting rule.',
   USER_NOT_BUCKETED_INTO_EVERYONE_TARGETING_RULE:
     '%s: User %s not bucketed into everyone targeting rule due to traffic allocation.',
   USER_NOT_BUCKETED_INTO_EXPERIMENT_IN_GROUP: '%s: User %s is not in experiment %s of group %s.',
@@ -119,6 +118,10 @@ export const LOG_MESSAGES = {
   USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE: '%s: User %s does not meet conditions for targeting rule %s.',
   USER_MEETS_CONDITIONS_FOR_TARGETING_RULE: '%s: User %s meets conditions for targeting rule %s.',
   USER_HAS_VARIATION: '%s: User %s is in variation %s of experiment %s.',
+  USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED: 'Variation (%s) is mapped to flag (%s), rule (%s) and user (%s) in the forced decision map.',
+  USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED: 'Variation (%s) is mapped to flag (%s) and user (%s) in the forced decision map.',
+  USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID: 'Invalid variation is mapped to flag (%s), rule (%s) and user (%s) in the forced decision map.',
+  USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID: 'Invalid variation is mapped to flag (%s) and user (%s) in the forced decision map.',
   USER_HAS_FORCED_VARIATION: '%s: Variation %s is mapped to experiment %s and user %s in the forced variation map.',
   USER_HAS_NO_VARIATION: '%s: User %s is in no variation of experiment %s.',
   USER_HAS_NO_FORCED_VARIATION: '%s: User %s is not in the forced variation map.',

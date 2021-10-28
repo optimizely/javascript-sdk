@@ -26,7 +26,6 @@ import {
   getAttributeId,
   getEventId,
   getLayerId,
-  getVariationIdFromExperimentIdAndVariationKey,
   ProjectConfig,
 } from '../project_config';
 
@@ -135,8 +134,8 @@ export const buildImpressionEvent = function({
   const experimentKey = decision.getExperimentKey(decisionObj);
   const experimentId = decision.getExperimentId(decisionObj);
   const variationKey = decision.getVariationKey(decisionObj);
+  const variationId = decision.getVariationId(decisionObj);
 
-  const variationId = experimentId !== null && variationKey !== '' ? getVariationIdFromExperimentIdAndVariationKey(configObj, experimentId, variationKey) : null;
   const layerId = experimentId !== null ? getLayerId(configObj, experimentId) : null;
 
   return {

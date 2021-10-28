@@ -69,6 +69,23 @@ describe('lib/core/decision', function() {
     });
   });
 
+  describe('getVariationId method', function() {
+    it('should return null when variation is null', function() {
+      var variationId = decision.getVariationId(rolloutDecisionObj);
+      assert.strictEqual(variationId, null);
+    });
+
+    it('should return null when variation is not defined', function() {
+      var variationId = decision.getVariationId({});
+      assert.strictEqual(variationId, null);
+    });
+
+    it('should return variation id when variation is defined', function() {
+      var variationId = decision.getVariationId(featureTestDecisionObj);
+      assert.strictEqual(variationId, '594096');
+    });
+  });
+
   describe('getFeatureEnabledFromVariation method', function() {
     it('should return false when variation is null', function() {
       var featureEnabled = decision.getFeatureEnabledFromVariation(rolloutDecisionObj);
