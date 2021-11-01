@@ -429,7 +429,7 @@ describe('lib/optimizely_user_context', function() {
           assert.equal(decision.userContext.getUserId(), userId);
           assert.deepEqual(decision.userContext.getAttributes(), {});
           assert.deepEqual(Object.values(decision.userContext.forcedDecisionsMap).length, 1);
-          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey]['$null-rule-key'], { variationKey });
+          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey][CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY], { variationKey });
           assert.equal(
             true,
             decision.reasons.includes(
@@ -681,7 +681,7 @@ describe('lib/optimizely_user_context', function() {
           assert.equal(decision.variationKey, '18257766532');
           assert.equal(decision.ruleKey, '18322080788');
           assert.deepEqual(Object.keys(decision.userContext.forcedDecisionsMap).length, 1);
-          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey]['$null-rule-key'], { variationKey });
+          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey][CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY], { variationKey });
           assert.equal(
             true,
             decision.reasons.includes(
