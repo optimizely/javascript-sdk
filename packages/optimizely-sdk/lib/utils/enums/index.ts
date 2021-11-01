@@ -183,14 +183,6 @@ export const REACT_NATIVE_CLIENT_ENGINE = 'react-native-sdk';
 export const REACT_NATIVE_JS_CLIENT_ENGINE = 'react-native-js-sdk';
 export const NODE_CLIENT_VERSION = '4.8.0-beta';
 
-export const VALID_CLIENT_ENGINES = [
-  NODE_CLIENT_ENGINE,
-  REACT_CLIENT_ENGINE,
-  JAVASCRIPT_CLIENT_ENGINE,
-  REACT_NATIVE_CLIENT_ENGINE,
-  REACT_NATIVE_JS_CLIENT_ENGINE,
-];
-
 export const NOTIFICATION_TYPES = notificationTypesEnum;
 
 export const DECISION_NOTIFICATION_TYPES = {

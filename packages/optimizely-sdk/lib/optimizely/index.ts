@@ -85,7 +85,7 @@ export default class Optimizely {
 
   constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;
-    if (enums.VALID_CLIENT_ENGINES.indexOf(clientEngine) === -1) {
+    if (!clientEngine) {
       config.logger.log(
         LOG_LEVEL.INFO,
         LOG_MESSAGES.INVALID_CLIENT_ENGINE,

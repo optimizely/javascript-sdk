@@ -28,8 +28,6 @@ import {
 } from '../../lib/shared_types';
 import { DECISION_MESSAGES, LOG_MESSAGES } from '../utils/enums';
 
-const MODULE_NAME = 'OPTIMIZELY_USER_CONTEXT';
-
 const logger = getLogger();
 
 export default class OptimizelyUserContext {
