@@ -137,9 +137,6 @@ export default class OptimizelyUserContext {
     }
 
     const flagKey = context.flagKey;
-    if (flagKey === '') {
-      return false;
-    }
 
     const ruleKey = context.ruleKey ?? '$null-rule-key';
     const variationKey  = decision.variationKey;

@@ -328,7 +328,7 @@ describe('lib/optimizely_user_context', function() {
         assert.strictEqual(stubLogHandler.log.args[0][1], DECISION_MESSAGES.SDK_NOT_READY);
       });
 
-      it('should return false when provided empty string flagKey', function() {
+      it('should return true when provided empty string flagKey', function() {
         fakeOptimizely = {
           isValidInstance: sinon.stub().returns(true)
         };
@@ -337,7 +337,7 @@ describe('lib/optimizely_user_context', function() {
           userId: 'user123',
         });
         var result = user.setForcedDecision({ flagKey: '' }, '3324490562');
-        assert.strictEqual(result, false);
+        assert.strictEqual(result, true);
         sinon.assert.notCalled(stubLogHandler.log);
       });
 
