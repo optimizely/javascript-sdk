@@ -26,7 +26,7 @@ import { createNotificationCenter } from '../core/notification_center';
 import Optimizely from '../optimizely';
 import errorHandler from '../plugins/error_handler';
 import eventDispatcher from '../plugins/event_dispatcher/index.node';
-import { DECISION_MESSAGES, LOG_LEVEL, LOG_MESSAGES } from '../utils/enums';
+import { CONTROL_ATTRIBUTES, DECISION_MESSAGES, LOG_LEVEL, LOG_MESSAGES } from '../utils/enums';
 import testData from '../tests/test_data';
 import { OptimizelyDecideOption } from '../shared_types';
 
@@ -400,7 +400,7 @@ describe('lib/optimizely_user_context', function() {
           assert.equal(decision.userContext.getUserId(), userId);
           assert.deepEqual(decision.userContext.getAttributes(), {});
           assert.deepEqual(Object.keys(decision.userContext.forcedDecisionsMap).length, 1);
-          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey]['$null-rule-key'], { variationKey });
+          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey][CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY], { variationKey });
           assert.equal(
             true,
             decision.reasons.includes(

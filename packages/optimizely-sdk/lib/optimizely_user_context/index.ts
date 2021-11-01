@@ -26,7 +26,7 @@ import {
   UserAttributes,
   Variation
 } from '../../lib/shared_types';
-import { DECISION_MESSAGES, LOG_MESSAGES } from '../utils/enums';
+import { DECISION_MESSAGES, LOG_MESSAGES, CONTROL_ATTRIBUTES } from '../utils/enums';
 
 const logger = getLogger();
 
@@ -138,7 +138,7 @@ export default class OptimizelyUserContext {
 
     const flagKey = context.flagKey;
 
-    const ruleKey = context.ruleKey ?? '$null-rule-key';
+    const ruleKey = context.ruleKey ?? CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY;
     const variationKey  = decision.variationKey;
     const forcedDecision = { variationKey };
 
@@ -175,7 +175,7 @@ export default class OptimizelyUserContext {
       return false;
     }
 
-    const ruleKey = context.ruleKey ?? '$null-rule-key';
+    const ruleKey = context.ruleKey ?? CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY;
     const flagKey = context.flagKey;
 
     let isForcedDecisionRemoved = false;
@@ -215,7 +215,7 @@ export default class OptimizelyUserContext {
    */
   private findForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null {
     let variationKey;
-    const validRuleKey = context.ruleKey ?? '$null-rule-key';
+    const validRuleKey = context.ruleKey ?? CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY;
     const flagKey = context.flagKey;
 
     if (this.forcedDecisionsMap.hasOwnProperty(context.flagKey)) {

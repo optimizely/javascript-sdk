@@ -174,6 +174,7 @@ export const CONTROL_ATTRIBUTES = {
   BUCKETING_ID: '$opt_bucketing_id',
   STICKY_BUCKETING_KEY: '$opt_experiment_bucket_map',
   USER_AGENT: '$opt_user_agent',
+  FORCED_DECISION_NULL_RULE_KEY: '$opt_null_rule_key'
 };
 
 export const JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
