@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.8.0-beta.2] - November 1, 2021
+
+### New Features
+- Removed Client engine validation in the SDK to allow tracking events from new clients without modifying SDK code.
+
 ## [4.8.0-beta] - October 18, 2021
 
 ### New Features
