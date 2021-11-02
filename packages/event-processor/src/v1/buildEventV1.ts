@@ -146,8 +146,8 @@ function makeConversionSnapshot(conversion: ConversionEvent): Visitor.Snapshot {
 function makeDecisionSnapshot(event: ImpressionEvent): Visitor.Snapshot {
   const { layer, experiment, variation, ruleKey, flagKey, ruleType, enabled } = event
   let layerId = layer ? layer.id : null
-  let experimentId = experiment ? experiment.id : null
-  let variationId = variation ? variation.id : null
+  let experimentId = experiment ? experiment.id : ''
+  let variationId = variation ? variation.id : ''
   let variationKey = variation ? variation.key : ''
 
   return {
