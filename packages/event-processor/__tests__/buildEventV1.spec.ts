@@ -181,7 +181,7 @@ describe('buildEventV1', () => {
                 decisions: [
                   {
                     campaign_id: null,
-                    experiment_id: null,
+                    experiment_id: "",
                     variation_id: null,
                     metadata: {
                       flag_key: 'flagKey1',
