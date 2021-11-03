@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.9.2] - November 3, 2021
+
+### Fixed
+- Impression event should send empty `experimentId` and `variationKey` instead of `null` when no `experiment` or `variation` is found.
+
 ## [0.9.1] - October 13, 2021
 
 ### Fixed
