@@ -182,7 +182,7 @@ describe('buildEventV1', () => {
                   {
                     campaign_id: null,
                     experiment_id: "",
-                    variation_id: null,
+                    variation_id: "",
                     metadata: {
                       flag_key: 'flagKey1',
                       rule_key: '',
