@@ -159,8 +159,8 @@ function makeConversionSnapshot(conversion: ConversionEvent): Snapshot {
 function makeDecisionSnapshot(event: ImpressionEvent): Snapshot {
   const { layer, experiment, variation, ruleKey, flagKey, ruleType, enabled } = event
   const layerId = layer ? layer.id : null
-  const experimentId = experiment ? experiment.id : null
-  const variationId = variation ? variation.id : null
+  const experimentId = experiment?.id ?? ''
+  const variationId = variation?.id ?? ''
   const variationKey = variation ? variation.key : ''
 
   return {

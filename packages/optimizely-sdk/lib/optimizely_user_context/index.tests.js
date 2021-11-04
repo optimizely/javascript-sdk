@@ -26,7 +26,7 @@ import { createNotificationCenter } from '../core/notification_center';
 import Optimizely from '../optimizely';
 import errorHandler from '../plugins/error_handler';
 import eventDispatcher from '../plugins/event_dispatcher/index.node';
-import { DECISION_MESSAGES, LOG_LEVEL, LOG_MESSAGES } from '../utils/enums';
+import { CONTROL_ATTRIBUTES, DECISION_MESSAGES, LOG_LEVEL, LOG_MESSAGES } from '../utils/enums';
 import testData from '../tests/test_data';
 import { OptimizelyDecideOption } from '../shared_types';
 
@@ -328,7 +328,7 @@ describe('lib/optimizely_user_context', function() {
         assert.strictEqual(stubLogHandler.log.args[0][1], DECISION_MESSAGES.SDK_NOT_READY);
       });
 
-      it('should return false when provided empty string flagKey', function() {
+      it('should return true when provided empty string flagKey', function() {
         fakeOptimizely = {
           isValidInstance: sinon.stub().returns(true)
         };
@@ -337,7 +337,7 @@ describe('lib/optimizely_user_context', function() {
           userId: 'user123',
         });
         var result = user.setForcedDecision({ flagKey: '' }, '3324490562');
-        assert.strictEqual(result, false);
+        assert.strictEqual(result, true);
         sinon.assert.notCalled(stubLogHandler.log);
       });
 
@@ -400,7 +400,7 @@ describe('lib/optimizely_user_context', function() {
           assert.equal(decision.userContext.getUserId(), userId);
           assert.deepEqual(decision.userContext.getAttributes(), {});
           assert.deepEqual(Object.keys(decision.userContext.forcedDecisionsMap).length, 1);
-          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey]['$null-rule-key'], { variationKey });
+          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey][CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY], { variationKey });
           assert.equal(
             true,
             decision.reasons.includes(
@@ -429,7 +429,7 @@ describe('lib/optimizely_user_context', function() {
           assert.equal(decision.userContext.getUserId(), userId);
           assert.deepEqual(decision.userContext.getAttributes(), {});
           assert.deepEqual(Object.values(decision.userContext.forcedDecisionsMap).length, 1);
-          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey]['$null-rule-key'], { variationKey });
+          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey][CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY], { variationKey });
           assert.equal(
             true,
             decision.reasons.includes(
@@ -448,7 +448,7 @@ describe('lib/optimizely_user_context', function() {
           var eventDecision = impressionEvent.params.visitors[0].snapshots[0].decisions[0];
           var metadata = eventDecision.metadata;
 
-          assert.equal(eventDecision.experiment_id, null);
+          assert.equal(eventDecision.experiment_id, '');
           assert.equal(eventDecision.variation_id, '3324490562');
 
           assert.equal(metadata.flag_key, featureKey);
@@ -561,6 +561,7 @@ describe('lib/optimizely_user_context', function() {
                 },
                 decisionEventDispatched: true,
                 reasons: [
+
                   sprintf(
                     LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
                     variationKey,
@@ -681,7 +682,7 @@ describe('lib/optimizely_user_context', function() {
           assert.equal(decision.variationKey, '18257766532');
           assert.equal(decision.ruleKey, '18322080788');
           assert.deepEqual(Object.keys(decision.userContext.forcedDecisionsMap).length, 1);
-          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey]['$null-rule-key'], { variationKey });
+          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey][CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY], { variationKey });
           assert.equal(
             true,
             decision.reasons.includes(

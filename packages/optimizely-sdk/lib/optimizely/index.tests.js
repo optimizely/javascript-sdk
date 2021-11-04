@@ -6717,8 +6717,8 @@ describe('lib/optimizely', function() {
                       decisions: [
                         {
                           campaign_id: null,
-                          experiment_id: null,
-                          variation_id: null,
+                          experiment_id: '',
+                          variation_id: '',
                           metadata: {
                             flag_key: 'test_feature',
                             rule_key: '',
