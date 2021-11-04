@@ -448,7 +448,7 @@ describe('lib/optimizely_user_context', function() {
           var eventDecision = impressionEvent.params.visitors[0].snapshots[0].decisions[0];
           var metadata = eventDecision.metadata;
 
-          assert.equal(eventDecision.experiment_id, null);
+          assert.equal(eventDecision.experiment_id, '');
           assert.equal(eventDecision.variation_id, '3324490562');
 
           assert.equal(metadata.flag_key, featureKey);
@@ -561,6 +561,7 @@ describe('lib/optimizely_user_context', function() {
                 },
                 decisionEventDispatched: true,
                 reasons: [
+
                   sprintf(
                     LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
                     variationKey,
