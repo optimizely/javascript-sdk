@@ -264,15 +264,25 @@ class OptimizelyLogger implements LoggerFacade {
     }
   }
 
-  private namedLog(level: LogLevel, message: string | Error, splat: any[]): void {
+  private namedLog(level: LogLevel, message: unknown, splat: any[]): void {
     let error: Error | undefined
 
     if (message instanceof Error) {
       error = message
-      message = error.message
       this.internalLog(level, {
         error,
-        message,
+        message: error.message,
+        splat,
+      })
+      return
+    }
+
+    // sometimes values other than Error are thrown and logged with the optimizely logger,
+    // we need to catch this case here to avoid a follow-up issue when calling format/sprintf with something else than a string for the message
+    if (typeof message !== 'string') {
+      this.internalLog(level, {
+        error,
+        message: `${message}`,
         splat,
       })
       return
