@@ -15,10 +15,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Performance Improvements
 - Reduced SDK client initialization time by removing `OptimizelyConfig` creation from initialization. The `OptimizelyConfig` object is now created on the first call to `getOptimizelyConfig` API.
-- Made Improvements to logging mechanism. The SDK now no longer concatenates and formats messages which do not qualify for the log level set by the user.
+- Made Improvements to logging mechanism. The SDK no longer concatenates and formats messages which do not qualify for the log level set by the user.
 
 ### Changed
-- Updated `json-schema` package version to `0.4.0` to fix a high-severity vulnerability.
+- Updated `json-schema` package version to `0.4.0` to fix a high-severity vulnerability ([Prototype Pollution](https://snyk.io/vuln/SNYK-JS-JSONSCHEMA-1920922)).
 
 ## [4.8.0-beta.2] - November 1, 2021
 
