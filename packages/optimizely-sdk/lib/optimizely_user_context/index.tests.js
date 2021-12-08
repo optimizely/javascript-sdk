@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2020, Optimizely, Inc. and contributors                        *
+ * Copyright 2020-2021, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -26,7 +26,7 @@ import { createNotificationCenter } from '../core/notification_center';
 import Optimizely from '../optimizely';
 import errorHandler from '../plugins/error_handler';
 import eventDispatcher from '../plugins/event_dispatcher/index.node';
-import { CONTROL_ATTRIBUTES, DECISION_MESSAGES, LOG_LEVEL, LOG_MESSAGES } from '../utils/enums';
+import { CONTROL_ATTRIBUTES, LOG_LEVEL, LOG_MESSAGES } from '../utils/enums';
 import testData from '../tests/test_data';
 import { OptimizelyDecideOption } from '../shared_types';
 
@@ -314,7 +314,7 @@ describe('lib/optimizely_user_context', function() {
       afterEach(function() {
         logging.resetLogger();
       });
-      it('should return false when client is not ready', function() {
+      it('should return true when client is not ready', function() {
         fakeOptimizely = {
           isValidInstance: sinon.stub().returns(false)
         };
@@ -323,9 +323,8 @@ describe('lib/optimizely_user_context', function() {
           userId,
         });
         var result = user.setForcedDecision({ flagKey: 'feature_1' }, '3324490562');
-        assert.strictEqual(result, false);
-        sinon.assert.calledOnce(stubLogHandler.log);
-        assert.strictEqual(stubLogHandler.log.args[0][1], DECISION_MESSAGES.SDK_NOT_READY);
+        assert.strictEqual(result, true);
+        sinon.assert.notCalled(stubLogHandler.log);
       });
 
       it('should return true when provided empty string flagKey', function() {
@@ -848,18 +847,17 @@ describe('lib/optimizely_user_context', function() {
         logging.resetLogger();
       });
 
-      it('should return false when client is not ready', function() {
+      it('should return true when client is not ready and the forced decision has been removed successfully', function() {
         fakeOptimizely = {
           isValidInstance: sinon.stub().returns(false)
         };
         var user = new OptimizelyUserContext({
           optimizely: fakeOptimizely,
-          userId,
+          userId: 'user123',
         });
-        var result = user.removeForcedDecision('feature_1');
-        assert.strictEqual(result, false);
-        sinon.assert.calledOnce(stubLogHandler.log);
-        assert.strictEqual(stubLogHandler.log.args[0][1], DECISION_MESSAGES.SDK_NOT_READY);
+        user.setForcedDecision({ flagKey: 'feature_1' }, '3324490562');
+        var result = user.removeForcedDecision({ flagKey: 'feature_1' });
+        assert.strictEqual(result, true);
       });
 
       it('should return true when the forced decision has been removed successfully and false otherwise', function() {
@@ -923,7 +921,7 @@ describe('lib/optimizely_user_context', function() {
         logging.resetLogger();
       });
 
-      it('should return false when client is not ready', function() {
+      it('should return true when client is not ready', function() {
         fakeOptimizely = {
           isValidInstance: sinon.stub().returns(false)
         };
@@ -932,9 +930,8 @@ describe('lib/optimizely_user_context', function() {
           userId,
         });
         var result = user.removeAllForcedDecisions();
-        assert.strictEqual(result, false);
-        sinon.assert.calledOnce(stubLogHandler.log);
-        assert.strictEqual(stubLogHandler.log.args[0][1], DECISION_MESSAGES.SDK_NOT_READY);
+        assert.strictEqual(result, true);
+        sinon.assert.notCalled(stubLogHandler.log);
       });
 
       it('should return true when all forced decisions have been removed successfully', function() {

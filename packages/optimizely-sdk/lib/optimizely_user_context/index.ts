@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2020, Optimizely, Inc. and contributors                   *
+ * Copyright 2020-2021, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -26,7 +26,7 @@ import {
   UserAttributes,
   Variation
 } from '../../lib/shared_types';
-import { DECISION_MESSAGES, LOG_MESSAGES, CONTROL_ATTRIBUTES } from '../utils/enums';
+import { LOG_MESSAGES, CONTROL_ATTRIBUTES } from '../utils/enums';
 
 const logger = getLogger();
 
@@ -131,11 +131,6 @@ export default class OptimizelyUserContext {
    * @return    {boolean}                     true if the forced decision has been set successfully.
    */
   setForcedDecision(context: OptimizelyDecisionContext, decision: OptimizelyForcedDecision): boolean {
-    if (!this.optimizely.isValidInstance()) {
-      logger.error(DECISION_MESSAGES.SDK_NOT_READY);
-      return false;
-    }
-
     const flagKey = context.flagKey;
 
     const ruleKey = context.ruleKey ?? CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY;
@@ -156,11 +151,6 @@ export default class OptimizelyUserContext {
    * @return    {OptimizelyForcedDecision|null}       OptimizelyForcedDecision for specified context if exists or null.
    */
   getForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null {
-    if (!this.optimizely.isValidInstance()) {
-      logger.error(DECISION_MESSAGES.SDK_NOT_READY);
-      return null;
-    }
-
     return this.findForcedDecision(context);
   }
 
@@ -170,11 +160,6 @@ export default class OptimizelyUserContext {
    * @return    {boolean}                    true if the forced decision has been removed successfully
    */
   removeForcedDecision(context: OptimizelyDecisionContext): boolean {
-    if (!this.optimizely.isValidInstance()) {
-      logger.error(DECISION_MESSAGES.SDK_NOT_READY);
-      return false;
-    }
-
     const ruleKey = context.ruleKey ?? CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY;
     const flagKey = context.flagKey;
 
@@ -199,11 +184,6 @@ export default class OptimizelyUserContext {
    * @return    {boolean}                    true if the forced decision has been removed successfully
    */
   removeAllForcedDecisions(): boolean {
-    if (!this.optimizely.isValidInstance()) {
-      logger.error(DECISION_MESSAGES.SDK_NOT_READY);
-      return false;
-
-    }
     this.forcedDecisionsMap = {};
     return true;
   }
