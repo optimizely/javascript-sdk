@@ -512,9 +512,9 @@ export const getExperimentFromId = function(
 * Returns flag variation for specified flagKey and variationKey
 * @param  {flagKey}        string
 * @param  {variationKey}   string
-* @return {OptimizelyVariation|null}
+* @return {Variation|null}
 */
-export const getFlagVariationByKey = function(projectConfig: ProjectConfig, flagKey: string, variationKey: string): OptimizelyVariation | null {
+export const getFlagVariationByKey = function(projectConfig: ProjectConfig, flagKey: string, variationKey: string): Variation | null {
   if (!projectConfig) {
     return null;
   }

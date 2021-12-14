@@ -615,7 +615,11 @@ export class DecisionService {
           decideReasons.push(...decisionVariation.reasons);
           variationKey = decisionVariation.result;
           if (variationKey) {
-            const variation = getFlagVariationByKey(configObj, feature.key, variationKey);
+            let variation = null;
+            variation = experiment.variationKeyMap[variationKey];
+            if (!variation) {
+              variation = getFlagVariationByKey(configObj, feature.key, variationKey);
+            }
             variationForFeatureExperiment = {
               experiment: experiment,
               variation: variation,
