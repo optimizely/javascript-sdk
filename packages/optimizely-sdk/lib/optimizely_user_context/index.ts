@@ -26,6 +26,10 @@ import {
   UserAttributes,
   Variation
 } from '../../lib/shared_types';
+import {
+  getFlagVariationByKey,
+  ProjectConfig,
+} from '../core/project_config';
 import { LOG_MESSAGES, CONTROL_ATTRIBUTES } from '../utils/enums';
 
 const logger = getLogger();
@@ -211,22 +215,24 @@ export default class OptimizelyUserContext {
 
   /**
    * Finds a validated forced decision for specific flagKey and optional ruleKey.
+   * @param     {ProjectConfig}config               A projectConfig.
    * @param     {string}       flagKey              A flagKey.
    * @param     {ruleKey}      ruleKey              A ruleKey (optional).
    * @return    {DecisionResponse<Variation|null>}  DecisionResponse object containing valid variation object and decide reasons.
    */
   findValidatedForcedDecision(
+    config: ProjectConfig,
     flagKey: string,
-    ruleKey?: string
+    ruleKey?: string,
   ): DecisionResponse<Variation | null> {
 
     const decideReasons: (string | number)[][] = [];
     const forcedDecision = this.findForcedDecision({ flagKey, ruleKey });
     let variation = null;
     let variationKey;
-    if (forcedDecision) {
+    if (config && forcedDecision) {
       variationKey = forcedDecision.variationKey;
-      variation = this.optimizely.getFlagVariationByKey(flagKey, variationKey);
+      variation = getFlagVariationByKey(config, flagKey, variationKey);
       if (variation) {
         if (ruleKey) {
           logger.info(
