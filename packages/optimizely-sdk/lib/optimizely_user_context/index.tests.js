@@ -176,7 +176,39 @@ describe('lib/optimizely_user_context', function() {
         );
         assert.deepEqual(decision, fakeDecision);
       });
-    });
+
+      it('should return an expected decision object when forced decision is called and variation of different experiment but same flag key', function() {
+        var flagKey = 'feature_1';
+        var ruleKey = 'exp_with_audience';
+        var variationKey = '3324490633';
+
+        var fakeDecision = {
+          variationKey: variationKey,
+          enabled: true,
+          variables: {},
+          ruleKey: ruleKey,
+          flagKey: flagKey,
+          userContext: 'fakeUserContext',
+          reasons: [],
+        };
+        fakeOptimizely = {
+          decide: sinon.stub().returns(fakeDecision)
+        };
+        var user = new OptimizelyUserContext({
+          optimizely: fakeOptimizely,
+          userId,
+        });
+        user.setForcedDecision({ flagKey: flagKey, ruleKey }, { variationKey });
+        var decision = user.decide(flagKey, options);
+        sinon.assert.calledWithExactly(
+          fakeOptimizely.decide,
+          user,
+          flagKey,
+          options
+        );
+        assert.deepEqual(decision, fakeDecision);
+      });
+  });
 
     describe('#decideForKeys', function() {
       it('should return an expected decision results object', function() {
