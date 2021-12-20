@@ -73,6 +73,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added support for multiple concurrent prioritized experiments per flag ([#664](https://github.com/optimizely/javascript-sdk/pull/664))
 
 ### Bug fixes
+- Fixed the issue of forced-variation and whitelist not working properly with exclusion group experiments ([#664](https://github.com/optimizely/javascript-sdk/pull/664))
 - Bumped `datafile-manager` and `event-processor` packages to version `0.8.1`.
 
 ## [4.5.1] - March 2, 2021
