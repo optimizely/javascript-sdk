@@ -509,6 +509,26 @@ export const getExperimentFromId = function(
 };
 
 /**
+* Returns flag variation for specified flagKey and variationKey
+* @param  {flagKey}        string
+* @param  {variationKey}   string
+* @return {Variation|null}
+*/
+export const getFlagVariationByKey = function(projectConfig: ProjectConfig, flagKey: string, variationKey: string): Variation | null {
+  if (!projectConfig) {
+    return null;
+  }
+
+  const variations = projectConfig.flagVariationsMap[flagKey];
+  const result = find(variations, item => item.key === variationKey)
+  if (result) {
+    return result;
+  }
+
+  return null;
+};
+
+/**
  * Get feature from provided feature key. Log an error if no feature exists in
  * the project config with the given key.
  * @param  {ProjectConfig}    projectConfig
@@ -817,6 +837,7 @@ export default {
   getExperimentFromKey,
   getTrafficAllocation,
   getExperimentFromId,
+  getFlagVariationByKey,
   getFeatureFromKey,
   getVariableForFeature,
   getVariableValueForVariation,

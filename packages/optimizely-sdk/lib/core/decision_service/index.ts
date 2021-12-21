@@ -31,6 +31,7 @@ import {
   getExperimentAudienceConditions,
   getExperimentFromId,
   getExperimentFromKey,
+  getFlagVariationByKey,
   getTrafficAllocation,
   getVariationIdFromExperimentAndVariationKey,
   getVariationFromId,
@@ -614,7 +615,11 @@ export class DecisionService {
           decideReasons.push(...decisionVariation.reasons);
           variationKey = decisionVariation.result;
           if (variationKey) {
-            const variation = experiment.variationKeyMap[variationKey];
+            let variation = null;
+            variation = experiment.variationKeyMap[variationKey];
+            if (!variation) {
+              variation = getFlagVariationByKey(configObj, feature.key, variationKey);
+            }
             variationForFeatureExperiment = {
               experiment: experiment,
               variation: variation,
@@ -1016,7 +1021,7 @@ export class DecisionService {
     const decideReasons: (string | number)[][] = [];
 
     // check forced decision first
-    const forcedDecisionResponse = user.findValidatedForcedDecision(flagKey, rule.key);
+    const forcedDecisionResponse = user.findValidatedForcedDecision(configObj, flagKey, rule.key);
     decideReasons.push(...forcedDecisionResponse.reasons);
 
     const forcedVariaton = forcedDecisionResponse.result;
@@ -1048,7 +1053,7 @@ export class DecisionService {
 
     // check forced decision first
     const rule = rules[ruleIndex];
-    const forcedDecisionResponse = user.findValidatedForcedDecision(flagKey, rule.key);
+    const forcedDecisionResponse = user.findValidatedForcedDecision(configObj, flagKey, rule.key);
     decideReasons.push(...forcedDecisionResponse.reasons);
 
     const forcedVariaton = forcedDecisionResponse.result;

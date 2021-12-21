@@ -176,7 +176,7 @@ describe('lib/optimizely_user_context', function() {
         );
         assert.deepEqual(decision, fakeDecision);
       });
-    });
+  });
 
     describe('#decideForKeys', function() {
       it('should return an expected decision results object', function() {
@@ -379,6 +379,23 @@ describe('lib/optimizely_user_context', function() {
         afterEach(function() {
           eventDispatcher.dispatchEvent.restore();
           optlyInstance.notificationCenter.sendNotifications.restore();
+        });
+
+        it('should return an expected decision object when forced decision is called and variation of different experiment but same flag key', function() {
+          var flagKey = 'feature_1';
+          var ruleKey = 'exp_with_audience';
+          var variationKey = '3324490633';
+  
+          var user = optlyInstance.createUserContext(userId);
+          user.setForcedDecision({ flagKey: flagKey, ruleKey }, { variationKey });
+          var decision = user.decide(flagKey, options);
+          
+          assert.equal(decision.variationKey, variationKey);
+          assert.equal(decision.ruleKey, ruleKey);
+          assert.equal(decision.enabled, true);
+          assert.equal(decision.userContext.getUserId(), userId);
+          assert.deepEqual(decision.userContext.getAttributes(), {});
+          assert.deepEqual(Object.keys(decision.userContext.forcedDecisionsMap).length, 1);
         });
 
         it('should return forced decision object when forced decision is set for a flag and do NOT dispatch an event with DISABLE_DECISION_EVENT passed in decide options', function() {

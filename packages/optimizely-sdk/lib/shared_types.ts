@@ -18,6 +18,8 @@ import { EventProcessor } from '@optimizely/js-sdk-event-processor';
 
 import { NotificationCenter } from '@optimizely/js-sdk-utils';
 
+import { ProjectConfig } from './core/project_config';
+
 export interface BucketerParams {
   experimentId: string;
   experimentKey: string;
@@ -381,8 +383,9 @@ export interface OptimizelyUserContext {
   ): { [key: string]: OptimizelyDecision };
   trackEvent(eventName: string, eventTags?: EventTags): void;
   findValidatedForcedDecision(
+    config: ProjectConfig,
     flagKey: string,
-    ruleKey?: string,
+    ruleKey?: string
   ): DecisionResponse<Variation | null>;
   setForcedDecision(context: OptimizelyDecisionContext, decision: OptimizelyForcedDecision): boolean;
   getForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null;
