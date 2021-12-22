@@ -382,11 +382,6 @@ export interface OptimizelyUserContext {
     options: OptimizelyDecideOption[],
   ): { [key: string]: OptimizelyDecision };
   trackEvent(eventName: string, eventTags?: EventTags): void;
-  findValidatedForcedDecision(
-    config: ProjectConfig,
-    flagKey: string,
-    ruleKey?: string
-  ): DecisionResponse<Variation | null>;
   setForcedDecision(context: OptimizelyDecisionContext, decision: OptimizelyForcedDecision): boolean;
   getForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null;
   removeForcedDecision(context: OptimizelyDecisionContext): boolean;

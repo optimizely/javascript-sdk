@@ -1481,7 +1481,7 @@ export default class Optimizely {
 
     const allDecideOptions = this.getAllDecideOptions(options);
 
-    const forcedDecisionResponse = user.findValidatedForcedDecision(configObj, key);
+    const forcedDecisionResponse = this.decisionService.findValidatedForcedDecision(configObj, user, key);
     reasons.push(...forcedDecisionResponse.reasons);
     const variation = forcedDecisionResponse.result;
     if (variation) {
