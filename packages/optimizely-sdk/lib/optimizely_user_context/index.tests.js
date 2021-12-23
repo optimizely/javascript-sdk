@@ -615,10 +615,10 @@ describe('lib/optimizely_user_context', function() {
           var logMessage = optlyInstance.decisionService.logger.log.args[4];
           assert.strictEqual(logMessage[0], 2);
           assert.strictEqual(logMessage[1], 'Variation (%s) is mapped to flag (%s), rule (%s) and user (%s) in the forced decision map.');
-          assert.strictEqual(logMessage[2], '3324490633');
-          assert.strictEqual(logMessage[3], 'feature_1');
-          assert.strictEqual(logMessage[4], '3332020515');
-          assert.strictEqual(logMessage[5], 'tester');
+          assert.strictEqual(logMessage[2], variationKey);
+          assert.strictEqual(logMessage[3], featureKey);
+          assert.strictEqual(logMessage[4], ruleKey);
+          assert.strictEqual(logMessage[5], userId);
 
           sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
           var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
