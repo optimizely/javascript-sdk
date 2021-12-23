@@ -24,7 +24,6 @@ import { createLogger } from '../plugins/logger';
 import { createEventProcessor } from '../plugins/event_processor';
 import { createNotificationCenter } from '../core/notification_center';
 import Optimizely from '../optimizely';
-import DecisionService from '../core/decision_service';
 import errorHandler from '../plugins/error_handler';
 import eventDispatcher from '../plugins/event_dispatcher/index.node';
 import { CONTROL_ATTRIBUTES, LOG_LEVEL, LOG_MESSAGES } from '../utils/enums';
