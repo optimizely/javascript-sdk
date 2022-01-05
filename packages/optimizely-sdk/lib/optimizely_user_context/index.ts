@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { getLogger } from '@optimizely/js-sdk-logging';
-
 import Optimizely from '../../lib/optimizely';
 import {
   DecisionResponse,
@@ -31,8 +29,6 @@ import {
   ProjectConfig,
 } from '../core/project_config';
 import { LOG_MESSAGES, CONTROL_ATTRIBUTES } from '../utils/enums';
-
-const logger = getLogger();
 
 export default class OptimizelyUserContext {
   private optimizely: Optimizely;
