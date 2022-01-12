@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-## [4.9.0] - January 6, 2022
+## [4.9.0] - January 12, 2022
 
 ### New Features
 * Add a set of new APIs for overriding and managing user-level flag, experiment and delivery rule decisions. These methods can be used for QA and automated testing purposes. They are an extension of the OptimizelyUserContext interface ([#705](https://github.com/optimizely/javascript-sdk/pull/705), [#727](https://github.com/optimizely/javascript-sdk/pull/727), [#729](https://github.com/optimizely/javascript-sdk/pull/729), [#730](https://github.com/optimizely/javascript-sdk/pull/730)):
