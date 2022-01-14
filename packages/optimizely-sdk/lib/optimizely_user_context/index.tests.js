@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2020-2021, Optimizely, Inc. and contributors                   *
+ * Copyright 2020-2022, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -372,11 +372,13 @@ describe('lib/optimizely_user_context', function() {
             notificationCenter,
           });
 
+          sinon.stub(optlyInstance.decisionService.logger, 'log')
           sinon.stub(eventDispatcher, 'dispatchEvent');
           sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
         });
 
         afterEach(function() {
+          optlyInstance.decisionService.logger.log.restore();
           eventDispatcher.dispatchEvent.restore();
           optlyInstance.notificationCenter.sendNotifications.restore();
         });
@@ -610,17 +612,13 @@ describe('lib/optimizely_user_context', function() {
           assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey][ruleKey], { variationKey });
 
           sinon.assert.called(stubLogHandler.log);
-          var logMessage = stubLogHandler.log.args[4][1];
-          assert.strictEqual(
-            logMessage,
-            sprintf(
-              LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
-              variationKey,
-              featureKey,
-              ruleKey,
-              userId,
-            )
-          );
+          var logMessage = optlyInstance.decisionService.logger.log.args[4];
+          assert.strictEqual(logMessage[0], 2);
+          assert.strictEqual(logMessage[1], 'Variation (%s) is mapped to flag (%s), rule (%s) and user (%s) in the forced decision map.');
+          assert.strictEqual(logMessage[2], variationKey);
+          assert.strictEqual(logMessage[3], featureKey);
+          assert.strictEqual(logMessage[4], ruleKey);
+          assert.strictEqual(logMessage[5], userId);
 
           sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
           var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
