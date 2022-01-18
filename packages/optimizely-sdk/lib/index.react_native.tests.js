@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020 Optimizely
+ * Copyright 2019-2020, 2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ describe('javascript-sdk/react-native', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.9.0');
+        assert.equal(optlyInstance.clientVersion, '4.9.1');
       });
 
       it('should set the React Native JS client engine and javascript SDK version', function() {

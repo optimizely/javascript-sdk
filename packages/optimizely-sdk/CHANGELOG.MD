@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.9.1] - January 18, 2022
+
+### Bug fixes
+- Fixed typescript compilation issue introduced by `4.9.0` ([#733](https://github.com/optimizely/javascript-sdk/pull/733))
+
 ## [4.9.0] - January 14, 2022
 
 ### New Features

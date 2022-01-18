@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2016-2021, Optimizely, Inc. and contributors                   *
+ * Copyright 2016-2022, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -182,7 +182,7 @@ export const NODE_CLIENT_ENGINE = 'node-sdk';
 export const REACT_CLIENT_ENGINE = 'react-sdk';
 export const REACT_NATIVE_CLIENT_ENGINE = 'react-native-sdk';
 export const REACT_NATIVE_JS_CLIENT_ENGINE = 'react-native-js-sdk';
-export const NODE_CLIENT_VERSION = '4.9.0';
+export const NODE_CLIENT_VERSION = '4.9.1';
 
 export const NOTIFICATION_TYPES = notificationTypesEnum;
 
