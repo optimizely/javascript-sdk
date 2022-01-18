@@ -18,8 +18,6 @@ import { EventProcessor } from '@optimizely/js-sdk-event-processor';
 
 import { NotificationCenter } from '@optimizely/js-sdk-utils';
 
-import { ProjectConfig } from './core/project_config';
-
 export interface BucketerParams {
   experimentId: string;
   experimentKey: string;
