@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.9.3] - January 28, 2022
+
+### Changed
+- Made these react native dependencies optional.
+  - `@react-native-async-storage/async-storage`
+  - `@react-native-community/netinfo`
+
 ## [0.9.2] - November 3, 2021
 
 ### Fixed
