@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.9.1] - January 18, 2022
+
+### Bug fixes
+- Fixed typescript compilation issue introduced by `4.9.0` ([#733](https://github.com/optimizely/javascript-sdk/pull/733))
+
+## [4.9.0] - January 14, 2022
+
+### New Features
+* Add a set of new APIs for overriding and managing user-level flag, experiment and delivery rule decisions. These methods can be used for QA and automated testing purposes. They are an extension of the OptimizelyUserContext interface ([#705](https://github.com/optimizely/javascript-sdk/pull/705), [#727](https://github.com/optimizely/javascript-sdk/pull/727), [#729](https://github.com/optimizely/javascript-sdk/pull/729), [#730](https://github.com/optimizely/javascript-sdk/pull/730)):
+	- setForcedDecision
+	- getForcedDecision
+	- removeForcedDecision
+	- removeAllForcedDecisions
+
+* For details, refer to our documentation pages: [OptimizelyUserContext](https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyusercontext-javascript-node) and [Forced Decision methods](https://docs.developers.optimizely.com/full-stack/v4.0/docs/forced-decision-methods-javascript-node).
+
+## [4.8.0] - November 29, 2021
+
+### New Features
+- Added a Lite bundle which does not include Data file manager and Event Processor packages. This reduces the bundle size up to 20% and is helpful for some platforms (such as edge service providers) that do not need extended functionality offered by these packages.
+- Removed Client engine validation in the SDK to allow tracking events from new clients without modifying SDK code.
+
+### Performance Improvements
+- Reduced SDK client initialization time by removing `OptimizelyConfig` creation from initialization. The `OptimizelyConfig` object is now created on the first call to `getOptimizelyConfig` API.
+- Made Improvements to logging mechanism. The SDK no longer concatenates and formats messages which do not qualify for the log level set by the user.
+
+### Changed
+- Updated `json-schema` package version to `0.4.0` to fix a high-severity vulnerability ([Prototype Pollution](https://snyk.io/vuln/SNYK-JS-JSONSCHEMA-1920922)).
+
 ## [4.8.0-beta.2] - November 1, 2021
 
 ### New Features
@@ -60,6 +89,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added support for multiple concurrent prioritized experiments per flag ([#664](https://github.com/optimizely/javascript-sdk/pull/664))
 
 ### Bug fixes
+- Fixed the issue of forced-variation and whitelist not working properly with exclusion group experiments ([#664](https://github.com/optimizely/javascript-sdk/pull/664))
 - Bumped `datafile-manager` and `event-processor` packages to version `0.8.1`.
 
 ## [4.5.1] - March 2, 2021

@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2020, Optimizely, Inc. and contributors                   *
+ * Copyright 2020-2022, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { getLogger } from '@optimizely/js-sdk-logging';
-
 import Optimizely from '../../lib/optimizely';
 import {
   DecisionResponse,
@@ -26,9 +24,11 @@ import {
   UserAttributes,
   Variation
 } from '../../lib/shared_types';
-import { DECISION_MESSAGES, LOG_MESSAGES, CONTROL_ATTRIBUTES } from '../utils/enums';
-
-const logger = getLogger();
+import {
+  getFlagVariationByKey,
+  ProjectConfig,
+} from '../core/project_config';
+import { LOG_MESSAGES, CONTROL_ATTRIBUTES } from '../utils/enums';
 
 export default class OptimizelyUserContext {
   private optimizely: Optimizely;
@@ -131,11 +131,6 @@ export default class OptimizelyUserContext {
    * @return    {boolean}                     true if the forced decision has been set successfully.
    */
   setForcedDecision(context: OptimizelyDecisionContext, decision: OptimizelyForcedDecision): boolean {
-    if (!this.optimizely.isValidInstance()) {
-      logger.error(DECISION_MESSAGES.SDK_NOT_READY);
-      return false;
-    }
-
     const flagKey = context.flagKey;
 
     const ruleKey = context.ruleKey ?? CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY;
@@ -156,11 +151,6 @@ export default class OptimizelyUserContext {
    * @return    {OptimizelyForcedDecision|null}       OptimizelyForcedDecision for specified context if exists or null.
    */
   getForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null {
-    if (!this.optimizely.isValidInstance()) {
-      logger.error(DECISION_MESSAGES.SDK_NOT_READY);
-      return null;
-    }
-
     return this.findForcedDecision(context);
   }
 
@@ -170,11 +160,6 @@ export default class OptimizelyUserContext {
    * @return    {boolean}                    true if the forced decision has been removed successfully
    */
   removeForcedDecision(context: OptimizelyDecisionContext): boolean {
-    if (!this.optimizely.isValidInstance()) {
-      logger.error(DECISION_MESSAGES.SDK_NOT_READY);
-      return false;
-    }
-
     const ruleKey = context.ruleKey ?? CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY;
     const flagKey = context.flagKey;
 
@@ -199,11 +184,6 @@ export default class OptimizelyUserContext {
    * @return    {boolean}                    true if the forced decision has been removed successfully
    */
   removeAllForcedDecisions(): boolean {
-    if (!this.optimizely.isValidInstance()) {
-      logger.error(DECISION_MESSAGES.SDK_NOT_READY);
-      return false;
-
-    }
     this.forcedDecisionsMap = {};
     return true;
   }
@@ -227,89 +207,6 @@ export default class OptimizelyUserContext {
     }
 
     return null;
-  }
-
-  /**
-   * Finds a validated forced decision for specific flagKey and optional ruleKey.
-   * @param     {string}       flagKey              A flagKey.
-   * @param     {ruleKey}      ruleKey              A ruleKey (optional).
-   * @return    {DecisionResponse<Variation|null>}  DecisionResponse object containing valid variation object and decide reasons.
-   */
-  findValidatedForcedDecision(
-    flagKey: string,
-    ruleKey?: string
-  ): DecisionResponse<Variation | null> {
-
-    const decideReasons: (string | number)[][] = [];
-    const forcedDecision = this.findForcedDecision({ flagKey, ruleKey });
-    let variation = null;
-    let variationKey;
-    if (forcedDecision) {
-      variationKey = forcedDecision.variationKey;
-      variation = this.optimizely.getFlagVariationByKey(flagKey, variationKey);
-      if (variation) {
-        if (ruleKey) {
-          logger.info(
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
-            variationKey,
-            flagKey,
-            ruleKey,
-            this.userId
-          );
-          decideReasons.push([
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
-            variationKey,
-            flagKey,
-            ruleKey,
-            this.userId
-          ]);
-        } else {
-          logger.info(
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
-            variationKey,
-            flagKey,
-            this.userId
-          );
-          decideReasons.push([
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
-            variationKey,
-            flagKey,
-            this.userId
-          ])
-        }
-      } else {
-        if (ruleKey) {
-          logger.info(
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
-            flagKey,
-            ruleKey,
-            this.userId
-          );
-          decideReasons.push([
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
-            flagKey,
-            ruleKey,
-            this.userId
-          ]);
-        } else {
-          logger.info(
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
-            flagKey,
-            this.userId
-          );
-          decideReasons.push([
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
-            flagKey,
-            this.userId
-          ])
-        }
-      }
-    }
-
-    return {
-      result: variation,
-      reasons: decideReasons,
-    }
   }
 
   private cloneUserContext(): OptimizelyUserContext {

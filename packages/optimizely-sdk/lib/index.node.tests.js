@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2020 Optimizely
+ * Copyright 2016-2020, 2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ describe('optimizelyFactory', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.8.0-beta.2');
+        assert.equal(optlyInstance.clientVersion, '4.9.1');
       });
 
       describe('event processor configuration', function() {

@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2017-2021 Optimizely, Inc. and contributors                    *
+ * Copyright 2017-2022 Optimizely, Inc. and contributors                    *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -31,6 +31,7 @@ import {
   getExperimentAudienceConditions,
   getExperimentFromId,
   getExperimentFromKey,
+  getFlagVariationByKey,
   getTrafficAllocation,
   getVariationIdFromExperimentAndVariationKey,
   getVariationFromId,
@@ -614,7 +615,11 @@ export class DecisionService {
           decideReasons.push(...decisionVariation.reasons);
           variationKey = decisionVariation.result;
           if (variationKey) {
-            const variation = experiment.variationKeyMap[variationKey];
+            let variation = null;
+            variation = experiment.variationKeyMap[variationKey];
+            if (!variation) {
+              variation = getFlagVariationByKey(configObj, feature.key, variationKey);
+            }
             variationForFeatureExperiment = {
               experiment: experiment,
               variation: variation,
@@ -769,6 +774,98 @@ export class DecisionService {
     }
 
     return bucketingId;
+  }
+
+  /**
+   * Finds a validated forced decision for specific flagKey and optional ruleKey.
+   * @param     {ProjectConfig}         config               A projectConfig.
+   * @param     {OptimizelyUserContext} user                 A Optimizely User Context.
+   * @param     {string}                flagKey              A flagKey.
+   * @param     {ruleKey}               ruleKey              A ruleKey (optional).
+   * @return    {DecisionResponse<Variation|null>}  DecisionResponse object containing valid variation object and decide reasons.
+   */
+   findValidatedForcedDecision(
+    config: ProjectConfig,
+    user: OptimizelyUserContext,
+    flagKey: string,
+    ruleKey?: string
+  ): DecisionResponse<Variation | null> {
+
+    const decideReasons: (string | number)[][] = [];
+    const forcedDecision = user.getForcedDecision({ flagKey, ruleKey });
+    let variation = null;
+    let variationKey;
+    const userId = user.getUserId()
+    if (config && forcedDecision) {
+      variationKey = forcedDecision.variationKey;
+      variation = getFlagVariationByKey(config, flagKey, variationKey);
+      if (variation) {
+        if (ruleKey) {
+          this.logger.log(
+            LOG_LEVEL.INFO,
+            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
+            variationKey,
+            flagKey,
+            ruleKey,
+            userId
+          );
+          decideReasons.push([
+            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
+            variationKey,
+            flagKey,
+            ruleKey,
+            userId
+          ]);
+        } else {
+          this.logger.log(
+            LOG_LEVEL.INFO,
+            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
+            variationKey,
+            flagKey,
+            userId
+          );
+          decideReasons.push([
+            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
+            variationKey,
+            flagKey,
+            userId
+          ])
+        }
+      } else {
+        if (ruleKey) {
+          this.logger.log(
+            LOG_LEVEL.INFO,
+            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
+            flagKey,
+            ruleKey,
+            userId
+          );
+          decideReasons.push([
+            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
+            flagKey,
+            ruleKey,
+            userId
+          ]);
+        } else {
+          this.logger.log(
+            LOG_LEVEL.INFO,
+            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
+            flagKey,
+            userId
+          );
+          decideReasons.push([
+            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
+            flagKey,
+            userId
+          ])
+        }
+      }
+    }
+
+    return {
+      result: variation,
+      reasons: decideReasons,
+    }
   }
 
   /**
@@ -1016,7 +1113,7 @@ export class DecisionService {
     const decideReasons: (string | number)[][] = [];
 
     // check forced decision first
-    const forcedDecisionResponse = user.findValidatedForcedDecision(flagKey, rule.key);
+    const forcedDecisionResponse = this.findValidatedForcedDecision(configObj, user, flagKey, rule.key);
     decideReasons.push(...forcedDecisionResponse.reasons);
 
     const forcedVariaton = forcedDecisionResponse.result;
@@ -1048,7 +1145,7 @@ export class DecisionService {
 
     // check forced decision first
     const rule = rules[ruleIndex];
-    const forcedDecisionResponse = user.findValidatedForcedDecision(flagKey, rule.key);
+    const forcedDecisionResponse = this.findValidatedForcedDecision(configObj, user, flagKey, rule.key);
     decideReasons.push(...forcedDecisionResponse.reasons);
 
     const forcedVariaton = forcedDecisionResponse.result;

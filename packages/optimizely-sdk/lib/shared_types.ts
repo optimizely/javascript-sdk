@@ -1,5 +1,5 @@
 /**
- * Copyright 2020-2021, Optimizely
+ * Copyright 2020-2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -380,10 +380,6 @@ export interface OptimizelyUserContext {
     options: OptimizelyDecideOption[],
   ): { [key: string]: OptimizelyDecision };
   trackEvent(eventName: string, eventTags?: EventTags): void;
-  findValidatedForcedDecision(
-    flagKey: string,
-    ruleKey?: string,
-  ): DecisionResponse<Variation | null>;
   setForcedDecision(context: OptimizelyDecisionContext, decision: OptimizelyForcedDecision): boolean;
   getForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null;
   removeForcedDecision(context: OptimizelyDecisionContext): boolean;

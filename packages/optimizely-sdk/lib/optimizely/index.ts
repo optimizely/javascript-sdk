@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2020-2021, Optimizely, Inc. and contributors                   *
+ * Copyright 2020-2022, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -1481,7 +1481,7 @@ export default class Optimizely {
 
     const allDecideOptions = this.getAllDecideOptions(options);
 
-    const forcedDecisionResponse = user.findValidatedForcedDecision(key);
+    const forcedDecisionResponse = this.decisionService.findValidatedForcedDecision(configObj, user, key);
     reasons.push(...forcedDecisionResponse.reasons);
     const variation = forcedDecisionResponse.result;
     if (variation) {
@@ -1672,24 +1672,4 @@ export default class Optimizely {
     return this.decideForKeys(user, allFlagKeys, options);
   }
 
-  /**
-   * Returns flag variation for specified flagKey and variationKey
-   * @param  {flagKey}        string
-   * @param  {variationKey}   string
-   * @return {OptimizelyVariation|null}
-   */
-  getFlagVariationByKey(flagKey: string, variationKey: string): OptimizelyVariation | null {
-    const configObj = this.projectConfigManager.getConfig();
-    if (!configObj) {
-      return null;
-    }
-
-    const variations = configObj.flagVariationsMap[flagKey];
-    const result = find(variations, item => item.key === variationKey)
-    if (result) {
-      return result;
-    }
-
-    return null;
-  }
 }
