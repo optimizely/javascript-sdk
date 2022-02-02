@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.9.4] - February 2, 2022
+
+### Changed
+- Made `@react-native-async-storage/async-storage` an optional peer dependency.
+
 ## [0.9.3] - January 31, 2022
 
 ### Changed
