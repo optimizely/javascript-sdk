@@ -54,5 +54,13 @@
   "peerDependencies": {
     "@react-native-community/netinfo": "5.9.4",
     "@react-native-async-storage/async-storage": "^1.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@react-native-async-storage/async-storage": {
+      "optional": true
+    },
+    "@react-native-community/netinfo": {
+      "optional": true
+    }
   }
 }
