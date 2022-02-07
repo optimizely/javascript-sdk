@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2018, 2020, Optimizely, Inc. and contributors                  *
+ * Copyright 2018, 2021, Optimizely, Inc. and contributors                  *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -18,7 +18,7 @@ const AND_CONDITION = 'and';
 const OR_CONDITION = 'or';
 const NOT_CONDITION = 'not';
 
-const DEFAULT_OPERATOR_TYPES = [AND_CONDITION, OR_CONDITION, NOT_CONDITION];
+export const DEFAULT_OPERATOR_TYPES = [AND_CONDITION, OR_CONDITION, NOT_CONDITION];
 export type ConditionTree<Leaf> = Leaf | unknown[];
 
 type LeafEvaluator<Leaf> = (leaf: Leaf) => boolean | null;

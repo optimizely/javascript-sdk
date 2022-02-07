@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2020, Optimizely
+ * Copyright 2016-2021, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import sinon from 'sinon';
-import { assert, expect, config } from 'chai';
+import { assert } from 'chai';
 import { forEach, cloneDeep } from 'lodash';
 import { getLogger } from '@optimizely/js-sdk-logging';
 import { sprintf } from '@optimizely/js-sdk-utils';
@@ -26,10 +26,11 @@ import {
   FEATURE_VARIABLE_TYPES,
   LOG_LEVEL,
 } from '../../utils/enums';
-import loggerPlugin from '../../plugins/logger';
+import * as loggerPlugin from '../../plugins/logger';
 import testDatafile from '../../tests/test_data';
 import configValidator from '../../utils/config_validator';
 
+var buildLogMessageFromArgs = args => sprintf(args[1], ...args.splice(2));
 var logger = getLogger();
 
 describe('lib/core/project_config', function() {
@@ -171,8 +172,6 @@ describe('lib/core/project_config', function() {
         '553': configObj.experiments[6].variations[0],
         '554': configObj.experiments[6].variations[1],
       };
-
-      assert.deepEqual(configObj.variationIdMap, expectedVariationIdMap);
     });
 
     it('should not mutate the datafile', function() {
@@ -252,6 +251,33 @@ describe('lib/core/project_config', function() {
         });
       });
     });
+
+    describe('flag variations', function() {
+      var configObj;
+      beforeEach(function() {
+        configObj = projectConfig.createProjectConfig(testDatafile.getTestDecideProjectConfig());
+      });
+
+      it('it should populate flagVariationsMap correctly', function() {
+        var allVariationsForFlag = configObj.flagVariationsMap;
+        var feature1Variations = allVariationsForFlag.feature_1;
+        var feature2Variations = allVariationsForFlag.feature_2;
+        var feature3Variations = allVariationsForFlag.feature_3;
+        var feature1VariationsKeys = feature1Variations.map((variation) => {
+          return variation.key;
+        }, {});
+        var feature2VariationsKeys = feature2Variations.map((variation) => {
+          return variation.key;
+        }, {});
+        var feature3VariationsKeys = feature3Variations.map((variation) => {
+          return variation.key;
+        }, {});
+
+        assert.deepEqual(feature1VariationsKeys, [ 'a', 'b', '3324490633', '3324490562', '18257766532' ]);
+        assert.deepEqual(feature2VariationsKeys, [ 'variation_with_traffic', 'variation_no_traffic' ]);
+        assert.deepEqual(feature3VariationsKeys, [ ]);
+      });
+    });
   });
 
   describe('projectConfig helper methods', function() {
@@ -301,9 +327,8 @@ describe('lib/core/project_config', function() {
 
     it('should return null for invalid attribute key in getAttributeId', function() {
       assert.isNull(projectConfig.getAttributeId(configObj, 'invalidAttributeKey', createdLogger));
-      sinon.assert.calledWithExactly(
-        createdLogger.log,
-        LOG_LEVEL.DEBUG,
+      assert.strictEqual(
+        buildLogMessageFromArgs(createdLogger.log.lastCall.args),
         'PROJECT_CONFIG: Unrecognized attribute invalidAttributeKey provided. Pruning before sending event to Optimizely.'
       );
     });
@@ -315,9 +340,8 @@ describe('lib/core/project_config', function() {
         key: '$opt_some_reserved_attribute',
       };
       assert.strictEqual(projectConfig.getAttributeId(configObj, '$opt_some_reserved_attribute', createdLogger), '42');
-      sinon.assert.calledWithExactly(
-        createdLogger.log,
-        LOG_LEVEL.WARN,
+      assert.strictEqual(
+        buildLogMessageFromArgs(createdLogger.log.lastCall.args),
         'Attribute $opt_some_reserved_attribute unexpectedly has reserved prefix $opt_; using attribute ID instead of reserved attribute name.'
       );
     });
@@ -368,15 +392,15 @@ describe('lib/core/project_config', function() {
 
     it('should retrieve traffic allocation given valid experiment key in getTrafficAllocation', function() {
       assert.deepEqual(
-        projectConfig.getTrafficAllocation(configObj, testData.experiments[0].key),
+        projectConfig.getTrafficAllocation(configObj, testData.experiments[0].id),
         testData.experiments[0].trafficAllocation
       );
     });
 
     it('should throw error for invalid experient key in getTrafficAllocation', function() {
       assert.throws(function() {
-        projectConfig.getTrafficAllocation(configObj, 'invalidExperimentKey');
-      }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'invalidExperimentKey'));
+        projectConfig.getTrafficAllocation(configObj, 'invalidExperimentId');
+      }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, 'PROJECT_CONFIG', 'invalidExperimentId'));
     });
 
     describe('#getVariationIdFromExperimentAndVariationKey', function() {
@@ -448,9 +472,8 @@ describe('lib/core/project_config', function() {
           var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
           assert.strictEqual(result, null);
           sinon.assert.calledOnce(featureManagementLogger.log);
-          sinon.assert.calledWithExactly(
-            featureManagementLogger.log,
-            LOG_LEVEL.ERROR,
+          assert.strictEqual(
+             buildLogMessageFromArgs(featureManagementLogger.log.lastCall.args),
             'PROJECT_CONFIG: Variable with key "notARealVariable____" associated with feature with key "test_feature_for_experiment" is not in datafile.'
           );
         });
@@ -461,9 +484,8 @@ describe('lib/core/project_config', function() {
           var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
           assert.strictEqual(result, null);
           sinon.assert.calledOnce(featureManagementLogger.log);
-          sinon.assert.calledWithExactly(
-            featureManagementLogger.log,
-            LOG_LEVEL.ERROR,
+          assert.strictEqual(
+             buildLogMessageFromArgs(featureManagementLogger.log.lastCall.args),
             'PROJECT_CONFIG: Feature key notARealFeature_____ is not in datafile.'
           );
         });
@@ -474,9 +496,8 @@ describe('lib/core/project_config', function() {
           var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
           assert.strictEqual(result, null);
           sinon.assert.calledOnce(featureManagementLogger.log);
-          sinon.assert.calledWithExactly(
-            featureManagementLogger.log,
-            LOG_LEVEL.ERROR,
+          assert.strictEqual(
+             buildLogMessageFromArgs(featureManagementLogger.log.lastCall.args),
             'PROJECT_CONFIG: Feature key notARealFeature_____ is not in datafile.'
           );
         });
@@ -620,9 +641,8 @@ describe('lib/core/project_config', function() {
             featureManagementLogger
           );
           assert.strictEqual(result, null);
-          sinon.assert.calledWithExactly(
-            featureManagementLogger.log,
-            LOG_LEVEL.ERROR,
+          assert.strictEqual(
+             buildLogMessageFromArgs(featureManagementLogger.log.lastCall.args),
             'PROJECT_CONFIG: Unable to cast value notabool to type boolean, returning null.'
           );
         });
@@ -634,9 +654,8 @@ describe('lib/core/project_config', function() {
             featureManagementLogger
           );
           assert.strictEqual(result, null);
-          sinon.assert.calledWithExactly(
-            featureManagementLogger.log,
-            LOG_LEVEL.ERROR,
+          assert.strictEqual(
+             buildLogMessageFromArgs(featureManagementLogger.log.lastCall.args),
             'PROJECT_CONFIG: Unable to cast value notanint to type integer, returning null.'
           );
         });
@@ -648,9 +667,8 @@ describe('lib/core/project_config', function() {
             featureManagementLogger
           );
           assert.strictEqual(result, null);
-          sinon.assert.calledWithExactly(
-            featureManagementLogger.log,
-            LOG_LEVEL.ERROR,
+          assert.strictEqual(
+             buildLogMessageFromArgs(featureManagementLogger.log.lastCall.args),
             'PROJECT_CONFIG: Unable to cast value notadouble to type double, returning null.'
           );
         });
@@ -670,7 +688,7 @@ describe('lib/core/project_config', function() {
     describe('#getExperimentAudienceConditions', function() {
       it('should retrieve audiences for valid experiment key', function() {
         configObj = projectConfig.createProjectConfig(cloneDeep(testData));
-        assert.deepEqual(projectConfig.getExperimentAudienceConditions(configObj, testData.experiments[1].key), [
+        assert.deepEqual(projectConfig.getExperimentAudienceConditions(configObj, testData.experiments[1].id), [
           '11154',
         ]);
       });
@@ -678,13 +696,13 @@ describe('lib/core/project_config', function() {
       it('should throw error for invalid experiment key', function() {
         configObj = projectConfig.createProjectConfig(cloneDeep(testData));
         assert.throws(function() {
-          projectConfig.getExperimentAudienceConditions(configObj, 'invalidExperimentKey');
-        }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'invalidExperimentKey'));
+          projectConfig.getExperimentAudienceConditions(configObj, 'invalidExperimentId');
+        }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, 'PROJECT_CONFIG', 'invalidExperimentId'));
       });
 
       it('should return experiment audienceIds if experiment has no audienceConditions', function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
-        var result = projectConfig.getExperimentAudienceConditions(configObj, 'feat_with_var_test');
+        var result = projectConfig.getExperimentAudienceConditions(configObj, '11564051718');
         assert.deepEqual(result, [
           '3468206642',
           '3988293898',
@@ -700,7 +718,7 @@ describe('lib/core/project_config', function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
         // audience_combinations_experiment has both audienceConditions and audienceIds
         // audienceConditions should be preferred over audienceIds
-        var result = projectConfig.getExperimentAudienceConditions(configObj, 'audience_combinations_experiment');
+        var result = projectConfig.getExperimentAudienceConditions(configObj, '1323241598');
         assert.deepEqual(result, [
           'and',
           ['or', '3468206642', '3988293898'],

@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020 Optimizely
+ * Copyright 2019-2021 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,6 +82,23 @@ describe('lib/utils/fns', function() {
       });
       it('should return false in case of null', function() {
         assert.isFalse(fns.isNumber(null));
+      });
+    });
+
+    describe('assign', function() {      
+      it('should return empty object when target is not provided', function() {
+        assert.deepEqual(fns.assign(), {});        
+      });
+
+      it('should copy correctly when Object.assign is available in environment', function() {        
+        assert.deepEqual(fns.assign({ a: 'a'}, {b: 'b'}), { a: 'a', b: 'b' });        
+      });
+
+      it('should copy correctly when Object.assign is not available in environment', function() {
+        var originalAssign = Object.assign;
+        Object.assign = null;
+        assert.deepEqual(fns.assign({ a: 'a'}, {b: 'b'}, {c: 'c'}), { a: 'a', b: 'b', c: 'c' });
+        Object.assign = originalAssign;
       });
     });
   });

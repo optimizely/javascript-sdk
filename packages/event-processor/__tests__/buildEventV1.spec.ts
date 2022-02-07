@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019, 2021, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -181,8 +181,8 @@ describe('buildEventV1', () => {
                 decisions: [
                   {
                     campaign_id: null,
-                    experiment_id: null,
-                    variation_id: null,
+                    experiment_id: "",
+                    variation_id: "",
                     metadata: {
                       flag_key: 'flagKey1',
                       rule_key: '',
@@ -224,7 +224,7 @@ describe('buildEventV1', () => {
   })
 
   describe('buildConversionEventV1', () => {
-    it('should build an build a ConversionEventV1', () => {
+    it('should build a ConversionEventV1 when tags object is defined', () => {
       const conversionEvent: ConversionEvent = {
         type: 'conversion',
         timestamp: 69,
@@ -285,6 +285,164 @@ describe('buildEventV1', () => {
                       value: '123',
                       revenue: '1000',
                     },
+                    revenue: 1000,
+                    value: 123,
+                  },
+                ],
+              },
+            ],
+            visitor_id: 'userId',
+            attributes: [
+              {
+                entity_id: 'attr1-id',
+                key: 'attr1-key',
+                type: 'custom',
+                value: 'attr1-value',
+              },
+              {
+                entity_id: '$opt_bot_filtering',
+                key: '$opt_bot_filtering',
+                type: 'custom',
+                value: true,
+              },
+            ],
+          },
+        ],
+      })
+    })
+
+    it('should build a ConversionEventV1 when tags object is undefined', () => {
+      const conversionEvent: ConversionEvent = {
+        type: 'conversion',
+        timestamp: 69,
+        uuid: 'uuid',
+
+        context: {
+          accountId: 'accountId',
+          projectId: 'projectId',
+          clientName: 'node-sdk',
+          clientVersion: '3.0.0',
+          revision: 'revision',
+          botFiltering: true,
+          anonymizeIP: true,
+        },
+
+        user: {
+          id: 'userId',
+          attributes: [{ entityId: 'attr1-id', key: 'attr1-key', value: 'attr1-value' }],
+        },
+
+        event: {
+          id: 'event-id',
+          key: 'event-key',
+        },
+
+        tags: undefined,
+
+        revenue: 1000,
+        value: 123,
+      }
+
+      const result = buildConversionEventV1(conversionEvent)
+      expect(result).toEqual({
+        client_name: 'node-sdk',
+        client_version: '3.0.0',
+        account_id: 'accountId',
+        project_id: 'projectId',
+        revision: 'revision',
+        anonymize_ip: true,
+        enrich_decisions: true,
+
+        visitors: [
+          {
+            snapshots: [
+              {
+                events: [
+                  {
+                    entity_id: 'event-id',
+                    timestamp: 69,
+                    key: 'event-key',
+                    uuid: 'uuid',
+                    tags: undefined,
+                    revenue: 1000,
+                    value: 123,
+                  },
+                ],
+              },
+            ],
+            visitor_id: 'userId',
+            attributes: [
+              {
+                entity_id: 'attr1-id',
+                key: 'attr1-key',
+                type: 'custom',
+                value: 'attr1-value',
+              },
+              {
+                entity_id: '$opt_bot_filtering',
+                key: '$opt_bot_filtering',
+                type: 'custom',
+                value: true,
+              },
+            ],
+          },
+        ],
+      })
+    })
+
+    it('should build a ConversionEventV1 when event id is null', () => {
+      const conversionEvent: ConversionEvent = {
+        type: 'conversion',
+        timestamp: 69,
+        uuid: 'uuid',
+
+        context: {
+          accountId: 'accountId',
+          projectId: 'projectId',
+          clientName: 'node-sdk',
+          clientVersion: '3.0.0',
+          revision: 'revision',
+          botFiltering: true,
+          anonymizeIP: true,
+        },
+
+        user: {
+          id: 'userId',
+          attributes: [{ entityId: 'attr1-id', key: 'attr1-key', value: 'attr1-value' }],
+        },
+
+        event: {
+          id: null,
+          key: 'event-key',
+        },
+
+        tags: undefined,
+
+        revenue: 1000,
+        value: 123,
+      }
+
+      const result = buildConversionEventV1(conversionEvent)
+      expect(result).toEqual({
+        client_name: 'node-sdk',
+        client_version: '3.0.0',
+        account_id: 'accountId',
+        project_id: 'projectId',
+        revision: 'revision',
+        anonymize_ip: true,
+        enrich_decisions: true,
+
+        visitors: [
+          {
+            snapshots: [
+              {
+                events: [
+                  {
+                    entity_id: null,
+                    timestamp: 69,
+                    key: 'event-key',
+                    uuid: 'uuid',
+                    tags: undefined,
                     revenue: 1000,
                     value: 123,
                   },

@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, 2020, Optimizely
+ * Copyright 2016-2017, 2020-2021, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ConsoleLogHandler } from '@optimizely/js-sdk-logging';
+import { ConsoleLogHandler, LogLevel } from '@optimizely/js-sdk-logging';
 
-function NoOpLogger() {}
+type ConsoleLogHandlerConfig = {
+  logLevel?: LogLevel | string;
+  logToConsole?: boolean;
+  prefix?: string;
+}
 
-NoOpLogger.prototype.log = function() {};
+export class NoOpLogger {
+  log(): void { }
+}
 
-export var createLogger = function(opts) {
+export function createLogger(opts?: ConsoleLogHandlerConfig): ConsoleLogHandler {  
   return new ConsoleLogHandler(opts);
-};
+}
 
-export var createNoOpLogger = function() {
+export function createNoOpLogger(): NoOpLogger {
   return new NoOpLogger();
-};
-
-export default {
-  createLogger,
-  createNoOpLogger,
-};
+}

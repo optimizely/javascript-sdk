@@ -7,6 +7,112 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.9.1] - January 18, 2022
+
+### Bug fixes
+- Fixed typescript compilation issue introduced by `4.9.0` ([#733](https://github.com/optimizely/javascript-sdk/pull/733))
+
+## [4.9.0] - January 14, 2022
+
+### New Features
+* Add a set of new APIs for overriding and managing user-level flag, experiment and delivery rule decisions. These methods can be used for QA and automated testing purposes. They are an extension of the OptimizelyUserContext interface ([#705](https://github.com/optimizely/javascript-sdk/pull/705), [#727](https://github.com/optimizely/javascript-sdk/pull/727), [#729](https://github.com/optimizely/javascript-sdk/pull/729), [#730](https://github.com/optimizely/javascript-sdk/pull/730)):
+	- setForcedDecision
+	- getForcedDecision
+	- removeForcedDecision
+	- removeAllForcedDecisions
+
+* For details, refer to our documentation pages: [OptimizelyUserContext](https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyusercontext-javascript-node) and [Forced Decision methods](https://docs.developers.optimizely.com/full-stack/v4.0/docs/forced-decision-methods-javascript-node).
+
+## [4.8.0] - November 29, 2021
+
+### New Features
+- Added a Lite bundle which does not include Data file manager and Event Processor packages. This reduces the bundle size up to 20% and is helpful for some platforms (such as edge service providers) that do not need extended functionality offered by these packages.
+- Removed Client engine validation in the SDK to allow tracking events from new clients without modifying SDK code.
+
+### Performance Improvements
+- Reduced SDK client initialization time by removing `OptimizelyConfig` creation from initialization. The `OptimizelyConfig` object is now created on the first call to `getOptimizelyConfig` API.
+- Made Improvements to logging mechanism. The SDK no longer concatenates and formats messages which do not qualify for the log level set by the user.
+
+### Changed
+- Updated `json-schema` package version to `0.4.0` to fix a high-severity vulnerability ([Prototype Pollution](https://snyk.io/vuln/SNYK-JS-JSONSCHEMA-1920922)).
+
+## [4.8.0-beta.2] - November 1, 2021
+
+### New Features
+- Removed Client engine validation in the SDK to allow tracking events from new clients without modifying SDK code.
+
+## [4.8.0-beta] - October 18, 2021
+
+### New Features
+- Added a Lite bundle which does not include Data file manager and Event Processor packages. This reduces the bundle size up to 20% and is helpful for some platforms (such as edge service providers) that do not need extended functionality offered by these packages.
+
+### Performance Improvements
+- Reduced SDK client initialization time by removing `OptimizelyConfig` creation from initialization. The `OptimizelyConfig` object is now created on the first call to `getOptimizelyConfig` API.
+- Made Improvements to logging mechanism. The SDK now no longer concatenates and formats messages which do not qualify for the log level set by the user.
+
+## [4.7.0] - September 15, 2021
+
+### New Features
+- Added new public properties to `OptimizelyConfig`. ([#683](https://github.com/optimizely/javascript-sdk/pull/683), [#698](https://github.com/optimizely/javascript-sdk/pull/698))
+	- sdkKey
+	- environmentKey
+	- attributes
+	- audiences
+	- events
+	- experimentRules and deliveryRules to `OptimizelyFeature`
+	- audiences to `OptimizelyExperiment`
+- For details, refer to our documentation page:
+  - Node version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyconfig-javascript-node](https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyconfig-javascript-node).
+  - Browser version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyconfig-javascript](https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyconfig-javascript).
+
+### Bug fixes
+- Followed experimentIds order of experiments inside featuresMap of OptimizelyConfig ([#701](https://github.com/optimizely/javascript-sdk/pull/701))
+
+### Deprecated
+
+- `OptimizelyFeature.experimentsMap` of `OptimizelyConfig` is deprecated as of this release. Please use `OptimizelyFeature.experimentRules` and `OptimizelyFeature.deliveryRules` ([#698](https://github.com/optimizely/javascript-sdk/pull/698))
+
+## [4.6.2] - July 15, 2021
+
+### Bug fixes
+- Fixed incorrect impression event payload in projects containing multiple flags with dublicate key rules ([#690](https://github.com/optimizely/javascript-sdk/pull/690))
+
+## [4.6.1] - July 8, 2021
+
+### Bug fixes
+- Bumped `event-processor` packages to version `0.8.2`
+- Fixed serving incorrect variation issue in projects containing multiple flags with same key rules ([#687](https://github.com/optimizely/javascript-sdk/pull/687))
+
+## [4.6.0] - May 27, 2021
+
+### New Features
+- Added support for multiple concurrent prioritized experiments per flag ([#664](https://github.com/optimizely/javascript-sdk/pull/664))
+
+### Bug fixes
+- Fixed the issue of forced-variation and whitelist not working properly with exclusion group experiments ([#664](https://github.com/optimizely/javascript-sdk/pull/664))
+- Bumped `datafile-manager` and `event-processor` packages to version `0.8.1`.
+
+## [4.5.1] - March 2, 2021
+
+### Bug fixes
+-  Refactored TypeScript type definitions to have `OptimizelyUserContext` and `OptimizelyDecision` imported from `shared_types` to provide isolation from internal modules ([#655](https://github.com/optimizely/javascript-sdk/pull/655))
+
+## [4.5.0] - February 17, 2021
+
+### New Features
+
+- Introducing a new primary interface for retrieving feature flag status, configuration and associated experiment decisions for users ([#632](https://github.com/optimizely/javascript-sdk/pull/632), [#634](https://github.com/optimizely/javascript-sdk/pull/634), [#635](https://github.com/optimizely/javascript-sdk/pull/635), [#636](https://github.com/optimizely/javascript-sdk/pull/636), [#640](https://github.com/optimizely/javascript-sdk/pull/640), [#642](https://github.com/optimizely/javascript-sdk/pull/642), [#643](https://github.com/optimizely/javascript-sdk/pull/643), [#644](https://github.com/optimizely/javascript-sdk/pull/644), [#647](https://github.com/optimizely/javascript-sdk/pull/647), [#648](https://github.com/optimizely/javascript-sdk/pull/648)). The new `OptimizelyUserContext` class is instantiated with `createUserContext` and exposes the following APIs to get `OptimizelyDecision`:
+
+	- setAttribute
+	- decide
+	- decideAll
+	- decideForKeys
+	- trackEvent
+
+- For details, refer to our documentation page:
+  - browser version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-sdk](https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-sdk).
+  - Node version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-node-sdk](https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-node-sdk).
+
 ## [4.5.0-beta] - February 10, 2021
 
 ### New Features

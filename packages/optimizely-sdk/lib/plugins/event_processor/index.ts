@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2020, Optimizely
+ * Copyright 2020, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-/**
- * Default error handler implementation
- */
-export var handleError = function() {
-  // no-op
+import { LogTierV1EventProcessor, LocalStoragePendingEventsDispatcher } from '@optimizely/js-sdk-event-processor';
+
+export function createEventProcessor(
+  ...args: ConstructorParameters<typeof LogTierV1EventProcessor>
+): LogTierV1EventProcessor {
+  return new LogTierV1EventProcessor(...args);
 }
 
-export default {
-  handleError,
-}
+export default { createEventProcessor, LocalStoragePendingEventsDispatcher };

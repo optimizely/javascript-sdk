@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020 Optimizely
+ * Copyright 2019-2021 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,13 @@ import * as enums from './utils/enums';
 import Optimizely from './optimizely';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
-import loggerPlugin from './plugins/logger/index.react_native';
+import * as loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
+import { createNotificationCenter } from './core/notification_center';
+import { createEventProcessor } from './plugins/event_processor';
 import { SDKOptions, OptimizelyDecideOption } from './shared_types';
+import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -83,16 +86,33 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       eventFlushInterval = DEFAULT_EVENT_FLUSH_INTERVAL;
     }
 
+    const errorHandler = getErrorHandler();
+    const notificationCenter = createNotificationCenter({ logger: logger, errorHandler: errorHandler });
+
+    const eventProcessorConfig = {
+      dispatcher: config.eventDispatcher || defaultEventDispatcher,
+      flushInterval: eventFlushInterval,
+      batchSize: eventBatchSize,
+      maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
+      notificationCenter,
+    }
+
+    const eventProcessor = createEventProcessor(eventProcessorConfig);
+
     const optimizelyOptions = {
-      clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
-      eventDispatcher: defaultEventDispatcher,
-      eventMaxQueueSize: DEFAULT_EVENT_MAX_QUEUE_SIZE,
+      clientEngine: enums.REACT_NATIVE_JS_CLIENT_ENGINE,
       ...config,
-      eventBatchSize: eventBatchSize,
-      eventFlushInterval: eventFlushInterval,
-      logger: logger,
-      errorHandler: getErrorHandler()
+      eventProcessor,
+      logger,
+      errorHandler,
+      datafileManager:  config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
+      notificationCenter,
     };
+
+    // If client engine is react, convert it to react native.
+    if (optimizelyOptions.clientEngine === enums.REACT_CLIENT_ENGINE) {
+      optimizelyOptions.clientEngine = enums.REACT_NATIVE_CLIENT_ENGINE;
+    }
 
     return new Optimizely(optimizelyOptions);
   } catch (e) {

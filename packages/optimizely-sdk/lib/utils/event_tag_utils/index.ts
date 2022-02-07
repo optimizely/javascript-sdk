@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf } from '@optimizely/js-sdk-utils';
-
 import { EventTags } from '@optimizely/js-sdk-event-processor';
 import { LoggerFacade } from '@optimizely/js-sdk-logging';
 
@@ -44,15 +42,15 @@ export function getRevenueValue(eventTags: EventTags, logger: LoggerFacade): num
     if (typeof rawValue === 'string') {
       parsedRevenueValue = parseInt(rawValue);
       if (isNaN(parsedRevenueValue)) {
-        logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FAILED_TO_PARSE_REVENUE, MODULE_NAME, rawValue));
+        logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.FAILED_TO_PARSE_REVENUE, MODULE_NAME, rawValue);
         return null;
       }
-      logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.PARSED_REVENUE_VALUE, MODULE_NAME, parsedRevenueValue));
+      logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.PARSED_REVENUE_VALUE, MODULE_NAME, parsedRevenueValue);
       return parsedRevenueValue;
     }
     if (typeof rawValue === 'number') {
       parsedRevenueValue = rawValue;
-      logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.PARSED_REVENUE_VALUE, MODULE_NAME, parsedRevenueValue));
+      logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.PARSED_REVENUE_VALUE, MODULE_NAME, parsedRevenueValue);
       return parsedRevenueValue;
     }
     return null;
@@ -73,15 +71,15 @@ export function getEventValue(eventTags: EventTags, logger: LoggerFacade): numbe
     if (typeof rawValue === 'string') {
       parsedEventValue = parseFloat(rawValue);
       if (isNaN(parsedEventValue)) {
-        logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.FAILED_TO_PARSE_VALUE, MODULE_NAME, rawValue));
+        logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.FAILED_TO_PARSE_VALUE, MODULE_NAME, rawValue);
         return null;
       }
-    logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.PARSED_NUMERIC_VALUE, MODULE_NAME, parsedEventValue));
+    logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.PARSED_NUMERIC_VALUE, MODULE_NAME, parsedEventValue);
     return parsedEventValue;
     }
     if (typeof rawValue === 'number') {
       parsedEventValue = rawValue;
-      logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.PARSED_NUMERIC_VALUE, MODULE_NAME, parsedEventValue));
+      logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.PARSED_NUMERIC_VALUE, MODULE_NAME, parsedEventValue);
       return parsedEventValue;
     }
     return null;

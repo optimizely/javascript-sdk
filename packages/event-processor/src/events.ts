@@ -73,13 +73,13 @@ export interface ConversionEvent extends BaseEvent {
   }
 
   event: {
-    id: string
+    id: string | null
     key: string
   }
 
   revenue: number | null
   value: number | null
-  tags: EventTags
+  tags: EventTags | undefined
 }
 
 export type EventTags = {

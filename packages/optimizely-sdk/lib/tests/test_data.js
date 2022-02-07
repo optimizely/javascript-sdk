@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2020, Optimizely
+ * Copyright 2016-2021, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -418,6 +418,8 @@ var decideConfig = {
   ],
   anonymizeIP: true,
   botFiltering: true,
+  sdkKey: 'ValidProjectConfigV4',
+  environmentKey: 'production',
   projectId: '10431130345',
   variables: [],
   featureFlags: [
@@ -871,6 +873,20 @@ var configWithFeatures = {
       experimentIds: ['12115595439'],
       variables: [],
     },
+    {
+      id: '91115',
+      key: 'test_feature_in_exclusion_group',
+      experimentIds: ['42222', '42223', '42224'],
+      rolloutId: '594059',
+      variables: [],
+    },
+    {
+      id: '91116',
+      key: 'test_feature_in_multiple_experiments',
+      experimentIds: ['111134', '111135', '111136'],
+      rolloutId: '594059',
+      variables: [],
+    },
   ],
   experiments: [
     {
@@ -1024,9 +1040,113 @@ var configWithFeatures = {
       key: 'test_shared_feature',
       id: '599028',
     },
+    {
+      key: 'test_experiment3',
+      status: 'Running',
+      layerId: '6',
+      audienceConditions : [
+        "or",
+        "11160"
+      ],
+      audienceIds: ['11160'],
+      id: '111134',
+      forcedVariations: {},
+      trafficAllocation: [
+        {
+          entityId: '222239',
+          endOfRange: 2500
+        },
+        {
+          entityId: '',
+          endOfRange: 5000
+        },
+        {
+          entityId: '',
+          endOfRange: 7500
+        },
+        {
+          entityId: '',
+          endOfRange: 10000
+        }
+      ],
+      variations: [
+        {
+          id: '222239',
+          key: 'control',
+          variables: [],
+          featureEnabled: false,
+        }
+      ],
+    },
+    {
+      key: 'test_experiment4',
+      status: 'Running',
+      layerId: '7',
+      audienceConditions: [
+        "or",
+        "11160"
+      ],
+      audienceIds: ['11160'],
+      id: '111135',
+      forcedVariations: {},
+      trafficAllocation: [
+        {
+          entityId: '222240',
+          endOfRange: 5000
+        },
+        {
+          entityId: '',
+          endOfRange: 7500
+        },
+        {
+          entityId: '',
+          endOfRange: 10000
+        }
+      ],
+      variations: [
+        {
+          id: '222240',
+          key: 'control',
+          variables: [],
+          featureEnabled: false,
+        }
+      ],
+    },
+    {
+      key: 'test_experiment5',
+      status: 'Running',
+      layerId: '8',
+      audienceConditions: [
+          "or",
+          "11160"
+      ],
+      audienceIds: ['11160'],
+      id: '111136',
+      forcedVariations: {},
+      trafficAllocation: [
+        {
+          entityId: '222241',
+          endOfRange: 7500
+        },
+        {
+          entityId: '',
+          endOfRange: 10000
+        }
+      ],
+      variations: [
+        {
+          id: '222241',
+          key: 'control',
+          variables: [],
+          featureEnabled: false,
+        }
+      ],
+    },
   ],
   anonymizeIP: true,
   botFiltering: true,
+  sdkKey: 'ValidProjectConfigV4',
+  environmentKey: 'development',
   audiences: [
     {
       id: '594017',
@@ -1034,6 +1154,12 @@ var configWithFeatures = {
       conditions:
         '["and", ["or", ["or", {"type": "custom_attribute", "name": "test_attribute", "value": "test_value"}]]]',
     },
+    {
+      id: '11160',
+      name: 'Test attribute users 3',
+      conditions:
+      '["and", ["or", ["or", {"match": "exact", "name": "experiment_attr", "type": "custom_attribute", "value": "group_experiment"}]]]',
+  }
   ],
   revision: '35',
   groups: [
@@ -1181,6 +1307,112 @@ var configWithFeatures = {
         },
       ],
     },
+    {
+      id: '19229',
+      policy: 'random',
+      experiments: [
+        {
+          id: '42222',
+          key: 'group_2_exp_1',
+          status: 'Running',
+          audienceConditions: [
+              "or",
+              "11160"
+          ],
+          audienceIds: ['11160'],
+          layerId: '211183',
+          variations: [
+              {
+                key: 'var_1',
+                id: '38901',
+                featureEnabled: false,
+              },
+          ],
+          forcedVariations: {},
+          trafficAllocation: [
+            {
+              entityId: '38901',
+              endOfRange: 10000
+            }
+          ],
+          variationKeyMap: {
+            var_1: {
+              key: 'var_1',
+              id: '38901',
+              featureEnabled: false,
+            }
+          }
+        },
+        {
+          id: '42223',
+          key: 'group_2_exp_2',
+          status: 'Running',
+          audienceConditions: [
+              "or",
+              "11160"
+          ],
+          audienceIds: ['11160'],
+          layerId: '211184',
+          variations: [
+            {
+              key: 'var_1',
+              id: '38905',
+              featureEnabled: false,
+            },
+          ],
+          forcedVariations: {},
+          trafficAllocation: [
+            {
+              entityId: '38905',
+              endOfRange: 10000
+            }
+          ],
+        },
+        {
+          id: '42224',
+          key: 'group_2_exp_3',
+          status: 'Running',
+          audienceConditions: [
+              "or",
+              "11160"
+          ],
+          audienceIds: ['11160'],
+          layerId: '211185',
+          variations: [
+            {
+              key: 'var_1',
+              id: '38906',
+              featureEnabled: false,
+            },
+          ],
+          forcedVariations: {},
+          trafficAllocation: [
+            {
+              entityId: '38906',
+              endOfRange: 10000
+            }
+          ],
+        }
+      ],
+      trafficAllocation: [
+        {
+          entityId: '42222',
+          endOfRange: 2500
+        },
+        {
+          entityId: '42223',
+          endOfRange: 5000
+        },
+        {
+          entityId: '42224',
+          endOfRange: 7500
+        },
+        {
+          entityId: '',
+          endOfRange: 10000
+        },
+      ],
+    }
   ],
   attributes: [
     {
@@ -1750,6 +1982,9 @@ export var datafileWithFeaturesExpectedData = {
   },
 
   variationVariableUsageMap: {
+    222239: {},
+    222240: {},
+    222241: {},
     594032: {
       4919852825313280: {
         id: '4919852825313280',
@@ -2143,7 +2378,6 @@ export var datafileWithFeaturesExpectedData = {
       key: 'feature_with_group',
       id: '595001',
       variableKeyMap: {},
-      groupId: '595024',
     },
     shared_feature: {
       rolloutId: '599055',
@@ -2194,7 +2428,22 @@ export var datafileWithFeaturesExpectedData = {
       experimentIds: ['12115595439'],
       variables: [],
       variableKeyMap: {},
-      groupId: '595025',
+    },
+    test_feature_in_exclusion_group: {
+      experimentIds: ['42222', '42223', '42224'],
+      id: '91115',
+      key: 'test_feature_in_exclusion_group',
+      rolloutId: '594059',
+      variableKeyMap: {},
+      variables: [],
+    },
+    test_feature_in_multiple_experiments: {
+      experimentIds: ['111134', '111135', '111136'],
+      id: '91116',
+      key: 'test_feature_in_multiple_experiments',
+      rolloutId: '594059',
+      variableKeyMap: {},
+      variables: [],
     },
   },
 };
@@ -3090,6 +3339,346 @@ export var featureTestDecisionObj = {
   decisionSource: 'feature-test',
 }
 
+var similarRuleKeyConfig = {
+  version: "4",
+  rollouts: [
+    {
+      experiments: [
+        {
+          status: "Running",
+          audienceConditions: [],
+          audienceIds: [],
+          variations: [
+            {
+              variables: [],
+              id: "5452",
+              key: "on",
+              featureEnabled: true
+            }
+          ],
+          forcedVariations: {},
+          key: "targeted_delivery",
+          layerId: "9300000004981",
+          trafficAllocation: [
+            {
+              entityId: "5452",
+              endOfRange: 10000
+            }
+          ],
+          id: "9300000004981"
+        }, {
+          status: "Running",
+          audienceConditions: [],
+          audienceIds: [],
+          variations: [
+            {
+              variables: [],
+              id: "5451",
+              key: "off",
+              featureEnabled: false
+            }
+          ],
+          forcedVariations: {},
+          key: "default-rollout-2029-20301771717",
+          layerId: "default-layer-rollout-2029-20301771717",
+          trafficAllocation: [
+            {
+              entityId: "5451",
+              endOfRange: 10000
+            }
+          ],
+          id: "default-rollout-2029-20301771717"
+        }
+      ],
+      id: "rollout-2029-20301771717"
+    }, {
+      experiments: [
+        {
+          status: "Running",
+          audienceConditions: [],
+          audienceIds: [],
+          variations: [
+            {
+              variables: [],
+              id: "5450",
+              key: "on",
+              featureEnabled: true
+            }
+          ],
+          forcedVariations: {},
+          key: "targeted_delivery",
+          layerId: "9300000004979",
+          trafficAllocation: [
+            {
+              entityId: "5450",
+              endOfRange: 10000
+            }
+          ],
+          id: "9300000004979"
+        }, {
+          status: "Running",
+          audienceConditions: [],
+          audienceIds: [],
+          variations: [
+            {
+              variables: [],
+              id: "5449",
+              key: "off",
+              featureEnabled: false
+            }
+          ],
+          forcedVariations: {},
+          key: "default-rollout-2028-20301771717",
+          layerId: "default-layer-rollout-2028-20301771717",
+          trafficAllocation: [
+            {
+              entityId: "5449",
+              endOfRange: 10000
+            }
+          ],
+          id: "default-rollout-2028-20301771717"
+        }
+      ],
+      id: "rollout-2028-20301771717"
+    }, {
+      experiments: [
+        {
+          status: "Running",
+          audienceConditions: [],
+          audienceIds: [],
+          variations: [
+            {
+              variables: [],
+              id: "5448",
+              key: "on",
+              featureEnabled: true
+            }
+          ],
+          forcedVariations: {},
+          key: "targeted_delivery",
+          layerId: "9300000004977",
+          trafficAllocation: [
+            {
+              entityId: "5448",
+              endOfRange: 10000
+            }
+          ],
+          id: "9300000004977"
+        }, {
+          status: "Running",
+          audienceConditions: [],
+          audienceIds: [],
+          variations: [
+            {
+              variables: [],
+              id: "5447",
+              key: "off",
+              featureEnabled: false
+            }
+          ],
+          forcedVariations: {},
+          key: "default-rollout-2027-20301771717",
+          layerId: "default-layer-rollout-2027-20301771717",
+          trafficAllocation: [
+            {
+              entityId: "5447",
+              endOfRange: 10000
+            }
+          ],
+          id: "default-rollout-2027-20301771717"
+        }
+      ],
+      id: "rollout-2027-20301771717"
+    }
+  ],
+  typedAudiences: [],
+  anonymizeIP: true,
+  projectId: "20286295225",
+  variables: [],
+  featureFlags: [
+    {
+      experimentIds: [],
+      rolloutId: "rollout-2029-20301771717",
+      variables: [],
+      id: "2029",
+      key: "flag_3"
+    }, {
+      experimentIds: [],
+      rolloutId: "rollout-2028-20301771717",
+      variables: [],
+      id: "2028",
+      key: "flag_2"
+    }, {
+      experimentIds: [],
+      rolloutId: "rollout-2027-20301771717",
+      variables: [],
+      id: "2027",
+      key: "flag_1"
+    }
+  ],
+  experiments: [],
+  audiences: [
+    {
+      conditions: "[\"or\", {\"match\": \"exact\", \"name\": \"$opt_dummy_attribute\", \"type\": \"custom_attribute\", \"value\": \"$opt_dummy_value\"}]",
+      id: "$opt_dummy_audience",
+      name: "Optimizely-Generated Audience for Backwards Compatibility"
+    }
+  ],
+  groups: [],
+  attributes: [],
+  botFiltering: false,
+  accountId: "19947277778",
+  events: [],
+  revision: "11",
+  sendFlagDecisions: true
+}
+
+export var getSimilarRuleKeyConfig = function() {
+  return cloneDeep(similarRuleKeyConfig);
+};
+
+var similarExperimentKeysConfig = {
+  version: "4",
+  rollouts: [],
+  typedAudiences: [
+    {
+      id: "20415611520",
+      conditions: [
+        "and",
+        [
+          "or",
+          [
+            "or", {
+              value: true,
+              type: "custom_attribute",
+              name: "hiddenLiveEnabled",
+              match: "exact"
+            }
+          ]
+        ]
+      ],
+      name: "test1"
+    }, {
+      id: "20406066925",
+      conditions: [
+        "and",
+        [
+          "or",
+          [
+            "or", {
+              value: false,
+              type: "custom_attribute",
+              name: "hiddenLiveEnabled",
+              match: "exact"
+            }
+          ]
+        ]
+      ],
+      name: "test2"
+    }
+  ],
+  anonymizeIP: true,
+  projectId: "20430981610",
+  variables: [],
+  featureFlags: [
+    {
+      experimentIds: ["9300000007569"],
+      rolloutId: "",
+      variables: [],
+      id: "3045",
+      key: "flag1"
+    }, {
+      experimentIds: ["9300000007573"],
+      rolloutId: "",
+      variables: [],
+      id: "3046",
+      key: "flag2"
+    }
+  ],
+  experiments: [
+    {
+      status: "Running",
+      audienceConditions: [
+        "or", "20415611520"
+      ],
+      audienceIds: ["20415611520"],
+      variations: [
+        {
+          variables: [],
+          id: "8045",
+          key: "variation1",
+          featureEnabled: true
+        }
+      ],
+      forcedVariations: {},
+      key: "targeted_delivery",
+      layerId: "9300000007569",
+      trafficAllocation: [
+        {
+          entityId: "8045",
+          endOfRange: 10000
+        }
+      ],
+      id: "9300000007569"
+    }, {
+      status: "Running",
+      audienceConditions: [
+        "or", "20406066925"
+      ],
+      audienceIds: ["20406066925"],
+      variations: [
+        {
+          variables: [],
+          id: "8048",
+          key: "variation2",
+          featureEnabled: true
+        }
+      ],
+      forcedVariations: {},
+      key: "targeted_delivery",
+      layerId: "9300000007573",
+      trafficAllocation: [
+        {
+          entityId: "8048",
+          endOfRange: 10000
+        }
+      ],
+      id: "9300000007573"
+    }
+  ],
+  audiences: [
+    {
+      id: "20415611520",
+      conditions: "[\"or\", {\"match\": \"exact\", \"name\": \"$opt_dummy_attribute\", \"type\": \"custom_attribute\", \"value\": \"$opt_dummy_value\"}]",
+      name: "test1"
+    }, {
+      id: "20406066925",
+      conditions: "[\"or\", {\"match\": \"exact\", \"name\": \"$opt_dummy_attribute\", \"type\": \"custom_attribute\", \"value\": \"$opt_dummy_value\"}]",
+      name: "test2"
+    }, {
+      conditions: "[\"or\", {\"match\": \"exact\", \"name\": \"$opt_dummy_attribute\", \"type\": \"custom_attribute\", \"value\": \"$opt_dummy_value\"}]",
+      id: "$opt_dummy_audience",
+      name: "Optimizely-Generated Audience for Backwards Compatibility"
+    }
+  ],
+  groups: [],
+  attributes: [
+    {
+      id: "20408641883",
+      key: "hiddenLiveEnabled"
+    }
+  ],
+  botFiltering: false,
+  accountId: "17882702980",
+  events: [],
+  revision: "25",
+  sendFlagDecisions: true
+}
+
+export var getSimilarExperimentKeyConfig = function() {
+  return cloneDeep(similarExperimentKeysConfig);
+};
+
 export default {
   getTestProjectConfig: getTestProjectConfig,
   getTestDecideProjectConfig: getTestDecideProjectConfig,
@@ -3100,4 +3689,6 @@ export default {
   getTypedAudiencesConfig: getTypedAudiencesConfig,
   typedAudiencesById: typedAudiencesById,
   getMutexFeatureTestsConfig: getMutexFeatureTestsConfig,
+  getSimilarRuleKeyConfig: getSimilarRuleKeyConfig,
+  getSimilarExperimentKeyConfig: getSimilarExperimentKeyConfig
 };

@@ -1,6 +1,12 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "*": [
+        "./typings/*"
+      ]
+    },
     "allowJs": true,
     "declaration": false,
     "module": "esnext",
@@ -19,4 +25,4 @@
     "./lib/**/*.ts",
     "./lib/**/*.js"
   ]
- }
+}

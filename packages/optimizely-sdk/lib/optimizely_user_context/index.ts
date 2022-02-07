@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2020, Optimizely, Inc. and contributors                   *
+ * Copyright 2020-2022, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -14,13 +14,27 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import Optimizely from '../../lib/optimizely';
-import { UserAttributes, OptimizelyDecideOption, EventTags } from '../../lib/shared_types';
-import { OptimizelyDecision } from '../optimizely_decision';
+import {
+  DecisionResponse,
+  EventTags,
+  OptimizelyDecideOption,
+  OptimizelyDecision,
+  OptimizelyDecisionContext,
+  OptimizelyForcedDecision,
+  UserAttributes,
+  Variation
+} from '../../lib/shared_types';
+import {
+  getFlagVariationByKey,
+  ProjectConfig,
+} from '../core/project_config';
+import { LOG_MESSAGES, CONTROL_ATTRIBUTES } from '../utils/enums';
 
 export default class OptimizelyUserContext {
   private optimizely: Optimizely;
   private userId: string;
   private attributes: UserAttributes;
+  private forcedDecisionsMap: { [key: string]: { [key: string]: OptimizelyForcedDecision } };
 
   constructor({
     optimizely,
@@ -33,7 +47,8 @@ export default class OptimizelyUserContext {
   }) {
     this.optimizely = optimizely;
     this.userId = userId;
-    this.attributes = {...attributes} ?? {};
+    this.attributes = { ...attributes } ?? {};
+    this.forcedDecisionsMap = {};
   }
 
   /**
@@ -50,7 +65,7 @@ export default class OptimizelyUserContext {
   }
 
   getAttributes(): UserAttributes {
-    return {...this.attributes};
+    return { ...this.attributes };
   }
 
   getOptimizely(): Optimizely {
@@ -109,11 +124,102 @@ export default class OptimizelyUserContext {
     this.optimizely.track(eventName, this.userId, this.attributes, eventTags);
   }
 
+  /**
+   * Sets the forced decision for specified optimizely decision context.
+   * @param     {OptimizelyDecisionContext}   context      OptimizelyDecisionContext containing flagKey and optional ruleKey.
+   * @param     {OptimizelyForcedDecision}    decision     OptimizelyForcedDecision containing forced variation key.
+   * @return    {boolean}                     true if the forced decision has been set successfully.
+   */
+  setForcedDecision(context: OptimizelyDecisionContext, decision: OptimizelyForcedDecision): boolean {
+    const flagKey = context.flagKey;
+
+    const ruleKey = context.ruleKey ?? CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY;
+    const variationKey  = decision.variationKey;
+    const forcedDecision = { variationKey };
+
+    if (!this.forcedDecisionsMap[flagKey]) {
+      this.forcedDecisionsMap[flagKey] = {};
+    }
+    this.forcedDecisionsMap[flagKey][ruleKey] = forcedDecision;
+
+    return true;
+  }
+
+  /**
+   * Returns the forced decision for specified optimizely decision context.
+   * @param     {OptimizelyDecisionContext}  context  OptimizelyDecisionContext containing flagKey and optional ruleKey.
+   * @return    {OptimizelyForcedDecision|null}       OptimizelyForcedDecision for specified context if exists or null.
+   */
+  getForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null {
+    return this.findForcedDecision(context);
+  }
+
+  /**
+   * Removes the forced decision for specified optimizely decision context.
+   * @param     {OptimizelyDecisionContext}  context  OptimizelyDecisionContext containing flagKey and optional ruleKey.
+   * @return    {boolean}                    true if the forced decision has been removed successfully
+   */
+  removeForcedDecision(context: OptimizelyDecisionContext): boolean {
+    const ruleKey = context.ruleKey ?? CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY;
+    const flagKey = context.flagKey;
+
+    let isForcedDecisionRemoved = false;
+
+    if (this.forcedDecisionsMap.hasOwnProperty(flagKey)) {
+      const forcedDecisionByRuleKey = this.forcedDecisionsMap[flagKey];
+      if (forcedDecisionByRuleKey.hasOwnProperty(ruleKey)) {
+        delete this.forcedDecisionsMap[flagKey][ruleKey];
+        isForcedDecisionRemoved = true;
+      }
+      if (Object.keys(this.forcedDecisionsMap[flagKey]).length === 0) {
+        delete this.forcedDecisionsMap[flagKey];
+      }
+    }
+
+    return isForcedDecisionRemoved;
+  }
+
+  /**
+   * Removes all forced decisions bound to this user context.
+   * @return    {boolean}                    true if the forced decision has been removed successfully
+   */
+  removeAllForcedDecisions(): boolean {
+    this.forcedDecisionsMap = {};
+    return true;
+  }
+
+  /**
+   * Finds a forced decision in forcedDecisionsMap for provided optimizely decision context.
+   * @param     {OptimizelyDecisionContext}     context  OptimizelyDecisionContext containing flagKey and optional ruleKey.
+   * @return    {OptimizelyForcedDecision|null}          OptimizelyForcedDecision for specified context if exists or null.
+   */
+  private findForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null {
+    let variationKey;
+    const validRuleKey = context.ruleKey ?? CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY;
+    const flagKey = context.flagKey;
+
+    if (this.forcedDecisionsMap.hasOwnProperty(context.flagKey)) {
+      const forcedDecisionByRuleKey = this.forcedDecisionsMap[flagKey];
+      if (forcedDecisionByRuleKey.hasOwnProperty(validRuleKey)) {
+        variationKey = forcedDecisionByRuleKey[validRuleKey].variationKey;
+        return { variationKey };
+      }
+    }
+
+    return null;
+  }
+
   private cloneUserContext(): OptimizelyUserContext {
-    return new OptimizelyUserContext({
+    const userContext = new OptimizelyUserContext({
       optimizely: this.getOptimizely(),
       userId: this.getUserId(),
       attributes: this.getAttributes(),
-    })
+    });
+
+    if (Object.keys(this.forcedDecisionsMap).length > 0) {
+      userContext.forcedDecisionsMap = { ...this.forcedDecisionsMap };
+    }
+
+    return userContext;
   }
 }

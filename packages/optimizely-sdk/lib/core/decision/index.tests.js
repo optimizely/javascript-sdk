@@ -35,6 +35,23 @@ describe('lib/core/decision', function() {
     });
   });
 
+  describe('getExperimentId method', function() {
+    it('should return null when experiment is null', function() {
+      var experimentId = decision.getExperimentId(rolloutDecisionObj);
+      assert.strictEqual(experimentId, null);
+    });
+
+    it('should return null when experiment is not defined', function() {
+      var experimentId = decision.getExperimentId({});
+      assert.strictEqual(experimentId, null);
+    });
+
+    it('should return experiment id when experiment is defined', function() {
+      var experimentId = decision.getExperimentId(featureTestDecisionObj);
+      assert.strictEqual(experimentId, '594098');
+    });
+  });
+
   describe('getVariationKey method', function() {
     it('should return empty string when variation is null', function() {
       var variationKey = decision.getVariationKey(rolloutDecisionObj);
@@ -49,6 +66,23 @@ describe('lib/core/decision', function() {
     it('should return variation key when variation is defined', function() {
       var variationKey = decision.getVariationKey(featureTestDecisionObj);
       assert.strictEqual(variationKey, 'variation');
+    });
+  });
+
+  describe('getVariationId method', function() {
+    it('should return null when variation is null', function() {
+      var variationId = decision.getVariationId(rolloutDecisionObj);
+      assert.strictEqual(variationId, null);
+    });
+
+    it('should return null when variation is not defined', function() {
+      var variationId = decision.getVariationId({});
+      assert.strictEqual(variationId, null);
+    });
+
+    it('should return variation id when variation is defined', function() {
+      var variationId = decision.getVariationId(featureTestDecisionObj);
+      assert.strictEqual(variationId, '594096');
     });
   });
 

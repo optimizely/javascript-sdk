@@ -16,7 +16,7 @@
 /// <reference types="jest" />
 
 import { ReactNativeEventsStore } from '../src/reactNativeEventsStore'
-import AsyncStorage from '../__mocks__/@react-native-community/async-storage'
+import AsyncStorage from '../__mocks__/@react-native-async-storage/async-storage'
 
 const STORE_KEY = 'test-store'
 

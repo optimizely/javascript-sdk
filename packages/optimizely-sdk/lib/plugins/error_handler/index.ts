@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2020. Optimizely
+ * Copyright 2016, 2020-2021, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,4 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { LOG_LEVEL as LogLevel } from '@optimizely/js-sdk-logging';
+
+/**
+ * Default error handler implementation
+ */
+export function handleError(): void {
+  // no-op
+}
+
+export default {
+  handleError,
+}

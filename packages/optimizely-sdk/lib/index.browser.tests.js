@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2020 Optimizely
+ * Copyright 2016-2020, 2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import * as logging from '@optimizely/js-sdk-logging';
+
 import { assert } from 'chai';
 import sinon from 'sinon';
-import * as logging from '@optimizely/js-sdk-logging';
-import eventProcessor from './core/event_processor';
-
+import { default as eventProcessor } from './plugins/event_processor';
 import Optimizely from './optimizely';
 import testData from './tests/test_data';
 import packageJSON from '../package.json';
@@ -148,7 +148,7 @@ describe('javascript-sdk', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.5.0-beta');
+        assert.equal(optlyInstance.clientVersion, '4.9.1');
       });
 
       it('should set the JavaScript client engine and version', function() {
@@ -389,9 +389,8 @@ describe('javascript-sdk', function() {
       });
 
       describe('event processor configuration', function() {
-        var eventProcessorSpy;
         beforeEach(function() {
-          eventProcessorSpy = sinon.spy(eventProcessor, 'createEventProcessor');
+          sinon.stub(eventProcessor, 'createEventProcessor');
         });
 
         afterEach(function() {
@@ -404,9 +403,9 @@ describe('javascript-sdk', function() {
             errorHandler: fakeErrorHandler,
             eventDispatcher: fakeEventDispatcher,
             logger: silentLogger,
-          });
+          });          
           sinon.assert.calledWithExactly(
-            eventProcessorSpy,
+            eventProcessor.createEventProcessor,
             sinon.match({
               flushInterval: 1000,
             })
@@ -431,7 +430,7 @@ describe('javascript-sdk', function() {
               eventFlushInterval: ['invalid', 'flush', 'interval'],
             });
             sinon.assert.calledWithExactly(
-              eventProcessorSpy,
+              eventProcessor.createEventProcessor,
               sinon.match({
                 flushInterval: 1000,
               })
@@ -457,7 +456,7 @@ describe('javascript-sdk', function() {
               eventFlushInterval: 9000,
             });
             sinon.assert.calledWithExactly(
-              eventProcessorSpy,
+              eventProcessor.createEventProcessor,
               sinon.match({
                 flushInterval: 9000,
               })
@@ -473,7 +472,7 @@ describe('javascript-sdk', function() {
             logger: silentLogger,
           });
           sinon.assert.calledWithExactly(
-            eventProcessorSpy,
+            eventProcessor.createEventProcessor,
             sinon.match({
               batchSize: 10,
             })
@@ -498,7 +497,7 @@ describe('javascript-sdk', function() {
               eventBatchSize: null,
             });
             sinon.assert.calledWithExactly(
-              eventProcessorSpy,
+              eventProcessor.createEventProcessor,
               sinon.match({
                 batchSize: 10,
               })
@@ -524,7 +523,7 @@ describe('javascript-sdk', function() {
               eventBatchSize: 300,
             });
             sinon.assert.calledWithExactly(
-              eventProcessorSpy,
+              eventProcessor.createEventProcessor,
               sinon.match({
                 batchSize: 300,
               })

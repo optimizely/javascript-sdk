@@ -1,5 +1,5 @@
 /**
- * Copyright 2020, Optimizely
+ * Copyright 2020-2021 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,22 +53,22 @@ const cjsBundleFor = (platform) => ({
   },
 });
 
-const esmBundle = {
-  ...cjsBundleFor('browser'),
+const esmBundleFor = (platform) => ({
+  ...cjsBundleFor(platform),
   output: [
     {
       format: 'es',
-      file: 'dist/optimizely.browser.es.js',
+      file: `dist/optimizely.${platform}.es.js`,
       sourcemap: true,
     },
     {
       format: 'es',
-      file: 'dist/optimizely.browser.es.min.js',
+      file: `dist/optimizely.${platform}.es.min.js`,
       plugins: [terser()],
       sourcemap: true,
     },
   ],
-};
+})
 
 const umdBundle = {
   plugins: [
@@ -130,7 +130,9 @@ const bundles = {
   'cjs-node': cjsBundleFor('node'),
   'cjs-browser': cjsBundleFor('browser'),
   'cjs-react-native': cjsBundleFor('react_native'),
-  esm: esmBundle,
+  'cjs-lite': cjsBundleFor('lite'),
+  esm: esmBundleFor('browser'),
+  'esm-lite': esmBundleFor('lite'),
   'json-schema': jsonSchemaBundle,
   umd: umdBundle,
 };

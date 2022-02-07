@@ -16,9 +16,9 @@ Platform-specific minimum supported versions:
 npm i @optimizely/js-sdk-datafile-manager
 ```
 
-For React Native, installation of peer dependency `@react-native-community/async-storage` is also required:
+For React Native, installation of peer dependency `@react-native-async-storage/async-storage` is also required:
 ```sh
-npm i @react-native-community/async-storage
+npm i @react-native-async-storage/async-storage
 ```
 
 ## Usage

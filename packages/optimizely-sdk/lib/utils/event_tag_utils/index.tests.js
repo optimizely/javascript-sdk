@@ -15,8 +15,11 @@
  */
 import sinon from 'sinon';
 import { assert } from 'chai';
+import { sprintf } from '@optimizely/js-sdk-utils';
 
 import * as eventTagUtils from './';
+
+var buildLogMessageFromArgs = args => sprintf(args[1], ...args.splice(2));
 
 describe('lib/utils/event_tag_utils', function() {
   var mockLogger;
@@ -38,7 +41,7 @@ describe('lib/utils/event_tag_utils', function() {
           );
 
           assert.strictEqual(parsedRevenueValue, 1337);
-          var logMessage = mockLogger.log.args[0][1];
+          var logMessage = buildLogMessageFromArgs(mockLogger.log.args[0]);
           assert.strictEqual(logMessage, 'EVENT_TAG_UTILS: Parsed revenue value "1337" from event tags.');
 
           // test out a float
@@ -64,7 +67,7 @@ describe('lib/utils/event_tag_utils', function() {
 
           assert.strictEqual(parsedRevenueValue, null);
 
-          var logMessage = mockLogger.log.args[0][1];
+          var logMessage = buildLogMessageFromArgs(mockLogger.log.args[0]);
           assert.strictEqual(logMessage, 'EVENT_TAG_UTILS: Failed to parse revenue value "invalid" from event tags.');
         });
       });
@@ -94,7 +97,7 @@ describe('lib/utils/event_tag_utils', function() {
           );
 
           assert.strictEqual(parsedEventValue, 1337);
-          var logMessage = mockLogger.log.args[0][1];
+          var logMessage = buildLogMessageFromArgs(mockLogger.log.args[0]);
           assert.strictEqual(logMessage, 'EVENT_TAG_UTILS: Parsed event value "1337" from event tags.');
 
           // test out a float
@@ -120,7 +123,7 @@ describe('lib/utils/event_tag_utils', function() {
 
           assert.strictEqual(parsedEventValue, null);
 
-          var logMessage = mockLogger.log.args[0][1];
+          var logMessage = buildLogMessageFromArgs(mockLogger.log.args[0]);
           assert.strictEqual(logMessage, 'EVENT_TAG_UTILS: Failed to parse event value "invalid" from event tags.');
         });
       });

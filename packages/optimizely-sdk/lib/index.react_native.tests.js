@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020 Optimizely
+ * Copyright 2019-2020, 2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as logging from '@optimizely/js-sdk-logging';
-import eventProcessor from './core/event_processor';
+import * as eventProcessor from './plugins/event_processor';
 
 import Optimizely from './optimizely';
 import testData from './tests/test_data';
@@ -89,10 +89,10 @@ describe('javascript-sdk/react-native', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.5.0-beta');
+        assert.equal(optlyInstance.clientVersion, '4.9.1');
       });
 
-      it('should set the Javascript client engine and version', function() {
+      it('should set the React Native JS client engine and javascript SDK version', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
@@ -101,11 +101,11 @@ describe('javascript-sdk/react-native', function() {
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
         optlyInstance.onReady().catch(function() {});
-        assert.equal('javascript-sdk', optlyInstance.clientEngine);
+        assert.equal('react-native-js-sdk', optlyInstance.clientEngine);
         assert.equal(packageJSON.version, optlyInstance.clientVersion);
       });
 
-      it('should allow passing of "react-sdk" as the clientEngine', function() {
+      it('should allow passing of "react-sdk" as the clientEngine and convert it to "react-native-sdk"', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           clientEngine: 'react-sdk',
           datafile: {},
@@ -115,7 +115,7 @@ describe('javascript-sdk/react-native', function() {
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
         optlyInstance.onReady().catch(function() {});
-        assert.equal('react-sdk', optlyInstance.clientEngine);
+        assert.equal('react-native-sdk', optlyInstance.clientEngine);
       });
 
       it('should activate with provided event dispatcher', function() {

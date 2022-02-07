@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2020-2021, Optimizely, Inc. and contributors                   *
+ * Copyright 2020-2022, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -13,31 +13,32 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
-import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
+import { find, sprintf, objectValues, NotificationCenter } from '@optimizely/js-sdk-utils';
+import { LoggerFacade, ErrorHandler } from '@optimizely/js-sdk-logging';
+import { EventProcessor } from '@optimizely/js-sdk-event-processor';
+
 import {
   UserAttributes,
   EventTags,
   OptimizelyConfig,
-  EventDispatcher,
   OnReadyResult,
   UserProfileService,
   Variation,
   FeatureFlag,
   FeatureVariable,
+  OptimizelyVariation,
   OptimizelyOptions,
-  OptimizelyDecideOption
+  OptimizelyDecideOption,
+  OptimizelyDecision
 } from '../shared_types';
-import { OptimizelyDecision, newErrorDecision } from '../optimizely_decision';
+import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
 import { createProjectConfigManager, ProjectConfigManager } from '../core/project_config/project_config_manager';
-import { createNotificationCenter, NotificationCenter } from '../core/notification_center';
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
 import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
 import { buildImpressionEvent, buildConversionEvent } from '../core/event_builder/event_helpers';
 import fns from '../utils/fns'
 import { validate } from '../utils/attributes_validator';
-import { EventProcessor, default as eventProcessor } from '../core/event_processor';
 import * as enums from '../utils/enums';
 import * as eventTagsValidator from '../utils/event_tags_validator';
 import * as projectConfig from '../core/project_config';
@@ -64,33 +65,18 @@ type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 
 
 type StringInputs = Partial<Record<InputKey, unknown>>;
 
-/**
- * The Optimizely class
- * @param {OptimizelyOptions} config
- * @param {string}            config.clientEngine
- * @param {string}            config.clientVersion
- * @param {Object|string}     config.datafile
- * @param {Object}            config.errorHandler
- * @param {Object}            config.eventDispatcher
- * @param {Object}            config.logger
- * @param {Object}            config.userProfileService
- * @param {Object}            config.eventBatchSize
- * @param {Object}            config.eventFlushInterval
- * @param {string}            config.sdkKey
- */
 export default class Optimizely {
   private isOptimizelyConfigValid: boolean;
-  private disposeOnUpdate: (() => void ) | null;
+  private disposeOnUpdate: (() => void) | null;
   private readyPromise: Promise<{ success: boolean; reason?: string }>;
   // readyTimeout is specified as any to make this work in both browser & Node
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private readyTimeouts: { [key: string]: {readyTimeout: any; onClose:() => void} };
+  private readyTimeouts: { [key: string]: { readyTimeout: any; onClose: () => void } };
   private nextReadyTimeoutId: number;
   private clientEngine: string;
   private clientVersion: string;
   private errorHandler: ErrorHandler;
-  private eventDispatcher: EventDispatcher;
-  private logger: LogHandler;
+  private logger: LoggerFacade;
   private projectConfigManager: ProjectConfigManager;
   private notificationCenter: NotificationCenter;
   private decisionService: DecisionService;
@@ -99,10 +85,12 @@ export default class Optimizely {
 
   constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;
-    if (enums.VALID_CLIENT_ENGINES.indexOf(clientEngine) === -1) {
+    if (!clientEngine) {
       config.logger.log(
         LOG_LEVEL.INFO,
-        sprintf(LOG_MESSAGES.INVALID_CLIENT_ENGINE, MODULE_NAME, clientEngine)
+        LOG_MESSAGES.INVALID_CLIENT_ENGINE,
+        MODULE_NAME,
+        clientEngine,
       );
       clientEngine = enums.NODE_CLIENT_ENGINE;
     }
@@ -110,13 +98,12 @@ export default class Optimizely {
     this.clientEngine = clientEngine;
     this.clientVersion = config.clientVersion || enums.NODE_CLIENT_VERSION;
     this.errorHandler = config.errorHandler;
-    this.eventDispatcher = config.eventDispatcher;
     this.isOptimizelyConfigValid = config.isValidInstance;
     this.logger = config.logger;
 
     let decideOptionsArray = config.defaultDecideOptions ?? [];
     if (!Array.isArray(decideOptionsArray)) {
-      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DEFAULT_DECIDE_OPTIONS, MODULE_NAME));
+      this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.INVALID_DEFAULT_DECIDE_OPTIONS, MODULE_NAME);
       decideOptionsArray = [];
     }
 
@@ -128,23 +115,28 @@ export default class Optimizely {
       } else {
         this.logger.log(
           LOG_LEVEL.WARNING,
-          sprintf(LOG_MESSAGES.UNRECOGNIZED_DECIDE_OPTION, MODULE_NAME, option)
+          LOG_MESSAGES.UNRECOGNIZED_DECIDE_OPTION,
+          MODULE_NAME,
+          option,
         );
       }
     });
     this.defaultDecideOptions = defaultDecideOptions;
     this.projectConfigManager = createProjectConfigManager({
       datafile: config.datafile,
-      datafileOptions: config.datafileOptions,
       jsonSchemaValidator: config.jsonSchemaValidator,
       sdkKey: config.sdkKey,
+      datafileManager: config.datafileManager
     });
 
     this.disposeOnUpdate = this.projectConfigManager.onUpdate(
       (configObj: projectConfig.ProjectConfig) => {
         this.logger.log(
           LOG_LEVEL.INFO,
-          sprintf(LOG_MESSAGES.UPDATED_OPTIMIZELY_CONFIG, MODULE_NAME, configObj.revision, configObj.projectId)
+          LOG_MESSAGES.UPDATED_OPTIMIZELY_CONFIG,
+          MODULE_NAME,
+          configObj.revision,
+          configObj.projectId,
         );
         this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE);
       }
@@ -157,7 +149,7 @@ export default class Optimizely {
       try {
         if (userProfileServiceValidator.validate(config.userProfileService)) {
           userProfileService = config.userProfileService;
-          this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.VALID_USER_PROFILE_SERVICE, MODULE_NAME));
+          this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.VALID_USER_PROFILE_SERVICE, MODULE_NAME);
         }
       } catch (ex) {
         this.logger.log(LOG_LEVEL.WARNING, ex.message);
@@ -170,20 +162,9 @@ export default class Optimizely {
       UNSTABLE_conditionEvaluators: config.UNSTABLE_conditionEvaluators,
     });
 
-    this.notificationCenter = createNotificationCenter({
-      logger: this.logger,
-      errorHandler: this.errorHandler,
-    });
+    this.notificationCenter = config.notificationCenter;
 
-    const eventProcessorConfig = {
-      dispatcher: this.eventDispatcher,
-      flushInterval: config.eventFlushInterval,
-      batchSize: config.eventBatchSize,
-      maxQueueSize: config.eventMaxQueueSize,
-      notificationCenter: this.notificationCenter,
-    }
-
-    this.eventProcessor = eventProcessor.createEventProcessor(eventProcessorConfig);
+    this.eventProcessor = config.eventProcessor;
 
     const eventProcessorStartedPromise = this.eventProcessor.start();
 
@@ -202,7 +183,7 @@ export default class Optimizely {
    * constructor was also valid.
    * @return {boolean}
    */
-  private isValidInstance(): boolean {
+  isValidInstance(): boolean {
     return this.isOptimizelyConfigValid && !!this.projectConfigManager.getConfig();
   }
 
@@ -216,7 +197,7 @@ export default class Optimizely {
   activate(experimentKey: string, userId: string, attributes?: UserAttributes): string | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'activate'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'activate');
         return null;
       }
 
@@ -237,12 +218,12 @@ export default class Optimizely {
 
         // If experiment is not set to 'Running' status, log accordingly and return variation key
         if (!projectConfig.isRunning(configObj, experimentKey)) {
-          const shouldNotDispatchActivateLogMessage = sprintf(
+          this.logger.log(
+            LOG_LEVEL.DEBUG,
             LOG_MESSAGES.SHOULD_NOT_DISPATCH_ACTIVATE,
             MODULE_NAME,
-            experimentKey
+            experimentKey,
           );
-          this.logger.log(LOG_LEVEL.DEBUG, shouldNotDispatchActivateLogMessage);
           return variationKey;
         }
 
@@ -264,13 +245,13 @@ export default class Optimizely {
         return variationKey;
       } catch (ex) {
         this.logger.log(LOG_LEVEL.ERROR, ex.message);
-        const failedActivationLogMessage = sprintf(
+        this.logger.log(
+          LOG_LEVEL.INFO,
           LOG_MESSAGES.NOT_ACTIVATING_USER,
           MODULE_NAME,
           userId,
-          experimentKey
+          experimentKey,
         );
-        this.logger.log(LOG_LEVEL.INFO, failedActivationLogMessage);
         this.errorHandler.handleError(ex);
         return null;
       }
@@ -302,7 +283,6 @@ export default class Optimizely {
     if (!configObj) {
       return;
     }
-
     const impressionEvent = buildImpressionEvent({
       decisionObj: decisionObj,
       flagKey: flagKey,
@@ -340,14 +320,14 @@ export default class Optimizely {
 
     const ruleType = decisionObj.decisionSource;
     const experimentKey = decision.getExperimentKey(decisionObj);
+    const experimentId = decision.getExperimentId(decisionObj);
     const variationKey = decision.getVariationKey(decisionObj);
+    const variationId = decision.getVariationId(decisionObj);
 
-    let experimentId: string | null = null;
-    let variationId: string | null = null;
+    let experiment;
 
-    if (experimentKey !=='' && variationKey !== '') {
-      variationId = projectConfig.getVariationIdFromExperimentAndVariationKey(configObj, experimentKey, variationKey);
-      experimentId = projectConfig.getExperimentId(configObj, experimentKey);
+    if (experimentId !== null && variationKey !== '') {
+      experiment = configObj.experimentIdMap[experimentId];
     }
 
     const impressionEventOptions = {
@@ -365,7 +345,6 @@ export default class Optimizely {
       logger: this.logger,
     };
     const impressionEvent = getImpressionEvent(impressionEventOptions);
-    const experiment = configObj.experimentKeyMap[experimentKey];
     let variation;
     if (experiment && experiment.variationKeyMap && variationKey !== '') {
       variation = experiment.variationKeyMap[variationKey];
@@ -389,7 +368,7 @@ export default class Optimizely {
   track(eventKey: string, userId: string, attributes?: UserAttributes, eventTags?: EventTags): void {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'track'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'track');
         return;
       }
 
@@ -405,9 +384,11 @@ export default class Optimizely {
       if (!projectConfig.eventWithKeyExists(configObj, eventKey)) {
         this.logger.log(
           LOG_LEVEL.WARNING,
-          sprintf(enums.LOG_MESSAGES.EVENT_KEY_NOT_FOUND, MODULE_NAME, eventKey)
+          enums.LOG_MESSAGES.EVENT_KEY_NOT_FOUND,
+          MODULE_NAME,
+          eventKey,
         );
-        this.logger.log(LOG_LEVEL.WARNING, sprintf(LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId));
+        this.logger.log(LOG_LEVEL.WARNING, LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId);
         return;
       }
 
@@ -422,15 +403,14 @@ export default class Optimizely {
         clientVersion: this.clientVersion,
         configObj: configObj,
       });
-      this.logger.log(LOG_LEVEL.INFO, sprintf(enums.LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId));
+      this.logger.log(LOG_LEVEL.INFO, enums.LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId);
       // TODO is it okay to not pass a projectConfig as second argument
       this.eventProcessor.process(conversionEvent);
       this.emitNotificationCenterTrack(eventKey, userId, attributes, eventTags);
     } catch (e) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
-      const failedTrackLogMessage = sprintf(LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId);
-      this.logger.log(LOG_LEVEL.ERROR, failedTrackLogMessage);
+      this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId);
     }
   }
   /**
@@ -482,7 +462,7 @@ export default class Optimizely {
   getVariation(experimentKey: string, userId: string, attributes?: UserAttributes): string | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getVariation'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getVariation');
         return null;
       }
 
@@ -500,12 +480,18 @@ export default class Optimizely {
         if (!experiment) {
           this.logger.log(
             LOG_LEVEL.DEBUG,
-            sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey)
+            ERROR_MESSAGES.INVALID_EXPERIMENT_KEY,
+            MODULE_NAME,
+            experimentKey,
           );
           return null;
         }
 
-        const variationKey = this.decisionService.getVariation(configObj, experimentKey, userId, attributes).result;
+        const variationKey = this.decisionService.getVariation(
+          configObj,
+          experiment,
+          this.createUserContext(userId, attributes) as OptimizelyUserContext
+        ).result;
         const decisionNotificationType = projectConfig.isFeatureExperiment(configObj, experiment.id)
           ? DECISION_NOTIFICATION_TYPES.FEATURE_TEST
           : DECISION_NOTIFICATION_TYPES.AB_TEST;
@@ -635,13 +621,13 @@ export default class Optimizely {
    * @return {null}
    */
   private notActivatingExperiment(experimentKey: string, userId: string): null {
-    const failedActivationLogMessage = sprintf(
+    this.logger.log(
+      LOG_LEVEL.INFO,
       LOG_MESSAGES.NOT_ACTIVATING_USER,
       MODULE_NAME,
       userId,
-      experimentKey
+      experimentKey,
     );
-    this.logger.log(LOG_LEVEL.INFO, failedActivationLogMessage);
     return null;
   }
 
@@ -671,7 +657,9 @@ export default class Optimizely {
       if (!this.isValidInstance()) {
         this.logger.log(
           LOG_LEVEL.ERROR,
-          sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'isFeatureEnabled')
+          LOG_MESSAGES.INVALID_OBJECT,
+          MODULE_NAME,
+          'isFeatureEnabled',
         );
         return false;
       }
@@ -691,7 +679,8 @@ export default class Optimizely {
       }
 
       let sourceInfo = {};
-      const decisionObj = this.decisionService.getVariationForFeature(configObj, feature, userId, attributes).result;
+      const user = this.createUserContext(userId, attributes) as OptimizelyUserContext;
+      const decisionObj = this.decisionService.getVariationForFeature(configObj, feature, user).result;
       const decisionSource = decisionObj.decisionSource;
       const experimentKey = decision.getExperimentKey(decisionObj);
       const variationKey = decision.getVariationKey(decisionObj);
@@ -721,12 +710,18 @@ export default class Optimizely {
       if (featureEnabled === true) {
         this.logger.log(
           LOG_LEVEL.INFO,
-          sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId)
+          LOG_MESSAGES.FEATURE_ENABLED_FOR_USER,
+          MODULE_NAME,
+          featureKey,
+          userId,
         );
       } else {
         this.logger.log(
           LOG_LEVEL.INFO,
-          sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, featureKey, userId)
+          LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER,
+          MODULE_NAME,
+          featureKey,
+          userId,
         );
         featureEnabled = false;
       }
@@ -766,7 +761,9 @@ export default class Optimizely {
       if (!this.isValidInstance()) {
         this.logger.log(
           LOG_LEVEL.ERROR,
-          sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getEnabledFeatures')
+          LOG_MESSAGES.INVALID_OBJECT,
+          MODULE_NAME,
+          'getEnabledFeatures',
         );
         return enabledFeatures;
       }
@@ -818,7 +815,7 @@ export default class Optimizely {
   ): unknown {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariable'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariable');
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, null, userId, attributes);
@@ -879,12 +876,16 @@ export default class Optimizely {
     if (variableType && variable.type !== variableType) {
       this.logger.log(
         LOG_LEVEL.WARNING,
-        sprintf(LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE, MODULE_NAME, variableType, variable.type)
+        LOG_MESSAGES.VARIABLE_REQUESTED_WITH_WRONG_TYPE,
+        MODULE_NAME,
+        variableType,
+        variable.type,
       );
       return null;
     }
 
-    const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes).result;
+    const user = this.createUserContext(userId, attributes) as OptimizelyUserContext;
+    const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, user).result;
     const featureEnabled = decision.getFeatureEnabledFromVariation(decisionObj);
     const variableValue = this.getFeatureVariableValueFromVariation(featureKey, featureEnabled, decisionObj.variation, variable, userId);
     let sourceInfo = {};
@@ -952,47 +953,39 @@ export default class Optimizely {
           variableValue = value;
           this.logger.log(
             LOG_LEVEL.INFO,
-            sprintf(
-              LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE,
-              MODULE_NAME,
-              variableValue,
-              variable.key,
-              featureKey
-            )
+            LOG_MESSAGES.USER_RECEIVED_VARIABLE_VALUE,
+            MODULE_NAME,
+            variableValue,
+            variable.key,
+            featureKey,
           );
         } else {
           this.logger.log(
             LOG_LEVEL.INFO,
-            sprintf(
-              LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE,
-              MODULE_NAME,
-              featureKey,
-              userId,
-              variableValue
-            )
+            LOG_MESSAGES.FEATURE_NOT_ENABLED_RETURN_DEFAULT_VARIABLE_VALUE,
+            MODULE_NAME,
+            featureKey,
+            userId,
+            variableValue,
           );
         }
       } else {
         this.logger.log(
           LOG_LEVEL.INFO,
-          sprintf(
-            LOG_MESSAGES.VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
-            MODULE_NAME,
-            variable.key,
-            variation.key
-          )
+          LOG_MESSAGES.VARIABLE_NOT_USED_RETURN_DEFAULT_VARIABLE_VALUE,
+          MODULE_NAME,
+          variable.key,
+          variation.key,
         );
       }
     } else {
       this.logger.log(
         LOG_LEVEL.INFO,
-        sprintf(
-          LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE,
-          MODULE_NAME,
-          userId,
-          variable.key,
-          featureKey
-        )
+        LOG_MESSAGES.USER_RECEIVED_DEFAULT_VARIABLE_VALUE,
+        MODULE_NAME,
+        userId,
+        variable.key,
+        featureKey,
       );
     }
 
@@ -1020,7 +1013,7 @@ export default class Optimizely {
   ): boolean | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableBoolean'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableBoolean');
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.BOOLEAN, userId, attributes) as boolean | null;
@@ -1046,14 +1039,14 @@ export default class Optimizely {
    *                                       of the variable
    */
   getFeatureVariableDouble(
-    featureKey:string,
+    featureKey: string,
     variableKey: string,
     userId: string,
     attributes?: UserAttributes
   ): number | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableDouble'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableDouble');
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.DOUBLE, userId, attributes) as number | null;
@@ -1086,7 +1079,7 @@ export default class Optimizely {
   ): number | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableInteger'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableInteger');
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.INTEGER, userId, attributes) as number | null;
@@ -1119,7 +1112,7 @@ export default class Optimizely {
   ): string | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableString'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableString');
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.STRING, userId, attributes) as string | null;
@@ -1152,7 +1145,7 @@ export default class Optimizely {
   ): unknown {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableJSON'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariableJSON');
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.JSON, userId, attributes);
@@ -1180,7 +1173,7 @@ export default class Optimizely {
   ): { [variableKey: string]: unknown } | null {
     try {
       if (!this.isValidInstance()) {
-        this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getAllFeatureVariables'));
+        this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getAllFeatureVariables');
         return null;
       }
 
@@ -1198,7 +1191,9 @@ export default class Optimizely {
         return null;
       }
 
-      const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, userId, attributes).result;
+      const user = this.createUserContext(userId, attributes) as OptimizelyUserContext;
+
+      const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, user).result;
       const featureEnabled = decision.getFeatureEnabledFromVariation(decisionObj);
       const allVariables: { [variableKey: string]: unknown } = {};
 
@@ -1468,33 +1463,43 @@ export default class Optimizely {
     key: string,
     options: OptimizelyDecideOption[] = []
   ): OptimizelyDecision {
+    const userId = user.getUserId();
+    const attributes = user.getAttributes();
     const configObj = this.projectConfigManager.getConfig();
-    const reasons: string[] = [];
+    const reasons: (string | number)[][] = [];
+    let decisionObj: DecisionObj;
     if (!this.isValidInstance() || !configObj) {
-      reasons.push(DECISION_MESSAGES.SDK_NOT_READY);
-      this.logger.log(LOG_LEVEL.INFO, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decide'));
-      return newErrorDecision(key, user, reasons);
+      this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decide');
+      return newErrorDecision(key, user, [DECISION_MESSAGES.SDK_NOT_READY]);
     }
 
     const feature = configObj.featureKeyMap[key];
     if (!feature) {
-      reasons.push(sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, key));
-      this.logger.log(LOG_LEVEL.ERROR, sprintf(ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, key));
-      return newErrorDecision(key, user, reasons);
+      this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, key);
+      return newErrorDecision(key, user, [sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, key)]);
     }
 
-    const userId = user.getUserId();
-    const attributes = user.getAttributes();
     const allDecideOptions = this.getAllDecideOptions(options);
-    const decisionVariation = this.decisionService.getVariationForFeature(
-      configObj,
-      feature,
-      userId,
-      attributes,
-      allDecideOptions,
-    );
-    reasons.push(...decisionVariation.reasons);
-    const decisionObj = decisionVariation.result;
+
+    const forcedDecisionResponse = this.decisionService.findValidatedForcedDecision(configObj, user, key);
+    reasons.push(...forcedDecisionResponse.reasons);
+    const variation = forcedDecisionResponse.result;
+    if (variation) {
+      decisionObj = {
+        experiment: null,
+        variation: variation,
+        decisionSource: DECISION_SOURCES.FEATURE_TEST
+      }
+    } else {
+      const decisionVariation = this.decisionService.getVariationForFeature(
+        configObj,
+        feature,
+        user,
+        allDecideOptions,
+      );
+      reasons.push(...decisionVariation.reasons);
+      decisionObj = decisionVariation.result;
+    }
     const decisionSource = decisionObj.decisionSource;
     const experimentKey = decisionObj.experiment?.key ?? null;
     const variationKey = decisionObj.variation?.key ?? null;
@@ -1502,12 +1507,18 @@ export default class Optimizely {
     if (flagEnabled === true) {
       this.logger.log(
         LOG_LEVEL.INFO,
-        sprintf(LOG_MESSAGES.FEATURE_ENABLED_FOR_USER, MODULE_NAME, key, userId)
+        LOG_MESSAGES.FEATURE_ENABLED_FOR_USER,
+        MODULE_NAME,
+        key,
+        userId,
       );
     } else {
       this.logger.log(
         LOG_LEVEL.INFO,
-        sprintf(LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER, MODULE_NAME, key, userId)
+        LOG_MESSAGES.FEATURE_NOT_ENABLED_FOR_USER,
+        MODULE_NAME,
+        key,
+        userId,
       );
     }
 
@@ -1517,20 +1528,20 @@ export default class Optimizely {
     if (!allDecideOptions[OptimizelyDecideOption.EXCLUDE_VARIABLES]) {
       feature.variables.forEach(variable => {
         variablesMap[variable.key] =
-        this.getFeatureVariableValueFromVariation(
-          key,
-          flagEnabled,
-          decisionObj.variation,
-          variable,
-          userId
-        );
+          this.getFeatureVariableValueFromVariation(
+            key,
+            flagEnabled,
+            decisionObj.variation,
+            variable,
+            userId
+          );
       });
     }
 
     if (
       !allDecideOptions[OptimizelyDecideOption.DISABLE_DECISION_EVENT] && (
-      decisionSource === DECISION_SOURCES.FEATURE_TEST ||
-      decisionSource === DECISION_SOURCES.ROLLOUT && projectConfig.getSendFlagDecisionsValue(configObj))
+        decisionSource === DECISION_SOURCES.FEATURE_TEST ||
+        decisionSource === DECISION_SOURCES.ROLLOUT && projectConfig.getSendFlagDecisionsValue(configObj))
     ) {
       this.sendImpressionEvent(
         decisionObj,
@@ -1543,7 +1554,11 @@ export default class Optimizely {
     }
 
     const shouldIncludeReasons = allDecideOptions[OptimizelyDecideOption.INCLUDE_REASONS];
-    const reportedReasons = shouldIncludeReasons ? reasons: [];
+
+    let reportedReasons: string[] = [];
+    if (shouldIncludeReasons) {
+      reportedReasons = reasons.map((reason) => sprintf(reason[0] as string, ...reason.slice(1)));
+    }
 
     const featureInfo = {
       flagKey: key,
@@ -1579,9 +1594,9 @@ export default class Optimizely {
    * @return {[key: string]: boolean}             Map of all provided decide options including default decide options
    */
   private getAllDecideOptions(options: OptimizelyDecideOption[]): { [key: string]: boolean } {
-    const allDecideOptions = {...this.defaultDecideOptions};
+    const allDecideOptions = { ...this.defaultDecideOptions };
     if (!Array.isArray(options)) {
-      this.logger.log(LOG_LEVEL.DEBUG, sprintf(LOG_MESSAGES.INVALID_DECIDE_OPTIONS, MODULE_NAME));
+      this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.INVALID_DECIDE_OPTIONS, MODULE_NAME);
     } else {
       options.forEach((option) => {
         // Filter out all provided decide options that are not in OptimizelyDecideOption[]
@@ -1590,7 +1605,9 @@ export default class Optimizely {
         } else {
           this.logger.log(
             LOG_LEVEL.WARNING,
-            sprintf(LOG_MESSAGES.UNRECOGNIZED_DECIDE_OPTION, MODULE_NAME, option)
+            LOG_MESSAGES.UNRECOGNIZED_DECIDE_OPTION,
+            MODULE_NAME,
+            option,
           );
         }
       });
@@ -1615,7 +1632,7 @@ export default class Optimizely {
   ): { [key: string]: OptimizelyDecision } {
     const decisionMap: { [key: string]: OptimizelyDecision } = {};
     if (!this.isValidInstance()) {
-      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decideForKeys'));
+      this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decideForKeys');
       return decisionMap;
     }
     if (keys.length === 0) {
@@ -1646,7 +1663,7 @@ export default class Optimizely {
     const configObj = this.projectConfigManager.getConfig();
     const decisionMap: { [key: string]: OptimizelyDecision } = {};
     if (!this.isValidInstance() || !configObj) {
-      this.logger.log(LOG_LEVEL.ERROR, sprintf(LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decideAll'));
+      this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decideAll');
       return decisionMap;
     }
 
@@ -1654,4 +1671,5 @@ export default class Optimizely {
 
     return this.decideForKeys(user, allFlagKeys, options);
   }
+
 }

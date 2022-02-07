@@ -16,11 +16,13 @@
 import sinon from 'sinon';
 import { assert } from 'chai';
 import { getLogger } from '@optimizely/js-sdk-logging';
+import { sprintf } from '@optimizely/js-sdk-utils';
 
-import AudienceEvaluator from './index';
+import { createAudienceEvaluator } from './index';
 import * as conditionTreeEvaluator from '../condition_tree_evaluator';
 import * as customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
 
+var buildLogMessageFromArgs = args => sprintf(args[1], ...args.splice(2));
 var mockLogger = getLogger();
 
 var chromeUserAudience = {
@@ -85,7 +87,7 @@ describe('lib/core/audience_evaluator', function() {
   describe('APIs', function() {
     context('with default condition evaluator', function() {
       beforeEach(function() {
-        audienceEvaluator = new AudienceEvaluator();
+        audienceEvaluator = createAudienceEvaluator();
       });
       describe('evaluate', function() {
         it('should return true if there are no audiences', function() {
@@ -135,7 +137,7 @@ describe('lib/core/audience_evaluator', function() {
         });
 
         it('should return true if no attributes are passed and the audience conditions evaluate to true in the absence of attributes', function() {
-          assert.isTrue(audienceEvaluator.evaluate(['2'], audiencesById, null));
+          assert.isTrue(audienceEvaluator.evaluate(['2'], audiencesById));
         });
 
         describe('complex audience conditions', function() {
@@ -200,7 +202,6 @@ describe('lib/core/audience_evaluator', function() {
               customAttributeConditionEvaluator.evaluate,
               iphoneUserAudience.conditions[1],
               userAttributes,
-              mockLogger
             );
             assert.isFalse(result);
           });
@@ -230,15 +231,14 @@ describe('lib/core/audience_evaluator', function() {
               customAttributeConditionEvaluator.evaluate,
               iphoneUserAudience.conditions[1],
               userAttributes,
-              mockLogger
             );
             assert.isFalse(result);
             assert.strictEqual(2, mockLogger.log.callCount);
             assert.strictEqual(
-              mockLogger.log.args[0][1],
+              buildLogMessageFromArgs(mockLogger.log.args[0]),
               'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: ["and",{"name":"device_model","value":"iphone","type":"custom_attribute"}].'
             );
-            assert.strictEqual(mockLogger.log.args[1][1], 'AUDIENCE_EVALUATOR: Audience "1" evaluated to UNKNOWN.');
+            assert.strictEqual(buildLogMessageFromArgs(mockLogger.log.args[1]), 'AUDIENCE_EVALUATOR: Audience "1" evaluated to UNKNOWN.');
           });
 
           it('logs correctly when conditionTreeEvaluator.evaluate returns true', function() {
@@ -253,15 +253,14 @@ describe('lib/core/audience_evaluator', function() {
               customAttributeConditionEvaluator.evaluate,
               iphoneUserAudience.conditions[1],
               userAttributes,
-              mockLogger
             );
             assert.isTrue(result);
             assert.strictEqual(2, mockLogger.log.callCount);
             assert.strictEqual(
-              mockLogger.log.args[0][1],
+              buildLogMessageFromArgs(mockLogger.log.args[0]),
               'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: ["and",{"name":"device_model","value":"iphone","type":"custom_attribute"}].'
             );
-            assert.strictEqual(mockLogger.log.args[1][1], 'AUDIENCE_EVALUATOR: Audience "1" evaluated to TRUE.');
+            assert.strictEqual(buildLogMessageFromArgs(mockLogger.log.args[1]), 'AUDIENCE_EVALUATOR: Audience "1" evaluated to TRUE.');
           });
 
           it('logs correctly when conditionTreeEvaluator.evaluate returns false', function() {
@@ -276,15 +275,14 @@ describe('lib/core/audience_evaluator', function() {
               customAttributeConditionEvaluator.evaluate,
               iphoneUserAudience.conditions[1],
               userAttributes,
-              mockLogger
             );
             assert.isFalse(result);
             assert.strictEqual(2, mockLogger.log.callCount);
             assert.strictEqual(
-              mockLogger.log.args[0][1],
+              buildLogMessageFromArgs(mockLogger.log.args[0]),
               'AUDIENCE_EVALUATOR: Starting to evaluate audience "1" with conditions: ["and",{"name":"device_model","value":"iphone","type":"custom_attribute"}].'
             );
-            assert.strictEqual(mockLogger.log.args[1][1], 'AUDIENCE_EVALUATOR: Audience "1" evaluated to FALSE.');
+            assert.strictEqual(buildLogMessageFromArgs(mockLogger.log.args[1]), 'AUDIENCE_EVALUATOR: Audience "1" evaluated to FALSE.');
           });
         });
       });
@@ -296,11 +294,10 @@ describe('lib/core/audience_evaluator', function() {
           const mockEnvironment = {
             special: true,
           };
-          audienceEvaluator = new AudienceEvaluator({
+          audienceEvaluator = createAudienceEvaluator({
             special_condition_type: {
-              evaluate: function(condition, userAttributes, logger) {
+              evaluate: function(condition, userAttributes) {
                 const result = mockEnvironment[condition.value] && userAttributes[condition.match] > 0;
-                logger.log(`special_condition_type: ${result} for ${condition.value}:${condition.match}`);
                 return result;
               },
             },
@@ -311,18 +308,11 @@ describe('lib/core/audience_evaluator', function() {
           assert.isFalse(audienceEvaluator.evaluate(['3'], audiencesById, { interest_level: 0 }));
           assert.isTrue(audienceEvaluator.evaluate(['3'], audiencesById, { interest_level: 1 }));
         });
-
-        it('should pass the logger instance to the custom condition evaluator', function() {
-          assert.isFalse(audienceEvaluator.evaluate(['3'], audiencesById, { interest_level: 0 }));
-          assert.isTrue(audienceEvaluator.evaluate(['3'], audiencesById, { interest_level: 1 }));
-          sinon.assert.calledWithExactly(mockLogger.log, 'special_condition_type: false for special:interest_level');
-          sinon.assert.calledWithExactly(mockLogger.log, 'special_condition_type: true for special:interest_level');
-        });
       });
 
       describe('when passing an invalid additional evaluator', function() {
         beforeEach(function() {
-          audienceEvaluator = new AudienceEvaluator({
+          audienceEvaluator = createAudienceEvaluator({
             custom_attribute: {
               evaluate: function() {
                 return false;

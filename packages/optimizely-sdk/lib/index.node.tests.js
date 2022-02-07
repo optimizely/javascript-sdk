@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2020 Optimizely
+ * Copyright 2016-2020, 2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@
  */
 import { assert } from 'chai';
 import sinon from 'sinon';
-import eventProcessor from './core/event_processor';
+import * as eventProcessor from './plugins/event_processor';
 
 import * as enums from './utils/enums';
 import Optimizely from './optimizely';
 import testData from './tests/test_data';
-import loggerPlugin from './plugins/logger';
+import * as loggerPlugin from './plugins/logger';
 import optimizelyFactory from './index.node';
 import configValidator from './utils/config_validator';
 
@@ -90,7 +90,7 @@ describe('optimizelyFactory', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.5.0-beta');
+        assert.equal(optlyInstance.clientVersion, '4.9.1');
       });
 
       describe('event processor configuration', function() {

@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.9.4] - February 2, 2022
+
+### Changed
+- Made `@react-native-async-storage/async-storage` an optional peer dependency.
+
+## [0.9.3] - January 31, 2022
+
+### Changed
+- Reverted changes in `0.9.2` and made `@react-native-async-storage/async-storage` a peer dependency again. Making it an optional dependency did not work as expected.
+
+## [0.9.2] - January 28, 2022
+
+### Changed
+- Made `@react-native-async-storage/async-storage` an optional dependency.
+
+## [0.9.1] - October 13, 2021
+
+### Fixed
+- Downgrade version of typescript to `3.8.x` to fix stubbing issue.
+- Update version of logging to `0.3.1` to fix stubbing issue.
+
+## [0.9.0] - October 8, 2021
+
+### Changed
+- Update `@optimizely/js-sdk-logging` to `0.3.0`.
+
+## [0.8.1] - May 25, 2021
+
+### Fixed
+
+- Replaced the deprecated `@react-native-community/async-storage` with `@react-native-async-storage/async-storage`.
+
 ## [0.8.0] - September 1, 2020
 
 ### Changed
