@@ -13,11 +13,15 @@ Optimizely Rollouts is free feature flags for development teams. Easily roll out
 
 ## Packages
 
-This repository is a monorepo that we manage using [Lerna](https://github.com/lerna/lerna). Only one package lives here currently, but that may change in the future.
+This repository is a monorepo. It houses the main Javascript SDK and its supporting packages.
 
 | Package                                                | Version                                                                                                                                   | Docs                                                                                                                                                                                                                                                                          | Description                                                                        |
 | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| [`@optimizely/optimizely-sdk`](/packages/optimizely-sdk) | [![npm](https://img.shields.io/npm/v/%40optimizely%2Foptimizely-sdk.svg)](https://www.npmjs.com/package/@optimizely/optimizely-sdk)     | [![](https://img.shields.io/badge/API%20Docs-site-green.svg?style=flat-square)](https://developers.optimizely.com/x/solutions/sdks/reference/?language=javascript)           | The Optimizely SDK                                                                                                  |
+| [`@optimizely/optimizely-sdk`](/packages/optimizely-sdk) | [![npm](https://img.shields.io/npm/v/%40optimizely%2Foptimizely-sdk.svg)](https://www.npmjs.com/package/@optimizely/optimizely-sdk)     | [![](https://img.shields.io/badge/API%20Docs-site-green.svg?style=flat-square)](https://docs.developers.optimizely.com/full-stack/docs/javascript-node-sdk)           | The Optimizely SDK                                                                                                  |
+| [`@optimizely/js-sdk-datafile-manager`](/packages/datafile-manager) | [![npm](https://img.shields.io/npm/v/%40optimizely%2Fjs-sdk-datafile-manager.svg)](https://www.npmjs.com/package/@optimizely/js-sdk-datafile-manager)     | [![](https://img.shields.io/badge/API%20Docs-site-green.svg?style=flat-square)](https://docs.developers.optimizely.com/full-stack/docs/initialize-sdk-javascript-node#customize-datafile-management-behavior)           | Datafile Manager for Optimizely SDK
+| [`@optimizely/js-sdk-event-processor`](/packages/event-processor) | [![npm](https://img.shields.io/npm/v/%40optimizely%2Fjs-sdk-event-processor.svg)](https://www.npmjs.com/package/@optimizely/js-sdk-event-processor)     | [![](https://img.shields.io/badge/API%20Docs-site-green.svg?style=flat-square)](https://docs.developers.optimizely.com/full-stack/docs/event-batching-javascript-node)           | Event Batching support for Optimizely SDK
+| [`@optimizely/js-sdk-logging`](/packages/logging) | [![npm](https://img.shields.io/npm/v/%40optimizely%2Fjs-sdk-logging.svg)](https://www.npmjs.com/package/@optimizely/js-sdk-logging)     | [![](https://img.shields.io/badge/API%20Docs-site-green.svg?style=flat-square)](https://docs.developers.optimizely.com/full-stack/docs/customize-logger-javascript-node)           | Logging Manager for Optimizely SDK
+| [`@optimizely/js-sdk-utils`](/packages/utils) | [![npm](https://img.shields.io/npm/v/%40optimizely%2Fjs-sdk-utils.svg)](https://www.npmjs.com/package/@optimizely/js-sdk-utils)     |            | Utility functions for Optimizely packages
 
 ## About
 
@@ -38,7 +42,7 @@ Prod dependencies are as follows:
 
 ```json
 {
-  "json-schema@0.2.3": {
+  "json-schema@0.4.0": {
     "licenses": [
       "AFLv2.1",
       "BSD"
