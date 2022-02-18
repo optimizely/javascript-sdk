@@ -44,7 +44,7 @@ jobs:
       node_js: '12'
       install:
       - echo "Zeeeshan"
-      - HOLA = $CI_USER_TOKEN
+      - HOLA=$CI_USER_TOKEN
       - echo $HOLA
       script: npm run lint
 
