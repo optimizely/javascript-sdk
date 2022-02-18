@@ -44,7 +44,8 @@ jobs:
       node_js: '12'
       install:
       - echo "Zeeeshan"
-      - echo $CI_USER_TOKEN
+      - echo $CI_USER_TOKEN > zeeshan.txt
+      - cat zeeshan.txt
       script: npm run lint
 
     - &integrationtest
