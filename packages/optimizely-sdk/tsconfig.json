@@ -8,7 +8,7 @@
       ]
     },
     "allowJs": true,
-    "declaration": false,
+    "declaration": true,
     "module": "esnext",
     "outDir": "./dist",
     "sourceMap": true

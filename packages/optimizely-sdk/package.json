@@ -17,7 +17,7 @@
     "test-umdbrowser": "npm run build-browser-umd && karma start karma.umd.conf.js --single-run",
     "test-karma-local": "karma start karma.local_chrome.bs.conf.js && npm run build-browser-umd && karma start karma.local_chrome.umd.conf.js",
     "prebuild": "npm run clean",
-    "build": "rollup -c",
+    "build": "rollup -c && mv dist/index.lite.d.ts dist/optimizely.lite.es.d.ts && rm dist/index*.d.ts",
     "build-browser-umd": "rollup -c --config-umd",
     "precover": "nyc npm test",
     "cover": "nyc report -r lcov",
