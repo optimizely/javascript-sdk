@@ -17,7 +17,7 @@ const POST_METHOD = 'POST';
 const GET_METHOD = 'GET';
 const READYSTATE_COMPLETE = 4;
 
-interface Event {
+export interface Event {
   url: string;
   httpVerb: 'POST' | 'GET';
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
