@@ -18,6 +18,7 @@ declare module '@optimizely/optimizely-sdk' {
   import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
   import * as enums from '@optimizely/optimizely-sdk/lib/utils/enums';
   import * as logging from '@optimizely/optimizely-sdk/lib/plugins/logger';
+
   export { enums, logging };
 
   export function setLogger(logger: LogHandler | null): void;
@@ -30,41 +31,119 @@ declare module '@optimizely/optimizely-sdk' {
 
   export const eventDispatcher: EventDispatcher;
 
-  interface DatafileOptions {
-    autoUpdate?: boolean;
-    updateInterval?: number;
-    urlTemplate?: string;
+  export type UserAttributes = import('./shared_types').UserAttributes;
+
+  export type OptimizelyConfig = import('./shared_types').OptimizelyConfig;
+
+  export type OptimizelyVariable = import('./shared_types').OptimizelyVariable;
+
+  export type OptimizelyVariation = import('./shared_types').OptimizelyVariation;
+
+  export type OptimizelyExperiment = import('./shared_types').OptimizelyExperiment;
+
+  export type OptimizelyFeature = import('./shared_types').OptimizelyFeature;
+
+  export type OptimizelyDecisionContext = import('./shared_types').OptimizelyDecisionContext;
+
+  export type OptimizelyForcedDecision = import('./shared_types').OptimizelyForcedDecision;
+
+  export type EventTags = import('./shared_types').EventTags;
+
+  export type Event = import('./shared_types').Event;
+
+  export type EventDispatcher = import('./shared_types').EventDispatcher;
+
+  export type DatafileOptions = import('./shared_types').DatafileOptions;
+
+  export type SDKOptions = import('./shared_types').SDKOptions;
+
+  export type OptimizelyOptions = import('./shared_types').OptimizelyOptions;
+
+  export type UserProfileService = import('./shared_types').UserProfileService;
+
+  export type UserProfile = import('./shared_types').UserProfile;
+
+  export type ListenerPayload = import('./shared_types').ListenerPayload;
+
+  export type OptimizelyDecision = import('./shared_types').OptimizelyDecision;
+
+  export type OptimizelyUserContext = import('./shared_types').OptimizelyUserContext;
+
+  export enum OptimizelyDecideOption {
+    DISABLE_DECISION_EVENT = 'DISABLE_DECISION_EVENT',
+    ENABLED_FLAGS_ONLY = 'ENABLED_FLAGS_ONLY',
+    IGNORE_USER_PROFILE_SERVICE = 'IGNORE_USER_PROFILE_SERVICE',
+    INCLUDE_REASONS = 'INCLUDE_REASONS',
+    EXCLUDE_VARIABLES = 'EXCLUDE_VARIABLES'
   }
+
+  export type NotificationListener<T extends ListenerPayload> = import('./shared_types').NotificationListener<T>;
 
   // The options object given to Optimizely.createInstance.
   export interface Config {
+    // TODO[OASIS-6649]: Don't use object type
+    // eslint-disable-next-line  @typescript-eslint/ban-types
     datafile?: object | string;
     datafileOptions?: DatafileOptions;
     errorHandler?: ErrorHandler;
     eventDispatcher?: EventDispatcher;
     logger?: LogHandler;
     logLevel?:
+      | string
       | enums.LOG_LEVEL.DEBUG
       | enums.LOG_LEVEL.ERROR
       | enums.LOG_LEVEL.INFO
       | enums.LOG_LEVEL.NOTSET
       | enums.LOG_LEVEL.WARNING;
-    jsonSchemaValidator?: object;
+    jsonSchemaValidator?: {
+      validate(jsonObject: unknown): boolean,
+    };
     userProfileService?: UserProfileService | null;
     eventBatchSize?: number;
     eventFlushInterval?: number;
     sdkKey?: string;
+    defaultDecideOptions?: OptimizelyDecideOption[]
   }
 
   export interface Client {
     notificationCenter: NotificationCenter;
-    activate(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
-    track(eventKey: string, userId: string, attributes?: UserAttributes, eventTags?: EventTags): void;
-    getVariation(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
+    createUserContext(
+      userId: string,
+      attributes?: UserAttributes
+    ): OptimizelyUserContext | null;
+    activate(
+      experimentKey: string,
+      userId: string,
+      attributes?: UserAttributes
+    ): string | null;
+    track(
+      eventKey: string,
+      userId: string,
+      attributes?: UserAttributes,
+      eventTags?: EventTags
+    ): void;
+    getVariation(
+      experimentKey: string,
+      userId: string,
+      attributes?: UserAttributes
+    ): string | null;
     setForcedVariation(experimentKey: string, userId: string, variationKey: string | null): boolean;
     getForcedVariation(experimentKey: string, userId: string): string | null;
-    isFeatureEnabled(featureKey: string, userId: string, attributes?: UserAttributes): boolean;
-    getEnabledFeatures(userId: string, attributes?: UserAttributes): string[];
+    isFeatureEnabled(
+      featureKey: string,
+      userId: string,
+      attributes?: UserAttributes
+    ): boolean;
+    getEnabledFeatures(
+      userId: string,
+      attributes?: UserAttributes
+    ): string[];
+    getFeatureVariable(
+      featureKey: string,
+      variableKey: string,
+      userId: string,
+      attributes?: UserAttributes
+    ): unknown;
     getFeatureVariableBoolean(
       featureKey: string,
       variableKey: string,
@@ -89,7 +168,7 @@ declare module '@optimizely/optimizely-sdk' {
       userId: string,
       attributes?: UserAttributes
     ): string | null;
-    getFeatureVariableJson(
+    getFeatureVariableJSON(
       featureKey: string,
       variableKey: string,
       userId: string,
@@ -99,37 +178,10 @@ declare module '@optimizely/optimizely-sdk' {
       featureKey: string,
       userId: string,
       attributes?: UserAttributes
-    ): unknown;
+    ): { [variableKey: string]: unknown } | null;
     getOptimizelyConfig(): OptimizelyConfig | null;
     onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
     close(): Promise<{ success: boolean; reason?: string }>;
-  }
-
-  // An event to be submitted to Optimizely, enabling tracking the reach and impact of
-  // tests and feature rollouts.
-  export interface Event {
-    // URL to which to send the HTTP request.
-    url: string;
-    // HTTP method with which to send the event.
-    httpVerb: 'POST';
-    // Value to send in the request body, JSON-serialized.
-    params: any;
-  }
-
-  export interface EventDispatcher {
-    /**
-     * @param event
-     *        Event being submitted for eventual dispatch.
-     * @param callback
-     *        After the event has at least been queued for dispatch, call this function to return
-     *        control back to the Client.
-     */
-    dispatchEvent: (event: Event, callback: () => void) => void;
-  }
-
-  export interface UserProfileService {
-    lookup: (userId: string) => UserProfile;
-    save: (profile: UserProfile) => void;
   }
 
   // NotificationCenter-related types
@@ -143,108 +195,16 @@ declare module '@optimizely/optimizely-sdk' {
     clearNotificationListeners(notificationType: enums.NOTIFICATION_TYPES): void;
   }
 
-  export type NotificationListener<T extends ListenerPayload> = (notificationData: T) => void;
-
-  export interface ListenerPayload {
-    userId: string;
-    attributes: UserAttributes;
-  }
-
   export interface ActivateListenerPayload extends ListenerPayload {
-    experiment: Experiment;
-    variation: Variation;
+    experiment: import('./shared_types').Experiment;
+    variation: import('./shared_types').Variation;
     logEvent: Event;
   }
-
-  export type UserAttributes = {
-    [name: string]: any;
-  };
-
-  export type EventTags = {
-    [key: string]: string | number | boolean;
-  };
 
   export interface TrackListenerPayload extends ListenerPayload {
     eventKey: string;
     eventTags: EventTags;
     logEvent: Event;
-  }
-
-  interface Experiment {
-    id: string;
-    key: string;
-    status: string;
-    layerId: string;
-    variations: Variation[];
-    trafficAllocation: Array<{
-      entityId: string;
-      endOfRange: number;
-    }>;
-    audienceIds: string[];
-    forcedVariations: object;
-  }
-
-  interface Variation {
-    id: string;
-    key: string;
-  }
-
-  // Information about past bucketing decisions for a user.
-  export interface UserProfile {
-    user_id: string;
-    experiment_bucket_map: {
-      [experiment_id: string]: {
-        variation_id: string;
-      };
-    };
-  }
-
-  /**
-   * Optimizely Config Entities
-   */
-  export interface OptimizelyVariable {
-    id: string;
-    key: string;
-    type: string;
-    value: string;
-  }
-
-  export interface OptimizelyVariation {
-    id: string;
-    key: string;
-    featureEnabled?: boolean;
-    variablesMap: {
-      [variableKey: string]: OptimizelyVariable;
-    };
-  }
-
-  export interface OptimizelyExperiment {
-    id: string;
-    key: string;
-    variationsMap: {
-      [variationKey: string]: OptimizelyVariation;
-    };
-  }
-
-  export interface OptimizelyFeature {
-    id: string;
-    key: string;
-    experimentsMap: {
-      [experimentKey: string]: OptimizelyExperiment;
-    };
-    variablesMap: {
-      [variableKey: string]: OptimizelyVariable;
-    };
-  }
-
-  export interface OptimizelyConfig {
-    experimentsMap: {
-      [experimentKey: string]: OptimizelyExperiment;
-    };
-    featuresMap: {
-      [featureKey: string]: OptimizelyFeature;
-    };
-    revision: string;
   }
 }
 
@@ -258,6 +218,7 @@ declare module '@optimizely/optimizely-sdk/lib/utils/enums' {
     DECISION = 'DECISION:type, userId, attributes, decisionInfo',
     OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
     TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
+    LOG_EVENT = "LOG_EVENT:logEvent"
   }
 }
 
@@ -266,7 +227,7 @@ declare module '@optimizely/optimizely-sdk/lib/plugins/logger' {
   import { LogHandler } from '@optimizely/js-sdk-logging';
 
   export interface LoggerConfig {
-    logLevel?: enums.LOG_LEVEL;
+    logLevel?: enums.LOG_LEVEL | string;
     logToConsole?: boolean;
     prefix?: string;
   }

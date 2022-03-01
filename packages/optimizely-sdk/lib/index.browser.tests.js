@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2020 Optimizely
+ * Copyright 2016-2020, 2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import * as logging from '@optimizely/js-sdk-logging';
+
 import { assert } from 'chai';
 import sinon from 'sinon';
-import * as logging from '@optimizely/js-sdk-logging';
-import * as eventProcessor from '@optimizely/js-sdk-event-processor';
-
+import { default as eventProcessor } from './plugins/event_processor';
 import Optimizely from './optimizely';
 import testData from './tests/test_data';
 import packageJSON from '../package.json';
@@ -28,10 +28,18 @@ import eventProcessorConfigValidator from './utils/event_processor_config_valida
 var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
 
 describe('javascript-sdk', function() {
-  describe('APIs', function() {
-    var xhr;
-    var requests;
+  var clock;
+  beforeEach(function() {
+    sinon.stub(optimizelyFactory.eventDispatcher, 'dispatchEvent');
+    clock = sinon.useFakeTimers(new Date());
+  });
 
+  afterEach(function() {
+    optimizelyFactory.eventDispatcher.dispatchEvent.restore();
+    clock.restore();
+  });
+
+  describe('APIs', function() {
     it('should expose logger, errorHandler, eventDispatcher and enums', function() {
       assert.isDefined(optimizelyFactory.logging);
       assert.isDefined(optimizelyFactory.logging.createLogger);
@@ -54,12 +62,7 @@ describe('javascript-sdk', function() {
         sinon.spy(console, 'error');
         sinon.stub(configValidator, 'validate');
 
-        xhr = sinon.useFakeXMLHttpRequest();
-        global.XMLHttpRequest = xhr;
-        requests = [];
-        xhr.onCreate = function(req) {
-          requests.push(req);
-        };
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
 
         sinon.stub(LocalStoragePendingEventsDispatcher.prototype, 'sendPendingEvents');
       });
@@ -69,7 +72,7 @@ describe('javascript-sdk', function() {
         optimizelyFactory.__internalResetRetryState();
         console.error.restore();
         configValidator.validate.restore();
-        xhr.restore();
+        delete global.XMLHttpRequest
       });
 
       describe('when an eventDispatcher is not passed in', function() {
@@ -145,7 +148,7 @@ describe('javascript-sdk', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.0.0');
+        assert.equal(optlyInstance.clientVersion, '4.9.1');
       });
 
       it('should set the JavaScript client engine and version', function() {
@@ -159,19 +162,6 @@ describe('javascript-sdk', function() {
         optlyInstance.onReady().catch(function() {});
         assert.equal('javascript-sdk', optlyInstance.clientEngine);
         assert.equal(packageJSON.version, optlyInstance.clientVersion);
-      });
-
-      it('should allow passing of "react-sdk" as the clientEngine', function() {
-        var optlyInstance = optimizelyFactory.createInstance({
-          clientEngine: 'react-sdk',
-          datafile: {},
-          errorHandler: fakeErrorHandler,
-          eventDispatcher: fakeEventDispatcher,
-          logger: silentLogger,
-        });
-        // Invalid datafile causes onReady Promise rejection - catch this error
-        optlyInstance.onReady().catch(function() {});
-        assert.equal('react-sdk', optlyInstance.clientEngine);
       });
 
       it('should allow passing of "react-sdk" as the clientEngine', function() {
@@ -399,13 +389,12 @@ describe('javascript-sdk', function() {
       });
 
       describe('event processor configuration', function() {
-        var eventProcessorSpy;
         beforeEach(function() {
-          eventProcessorSpy = sinon.stub(eventProcessor, 'LogTierV1EventProcessor').callThrough();
+          sinon.stub(eventProcessor, 'createEventProcessor');
         });
 
         afterEach(function() {
-          eventProcessor.LogTierV1EventProcessor.restore();
+          eventProcessor.createEventProcessor.restore();
         });
 
         it('should use default event flush interval when none is provided', function() {
@@ -414,9 +403,9 @@ describe('javascript-sdk', function() {
             errorHandler: fakeErrorHandler,
             eventDispatcher: fakeEventDispatcher,
             logger: silentLogger,
-          });
+          });          
           sinon.assert.calledWithExactly(
-            eventProcessorSpy,
+            eventProcessor.createEventProcessor,
             sinon.match({
               flushInterval: 1000,
             })
@@ -441,7 +430,7 @@ describe('javascript-sdk', function() {
               eventFlushInterval: ['invalid', 'flush', 'interval'],
             });
             sinon.assert.calledWithExactly(
-              eventProcessorSpy,
+              eventProcessor.createEventProcessor,
               sinon.match({
                 flushInterval: 1000,
               })
@@ -467,7 +456,7 @@ describe('javascript-sdk', function() {
               eventFlushInterval: 9000,
             });
             sinon.assert.calledWithExactly(
-              eventProcessorSpy,
+              eventProcessor.createEventProcessor,
               sinon.match({
                 flushInterval: 9000,
               })
@@ -483,9 +472,9 @@ describe('javascript-sdk', function() {
             logger: silentLogger,
           });
           sinon.assert.calledWithExactly(
-            eventProcessorSpy,
+            eventProcessor.createEventProcessor,
             sinon.match({
-              maxQueueSize: 10,
+              batchSize: 10,
             })
           );
         });
@@ -508,9 +497,9 @@ describe('javascript-sdk', function() {
               eventBatchSize: null,
             });
             sinon.assert.calledWithExactly(
-              eventProcessorSpy,
+              eventProcessor.createEventProcessor,
               sinon.match({
-                maxQueueSize: 10,
+                batchSize: 10,
               })
             );
           });
@@ -534,9 +523,9 @@ describe('javascript-sdk', function() {
               eventBatchSize: 300,
             });
             sinon.assert.calledWithExactly(
-              eventProcessorSpy,
+              eventProcessor.createEventProcessor,
               sinon.match({
-                maxQueueSize: 300,
+                batchSize: 300,
               })
             );
           });

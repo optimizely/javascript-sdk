@@ -93,7 +93,7 @@ describe('LocalStorageStore', () => {
       { uuid: '3', timestamp: 3, value: 'third' },
     ])
 
-    const newMap = {}
+    const newMap: { [key: string]: TestEntry } = {}
     store.values().forEach(item => {
       newMap[item.uuid] = {
         ...item,

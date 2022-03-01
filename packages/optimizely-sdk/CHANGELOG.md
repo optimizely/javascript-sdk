@@ -7,6 +7,251 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+- Add package.json script for running Karma tests locally using Chrome ([#651](https://github.com/optimizely/javascript-sdk/pull/651)).
+
+## [4.9.1] - January 18, 2022
+
+### Bug fixes
+- Fixed typescript compilation issue introduced by `4.9.0` ([#733](https://github.com/optimizely/javascript-sdk/pull/733))
+
+## [4.9.0] - January 14, 2022
+
+### New Features
+* Add a set of new APIs for overriding and managing user-level flag, experiment and delivery rule decisions. These methods can be used for QA and automated testing purposes. They are an extension of the OptimizelyUserContext interface ([#705](https://github.com/optimizely/javascript-sdk/pull/705), [#727](https://github.com/optimizely/javascript-sdk/pull/727), [#729](https://github.com/optimizely/javascript-sdk/pull/729), [#730](https://github.com/optimizely/javascript-sdk/pull/730)):
+	- setForcedDecision
+	- getForcedDecision
+	- removeForcedDecision
+	- removeAllForcedDecisions
+
+* For details, refer to our documentation pages: [OptimizelyUserContext](https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyusercontext-javascript-node) and [Forced Decision methods](https://docs.developers.optimizely.com/full-stack/v4.0/docs/forced-decision-methods-javascript-node).
+
+## [4.8.0] - November 29, 2021
+
+### New Features
+- Added a Lite bundle which does not include Data file manager and Event Processor packages. This reduces the bundle size up to 20% and is helpful for some platforms (such as edge service providers) that do not need extended functionality offered by these packages.
+- Removed Client engine validation in the SDK to allow tracking events from new clients without modifying SDK code.
+
+### Performance Improvements
+- Reduced SDK client initialization time by removing `OptimizelyConfig` creation from initialization. The `OptimizelyConfig` object is now created on the first call to `getOptimizelyConfig` API.
+- Made Improvements to logging mechanism. The SDK no longer concatenates and formats messages which do not qualify for the log level set by the user.
+
+### Changed
+- Updated `json-schema` package version to `0.4.0` to fix a high-severity vulnerability ([Prototype Pollution](https://snyk.io/vuln/SNYK-JS-JSONSCHEMA-1920922)).
+
+## [4.8.0-beta.2] - November 1, 2021
+
+### New Features
+- Removed Client engine validation in the SDK to allow tracking events from new clients without modifying SDK code.
+
+## [4.8.0-beta] - October 18, 2021
+
+### New Features
+- Added a Lite bundle which does not include Data file manager and Event Processor packages. This reduces the bundle size up to 20% and is helpful for some platforms (such as edge service providers) that do not need extended functionality offered by these packages.
+
+### Performance Improvements
+- Reduced SDK client initialization time by removing `OptimizelyConfig` creation from initialization. The `OptimizelyConfig` object is now created on the first call to `getOptimizelyConfig` API.
+- Made Improvements to logging mechanism. The SDK now no longer concatenates and formats messages which do not qualify for the log level set by the user.
+
+## [4.7.0] - September 15, 2021
+
+### New Features
+- Added new public properties to `OptimizelyConfig`. ([#683](https://github.com/optimizely/javascript-sdk/pull/683), [#698](https://github.com/optimizely/javascript-sdk/pull/698))
+	- sdkKey
+	- environmentKey
+	- attributes
+	- audiences
+	- events
+	- experimentRules and deliveryRules to `OptimizelyFeature`
+	- audiences to `OptimizelyExperiment`
+- For details, refer to our documentation page:
+  - Node version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyconfig-javascript-node](https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyconfig-javascript-node).
+  - Browser version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyconfig-javascript](https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyconfig-javascript).
+
+### Bug fixes
+- Followed experimentIds order of experiments inside featuresMap of OptimizelyConfig ([#701](https://github.com/optimizely/javascript-sdk/pull/701))
+
+### Deprecated
+
+- `OptimizelyFeature.experimentsMap` of `OptimizelyConfig` is deprecated as of this release. Please use `OptimizelyFeature.experimentRules` and `OptimizelyFeature.deliveryRules` ([#698](https://github.com/optimizely/javascript-sdk/pull/698))
+
+## [4.6.2] - July 15, 2021
+
+### Bug fixes
+- Fixed incorrect impression event payload in projects containing multiple flags with dublicate key rules ([#690](https://github.com/optimizely/javascript-sdk/pull/690))
+
+## [4.6.1] - July 8, 2021
+
+### Bug fixes
+- Bumped `event-processor` packages to version `0.8.2`
+- Fixed serving incorrect variation issue in projects containing multiple flags with same key rules ([#687](https://github.com/optimizely/javascript-sdk/pull/687))
+
+## [4.6.0] - May 27, 2021
+
+### New Features
+- Added support for multiple concurrent prioritized experiments per flag ([#664](https://github.com/optimizely/javascript-sdk/pull/664))
+
+### Bug fixes
+- Fixed the issue of forced-variation and whitelist not working properly with exclusion group experiments ([#664](https://github.com/optimizely/javascript-sdk/pull/664))
+- Bumped `datafile-manager` and `event-processor` packages to version `0.8.1`.
+
+## [4.5.1] - March 2, 2021
+
+### Bug fixes
+-  Refactored TypeScript type definitions to have `OptimizelyUserContext` and `OptimizelyDecision` imported from `shared_types` to provide isolation from internal modules ([#655](https://github.com/optimizely/javascript-sdk/pull/655))
+
+## [4.5.0] - February 17, 2021
+
+### New Features
+
+- Introducing a new primary interface for retrieving feature flag status, configuration and associated experiment decisions for users ([#632](https://github.com/optimizely/javascript-sdk/pull/632), [#634](https://github.com/optimizely/javascript-sdk/pull/634), [#635](https://github.com/optimizely/javascript-sdk/pull/635), [#636](https://github.com/optimizely/javascript-sdk/pull/636), [#640](https://github.com/optimizely/javascript-sdk/pull/640), [#642](https://github.com/optimizely/javascript-sdk/pull/642), [#643](https://github.com/optimizely/javascript-sdk/pull/643), [#644](https://github.com/optimizely/javascript-sdk/pull/644), [#647](https://github.com/optimizely/javascript-sdk/pull/647), [#648](https://github.com/optimizely/javascript-sdk/pull/648)). The new `OptimizelyUserContext` class is instantiated with `createUserContext` and exposes the following APIs to get `OptimizelyDecision`:
+
+	- setAttribute
+	- decide
+	- decideAll
+	- decideForKeys
+	- trackEvent
+
+- For details, refer to our documentation page:
+  - browser version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-sdk](https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-sdk).
+  - Node version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-node-sdk](https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-node-sdk).
+
+## [4.5.0-beta] - February 10, 2021
+
+### New Features
+
+- Introducing a new primary interface for retrieving feature flag status, configuration and associated experiment decisions for users ([#632](https://github.com/optimizely/javascript-sdk/pull/632), [#634](https://github.com/optimizely/javascript-sdk/pull/634), [#635](https://github.com/optimizely/javascript-sdk/pull/635), [#636](https://github.com/optimizely/javascript-sdk/pull/636), [#640](https://github.com/optimizely/javascript-sdk/pull/640), [#642](https://github.com/optimizely/javascript-sdk/pull/642), [#643](https://github.com/optimizely/javascript-sdk/pull/643), [#644](https://github.com/optimizely/javascript-sdk/pull/644), [#647](https://github.com/optimizely/javascript-sdk/pull/647), [#648](https://github.com/optimizely/javascript-sdk/pull/648)). The new `OptimizelyUserContext` class is instantiated with `createUserContext` and exposes the following APIs to get `OptimizelyDecision`:
+
+	- setAttribute
+	- decide
+	- decideAll
+	- decideForKeys
+	- trackEvent
+
+- For details, refer to our documentation page:
+  - browser version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-sdk](https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-sdk).
+  - Node version: [https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-node-sdk](https://docs.developers.optimizely.com/full-stack/v4.0/docs/javascript-node-sdk).
+
+## [4.4.3] - November 23, 2020
+
+### Bug fixes
+-  Refactored TypeScript type definitions to have `OptimizelyOptions` imported from `shared_types` to provide isolation from internal modules ([#629](https://github.com/optimizely/javascript-sdk/pull/629))
+
+## [4.4.2] - November 19, 2020
+
+### Bug fixes
+
+- In `Optimizely` class, use `any` type when assigning the return value of `setTimeout`. This is to allow it to type check regardless of whether it uses the browser or Node version of `setTimeout` ([PR #623](https://github.com/optimizely/javascript-sdk/pull/623)), ([Issue #622](https://github.com/optimizely/javascript-sdk/issues/622))
+- Allowed to pass string type `logLevel` to `createInstance`. ([PR #627](https://github.com/optimizely/javascript-sdk/pull/627)), ([Issue #614](https://github.com/optimizely/javascript-sdk/issues/614))
+- Excluded `suppressImplicitAnyIndexErrors` from TSconfig and resolved reported TS compiler issues ([PR #616](https://github.com/optimizely/javascript-sdk/pull/616)), ([Issue #613](https://github.com/optimizely/javascript-sdk/issues/613))
+- Refactored TypeScript type definitions to only import from `shared_types` to provide isolation from internal modules ([#625](https://github.com/optimizely/javascript-sdk/pull/625))
+
+### New Features
+
+- Added `enabled` field to decision metadata structure to support upcoming application-controlled introduction of tracking for non-experiment Flag decisions ([#619](https://github.com/optimizely/javascript-sdk/pull/619))
+
+## [4.4.1] - November 5, 2020
+
+### Bug fixes
+
+- Allowed using `--isolatedModules` flag in TSConfig file by fixing exports in event processor ([#610](https://github.com/optimizely/javascript-sdk/pull/610))
+- Fixed strictNullChecks type errors ([#611](https://github.com/optimizely/javascript-sdk/pull/611))
+
+## [4.4.0] - November 2, 2020
+
+### New Features
+
+- Added support sending impression events every time a decision is made ([#599](https://github.com/optimizely/javascript-sdk/pull/599))
+
+## [4.3.4] - October 8, 2020
+
+### Bug fixes
+- The prior version (4.3.3) was erroneously published with the wrong content. This version contains up-to-date content, with no new changes.
+
+## [4.3.3] - October 7, 2020
+
+### Bug fixes
+- Exported `OptimizelyVariable`, `OptimizelyVariation`, `OptimizelyExperiment`, `OptimizelyFeature`, `UserProfileService`, and `UserProfile` types from TypeScript type definitions ([#594](https://github.com/optimizely/javascript-sdk/pull/594))
+
+## [4.3.2] - October 6, 2020
+
+### Bug fixes
+
+- Fixed return type of `getAllFeatureVariables` method and `dispatchEvent ` method signature of `EventDispatcher` interface in TypeScript type definitions ([#576](https://github.com/optimizely/javascript-sdk/pull/576))
+- Don't log an error message when initialized with `sdkKey`, but no `datafile` ([#589](https://github.com/optimizely/javascript-sdk/pull/589))
+
+## [4.3.1] - October 5, 2020
+
+### Bug fixes
+
+-  Exported `OptimizelyConfig` and `UserAttributes` type in TypeScript type definitions ([#587](https://github.com/optimizely/javascript-sdk/pull/587))
+
+## [4.3.0] - October 1, 2020
+
+### New Features
+
+- Added support for version audience evaluation ([#517](https://github.com/optimizely/javascript-sdk/pull/571))
+- Add datafile accessor ([#564](https://github.com/optimizely/javascript-sdk/pull/564))
+
+## [4.2.1] - August 10, 2020
+
+### Bug fixes
+  - Remove incorrect warning about invalid variation ID when user not bucketed into experiment or feature rollout ([#549](https://github.com/optimizely/javascript-sdk/pull/549))
+
+## [4.2.0] - July 31, 2020
+
+### New Features
+
+  - Better offline support in React Native apps:
+    - Persist downloaded datafiles in local storage for use in subsequent SDK initializations ([#430](https://github.com/optimizely/javascript-sdk/pull/430))
+    - Persist pending impression & conversion events in local storage ([#517](https://github.com/optimizely/javascript-sdk/pull/517), [#532](https://github.com/optimizely/javascript-sdk/pull/532))
+
+### Bug fixes
+
+  - Fixed log messages for Targeted Rollouts ([#515](https://github.com/optimizely/javascript-sdk/pull/515))
+
+## [4.1.0] - July 7, 2020
+
+### New Features
+
+- Added support for JSON feature variables: new methods `getFeatureVariableJSON` and `getAllFeatureVariables` ([#467](https://github.com/optimizely/javascript-sdk/pull/467), [#470](https://github.com/optimizely/javascript-sdk/pull/470))
+- Added support for authenticated datafiles when running in Node.js. Pass `datafileAccessToken` within `datafileOptions` to request an authenticated datafile using the token ([#498](https://github.com/optimizely/javascript-sdk/pull/498), [#502](https://github.com/optimizely/javascript-sdk/pull/502)):
+  ```js
+  const optimizelySDK = require('@optimizely/optimizely-sdk');
+  var optimizelyClientInstance = optimizely.createInstance({
+    sdkKey: '<Your SDK key>',
+    datafileOptions: {
+      datafileAccessToken: '<Your datafile access token>',
+    }
+  });
+  ```
+
+### Bug fixes
+
+- Fixed audience evaluation log level: changed from `INFO` to `DEBUG` ([#496](https://github.com/optimizely/javascript-sdk/pull/496))
+- Temporarily disabled React Native FSC tests ([#514](https://github.com/optimizely/javascript-sdk/pull/514))
+- Changed `getFeatureVariableJson` to `getFeatureVariableJSON` ([#516](https://github.com/optimizely/javascript-sdk/pull/516))
+
+## [4.1.0-beta] - June 16, 2020
+
+### New Features
+
+- Added support for JSON feature variables: new methods `getFeatureVariableJSON` and `getAllFeatureVariables` ([#467](https://github.com/optimizely/javascript-sdk/pull/467), [#470](https://github.com/optimizely/javascript-sdk/pull/470))
+- Added support for authenticated datafiles when running in Node.js. Pass `datafileAccessToken` within `datafileOptions` to request an authenticated datafile using the token ([#498](https://github.com/optimizely/javascript-sdk/pull/498), [#502](https://github.com/optimizely/javascript-sdk/pull/502)):
+  ```js
+  const optimizelySDK = require('@optimizely/optimizely-sdk');
+  var optimizelyClientInstance = optimizely.createInstance({
+    sdkKey: '<Your SDK key>',
+    datafileOptions: {
+      datafileAccessToken: '<Your datafile access token>',
+    }
+  });
+  ```
+
+### Bug fixes
+
+- Fixed audience evaluation log level: changed from `INFO` to `DEBUG` ([#496](https://github.com/optimizely/javascript-sdk/pull/496))
+
 ## [4.0.0] - April 30, 2020
 
 ### New Features
@@ -41,22 +286,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [4.0.0-rc.2] - April 24, 2020
 
 ### Bug fixes
+
 - Allow multiple instances to be created from the same datafile object ([#462](https://github.com/optimizely/javascript-sdk/pull/462))
 
 ## [4.0.0-rc.1] - April 17, 2020
 
 ### New Features
+
 - ES module entry point for the browser - `"module"` property of `package.json` points to `dist/optimizely.browser.es.min.js` ([#445](https://github.com/optimizely/javascript-sdk/pull/445))
 
 ### Breaking Changes:
+
 - Dropped support for Node.js version <8 ([#456](https://github.com/optimizely/javascript-sdk/pull/456))
 
 ### Bug fixes
+
 - Node.js datafile manager uses gzip,deflate compression for requests ([#456](https://github.com/optimizely/javascript-sdk/pull/456))
 
 ## [4.0.0-alpha.1] - March 4, 2020
 
 ### Breaking Changes:
+
 - Removed `Promise` polyfill from browser entry point ([417](https://github.com/optimizely/javascript-sdk/pull/417)).
 - Changed functionality of JSON schema validation in all entry points ([442](https://github.com/optimizely/javascript-sdk/pull/442)).
    - Previously, `skipJSONValidation` flag was used by the user to specify whether the JSON object should be validated.

@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2020 Optimizely
+ * Copyright 2016-2020, 2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@
  */
 import { assert } from 'chai';
 import sinon from 'sinon';
-import * as eventProcessor from '@optimizely/js-sdk-event-processor';
+import * as eventProcessor from './plugins/event_processor';
 
-import enums from './utils/enums';
+import * as enums from './utils/enums';
 import Optimizely from './optimizely';
 import testData from './tests/test_data';
-import loggerPlugin from './plugins/logger';
+import * as loggerPlugin from './plugins/logger';
 import optimizelyFactory from './index.node';
 import configValidator from './utils/config_validator';
 
@@ -90,17 +90,17 @@ describe('optimizelyFactory', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.0.0');
+        assert.equal(optlyInstance.clientVersion, '4.9.1');
       });
 
       describe('event processor configuration', function() {
         var eventProcessorSpy;
         beforeEach(function() {
-          eventProcessorSpy = sinon.stub(eventProcessor, 'LogTierV1EventProcessor').callThrough();
+          eventProcessorSpy = sinon.stub(eventProcessor, 'createEventProcessor').callThrough();
         });
 
         afterEach(function() {
-          eventProcessor.LogTierV1EventProcessor.restore();
+          eventProcessor.createEventProcessor.restore();
         });
 
         it('should ignore invalid event flush interval and use default instead', function() {
@@ -161,7 +161,7 @@ describe('optimizelyFactory', function() {
           sinon.assert.calledWithExactly(
             eventProcessorSpy,
             sinon.match({
-              maxQueueSize: 10,
+              batchSize: 10,
             })
           );
         });
@@ -176,7 +176,7 @@ describe('optimizelyFactory', function() {
           sinon.assert.calledWithExactly(
             eventProcessorSpy,
             sinon.match({
-              maxQueueSize: 10,
+              batchSize: 10,
             })
           );
         });
@@ -192,7 +192,7 @@ describe('optimizelyFactory', function() {
           sinon.assert.calledWithExactly(
             eventProcessorSpy,
             sinon.match({
-              maxQueueSize: 300,
+              batchSize: 300,
             })
           );
         });

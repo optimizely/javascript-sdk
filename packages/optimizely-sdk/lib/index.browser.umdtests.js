@@ -17,8 +17,8 @@ import { assert } from 'chai';
 import sinon from 'sinon';
 
 import configValidator from './utils/config_validator';
-import enums from './utils/enums';
-import logger from './plugins/logger';
+import * as enums from './utils/enums';
+import * as logger from './plugins/logger';
 import Optimizely from './optimizely';
 import testData from './tests/test_data';
 import packageJSON from '../package.json';
@@ -26,8 +26,6 @@ import eventDispatcher from './plugins/event_dispatcher/index.browser';
 
 describe('javascript-sdk', function() {
   describe('APIs', function() {
-    var xhr;
-    var requests;
     describe('createInstance', function() {
       var fakeErrorHandler = { handleError: function() {} };
       var fakeEventDispatcher = { dispatchEvent: function() {} };
@@ -41,12 +39,7 @@ describe('javascript-sdk', function() {
         sinon.stub(configValidator, 'validate');
         sinon.stub(Optimizely.prototype, 'close');
 
-        xhr = sinon.useFakeXMLHttpRequest();
-        global.XMLHttpRequest = xhr;
-        requests = [];
-        xhr.onCreate = function(req) {
-          requests.push(req);
-        };
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
 
         sinon.spy(console, 'log');
         sinon.spy(console, 'info');
@@ -64,7 +57,7 @@ describe('javascript-sdk', function() {
         window.addEventListener.restore();
         configValidator.validate.restore();
         Optimizely.prototype.close.restore();
-        xhr.restore();
+        delete global.XMLHttpRequest
       });
 
       // this test has to come first due to local state of the logLevel

@@ -7,6 +7,77 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.9.5] - February 2, 2022
+
+### Changed
+- Made these react native peer dependencies optional.
+  - `@react-native-async-storage/async-storage`
+  - `@react-native-community/netinfo`
+
+## [0.9.4] - January 31, 2022
+
+### Changed
+- Reverted changes in `0.9.3`. Changed these back to peer dependencies. Making them optional did not work as expected.
+  - `@react-native-async-storage/async-storage`
+  - `@react-native-community/netinfo`
+
+## [0.9.3] - January 28, 2022
+
+### Changed
+- Made these react native dependencies optional.
+  - `@react-native-async-storage/async-storage`
+  - `@react-native-community/netinfo`
+
+## [0.9.2] - November 3, 2021
+
+### Fixed
+- Impression event should send empty `experimentId` and `variationKey` instead of `null` when no `experiment` or `variation` is found.
+
+## [0.9.1] - October 13, 2021
+
+### Fixed
+- Update version of logging to `0.3.1` to fix stubbing issue.
+
+## [0.9.0] - October 8, 2021
+
+### Changed
+- Update `@optimizely/js-sdk-logging` to `0.3.0`.
+
+## [0.8.2] - June 14th, 2021
+
+### Fixed
+- Update `ConversionEvent` interface to allow event `id` type null and `tags` type undefined.
+
+## [0.8.1] - May 25th, 2021
+
+### Fixed
+- Replaced the deprecated `@react-native-community/async-storage` with `@react-native-async-storage/async-storage`.
+
+## [0.8.0] - November 10th, 2020
+
+### New Features
+- Update `Visitor.Snapshot` to include `enabled` in decision metadata object to support sending flag decisions.
+
+## [0.7.0] - October 16th, 2020
+
+### New Features
+- Update `Visitor.Snapshot` to include metadata object to support sending flag decisions.
+
+## [0.6.0] - July 28, 2020
+
+### Fixed
+- Upgrade utils dependency version
+
+## [0.5.1] - July 22, 2020
+
+### Fixed
+- In event processor, reverted back the typescript version to fix stubbing issue
+
+## [0.5.0] - July 21, 2020
+
+### New Features
+- Added Offline storage support to Event processor for React Native Apps
+
 ## [0.4.0] - February 19, 2020
 
 ### New Features

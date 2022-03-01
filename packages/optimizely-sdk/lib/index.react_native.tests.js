@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020 Optimizely
+ * Copyright 2019-2020, 2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,28 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as logging from '@optimizely/js-sdk-logging';
-import * as eventProcessor from '@optimizely/js-sdk-event-processor';
+import * as eventProcessor from './plugins/event_processor';
 
 import Optimizely from './optimizely';
 import testData from './tests/test_data';
 import packageJSON from '../package.json';
 import optimizelyFactory from './index.react_native';
 import configValidator from './utils/config_validator';
-import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
 describe('javascript-sdk/react-native', function() {
-  describe('APIs', function() {
-    var xhr;
-    var requests;
+  var clock;
+  beforeEach(function() {
+    sinon.stub(optimizelyFactory.eventDispatcher, 'dispatchEvent');
+    clock = sinon.useFakeTimers(new Date());
+  });
 
+  afterEach(function() {
+    optimizelyFactory.eventDispatcher.dispatchEvent.restore();
+    clock.restore();
+  });
+
+  describe('APIs', function() {
     it('should expose logger, errorHandler, eventDispatcher and enums', function() {
       assert.isDefined(optimizelyFactory.logging);
       assert.isDefined(optimizelyFactory.logging.createLogger);
@@ -52,18 +59,11 @@ describe('javascript-sdk/react-native', function() {
         });
         sinon.spy(console, 'error');
         sinon.stub(configValidator, 'validate');
-
-        xhr = sinon.useFakeXMLHttpRequest();
-        requests = [];
-        xhr.onCreate = function(req) {
-          requests.push(req);
-        };
       });
 
       afterEach(function() {
         console.error.restore();
         configValidator.validate.restore();
-        xhr.restore();
       });
 
       it('should not throw if the provided config is not valid', function() {
@@ -89,10 +89,10 @@ describe('javascript-sdk/react-native', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.0.0');
+        assert.equal(optlyInstance.clientVersion, '4.9.1');
       });
 
-      it('should set the Javascript client engine and version', function() {
+      it('should set the React Native JS client engine and javascript SDK version', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
@@ -101,11 +101,11 @@ describe('javascript-sdk/react-native', function() {
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
         optlyInstance.onReady().catch(function() {});
-        assert.equal('javascript-sdk', optlyInstance.clientEngine);
+        assert.equal('react-native-js-sdk', optlyInstance.clientEngine);
         assert.equal(packageJSON.version, optlyInstance.clientVersion);
       });
 
-      it('should allow passing of "react-sdk" as the clientEngine', function() {
+      it('should allow passing of "react-sdk" as the clientEngine and convert it to "react-native-sdk"', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           clientEngine: 'react-sdk',
           datafile: {},
@@ -115,7 +115,7 @@ describe('javascript-sdk/react-native', function() {
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
         optlyInstance.onReady().catch(function() {});
-        assert.equal('react-sdk', optlyInstance.clientEngine);
+        assert.equal('react-native-sdk', optlyInstance.clientEngine);
       });
 
       it('should activate with provided event dispatcher', function() {
@@ -130,16 +130,6 @@ describe('javascript-sdk/react-native', function() {
       });
 
       describe('when no event dispatcher passed to createInstance', function() {
-        beforeEach(function() {
-          sinon.stub(defaultEventDispatcher, 'dispatchEvent', function(evt, cb) {
-            cb();
-          });
-        });
-
-        afterEach(function() {
-          defaultEventDispatcher.dispatchEvent.restore();
-        });
-
         it('uses the default event dispatcher', function() {
           var optlyInstance = optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
@@ -147,9 +137,8 @@ describe('javascript-sdk/react-native', function() {
             logger: silentLogger,
           });
           optlyInstance.activate('testExperiment', 'testUser');
-          return optlyInstance.close().then(function() {
-            sinon.assert.calledOnce(defaultEventDispatcher.dispatchEvent);
-          });
+          clock.tick(30001)
+          sinon.assert.calledOnce(optimizelyFactory.eventDispatcher.dispatchEvent);
         });
       });
 
@@ -195,11 +184,11 @@ describe('javascript-sdk/react-native', function() {
       describe('event processor configuration', function() {
         var eventProcessorSpy;
         beforeEach(function() {
-          eventProcessorSpy = sinon.stub(eventProcessor, 'LogTierV1EventProcessor').callThrough();
+          eventProcessorSpy = sinon.spy(eventProcessor, 'createEventProcessor');
         });
 
         afterEach(function() {
-          eventProcessor.LogTierV1EventProcessor.restore();
+          eventProcessor.createEventProcessor.restore();
         });
 
         it('should use default event flush interval when none is provided', function() {
@@ -279,7 +268,7 @@ describe('javascript-sdk/react-native', function() {
           sinon.assert.calledWithExactly(
             eventProcessorSpy,
             sinon.match({
-              maxQueueSize: 10,
+              batchSize: 10,
             })
           );
         });
@@ -304,7 +293,7 @@ describe('javascript-sdk/react-native', function() {
             sinon.assert.calledWithExactly(
               eventProcessorSpy,
               sinon.match({
-                maxQueueSize: 10,
+                batchSize: 10,
               })
             );
           });
@@ -330,7 +319,7 @@ describe('javascript-sdk/react-native', function() {
             sinon.assert.calledWithExactly(
               eventProcessorSpy,
               sinon.match({
-                maxQueueSize: 300,
+                batchSize: 300,
               })
             );
           });

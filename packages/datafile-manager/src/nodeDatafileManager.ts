@@ -14,14 +14,34 @@
  * limitations under the License.
  */
 
+import { getLogger } from '@optimizely/js-sdk-logging';
 import { makeGetRequest } from './nodeRequest';
 import HttpPollingDatafileManager from './httpPollingDatafileManager';
 import { Headers, AbortableRequest } from './http';
-import { DatafileManagerConfig } from './datafileManager';
+import { NodeDatafileManagerConfig, DatafileManagerConfig } from './datafileManager';
+import { DEFAULT_URL_TEMPLATE, DEFAULT_AUTHENTICATED_URL_TEMPLATE } from './config';
+
+const logger = getLogger('NodeDatafileManager');
 
 export default class NodeDatafileManager extends HttpPollingDatafileManager {
+  private accessToken?: string;
+
+  constructor(config: NodeDatafileManagerConfig) {
+    const defaultUrlTemplate = config.datafileAccessToken ? DEFAULT_AUTHENTICATED_URL_TEMPLATE : DEFAULT_URL_TEMPLATE;
+    super({
+      ...config,
+      urlTemplate: config.urlTemplate || defaultUrlTemplate,
+    });
+    this.accessToken = config.datafileAccessToken;
+  }
+
   protected makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest {
-    return makeGetRequest(reqUrl, headers);
+    const requestHeaders = Object.assign({}, headers);
+    if (this.accessToken) {
+      logger.debug('Adding Authorization header with Bearer Token');
+      requestHeaders['Authorization'] = `Bearer ${this.accessToken}`;
+    }
+    return makeGetRequest(reqUrl, requestHeaders);
   }
 
   protected getConfigDefaults(): Partial<DatafileManagerConfig> {

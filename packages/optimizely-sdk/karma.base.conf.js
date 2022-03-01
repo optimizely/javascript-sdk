@@ -24,6 +24,18 @@ module.exports = {
 
   webpack: {
     mode: 'production',
+    module: {
+      rules: [
+        {
+          test: /\.[tj]s$/,
+          use: 'ts-loader',
+          exclude: /node_modules/,
+        },
+      ],
+    },
+    resolve: {
+      extensions: ['.ts', '.js'],
+    },
   },
 
   //browserStack setup

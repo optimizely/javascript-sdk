@@ -45,18 +45,23 @@ export interface ImpressionEvent extends BaseEvent {
   }
 
   layer: {
-    id: string
+    id: string | null
   } | null
 
   experiment: {
-    id: string
+    id: string | null
     key: string
   } | null
 
   variation: {
-    id: string
+    id: string | null
     key: string
   } | null
+
+  ruleKey: string
+  flagKey: string
+  ruleType: string
+  enabled: boolean
 }
 
 export interface ConversionEvent extends BaseEvent {
@@ -68,13 +73,13 @@ export interface ConversionEvent extends BaseEvent {
   }
 
   event: {
-    id: string
+    id: string | null
     key: string
   }
 
   revenue: number | null
   value: number | null
-  tags: EventTags
+  tags: EventTags | undefined
 }
 
 export type EventTags = {

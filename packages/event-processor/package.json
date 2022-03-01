@@ -1,11 +1,12 @@
 {
   "name": "@optimizely/js-sdk-event-processor",
-  "version": "0.4.0",
+  "version": "0.9.5",
   "description": "Optimizely Full Stack Event Processor",
   "author": "jordangarcia <jordan@optimizely.com>",
   "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/event-processor",
   "license": "Apache-2.0",
   "main": "lib/index.js",
+  "react-native": "lib/index.react_native.js",
   "types": "lib/index.d.ts",
   "directories": {
     "lib": "lib",
@@ -37,14 +38,28 @@
     "access": "public"
   },
   "dependencies": {
-    "@optimizely/js-sdk-logging": "^0.1.0",
-    "@optimizely/js-sdk-utils": "^0.2.0"
+    "@optimizely/js-sdk-logging": "^0.3.1",
+    "@optimizely/js-sdk-utils": "^0.4.0"
   },
   "devDependencies": {
+    "@react-native-community/netinfo": "^5.9.4",
+    "@react-native-async-storage/async-storage": "^1.2.0",
     "@types/jest": "^24.0.9",
     "jest": "^23.6.0",
     "jest-localstorage-mock": "^2.4.0",
     "ts-jest": "^23.10.5",
-    "typescript": "^3.3.3333"
+    "typescript": "^4.0.3"
+  },
+  "peerDependencies": {
+    "@react-native-community/netinfo": "5.9.4",
+    "@react-native-async-storage/async-storage": "^1.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@react-native-async-storage/async-storage": {
+      "optional": true
+    },
+    "@react-native-community/netinfo": {
+      "optional": true
+    }
   }
 }

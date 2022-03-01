@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/js-sdk-datafile-manager",
-  "version": "0.5.0",
+  "version": "0.9.4",
   "description": "Optimizely Full Stack Datafile Manager",
   "repository": {
     "type": "git",
@@ -13,6 +13,7 @@
   },
   "main": "lib/index.node.js",
   "browser": "lib/index.browser.js",
+  "react-native": "lib/index.react_native.js",
   "types": "lib/index.d.ts",
   "directories": {
     "lib": "lib",
@@ -25,30 +26,35 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.9",
+    "@react-native-async-storage/async-storage": "^1.2.0",
+    "@types/jest": "^26.0.3",
     "@types/nise": "^1.4.0",
     "@types/nock": "^9.3.1",
     "@types/node": "^11.11.7",
-    "@typescript-eslint/eslint-plugin": "^2.23.0",
-    "@typescript-eslint/parser": "^2.23.0",
+    "@typescript-eslint/eslint-plugin": "^3.3.0",
+    "@typescript-eslint/parser": "^3.3.0",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-prettier": "^3.1.2",
-    "jest": "^24.1.0",
+    "jest": "^27.0.1",
     "nise": "^1.4.10",
     "nock": "^10.0.6",
     "prettier": "^1.19.1",
-    "ts-jest": "^24.0.0",
-    "typescript": "3.3.3333",
-    "@react-native-community/async-storage": "^1.2.0"
+    "ts-jest": "^27.0.1",
+    "typescript": "3.8.x"
   },
   "dependencies": {
-    "@optimizely/js-sdk-logging": "^0.1.0",
-    "@optimizely/js-sdk-utils": "^0.2.0",
+    "@optimizely/js-sdk-logging": "^0.3.1",
+    "@optimizely/js-sdk-utils": "^0.4.0",
     "decompress-response": "^4.2.1"
   },
   "peerDependencies": {
-    "@react-native-community/async-storage": "^1.2.0"
+    "@react-native-async-storage/async-storage": "^1.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@react-native-async-storage/async-storage": {
+      "optional": true
+    }
   },
   "scripts": {
     "clean": "rm -rf lib",

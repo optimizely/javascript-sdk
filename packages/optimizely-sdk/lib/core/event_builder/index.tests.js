@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2020, Optimizely
+ * Copyright 2016-2021, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import uuid from 'uuid';
 import sinon from 'sinon';
 import { assert } from 'chai';
 
+import fns from '../../utils/fns';
 import testData from '../../tests/test_data';
 import projectConfig from '../project_config';
 import packageJSON from '../../../package.json';
-import { getConversionEvent, getImpressionEvent} from './index.js';
+import { getConversionEvent, getImpressionEvent } from './';
 
 describe('lib/core/event_builder', function() {
   describe('APIs', function() {
@@ -31,7 +31,7 @@ describe('lib/core/event_builder', function() {
     beforeEach(function() {
       configObj = projectConfig.createProjectConfig(testData.getTestProjectConfig());
       clock = sinon.useFakeTimers(new Date().getTime());
-      sinon.stub(uuid, 'v4').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
+      sinon.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
       mockLogger = {
         log: sinon.stub(),
       };
@@ -39,7 +39,7 @@ describe('lib/core/event_builder', function() {
 
     afterEach(function() {
       clock.restore();
-      uuid.v4.restore();
+      fns.uuid.restore();
     });
 
     describe('getImpressionEvent', function() {
@@ -61,6 +61,13 @@ describe('lib/core/event_builder', function() {
                         variation_id: '111128',
                         experiment_id: '111127',
                         campaign_id: '4',
+                        metadata: {
+                          flag_key: 'flagKey1',
+                          rule_key: 'exp1',
+                          rule_type: 'experiment',
+                          variation_key: 'control',
+                          enabled: true,
+                        },
                       },
                     ],
                     events: [
@@ -88,6 +95,10 @@ describe('lib/core/event_builder', function() {
           clientVersion: packageJSON.version,
           configObj: configObj,
           experimentId: '111127',
+          ruleKey: 'exp1',
+          flagKey: 'flagKey1',
+          enabled: true,
+          ruleType: 'experiment',
           variationId: '111128',
           userId: 'testUser',
         };
@@ -122,6 +133,13 @@ describe('lib/core/event_builder', function() {
                         variation_id: '111128',
                         experiment_id: '111127',
                         campaign_id: '4',
+                        metadata: {
+                          flag_key: 'flagKey1',
+                          rule_key: 'exp1',
+                          rule_type: 'experiment',
+                          variation_key: 'control',
+                          enabled: false,
+                        },
                       },
                     ],
                     events: [
@@ -150,6 +168,10 @@ describe('lib/core/event_builder', function() {
           configObj: configObj,
           experimentId: '111127',
           variationId: '111128',
+          ruleKey: 'exp1',
+          flagKey: 'flagKey1',
+          enabled: false,
+          ruleType: 'experiment',
           userId: 'testUser',
         };
 
@@ -183,6 +205,13 @@ describe('lib/core/event_builder', function() {
                         variation_id: '111128',
                         experiment_id: '111127',
                         campaign_id: '4',
+                        metadata: {
+                          flag_key: 'flagKey1',
+                          rule_key: 'exp1',
+                          rule_type: 'experiment',
+                          variation_key: 'control',
+                          enabled: true,
+                        },
                       },
                     ],
                     events: [
@@ -211,6 +240,10 @@ describe('lib/core/event_builder', function() {
           clientVersion: packageJSON.version,
           configObj: configObj,
           experimentId: '111127',
+          ruleKey: 'exp1',
+          flagKey: 'flagKey1',
+          ruleType: 'experiment',
+          enabled: true,
           variationId: '111128',
           userId: 'testUser',
         };
@@ -245,6 +278,13 @@ describe('lib/core/event_builder', function() {
                         variation_id: '111128',
                         experiment_id: '111127',
                         campaign_id: '4',
+                        metadata: {
+                          flag_key: 'flagKey1',
+                          rule_key: 'exp1',
+                          rule_type: 'experiment',
+                          variation_key: 'control',
+                          enabled: true,
+                        },
                       },
                     ],
                     events: [
@@ -273,6 +313,10 @@ describe('lib/core/event_builder', function() {
           clientVersion: packageJSON.version,
           configObj: configObj,
           experimentId: '111127',
+          ruleKey: 'exp1',
+          flagKey: 'flagKey1',
+          ruleType: 'experiment',
+          enabled: true,
           variationId: '111128',
           userId: 'testUser',
         };
@@ -300,6 +344,13 @@ describe('lib/core/event_builder', function() {
                         variation_id: '111128',
                         experiment_id: '111127',
                         campaign_id: '4',
+                        metadata: {
+                          flag_key: 'flagKey1',
+                          rule_key: 'exp1',
+                          rule_type: 'experiment',
+                          variation_key: 'control',
+                          enabled: false,
+                        },
                       },
                     ],
                     events: [
@@ -328,6 +379,10 @@ describe('lib/core/event_builder', function() {
           clientVersion: packageJSON.version,
           configObj: configObj,
           experimentId: '111127',
+          ruleKey: 'exp1',
+          flagKey: 'flagKey1',
+          ruleType: 'experiment',
+          enabled: false,
           variationId: '111128',
           userId: 'testUser',
           logger: mockLogger,
@@ -370,6 +425,13 @@ describe('lib/core/event_builder', function() {
                         variation_id: '595008',
                         experiment_id: '595010',
                         campaign_id: '595005',
+                        metadata: {
+                          flag_key: 'flagKey2',
+                          rule_key: 'exp2',
+                          rule_type: 'experiment',
+                          variation_key: 'var',
+                          enabled: false,
+                        },
                       },
                     ],
                     events: [
@@ -398,6 +460,10 @@ describe('lib/core/event_builder', function() {
           clientVersion: packageJSON.version,
           configObj: v4ConfigObj,
           experimentId: '595010',
+          ruleKey: 'exp2',
+          flagKey: 'flagKey2',
+          ruleType: 'experiment',
+          enabled: false,
           variationId: '595008',
           userId: 'testUser',
         };
@@ -440,6 +506,13 @@ describe('lib/core/event_builder', function() {
                         variation_id: '595008',
                         experiment_id: '595010',
                         campaign_id: '595005',
+                        metadata: {
+                          flag_key: 'flagKey2',
+                          rule_key: 'exp2',
+                          rule_type: 'experiment',
+                          variation_key: 'var',
+                          enabled: false,
+                        },
                       },
                     ],
                     events: [
@@ -468,6 +541,10 @@ describe('lib/core/event_builder', function() {
           clientVersion: packageJSON.version,
           configObj: v4ConfigObj,
           experimentId: '595010',
+          ruleKey: 'exp2',
+          flagKey: 'flagKey2',
+          ruleType: 'experiment',
+          enabled: false,
           variationId: '595008',
           userId: 'testUser',
         };
@@ -520,6 +597,13 @@ describe('lib/core/event_builder', function() {
                         variation_id: '111128',
                         experiment_id: '111127',
                         campaign_id: '4',
+                        metadata: {
+                          flag_key: 'flagKey1',
+                          rule_key: 'exp1',
+                          rule_type: 'experiment',
+                          variation_key: 'control',
+                          enabled: false,
+                        },
                       },
                     ],
                     events: [
@@ -553,6 +637,10 @@ describe('lib/core/event_builder', function() {
           clientVersion: packageJSON.version,
           configObj: configObj,
           experimentId: '111127',
+          ruleKey: 'exp1',
+          flagKey: 'flagKey1',
+          ruleType: 'experiment',
+          enabled: false,
           variationId: '111128',
           userId: 'testUser',
         };
@@ -599,6 +687,13 @@ describe('lib/core/event_builder', function() {
                         variation_id: '111128',
                         experiment_id: '111127',
                         campaign_id: '4',
+                        metadata: {
+                          flag_key: 'flagKey1',
+                          rule_key: 'exp1',
+                          rule_type: 'experiment',
+                          variation_key: 'control',
+                          enabled: true,
+                        },
                       },
                     ],
                     events: [
@@ -633,6 +728,10 @@ describe('lib/core/event_builder', function() {
           clientVersion: packageJSON.version,
           configObj: configObj,
           experimentId: '111127',
+          ruleKey: 'exp1',
+          flagKey: 'flagKey1',
+          ruleType: 'experiment',
+          enabled: true,
           variationId: '111128',
           userId: 'testUser',
         };

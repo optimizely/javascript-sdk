@@ -1,5 +1,5 @@
 /**
- * Copyright 2020, Optimizely
+ * Copyright 2020-2021 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,32 @@ import commonjs from '@rollup/plugin-commonjs';
 import { terser } from 'rollup-plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 import { dependencies } from './package.json';
+import typescript from 'rollup-plugin-typescript2';
+
+const typescriptPluginOptions = {
+  allowJs: true,
+  exclude: [
+    './dist',
+    './lib/**/*.tests.js',
+    './lib/**/*.tests.ts',
+    './lib/**/*.umdtests.js',
+    './lib/tests',
+    'node_modules'
+  ],
+  include: [
+    './lib/**/*.ts',
+    './lib/**/*.js'
+  ],
+};
 
 const cjsBundleFor = (platform) => ({
-  plugins: [resolve(), commonjs()],
+  plugins: [
+    resolve(),
+    commonjs(),
+    typescript(typescriptPluginOptions),
+  ],
   external: ['https', 'http', 'url'].concat(Object.keys(dependencies || {})),
-  input: `lib/index.${platform}.js`,
+  input: `lib/index.${platform}.ts`,
   output: {
     exports: 'named',
     format: 'cjs',
@@ -32,22 +53,22 @@ const cjsBundleFor = (platform) => ({
   },
 });
 
-const esmBundle = {
-  ...cjsBundleFor('browser'),
+const esmBundleFor = (platform) => ({
+  ...cjsBundleFor(platform),
   output: [
     {
       format: 'es',
-      file: 'dist/optimizely.browser.es.js',
+      file: `dist/optimizely.${platform}.es.js`,
       sourcemap: true,
     },
     {
       format: 'es',
-      file: 'dist/optimizely.browser.es.min.js',
+      file: `dist/optimizely.${platform}.es.min.js`,
       plugins: [terser()],
       sourcemap: true,
     },
   ],
-};
+})
 
 const umdBundle = {
   plugins: [
@@ -66,8 +87,9 @@ const umdBundle = {
         '@optimizely/js-sdk-event-processor': ['LogTierV1EventProcessor', 'LocalStoragePendingEventsDispatcher'],
       },
     }),
+    typescript(typescriptPluginOptions),
   ],
-  input: 'lib/index.browser.js',
+  input: 'lib/index.browser.ts',
   output: [
     {
       name: 'optimizelySdk',
@@ -88,9 +110,13 @@ const umdBundle = {
 
 // A separate bundle for json schema validator.
 const jsonSchemaBundle = {
-  plugins: [resolve(), commonjs()],
+  plugins: [
+    resolve(),
+    commonjs(),
+    typescript(typescriptPluginOptions),
+  ],
   external: ['json-schema', '@optimizely/js-sdk-utils'],
-  input: 'lib/utils/json_schema_validator/index.js',
+  input: 'lib/utils/json_schema_validator/index.ts',
   output: {
     exports: 'named',
     format: 'cjs',
@@ -104,7 +130,9 @@ const bundles = {
   'cjs-node': cjsBundleFor('node'),
   'cjs-browser': cjsBundleFor('browser'),
   'cjs-react-native': cjsBundleFor('react_native'),
-  esm: esmBundle,
+  'cjs-lite': cjsBundleFor('lite'),
+  esm: esmBundleFor('browser'),
+  'esm-lite': esmBundleFor('lite'),
   'json-schema': jsonSchemaBundle,
   umd: umdBundle,
 };

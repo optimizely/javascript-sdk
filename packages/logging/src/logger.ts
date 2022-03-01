@@ -18,7 +18,15 @@ import { isValidEnum, sprintf } from '@optimizely/js-sdk-utils'
 
 import { LogLevel, LoggerFacade, LogManager, LogHandler } from './models'
 
-const stringToLogLevel = {
+type StringToLogLevel = {
+  NOTSET: number,
+  DEBUG: number,
+  INFO: number,
+  WARNING: number,
+  ERROR: number,
+}
+
+const stringToLogLevel: StringToLogLevel = {
   NOTSET: 0,
   DEBUG: 1,
   INFO: 2,
@@ -36,11 +44,11 @@ function coerceLogLevel(level: any): LogLevel {
     level = 'WARNING'
   }
 
-  if (!stringToLogLevel[level]) {
+  if (!stringToLogLevel[level as keyof StringToLogLevel]) {
     return level
   }
 
-  return stringToLogLevel[level]
+  return stringToLogLevel[level as keyof StringToLogLevel]
 }
 
 type LogData = {
@@ -210,10 +218,10 @@ class OptimizelyLogger implements LoggerFacade {
    * @param {string} [message]
    * @memberof OptimizelyLogger
    */
-  log(level: LogLevel | string, message: string): void {
+  log(level: LogLevel | string, message: string, ...splat: any[]): void {
     this.internalLog(coerceLogLevel(level), {
       message,
-      splat: [],
+      splat,
     })
   }
 

@@ -17,7 +17,8 @@ import sinon from 'sinon';
 import { assert } from 'chai';
 
 import fns from '../../utils/fns';
-import projectConfig from '../project_config';
+import * as projectConfig from '../project_config';
+import * as decision from '../decision';
 import { buildImpressionEvent, buildConversionEvent } from './event_helpers';
 
 describe('lib/event_builder/event_helpers', function() {
@@ -33,19 +34,19 @@ describe('lib/event_builder/event_helpers', function() {
     };
 
     sinon.stub(projectConfig, 'getEventId');
-    sinon.stub(projectConfig, 'getVariationIdFromExperimentAndVariationKey');
-    sinon.stub(projectConfig, 'getExperimentId');
     sinon.stub(projectConfig, 'getLayerId');
     sinon.stub(projectConfig, 'getAttributeId');
+
+    sinon.stub(decision, 'getExperimentId');
 
     sinon.stub(fns, 'uuid').returns('uuid');
     sinon.stub(fns, 'currentTimestamp').returns(100);
   });
 
   afterEach(function() {
+    decision.getExperimentId.restore();
+
     projectConfig.getEventId.restore();
-    projectConfig.getVariationIdFromExperimentAndVariationKey.restore();
-    projectConfig.getExperimentId.restore();
     projectConfig.getLayerId.restore();
     projectConfig.getAttributeId.restore();
 
@@ -56,18 +57,41 @@ describe('lib/event_builder/event_helpers', function() {
   describe('buildImpressionEvent', function() {
     describe('when botFiltering and anonymizeIP are true', function() {
       it('should build an ImpressionEvent with the correct attributes', function() {
-        projectConfig.getVariationIdFromExperimentAndVariationKey
-          .withArgs(configObj, 'exp1', 'var1')
-          .returns('var1-id');
-        projectConfig.getExperimentId.withArgs(configObj, 'exp1').returns('exp1-id');
+        var decisionObj = {
+          experiment: {
+            key: 'exp1',
+            status: 'Running',
+            forcedVariations: {},
+            audienceIds: [],
+            layerId: 'layer-id',
+            trafficAllocation: [],
+            variationKeyMap: {
+              'variation': {
+                key: 'var1',
+                id: 'var1-id',
+              }
+            },
+            id: 'exp1-id',
+            variations: [{ key: 'var1', id: 'var1-id' }],
+          },
+          variation: {
+            key: 'var1',
+            id: 'var1-id',
+          },
+          decisionSource: 'experiment',
+        }
+        decision.getExperimentId.withArgs(decisionObj).returns('exp1-id');
+
         projectConfig.getLayerId.withArgs(configObj, 'exp1-id').returns('layer-id');
 
         projectConfig.getAttributeId.withArgs(configObj, 'plan_type').returns('plan_type_id');
 
+
         var result = buildImpressionEvent({
           configObj: configObj,
-          experimentKey: 'exp1',
-          variationKey: 'var1',
+          decisionObj: decisionObj,
+          enabled: true,
+          flagKey: 'flagkey1',
           userId: 'user1',
           userAttributes: {
             plan_type: 'bronze',
@@ -113,16 +137,42 @@ describe('lib/event_builder/event_helpers', function() {
             id: 'var1-id',
             key: 'var1',
           },
+
+          ruleKey: "exp1",
+          flagKey: 'flagkey1',
+          ruleType: 'experiment',
+          enabled: true,
         });
       });
     });
 
     describe('when botFiltering and anonymizeIP are undefined', function() {
       it('should create an ImpressionEvent with the correct attributes', function() {
-        projectConfig.getVariationIdFromExperimentAndVariationKey
-          .withArgs(configObj, 'exp1', 'var1')
-          .returns('var1-id');
-        projectConfig.getExperimentId.withArgs(configObj, 'exp1').returns('exp1-id');
+        var decisionObj = {
+          experiment: {
+            key: 'exp1',
+            status: 'Running',
+            forcedVariations: {},
+            audienceIds: [],
+            layerId: '253442',
+            trafficAllocation: [],
+            variationKeyMap: {
+              'variation': {
+                key: 'var1',
+                id: 'var1-id',
+              }
+            },
+            id: '1237847778',
+            variations: [{ key: 'var1', id: 'var1-id' }],
+          },
+          variation: {
+            key: 'var1',
+            id: 'var1-id',
+          },
+          decisionSource: 'experiment',
+        }
+        decision.getExperimentId.withArgs(decisionObj).returns('exp1-id');
+
         projectConfig.getLayerId.withArgs(configObj, 'exp1-id').returns('layer-id');
 
         projectConfig.getAttributeId.withArgs(configObj, 'plan_type').returns('plan_type_id');
@@ -132,8 +182,9 @@ describe('lib/event_builder/event_helpers', function() {
 
         var result = buildImpressionEvent({
           configObj: configObj,
-          experimentKey: 'exp1',
-          variationKey: 'var1',
+          decisionObj: decisionObj,
+          flagKey: 'flagkey1',
+          enabled: false,
           userId: 'user1',
           userAttributes: {
             plan_type: 'bronze',
@@ -179,6 +230,11 @@ describe('lib/event_builder/event_helpers', function() {
             id: 'var1-id',
             key: 'var1',
           },
+
+          ruleKey: "exp1",
+          flagKey: 'flagkey1',
+          ruleType: 'experiment',
+          enabled: false,
         });
       });
     });

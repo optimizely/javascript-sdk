@@ -16,16 +16,16 @@
 import sinon from 'sinon';
 import { assert } from 'chai';
 
-import NotificationCenter from './';
-import enums from '../../utils/enums';
-import logger from '../../plugins/logger';
+import { createNotificationCenter } from './';
+import * as enums from '../../utils/enums';
+import { createLogger } from '../../plugins/logger';
 import errorHandler from '../../plugins/error_handler';
 
 var LOG_LEVEL = enums.LOG_LEVEL;
 
 describe('lib/core/notification_center', function() {
   describe('APIs', function() {
-    var mockLogger = logger.createLogger({ logLevel: LOG_LEVEL.INFO });
+    var mockLogger = createLogger({ logLevel: LOG_LEVEL.INFO });
     var mockErrorHandler = errorHandler.handleError;
     var mockLoggerStub;
     var mockErrorHandlerStub;
@@ -37,7 +37,7 @@ describe('lib/core/notification_center', function() {
       mockLoggerStub = sandbox.stub(mockLogger, 'log');
       mockErrorHandlerStub = sandbox.stub(mockErrorHandler, 'handleError');
 
-      notificationCenterInstance = NotificationCenter.createNotificationCenter({
+      notificationCenterInstance = createNotificationCenter({
         logger: mockLoggerStub,
         errorHandler: mockErrorHandlerStub,
       });

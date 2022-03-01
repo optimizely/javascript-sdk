@@ -1,5 +1,6 @@
 import { EventTags, ConversionEvent, ImpressionEvent, VisitorAttribute } from '../events'
-import { ProcessableEvents } from '../eventProcessor'
+import { ProcessableEvent } from '../eventProcessor'
+import { EventV1Request } from '../eventDispatcher'
 
 const ACTIVATE_EVENT_KEY = 'campaign_activated'
 const CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom'
@@ -43,6 +44,15 @@ namespace Visitor {
     campaign_id: string | null
     experiment_id: string | null
     variation_id: string | null
+    metadata: Metadata
+  }
+
+  type Metadata = {
+    flag_key: string;
+    rule_key: string;
+    rule_type: string;
+    variation_key: string;
+    enabled: boolean;
   }
 
   export type SnapshotEvent = {
@@ -66,10 +76,10 @@ type Attributes = {
  * Given an array of batchable Decision or ConversionEvent events it returns
  * a single EventV1 with proper batching
  *
- * @param {ProcessableEvents[]} events
+ * @param {ProcessableEvent[]} events
  * @returns {EventV1}
  */
-export function makeBatchedEventV1(events: ProcessableEvents[]): EventV1 {
+export function makeBatchedEventV1(events: ProcessableEvent[]): EventV1 {
   const visitors: Visitor[] = []
   const data = events[0]
 
@@ -134,10 +144,11 @@ function makeConversionSnapshot(conversion: ConversionEvent): Visitor.Snapshot {
 }
 
 function makeDecisionSnapshot(event: ImpressionEvent): Visitor.Snapshot {
-  const { layer, experiment, variation } = event
+  const { layer, experiment, variation, ruleKey, flagKey, ruleType, enabled } = event
   let layerId = layer ? layer.id : null
-  let experimentId = experiment ? experiment.id : null
-  let variationId = variation ? variation.id : null
+  let experimentId = experiment?.id ?? ''
+  let variationId = variation?.id ?? ''
+  let variationKey = variation ? variation.key : ''
 
   return {
     decisions: [
@@ -145,6 +156,13 @@ function makeDecisionSnapshot(event: ImpressionEvent): Visitor.Snapshot {
         campaign_id: layerId,
         experiment_id: experimentId,
         variation_id: variationId,
+        metadata: {
+          flag_key: flagKey,
+          rule_key: ruleKey,
+          rule_type: ruleType,
+          variation_key: variationKey,
+          enabled: enabled,
+        },
       },
     ],
     events: [
@@ -225,5 +243,13 @@ export function buildConversionEventV1(data: ConversionEvent): EventV1 {
     enrich_decisions: true,
 
     visitors: [visitor],
+  }
+}
+
+export function formatEvents(events: ProcessableEvent[]): EventV1Request {
+  return {
+    url: 'https://logx.optimizely.com/v1/events',
+    httpVerb: 'POST',
+    params: makeBatchedEventV1(events),
   }
 }

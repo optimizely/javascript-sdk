@@ -15,8 +15,7 @@
  */
 
 /**
- * An Interface to implement a persistent key value cache which supports strings as keys
- * and JSON Object as value.
+ * An Interface to implement a persistent key value cache which supports strings as keys and values.
  */
 export default interface PersistentKeyValueCache {
   /**
@@ -24,21 +23,21 @@ export default interface PersistentKeyValueCache {
    * @param key
    * @returns
    * Resolves promise with
-   * 1. Object if value found was stored as a JSON Object.
+   * 1. string if value found was stored as a string.
    * 2. null if the key does not exist in the cache.
    * Rejects the promise in case of an error
    */
-  get(key: string): Promise<any | null>;
+  get(key: string): Promise<string>;
 
   /**
-   * Stores Object in the persistent cache against a key
+   * Stores string in the persistent cache against a key
    * @param key
    * @param val
    * @returns
    * Resolves promise without a value if successful
    * Rejects the promise in case of an error
    */
-  set(key: string, val: any): Promise<void>;
+  set(key: string, val: string): Promise<void>;
 
   /**
    * Checks if a key exists in the cache
