@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { find, sprintf, objectValues, NotificationCenter } from '@optimizely/js-sdk-utils';
+import { find, sprintf, objectValues, NotificationCenter } from '../../modules/utils';
 import { LoggerFacade, ErrorHandler } from '@optimizely/js-sdk-logging';
 import { EventProcessor } from '@optimizely/js-sdk-event-processor';
 

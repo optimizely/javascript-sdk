@@ -16,7 +16,7 @@
 import sinon from 'sinon';
 import { assert, expect } from 'chai';
 import { cloneDeep } from 'lodash';
-import { sprintf } from '@optimizely/js-sdk-utils';
+import { sprintf } from '../../../modules/utils';
 
 import * as bucketer from './';
 import {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf } from '@optimizely/js-sdk-utils';
+import { sprintf } from '../../../modules/utils';
 import { assert } from 'chai';
 
 import { validate } from './';

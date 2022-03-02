@@ -115,7 +115,7 @@ const jsonSchemaBundle = {
     commonjs(),
     typescript(typescriptPluginOptions),
   ],
-  external: ['json-schema', '@optimizely/js-sdk-utils'],
+  external: ['json-schema', '../../../modules/utils'],
   input: 'lib/utils/json_schema_validator/index.ts',
   output: {
     exports: 'named',

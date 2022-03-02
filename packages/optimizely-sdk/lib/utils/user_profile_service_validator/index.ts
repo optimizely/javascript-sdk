@@ -18,7 +18,7 @@
  * Provides utility method for validating that the given user profile service implementation is valid.
  */
 
-import { sprintf } from '@optimizely/js-sdk-utils';
+import { sprintf } from '../../../modules/utils';
 import { ObjectWithUnknownProperties } from '../../shared_types';
 
 import { ERROR_MESSAGES } from '../enums';

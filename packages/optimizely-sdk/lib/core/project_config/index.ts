@@ -18,7 +18,7 @@ import {
   objectEntries,
   objectValues,
   sprintf
-} from '@optimizely/js-sdk-utils';
+} from '../../../modules/utils';
 
 import fns from '../../utils/fns';
 import {

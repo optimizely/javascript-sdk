@@ -17,7 +17,7 @@
 /**
  * Provides utility method for validating that event tags user has provided are valid
  */
-import { sprintf } from '@optimizely/js-sdk-utils';
+import { sprintf } from '../../../modules/utils';
 
 import { ERROR_MESSAGES } from '../enums';
 

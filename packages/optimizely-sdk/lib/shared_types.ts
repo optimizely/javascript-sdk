@@ -16,7 +16,7 @@
 import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from '@optimizely/js-sdk-logging';
 import { EventProcessor } from '@optimizely/js-sdk-event-processor';
 
-import { NotificationCenter } from '@optimizely/js-sdk-utils';
+import { NotificationCenter } from '../modules/utils';
 
 export interface BucketerParams {
   experimentId: string;

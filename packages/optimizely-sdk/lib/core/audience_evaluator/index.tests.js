@@ -16,7 +16,7 @@
 import sinon from 'sinon';
 import { assert } from 'chai';
 import { getLogger } from '@optimizely/js-sdk-logging';
-import { sprintf } from '@optimizely/js-sdk-utils';
+import { sprintf } from '../../../modules/utils';
 
 import { createAudienceEvaluator } from './index';
 import * as conditionTreeEvaluator from '../condition_tree_evaluator';

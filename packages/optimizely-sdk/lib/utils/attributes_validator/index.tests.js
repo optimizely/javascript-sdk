@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { assert } from 'chai';
-import { sprintf } from '@optimizely/js-sdk-utils';
+import { sprintf } from '../../../modules/utils';
 
 import * as attributesValidator from './';
 import { ERROR_MESSAGES } from '../enums';
