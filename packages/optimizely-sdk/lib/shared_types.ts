@@ -263,12 +263,103 @@ export interface OptimizelyVariable {
   value: string;
 }
 
+export interface Client {
+  notificationCenter: NotificationCenter;
+  createUserContext(
+    userId: string,
+    attributes?: UserAttributes
+  ): OptimizelyUserContext | null;
+  activate(
+    experimentKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): string | null;
+  track(
+    eventKey: string,
+    userId: string,
+    attributes?: UserAttributes,
+    eventTags?: EventTags
+  ): void;
+  getVariation(
+    experimentKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): string | null;
+  setForcedVariation(experimentKey: string, userId: string, variationKey: string | null): boolean;
+  getForcedVariation(experimentKey: string, userId: string): string | null;
+  isFeatureEnabled(
+    featureKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): boolean;
+  getEnabledFeatures(
+    userId: string,
+    attributes?: UserAttributes
+  ): string[];
+  getFeatureVariable(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): unknown;
+  getFeatureVariableBoolean(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): boolean | null;
+  getFeatureVariableDouble(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): number | null;
+  getFeatureVariableInteger(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): number | null;
+  getFeatureVariableString(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): string | null;
+  getFeatureVariableJSON(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): unknown;
+  getAllFeatureVariables(
+    featureKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): { [variableKey: string]: unknown } | null;
+  getOptimizelyConfig(): OptimizelyConfig | null;
+  onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
+  close(): Promise<{ success: boolean; reason?: string }>;
+}
+
+export interface ActivateListenerPayload extends ListenerPayload {
+  experiment: import('./shared_types').Experiment;
+  variation: import('./shared_types').Variation;
+  logEvent: Event;
+}
+
+export interface TrackListenerPayload extends ListenerPayload {
+  eventKey: string;
+  eventTags: EventTags;
+  logEvent: Event;
+}
+
 /**
  * Entry level Config Entities
  */
 export interface SDKOptions {
   // Datafile string
-  datafile?: string;
+  datafile?: object | string;
   // options for Datafile Manager
   datafileOptions?: DatafileOptions;
   // errorHandler object for logging error
