@@ -22,7 +22,7 @@ import fns from '../../utils/fns';
 export function createHttpPollingDatafileManager(
   sdkKey: string,
   logger: LoggerFacade,  
-  datafile?: string,
+  datafile?: string | object,
   datafileOptions?: DatafileOptions,
 ): DatafileManager {  
   const datafileManagerConfig: DatafileManagerConfig = { sdkKey };

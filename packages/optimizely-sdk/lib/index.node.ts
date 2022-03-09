@@ -30,7 +30,7 @@ import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
 import { createEventProcessor } from './plugins/event_processor';
-import { SDKOptions, OptimizelyDecideOption, Config, Client } from './shared_types';
+import { SDKOptions, OptimizelyDecideOption, Client } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
 
 const logger = getLogger();

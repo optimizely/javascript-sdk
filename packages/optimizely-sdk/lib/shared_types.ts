@@ -229,7 +229,7 @@ export interface OptimizelyOptions {
   UNSTABLE_conditionEvaluators?: unknown;
   clientEngine: string;
   clientVersion?: string;
-  datafile?: string;
+  datafile?: string | object;
   datafileManager?: DatafileManager;
   errorHandler: ErrorHandler;
   eventProcessor: EventProcessor;

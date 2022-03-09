@@ -45,7 +45,7 @@ import {
 } from '../../shared_types';
 
 interface TryCreatingProjectConfigConfig {
-  datafile: string;
+  datafile: string | object;
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean,
   };
