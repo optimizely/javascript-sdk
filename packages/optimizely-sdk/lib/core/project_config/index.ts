@@ -45,6 +45,8 @@ import {
 } from '../../shared_types';
 
 interface TryCreatingProjectConfigConfig {
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
   datafile: string | object;
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean,

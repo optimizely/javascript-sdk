@@ -229,6 +229,8 @@ export interface OptimizelyOptions {
   UNSTABLE_conditionEvaluators?: unknown;
   clientEngine: string;
   clientVersion?: string;
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
   datafile?: string | object;
   datafileManager?: DatafileManager;
   errorHandler: ErrorHandler;
@@ -359,6 +361,8 @@ export interface TrackListenerPayload extends ListenerPayload {
  */
 export interface SDKOptions {
   // Datafile string
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
   datafile?: object | string;
   // options for Datafile Manager
   datafileOptions?: DatafileOptions;

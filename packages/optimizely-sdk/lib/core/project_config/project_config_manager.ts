@@ -29,6 +29,8 @@ const logger = getLogger();
 const MODULE_NAME = 'PROJECT_CONFIG_MANAGER';
 
 interface ProjectConfigManagerConfig {
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
   datafile?: string | object,
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean,
@@ -169,7 +171,7 @@ export class ProjectConfigManager {
    * the new config object's revision is newer than the current one, sets/updates the project config
    * and optimizely config object instance variables and returns null for the error. If unsuccessful,
    * the project config and optimizely config objects will not be updated, and the error is returned.
-   * @param   {string}        newDatafile
+   * @param   {string | object}        newDatafile
    * @returns {Error|null}    error or null
    */
   private handleNewDatafile(newDatafile: string | object): Error | null {

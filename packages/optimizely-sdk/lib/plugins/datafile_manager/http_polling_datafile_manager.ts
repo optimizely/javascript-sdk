@@ -21,7 +21,9 @@ import fns from '../../utils/fns';
 
 export function createHttpPollingDatafileManager(
   sdkKey: string,
-  logger: LoggerFacade,  
+  logger: LoggerFacade,
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
   datafile?: string | object,
   datafileOptions?: DatafileOptions,
 ): DatafileManager {  
