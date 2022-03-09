@@ -29,7 +29,7 @@ const logger = getLogger();
 const MODULE_NAME = 'PROJECT_CONFIG_MANAGER';
 
 interface ProjectConfigManagerConfig {
-  datafile?: string,
+  datafile?: string | object,
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean,
   };
@@ -172,7 +172,7 @@ export class ProjectConfigManager {
    * @param   {string}        newDatafile
    * @returns {Error|null}    error or null
    */
-  private handleNewDatafile(newDatafile: string): Error | null {
+  private handleNewDatafile(newDatafile: string | object): Error | null {
     const { configObj, error } = tryCreatingProjectConfig({
       datafile: newDatafile,
       jsonSchemaValidator: this.jsonSchemaValidator,
