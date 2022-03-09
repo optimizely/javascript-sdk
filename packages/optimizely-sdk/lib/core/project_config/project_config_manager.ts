@@ -174,6 +174,8 @@ export class ProjectConfigManager {
    * @param   {string | object}        newDatafile
    * @returns {Error|null}    error or null
    */
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
   private handleNewDatafile(newDatafile: string | object): Error | null {
     const { configObj, error } = tryCreatingProjectConfig({
       datafile: newDatafile,
