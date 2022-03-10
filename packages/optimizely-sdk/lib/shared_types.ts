@@ -266,7 +266,6 @@ export interface OptimizelyVariable {
 }
 
 export interface Client {
-  notificationCenter: NotificationCenter;
   createUserContext(
     userId: string,
     attributes?: UserAttributes
@@ -377,7 +376,42 @@ export interface SDKOptions {
   // maximum size for the event queue
   eventMaxQueueSize?: number;
   // flag to validate if this instance is valid
-  isValidInstance: boolean;
+  isValidInstance?: boolean;
+  // level of logging i.e debug, info, error, warning etc
+  logLevel?: LogLevel | string;
+  // LogHandler object for logging
+  logger?: LogHandler;
+  // sdk key
+  sdkKey?: string;
+  // user profile that contains user information
+  userProfileService?: UserProfileService;
+  // dafault options for decide API
+  defaultDecideOptions?: OptimizelyDecideOption[];
+}
+
+/**
+ * Entry level Config Entities
+ * For compatibility with the previous declaration file
+ */
+ export interface Config {
+  // Datafile string
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
+  datafile?: object | string;
+  // options for Datafile Manager
+  datafileOptions?: DatafileOptions;
+  // errorHandler object for logging error
+  errorHandler?: ErrorHandler;
+  // limit of events to dispatch in a batch
+  eventBatchSize?: number;
+  // event dispatcher function
+  eventDispatcher?: EventDispatcher;
+  // maximum time for an event to stay in the queue
+  eventFlushInterval?: number;
+  // maximum size for the event queue
+  eventMaxQueueSize?: number;
+  // flag to validate if this instance is valid
+  isValidInstance?: boolean;
   // level of logging i.e debug, info, error, warning etc
   logLevel?: LogLevel | string;
   // LogHandler object for logging

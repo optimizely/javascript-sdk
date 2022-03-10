@@ -31,7 +31,7 @@ import Optimizely from './optimizely';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
 import { default as eventProcessor } from './plugins/event_processor';
-import { SDKOptions, OptimizelyDecideOption, Client } from './shared_types';
+import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
 
 const logger = getLogger();
@@ -51,7 +51,7 @@ let hasRetriedEvents = false;
  * @return {Optimizely|null} the Optimizely object
  *                           null on error 
  */
-const createInstance = function(config: SDKOptions): Optimizely | Client | null {
+const createInstance = function(config: Config): Client | null {
   try {
     // TODO warn about setting per instance errorHandler / logger / logLevel
     if (config.errorHandler) {
@@ -125,6 +125,7 @@ const createInstance = function(config: SDKOptions): Optimizely | Client | null 
       errorHandler,
       datafileManager: config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
       notificationCenter,
+      isValidInstance: config.isValidInstance
     };
 
     const optimizely = new Optimizely(optimizelyOptions);

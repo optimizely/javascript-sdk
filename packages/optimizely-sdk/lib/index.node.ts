@@ -30,7 +30,7 @@ import defaultEventDispatcher from './plugins/event_dispatcher/index.node';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
 import { createEventProcessor } from './plugins/event_processor';
-import { SDKOptions, OptimizelyDecideOption, Client } from './shared_types';
+import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
 
 const logger = getLogger();
@@ -46,7 +46,7 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
  * @return {Optimizely|null} the Optimizely object
  *                           null on error 
  */
-const createInstance = function(config: SDKOptions): Optimizely | Client | null {
+ const createInstance = function(config: Config): Client | null {
   try {
     let hasLogger = false;
 
@@ -113,6 +113,7 @@ const createInstance = function(config: SDKOptions): Optimizely | Client | null 
       errorHandler,
       datafileManager: config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
       notificationCenter,
+      isValidInstance: config.isValidInstance,
     };
 
     return new Optimizely(optimizelyOptions);
