@@ -15,7 +15,7 @@
  */
 import { assert } from 'chai';
 import sinon from 'sinon';
-import * as logging from '../modules/logging';
+import * as logging from '../modules/logging/logger';
 import * as eventProcessor from './plugins/event_processor';
 
 import Optimizely from './optimizely';

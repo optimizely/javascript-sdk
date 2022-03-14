@@ -21,7 +21,7 @@ import {
   LOG_LEVEL,
   LOG_MESSAGES,
 } from '../../utils/enums';
-import * as logging from '../../../modules/utils';
+import * as logging from '../../../modules/logging';
 import * as customAttributeEvaluator from './';
 
 var browserConditionSafari = {
