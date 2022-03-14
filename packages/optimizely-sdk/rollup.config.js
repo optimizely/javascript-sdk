@@ -75,7 +75,7 @@ const umdBundle = {
     resolve({ browser: true }),
     commonjs({
       namedExports: {
-        '@optimizely/js-sdk-logging': [
+        '../../../modules/logging': [
           'ConsoleLogHandler',
           'getLogger',
           'setLogLevel',

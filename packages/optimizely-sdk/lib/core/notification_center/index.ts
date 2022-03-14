@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
 import { objectValues } from '../../utils/fns';
+import { LogHandler, ErrorHandler } from '../../../modules/logging';
 import { NotificationListener, ListenerPayload } from '../../shared_types';
 
 import {

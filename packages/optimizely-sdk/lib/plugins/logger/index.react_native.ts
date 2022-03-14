@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LogLevel } from '@optimizely/js-sdk-logging';
 import { sprintf } from '../../utils/fns';
+import { LogLevel } from '../../../modules/logging';
 import { NoOpLogger } from './index';
 
 function getLogLevelName(level: number): string {

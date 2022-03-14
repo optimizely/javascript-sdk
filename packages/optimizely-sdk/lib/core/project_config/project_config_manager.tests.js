@@ -17,8 +17,8 @@ import sinon from 'sinon';
 import { assert } from 'chai';
 import { cloneDeep } from 'lodash';
 
-import * as logging from '@optimizely/js-sdk-logging';
 import { sprintf } from '../../utils/fns';
+import * as logging from '../../../modules/logging';
 import * as datafileManager from '@optimizely/js-sdk-datafile-manager';
 
 import * as projectConfig from './index';
