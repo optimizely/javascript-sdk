@@ -20,7 +20,7 @@ import {
   setErrorHandler,
   getErrorHandler,
   LogLevel
-} from '@optimizely/js-sdk-logging';
+} from '../modules/logging';
 import * as enums from './utils/enums';
 import Optimizely from './optimizely';
 import configValidator from './utils/config_validator';

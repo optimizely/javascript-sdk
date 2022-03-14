@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { getLogger } from '@optimizely/js-sdk-logging';
+import { getLogger } from '../../../modules/logging';
 import { VERSION_TYPE, LOG_MESSAGES } from '../enums';
 
 const MODULE_NAME = 'SEMANTIC VERSION';

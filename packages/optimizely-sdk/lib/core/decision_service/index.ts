@@ -14,7 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import { sprintf } from '../../../modules/utils';
-import { LogHandler } from '@optimizely/js-sdk-logging';
+import { LogHandler } from '../../../modules/logging';
 
 import fns from '../../utils/fns';
 import { bucket } from '../bucketer';

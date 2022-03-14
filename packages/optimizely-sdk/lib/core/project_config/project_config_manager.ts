@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { sprintf } from '../../../modules/utils';
-import { getLogger } from '@optimizely/js-sdk-logging';
+import { getLogger } from '../../../modules/logging';
 
 import { ERROR_MESSAGES } from '../../utils/enums';
 import { createOptimizelyConfig } from '../optimizely_config';

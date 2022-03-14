@@ -29,7 +29,7 @@ import {
 } from '../../utils/enums';
 import configValidator from '../../utils/config_validator';
 
-import { LogHandler } from '@optimizely/js-sdk-logging';
+import { LogHandler } from '../../../modules/logging';
 import {
   Audience,
   Experiment,
