@@ -88,11 +88,7 @@
   },
   "files": [
     "dist/",
-    "lib/",
-    "LICENSE",
-    "CHANGELOG",
-    "README.md",
-    "package.json"
+    "lib/"
   ],
   "nyc": {
     "temp-dir": "coverage/raw"
