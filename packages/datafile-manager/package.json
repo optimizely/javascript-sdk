@@ -20,11 +20,7 @@
     "test": "__test__"
   },
   "files": [
-    "lib",
-    "LICENSE",
-    "CHANGELOG",
-    "README.md",
-    "package.json"
+    "lib"
   ],
   "publishConfig": {
     "access": "public"
@@ -61,10 +57,13 @@
     }
   },
   "scripts": {
+    "clean": "rm -rf lib",
     "lint": "tsc --noEmit && eslint --fix 'src/**/*.ts' '__test__/**/*.ts'",
     "test": "jest",
     "posttest": "npm run lint",
-    "tsc": "rm -rf lib && tsc",
-    "prepublishOnly": "npm run lint && npm test && npm run tsc"
+    "prebuild": "npm run clean",
+    "build": "tsc",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test"
   }
 }
