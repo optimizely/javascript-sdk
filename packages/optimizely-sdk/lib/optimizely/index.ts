@@ -78,10 +78,10 @@ export default class Optimizely {
   private errorHandler: ErrorHandler;
   private logger: LoggerFacade;
   private projectConfigManager: ProjectConfigManager;
-  private notificationCenter: NotificationCenter;
   private decisionService: DecisionService;
   private eventProcessor: EventProcessor;
   private defaultDecideOptions: { [key: string]: boolean };
+  public notificationCenter: NotificationCenter;
 
   constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;
