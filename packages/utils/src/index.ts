@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ListenerPayload, NotificationListener } from '@optimizely/optimizely-sdk/dist/shared_types';
 import { v4 } from 'uuid';
 
 export function generateUUID(): string {
@@ -155,8 +154,4 @@ export enum NOTIFICATION_TYPES {
 
 export interface NotificationCenter {
   sendNotifications(notificationType: NOTIFICATION_TYPES, notificationData?: any): void
-  addNotificationListener<T extends ListenerPayload>(
-    notificationType: string,
-    callback: NotificationListener<T>
-  ): number;
 }

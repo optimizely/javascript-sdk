@@ -16,7 +16,8 @@
 import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from '@optimizely/js-sdk-logging';
 import { EventProcessor } from '@optimizely/js-sdk-event-processor';
 
-import { NotificationCenter } from '@optimizely/js-sdk-utils';
+import { NOTIFICATION_TYPES } from '@optimizely/js-sdk-utils';
+import {NotificationCenter as NotificationCenterImpl} from './core/notification_center'
 
 export interface BucketerParams {
   experimentId: string;
@@ -80,6 +81,17 @@ export interface ListenerPayload {
 }
 
 export type NotificationListener<T extends ListenerPayload> = (notificationData: T) => void;
+
+// NotificationCenter-related types
+export interface NotificationCenter {
+  addNotificationListener<T extends ListenerPayload>(
+    notificationType: string,
+    callback: NotificationListener<T>
+  ): number;
+  removeNotificationListener(listenerId: number): boolean;
+  clearAllNotificationListeners(): void;
+  clearNotificationListeners(notificationType: NOTIFICATION_TYPES): void;
+}
 
 // An event to be submitted to Optimizely, enabling tracking the reach and impact of
 // tests and feature rollouts.
@@ -243,7 +255,7 @@ export interface OptimizelyOptions {
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
   defaultDecideOptions?: OptimizelyDecideOption[];
-  notificationCenter: NotificationCenter;
+  notificationCenter: NotificationCenterImpl;
 }
 
 /**

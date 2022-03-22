@@ -23,6 +23,5 @@ export {
   Client,
   ActivateListenerPayload,
   TrackListenerPayload,
+  NotificationCenter
 } from './shared_types'
-
-export {NotificationCenter} from "./core/notification_center"
