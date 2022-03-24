@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - Add package.json script for running Karma tests locally using Chrome ([#651](https://github.com/optimizely/javascript-sdk/pull/651)).
+- Replaced explicit typescript typings with auto generated ones ([#745](https://github.com/optimizely/javascript-sdk/pull/745))
 
 ## [4.9.1] - January 18, 2022
 
@@ -18,13 +19,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [4.9.0] - January 14, 2022
 
 ### New Features
-* Add a set of new APIs for overriding and managing user-level flag, experiment and delivery rule decisions. These methods can be used for QA and automated testing purposes. They are an extension of the OptimizelyUserContext interface ([#705](https://github.com/optimizely/javascript-sdk/pull/705), [#727](https://github.com/optimizely/javascript-sdk/pull/727), [#729](https://github.com/optimizely/javascript-sdk/pull/729), [#730](https://github.com/optimizely/javascript-sdk/pull/730)):
+- Add a set of new APIs for overriding and managing user-level flag, experiment and delivery rule decisions. These methods can be used for QA and automated testing purposes. They are an extension of the OptimizelyUserContext interface ([#705](https://github.com/optimizely/javascript-sdk/pull/705), [#727](https://github.com/optimizely/javascript-sdk/pull/727), [#729](https://github.com/optimizely/javascript-sdk/pull/729), [#730](https://github.com/optimizely/javascript-sdk/pull/730)):
 	- setForcedDecision
 	- getForcedDecision
 	- removeForcedDecision
 	- removeAllForcedDecisions
 
-* For details, refer to our documentation pages: [OptimizelyUserContext](https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyusercontext-javascript-node) and [Forced Decision methods](https://docs.developers.optimizely.com/full-stack/v4.0/docs/forced-decision-methods-javascript-node).
+- For details, refer to our documentation pages: [OptimizelyUserContext](https://docs.developers.optimizely.com/full-stack/v4.0/docs/optimizelyusercontext-javascript-node) and [Forced Decision methods](https://docs.developers.optimizely.com/full-stack/v4.0/docs/forced-decision-methods-javascript-node).
 
 ## [4.8.0] - November 29, 2021
 
