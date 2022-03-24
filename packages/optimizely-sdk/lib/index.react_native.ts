@@ -43,8 +43,8 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
 
 /**
  * Creates an instance of the Optimizely class
- * @param  {SDKOptions} config
- * @return {Optimizely|null} the Optimizely object
+ * @param  {Config} config
+ * @return {Client|null} the Optimizely client object
  *                           null on error 
  */
  const createInstance = function(config: Config): Client | null {

@@ -29,7 +29,7 @@ import * as loggerPlugin from './plugins/logger';
 import Optimizely from './optimizely';
 import { createNotificationCenter } from './core/notification_center';
 import { createForwardingEventProcessor } from './plugins/event_processor/forwarding_event_processor';
-import { OptimizelyDecideOption, Client, Config } from './shared_types';
+import { OptimizelyDecideOption, Client, ConfigLite } from './shared_types';
 import { createNoOpDatafileManager } from './plugins/datafile_manager/no_op_datafile_manager';
   
 const logger = getLogger();
@@ -38,11 +38,11 @@ setLogLevel(LogLevel.ERROR);
 
 /**
  * Creates an instance of the Optimizely class
- * @param  {SDKOptions} config
- * @return {Optimizely|null} the Optimizely object
+ * @param  {ConfigLite} config
+ * @return {Client|null} the Optimizely client object
  *                           null on error 
  */
- const createInstance = function(config: Config): Client | null {
+ const createInstance = function(config: ConfigLite): Client | null {
   try {
 
     // TODO warn about setting per instance errorHandler / logger / logLevel

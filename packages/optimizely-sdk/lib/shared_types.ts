@@ -437,6 +437,33 @@ export interface SDKOptions {
   defaultDecideOptions?: OptimizelyDecideOption[];
 }
 
+/**
+ * Entry level Config Entities for Lite bundle
+ * For compatibility with the previous declaration file
+ */
+ export interface ConfigLite {
+  // Datafile string
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
+  datafile?: object | string;
+  // options for Datafile Manager
+  datafileOptions?: DatafileOptions;
+  // errorHandler object for logging error
+  errorHandler?: ErrorHandler;
+  // event dispatcher function
+  eventDispatcher?: EventDispatcher;
+  // flag to validate if this instance is valid
+  isValidInstance?: boolean;
+  // level of logging i.e debug, info, error, warning etc
+  logLevel?: LogLevel | string;
+  // LogHandler object for logging
+  logger?: LogHandler;
+  // user profile that contains user information
+  userProfileService?: UserProfileService;
+  // dafault options for decide API
+  defaultDecideOptions?: OptimizelyDecideOption[];
+}
+
 export type OptimizelyExperimentsMap = {
   [experimentKey: string]: OptimizelyExperiment;
 }
