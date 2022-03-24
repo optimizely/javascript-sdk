@@ -13,6 +13,7 @@ env:
   global:
     - SDK=javascript
     - SDK_BRANCH=$TRAVIS_PULL_REQUEST_BRANCH
+    - TESTAPP_BRANCH=zeeshan/fix-types
 before_install: cd packages/optimizely-sdk
 install: npm install
 script: npm test
