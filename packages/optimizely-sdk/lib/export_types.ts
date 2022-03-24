@@ -11,7 +11,6 @@ export {
   Event,
   EventDispatcher,
   DatafileOptions,
-  SDKOptions,
   OptimizelyOptions,
   UserProfileService,
   UserProfile,

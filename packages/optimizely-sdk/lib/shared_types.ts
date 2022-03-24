@@ -406,35 +406,17 @@ export interface SDKOptions {
  * Entry level Config Entities
  * For compatibility with the previous declaration file
  */
- export interface Config {
-  // Datafile string
-  // TODO[OASIS-6649]: Don't use object type
-  // eslint-disable-next-line  @typescript-eslint/ban-types
-  datafile?: object | string;
+ export interface Config extends ConfigLite {
   // options for Datafile Manager
   datafileOptions?: DatafileOptions;
-  // errorHandler object for logging error
-  errorHandler?: ErrorHandler;
   // limit of events to dispatch in a batch
   eventBatchSize?: number;
-  // event dispatcher function
-  eventDispatcher?: EventDispatcher;
   // maximum time for an event to stay in the queue
   eventFlushInterval?: number;
   // maximum size for the event queue
   eventMaxQueueSize?: number;
-  // flag to validate if this instance is valid
-  isValidInstance?: boolean;
-  // level of logging i.e debug, info, error, warning etc
-  logLevel?: LogLevel | string;
-  // LogHandler object for logging
-  logger?: LogHandler;
   // sdk key
   sdkKey?: string;
-  // user profile that contains user information
-  userProfileService?: UserProfileService;
-  // dafault options for decide API
-  defaultDecideOptions?: OptimizelyDecideOption[];
 }
 
 /**
@@ -446,8 +428,6 @@ export interface SDKOptions {
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
   datafile?: object | string;
-  // options for Datafile Manager
-  datafileOptions?: DatafileOptions;
   // errorHandler object for logging error
   errorHandler?: ErrorHandler;
   // event dispatcher function
@@ -462,6 +442,8 @@ export interface SDKOptions {
   userProfileService?: UserProfileService;
   // dafault options for decide API
   defaultDecideOptions?: OptimizelyDecideOption[];
+  clientEngine?: string;
+  clientVersion?: string;
 }
 
 export type OptimizelyExperimentsMap = {
@@ -539,14 +521,14 @@ export interface OptimizelyUserContext {
   setAttribute(key: string, value: unknown): void;
   decide(
     key: string,
-    options: OptimizelyDecideOption[]
+    options?: OptimizelyDecideOption[]
   ): OptimizelyDecision;
   decideForKeys(
     keys: string[],
-    options: OptimizelyDecideOption[],
+    options?: OptimizelyDecideOption[],
   ): { [key: string]: OptimizelyDecision };
   decideAll(
-    options: OptimizelyDecideOption[],
+    options?: OptimizelyDecideOption[],
   ): { [key: string]: OptimizelyDecision };
   trackEvent(eventName: string, eventTags?: EventTags): void;
   setForcedDecision(context: OptimizelyDecisionContext, decision: OptimizelyForcedDecision): boolean;
