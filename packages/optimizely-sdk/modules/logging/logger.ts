@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { getErrorHandler } from './errorHandler'
-import { isValidEnum, sprintf } from '../utils'
+import { isValidEnum, sprintf } from '../../lib/utils/fns'
 
 import { LogLevel, LoggerFacade, LogManager, LogHandler } from './models'
 
