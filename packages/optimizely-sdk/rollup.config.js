@@ -32,7 +32,8 @@ const typescriptPluginOptions = {
   ],
   include: [
     './lib/**/*.ts',
-    './lib/**/*.js'
+    './lib/**/*.js',
+    './modules/**/*.ts'
   ],
 };
 
@@ -115,7 +116,7 @@ const jsonSchemaBundle = {
     commonjs(),
     typescript(typescriptPluginOptions),
   ],
-  external: ['json-schema', '../../../modules/utils'],
+  external: ['json-schema', './lib/utils/fns', 'uuid'],
   input: 'lib/utils/json_schema_validator/index.ts',
   output: {
     exports: 'named',

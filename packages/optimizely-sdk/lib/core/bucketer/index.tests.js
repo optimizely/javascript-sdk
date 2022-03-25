@@ -16,7 +16,7 @@
 import sinon from 'sinon';
 import { assert, expect } from 'chai';
 import { cloneDeep } from 'lodash';
-import { sprintf } from '../../../modules/utils';
+import { sprintf } from '../../utils/fns';
 
 import * as bucketer from './';
 import {

@@ -15,7 +15,7 @@
  ***************************************************************************/
 import sinon from 'sinon';
 import { assert } from 'chai';
-import { sprintf } from '../../../modules/utils';
+import { sprintf } from '../../utils/fns';
 
 import {
   LOG_LEVEL,

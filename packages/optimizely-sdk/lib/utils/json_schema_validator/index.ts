@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf } from '../../../modules/utils';
+import { sprintf } from '../fns';
 import { validate as jsonSchemaValidator } from 'json-schema';
 
 import { ERROR_MESSAGES } from '../enums';

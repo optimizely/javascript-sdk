@@ -15,7 +15,7 @@
  ***************************************************************************/
 
 import { assert } from 'chai';
-import { sprintf } from '../../../modules/utils';
+import { sprintf } from '../../utils/fns';
 
 import { validate } from './';
 import { ERROR_MESSAGES } from '../enums';

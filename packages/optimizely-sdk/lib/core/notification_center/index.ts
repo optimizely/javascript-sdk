@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { objectValues } from '../../../modules/utils';
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
-import { NOTIFICATION_TYPES as notificationTypesEnum } from '../../../modules/utils';
+import { objectValues, NOTIFICATION_TYPES as notificationTypesEnum } from '../../utils/fns';
 import { NotificationListener, ListenerPayload } from '../../shared_types';
 
 import {

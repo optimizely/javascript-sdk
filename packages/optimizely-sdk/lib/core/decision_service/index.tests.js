@@ -16,7 +16,7 @@
 import sinon from 'sinon';
 import { assert } from 'chai';
 import cloneDeep from 'lodash/cloneDeep';
-import { sprintf } from '../../../modules/utils';
+import { sprintf } from '../../utils/fns';
 
 import { createDecisionService } from './';
 import * as bucketer from '../bucketer';

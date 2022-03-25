@@ -18,7 +18,7 @@ import {
   objectEntries,
   objectValues,
   sprintf
-} from '../../../modules/utils';
+} from '../../utils/fns';
 
 import fns from '../../utils/fns';
 import {

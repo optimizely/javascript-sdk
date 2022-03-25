@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf } from '../../../modules/utils';
+import { sprintf } from '../../utils/fns';
 import { ObjectWithUnknownProperties } from '../../shared_types';
 
 import { 

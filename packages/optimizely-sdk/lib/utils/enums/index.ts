@@ -14,7 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
-import { NOTIFICATION_TYPES as notificationTypesEnum } from '../../../modules/utils';
+import { NOTIFICATION_TYPES as notificationTypesEnum } from '../../utils/fns';
 
 /**
  * Contains global enums used throughout the library

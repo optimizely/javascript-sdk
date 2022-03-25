@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf } from '../../../modules/utils';
 import { getLogger } from '@optimizely/js-sdk-logging';
+import { sprintf } from '../../utils/fns';
 
 import { ERROR_MESSAGES } from '../../utils/enums';
 import { createOptimizelyConfig } from '../optimizely_config';

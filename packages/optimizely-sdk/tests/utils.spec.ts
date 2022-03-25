@@ -1,5 +1,5 @@
 /// <reference types="jest" />
-import { isValidEnum, groupBy, objectEntries, objectValues, find, keyBy, sprintf } from '../'
+import { isValidEnum, groupBy, objectEntries, objectValues, find, keyByUtil, sprintf } from '../lib/utils/fns'
 
 describe('utils', () => {
   describe('isValidEnum', () => {
@@ -83,7 +83,7 @@ describe('utils', () => {
         { key: 'baz', firstName: 'james', lastName: 'foxy' },
       ]
 
-      expect(keyBy(input, item => item.key)).toEqual({
+      expect(keyByUtil(input, item => item.key)).toEqual({
         foo: { key: 'foo', firstName: 'jordan', lastName: 'foo' },
         bar: { key: 'bar', firstName: 'jordan', lastName: 'bar' },
         baz: { key: 'baz', firstName: 'james', lastName: 'foxy' },
