@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as uuid from 'uuid';
+import { v4 } from 'uuid';
 
 export function generateUUID(): string {
-  return uuid.v4()
+  return v4()
 }
 
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>

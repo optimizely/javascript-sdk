@@ -208,5 +208,5 @@ export default {
   isSafeInteger,
   keyBy,
   uuid,
-  isNumber
+  isNumber,
 }
