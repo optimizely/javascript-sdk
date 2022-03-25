@@ -17,7 +17,7 @@ import { assert, expect } from 'chai';
 import sinon from 'sinon';
 import { sprintf, NOTIFICATION_TYPES } from '../../modules/utils';
 import eventProcessor from '../plugins/event_processor';
-import * as logging from '../../modules/logging';
+import * as logging from '@optimizely/js-sdk-logging';
 
 import Optimizely from './';
 import OptimizelyUserContext from '../optimizely_user_context';

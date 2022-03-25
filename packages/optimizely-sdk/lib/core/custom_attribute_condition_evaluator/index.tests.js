@@ -21,7 +21,7 @@ import {
   LOG_LEVEL,
   LOG_MESSAGES,
 } from '../../utils/enums';
-import * as logging from '../../../modules/logging';
+import * as logging from '@optimizely/js-sdk-logging';
 import * as customAttributeEvaluator from './';
 
 var browserConditionSafari = {

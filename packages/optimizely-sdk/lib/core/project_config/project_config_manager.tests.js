@@ -18,7 +18,7 @@ import { assert } from 'chai';
 import { cloneDeep } from 'lodash';
 
 import { sprintf } from '../../../modules/utils';
-import * as logging from '../../../modules/logging';
+import * as logging from '@optimizely/js-sdk-logging';
 import * as datafileManager from '@optimizely/js-sdk-datafile-manager';
 
 import * as projectConfig from './index';

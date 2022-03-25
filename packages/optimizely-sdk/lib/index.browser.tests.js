@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as logging from '../modules/logging/logger';
+import * as logging from '@optimizely/js-sdk-logging';
 
 import { assert } from 'chai';
 import sinon from 'sinon';

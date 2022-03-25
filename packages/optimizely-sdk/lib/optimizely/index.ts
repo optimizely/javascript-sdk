@@ -14,7 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import { find, sprintf, objectValues, NotificationCenter } from '../../modules/utils';
-import { LoggerFacade, ErrorHandler } from '../../modules/logging';
+import { LoggerFacade, ErrorHandler } from '@optimizely/js-sdk-logging';
 import { EventProcessor } from '@optimizely/js-sdk-event-processor';
 
 import {

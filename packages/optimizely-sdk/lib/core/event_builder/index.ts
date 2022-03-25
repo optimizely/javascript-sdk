@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LoggerFacade } from '../../../modules/logging';
+import { LoggerFacade } from '@optimizely/js-sdk-logging';
 import { EventV1 as CommonEventParams } from '@optimizely/js-sdk-event-processor';
 
 import fns from '../../utils/fns';

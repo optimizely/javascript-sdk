@@ -16,7 +16,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 
-import * as logging from '../../modules/logging';
+import * as logging from '@optimizely/js-sdk-logging';
 import { sprintf, NOTIFICATION_TYPES } from '../../modules/utils';
 
 import OptimizelyUserContext from './';

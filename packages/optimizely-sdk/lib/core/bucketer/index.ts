@@ -19,7 +19,7 @@
  */
 import { sprintf } from '../../../modules/utils';
 import murmurhash from 'murmurhash';
-import { LogHandler } from '../../../modules/logging';
+import { LogHandler } from '@optimizely/js-sdk-logging';
 import {
   DecisionResponse,
   BucketerParams,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { objectValues } from '../../../modules/utils';
-import { LogHandler, ErrorHandler } from '../../../modules/logging';
+import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
 import { NOTIFICATION_TYPES as notificationTypesEnum } from '../../../modules/utils';
 import { NotificationListener, ListenerPayload } from '../../shared_types';
 
