@@ -11,7 +11,8 @@
     "declaration": false,
     "module": "esnext",
     "outDir": "./dist",
-    "sourceMap": true
+    "sourceMap": true,
+    "skipLibCheck": true,
   },
   "exclude": [
     "./dist",
