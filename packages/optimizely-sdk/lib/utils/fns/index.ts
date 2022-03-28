@@ -79,6 +79,8 @@ function isNumber(value: unknown): boolean {
   * @param {*} value
   * @returns {boolean}
   */
+ // TODO[OASIS-6649]: Don't use any type
+ // eslint-disable-next-line  @typescript-eslint/no-explicit-any
  export function isValidEnum(enumToCheck: { [key: string]: any }, value: any): boolean {
    let found = false
  
@@ -115,7 +117,7 @@ function isNumber(value: unknown): boolean {
  export function find<K>(arr: K[], cond: (arg: K) => boolean): K | undefined {
    let found
  
-   for (let item of arr) {
+   for (const item of arr) {
      if (cond(item)) {
        found = item
        break
@@ -126,7 +128,7 @@ function isNumber(value: unknown): boolean {
  }
  
  export function keyByUtil<K>(arr: K[], keyByFn: (item: K) => string): { [key: string]: K } {
-   let map: { [key: string]: K } = {}
+   const map: { [key: string]: K } = {}
    arr.forEach(item => {
      const key = keyByFn(item)
      map[key] = item
@@ -134,6 +136,8 @@ function isNumber(value: unknown): boolean {
    return map
  }
  
+ // TODO[OASIS-6649]: Don't use any type
+ // eslint-disable-next-line  @typescript-eslint/no-explicit-any
  export function sprintf(format: string, ...args: any[]): string {
    var i = 0
    return format.replace(/%s/g, function() {
