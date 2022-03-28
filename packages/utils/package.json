@@ -12,16 +12,15 @@
     "test": "test"
   },
   "files": [
-    "lib",
-    "LICENSE",
-    "CHANGELOG",
-    "README.md",
-    "package.json"
+    "lib"
   ],
   "scripts": {
-    "tsc": "rm -rf lib && tsc",
+    "clean": "rm -rf lib",
+    "prebuild": "npm run clean",
+    "build": "tsc",
     "test": "jest",
-    "prepublishOnly": "jest && npm run tsc"
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test"
   },
   "repository": {
     "type": "git",

@@ -23,7 +23,8 @@
     "cover": "nyc report -r lcov",
     "precoveralls": "npm run cover",
     "coveralls": "< coverage/lcov.info coveralls",
-    "prepublishOnly": "npm run build && npm test && npm run test-xbrowser && npm run test-umdbrowser"
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run test-ci"
   },
   "repository": {
     "type": "git",
@@ -92,11 +93,7 @@
   },
   "files": [
     "dist/",
-    "lib/",
-    "LICENSE",
-    "CHANGELOG",
-    "README.md",
-    "package.json"
+    "lib/"
   ],
   "nyc": {
     "temp-dir": "coverage/raw"
