@@ -29,12 +29,13 @@ const logger = getLogger();
 const MODULE_NAME = 'PROJECT_CONFIG_MANAGER';
 
 interface ProjectConfigManagerConfig {
-  datafile?: string,
+  datafile?: string;
   jsonSchemaValidator?: {
-    validate(jsonObject: unknown): boolean,
+    validate(jsonObject: unknown): boolean;
   };
-  sdkKey?: string,
-  datafileManager?: DatafileManager
+  sdkKey?: string;
+  datafileManager?: DatafileManager;
+  validateForcedVariations?: boolean;
 }
 
 /**
@@ -66,6 +67,7 @@ export class ProjectConfigManager {
   private readyPromise: Promise<OnReadyResult>;
   public jsonSchemaValidator: { validate(jsonObject: unknown): boolean } | undefined;
   public datafileManager: DatafileManager | null = null;
+  private validateForcedVariations = true;
 
   constructor(config: ProjectConfigManagerConfig) {
     try {
@@ -102,6 +104,10 @@ export class ProjectConfigManager {
           success: false,
           reason: getErrorMessage(handleNewDatafileException, 'Invalid datafile'),
         });
+      }
+
+      if (config.validateForcedVariations === false) {
+        this.validateForcedVariations = config.validateForcedVariations;
       }
     } catch (ex) {
       logger.error(ex);
@@ -176,7 +182,8 @@ export class ProjectConfigManager {
     const { configObj, error } = tryCreatingProjectConfig({
       datafile: newDatafile,
       jsonSchemaValidator: this.jsonSchemaValidator,
-      logger: logger
+      logger: logger,
+      validateForcedVariations: this.validateForcedVariations,
     });
 
     if (error) {

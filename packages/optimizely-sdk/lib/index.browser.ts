@@ -115,7 +115,9 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       batchSize: eventBatchSize,
       maxQueueSize:  config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
       notificationCenter,
-    }
+    };
+
+    const { validateForcedVariations } = config;
 
     const optimizelyOptions = {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
@@ -125,6 +127,7 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       errorHandler,
       datafileManager: config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
       notificationCenter,
+      validateForcedVariations,
     };
 
     const optimizely = new Optimizely(optimizelyOptions);

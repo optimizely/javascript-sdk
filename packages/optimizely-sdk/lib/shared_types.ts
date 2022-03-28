@@ -293,6 +293,8 @@ export interface SDKOptions {
   userProfileService?: UserProfileService;
   // dafault options for decide API
   defaultDecideOptions?: OptimizelyDecideOption[];
+  // validate if variation is in datafile or not when forcing variation
+  validateForcedVariations?: boolean;
 }
 
 export type OptimizelyExperimentsMap = {

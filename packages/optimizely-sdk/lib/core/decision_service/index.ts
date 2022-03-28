@@ -832,32 +832,48 @@ export class DecisionService {
           ])
         }
       } else {
-        if (ruleKey) {
+        if (!config.validateForcedVariations) {
           this.logger.log(
             LOG_LEVEL.INFO,
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
+            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
+            variationKey,
             flagKey,
-            ruleKey,
             userId
           );
           decideReasons.push([
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
+            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
+            variationKey,
             flagKey,
-            ruleKey,
-            userId
+            userId,
           ]);
         } else {
-          this.logger.log(
-            LOG_LEVEL.INFO,
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
-            flagKey,
-            userId
-          );
-          decideReasons.push([
-            LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
-            flagKey,
-            userId
-          ])
+          if (ruleKey) {
+            this.logger.log(
+              LOG_LEVEL.INFO,
+              LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
+              flagKey,
+              ruleKey,
+              userId
+            );
+            decideReasons.push([
+              LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
+              flagKey,
+              ruleKey,
+              userId,
+            ]);
+          } else {
+            this.logger.log(
+              LOG_LEVEL.INFO,
+              LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
+              flagKey,
+              userId
+            );
+            decideReasons.push([
+              LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
+              flagKey,
+              userId,
+            ]);
+          }
         }
       }
     }

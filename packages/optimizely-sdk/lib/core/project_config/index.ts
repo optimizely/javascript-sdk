@@ -50,6 +50,7 @@ interface TryCreatingProjectConfigConfig {
     validate(jsonObject: unknown): boolean,
   };
   logger: LogHandler;
+  validateForcedVariations?: boolean;
 }
 
 interface Event {
@@ -95,6 +96,7 @@ export interface ProjectConfig {
   accountId: string;
   flagRulesMap: { [key: string]: Experiment[] };
   flagVariationsMap: { [key: string]: Variation[] };
+  validateForcedVariations: boolean;
 }
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -142,9 +144,12 @@ function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
  */
 export const createProjectConfig = function(
   datafileObj?: JSON,
-  datafileStr: string | null = null
+  datafileStr: string | null = null,
+  validateForcedVariations = true
 ): ProjectConfig {
   const projectConfig = createMutationSafeDatafileCopy(datafileObj);
+
+  projectConfig.validateForcedVariations = validateForcedVariations;
 
   projectConfig.__datafileStr = datafileStr === null ? JSON.stringify(datafileObj) : datafileStr;
 
