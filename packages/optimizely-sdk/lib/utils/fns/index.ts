@@ -80,7 +80,7 @@ function isNumber(value: unknown): boolean {
   * @param {*} value
   * @returns {boolean}
   */
- export function isValidEnum(enumToCheck: { [key: string]: any }, value: LogLevel | string): boolean {
+ export function isValidEnum(enumToCheck: { [key: string]: any }, value: number | string): boolean {
    let found = false
  
    const keys = Object.keys(enumToCheck)
