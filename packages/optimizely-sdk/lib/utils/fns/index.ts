@@ -70,10 +70,21 @@ function isNumber(value: unknown): boolean {
  export function getTimestamp(): number {
    return new Date().getTime()
  }
-
+ 
+ /**
+  * Validates a value is a valid TypeScript enum
+  *
+  * @export
+  * @param {object} enumToCheck
+  * @param {*} value
+  * @returns {boolean}
+  */
  // TODO[OASIS-6649]: Don't use any type
  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
- export function isValidEnum(enumToCheck: { [key: string]: any }, value: any): boolean {
+ export function isValidEnum(enumToCheck: { [key: string]: any },
+  // TODO[OASIS-6649]: Don't use any type
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  value: any): boolean {
    let found = false
  
    const keys = Object.keys(enumToCheck)
