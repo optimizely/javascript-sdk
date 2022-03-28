@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { LogLevel } from '@optimizely/js-sdk-logging';
 import v4 from 'uuid';
 
 const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
@@ -79,12 +80,7 @@ function isNumber(value: unknown): boolean {
   * @param {*} value
   * @returns {boolean}
   */
- // TODO[OASIS-6649]: Don't use any type
- // eslint-disable-next-line  @typescript-eslint/no-explicit-any
- export function isValidEnum(enumToCheck: { [key: string]: any },
-  // TODO[OASIS-6649]: Don't use any type
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  value: any): boolean {
+ export function isValidEnum(enumToCheck: { [key: string]: any }, value: LogLevel | string): boolean {
    let found = false
  
    const keys = Object.keys(enumToCheck)
