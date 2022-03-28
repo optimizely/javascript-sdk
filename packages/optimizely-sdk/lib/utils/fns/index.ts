@@ -139,7 +139,7 @@ function isNumber(value: unknown): boolean {
  // TODO[OASIS-6649]: Don't use any type
  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
  export function sprintf(format: string, ...args: any[]): string {
-   var i = 0
+   let i = 0
    return format.replace(/%s/g, function() {
      const arg = args[i++]
      const type = typeof arg
@@ -203,6 +203,8 @@ function isNumber(value: unknown): boolean {
  }
  
  export interface NotificationCenter {
+   // TODO[OASIS-6649]: Don't use any type
+   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
    sendNotifications(notificationType: NOTIFICATION_TYPES, notificationData?: any): void
  }
 
