@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, 2020-2021, Optimizely
+ * Copyright 2016-2017, 2020-2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ const POST_METHOD = 'POST';
 const GET_METHOD = 'GET';
 const READYSTATE_COMPLETE = 4;
 
-interface Event {
+export interface Event {
   url: string;
   httpVerb: 'POST' | 'GET';
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any

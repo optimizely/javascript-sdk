@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2021 Optimizely
+ * Copyright 2019-2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
 import { createEventProcessor } from './plugins/event_processor';
-import { SDKOptions, OptimizelyDecideOption } from './shared_types';
+import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
 
 const logger = getLogger();
@@ -43,13 +43,15 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
 
 /**
  * Creates an instance of the Optimizely class
- * @param  {SDKOptions} config
- * @return {Optimizely|null} the Optimizely object
+ * @param  {Config} config
+ * @return {Client|null} the Optimizely client object
  *                           null on error 
  */
-const createInstance = function(config: SDKOptions): Optimizely | null {
+ const createInstance = function(config: Config): Client | null {
   try {
     // TODO warn about setting per instance errorHandler / logger / logLevel
+    let isValidInstance = false;
+
     if (config.errorHandler) {
       setErrorHandler(config.errorHandler);
     }
@@ -64,10 +66,9 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
 
     try {
       configValidator.validate(config);
-      config.isValidInstance = true;
+      isValidInstance = true;
     } catch (ex) {
       logger.error(ex);
-      config.isValidInstance = false;
     }
 
     let eventBatchSize = config.eventBatchSize;
@@ -107,6 +108,7 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       errorHandler,
       datafileManager:  config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
       notificationCenter,
+      isValidInstance: isValidInstance,
     };
 
     // If client engine is react, convert it to react native.
@@ -145,3 +147,5 @@ export default {
   createInstance,
   OptimizelyDecideOption,
 };
+
+export * from './export_types'

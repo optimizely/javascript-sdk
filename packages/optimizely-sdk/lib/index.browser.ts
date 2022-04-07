@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, 2019-2020 Optimizely
+ * Copyright 2016-2017, 2019-2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import Optimizely from './optimizely';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
 import { default as eventProcessor } from './plugins/event_processor';
-import { SDKOptions, OptimizelyDecideOption } from './shared_types';
+import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
 
 const logger = getLogger();
@@ -47,13 +47,15 @@ let hasRetriedEvents = false;
 
 /**
  * Creates an instance of the Optimizely class
- * @param  {SDKOptions} config
- * @return {Optimizely|null} the Optimizely object
+ * @param  {Config} config
+ * @return {Client|null} the Optimizely client object
  *                           null on error 
  */
-const createInstance = function(config: SDKOptions): Optimizely | null {
+const createInstance = function(config: Config): Client | null {
   try {
     // TODO warn about setting per instance errorHandler / logger / logLevel
+    let isValidInstance = false
+
     if (config.errorHandler) {
       setErrorHandler(config.errorHandler);
     }
@@ -68,10 +70,9 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
 
     try {
       configValidator.validate(config);
-      config.isValidInstance = true;
+      isValidInstance = true;
     } catch (ex) {
       logger.error(ex);
-      config.isValidInstance = false;
     }
 
     let eventDispatcher;
@@ -125,6 +126,7 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       errorHandler,
       datafileManager: config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
       notificationCenter,
+      isValidInstance: isValidInstance
     };
 
     const optimizely = new Optimizely(optimizelyOptions);
@@ -181,3 +183,5 @@ export default {
   __internalResetRetryState,
   OptimizelyDecideOption,
 };
+
+export * from './export_types'

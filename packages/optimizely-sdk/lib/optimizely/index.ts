@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { find, sprintf, objectValues, NotificationCenter } from '@optimizely/js-sdk-utils';
+import { sprintf, objectValues } from '@optimizely/js-sdk-utils';
 import { LoggerFacade, ErrorHandler } from '@optimizely/js-sdk-logging';
 import { EventProcessor } from '@optimizely/js-sdk-event-processor';
+import {NotificationCenter} from '../core/notification_center'
 
 import {
   UserAttributes,
@@ -26,7 +27,6 @@ import {
   Variation,
   FeatureFlag,
   FeatureVariable,
-  OptimizelyVariation,
   OptimizelyOptions,
   OptimizelyDecideOption,
   OptimizelyDecision
@@ -78,10 +78,10 @@ export default class Optimizely {
   private errorHandler: ErrorHandler;
   private logger: LoggerFacade;
   private projectConfigManager: ProjectConfigManager;
-  private notificationCenter: NotificationCenter;
   private decisionService: DecisionService;
   private eventProcessor: EventProcessor;
   private defaultDecideOptions: { [key: string]: boolean };
+  public notificationCenter: NotificationCenter;
 
   constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;

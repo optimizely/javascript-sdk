@@ -1,5 +1,5 @@
 /**
- * Copyright 2021, Optimizely
+ * Copyright 2021-2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import * as loggerPlugin from './plugins/logger';
 import Optimizely from './optimizely';
 import { createNotificationCenter } from './core/notification_center';
 import { createForwardingEventProcessor } from './plugins/event_processor/forwarding_event_processor';
-import { SDKOptions, OptimizelyDecideOption } from './shared_types';
+import { OptimizelyDecideOption, Client, ConfigLite } from './shared_types';
 import { createNoOpDatafileManager } from './plugins/datafile_manager/no_op_datafile_manager';
   
 const logger = getLogger();
@@ -38,14 +38,16 @@ setLogLevel(LogLevel.ERROR);
 
 /**
  * Creates an instance of the Optimizely class
- * @param  {SDKOptions} config
- * @return {Optimizely|null} the Optimizely object
+ * @param  {ConfigLite} config
+ * @return {Client|null} the Optimizely client object
  *                           null on error 
  */
-const createInstance = function(config: SDKOptions): Optimizely | null {
+ const createInstance = function(config: ConfigLite): Client | null {
   try {
 
     // TODO warn about setting per instance errorHandler / logger / logLevel
+    let isValidInstance = false;
+
     if (config.errorHandler) {
       setErrorHandler(config.errorHandler);
     }
@@ -60,10 +62,9 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
 
     try {
       configValidator.validate(config);
-      config.isValidInstance = true;
+      isValidInstance = true;
     } catch (ex) {
       logger.error(ex);
-      config.isValidInstance = false;
     }
 
     const errorHandler = getErrorHandler();
@@ -79,6 +80,7 @@ const createInstance = function(config: SDKOptions): Optimizely | null {
       datafileManager: createNoOpDatafileManager(),
       eventProcessor,
       notificationCenter,
+      isValidInstance: isValidInstance,
     };
 
     const optimizely = new Optimizely(optimizelyOptions);
@@ -110,3 +112,5 @@ export default {
   createInstance,
   OptimizelyDecideOption,
 };
+
+export * from './export_types'

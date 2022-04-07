@@ -15,20 +15,14 @@
  ***************************************************************************/
 import Optimizely from '../../lib/optimizely';
 import {
-  DecisionResponse,
   EventTags,
   OptimizelyDecideOption,
   OptimizelyDecision,
   OptimizelyDecisionContext,
   OptimizelyForcedDecision,
   UserAttributes,
-  Variation
 } from '../../lib/shared_types';
-import {
-  getFlagVariationByKey,
-  ProjectConfig,
-} from '../core/project_config';
-import { LOG_MESSAGES, CONTROL_ATTRIBUTES } from '../utils/enums';
+import { CONTROL_ATTRIBUTES } from '../utils/enums';
 
 export default class OptimizelyUserContext {
   private optimizely: Optimizely;
