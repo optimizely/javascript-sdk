@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2021 Optimizely
+ * Copyright 2019-2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,8 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
  const createInstance = function(config: Config): Client | null {
   try {
     // TODO warn about setting per instance errorHandler / logger / logLevel
+    let isValidInstance = false;
+
     if (config.errorHandler) {
       setErrorHandler(config.errorHandler);
     }
@@ -64,10 +66,9 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
 
     try {
       configValidator.validate(config);
-      config.isValidInstance = true;
+      isValidInstance = true;
     } catch (ex) {
       logger.error(ex);
-      config.isValidInstance = false;
     }
 
     let eventBatchSize = config.eventBatchSize;
@@ -107,7 +108,7 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
       errorHandler,
       datafileManager:  config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
       notificationCenter,
-      isValidInstance: config.isValidInstance,
+      isValidInstance: isValidInstance,
     };
 
     // If client engine is react, convert it to react native.

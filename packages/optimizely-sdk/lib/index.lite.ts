@@ -1,5 +1,5 @@
 /**
- * Copyright 2021, Optimizely
+ * Copyright 2021-2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,8 @@ setLogLevel(LogLevel.ERROR);
   try {
 
     // TODO warn about setting per instance errorHandler / logger / logLevel
+    let isValidInstance = false;
+
     if (config.errorHandler) {
       setErrorHandler(config.errorHandler);
     }
@@ -60,10 +62,9 @@ setLogLevel(LogLevel.ERROR);
 
     try {
       configValidator.validate(config);
-      config.isValidInstance = true;
+      isValidInstance = true;
     } catch (ex) {
       logger.error(ex);
-      config.isValidInstance = false;
     }
 
     const errorHandler = getErrorHandler();
@@ -79,7 +80,7 @@ setLogLevel(LogLevel.ERROR);
       datafileManager: createNoOpDatafileManager(),
       eventProcessor,
       notificationCenter,
-      isValidInstance: config.isValidInstance,
+      isValidInstance: isValidInstance,
     };
 
     const optimizely = new Optimizely(optimizelyOptions);

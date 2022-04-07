@@ -398,8 +398,10 @@ export interface TrackListenerPayload extends ListenerPayload {
   errorHandler?: ErrorHandler;
   // event dispatcher function
   eventDispatcher?: EventDispatcher;
-  // flag to validate if this instance is valid
-  isValidInstance?: boolean;
+  // The object to validate against the schema
+  jsonSchemaValidator?: {
+    validate(jsonObject: unknown): boolean,
+  };
   // level of logging i.e debug, info, error, warning etc
   logLevel?: LogLevel | string;
   // LogHandler object for logging

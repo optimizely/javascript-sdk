@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, 2019-2020 Optimizely
+ * Copyright 2016-2017, 2019-2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,8 @@ let hasRetriedEvents = false;
 const createInstance = function(config: Config): Client | null {
   try {
     // TODO warn about setting per instance errorHandler / logger / logLevel
+    let isValidInstance = false
+
     if (config.errorHandler) {
       setErrorHandler(config.errorHandler);
     }
@@ -68,10 +70,9 @@ const createInstance = function(config: Config): Client | null {
 
     try {
       configValidator.validate(config);
-      config.isValidInstance = true;
+      isValidInstance = true;
     } catch (ex) {
       logger.error(ex);
-      config.isValidInstance = false;
     }
 
     let eventDispatcher;
@@ -125,7 +126,7 @@ const createInstance = function(config: Config): Client | null {
       errorHandler,
       datafileManager: config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
       notificationCenter,
-      isValidInstance: config.isValidInstance
+      isValidInstance: isValidInstance
     };
 
     const optimizely = new Optimizely(optimizelyOptions);
