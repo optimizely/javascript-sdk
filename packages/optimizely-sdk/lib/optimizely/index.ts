@@ -16,6 +16,7 @@
 import { LoggerFacade, ErrorHandler } from '@optimizely/js-sdk-logging';
 import { sprintf, objectValues, NotificationCenter } from '../utils/fns';
 import { EventProcessor } from '@optimizely/js-sdk-event-processor';
+import {NotificationCenter} from '../core/notification_center'
 
 import {
   UserAttributes,
@@ -77,10 +78,10 @@ export default class Optimizely {
   private errorHandler: ErrorHandler;
   private logger: LoggerFacade;
   private projectConfigManager: ProjectConfigManager;
-  private notificationCenter: NotificationCenter;
   private decisionService: DecisionService;
   private eventProcessor: EventProcessor;
   private defaultDecideOptions: { [key: string]: boolean };
+  public notificationCenter: NotificationCenter;
 
   constructor(config: OptimizelyOptions) {
     let clientEngine = config.clientEngine;

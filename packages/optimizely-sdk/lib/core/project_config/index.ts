@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2021, Optimizely
+ * Copyright 2016-2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,9 @@ import {
 } from '../../shared_types';
 
 interface TryCreatingProjectConfigConfig {
-  datafile: string;
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
+  datafile: string | object;
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean,
   };

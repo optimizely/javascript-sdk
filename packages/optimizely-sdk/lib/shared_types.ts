@@ -16,7 +16,8 @@
 import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from '@optimizely/js-sdk-logging';
 import { EventProcessor } from '@optimizely/js-sdk-event-processor';
 
-import { NotificationCenter } from '../lib/utils/fns';
+import {NotificationCenter as NotificationCenterImpl} from './core/notification_center'
+import { NOTIFICATION_TYPES } from './utils/fns';
 
 export interface BucketerParams {
   experimentId: string;
@@ -80,6 +81,17 @@ export interface ListenerPayload {
 }
 
 export type NotificationListener<T extends ListenerPayload> = (notificationData: T) => void;
+
+// NotificationCenter-related types
+export interface NotificationCenter {
+  addNotificationListener<T extends ListenerPayload>(
+    notificationType: string,
+    callback: NotificationListener<T>
+  ): number;
+  removeNotificationListener(listenerId: number): boolean;
+  clearAllNotificationListeners(): void;
+  clearNotificationListeners(notificationType: NOTIFICATION_TYPES): void;
+}
 
 // An event to be submitted to Optimizely, enabling tracking the reach and impact of
 // tests and feature rollouts.
@@ -229,7 +241,9 @@ export interface OptimizelyOptions {
   UNSTABLE_conditionEvaluators?: unknown;
   clientEngine: string;
   clientVersion?: string;
-  datafile?: string;
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
+  datafile?: string | object;
   datafileManager?: DatafileManager;
   errorHandler: ErrorHandler;
   eventProcessor: EventProcessor;
@@ -241,7 +255,7 @@ export interface OptimizelyOptions {
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
   defaultDecideOptions?: OptimizelyDecideOption[];
-  notificationCenter: NotificationCenter;
+  notificationCenter: NotificationCenterImpl;
 }
 
 /**
@@ -263,36 +277,141 @@ export interface OptimizelyVariable {
   value: string;
 }
 
+export interface Client {
+  notificationCenter: NotificationCenter;
+  createUserContext(
+    userId: string,
+    attributes?: UserAttributes
+  ): OptimizelyUserContext | null;
+  activate(
+    experimentKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): string | null;
+  track(
+    eventKey: string,
+    userId: string,
+    attributes?: UserAttributes,
+    eventTags?: EventTags
+  ): void;
+  getVariation(
+    experimentKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): string | null;
+  setForcedVariation(experimentKey: string, userId: string, variationKey: string | null): boolean;
+  getForcedVariation(experimentKey: string, userId: string): string | null;
+  isFeatureEnabled(
+    featureKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): boolean;
+  getEnabledFeatures(
+    userId: string,
+    attributes?: UserAttributes
+  ): string[];
+  getFeatureVariable(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): unknown;
+  getFeatureVariableBoolean(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): boolean | null;
+  getFeatureVariableDouble(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): number | null;
+  getFeatureVariableInteger(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): number | null;
+  getFeatureVariableString(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): string | null;
+  getFeatureVariableJSON(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): unknown;
+  getAllFeatureVariables(
+    featureKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): { [variableKey: string]: unknown } | null;
+  getOptimizelyConfig(): OptimizelyConfig | null;
+  onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
+  close(): Promise<{ success: boolean; reason?: string }>;
+}
+
+export interface ActivateListenerPayload extends ListenerPayload {
+  experiment: import('./shared_types').Experiment;
+  variation: import('./shared_types').Variation;
+  logEvent: Event;
+}
+
+export interface TrackListenerPayload extends ListenerPayload {
+  eventKey: string;
+  eventTags: EventTags;
+  logEvent: Event;
+}
+
 /**
  * Entry level Config Entities
+ * For compatibility with the previous declaration file
  */
-export interface SDKOptions {
-  // Datafile string
-  datafile?: string;
+ export interface Config extends ConfigLite {
   // options for Datafile Manager
   datafileOptions?: DatafileOptions;
-  // errorHandler object for logging error
-  errorHandler?: ErrorHandler;
   // limit of events to dispatch in a batch
   eventBatchSize?: number;
-  // event dispatcher function
-  eventDispatcher?: EventDispatcher;
   // maximum time for an event to stay in the queue
   eventFlushInterval?: number;
   // maximum size for the event queue
   eventMaxQueueSize?: number;
-  // flag to validate if this instance is valid
-  isValidInstance: boolean;
+  // sdk key
+  sdkKey?: string;
+}
+
+/**
+ * Entry level Config Entities for Lite bundle
+ * For compatibility with the previous declaration file
+ */
+ export interface ConfigLite {
+  // Datafile string
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
+  datafile?: object | string;
+  // errorHandler object for logging error
+  errorHandler?: ErrorHandler;
+  // event dispatcher function
+  eventDispatcher?: EventDispatcher;
+  // The object to validate against the schema
+  jsonSchemaValidator?: {
+    validate(jsonObject: unknown): boolean,
+  };
   // level of logging i.e debug, info, error, warning etc
   logLevel?: LogLevel | string;
   // LogHandler object for logging
   logger?: LogHandler;
-  // sdk key
-  sdkKey?: string;
   // user profile that contains user information
   userProfileService?: UserProfileService;
   // dafault options for decide API
   defaultDecideOptions?: OptimizelyDecideOption[];
+  clientEngine?: string;
+  clientVersion?: string;
 }
 
 export type OptimizelyExperimentsMap = {
@@ -370,14 +489,14 @@ export interface OptimizelyUserContext {
   setAttribute(key: string, value: unknown): void;
   decide(
     key: string,
-    options: OptimizelyDecideOption[]
+    options?: OptimizelyDecideOption[]
   ): OptimizelyDecision;
   decideForKeys(
     keys: string[],
-    options: OptimizelyDecideOption[],
+    options?: OptimizelyDecideOption[],
   ): { [key: string]: OptimizelyDecision };
   decideAll(
-    options: OptimizelyDecideOption[],
+    options?: OptimizelyDecideOption[],
   ): { [key: string]: OptimizelyDecision };
   trackEvent(eventName: string, eventTags?: EventTags): void;
   setForcedDecision(context: OptimizelyDecisionContext, decision: OptimizelyForcedDecision): boolean;

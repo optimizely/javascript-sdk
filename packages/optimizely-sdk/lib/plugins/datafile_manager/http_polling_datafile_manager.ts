@@ -1,5 +1,5 @@
 /**
- * Copyright 2021, Optimizely
+ * Copyright 2021-2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@ import fns from '../../utils/fns';
 
 export function createHttpPollingDatafileManager(
   sdkKey: string,
-  logger: LoggerFacade,  
-  datafile?: string,
+  logger: LoggerFacade,
+  // TODO[OASIS-6649]: Don't use object type
+  // eslint-disable-next-line  @typescript-eslint/ban-types
+  datafile?: string | object,
   datafileOptions?: DatafileOptions,
 ): DatafileManager {  
   const datafileManagerConfig: DatafileManagerConfig = { sdkKey };

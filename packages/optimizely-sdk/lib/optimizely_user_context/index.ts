@@ -20,7 +20,7 @@ import {
   OptimizelyDecision,
   OptimizelyDecisionContext,
   OptimizelyForcedDecision,
-  UserAttributes
+  UserAttributes,
 } from '../../lib/shared_types';
 import { CONTROL_ATTRIBUTES } from '../utils/enums';
 
