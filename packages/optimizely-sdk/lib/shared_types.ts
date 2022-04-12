@@ -278,7 +278,7 @@ export interface OptimizelyVariable {
 }
 
 export interface Client {
-  notificationCenter: NotificationCenter;
+  notificationCenter: NotificationCenterImpl;
   createUserContext(
     userId: string,
     attributes?: UserAttributes
