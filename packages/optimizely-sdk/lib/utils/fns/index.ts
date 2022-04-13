@@ -192,19 +192,6 @@ export function sprintf(format: string, ...args: any[]): string {
 *    - logEvent {Object}
 *
 */
-export enum NOTIFICATION_TYPES {
-  ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
-  DECISION = 'DECISION:type, userId, attributes, decisionInfo',
-  LOG_EVENT = 'LOG_EVENT:logEvent',
-  OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
-  TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
-}
-
-export interface NotificationCenter {
-  // TODO[OASIS-6649]: Don't use any type
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  sendNotifications(notificationType: NOTIFICATION_TYPES, notificationData?: any): void
-}
 
 export default {
   assign,
@@ -220,6 +207,5 @@ export default {
   objectEntries,
   find,
   keyByUtil,
-  sprintf,
-  NOTIFICATION_TYPES
+  sprintf
 }

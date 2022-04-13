@@ -1,5 +1,5 @@
 /**
- * Copyright 2021-2022, Optimizely
+ * Copyright 2021, 2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import {
   EventProcessor,
   ProcessableEvent,
 } from '@optimizely/js-sdk-event-processor';
-import { NotificationCenter } from '../../utils/fns';
+import { NotificationCenter } from '../../core/notification_center';
 
 import { EventDispatcher } from '../../shared_types';
 import { NOTIFICATION_TYPES } from '../../utils/enums';

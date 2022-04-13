@@ -1,5 +1,5 @@
 /**
- * Copyright 2020-2022, Optimizely
+ * Copyright 2020, 2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,23 @@
  * limitations under the License.
  */
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
-import { objectValues, NOTIFICATION_TYPES as notificationTypesEnum } from '../../utils/fns';
+import { objectValues } from '../../utils/fns';
 import { NotificationListener, ListenerPayload } from '../../shared_types';
 
 import {
   LOG_LEVEL,
   LOG_MESSAGES,
-  NOTIFICATION_TYPES,
 } from '../../utils/enums';
 
 const MODULE_NAME = 'NOTIFICATION_CENTER';
+
+export enum NOTIFICATION_TYPES {
+  ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
+  DECISION = 'DECISION:type, userId, attributes, decisionInfo',
+  LOG_EVENT = 'LOG_EVENT:logEvent',
+  OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
+  TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
+}
 
 interface NotificationCenterOptions {
   logger: LogHandler;
@@ -185,9 +192,9 @@ export class NotificationCenter {
 
   /**
    * Remove all previously added notification listeners for the argument type
-   * @param   {notificationTypesEnum}    notificationType One of NOTIFICATION_TYPES
+   * @param   {NOTIFICATION_TYPES}    notificationType One of NOTIFICATION_TYPES
    */
-  clearNotificationListeners(notificationType: notificationTypesEnum): void {
+  clearNotificationListeners(notificationType: NOTIFICATION_TYPES): void {
     try {
       this.notificationListeners[notificationType] = [];
     } catch (e) {
@@ -237,4 +244,10 @@ export class NotificationCenter {
  */
 export function createNotificationCenter(options: NotificationCenterOptions): NotificationCenter {
   return new NotificationCenter(options);
+}
+
+export interface NotificationCenter {
+  // TODO[OASIS-6649]: Don't use any type
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  sendNotifications(notificationType: NOTIFICATION_TYPES, notificationData?: any): void
 }
