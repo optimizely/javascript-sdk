@@ -12,6 +12,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+    steps:
     - uses: actions/checkout@v2
     - name: Set up Node
       uses: actions/setup-node@v3
@@ -38,6 +39,7 @@ jobs:
 
   crossbrowser_and_umd_unit_tests:
     runs-on: ubuntu-latest
+    steps:
     - uses: actions/checkout@v2
     - name: Set up Node
       uses: actions/setup-node@v3
@@ -78,6 +80,7 @@ jobs:
     strategy:
       matrix:
         package: [ 'packages/utils', 'packages/event-processor', 'packages/logging', 'packages/datafile-manager']
+    steps:
     - uses: actions/checkout@v2
     - name: Set up Node
       uses: actions/setup-node@v3
