@@ -21,10 +21,8 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 12
+        cache-dependency-path: packages/optimizely-sdk/package-lock.json
         cache: 'npm'
-    - name: Run linting
-      run: |
-        npm run lint
     - name: Run linting
       run: |
         npm run lint
