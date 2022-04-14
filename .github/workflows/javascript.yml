@@ -14,9 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Move to package
-      run: |
-        cd packages/optimizely-sdk
     - name: Set up Node
       uses: actions/setup-node@v3
       with:
@@ -24,6 +21,7 @@ jobs:
         cache-dependency-path: packages/optimizely-sdk/package-lock.json
         cache: 'npm'
     - name: Run linting
+      working-directory: ./packages/optimizely-sdk
       run: |
         npm run lint
 
