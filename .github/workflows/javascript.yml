@@ -52,8 +52,11 @@ jobs:
       with:
         node-version: 8
         cache: 'npm'
+        cache-dependency-path: packages/optimizely-sdk/package-lock.json
     - name: Cross-browser and umd unit tests
+      working-directory: ./packages/optimizely-sdk
       run: |
+        npm install
         npm run test-ci
 
   unit_tests:
@@ -71,14 +74,12 @@ jobs:
       with:
         node-version: ${{ matrix.node }}
         cache: 'npm'
-    - name: Install packages
+        cache-dependency-path: packages/optimizely-sdk/package-lock.json
+    - name: Unit tests
+      working-directory: ./packages/optimizely-sdk
       run: |
         npm install
-    - name: Run tests
-      run: |
         npm test
-    - name: Run coveralls
-      run: |
         npm run coveralls
         
   test_sub_packages:
@@ -96,12 +97,10 @@ jobs:
       with:
         node-version: 12
         cache: 'npm'
-    - name: Install packages
+        cache-dependency-path: packages/optimizely-sdk/package-lock.json
+    - name: Test sub packages
+      working-directory: ./packages/optimizely-sdk
       run: |
         npm install
-    - name: Run tests
-      run: |
         npm test
-    - name: Run coveralls
-      run: |
         npm run coveralls
