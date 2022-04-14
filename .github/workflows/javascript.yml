@@ -42,6 +42,9 @@ jobs:
 
   crossbrowser_and_umd_unit_tests:
     runs-on: ubuntu-latest
+    env:
+      BROWSER_STACK_USERNAME: ${{ secrets.BROWSER_STACK_USERNAME }}
+      BROWSER_STACK_ACCESS_KEY: ${{ secrets.BROWSER_STACK_ACCESS_KEY }}
     steps:
     - uses: actions/checkout@v2
     - name: Move to package
@@ -77,9 +80,12 @@ jobs:
         cache-dependency-path: packages/optimizely-sdk/package-lock.json
     - name: Unit tests
       working-directory: ./packages/optimizely-sdk
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         npm install
         npm test
+        npm run cover
         npm run coveralls
         
   test_sub_packages:
@@ -97,9 +103,9 @@ jobs:
       with:
         node-version: 12
         cache: 'npm'
-        cache-dependency-path: packages/optimizely-sdk/package-lock.json
+        cache-dependency-path: packages/${{ matrix.package }}/package-lock.json
     - name: Test sub packages
-      working-directory: ./packages/optimizely-sdk
+      working-directory: ./packages/${{ matrix.package }}
       run: |
         npm install
         npm test
