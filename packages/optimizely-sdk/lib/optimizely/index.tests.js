@@ -16,7 +16,7 @@
 import { assert, expect } from 'chai';
 import sinon from 'sinon';
 import { sprintf } from '../utils/fns';
-import { NOTIFICATION_TYPES } from '../core/notification_center';
+import { NOTIFICATION_TYPES } from '../utils/enums';
 import eventProcessor from '../plugins/event_processor';
 import * as logging from '@optimizely/js-sdk-logging';
 

@@ -20,17 +20,10 @@ import { NotificationListener, ListenerPayload } from '../../shared_types';
 import {
   LOG_LEVEL,
   LOG_MESSAGES,
+  NOTIFICATION_TYPES
 } from '../../utils/enums';
 
 const MODULE_NAME = 'NOTIFICATION_CENTER';
-
-export enum NOTIFICATION_TYPES {
-  ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
-  DECISION = 'DECISION:type, userId, attributes, decisionInfo',
-  LOG_EVENT = 'LOG_EVENT:logEvent',
-  OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
-  TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
-}
 
 interface NotificationCenterOptions {
   logger: LogHandler;

@@ -18,7 +18,7 @@ import sinon from 'sinon';
 
 import * as logging from '@optimizely/js-sdk-logging';
 import { sprintf } from '../utils/fns';
-import { NOTIFICATION_TYPES } from '../core/notification_center';
+import { NOTIFICATION_TYPES } from '../utils/enums';
 
 import OptimizelyUserContext from './';
 import { createLogger } from '../plugins/logger';

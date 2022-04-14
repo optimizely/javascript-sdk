@@ -14,8 +14,6 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 
-import { NOTIFICATION_TYPES as notificationTypesEnum } from '../../core/notification_center';
-
 /**
  * Contains global enums used throughout the library
  */
@@ -184,8 +182,6 @@ export const REACT_NATIVE_CLIENT_ENGINE = 'react-native-sdk';
 export const REACT_NATIVE_JS_CLIENT_ENGINE = 'react-native-js-sdk';
 export const NODE_CLIENT_VERSION = '4.9.1';
 
-export const NOTIFICATION_TYPES = notificationTypesEnum;
-
 export const DECISION_NOTIFICATION_TYPES = {
   AB_TEST: 'ab-test',
   FEATURE: 'feature',
@@ -244,4 +240,12 @@ export const DECISION_MESSAGES = {
   SDK_NOT_READY: 'Optimizely SDK not configured properly yet.',
   FLAG_KEY_INVALID: 'No flag was found for key "%s".',
   VARIABLE_VALUE_INVALID: 'Variable value for key "%s" is invalid or wrong type.',
+}
+
+export enum NOTIFICATION_TYPES {
+  ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
+  DECISION = 'DECISION:type, userId, attributes, decisionInfo',
+  LOG_EVENT = 'LOG_EVENT:logEvent',
+  OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
+  TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
 }
