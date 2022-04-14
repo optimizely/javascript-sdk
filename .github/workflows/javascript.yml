@@ -23,6 +23,7 @@ jobs:
     - name: Run linting
       working-directory: ./packages/optimizely-sdk
       run: |
+        npm install
         npm run lint
 
   integration_tests:
