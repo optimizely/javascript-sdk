@@ -82,7 +82,7 @@ jobs:
       working-directory: ./packages/optimizely-sdk
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        TRAVIS_COM_TOKEN: ${{ TRAVIS_COM_TOKEN }}
+        TRAVIS_COM_TOKEN: ${{ secrets.TRAVIS_COM_TOKEN }}
         AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -116,7 +116,7 @@ jobs:
       working-directory: ./packages/${{ matrix.package }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        TRAVIS_COM_TOKEN: ${{ TRAVIS_COM_TOKEN }}
+        TRAVIS_COM_TOKEN: ${{ secrets.TRAVIS_COM_TOKEN }}
         AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
