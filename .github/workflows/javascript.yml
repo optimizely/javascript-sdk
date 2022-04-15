@@ -90,6 +90,7 @@ jobs:
         SRCCLR_API_TOKEN: ${{ secrets.SRCCLR_API_TOKEN }}
         BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
         BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+        NODE_COVERALLS_DEBUG: 1
       run: |
         npm install
         npm test
@@ -111,9 +112,9 @@ jobs:
       with:
         node-version: 12
         cache: 'npm'
-        cache-dependency-path: packages/${{ matrix.package }}/package-lock.json
+        cache-dependency-path: ${{ matrix.package }}/package-lock.json
     - name: Test sub packages
-      working-directory: ./packages/${{ matrix.package }}
+      working-directory: ./${{ matrix.package }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         TRAVIS_COM_TOKEN: ${{ secrets.TRAVIS_COM_TOKEN }}
