@@ -81,7 +81,7 @@ jobs:
     - name: Unit tests
       working-directory: ./packages/optimizely-sdk
       env:
-        github-token: ${{ github.token }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
       run: |
         npm install
         npm test
@@ -106,8 +106,9 @@ jobs:
     - name: Test sub packages
       working-directory: ./${{ matrix.package }}
       env:
-        github-token: ${{ github.token }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
       run: |
         npm install
         npm test
         npm run coveralls
+      
