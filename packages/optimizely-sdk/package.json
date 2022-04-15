@@ -21,9 +21,7 @@
     "build-browser-umd": "rollup -c --config-umd",
     "precover": "nyc npm test",
     "cover": "nyc report -r lcov",
-    "precoveralls": "npm run cover",
-    "coveralls": "< coverage/lcov.info coveralls",
-    "coverage": "nyc --reporter=lcov npm test",
+    "coveralls": "npm run cover",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run test-ci"
   },

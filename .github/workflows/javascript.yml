@@ -79,7 +79,7 @@ jobs:
       working-directory: ./packages/optimizely-sdk
       run: |
         npm install
-        npm run coverage
+        npm run coveralls
     - name: Coveralls
       uses: coverallsapp/github-action@master
       with:
