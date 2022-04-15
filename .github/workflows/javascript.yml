@@ -82,6 +82,14 @@ jobs:
       working-directory: ./packages/optimizely-sdk
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TRAVIS_COM_TOKEN: ${{ TRAVIS_COM_TOKEN }}
+        AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        CI_USER_TOKEN: ${{ secrets.CI_USER_TOKEN }}
+        SRCCLR_API_TOKEN: ${{ secrets.SRCCLR_API_TOKEN }}
+        BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+        BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
       run: |
         npm install
         npm test
@@ -106,6 +114,16 @@ jobs:
         cache-dependency-path: packages/${{ matrix.package }}/package-lock.json
     - name: Test sub packages
       working-directory: ./packages/${{ matrix.package }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TRAVIS_COM_TOKEN: ${{ TRAVIS_COM_TOKEN }}
+        AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        CI_USER_TOKEN: ${{ secrets.CI_USER_TOKEN }}
+        SRCCLR_API_TOKEN: ${{ secrets.SRCCLR_API_TOKEN }}
+        BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+        BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
       run: |
         npm install
         npm test
