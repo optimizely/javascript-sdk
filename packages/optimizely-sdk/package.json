@@ -23,6 +23,7 @@
     "cover": "nyc report -r lcov",
     "precoveralls": "npm run cover",
     "coveralls": "< coverage/lcov.info coveralls",
+    "coverage": "nyc --reporter=lcov npm test",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run test-ci"
   },
