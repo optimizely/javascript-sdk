@@ -85,7 +85,12 @@ jobs:
       run: |
         npm install
         npm test
-        npm run coveralls
+        make test-coverage
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+      
         
   test_sub_packages:
     runs-on: ubuntu-latest
@@ -110,5 +115,9 @@ jobs:
       run: |
         npm install
         npm test
-        npm run coveralls
+        make test-coverage
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
       
