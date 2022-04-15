@@ -80,12 +80,9 @@ jobs:
         cache-dependency-path: packages/optimizely-sdk/package-lock.json
     - name: Unit tests
       working-directory: ./packages/optimizely-sdk
-      env:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
       run: |
         npm install
-        npm test
-        make test-coverage
+        npm test -- --coverage
     - name: Coveralls
       uses: coverallsapp/github-action@master
       with:
@@ -110,12 +107,9 @@ jobs:
         cache-dependency-path: ${{ matrix.package }}/package-lock.json
     - name: Test sub packages
       working-directory: ./${{ matrix.package }}
-      env:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
       run: |
         npm install
-        npm test
-        make test-coverage
+        npm test -- --coverage
     - name: Coveralls
       uses: coverallsapp/github-action@master
       with:
