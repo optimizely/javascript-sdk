@@ -81,6 +81,7 @@ jobs:
         npm install
         npm run coverage
     - name: Coveralls
+      working-directory: ./packages/optimizely-sdk
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }} 
