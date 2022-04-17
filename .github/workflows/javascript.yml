@@ -88,6 +88,7 @@ jobs:
         flag-name: run-${{ matrix.node }}
         # This is a parallel build so need this
         parallel: true
+        base-path: ./packages/optimizely-sdk
 
   # As testing against multiple versions need this to
   # finish the parallel build
@@ -102,6 +103,7 @@ jobs:
           github-token: ${{ secrets.github_token }}
           path-to-lcov: ./packages/optimizely-sdk/coverage/lcov.info
           parallel-finished: true
+          base-path: ./packages/optimizely-sdk
         
   test_sub_packages:
     runs-on: ubuntu-latest
