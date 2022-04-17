@@ -80,11 +80,27 @@ jobs:
       run: |
         npm install
         npm run coveralls
-    - name: Coveralls
+    - name: Coveralls Parallel
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }} 
         path-to-lcov: ./packages/optimizely-sdk/coverage/lcov.info
+        flag-name: run-${{ matrix.node }}
+        # This is a parallel build so need this
+        parallel: true
+
+  # As testing against multiple versions need this to
+  # finish the parallel build
+  finish:
+    name: Coveralls coverage
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.github_token }}
+          parallel-finished: true
         
   test_sub_packages:
     runs-on: ubuntu-latest
