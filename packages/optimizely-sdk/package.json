@@ -19,9 +19,7 @@
     "prebuild": "npm run clean",
     "build": "rollup -c && cp dist/index.lite.d.ts dist/optimizely.lite.es.d.ts && cp dist/index.lite.d.ts dist/optimizely.lite.es.min.d.ts && cp dist/index.lite.d.ts dist/optimizely.lite.min.d.ts",
     "build-browser-umd": "rollup -c --config-umd",
-    "precover": "nyc npm test",
-    "cover": "nyc report -r lcov",
-    "coveralls": "npm run cover",
+    "coveralls": "nyc --reporter=lcov npm test",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run test-ci"
   },
