@@ -43,8 +43,8 @@ jobs:
   crossbrowser_and_umd_unit_tests:
     runs-on: ubuntu-latest
     env:
-      BROWSER_STACK_USERNAME: ${{ secrets.BROWSER_STACK_USERNAME }}
-      BROWSER_STACK_ACCESS_KEY: ${{ secrets.BROWSER_STACK_ACCESS_KEY }}
+      BROWSER_STACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+      BROWSER_STACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
     steps:
     - uses: actions/checkout@v2
     - name: Move to package
