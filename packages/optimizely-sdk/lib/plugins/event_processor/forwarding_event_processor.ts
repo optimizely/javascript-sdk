@@ -18,7 +18,7 @@ import {
   EventProcessor,
   ProcessableEvent,
 } from '@optimizely/js-sdk-event-processor';
-import { NotificationCenter } from '../../core/notification_center';
+import { NotificationCenterInterface as NotificationCenter } from '../../core/notification_center';
 
 import { EventDispatcher } from '../../shared_types';
 import { NOTIFICATION_TYPES } from '../../utils/enums';

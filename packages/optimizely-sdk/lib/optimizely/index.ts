@@ -15,7 +15,7 @@
  ***************************************************************************/
 import { LoggerFacade, ErrorHandler } from '@optimizely/js-sdk-logging';
 import { sprintf, objectValues } from '../utils/fns';
-import { NotificationCenter } from '../core/notification_center';
+import { NotificationCenterInterface as NotificationCenter } from '../core/notification_center';
 import { EventProcessor } from '@optimizely/js-sdk-event-processor';
 
 import {
