@@ -239,7 +239,7 @@ export function createNotificationCenter(options: NotificationCenterOptions): No
   return new NotificationCenter(options);
 }
 
-export interface NotificationCenterInterface {
+export interface NotificationSender {
   // TODO[OASIS-6649]: Don't use any type
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   sendNotifications(notificationType: NOTIFICATION_TYPES, notificationData?: any): void

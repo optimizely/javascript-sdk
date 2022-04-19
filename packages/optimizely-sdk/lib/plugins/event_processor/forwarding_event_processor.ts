@@ -18,7 +18,7 @@ import {
   EventProcessor,
   ProcessableEvent,
 } from '@optimizely/js-sdk-event-processor';
-import { NotificationCenterInterface as NotificationCenter } from '../../core/notification_center';
+import { NotificationSender } from '../../core/notification_center';
 
 import { EventDispatcher } from '../../shared_types';
 import { NOTIFICATION_TYPES } from '../../utils/enums';
@@ -26,9 +26,9 @@ import { formatEvents } from '../../core/event_builder/build_event_v1';
 
 class ForwardingEventProcessor implements EventProcessor {
   private dispatcher: EventDispatcher;
-  private notificationCenter?: NotificationCenter;
+  private notificationCenter?: NotificationSender;
 
-  constructor(dispatcher: EventDispatcher, notificationCenter?: NotificationCenter) {
+  constructor(dispatcher: EventDispatcher, notificationCenter?: NotificationSender) {
     this.dispatcher = dispatcher;
     this.notificationCenter = notificationCenter;
   }
@@ -51,6 +51,6 @@ class ForwardingEventProcessor implements EventProcessor {
   }
 }
 
-export function createForwardingEventProcessor(dispatcher: EventDispatcher, notificationCenter?: NotificationCenter): EventProcessor {
+export function createForwardingEventProcessor(dispatcher: EventDispatcher, notificationCenter?: NotificationSender): EventProcessor {
   return new ForwardingEventProcessor(dispatcher, notificationCenter);
 }
