@@ -33,7 +33,6 @@ const typescriptPluginOptions = {
   include: [
     './lib/**/*.ts',
     './lib/**/*.js',
-    './modules/**/*.ts'
   ],
 };
 
