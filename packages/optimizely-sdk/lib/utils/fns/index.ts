@@ -18,7 +18,7 @@ import v4 from 'uuid';
 const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 
 // eslint-disable-next-line
-function assign(target: any, ...sources: any[]): any {
+export function assign(target: any, ...sources: any[]): any {
   if (!target) {
     return {};
   }
@@ -49,7 +49,7 @@ function isSafeInteger(number: unknown): boolean {
   return typeof number == 'number' && Math.abs(number) <= MAX_SAFE_INTEGER_LIMIT;
 }
 
-function keyBy<K>(arr: K[], key: string): { [key: string]: K } {
+export function keyBy<K>(arr: K[], key: string): { [key: string]: K } {
   if (!arr) return {};
   return keyByUtil(arr, function (item) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
