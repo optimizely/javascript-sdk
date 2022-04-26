@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { getLogger } from '../../../modules/logging';
+import { getLogger } from '../../modules/logging';
 
 import fns from '../../utils/fns';
 import * as eventTagUtils from '../../utils/event_tag_utils';

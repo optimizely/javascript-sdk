@@ -14,7 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import { sprintf } from '../../utils/fns';
-import { LogHandler } from '../../../modules/logging';
+import { LogHandler } from '../../modules/logging';
 
 import fns from '../../utils/fns';
 import { bucket } from '../bucketer';

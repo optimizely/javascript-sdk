@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { sprintf } from '../../utils/fns';
-import { getLogger } from '../../../modules/logging';
+import { getLogger } from '../../modules/logging';
 
 import { ERROR_MESSAGES } from '../../utils/enums';
 import { createOptimizelyConfig } from '../optimizely_config';

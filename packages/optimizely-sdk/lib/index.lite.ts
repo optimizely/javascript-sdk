@@ -20,7 +20,7 @@
     setErrorHandler,
     getErrorHandler,
     LogLevel
-  } from '../modules/logging';
+  } from './modules/logging';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import noOpEventDispatcher from './plugins/event_dispatcher/no_op';

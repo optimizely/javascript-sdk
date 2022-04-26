@@ -16,7 +16,7 @@
 import sinon from 'sinon';
 import { assert } from 'chai';
 import { sprintf } from '../../utils/fns';
-import { getLogger } from '../../../modules/logging';
+import { getLogger } from '../../modules/logging';
 
 import { createAudienceEvaluator } from './index';
 import * as conditionTreeEvaluator from '../condition_tree_evaluator';

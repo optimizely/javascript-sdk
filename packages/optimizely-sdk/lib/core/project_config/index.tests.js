@@ -17,7 +17,7 @@ import sinon from 'sinon';
 import { assert } from 'chai';
 import { forEach, cloneDeep } from 'lodash';
 import { sprintf } from '../../utils/fns';
-import { getLogger } from '../../../modules/logging';
+import { getLogger } from '../../modules/logging';
 
 import fns from '../../utils/fns';
 import projectConfig from './';

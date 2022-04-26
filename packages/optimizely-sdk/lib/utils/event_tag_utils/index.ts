@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { EventTags } from '@optimizely/js-sdk-event-processor';
-import { LoggerFacade } from '../../../modules/logging';
+import { LoggerFacade } from '../../modules/logging';
 
 import {
   LOG_LEVEL,

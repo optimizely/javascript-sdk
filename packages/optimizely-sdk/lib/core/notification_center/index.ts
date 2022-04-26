@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { objectValues } from '../../utils/fns';
-import { LogHandler, ErrorHandler } from '../../../modules/logging';
+import { LogHandler, ErrorHandler } from '../../modules/logging';
 import { NotificationListener, ListenerPayload } from '../../shared_types';
 
 import {

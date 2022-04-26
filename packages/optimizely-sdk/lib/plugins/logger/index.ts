@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ConsoleLogHandler, LogLevel } from '../../../modules/logging';
+import { ConsoleLogHandler, LogLevel } from '../../modules/logging';
 
 type ConsoleLogHandlerConfig = {
   logLevel?: LogLevel | string;

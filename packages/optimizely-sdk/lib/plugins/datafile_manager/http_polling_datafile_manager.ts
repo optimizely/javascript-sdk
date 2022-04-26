@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LoggerFacade } from '../../../modules/logging';
+import { LoggerFacade } from '../../modules/logging';
 import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager';
 import { DatafileOptions, DatafileManagerConfig, DatafileManager } from '../../shared_types';
 import { toDatafile, tryCreatingProjectConfig } from '../../core/project_config';

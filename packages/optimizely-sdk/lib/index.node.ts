@@ -20,7 +20,7 @@ import {
   setErrorHandler,
   getErrorHandler,
   LogLevel
-} from '../modules/logging';
+} from './modules/logging';
 import Optimizely from './optimizely';
 import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';

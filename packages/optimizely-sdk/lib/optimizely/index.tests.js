@@ -18,7 +18,7 @@ import sinon from 'sinon';
 import { sprintf } from '../utils/fns';
 import { NOTIFICATION_TYPES } from '../utils/enums';
 import eventProcessor from '../plugins/event_processor';
-import * as logging from '../../modules/logging';
+import * as logging from '../modules/logging';
 
 import Optimizely from './';
 import OptimizelyUserContext from '../optimizely_user_context';

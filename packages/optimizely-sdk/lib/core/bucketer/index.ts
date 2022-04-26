@@ -19,7 +19,7 @@
  */
 import { sprintf } from '../../utils/fns';
 import murmurhash from 'murmurhash';
-import { LogHandler } from '../../../modules/logging';
+import { LogHandler } from '../../modules/logging';
 import {
   DecisionResponse,
   BucketerParams,

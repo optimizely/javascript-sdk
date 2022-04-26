@@ -33,7 +33,6 @@ const typescriptPluginOptions = {
   include: [
     './lib/**/*.ts',
     './lib/**/*.js',
-    './modules/**/*.ts'
   ],
 };
 
@@ -76,15 +75,6 @@ const umdBundle = {
     resolve({ browser: true }),
     commonjs({
       namedExports: {
-        './modules/logging': [
-          'ConsoleLogHandler',
-          'getLogger',
-          'setLogLevel',
-          'LogLevel',
-          'setLogHandler',
-          'setErrorHandler',
-          'getErrorHandler',
-        ],
         '@optimizely/js-sdk-event-processor': ['LogTierV1EventProcessor', 'LocalStoragePendingEventsDispatcher'],
       },
     }),

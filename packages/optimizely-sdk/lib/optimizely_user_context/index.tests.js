@@ -16,7 +16,7 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 
-import * as logging from '../../modules/logging';
+import * as logging from '../modules/logging';
 import { sprintf } from '../utils/fns';
 import { NOTIFICATION_TYPES } from '../utils/enums';
 
