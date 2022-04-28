@@ -3,7 +3,7 @@ import {
   LogLevel,
   LogHandler,
   LoggerFacade,
-} from '../modules/logging/models'
+} from '../lib/modules/logging/models'
 
 import {
   setLogHandler,
@@ -12,10 +12,10 @@ import {
   ConsoleLogHandler,
   resetLogger,
   getLogLevel,
-} from '../modules/logging/logger'
+} from '../lib/modules/logging/logger'
 
-import { resetErrorHandler } from '../modules/logging/errorHandler'
-import { ErrorHandler, setErrorHandler } from '../modules/logging/errorHandler'
+import { resetErrorHandler } from '../lib/modules/logging/errorHandler'
+import { ErrorHandler, setErrorHandler } from '../lib/modules/logging/errorHandler'
 
 describe('logger', () => {
   afterEach(() => {
