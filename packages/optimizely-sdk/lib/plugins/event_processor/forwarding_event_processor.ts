@@ -21,16 +21,16 @@ import {
 import { NotificationSender } from '../../core/notification_center';
 
 import { EventDispatcher } from '../../shared_types';
-import { NOTIFICATION_TYPES } from '../../utils/enums';
+import { NOTIFICATION_TYPES } from '@utils/enums';
 import { formatEvents } from '../../core/event_builder/build_event_v1';
 
 class ForwardingEventProcessor implements EventProcessor {
   private dispatcher: EventDispatcher;
   private NotificationSender?: NotificationSender;
 
-  constructor(dispatcher: EventDispatcher, notificationCenter?: NotificationSender) {
+  constructor(dispatcher: EventDispatcher, notificationSender?: NotificationSender) {
     this.dispatcher = dispatcher;
-    this.NotificationSender = notificationCenter;
+    this.NotificationSender = notificationSender;
   }
 
   process(event: ProcessableEvent): void {
@@ -51,6 +51,6 @@ class ForwardingEventProcessor implements EventProcessor {
   }
 }
 
-export function createForwardingEventProcessor(dispatcher: EventDispatcher, notificationCenter?: NotificationSender): EventProcessor {
-  return new ForwardingEventProcessor(dispatcher, notificationCenter);
+export function createForwardingEventProcessor(dispatcher: EventDispatcher, notificationSender?: NotificationSender): EventProcessor {
+  return new ForwardingEventProcessor(dispatcher, notificationSender);
 }

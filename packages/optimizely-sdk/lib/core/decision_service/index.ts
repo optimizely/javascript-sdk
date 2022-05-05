@@ -14,9 +14,9 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import { LogHandler } from '@optimizely/js-sdk-logging';
-import { sprintf } from '../../utils/fns';
+import { sprintf } from '@utils/fns';
 
-import fns from '../../utils/fns';
+import fns from '@utils/fns';
 import { bucket } from '../bucketer';
 import {
   AUDIENCE_EVALUATION_TYPES,
@@ -25,7 +25,7 @@ import {
   ERROR_MESSAGES,
   LOG_LEVEL,
   LOG_MESSAGES,
-} from '../../utils/enums';
+} from '@utils/enums';
 import {
   getAudiencesById,
   getExperimentAudienceConditions,
@@ -40,7 +40,7 @@ import {
   ProjectConfig,
 } from '../project_config';
 import { AudienceEvaluator, createAudienceEvaluator } from '../audience_evaluator';
-import * as stringValidator from '../../utils/string_value_validator';
+import * as stringValidator from '@utils/string_value_validator';
 import {
   BucketerParams,
   DecisionResponse,
