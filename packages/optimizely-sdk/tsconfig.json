@@ -5,6 +5,9 @@
     "paths": {
       "*": [
         "./typings/*"
+      ],
+      "@utils/*": [ 
+        "./lib/utils/*" 
       ]
     },
     "allowJs": true,

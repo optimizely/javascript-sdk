@@ -22,7 +22,7 @@ import {
   OptimizelyForcedDecision,
   UserAttributes,
 } from '../../lib/shared_types';
-import { CONTROL_ATTRIBUTES } from '../utils/enums';
+import { CONTROL_ATTRIBUTES } from '@utils/enums';
 
 export default class OptimizelyUserContext {
   private optimizely: Optimizely;

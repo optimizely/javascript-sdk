@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf } from '../../utils/fns';
 import { getLogger } from '../../modules/logging';
+import { sprintf } from '@utils/fns';
 
-import { ERROR_MESSAGES } from '../../utils/enums';
+import { ERROR_MESSAGES } from '@utils/enums';
 import { createOptimizelyConfig } from '../optimizely_config';
 import {
   OnReadyResult,

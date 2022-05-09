@@ -10,7 +10,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit && eslint 'lib/**/*.js' 'lib/**/*.ts'",
-    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.ts' 'lib/**/*.tests.js' && jest",
+    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r tsconfig-paths/register -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.ts' 'lib/**/*.tests.js' && jest",
     "posttest": "npm run lint",
     "test-ci": "npm run test-xbrowser && npm run test-umdbrowser",
     "test-xbrowser": "karma start karma.bs.conf.js --single-run",
@@ -52,13 +52,16 @@
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
     "@types/chai": "^4.2.11",
+    "@types/jest": "^23.3.12",
     "@types/mocha": "^5.2.7",
+    "@types/uuid": "^3.4.4",
     "@typescript-eslint/eslint-plugin": "^3.2.0",
     "@typescript-eslint/parser": "^3.2.0",
     "bluebird": "^3.4.6",
     "chai": "^4.2.0",
     "coveralls": "^3.0.2",
     "eslint": "^6.7.2",
+    "jest": "^23.6.0",
     "json-loader": "^0.5.4",
     "karma": "^4.4.1",
     "karma-browserstack-launcher": "^1.5.1",
@@ -76,14 +79,12 @@
     "rollup-plugin-terser": "^5.3.0",
     "rollup-plugin-typescript2": "^0.27.1",
     "sinon": "^2.3.1",
+    "ts-jest": "^23.10.5",
     "ts-loader": "^7.0.5",
     "ts-node": "^8.10.2",
+    "tsconfig-paths": "^4.0.0",
     "typescript": "^4.0.3",
-    "webpack": "^4.42.1",
-    "@types/jest": "^23.3.12",
-    "@types/uuid": "^3.4.4",
-    "jest": "^23.6.0",
-    "ts-jest": "^23.10.5"
+    "webpack": "^4.42.1"
   },
   "publishConfig": {
     "access": "public"
