@@ -52,5 +52,6 @@ jobs:
         EVENT_MESSAGE: ${{ github.event.message }}
         HOME: 'home/runner'
       run: |
-        echo "$GITHUB_CONTEXT"
-        home/runner/travisci-tools/trigger-script-with-status-update.sh
+        CLIENT=node home/runner/travisci-tools/trigger-script-with-status-update.sh
+        # Run only browser builds when it's FSC not for FPS.
+        CLIENT=browser (FULLSTACK_TEST_REPO=ProdTesting || home/runner/travisci-tools/trigger-script-with-status-update.sh)
