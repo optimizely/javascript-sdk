@@ -89,7 +89,7 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }} 
         path-to-lcov: ./packages/optimizely-sdk/coverage/lcov.info
-        flag-name: run-${{ matrix.node }}
+        flag-name: run-total
         # This is a parallel build so need this
         parallel: true
         base-path: ./packages/optimizely-sdk
