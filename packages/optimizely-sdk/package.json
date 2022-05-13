@@ -6,7 +6,7 @@
   "main": "dist/optimizely.node.min.js",
   "browser": "dist/optimizely.browser.min.js",
   "react-native": "dist/optimizely.react_native.min.js",
-  "typings": "dist/index.node.d.ts",
+  "typings": "dist/index.browser.d.ts",
   "scripts": {
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit && eslint 'lib/**/*.js' 'lib/**/*.ts'",
