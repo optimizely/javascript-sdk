@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+let localCallback: any
 
-import { LogTierV1EventProcessor, LocalStoragePendingEventsDispatcher } from '../../../lib/modules/event_processor';
-
-export function createEventProcessor(
-  ...args: ConstructorParameters<typeof LogTierV1EventProcessor>
-): LogTierV1EventProcessor {
-  return new LogTierV1EventProcessor(...args);
+export function addEventListener(callback: any) {
+  localCallback = callback  
 }
 
-export default { createEventProcessor, LocalStoragePendingEventsDispatcher };
+export function triggerInternetState(isInternetReachable: boolean) {
+  localCallback({ isInternetReachable })
+}

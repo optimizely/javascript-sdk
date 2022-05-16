@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-import { LogTierV1EventProcessor, LocalStoragePendingEventsDispatcher } from '../../../lib/modules/event_processor';
-
-export function createEventProcessor(
-  ...args: ConstructorParameters<typeof LogTierV1EventProcessor>
-): LogTierV1EventProcessor {
-  return new LogTierV1EventProcessor(...args);
-}
-
-export default { createEventProcessor, LocalStoragePendingEventsDispatcher };
+export * from './events'
+export * from './eventProcessor'
+export * from './eventDispatcher'
+export * from './managed'
+export * from './pendingEventsDispatcher'
+export * from './v1/buildEventV1'
+export * from './v1/v1EventProcessor.react_native'

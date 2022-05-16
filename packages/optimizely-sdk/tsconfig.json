@@ -27,6 +27,8 @@
   ],
   "include": [
     "./lib/**/*.ts",
-    "./lib/**/*.js"
+    "./lib/**/*.js",
+    "./lib/modules/**/*.ts",
+    "./lib/modules/**/**/*.ts"
   ]
 }

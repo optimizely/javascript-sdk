@@ -1,27 +1,6 @@
-/**
- * Copyright 2021 Optimizely
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-import {
-  EventTags,
-  ConversionEvent,
-  ImpressionEvent,
-} from '../../modules/event_processor';
-
-import { Event } from '../../shared_types';
-
-type ProcessableEvent = ConversionEvent | ImpressionEvent
+import { EventTags, ConversionEvent, ImpressionEvent, VisitorAttribute } from '../events'
+import { ProcessableEvent } from '../eventProcessor'
+import { EventV1Request } from '../eventDispatcher'
 
 const ACTIVATE_EVENT_KEY = 'campaign_activated'
 const CUSTOM_ATTRIBUTE_FEATURE_TYPE = 'custom'
@@ -39,50 +18,58 @@ export type EventV1 = {
 }
 
 type Visitor = {
-  snapshots: Snapshot[]
+  snapshots: Visitor.Snapshot[]
   visitor_id: string
-  attributes: Attribute[]
+  attributes: Visitor.Attribute[]
 }
 
-type AttributeType = 'custom'
+namespace Visitor {
+  type AttributeType = 'custom'
 
-export type Attribute = {
-  // attribute id
-  entity_id: string
-  // attribute key
-  key: string
-  type: AttributeType
-  value: string | number | boolean
+  export type Attribute = {
+    // attribute id
+    entity_id: string
+    // attribute key
+    key: string
+    type: AttributeType
+    value: string | number | boolean
+  }
+
+  export type Snapshot = {
+    decisions?: Decision[]
+    events: SnapshotEvent[]
+  }
+
+  type Decision = {
+    campaign_id: string | null
+    experiment_id: string | null
+    variation_id: string | null
+    metadata: Metadata
+  }
+
+  type Metadata = {
+    flag_key: string;
+    rule_key: string;
+    rule_type: string;
+    variation_key: string;
+    enabled: boolean;
+  }
+
+  export type SnapshotEvent = {
+    entity_id: string | null
+    timestamp: number
+    uuid: string
+    key: string
+    revenue?: number
+    value?: number
+    tags?: EventTags
+  }
 }
 
-export type Snapshot = {
-  decisions?: Decision[]
-  events: SnapshotEvent[]
-}
 
-type Decision = {
-  campaign_id: string | null
-  experiment_id: string | null
-  variation_id: string | null
-  metadata: Metadata
-}
 
-type Metadata = {
-  flag_key: string;
-  rule_key: string;
-  rule_type: string;
-  variation_key: string;
-  enabled: boolean;
-}
-
-export type SnapshotEvent = {
-  entity_id: string | null
-  timestamp: number
-  uuid: string
-  key: string
-  revenue?: number
-  value?: number
-  tags?: EventTags
+type Attributes = {
+  [key: string]: string | number | boolean
 }
 
 /**
@@ -98,7 +85,7 @@ export function makeBatchedEventV1(events: ProcessableEvent[]): EventV1 {
 
   events.forEach(event => {
     if (event.type === 'conversion' || event.type === 'impression') {
-      const visitor = makeVisitor(event)
+      let visitor = makeVisitor(event)
 
       if (event.type === 'impression') {
         visitor.snapshots.push(makeDecisionSnapshot(event))
@@ -124,15 +111,15 @@ export function makeBatchedEventV1(events: ProcessableEvent[]): EventV1 {
   }
 }
 
-function makeConversionSnapshot(conversion: ConversionEvent): Snapshot {
-  const tags: EventTags = {
+function makeConversionSnapshot(conversion: ConversionEvent): Visitor.Snapshot {
+  let tags: EventTags = {
     ...conversion.tags,
   }
 
   delete tags['revenue']
   delete tags['value']
 
-  const event: SnapshotEvent = {
+  const event: Visitor.SnapshotEvent = {
     entity_id: conversion.event.id,
     key: conversion.event.key,
     timestamp: conversion.timestamp,
@@ -156,12 +143,12 @@ function makeConversionSnapshot(conversion: ConversionEvent): Snapshot {
   }
 }
 
-function makeDecisionSnapshot(event: ImpressionEvent): Snapshot {
+function makeDecisionSnapshot(event: ImpressionEvent): Visitor.Snapshot {
   const { layer, experiment, variation, ruleKey, flagKey, ruleType, enabled } = event
-  const layerId = layer ? layer.id : null
-  const experimentId = experiment?.id ?? ''
-  const variationId = variation?.id ?? ''
-  const variationKey = variation ? variation.key : ''
+  let layerId = layer ? layer.id : null
+  let experimentId = experiment?.id ?? ''
+  let variationId = variation?.id ?? ''
+  let variationKey = variation ? variation.key : ''
 
   return {
     decisions: [
@@ -200,7 +187,7 @@ function makeVisitor(data: ImpressionEvent | ConversionEvent): Visitor {
     visitor.attributes.push({
       entity_id: attr.entityId,
       key: attr.key,
-      type: 'custom' as const, // tell the compiler this is always string "custom"
+      type: 'custom' as 'custom', // tell the compiler this is always string "custom"
       value: attr.value,
     })
   })
@@ -222,6 +209,7 @@ function makeVisitor(data: ImpressionEvent | ConversionEvent): Visitor {
  * @export
  * @interface EventBuilderV1
  */
+
 export function buildImpressionEventV1(data: ImpressionEvent): EventV1 {
   const visitor = makeVisitor(data)
   visitor.snapshots.push(makeDecisionSnapshot(data))
@@ -258,7 +246,7 @@ export function buildConversionEventV1(data: ConversionEvent): EventV1 {
   }
 }
 
-export function formatEvents(events: ProcessableEvent[]): Event {
+export function formatEvents(events: ProcessableEvent[]): EventV1Request {
   return {
     url: 'https://logx.optimizely.com/v1/events',
     httpVerb: 'POST',

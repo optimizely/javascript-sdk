@@ -14,4 +14,8 @@ module.exports = {
     "json",
     "node"
   ],
+  "setupFiles": ["jest-localstorage-mock"],
+  "moduleNameMapper": {
+    "@utils/(.*)": "<rootDir>/lib/utils/$1"
+}
 }
