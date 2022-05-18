@@ -29,6 +29,7 @@ export default class OptimizelyUserContext {
   private userId: string;
   private attributes: UserAttributes;
   private forcedDecisionsMap: { [key: string]: { [key: string]: OptimizelyForcedDecision } };
+  private qualifiedSegments: string[] = [];
 
   constructor({
     optimizely,
@@ -201,6 +202,10 @@ export default class OptimizelyUserContext {
     }
 
     return null;
+  }
+
+  public isQualifiedFor(segment: string): boolean {
+    return this.qualifiedSegments.includes(segment);
   }
 
   private cloneUserContext(): OptimizelyUserContext {
