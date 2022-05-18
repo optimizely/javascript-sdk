@@ -151,7 +151,7 @@ export class DefaultEventQueue<K> implements EventQueue<K> {
     }
   }
 
-  flush() {
+  flush() : void {
     this.sink(this.buffer)
     this.buffer = []
     this.timer.stop()

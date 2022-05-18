@@ -21,7 +21,7 @@
  * tracked requests.
  */
 class RequestTracker {
-  private reqsInFlightCount: number = 0
+  private reqsInFlightCount = 0
   private reqsCompleteResolvers: Array<() => void> = []
 
   /**

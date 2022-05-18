@@ -23,14 +23,11 @@ export default class ReactNativeAsyncStorageCache implements PersistentKeyValueC
       if (!val) {
         return null;
       }
-      try {
-        return JSON.parse(val);
-      } catch (ex) {
-        throw ex;
-      }
+      return JSON.parse(val);
     });
   }
 
+  /* eslint-disable */
   set(key: string, val: any): Promise<void> {
     try {
       return AsyncStorage.setItem(key, JSON.stringify(val));
@@ -38,6 +35,7 @@ export default class ReactNativeAsyncStorageCache implements PersistentKeyValueC
       return Promise.reject(ex);
     }
   }
+  /* eslint-enable */
 
   contains(key: string): Promise<boolean> {
     return AsyncStorage.getItem(key).then((val: string | null) => val !== null);

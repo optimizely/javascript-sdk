@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {
-  uuid,
+  uuid as id,
   objectEntries,
 } from '@utils/fns'
 import {
@@ -62,13 +62,15 @@ export class LogTierV1EventProcessor implements EventProcessor {
   private notificationSender?: NotificationSender
   private requestTracker: RequestTracker
 
+  /* eslint-disable */
   private unsubscribeNetInfo: Function | null = null
-  private isInternetReachable: boolean = true
+  /* eslint-enable */
+  private isInternetReachable = true
   private pendingEventsPromise: Promise<void> | null = null
   private synchronizer: Synchronizer = new Synchronizer()
 
   // If a pending event fails to dispatch, this indicates skipping further events to preserve sequence in the next retry.
-  private shouldSkipDispatchToPreserveSequence: boolean = false
+  private shouldSkipDispatchToPreserveSequence = false
 
   /**
    * This Stores Formatted events before dispatching. The events are removed after they are successfully dispatched.
@@ -137,7 +139,7 @@ export class LogTierV1EventProcessor implements EventProcessor {
 
     logger.debug('draining queue with %s events', buffer.length)
 
-    const eventCacheKey = uuid()
+    const eventCacheKey = id()
     const formattedEvent = formatEvents(buffer)
 
     // Store formatted event before dispatching to be retried later in case of failure.

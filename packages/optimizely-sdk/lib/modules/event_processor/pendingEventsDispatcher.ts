@@ -60,7 +60,10 @@ export class PendingEventsDispatcher implements EventDispatcher {
     pendingEvents.forEach(item => {
       try {
         this.send(item, () => {})
-      } catch (e) {}
+      } catch (e)
+        {
+          logger.debug(e)
+        }
     })
   }
 

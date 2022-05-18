@@ -17,7 +17,7 @@
 import { Managed } from './managed'
 import { ConversionEvent, ImpressionEvent } from './events'
 import { EventV1Request } from './eventDispatcher'
-import { EventQueue, DefaultEventQueue, SingleEventQueue } from './eventQueue'
+import { EventQueue, DefaultEventQueue, SingleEventQueue, EventQueueSink } from './eventQueue'
 import { getLogger } from '../logging'
 import { NOTIFICATION_TYPES } from '@utils/enums'
 import { NotificationSender } from '../../core/notification_center'
@@ -57,7 +57,7 @@ export function validateAndGetBatchSize(batchSize: number): number {
   return batchSize
 }
 
-export function getQueue(batchSize: number, flushInterval: number, sink: any, batchComparator: any): EventQueue<ProcessableEvent> {
+export function getQueue(batchSize: number, flushInterval: number, sink: EventQueueSink<ProcessableEvent>, batchComparator: (eventA: ProcessableEvent, eventB: ProcessableEvent) => boolean ): EventQueue<ProcessableEvent> {
   let queue: EventQueue<ProcessableEvent>
   if (batchSize > 1) {
     queue = new DefaultEventQueue<ProcessableEvent>({

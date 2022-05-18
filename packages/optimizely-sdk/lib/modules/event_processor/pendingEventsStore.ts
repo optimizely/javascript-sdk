@@ -95,7 +95,7 @@ export class LocalStorageStore<K extends StoreEntry> implements PendingEventsSto
 
     entries.sort((a, b) => a.value.timestamp - b.value.timestamp)
 
-    for (var i = 0; i < toRemove; i++) {
+    for (let i = 0; i < toRemove; i++) {
       delete map[entries[i].key]
     }
 

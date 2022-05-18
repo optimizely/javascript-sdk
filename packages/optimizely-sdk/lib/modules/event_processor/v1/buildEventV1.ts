@@ -23,6 +23,7 @@ type Visitor = {
   attributes: Visitor.Attribute[]
 }
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 namespace Visitor {
   type AttributeType = 'custom'
 
@@ -85,7 +86,7 @@ export function makeBatchedEventV1(events: ProcessableEvent[]): EventV1 {
 
   events.forEach(event => {
     if (event.type === 'conversion' || event.type === 'impression') {
-      let visitor = makeVisitor(event)
+      const visitor = makeVisitor(event)
 
       if (event.type === 'impression') {
         visitor.snapshots.push(makeDecisionSnapshot(event))
@@ -112,7 +113,7 @@ export function makeBatchedEventV1(events: ProcessableEvent[]): EventV1 {
 }
 
 function makeConversionSnapshot(conversion: ConversionEvent): Visitor.Snapshot {
-  let tags: EventTags = {
+  const tags: EventTags = {
     ...conversion.tags,
   }
 
@@ -145,10 +146,10 @@ function makeConversionSnapshot(conversion: ConversionEvent): Visitor.Snapshot {
 
 function makeDecisionSnapshot(event: ImpressionEvent): Visitor.Snapshot {
   const { layer, experiment, variation, ruleKey, flagKey, ruleType, enabled } = event
-  let layerId = layer ? layer.id : null
-  let experimentId = experiment?.id ?? ''
-  let variationId = variation?.id ?? ''
-  let variationKey = variation ? variation.key : ''
+  const layerId = layer ? layer.id : null
+  const experimentId = experiment?.id ?? ''
+  const variationId = variation?.id ?? ''
+  const variationKey = variation ? variation.key : ''
 
   return {
     decisions: [
@@ -183,11 +184,12 @@ function makeVisitor(data: ImpressionEvent | ConversionEvent): Visitor {
     attributes: [],
   }
 
+  const type = 'custom'
   data.user.attributes.forEach(attr => {
     visitor.attributes.push({
       entity_id: attr.entityId,
       key: attr.key,
-      type: 'custom' as 'custom', // tell the compiler this is always string "custom"
+      type: type as 'custom', // tell the compiler this is always string "custom"
       value: attr.value,
     })
   })
