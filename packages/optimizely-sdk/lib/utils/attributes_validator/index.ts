@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf } from '@utils/fns';
+import { sprintf } from '../../utils/fns';
 import { ObjectWithUnknownProperties } from '../../shared_types';
 
-import fns from '@utils/fns';
+import fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../enums';
 
 const MODULE_NAME = 'ATTRIBUTES_VALIDATOR';

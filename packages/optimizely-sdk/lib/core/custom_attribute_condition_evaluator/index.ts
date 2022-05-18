@@ -16,9 +16,9 @@
 import { getLogger } from '@optimizely/js-sdk-logging';
 import { UserAttributes, Condition } from '../../shared_types';
 
-import fns from '@utils/fns';
-import { LOG_MESSAGES } from '@utils/enums';
-import { compareVersion } from '@utils/semantic_version';
+import fns from '../../utils/fns';
+import { LOG_MESSAGES } from '../../utils/enums';
+import { compareVersion } from '../../utils/semantic_version';
 
 const MODULE_NAME = 'CUSTOM_ATTRIBUTE_CONDITION_EVALUATOR';
 

@@ -10,7 +10,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit && eslint 'lib/**/*.js' 'lib/**/*.ts'",
-    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r tsconfig-paths/register -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.ts' 'lib/**/*.tests.js' && jest",
+    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.ts' 'lib/**/*.tests.js' && jest",
     "posttest": "npm run lint",
     "test-ci": "npm run test-xbrowser && npm run test-umdbrowser",
     "test-xbrowser": "karma start karma.bs.conf.js --single-run",
@@ -82,7 +82,6 @@
     "ts-jest": "^23.10.5",
     "ts-loader": "^7.0.5",
     "ts-node": "^8.10.2",
-    "tsconfig-paths": "^4.0.0",
     "typescript": "^4.0.3",
     "webpack": "^4.42.1"
   },

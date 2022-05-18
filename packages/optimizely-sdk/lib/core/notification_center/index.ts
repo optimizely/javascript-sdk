@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
-import { objectValues } from '@utils/fns';
+import { objectValues } from '../../utils/fns';
 import { NotificationListener, ListenerPayload } from '../../shared_types';
 
 import {
   LOG_LEVEL,
   LOG_MESSAGES,
   NOTIFICATION_TYPES,
-} from '@utils/enums';
+} from '../../utils/enums';
 
 const MODULE_NAME = 'NOTIFICATION_CENTER';
 

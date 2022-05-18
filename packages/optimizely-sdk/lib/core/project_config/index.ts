@@ -20,15 +20,15 @@ import {
   sprintf,
   assign,
   keyBy
-} from '@utils/fns';
+} from '../../utils/fns';
 
 import {
   ERROR_MESSAGES,
   LOG_LEVEL,
   LOG_MESSAGES,
   FEATURE_VARIABLE_TYPES,
-} from '@utils/enums';
-import configValidator from '@utils/config_validator';
+} from '../../utils/enums';
+import configValidator from '../../utils/config_validator';
 
 import { LogHandler } from '@optimizely/js-sdk-logging';
 import {
