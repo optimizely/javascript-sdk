@@ -1,5 +1,5 @@
 /**
- * Copyright 2020-2021 Optimizely
+ * Copyright 2020-2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ const typescriptPluginOptions = {
   ],
   include: [
     './lib/**/*.ts',
-    './lib/**/*.js'
+    './lib/**/*.js',
   ],
 };
 
@@ -115,7 +115,7 @@ const jsonSchemaBundle = {
     commonjs(),
     typescript(typescriptPluginOptions),
   ],
-  external: ['json-schema', '@optimizely/js-sdk-utils'],
+  external: ['json-schema', 'uuid'],
   input: 'lib/utils/json_schema_validator/index.ts',
   output: {
     exports: 'named',

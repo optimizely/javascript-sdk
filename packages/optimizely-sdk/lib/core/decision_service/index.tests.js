@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2017-2021 Optimizely, Inc. and contributors                    *
+ * Copyright 2017-2022 Optimizely, Inc. and contributors                    *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -16,7 +16,7 @@
 import sinon from 'sinon';
 import { assert } from 'chai';
 import cloneDeep from 'lodash/cloneDeep';
-import { sprintf } from '@optimizely/js-sdk-utils';
+import { sprintf } from '../../utils/fns';
 
 import { createDecisionService } from './';
 import * as bucketer from '../bucketer';

@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2021, Optimizely
+ * Copyright 2016-2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ import sinon from 'sinon';
 import { assert } from 'chai';
 import { forEach, cloneDeep } from 'lodash';
 import { getLogger } from '@optimizely/js-sdk-logging';
-import { sprintf } from '@optimizely/js-sdk-utils';
+import { sprintf } from '../../utils/fns';
 
 import fns from '../../utils/fns';
 import projectConfig from './';

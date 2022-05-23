@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { sprintf } from '@optimizely/js-sdk-utils';
 import { LogHandler } from '@optimizely/js-sdk-logging';
+import { sprintf } from '../../utils/fns';
 
 import fns from '../../utils/fns';
 import { bucket } from '../bucketer';

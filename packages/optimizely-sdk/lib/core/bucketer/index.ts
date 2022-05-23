@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2019-2021, Optimizely
+ * Copyright 2016, 2019-2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 /**
  * Bucketer API for determining the variation id from the specified parameters
  */
-import { sprintf } from '@optimizely/js-sdk-utils';
+import { sprintf } from '../../utils/fns';
 import murmurhash from 'murmurhash';
 import { LogHandler } from '@optimizely/js-sdk-logging';
 import {

@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2016-2021, Optimizely, Inc. and contributors                   *
+ * Copyright 2016-2022, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -15,7 +15,8 @@
  ***************************************************************************/
 import { assert, expect } from 'chai';
 import sinon from 'sinon';
-import { sprintf, NOTIFICATION_TYPES } from '@optimizely/js-sdk-utils';
+import { sprintf } from '../utils/fns';
+import { NOTIFICATION_TYPES } from '../utils/enums';
 import eventProcessor from '../plugins/event_processor';
 import * as logging from '@optimizely/js-sdk-logging';
 

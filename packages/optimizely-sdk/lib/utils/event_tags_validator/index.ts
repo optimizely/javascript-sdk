@@ -1,5 +1,5 @@
 /**
- * Copyright 2017, 2020 Optimizely
+ * Copyright 2017, 2020, 2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 /**
  * Provides utility method for validating that event tags user has provided are valid
  */
-import { sprintf } from '@optimizely/js-sdk-utils';
+import { sprintf } from '../../utils/fns';
 
 import { ERROR_MESSAGES } from '../enums';
 

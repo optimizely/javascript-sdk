@@ -5,13 +5,14 @@
     "paths": {
       "*": [
         "./typings/*"
-      ]
+      ],
     },
     "allowJs": true,
     "declaration": true,
     "module": "esnext",
     "outDir": "./dist",
-    "sourceMap": true
+    "sourceMap": true,
+    "skipLibCheck": true,
   },
   "exclude": [
     "./dist",
