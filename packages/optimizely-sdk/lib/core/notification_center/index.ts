@@ -21,7 +21,7 @@ import {
   LOG_LEVEL,
   LOG_MESSAGES,
   NOTIFICATION_TYPES,
-} from '@utils/enums';
+} from '../../utils/enums';
 
 const MODULE_NAME = 'NOTIFICATION_CENTER';
 

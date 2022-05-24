@@ -31,7 +31,7 @@ import {
   ERROR_MESSAGES,
   LOG_LEVEL,
   LOG_MESSAGES,
-} from '@utils/enums';
+} from '../../utils/enums';
 
 const HASH_SEED = 1;
 const MAX_HASH_VALUE = Math.pow(2, 32);
