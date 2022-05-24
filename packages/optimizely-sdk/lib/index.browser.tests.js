@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as logging from './modules/logging/logger';
+import * as logging from './modules/logging/';
 
 import { assert } from 'chai';
 import sinon from 'sinon';
@@ -61,7 +61,6 @@ describe('javascript-sdk', function() {
         });
         sinon.spy(console, 'error');
         sinon.stub(configValidator, 'validate');
-        sinon.stub(logging, 'setLogLevel');
 
         global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
 
@@ -73,7 +72,6 @@ describe('javascript-sdk', function() {
         optimizelyFactory.__internalResetRetryState();
         console.error.restore();
         configValidator.validate.restore();
-        logging.setLogLevel.restore();
         delete global.XMLHttpRequest
       });
 

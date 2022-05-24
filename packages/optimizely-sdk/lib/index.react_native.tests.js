@@ -15,7 +15,7 @@
  */
 import { assert } from 'chai';
 import sinon from 'sinon';
-import * as logging from './modules/logging/logger';
+import * as logging from './modules/logging/';
 import * as eventProcessor from './plugins/event_processor';
 
 import Optimizely from './optimizely';
@@ -59,13 +59,11 @@ describe('javascript-sdk/react-native', function() {
         });
         sinon.spy(console, 'error');
         sinon.stub(configValidator, 'validate');
-        sinon.stub(logging, 'setLogLevel');
       });
 
       afterEach(function() {
         console.error.restore();
         configValidator.validate.restore();
-        logging.setLogHandler.restore();
       });
 
       it('should not throw if the provided config is not valid', function() {
