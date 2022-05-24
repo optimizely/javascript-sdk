@@ -59,11 +59,13 @@ describe('javascript-sdk/react-native', function() {
         });
         sinon.spy(console, 'error');
         sinon.stub(configValidator, 'validate');
+        sinon.stub(logging, 'setLogLevel');
       });
 
       afterEach(function() {
         console.error.restore();
         configValidator.validate.restore();
+        logging.setLogHandler.restore();
       });
 
       it('should not throw if the provided config is not valid', function() {

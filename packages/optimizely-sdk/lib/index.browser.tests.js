@@ -61,6 +61,7 @@ describe('javascript-sdk', function() {
         });
         sinon.spy(console, 'error');
         sinon.stub(configValidator, 'validate');
+        sinon.stub(logging, 'setLogLevel');
 
         global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
 
@@ -72,6 +73,7 @@ describe('javascript-sdk', function() {
         optimizelyFactory.__internalResetRetryState();
         console.error.restore();
         configValidator.validate.restore();
+        logging.setLogLevel.restore();
         delete global.XMLHttpRequest
       });
 
