@@ -111,12 +111,12 @@ export class ConsoleLogHandler implements LogHandler {
    * @param {string} message
    * @memberof ConsoleLogger
    */
-  log(level: LogLevel, message: string) {
+  log(level: LogLevel, message: string) : void {
     if (!this.shouldLog(level) || !this.logToConsole) {
       return
     }
 
-    let logMessage: string = `${this.prefix} - ${this.getLogLevelName(
+    const logMessage = `${this.prefix} - ${this.getLogLevelName(
       level,
     )} ${this.getTime()} ${message}`
 
@@ -127,7 +127,7 @@ export class ConsoleLogHandler implements LogHandler {
    * @param {LogLevel} level
    * @memberof ConsoleLogger
    */
-  setLogLevel(level: LogLevel | string) {
+  setLogLevel(level: LogLevel | string) : void {
     level = coerceLogLevel(level)
     if (!isValidEnum(LogLevel, level) || level === undefined) {
       this.logLevel = LogLevel.ERROR
@@ -184,19 +184,19 @@ export class ConsoleLogHandler implements LogHandler {
   private consoleLog(logLevel: LogLevel, logArguments: [string, ...string[]]) {
     switch (logLevel) {
       case LogLevel.DEBUG:
-        console.log.apply(console, logArguments)
+        console.log(...logArguments)
         break
       case LogLevel.INFO:
-        console.info.apply(console, logArguments)
+        console.info(...logArguments)
         break
       case LogLevel.WARNING:
-        console.warn.apply(console, logArguments)
+        console.warn(...logArguments)
         break
       case LogLevel.ERROR:
-        console.error.apply(console, logArguments)
+        console.error(...logArguments)
         break
       default:
-        console.log.apply(console, logArguments)
+        console.log(...logArguments)
     }
   }
 }
@@ -205,7 +205,7 @@ let globalLogLevel: LogLevel = LogLevel.NOTSET
 let globalLogHandler: LogHandler | null = null
 
 class OptimizelyLogger implements LoggerFacade {
-  private messagePrefix: string = ''
+  private messagePrefix = ''
 
   constructor(opts: { messagePrefix?: string } = {}) {
     if (opts.messagePrefix) {
@@ -302,11 +302,11 @@ export function getLogger(name?: string): LoggerFacade {
   return globalLogManager.getLogger(name)
 }
 
-export function setLogHandler(logger: LogHandler | null) {
+export function setLogHandler(logger: LogHandler | null) : void {
   globalLogHandler = logger
 }
 
-export function setLogLevel(level: LogLevel | string) {
+export function setLogLevel(level: LogLevel | string) : void {
   level = coerceLogLevel(level)
   if (!isValidEnum(LogLevel, level) || level === undefined) {
     globalLogLevel = LogLevel.ERROR
@@ -322,7 +322,7 @@ export function getLogLevel(): LogLevel {
 /**
  * Resets all global logger state to it's original
  */
-export function resetLogger() {
+export function resetLogger() : void {
   globalLogManager = new DefaultLogManager()
   globalLogLevel = LogLevel.NOTSET
 }
