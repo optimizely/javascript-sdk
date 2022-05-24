@@ -20,7 +20,7 @@ import {
   sprintf,
   assign,
   keyBy
-} from '@utils/fns';
+} from '../../utils/fns';
 
 import {
   ERROR_MESSAGES,

@@ -6,11 +6,11 @@
   "main": "dist/optimizely.node.min.js",
   "browser": "dist/optimizely.browser.min.js",
   "react-native": "dist/optimizely.react_native.min.js",
-  "typings": "dist/index.node.d.ts",
+  "typings": "dist/index.browser.d.ts",
   "scripts": {
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit && eslint 'lib/**/*.js' 'lib/**/*.ts'",
-    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r tsconfig-paths/register -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.ts' 'lib/**/*.tests.js' && jest",
+    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.ts' 'lib/**/*.tests.js' && jest",
     "posttest": "npm run lint",
     "test-ci": "npm run test-xbrowser && npm run test-umdbrowser",
     "test-xbrowser": "karma start karma.bs.conf.js --single-run",
@@ -43,7 +43,6 @@
     "@optimizely/js-sdk-datafile-manager": "^0.9.1",
     "@optimizely/js-sdk-event-processor": "^0.9.2",
     "@optimizely/js-sdk-logging": "^0.3.1",
-    "@optimizely/js-sdk-utils": "^0.4.0",
     "json-schema": "^0.4.0",
     "murmurhash": "0.0.2",
     "uuid": "^3.3.2"

@@ -26,18 +26,18 @@ import { formatEvents } from '../../core/event_builder/build_event_v1';
 
 class ForwardingEventProcessor implements EventProcessor {
   private dispatcher: EventDispatcher;
-  private NotificationSender?: NotificationSender;
+  private notificationSender?: NotificationSender;
 
   constructor(dispatcher: EventDispatcher, notificationSender?: NotificationSender) {
     this.dispatcher = dispatcher;
-    this.NotificationSender = notificationSender;
+    this.notificationSender = notificationSender;
   }
 
   process(event: ProcessableEvent): void {
     const formattedEvent = formatEvents([event]);
     this.dispatcher.dispatchEvent(formattedEvent, () => {});
-    if (this.NotificationSender) {
-      this.NotificationSender.sendNotifications(
+    if (this.notificationSender) {
+      this.notificationSender.sendNotifications(
         NOTIFICATION_TYPES.LOG_EVENT,
         formattedEvent,
       )
