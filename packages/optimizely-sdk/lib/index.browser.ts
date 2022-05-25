@@ -52,6 +52,9 @@ let hasRetriedEvents = false;
  *                           null on error 
  */
 const createInstance = function(config: Config): Client | null {
+  console.log('------ IN BROWSER ENTRY POINT ------');
+  const isRealtime = config.enableRealtimeUpdateNotification;
+  const isStreaming = !isRealtime && config.enableStreaming;
   try {
     // TODO warn about setting per instance errorHandler / logger / logLevel
     let isValidInstance = false

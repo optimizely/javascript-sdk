@@ -157,7 +157,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
   }
 
   start(): void {
-    console.log('------ INSIDE THE LOCAL DATAFILE MANAGER 2 ------');
+    console.log('------ INSIDE THE REAL TIME DATAFILE MANAGER 2 ------');
     if (!this.isStarted) {
       logger.debug('Datafile manager started');
       this.isStarted = true;

@@ -127,14 +127,14 @@ const jsonSchemaBundle = {
 };
 
 const bundles = {
-  'cjs-node': cjsBundleFor('node'),
-  'cjs-browser': cjsBundleFor('browser'),
-  'cjs-react-native': cjsBundleFor('react_native'),
-  'cjs-lite': cjsBundleFor('lite'),
+  //'cjs-node': cjsBundleFor('node'),
+  //'cjs-browser': cjsBundleFor('browser'),
+  //'cjs-react-native': cjsBundleFor('react_native'),
+  //'cjs-lite': cjsBundleFor('lite'),
   esm: esmBundleFor('browser'),
-  'esm-lite': esmBundleFor('lite'),
-  'json-schema': jsonSchemaBundle,
-  umd: umdBundle,
+  //'esm-lite': esmBundleFor('lite'),
+  //'json-schema': jsonSchemaBundle,
+  //umd: umdBundle,
 };
 
 // Collect all --config-* options and return the matching bundle configs
