@@ -14,6 +14,19 @@
  * limitations under the License.
  */
 
-export * from './datafileManager';
-export { default as HttpPollingDatafileManager } from './browserDatafileManager';
-export { default as RealtimeDatafileManager } from './realtimeBrowserDatafileManager';
+import { makeGetRequest } from './browserRequest';
+import { Headers, AbortableRequest } from './http';
+import { DatafileManagerConfig } from './datafileManager';
+import RealtimeDatafileManager from './realTimeDatafileManager';
+
+export default class RealtimeBrowserDatafileManager extends RealtimeDatafileManager {
+  protected makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest {
+    return makeGetRequest(reqUrl, headers);
+  }
+
+  protected getConfigDefaults(): Partial<DatafileManagerConfig> {
+    return {
+      autoUpdate: false,
+    };
+  }
+}

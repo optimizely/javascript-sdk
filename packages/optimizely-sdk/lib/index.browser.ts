@@ -31,8 +31,9 @@ import Optimizely from './optimizely';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
 import { default as eventProcessor } from './plugins/event_processor';
-import { OptimizelyDecideOption, Client, Config } from './shared_types';
+import { OptimizelyDecideOption, Client, Config, DatafileManager } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
+import { createRealtimeDatafileManager } from './plugins/datafile_manager/real_time_datafile_manager';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -121,13 +122,22 @@ const createInstance = function(config: Config): Client | null {
       notificationCenter,
     }
 
+    let datafileManager: DatafileManager | undefined = undefined;
+    if (config.sdkKey) {
+      if (isRealtime || isStreaming) {
+        datafileManager = createRealtimeDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions);
+      } else {
+        datafileManager = createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions);
+      }
+    }
+
     const optimizelyOptions = {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       ...config,
       eventProcessor: eventProcessor.createEventProcessor(eventProcessorConfig),
       logger,
       errorHandler,
-      datafileManager: config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
+      datafileManager,
       notificationCenter,
       isValidInstance: isValidInstance
     };

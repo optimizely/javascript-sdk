@@ -53,7 +53,7 @@ const noOpKeyValueCache: PersistentKeyValueCache = {
   },
 };
 
-export default abstract class HttpPollingDatafileManager implements DatafileManager {
+export default abstract class RealtimeDatafileManager implements DatafileManager {
   // Make an HTTP get request to the given URL with the given headers
   // Return an AbortableRequest, which has a promise for a Response.
   // If we can't get a response, the promise is rejected.
@@ -238,7 +238,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     }
   }
 
-  private onRequestComplete(this: HttpPollingDatafileManager): void {
+  private onRequestComplete(this: RealtimeDatafileManager): void {
     if (!this.isStarted) {
       return;
     }

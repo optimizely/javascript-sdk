@@ -15,4 +15,13 @@ declare module '@optimizely/js-sdk-datafile-manager' {
     start(): void;
     stop(): Promise<void>;
   }
+
+  export class RealtimeDatafileManager {
+    constructor(config: DatafileManagerConfig);
+    get(): string;
+    on(eventName: string, listener: (datafileUpdate: DatafileUpdate) => void): Disposer;
+    onReady(): Promise<void>;
+    start(): void;
+    stop(): Promise<void>;
+  }
 }
