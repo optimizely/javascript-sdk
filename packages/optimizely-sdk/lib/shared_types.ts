@@ -503,6 +503,7 @@ export interface OptimizelyUserContext {
   getForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null;
   removeForcedDecision(context: OptimizelyDecisionContext): boolean;
   removeAllForcedDecisions(): boolean;
+  getQualifiedSegments(): string[];
 }
 
 export interface OptimizelyDecision {

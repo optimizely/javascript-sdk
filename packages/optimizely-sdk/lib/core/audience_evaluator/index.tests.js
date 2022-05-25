@@ -84,7 +84,7 @@ describe('lib/core/audience_evaluator', function() {
     mockLogger.log.restore();
   });
 
-  describe('APIs', function() {
+  describe.only('APIs', function() {
     context('with default condition evaluator', function() {
       beforeEach(function() {
         audienceEvaluator = createAudienceEvaluator();
@@ -329,6 +329,14 @@ describe('lib/core/audience_evaluator', function() {
           );
         });
       });
+    });
+
+    context('with odp segment evaluator', function() {
+
+    });
+
+    context('with multiple types of evaluators', function() {
+
     });
   });
 });

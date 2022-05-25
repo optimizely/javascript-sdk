@@ -185,7 +185,8 @@ export class DecisionService {
       experiment,
       AUDIENCE_EVALUATION_TYPES.EXPERIMENT,
       attributes,
-      ''
+      '',
+      user.getQualifiedSegments(),
     );
     decideReasons.push(...decisionifUserIsInAudience.reasons);
     if (!decisionifUserIsInAudience.result) {
@@ -364,6 +365,7 @@ export class DecisionService {
     evaluationAttribute: string,
     attributes?: UserAttributes,
     loggingKey?: string | number,
+    segments?: string[],
   ): DecisionResponse<boolean> {
     const decideReasons: (string | number)[][] = [];
     const experimentAudienceConditions = getExperimentAudienceConditions(configObj, experiment.id);
@@ -383,7 +385,7 @@ export class DecisionService {
       loggingKey || experiment.key,
       JSON.stringify(experimentAudienceConditions),
     ]);
-    const result = this.audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, attributes);
+    const result = this.audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, attributes, segments);
     this.logger.log(
       LOG_LEVEL.INFO,
       LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
@@ -1172,7 +1174,8 @@ export class DecisionService {
       rule,
       AUDIENCE_EVALUATION_TYPES.RULE,
       attributes,
-      loggingKey
+      loggingKey,
+      user.getQualifiedSegments(),
     );
     decideReasons.push(...decisionifUserIsInAudience.reasons);
     if (decisionifUserIsInAudience.result) {

@@ -23,6 +23,7 @@ import {
 } from '../../utils/enums';
 import * as conditionTreeEvaluator from '../condition_tree_evaluator';
 import * as customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
+import * as odpSegmentsConditionEvaluator from './odp_segment_condition_evaluator';
 import { UserAttributes, Audience, Condition } from '../../shared_types';
 
 const logger = getLogger();
@@ -31,7 +32,7 @@ const MODULE_NAME = 'AUDIENCE_EVALUATOR';
 export class AudienceEvaluator {
   private typeToEvaluatorMap: {
     [key: string]: {
-      [key: string]: (condition: Condition, userAttributes: UserAttributes) => boolean | null
+      [key: string]: (condition: Condition, userAttributes: UserAttributes, segments: string[]) => boolean | null
     };
   };
 
@@ -45,6 +46,7 @@ export class AudienceEvaluator {
   constructor(UNSTABLE_conditionEvaluators: unknown) {
     this.typeToEvaluatorMap = fns.assign({}, UNSTABLE_conditionEvaluators, {
       custom_attribute: customAttributeConditionEvaluator,
+      third_party_dimension: odpSegmentsConditionEvaluator,
     });
   }
 
@@ -64,7 +66,8 @@ export class AudienceEvaluator {
   evaluate(
     audienceConditions: Array<string | string[]>,
     audiencesById: { [id: string]: Audience },
-    userAttributes: UserAttributes = {}
+    userAttributes: UserAttributes = {},
+    segments: string[] = [],
   ): boolean {
     // if there are no audiences, return true because that means ALL users are included in the experiment
     if (!audienceConditions || audienceConditions.length === 0) {
@@ -80,7 +83,7 @@ export class AudienceEvaluator {
         );
         const result = conditionTreeEvaluator.evaluate(
           audience.conditions as unknown[] ,
-          this.evaluateConditionWithUserAttributes.bind(this, userAttributes)
+          this.evaluateConditionWithUserAttributes.bind(this, userAttributes, segments)
         );
         const resultText = result === null ? 'UNKNOWN' : result.toString().toUpperCase();
         logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText);
@@ -99,14 +102,15 @@ export class AudienceEvaluator {
    * @param  {Condition}            condition          A single condition object to evaluate.
    * @return {boolean|null}                            true if the condition is satisfied, null if a matcher is not found.
    */
-  evaluateConditionWithUserAttributes(userAttributes: UserAttributes, condition: Condition): boolean | null {
+  evaluateConditionWithUserAttributes(userAttributes: UserAttributes, segments: string[], condition: Condition): boolean | null {
+    console.log(condition);
     const evaluator = this.typeToEvaluatorMap[condition.type];
     if (!evaluator) {
       logger.log(LOG_LEVEL.WARNING, LOG_MESSAGES.UNKNOWN_CONDITION_TYPE, MODULE_NAME, JSON.stringify(condition));
       return null;
     }
     try {
-      return evaluator.evaluate(condition, userAttributes);
+      return evaluator.evaluate(condition, userAttributes, segments);
     } catch (err) {
       logger.log(
         LOG_LEVEL.ERROR,
