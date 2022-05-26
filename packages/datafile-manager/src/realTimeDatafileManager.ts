@@ -24,6 +24,7 @@ import BackoffController from './backoffController';
 import PersistentKeyValueCache from './persistentKeyValueCache';
 import {Types} from 'ably';
 import Ably from "ably/callbacks";
+import * as jsonpatch from 'fast-json-patch';
 import RealtimeChannelCallbacks = Types.RealtimeChannelCallbacks;
 
 const logger = getLogger('DatafileManager');
@@ -222,11 +223,64 @@ export default abstract class RealtimeDatafileManager implements DatafileManager
       console.log('SDK connected to Ably.');
 
       this.channel = ably.channels.get("21468570738_development");
-      this.channel.subscribe('datafile-updated', (message: { data: any; }) => {
-        console.log('Received message from Ably.');
-        console.dir(message);
-      });
+      this.channel.subscribe('datafile-updated', this.handleAblyResponse);
     });
+  }
+
+  private handleAblyResponse(response: { data: any; }): void {
+    console.log("Received message from Ably.");
+    console.dir(response);
+
+    const previousDatafile = this.currentDatafile;
+
+    this.updateCurrentDatafile(response.data);
+
+    const changedFlags = this.findAffectedFlags(previousDatafile);
+
+    const datafileUpdate: DatafileUpdate = {
+      datafile: this.currentDatafile,
+      changedFlags,
+    };
+    this.emitter.emit(UPDATE_EVT, datafileUpdate);
+  }
+
+  private updateCurrentDatafile(jsonPatch: any): void {
+    if (this.isNotificationEnabled) {
+      console.log("Pulling datafile from CDN [syncDatafile()]");
+      // TODO: make async/await
+      this.syncDatafile();
+    }
+
+    if (this.isStreamingEnabled) {
+      this.patchDatafile(jsonPatch);
+    }
+  }
+
+  private patchDatafile(jsonPatch: any): void {
+    console.log("Patching current datafile");
+    console.dir(jsonPatch);
+
+    const currentDatafileObject = JSON.parse(this.currentDatafile);
+
+    const patchedDatafileObject = jsonpatch.applyPatch(currentDatafileObject, jsonPatch).newDocument;
+
+    const patchedDatafileString = JSON.stringify(patchedDatafileObject);
+
+    this.currentDatafile = patchedDatafileString;
+    this.cache.set(this.cacheKey, patchedDatafileString);
+  }
+
+  private findAffectedFlags(previousDatafile: string): string[] {
+    console.log("Finding affected flags for event emit");
+
+    const previousDatafileObject = JSON.parse(previousDatafile);
+    const currentDatafileObject = JSON.parse(this.currentDatafile);
+
+    // TODO: find diffs between prev and new
+    // Working on this in https://github.com/mikechu-optimizely/_playground
+
+    // TODO: return ["with_audience","another_key"]
+    return [];
   }
 
   private onRequestRejected(err: any): void {
@@ -265,11 +319,6 @@ export default abstract class RealtimeDatafileManager implements DatafileManager
       this.cache.set(this.cacheKey, datafile);
       if (!this.isReadyPromiseSettled) {
         this.resolveReadyPromise();
-      } else {
-        const datafileUpdate: DatafileUpdate = {
-          datafile,
-        };
-        this.emitter.emit(UPDATE_EVT, datafileUpdate);
       }
     }
   }
@@ -313,10 +362,6 @@ export default abstract class RealtimeDatafileManager implements DatafileManager
     this.currentRequest.responsePromise
       .then(onRequestResolved, onRequestRejected)
       .then(onRequestComplete, onRequestComplete);
-
-    if (this.autoUpdate) {
-      this.scheduleNextUpdate();
-    }
   }
 
   private resolveReadyPromise(): void {
@@ -327,19 +372,6 @@ export default abstract class RealtimeDatafileManager implements DatafileManager
   private rejectReadyPromise(err: Error): void {
     this.readyPromiseRejecter(err);
     this.isReadyPromiseSettled = true;
-  }
-
-  private scheduleNextUpdate(): void {
-    const currentBackoffDelay = this.backoffController.getDelay();
-    const nextUpdateDelay = Math.max(currentBackoffDelay, this.updateInterval);
-    logger.debug('Scheduling sync in %s ms', nextUpdateDelay);
-    this.currentTimeout = setTimeout(() => {
-      if (this.currentRequest) {
-        this.syncOnCurrentRequestComplete = true;
-      } else {
-        this.syncDatafile();
-      }
-    }, nextUpdateDelay);
   }
 
   private getNextDatafileFromResponse(response: Response): string {

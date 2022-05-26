@@ -47,7 +47,8 @@
     "@optimizely/js-sdk-logging": "^0.3.1",
     "@optimizely/js-sdk-utils": "^0.4.0",
     "ably": "^1.2.22",
-    "decompress-response": "^4.2.1"
+    "decompress-response": "^4.2.1",
+    "fast-json-patch": "^3.1.1"
   },
   "peerDependencies": {
     "@react-native-async-storage/async-storage": "^1.2.0"
