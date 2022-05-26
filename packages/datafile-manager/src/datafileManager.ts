@@ -48,3 +48,8 @@ export interface DatafileManagerConfig {
 export interface NodeDatafileManagerConfig extends DatafileManagerConfig {
   datafileAccessToken?: string;
 }
+
+export interface RealtimeDatafileManagerConfig extends DatafileManagerConfig {
+  enableRealtimeUpdateNotification?: boolean;
+  enableStreaming?: boolean;
+}

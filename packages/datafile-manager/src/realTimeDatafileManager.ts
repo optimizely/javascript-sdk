@@ -16,12 +16,15 @@
 
 import { getLogger } from '@optimizely/js-sdk-logging';
 import { sprintf } from '@optimizely/js-sdk-utils';
-import { DatafileManager, DatafileManagerConfig, DatafileUpdate } from './datafileManager';
+import { DatafileManager, RealtimeDatafileManagerConfig, DatafileUpdate } from './datafileManager';
 import EventEmitter, { Disposer } from './eventEmitter';
 import { AbortableRequest, Response, Headers } from './http';
 import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE } from './config';
 import BackoffController from './backoffController';
 import PersistentKeyValueCache from './persistentKeyValueCache';
+import {Types} from 'ably';
+import Ably from "ably/callbacks";
+import RealtimeChannelCallbacks = Types.RealtimeChannelCallbacks;
 
 const logger = getLogger('DatafileManager');
 
@@ -61,7 +64,7 @@ export default abstract class RealtimeDatafileManager implements DatafileManager
   protected abstract makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest;
 
   // Return any default configuration options that should be applied
-  protected abstract getConfigDefaults(): Partial<DatafileManagerConfig>;
+  protected abstract getConfigDefaults(): Partial<RealtimeDatafileManagerConfig>;
 
   private currentDatafile: string;
 
@@ -101,8 +104,14 @@ export default abstract class RealtimeDatafileManager implements DatafileManager
   // interval.
   private syncOnCurrentRequestComplete: boolean;
 
-  constructor(config: DatafileManagerConfig) {
-    const configWithDefaultsApplied: DatafileManagerConfig = {
+  private channel: RealtimeChannelCallbacks | undefined;
+
+  private readonly isNotificationEnabled: boolean;
+
+  private readonly isStreamingEnabled: boolean;
+
+  constructor(config: RealtimeDatafileManagerConfig) {
+    const configWithDefaultsApplied: RealtimeDatafileManagerConfig = {
       ...this.getConfigDefaults(),
       ...config,
     };
@@ -113,6 +122,8 @@ export default abstract class RealtimeDatafileManager implements DatafileManager
       updateInterval = DEFAULT_UPDATE_INTERVAL,
       urlTemplate = DEFAULT_URL_TEMPLATE,
       cache = noOpKeyValueCache,
+      enableRealtimeUpdateNotification = true, // if we're using the RTDFM then one of these should be enabled by default
+      enableStreaming = false,
     } = configWithDefaultsApplied;
 
     this.cache = cache;
@@ -150,6 +161,9 @@ export default abstract class RealtimeDatafileManager implements DatafileManager
     this.currentRequest = null;
     this.backoffController = new BackoffController();
     this.syncOnCurrentRequestComplete = false;
+
+    this.isNotificationEnabled = enableRealtimeUpdateNotification;
+    this.isStreamingEnabled = enableStreaming;
   }
 
   get(): string {
@@ -164,6 +178,9 @@ export default abstract class RealtimeDatafileManager implements DatafileManager
       this.backoffController.reset();
       this.setDatafileFromCacheIfAvailable();
       this.syncDatafile();
+      if (this.isNotificationEnabled || this.isStreamingEnabled) {
+        this.connectToAbly();
+      }
     }
   }
 
@@ -191,6 +208,25 @@ export default abstract class RealtimeDatafileManager implements DatafileManager
 
   on(eventName: string, listener: (datafileUpdate: DatafileUpdate) => void): Disposer {
     return this.emitter.on(eventName, listener);
+  }
+
+  private connectToAbly(): void {
+    if (!this.isStarted) {
+      return;
+    }
+
+    // Subscriber API Key
+    // const ably = new Ably.Realtime('1ZS5wg.g5H34w:Q9kxDvOBljjdhQ5LcK9eTWqp64e4b5iHioyT3zI_5_g');
+    const ably = new Ably.Realtime('8bjSyw.iy4dIQ:HKthbSWnyzYtAAwr5gKhMfaFZcX6C7gmbJonomGTfpI');
+    ably.connection.on('connected', () => {
+      console.log('SDK connected to Ably.');
+
+      this.channel = ably.channels.get("21468570738_development");
+      this.channel.subscribe('datafile-updated', (message: { data: any; }) => {
+        console.log('Received message from Ably.');
+        console.dir(message);
+      });
+    });
   }
 
   private onRequestRejected(err: any): void {
