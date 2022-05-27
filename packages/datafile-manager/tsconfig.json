@@ -1,12 +1,13 @@
 {
- "extends": "../../tsconfig.json",
- "compilerOptions": {
-   "outDir": "./lib"
- },
- "include": [
-   "./src"
- ],
- "exclude": [
-   "./lib"
- ]
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./lib",
+    "downlevelIteration": true
+  },
+  "include": [
+    "./src"
+  ],
+  "exclude": [
+    "./lib"
+  ]
 }

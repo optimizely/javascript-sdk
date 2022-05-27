@@ -125,6 +125,7 @@ const createInstance = function(config: Config): Client | null {
     let datafileManager: DatafileManager | undefined = undefined;
     if (config.sdkKey) {
       if (isRealtime || isStreaming) {
+        // TODO: @Zeeshan I think we're not passing along the  enableRealtimeUpdateNotification & enableStreaming
         datafileManager = createRealtimeDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions);
       } else {
         datafileManager = createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions);
