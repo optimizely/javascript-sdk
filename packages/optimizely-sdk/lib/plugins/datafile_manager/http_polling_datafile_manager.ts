@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 import { LoggerFacade } from '@optimizely/js-sdk-logging';
-import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager';
+import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager/lib/index.node';
+
 import { DatafileOptions, DatafileManagerConfig, DatafileManager } from '../../shared_types';
 import { toDatafile, tryCreatingProjectConfig } from '../../core/project_config';
 import fns from '../../utils/fns';
@@ -25,8 +26,8 @@ export function createHttpPollingDatafileManager(
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
   datafile?: string | object,
-  datafileOptions?: DatafileOptions,
-): DatafileManager {  
+  datafileOptions?: DatafileOptions
+): DatafileManager {
   const datafileManagerConfig: DatafileManagerConfig = { sdkKey };
   if (datafileOptions === undefined || (typeof datafileOptions === 'object' && datafileOptions !== null)) {
     fns.assign(datafileManagerConfig, datafileOptions);
@@ -37,7 +38,7 @@ export function createHttpPollingDatafileManager(
       jsonSchemaValidator: undefined,
       logger: logger,
     });
-    
+
     if (error) {
       logger.error(error);
     }
