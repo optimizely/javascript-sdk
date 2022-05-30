@@ -29,6 +29,7 @@ export default class OptimizelyUserContext {
   private userId: string;
   private attributes: UserAttributes;
   private forcedDecisionsMap: { [key: string]: { [key: string]: OptimizelyForcedDecision } };
+  private subscriptions: Map<string, (decision: OptimizelyDecision) => {}> = new Map()
 
   constructor({
     optimizely,
@@ -215,5 +216,17 @@ export default class OptimizelyUserContext {
     }
 
     return userContext;
+  }
+
+  subscribeToFlag(
+    key: string,
+    listener: (decision: OptimizelyDecision) => void,
+    options: OptimizelyDecideOption[] = [],
+  ): number {
+    return this.optimizely.subscribeToFlag(this.cloneUserContext(), key, listener, options);
+  }
+
+  unsubscribeFromFlag(key: string, subscriptionId: number): void {
+    this.optimizely.unsubscribeFromFlag(key, subscriptionId);
   }
 }

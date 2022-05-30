@@ -508,6 +508,12 @@ export interface OptimizelyUserContext {
   getForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null;
   removeForcedDecision(context: OptimizelyDecisionContext): boolean;
   removeAllForcedDecisions(): boolean;
+  subscribeToFlag(
+    key: string,
+    listener: (decision: OptimizelyDecision) => void,
+    options?: OptimizelyDecideOption[],
+  ): number;
+  unsubscribeFromFlag(key: string, subscriptionId: number): void;
 }
 
 export interface OptimizelyDecision {

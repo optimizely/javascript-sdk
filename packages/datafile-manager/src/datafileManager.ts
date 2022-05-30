@@ -17,7 +17,7 @@ import PersistentKeyValueCache from './persistentKeyValueCache';
 
 export interface DatafileUpdate {
   datafile: string;
-  changedFlags?: string[];
+  flagsChanged?: string[];
 }
 
 export interface DatafileUpdateListener {

@@ -55,6 +55,7 @@ import {
   DECISION_NOTIFICATION_TYPES,
   NOTIFICATION_TYPES
 } from '../utils/enums';
+import { DatafileUpdate } from '@optimizely/js-sdk-datafile-manager';
 
 const MODULE_NAME = 'OPTIMIZELY';
 
@@ -81,6 +82,15 @@ export default class Optimizely {
   private decisionService: DecisionService;
   private eventProcessor: EventProcessor;
   private defaultDecideOptions: { [key: string]: boolean };
+  private flagSubscriptions: {
+    [key: string]: Array<{
+      subscriptionId: number,
+      userContext: OptimizelyUserContext,
+      options: OptimizelyDecideOption[],
+      listener: (decision: OptimizelyDecision) => void, 
+    }>
+  } = {};
+
   public notificationCenter: NotificationCenter;
 
   constructor(config: OptimizelyOptions) {
@@ -128,6 +138,10 @@ export default class Optimizely {
       sdkKey: config.sdkKey,
       datafileManager: config.datafileManager
     });
+
+    if (config.datafileManager) {
+      config.datafileManager.on('update', this.flagUpdateListener)
+    }
 
     this.disposeOnUpdate = this.projectConfigManager.onUpdate(
       (configObj: projectConfig.ProjectConfig) => {
@@ -1672,4 +1686,56 @@ export default class Optimizely {
     return this.decideForKeys(user, allFlagKeys, options);
   }
 
+  private lastSubscriptionId = -1;
+
+  subscribeToFlag(
+    user: OptimizelyUserContext,
+    key: string,
+    listener: (decision: OptimizelyDecision) => void,
+    options: OptimizelyDecideOption[] = [],
+  ): number {
+    this.readyPromise.then(({ success }) => {
+      if (success) {
+        listener(this.decide(user, key, options));
+      }
+    });
+
+    if (!this.flagSubscriptions[key]) {
+      this.flagSubscriptions[key] = []
+    }
+
+    const subscriptionId = ++ this.lastSubscriptionId;
+    this.flagSubscriptions[key].push({
+      subscriptionId,
+      userContext: user,
+      options,
+      listener,
+    })
+    
+    return subscriptionId;
+  }
+
+  public unsubscribeFromFlag(key: string, subscriptionId?: number) {
+    if(this.flagSubscriptions[key]) {
+      const subscriptions = this.flagSubscriptions[key];
+      const index = subscriptions.findIndex((subscription) => subscription.subscriptionId === subscriptionId);
+      if (index >= 0) {
+        subscriptions.splice(index, 1);
+      }
+    }
+  }
+
+  private flagUpdateListener = ({ flagsChanged }: DatafileUpdate) => {
+    let keys = flagsChanged;
+    if (!keys) {
+      keys = Object.keys(this.projectConfigManager.getConfig()!.featureKeyMap);
+    }
+    console.log(keys);
+    keys.forEach((flagKey) => {
+      const flagSubscribers = this.flagSubscriptions[flagKey];
+      flagSubscribers.forEach(({userContext, options, listener}) => {
+        listener(this.decide(userContext, flagKey, options));
+      });
+    });
+  }
 }
