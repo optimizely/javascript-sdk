@@ -1725,8 +1725,8 @@ export default class Optimizely {
     }
   }
 
-  private flagUpdateListener = ({ flagsChanged }: DatafileUpdate) => {
-    let keys = flagsChanged;
+  private flagUpdateListener = ({ changedFlags }: DatafileUpdate) => {
+    let keys = changedFlags;
     if (!keys) {
       keys = Object.keys(this.projectConfigManager.getConfig()!.featureKeyMap);
     }

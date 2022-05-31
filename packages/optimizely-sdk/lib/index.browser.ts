@@ -54,8 +54,8 @@ let hasRetriedEvents = false;
  */
 const createInstance = function(config: Config): Client | null {
   console.log('------ IN BROWSER ENTRY POINT ------');
-  const isRealtime = config.enableRealtimeUpdateNotification;
-  const isStreaming = !isRealtime && config.enableStreaming;
+  const isRealtime = config.datafileOptions?.enableRealtimeUpdateNotification;
+  const isStreaming = !isRealtime && config.datafileOptions?.enableStreaming;
   try {
     // TODO warn about setting per instance errorHandler / logger / logLevel
     let isValidInstance = false
@@ -125,7 +125,6 @@ const createInstance = function(config: Config): Client | null {
     let datafileManager: DatafileManager | undefined = undefined;
     if (config.sdkKey) {
       if (isRealtime || isStreaming) {
-        // TODO: @Zeeshan I think we're not passing along the  enableRealtimeUpdateNotification & enableStreaming
         datafileManager = createRealtimeDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions);
       } else {
         datafileManager = createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions);

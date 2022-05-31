@@ -17,7 +17,7 @@ import PersistentKeyValueCache from './persistentKeyValueCache';
 
 export interface DatafileUpdate {
   datafile: string;
-  flagsChanged?: string[];
+  changedFlags?: string[];
 }
 
 export interface DatafileUpdateListener {
@@ -53,4 +53,5 @@ export interface NodeDatafileManagerConfig extends DatafileManagerConfig {
 export interface RealtimeDatafileManagerConfig extends DatafileManagerConfig {
   enableRealtimeUpdateNotification?: boolean;
   enableStreaming?: boolean;
+  ablyApiKey?: string;
 }

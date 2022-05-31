@@ -4,7 +4,7 @@ declare module '@optimizely/js-sdk-datafile-manager' {
   }
   interface DatafileUpdate {
     datafile: string;
-    flagsChanged?: string[];
+    changedFlags?: string[];
   }
   type Disposer = () => void;
 

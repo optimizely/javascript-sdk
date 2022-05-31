@@ -73,6 +73,12 @@ export interface DatafileOptions {
   updateInterval?: number;
   urlTemplate?: string;
   datafileAccessToken?: string;
+  // Enables real time datafile update notification pushed in real time from the backend
+  enableRealtimeUpdateNotification?: boolean;
+  // Enables streaming of datafile updates as they occur.
+  // When `enableRealtimeUpdateNotification` and `enableStreaming` are both true, `enableRealtimeUpdateNotification` will take effect.
+  enableStreaming?: boolean;
+  ablyApiKey?: string;
 }
 
 export interface ListenerPayload {
@@ -383,11 +389,6 @@ export interface TrackListenerPayload extends ListenerPayload {
   eventMaxQueueSize?: number;
   // sdk key
   sdkKey?: string;
-  // Enables real time datafile update notification pushed in real time from the backend
-  enableRealtimeUpdateNotification?: boolean;
-  // Enables streaming of datafile updates as they occur.
-  // When `enableRealtimeUpdateNotification` and `enableStreaming` are both true, `enableRealtimeUpdateNotification` will take effect.
-  enableStreaming?: boolean;
 }
 
 /**
