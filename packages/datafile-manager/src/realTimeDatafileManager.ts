@@ -212,19 +212,17 @@ export default abstract class RealtimeDatafileManager implements DatafileManager
   }
 
   private connectToAbly(): void {
-    if (!this.isStarted) {
+    if (!this.isStarted || this.ablyApiKey === '') {
       return;
     }
 
-    // Subscriber API Key
+    console.log('Connecting to Ably with key', this.ablyApiKey);
     const ably = new Ably.Realtime(this.ablyApiKey);
-    //const ably = new Ably.Realtime('1ZS5wg.g5H34w:Q9kxDvOBljjdhQ5LcK9eTWqp64e4b5iHioyT3zI_5_g');
-    //const ably = new Ably.Realtime('8bjSyw.iy4dIQ:HKthbSWnyzYtAAwr5gKhMfaFZcX6C7gmbJonomGTfpI');
     ably.connection.on('connected', () => {
       console.log('SDK connected to Ably.');
 
       const channel = ably.channels.get(this.sdkKey);
-      channel.subscribe('datafile-updated', this.handleAblyDatafileUpdated);
+      channel.subscribe('datafile-updated', response => this.handleAblyDatafileUpdated(response));
     });
   }
 
@@ -252,9 +250,7 @@ export default abstract class RealtimeDatafileManager implements DatafileManager
     console.log('Patching current datafile');
     console.dir(patch);
 
-    // ...once again this.currentDatafile is undefined in the bundle
     const currentDatafileObject = JSON.parse(this.currentDatafile);
-    // I considered moving to ably/promises or restructuring with dependency injection but...
 
     const patchedDatafileObject = jsonPatch.applyPatch(currentDatafileObject, patch);
 
@@ -271,11 +267,14 @@ export default abstract class RealtimeDatafileManager implements DatafileManager
     const previousDatafile = JSON.parse(previousDatafileString);
     const newDatafile = JSON.parse(this.currentDatafile);
 
-    console.log(previousDatafile.revision);
-    console.log(newDatafile.revision);
+    if (previousDatafile?.revision === undefined || newDatafile?.revision === undefined || previousDatafile.revision === newDatafile.revision) {
+      return [];
+    }
 
     const patches = jsonPatch.compare(previousDatafile, newDatafile);
-    console.log(patches.length);
+    if (patches === undefined || patches.length === 0 ) {
+      return [];
+    }
 
     const allTargetPaths: string[] = patches.map(
       patch => { 
