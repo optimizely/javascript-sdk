@@ -326,3 +326,8 @@ export function resetLogger() : void {
   globalLogManager = new DefaultLogManager()
   globalLogLevel = LogLevel.NOTSET
 }
+
+export default {
+  setLogLevel: setLogLevel,
+  setLogHandler: setLogHandler
+}
