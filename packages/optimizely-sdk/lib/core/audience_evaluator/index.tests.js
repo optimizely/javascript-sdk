@@ -18,7 +18,7 @@ import { assert } from 'chai';
 import { getLogger } from '@optimizely/js-sdk-logging';
 import { sprintf } from '../../utils/fns';
 
-import { createAudienceEvaluator } from './index';
+import AudienceEvaluator, { createAudienceEvaluator } from './index';
 import * as conditionTreeEvaluator from '../condition_tree_evaluator';
 import * as customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
 
@@ -84,7 +84,7 @@ describe('lib/core/audience_evaluator', function() {
     mockLogger.log.restore();
   });
 
-  describe.only('APIs', function() {
+  describe('APIs', function() {
     context('with default condition evaluator', function() {
       beforeEach(function() {
         audienceEvaluator = createAudienceEvaluator();
@@ -202,6 +202,7 @@ describe('lib/core/audience_evaluator', function() {
               customAttributeConditionEvaluator.evaluate,
               iphoneUserAudience.conditions[1],
               userAttributes,
+              [],
             );
             assert.isFalse(result);
           });
@@ -231,6 +232,7 @@ describe('lib/core/audience_evaluator', function() {
               customAttributeConditionEvaluator.evaluate,
               iphoneUserAudience.conditions[1],
               userAttributes,
+              []
             );
             assert.isFalse(result);
             assert.strictEqual(2, mockLogger.log.callCount);
@@ -253,6 +255,7 @@ describe('lib/core/audience_evaluator', function() {
               customAttributeConditionEvaluator.evaluate,
               iphoneUserAudience.conditions[1],
               userAttributes,
+              []
             );
             assert.isTrue(result);
             assert.strictEqual(2, mockLogger.log.callCount);
@@ -275,6 +278,7 @@ describe('lib/core/audience_evaluator', function() {
               customAttributeConditionEvaluator.evaluate,
               iphoneUserAudience.conditions[1],
               userAttributes,
+              []
             );
             assert.isFalse(result);
             assert.strictEqual(2, mockLogger.log.callCount);
@@ -332,11 +336,239 @@ describe('lib/core/audience_evaluator', function() {
     });
 
     context('with odp segment evaluator', function() {
+      describe('Single ODP Audience', () => {
+        const singleAudience = {
+          "conditions": [
+            "and",
+            {
+                "value": "odp-segment-1",
+                "type": "third_party_dimension",
+                "name": "odp.audiences",
+                "match": "qualified"
+            }
+          ]
+        };
+        const audienceByIds = {
+          0: singleAudience,
+        }
+        const audience = new AudienceEvaluator();
+        
+        it('shoud evaluate to true if segment is found', () => {
+          assert.isTrue(audience.evaluate(['or', '0'], audienceByIds, {}, ['odp-segment-1']));
+        });
+        
+        it('shoud evaluate to false if segment is not found', () => {
+          assert.isFalse(audience.evaluate(['or', '0'], audienceByIds, {}, ['odp-segment-2']));
+        });
 
+        it('shoud evaluate to false if not segments are provided', () => {
+          assert.isFalse(audience.evaluate(['or', '0'], audienceByIds, {}));
+        });
+      });
+
+      describe('Multiple ODP conditions in one Audience', () => {
+        const singleAudience = {
+          "conditions": [
+            "and",
+            {
+              "value": "odp-segment-1",
+              "type": "third_party_dimension",
+              "name": "odp.audiences",
+              "match": "qualified"
+            },
+            {
+              "value": "odp-segment-2",
+              "type": "third_party_dimension",
+              "name": "odp.audiences",
+              "match": "qualified"
+            },
+            [
+              "or",
+              {
+                "value": "odp-segment-3",
+                "type": "third_party_dimension",
+                "name": "odp.audiences",
+                "match": "qualified"
+              },
+              {
+                "value": "odp-segment-4",
+                "type": "third_party_dimension",
+                "name": "odp.audiences",
+                "match": "qualified"
+              },
+            ]
+          ]
+        };
+        const audienceByIds = {
+          0: singleAudience,
+        }
+        const audience = new AudienceEvaluator();
+        
+        it('shoud evaluate correctly based on the given segments', () => {
+          assert.isTrue(audience.evaluate(['or', '0'], audienceByIds, {}, ['odp-segment-1', 'odp-segment-2', 'odp-segment-3']));
+          assert.isTrue(audience.evaluate(['or', '0'], audienceByIds, {}, ['odp-segment-1', 'odp-segment-2', 'odp-segment-4']));
+          assert.isTrue(audience.evaluate(['or', '0'], audienceByIds, {}, ['odp-segment-1', 'odp-segment-2', 'odp-segment-3', 'odp-segment-4']));
+          assert.isFalse(audience.evaluate(['or', '0'], audienceByIds, {}, ['odp-segment-1', 'odp-segment-3', 'odp-segment-4']));
+          assert.isFalse(audience.evaluate(['or', '0'], audienceByIds, {}, ['odp-segment-2', 'odp-segment-3', 'odp-segment-4']));
+        });
+      });
+
+      describe('Multiple ODP conditions in multiple Audience', () => {
+        const audience1And2 = {
+          "conditions": [
+            "and",
+            {
+              "value": "odp-segment-1",
+              "type": "third_party_dimension",
+              "name": "odp.audiences",
+              "match": "qualified"
+            },
+            {
+              "value": "odp-segment-2",
+              "type": "third_party_dimension",
+              "name": "odp.audiences",
+              "match": "qualified"
+            }
+          ]
+        };
+
+        const audience3And4 = {
+          "conditions": [
+            "and",
+            {
+              "value": "odp-segment-3",
+              "type": "third_party_dimension",
+              "name": "odp.audiences",
+              "match": "qualified"
+            },
+            {
+              "value": "odp-segment-4",
+              "type": "third_party_dimension",
+              "name": "odp.audiences",
+              "match": "qualified"
+            }
+          ]
+        };
+
+        const audience5And6 = {
+          "conditions": [
+            "or",
+            {
+              "value": "odp-segment-5",
+              "type": "third_party_dimension",
+              "name": "odp.audiences",
+              "match": "qualified"
+            },
+            {
+              "value": "odp-segment-6",
+              "type": "third_party_dimension",
+              "name": "odp.audiences",
+              "match": "qualified"
+            }
+          ]
+        };
+        const audienceByIds = {
+          0: audience1And2,
+          1: audience3And4,
+          2: audience5And6
+        }
+        const audience = new AudienceEvaluator();
+        
+        it('shoud evaluate correctly based on the given segments', () => {
+          assert.isTrue(
+            audience.evaluate(
+              ['or', '0', '1', '2'],
+              audienceByIds, {},
+              ['odp-segment-1', 'odp-segment-2']
+            )
+          );
+          assert.isFalse(
+            audience.evaluate(
+              ['and', '0', '1', '2'],
+              audienceByIds, {},
+              ['odp-segment-1', 'odp-segment-2']
+            )
+          );
+          assert.isTrue(
+            audience.evaluate(
+              ['and', '0', '1', '2'],
+              audienceByIds, {},
+              ['odp-segment-1', 'odp-segment-2', 'odp-segment-3', 'odp-segment-4', 'odp-segment-6']
+            )
+          );
+          assert.isTrue(
+            audience.evaluate(
+              ['and', '0', '1',['not', '2']],
+              audienceByIds, {},
+              ['odp-segment-1', 'odp-segment-2', 'odp-segment-3', 'odp-segment-4']
+            )
+          );
+        });
+      });
     });
 
     context('with multiple types of evaluators', function() {
+      const audience1And2 = {
+        "conditions": [
+          "and",
+          {
+            "value": "odp-segment-1",
+            "type": "third_party_dimension",
+            "name": "odp.audiences",
+            "match": "qualified"
+          },
+          {
+            "value": "odp-segment-2",
+            "type": "third_party_dimension",
+            "name": "odp.audiences",
+            "match": "qualified"
+          }
+        ]
+      };
+      const audience3Or4 = {
+        "conditions": [
+          "or",
+          {
+            "value": "odp-segment-3",
+            "type": "third_party_dimension",
+            "name": "odp.audiences",
+            "match": "qualified"
+          },
+          {
+            "value": "odp-segment-4",
+            "type": "third_party_dimension",
+            "name": "odp.audiences",
+            "match": "qualified"
+          }
+        ]
+      };
 
+      const audienceByIds = {
+        0: audience1And2,
+        1: audience3Or4,
+        2: chromeUserAudience,
+      }
+      
+      const audience = new AudienceEvaluator();
+
+      it('shoud evaluate correctly based on the given segments', () => {
+        assert.isFalse(
+          audience.evaluate(
+            ['and', '0', '1', '2'],
+            audienceByIds,
+            { browser_type: 'not_chrome' },
+            ['odp-segment-1', 'odp-segment-2', 'odp-segment-4']
+          )
+        );
+        assert.isTrue(
+          audience.evaluate(
+            ['and', '0', '1', '2'],
+            audienceByIds,
+            { browser_type: 'chrome' },
+            ['odp-segment-1', 'odp-segment-2', 'odp-segment-4']
+          )
+        );
+      });
     });
   });
 });

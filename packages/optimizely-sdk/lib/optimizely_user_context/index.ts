@@ -29,7 +29,7 @@ export default class OptimizelyUserContext {
   private userId: string;
   private attributes: UserAttributes;
   private forcedDecisionsMap: { [key: string]: { [key: string]: OptimizelyForcedDecision } };
-  private qualifiedSegments: string[] = ['odp-segment-1', 'odp-segment-2'];
+  private qualifiedSegments: string[] = [];
 
   constructor({
     optimizely,

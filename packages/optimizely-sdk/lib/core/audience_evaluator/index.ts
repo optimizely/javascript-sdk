@@ -103,7 +103,6 @@ export class AudienceEvaluator {
    * @return {boolean|null}                            true if the condition is satisfied, null if a matcher is not found.
    */
   evaluateConditionWithUserAttributes(userAttributes: UserAttributes, segments: string[], condition: Condition): boolean | null {
-    console.log(condition);
     const evaluator = this.typeToEvaluatorMap[condition.type];
     if (!evaluator) {
       logger.log(LOG_LEVEL.WARNING, LOG_MESSAGES.UNKNOWN_CONDITION_TYPE, MODULE_NAME, JSON.stringify(condition));
