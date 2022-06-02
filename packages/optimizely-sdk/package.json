@@ -44,7 +44,7 @@
     "@optimizely/js-sdk-event-processor": "^0.9.2",
     "@optimizely/js-sdk-logging": "^0.3.1",
     "json-schema": "^0.4.0",
-    "murmurhash": "^2.0.1",
+    "murmurhash": "1.0.0",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
