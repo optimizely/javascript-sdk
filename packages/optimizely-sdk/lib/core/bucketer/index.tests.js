@@ -352,10 +352,17 @@ describe('lib/core/bucketer', function () {
         expect(bucketer._generateBucketValue(bucketingKey4)).to.equal(5439);
       });
 
-      it('should return an error if it cannot generate the hash value', function () {
-        assert.throws(function () {
+      it('should return an error if it cannot generate the hash value', function() {
+       const response = assert.throws(function() {
           bucketer._generateBucketValue(null);
-        }, sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type object"));
+        } );
+        expect([
+          sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object."), // node v8
+          sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type null"),  // node v9
+          sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type object"),  // node v10
+          sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received null")  // node v12, v14
+        ]).contain(response.message);
+
       });
     });
 
