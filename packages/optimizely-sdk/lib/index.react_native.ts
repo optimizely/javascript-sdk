@@ -55,12 +55,12 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
       setErrorHandler(config.errorHandler);
     }
     if (config.logger) {
-      setLogHandler(config.logger);
+      logHelper.setLogHandler(config.logger);
       // respect the logger's shouldLog functionality
-      setLogLevel(LogLevel.NOTSET);
+      logHelper.setLogLevel(LogLevel.NOTSET);
     }
     if (config.logLevel !== undefined) {
-      setLogLevel(config.logLevel);
+      logHelper.setLogLevel(config.logLevel);
     }
 
     try {

@@ -57,12 +57,12 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
     if (config.logger) {
       // only set a logger in node if one is provided, by not setting we are noop-ing
       hasLogger = true;
-      setLogHandler(config.logger);
+      logHelper.setLogHandler(config.logger);
       // respect the logger's shouldLog functionality
-      setLogLevel(LogLevel.NOTSET);
+      logHelper.setLogLevel(LogLevel.NOTSET);
     }
     if (config.logLevel !== undefined) {
-      setLogLevel(config.logLevel);
+      logHelper.setLogLevel(config.logLevel);
     }
     try {
       configValidator.validate(config);
