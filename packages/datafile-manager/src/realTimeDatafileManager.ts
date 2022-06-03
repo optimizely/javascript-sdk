@@ -227,6 +227,10 @@ export default abstract class RealtimeDatafileManager implements DatafileManager
   }
 
   private handleAblyDatafileUpdated = (response: any): void => {
+    // if (!response.data.revision) {  // KLUDGE: stop on websocket
+    //   return;
+    // }
+    // KLUDGE: continue when coming from webhook
     console.log('Received message from Ably.');
     console.log(response);
 
@@ -262,10 +266,10 @@ export default abstract class RealtimeDatafileManager implements DatafileManager
   };
 
   private findAffectedFlags(previousDatafileString: string): string[] {
-    console.log('Finding affected flags for event emit');
-
     const previousDatafile = JSON.parse(previousDatafileString);
     const newDatafile = JSON.parse(this.currentDatafile);
+
+    console.log('Finding affected flags for event emit between previous revision', previousDatafile.revision, 'and new revision', newDatafile.revision);
 
     if (previousDatafile?.revision === undefined || newDatafile?.revision === undefined || previousDatafile.revision === newDatafile.revision) {
       return [];
@@ -447,13 +451,13 @@ export default abstract class RealtimeDatafileManager implements DatafileManager
   }
 
   private syncDatafile(): void {
+    const cachebuster  = Math.round(new Date().getTime() / 1000).toString();
+    const url = `${this.datafileUrl}?cb=${cachebuster}`;
+    
     const headers: Headers = {};
-    if (this.lastResponseLastModified) {
-      headers['if-modified-since'] = this.lastResponseLastModified;
-    }
-
-    logger.debug('Making datafile request to url %s with headers: %s', this.datafileUrl, () => JSON.stringify(headers));
-    this.currentRequest = this.makeGetRequest(this.datafileUrl, headers);
+    
+    logger.debug('Making datafile request to url %s with headers: %s', url, () => JSON.stringify(headers));
+    this.currentRequest = this.makeGetRequest(url, headers);
 
     const onRequestComplete = (): void => {
       this.onRequestComplete();
