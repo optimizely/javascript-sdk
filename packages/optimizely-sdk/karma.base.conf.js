@@ -92,10 +92,10 @@ module.exports = {
     bs_safari: {
       base: 'BrowserStack',
       os: 'OS X',
-      os_version: 'Slerra',
+      os_version: 'Mountain Lion',
       browser: 'safari',
       device: null,
-      browser_version: '10.12',
+      browser_version: '6.2',
     },
   },
 
