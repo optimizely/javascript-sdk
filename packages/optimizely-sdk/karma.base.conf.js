@@ -95,7 +95,7 @@ module.exports = {
       os_version: 'Slerra',
       browser: 'safari',
       device: null,
-      browser_version: '10.1',
+      browser_version: '10.12',
     },
   },
 
