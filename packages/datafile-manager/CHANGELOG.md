@@ -7,10 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
-## [0.9.5] - June 2, 2022
+## [0.9.5] - June 6, 2022
 
 ### Changed
-- Changed types file path from `lib/index.d.ts` to `lib/index.node.d.ts`.
+- Changed typescript types file path from `lib/index.d.ts` to `lib/index.node.d.ts`.
 
 ## [0.9.4] - February 2, 2022
 
