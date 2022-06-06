@@ -65,7 +65,7 @@ module.exports = {
       os_version: '10',
       browser: 'edge',
       device: null,
-      browser_version: '15.0',
+      browser_version: 'Blink',
     },
     bs_firefox_mac: {
       base: 'BrowserStack',
