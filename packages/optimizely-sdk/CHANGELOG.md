@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add package.json script for running Karma tests locally using Chrome ([#651](https://github.com/optimizely/javascript-sdk/pull/651)).
 - Replaced explicit typescript typings with auto generated ones ([#745](https://github.com/optimizely/javascript-sdk/pull/745)).
 - Integrated code from `utils` package into `optimizely-sdk` ([#749](https://github.com/optimizely/javascript-sdk/pull/749)).
+- Added ODP Segments support in Audience Evaluation ([#765](https://github.com/optimizely/javascript-sdk/pull/765)).
 
 ## [4.9.1] - January 18, 2022
 
