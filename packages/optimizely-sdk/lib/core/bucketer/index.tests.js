@@ -360,9 +360,13 @@ describe('lib/core/bucketer', function () {
           sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object."), // node v8
           sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type null"),  // node v9
           sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type object"),  // node v10
-          sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received null")  // node v12, v14
+          sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received null"),  // node v12
+          sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "Cannot read property 'length' of null")  // node v14
         ]).contain(response.message);
-
+      // assert.throws(function() {
+      //   bucketer._generateBucketValue(null);
+      // }, sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "Cannot read property 'length' of null"));
+    
       });
     });
 
