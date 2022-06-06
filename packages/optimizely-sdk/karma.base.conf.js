@@ -65,7 +65,7 @@ module.exports = {
       os_version: '10',
       browser: 'edge',
       device: null,
-      browser_version: 'Blink',
+      browser_version: '15.0',
     },
     bs_firefox_mac: {
       base: 'BrowserStack',
@@ -92,10 +92,10 @@ module.exports = {
     bs_safari: {
       base: 'BrowserStack',
       os: 'OS X',
-      os_version: 'Yosemite',
+      os_version: 'Mountain Lion',
       browser: 'safari',
       device: null,
-      browser_version: '10.10',
+      browser_version: '6.2',
     },
   },
 
