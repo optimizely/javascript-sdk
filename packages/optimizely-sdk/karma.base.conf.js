@@ -95,7 +95,7 @@ module.exports = {
       os_version: 'Mountain Lion',
       browser: 'safari',
       device: null,
-      browser_version: '6.2',
+      browser_version: '10.1',
     },
   },
 
