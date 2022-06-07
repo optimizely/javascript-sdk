@@ -59,14 +59,14 @@ module.exports = {
       os: 'OS X',
       os_version: 'Mountain Lion',
     },
-    bs_edge: {
-      base: 'BrowserStack',
-      os: 'Windows',
-      os_version: '10',
-      browser: 'edge',
-      device: null,
-      browser_version: '15.0',
-    },
+    // bs_edge: {
+    //   base: 'BrowserStack',
+    //   os: 'Windows',
+    //   os_version: '10',
+    //   browser: 'edge',
+    //   device: null,
+    //   browser_version: '15.0',
+    // },
     bs_firefox_mac: {
       base: 'BrowserStack',
       browser: 'firefox',
@@ -89,17 +89,18 @@ module.exports = {
       os: 'OS X',
       os_version: 'Mountain Lion',
     },
-    bs_safari: {
-      base: 'BrowserStack',
-      os: 'OS X',
-      os_version: 'Mountain Lion',
-      browser: 'safari',
-      device: null,
-      browser_version: '6.2',
-    },
+    // bs_safari: {
+    //   base: 'BrowserStack',
+    //   os: 'OS X',
+    //   os_version: 'Mountain Lion',
+    //   browser: 'safari',
+    //   device: null,
+    //   browser_version: '6.2',
+    // },
   },
 
-  browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox_mac', 'bs_ie', 'bs_opera_mac', 'bs_safari'],
+  // browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox_mac', 'bs_ie', 'bs_opera_mac', 'bs_safari'],
+  browsers: ['bs_chrome_mac',  'bs_firefox_mac', 'bs_ie', 'bs_opera_mac'],
 
   // frameworks to use
   // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
