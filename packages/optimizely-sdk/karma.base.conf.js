@@ -59,6 +59,7 @@ module.exports = {
       os: 'OS X',
       os_version: 'Lion',
       browserName: 'Chrome',
+      'browserstack.selenium_version': '3.14.0',
     },
     bs_edge: {
       base: 'BrowserStack',
@@ -67,6 +68,7 @@ module.exports = {
       browser: 'Edge',
       device: null,
       browser_version: '85.0',
+      'browserstack.selenium_version': '3.5.2',
     },
     bs_firefox_mac: {
       base: 'BrowserStack',
@@ -74,7 +76,9 @@ module.exports = {
       browser_version: '43.0',
       os: 'OS X',
       os_version: 'Lion',
-    },
+      'browserstack.selenium_version': '3.5.2',
+
+     },
     // bs_ie: {
     //   base: 'BrowserStack',
     //   os: 'Windows',
