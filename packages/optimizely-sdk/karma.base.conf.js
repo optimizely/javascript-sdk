@@ -73,12 +73,12 @@ module.exports = {
     bs_firefox_mac: {
       base: 'BrowserStack',
       browserName: 'Firefox',
+      browser: 'firefox',
       browser_version: '43.0',
       os: 'OS X',
       os_version: 'Lion',
       'browserstack.selenium_version': '3.5.2',
-
-     },
+    },
     // bs_ie: {
     //   base: 'BrowserStack',
     //   os: 'Windows',
