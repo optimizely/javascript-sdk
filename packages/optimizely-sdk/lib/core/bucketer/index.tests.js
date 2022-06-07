@@ -360,13 +360,6 @@ describe('lib/core/bucketer', function () {
           sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "Cannot read property 'length' of null"),  // node v14
           sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "Cannot read properties of null (reading \'length\')")  // node v16
         ]).contain(response.message);
-      
-
-        // assert.throws(function() {
-        //   bucketer._generateBucketValue(null);
-        // }, sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "Cannot read properties of null (reading \'length\')"));
-      
-
       });
     });
 
