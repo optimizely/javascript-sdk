@@ -67,21 +67,21 @@ module.exports = {
     //   device: null,
     //   browser_version: '15.0',
     // },
-    bs_firefox_mac: {
-      base: 'BrowserStack',
-      browser: 'firefox',
-      browser_version: '21.0',
-      os: 'OS X',
-      os_version: 'Mountain Lion',
-    },
-    bs_ie: {
-      base: 'BrowserStack',
-      os: 'Windows',
-      os_version: '7',
-      browser: 'ie',
-      device: null,
-      browser_version: '10.0',
-    },
+    // bs_firefox_mac: {
+    //   base: 'BrowserStack',
+    //   browser: 'firefox',
+    //   browser_version: '21.0',
+    //   os: 'OS X',
+    //   os_version: 'Mountain Lion',
+    // },
+    // bs_ie: {
+    //   base: 'BrowserStack',
+    //   os: 'Windows',
+    //   os_version: '7',
+    //   browser: 'ie',
+    //   device: null,
+    //   browser_version: '10.0',
+    // },
     bs_opera_mac: {
       base: 'BrowserStack',
       browser: 'opera',
@@ -100,7 +100,7 @@ module.exports = {
   },
 
   // browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox_mac', 'bs_ie', 'bs_opera_mac', 'bs_safari'],
-  browsers: ['bs_chrome_mac',  'bs_firefox_mac', 'bs_ie', 'bs_opera_mac'],
+  browsers: ['bs_chrome_mac',   'bs_opera_mac'],
 
   // frameworks to use
   // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
