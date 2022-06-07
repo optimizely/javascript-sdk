@@ -59,7 +59,6 @@ module.exports = {
       browser: 'Chrome',
       browser_version: '49.0',
       browserName: 'Chrome',
-      'browserstack.selenium_version': '3.14.0',
     },
     bs_edge: {
       base: 'BrowserStack',
@@ -68,7 +67,6 @@ module.exports = {
       browser: 'Edge',
       browser_version: '85.0',
       device: null,
-      'browserstack.selenium_version': '3.5.2',
     },
     bs_firefox: {
       base: 'BrowserStack',
@@ -78,16 +76,15 @@ module.exports = {
       browser_version: '70.0',
       browserName: 'Firefox',
       device: null,
-      'browserstack.selenium_version': '3.5.2',
     },
-    // bs_ie: {
-    //   base: 'BrowserStack',
-    //   os: 'Windows',
-    //   os_version: '7',
-    //   browser: 'ie',
-    //   device: null,
-    //   browser_version: '10.0',
-    // },
+    bs_ie: {
+      base: 'BrowserStack',
+      os: 'Windows',
+      os_version: '7',
+      browser: 'ie',
+      device: null,
+      browser_version: '10.0',
+    },
     bs_opera_mac: {
       base: 'BrowserStack',
       browser: 'opera',
@@ -107,7 +104,7 @@ module.exports = {
   },
 
   // browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox_mac', 'bs_ie', 'bs_opera_mac', 'bs_safari'],
-  browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox', 'bs_opera_mac', 'bs_safari'],
+  browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox', 'bs_ie', 'bs_opera_mac', 'bs_safari'],
 
   // frameworks to use
   // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
