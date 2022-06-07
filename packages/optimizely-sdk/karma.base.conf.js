@@ -95,18 +95,19 @@ module.exports = {
       os: 'OS X',
       os_version: 'Mountain Lion',
     },
-    // bs_safari: {
-    //   base: 'BrowserStack',
-    //   os: 'OS X',
-    //   os_version: 'Mountain Lion',
-    //   browser: 'safari',
-    //   device: null,
-    //   browser_version: '6.2',
-    // },
+    bs_safari: {
+      base: 'BrowserStack',
+      os: 'OS X',
+      os_version: 'High Sierra',
+      browserName: 'Safari',
+      browser: 'Safari',
+      device: null,
+      browser_version: '11.1',
+    },
   },
 
   // browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox_mac', 'bs_ie', 'bs_opera_mac', 'bs_safari'],
-  browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox', 'bs_opera_mac'],
+  browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox', 'bs_opera_mac', 'bs_safari'],
 
   // frameworks to use
   // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
