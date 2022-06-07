@@ -54,10 +54,12 @@ module.exports = {
   customLaunchers: {
     bs_chrome_mac: {
       base: 'BrowserStack',
-      browser: 'chrome',
-      browser_version: '21.0',
+      browser: 'Chrome',
+      browser_version: '49.0',
       os: 'OS X',
-      os_version: 'Mountain Lion',
+      os_version: 'Lion',
+      browserName: 'Chrome',
+      'browserstack.selenium_version': '3.14.0',
     },
     // bs_edge: {
     //   base: 'BrowserStack',
@@ -100,7 +102,7 @@ module.exports = {
   },
 
   // browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox_mac', 'bs_ie', 'bs_opera_mac', 'bs_safari'],
-  browsers: ['bs_chrome_mac',   'bs_opera_mac'],
+  browsers: ['bs_chrome_mac', 'bs_opera_mac'],
 
   // frameworks to use
   // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
