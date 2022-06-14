@@ -25,8 +25,8 @@ export function createHttpPollingDatafileManager(
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
   datafile?: string | object,
-  datafileOptions?: DatafileOptions
-): DatafileManager {
+  datafileOptions?: DatafileOptions,
+): DatafileManager {  
   const datafileManagerConfig: DatafileManagerConfig = { sdkKey };
   if (datafileOptions === undefined || (typeof datafileOptions === 'object' && datafileOptions !== null)) {
     fns.assign(datafileManagerConfig, datafileOptions);
@@ -37,7 +37,7 @@ export function createHttpPollingDatafileManager(
       jsonSchemaValidator: undefined,
       logger: logger,
     });
-
+    
     if (error) {
       logger.error(error);
     }
@@ -47,3 +47,4 @@ export function createHttpPollingDatafileManager(
   }
   return new HttpPollingDatafileManager(datafileManagerConfig);
 }
+ 
