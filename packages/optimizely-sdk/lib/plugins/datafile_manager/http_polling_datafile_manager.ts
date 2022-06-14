@@ -18,6 +18,7 @@ import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager'
 import { DatafileOptions, DatafileManagerConfig, DatafileManager } from '../../shared_types';
 import { toDatafile, tryCreatingProjectConfig } from '../../core/project_config';
 import fns from '../../utils/fns';
+
 export function createHttpPollingDatafileManager(
   sdkKey: string,
   logger: LoggerFacade,
