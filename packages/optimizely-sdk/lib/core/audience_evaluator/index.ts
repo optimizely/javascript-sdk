@@ -63,7 +63,7 @@ export class AudienceEvaluator {
    */
   evaluate(
     audienceConditions: Array<string | string[]>,
-    audiencesById: { [id: string]: Audience },
+    audiencesById: Map<string, Audience>,
     userAttributes: UserAttributes = {}
   ): boolean {
     // if there are no audiences, return true because that means ALL users are included in the experiment
@@ -72,7 +72,7 @@ export class AudienceEvaluator {
     }
 
     const evaluateAudience = (audienceId: string) => {
-      const audience = audiencesById[audienceId];
+      const audience = audiencesById.get(audienceId);
       if (audience) {
         logger.log(
           LOG_LEVEL.DEBUG,

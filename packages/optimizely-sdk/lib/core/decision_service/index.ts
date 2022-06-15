@@ -14,7 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import { LogHandler } from '@optimizely/js-sdk-logging';
-import { sprintf } from '../../utils/fns';
+import { sprintf, toObject } from '../../utils/fns';
 
 import fns from '../../utils/fns';
 import { bucket } from '../bucketer';
@@ -120,7 +120,7 @@ export class DecisionService {
     const attributes = user.getAttributes();
     // by default, the bucketing ID should be the user ID
     const bucketingId = this.getBucketingId(userId, attributes);
-    const decideReasons: (string | number)[][] = [];
+    const decideReasons: (string | number | undefined)[][] = [];
     const experimentKey = experiment.key;
     if (!this.checkIfExperimentIsActive(configObj, experimentKey)) {
       this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey);
@@ -163,7 +163,7 @@ export class DecisionService {
           MODULE_NAME,
           variation.key,
           experimentKey,
-          userId,
+          userId
         );
         decideReasons.push([
           LOG_MESSAGES.RETURNING_STORED_VARIATION,
@@ -189,19 +189,8 @@ export class DecisionService {
     );
     decideReasons.push(...decisionifUserIsInAudience.reasons);
     if (!decisionifUserIsInAudience.result) {
-      this.logger.log(
-        LOG_LEVEL.INFO,
-        LOG_MESSAGES.USER_NOT_IN_EXPERIMENT,
-        MODULE_NAME,
-        userId,
-        experimentKey,
-      );
-      decideReasons.push([
-        LOG_MESSAGES.USER_NOT_IN_EXPERIMENT,
-        MODULE_NAME,
-        userId,
-        experimentKey,
-      ]);
+      this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, MODULE_NAME, userId, experimentKey);
+      decideReasons.push([LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, MODULE_NAME, userId, experimentKey]);
       return {
         result: null,
         reasons: decideReasons,
@@ -213,43 +202,23 @@ export class DecisionService {
     decideReasons.push(...decisionVariation.reasons);
     const variationId = decisionVariation.result;
     if (variationId) {
-      variation = configObj.variationIdMap[variationId];
+      const configVariation = configObj.variationIdMap.get(variationId);
+
+      if (configVariation) {
+        variation = configVariation;
+      }
     }
     if (!variation) {
-      this.logger.log(
-        LOG_LEVEL.DEBUG,
-        LOG_MESSAGES.USER_HAS_NO_VARIATION,
-        MODULE_NAME,
-        userId,
-        experimentKey,
-      );
-      decideReasons.push([
-        LOG_MESSAGES.USER_HAS_NO_VARIATION,
-        MODULE_NAME,
-        userId,
-        experimentKey,
-      ]);
+      this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.USER_HAS_NO_VARIATION, MODULE_NAME, userId, experimentKey);
+      decideReasons.push([LOG_MESSAGES.USER_HAS_NO_VARIATION, MODULE_NAME, userId, experimentKey]);
       return {
         result: null,
         reasons: decideReasons,
       };
     }
 
-    this.logger.log(
-      LOG_LEVEL.INFO,
-      LOG_MESSAGES.USER_HAS_VARIATION,
-      MODULE_NAME,
-      userId,
-      variation.key,
-      experimentKey,
-    );
-    decideReasons.push([
-      LOG_MESSAGES.USER_HAS_VARIATION,
-      MODULE_NAME,
-      userId,
-      variation.key,
-      experimentKey,
-    ]);
+    this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.USER_HAS_VARIATION, MODULE_NAME, userId, variation.key, experimentKey);
+    decideReasons.push([LOG_MESSAGES.USER_HAS_VARIATION, MODULE_NAME, userId, variation.key, experimentKey]);
     // persist bucketing if decide options do not include shouldIgnoreUPS
     if (!shouldIgnoreUPS) {
       this.saveUserProfile(experiment, variation, userId, experimentBucketMap);
@@ -267,13 +236,10 @@ export class DecisionService {
    * @param  {UserAttributes}       attributes
    * @return {ExperimentBucketMap}  finalized copy of experiment_bucket_map
    */
-  private resolveExperimentBucketMap(
-    userId: string,
-    attributes?: UserAttributes
-  ): ExperimentBucketMap {
+  private resolveExperimentBucketMap(userId: string, attributes?: UserAttributes): ExperimentBucketMap {
     attributes = attributes || {};
 
-    const userProfile = this.getUserProfile(userId) || {} as UserProfile;
+    const userProfile = this.getUserProfile(userId) || ({} as UserProfile);
     const attributeExperimentBucketMap = attributes[CONTROL_ATTRIBUTES.STICKY_BUCKETING_KEY];
     return fns.assign({}, userProfile.experiment_bucket_map, attributeExperimentBucketMap);
   }
@@ -295,50 +261,35 @@ export class DecisionService {
    * @return {DecisionResponse<Variation|null>}           DecisionResponse containing the forced variation if it exists
    *                                                      or user ID and the decide reasons.
    */
-  private getWhitelistedVariation(
-    experiment: Experiment,
-    userId: string
-  ): DecisionResponse<Variation | null> {
-    const decideReasons: (string | number)[][] = [];
+  private getWhitelistedVariation(experiment: Experiment, userId: string): DecisionResponse<Variation | null> {
+    const decideReasons: (string | number | undefined)[][] = [];
     if (experiment.forcedVariations && experiment.forcedVariations.hasOwnProperty(userId)) {
-      const forcedVariationKey = experiment.forcedVariations[userId];
-      if (experiment.variationKeyMap.hasOwnProperty(forcedVariationKey)) {
-        this.logger.log(
-          LOG_LEVEL.INFO,
-          LOG_MESSAGES.USER_FORCED_IN_VARIATION,
-          MODULE_NAME,
-          userId,
-          forcedVariationKey,
-        );
-        decideReasons.push([
-          LOG_MESSAGES.USER_FORCED_IN_VARIATION,
-          MODULE_NAME,
-          userId,
-          forcedVariationKey,
-        ]);
-        return {
-          result: experiment.variationKeyMap[forcedVariationKey],
-          reasons: decideReasons,
-        };
-      } else {
-        this.logger.log(
-          LOG_LEVEL.ERROR,
-          LOG_MESSAGES.FORCED_BUCKETING_FAILED,
-          MODULE_NAME,
-          forcedVariationKey,
-          userId,
-        );
-        decideReasons.push([
-          LOG_MESSAGES.FORCED_BUCKETING_FAILED,
-          MODULE_NAME,
-          forcedVariationKey,
-          userId,
-        ]);
-        return {
-          result: null,
-          reasons: decideReasons,
-        };
+      const forcedVariationKey = experiment.forcedVariations.get(userId);
+
+      if (forcedVariationKey) {
+        const variation = experiment.variationKeyMap.get(forcedVariationKey);
+        if (variation) {
+          this.logger.log(
+            LOG_LEVEL.INFO,
+            LOG_MESSAGES.USER_FORCED_IN_VARIATION,
+            MODULE_NAME,
+            userId,
+            forcedVariationKey
+          );
+          decideReasons.push([LOG_MESSAGES.USER_FORCED_IN_VARIATION, MODULE_NAME, userId, forcedVariationKey]);
+          return {
+            result: variation,
+            reasons: decideReasons,
+          };
+        }
       }
+
+      this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.FORCED_BUCKETING_FAILED, MODULE_NAME, forcedVariationKey, userId);
+      decideReasons.push([LOG_MESSAGES.FORCED_BUCKETING_FAILED, MODULE_NAME, forcedVariationKey, userId]);
+      return {
+        result: null,
+        reasons: decideReasons,
+      };
     }
 
     return {
@@ -363,7 +314,7 @@ export class DecisionService {
     experiment: Experiment,
     evaluationAttribute: string,
     attributes?: UserAttributes,
-    loggingKey?: string | number,
+    loggingKey?: string | number
   ): DecisionResponse<boolean> {
     const decideReasons: (string | number)[][] = [];
     const experimentAudienceConditions = getExperimentAudienceConditions(configObj, experiment.id);
@@ -374,7 +325,7 @@ export class DecisionService {
       MODULE_NAME,
       evaluationAttribute,
       loggingKey || experiment.key,
-      JSON.stringify(experimentAudienceConditions),
+      JSON.stringify(experimentAudienceConditions)
     );
     decideReasons.push([
       LOG_MESSAGES.EVALUATING_AUDIENCES_COMBINED,
@@ -390,7 +341,7 @@ export class DecisionService {
       MODULE_NAME,
       evaluationAttribute,
       loggingKey || experiment.key,
-      result.toString().toUpperCase(),
+      result.toString().toUpperCase()
     );
     decideReasons.push([
       LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
@@ -424,14 +375,14 @@ export class DecisionService {
       bucketingId,
       experimentId: experiment.id,
       experimentKey: experiment.key,
-      experimentIdMap: configObj.experimentIdMap,
-      experimentKeyMap: configObj.experimentKeyMap,
-      groupIdMap: configObj.groupIdMap,
+      experimentIdMap: toObject(configObj.experimentIdMap),
+      experimentKeyMap: toObject(configObj.experimentKeyMap),
+      groupIdMap: toObject(configObj.groupIdMap),
       logger: this.logger,
       trafficAllocationConfig: getTrafficAllocation(configObj, experiment.id),
       userId,
-      variationIdMap: configObj.variationIdMap,
-    }
+      variationIdMap: toObject(configObj.variationIdMap),
+    };
   }
 
   /**
@@ -451,15 +402,17 @@ export class DecisionService {
     if (experimentBucketMap.hasOwnProperty(experiment.id)) {
       const decision = experimentBucketMap[experiment.id];
       const variationId = decision.variation_id;
-      if (configObj.variationIdMap.hasOwnProperty(variationId)) {
-        return configObj.variationIdMap[decision.variation_id];
+      const variation = configObj.variationIdMap.get(variationId);
+      if (variation) {
+        return variation;
       } else {
         this.logger.log(
           LOG_LEVEL.INFO,
           LOG_MESSAGES.SAVED_VARIATION_NOT_FOUND,
-          MODULE_NAME, userId,
+          MODULE_NAME,
+          userId,
           variationId,
-          experiment.key,
+          experiment.key
         );
       }
     }
@@ -485,13 +438,7 @@ export class DecisionService {
     try {
       return this.userProfileService.lookup(userId);
     } catch (ex) {
-      this.logger.log(
-        LOG_LEVEL.ERROR,
-        ERROR_MESSAGES.USER_PROFILE_LOOKUP_ERROR,
-        MODULE_NAME,
-        userId,
-        ex.message,
-      );
+      this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.USER_PROFILE_LOOKUP_ERROR, MODULE_NAME, userId, ex.message);
     }
 
     return null;
@@ -516,7 +463,7 @@ export class DecisionService {
 
     try {
       experimentBucketMap[experiment.id] = {
-        variation_id: variation.id
+        variation_id: variation.id,
       };
 
       this.userProfileService.save({
@@ -524,21 +471,14 @@ export class DecisionService {
         experiment_bucket_map: experimentBucketMap,
       });
 
-      this.logger.log(
-        LOG_LEVEL.INFO,
-        LOG_MESSAGES.SAVED_VARIATION,
-        MODULE_NAME,
-        variation.key,
-        experiment.key,
-        userId,
-      );
+      this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.SAVED_VARIATION, MODULE_NAME, variation.key, experiment.key, userId);
     } catch (ex) {
       this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.USER_PROFILE_SAVE_ERROR, MODULE_NAME, userId, ex.message);
     }
   }
 
   /**
-   * Given a feature, user ID, and attributes, returns a decision response containing 
+   * Given a feature, user ID, and attributes, returns a decision response containing
    * an object representing a decision and decide reasons. If the user was bucketed into
    * a variation for the given feature and attributes, the decision object will have variation and
    * experiment properties (both objects), as well as a decisionSource property.
@@ -558,8 +498,7 @@ export class DecisionService {
     user: OptimizelyUserContext,
     options: { [key: string]: boolean } = {}
   ): DecisionResponse<DecisionObj> {
-
-    const decideReasons: (string | number)[][] = [];
+    const decideReasons: (string | number | undefined)[][] = [];
     const decisionVariation = this.getVariationForFeatureExperiment(configObj, feature, user, options);
     decideReasons.push(...decisionVariation.reasons);
     const experimentDecision = decisionVariation.result;
@@ -598,8 +537,7 @@ export class DecisionService {
     user: OptimizelyUserContext,
     options: { [key: string]: boolean } = {}
   ): DecisionResponse<DecisionObj> {
-
-    const decideReasons: (string | number)[][] = [];
+    const decideReasons: (string | number | undefined)[][] = [];
     let variationKey = null;
     let decisionVariation;
     let index;
@@ -616,7 +554,7 @@ export class DecisionService {
           variationKey = decisionVariation.result;
           if (variationKey) {
             let variation = null;
-            variation = experiment.variationKeyMap[variationKey];
+            variation = experiment.variationKeyMap.get(variationKey);
             if (!variation) {
               variation = getFlagVariationByKey(configObj, feature.key, variationKey);
             }
@@ -629,7 +567,7 @@ export class DecisionService {
             return {
               result: variationForFeatureExperiment,
               reasons: decideReasons,
-            }
+            };
           }
         }
       }
@@ -653,9 +591,9 @@ export class DecisionService {
   private getVariationForRollout(
     configObj: ProjectConfig,
     feature: FeatureFlag,
-    user: OptimizelyUserContext,
+    user: OptimizelyUserContext
   ): DecisionResponse<DecisionObj> {
-    const decideReasons: (string | number)[][] = [];
+    const decideReasons: (string | number | undefined)[][] = [];
     let decisionObj: DecisionObj;
     if (!feature.rolloutId) {
       this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.NO_ROLLOUT_EXISTS, MODULE_NAME, feature.key);
@@ -672,15 +610,9 @@ export class DecisionService {
       };
     }
 
-    const rollout = configObj.rolloutIdMap[feature.rolloutId];
+    const rollout = configObj.rolloutIdMap.get(feature.rolloutId);
     if (!rollout) {
-      this.logger.log(
-        LOG_LEVEL.ERROR,
-        ERROR_MESSAGES.INVALID_ROLLOUT_ID,
-        MODULE_NAME,
-        feature.rolloutId,
-        feature.key,
-      );
+      this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.INVALID_ROLLOUT_ID, MODULE_NAME, feature.rolloutId, feature.key);
       decideReasons.push([ERROR_MESSAGES.INVALID_ROLLOUT_ID, MODULE_NAME, feature.rolloutId, feature.key]);
       decisionObj = {
         experiment: null,
@@ -695,12 +627,7 @@ export class DecisionService {
 
     const rolloutRules = rollout.experiments;
     if (rolloutRules.length === 0) {
-      this.logger.log(
-        LOG_LEVEL.ERROR,
-        LOG_MESSAGES.ROLLOUT_HAS_NO_EXPERIMENTS,
-        MODULE_NAME,
-        feature.rolloutId,
-      );
+      this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.ROLLOUT_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.rolloutId);
       decideReasons.push([LOG_MESSAGES.ROLLOUT_HAS_NO_EXPERIMENTS, MODULE_NAME, feature.rolloutId]);
       decisionObj = {
         experiment: null,
@@ -723,11 +650,11 @@ export class DecisionService {
       variation = decisionVariation.result;
       skipToEveryoneElse = decisionVariation.skipToEveryoneElse;
       if (variation) {
-        rolloutRule = configObj.experimentIdMap[rolloutRules[index].id];
+        rolloutRule = configObj.experimentIdMap.get(rolloutRules[index].id)!;
         decisionObj = {
           experiment: rolloutRule,
           variation: variation,
-          decisionSource: DECISION_SOURCES.ROLLOUT
+          decisionSource: DECISION_SOURCES.ROLLOUT,
         };
         return {
           result: decisionObj,
@@ -735,7 +662,7 @@ export class DecisionService {
         };
       }
       // the last rule is special for "Everyone Else"
-      index = skipToEveryoneElse ? (rolloutRules.length - 1) : (index + 1);
+      index = skipToEveryoneElse ? rolloutRules.length - 1 : index + 1;
     }
 
     decisionObj = {
@@ -784,18 +711,17 @@ export class DecisionService {
    * @param     {ruleKey}               ruleKey              A ruleKey (optional).
    * @return    {DecisionResponse<Variation|null>}  DecisionResponse object containing valid variation object and decide reasons.
    */
-   findValidatedForcedDecision(
+  findValidatedForcedDecision(
     config: ProjectConfig,
     user: OptimizelyUserContext,
     flagKey: string,
     ruleKey?: string
   ): DecisionResponse<Variation | null> {
-
     const decideReasons: (string | number)[][] = [];
     const forcedDecision = user.getForcedDecision({ flagKey, ruleKey });
     let variation = null;
     let variationKey;
-    const userId = user.getUserId()
+    const userId = user.getUserId();
     if (config && forcedDecision) {
       variationKey = forcedDecision.variationKey;
       variation = getFlagVariationByKey(config, flagKey, variationKey);
@@ -814,7 +740,7 @@ export class DecisionService {
             variationKey,
             flagKey,
             ruleKey,
-            userId
+            userId,
           ]);
         } else {
           this.logger.log(
@@ -828,8 +754,8 @@ export class DecisionService {
             LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
             variationKey,
             flagKey,
-            userId
-          ])
+            userId,
+          ]);
         }
       } else {
         if (ruleKey) {
@@ -844,7 +770,7 @@ export class DecisionService {
             LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
             flagKey,
             ruleKey,
-            userId
+            userId,
           ]);
         } else {
           this.logger.log(
@@ -856,8 +782,8 @@ export class DecisionService {
           decideReasons.push([
             LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
             flagKey,
-            userId
-          ])
+            userId,
+          ]);
         }
       }
     }
@@ -865,7 +791,7 @@ export class DecisionService {
     return {
       result: variation,
       reasons: decideReasons,
-    }
+    };
   }
 
   /**
@@ -882,13 +808,7 @@ export class DecisionService {
 
     if (this.forcedVariationMap.hasOwnProperty(userId)) {
       delete this.forcedVariationMap[userId][experimentId];
-      this.logger.log(
-        LOG_LEVEL.DEBUG,
-        LOG_MESSAGES.VARIATION_REMOVED_FOR_USER,
-        MODULE_NAME,
-        experimentKey,
-        userId,
-      );
+      this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.VARIATION_REMOVED_FOR_USER, MODULE_NAME, experimentKey, userId);
     } else {
       throw new Error(sprintf(ERROR_MESSAGES.USER_NOT_IN_FORCED_VARIATION, MODULE_NAME, userId));
     }
@@ -915,7 +835,7 @@ export class DecisionService {
       MODULE_NAME,
       variationId,
       experimentId,
-      userId,
+      userId
     );
   }
 
@@ -927,20 +847,11 @@ export class DecisionService {
    * @return {DecisionResponse<string|null>}                    DecisionResponse containing variation which the given user and experiment
    *                                                            should be forced into and the decide reasons.
    */
-  getForcedVariation(
-    configObj: ProjectConfig,
-    experimentKey: string,
-    userId: string
-  ): DecisionResponse<string | null> {
+  getForcedVariation(configObj: ProjectConfig, experimentKey: string, userId: string): DecisionResponse<string | null> {
     const decideReasons: (string | number)[][] = [];
     const experimentToVariationMap = this.forcedVariationMap[userId];
     if (!experimentToVariationMap) {
-      this.logger.log(
-        LOG_LEVEL.DEBUG,
-        LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,
-        MODULE_NAME,
-        userId,
-      );
+      this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, MODULE_NAME, userId);
 
       return {
         result: null,
@@ -955,17 +866,8 @@ export class DecisionService {
         experimentId = experiment['id'];
       } else {
         // catching improperly formatted experiments
-        this.logger.log(
-          LOG_LEVEL.ERROR,
-          ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT,
-          MODULE_NAME,
-          experimentKey,
-        );
-        decideReasons.push([
-          ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT,
-          MODULE_NAME,
-          experimentKey,
-        ]);
+        this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT, MODULE_NAME, experimentKey);
+        decideReasons.push([ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT, MODULE_NAME, experimentKey]);
 
         return {
           result: null,
@@ -990,7 +892,7 @@ export class DecisionService {
         LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
         MODULE_NAME,
         experimentKey,
-        userId,
+        userId
       );
       return {
         result: null,
@@ -1006,22 +908,16 @@ export class DecisionService {
         MODULE_NAME,
         variationKey,
         experimentKey,
-        userId,
+        userId
       );
-      decideReasons.push([
-        LOG_MESSAGES.USER_HAS_FORCED_VARIATION,
-        MODULE_NAME,
-        variationKey,
-        experimentKey,
-        userId,
-      ]);
+      decideReasons.push([LOG_MESSAGES.USER_HAS_FORCED_VARIATION, MODULE_NAME, variationKey, experimentKey, userId]);
     } else {
       this.logger.log(
         LOG_LEVEL.DEBUG,
         LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION_FOR_EXPERIMENT,
         MODULE_NAME,
         experimentKey,
-        userId,
+        userId
       );
     }
 
@@ -1057,12 +953,7 @@ export class DecisionService {
         experimentId = experiment['id'];
       } else {
         // catching improperly formatted experiments
-        this.logger.log(
-          LOG_LEVEL.ERROR,
-          ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT,
-          MODULE_NAME,
-          experimentKey,
-        );
+        this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT, MODULE_NAME, experimentKey);
         return false;
       }
     } catch (ex) {
@@ -1089,7 +980,7 @@ export class DecisionService {
         ERROR_MESSAGES.NO_VARIATION_FOR_EXPERIMENT_KEY,
         MODULE_NAME,
         variationKey,
-        experimentKey,
+        experimentKey
       );
       return false;
     }
@@ -1110,7 +1001,7 @@ export class DecisionService {
     user: OptimizelyUserContext,
     options: { [key: string]: boolean } = {}
   ): DecisionResponse<string | null> {
-    const decideReasons: (string | number)[][] = [];
+    const decideReasons: (string | number | undefined)[][] = [];
 
     // check forced decision first
     const forcedDecisionResponse = this.findValidatedForcedDecision(configObj, user, flagKey, rule.key);
@@ -1140,7 +1031,7 @@ export class DecisionService {
     ruleIndex: number,
     user: OptimizelyUserContext
   ): DeliveryRuleResponse<Variation | null, boolean> {
-    const decideReasons: (string | number)[][] = [];
+    const decideReasons: (string | number | undefined)[][] = [];
     let skipToEveryoneElse = false;
 
     // check forced decision first
@@ -1161,7 +1052,7 @@ export class DecisionService {
     const attributes = user.getAttributes();
     const bucketingId = this.getBucketingId(userId, attributes);
     const everyoneElse = ruleIndex === rules.length - 1;
-    const loggingKey = everyoneElse ? "Everyone Else" : ruleIndex + 1;
+    const loggingKey = everyoneElse ? 'Everyone Else' : ruleIndex + 1;
 
     let bucketedVariation = null;
     let bucketerVariationId;
@@ -1183,12 +1074,7 @@ export class DecisionService {
         userId,
         loggingKey
       );
-      decideReasons.push([
-        LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
-        MODULE_NAME,
-        userId,
-        loggingKey
-      ]);
+      decideReasons.push([LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE, MODULE_NAME, userId, loggingKey]);
 
       bucketerParams = this.buildBucketerParams(configObj, rule, bucketingId, userId);
       decisionVariation = bucket(bucketerParams);
@@ -1205,11 +1091,7 @@ export class DecisionService {
           userId,
           loggingKey
         );
-        decideReasons.push([
-          LOG_MESSAGES.USER_BUCKETED_INTO_TARGETING_RULE,
-          MODULE_NAME,
-          userId,
-          loggingKey]);
+        decideReasons.push([LOG_MESSAGES.USER_BUCKETED_INTO_TARGETING_RULE, MODULE_NAME, userId, loggingKey]);
       } else if (!everyoneElse) {
         // skip this logging for EveryoneElse since this has a message not for EveryoneElse
         this.logger.log(
@@ -1219,12 +1101,7 @@ export class DecisionService {
           userId,
           loggingKey
         );
-        decideReasons.push([
-          LOG_MESSAGES.USER_NOT_BUCKETED_INTO_TARGETING_RULE,
-          MODULE_NAME,
-          userId,
-          loggingKey
-        ]);
+        decideReasons.push([LOG_MESSAGES.USER_NOT_BUCKETED_INTO_TARGETING_RULE, MODULE_NAME, userId, loggingKey]);
 
         // skip the rest of rollout rules to the everyone-else rule if audience matches but not bucketed
         skipToEveryoneElse = true;
@@ -1241,7 +1118,7 @@ export class DecisionService {
         LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
         MODULE_NAME,
         userId,
-        loggingKey
+        loggingKey,
       ]);
     }
 

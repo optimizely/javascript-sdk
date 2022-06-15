@@ -34,7 +34,7 @@ export interface BucketerParams {
 
 export interface DecisionResponse<T> {
   readonly result: T;
-  readonly reasons: (string | number)[][];
+  readonly reasons: (string | number | undefined)[][];
 }
 
 export type UserAttributes = {
@@ -134,14 +134,14 @@ export interface Experiment {
   id: string;
   key: string;
   variations: Variation[];
-  variationKeyMap: { [key: string]: Variation };
+  variationKeyMap: Map<string, Variation>;
   groupId?: string;
   layerId: string;
   status: string;
   audienceConditions: Array<string | string[]>;
   audienceIds: string[];
   trafficAllocation: TrafficAllocation[];
-  forcedVariations?: { [key: string]: string };
+  forcedVariations?: Map<string, string>;
 }
 
 export enum VariableType {
@@ -164,9 +164,9 @@ export interface FeatureFlag {
   rolloutId: string;
   key: string;
   id: string;
-  experimentIds: string[],
-  variables: FeatureVariable[],
-  variableKeyMap: { [key: string]: FeatureVariable }
+  experimentIds: string[];
+  variables: FeatureVariable[];
+  variableKeyMap: Map<string, FeatureVariable>;
   groupId?: string;
 }
 

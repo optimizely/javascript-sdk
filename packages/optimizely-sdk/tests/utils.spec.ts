@@ -1,5 +1,5 @@
 /// <reference types="jest" />
-import { isValidEnum, groupBy, objectEntries, objectValues, find, keyByUtil, sprintf } from '../lib/utils/fns'
+import { isValidEnum, groupBy, objectEntries, objectValues, find, sprintf } from '../lib/utils/fns'
 
 describe('utils', () => {
   describe('isValidEnum', () => {
@@ -72,22 +72,6 @@ describe('utils', () => {
       ]
 
       expect(find(input, item => item.firstName === 'joe')).toBeUndefined()
-    })
-  })
-
-  describe('keyBy', () => {
-    it('return an object with keys generated from the key function', () => {
-      const input = [
-        { key: 'foo', firstName: 'jordan', lastName: 'foo' },
-        { key: 'bar', firstName: 'jordan', lastName: 'bar' },
-        { key: 'baz', firstName: 'james', lastName: 'foxy' },
-      ]
-
-      expect(keyByUtil(input, item => item.key)).toEqual({
-        foo: { key: 'foo', firstName: 'jordan', lastName: 'foo' },
-        bar: { key: 'bar', firstName: 'jordan', lastName: 'bar' },
-        baz: { key: 'baz', firstName: 'james', lastName: 'foxy' },
-      })
     })
   })
 

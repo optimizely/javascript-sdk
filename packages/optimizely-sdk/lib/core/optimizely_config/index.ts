@@ -136,7 +136,7 @@ export class OptimizelyConfig {
    */
   static getSerializedAudiences(
     conditions: Array<string | string[]>,
-    audiencesById: { [id: string]: Audience }
+    audiencesById: Map<string, Audience>
   ): string {
     let serializedAudience = '';
 
@@ -152,12 +152,12 @@ export class OptimizelyConfig {
           cond = item.toUpperCase();
         } else {
           // Checks if item is audience id
-          const audienceName = audiencesById[item] ? audiencesById[item].name : item;
+          const audienceName = audiencesById.get(item) ? audiencesById.get(item)?.name : item;
           // if audience condition is "NOT" then add "NOT" at start. Otherwise check if there is already audience id in serializedAudience then append condition between serializedAudience and item
           if (serializedAudience || cond === 'NOT') {
             cond = cond === '' ? 'OR' : cond;
             if (serializedAudience === '') {
-              serializedAudience = `${cond} "${audiencesById[item].name}"`;
+              serializedAudience = `${cond} "${audiencesById.get(item)?.name}"`;
             } else {
               serializedAudience = serializedAudience.concat(` ${cond} "${audienceName}"`);
             }
@@ -352,7 +352,7 @@ export class OptimizelyConfig {
 
     return (experiments || []).reduce((experimentsMap: { [id: string]: OptimizelyExperiment }, experiment) => {
       if (rolloutExperimentIds.indexOf(experiment.id) === -1) {
-        const featureIds = configObj.experimentFeatureMap[experiment.id];
+        const featureIds = configObj.experimentFeatureMap.get(experiment.id);
         let featureId = '';
         if (featureIds && featureIds.length > 0) {
           featureId = featureIds[0];
@@ -422,7 +422,7 @@ export class OptimizelyConfig {
         return variables;
       }, {});
       let deliveryRules: OptimizelyExperiment[] = [];
-      const rollout = configObj.rolloutIdMap[featureFlag.rolloutId];
+      const rollout = configObj.rolloutIdMap.get(featureFlag.rolloutId);
       if (rollout) {
         deliveryRules = OptimizelyConfig.getDeliveryRules(
           configObj,

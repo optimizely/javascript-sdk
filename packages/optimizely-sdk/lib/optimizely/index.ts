@@ -228,7 +228,7 @@ export default class Optimizely {
         }
 
         const experiment = projectConfig.getExperimentFromKey(configObj, experimentKey);
-        const variation = experiment.variationKeyMap[variationKey];
+        const variation = experiment.variationKeyMap.get(variationKey)!;
         const decisionObj = {
           experiment: experiment,
           variation: variation,
@@ -327,7 +327,7 @@ export default class Optimizely {
     let experiment;
 
     if (experimentId !== null && variationKey !== '') {
-      experiment = configObj.experimentIdMap[experimentId];
+      experiment = configObj.experimentIdMap.get(experimentId);
     }
 
     const impressionEventOptions = {
@@ -347,7 +347,7 @@ export default class Optimizely {
     const impressionEvent = getImpressionEvent(impressionEventOptions);
     let variation;
     if (experiment && experiment.variationKeyMap && variationKey !== '') {
-      variation = experiment.variationKeyMap[variationKey];
+      variation = experiment.variationKeyMap.get(variationKey);
     }
     this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.ACTIVATE, {
       experiment: experiment,
@@ -476,7 +476,7 @@ export default class Optimizely {
           return null;
         }
 
-        const experiment = configObj.experimentKeyMap[experimentKey];
+        const experiment = configObj.experimentKeyMap.get(experimentKey);
         if (!experiment) {
           this.logger.log(
             LOG_LEVEL.DEBUG,
@@ -777,8 +777,8 @@ export default class Optimizely {
         return enabledFeatures;
       }
 
-      objectValues(configObj.featureKeyMap).forEach(
-        (feature: FeatureFlag) => {
+      configObj.featureKeyMap.forEach(
+        (feature) => {
           if (this.isFeatureEnabled(feature.key, userId, attributes)) {
             enabledFeatures.push(feature.key);
           }
@@ -1466,14 +1466,14 @@ export default class Optimizely {
     const userId = user.getUserId();
     const attributes = user.getAttributes();
     const configObj = this.projectConfigManager.getConfig();
-    const reasons: (string | number)[][] = [];
+    const reasons: (string | number | undefined)[][] = [];
     let decisionObj: DecisionObj;
     if (!this.isValidInstance() || !configObj) {
       this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'decide');
       return newErrorDecision(key, user, [DECISION_MESSAGES.SDK_NOT_READY]);
     }
 
-    const feature = configObj.featureKeyMap[key];
+    const feature = configObj.featureKeyMap.get(key);
     if (!feature) {
       this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.FEATURE_NOT_IN_DATAFILE, MODULE_NAME, key);
       return newErrorDecision(key, user, [sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, key)]);

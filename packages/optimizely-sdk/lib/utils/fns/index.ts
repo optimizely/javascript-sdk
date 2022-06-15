@@ -49,12 +49,14 @@ function isSafeInteger(number: unknown): boolean {
   return typeof number == 'number' && Math.abs(number) <= MAX_SAFE_INTEGER_LIMIT;
 }
 
-export function keyBy<K>(arr: K[], key: string): { [key: string]: K } {
-  if (!arr) return {};
-  return keyByUtil(arr, function (item) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (item as any)[key];
-  });
+export function createMap<K extends { [key: string]: any }>(arr: K[], key: string): Map<string, K> {
+  if (!arr || arr.length === 0) return new Map();
+
+  return new Map(arr.map((item) => {
+    const identifier = item[key as keyof typeof item] as string;
+
+    return [identifier, item];
+  }));
 }
 
 function isNumber(value: unknown): boolean {
@@ -94,26 +96,6 @@ export function isValidEnum(enumToCheck: { [key: string]: any }, value: number |
   return found
 }
 
-export function groupBy<K>(arr: K[], grouperFn: (item: K) => string): Array<K[]> {
-  const grouper: { [key: string]: K[] } = {}
-
-  arr.forEach(item => {
-    const key = grouperFn(item)
-    grouper[key] = grouper[key] || []
-    grouper[key].push(item)
-  })
-
-  return objectValues(grouper)
-}
-
-export function objectValues<K>(obj: { [key: string]: K }): K[] {
-  return Object.keys(obj).map(key => obj[key])
-}
-
-export function objectEntries<K>(obj: { [key: string]: K }): [string, K][] {
-  return Object.keys(obj).map(key => [key, obj[key]])
-}
-
 export function find<K>(arr: K[], cond: (arg: K) => boolean): K | undefined {
   let found
 
@@ -127,13 +109,18 @@ export function find<K>(arr: K[], cond: (arg: K) => boolean): K | undefined {
   return found
 }
 
-export function keyByUtil<K>(arr: K[], keyByFn: (item: K) => string): { [key: string]: K } {
-  const map: { [key: string]: K } = {}
-  arr.forEach(item => {
-    const key = keyByFn(item)
-    map[key] = item
-  })
-  return map
+export function toObject<K extends { [key: string]: any }>(map: Map<string, K>): Record<string, K> {
+  const obj: Record<string, K> = {};
+
+  map.forEach((item, key) => {
+    obj[key] = item;
+  });
+
+  return obj;
+}
+
+export function objectValues<K>(obj: { [key: string]: K }): K[] {
+  return Object.keys(obj).map(key => obj[key])
 }
 
 // TODO[OASIS-6649]: Don't use any type
@@ -157,15 +144,13 @@ export default {
   assign,
   currentTimestamp,
   isSafeInteger,
-  keyBy,
+  createMap,
   uuid,
   isNumber,
   getTimestamp,
   isValidEnum,
-  groupBy,
-  objectValues,
-  objectEntries,
   find,
-  keyByUtil,
-  sprintf
+  sprintf,
+  toObject,
+  objectValues
 }
