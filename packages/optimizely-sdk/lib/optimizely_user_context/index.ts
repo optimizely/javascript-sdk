@@ -204,8 +204,8 @@ export default class OptimizelyUserContext {
     return null;
   }
 
-  public getQualifiedSegments(): string[] {
-    return this.qualifiedSegments;
+  public isQualifiedFor(segment: string): boolean {
+    return this.qualifiedSegments.indexOf(segment) > -1;
   }
 
   private cloneUserContext(): OptimizelyUserContext {

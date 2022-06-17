@@ -184,9 +184,8 @@ export class DecisionService {
       configObj,
       experiment,
       AUDIENCE_EVALUATION_TYPES.EXPERIMENT,
-      attributes,
-      '',
-      user.getQualifiedSegments(),
+      user,
+      ''
     );
     decideReasons.push(...decisionifUserIsInAudience.reasons);
     if (!decisionifUserIsInAudience.result) {
@@ -363,9 +362,8 @@ export class DecisionService {
     configObj: ProjectConfig,
     experiment: Experiment,
     evaluationAttribute: string,
-    attributes?: UserAttributes,
+    user: OptimizelyUserContext,
     loggingKey?: string | number,
-    segments?: string[],
   ): DecisionResponse<boolean> {
     const decideReasons: (string | number)[][] = [];
     const experimentAudienceConditions = getExperimentAudienceConditions(configObj, experiment.id);
@@ -385,7 +383,7 @@ export class DecisionService {
       loggingKey || experiment.key,
       JSON.stringify(experimentAudienceConditions),
     ]);
-    const result = this.audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, attributes, segments);
+    const result = this.audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, user);
     this.logger.log(
       LOG_LEVEL.INFO,
       LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
@@ -1173,9 +1171,8 @@ export class DecisionService {
       configObj,
       rule,
       AUDIENCE_EVALUATION_TYPES.RULE,
-      attributes,
-      loggingKey,
-      user.getQualifiedSegments(),
+      user,
+      loggingKey
     );
     decideReasons.push(...decisionifUserIsInAudience.reasons);
     if (decisionifUserIsInAudience.result) {

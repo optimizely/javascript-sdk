@@ -25,6 +25,11 @@ import * as customAttributeConditionEvaluator from '../custom_attribute_conditio
 var buildLogMessageFromArgs = args => sprintf(args[1], ...args.splice(2));
 var mockLogger = getLogger();
 
+var getMockUserContext = (attributes, segments) => ({
+  getAttributes: () => ({ ... (attributes || {})}),
+  isQualifiedFor: segment => segments.indexOf(segment) > -1
+});
+
 var chromeUserAudience = {
   conditions: [
     'and',
@@ -91,11 +96,11 @@ describe('lib/core/audience_evaluator', function() {
       });
       describe('evaluate', function() {
         it('should return true if there are no audiences', function() {
-          assert.isTrue(audienceEvaluator.evaluate([], audiencesById, {}));
+          assert.isTrue(audienceEvaluator.evaluate([], audiencesById, getMockUserContext({})));
         });
 
         it('should return false if there are audiences but no attributes', function() {
-          assert.isFalse(audienceEvaluator.evaluate(['0'], audiencesById, {}));
+          assert.isFalse(audienceEvaluator.evaluate(['0'], audiencesById, getMockUserContext({})));
         });
 
         it('should return true if any of the audience conditions are met', function() {
@@ -112,9 +117,9 @@ describe('lib/core/audience_evaluator', function() {
             device_model: 'iphone',
           };
 
-          assert.isTrue(audienceEvaluator.evaluate(['0', '1'], audiencesById, iphoneUsers));
-          assert.isTrue(audienceEvaluator.evaluate(['0', '1'], audiencesById, chromeUsers));
-          assert.isTrue(audienceEvaluator.evaluate(['0', '1'], audiencesById, iphoneChromeUsers));
+          assert.isTrue(audienceEvaluator.evaluate(['0', '1'], audiencesById, getMockUserContext(iphoneUsers)));
+          assert.isTrue(audienceEvaluator.evaluate(['0', '1'], audiencesById, getMockUserContext(chromeUsers)));
+          assert.isTrue(audienceEvaluator.evaluate(['0', '1'], audiencesById, getMockUserContext(iphoneChromeUsers)));
         });
 
         it('should return false if none of the audience conditions are met', function() {
@@ -131,31 +136,31 @@ describe('lib/core/audience_evaluator', function() {
             device_model: 'nexus5',
           };
 
-          assert.isFalse(audienceEvaluator.evaluate(['0', '1'], audiencesById, nexusUsers));
-          assert.isFalse(audienceEvaluator.evaluate(['0', '1'], audiencesById, safariUsers));
-          assert.isFalse(audienceEvaluator.evaluate(['0', '1'], audiencesById, nexusSafariUsers));
+          assert.isFalse(audienceEvaluator.evaluate(['0', '1'], audiencesById, getMockUserContext(nexusUsers)));
+          assert.isFalse(audienceEvaluator.evaluate(['0', '1'], audiencesById, getMockUserContext(safariUsers)));
+          assert.isFalse(audienceEvaluator.evaluate(['0', '1'], audiencesById, getMockUserContext(nexusSafariUsers)));
         });
 
         it('should return true if no attributes are passed and the audience conditions evaluate to true in the absence of attributes', function() {
-          assert.isTrue(audienceEvaluator.evaluate(['2'], audiencesById));
+          assert.isTrue(audienceEvaluator.evaluate(['2'], audiencesById, getMockUserContext({})));
         });
 
         describe('complex audience conditions', function() {
           it('should return true if any of the audiences in an "OR" condition pass', function() {
-            var result = audienceEvaluator.evaluate(['or', '0', '1'], audiencesById, { browser_type: 'chrome' });
+            var result = audienceEvaluator.evaluate(['or', '0', '1'], audiencesById, getMockUserContext({ browser_type: 'chrome' }));
             assert.isTrue(result);
           });
 
           it('should return true if all of the audiences in an "AND" condition pass', function() {
-            var result = audienceEvaluator.evaluate(['and', '0', '1'], audiencesById, {
+            var result = audienceEvaluator.evaluate(['and', '0', '1'], audiencesById, getMockUserContext({
               browser_type: 'chrome',
               device_model: 'iphone',
-            });
+            }));
             assert.isTrue(result);
           });
 
           it('should return true if the audience in a "NOT" condition does not pass', function() {
-            var result = audienceEvaluator.evaluate(['not', '1'], audiencesById, { device_model: 'android' });
+            var result = audienceEvaluator.evaluate(['not', '1'], audiencesById, getMockUserContext({ device_model: 'android' }));
             assert.isTrue(result);
           });
         });
@@ -174,19 +179,19 @@ describe('lib/core/audience_evaluator', function() {
 
           it('returns true if conditionTreeEvaluator.evaluate returns true', function() {
             conditionTreeEvaluator.evaluate.returns(true);
-            var result = audienceEvaluator.evaluate(['or', '0', '1'], audiencesById, { browser_type: 'chrome' });
+            var result = audienceEvaluator.evaluate(['or', '0', '1'], audiencesById, getMockUserContext({ browser_type: 'chrome' }));
             assert.isTrue(result);
           });
 
           it('returns false if conditionTreeEvaluator.evaluate returns false', function() {
             conditionTreeEvaluator.evaluate.returns(false);
-            var result = audienceEvaluator.evaluate(['or', '0', '1'], audiencesById, { browser_type: 'safari' });
+            var result = audienceEvaluator.evaluate(['or', '0', '1'], audiencesById, getMockUserContext({ browser_type: 'safari' }));
             assert.isFalse(result);
           });
 
           it('returns false if conditionTreeEvaluator.evaluate returns null', function() {
             conditionTreeEvaluator.evaluate.returns(null);
-            var result = audienceEvaluator.evaluate(['or', '0', '1'], audiencesById, { state: 'California' });
+            var result = audienceEvaluator.evaluate(['or', '0', '1'], audiencesById, getMockUserContext({ state: 'California' }));
             assert.isFalse(result);
           });
 
@@ -196,13 +201,13 @@ describe('lib/core/audience_evaluator', function() {
             });
             customAttributeConditionEvaluator.evaluate.returns(false);
             var userAttributes = { device_model: 'android' };
-            var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
+            var user = getMockUserContext(userAttributes);
+            var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, user);
             sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
             sinon.assert.calledWithExactly(
               customAttributeConditionEvaluator.evaluate,
               iphoneUserAudience.conditions[1],
-              userAttributes,
-              [],
+              user,
             );
             assert.isFalse(result);
           });
@@ -226,13 +231,13 @@ describe('lib/core/audience_evaluator', function() {
             });
             customAttributeConditionEvaluator.evaluate.returns(null);
             var userAttributes = { device_model: 5.5 };
-            var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
+            var user = getMockUserContext(userAttributes);
+            var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, user);
             sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
             sinon.assert.calledWithExactly(
               customAttributeConditionEvaluator.evaluate,
               iphoneUserAudience.conditions[1],
-              userAttributes,
-              []
+              user
             );
             assert.isFalse(result);
             assert.strictEqual(2, mockLogger.log.callCount);
@@ -249,13 +254,13 @@ describe('lib/core/audience_evaluator', function() {
             });
             customAttributeConditionEvaluator.evaluate.returns(true);
             var userAttributes = { device_model: 'iphone' };
-            var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
+            var user = getMockUserContext(userAttributes);
+            var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, user);
             sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
             sinon.assert.calledWithExactly(
               customAttributeConditionEvaluator.evaluate,
               iphoneUserAudience.conditions[1],
-              userAttributes,
-              []
+              user,
             );
             assert.isTrue(result);
             assert.strictEqual(2, mockLogger.log.callCount);
@@ -272,13 +277,13 @@ describe('lib/core/audience_evaluator', function() {
             });
             customAttributeConditionEvaluator.evaluate.returns(false);
             var userAttributes = { device_model: 'android' };
-            var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, userAttributes);
+            var user = getMockUserContext(userAttributes);
+            var result = audienceEvaluator.evaluate(['or', '1'], audiencesById, user);
             sinon.assert.calledOnce(customAttributeConditionEvaluator.evaluate);
             sinon.assert.calledWithExactly(
               customAttributeConditionEvaluator.evaluate,
               iphoneUserAudience.conditions[1],
-              userAttributes,
-              []
+              user,
             );
             assert.isFalse(result);
             assert.strictEqual(2, mockLogger.log.callCount);
@@ -300,8 +305,8 @@ describe('lib/core/audience_evaluator', function() {
           };
           audienceEvaluator = createAudienceEvaluator({
             special_condition_type: {
-              evaluate: function(condition, userAttributes) {
-                const result = mockEnvironment[condition.value] && userAttributes[condition.match] > 0;
+              evaluate: function(condition, user) {
+                const result = mockEnvironment[condition.value] && user.getAttributes()[condition.match] > 0;
                 return result;
               },
             },
@@ -309,8 +314,8 @@ describe('lib/core/audience_evaluator', function() {
         });
 
         it('should evaluate an audience properly using the custom condition evaluator', function() {
-          assert.isFalse(audienceEvaluator.evaluate(['3'], audiencesById, { interest_level: 0 }));
-          assert.isTrue(audienceEvaluator.evaluate(['3'], audiencesById, { interest_level: 1 }));
+          assert.isFalse(audienceEvaluator.evaluate(['3'], audiencesById, getMockUserContext({ interest_level: 0 })));
+          assert.isTrue(audienceEvaluator.evaluate(['3'], audiencesById, getMockUserContext({ interest_level: 1 })));
         });
       });
 
@@ -327,9 +332,9 @@ describe('lib/core/audience_evaluator', function() {
 
         it('should not be able to overwrite built in `custom_attribute` evaluator', function() {
           assert.isTrue(
-            audienceEvaluator.evaluate(['0'], audiencesById, {
+            audienceEvaluator.evaluate(['0'], audiencesById, getMockUserContext({
               browser_type: 'chrome',
-            })
+            }))
           );
         });
       });
@@ -348,21 +353,21 @@ describe('lib/core/audience_evaluator', function() {
             }
           ]
         };
-        const audienceByIds = {
+        const audiencesById = {
           0: singleAudience,
         }
         const audience = new AudienceEvaluator();
         
         it('shoud evaluate to true if segment is found', () => {
-          assert.isTrue(audience.evaluate(['or', '0'], audienceByIds, {}, ['odp-segment-1']));
+          assert.isTrue(audience.evaluate(['or', '0'], audiencesById, getMockUserContext({}, ['odp-segment-1'])));
         });
         
         it('shoud evaluate to false if segment is not found', () => {
-          assert.isFalse(audience.evaluate(['or', '0'], audienceByIds, {}, ['odp-segment-2']));
+          assert.isFalse(audience.evaluate(['or', '0'], audiencesById, getMockUserContext({}, ['odp-segment-2'])));
         });
 
         it('shoud evaluate to false if not segments are provided', () => {
-          assert.isFalse(audience.evaluate(['or', '0'], audienceByIds, {}));
+          assert.isFalse(audience.evaluate(['or', '0'], audiencesById, getMockUserContext({})));
         });
       });
 
@@ -399,17 +404,17 @@ describe('lib/core/audience_evaluator', function() {
             ]
           ]
         };
-        const audienceByIds = {
+        const audiencesById = {
           0: singleAudience,
         }
         const audience = new AudienceEvaluator();
         
         it('shoud evaluate correctly based on the given segments', () => {
-          assert.isTrue(audience.evaluate(['or', '0'], audienceByIds, {}, ['odp-segment-1', 'odp-segment-2', 'odp-segment-3']));
-          assert.isTrue(audience.evaluate(['or', '0'], audienceByIds, {}, ['odp-segment-1', 'odp-segment-2', 'odp-segment-4']));
-          assert.isTrue(audience.evaluate(['or', '0'], audienceByIds, {}, ['odp-segment-1', 'odp-segment-2', 'odp-segment-3', 'odp-segment-4']));
-          assert.isFalse(audience.evaluate(['or', '0'], audienceByIds, {}, ['odp-segment-1', 'odp-segment-3', 'odp-segment-4']));
-          assert.isFalse(audience.evaluate(['or', '0'], audienceByIds, {}, ['odp-segment-2', 'odp-segment-3', 'odp-segment-4']));
+          assert.isTrue(audience.evaluate(['or', '0'], audiencesById, getMockUserContext({}, ['odp-segment-1', 'odp-segment-2', 'odp-segment-3'])));
+          assert.isTrue(audience.evaluate(['or', '0'], audiencesById, getMockUserContext({}, ['odp-segment-1', 'odp-segment-2', 'odp-segment-4'])));
+          assert.isTrue(audience.evaluate(['or', '0'], audiencesById, getMockUserContext({}, ['odp-segment-1', 'odp-segment-2', 'odp-segment-3', 'odp-segment-4'])));
+          assert.isFalse(audience.evaluate(['or', '0'], audiencesById, getMockUserContext({}, ['odp-segment-1', 'odp-segment-3', 'odp-segment-4'])));
+          assert.isFalse(audience.evaluate(['or', '0'], audiencesById, getMockUserContext({}, ['odp-segment-2', 'odp-segment-3', 'odp-segment-4'])));
         });
       });
 
@@ -467,7 +472,7 @@ describe('lib/core/audience_evaluator', function() {
             }
           ]
         };
-        const audienceByIds = {
+        const audiencesById = {
           0: audience1And2,
           1: audience3And4,
           2: audience5And6
@@ -478,29 +483,29 @@ describe('lib/core/audience_evaluator', function() {
           assert.isTrue(
             audience.evaluate(
               ['or', '0', '1', '2'],
-              audienceByIds, {},
-              ['odp-segment-1', 'odp-segment-2']
+              audiencesById,
+              getMockUserContext({},['odp-segment-1', 'odp-segment-2'])
             )
           );
           assert.isFalse(
             audience.evaluate(
               ['and', '0', '1', '2'],
-              audienceByIds, {},
-              ['odp-segment-1', 'odp-segment-2']
+              audiencesById,
+              getMockUserContext({}, ['odp-segment-1', 'odp-segment-2'])
             )
           );
           assert.isTrue(
             audience.evaluate(
               ['and', '0', '1', '2'],
-              audienceByIds, {},
-              ['odp-segment-1', 'odp-segment-2', 'odp-segment-3', 'odp-segment-4', 'odp-segment-6']
+              audiencesById,
+              getMockUserContext({}, ['odp-segment-1', 'odp-segment-2', 'odp-segment-3', 'odp-segment-4', 'odp-segment-6'])
             )
           );
           assert.isTrue(
             audience.evaluate(
               ['and', '0', '1',['not', '2']],
-              audienceByIds, {},
-              ['odp-segment-1', 'odp-segment-2', 'odp-segment-3', 'odp-segment-4']
+              audiencesById,
+              getMockUserContext({}, ['odp-segment-1', 'odp-segment-2', 'odp-segment-3', 'odp-segment-4'])
             )
           );
         });
@@ -543,7 +548,7 @@ describe('lib/core/audience_evaluator', function() {
         ]
       };
 
-      const audienceByIds = {
+      const audiencesById = {
         0: audience1And2,
         1: audience3Or4,
         2: chromeUserAudience,
@@ -555,17 +560,17 @@ describe('lib/core/audience_evaluator', function() {
         assert.isFalse(
           audience.evaluate(
             ['and', '0', '1', '2'],
-            audienceByIds,
-            { browser_type: 'not_chrome' },
-            ['odp-segment-1', 'odp-segment-2', 'odp-segment-4']
+            audiencesById,
+            getMockUserContext({ browser_type: 'not_chrome' },
+              ['odp-segment-1', 'odp-segment-2', 'odp-segment-4'])
           )
         );
         assert.isTrue(
           audience.evaluate(
             ['and', '0', '1', '2'],
-            audienceByIds,
-            { browser_type: 'chrome' },
-            ['odp-segment-1', 'odp-segment-2', 'odp-segment-4']
+            audiencesById,
+            getMockUserContext({ browser_type: 'chrome' },
+              ['odp-segment-1', 'odp-segment-2', 'odp-segment-4'])
           )
         );
       });

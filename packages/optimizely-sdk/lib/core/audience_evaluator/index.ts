@@ -24,7 +24,7 @@ import {
 import * as conditionTreeEvaluator from '../condition_tree_evaluator';
 import * as customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
 import * as odpSegmentsConditionEvaluator from './odp_segment_condition_evaluator';
-import { UserAttributes, Audience, Condition } from '../../shared_types';
+import { Audience, Condition, OptimizelyUserContext } from '../../shared_types';
 
 const logger = getLogger();
 const MODULE_NAME = 'AUDIENCE_EVALUATOR';
@@ -32,7 +32,7 @@ const MODULE_NAME = 'AUDIENCE_EVALUATOR';
 export class AudienceEvaluator {
   private typeToEvaluatorMap: {
     [key: string]: {
-      [key: string]: (condition: Condition, userAttributes: UserAttributes, segments: string[]) => boolean | null
+      [key: string]: (condition: Condition, user: OptimizelyUserContext) => boolean | null
     };
   };
 
@@ -58,16 +58,15 @@ export class AudienceEvaluator {
    * @param  {[id: string]: Audience}       audiencesById         Object providing access to full audience objects for audience IDs
    *                                                              contained in audienceConditions. Keys should be audience IDs, values
    *                                                              should be full audience objects with conditions properties
-   * @param  {UserAttributes}               userAttributes        User attributes which will be used in determining if audience conditions
-   *                                                              are met. If not provided, defaults to an empty object
+   * @param  {OptimizelyUserContext}        userAttributes        User context which contains the attributes and segments which will be used in 
+   *                                                              determining if audience conditions are met.
    * @return {boolean}                                            true if the user attributes match the given audience conditions, false
    *                                                              otherwise
    */
   evaluate(
     audienceConditions: Array<string | string[]>,
     audiencesById: { [id: string]: Audience },
-    userAttributes: UserAttributes = {},
-    segments: string[] = [],
+    user: OptimizelyUserContext,
   ): boolean {
     // if there are no audiences, return true because that means ALL users are included in the experiment
     if (!audienceConditions || audienceConditions.length === 0) {
@@ -83,7 +82,7 @@ export class AudienceEvaluator {
         );
         const result = conditionTreeEvaluator.evaluate(
           audience.conditions as unknown[] ,
-          this.evaluateConditionWithUserAttributes.bind(this, userAttributes, segments)
+          this.evaluateConditionWithUserAttributes.bind(this, user)
         );
         const resultText = result === null ? 'UNKNOWN' : result.toString().toUpperCase();
         logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT, MODULE_NAME, audienceId, resultText);
@@ -98,18 +97,18 @@ export class AudienceEvaluator {
   /**
    * Wrapper around evaluator.evaluate that is passed to the conditionTreeEvaluator.
    * Evaluates the condition provided given the user attributes if an evaluator has been defined for the condition type.
-   * @param  {UserAttributes}       userAttributes     A map of user attributes.
-   * @param  {Condition}            condition          A single condition object to evaluate.
+   * @param  {OptimizelyUserContext}  user             Optimizely user context containing attributes and segments
+   * @param  {Condition}              condition        A single condition object to evaluate.
    * @return {boolean|null}                            true if the condition is satisfied, null if a matcher is not found.
    */
-  evaluateConditionWithUserAttributes(userAttributes: UserAttributes, segments: string[], condition: Condition): boolean | null {
+  evaluateConditionWithUserAttributes(user: OptimizelyUserContext, condition: Condition): boolean | null {
     const evaluator = this.typeToEvaluatorMap[condition.type];
     if (!evaluator) {
       logger.log(LOG_LEVEL.WARNING, LOG_MESSAGES.UNKNOWN_CONDITION_TYPE, MODULE_NAME, JSON.stringify(condition));
       return null;
     }
     try {
-      return evaluator.evaluate(condition, userAttributes, segments);
+      return evaluator.evaluate(condition, user);
     } catch (err) {
       logger.log(
         LOG_LEVEL.ERROR,

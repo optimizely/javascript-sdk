@@ -31,6 +31,11 @@ var odpSegment1Condition = {
   "match": "qualified"
 };
 
+var getMockUserContext = (attributes, segments) => ({
+  getAttributes: () => ({ ... (attributes || {})}),
+  isQualifiedFor: segment => segments.indexOf(segment) > -1
+});
+
 describe('lib/core/audience_evaluator/odp_segment_condition_evaluator', function() {
   var stubLogHandler;
 
@@ -47,11 +52,11 @@ describe('lib/core/audience_evaluator/odp_segment_condition_evaluator', function
   });
 
   it('should return true when segment qualifies and known match type is provided', () =>  {
-    assert.isTrue(odpSegmentEvalutor.evaluate(odpSegment1Condition, {}, ['odp-segment-1']));
+    assert.isTrue(odpSegmentEvalutor.evaluate(odpSegment1Condition, getMockUserContext({}, ['odp-segment-1'])));
   });
 
   it('should return false when segment does not qualify and known match type is provided', () =>  {
-    assert.isFalse(odpSegmentEvalutor.evaluate(odpSegment1Condition, {}, ['odp-segment-2']));
+    assert.isFalse(odpSegmentEvalutor.evaluate(odpSegment1Condition, getMockUserContext({}, ['odp-segment-2'])));
   })
 
   it('should return null when segment qualifies but unknown match type is provided', () =>  {
@@ -59,7 +64,7 @@ describe('lib/core/audience_evaluator/odp_segment_condition_evaluator', function
       ... odpSegment1Condition,
       "match": 'unknown',
     };
-    assert.isNull(odpSegmentEvalutor.evaluate(invalidOdpMatchCondition, {}, ['odp-segment-1']));
+    assert.isNull(odpSegmentEvalutor.evaluate(invalidOdpMatchCondition, getMockUserContext({}, ['odp-segment-1'])));
     sinon.assert.calledOnce(stubLogHandler.log);
     assert.strictEqual(stubLogHandler.log.args[0][0], LOG_LEVEL.WARNING);
     var logMessage = stubLogHandler.log.args[0][1];

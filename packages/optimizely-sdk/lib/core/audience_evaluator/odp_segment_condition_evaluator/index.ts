@@ -14,7 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import { getLogger } from '@optimizely/js-sdk-logging';
-import { Condition, UserAttributes } from '../../../shared_types';
+import { Condition, OptimizelyUserContext } from '../../../shared_types';
 
 import { LOG_MESSAGES } from '../../../utils/enums';
 
@@ -28,7 +28,7 @@ const MATCH_TYPES = [
   QUALIFIED_MATCH_TYPE,
 ];
 
-type ConditionEvaluator = (condition: Condition, userAttributes: UserAttributes, segments: string[]) => boolean | null;
+type ConditionEvaluator = (condition: Condition, user: OptimizelyUserContext) => boolean | null;
 
 const EVALUATORS_BY_MATCH_TYPE: { [conditionType: string]: ConditionEvaluator | undefined } = {};
 EVALUATORS_BY_MATCH_TYPE[QUALIFIED_MATCH_TYPE] = qualifiedEvaluator;
@@ -37,13 +37,12 @@ EVALUATORS_BY_MATCH_TYPE[QUALIFIED_MATCH_TYPE] = qualifiedEvaluator;
  * Given a custom attribute audience condition and user attributes, evaluate the
  * condition against the attributes.
  * @param  {Condition}        condition
- * @param  {UserAttributes}   userAttributes
- * @param  {LoggerFacade}     logger
+ * @param  {OptimizelyUserContext} user
  * @return {?boolean}         true/false if the given user attributes match/don't match the given condition,
  *                            null if the given user attributes and condition can't be evaluated
  * TODO: Change to accept and object with named properties
  */
-export function evaluate(condition: Condition, userAttributes: UserAttributes, segments: string[]): boolean | null {
+export function evaluate(condition: Condition, user: OptimizelyUserContext): boolean | null {
   const conditionMatch = condition.match;
   if (typeof conditionMatch !== 'undefined' && MATCH_TYPES.indexOf(conditionMatch) === -1) {
     logger.warn(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, JSON.stringify(condition));
@@ -57,9 +56,10 @@ export function evaluate(condition: Condition, userAttributes: UserAttributes, s
     evaluator = EVALUATORS_BY_MATCH_TYPE[conditionMatch] || qualifiedEvaluator;
   }
 
-  return evaluator(condition, userAttributes, segments);
+  return evaluator(condition, user);
 }
 
-function qualifiedEvaluator(condition: Condition, userAttributes: UserAttributes, segments: string[]): boolean {
-  return segments.indexOf(condition.value as string) > -1;
+function qualifiedEvaluator(condition: Condition, user: OptimizelyUserContext): boolean {
+  //return user.getQualifiedSegments().indexOf(condition.value as string) > -1;
+  return user.isQualifiedFor(condition.value as string);
 }
