@@ -14,7 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import { LoggerFacade, ErrorHandler } from '@optimizely/js-sdk-logging';
-import { sprintf, objectValues } from '../utils/fns';
+import { sprintf, objectValues, toObject } from '../utils/fns';
 import { NotificationCenter } from '../core/notification_center';
 import { EventProcessor } from '@optimizely/js-sdk-event-processor';
 
@@ -1667,7 +1667,7 @@ export default class Optimizely {
       return decisionMap;
     }
 
-    const allFlagKeys = Object.keys(configObj.featureKeyMap);
+    const allFlagKeys = [...configObj.featureKeyMap.keys()];
 
     return this.decideForKeys(user, allFlagKeys, options);
   }

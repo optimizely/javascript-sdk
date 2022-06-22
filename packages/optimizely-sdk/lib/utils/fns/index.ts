@@ -111,12 +111,15 @@ export function find<K>(arr: K[], cond: (arg: K) => boolean): K | undefined {
 
 export function toObject<K extends { [key: string]: any }>(map: Map<string, K>): Record<string, K> {
   const obj: Record<string, K> = {};
-
-  map.forEach((item, key) => {
-    obj[key] = item;
-  });
-
-  return obj;
+  return Object.fromEntries
+  ( Array.from
+      ( map.entries()
+      , ([ k, v ]) =>
+          v instanceof Map
+            ? [ k, toObject (v) ]
+            : [ k, v ]
+      )
+  )
 }
 
 export function objectValues<K>(obj: { [key: string]: K }): K[] {

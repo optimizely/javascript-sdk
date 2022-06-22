@@ -66,12 +66,12 @@ var conditionsPassingWithNoAttrs = [
 var conditionsPassingWithNoAttrsAudience = {
   conditions: conditionsPassingWithNoAttrs,
 };
-var audiencesById = {
-  0: chromeUserAudience,
-  1: iphoneUserAudience,
-  2: conditionsPassingWithNoAttrsAudience,
-  3: specialConditionTypeAudience,
-};
+var audiencesById = new Map([
+  ['0', chromeUserAudience],
+  ['1', iphoneUserAudience],
+  ['2', conditionsPassingWithNoAttrsAudience],
+  ['3', specialConditionTypeAudience],
+]);
 
 describe('lib/core/audience_evaluator', function() {
   var audienceEvaluator;

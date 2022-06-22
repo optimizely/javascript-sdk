@@ -16,7 +16,7 @@
 import sinon from 'sinon';
 import { assert, expect } from 'chai';
 import { cloneDeep } from 'lodash';
-import { sprintf } from '../../utils/fns';
+import { sprintf, toObject } from '../../utils/fns';
 
 import * as bucketer from './';
 import {
@@ -49,13 +49,14 @@ describe('lib/core/bucketer', function() {
       describe('return values for bucketing (excluding groups)', function() {
         beforeEach(function() {
           configObj = projectConfig.createProjectConfig(cloneDeep(testData));
+
           bucketerParams = {
             experimentId: configObj.experiments[0].id,
             experimentKey: configObj.experiments[0].key,
             trafficAllocationConfig: configObj.experiments[0].trafficAllocation,
-            variationIdMap: configObj.variationIdMap,
-            experimentIdMap: configObj.experimentIdMap,
-            groupIdMap: configObj.groupIdMap,
+            variationIdMap: toObject(configObj.variationIdMap),
+            experimentIdMap: toObject(configObj.experimentIdMap),
+            groupIdMap: toObject(configObj.groupIdMap),
             logger: createdLogger,
           };
           sinon
@@ -101,9 +102,9 @@ describe('lib/core/bucketer', function() {
             experimentId: configObj.experiments[0].id,
             experimentKey: configObj.experiments[0].key,
             trafficAllocationConfig: configObj.experiments[0].trafficAllocation,
-            variationIdMap: configObj.variationIdMap,
-            experimentIdMap: configObj.experimentIdMap,
-            groupIdMap: configObj.groupIdMap,
+            variationIdMap: toObject(configObj.variationIdMap),
+            experimentIdMap: toObject(configObj.experimentIdMap),
+            groupIdMap: toObject(configObj.groupIdMap),
             logger: createdLogger,
           };
           bucketerStub = sinon.stub(bucketer, '_generateBucketValue');
@@ -120,9 +121,9 @@ describe('lib/core/bucketer', function() {
               experimentId: configObj.experiments[4].id,
               experimentKey: configObj.experiments[4].key,
               trafficAllocationConfig: configObj.experiments[4].trafficAllocation,
-              variationIdMap: configObj.variationIdMap,
-              experimentIdMap: configObj.experimentIdMap,
-              groupIdMap: configObj.groupIdMap,
+              variationIdMap: toObject(configObj.variationIdMap),
+              experimentIdMap: toObject(configObj.experimentIdMap),
+              groupIdMap: toObject(configObj.groupIdMap),
               logger: createdLogger,
               userId: 'testUser',
             };
@@ -236,9 +237,9 @@ describe('lib/core/bucketer', function() {
               experimentId: configObj.experiments[6].id,
               experimentKey: configObj.experiments[6].key,
               trafficAllocationConfig: configObj.experiments[6].trafficAllocation,
-              variationIdMap: configObj.variationIdMap,
-              experimentIdMap: configObj.experimentIdMap,
-              groupIdMap: configObj.groupIdMap,
+              variationIdMap: toObject(configObj.variationIdMap),
+              experimentIdMap: toObject(configObj.experimentIdMap),
+              groupIdMap: toObject(configObj.groupIdMap),
               logger: createdLogger,
               userId: 'testUser',
             };
@@ -282,9 +283,9 @@ describe('lib/core/bucketer', function() {
                 endOfRange: 10000,
               },
             ],
-            variationIdMap: configObj.variationIdMap,
-            experimentIdMap: configObj.experimentIdMap,
-            groupIdMap: configObj.groupIdMap,
+            variationIdMap: toObject(configObj.variationIdMap),
+            experimentIdMap: toObject(configObj.experimentIdMap),
+            groupIdMap: toObject(configObj.groupIdMap),
             logger: createdLogger,
           };
         });
@@ -322,9 +323,9 @@ describe('lib/core/bucketer', function() {
                 endOfRange: 10000,
               },
             ],
-            variationIdMap: configObj.variationIdMap,
-            experimentIdMap: configObj.experimentIdMap,
-            groupIdMap: configObj.groupIdMap,
+            variationIdMap: toObject(configObj.variationIdMap),
+            experimentIdMap: toObject(configObj.experimentIdMap),
+            groupIdMap: toObject(configObj.groupIdMap),
             logger: createdLogger,
           };
         });
@@ -370,9 +371,9 @@ describe('lib/core/bucketer', function() {
         var configObj = projectConfig.createProjectConfig(cloneDeep(testData));
         bucketerParams = {
           trafficAllocationConfig: configObj.experiments[0].trafficAllocation,
-          variationIdMap: configObj.variationIdMap,
-          experimentIdMap: configObj.experimentIdMap,
-          groupIdMap: configObj.groupIdMap,
+          variationIdMap: toObject(configObj.variationIdMap),
+          experimentIdMap: toObject(configObj.experimentIdMap),
+          groupIdMap: toObject(configObj.groupIdMap),
           logger: createdLogger,
         };
       });

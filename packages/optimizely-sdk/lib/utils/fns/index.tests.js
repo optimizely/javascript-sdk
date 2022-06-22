@@ -39,34 +39,6 @@ describe('lib/utils/fns', function() {
       });
     });
 
-    describe('keyBy', function() {
-      it('should return correct object when a key is provided', function() {
-        var arr = [
-          { key1: 'row1', key2: 'key2row1' },
-          { key1: 'row2', key2: 'key2row2' },
-          { key1: 'row3', key2: 'key2row3' },
-          { key1: 'row4', key2: 'key2row4' },
-        ];
-
-        var obj = fns.keyBy(arr, 'key1');
-
-        assert.deepEqual(obj, {
-          row1: { key1: 'row1', key2: 'key2row1' },
-          row2: { key1: 'row2', key2: 'key2row2' },
-          row3: { key1: 'row3', key2: 'key2row3' },
-          row4: { key1: 'row4', key2: 'key2row4' },
-        });
-      });
-
-      it('should return empty object when first argument is null or undefined', function() {
-        var obj = fns.keyBy(null, 'key1');
-        assert.isEmpty(obj);
-
-        obj = fns.keyBy(undefined, 'key1');
-        assert.isEmpty(obj);
-      });
-    });
-
     describe('isNumber', function() {
       it('should return true in case of number', function() {
         assert.isTrue(fns.isNumber(3));

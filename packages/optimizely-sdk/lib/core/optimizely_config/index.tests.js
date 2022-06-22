@@ -743,7 +743,7 @@ describe('lib/core/optimizely_config', function() {
           key: featureFlag.key,
         });
         featureFlag.experimentIds.forEach(function(experimentId) {
-          var experimentKey = projectConfigObject.experimentIdMap[experimentId].key;
+          var experimentKey = projectConfigObject.experimentIdMap.get(experimentId).key;
           assert.isTrue(!!featuresMap[featureFlag.key].experimentsMap[experimentKey]);
         });
         var variablesMap = featuresMap[featureFlag.key].variablesMap;
@@ -774,7 +774,7 @@ describe('lib/core/optimizely_config', function() {
       featureFlags.forEach(function(featureFlag) {
         var experimentIds = featureFlag.experimentIds;
         experimentIds.forEach(function(experimentId) {
-          var experimentKey = projectConfigObject.experimentIdMap[experimentId].key;
+          var experimentKey = projectConfigObject.experimentIdMap.get(experimentId).key;
           var experiment = optimizelyConfigObject.experimentsMap[experimentKey];
           var variations = datafileExperimentsMap[experimentKey].variations;
           var variationsMap = experiment.variationsMap;

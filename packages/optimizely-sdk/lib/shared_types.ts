@@ -141,7 +141,7 @@ export interface Experiment {
   audienceConditions: Array<string | string[]>;
   audienceIds: string[];
   trafficAllocation: TrafficAllocation[];
-  forcedVariations?: Map<string, string>;
+  forcedVariations?: { [key: string]: string };
 }
 
 export enum VariableType {

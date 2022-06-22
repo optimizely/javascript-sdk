@@ -91,12 +91,12 @@ interface DeliveryRuleResponse<T, K> extends DecisionResponse<T> {
 export class DecisionService {
   private logger: LogHandler;
   private audienceEvaluator: AudienceEvaluator;
-  private forcedVariationMap: { [key: string]: { [id: string]: string } };
+  private forcedVariationMap: Map<string, Map<string, string>>;
   private userProfileService: UserProfileService | null;
 
   constructor(options: DecisionServiceOptions) {
     this.audienceEvaluator = createAudienceEvaluator(options.UNSTABLE_conditionEvaluators);
-    this.forcedVariationMap = {};
+    this.forcedVariationMap = new Map();
     this.logger = options.logger;
     this.userProfileService = options.userProfileService || null;
   }
@@ -264,7 +264,7 @@ export class DecisionService {
   private getWhitelistedVariation(experiment: Experiment, userId: string): DecisionResponse<Variation | null> {
     const decideReasons: (string | number | undefined)[][] = [];
     if (experiment.forcedVariations && experiment.forcedVariations.hasOwnProperty(userId)) {
-      const forcedVariationKey = experiment.forcedVariations.get(userId);
+      const forcedVariationKey = experiment.forcedVariations[userId];
 
       if (forcedVariationKey) {
         const variation = experiment.variationKeyMap.get(forcedVariationKey);
@@ -806,8 +806,9 @@ export class DecisionService {
       throw new Error(sprintf(ERROR_MESSAGES.INVALID_USER_ID, MODULE_NAME));
     }
 
-    if (this.forcedVariationMap.hasOwnProperty(userId)) {
-      delete this.forcedVariationMap[userId][experimentId];
+    const forcedVariation = this.forcedVariationMap.get(userId);
+    if (forcedVariation) {
+      forcedVariation.delete(experimentId);
       this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.VARIATION_REMOVED_FOR_USER, MODULE_NAME, experimentKey, userId);
     } else {
       throw new Error(sprintf(ERROR_MESSAGES.USER_NOT_IN_FORCED_VARIATION, MODULE_NAME, userId));
@@ -822,11 +823,13 @@ export class DecisionService {
    * @throws If the user id is not valid
    */
   private setInForcedVariationMap(userId: string, experimentId: string, variationId: string): void {
-    if (this.forcedVariationMap.hasOwnProperty(userId)) {
-      this.forcedVariationMap[userId][experimentId] = variationId;
+    const experimentToVariationMap = this.forcedVariationMap.get(userId);
+    if (experimentToVariationMap) {
+      experimentToVariationMap.set(experimentId, variationId);
     } else {
-      this.forcedVariationMap[userId] = {};
-      this.forcedVariationMap[userId][experimentId] = variationId;
+      this.forcedVariationMap.set(userId, new Map([
+        [experimentId, variationId]
+      ]));
     }
 
     this.logger.log(
@@ -849,7 +852,7 @@ export class DecisionService {
    */
   getForcedVariation(configObj: ProjectConfig, experimentKey: string, userId: string): DecisionResponse<string | null> {
     const decideReasons: (string | number)[][] = [];
-    const experimentToVariationMap = this.forcedVariationMap[userId];
+    const experimentToVariationMap = this.forcedVariationMap.get(userId);
     if (!experimentToVariationMap) {
       this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, MODULE_NAME, userId);
 
@@ -885,7 +888,7 @@ export class DecisionService {
       };
     }
 
-    const variationId = experimentToVariationMap[experimentId];
+    const variationId = experimentToVariationMap.get(experimentId);
     if (!variationId) {
       this.logger.log(
         LOG_LEVEL.DEBUG,

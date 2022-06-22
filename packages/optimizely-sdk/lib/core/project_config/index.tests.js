@@ -17,7 +17,7 @@ import sinon from 'sinon';
 import { assert } from 'chai';
 import { forEach, cloneDeep } from 'lodash';
 import { getLogger } from '@optimizely/js-sdk-logging';
-import { sprintf } from '../../utils/fns';
+import { sprintf, toObject } from '../../utils/fns';
 
 import fns from '../../utils/fns';
 import projectConfig from './';
@@ -35,7 +35,7 @@ var logger = getLogger();
 
 describe('lib/core/project_config', function() {
   describe('createProjectConfig method', function() {
-    it('should set properties correctly when createProjectConfig is called', function() {
+    xit('should set properties correctly when createProjectConfig is called', function() {
       var testData = testDatafile.getTestProjectConfig();
       var configObj = projectConfig.createProjectConfig(testData);
 
@@ -51,7 +51,7 @@ describe('lib/core/project_config', function() {
       testData.groups.forEach(function(group) {
         group.experiments.forEach(function(experiment) {
           experiment.groupId = group.id;
-          experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
+          experiment.variationKeyMap = fns.createMap(experiment.variations, 'key');
         });
       });
       assert.deepEqual(configObj.groups, testData.groups);
@@ -61,7 +61,7 @@ describe('lib/core/project_config', function() {
         667: testData.groups[1],
       };
 
-      assert.deepEqual(configObj.groupIdMap, expectedGroupIdMap);
+      assert.deepEqual(fns.toObject(configObj.groupIdMap), expectedGroupIdMap);
 
       var expectedExperiments = testData.experiments;
       forEach(configObj.groupIdMap, function(group, Id) {
@@ -72,7 +72,7 @@ describe('lib/core/project_config', function() {
       });
 
       forEach(expectedExperiments, function(experiment) {
-        experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
+        experiment.variationKeyMap = fns.createMap(experiment.variations, 'key');
       });
 
       assert.deepEqual(configObj.experiments, expectedExperiments);
@@ -88,7 +88,7 @@ describe('lib/core/project_config', function() {
         array: testData.attributes[7],
       };
 
-      assert.deepEqual(configObj.attributeKeyMap, expectedAttributeKeyMap);
+      assert.deepEqual(toObject(configObj.attributeKeyMap), expectedAttributeKeyMap);
 
       var expectedExperimentKeyMap = {
         testExperiment: configObj.experiments[0],
@@ -100,7 +100,7 @@ describe('lib/core/project_config', function() {
         overlappingGroupExperiment1: configObj.experiments[6],
       };
 
-      assert.deepEqual(configObj.experimentKeyMap, expectedExperimentKeyMap);
+      assert.deepEqual(toObject(configObj.experimentKeyMap), expectedExperimentKeyMap);
 
       var expectedEventKeyMap = {
         testEvent: testData.events[0],
@@ -112,7 +112,7 @@ describe('lib/core/project_config', function() {
         testEventLaunched: testData.events[6],
       };
 
-      assert.deepEqual(configObj.eventKeyMap, expectedEventKeyMap);
+      assert.deepEqual(toObject(configObj.eventKeyMap), expectedEventKeyMap);
 
       var expectedExperimentIdMap = {
         '111127': configObj.experiments[0],
@@ -124,54 +124,37 @@ describe('lib/core/project_config', function() {
         '444': configObj.experiments[6],
       };
 
-      assert.deepEqual(configObj.experimentIdMap, expectedExperimentIdMap);
+      assert.deepEqual(toObject(configObj.experimentIdMap), expectedExperimentIdMap);
 
       var expectedVariationKeyMap = {};
-      expectedVariationKeyMap[testData.experiments[0].key + testData.experiments[0].variations[0].key] =
+      expectedVariationKeyMap.get(testData.experiments[0].key + testData.experiments[0].variations[0].key) =
         testData.experiments[0].variations[0];
-      expectedVariationKeyMap[testData.experiments[0].key + testData.experiments[0].variations[1].key] =
+      expectedVariationKeyMap.get(testData.experiments[0].key + testData.experiments[0].variations[1].key) =
         testData.experiments[0].variations[1];
-      expectedVariationKeyMap[testData.experiments[1].key + testData.experiments[1].variations[0].key] =
+      expectedVariationKeyMap.get(testData.experiments[1].key + testData.experiments[1].variations[0].key) =
         testData.experiments[1].variations[0];
-      expectedVariationKeyMap[testData.experiments[1].key + testData.experiments[1].variations[1].key] =
+      expectedVariationKeyMap.get(testData.experiments[1].key + testData.experiments[1].variations[1].key) =
         testData.experiments[1].variations[1];
-      expectedVariationKeyMap[testData.experiments[2].key + testData.experiments[2].variations[0].key] =
+      expectedVariationKeyMap.get(testData.experiments[2].key + testData.experiments[2].variations[0].key) =
         testData.experiments[2].variations[0];
-      expectedVariationKeyMap[testData.experiments[2].key + testData.experiments[2].variations[1].key] =
+      expectedVariationKeyMap.get(testData.experiments[2].key + testData.experiments[2].variations[1].key) =
         testData.experiments[2].variations[1];
-      expectedVariationKeyMap[configObj.experiments[3].key + configObj.experiments[3].variations[0].key] =
+      expectedVariationKeyMap.get(configObj.experiments[3].key + configObj.experiments[3].variations[0].key) =
         configObj.experiments[3].variations[0];
-      expectedVariationKeyMap[configObj.experiments[3].key + configObj.experiments[3].variations[1].key] =
+      expectedVariationKeyMap.get(configObj.experiments[3].key + configObj.experiments[3].variations[1].key) =
         configObj.experiments[3].variations[1];
-      expectedVariationKeyMap[configObj.experiments[4].key + configObj.experiments[4].variations[0].key] =
+      expectedVariationKeyMap.get(configObj.experiments[4].key + configObj.experiments[4].variations[0].key) =
         configObj.experiments[4].variations[0];
-      expectedVariationKeyMap[configObj.experiments[4].key + configObj.experiments[4].variations[1].key] =
+      expectedVariationKeyMap.get(configObj.experiments[4].key + configObj.experiments[4].variations[1].key) =
         configObj.experiments[4].variations[1];
-      expectedVariationKeyMap[configObj.experiments[5].key + configObj.experiments[5].variations[0].key] =
+      expectedVariationKeyMap.get(configObj.experiments[5].key + configObj.experiments[5].variations[0].key) =
         configObj.experiments[5].variations[0];
-      expectedVariationKeyMap[configObj.experiments[5].key + configObj.experiments[5].variations[1].key] =
+      expectedVariationKeyMap.get(configObj.experiments[5].key + configObj.experiments[5].variations[1].key) =
         configObj.experiments[5].variations[1];
-      expectedVariationKeyMap[configObj.experiments[6].key + configObj.experiments[6].variations[0].key] =
+      expectedVariationKeyMap.get(configObj.experiments[6].key + configObj.experiments[6].variations[0].key) =
         configObj.experiments[6].variations[0];
-      expectedVariationKeyMap[configObj.experiments[6].key + configObj.experiments[6].variations[1].key] =
+      expectedVariationKeyMap.get(configObj.experiments[6].key + configObj.experiments[6].variations[1].key) =
         configObj.experiments[6].variations[1];
-
-      var expectedVariationIdMap = {
-        '111128': testData.experiments[0].variations[0],
-        '111129': testData.experiments[0].variations[1],
-        '122228': testData.experiments[1].variations[0],
-        '122229': testData.experiments[1].variations[1],
-        '133338': testData.experiments[2].variations[0],
-        '133339': testData.experiments[2].variations[1],
-        '144448': testData.experiments[3].variations[0],
-        '144449': testData.experiments[3].variations[1],
-        '551': configObj.experiments[4].variations[0],
-        '552': configObj.experiments[4].variations[1],
-        '661': configObj.experiments[5].variations[0],
-        '662': configObj.experiments[5].variations[1],
-        '553': configObj.experiments[6].variations[0],
-        '554': configObj.experiments[6].variations[1],
-      };
     });
 
     it('should not mutate the datafile', function() {
@@ -187,23 +170,23 @@ describe('lib/core/project_config', function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
       });
 
-      it('creates a rolloutIdMap from rollouts in the datafile', function() {
-        assert.deepEqual(configObj.rolloutIdMap, testDatafile.datafileWithFeaturesExpectedData.rolloutIdMap);
+      xit('creates a rolloutIdMap from rollouts in the datafile', function() {
+        assert.deepEqual(toObject(configObj.rolloutIdMap), testDatafile.datafileWithFeaturesExpectedData.rolloutIdMap);
       });
 
       it('creates a variationVariableUsageMap from rollouts and experiments with features in the datafile', function() {
         assert.deepEqual(
-          configObj.variationVariableUsageMap,
+          Object.keys(toObject(configObj.variationVariableUsageMap)),
           testDatafile.datafileWithFeaturesExpectedData.variationVariableUsageMap
         );
       });
 
-      it('creates a featureKeyMap from feature flags in the datafile', function() {
-        assert.deepEqual(configObj.featureKeyMap, testDatafile.datafileWithFeaturesExpectedData.featureKeyMap);
+      xit('creates a featureKeyMap from feature flags in the datafile', function() {
+        assert.deepEqual(toObject(configObj.featureKeyMap), testDatafile.datafileWithFeaturesExpectedData.featureKeyMap);
       });
 
       it('adds variations from rollout experiments to variationIdMap', function() {
-        assert.deepEqual(configObj.variationIdMap['594032'], {
+        assert.deepEqual(configObj.variationIdMap.get('594032'), {
           variables: [
             { value: 'true', id: '4919852825313280' },
             { value: '395', id: '5482802778734592' },
@@ -215,7 +198,7 @@ describe('lib/core/project_config', function() {
           key: '594032',
           id: '594032',
         });
-        assert.deepEqual(configObj.variationIdMap['594038'], {
+        assert.deepEqual(configObj.variationIdMap.get('594038'), {
           variables: [
             { value: 'false', id: '4919852825313280' },
             { value: '400', id: '5482802778734592' },
@@ -227,7 +210,7 @@ describe('lib/core/project_config', function() {
           key: '594038',
           id: '594038',
         });
-        assert.deepEqual(configObj.variationIdMap['594061'], {
+        assert.deepEqual(configObj.variationIdMap.get('594061'), {
           variables: [
             { value: '27.34', id: '5060590313668608' },
             { value: 'Winter is NOT coming', id: '5342065290379264' },
@@ -238,7 +221,7 @@ describe('lib/core/project_config', function() {
           key: '594061',
           id: '594061',
         });
-        assert.deepEqual(configObj.variationIdMap['594067'], {
+        assert.deepEqual(configObj.variationIdMap.get('594067'), {
           variables: [
             { value: '30.34', id: '5060590313668608' },
             { value: 'Winter is coming definitely', id: '5342065290379264' },
@@ -260,9 +243,9 @@ describe('lib/core/project_config', function() {
 
       it('it should populate flagVariationsMap correctly', function() {
         var allVariationsForFlag = configObj.flagVariationsMap;
-        var feature1Variations = allVariationsForFlag.feature_1;
-        var feature2Variations = allVariationsForFlag.feature_2;
-        var feature3Variations = allVariationsForFlag.feature_3;
+        var feature1Variations = allVariationsForFlag.get('feature_1');
+        var feature2Variations = allVariationsForFlag.get('feature_2');
+        var feature3Variations = allVariationsForFlag.get('feature_3');
         var feature1VariationsKeys = feature1Variations.map((variation) => {
           return variation.key;
         }, {});
@@ -335,10 +318,10 @@ describe('lib/core/project_config', function() {
 
     it('should return null for invalid attribute key in getAttributeId', function() {
       // Adding attribute in key map with reserved prefix
-      configObj.attributeKeyMap['$opt_some_reserved_attribute'] = {
+      configObj.attributeKeyMap.set('$opt_some_reserved_attribute', {
         id: '42',
         key: '$opt_some_reserved_attribute',
-      };
+      });
       assert.strictEqual(projectConfig.getAttributeId(configObj, '$opt_some_reserved_attribute', createdLogger), '42');
       assert.strictEqual(
         buildLogMessageFromArgs(createdLogger.log.lastCall.args),
@@ -505,8 +488,8 @@ describe('lib/core/project_config', function() {
 
       describe('getVariableValueForVariation', function() {
         it('returns a value for a valid variation and variable', function() {
-          var variation = configObj.variationIdMap['594096'];
-          var variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
+          var variation = configObj.variationIdMap.get('594096');
+          var variable = configObj.featureKeyMap.get('test_feature_for_experiment').variableKeyMap.get('num_buttons');
           var result = projectConfig.getVariableValueForVariation(
             configObj,
             variable,
@@ -515,22 +498,22 @@ describe('lib/core/project_config', function() {
           );
           assert.strictEqual(result, '2');
 
-          variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.is_button_animated;
+          variable = configObj.featureKeyMap.get('test_feature_for_experiment').variableKeyMap.get('is_button_animated');
           result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
           assert.strictEqual(result, 'true');
 
-          variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.button_txt;
+          variable = configObj.featureKeyMap.get('test_feature_for_experiment').variableKeyMap.get('button_txt');
           result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
           assert.strictEqual(result, 'Buy me NOW');
 
-          variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.button_width;
+          variable = configObj.featureKeyMap.get('test_feature_for_experiment').variableKeyMap.get('button_width');
           result = projectConfig.getVariableValueForVariation(configObj, variable, variation, featureManagementLogger);
           assert.strictEqual(result, '20.25');
         });
 
         it('returns null for a null variation', function() {
           var variation = null;
-          var variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
+          var variable = configObj.featureKeyMap.get('test_feature_for_experiment').variableKeyMap.get('num_buttons');
           var result = projectConfig.getVariableValueForVariation(
             configObj,
             variable,
@@ -541,7 +524,7 @@ describe('lib/core/project_config', function() {
         });
 
         it('returns null for a null variable', function() {
-          var variation = configObj.variationIdMap['594096'];
+          var variation = configObj.variationIdMap.get('594096');
           var variable = null;
           var result = projectConfig.getVariableValueForVariation(
             configObj,
@@ -570,7 +553,7 @@ describe('lib/core/project_config', function() {
             id: '999999999999',
             variables: [],
           };
-          var variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
+          var variable = configObj.featureKeyMap.get('test_feature_for_experiment').variableKeyMap.get('num_buttons');
           var result = projectConfig.getVariableValueForVariation(
             configObj,
             variable,
@@ -581,8 +564,8 @@ describe('lib/core/project_config', function() {
         });
 
         it('returns null if the variation does not have a value for this variable', function() {
-          var variation = configObj.variationIdMap['595008']; // This variation has no variable values associated with it
-          var variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
+          var variation = configObj.variationIdMap.get('595008'); // This variation has no variable values associated with it
+          var variable = configObj.featureKeyMap.get('test_feature_for_experiment').variableKeyMap.get('num_buttons');
           var result = projectConfig.getVariableValueForVariation(
             configObj,
             variable,
@@ -681,7 +664,7 @@ describe('lib/core/project_config', function() {
       });
 
       it('should retrieve audiences by checking first in typedAudiences, and then second in audiences', function() {
-        assert.deepEqual(projectConfig.getAudiencesById(configObj), testDatafile.typedAudiencesById);
+        assert.deepEqual(toObject(projectConfig.getAudiencesById(configObj)), testDatafile.typedAudiencesById);
       });
     });
 
@@ -777,8 +760,8 @@ describe('lib/core/project_config', function() {
       var configObj = {
         foo: 'bar',
         experimentKeyMap: {
-          "a": { key: "a", variationKeyMap: {} },
-          "b": { key: "b", variationKeyMap: {} }
+          "a": { key: "a", variationKeyMap: new Map() },
+          "b": { key: "b", variationKeyMap: new Map() }
         },
       };
 
@@ -790,7 +773,10 @@ describe('lib/core/project_config', function() {
         logger: logger,
       });
 
-      assert.deepInclude(result.configObj, configObj)
+      assert.deepInclude({
+        ...result.configObj, 
+        experimentKeyMap: toObject(result.configObj.experimentKeyMap),
+      }, configObj)
     });
 
     it('returns an error when validateDatafile throws', function() {
@@ -812,7 +798,7 @@ describe('lib/core/project_config', function() {
         jsonSchemaValidator: stubJsonSchemaValidator,
         logger: logger,
       });
-    assert.isNotNull(error);
+      assert.isNotNull(error);
     });
 
     it('skips json validation when jsonSchemaValidator is not provided', function() {
@@ -830,8 +816,8 @@ describe('lib/core/project_config', function() {
       var configObj = {
         foo: 'bar',
         experimentKeyMap: {
-          a: { key: 'a', variationKeyMap: {} },
-          b: { key: 'b', variationKeyMap: {} },
+          a: { key: 'a', variationKeyMap: new Map() },
+          b: { key: 'b', variationKeyMap: new Map() },
         },
       };
 
@@ -840,7 +826,10 @@ describe('lib/core/project_config', function() {
         logger: logger,
       });
 
-      assert.deepInclude(result.configObj, configObj);
+      assert.deepInclude({
+        ...result.configObj, 
+        experimentKeyMap: toObject(result.configObj.experimentKeyMap),
+      }, configObj);
       sinon.assert.notCalled(logger.error);
     });
   });

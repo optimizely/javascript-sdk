@@ -16,7 +16,7 @@
 import sinon from 'sinon';
 import { assert } from 'chai';
 import cloneDeep from 'lodash/cloneDeep';
-import { sprintf } from '../../utils/fns';
+import { sprintf, toObject } from '../../utils/fns';
 
 import { createDecisionService } from './';
 import * as bucketer from '../bucketer';
@@ -75,7 +75,7 @@ describe('lib/core/decision_service', function() {
           result: '111128',
           reasons: [],
         };
-        experiment = configObj.experimentIdMap['111127'];
+        experiment = configObj.experimentIdMap.get('111127');
         bucketerStub.returns(fakeDecisionResponse); // contains variation ID of the 'control' variation from `test_data`
         assert.strictEqual(
           'control',
@@ -89,7 +89,7 @@ describe('lib/core/decision_service', function() {
           optimizely: {},
           userId: 'user2'
         });
-        experiment = configObj.experimentIdMap['122227'];
+        experiment = configObj.experimentIdMap.get('122227');
         assert.strictEqual(
           'variationWithAudience',
           decisionServiceInstance.getVariation(configObj, experiment, user).result
@@ -111,7 +111,7 @@ describe('lib/core/decision_service', function() {
           optimizely: {},
           userId: 'user3'
         });
-        experiment = configObj.experimentIdMap['122227'];
+        experiment = configObj.experimentIdMap.get('122227');
         assert.isNull(
           decisionServiceInstance.getVariation(configObj, experiment, user, { foo: 'bar' }).result
         );
@@ -139,7 +139,7 @@ describe('lib/core/decision_service', function() {
           optimizely: {},
           userId: 'user1'
         });
-        experiment = configObj.experimentIdMap['133337'];
+        experiment = configObj.experimentIdMap.get('133337');
         assert.isNull(decisionServiceInstance.getVariation(configObj, experiment, user).result);
         sinon.assert.notCalled(bucketerStub);
         assert.strictEqual(1, mockLogger.log.callCount);
@@ -155,7 +155,7 @@ describe('lib/core/decision_service', function() {
             result: '111128',
             reasons: [],
           };
-          experiment = configObj.experimentIdMap['111127'];
+          experiment = configObj.experimentIdMap.get('111127');
           bucketerStub.returns(fakeDecisionResponse); // ID of the 'control' variation from `test_data`
           var attributes = {
             $opt_experiment_bucket_map: {
@@ -220,7 +220,7 @@ describe('lib/core/decision_service', function() {
               },
             },
           });
-          experiment = configObj.experimentIdMap['111127'];
+          experiment = configObj.experimentIdMap.get('111127');
           user = new OptimizelyUserContext({
             optimizely: {},
             userId: 'decision_service_user',
@@ -248,7 +248,7 @@ describe('lib/core/decision_service', function() {
             user_id: 'decision_service_user',
             experiment_bucket_map: {},
           });
-          experiment = configObj.experimentIdMap['111127'];
+          experiment = configObj.experimentIdMap.get('111127');
           user = new OptimizelyUserContext({
             optimizely: {},
             userId: 'decision_service_user',
@@ -274,7 +274,7 @@ describe('lib/core/decision_service', function() {
         it('should bucket if the user profile service returns null', function() {
           bucketerStub.returns(fakeDecisionResponse); // ID of the 'control' variation
           userProfileLookupStub.returns(null);
-          experiment = configObj.experimentIdMap['111127'];
+          experiment = configObj.experimentIdMap.get('111127');
           user = new OptimizelyUserContext({
             optimizely: {},
             userId: 'decision_service_user',
@@ -306,7 +306,7 @@ describe('lib/core/decision_service', function() {
               },
             },
           });
-          experiment = configObj.experimentIdMap['111127'];
+          experiment = configObj.experimentIdMap.get('111127');
           user = new OptimizelyUserContext({
             optimizely: {},
             userId: 'decision_service_user',
@@ -346,7 +346,7 @@ describe('lib/core/decision_service', function() {
             optimizely: {},
             userId: 'decision_service_user',
           });
-          experiment = configObj.experimentIdMap['111127'];
+          experiment = configObj.experimentIdMap.get('111127');
 
           assert.strictEqual(
             'control',
@@ -376,7 +376,7 @@ describe('lib/core/decision_service', function() {
         it('should log an error message if "lookup" throws an error', function() {
           bucketerStub.returns(fakeDecisionResponse); // ID of the 'control' variation
           userProfileLookupStub.throws(new Error('I am an error'));
-          experiment = configObj.experimentIdMap['111127'];
+          experiment = configObj.experimentIdMap.get('111127');
           user = new OptimizelyUserContext({
             optimizely: {},
             userId: 'decision_service_user',
@@ -401,7 +401,7 @@ describe('lib/core/decision_service', function() {
           bucketerStub.returns(fakeDecisionResponse); // ID of the 'control' variation
           userProfileLookupStub.returns(null);
           userProfileSaveStub.throws(new Error('I am an error'));
-          experiment = configObj.experimentIdMap['111127'];
+          experiment = configObj.experimentIdMap.get('111127');
           user = new OptimizelyUserContext({
             optimizely: {},
             userId: 'decision_service_user',
@@ -453,7 +453,7 @@ describe('lib/core/decision_service', function() {
               },
             };
 
-            experiment = configObj.experimentIdMap['111127'];
+            experiment = configObj.experimentIdMap.get('111127');
 
             user = new OptimizelyUserContext({
               optimizely: {},
@@ -488,7 +488,7 @@ describe('lib/core/decision_service', function() {
               },
             });
 
-            experiment = configObj.experimentIdMap['111127'];
+            experiment = configObj.experimentIdMap.get('111127');
 
             var attributes = {
               $opt_experiment_bucket_map: {
@@ -532,7 +532,7 @@ describe('lib/core/decision_service', function() {
               },
             });
 
-            experiment = configObj.experimentIdMap['111127'];
+            experiment = configObj.experimentIdMap.get('111127');
 
             var attributes = {
               $opt_experiment_bucket_map: {
@@ -568,7 +568,7 @@ describe('lib/core/decision_service', function() {
           it('should use attributes when the userProfileLookup returns null', function() {
             userProfileLookupStub.returns(null);
 
-            experiment = configObj.experimentIdMap['111127'];
+            experiment = configObj.experimentIdMap.get('111127');
 
             var attributes = {
               $opt_experiment_bucket_map: {
@@ -605,7 +605,7 @@ describe('lib/core/decision_service', function() {
 
     describe('buildBucketerParams', function() {
       it('should return params object with correct properties', function() {
-        experiment = configObj.experimentIdMap['111127'];
+        experiment = configObj.experimentIdMap.get('111127');
         var bucketerParams = decisionServiceInstance.buildBucketerParams(
           configObj,
           experiment,
@@ -628,11 +628,11 @@ describe('lib/core/decision_service', function() {
               endOfRange: 9000,
             },
           ],
-          variationIdMap: configObj.variationIdMap,
+          variationIdMap: toObject(configObj.variationIdMap),
           logger: mockLogger,
-          experimentIdMap: configObj.experimentIdMap,
-          experimentKeyMap: configObj.experimentKeyMap,
-          groupIdMap: configObj.groupIdMap,
+          experimentIdMap: toObject(configObj.experimentIdMap),
+          experimentKeyMap: toObject(configObj.experimentKeyMap),
+          groupIdMap: toObject(configObj.groupIdMap),
         };
 
         assert.deepEqual(bucketerParams, expectedParams);
@@ -663,7 +663,7 @@ describe('lib/core/decision_service', function() {
       });
 
       it('should return decision response with result true when audience conditions are met', function() {
-        experiment = configObj.experimentIdMap['122227'];
+        experiment = configObj.experimentIdMap.get('122227');
         assert.isTrue(
           decisionServiceInstance.checkIfUserIsInAudience(
             configObj,
@@ -685,7 +685,7 @@ describe('lib/core/decision_service', function() {
       });
 
       it('should return decision response with result true when experiment has no audience', function() {
-        experiment = configObj.experimentIdMap['111127'];
+        experiment = configObj.experimentIdMap.get('111127');
         assert.isTrue(
           decisionServiceInstance.checkIfUserIsInAudience(
             configObj,
@@ -709,7 +709,7 @@ describe('lib/core/decision_service', function() {
       });
 
       it('should return decision response with result false when audience conditions can not be evaluated', function() {
-        experiment = configObj.experimentIdMap['122227'];
+        experiment = configObj.experimentIdMap.get('122227');
         assert.isFalse(
           decisionServiceInstance.checkIfUserIsInAudience(
             configObj,
@@ -733,7 +733,7 @@ describe('lib/core/decision_service', function() {
       });
 
       it('should return decision response with result false when audience conditions are not met', function() {
-        experiment = configObj.experimentIdMap['122227'];
+        experiment = configObj.experimentIdMap.get('122227');
         assert.isFalse(
           decisionServiceInstance.checkIfUserIsInAudience(
             configObj,
@@ -759,8 +759,8 @@ describe('lib/core/decision_service', function() {
 
     describe('getWhitelistedVariation', function() {
       it('should return forced variation ID if forced variation is provided for the user ID', function() {
-        var testExperiment = configObj.experimentKeyMap['testExperiment'];
-        var expectedVariation = configObj.variationIdMap['111128'];
+        var testExperiment = configObj.experimentKeyMap.get('testExperiment');
+        var expectedVariation = configObj.variationIdMap.get('111128');
         assert.strictEqual(
           decisionServiceInstance.getWhitelistedVariation(testExperiment, 'user1').result,
           expectedVariation
@@ -768,7 +768,7 @@ describe('lib/core/decision_service', function() {
       });
 
       it('should return null if forced variation is not provided for the user ID', function() {
-        var testExperiment = configObj.experimentKeyMap['testExperiment'];
+        var testExperiment = configObj.experimentKeyMap.get('testExperiment');
         assert.isNull(decisionServiceInstance.getWhitelistedVariation(testExperiment, 'notInForcedVariations').result);
       });
     });
@@ -1150,7 +1150,7 @@ describe('lib/core/decision_service', function() {
         userId: 'test_user',
         attributes: userAttributesWithBucketingId,
       });
-      var experiment = configObj.experimentIdMap['111127'];
+      var experiment = configObj.experimentIdMap.get('111127');
 
       var decisionServiceInstance = createDecisionService({
         logger: createdLogger,
@@ -1240,7 +1240,7 @@ describe('lib/core/decision_service', function() {
       describe('feature attached to an experiment, and not attached to a rollout', function() {
         var feature;
         beforeEach(function() {
-          feature = configObj.featureKeyMap.test_feature_for_experiment;
+          feature = configObj.featureKeyMap.get('test_feature_for_experiment');
         });
 
         describe('user bucketed into this experiment', function() {
@@ -1258,7 +1258,7 @@ describe('lib/core/decision_service', function() {
               result: 'variation',
               reasons: [],
             };
-            experiment = configObj.experimentIdMap['594098'];
+            experiment = configObj.experimentIdMap.get('594098');
             getVariationStub = sandbox.stub(decisionServiceInstance, 'getVariation');
             getVariationStub.returns(fakeDecisionResponse);
             getVariationStub.withArgs(configObj, experiment, user).returns(fakeDecisionResponseWithArgs);
@@ -1474,7 +1474,13 @@ describe('lib/core/decision_service', function() {
               },
               decisionSource: DECISION_SOURCES.FEATURE_TEST,
             };
-            assert.deepEqual(decision, expectedDecision);
+            assert.deepEqual({
+              ...decision,
+              experiment: {
+                ...decision.experiment,
+                variationKeyMap: toObject(decision.experiment.variationKeyMap),
+              },
+            }, expectedDecision);
             sinon.assert.calledWithExactly(
               getVariationStub,
               configObj,
@@ -1515,7 +1521,7 @@ describe('lib/core/decision_service', function() {
       describe('feature attached to an experiment in a group, and not attached to a rollout', function() {
         var feature;
         beforeEach(function() {
-          feature = configObj.featureKeyMap.feature_with_group;
+          feature = configObj.featureKeyMap.get('feature_with_group');
         });
 
         describe('user bucketed into an experiment in the group', function() {
@@ -1574,7 +1580,13 @@ describe('lib/core/decision_service', function() {
               },
               decisionSource: DECISION_SOURCES.FEATURE_TEST,
             };
-            assert.deepEqual(decision, expectedDecision);
+            assert.deepEqual({
+              ...decision,
+              experiment: {
+                ...decision.experiment,
+                variationKeyMap: toObject(decision.experiment.variationKeyMap),
+              },
+            }, expectedDecision);
           });
         });
 
@@ -1605,7 +1617,7 @@ describe('lib/core/decision_service', function() {
           });
 
           it('returns null decision for group experiment not referenced by the feature', function() {
-            var noTrafficExpFeature = configObj.featureKeyMap.feature_exp_no_traffic;
+            var noTrafficExpFeature = configObj.featureKeyMap.get('feature_exp_no_traffic');
             var decision = decisionServiceInstance.getVariationForFeature(configObj, noTrafficExpFeature, user).result;
             var expectedDecision = {
               experiment: null,
@@ -1627,7 +1639,7 @@ describe('lib/core/decision_service', function() {
         var feature;
         var bucketStub;
         beforeEach(function() {
-          feature = configObj.featureKeyMap.test_feature;
+          feature = configObj.featureKeyMap.get('test_feature');
           bucketStub = sandbox.stub(bucketer, 'bucket');
         });
 
@@ -1744,7 +1756,15 @@ describe('lib/core/decision_service', function() {
               },
               decisionSource: DECISION_SOURCES.ROLLOUT,
             };
-            assert.deepEqual(decision, expectedDecision);
+
+            assert.deepEqual({
+              ...decision,
+              experiment: {
+                ...decision.experiment,
+                variationKeyMap: toObject(decision.experiment.variationKeyMap),
+              },
+            }, expectedDecision);
+
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
@@ -1880,7 +1900,15 @@ describe('lib/core/decision_service', function() {
               },
               decisionSource: DECISION_SOURCES.ROLLOUT,
             };
-            assert.deepEqual(decision, expectedDecision);
+            
+            assert.deepEqual({
+              ...decision,
+              experiment: {
+                ...decision.experiment,
+                variationKeyMap: toObject(decision.experiment.variationKeyMap),
+              },
+            }, expectedDecision);
+
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
@@ -2062,7 +2090,15 @@ describe('lib/core/decision_service', function() {
               },
               decisionSource: DECISION_SOURCES.ROLLOUT,
             };
-            assert.deepEqual(decision, expectedDecision);
+            
+            assert.deepEqual({
+              ...decision,
+              experiment: {
+                ...decision.experiment,
+                variationKeyMap: toObject(decision.experiment.variationKeyMap),
+              },
+            }, expectedDecision);
+
             sinon.assert.calledWithExactly(
               mockLogger.log,
               LOG_LEVEL.DEBUG,
@@ -2098,7 +2134,7 @@ describe('lib/core/decision_service', function() {
           reasons: [],
         }
         beforeEach(function() {
-          feature = configObj.featureKeyMap.shared_feature;
+          feature = configObj.featureKeyMap.get('shared_feature');
           getVariationStub = sandbox.stub(decisionServiceInstance, 'getVariation');
           getVariationStub.returns(fakeDecisionResponse); // No variation returned by getVariation
           bucketStub = sandbox.stub(bucketer, 'bucket');
@@ -2179,7 +2215,15 @@ describe('lib/core/decision_service', function() {
             },
             decisionSource: DECISION_SOURCES.ROLLOUT,
           };
-          assert.deepEqual(decision, expectedDecision);
+          
+          assert.deepEqual({
+            ...decision,
+            experiment: {
+              ...decision.experiment,
+              variationKeyMap: toObject(decision.experiment.variationKeyMap),
+            },
+          }, expectedDecision);
+
           sinon.assert.calledWithExactly(
             mockLogger.log,
             LOG_LEVEL.DEBUG,
@@ -2198,7 +2242,7 @@ describe('lib/core/decision_service', function() {
       describe('feature not attached to an experiment or a rollout', function() {
         var feature;
         beforeEach(function() {
-          feature = configObj.featureKeyMap.unused_flag;
+          feature = configObj.featureKeyMap.get('unused_flag');
         });
 
         it('returns a decision with no variation, no experiment and source rollout', function() {
@@ -2232,7 +2276,7 @@ describe('lib/core/decision_service', function() {
         var feature;
         var generateBucketValueStub;
         beforeEach(function() {
-          feature = configObj.featureKeyMap.test_feature_in_exclusion_group;
+          feature = configObj.featureKeyMap.get('test_feature_in_exclusion_group');
           generateBucketValueStub = sandbox.stub(bucketer, '_generateBucketValue');
         });
 
@@ -2422,7 +2466,7 @@ describe('lib/core/decision_service', function() {
         var feature;
         var generateBucketValueStub;
         beforeEach(function() {
-          feature = configObj.featureKeyMap.test_feature_in_multiple_experiments;
+          feature = configObj.featureKeyMap.get('test_feature_in_multiple_experiments');
           generateBucketValueStub = sandbox.stub(bucketer, '_generateBucketValue');
         });
 
@@ -2621,7 +2665,7 @@ describe('lib/core/decision_service', function() {
 
       beforeEach(function() {
         configObj = projectConfig.createProjectConfig(cloneDeep(testDataWithFeatures));
-        feature = configObj.featureKeyMap.test_feature;
+        feature = configObj.featureKeyMap.get('test_feature');
         decisionService = createDecisionService({
           logger: createLogger({ logLevel: LOG_LEVEL.INFO }),
         });
@@ -2641,8 +2685,8 @@ describe('lib/core/decision_service', function() {
         decisionService.getVariationForRollout(configObj, feature, user).result;
 
         sinon.assert.callCount(buildBucketerParamsSpy, 2);
-        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, configObj.experimentIdMap['594031'], 'testUser', 'testUser');
-        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, configObj.experimentIdMap['594037'], 'testUser', 'testUser');
+        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, configObj.experimentIdMap.get('594031'), 'testUser', 'testUser');
+        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, configObj.experimentIdMap.get('594037'), 'testUser', 'testUser');
       });
 
       it('should call buildBucketerParams with bucketing Id when bucketing Id is provided in the attributes', function() {
@@ -2658,8 +2702,8 @@ describe('lib/core/decision_service', function() {
         decisionService.getVariationForRollout(configObj, feature, user).result;
 
         sinon.assert.callCount(buildBucketerParamsSpy, 2);
-        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, configObj.experimentIdMap['594031'], 'abcdefg', 'testUser');
-        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, configObj.experimentIdMap['594037'], 'abcdefg', 'testUser');
+        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, configObj.experimentIdMap.get('594031'), 'abcdefg', 'testUser');
+        sinon.assert.calledWithExactly(buildBucketerParamsSpy, configObj, configObj.experimentIdMap.get('594037'), 'abcdefg', 'testUser');
       });
     });
   });

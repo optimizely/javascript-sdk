@@ -15,7 +15,7 @@
  ***************************************************************************/
 import { assert, expect } from 'chai';
 import sinon from 'sinon';
-import { sprintf } from '../utils/fns';
+import { sprintf, toObject } from '../utils/fns';
 import { NOTIFICATION_TYPES } from '../utils/enums';
 import eventProcessor from '../plugins/event_processor';
 import * as logging from '@optimizely/js-sdk-logging';
@@ -2914,7 +2914,7 @@ describe('lib/optimizely', function() {
 
               describe('when the variation is toggled ON', function() {
                 beforeEach(function() {
-                  var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.testing_my_feature;
+                  var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.get('testing_my_feature');
                   var variation = experiment.variations[0];
                   var decisionObj = {
                     experiment: experiment,
@@ -2950,7 +2950,7 @@ describe('lib/optimizely', function() {
 
               describe('when the variation is toggled OFF', function() {
                 beforeEach(function() {
-                  var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.test_shared_feature;
+                  var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.get('test_shared_feature');
                   var variation = experiment.variations[1];
                   var decisionObj = {
                     experiment: experiment,
@@ -2989,7 +2989,7 @@ describe('lib/optimizely', function() {
               describe('when the variation is toggled ON', function() {
                 beforeEach(function() {
                   // This experiment is the first audience targeting rule in the rollout of feature 'test_feature'
-                  var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap['594031'];
+                  var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.get('594031');
                   var variation = experiment.variations[0];
                   var decisionObj = {
                     experiment: experiment,
@@ -3025,7 +3025,7 @@ describe('lib/optimizely', function() {
               describe('when the variation is toggled OFF', function() {
                 beforeEach(function() {
                   // This experiment is the second audience targeting rule in the rollout of feature 'test_feature'
-                  var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap['594037'];
+                  var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.get('594037');
                   var variation = experiment.variations[0];
                   var decisionObj = {
                     experiment: experiment,
@@ -5261,9 +5261,9 @@ describe('lib/optimizely', function() {
           var flagKey = 'feature_1';
           var variationKey = 'b';
           var experimentKey = 'exp_with_audience';
-          optlyInstance.decisionService.forcedVariationMap[userId] = { '10390977673': variationKey };
+          optlyInstance.decisionService.forcedVariationMap.set(userId, new Map([['10390977673', variationKey]]));
           var newConfig = optlyInstance.projectConfigManager.getConfig();
-          newConfig.variationIdMap[variationKey] = { key: variationKey };
+          newConfig.variationIdMap.set(variationKey, { key: variationKey });
           optlyInstance.projectConfigManager.getConfig.returns(newConfig);
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
@@ -5952,7 +5952,7 @@ describe('lib/optimizely', function() {
 
         it('should return decision results map with all flag keys provided and dispatch events', function() {
           var configObj = optlyInstance.projectConfigManager.getConfig();
-          var allFlagKeysArray = Object.keys(configObj.featureKeyMap);
+          var allFlagKeysArray = [...configObj.featureKeyMap.keys()];
           var user = optlyInstance.createUserContext(userId);
           var expectedVariables1 = optlyInstance.getAllFeatureVariables(allFlagKeysArray[0], userId);
           var expectedVariables2 = optlyInstance.getAllFeatureVariables(allFlagKeysArray[1], userId);
@@ -6253,7 +6253,7 @@ describe('lib/optimizely', function() {
 
         describe('when the variation is toggled ON', function() {
           beforeEach(function() {
-            var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.testing_my_feature;
+            var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.get('testing_my_feature');
             var variation = experiment.variations[0];
             var decisionObj = {
               experiment: experiment,
@@ -6272,7 +6272,7 @@ describe('lib/optimizely', function() {
             var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user1', attributes);
             assert.strictEqual(result, true);
             sinon.assert.calledOnce(optlyInstance.decisionService.getVariationForFeature);
-            var feature = optlyInstance.projectConfigManager.getConfig().featureKeyMap.test_feature_for_experiment;
+            var feature = optlyInstance.projectConfigManager.getConfig().featureKeyMap.get('test_feature_for_experiment');
             sinon.assert.calledWithExactly(
               optlyInstance.decisionService.getVariationForFeature,
               optlyInstance.projectConfigManager.getConfig(),
@@ -6475,7 +6475,7 @@ describe('lib/optimizely', function() {
         describe('when the variation is toggled OFF', function() {
           var result;
           beforeEach(function() {
-            var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.test_shared_feature;
+            var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.get('test_shared_feature');
             var variation = experiment.variations[1];
             var decisionObj = {
               experiment: experiment,
@@ -6493,7 +6493,7 @@ describe('lib/optimizely', function() {
           it('should return false', function() {
             assert.strictEqual(result, false);
             sinon.assert.calledOnce(optlyInstance.decisionService.getVariationForFeature);
-            var feature = optlyInstance.projectConfigManager.getConfig().featureKeyMap.shared_feature;
+            var feature = optlyInstance.projectConfigManager.getConfig().featureKeyMap.get('shared_feature');
             var user = optlyInstance.createUserContext('user1', attributes);
             sinon.assert.calledWithExactly(
               optlyInstance.decisionService.getVariationForFeature,
@@ -6571,11 +6571,14 @@ describe('lib/optimizely', function() {
 
         describe('when the variation is missing the toggle', function() {
           beforeEach(function() {
-            var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.test_shared_feature;
+            var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.get('test_shared_feature');
             var variation = experiment.variations[0];
             delete variation['featureEnabled'];
             sandbox.stub(optlyInstance.decisionService, 'getVariationForFeature').returns({
-              experiment: experiment,
+              experiment: {
+                ...experiment, 
+                variationKeyMap: toObject(experiment.variationKeyMap),
+              },
               variation: variation,
               decisionSource: DECISION_SOURCES.FEATURE_TEST,
             });
@@ -6586,7 +6589,7 @@ describe('lib/optimizely', function() {
             var user = optlyInstance.createUserContext('user1', attributes);
             assert.strictEqual(result, false);
             sinon.assert.calledOnce(optlyInstance.decisionService.getVariationForFeature);
-            var feature = optlyInstance.projectConfigManager.getConfig().featureKeyMap.shared_feature;
+            var feature = optlyInstance.projectConfigManager.getConfig().featureKeyMap.get('shared_feature');
             sinon.assert.calledWithExactly(
               optlyInstance.decisionService.getVariationForFeature,
               optlyInstance.projectConfigManager.getConfig(),
@@ -6601,7 +6604,7 @@ describe('lib/optimizely', function() {
         describe('when the variation is toggled ON', function() {
           beforeEach(function() {
             // This experiment is the first audience targeting rule in the rollout of feature 'test_feature'
-            var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap['594031'];
+            var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.get('594031');
             var variation = experiment.variations[0];
             var decisionObj = {
               experiment: experiment,
@@ -6631,7 +6634,7 @@ describe('lib/optimizely', function() {
         describe('when the variation is toggled OFF', function() {
           beforeEach(function() {
             // This experiment is the second audience targeting rule in the rollout of feature 'test_feature'
-            var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap['594037'];
+            var experiment = optlyInstance.projectConfigManager.getConfig().experimentKeyMap.get('594037');
             var variation = experiment.variations[0];
             var decisionObj = {
               experiment: experiment,

@@ -33,9 +33,7 @@ import {
   VariationVariable,
 } from '../../shared_types';
 
-interface FeatureVariablesMap {
-  [key: string]: FeatureVariable[];
-}
+type FeatureVariablesMap = Map<string, FeatureVariable[]>
 
 /**
  * The OptimizelyConfig class
@@ -69,10 +67,9 @@ export class OptimizelyConfig {
     this.events = configObj.events;
     this.revision = configObj.revision;
 
-    const featureIdVariablesMap = (configObj.featureFlags || []).reduce((resultMap: FeatureVariablesMap, feature) => {
-      resultMap[feature.id] = feature.variables;
-      return resultMap;
-    }, {});
+    const featureIdVariablesMap: FeatureVariablesMap = new Map((configObj.featureFlags || []).map(feature => {
+      return [feature.id, feature.variables]
+    }));
 
     const experimentsMapById = OptimizelyConfig.getExperimentsMapById(configObj, featureIdVariablesMap);
     this.experimentsMap = OptimizelyConfig.getExperimentsKeyMap(experimentsMapById);
@@ -212,7 +209,7 @@ export class OptimizelyConfig {
     featureVariableUsages: VariationVariable[] | undefined,
     isFeatureEnabled: boolean | undefined
   ): OptimizelyVariablesMap {
-    const variablesMap = (featureIdVariableMap[featureId] || []).reduce(
+    const variablesMap = (featureIdVariableMap.get(featureId) || []).reduce(
       (optlyVariablesMap: OptimizelyVariablesMap, featureVariable) => {
         optlyVariablesMap[featureVariable.key] = {
           id: featureVariable.id,
