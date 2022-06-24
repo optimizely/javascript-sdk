@@ -650,9 +650,9 @@ export class DecisionService {
       variation = decisionVariation.result;
       skipToEveryoneElse = decisionVariation.skipToEveryoneElse;
       if (variation) {
-        rolloutRule = configObj.experimentIdMap.get(rolloutRules[index].id)!;
+        rolloutRule = configObj.experimentIdMap.get(rolloutRules[index].id);
         decisionObj = {
-          experiment: rolloutRule,
+          experiment: rolloutRule as Experiment,
           variation: variation,
           decisionSource: DECISION_SOURCES.ROLLOUT,
         };

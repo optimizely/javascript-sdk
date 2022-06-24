@@ -49,6 +49,7 @@ function isSafeInteger(number: unknown): boolean {
   return typeof number == 'number' && Math.abs(number) <= MAX_SAFE_INTEGER_LIMIT;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createMap<K extends { [key: string]: any }>(arr: K[], key: string): Map<string, K> {
   if (!arr || arr.length === 0) return new Map();
 
@@ -109,17 +110,19 @@ export function find<K>(arr: K[], cond: (arg: K) => boolean): K | undefined {
   return found
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function toObject<K extends { [key: string]: any }>(map: Map<string, K>): Record<string, K> {
   const obj: Record<string, K> = {};
-  return Object.fromEntries
-  ( Array.from
-      ( map.entries()
-      , ([ k, v ]) =>
-          v instanceof Map
-            ? [ k, toObject (v) ]
-            : [ k, v ]
-      )
-  )
+
+  map.forEach((item, key) => {
+    if (item instanceof Map) {
+      obj[key] = toObject(item) as K;
+    } else {
+      obj[key] = item;
+    }
+  });
+
+  return obj;
 }
 
 export function objectValues<K>(obj: { [key: string]: K }): K[] {

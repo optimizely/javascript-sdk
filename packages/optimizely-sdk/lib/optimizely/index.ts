@@ -14,7 +14,7 @@
  * limitations under the License.                                           *
  ***************************************************************************/
 import { LoggerFacade, ErrorHandler } from '@optimizely/js-sdk-logging';
-import { sprintf, objectValues, toObject } from '../utils/fns';
+import { sprintf } from '../utils/fns';
 import { NotificationCenter } from '../core/notification_center';
 import { EventProcessor } from '@optimizely/js-sdk-event-processor';
 
@@ -25,7 +25,6 @@ import {
   OnReadyResult,
   UserProfileService,
   Variation,
-  FeatureFlag,
   FeatureVariable,
   OptimizelyOptions,
   OptimizelyDecideOption,
@@ -228,10 +227,10 @@ export default class Optimizely {
         }
 
         const experiment = projectConfig.getExperimentFromKey(configObj, experimentKey);
-        const variation = experiment.variationKeyMap.get(variationKey)!;
+        const variation = experiment.variationKeyMap.get(variationKey);
         const decisionObj = {
           experiment: experiment,
-          variation: variation,
+          variation: variation as Variation,
           decisionSource: enums.DECISION_SOURCES.EXPERIMENT
         }
 

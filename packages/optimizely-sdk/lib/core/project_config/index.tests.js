@@ -35,7 +35,7 @@ var logger = getLogger();
 
 describe('lib/core/project_config', function() {
   describe('createProjectConfig method', function() {
-    xit('should set properties correctly when createProjectConfig is called', function() {
+    it('should set properties correctly when createProjectConfig is called', function() {
       var testData = testDatafile.getTestProjectConfig();
       var configObj = projectConfig.createProjectConfig(testData);
 
@@ -56,17 +56,17 @@ describe('lib/core/project_config', function() {
       });
       assert.deepEqual(configObj.groups, testData.groups);
 
-      var expectedGroupIdMap = {
-        666: testData.groups[0],
-        667: testData.groups[1],
-      };
+      var expectedGroupIdMap = new Map([
+        ['666', testData.groups[0]],
+        ['667', testData.groups[1]],
+      ]);
 
-      assert.deepEqual(fns.toObject(configObj.groupIdMap), expectedGroupIdMap);
+      assert.deepEqual(fns.toObject(configObj.groupIdMap), fns.toObject(expectedGroupIdMap));
 
       var expectedExperiments = testData.experiments;
-      forEach(configObj.groupIdMap, function(group, Id) {
+      configObj.groupIdMap.forEach((group, groupId) => {
         forEach(group.experiments, function(experiment) {
-          experiment.groupId = Id;
+          experiment.groupId = groupId;
           expectedExperiments.push(experiment);
         });
       });
@@ -126,35 +126,63 @@ describe('lib/core/project_config', function() {
 
       assert.deepEqual(toObject(configObj.experimentIdMap), expectedExperimentIdMap);
 
-      var expectedVariationKeyMap = {};
-      expectedVariationKeyMap.get(testData.experiments[0].key + testData.experiments[0].variations[0].key) =
-        testData.experiments[0].variations[0];
-      expectedVariationKeyMap.get(testData.experiments[0].key + testData.experiments[0].variations[1].key) =
-        testData.experiments[0].variations[1];
-      expectedVariationKeyMap.get(testData.experiments[1].key + testData.experiments[1].variations[0].key) =
-        testData.experiments[1].variations[0];
-      expectedVariationKeyMap.get(testData.experiments[1].key + testData.experiments[1].variations[1].key) =
-        testData.experiments[1].variations[1];
-      expectedVariationKeyMap.get(testData.experiments[2].key + testData.experiments[2].variations[0].key) =
-        testData.experiments[2].variations[0];
-      expectedVariationKeyMap.get(testData.experiments[2].key + testData.experiments[2].variations[1].key) =
-        testData.experiments[2].variations[1];
-      expectedVariationKeyMap.get(configObj.experiments[3].key + configObj.experiments[3].variations[0].key) =
-        configObj.experiments[3].variations[0];
-      expectedVariationKeyMap.get(configObj.experiments[3].key + configObj.experiments[3].variations[1].key) =
-        configObj.experiments[3].variations[1];
-      expectedVariationKeyMap.get(configObj.experiments[4].key + configObj.experiments[4].variations[0].key) =
-        configObj.experiments[4].variations[0];
-      expectedVariationKeyMap.get(configObj.experiments[4].key + configObj.experiments[4].variations[1].key) =
-        configObj.experiments[4].variations[1];
-      expectedVariationKeyMap.get(configObj.experiments[5].key + configObj.experiments[5].variations[0].key) =
-        configObj.experiments[5].variations[0];
-      expectedVariationKeyMap.get(configObj.experiments[5].key + configObj.experiments[5].variations[1].key) =
-        configObj.experiments[5].variations[1];
-      expectedVariationKeyMap.get(configObj.experiments[6].key + configObj.experiments[6].variations[0].key) =
-        configObj.experiments[6].variations[0];
-      expectedVariationKeyMap.get(configObj.experiments[6].key + configObj.experiments[6].variations[1].key) =
-        configObj.experiments[6].variations[1];
+      var expectedVariationKeyMap = new Map();
+      expectedVariationKeyMap.set(
+        testData.experiments[0].key + testData.experiments[0].variations[0].key, 
+        testData.experiments[0].variations[0]
+      );
+      expectedVariationKeyMap.set(
+        testData.experiments[0].key + testData.experiments[0].variations[1].key, 
+        testData.experiments[0].variations[1]
+      );
+      expectedVariationKeyMap.set(
+        testData.experiments[1].key + testData.experiments[1].variations[0].key, 
+        testData.experiments[1].variations[0]
+      );
+      expectedVariationKeyMap.set(
+        testData.experiments[1].key + testData.experiments[1].variations[1].key, 
+        testData.experiments[1].variations[1]
+      );
+      expectedVariationKeyMap.set(
+        testData.experiments[2].key + testData.experiments[2].variations[0].key, 
+        testData.experiments[2].variations[0]
+      );
+      expectedVariationKeyMap.set(
+        testData.experiments[2].key + testData.experiments[2].variations[1].key, 
+        testData.experiments[2].variations[1]
+      );
+      expectedVariationKeyMap.set(
+        configObj.experiments[3].key + configObj.experiments[3].variations[0].key, 
+        configObj.experiments[3].variations[0]
+      );
+      expectedVariationKeyMap.set(
+        configObj.experiments[3].key + configObj.experiments[3].variations[1].key, 
+        configObj.experiments[3].variations[1]
+      );
+      expectedVariationKeyMap.set(
+        configObj.experiments[4].key + configObj.experiments[4].variations[0].key, 
+        configObj.experiments[4].variations[0]
+      );
+      expectedVariationKeyMap.set(
+        configObj.experiments[4].key + configObj.experiments[4].variations[1].key, 
+        configObj.experiments[4].variations[1]
+      );
+      expectedVariationKeyMap.set(
+        configObj.experiments[5].key + configObj.experiments[5].variations[0].key, 
+        configObj.experiments[5].variations[0]
+      );
+      expectedVariationKeyMap.set(
+        configObj.experiments[5].key + configObj.experiments[5].variations[1].key, 
+        configObj.experiments[5].variations[1]
+      );
+      expectedVariationKeyMap.set(
+        configObj.experiments[6].key + configObj.experiments[6].variations[0].key, 
+        configObj.experiments[6].variations[0]
+      );
+      expectedVariationKeyMap.set(
+        configObj.experiments[6].key + configObj.experiments[6].variations[1].key, 
+        configObj.experiments[6].variations[1]
+      );
     });
 
     it('should not mutate the datafile', function() {
@@ -170,19 +198,62 @@ describe('lib/core/project_config', function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
       });
 
-      xit('creates a rolloutIdMap from rollouts in the datafile', function() {
-        assert.deepEqual(toObject(configObj.rolloutIdMap), testDatafile.datafileWithFeaturesExpectedData.rolloutIdMap);
+      it('creates a rolloutIdMap from rollouts in the datafile', function() {
+        const convertDeepMapToObject = (map) => {
+          const hash = map instanceof Map ? toObject(map) : map;
+  
+          return Object.keys(hash).reduce((acc, id) => {
+            const item = hash[id];
+  
+            return {
+              ...acc,
+              ...item,
+              experiments: [
+                ...item.experiments.map(experiment => ({
+                  ...experiment,
+                  variationKeyMap: experiment.variationKeyMap instanceof Map ? 
+                    toObject(experiment.variationKeyMap) : 
+                    experiment.variationKeyMap,
+                })),
+              ]
+            }
+          }, {});
+        };
+
+        assert.deepEqual(
+          convertDeepMapToObject(configObj.rolloutIdMap), 
+          convertDeepMapToObject(testDatafile.datafileWithFeaturesExpectedData.rolloutIdMap)
+        );
       });
 
       it('creates a variationVariableUsageMap from rollouts and experiments with features in the datafile', function() {
         assert.deepEqual(
-          Object.keys(toObject(configObj.variationVariableUsageMap)),
+          toObject(configObj.variationVariableUsageMap),
           testDatafile.datafileWithFeaturesExpectedData.variationVariableUsageMap
         );
       });
 
-      xit('creates a featureKeyMap from feature flags in the datafile', function() {
-        assert.deepEqual(toObject(configObj.featureKeyMap), testDatafile.datafileWithFeaturesExpectedData.featureKeyMap);
+      it('creates a featureKeyMap from feature flags in the datafile', function() {
+        const convertDeepMapToObject = (map) => {
+          const hash = map instanceof Map ? toObject(map) : map;
+  
+          return Object.keys(hash).reduce((acc, id) => {
+            const item = hash[id];
+  
+            return {
+              ...acc,
+              ...item,
+              variableKeyMap: item.variableKeyMap instanceof Map ? 
+                toObject(item.variableKeyMap) :
+                item.variableKeyMap,
+            }
+          }, {});
+        };
+
+        assert.deepEqual(
+          convertDeepMapToObject(configObj.featureKeyMap), 
+          convertDeepMapToObject(testDatafile.datafileWithFeaturesExpectedData.featureKeyMap)
+        );
       });
 
       it('adds variations from rollout experiments to variationIdMap', function() {

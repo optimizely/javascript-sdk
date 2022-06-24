@@ -1,5 +1,5 @@
 /// <reference types="jest" />
-import { isValidEnum, groupBy, objectEntries, objectValues, find, sprintf } from '../lib/utils/fns'
+import { isValidEnum, objectValues, find, sprintf } from '../lib/utils/fns'
 
 describe('utils', () => {
   describe('isValidEnum', () => {
@@ -18,32 +18,7 @@ describe('utils', () => {
     })
   })
 
-  describe('groupBy', () => {
-    it('should group values by some key function', () => {
-      const input = [
-        { firstName: 'jordan', lastName: 'foo' },
-        { firstName: 'jordan', lastName: 'bar' },
-        { firstName: 'james', lastName: 'foxy' },
-      ]
-      const result = groupBy(input, item => item.firstName)
-
-      expect(result).toEqual([
-        [
-          { firstName: 'jordan', lastName: 'foo' },
-          { firstName: 'jordan', lastName: 'bar' },
-        ],
-        [{ firstName: 'james', lastName: 'foxy' }],
-      ])
-    })
-  })
-
-  describe('objectEntries', () => {
-    it('should return object entries', () => {
-      expect(objectEntries({ foo: 'bar', bar: 123 })).toEqual([['foo', 'bar'], ['bar', 123]])
-    })
-  })
-
-  describe('objectValues', () => {
+  describe('oobjectValues', () => {
     it('should return object values', () => {
       expect(objectValues({ foo: 'bar', bar: 123 })).toEqual(['bar', 123])
     })
