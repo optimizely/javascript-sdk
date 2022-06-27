@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+- Nothing yet!
+
+## [4.9.2] - June 27, 2022
+
 ### Changed
 - Add package.json script for running Karma tests locally using Chrome ([#651](https://github.com/optimizely/javascript-sdk/pull/651)).
 - Replaced explicit typescript typings with auto generated ones ([#745](https://github.com/optimizely/javascript-sdk/pull/745)).
