@@ -37,7 +37,7 @@ jobs:
         SDK: javascript
         FULLSTACK_TEST_REPO: ${{ inputs.FULLSTACK_TEST_REPO }}
         BUILD_NUMBER: ${{ github.run_id }}
-        TESTAPP_BRANCH: sherry/node-12-update
+        TESTAPP_BRANCH: master
         GITHUB_TOKEN: ${{ secrets.CI_USER_TOKEN }}
         TRAVIS_EVENT_TYPE: ${{ github.event_name }}
         GITHUB_CONTEXT: ${{ toJson(github) }}
