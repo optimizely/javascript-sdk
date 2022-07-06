@@ -52,51 +52,56 @@ module.exports = {
 
   // define browsers
   customLaunchers: {
-    bs_chrome_mac: {
-      base: 'BrowserStack',
-      os: 'OS X',
-      os_version: 'Lion',
-      browser: 'Chrome',
-      browser_version: '49.0',
-      browserName: 'Chrome',
-    },
-    bs_edge: {
-      base: 'BrowserStack',
-      os: 'Windows',
-      os_version: '10',
-      browser: 'Edge',
-      browser_version: '85.0',
-      device: null,
-    },
+    // bs_chrome_mac: {
+    //   base: 'BrowserStack',
+    //   os: 'OS X',
+    //   os_version: 'Lion',
+    //   browser: 'Chrome',
+    //   browser_version: '49.0',
+    //   browserName: 'Chrome',
+    // },
+    // bs_edge: {
+    //   base: 'BrowserStack',
+    //   os: 'Windows',
+    //   os_version: '10',
+    //   browser: 'Edge',
+    //   browser_version: '85.0',
+    //   device: null,
+    // },
     bs_firefox: {
       base: 'BrowserStack',
       os: 'Windows',
-      os_version: '10',
       browser: 'Firefox',
-      browser_version: '70.0',
+
+      os_version: '10',
       browserName: 'Firefox',
+      browser_version: '102.0',
+
       device: null,
     },
 
     bs_opera_mac: {
       base: 'BrowserStack',
       browser: 'opera',
-      browser_version: '37',
+      os_version: 'Mojave',
+      browserName: 'Opera',
+      browser_version: '12.15',
+
       os: 'OS X',
-      os_version: 'Mountain Lion',
     },
     bs_safari: {
       base: 'BrowserStack',
       os: 'OS X',
-      os_version: 'High Sierra',
+      os_version: 'Catalina',
       browserName: 'Safari',
+      browser_version: '13.0',
       browser: 'Safari',
       device: null,
-      browser_version: '11.1',
     },
   },
 
-  browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox', 'bs_opera_mac', 'bs_safari'],
+  // browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox', 'bs_opera_mac', 'bs_safari'],
+  browsers: ['bs_firefox', 'bs_opera_mac', 'bs_safari'],
 
   // frameworks to use
   // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
