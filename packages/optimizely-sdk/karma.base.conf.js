@@ -80,15 +80,15 @@ module.exports = {
       device: null,
     },
 
-    bs_opera_mac: {
-      base: 'BrowserStack',
-      browser: 'opera',
-      os_version: 'Mojave',
-      browserName: 'Opera',
-      browser_version: '12.15',
+    // bs_opera_mac: {
+    //   base: 'BrowserStack',
+    //   browser: 'opera',
+    //   os_version: 'Mojave',
+    //   browserName: 'Opera',
+    //   browser_version: '12.15',
 
-      os: 'OS X',
-    },
+    //   os: 'OS X',
+    // },
     bs_safari: {
       base: 'BrowserStack',
       os: 'OS X',
@@ -101,7 +101,7 @@ module.exports = {
   },
 
   // browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox', 'bs_opera_mac', 'bs_safari'],
-  browsers: ['bs_firefox', 'bs_opera_mac', 'bs_safari'],
+  browsers: ['bs_firefox',  'bs_safari'],
 
   // frameworks to use
   // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
