@@ -83,8 +83,16 @@ module.exports = {
       os_version: 'Mojave',
       browserName: 'Opera',
       browser: 'Opera',
-      browser_version: '12.15',
+      browser_version: '76.0',
       os: 'OS X',
+
+
+      // base: 'BrowserStack',
+      // browser: 'opera',
+      // browser_version: '37',
+      // os: 'OS X',
+      // os_version: 'Mountain Lion',
+
     },
     bs_safari: {
       base: 'BrowserStack',
