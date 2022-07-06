@@ -55,11 +55,9 @@ module.exports = {
     bs_chrome_mac: {
       base: 'BrowserStack',
       os: 'OS X',
-
       os_version: 'Mojave',
       browserName: 'Chrome',
       browser_version: '102.0',
-
       browser: 'Chrome',
     },
     bs_edge: {
@@ -68,8 +66,8 @@ module.exports = {
       os_version: '10',
       browserName: 'Edge',
       browser_version: '96.0',
-      device: null,
-    },
+      browser: 'Edge',
+     },
     bs_firefox: {
       base: 'BrowserStack',
       os: 'Windows',
@@ -77,8 +75,7 @@ module.exports = {
       os_version: '10',
       browserName: 'Firefox',
       browser_version: '102.0',
-      device: null,
-    },
+     },
 
     // bs_opera_mac: {
     //   base: 'BrowserStack',
