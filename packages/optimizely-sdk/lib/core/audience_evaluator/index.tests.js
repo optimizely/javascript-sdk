@@ -358,15 +358,15 @@ describe('lib/core/audience_evaluator', function() {
         }
         const audience = new AudienceEvaluator();
         
-        it('shoud evaluate to true if segment is found', () => {
+        it('should evaluate to true if segment is found', () => {
           assert.isTrue(audience.evaluate(['or', '0'], audiencesById, getMockUserContext({}, ['odp-segment-1'])));
         });
         
-        it('shoud evaluate to false if segment is not found', () => {
+        it('should evaluate to false if segment is not found', () => {
           assert.isFalse(audience.evaluate(['or', '0'], audiencesById, getMockUserContext({}, ['odp-segment-2'])));
         });
 
-        it('shoud evaluate to false if not segments are provided', () => {
+        it('should evaluate to false if not segments are provided', () => {
           assert.isFalse(audience.evaluate(['or', '0'], audiencesById, getMockUserContext({})));
         });
       });
@@ -409,7 +409,7 @@ describe('lib/core/audience_evaluator', function() {
         }
         const audience = new AudienceEvaluator();
         
-        it('shoud evaluate correctly based on the given segments', () => {
+        it('should evaluate correctly based on the given segments', () => {
           assert.isTrue(audience.evaluate(['or', '0'], audiencesById, getMockUserContext({}, ['odp-segment-1', 'odp-segment-2', 'odp-segment-3'])));
           assert.isTrue(audience.evaluate(['or', '0'], audiencesById, getMockUserContext({}, ['odp-segment-1', 'odp-segment-2', 'odp-segment-4'])));
           assert.isTrue(audience.evaluate(['or', '0'], audiencesById, getMockUserContext({}, ['odp-segment-1', 'odp-segment-2', 'odp-segment-3', 'odp-segment-4'])));
@@ -479,7 +479,7 @@ describe('lib/core/audience_evaluator', function() {
         }
         const audience = new AudienceEvaluator();
         
-        it('shoud evaluate correctly based on the given segments', () => {
+        it('should evaluate correctly based on the given segments', () => {
           assert.isTrue(
             audience.evaluate(
               ['or', '0', '1', '2'],
@@ -556,7 +556,7 @@ describe('lib/core/audience_evaluator', function() {
       
       const audience = new AudienceEvaluator();
 
-      it('shoud evaluate correctly based on the given segments', () => {
+      it('should evaluate correctly based on the given segments', () => {
         assert.isFalse(
           audience.evaluate(
             ['and', '0', '1', '2'],

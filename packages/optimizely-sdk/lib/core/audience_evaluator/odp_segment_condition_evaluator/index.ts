@@ -60,6 +60,5 @@ export function evaluate(condition: Condition, user: OptimizelyUserContext): boo
 }
 
 function qualifiedEvaluator(condition: Condition, user: OptimizelyUserContext): boolean {
-  //return user.getQualifiedSegments().indexOf(condition.value as string) > -1;
   return user.isQualifiedFor(condition.value as string);
 }

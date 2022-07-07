@@ -29,7 +29,7 @@ export default class OptimizelyUserContext {
   private userId: string;
   private attributes: UserAttributes;
   private forcedDecisionsMap: { [key: string]: { [key: string]: OptimizelyForcedDecision } };
-  private qualifiedSegments: string[] = [];
+  private _qualifiedSegments: string[] = [];
 
   constructor({
     optimizely,
@@ -65,6 +65,14 @@ export default class OptimizelyUserContext {
 
   getOptimizely(): Optimizely {
     return this.optimizely;
+  }
+
+  public get qualifiedSegments(): string[] {
+    return this._qualifiedSegments;
+  }
+
+  public set qualifiedSegments(qualifiedSegments: string[]) {
+    this._qualifiedSegments = [ ... qualifiedSegments ];
   }
 
   /**
@@ -205,7 +213,7 @@ export default class OptimizelyUserContext {
   }
 
   public isQualifiedFor(segment: string): boolean {
-    return this.qualifiedSegments.indexOf(segment) > -1;
+    return this._qualifiedSegments.indexOf(segment) > -1;
   }
 
   private cloneUserContext(): OptimizelyUserContext {
