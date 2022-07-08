@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, 2020-2022 Optimizely
+ * Copyright 2018, 2020, 2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ module.exports = {
       os: 'Windows',
       os_version: '10',
       browserName: 'Edge',
-      browser_version: '96.0',
+      browser_version: '84.0',
       browser: 'Edge',
     },
     bs_firefox: {
@@ -74,7 +74,7 @@ module.exports = {
       browser: 'Firefox',
       os_version: '10',
       browserName: 'Firefox',
-      browser_version: '102.0',
+      browser_version: '91.0',
     },
 
     bs_opera_mac: {
