@@ -7,7 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-- Nothing yet!
+### Changed
+- Updated `murmurhash` dependency to version `2.0.1`.
+- Updated `uuid` dependency to version `8.3.2`.
+- Dropped support for the following browser versions.
+  - All versions of Microsof Internet Explorer.
+  - Chrome versions earlier than `102.0`.
+  - Microsoft Edge versions earlier than `84.0`.
+  - Firefox versions earlier than `91.0`.
+  - Opera versions earlier than `76.0`.
+  - Safari versions earlier than `13.0`.
 
 ## [4.9.2] - June 27, 2022
 
