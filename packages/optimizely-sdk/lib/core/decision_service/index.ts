@@ -120,7 +120,7 @@ export class DecisionService {
     const attributes = user.getAttributes();
     // by default, the bucketing ID should be the user ID
     const bucketingId = this.getBucketingId(userId, attributes);
-    const decideReasons: (string | number | undefined)[][] = [];
+    const decideReasons: (string | number)[][] = [];
     const experimentKey = experiment.key;
     if (!this.checkIfExperimentIsActive(configObj, experimentKey)) {
       this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, MODULE_NAME, experimentKey);
@@ -262,7 +262,7 @@ export class DecisionService {
    *                                                      or user ID and the decide reasons.
    */
   private getWhitelistedVariation(experiment: Experiment, userId: string): DecisionResponse<Variation | null> {
-    const decideReasons: (string | number | undefined)[][] = [];
+    const decideReasons: (string | number)[][] = [];
     if (experiment.forcedVariations && experiment.forcedVariations.hasOwnProperty(userId)) {
       const forcedVariationKey = experiment.forcedVariations[userId];
 
@@ -498,7 +498,7 @@ export class DecisionService {
     user: OptimizelyUserContext,
     options: { [key: string]: boolean } = {}
   ): DecisionResponse<DecisionObj> {
-    const decideReasons: (string | number | undefined)[][] = [];
+    const decideReasons: (string | number)[][] = [];
     const decisionVariation = this.getVariationForFeatureExperiment(configObj, feature, user, options);
     decideReasons.push(...decisionVariation.reasons);
     const experimentDecision = decisionVariation.result;
@@ -537,7 +537,7 @@ export class DecisionService {
     user: OptimizelyUserContext,
     options: { [key: string]: boolean } = {}
   ): DecisionResponse<DecisionObj> {
-    const decideReasons: (string | number | undefined)[][] = [];
+    const decideReasons: (string | number)[][] = [];
     let variationKey = null;
     let decisionVariation;
     let index;
@@ -593,7 +593,7 @@ export class DecisionService {
     feature: FeatureFlag,
     user: OptimizelyUserContext
   ): DecisionResponse<DecisionObj> {
-    const decideReasons: (string | number | undefined)[][] = [];
+    const decideReasons: (string | number)[][] = [];
     let decisionObj: DecisionObj;
     if (!feature.rolloutId) {
       this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.NO_ROLLOUT_EXISTS, MODULE_NAME, feature.key);
@@ -827,9 +827,7 @@ export class DecisionService {
     if (experimentToVariationMap) {
       experimentToVariationMap.set(experimentId, variationId);
     } else {
-      this.forcedVariationMap.set(userId, new Map([
-        [experimentId, variationId]
-      ]));
+      this.forcedVariationMap.set(userId, new Map([[experimentId, variationId]]));
     }
 
     this.logger.log(
@@ -1004,7 +1002,7 @@ export class DecisionService {
     user: OptimizelyUserContext,
     options: { [key: string]: boolean } = {}
   ): DecisionResponse<string | null> {
-    const decideReasons: (string | number | undefined)[][] = [];
+    const decideReasons: (string | number)[][] = [];
 
     // check forced decision first
     const forcedDecisionResponse = this.findValidatedForcedDecision(configObj, user, flagKey, rule.key);
@@ -1034,7 +1032,7 @@ export class DecisionService {
     ruleIndex: number,
     user: OptimizelyUserContext
   ): DeliveryRuleResponse<Variation | null, boolean> {
-    const decideReasons: (string | number | undefined)[][] = [];
+    const decideReasons: (string | number)[][] = [];
     let skipToEveryoneElse = false;
 
     // check forced decision first

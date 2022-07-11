@@ -17,10 +17,10 @@ import { assert } from 'chai';
 
 import fns from './';
 
-describe('lib/utils/fns', function() {
-  describe('APIs', function() {
-    describe('isFinite', function() {
-      it('should return false for invalid numbers', function() {
+describe('lib/utils/fns', function () {
+  describe('APIs', function () {
+    describe('isFinite', function () {
+      it('should return false for invalid numbers', function () {
         assert.isFalse(fns.isSafeInteger(Infinity));
         assert.isFalse(fns.isSafeInteger(-Infinity));
         assert.isFalse(fns.isSafeInteger(NaN));
@@ -30,7 +30,7 @@ describe('lib/utils/fns', function() {
         assert.isFalse(fns.isSafeInteger(-Math.pow(2, 53) - 2));
       });
 
-      it('should return true for valid numbers', function() {
+      it('should return true for valid numbers', function () {
         assert.isTrue(fns.isSafeInteger(0));
         assert.isTrue(fns.isSafeInteger(10));
         assert.isTrue(fns.isSafeInteger(10.5));
@@ -39,37 +39,73 @@ describe('lib/utils/fns', function() {
       });
     });
 
-    describe('isNumber', function() {
-      it('should return true in case of number', function() {
+    describe('isNumber', function () {
+      it('should return true in case of number', function () {
         assert.isTrue(fns.isNumber(3));
       });
-      it('should return true in case of value from Number object ', function() {
+      it('should return true in case of value from Number object ', function () {
         assert.isTrue(fns.isNumber(Number.MIN_VALUE));
       });
-      it('should return true in case of Infinity ', function() {
+      it('should return true in case of Infinity ', function () {
         assert.isTrue(fns.isNumber(Infinity));
       });
-      it('should return false in case of string', function() {
+      it('should return false in case of string', function () {
         assert.isFalse(fns.isNumber('3'));
       });
-      it('should return false in case of null', function() {
+      it('should return false in case of null', function () {
         assert.isFalse(fns.isNumber(null));
       });
     });
 
-    describe('assign', function() {      
-      it('should return empty object when target is not provided', function() {
-        assert.deepEqual(fns.assign(), {});        
+    describe('createMap', function () {
+      it('should return true in case of number', function () {
+        assert.deepEqual(
+          fns
+            .createMap(
+              [
+                {
+                  id: 'id.1',
+                  key: 'key.1',
+                },
+                {
+                  id: 'id.2',
+                  key: 'key.2',
+                },
+              ],
+              'key'
+            )
+            .get('key.2'),
+          {
+            id: 'id.2',
+            key: 'key.2',
+          }
+        );
+      });
+    });
+
+    describe('toObject', function () {
+      it('should return true in case of number', function () {
+        assert.deepEqual(fns.toObject(new Map([['id.1', { id: 'id.1' }]])), {
+          'id.1': {
+            id: 'id.1',
+          },
+        });
+      });
+    });
+
+    describe('assign', function () {
+      it('should return empty object when target is not provided', function () {
+        assert.deepEqual(fns.assign(), {});
       });
 
-      it('should copy correctly when Object.assign is available in environment', function() {        
-        assert.deepEqual(fns.assign({ a: 'a'}, {b: 'b'}), { a: 'a', b: 'b' });        
+      it('should copy correctly when Object.assign is available in environment', function () {
+        assert.deepEqual(fns.assign({ a: 'a' }, { b: 'b' }), { a: 'a', b: 'b' });
       });
 
-      it('should copy correctly when Object.assign is not available in environment', function() {
+      it('should copy correctly when Object.assign is not available in environment', function () {
         var originalAssign = Object.assign;
         Object.assign = null;
-        assert.deepEqual(fns.assign({ a: 'a'}, {b: 'b'}, {c: 'c'}), { a: 'a', b: 'b', c: 'c' });
+        assert.deepEqual(fns.assign({ a: 'a' }, { b: 'b' }, { c: 'c' }), { a: 'a', b: 'b', c: 'c' });
         Object.assign = originalAssign;
       });
     });
