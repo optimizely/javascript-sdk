@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+### Fixed
+- Warn instead of error if window.localStorage is undefined or not functioning properly.
+
 ## [0.9.5] - February 2, 2022
 
 ### Changed
