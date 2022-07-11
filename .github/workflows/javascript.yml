@@ -33,7 +33,7 @@ jobs:
       TRAVIS_COM_TOKEN: ${{ secrets.TRAVIS_COM_TOKEN }}
 
   fullstack_production_suite:
-    uses: optimizely/javascript-sdk/.github/workflows/integration_test.yml@master
+    uses: optimizely/javascript-sdk/.github/workflows/integration_test.yml@uzair/test-with-fsc
     with:
       FULLSTACK_TEST_REPO: ProdTesting
     secrets:
