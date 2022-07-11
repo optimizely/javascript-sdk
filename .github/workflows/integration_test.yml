@@ -21,7 +21,7 @@ jobs:
         token: ${{ secrets.CI_USER_TOKEN }}
         repository: 'optimizely/travisci-tools'
         path: 'home/runner/travisci-tools'
-        ref: 'mnoman/gitActions'
+        ref: 'master'
     - name: set SDK Branch if PR
       if: ${{ github.event_name == 'pull_request' }}
       run: |
