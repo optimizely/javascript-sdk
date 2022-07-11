@@ -18,6 +18,28 @@ import { getLogger } from '@optimizely/js-sdk-logging';
 
 const logger = getLogger('EventProcessor')
 
+function isLocalStorageAvailable() {
+  if (typeof window.localStorage == 'undefined') {
+    logger.warn('Local storage is undefined.');
+    return false;
+  }
+
+  try {
+    window.localStorage.setItem('foo', 'bar');
+
+    if (window.localStorage.getItem('foo') === 'bar') {
+      window.localStorage.removeItem('foo');
+      return true;
+    }
+
+    logger.warn('Local storage is not functioning as expected.');
+  } catch (e) {
+    logger.warn('Local storage is not available.');
+  }
+
+  return false;
+}
+
 export interface PendingEventsStore<K> {
   get(key: string): K | null
 
@@ -71,9 +93,10 @@ export class LocalStorageStore<K extends StoreEntry> implements PendingEventsSto
   }
 
   replace(map: { [key: string]: K }): void {
+    if (!isLocalStorageAvailable()) return;
     try {
       // This is a temporary fix to support React Native which does not have localStorage.
-      window.localStorage && localStorage.setItem(this.LS_KEY, JSON.stringify(map))
+      localStorage.setItem(this.LS_KEY, JSON.stringify(map))
       this.clean()
     } catch (e) {
       logger.error(e)
@@ -103,15 +126,18 @@ export class LocalStorageStore<K extends StoreEntry> implements PendingEventsSto
   }
 
   private getMap(): { [key: string]: K } {
-    try {
-      // This is a temporary fix to support React Native which does not have localStorage.
-      const data = window.localStorage && localStorage.getItem(this.LS_KEY);
-      if (data) {
-        return (JSON.parse(data) as { [key: string]: K }) || {}
+    if (isLocalStorageAvailable()) {
+      try {
+        // This is a temporary fix to support React Native which does not have localStorage.
+        const data = localStorage.getItem(this.LS_KEY);
+        if (data) {
+          return (JSON.parse(data) as { [key: string]: K }) || {}
+        }
+      } catch (e) {
+        logger.error(e)
       }
-    } catch (e) {
-      logger.error(e)
     }
+
     return {}
   }
 }
