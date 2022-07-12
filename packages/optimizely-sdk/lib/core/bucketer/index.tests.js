@@ -352,10 +352,14 @@ describe('lib/core/bucketer', function () {
         expect(bucketer._generateBucketValue(bucketingKey4)).to.equal(5439);
       });
 
-      it('should return an error if it cannot generate the hash value', function () {
-        assert.throws(function () {
+      it('should return an error if it cannot generate the hash value', function() {
+       const response = assert.throws(function() {
           bucketer._generateBucketValue(null);
-        }, sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "Cannot read property 'length' of null"));
+        } );
+        expect([
+          sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "Cannot read property 'length' of null"),  // node v14
+          sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, 'BUCKETER', null, "Cannot read properties of null (reading \'length\')")  // node v16
+        ]).contain(response.message);
       });
     });
 
