@@ -51,6 +51,6 @@ jobs:
         EVENT_MESSAGE: ${{ github.event.message }}
         HOME: 'home/runner'
       run: |
-        CLIENT=node home/runner/travisci-tools/trigger-script-with-status-update.sh
+        CLIENT=node home/runner/travisci-tools/trigger-script-with-status-update.sh zeeshan/fix-js-sdk-client-trigger
         # Run only browser builds when it's FSC not for FPS.
-        [ "$FULLSTACK_TEST_REPO" == "ProdTesting" ] || CLIENT=browser home/runner/travisci-tools/trigger-script-with-status-update.sh
+        [ "$FULLSTACK_TEST_REPO" == "ProdTesting" ] || CLIENT=browser home/runner/travisci-tools/trigger-script-with-status-update.sh zeeshan/fix-js-sdk-client-trigger
