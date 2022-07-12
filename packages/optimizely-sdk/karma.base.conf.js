@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, 2020 Optimizely
+ * Copyright 2018, 2020, 2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,52 +54,50 @@ module.exports = {
   customLaunchers: {
     bs_chrome_mac: {
       base: 'BrowserStack',
-      browser: 'chrome',
-      browser_version: '21.0',
       os: 'OS X',
-      os_version: 'Mountain Lion',
+      os_version: 'Mojave',
+      browserName: 'Chrome',
+      browser_version: '102.0',
+      browser: 'Chrome',
     },
     bs_edge: {
       base: 'BrowserStack',
       os: 'Windows',
       os_version: '10',
-      browser: 'edge',
-      device: null,
-      browser_version: '15.0',
+      browserName: 'Edge',
+      browser_version: '84.0',
+      browser: 'Edge',
     },
-    bs_firefox_mac: {
-      base: 'BrowserStack',
-      browser: 'firefox',
-      browser_version: '21.0',
-      os: 'OS X',
-      os_version: 'Mountain Lion',
-    },
-    bs_ie: {
+    bs_firefox: {
       base: 'BrowserStack',
       os: 'Windows',
-      os_version: '7',
-      browser: 'ie',
-      device: null,
-      browser_version: '10.0',
+      browser: 'Firefox',
+      os_version: '10',
+      browserName: 'Firefox',
+      browser_version: '91.0',
     },
+
     bs_opera_mac: {
       base: 'BrowserStack',
-      browser: 'opera',
-      browser_version: '37',
+      browser: 'Opera',
+      os_version: 'Mojave',
+      browserName: 'Opera',
+      browser: 'Opera',
+      browser_version: '76.0',
       os: 'OS X',
-      os_version: 'Mountain Lion',
     },
     bs_safari: {
       base: 'BrowserStack',
       os: 'OS X',
-      os_version: 'Mountain Lion',
-      browser: 'safari',
+      os_version: 'Catalina',
+      browserName: 'Safari',
+      browser_version: '13.0',
+      browser: 'Safari',
       device: null,
-      browser_version: '6.2',
     },
   },
 
-  browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox_mac', 'bs_ie', 'bs_opera_mac', 'bs_safari'],
+  browsers: ['bs_chrome_mac', 'bs_edge', 'bs_firefox', 'bs_opera_mac', 'bs_safari'],
 
   // frameworks to use
   // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
