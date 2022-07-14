@@ -131,7 +131,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Link Jira Issue
-        uses: john-d-pelingo/jira-link-issue-action@v1
+        uses: john-d-pelingo/jira-link-issue-action
         with:
           atlassian-domain: 'https://optimizely.atlassian.net'
           board-name: 'OASIS'
