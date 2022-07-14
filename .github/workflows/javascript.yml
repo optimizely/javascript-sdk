@@ -132,7 +132,7 @@ jobs:
 
     steps:
       - name: Check for ticket
-        uses: shaharyar123/ticket-check-action@v2
+        uses: shaharyar123/ticket-check-action@v2.4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ticketLink: 'https://optimizely.atlassian.net/browse/OASIS-%ticketNumber%'
