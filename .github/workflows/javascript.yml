@@ -135,9 +135,9 @@ jobs:
         uses: neofinancial/ticket-check-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          ticketLink: 'https://:org.atlassian.net/browse/OASIS-%ticketNumber%'
+          ticketLink: 'https://optimizely.atlassian.net/browse/OASIS-%ticketNumber%'
           ticketPrefix: 'OASIS-'
           titleRegex: '^OASIS-(?<ticketNumber>\d+)'
           branchRegex: '^OASIS-(?<ticketNumber>\d+)'
           bodyRegex: 'OASIS-(?<ticketNumber>\d+)'
-          bodyURLRegex: 'http(s?):\/\/(:org.atlassian.net)(\/browse)\/(OASIS\-)(?<ticketNumber>\d+)'
+          bodyURLRegex: 'http(s?):\/\/(optimizely.atlassian.net)(\/browse)\/(OASIS\-)(?<ticketNumber>\d+)'
