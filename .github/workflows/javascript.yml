@@ -129,15 +129,10 @@ jobs:
   
   ticket_url_checker:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check for ticket
-        uses: neofinancial/ticket-check-action@v1
+      - name: Link Jira Issue
+        uses: john-d-pelingo/jira-link-issue-action@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ticketLink: 'https://optimizely.atlassian.net/browse/OASIS-%ticketNumber%'
-          ticketPrefix: 'OASIS-'
-          titleRegex: '^OASIS-(?<ticketNumber>\d+)'
-          branchRegex: '^OASIS-(?<ticketNumber>\d+)'
-          bodyRegex: 'OASIS-(?<ticketNumber>\d+)'
-          bodyURLRegex: 'http(s?):\/\/(optimizely.atlassian.net)(\/browse)\/(OASIS\-)(?<ticketNumber>\d+)'
+          atlassian-domain: 'https://optimizely.atlassian.net'
+          board-name: 'OASIS'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
