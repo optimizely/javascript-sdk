@@ -1,0 +1,23 @@
+name: Javascript
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+     types: [opened, review_requested, edited]
+
+jobs:
+
+  ticket_url_checker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check for ticket
+        uses: shaharyar123/ticket-check-action@v2.5
+        with:
+          # token: ${{ secrets.GITHUB_TOKEN }}
+          # ticketLink: 'https://optimizely.atlassian.net/browse/OASIS-%ticketNumber%'
+          # ticketPrefix: 'OASIS-'
+          # branchRegex: '^OASIS-(?<ticketNumber>\d+)' 
+          bodyRegex: 'OASIS-(?<ticketNumber>\d+)' 
+          bodyURLRegex: 'http(s?):\/\/(optimizely.atlassian.net)(\/browse)\/(OASIS\-)(?<ticketNumber>\d+)'
