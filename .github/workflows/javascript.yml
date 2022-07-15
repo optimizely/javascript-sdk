@@ -138,5 +138,5 @@ jobs:
           # ticketLink: 'https://optimizely.atlassian.net/browse/OASIS-%ticketNumber%'
           # ticketPrefix: 'OASIS-'
           # branchRegex: '^OASIS-(?<ticketNumber>\d+)' 
-          bodyRegex: 'OASIS-(?<ticketNumber>\d+)'
+          bodyRegex: 'OASIS-(?<ticketNumber>\d+)' 
           bodyURLRegex: 'http(s?):\/\/(optimizely.atlassian.net)(\/browse)\/(OASIS\-)(?<ticketNumber>\d+)'
