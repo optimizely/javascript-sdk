@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
-     types: [opened, review_requested, edited]
+     types: [opened, edited]
 
 jobs:
 
@@ -16,4 +16,4 @@ jobs:
         uses: shaharyar123/ticket-reference-available@master
         with:
           bodyRegex: 'OASIS-(?<ticketNumber>\d+)' 
-          bodyURLRegex: 'http(s?):\/\/(optimizely.atlassian.net)(\/browse)\/(OASIS\-)(?<ticketNumber>\d+)'
+          
