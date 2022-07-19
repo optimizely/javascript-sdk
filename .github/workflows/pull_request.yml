@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
-     types: [opened, edited, synchronize]
+     types: [opened, edited, reopened, synchronize]
 
 jobs:
 
@@ -13,6 +13,6 @@ jobs:
 
     steps:
       - name: Check for Jira ticket link
-        uses: shaharyar123/ticket-reference-available@master
+        uses: optimizely/github-action-ticket-reference-checker@master
         with:
           bodyRegex: 'OASIS-(?<ticketNumber>\d+)' 
