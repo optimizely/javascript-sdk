@@ -16,4 +16,3 @@ jobs:
         uses: shaharyar123/ticket-reference-available@master
         with:
           bodyRegex: 'OASIS-(?<ticketNumber>\d+)' 
-          bodyURLRegex: 'http(s?):\/\/(optimizely.atlassian.net)(\/browse)\/(OASIS\-)(?<ticketNumber>\d+)'
