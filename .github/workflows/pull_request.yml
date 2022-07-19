@@ -13,7 +13,6 @@ jobs:
 
     steps:
       - name: Check for Jira ticket link
-        uses: shaharyar123/ticket-reference-available@master
+        uses: shaharyar123/ticket-reference-available@minor-fixes
         with:
           bodyRegex: 'OASIS-(?<ticketNumber>\d+)' 
-          
