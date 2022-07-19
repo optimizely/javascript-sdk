@@ -4,8 +4,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
-     types: [opened, edited]
-     branches: [ master ]
+     types: [opened, edited, synchronize]
 
 jobs:
 
