@@ -1,12 +1,10 @@
-name: PR
-
 on:
   pull_request:
      types: [opened, edited, reopened, synchronize]
 
 jobs:
 
-  ticket_url_checker:
+  ticket_reference_check:
     runs-on: ubuntu-latest
 
     steps:
