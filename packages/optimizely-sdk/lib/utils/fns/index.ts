@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import v4 from 'uuid';
+import { v4 } from 'uuid';
 
 const MAX_SAFE_INTEGER_LIMIT = Math.pow(2, 53);
 

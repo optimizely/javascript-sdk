@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/optimizely-sdk",
-  "version": "4.9.1",
+  "version": "4.9.2",
   "description": "JavaScript SDK for Optimizely X Full Stack",
   "module": "dist/optimizely.browser.es.js",
   "main": "dist/optimizely.node.min.js",
@@ -44,8 +44,8 @@
     "@optimizely/js-sdk-event-processor": "^0.9.2",
     "@optimizely/js-sdk-logging": "^0.3.1",
     "json-schema": "^0.4.0",
-    "murmurhash": "0.0.2",
-    "uuid": "^3.3.2"
+    "murmurhash": "^2.0.1",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.2",
