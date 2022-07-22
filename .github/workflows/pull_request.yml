@@ -13,6 +13,6 @@ jobs:
 
     steps:
       - name: Check for Jira ticket link
-        uses: optimizely/github-action-ticket-reference-checker@master
+        uses: optimizely/github-action-ticket-reference-checker-public@master
         with:
           bodyRegex: 'OASIS-(?<ticketNumber>\d+)' 
