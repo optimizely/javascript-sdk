@@ -1,10 +1,12 @@
+name: Jira ticket reference check
+
 on:
   pull_request:
      types: [opened, edited, reopened, synchronize]
 
 jobs:
 
-  ticket_reference_check:
+  jira_ticket_reference_check:
     runs-on: ubuntu-latest
 
     steps:
