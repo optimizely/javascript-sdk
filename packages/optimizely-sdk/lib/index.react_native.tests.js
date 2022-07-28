@@ -25,20 +25,20 @@ import optimizelyFactory from './index.react_native';
 import configValidator from './utils/config_validator';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 
-describe('javascript-sdk/react-native', function() {
+describe('javascript-sdk/react-native', function () {
   var clock;
-  beforeEach(function() {
+  beforeEach(function () {
     sinon.stub(optimizelyFactory.eventDispatcher, 'dispatchEvent');
     clock = sinon.useFakeTimers(new Date());
   });
 
-  afterEach(function() {
+  afterEach(function () {
     optimizelyFactory.eventDispatcher.dispatchEvent.restore();
     clock.restore();
   });
 
-  describe('APIs', function() {
-    it('should expose logger, errorHandler, eventDispatcher and enums', function() {
+  describe('APIs', function () {
+    it('should expose logger, errorHandler, eventDispatcher and enums', function () {
       assert.isDefined(optimizelyFactory.logging);
       assert.isDefined(optimizelyFactory.logging.createLogger);
       assert.isDefined(optimizelyFactory.logging.createNoOpLogger);
@@ -47,12 +47,12 @@ describe('javascript-sdk/react-native', function() {
       assert.isDefined(optimizelyFactory.enums);
     });
 
-    describe('createInstance', function() {
-      var fakeErrorHandler = { handleError: function() {} };
-      var fakeEventDispatcher = { dispatchEvent: function() {} };
+    describe('createInstance', function () {
+      var fakeErrorHandler = { handleError: function () { } };
+      var fakeEventDispatcher = { dispatchEvent: function () { } };
       var silentLogger;
 
-      beforeEach(function() {
+      beforeEach(function () {
         silentLogger = optimizelyFactory.logging.createLogger({
           logLevel: optimizelyFactory.enums.LOG_LEVEL.INFO,
           logToConsole: false,
@@ -61,24 +61,24 @@ describe('javascript-sdk/react-native', function() {
         sinon.stub(configValidator, 'validate');
       });
 
-      afterEach(function() {
+      afterEach(function () {
         console.error.restore();
         configValidator.validate.restore();
       });
 
-      it('should not throw if the provided config is not valid', function() {
+      it('should not throw if the provided config is not valid', function () {
         configValidator.validate.throws(new Error('Invalid config or something'));
-        assert.doesNotThrow(function() {
+        assert.doesNotThrow(function () {
           var optlyInstance = optimizelyFactory.createInstance({
             datafile: {},
             logger: silentLogger,
           });
           // Invalid datafile causes onReady Promise rejection - catch this error
-          optlyInstance.onReady().catch(function() {});
+          optlyInstance.onReady().catch(function () { });
         });
       });
 
-      it('should create an instance of optimizely', function() {
+      it('should create an instance of optimizely', function () {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
@@ -86,13 +86,13 @@ describe('javascript-sdk/react-native', function() {
           logger: silentLogger,
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
-        optlyInstance.onReady().catch(function() {});
+        optlyInstance.onReady().catch(function () { });
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.9.1');
+        assert.equal(optlyInstance.clientVersion, '4.9.2');
       });
 
-      it('should set the React Native JS client engine and javascript SDK version', function() {
+      it('should set the React Native JS client engine and javascript SDK version', function () {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
@@ -100,12 +100,12 @@ describe('javascript-sdk/react-native', function() {
           logger: silentLogger,
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
-        optlyInstance.onReady().catch(function() {});
+        optlyInstance.onReady().catch(function () { });
         assert.equal('react-native-js-sdk', optlyInstance.clientEngine);
         assert.equal(packageJSON.version, optlyInstance.clientVersion);
       });
 
-      it('should allow passing of "react-sdk" as the clientEngine and convert it to "react-native-sdk"', function() {
+      it('should allow passing of "react-sdk" as the clientEngine and convert it to "react-native-sdk"', function () {
         var optlyInstance = optimizelyFactory.createInstance({
           clientEngine: 'react-sdk',
           datafile: {},
@@ -114,11 +114,11 @@ describe('javascript-sdk/react-native', function() {
           logger: silentLogger,
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
-        optlyInstance.onReady().catch(function() {});
+        optlyInstance.onReady().catch(function () { });
         assert.equal('react-native-sdk', optlyInstance.clientEngine);
       });
 
-      it('should activate with provided event dispatcher', function() {
+      it('should activate with provided event dispatcher', function () {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfig(),
           errorHandler: fakeErrorHandler,
@@ -129,8 +129,8 @@ describe('javascript-sdk/react-native', function() {
         assert.strictEqual(activate, 'control');
       });
 
-      describe('when no event dispatcher passed to createInstance', function() {
-        it('uses the default event dispatcher', function() {
+      describe('when no event dispatcher passed to createInstance', function () {
+        it('uses the default event dispatcher', function () {
           var optlyInstance = optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
             errorHandler: fakeErrorHandler,
@@ -142,16 +142,16 @@ describe('javascript-sdk/react-native', function() {
         });
       });
 
-      describe('when passing in logLevel', function() {
-        beforeEach(function() {
+      describe('when passing in logLevel', function () {
+        beforeEach(function () {
           sinon.stub(logging, 'setLogLevel');
         });
 
-        afterEach(function() {
+        afterEach(function () {
           logging.setLogLevel.restore();
         });
 
-        it('should call logging.setLogLevel', function() {
+        it('should call logging.setLogLevel', function () {
           optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
             logLevel: optimizelyFactory.enums.LOG_LEVEL.ERROR,
@@ -161,17 +161,17 @@ describe('javascript-sdk/react-native', function() {
         });
       });
 
-      describe('when passing in logger', function() {
-        beforeEach(function() {
+      describe('when passing in logger', function () {
+        beforeEach(function () {
           sinon.stub(logging, 'setLogHandler');
         });
 
-        afterEach(function() {
+        afterEach(function () {
           logging.setLogHandler.restore();
         });
 
-        it('should call logging.setLogHandler with the supplied logger', function() {
-          var fakeLogger = { log: function() {} };
+        it('should call logging.setLogHandler with the supplied logger', function () {
+          var fakeLogger = { log: function () { } };
           optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
             logger: fakeLogger,
@@ -181,17 +181,17 @@ describe('javascript-sdk/react-native', function() {
         });
       });
 
-      describe('event processor configuration', function() {
+      describe('event processor configuration', function () {
         var eventProcessorSpy;
-        beforeEach(function() {
+        beforeEach(function () {
           eventProcessorSpy = sinon.spy(eventProcessor, 'createEventProcessor');
         });
 
-        afterEach(function() {
+        afterEach(function () {
           eventProcessor.createEventProcessor.restore();
         });
 
-        it('should use default event flush interval when none is provided', function() {
+        it('should use default event flush interval when none is provided', function () {
           optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfigWithFeatures(),
             errorHandler: fakeErrorHandler,
@@ -206,16 +206,16 @@ describe('javascript-sdk/react-native', function() {
           );
         });
 
-        describe('with an invalid flush interval', function() {
-          beforeEach(function() {
+        describe('with an invalid flush interval', function () {
+          beforeEach(function () {
             sinon.stub(eventProcessorConfigValidator, 'validateEventFlushInterval').returns(false);
           });
 
-          afterEach(function() {
+          afterEach(function () {
             eventProcessorConfigValidator.validateEventFlushInterval.restore();
           });
 
-          it('should ignore the event flush interval and use the default instead', function() {
+          it('should ignore the event flush interval and use the default instead', function () {
             optimizelyFactory.createInstance({
               datafile: testData.getTestProjectConfigWithFeatures(),
               errorHandler: fakeErrorHandler,
@@ -232,16 +232,16 @@ describe('javascript-sdk/react-native', function() {
           });
         });
 
-        describe('with a valid flush interval', function() {
-          beforeEach(function() {
+        describe('with a valid flush interval', function () {
+          beforeEach(function () {
             sinon.stub(eventProcessorConfigValidator, 'validateEventFlushInterval').returns(true);
           });
 
-          afterEach(function() {
+          afterEach(function () {
             eventProcessorConfigValidator.validateEventFlushInterval.restore();
           });
 
-          it('should use the provided event flush interval', function() {
+          it('should use the provided event flush interval', function () {
             optimizelyFactory.createInstance({
               datafile: testData.getTestProjectConfigWithFeatures(),
               errorHandler: fakeErrorHandler,
@@ -258,7 +258,7 @@ describe('javascript-sdk/react-native', function() {
           });
         });
 
-        it('should use default event batch size when none is provided', function() {
+        it('should use default event batch size when none is provided', function () {
           optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfigWithFeatures(),
             errorHandler: fakeErrorHandler,
@@ -273,16 +273,16 @@ describe('javascript-sdk/react-native', function() {
           );
         });
 
-        describe('with an invalid event batch size', function() {
-          beforeEach(function() {
+        describe('with an invalid event batch size', function () {
+          beforeEach(function () {
             sinon.stub(eventProcessorConfigValidator, 'validateEventBatchSize').returns(false);
           });
 
-          afterEach(function() {
+          afterEach(function () {
             eventProcessorConfigValidator.validateEventBatchSize.restore();
           });
 
-          it('should ignore the event batch size and use the default instead', function() {
+          it('should ignore the event batch size and use the default instead', function () {
             optimizelyFactory.createInstance({
               datafile: testData.getTestProjectConfigWithFeatures(),
               errorHandler: fakeErrorHandler,
@@ -299,16 +299,16 @@ describe('javascript-sdk/react-native', function() {
           });
         });
 
-        describe('with a valid event batch size', function() {
-          beforeEach(function() {
+        describe('with a valid event batch size', function () {
+          beforeEach(function () {
             sinon.stub(eventProcessorConfigValidator, 'validateEventBatchSize').returns(true);
           });
 
-          afterEach(function() {
+          afterEach(function () {
             eventProcessorConfigValidator.validateEventBatchSize.restore();
           });
 
-          it('should use the provided event batch size', function() {
+          it('should use the provided event batch size', function () {
             optimizelyFactory.createInstance({
               datafile: testData.getTestProjectConfigWithFeatures(),
               errorHandler: fakeErrorHandler,

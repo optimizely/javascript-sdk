@@ -24,9 +24,9 @@ import * as loggerPlugin from './plugins/logger';
 import optimizelyFactory from './index.node';
 import configValidator from './utils/config_validator';
 
-describe('optimizelyFactory', function() {
-  describe('APIs', function() {
-    it('should expose logger, errorHandler, eventDispatcher and enums', function() {
+describe('optimizelyFactory', function () {
+  describe('APIs', function () {
+    it('should expose logger, errorHandler, eventDispatcher and enums', function () {
       assert.isDefined(optimizelyFactory.logging);
       assert.isDefined(optimizelyFactory.logging.createLogger);
       assert.isDefined(optimizelyFactory.logging.createNoOpLogger);
@@ -35,51 +35,51 @@ describe('optimizelyFactory', function() {
       assert.isDefined(optimizelyFactory.enums);
     });
 
-    describe('createInstance', function() {
-      var fakeErrorHandler = { handleError: function() {} };
-      var fakeEventDispatcher = { dispatchEvent: function() {} };
+    describe('createInstance', function () {
+      var fakeErrorHandler = { handleError: function () { } };
+      var fakeEventDispatcher = { dispatchEvent: function () { } };
       var fakeLogger;
 
-      beforeEach(function() {
+      beforeEach(function () {
         fakeLogger = { log: sinon.spy(), setLogLevel: sinon.spy() };
         sinon.stub(loggerPlugin, 'createLogger').returns(fakeLogger);
         sinon.stub(configValidator, 'validate');
         sinon.stub(console, 'error');
       });
 
-      afterEach(function() {
+      afterEach(function () {
         loggerPlugin.createLogger.restore();
         configValidator.validate.restore();
         console.error.restore();
       });
 
-      it('should not throw if the provided config is not valid and log an error if logger is passed in', function() {
+      it('should not throw if the provided config is not valid and log an error if logger is passed in', function () {
         configValidator.validate.throws(new Error('Invalid config or something'));
         var localLogger = loggerPlugin.createLogger({ logLevel: enums.LOG_LEVEL.INFO });
-        assert.doesNotThrow(function() {
+        assert.doesNotThrow(function () {
           var optlyInstance = optimizelyFactory.createInstance({
             datafile: {},
             logger: localLogger,
           });
           // Invalid datafile causes onReady Promise rejection - catch this
-          optlyInstance.onReady().catch(function() {});
+          optlyInstance.onReady().catch(function () { });
         });
         sinon.assert.calledWith(localLogger.log, enums.LOG_LEVEL.ERROR);
       });
 
-      it('should not throw if the provided config is not valid and log an error if no logger is provided', function() {
+      it('should not throw if the provided config is not valid and log an error if no logger is provided', function () {
         configValidator.validate.throws(new Error('Invalid config or something'));
-        assert.doesNotThrow(function() {
+        assert.doesNotThrow(function () {
           var optlyInstance = optimizelyFactory.createInstance({
             datafile: {},
           });
           // Invalid datafile causes onReady Promise rejection - catch this
-          optlyInstance.onReady().catch(function() {});
+          optlyInstance.onReady().catch(function () { });
         });
         sinon.assert.calledOnce(console.error);
       });
 
-      it('should create an instance of optimizely', function() {
+      it('should create an instance of optimizely', function () {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
@@ -87,23 +87,23 @@ describe('optimizelyFactory', function() {
           logger: fakeLogger,
         });
         // Invalid datafile causes onReady Promise rejection - catch this
-        optlyInstance.onReady().catch(function() {});
+        optlyInstance.onReady().catch(function () { });
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.9.1');
+        assert.equal(optlyInstance.clientVersion, '4.9.2');
       });
 
-      describe('event processor configuration', function() {
+      describe('event processor configuration', function () {
         var eventProcessorSpy;
-        beforeEach(function() {
+        beforeEach(function () {
           eventProcessorSpy = sinon.stub(eventProcessor, 'createEventProcessor').callThrough();
         });
 
-        afterEach(function() {
+        afterEach(function () {
           eventProcessor.createEventProcessor.restore();
         });
 
-        it('should ignore invalid event flush interval and use default instead', function() {
+        it('should ignore invalid event flush interval and use default instead', function () {
           optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfigWithFeatures(),
             errorHandler: fakeErrorHandler,
@@ -119,7 +119,7 @@ describe('optimizelyFactory', function() {
           );
         });
 
-        it('should use default event flush interval when none is provided', function() {
+        it('should use default event flush interval when none is provided', function () {
           optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfigWithFeatures(),
             errorHandler: fakeErrorHandler,
@@ -134,7 +134,7 @@ describe('optimizelyFactory', function() {
           );
         });
 
-        it('should use provided event flush interval when valid', function() {
+        it('should use provided event flush interval when valid', function () {
           optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfigWithFeatures(),
             errorHandler: fakeErrorHandler,
@@ -150,7 +150,7 @@ describe('optimizelyFactory', function() {
           );
         });
 
-        it('should ignore invalid event batch size and use default instead', function() {
+        it('should ignore invalid event batch size and use default instead', function () {
           optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfigWithFeatures(),
             errorHandler: fakeErrorHandler,
@@ -166,7 +166,7 @@ describe('optimizelyFactory', function() {
           );
         });
 
-        it('should use default event batch size when none is provided', function() {
+        it('should use default event batch size when none is provided', function () {
           optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfigWithFeatures(),
             errorHandler: fakeErrorHandler,
@@ -181,7 +181,7 @@ describe('optimizelyFactory', function() {
           );
         });
 
-        it('should use provided event batch size when valid', function() {
+        it('should use provided event batch size when valid', function () {
           optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfigWithFeatures(),
             errorHandler: fakeErrorHandler,
