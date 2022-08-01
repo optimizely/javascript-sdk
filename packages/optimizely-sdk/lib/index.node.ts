@@ -17,9 +17,10 @@ import {
   getLogger,
   setErrorHandler,
   getErrorHandler,
-  LogLevel
+  LogLevel,
+  setLogHandler,
+  setLogLevel
 } from './modules/logging';
-import logHelper from './modules/logging/logger';
 import Optimizely from './optimizely';
 import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
@@ -33,7 +34,7 @@ import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
 
 const logger = getLogger();
-logHelper.setLogLevel(LogLevel.ERROR);
+setLogLevel(LogLevel.ERROR);
 
 const DEFAULT_EVENT_BATCH_SIZE = 10;
 const DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
@@ -57,12 +58,12 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
     if (config.logger) {
       // only set a logger in node if one is provided, by not setting we are noop-ing
       hasLogger = true;
-      logHelper.setLogHandler(config.logger);
+      setLogHandler(config.logger);
       // respect the logger's shouldLog functionality
-      logHelper.setLogLevel(LogLevel.NOTSET);
+      setLogLevel(LogLevel.NOTSET);
     }
     if (config.logLevel !== undefined) {
-      logHelper.setLogLevel(config.logLevel);
+      setLogLevel(config.logLevel);
     }
     try {
       configValidator.validate(config);
@@ -121,9 +122,6 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
     return null;
   }
 };
-
-const setLogHandler = logHelper.setLogHandler
-const setLogLevel = logHelper.setLogLevel
 
 /**
  * Entry point into the Optimizely Node testing SDK

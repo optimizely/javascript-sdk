@@ -17,9 +17,10 @@
     getLogger,
     setErrorHandler,
     getErrorHandler,
-    LogLevel
+    LogLevel,
+    setLogHandler,
+    setLogLevel
   } from './modules/logging';
-import logHelper from './modules/logging/logger';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import noOpEventDispatcher from './plugins/event_dispatcher/no_op';
@@ -32,8 +33,8 @@ import { OptimizelyDecideOption, Client, ConfigLite } from './shared_types';
 import { createNoOpDatafileManager } from './plugins/datafile_manager/no_op_datafile_manager';
   
 const logger = getLogger();
-logHelper.setLogHandler(loggerPlugin.createLogger());
-logHelper.setLogLevel(LogLevel.ERROR);
+setLogHandler(loggerPlugin.createLogger());
+setLogLevel(LogLevel.ERROR);
 
 /**
  * Creates an instance of the Optimizely class
@@ -51,12 +52,12 @@ logHelper.setLogLevel(LogLevel.ERROR);
       setErrorHandler(config.errorHandler);
     }
     if (config.logger) {
-      logHelper.setLogHandler(config.logger);
+      setLogHandler(config.logger);
       // respect the logger's shouldLog functionality
-      logHelper.setLogLevel(LogLevel.NOTSET);
+      setLogLevel(LogLevel.NOTSET);
     }
     if (config.logLevel !== undefined) {
-      logHelper.setLogLevel(config.logLevel);
+      setLogLevel(config.logLevel);
     }
 
     try {
@@ -90,8 +91,6 @@ logHelper.setLogLevel(LogLevel.ERROR);
   }
 };
 
-const setLogHandler = logHelper.setLogHandler
-const setLogLevel = logHelper.setLogLevel
 export {
   loggerPlugin as logging,
   defaultErrorHandler as errorHandler,

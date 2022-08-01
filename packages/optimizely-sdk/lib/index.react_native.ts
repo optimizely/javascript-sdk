@@ -17,9 +17,10 @@ import {
   getLogger,
   setErrorHandler,
   getErrorHandler,
-  LogLevel
+  LogLevel,
+  setLogHandler,
+  setLogLevel
 } from './modules/logging';
-import logHelper from './modules/logging/logger';
 import * as enums from './utils/enums';
 import Optimizely from './optimizely';
 import configValidator from './utils/config_validator';
@@ -33,8 +34,8 @@ import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
 
 const logger = getLogger();
-logHelper.setLogHandler(loggerPlugin.createLogger());
-logHelper.setLogLevel(LogLevel.INFO);
+setLogHandler(loggerPlugin.createLogger());
+setLogLevel(LogLevel.INFO);
 
 const DEFAULT_EVENT_BATCH_SIZE = 10;
 const DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
@@ -55,12 +56,12 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
       setErrorHandler(config.errorHandler);
     }
     if (config.logger) {
-      logHelper.setLogHandler(config.logger);
+      setLogHandler(config.logger);
       // respect the logger's shouldLog functionality
-      logHelper.setLogLevel(LogLevel.NOTSET);
+      setLogLevel(LogLevel.NOTSET);
     }
     if (config.logLevel !== undefined) {
-      logHelper.setLogLevel(config.logLevel);
+      setLogLevel(config.logLevel);
     }
 
     try {
@@ -121,9 +122,6 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
     return null;
   }
 };
-
-const setLogHandler = logHelper.setLogHandler
-const setLogLevel = logHelper.setLogLevel
 
 /**
  * Entry point into the Optimizely Javascript SDK for React Native
