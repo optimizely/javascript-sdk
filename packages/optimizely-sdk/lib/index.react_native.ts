@@ -15,12 +15,12 @@
  */
 import {
   getLogger,
-  setLogHandler,
-  setLogLevel,
   setErrorHandler,
   getErrorHandler,
-  LogLevel
-} from '@optimizely/js-sdk-logging';
+  LogLevel,
+  setLogHandler,
+  setLogLevel
+} from './modules/logging';
 import * as enums from './utils/enums';
 import Optimizely from './optimizely';
 import configValidator from './utils/config_validator';

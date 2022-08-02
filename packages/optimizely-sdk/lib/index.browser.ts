@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import logHelper from './modules/logging/logger';
 import {
   getLogger,
-  setLogHandler,
-  setLogLevel,
   setErrorHandler,
   getErrorHandler,
   LogLevel
-} from '@optimizely/js-sdk-logging';
+} from './modules/logging';
 import { LocalStoragePendingEventsDispatcher } from '@optimizely/js-sdk-event-processor';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
@@ -35,8 +34,8 @@ import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
 
 const logger = getLogger();
-setLogHandler(loggerPlugin.createLogger());
-setLogLevel(LogLevel.INFO);
+logHelper.setLogHandler(loggerPlugin.createLogger());
+logHelper.setLogLevel(LogLevel.INFO);
 
 const MODULE_NAME = 'INDEX_BROWSER';
 const DEFAULT_EVENT_BATCH_SIZE = 10;
@@ -60,12 +59,12 @@ const createInstance = function(config: Config): Client | null {
       setErrorHandler(config.errorHandler);
     }
     if (config.logger) {
-      setLogHandler(config.logger);
+      logHelper.setLogHandler(config.logger);
       // respect the logger's shouldLog functionality
-      setLogLevel(LogLevel.NOTSET);
+      logHelper.setLogLevel(LogLevel.NOTSET);
     }
     if (config.logLevel !== undefined) {
-      setLogLevel(config.logLevel);
+      logHelper.setLogLevel(config.logLevel);
     }
 
     try {
@@ -160,6 +159,9 @@ const __internalResetRetryState = function(): void {
 /**
  * Entry point into the Optimizely Browser SDK
  */
+
+const setLogHandler = logHelper.setLogHandler
+const setLogLevel = logHelper.setLogLevel
 export {
   loggerPlugin as logging,
   defaultErrorHandler as errorHandler,
