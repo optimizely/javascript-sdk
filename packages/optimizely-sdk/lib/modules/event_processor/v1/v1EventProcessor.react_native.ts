@@ -16,7 +16,7 @@
 import {
   uuid as id,
   objectEntries,
-} from '@utils/fns'
+} from '../../../utils/fns'
 import {
   NetInfoState,
   addEventListener as addConnectionListener,

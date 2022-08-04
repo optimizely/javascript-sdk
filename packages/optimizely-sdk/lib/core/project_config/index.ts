@@ -27,8 +27,8 @@ import {
   LOG_LEVEL,
   LOG_MESSAGES,
   FEATURE_VARIABLE_TYPES,
-} from '@utils/enums';
-import configValidator from '@utils/config_validator';
+} from '../../utils/enums';
+import configValidator from '../../utils/config_validator';
 
 import { LogHandler } from '../../modules/logging';
 import {

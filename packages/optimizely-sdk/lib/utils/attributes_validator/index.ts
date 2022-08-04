@@ -16,7 +16,7 @@
 import { sprintf } from '../../utils/fns';
 import { ObjectWithUnknownProperties } from '../../shared_types';
 
-import fns from '@utils/fns';
+import fns from '../../utils/fns';
 import { ERROR_MESSAGES } from '../enums';
 
 const MODULE_NAME = 'ATTRIBUTES_VALIDATOR';

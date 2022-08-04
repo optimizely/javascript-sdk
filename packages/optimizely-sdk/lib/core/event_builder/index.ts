@@ -16,8 +16,8 @@
 import { LoggerFacade } from '../../modules/logging';
 import { EventV1 as CommonEventParams } from '../../modules/event_processor';
 
-import fns from '@utils/fns';
-import { CONTROL_ATTRIBUTES, RESERVED_EVENT_KEYWORDS } from '@utils/enums';
+import fns from '../../utils/fns';
+import { CONTROL_ATTRIBUTES, RESERVED_EVENT_KEYWORDS } from '../../utils/enums';
 import {
   getAttributeId,
   getEventId,
@@ -25,8 +25,8 @@ import {
   getVariationKeyFromId,
   ProjectConfig,
 } from '../project_config';
-import * as eventTagUtils from '@utils/event_tag_utils';
-import { isAttributeValid } from '@utils/attributes_validator';
+import * as eventTagUtils from '../../utils/event_tag_utils';
+import { isAttributeValid } from '../../utils/attributes_validator';
 import { EventTags, UserAttributes, Event as EventLoggingEndpoint } from '../../shared_types';
 
 const ACTIVATE_EVENT_KEY = 'campaign_activated';

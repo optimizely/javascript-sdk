@@ -16,7 +16,7 @@
 import { getLogger } from '../logging'
 import { EventDispatcher, EventV1Request, EventDispatcherCallback } from './eventDispatcher'
 import { PendingEventsStore, LocalStorageStore } from './pendingEventsStore'
-import { uuid, getTimestamp } from '@utils/fns'
+import { uuid, getTimestamp } from '../../utils/fns'
 
 const logger = getLogger('EventProcessor')
 

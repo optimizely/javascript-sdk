@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 import { getLogger } from '../logging'
-import { objectValues } from "@utils/fns"
+import { objectValues } from "../../utils/fns"
 
 import { Synchronizer } from './synchronizer'
 import ReactNativeAsyncStorageCache from './reactNativeAsyncStorageCache'
