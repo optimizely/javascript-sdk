@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/js-sdk-datafile-manager",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "description": "Optimizely Full Stack Datafile Manager",
   "repository": {
     "type": "git",
@@ -14,7 +14,7 @@
   "main": "lib/index.node.js",
   "browser": "lib/index.browser.js",
   "react-native": "lib/index.react_native.js",
-  "types": "lib/index.d.ts",
+  "types": "lib/index.node.d.ts",
   "directories": {
     "lib": "lib",
     "test": "__test__"

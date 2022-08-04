@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { LogLevel } from '../../modules/logging';
-import { sprintf } from '@utils/fns';
+import { sprintf } from '../../utils/fns';
 import { NoOpLogger } from './index';
 
 function getLogLevelName(level: number): string {

@@ -6,9 +6,6 @@
       "*": [
         "./typings/*"
       ],
-      "@utils/*": [ 
-        "./lib/utils/*" 
-      ]
     },
     "allowJs": true,
     "declaration": true,

@@ -15,11 +15,11 @@
  */
 import {
   getLogger,
-  setLogHandler,
-  setLogLevel,
   setErrorHandler,
   getErrorHandler,
-  LogLevel
+  LogLevel,
+  setLogHandler,
+  setLogLevel
 } from './modules/logging';
 import * as enums from './utils/enums';
 import Optimizely from './optimizely';

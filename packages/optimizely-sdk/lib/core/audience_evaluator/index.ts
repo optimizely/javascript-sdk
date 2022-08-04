@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, 2018-2021, 2022, Optimizely
+ * Copyright 2016, 2018-2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@
  */
 import { getLogger } from '../../modules/logging';
 
-import fns from '@utils/fns';
+import fns from '../../utils/fns';
 import {
   LOG_LEVEL,
   LOG_MESSAGES,
   ERROR_MESSAGES,
-} from '@utils/enums';
+} from '../../utils/enums';
 import * as conditionTreeEvaluator from '../condition_tree_evaluator';
 import * as customAttributeConditionEvaluator from '../custom_attribute_condition_evaluator';
 import { UserAttributes, Audience, Condition } from '../../shared_types';

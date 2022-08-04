@@ -15,11 +15,11 @@
  */
  import {
     getLogger,
-    setLogHandler,
-    setLogLevel,
     setErrorHandler,
     getErrorHandler,
-    LogLevel
+    LogLevel,
+    setLogHandler,
+    setLogLevel
   } from './modules/logging';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
