@@ -3,7 +3,9 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "*": ["./typings/*"]
+      "*": [
+        "./typings/*"
+      ],
     },
     "allowJs": true,
     "declaration": true,
@@ -11,7 +13,6 @@
     "outDir": "./dist",
     "sourceMap": true,
     "skipLibCheck": true,
-    "target": "es6"
   },
   "exclude": [
     "./dist",
@@ -21,5 +22,8 @@
     "./lib/tests",
     "node_modules"
   ],
-  "include": ["./lib/**/*.ts", "./lib/**/*.js"]
+  "include": [
+    "./lib/**/*.ts",
+    "./lib/**/*.js"
+  ]
 }
