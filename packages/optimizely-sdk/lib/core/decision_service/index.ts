@@ -484,7 +484,7 @@ export class DecisionService {
 
     try {
       return this.userProfileService.lookup(userId);
-    } catch (ex) {
+    } catch (ex: any) {
       this.logger.log(
         LOG_LEVEL.ERROR,
         ERROR_MESSAGES.USER_PROFILE_LOOKUP_ERROR,
@@ -532,7 +532,7 @@ export class DecisionService {
         experiment.key,
         userId,
       );
-    } catch (ex) {
+    } catch (ex: any) {
       this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.USER_PROFILE_SAVE_ERROR, MODULE_NAME, userId, ex.message);
     }
   }
@@ -972,7 +972,7 @@ export class DecisionService {
           reasons: decideReasons,
         };
       }
-    } catch (ex) {
+    } catch (ex: any) {
       // catching experiment not in datafile
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       decideReasons.push(ex.message);
@@ -1065,7 +1065,7 @@ export class DecisionService {
         );
         return false;
       }
-    } catch (ex) {
+    } catch (ex: any) {
       // catching experiment not in datafile
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       return false;
@@ -1075,7 +1075,7 @@ export class DecisionService {
       try {
         this.removeForcedVariation(userId, experimentId, experimentKey);
         return true;
-      } catch (ex) {
+      } catch (ex: any) {
         this.logger.log(LOG_LEVEL.ERROR, ex.message);
         return false;
       }
@@ -1097,7 +1097,7 @@ export class DecisionService {
     try {
       this.setInForcedVariationMap(userId, experimentId, variationId);
       return true;
-    } catch (ex) {
+    } catch (ex: any) {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       return false;
     }

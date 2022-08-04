@@ -105,7 +105,7 @@ export class ProjectConfigManager {
           reason: getErrorMessage(handleNewDatafileException, 'Invalid datafile'),
         });
       }
-    } catch (ex) {
+    } catch (ex: any) {
       logger.error(ex);
       this.readyPromise = Promise.resolve({
         success: false,

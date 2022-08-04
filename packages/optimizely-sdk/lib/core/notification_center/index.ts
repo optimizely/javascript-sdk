@@ -116,7 +116,7 @@ export class NotificationCenter {
       const returnId = this.listenerId;
       this.listenerId += 1;
       return returnId;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
       return -1;
@@ -159,7 +159,7 @@ export class NotificationCenter {
         this.notificationListeners[typeToRemove].splice(indexToRemove, 1);
         return true;
       }
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
     }
@@ -177,7 +177,7 @@ export class NotificationCenter {
           this.notificationListeners[notificationTypeEnum] = [];
         }
       );
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
     }
@@ -190,7 +190,7 @@ export class NotificationCenter {
   clearNotificationListeners(notificationType: NOTIFICATION_TYPES): void {
     try {
       this.notificationListeners[notificationType] = [];
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
     }
@@ -212,7 +212,7 @@ export class NotificationCenter {
           const callback = listenerEntry.callback;
           try {
             callback(notificationData);
-          } catch (ex) {
+          } catch (ex: any) {
             this.logger.log(
               LOG_LEVEL.ERROR,
               LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION,
@@ -223,7 +223,7 @@ export class NotificationCenter {
           }
         }
       );
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
     }
