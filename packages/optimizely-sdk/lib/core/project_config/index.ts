@@ -168,8 +168,9 @@ export const createProjectConfig = function (
   assign(projectConfig.audiencesById, keyBy(projectConfig.typedAudiences, 'id'));
 
   if (!projectConfig.allSegments) projectConfig.allSegments = []
+
   Object.keys(projectConfig.audiencesById).forEach((audience) => {
-    projectConfig.allSegments.concat(getAudienceSegments(projectConfig.audiencesById[audience]))
+    projectConfig.allSegments = projectConfig.allSegments.concat(getAudienceSegments(projectConfig.audiencesById[audience]))
   })
 
   projectConfig.attributeKeyMap = keyBy(projectConfig.attributes, 'key');
@@ -204,8 +205,6 @@ export const createProjectConfig = function (
       }
     })
   }
-
-  projectConfig.audiencesById
 
   projectConfig.experimentKeyMap = keyBy(projectConfig.experiments, 'key');
   projectConfig.experimentIdMap = keyBy(projectConfig.experiments, 'id');
@@ -301,15 +300,30 @@ export const createProjectConfig = function (
  * @return {string[]}               List of all audience segments
  */
 export const getAudienceSegments = function (audience: Audience): string[] {
-  if (audience.conditions && Array.isArray(audience.conditions)) {
-    const qualifiedAudienceSegments = audience.conditions
-      .filter((condition) => (condition as string[])[3] === 'qualified')
-      .map((condition) => (condition as string[])[1])
-
-    return qualifiedAudienceSegments
-  }
-  return []
+  if (!audience.conditions) return []
+  return getSegmentsFromConditions(audience.conditions);
 };
+
+// eslint-disable-next-line  @typescript-eslint/no-explicit-any
+const getSegmentsFromConditions = (condition: any): string[] => {
+  const segments = [];
+
+  if (isLogicalOperator(condition)) {
+    return []
+  }
+  else if (Array.isArray(condition)) {
+    condition.forEach((nextCondition) => segments.push(...getSegmentsFromConditions(nextCondition)))
+  }
+  else if (condition['match'] === 'qualified') {
+    segments.push(condition['value'])
+  }
+
+  return segments;
+}
+
+function isLogicalOperator(condition: string): boolean {
+  return ['and', 'or', 'not'].includes(condition)
+}
 
 /**
  * Get experiment ID for the provided experiment key
@@ -886,6 +900,7 @@ export default {
   getTypeCastValue,
   getSendFlagDecisionsValue,
   getAudiencesById,
+  getAudienceSegments,
   eventWithKeyExists,
   isFeatureExperiment,
   toDatafile,

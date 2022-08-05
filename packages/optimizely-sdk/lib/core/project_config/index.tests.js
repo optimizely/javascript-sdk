@@ -748,6 +748,70 @@ describe('lib/core/project_config', function () {
         assert.isTrue(result);
       });
     });
+
+    describe('#getAudienceSegments', function () {
+      it('returns all qualified segments from an audience', function () {
+        const dummyQualifiedAudienceJson = {
+          "id": "13389142234",
+          "conditions": [
+            "and",
+            [
+              "or",
+              [
+                "or",
+                {
+                  "value": "odp-segment-1",
+                  "type": "third_party_dimension",
+                  "name": "odp.audiences",
+                  "match": "qualified"
+                }
+              ]
+            ]
+          ],
+          "name": "odp-segment-1"
+        };
+
+        const dummyQualifiedAudienceJsonSegments = projectConfig.getAudienceSegments(dummyQualifiedAudienceJson);
+        assert.deepEqual(dummyQualifiedAudienceJsonSegments, ['odp-segment-1']);
+
+        const dummyUnqualifiedAudienceJson = {
+          "id": "13389142234",
+          "conditions": [
+            "and",
+            [
+              "or",
+              [
+                "or",
+                {
+                  "value": "odp-segment-1",
+                  "type": "third_party_dimension",
+                  "name": "odp.audiences",
+                  "match": "not-qualified"
+                }
+              ]
+            ]
+          ],
+          "name": "odp-segment-1"
+        };
+
+        const dummyUnqualifiedAudienceJsonSegments = projectConfig.getAudienceSegments(dummyUnqualifiedAudienceJson);
+        assert.deepEqual(dummyUnqualifiedAudienceJsonSegments, []);
+      });
+
+      it('returns false for an A/B test', function () {
+        var config = projectConfig.createProjectConfig(testDatafile.getTestProjectConfig());
+        var result = projectConfig.isFeatureExperiment(config, '111127'); // id of 'testExperiment'
+        assert.isFalse(result);
+      });
+
+      it('returns true for a feature test in a mutex group', function () {
+        var config = projectConfig.createProjectConfig(testDatafile.getMutexFeatureTestsConfig());
+        var result = projectConfig.isFeatureExperiment(config, '17128410791'); // id of 'f_test1'
+        assert.isTrue(result);
+        result = projectConfig.isFeatureExperiment(config, '17139931304'); // id of 'f_test2'
+        assert.isTrue(result);
+      });
+    });
   });
 
   describe('integrations', () => {
@@ -771,9 +835,9 @@ describe('lib/core/project_config', function () {
         assert.exists(config.hostForOdp)
       })
 
-      it('should contain all expected odp segments in all segments', () => {
+      it('should contain all expected odp segments in allSegments', () => {
         assert.equal(config.allSegments.length, 3)
-        assert.equal(config.allSegments, ['odp-segment-1', 'odp-segment-2', 'odp-segment-3'])
+        assert.deepEqual(config.allSegments, ['odp-segment-1', 'odp-segment-2', 'odp-segment-3'])
       })
     });
 
@@ -790,15 +854,16 @@ describe('lib/core/project_config', function () {
 
       it('should populate the public key value from the odp integration', () => {
         assert.exists(config.publicKeyForOdp)
+        assert.equal(config.publicKeyForOdp, 'W4WzcEs-ABgXorzY7h1LCQ')
       })
 
       it('should populate the host value from the odp integration', () => {
         assert.exists(config.hostForOdp)
+        assert.equal(config.hostForOdp, 'https://api.zaius.com')
       })
 
       it('should contain all expected odp segments in all segments', () => {
         assert.equal(config.allSegments.length, 0)
-        assert.equal(config.allSegments, [])
       })
     });
 
