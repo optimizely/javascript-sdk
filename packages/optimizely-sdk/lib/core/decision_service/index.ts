@@ -784,7 +784,7 @@ export class DecisionService {
    * @param     {ruleKey}               ruleKey              A ruleKey (optional).
    * @return    {DecisionResponse<Variation|null>}  DecisionResponse object containing valid variation object and decide reasons.
    */
-   findValidatedForcedDecision(
+  findValidatedForcedDecision(
     config: ProjectConfig,
     user: OptimizelyUserContext,
     flagKey: string,
@@ -1116,10 +1116,10 @@ export class DecisionService {
     const forcedDecisionResponse = this.findValidatedForcedDecision(configObj, user, flagKey, rule.key);
     decideReasons.push(...forcedDecisionResponse.reasons);
 
-    const forcedVariaton = forcedDecisionResponse.result;
-    if (forcedVariaton) {
+    const forcedVariation = forcedDecisionResponse.result;
+    if (forcedVariation) {
       return {
-        result: forcedVariaton.key,
+        result: forcedVariation.key,
         reasons: decideReasons,
       };
     }
@@ -1148,10 +1148,10 @@ export class DecisionService {
     const forcedDecisionResponse = this.findValidatedForcedDecision(configObj, user, flagKey, rule.key);
     decideReasons.push(...forcedDecisionResponse.reasons);
 
-    const forcedVariaton = forcedDecisionResponse.result;
-    if (forcedVariaton) {
+    const forcedVariation = forcedDecisionResponse.result;
+    if (forcedVariation) {
       return {
-        result: forcedVariaton,
+        result: forcedVariation,
         reasons: decideReasons,
         skipToEveryoneElse,
       };

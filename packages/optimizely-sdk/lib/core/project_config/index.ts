@@ -43,6 +43,7 @@ import {
   Variation,
   VariableType,
   VariationVariable,
+  Integration,
 } from '../../shared_types';
 
 interface TryCreatingProjectConfigConfig {
@@ -98,6 +99,11 @@ export interface ProjectConfig {
   accountId: string;
   flagRulesMap: { [key: string]: Experiment[] };
   flagVariationsMap: { [key: string]: Variation[] };
+  integrations: Integration[];
+  integrationKeyMap?: { [key: string]: Integration };
+  publicKeyForOdp?: string;
+  hostForOdp?: string;
+  allSegments: string[];
 }
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -143,7 +149,7 @@ function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
  * @param  {string|null}   datafileStr   JSON string representation of the datafile
  * @return {ProjectConfig} Object representing project configuration
  */
-export const createProjectConfig = function(
+export const createProjectConfig = function (
   datafileObj?: JSON,
   datafileStr: string | null = null
 ): ProjectConfig {
@@ -160,6 +166,11 @@ export const createProjectConfig = function(
   });
   projectConfig.audiencesById = keyBy(projectConfig.audiences, 'id');
   assign(projectConfig.audiencesById, keyBy(projectConfig.typedAudiences, 'id'));
+
+  if (!projectConfig.allSegments) projectConfig.allSegments = []
+  Object.keys(projectConfig.audiencesById).forEach((audience) => {
+    projectConfig.allSegments.concat(getAudienceSegments(projectConfig.audiencesById[audience]))
+  })
 
   projectConfig.attributeKeyMap = keyBy(projectConfig.attributes, 'key');
   projectConfig.eventKeyMap = keyBy(projectConfig.events, 'key');
@@ -183,6 +194,18 @@ export const createProjectConfig = function(
       });
     }
   );
+
+  if (projectConfig.integrations) {
+    projectConfig.integrationKeyMap = keyBy(projectConfig.integrations, 'key');
+    projectConfig.integrations.forEach((integration) => {
+      if (integration.key === 'odp') {
+        projectConfig.publicKeyForOdp = integration.publicKey
+        projectConfig.hostForOdp = integration.host
+      }
+    })
+  }
+
+  projectConfig.audiencesById
 
   projectConfig.experimentKeyMap = keyBy(projectConfig.experiments, 'key');
   projectConfig.experimentIdMap = keyBy(projectConfig.experiments, 'id');
@@ -273,13 +296,29 @@ export const createProjectConfig = function(
 };
 
 /**
+ * Extract all audience segments used in this audience's conditions
+ * @param  {Audience}     audience  Object representing the audience being parsed
+ * @return {string[]}               List of all audience segments
+ */
+export const getAudienceSegments = function (audience: Audience): string[] {
+  if (audience.conditions && Array.isArray(audience.conditions)) {
+    const qualifiedAudienceSegments = audience.conditions
+      .filter((condition) => (condition as string[])[3] === 'qualified')
+      .map((condition) => (condition as string[])[1])
+
+    return qualifiedAudienceSegments
+  }
+  return []
+};
+
+/**
  * Get experiment ID for the provided experiment key
  * @param  {ProjectConfig}    projectConfig   Object representing project configuration
  * @param  {string}           experimentKey   Experiment key for which ID is to be determined
  * @return {string}                           Experiment ID corresponding to the provided experiment key
  * @throws If experiment key is not in datafile
  */
-export const getExperimentId = function(projectConfig: ProjectConfig, experimentKey: string): string {
+export const getExperimentId = function (projectConfig: ProjectConfig, experimentKey: string): string {
   const experiment = projectConfig.experimentKeyMap[experimentKey];
   if (!experiment) {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
@@ -294,7 +333,7 @@ export const getExperimentId = function(projectConfig: ProjectConfig, experiment
  * @return {string}                           Layer ID corresponding to the provided experiment key
  * @throws If experiment key is not in datafile
  */
-export const getLayerId = function(projectConfig: ProjectConfig, experimentId: string): string {
+export const getLayerId = function (projectConfig: ProjectConfig, experimentId: string): string {
   const experiment = projectConfig.experimentIdMap[experimentId];
   if (!experiment) {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
@@ -309,7 +348,7 @@ export const getLayerId = function(projectConfig: ProjectConfig, experimentId: s
  * @param  {LogHandler}      logger
  * @return {string|null}     Attribute ID corresponding to the provided attribute key. Attribute key if it is a reserved attribute.
  */
-export const getAttributeId = function(
+export const getAttributeId = function (
   projectConfig: ProjectConfig,
   attributeKey: string,
   logger: LogHandler
@@ -340,7 +379,7 @@ export const getAttributeId = function(
  * @param  {string}          eventKey       Event key for which ID is to be determined
  * @return {string|null}     Event ID corresponding to the provided event key
  */
-export const getEventId = function(projectConfig: ProjectConfig, eventKey: string): string | null {
+export const getEventId = function (projectConfig: ProjectConfig, eventKey: string): string | null {
   const event = projectConfig.eventKeyMap[eventKey];
   if (event) {
     return event.id;
@@ -355,7 +394,7 @@ export const getEventId = function(projectConfig: ProjectConfig, eventKey: strin
  * @return {string}         Experiment status corresponding to the provided experiment key
  * @throws If experiment key is not in datafile
  */
-export const getExperimentStatus = function(projectConfig: ProjectConfig, experimentKey: string): string {
+export const getExperimentStatus = function (projectConfig: ProjectConfig, experimentKey: string): string {
   const experiment = projectConfig.experimentKeyMap[experimentKey];
   if (!experiment) {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, MODULE_NAME, experimentKey));
@@ -369,7 +408,7 @@ export const getExperimentStatus = function(projectConfig: ProjectConfig, experi
  * @param  {string}         experimentKey   Experiment key for which status is to be compared with 'Running'
  * @return {boolean}                        True if experiment status is set to 'Running', false otherwise
  */
-export const isActive = function(projectConfig: ProjectConfig, experimentKey: string): boolean {
+export const isActive = function (projectConfig: ProjectConfig, experimentKey: string): boolean {
   return getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_RUNNING_STATUS;
 };
 
@@ -381,7 +420,7 @@ export const isActive = function(projectConfig: ProjectConfig, experimentKey: st
  *                                          False if the experiment is not running
  *
  */
-export const isRunning = function(projectConfig: ProjectConfig, experimentKey: string): boolean {
+export const isRunning = function (projectConfig: ProjectConfig, experimentKey: string): boolean {
   return getExperimentStatus(projectConfig, experimentKey) === EXPERIMENT_RUNNING_STATUS;
 };
 
@@ -394,7 +433,7 @@ export const isRunning = function(projectConfig: ProjectConfig, experimentKey: s
  *                                          Examples: ["5", "6"], ["and", ["or", "1", "2"], "3"]
  * @throws If experiment key is not in datafile
  */
-export const getExperimentAudienceConditions = function(
+export const getExperimentAudienceConditions = function (
   projectConfig: ProjectConfig,
   experimentId: string
 ): Array<string | string[]> {
@@ -412,7 +451,7 @@ export const getExperimentAudienceConditions = function(
  * @param  {string}         variationId     ID of the variation
  * @return {string|null}    Variation key or null if the variation ID is not found
  */
-export const getVariationKeyFromId = function(projectConfig: ProjectConfig, variationId: string): string | null {
+export const getVariationKeyFromId = function (projectConfig: ProjectConfig, variationId: string): string | null {
   if (projectConfig.variationIdMap.hasOwnProperty(variationId)) {
     return projectConfig.variationIdMap[variationId].key;
   }
@@ -426,7 +465,7 @@ export const getVariationKeyFromId = function(projectConfig: ProjectConfig, vari
  * @param  {string}         variationId     ID of the variation
  * @return {Variation|null}    Variation or null if the variation ID is not found
  */
- export const getVariationFromId = function(projectConfig: ProjectConfig, variationId: string): Variation | null {
+export const getVariationFromId = function (projectConfig: ProjectConfig, variationId: string): Variation | null {
   if (projectConfig.variationIdMap.hasOwnProperty(variationId)) {
     return projectConfig.variationIdMap[variationId];
   }
@@ -441,7 +480,7 @@ export const getVariationKeyFromId = function(projectConfig: ProjectConfig, vari
  * @param  {string}         variationKey    The variation key
  * @return {string|null}    Variation ID or null
  */
-export const getVariationIdFromExperimentAndVariationKey = function(
+export const getVariationIdFromExperimentAndVariationKey = function (
   projectConfig: ProjectConfig,
   experimentKey: string,
   variationKey: string
@@ -461,7 +500,7 @@ export const getVariationIdFromExperimentAndVariationKey = function(
  * @return {Experiment}     Experiment
  * @throws If experiment key is not in datafile
  */
-export const getExperimentFromKey = function(projectConfig: ProjectConfig, experimentKey: string): Experiment {
+export const getExperimentFromKey = function (projectConfig: ProjectConfig, experimentKey: string): Experiment {
   if (projectConfig.experimentKeyMap.hasOwnProperty(experimentKey)) {
     const experiment = projectConfig.experimentKeyMap[experimentKey];
     if (experiment) {
@@ -479,7 +518,7 @@ export const getExperimentFromKey = function(projectConfig: ProjectConfig, exper
  * @return {TrafficAllocation[]}           Traffic allocation for the experiment
  * @throws If experiment key is not in datafile
  */
-export const getTrafficAllocation = function(projectConfig: ProjectConfig, experimentId: string): TrafficAllocation[] {
+export const getTrafficAllocation = function (projectConfig: ProjectConfig, experimentId: string): TrafficAllocation[] {
   const experiment = projectConfig.experimentIdMap[experimentId];
   if (!experiment) {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, MODULE_NAME, experimentId));
@@ -495,7 +534,7 @@ export const getTrafficAllocation = function(projectConfig: ProjectConfig, exper
  * @param  {LogHandler}     logger
  * @return {Experiment|null}               Experiment object or null
  */
-export const getExperimentFromId = function(
+export const getExperimentFromId = function (
   projectConfig: ProjectConfig,
   experimentId: string,
   logger: LogHandler
@@ -517,7 +556,7 @@ export const getExperimentFromId = function(
 * @param  {variationKey}   string
 * @return {Variation|null}
 */
-export const getFlagVariationByKey = function(projectConfig: ProjectConfig, flagKey: string, variationKey: string): Variation | null {
+export const getFlagVariationByKey = function (projectConfig: ProjectConfig, flagKey: string, variationKey: string): Variation | null {
   if (!projectConfig) {
     return null;
   }
@@ -540,7 +579,7 @@ export const getFlagVariationByKey = function(projectConfig: ProjectConfig, flag
  * @return {FeatureFlag|null} Feature object, or null if no feature with the given
  *                            key exists
  */
-export const getFeatureFromKey = function(
+export const getFeatureFromKey = function (
   projectConfig: ProjectConfig,
   featureKey: string,
   logger: LogHandler
@@ -567,7 +606,7 @@ export const getFeatureFromKey = function(
  * @return {FeatureVariable|null} Variable object, or null one or both of the given
  * feature and variable keys are invalid
  */
-export const getVariableForFeature = function(
+export const getVariableForFeature = function (
   projectConfig: ProjectConfig,
   featureKey: string,
   variableKey: string,
@@ -606,7 +645,7 @@ export const getVariableForFeature = function(
  * variation, or null if the given variable has no value
  * for the given variation or if the variation or variable are invalid
  */
-export const getVariableValueForVariation = function(
+export const getVariableValueForVariation = function (
   projectConfig: ProjectConfig,
   variable: FeatureVariable,
   variation: Variation,
@@ -648,7 +687,7 @@ export const getVariableValueForVariation = function(
  * @returns {*}                       Variable value of the appropriate type, or
  *                                    null if the type cast failed
  */
-export const getTypeCastValue = function(
+export const getTypeCastValue = function (
   variableValue: string,
   variableType: VariableType,
   logger: LogHandler
@@ -729,7 +768,7 @@ export const getTypeCastValue = function(
  * @param   {ProjectConfig}     projectConfig
  * @returns {{ [id: string]: Audience }}
  */
-export const getAudiencesById = function(projectConfig: ProjectConfig): { [id: string]: Audience } {
+export const getAudiencesById = function (projectConfig: ProjectConfig): { [id: string]: Audience } {
   return projectConfig.audiencesById;
 };
 
@@ -739,7 +778,7 @@ export const getAudiencesById = function(projectConfig: ProjectConfig): { [id: s
  * @param   {string}            eventKey
  * @returns {boolean}
  */
-export const eventWithKeyExists = function(projectConfig: ProjectConfig, eventKey: string): boolean {
+export const eventWithKeyExists = function (projectConfig: ProjectConfig, eventKey: string): boolean {
   return projectConfig.eventKeyMap.hasOwnProperty(eventKey);
 };
 
@@ -749,7 +788,7 @@ export const eventWithKeyExists = function(projectConfig: ProjectConfig, eventKe
  * @param   {string}              experimentId
  * @returns {boolean} 
  */
-export const isFeatureExperiment = function(projectConfig: ProjectConfig, experimentId: string): boolean {
+export const isFeatureExperiment = function (projectConfig: ProjectConfig, experimentId: string): boolean {
   return projectConfig.experimentFeatureMap.hasOwnProperty(experimentId);
 };
 
@@ -758,7 +797,7 @@ export const isFeatureExperiment = function(projectConfig: ProjectConfig, experi
  * @param   {ProjectConfig}       projectConfig
  * @returns {string}
  */
-export const toDatafile = function(projectConfig: ProjectConfig): string {
+export const toDatafile = function (projectConfig: ProjectConfig): string {
   return projectConfig.__datafileStr;
 }
 
@@ -780,7 +819,7 @@ export const toDatafile = function(projectConfig: ProjectConfig): string {
  * @param   {Object}         config.logger
  * @returns {Object}         Object containing configObj and error properties
  */
-export const tryCreatingProjectConfig = function(
+export const tryCreatingProjectConfig = function (
   config: TryCreatingProjectConfigConfig
 ): { configObj: ProjectConfig | null; error: Error | null } {
   let newDatafileObj;
@@ -820,7 +859,7 @@ export const tryCreatingProjectConfig = function(
  * @param  {ProjectConfig}   projectConfig
  * @return {boolean}         A boolean value that indicates if we should send flag decisions
  */
-export const getSendFlagDecisionsValue = function(projectConfig: ProjectConfig): boolean {
+export const getSendFlagDecisionsValue = function (projectConfig: ProjectConfig): boolean {
   return !!projectConfig.sendFlagDecisions;
 }
 
