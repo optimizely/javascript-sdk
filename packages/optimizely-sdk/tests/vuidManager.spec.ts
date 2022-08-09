@@ -14,26 +14,16 @@
  * limitations under the License.
  */
 
-import sinon from 'sinon';
-import { assert } from 'chai';
+/// <reference types="jest" />
 
 describe('VUID Manager', () => {
-  let sandbox;
-
-  beforeEach(() => {
-    sandbox = sinon.sandbox.create();
-  });
-
-  afterEach(() => {
-    sandbox.restore();
-  });
 
   it('should make a VUID', () => {
     // arrange
     // TODO: implement
     const manager = {
       makeVuid: () => {
-        return '';
+        return 'vuid_a40b1fc05ce54a4fb6aafa4ffe3';
       },
     };
 
@@ -41,21 +31,21 @@ describe('VUID Manager', () => {
     const vuid = manager.makeVuid();
 
     // assert
-    assert.isTrue(vuid.startsWith('vuid_'));
-    assert.isTrue(vuid.length > 20);
+    expect(vuid.startsWith('vuid_')).toBe(true);
+    expect(vuid.length).toBe(32);
   });
 
   it('should test if a VUID is valid', () => {
     // TODO: implement
     const manager = {
-      isVuid: (visitorId) => {
-        return true;
+      isVuid: (visitorId:string) => {
+        return visitorId.startsWith("vuid_");
       },
     };
 
-    assert.isTrue(manager.isVuid('vuid_123'));
-    assert.isFalse(manager.isVuid('vuid-123'));
-    assert.isFalse(manager.isVuid('123'));
+    expect(manager.isVuid('vuid_123')).toBeTruthy();
+    expect(manager.isVuid('vuid-123')).toBeFalsy();
+    expect(manager.isVuid('123')).toBeFalsy();
   });
 
   it('should auto-save and auto-load', () => {
@@ -64,27 +54,31 @@ describe('VUID Manager', () => {
 
     // TODO: implement
     let manager = {
-      vuid: 'vuid_77e42d9a17f311ed861d0242ac120002',
-      isVuid: (visitorId) => {
+      vuid: 'vuid_77e42d9a17f311ed861d0242ac1',
+      isVuid: (visitorId: string) => {
         return true;
       },
     };
     const vuid1 = manager.vuid;
 
     // TODO: should be same instance as above static
-    manager = manager; // OdpVuidManager()
+    // manager = OdpVuidManager()
     const vuid2 = manager.vuid;
 
-    assert.strictEqual(vuid1, vuid2);
-    assert.isTrue(manager.isVuid(vuid1));
-    assert.isTrue(manager.isVuid(vuid2));
+    expect(vuid1).toStrictEqual(vuid2);
+    expect(manager.isVuid(vuid1)).toBeTruthy();
+    expect(manager.isVuid(vuid2)).toBeTruthy();
 
     // UserDefaults.standard.removeObject(forKey: "optimizely-odp")
 
     // TODO: should end up being a new instance since we just removed it above
-    manager = { vuid: 'vuid_06fac8e017f411ed861d0242ac120002' };
+    manager = { vuid: 'vuid_06fac8e017f411ed861d0242ac1',
+      isVuid: (visitorId) => {
+        return true;
+      },
+    };
     const vuid3 = manager.vuid;
 
-    assert.notEqual(vuid1, vuid3);
+    expect(vuid3).not.toStrictEqual(vuid1);
   });
 });
