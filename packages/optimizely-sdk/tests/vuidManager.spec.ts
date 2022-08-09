@@ -16,32 +16,25 @@
 
 /// <reference types="jest" />
 
+import { VuidManager } from '../lib/plugins/vuid_manager';
+
 describe('VUID Manager', () => {
 
   it('should make a VUID', () => {
     // arrange
-    // TODO: implement
-    const manager = {
-      makeVuid: () => {
-        return 'vuid_a40b1fc05ce54a4fb6aafa4ffe3';
-      },
-    };
+    const manager = VuidManager.getInstance();
 
     // act
     const vuid = manager.makeVuid();
 
     // assert
     expect(vuid.startsWith('vuid_')).toBe(true);
-    expect(vuid.length).toBe(32);
+    expect(vuid.length).toBeGreaterThan(20);
+    expect(vuid).not.toContain('-');
   });
 
   it('should test if a VUID is valid', () => {
-    // TODO: implement
-    const manager = {
-      isVuid: (visitorId:string) => {
-        return visitorId.startsWith("vuid_");
-      },
-    };
+    const manager = VuidManager.getInstance();
 
     expect(manager.isVuid('vuid_123')).toBeTruthy();
     expect(manager.isVuid('vuid-123')).toBeFalsy();
@@ -52,17 +45,10 @@ describe('VUID Manager', () => {
     // TODO: Where is UserDefaults in javascript sdk?
     // UserDefaults.standard.removeObject(forKey: "optimizely-odp")
 
-    // TODO: implement
-    let manager = {
-      vuid: 'vuid_77e42d9a17f311ed861d0242ac1',
-      isVuid: (visitorId: string) => {
-        return true;
-      },
-    };
+    let manager = VuidManager.getInstance();
     const vuid1 = manager.vuid;
 
-    // TODO: should be same instance as above static
-    // manager = OdpVuidManager()
+    manager = VuidManager.getInstance();
     const vuid2 = manager.vuid;
 
     expect(vuid1).toStrictEqual(vuid2);
@@ -72,11 +58,7 @@ describe('VUID Manager', () => {
     // UserDefaults.standard.removeObject(forKey: "optimizely-odp")
 
     // TODO: should end up being a new instance since we just removed it above
-    manager = { vuid: 'vuid_06fac8e017f411ed861d0242ac1',
-      isVuid: (visitorId) => {
-        return true;
-      },
-    };
+    manager = VuidManager.getInstance();
     const vuid3 = manager.vuid;
 
     expect(vuid3).not.toStrictEqual(vuid1);

@@ -14,6 +14,44 @@
  * limitations under the License.
  */
 
-export class VuidManager {
+import { uuid } from '../../utils/fns';
 
+export interface IVuidManager {
+  makeVuid(): string;
+
+  isVuid(visitorId: string): boolean;
+}
+
+export class VuidManager implements IVuidManager {
+  keyForVuidMap = 'optimizely-odp';
+  keyForVuid = 'vuid';
+  prefix = `${(this.keyForVuid)}_`;
+
+  public readonly vuid: string
+
+  private constructor() {
+    this.vuid = this.makeVuid();
+  }
+
+  private static instance: VuidManager;
+
+  public static getInstance() : VuidManager {
+    if (!this.instance) {
+      this.instance = new VuidManager();
+    }
+    return this.instance;
+  }
+
+  public isVuid = (visitorId: string): boolean => visitorId.startsWith(this.prefix);
+
+  public makeVuid(): string {
+    const maxLength = 32;   // required by ODP server
+
+    // make sure UUIDv4 is used (not UUIDv1 or UUIDv6) since the trailing 5 chars will be truncated. See TDD for details.
+    const uuidV4 = uuid();
+    const formatted = uuidV4.replace(/-/g, '', ).toLowerCase();
+    const vuidFull = `${this.prefix}${formatted}`;
+
+    return (vuidFull.length <= maxLength) ? vuidFull : vuidFull.substring(0, maxLength);
+  }
 }
