@@ -15,12 +15,12 @@
  */
  import {
     getLogger,
-    setLogHandler,
-    setLogLevel,
     setErrorHandler,
     getErrorHandler,
-    LogLevel
-  } from '@optimizely/js-sdk-logging';
+    LogLevel,
+    setLogHandler,
+    setLogLevel
+  } from './modules/logging';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import noOpEventDispatcher from './plugins/event_dispatcher/no_op';

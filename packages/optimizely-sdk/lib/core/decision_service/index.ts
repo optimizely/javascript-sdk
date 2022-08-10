@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { LogHandler } from '@optimizely/js-sdk-logging';
+import { LogHandler } from '../../modules/logging';
 import { sprintf } from '../../utils/fns';
 
 import fns from '../../utils/fns';

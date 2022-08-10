@@ -1,5 +1,5 @@
 /**
- * Copyright 2017, 2019-2020 Optimizely
+ * Copyright 2017, 2019-2020, 2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { EventTags } from '@optimizely/js-sdk-event-processor';
-import { LoggerFacade } from '@optimizely/js-sdk-logging';
+import { LoggerFacade } from '../../modules/logging';
 
 import {
   LOG_LEVEL,
