@@ -42,7 +42,7 @@ const cjsBundleFor = (platform) => ({
     commonjs(),
     typescript(typescriptPluginOptions),
   ],
-  external: ['https', 'http', 'url' ].concat(Object.keys(dependencies || {})),
+  external: ['https', 'http', 'url', 'react-native' ].concat(Object.keys(dependencies || {})),
   input: `lib/index.${platform}.ts`,
   output: {
     exports: 'named',
