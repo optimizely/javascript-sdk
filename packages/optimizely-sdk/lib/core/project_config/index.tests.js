@@ -786,7 +786,7 @@ describe('lib/core/project_config', function () {
                   "value": "odp-segment-1",
                   "type": "third_party_dimension",
                   "name": "odp.audiences",
-                  "match": "not-qualified"
+                  "match": "invalid"
                 }
               ]
             ]
@@ -824,7 +824,7 @@ describe('lib/core/project_config', function () {
 
       it('should convert integrations from the datafile into the project config', () => {
         assert.exists(config.integrations);
-        assert.equal(config.integrations.length, 1);
+        assert.equal(config.integrations.length, 3);
       });
 
       it('should populate the public key value from the odp integration', () => {
@@ -835,9 +835,9 @@ describe('lib/core/project_config', function () {
         assert.exists(config.hostForOdp)
       })
 
-      it('should contain all expected odp segments in allSegments', () => {
-        assert.equal(config.allSegments.length, 3)
-        assert.deepEqual(config.allSegments, ['odp-segment-1', 'odp-segment-2', 'odp-segment-3'])
+      it('should contain all expected unique odp segments in allSegments', () => {
+        assert.equal(config.allSegments.size, 3)
+        assert.deepEqual(config.allSegments, new Set(['odp-segment-1', 'odp-segment-2', 'odp-segment-3']))
       })
     });
 
@@ -849,7 +849,7 @@ describe('lib/core/project_config', function () {
 
       it('should convert integrations from the datafile into the project config', () => {
         assert.exists(config.integrations);
-        assert.equal(config.integrations.length, 1);
+        assert.equal(config.integrations.length, 3);
       });
 
       it('should populate the public key value from the odp integration', () => {
@@ -862,8 +862,8 @@ describe('lib/core/project_config', function () {
         assert.equal(config.hostForOdp, 'https://api.zaius.com')
       })
 
-      it('should contain all expected odp segments in all segments', () => {
-        assert.equal(config.allSegments.length, 0)
+      it('should contain all expected unique odp segments in all segments', () => {
+        assert.equal(config.allSegments.size, 0)
       })
     });
 

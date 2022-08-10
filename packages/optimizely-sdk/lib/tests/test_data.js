@@ -3255,9 +3255,37 @@ var odpIntegratedConfigWithSegments = {
       "key": "odp",
       "host": "https://api.zaius.com",
       "publicKey": "W4WzcEs-ABgXorzY7h1LCQ"
+    },
+    {
+      "key": "odp",
+      "a": "1",
+      "b": "2",
+    },
+    {
+      "key": "x",
+      "test": "foobar"
     }
   ],
   "typedAudiences": [
+    {
+      "id": "13389142234",
+      "conditions": [
+        "and",
+        [
+          "or",
+          [
+            "or",
+            {
+              "value": "odp-segment-1",
+              "type": "third_party_dimension",
+              "name": "odp.audiences",
+              "match": "qualified"
+            }
+          ]
+        ]
+      ],
+      "name": "odp-segment-1"
+    },
     {
       "id": "13389142234",
       "conditions": [
@@ -3356,6 +3384,15 @@ var odpIntegratedConfigWithoutSegments = {
       "key": "odp",
       "host": "https://api.zaius.com",
       "publicKey": "W4WzcEs-ABgXorzY7h1LCQ"
+    },
+    {
+      "key": "odp",
+      "a": "1",
+      "b": "2",
+    },
+    {
+      "key": "x",
+      "test": "foobar"
     }
   ],
   "revision": "100"

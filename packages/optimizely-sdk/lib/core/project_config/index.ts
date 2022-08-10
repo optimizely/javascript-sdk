@@ -103,7 +103,7 @@ export interface ProjectConfig {
   integrationKeyMap?: { [key: string]: Integration };
   publicKeyForOdp?: string;
   hostForOdp?: string;
-  allSegments: string[];
+  allSegments: Set<string>;
 }
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -167,11 +167,15 @@ export const createProjectConfig = function (
   projectConfig.audiencesById = keyBy(projectConfig.audiences, 'id');
   assign(projectConfig.audiencesById, keyBy(projectConfig.typedAudiences, 'id'));
 
-  if (!projectConfig.allSegments) projectConfig.allSegments = []
+  projectConfig.allSegments = new Set<string>([])
 
-  Object.keys(projectConfig.audiencesById).forEach((audience) => {
-    projectConfig.allSegments = projectConfig.allSegments.concat(getAudienceSegments(projectConfig.audiencesById[audience]))
-  })
+  Object.keys(projectConfig.audiencesById)
+    .map((audience) => getAudienceSegments(projectConfig.audiencesById[audience]))
+    .forEach(audienceSegments => {
+      audienceSegments.forEach(segment => {
+        projectConfig.allSegments.add(segment)
+      })
+    })
 
   projectConfig.attributeKeyMap = keyBy(projectConfig.attributes, 'key');
   projectConfig.eventKeyMap = keyBy(projectConfig.events, 'key');
@@ -198,12 +202,12 @@ export const createProjectConfig = function (
 
   if (projectConfig.integrations) {
     projectConfig.integrationKeyMap = keyBy(projectConfig.integrations, 'key');
-    projectConfig.integrations.forEach((integration) => {
-      if (integration.key === 'odp') {
-        projectConfig.publicKeyForOdp = integration.publicKey
-        projectConfig.hostForOdp = integration.host
-      }
-    })
+    projectConfig.integrations
+      .filter((integration) => integration.key === 'odp')
+      .forEach((integration) => {
+        if (integration.publicKey) projectConfig.publicKeyForOdp = integration.publicKey
+        if (integration.host) projectConfig.hostForOdp = integration.host
+      })
   }
 
   projectConfig.experimentKeyMap = keyBy(projectConfig.experiments, 'key');
