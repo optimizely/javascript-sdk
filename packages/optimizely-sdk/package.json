@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@react-native-async-storage/async-storage": "^1.2.0",
-    "@react-native-community/netinfo": "^5.9.4",
+    "@react-native-community/netinfo": "^5.9.10",
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
     "@types/chai": "^4.2.11",
@@ -83,8 +83,7 @@
     "ts-loader": "^7.0.5",
     "ts-node": "^8.10.2",
     "tsconfig-paths": "^4.0.0",
-    "typescript": "^4.0.3",
-    "webpack": "^4.42.1"
+    "typescript": "^4.0.3"
   },
   "peerDependencies": {
     "@react-native-community/netinfo": "5.9.4",
