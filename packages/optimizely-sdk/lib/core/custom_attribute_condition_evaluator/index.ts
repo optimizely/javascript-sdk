@@ -381,7 +381,7 @@ function evaluateSemanticVersion(condition: Condition, user: OptimizelyUserConte
     );
     return null;
   }
-  
+
   return compareVersion(conditionValue, userValue);
 }
 
@@ -395,7 +395,7 @@ function evaluateSemanticVersion(condition: Condition, user: OptimizelyUserConte
  */
 function semverEqualEvaluator(condition: Condition, user: OptimizelyUserContext): boolean | null {
   const result = evaluateSemanticVersion(condition, user);
-  if (result === null ) {
+  if (result === null) {
     return null;
   }
   return result === 0;
@@ -411,7 +411,7 @@ function semverEqualEvaluator(condition: Condition, user: OptimizelyUserContext)
  */
 function semverGreaterThanEvaluator(condition: Condition, user: OptimizelyUserContext): boolean | null {
   const result = evaluateSemanticVersion(condition, user);
-  if (result === null ) {
+  if (result === null) {
     return null;
   }
   return result > 0;
@@ -427,7 +427,7 @@ function semverGreaterThanEvaluator(condition: Condition, user: OptimizelyUserCo
  */
 function semverLessThanEvaluator(condition: Condition, user: OptimizelyUserContext): boolean | null {
   const result = evaluateSemanticVersion(condition, user);
-  if (result === null ) {
+  if (result === null) {
     return null;
   }
   return result < 0;
@@ -443,7 +443,7 @@ function semverLessThanEvaluator(condition: Condition, user: OptimizelyUserConte
  */
 function semverGreaterThanOrEqualEvaluator(condition: Condition, user: OptimizelyUserContext): boolean | null {
   const result = evaluateSemanticVersion(condition, user);
-  if (result === null ) {
+  if (result === null) {
     return null;
   }
   return result >= 0;
@@ -459,9 +459,9 @@ function semverGreaterThanOrEqualEvaluator(condition: Condition, user: Optimizel
  */
 function semverLessThanOrEqualEvaluator(condition: Condition, user: OptimizelyUserContext): boolean | null {
   const result = evaluateSemanticVersion(condition, user);
-  if (result === null ) {
+  if (result === null) {
     return null;
   }
   return result <= 0;
-  
+
 }
