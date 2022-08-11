@@ -15,13 +15,13 @@
  ***************************************************************************/
 import sinon from 'sinon';
 import { assert } from 'chai';
-import { sprintf } from '@optimizely/js-sdk-utils';
+import { sprintf } from '../../../utils/fns';
 
 import {
   LOG_LEVEL,
   LOG_MESSAGES,
 } from '../../../utils/enums';
-import * as logging from '@optimizely/js-sdk-logging';
+import * as logging from '../../../modules/logging';
 import * as odpSegmentEvalutor from './';
 
 var odpSegment1Condition = {
