@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { getLogger } from '@optimizely/js-sdk-logging';
+import { getLogger } from '../../modules/logging';
 import { Condition, OptimizelyUserContext } from '../../../shared_types';
 
 import { LOG_MESSAGES } from '../../../utils/enums';
