@@ -19,7 +19,7 @@
  */
 export default interface PersistentKeyValueCache {
   /**
-   * Returns value stored against a key or null if not found.
+   * Returns value stored against a key or undefined if not found.
    * @param key
    * @returns
    * Resolves promise with
