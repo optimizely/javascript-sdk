@@ -45,6 +45,7 @@
     "json-schema": "^0.4.0",
     "murmurhash": "^2.0.1",
     "react": "^18.2.0",
+    "react-native": "^0.69.4",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
