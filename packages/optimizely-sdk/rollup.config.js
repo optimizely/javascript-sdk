@@ -17,7 +17,7 @@
 import commonjs from '@rollup/plugin-commonjs';
 import { terser } from 'rollup-plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
-import { dependencies } from './package.json';
+import { dependencies, peerDependencies } from './package.json';
 import typescript from 'rollup-plugin-typescript2';
 
 const typescriptPluginOptions = {
@@ -42,7 +42,7 @@ const cjsBundleFor = (platform) => ({
     commonjs(),
     typescript(typescriptPluginOptions),
   ],
-  external: ['https', 'http', 'url', 'react-native' ].concat(Object.keys(dependencies || {})),
+  external: ['https', 'http', 'url'].concat(Object.keys({ ...dependencies, ...peerDependencies } || {})),
   input: `lib/index.${platform}.ts`,
   output: {
     exports: 'named',
