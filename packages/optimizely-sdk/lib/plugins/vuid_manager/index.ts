@@ -15,43 +15,86 @@
  */
 
 import { uuid } from '../../utils/fns';
+import PersistentKeyValueCache from '../key_value_cache/persistentKeyValueCache';
 
 export interface IVuidManager {
+  load(cache: PersistentKeyValueCache): Promise<string>;
+
+  save(vuid: string, cache: PersistentKeyValueCache): Promise<void>;
+
   makeVuid(): string;
 
   isVuid(visitorId: string): boolean;
 }
 
 export class VuidManager implements IVuidManager {
-  keyForVuidMap = 'optimizely-odp';
-  keyForVuid = 'vuid';
-  prefix = `${(this.keyForVuid)}_`;
+  private readonly _keyForVuidMap: string;
+  public get keyForVuidMap(): string {
+    return this._keyForVuidMap;
+  }
 
-  public readonly vuid: string
+  private readonly _keyForVuid: string;
+  public get keyForVuid(): string {
+    return this._keyForVuid;
+  }
+
+  private readonly _prefix: string;
+
+  private _vuid: string;
+  public get vuid(): string {
+    return this._vuid;
+  }
 
   private constructor() {
-    this.vuid = this.makeVuid();
+    this._keyForVuidMap = 'optimizely-odp';
+    this._keyForVuid = 'vuid';
+    this._prefix = `${(this._keyForVuid)}_`;
+    this._vuid = '';
   }
 
   private static instance: VuidManager;
-
-  public static getInstance() : VuidManager {
+  public static async getInstance(cache: PersistentKeyValueCache): Promise<VuidManager> {
     if (!this.instance) {
       this.instance = new VuidManager();
     }
+
+    if (!this.instance._vuid) {
+      await this.instance.load(cache);
+    }
+
     return this.instance;
   }
 
-  public isVuid = (visitorId: string): boolean => visitorId.startsWith(this.prefix);
+  public async load(cache: PersistentKeyValueCache): Promise<string> {
+    const dict: Map<string, string> = await cache.get(this.keyForVuidMap);
+    if (dict?.has(this.keyForVuid)) {
+      const oldVuid = dict.get(this.keyForVuid);
+      if (oldVuid) {
+        this._vuid = oldVuid;
+      }
+    } else {
+      const newVuid = this.makeVuid();
+      await this.save(newVuid, cache);
+      this._vuid = newVuid;
+    }
+    return this._vuid;
+  }
 
   public makeVuid(): string {
     const maxLength = 32;   // required by ODP server
 
     // make sure UUIDv4 is used (not UUIDv1 or UUIDv6) since the trailing 5 chars will be truncated. See TDD for details.
     const uuidV4 = uuid();
-    const formatted = uuidV4.replace(/-/g, '', ).toLowerCase();
-    const vuidFull = `${this.prefix}${formatted}`;
+    const formatted = uuidV4.replace(/-/g, '').toLowerCase();
+    const vuidFull = `${this._prefix}${formatted}`;
 
     return (vuidFull.length <= maxLength) ? vuidFull : vuidFull.substring(0, maxLength);
   }
+
+  public async save(vuid: string, cache: PersistentKeyValueCache): Promise<void> {
+    const dict = new Map<string, string>([[this.keyForVuidMap, vuid]]);
+    await cache.set(this.keyForVuidMap, dict);
+  }
+
+  public isVuid = (visitorId: string): boolean => visitorId.startsWith(this._prefix);
 }

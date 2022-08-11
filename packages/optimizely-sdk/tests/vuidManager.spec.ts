@@ -17,12 +17,19 @@
 /// <reference types="jest" />
 
 import { VuidManager } from '../lib/plugins/vuid_manager';
+import InMemoryStringCache from '../lib/plugins/key_value_cache/inMemoryStringCache';
+import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache';
 
 describe('VUID Manager', () => {
+  let cache: PersistentKeyValueCache;
 
-  it('should make a VUID', () => {
+  beforeEach(() => {
+    cache = InMemoryStringCache.getInstance();
+  });
+
+  it('should make a VUID', async () => {
     // arrange
-    const manager = VuidManager.getInstance();
+    const manager = await VuidManager.getInstance(cache);
 
     // act
     const vuid = manager.makeVuid();
@@ -33,32 +40,31 @@ describe('VUID Manager', () => {
     expect(vuid).not.toContain('-');
   });
 
-  it('should test if a VUID is valid', () => {
-    const manager = VuidManager.getInstance();
+  it('should test if a VUID is valid', async () => {
+    const manager = await VuidManager.getInstance(cache);
 
     expect(manager.isVuid('vuid_123')).toBeTruthy();
     expect(manager.isVuid('vuid-123')).toBeFalsy();
     expect(manager.isVuid('123')).toBeFalsy();
   });
 
-  it('should auto-save and auto-load', () => {
-    // TODO: Where is UserDefaults in javascript sdk?
-    // UserDefaults.standard.removeObject(forKey: "optimizely-odp")
+  it('should auto-save and auto-load', async () => {
+    await cache.remove("optimizely-odp");
 
-    let manager = VuidManager.getInstance();
+    let manager = await VuidManager.getInstance(cache);
     const vuid1 = manager.vuid;
 
-    manager = VuidManager.getInstance();
+    manager = await VuidManager.getInstance(cache);
     const vuid2 = manager.vuid;
 
     expect(vuid1).toStrictEqual(vuid2);
     expect(manager.isVuid(vuid1)).toBeTruthy();
     expect(manager.isVuid(vuid2)).toBeTruthy();
 
-    // UserDefaults.standard.removeObject(forKey: "optimizely-odp")
+    await cache.remove("optimizely-odp");
 
-    // TODO: should end up being a new instance since we just removed it above
-    manager = VuidManager.getInstance();
+    // should end up being a new instance since we just removed it above
+    await manager.load(cache);
     const vuid3 = manager.vuid;
 
     expect(vuid3).not.toStrictEqual(vuid1);
