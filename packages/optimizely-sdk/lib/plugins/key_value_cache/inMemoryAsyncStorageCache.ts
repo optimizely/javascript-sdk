@@ -19,18 +19,18 @@ import PersistentKeyValueCache from './persistentKeyValueCache';
 /**
  * An in-memory singleton string cache, supporting strings as keys and value.
  */
-export default class InMemoryStringCache implements PersistentKeyValueCache {
+export default class InMemoryAsyncStorageCache implements PersistentKeyValueCache {
   private readonly data: Map<string, string>;
 
   private constructor() {
     this.data = new Map<string, string>();
   }
 
-  private static instance: InMemoryStringCache;
+  private static instance: InMemoryAsyncStorageCache;
 
-  public static getInstance(): InMemoryStringCache {
+  public static getInstance(): InMemoryAsyncStorageCache {
     if (!this.instance) {
-      this.instance = new InMemoryStringCache();
+      this.instance = new InMemoryAsyncStorageCache();
     }
     return this.instance;
   }

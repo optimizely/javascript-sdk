@@ -19,6 +19,16 @@
  */
 export default interface PersistentKeyValueCache {
   /**
+   * Checks if a key exists in the cache
+   * @param key
+   * Resolves promise with
+   * 1. true if the key exists
+   * 2. false if the key does not exist
+   * Rejects the promise in case of an error
+   */
+  contains(key: string): Promise<boolean>;
+
+  /**
    * Returns value stored against a key or undefined if not found.
    * @param key
    * @returns
@@ -31,27 +41,6 @@ export default interface PersistentKeyValueCache {
   get(key: string): Promise<any | undefined>;
 
   /**
-   * Stores any object in the persistent cache against a key
-   * @param key
-   * @param val
-   * @returns
-   * Resolves promise without a value if successful
-   * Rejects the promise in case of an error
-   */
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  set(key: string, val: any): Promise<void>;
-
-  /**
-   * Checks if a key exists in the cache
-   * @param key
-   * Resolves promise with
-   * 1. true if the key exists
-   * 2. false if the key does not exist
-   * Rejects the promise in case of an error
-   */
-  contains(key: string): Promise<boolean>;
-
-  /**
    * Removes the key value pair from cache.
    * @param key   *
    * @returns
@@ -61,4 +50,15 @@ export default interface PersistentKeyValueCache {
    * Rejects the promise in case of an error
    */
   remove(key: string): Promise<boolean>;
+
+  /**
+   * Stores any object in the persistent cache against a key
+   * @param key
+   * @param val
+   * @returns
+   * Resolves promise without a value if successful
+   * Rejects the promise in case of an error
+   */
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  set(key: string, val: any): Promise<void>;
 }

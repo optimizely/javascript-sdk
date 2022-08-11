@@ -17,14 +17,14 @@
 /// <reference types="jest" />
 
 import { VuidManager } from '../lib/plugins/vuid_manager';
-import InMemoryStringCache from '../lib/plugins/key_value_cache/inMemoryStringCache';
+import InMemoryAsyncStorageCache from '../lib/plugins/key_value_cache/inMemoryAsyncStorageCache';
 import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache';
 
 describe('VUID Manager', () => {
   let cache: PersistentKeyValueCache;
 
   beforeEach(() => {
-    cache = InMemoryStringCache.getInstance();
+    cache = InMemoryAsyncStorageCache.getInstance();
   });
 
   it('should make a VUID', async () => {
