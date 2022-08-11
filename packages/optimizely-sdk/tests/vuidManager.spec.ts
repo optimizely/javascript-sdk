@@ -51,21 +51,21 @@ describe('VUID Manager', () => {
   it('should auto-save and auto-load', async () => {
     await cache.remove("optimizely-odp");
 
-    let manager = await VuidManager.getInstance(cache);
-    const vuid1 = manager.vuid;
+    const manager1 = await VuidManager.getInstance(cache);
+    const vuid1 = manager1.vuid;
 
-    manager = await VuidManager.getInstance(cache);
-    const vuid2 = manager.vuid;
+    const manager2 = await VuidManager.getInstance(cache);
+    const vuid2 = manager2.vuid;
 
     expect(vuid1).toStrictEqual(vuid2);
-    expect(manager.isVuid(vuid1)).toBeTruthy();
-    expect(manager.isVuid(vuid2)).toBeTruthy();
+    expect(manager2.isVuid(vuid1)).toBeTruthy();
+    expect(manager1.isVuid(vuid2)).toBeTruthy();
 
     await cache.remove("optimizely-odp");
 
     // should end up being a new instance since we just removed it above
-    await manager.load(cache);
-    const vuid3 = manager.vuid;
+    await manager2.load(cache);
+    const vuid3 = manager2.vuid;
 
     expect(vuid3).not.toStrictEqual(vuid1);
   });
