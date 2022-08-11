@@ -27,7 +27,8 @@ export default interface PersistentKeyValueCache {
    * 2. undefined if the key does not exist in the cache.
    * Rejects the promise in case of an error
    */
-  get(key: string): Promise<unknown | undefined>;
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  get(key: string): Promise<any | undefined>;
 
   /**
    * Stores any object in the persistent cache against a key
@@ -37,7 +38,8 @@ export default interface PersistentKeyValueCache {
    * Resolves promise without a value if successful
    * Rejects the promise in case of an error
    */
-  set(key: string, val: unknown): Promise<void>;
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  set(key: string, val: any): Promise<void>;
 
   /**
    * Checks if a key exists in the cache
