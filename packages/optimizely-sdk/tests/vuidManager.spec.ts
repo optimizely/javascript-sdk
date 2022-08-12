@@ -20,7 +20,7 @@ import { VuidManager } from '../lib/plugins/vuid_manager';
 import InMemoryAsyncStorageCache from '../lib/plugins/key_value_cache/inMemoryAsyncStorageCache';
 import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache';
 
-describe('VUID Manager', () => {
+describe('VuidManager', () => {
   let cache: PersistentKeyValueCache;
 
   beforeEach(() => {
