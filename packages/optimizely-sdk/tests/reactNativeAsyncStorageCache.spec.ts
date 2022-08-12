@@ -27,28 +27,38 @@ describe('ReactNativeAsyncStorageCache', () => {
 
   describe('get', () => {
     it('should return correct string when item is found in cache', async () => {
-      cacheInstance.get('keyThatExists').then(v => expect(JSON.parse(v)).toEqual({ name: 'Awesome Object' }));
+      const json = await cacheInstance.get('keyThatExists');
+      const parsedObject = JSON.parse(json);
+
+      expect(parsedObject).toEqual({ name: 'Awesome Object' });
     });
 
-    it('should return empty string if item is not found in cache', function() {
-      cacheInstance.get('keyThatDoesNotExist').then(v => expect(v).toEqual(''));
+    it('should return empty string if item is not found in cache', async () => {
+      const json = await cacheInstance.get('keyThatDoesNotExist');
+
+      expect(json).toEqual('');
     });
   });
 
   describe('set', () => {
-    it('should resolve promise if item was successfully set in the cache', function() {
+    it('should resolve promise if item was successfully set in the cache', async () => {
       const testObj = { name: 'Awesome Object' };
-      cacheInstance.set('testKey', JSON.stringify(testObj));
+
+      await cacheInstance.set('testKey', JSON.stringify(testObj));
     });
   });
 
   describe('contains', () => {
-    it('should return true if value with key exists', function() {
-      cacheInstance.contains('keyThatExists').then(v => expect(v).toBeTruthy());
+    it('should return true if value with key exists', async () => {
+      const foundKey = await cacheInstance.contains('keyThatExists');
+
+      expect(foundKey).toBeTruthy();
     });
 
-    it('should return false if value with key does not exist', function() {
-      cacheInstance.contains('keyThatDoesNotExist').then(v => expect(v).toBeFalsy());
+    it('should return false if value with key does not exist', async () => {
+      const foundKey = await cacheInstance.contains('keyThatDoesNotExist');
+
+      expect(foundKey).toBeFalsy();
     });
   });
 });
