@@ -75,7 +75,7 @@ export class LocalStorageStore<K extends StoreEntry> implements PendingEventsSto
       // This is a temporary fix to support React Native which does not have localStorage.
       window.localStorage && localStorage.setItem(this.LS_KEY, JSON.stringify(map))
       this.clean()
-    } catch (e) {
+    } catch (e: any) {
       logger.error(e)
     }
   }
@@ -109,7 +109,7 @@ export class LocalStorageStore<K extends StoreEntry> implements PendingEventsSto
       if (data) {
         return (JSON.parse(data) as { [key: string]: K }) || {}
       }
-    } catch (e) {
+    } catch (e: any) {
       logger.error(e)
     }
     return {}

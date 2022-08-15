@@ -234,7 +234,7 @@ export const _generateBucketValue = function(bucketingKey: string): number {
     const hashValue = murmurhash.v3(bucketingKey, HASH_SEED);
     const ratio = hashValue / MAX_HASH_VALUE;
     return Math.floor(ratio * MAX_TRAFFIC_VALUE);
-  } catch (ex) {
+  } catch (ex: any) {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, MODULE_NAME, bucketingKey, ex.message));
   }
 };

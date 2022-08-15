@@ -41,7 +41,7 @@
     "nock": "^10.0.6",
     "prettier": "^1.19.1",
     "ts-jest": "^27.0.1",
-    "typescript": "3.8.x"
+    "typescript": "^4.7.4"
   },
   "dependencies": {
     "@optimizely/js-sdk-logging": "^0.3.1",
