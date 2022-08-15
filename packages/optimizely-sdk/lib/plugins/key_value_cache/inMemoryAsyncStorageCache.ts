@@ -22,17 +22,21 @@ import PersistentKeyValueCache from './persistentKeyValueCache';
 export default class InMemoryAsyncStorageCache implements PersistentKeyValueCache {
   private readonly data: Map<string, string>;
 
-  private constructor() {
-    this.data = new Map<string, string>();
+  private constructor(data: Map<string, string> = new Map<string, string>()) {
+    this.data = data;
   }
 
-  private static instance: InMemoryAsyncStorageCache;
+  private static _instance: InMemoryAsyncStorageCache;
 
-  public static getInstance(): InMemoryAsyncStorageCache {
-    if (!this.instance) {
-      this.instance = new InMemoryAsyncStorageCache();
+  public static get instance(): InMemoryAsyncStorageCache {
+    if (!this._instance) {
+      this._instance = new InMemoryAsyncStorageCache();
     }
-    return this.instance;
+    return this._instance;
+  }
+
+  public static getTestingInstance(data: Map<string, string>): InMemoryAsyncStorageCache {
+    return new InMemoryAsyncStorageCache(data);
   }
 
   /**
@@ -48,16 +52,17 @@ export default class InMemoryAsyncStorageCache implements PersistentKeyValueCach
   }
 
   /**
-   * Returns string stored against a key or undefined if not found.
+   * Returns string stored against a key or empty string if not found.
    * @param key
    * @returns
    * Resolves promise with
    * 1. string as value if found.
-   * 2. undefined if the key does not exist in the cache.
+   * 2. empty string if the key does not exist in the cache.
    * Rejects the promise in case of an error
    */
-  get(key: string): Promise<string | undefined> {
-    return Promise.resolve(this.data.get(key));
+  get(key: string): Promise<string> {
+    const value = this.data.get(key);
+    return Promise.resolve(value ? value : '');
   }
 
   /**
