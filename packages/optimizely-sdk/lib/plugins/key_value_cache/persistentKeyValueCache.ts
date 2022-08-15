@@ -38,7 +38,7 @@ export default interface PersistentKeyValueCache {
    * Rejects the promise in case of an error
    */
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  get(key: string): Promise<any | undefined>;
+  get(key: string): Promise<any>;
 
   /**
    * Removes the key value pair from cache.

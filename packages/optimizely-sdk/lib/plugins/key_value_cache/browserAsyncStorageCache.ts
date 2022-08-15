@@ -18,12 +18,12 @@ import PersistentKeyValueCache from './persistentKeyValueCache';
 
 export default class BrowserAsyncStorageCache implements PersistentKeyValueCache {
   contains(key: string): Promise<boolean> {
-    return Promise.resolve(localStorage.getItem(key) !== null);
+    return Promise.resolve( localStorage.getItem(key) !== null);
   }
 
-  get(key: string): Promise<string | undefined> {
+  get(key: string): Promise<string> {
     const item = localStorage.getItem(key);
-    return item === null ? Promise.resolve().then(() => undefined) : Promise.resolve(item);
+    return item === null ? Promise.resolve().then(() => '') : Promise.resolve(item);
   }
 
   remove(key: string): Promise<boolean> {
