@@ -46,7 +46,7 @@ describe('lib/plugins/logger/react_native', function() {
         console.error.restore();
       });
 
-      it('shoud use console.info when log level is info', function() {
+      it('should use console.info when log level is info', function() {
         defaultLogger.log(LOG_LEVEL.INFO, 'message');
         sinon.assert.calledWithExactly(console.info, sinon.match(/.*INFO.*message.*/));
         sinon.assert.notCalled(console.log);
@@ -54,7 +54,7 @@ describe('lib/plugins/logger/react_native', function() {
         sinon.assert.notCalled(console.error);
       });
 
-      it('shoud use console.log when log level is debug', function() {
+      it('should use console.log when log level is debug', function() {
         defaultLogger.log(LOG_LEVEL.DEBUG, 'message');
         sinon.assert.calledWithExactly(console.log, sinon.match(/.*DEBUG.*message.*/));
         sinon.assert.notCalled(console.info);
@@ -62,7 +62,7 @@ describe('lib/plugins/logger/react_native', function() {
         sinon.assert.notCalled(console.error);
       });
 
-      it('shoud use console.warn when log level is warn', function() {
+      it('should use console.warn when log level is warn', function() {
         defaultLogger.log(LOG_LEVEL.WARNING, 'message');
         sinon.assert.calledWithExactly(console.warn, sinon.match(/.*WARNING.*message.*/));
         sinon.assert.notCalled(console.log);
@@ -70,7 +70,7 @@ describe('lib/plugins/logger/react_native', function() {
         sinon.assert.notCalled(console.error);
       });
 
-      it('shoud use console.warn when log level is error', function() {
+      it('should use console.warn when log level is error', function() {
         defaultLogger.log(LOG_LEVEL.ERROR, 'message');
         sinon.assert.calledWithExactly(console.warn, sinon.match(/.*ERROR.*message.*/));
         sinon.assert.notCalled(console.log);

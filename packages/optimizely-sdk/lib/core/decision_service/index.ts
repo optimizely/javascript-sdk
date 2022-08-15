@@ -184,7 +184,7 @@ export class DecisionService {
       configObj,
       experiment,
       AUDIENCE_EVALUATION_TYPES.EXPERIMENT,
-      attributes,
+      user,
       ''
     );
     decideReasons.push(...decisionifUserIsInAudience.reasons);
@@ -362,7 +362,7 @@ export class DecisionService {
     configObj: ProjectConfig,
     experiment: Experiment,
     evaluationAttribute: string,
-    attributes?: UserAttributes,
+    user: OptimizelyUserContext,
     loggingKey?: string | number,
   ): DecisionResponse<boolean> {
     const decideReasons: (string | number)[][] = [];
@@ -383,7 +383,7 @@ export class DecisionService {
       loggingKey || experiment.key,
       JSON.stringify(experimentAudienceConditions),
     ]);
-    const result = this.audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, attributes);
+    const result = this.audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, user);
     this.logger.log(
       LOG_LEVEL.INFO,
       LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
@@ -784,7 +784,7 @@ export class DecisionService {
    * @param     {ruleKey}               ruleKey              A ruleKey (optional).
    * @return    {DecisionResponse<Variation|null>}  DecisionResponse object containing valid variation object and decide reasons.
    */
-   findValidatedForcedDecision(
+  findValidatedForcedDecision(
     config: ProjectConfig,
     user: OptimizelyUserContext,
     flagKey: string,
@@ -1116,10 +1116,10 @@ export class DecisionService {
     const forcedDecisionResponse = this.findValidatedForcedDecision(configObj, user, flagKey, rule.key);
     decideReasons.push(...forcedDecisionResponse.reasons);
 
-    const forcedVariaton = forcedDecisionResponse.result;
-    if (forcedVariaton) {
+    const forcedVariation = forcedDecisionResponse.result;
+    if (forcedVariation) {
       return {
-        result: forcedVariaton.key,
+        result: forcedVariation.key,
         reasons: decideReasons,
       };
     }
@@ -1148,10 +1148,10 @@ export class DecisionService {
     const forcedDecisionResponse = this.findValidatedForcedDecision(configObj, user, flagKey, rule.key);
     decideReasons.push(...forcedDecisionResponse.reasons);
 
-    const forcedVariaton = forcedDecisionResponse.result;
-    if (forcedVariaton) {
+    const forcedVariation = forcedDecisionResponse.result;
+    if (forcedVariation) {
       return {
-        result: forcedVariaton,
+        result: forcedVariation,
         reasons: decideReasons,
         skipToEveryoneElse,
       };
@@ -1171,7 +1171,7 @@ export class DecisionService {
       configObj,
       rule,
       AUDIENCE_EVALUATION_TYPES.RULE,
-      attributes,
+      user,
       loggingKey
     );
     decideReasons.push(...decisionifUserIsInAudience.reasons);
