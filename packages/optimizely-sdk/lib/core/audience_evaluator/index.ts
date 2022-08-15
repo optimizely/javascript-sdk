@@ -109,7 +109,7 @@ export class AudienceEvaluator {
     }
     try {
       return evaluator.evaluate(condition, user);
-    } catch (err) {
+    } catch (err: any) {
       logger.log(
         LOG_LEVEL.ERROR,
         ERROR_MESSAGES.CONDITION_EVALUATOR_ERROR, MODULE_NAME, condition.type, err.message

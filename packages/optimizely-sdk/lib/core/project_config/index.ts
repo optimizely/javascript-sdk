@@ -759,7 +759,7 @@ export const getTypeCastValue = function (
     case FEATURE_VARIABLE_TYPES.JSON:
       try {
         castValue = JSON.parse(variableValue);
-      } catch (e) {
+      } catch (e: any) {
         logger.log(
           LOG_LEVEL.ERROR,
           ERROR_MESSAGES.UNABLE_TO_CAST_VALUE,
@@ -843,7 +843,7 @@ export const tryCreatingProjectConfig = function (
   let newDatafileObj;
   try {
     newDatafileObj = configValidator.validateDatafile(config.datafile);
-  } catch (error) {
+  } catch (error: any) {
     return { configObj: null, error };
   }
 
@@ -851,7 +851,7 @@ export const tryCreatingProjectConfig = function (
     try {
       config.jsonSchemaValidator.validate(newDatafileObj);
       config.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.VALID_DATAFILE, MODULE_NAME);
-    } catch (error) {
+    } catch (error : any) {
       return { configObj: null, error };
     }
   } else {
