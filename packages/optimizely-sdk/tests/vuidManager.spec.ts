@@ -24,7 +24,7 @@ describe('VuidManager', () => {
   let cache: PersistentKeyValueCache;
 
   beforeEach(() => {
-    cache = InMemoryAsyncStorageCache.getInstance();
+    cache = InMemoryAsyncStorageCache.instance();
   });
 
   it('should make a VUID', async () => {
