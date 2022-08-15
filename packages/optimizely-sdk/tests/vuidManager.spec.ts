@@ -24,12 +24,12 @@ describe('VuidManager', () => {
   let cache: PersistentKeyValueCache;
 
   beforeEach(() => {
-    cache = InMemoryAsyncStorageCache.instance();
+    cache = InMemoryAsyncStorageCache.instance;
   });
 
   it('should make a VUID', async () => {
     // arrange
-    const manager = await VuidManager.getInstance(cache);
+    const manager = await VuidManager.instance(cache);
 
     // act
     const vuid = manager.makeVuid();
@@ -41,7 +41,7 @@ describe('VuidManager', () => {
   });
 
   it('should test if a VUID is valid', async () => {
-    const manager = await VuidManager.getInstance(cache);
+    const manager = await VuidManager.instance(cache);
 
     expect(manager.isVuid('vuid_123')).toBeTruthy();
     expect(manager.isVuid('vuid-123')).toBeFalsy();
@@ -51,10 +51,10 @@ describe('VuidManager', () => {
   it('should auto-save and auto-load', async () => {
     await cache.remove("optimizely-odp");
 
-    const manager1 = await VuidManager.getInstance(cache);
+    const manager1 = await VuidManager.instance(cache);
     const vuid1 = manager1.vuid;
 
-    const manager2 = await VuidManager.getInstance(cache);
+    const manager2 = await VuidManager.instance(cache);
     const vuid2 = manager2.vuid;
 
     expect(vuid1).toStrictEqual(vuid2);

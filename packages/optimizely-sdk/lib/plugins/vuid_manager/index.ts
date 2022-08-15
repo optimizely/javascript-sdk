@@ -52,25 +52,29 @@ export class VuidManager implements IVuidManager {
     this._vuid = '';
   }
 
-  private static instance: VuidManager;
-  public static async getInstance(cache: PersistentKeyValueCache): Promise<VuidManager> {
-    if (!this.instance) {
-      this.instance = new VuidManager();
+  private static _instance: VuidManager;
+
+  public static async instance(cache: PersistentKeyValueCache): Promise<VuidManager> {
+    if (!this._instance) {
+      this._instance = new VuidManager();
     }
 
-    if (!this.instance._vuid) {
-      await this.instance.load(cache);
+    if (!this._instance._vuid) {
+      await this._instance.load(cache);
     }
 
-    return this.instance;
+    return this._instance;
   }
 
   public async load(cache: PersistentKeyValueCache): Promise<string> {
-    const dict: Map<string, string> = await cache.get(this.keyForVuidMap);
-    if (dict?.has(this.keyForVuid)) {
-      const oldVuid = dict.get(this.keyForVuid);
-      if (oldVuid) {
-        this._vuid = oldVuid;
+    const cachedValue = await cache.get(this.keyForVuidMap);
+    if (cachedValue) {
+      const dict = cachedValue as Map<string, string>;
+      if (dict.has(this.keyForVuid)) {
+        const oldVuid = dict.get(this.keyForVuid);
+        if (oldVuid) {
+          this._vuid = oldVuid;
+        }
       }
     } else {
       const newVuid = this.makeVuid();
