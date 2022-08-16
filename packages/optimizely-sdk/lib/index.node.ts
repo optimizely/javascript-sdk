@@ -68,7 +68,7 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
     try {
       configValidator.validate(config);
       isValidInstance = true;
-    } catch (ex) {
+    } catch (ex: any) {
       if (hasLogger) {
         logger.error(ex);
       } else {
@@ -117,7 +117,7 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
     };
 
     return new Optimizely(optimizelyOptions);
-  } catch (e) {
+  } catch (e: any) {
     logger.error(e);
     return null;
   }

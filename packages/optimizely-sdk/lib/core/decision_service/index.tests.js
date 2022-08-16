@@ -669,7 +669,7 @@ describe('lib/core/decision_service', function() {
             configObj,
             experiment,
             "experiment",
-            { browser_type: 'firefox' },
+            { getAttributes: () => ({ browser_type: 'firefox' }) },
             ''
           ).result
         );

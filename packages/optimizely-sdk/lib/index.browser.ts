@@ -70,7 +70,7 @@ const createInstance = function(config: Config): Client | null {
     try {
       configValidator.validate(config);
       isValidInstance = true;
-    } catch (ex) {
+    } catch (ex: any) {
       logger.error(ex);
     }
 
@@ -141,12 +141,12 @@ const createInstance = function(config: Config): Client | null {
           false
         );
       }
-    } catch (e) {
+    } catch (e: any) {
       logger.error(enums.LOG_MESSAGES.UNABLE_TO_ATTACH_UNLOAD, MODULE_NAME, e.message);
     }
 
     return optimizely;
-  } catch (e) {
+  } catch (e: any) {
     logger.error(e);
     return null;
   }
