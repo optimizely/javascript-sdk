@@ -36,6 +36,7 @@ export default class AsyncStorage {
     return new Promise(resolve => {
       setTimeout(() => {
         items[key] && delete items[key]
+        // @ts-ignore
         resolve()
       }, 1)
     })
