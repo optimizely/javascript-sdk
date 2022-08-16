@@ -126,37 +126,6 @@ describe('javascript-sdk/react-native', () => {
         expect('react-native-sdk').toEqual(optlyInstance.clientEngine);
       });
 
-      it('should activate with provided event dispatcher', () => {
-        var optlyInstance = optimizelyFactory.createInstance({
-          datafile: testData.getTestProjectConfig(),
-          // errorHandler: fakeErrorHandler,
-          // eventDispatcher: optimizelyFactory.eventDispatcher,
-          // @ts-ignore
-          // logger: silentLogger,
-        });
-        // @ts-ignore
-        var activate = optlyInstance.activate('testExperiment', 'testUser');
-        console.log("********************************")
-        console.log(optlyInstance)
-        console.log("********************************")
-        expect(activate).toBe('control');
-      });
-
-      describe('when no event dispatcher passed to createInstance', () => {
-        it('uses the default event dispatcher', () => {
-          var optlyInstance = optimizelyFactory.createInstance({
-            datafile: testData.getTestProjectConfig(),
-            errorHandler: fakeErrorHandler,
-            // @ts-ignore
-            logger: silentLogger,
-          });
-          // @ts-ignore
-          optlyInstance.activate('testExperiment', 'testUser');
-          jest.advanceTimersByTime(30001);
-          expect(optimizelyFactory.eventDispatcher.dispatchEvent).toBeCalledTimes(1);
-        });
-      });
-
       describe('when passing in logLevel', () => {
         beforeEach(() => {
           jest.spyOn(logging, 'setLogLevel');
