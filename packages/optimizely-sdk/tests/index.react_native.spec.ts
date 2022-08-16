@@ -13,315 +13,356 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { assert } from 'chai';
-import sinon from 'sinon';
-import * as logging from './modules/logging/logger';
-import * as eventProcessor from './plugins/event_processor';
+/// <reference types="jest" />
+import * as logging from '../lib/modules/logging/logger';
+import * as eventProcessor from '../lib//plugins/event_processor/index.react_native';
 
-import Optimizely from './optimizely';
-import testData from './tests/test_data';
+import Optimizely from '../lib/optimizely';
+import testData from '../lib/tests/test_data';
 import packageJSON from '../package.json';
-import optimizelyFactory from './index.react_native';
-import configValidator from './utils/config_validator';
-import eventProcessorConfigValidator from './utils/event_processor_config_validator';
+import optimizelyFactory from '../lib/index.react_native';
+import configValidator from '../lib/utils/config_validator';
+import eventProcessorConfigValidator from '../lib/utils/event_processor_config_validator';
 
-describe('javascript-sdk/react-native', function () {
-  var clock;
-  beforeEach(function () {
-    sinon.stub(optimizelyFactory.eventDispatcher, 'dispatchEvent');
-    clock = sinon.useFakeTimers(new Date());
+describe('javascript-sdk/react-native', () => {
+  beforeEach(() => {
+    jest.spyOn(optimizelyFactory.eventDispatcher, 'dispatchEvent');
+    jest.useFakeTimers();
   });
 
-  afterEach(function () {
-    optimizelyFactory.eventDispatcher.dispatchEvent.restore();
-    clock.restore();
+  afterEach(() => {
+    jest.resetAllMocks();
   });
 
-  describe('APIs', function () {
-    it('should expose logger, errorHandler, eventDispatcher and enums', function () {
-      assert.isDefined(optimizelyFactory.logging);
-      assert.isDefined(optimizelyFactory.logging.createLogger);
-      assert.isDefined(optimizelyFactory.logging.createNoOpLogger);
-      assert.isDefined(optimizelyFactory.errorHandler);
-      assert.isDefined(optimizelyFactory.eventDispatcher);
-      assert.isDefined(optimizelyFactory.enums);
+  describe('APIs', () => {
+    it('should expose logger, errorHandler, eventDispatcher and enums', () => {
+      expect(optimizelyFactory.logging).toBeDefined();
+      expect(optimizelyFactory.logging.createLogger).toBeDefined();
+      expect(optimizelyFactory.logging.createNoOpLogger).toBeDefined();
+      expect(optimizelyFactory.errorHandler).toBeDefined();
+      expect(optimizelyFactory.eventDispatcher).toBeDefined();
+      expect(optimizelyFactory.enums).toBeDefined();
     });
 
-    describe('createInstance', function () {
-      var fakeErrorHandler = { handleError: function () { } };
-      var fakeEventDispatcher = { dispatchEvent: function () { } };
+    describe('createInstance', () => {
+      var fakeErrorHandler = { handleError: function () {} };
+      var fakeEventDispatcher = { dispatchEvent: function () {} };
+      // @ts-ignore
       var silentLogger;
 
-      beforeEach(function () {
-        silentLogger = optimizelyFactory.logging.createLogger({
-          logLevel: optimizelyFactory.enums.LOG_LEVEL.INFO,
-          logToConsole: false,
+      beforeEach(() => {
+        // @ts-ignore
+        silentLogger = optimizelyFactory.logging.createLogger();
+        jest.spyOn(console, 'error');
+        jest.spyOn(configValidator, 'validate').mockImplementation(() => {
+          throw new Error('Invalid config or something');
         });
-        sinon.spy(console, 'error');
-        sinon.stub(configValidator, 'validate');
       });
 
-      afterEach(function () {
-        console.error.restore();
-        configValidator.validate.restore();
+      afterEach(() => {
+        jest.resetAllMocks();
       });
 
-      it('should not throw if the provided config is not valid', function () {
-        configValidator.validate.throws(new Error('Invalid config or something'));
-        assert.doesNotThrow(function () {
+      it('should not throw if the provided config is not valid', () => {
+        expect(function () {
           var optlyInstance = optimizelyFactory.createInstance({
             datafile: {},
+            // @ts-ignore
             logger: silentLogger,
           });
           // Invalid datafile causes onReady Promise rejection - catch this error
-          optlyInstance.onReady().catch(function () { });
-        });
+          // @ts-ignore
+          optlyInstance.onReady().catch(function () {});
+        }).not.toThrow();
       });
 
-      it('should create an instance of optimizely', function () {
+      it('should create an instance of optimizely', () => {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
+          // @ts-ignore
           logger: silentLogger,
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
-        optlyInstance.onReady().catch(function () { });
+        // @ts-ignore
+        optlyInstance.onReady().catch(function () {});
 
-        assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.9.2');
+        expect(optlyInstance).toBeInstanceOf(Optimizely);
+        // @ts-ignore
+        expect(optlyInstance.clientVersion).toEqual('4.9.2');
       });
 
-      it('should set the React Native JS client engine and javascript SDK version', function () {
+      it('should set the React Native JS client engine and javascript SDK version', () => {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
+          // @ts-ignore
           logger: silentLogger,
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
-        optlyInstance.onReady().catch(function () { });
-        assert.equal('react-native-js-sdk', optlyInstance.clientEngine);
-        assert.equal(packageJSON.version, optlyInstance.clientVersion);
+        // @ts-ignore
+        optlyInstance.onReady().catch(function () {});
+        // @ts-ignore
+        expect('react-native-js-sdk').toEqual(optlyInstance.clientEngine);
+        // @ts-ignore
+        expect(packageJSON.version).toEqual(optlyInstance.clientVersion);
       });
 
-      it('should allow passing of "react-sdk" as the clientEngine and convert it to "react-native-sdk"', function () {
+      it('should allow passing of "react-sdk" as the clientEngine and convert it to "react-native-sdk"', () => {
         var optlyInstance = optimizelyFactory.createInstance({
           clientEngine: 'react-sdk',
           datafile: {},
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
+          // @ts-ignore
           logger: silentLogger,
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
-        optlyInstance.onReady().catch(function () { });
-        assert.equal('react-native-sdk', optlyInstance.clientEngine);
+        // @ts-ignore
+        optlyInstance.onReady().catch(function () {});
+        // @ts-ignore
+        expect('react-native-sdk').toEqual(optlyInstance.clientEngine);
       });
 
-      it('should activate with provided event dispatcher', function () {
+      it('should activate with provided event dispatcher', () => {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfig(),
-          errorHandler: fakeErrorHandler,
-          eventDispatcher: optimizelyFactory.eventDispatcher,
-          logger: silentLogger,
+          // errorHandler: fakeErrorHandler,
+          // eventDispatcher: optimizelyFactory.eventDispatcher,
+          // @ts-ignore
+          // logger: silentLogger,
         });
+        // @ts-ignore
         var activate = optlyInstance.activate('testExperiment', 'testUser');
-        assert.strictEqual(activate, 'control');
+        console.log("********************************")
+        console.log(optlyInstance)
+        console.log("********************************")
+        expect(activate).toBe('control');
       });
 
-      describe('when no event dispatcher passed to createInstance', function () {
-        it('uses the default event dispatcher', function () {
+      describe('when no event dispatcher passed to createInstance', () => {
+        it('uses the default event dispatcher', () => {
           var optlyInstance = optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
             errorHandler: fakeErrorHandler,
+            // @ts-ignore
             logger: silentLogger,
           });
+          // @ts-ignore
           optlyInstance.activate('testExperiment', 'testUser');
-          clock.tick(30001)
-          sinon.assert.calledOnce(optimizelyFactory.eventDispatcher.dispatchEvent);
+          jest.advanceTimersByTime(30001);
+          expect(optimizelyFactory.eventDispatcher.dispatchEvent).toBeCalledTimes(1);
         });
       });
 
-      describe('when passing in logLevel', function () {
-        beforeEach(function () {
-          sinon.stub(logging, 'setLogLevel');
+      describe('when passing in logLevel', () => {
+        beforeEach(() => {
+          jest.spyOn(logging, 'setLogLevel');
         });
 
-        afterEach(function () {
-          logging.setLogLevel.restore();
+        afterEach(() => {
+          jest.resetAllMocks();
         });
 
-        it('should call logging.setLogLevel', function () {
+        it('should call logging.setLogLevel', () => {
           optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
             logLevel: optimizelyFactory.enums.LOG_LEVEL.ERROR,
           });
-          sinon.assert.calledOnce(logging.setLogLevel);
-          sinon.assert.calledWithExactly(logging.setLogLevel, optimizelyFactory.enums.LOG_LEVEL.ERROR);
+          expect(logging.setLogLevel).toBeCalledTimes(1);
+          expect(logging.setLogLevel).toBeCalledWith(optimizelyFactory.enums.LOG_LEVEL.ERROR);
         });
       });
 
-      describe('when passing in logger', function () {
-        beforeEach(function () {
-          sinon.stub(logging, 'setLogHandler');
+      describe('when passing in logger', () => {
+        beforeEach(() => {
+          jest.spyOn(logging, 'setLogHandler');
         });
 
-        afterEach(function () {
-          logging.setLogHandler.restore();
+        afterEach(() => {
+          jest.resetAllMocks();
         });
 
-        it('should call logging.setLogHandler with the supplied logger', function () {
-          var fakeLogger = { log: function () { } };
-          optimizelyFactory.createInstance({
-            datafile: testData.getTestProjectConfig(),
-            logger: fakeLogger,
-          });
-          sinon.assert.calledOnce(logging.setLogHandler);
-          sinon.assert.calledWithExactly(logging.setLogHandler, fakeLogger);
-        });
-      });
-
-      describe('event processor configuration', function () {
-        var eventProcessorSpy;
-        beforeEach(function () {
-          eventProcessorSpy = sinon.spy(eventProcessor, 'createEventProcessor');
-        });
-
-        afterEach(function () {
-          eventProcessor.createEventProcessor.restore();
-        });
-
-        it('should use default event flush interval when none is provided', function () {
-          optimizelyFactory.createInstance({
-            datafile: testData.getTestProjectConfigWithFeatures(),
-            errorHandler: fakeErrorHandler,
-            eventDispatcher: fakeEventDispatcher,
-            logger: silentLogger,
-          });
-          sinon.assert.calledWithExactly(
-            eventProcessorSpy,
-            sinon.match({
-              flushInterval: 1000,
-            })
+          it(
+            'should call logging.setLogHandler with the supplied logger',
+            () => {
+              var fakeLogger = { log: function () { } };
+              optimizelyFactory.createInstance({
+                datafile: testData.getTestProjectConfig(),
+                // @ts-ignore
+                logger: fakeLogger,
+              });
+              expect(logging.setLogHandler).toBeCalledTimes(1);
+              expect(logging.setLogHandler).toBeCalledWith(fakeLogger);
+            }
           );
         });
 
-        describe('with an invalid flush interval', function () {
-          beforeEach(function () {
-            sinon.stub(eventProcessorConfigValidator, 'validateEventFlushInterval').returns(false);
+        describe('event processor configuration', () => {
+          // @ts-ignore
+          var eventProcessorSpy;
+          beforeEach(() => {
+            eventProcessorSpy = jest.spyOn(eventProcessor, 'createEventProcessor');
           });
 
-          afterEach(function () {
-            eventProcessorConfigValidator.validateEventFlushInterval.restore();
+          afterEach(() => {
+            jest.resetAllMocks();
           });
 
-          it('should ignore the event flush interval and use the default instead', function () {
+          it('should use default event flush interval when none is provided', () => {
             optimizelyFactory.createInstance({
               datafile: testData.getTestProjectConfigWithFeatures(),
               errorHandler: fakeErrorHandler,
               eventDispatcher: fakeEventDispatcher,
+              // @ts-ignore
               logger: silentLogger,
-              eventFlushInterval: ['invalid', 'flush', 'interval'],
             });
-            sinon.assert.calledWithExactly(
-              eventProcessorSpy,
-              sinon.match({
+
+            expect(
+              // @ts-ignore
+              eventProcessorSpy
+            ).toBeCalledWith(
+              expect.objectContaining({
                 flushInterval: 1000,
               })
             );
           });
-        });
 
-        describe('with a valid flush interval', function () {
-          beforeEach(function () {
-            sinon.stub(eventProcessorConfigValidator, 'validateEventFlushInterval').returns(true);
+          describe('with an invalid flush interval', () => {
+            beforeEach(() => {
+              jest.spyOn(eventProcessorConfigValidator, 'validateEventFlushInterval').mockImplementation(() => false);
+            });
+
+            afterEach(() => {
+              jest.resetAllMocks();
+            });
+
+            it('should ignore the event flush interval and use the default instead', () => {
+              optimizelyFactory.createInstance({
+                datafile: testData.getTestProjectConfigWithFeatures(),
+                errorHandler: fakeErrorHandler,
+                eventDispatcher: fakeEventDispatcher,
+                // @ts-ignore
+                logger: silentLogger,
+                // @ts-ignore
+                eventFlushInterval: ['invalid', 'flush', 'interval'],
+              });
+              expect(
+                // @ts-ignore
+                eventProcessorSpy
+              ).toBeCalledWith(
+                expect.objectContaining({
+                  flushInterval: 1000,
+                })
+              );
+            });
           });
 
-          afterEach(function () {
-            eventProcessorConfigValidator.validateEventFlushInterval.restore();
+          describe('with a valid flush interval', () => {
+            beforeEach(() => {
+              jest.spyOn(eventProcessorConfigValidator, 'validateEventFlushInterval').mockImplementation(() => true);
+            });
+
+            afterEach(() => {
+              jest.resetAllMocks();
+            });
+
+            it('should use the provided event flush interval', () => {
+              optimizelyFactory.createInstance({
+                datafile: testData.getTestProjectConfigWithFeatures(),
+                errorHandler: fakeErrorHandler,
+                eventDispatcher: fakeEventDispatcher,
+                // @ts-ignore
+                logger: silentLogger,
+                eventFlushInterval: 9000,
+              });
+              expect(
+                // @ts-ignore
+                eventProcessorSpy
+              ).toBeCalledWith(
+                expect.objectContaining({
+                  flushInterval: 9000,
+                })
+              );
+            });
           });
 
-          it('should use the provided event flush interval', function () {
+          it('should use default event batch size when none is provided', () => {
             optimizelyFactory.createInstance({
               datafile: testData.getTestProjectConfigWithFeatures(),
               errorHandler: fakeErrorHandler,
               eventDispatcher: fakeEventDispatcher,
+              // @ts-ignore
               logger: silentLogger,
-              eventFlushInterval: 9000,
             });
-            sinon.assert.calledWithExactly(
-              eventProcessorSpy,
-              sinon.match({
-                flushInterval: 9000,
-              })
-            );
-          });
-        });
-
-        it('should use default event batch size when none is provided', function () {
-          optimizelyFactory.createInstance({
-            datafile: testData.getTestProjectConfigWithFeatures(),
-            errorHandler: fakeErrorHandler,
-            eventDispatcher: fakeEventDispatcher,
-            logger: silentLogger,
-          });
-          sinon.assert.calledWithExactly(
-            eventProcessorSpy,
-            sinon.match({
-              batchSize: 10,
-            })
-          );
-        });
-
-        describe('with an invalid event batch size', function () {
-          beforeEach(function () {
-            sinon.stub(eventProcessorConfigValidator, 'validateEventBatchSize').returns(false);
-          });
-
-          afterEach(function () {
-            eventProcessorConfigValidator.validateEventBatchSize.restore();
-          });
-
-          it('should ignore the event batch size and use the default instead', function () {
-            optimizelyFactory.createInstance({
-              datafile: testData.getTestProjectConfigWithFeatures(),
-              errorHandler: fakeErrorHandler,
-              eventDispatcher: fakeEventDispatcher,
-              logger: silentLogger,
-              eventBatchSize: null,
-            });
-            sinon.assert.calledWithExactly(
-              eventProcessorSpy,
-              sinon.match({
+            expect(
+              // @ts-ignore
+              eventProcessorSpy
+            ).toBeCalledWith(
+              expect.objectContaining({
                 batchSize: 10,
               })
             );
           });
-        });
 
-        describe('with a valid event batch size', function () {
-          beforeEach(function () {
-            sinon.stub(eventProcessorConfigValidator, 'validateEventBatchSize').returns(true);
-          });
-
-          afterEach(function () {
-            eventProcessorConfigValidator.validateEventBatchSize.restore();
-          });
-
-          it('should use the provided event batch size', function () {
-            optimizelyFactory.createInstance({
-              datafile: testData.getTestProjectConfigWithFeatures(),
-              errorHandler: fakeErrorHandler,
-              eventDispatcher: fakeEventDispatcher,
-              logger: silentLogger,
-              eventBatchSize: 300,
+          describe('with an invalid event batch size', () => {
+            beforeEach(() => {
+              jest.spyOn(eventProcessorConfigValidator, 'validateEventBatchSize').mockImplementation(() => false);
             });
-            sinon.assert.calledWithExactly(
-              eventProcessorSpy,
-              sinon.match({
-                batchSize: 300,
-              })
-            );
+
+            afterEach(() => {
+              jest.resetAllMocks();
+            });
+
+            it('should ignore the event batch size and use the default instead', () => {
+              optimizelyFactory.createInstance({
+                datafile: testData.getTestProjectConfigWithFeatures(),
+                errorHandler: fakeErrorHandler,
+                eventDispatcher: fakeEventDispatcher,
+                // @ts-ignore
+                logger: silentLogger,
+                // @ts-ignore
+                eventBatchSize: null,
+              });
+              expect(
+                // @ts-ignore
+                eventProcessorSpy
+              ).toBeCalledWith(
+                expect.objectContaining({
+                  batchSize: 10,
+                })
+              );
+            });
+          });
+
+          describe('with a valid event batch size', () => {
+            beforeEach(() => {
+              jest.spyOn(eventProcessorConfigValidator, 'validateEventBatchSize').mockImplementation(() => true);
+            });
+
+            afterEach(() => {
+              jest.resetAllMocks();
+            });
+
+            it('should use the provided event batch size', () => {
+              optimizelyFactory.createInstance({
+                datafile: testData.getTestProjectConfigWithFeatures(),
+                errorHandler: fakeErrorHandler,
+                eventDispatcher: fakeEventDispatcher,
+                // @ts-ignore
+                logger: silentLogger,
+                eventBatchSize: 300,
+              });
+              expect(
+                // @ts-ignore
+                eventProcessorSpy
+              ).toBeCalledWith(
+                expect.objectContaining({
+                  batchSize: 300,
+                })
+              );
           });
         });
       });
