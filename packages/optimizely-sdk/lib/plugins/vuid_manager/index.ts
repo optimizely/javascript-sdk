@@ -28,15 +28,8 @@ export interface IVuidManager {
 }
 
 export class VuidManager implements IVuidManager {
-  private readonly _keyForVuidMap: string;
-  public get keyForVuidMap(): string {
-    return this._keyForVuidMap;
-  }
-
-  private readonly _keyForVuid: string;
-  public get keyForVuid(): string {
-    return this._keyForVuid;
-  }
+  private readonly _keyForVuidMap = 'optimizely-odp';
+  private readonly _keyForVuid = 'vuid';
 
   private readonly _prefix: string;
 
@@ -46,8 +39,6 @@ export class VuidManager implements IVuidManager {
   }
 
   private constructor() {
-    this._keyForVuidMap = 'optimizely-odp';
-    this._keyForVuid = 'vuid';
     this._prefix = `${(this._keyForVuid)}_`;
     this._vuid = '';
   }
@@ -67,20 +58,25 @@ export class VuidManager implements IVuidManager {
   }
 
   public async load(cache: PersistentKeyValueCache): Promise<string> {
-    const cachedValue = await cache.get(this.keyForVuidMap);
+    let validVuid = '';
+    const cachedValue = await cache.get(this._keyForVuidMap);
     if (cachedValue) {
       const dict = cachedValue as Map<string, string>;
-      if (dict.has(this.keyForVuid)) {
-        const oldVuid = dict.get(this.keyForVuid);
+      if (typeof dict?.has === "function" && dict?.has(this._keyForVuid)) {
+        const oldVuid = dict.get(this._keyForVuid);
         if (oldVuid) {
-          this._vuid = oldVuid;
+          validVuid = oldVuid;
         }
       }
-    } else {
-      const newVuid = this.makeVuid();
-      await this.save(newVuid, cache);
-      this._vuid = newVuid;
     }
+
+    if (validVuid && this.isVuid(validVuid)) {
+      this._vuid = validVuid;
+    } else {
+      this._vuid = this.makeVuid();
+      await this.save(this._vuid, cache);
+    }
+
     return this._vuid;
   }
 
@@ -96,8 +92,8 @@ export class VuidManager implements IVuidManager {
   }
 
   public async save(vuid: string, cache: PersistentKeyValueCache): Promise<void> {
-    const dict = new Map<string, string>([[this.keyForVuid, vuid]]);
-    await cache.set(this.keyForVuidMap, dict);
+    const dict = new Map<string, string>([[this._keyForVuid, vuid]]);
+    await cache.set(this._keyForVuidMap, dict);
   }
 
   public isVuid = (visitorId: string): boolean => visitorId.startsWith(this._prefix);
