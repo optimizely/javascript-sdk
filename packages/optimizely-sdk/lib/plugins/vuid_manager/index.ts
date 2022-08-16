@@ -96,7 +96,7 @@ export class VuidManager implements IVuidManager {
   }
 
   public async save(vuid: string, cache: PersistentKeyValueCache): Promise<void> {
-    const dict = new Map<string, string>([[this.keyForVuidMap, vuid]]);
+    const dict = new Map<string, string>([[this.keyForVuid, vuid]]);
     await cache.set(this.keyForVuidMap, dict);
   }
 
