@@ -76,6 +76,7 @@ export class LocalStorageStore<K extends StoreEntry> implements PendingEventsSto
       window.localStorage && localStorage.setItem(this.LS_KEY, JSON.stringify(map))
       this.clean()
     } catch (e) {
+      // @ts-ignore
       logger.error(e)
     }
   }
@@ -110,6 +111,7 @@ export class LocalStorageStore<K extends StoreEntry> implements PendingEventsSto
         return (JSON.parse(data) as { [key: string]: K }) || {}
       }
     } catch (e) {
+      // @ts-ignore
       logger.error(e)
     }
     return {}
