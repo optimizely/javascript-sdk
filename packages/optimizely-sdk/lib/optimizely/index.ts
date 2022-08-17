@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { LoggerFacade, ErrorHandler } from '@optimizely/js-sdk-logging';
-import { sprintf } from '../utils/fns';
+import { LoggerFacade, ErrorHandler } from '../modules/logging';
+import { sprintf, objectValues } from '../utils/fns';
 import { NotificationCenter } from '../core/notification_center';
 import { EventProcessor } from '@optimizely/js-sdk-event-processor';
 
@@ -150,7 +150,7 @@ export default class Optimizely {
           userProfileService = config.userProfileService;
           this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.VALID_USER_PROFILE_SERVICE, MODULE_NAME);
         }
-      } catch (ex) {
+      } catch (ex: any) {
         this.logger.log(LOG_LEVEL.WARNING, ex.message);
       }
     }
@@ -167,7 +167,7 @@ export default class Optimizely {
 
     const eventProcessorStartedPromise = this.eventProcessor.start();
 
-    this.readyPromise = Promise.all([projectConfigManagerReadyPromise, eventProcessorStartedPromise]).then(function(promiseResults) {
+    this.readyPromise = Promise.all([projectConfigManagerReadyPromise, eventProcessorStartedPromise]).then(function (promiseResults) {
       // Only return status from project config promise because event processor promise does not return any status.
       return promiseResults[0];
     })
@@ -242,7 +242,7 @@ export default class Optimizely {
           attributes
         );
         return variationKey;
-      } catch (ex) {
+      } catch (ex: any) {
         this.logger.log(LOG_LEVEL.ERROR, ex.message);
         this.logger.log(
           LOG_LEVEL.INFO,
@@ -254,7 +254,7 @@ export default class Optimizely {
         this.errorHandler.handleError(ex);
         return null;
       }
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
       return null;
@@ -406,7 +406,7 @@ export default class Optimizely {
       // TODO is it okay to not pass a projectConfig as second argument
       this.eventProcessor.process(conversionEvent);
       this.emitNotificationCenterTrack(eventKey, userId, attributes, eventTags);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
       this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.NOT_TRACKING_USER, MODULE_NAME, userId);
@@ -445,7 +445,7 @@ export default class Optimizely {
         eventTags: eventTags,
         logEvent: conversionEvent,
       });
-    } catch (ex) {
+    } catch (ex: any) {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       this.errorHandler.handleError(ex);
     }
@@ -506,12 +506,12 @@ export default class Optimizely {
         });
 
         return variationKey;
-      } catch (ex) {
+      } catch (ex: any) {
         this.logger.log(LOG_LEVEL.ERROR, ex.message);
         this.errorHandler.handleError(ex);
         return null;
       }
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
       return null;
@@ -538,7 +538,7 @@ export default class Optimizely {
 
     try {
       return this.decisionService.setForcedVariation(configObj, experimentKey, userId, variationKey);
-    } catch (ex) {
+    } catch (ex: any) {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       this.errorHandler.handleError(ex);
       return false;
@@ -563,7 +563,7 @@ export default class Optimizely {
 
     try {
       return this.decisionService.getForcedVariation(configObj, experimentKey, userId).result;
-    } catch (ex) {
+    } catch (ex: any) {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       this.errorHandler.handleError(ex);
       return null;
@@ -605,7 +605,7 @@ export default class Optimizely {
       }
       return true;
 
-    } catch (ex) {
+    } catch (ex: any) {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       this.errorHandler.handleError(ex);
       return false;
@@ -740,7 +740,7 @@ export default class Optimizely {
       });
 
       return featureEnabled;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
       return false;
@@ -785,7 +785,7 @@ export default class Optimizely {
       );
 
       return enabledFeatures;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
       return [];
@@ -818,7 +818,7 @@ export default class Optimizely {
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, null, userId, attributes);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
       return null;
@@ -1016,7 +1016,7 @@ export default class Optimizely {
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.BOOLEAN, userId, attributes) as boolean | null;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
       return null;
@@ -1049,7 +1049,7 @@ export default class Optimizely {
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.DOUBLE, userId, attributes) as number | null;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
       return null;
@@ -1082,7 +1082,7 @@ export default class Optimizely {
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.INTEGER, userId, attributes) as number | null;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
       return null;
@@ -1115,7 +1115,7 @@ export default class Optimizely {
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.STRING, userId, attributes) as string | null;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
       return null;
@@ -1148,7 +1148,7 @@ export default class Optimizely {
         return null;
       }
       return this.getFeatureVariableForType(featureKey, variableKey, FEATURE_VARIABLE_TYPES.JSON, userId, attributes);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
       return null;
@@ -1224,7 +1224,7 @@ export default class Optimizely {
       });
 
       return allVariables;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
       return null;
@@ -1274,7 +1274,7 @@ export default class Optimizely {
         return null;
       }
       return this.projectConfigManager.getOptimizelyConfig();
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
       return null;
@@ -1331,19 +1331,19 @@ export default class Optimizely {
       );
       this.readyTimeouts = {};
       return eventProcessorStoppedPromise.then(
-        function() {
+        function () {
           return {
             success: true,
           };
         },
-        function(err) {
+        function (err) {
           return {
             success: false,
             reason: String(err),
           };
         }
       );
-    } catch (err) {
+    } catch (err: any) {
       this.logger.log(LOG_LEVEL.ERROR, err.message);
       this.errorHandler.handleError(err);
       return Promise.resolve({
@@ -1409,7 +1409,7 @@ export default class Optimizely {
       });
     });
     const readyTimeout = setTimeout(onReadyTimeout, timeoutValue);
-    const onClose = function() {
+    const onClose = function () {
       resolveTimeoutPromise({
         success: false,
         reason: 'Instance closed',

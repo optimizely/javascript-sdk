@@ -19,7 +19,7 @@
  */
 import { sprintf } from '../../utils/fns';
 import murmurhash from 'murmurhash';
-import { LogHandler } from '@optimizely/js-sdk-logging';
+import { LogHandler } from '../../modules/logging';
 import {
   DecisionResponse,
   BucketerParams,
@@ -234,7 +234,7 @@ export const _generateBucketValue = function(bucketingKey: string): number {
     const hashValue = murmurhash.v3(bucketingKey, HASH_SEED);
     const ratio = hashValue / MAX_HASH_VALUE;
     return Math.floor(ratio * MAX_TRAFFIC_VALUE);
-  } catch (ex) {
+  } catch (ex: any) {
     throw new Error(sprintf(ERROR_MESSAGES.INVALID_BUCKETING_ID, MODULE_NAME, bucketingKey, ex.message));
   }
 };

@@ -75,15 +75,6 @@ const umdBundle = {
     resolve({ browser: true }),
     commonjs({
       namedExports: {
-        '@optimizely/js-sdk-logging': [
-          'ConsoleLogHandler',
-          'getLogger',
-          'setLogLevel',
-          'LogLevel',
-          'setLogHandler',
-          'setErrorHandler',
-          'getErrorHandler',
-        ],
         '@optimizely/js-sdk-event-processor': ['LogTierV1EventProcessor', 'LocalStoragePendingEventsDispatcher'],
       },
     }),

@@ -29,6 +29,7 @@ export default class OptimizelyUserContext {
   private userId: string;
   private attributes: UserAttributes;
   private forcedDecisionsMap: { [key: string]: { [key: string]: OptimizelyForcedDecision } };
+  private _qualifiedSegments: string[] = [];
 
   constructor({
     optimizely,
@@ -64,6 +65,14 @@ export default class OptimizelyUserContext {
 
   getOptimizely(): Optimizely {
     return this.optimizely;
+  }
+
+  public get qualifiedSegments(): string[] {
+    return this._qualifiedSegments;
+  }
+
+  public set qualifiedSegments(qualifiedSegments: string[]) {
+    this._qualifiedSegments = [...qualifiedSegments];
   }
 
   /**
@@ -128,7 +137,7 @@ export default class OptimizelyUserContext {
     const flagKey = context.flagKey;
 
     const ruleKey = context.ruleKey ?? CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY;
-    const variationKey  = decision.variationKey;
+    const variationKey = decision.variationKey;
     const forcedDecision = { variationKey };
 
     if (!this.forcedDecisionsMap[flagKey]) {
@@ -203,6 +212,10 @@ export default class OptimizelyUserContext {
     return null;
   }
 
+  public isQualifiedFor(segment: string): boolean {
+    return this._qualifiedSegments.indexOf(segment) > -1;
+  }
+
   private cloneUserContext(): OptimizelyUserContext {
     const userContext = new OptimizelyUserContext({
       optimizely: this.getOptimizely(),
@@ -212,6 +225,10 @@ export default class OptimizelyUserContext {
 
     if (Object.keys(this.forcedDecisionsMap).length > 0) {
       userContext.forcedDecisionsMap = { ...this.forcedDecisionsMap };
+    }
+
+    if (this._qualifiedSegments) {
+      userContext._qualifiedSegments = [...this._qualifiedSegments];
     }
 
     return userContext;

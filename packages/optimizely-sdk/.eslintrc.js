@@ -31,6 +31,5 @@ module.exports = {
     'no-prototype-builtins': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-empty-function': 'off',
-    'no-shadow': 'error',
   },
 };

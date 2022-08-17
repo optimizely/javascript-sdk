@@ -18,7 +18,7 @@ import sinon from 'sinon';
 import { sprintf, toObject } from '../utils/fns';
 import { NOTIFICATION_TYPES } from '../utils/enums';
 import eventProcessor from '../plugins/event_processor';
-import * as logging from '@optimizely/js-sdk-logging';
+import * as logging from '../modules/logging';
 
 import Optimizely from './';
 import OptimizelyUserContext from '../optimizely_user_context';
@@ -9169,6 +9169,7 @@ describe('lib/optimizely', function() {
 
   describe('audience combinations', function() {
     var sandbox = sinon.sandbox.create();
+    var evalSpy;
     var createdLogger = logger.createLogger({
       logLevel: LOG_LEVEL.INFO,
       logToConsole: false,
@@ -9198,7 +9199,7 @@ describe('lib/optimizely', function() {
 
       sandbox.stub(errorHandler, 'handleError');
       sandbox.stub(createdLogger, 'log');
-      sandbox.spy(audienceEvaluator, 'evaluate');
+      evalSpy = sandbox.spy(audienceEvaluator, 'evaluate');
     });
 
     afterEach(function() {
@@ -9222,8 +9223,9 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().experiments[2].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        { house: 'Welcome to Slytherin!', lasers: 45.5 }
+        sinon.match.any
       );
+      assert.deepEqual(evalSpy.getCalls()[0].args[2].getAttributes(), { house: 'Welcome to Slytherin!', lasers: 45.5 });
     });
 
     it('can exclude a user from an experiment with complex audience conditions', function() {
@@ -9239,8 +9241,9 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().experiments[2].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        { house: 'Hufflepuff', lasers: 45.5 }
+        sinon.match.any
       );
+      assert.deepEqual(evalSpy.getCalls()[0].args[2].getAttributes(), { house: 'Hufflepuff', lasers: 45.5 });
     });
 
     it('can track an experiment with complex audience conditions', function() {
@@ -9269,8 +9272,9 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().rollouts[2].experiments[0].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        { house: '...Slytherinnn...sss.', favorite_ice_cream: 'matcha' }
+        sinon.match.any
       );
+      assert.deepEqual(evalSpy.getCalls()[0].args[2].getAttributes(), { house: '...Slytherinnn...sss.', favorite_ice_cream: 'matcha' });
     });
 
     it('can exclude a user from a rollout with complex audience conditions via isFeatureEnabled', function() {
@@ -9284,8 +9288,9 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().rollouts[2].experiments[0].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        { house: 'Lannister' }
+        sinon.match.any
       );
+      assert.deepEqual(evalSpy.getCalls()[0].args[2].getAttributes(), { house: 'Lannister' });
     });
 
     it('can return a variable value from a feature test with complex audience conditions via getFeatureVariableString', function() {
@@ -9300,8 +9305,9 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().experiments[3].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        { house: 'Gryffindor', lasers: 700 }
+        sinon.match.any
       );
+      assert.deepEqual(evalSpy.getCalls()[0].args[2].getAttributes(), { house: 'Gryffindor', lasers: 700 });
     });
 
     it('can return a variable value from a feature test with complex audience conditions via getFeatureVariable', function() {
@@ -9316,8 +9322,9 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().experiments[3].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        { house: 'Gryffindor', lasers: 700 }
+        sinon.match.any
       );
+      assert.deepEqual(evalSpy.getCalls()[0].args[2].getAttributes(), { house: 'Gryffindor', lasers: 700 });
     });
 
     it('can return the default value for a feature variable from getFeatureVariable, via excluding a user from a feature test with complex audience conditions', function() {
@@ -9329,8 +9336,9 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().experiments[3].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        {}
+        sinon.match.any
       );
+      assert.deepEqual(evalSpy.getCalls()[0].args[2].getAttributes(), {});
     });
 
     it('can return the default value for a feature variable from getFeatureVariableString, via excluding a user from a feature test with complex audience conditions', function() {
@@ -9342,8 +9350,9 @@ describe('lib/optimizely', function() {
         audienceEvaluator.evaluate,
         optlyInstance.projectConfigManager.getConfig().experiments[3].audienceConditions,
         optlyInstance.projectConfigManager.getConfig().audiencesById,
-        {}
+        sinon.match.any
       );
+      assert.deepEqual(evalSpy.getCalls()[0].args[2].getAttributes(), {});
     });
   });
 

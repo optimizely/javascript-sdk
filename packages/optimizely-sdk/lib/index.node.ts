@@ -15,12 +15,12 @@
  ***************************************************************************/
 import {
   getLogger,
-  setLogHandler,
-  setLogLevel,
   setErrorHandler,
   getErrorHandler,
-  LogLevel
-} from '@optimizely/js-sdk-logging';
+  LogLevel,
+  setLogHandler,
+  setLogLevel
+} from './modules/logging';
 import Optimizely from './optimizely';
 import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
@@ -68,7 +68,7 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
     try {
       configValidator.validate(config);
       isValidInstance = true;
-    } catch (ex) {
+    } catch (ex: any) {
       if (hasLogger) {
         logger.error(ex);
       } else {
@@ -117,7 +117,7 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
     };
 
     return new Optimizely(optimizelyOptions);
-  } catch (e) {
+  } catch (e: any) {
     logger.error(e);
     return null;
   }

@@ -16,7 +16,7 @@
 import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from '@optimizely/js-sdk-logging';
 import { EventProcessor } from '@optimizely/js-sdk-event-processor';
 
-import {NotificationCenter as NotificationCenterImpl} from './core/notification_center'
+import { NotificationCenter as NotificationCenterImpl } from './core/notification_center'
 import { NOTIFICATION_TYPES } from './utils/enums';
 
 export interface BucketerParams {
@@ -181,6 +181,12 @@ export interface Audience {
   id: string;
   name: string;
   conditions: unknown[] | string;
+}
+
+export interface Integration {
+  key: string;
+  host?: string;
+  publicKey?: string;
 }
 
 export interface TrafficAllocation {
@@ -372,7 +378,7 @@ export interface TrackListenerPayload extends ListenerPayload {
  * Entry level Config Entities
  * For compatibility with the previous declaration file
  */
- export interface Config extends ConfigLite {
+export interface Config extends ConfigLite {
   // options for Datafile Manager
   datafileOptions?: DatafileOptions;
   // limit of events to dispatch in a batch
@@ -389,7 +395,7 @@ export interface TrackListenerPayload extends ListenerPayload {
  * Entry level Config Entities for Lite bundle
  * For compatibility with the previous declaration file
  */
- export interface ConfigLite {
+export interface ConfigLite {
   // Datafile string
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
@@ -503,6 +509,7 @@ export interface OptimizelyUserContext {
   getForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null;
   removeForcedDecision(context: OptimizelyDecisionContext): boolean;
   removeAllForcedDecisions(): boolean;
+  isQualifiedFor(segment: string): boolean;
 }
 
 export interface OptimizelyDecision {

@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2018-2019, 2020 Optimizely, Inc. and contributors              *
+ * Copyright 2018-2019, 2020, 2022, Optimizely, Inc. and contributors              *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { getLogger } from '@optimizely/js-sdk-logging';
-import { UserAttributes, Condition } from '../../shared_types';
+import { getLogger } from '../../modules/logging';
+import { Condition, OptimizelyUserContext } from '../../shared_types';
 
 import fns from '../../utils/fns';
 import { LOG_MESSAGES } from '../../utils/enums';
@@ -52,7 +52,7 @@ const MATCH_TYPES = [
   SEMVER_GREATER_OR_EQUAL_THAN_MATCH_TYPE
 ];
 
-type ConditionEvaluator = (condition: Condition, userAttributes: UserAttributes) => boolean | null;
+type ConditionEvaluator = (condition: Condition, user: OptimizelyUserContext) => boolean | null;
 
 const EVALUATORS_BY_MATCH_TYPE: { [conditionType: string]: ConditionEvaluator | undefined } = {};
 EVALUATORS_BY_MATCH_TYPE[EXACT_MATCH_TYPE] = exactEvaluator;
@@ -71,14 +71,14 @@ EVALUATORS_BY_MATCH_TYPE[SEMVER_LESS_OR_EQUAL_THAN_MATCH_TYPE] = semverLessThanO
 /**
  * Given a custom attribute audience condition and user attributes, evaluate the
  * condition against the attributes.
- * @param  {Condition}        condition
- * @param  {UserAttributes}   userAttributes
- * @param  {LoggerFacade}     logger
- * @return {?boolean}         true/false if the given user attributes match/don't match the given condition,
- *                            null if the given user attributes and condition can't be evaluated
+ * @param  {Condition}              condition
+ * @param  {OptimizelyUserContext}  user
+ * @return {?boolean}               true/false if the given user attributes match/don't match the given condition,
+ *                                  null if the given user attributes and condition can't be evaluated
  * TODO: Change to accept and object with named properties
  */
-export function evaluate(condition: Condition, userAttributes: UserAttributes): boolean | null {
+export function evaluate(condition: Condition, user: OptimizelyUserContext): boolean | null {
+  const userAttributes = user.getAttributes();
   const conditionMatch = condition.match;
   if (typeof conditionMatch !== 'undefined' && MATCH_TYPES.indexOf(conditionMatch) === -1) {
     logger.warn(LOG_MESSAGES.UNKNOWN_MATCH_TYPE, MODULE_NAME, JSON.stringify(condition));
@@ -100,7 +100,7 @@ export function evaluate(condition: Condition, userAttributes: UserAttributes): 
     evaluatorForMatch = EVALUATORS_BY_MATCH_TYPE[conditionMatch] || exactEvaluator;
   }
 
-  return evaluatorForMatch(condition, userAttributes);
+  return evaluatorForMatch(condition, user);
 }
 
 /**
@@ -115,16 +115,16 @@ function isValueTypeValidForExactConditions(value: unknown): boolean {
 
 /**
  * Evaluate the given exact match condition for the given user attributes
- * @param   {Condition}       condition
- * @param   {UserAttributes}  userAttributes
- * @param   {LoggerFacade}    logger
- * @return  {?boolean}        true if the user attribute value is equal (===) to the condition value,
- *                            false if the user attribute value is not equal (!==) to the condition value,
- *                            null if the condition value or user attribute value has an invalid type, or
- *                            if there is a mismatch between the user attribute type and the condition value
- *                            type
+ * @param  {Condition}              condition
+ * @param  {OptimizelyUserContext}  user
+ * @return  {?boolean}              true if the user attribute value is equal (===) to the condition value,
+ *                                  false if the user attribute value is not equal (!==) to the condition value,
+ *                                  null if the condition value or user attribute value has an invalid type, or
+ *                                  if there is a mismatch between the user attribute type and the condition value
+ *                                  type
  */
-function exactEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
+function exactEvaluator(condition: Condition, user: OptimizelyUserContext): boolean | null {
+  const userAttributes = user.getAttributes();
   const conditionValue = condition.value;
   const conditionValueType = typeof conditionValue;
   const conditionName = condition.name;
@@ -167,26 +167,28 @@ function exactEvaluator(condition: Condition, userAttributes: UserAttributes): b
 
 /**
  * Evaluate the given exists match condition for the given user attributes
- * @param   {Condition}       condition
- * @param   {UserAttributes}  userAttributes
- * @returns {boolean}         true if both:
- *                              1) the user attributes have a value for the given condition, and
- *                              2) the user attribute value is neither null nor undefined
- *                            Returns false otherwise
+ * @param  {Condition}              condition
+ * @param  {OptimizelyUserContext}  user
+ * @returns {boolean}               true if both:
+ *                                    1) the user attributes have a value for the given condition, and
+ *                                    2) the user attribute value is neither null nor undefined
+ *                                  Returns false otherwise
  */
-function existsEvaluator(condition: Condition, userAttributes: UserAttributes): boolean {
+function existsEvaluator(condition: Condition, user: OptimizelyUserContext): boolean {
+  const userAttributes = user.getAttributes();
   const userValue = userAttributes[condition.name];
   return typeof userValue !== 'undefined' && userValue !== null;
 }
 
 /**
  * Validate user and condition values
- * @param   {Condition}       condition
- * @param   {UserAttributes}  userAttributes
- * @returns {?boolean}        true if values are valid,
- *                            false if values are not valid
+ * @param  {Condition}              condition
+ * @param  {OptimizelyUserContext}  user
+ * @returns {?boolean}              true if values are valid,
+ *                                  false if values are not valid
  */
-function validateValuesForNumericCondition(condition: Condition, userAttributes: UserAttributes): boolean {
+function validateValuesForNumericCondition(condition: Condition, user: OptimizelyUserContext): boolean {
+  const userAttributes = user.getAttributes();
   const conditionName = condition.name;
   const userValue = userAttributes[conditionName];
   const userValueType = typeof userValue;
@@ -224,19 +226,19 @@ function validateValuesForNumericCondition(condition: Condition, userAttributes:
 
 /**
  * Evaluate the given greater than match condition for the given user attributes
- * @param   {Condition}       condition
- * @param   {UserAttributes}  userAttributes
- * @param   {LoggerFacade}    logger
- * @returns {?boolean}        true if the user attribute value is greater than the condition value,
- *                            false if the user attribute value is less than or equal to the condition value,
- *                            null if the condition value isn't a number or the user attribute value
- *                            isn't a number
+ * @param  {Condition}              condition
+ * @param  {OptimizelyUserContext}  user
+ * @returns {?boolean}              true if the user attribute value is greater than the condition value,
+ *                                  false if the user attribute value is less than or equal to the condition value,
+ *                                  null if the condition value isn't a number or the user attribute value
+ *                                  isn't a number
  */
-function greaterThanEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
+function greaterThanEvaluator(condition: Condition, user: OptimizelyUserContext): boolean | null {
+  const userAttributes = user.getAttributes();
   const userValue = userAttributes[condition.name];
   const conditionValue = condition.value;
 
-  if (!validateValuesForNumericCondition(condition, userAttributes) || conditionValue === null) {
+  if (!validateValuesForNumericCondition(condition, user) || conditionValue === null) {
     return null;
   }
   return userValue > conditionValue;
@@ -244,19 +246,19 @@ function greaterThanEvaluator(condition: Condition, userAttributes: UserAttribut
 
 /**
  * Evaluate the given greater or equal than match condition for the given user attributes
- * @param   {Condition}        condition
- * @param   {UserAttributes}   userAttributes
- * @param   {LoggerFacade}     logger
- * @returns {?Boolean}         true if the user attribute value is greater or equal than the condition value,
- *                             false if the user attribute value is less than to the condition value,
- *                             null if the condition value isn't a number or the user attribute value isn't a
- *                             number
+ * @param  {Condition}              condition
+ * @param  {OptimizelyUserContext}  user
+ * @returns {?Boolean}              true if the user attribute value is greater or equal than the condition value,
+ *                                  false if the user attribute value is less than to the condition value,
+ *                                  null if the condition value isn't a number or the user attribute value isn't a
+ *                                  number
  */
-function greaterThanOrEqualEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
+function greaterThanOrEqualEvaluator(condition: Condition, user: OptimizelyUserContext): boolean | null {
+  const userAttributes = user.getAttributes();
   const userValue = userAttributes[condition.name];
   const conditionValue = condition.value;
 
-  if (!validateValuesForNumericCondition(condition, userAttributes) || conditionValue === null) {
+  if (!validateValuesForNumericCondition(condition, user) || conditionValue === null) {
     return null;
   }
 
@@ -265,19 +267,19 @@ function greaterThanOrEqualEvaluator(condition: Condition, userAttributes: UserA
 
 /**
  * Evaluate the given less than match condition for the given user attributes
- * @param   {Condition}       condition
- * @param   {UserAttributes}  userAttributes
- * @param   {LoggerFacade}    logger
- * @returns {?boolean}        true if the user attribute value is less than the condition value,
- *                            false if the user attribute value is greater than or equal to the condition value,
- *                            null if the condition value isn't a number or the user attribute value isn't a
- *                            number
+ * @param  {Condition}              condition
+ * @param  {OptimizelyUserContext}  user
+ * @returns {?boolean}              true if the user attribute value is less than the condition value,
+ *                                  false if the user attribute value is greater than or equal to the condition value,
+ *                                  null if the condition value isn't a number or the user attribute value isn't a
+ *                                  number
  */
-function lessThanEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
+function lessThanEvaluator(condition: Condition, user: OptimizelyUserContext): boolean | null {
+  const userAttributes = user.getAttributes();
   const userValue = userAttributes[condition.name];
   const conditionValue = condition.value;
 
-  if (!validateValuesForNumericCondition(condition, userAttributes) || conditionValue === null) {
+  if (!validateValuesForNumericCondition(condition, user) || conditionValue === null) {
     return null;
   }
 
@@ -286,19 +288,19 @@ function lessThanEvaluator(condition: Condition, userAttributes: UserAttributes)
 
 /**
  * Evaluate the given less or equal than match condition for the given user attributes
- * @param   {Condition}       condition
- * @param   {UserAttributes}  userAttributes
- * @param   {LoggerFacade}    logger
- * @returns {?Boolean}        true if the user attribute value is less or equal than the condition value,
- *                            false if the user attribute value is greater than to the condition value,
- *                            null if the condition value isn't a number or the user attribute value isn't a
- *                            number
+ * @param  {Condition}              condition
+ * @param  {OptimizelyUserContext}  user
+ * @returns {?Boolean}              true if the user attribute value is less or equal than the condition value,
+ *                                  false if the user attribute value is greater than to the condition value,
+ *                                  null if the condition value isn't a number or the user attribute value isn't a
+ *                                  number
  */
-function lessThanOrEqualEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
+function lessThanOrEqualEvaluator(condition: Condition, user: OptimizelyUserContext): boolean | null {
+  const userAttributes = user.getAttributes();
   const userValue = userAttributes[condition.name];
   const conditionValue = condition.value;
 
-  if (!validateValuesForNumericCondition(condition, userAttributes) || conditionValue === null) {
+  if (!validateValuesForNumericCondition(condition, user) || conditionValue === null) {
     return null;
   }
 
@@ -307,15 +309,15 @@ function lessThanOrEqualEvaluator(condition: Condition, userAttributes: UserAttr
 
 /**
  * Evaluate the given substring match condition for the given user attributes
- * @param   {Condition}       condition
- * @param   {UserAttributes}  userAttributes
- * @param   {LoggerFacade}    logger
- * @returns {?Boolean}        true if the condition value is a substring of the user attribute value,
- *                            false if the condition value is not a substring of the user attribute value,
- *                            null if the condition value isn't a string or the user attribute value
- *                            isn't a string
+ * @param  {Condition}              condition
+ * @param  {OptimizelyUserContext}  user
+ * @returns {?Boolean}              true if the condition value is a substring of the user attribute value,
+ *                                  false if the condition value is not a substring of the user attribute value,
+ *                                  null if the condition value isn't a string or the user attribute value
+ *                                  isn't a string
  */
-function substringEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
+function substringEvaluator(condition: Condition, user: OptimizelyUserContext): boolean | null {
+  const userAttributes = user.getAttributes();
   const conditionName = condition.name;
   const userValue = userAttributes[condition.name];
   const userValueType = typeof userValue;
@@ -347,13 +349,13 @@ function substringEvaluator(condition: Condition, userAttributes: UserAttributes
 
 /**
  * Evaluate the given semantic version match condition for the given user attributes
- * @param   {Condition}       condition
- * @param   {UserAttributes}  userAttributes
- * @param   {LoggerFacade}    logger
- * @returns {?number}         returns compareVersion result
- *                            null if the user attribute version has an invalid type
+ * @param  {Condition}              condition
+ * @param  {OptimizelyUserContext}  user
+ * @returns {?number}               returns compareVersion result
+ *                                  null if the user attribute version has an invalid type
  */
-function evaluateSemanticVersion(condition: Condition, userAttributes: UserAttributes): number | null {
+function evaluateSemanticVersion(condition: Condition, user: OptimizelyUserContext): number | null {
+  const userAttributes = user.getAttributes();
   const conditionName = condition.name;
   const userValue = userAttributes[conditionName];
   const userValueType = typeof userValue;
@@ -379,22 +381,21 @@ function evaluateSemanticVersion(condition: Condition, userAttributes: UserAttri
     );
     return null;
   }
-  
+
   return compareVersion(conditionValue, userValue);
 }
 
 /**
  * Evaluate the given version match condition for the given user attributes
- * @param   {Condition}       condition
- * @param   {UserAttributes}  userAttributes
- * @param   {LoggerFacade}    logger
- * @returns {?Boolean}        true if the user attribute version is equal (===) to the condition version,
- *                            false if the user attribute version is not equal (!==) to the condition version,
- *                            null if the user attribute version has an invalid type
+ * @param  {Condition}              condition
+ * @param  {OptimizelyUserContext}  user
+ * @returns {?Boolean}              true if the user attribute version is equal (===) to the condition version,
+ *                                  false if the user attribute version is not equal (!==) to the condition version,
+ *                                  null if the user attribute version has an invalid type
  */
-function semverEqualEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
-  const result = evaluateSemanticVersion(condition, userAttributes);
-  if (result === null ) {
+function semverEqualEvaluator(condition: Condition, user: OptimizelyUserContext): boolean | null {
+  const result = evaluateSemanticVersion(condition, user);
+  if (result === null) {
     return null;
   }
   return result === 0;
@@ -402,16 +403,15 @@ function semverEqualEvaluator(condition: Condition, userAttributes: UserAttribut
 
 /**
  * Evaluate the given version match condition for the given user attributes
- * @param   {Condition}       condition
- * @param   {UserAttributes}  userAttributes
- * @param   {LoggerFacade}    logger
- * @returns {?Boolean}        true if the user attribute version is greater (>) than the condition version,
- *                            false if the user attribute version is not greater than the condition version,
- *                            null if the user attribute version has an invalid type
+ * @param  {Condition}              condition
+ * @param  {OptimizelyUserContext}  user
+ * @returns {?Boolean}              true if the user attribute version is greater (>) than the condition version,
+ *                                  false if the user attribute version is not greater than the condition version,
+ *                                  null if the user attribute version has an invalid type
  */
-function semverGreaterThanEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
-  const result = evaluateSemanticVersion(condition, userAttributes);
-  if (result === null ) {
+function semverGreaterThanEvaluator(condition: Condition, user: OptimizelyUserContext): boolean | null {
+  const result = evaluateSemanticVersion(condition, user);
+  if (result === null) {
     return null;
   }
   return result > 0;
@@ -419,16 +419,15 @@ function semverGreaterThanEvaluator(condition: Condition, userAttributes: UserAt
 
 /**
  * Evaluate the given version match condition for the given user attributes
- * @param   {Condition}       condition
- * @param   {UserAttributes}  userAttributes
- * @param   {LoggerFacade}    logger
- * @returns {?Boolean}        true if the user attribute version is less (<) than the condition version,
- *                            false if the user attribute version is not less than the condition version,
- *                            null if the user attribute version has an invalid type
+ * @param  {Condition}              condition
+ * @param  {OptimizelyUserContext}  user
+ * @returns {?Boolean}              true if the user attribute version is less (<) than the condition version,
+ *                                  false if the user attribute version is not less than the condition version,
+ *                                  null if the user attribute version has an invalid type
  */
-function semverLessThanEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
-  const result = evaluateSemanticVersion(condition, userAttributes);
-  if (result === null ) {
+function semverLessThanEvaluator(condition: Condition, user: OptimizelyUserContext): boolean | null {
+  const result = evaluateSemanticVersion(condition, user);
+  if (result === null) {
     return null;
   }
   return result < 0;
@@ -436,16 +435,15 @@ function semverLessThanEvaluator(condition: Condition, userAttributes: UserAttri
 
 /**
  * Evaluate the given version match condition for the given user attributes
- * @param   {Condition}       condition
- * @param   {UserAttributes}  userAttributes
- * @param   {LoggerFacade}    logger
- * @returns {?Boolean}        true if the user attribute version is greater than or equal (>=) to the condition version,
- *                            false if the user attribute version is not greater than or equal to the condition version,
- *                            null if the user attribute version has an invalid type
+ * @param  {Condition}              condition
+ * @param  {OptimizelyUserContext}  user
+ * @returns {?Boolean}              true if the user attribute version is greater than or equal (>=) to the condition version,
+ *                                  false if the user attribute version is not greater than or equal to the condition version,
+ *                                  null if the user attribute version has an invalid type
  */
-function semverGreaterThanOrEqualEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
-  const result = evaluateSemanticVersion(condition, userAttributes);
-  if (result === null ) {
+function semverGreaterThanOrEqualEvaluator(condition: Condition, user: OptimizelyUserContext): boolean | null {
+  const result = evaluateSemanticVersion(condition, user);
+  if (result === null) {
     return null;
   }
   return result >= 0;
@@ -453,18 +451,17 @@ function semverGreaterThanOrEqualEvaluator(condition: Condition, userAttributes:
 
 /**
  * Evaluate the given version match condition for the given user attributes
- * @param   {Condition}       condition
- * @param   {UserAttributes}  userAttributes
- * @param   {LoggerFacade}    logger
- * @returns {?Boolean}        true if the user attribute version is less than or equal (<=) to the condition version,
- *                            false if the user attribute version is not less than or equal to the condition version,
- *                            null if the user attribute version has an invalid type
+ * @param  {Condition}              condition
+ * @param  {OptimizelyUserContext}  user
+ * @returns {?Boolean}              true if the user attribute version is less than or equal (<=) to the condition version,
+ *                                  false if the user attribute version is not less than or equal to the condition version,
+ *                                  null if the user attribute version has an invalid type
  */
-function semverLessThanOrEqualEvaluator(condition: Condition, userAttributes: UserAttributes): boolean | null {
-  const result = evaluateSemanticVersion(condition, userAttributes);
-  if (result === null ) {
+function semverLessThanOrEqualEvaluator(condition: Condition, user: OptimizelyUserContext): boolean | null {
+  const result = evaluateSemanticVersion(condition, user);
+  if (result === null) {
     return null;
   }
   return result <= 0;
-  
+
 }

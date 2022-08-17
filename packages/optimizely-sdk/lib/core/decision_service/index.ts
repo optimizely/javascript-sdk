@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { LogHandler } from '@optimizely/js-sdk-logging';
+import { LogHandler } from '../../modules/logging';
 import { sprintf, toObject } from '../../utils/fns';
 
 import fns from '../../utils/fns';
@@ -184,7 +184,7 @@ export class DecisionService {
       configObj,
       experiment,
       AUDIENCE_EVALUATION_TYPES.EXPERIMENT,
-      attributes,
+      user,
       ''
     );
     decideReasons.push(...decisionifUserIsInAudience.reasons);
@@ -313,8 +313,8 @@ export class DecisionService {
     configObj: ProjectConfig,
     experiment: Experiment,
     evaluationAttribute: string,
-    attributes?: UserAttributes,
-    loggingKey?: string | number
+    user: OptimizelyUserContext,
+    loggingKey?: string | number,
   ): DecisionResponse<boolean> {
     const decideReasons: (string | number)[][] = [];
     const experimentAudienceConditions = getExperimentAudienceConditions(configObj, experiment.id);
@@ -334,7 +334,7 @@ export class DecisionService {
       loggingKey || experiment.key,
       JSON.stringify(experimentAudienceConditions),
     ]);
-    const result = this.audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, attributes);
+    const result = this.audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, user);
     this.logger.log(
       LOG_LEVEL.INFO,
       LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
@@ -437,8 +437,14 @@ export class DecisionService {
 
     try {
       return this.userProfileService.lookup(userId);
-    } catch (ex) {
-      this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.USER_PROFILE_LOOKUP_ERROR, MODULE_NAME, userId, ex.message);
+    } catch (ex: any) {
+      this.logger.log(
+        LOG_LEVEL.ERROR,
+        ERROR_MESSAGES.USER_PROFILE_LOOKUP_ERROR,
+        MODULE_NAME,
+        userId,
+        ex.message,
+      );
     }
 
     return null;
@@ -471,8 +477,15 @@ export class DecisionService {
         experiment_bucket_map: experimentBucketMap,
       });
 
-      this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.SAVED_VARIATION, MODULE_NAME, variation.key, experiment.key, userId);
-    } catch (ex) {
+      this.logger.log(
+        LOG_LEVEL.INFO,
+        LOG_MESSAGES.SAVED_VARIATION,
+        MODULE_NAME,
+        variation.key,
+        experiment.key,
+        userId,
+      );
+    } catch (ex: any) {
       this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.USER_PROFILE_SAVE_ERROR, MODULE_NAME, userId, ex.message);
     }
   }
@@ -875,7 +888,7 @@ export class DecisionService {
           reasons: decideReasons,
         };
       }
-    } catch (ex) {
+    } catch (ex: any) {
       // catching experiment not in datafile
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       decideReasons.push(ex.message);
@@ -957,7 +970,7 @@ export class DecisionService {
         this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.IMPROPERLY_FORMATTED_EXPERIMENT, MODULE_NAME, experimentKey);
         return false;
       }
-    } catch (ex) {
+    } catch (ex: any) {
       // catching experiment not in datafile
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       return false;
@@ -967,7 +980,7 @@ export class DecisionService {
       try {
         this.removeForcedVariation(userId, experimentId, experimentKey);
         return true;
-      } catch (ex) {
+      } catch (ex: any) {
         this.logger.log(LOG_LEVEL.ERROR, ex.message);
         return false;
       }
@@ -989,7 +1002,7 @@ export class DecisionService {
     try {
       this.setInForcedVariationMap(userId, experimentId, variationId);
       return true;
-    } catch (ex) {
+    } catch (ex: any) {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       return false;
     }
@@ -1008,10 +1021,10 @@ export class DecisionService {
     const forcedDecisionResponse = this.findValidatedForcedDecision(configObj, user, flagKey, rule.key);
     decideReasons.push(...forcedDecisionResponse.reasons);
 
-    const forcedVariaton = forcedDecisionResponse.result;
-    if (forcedVariaton) {
+    const forcedVariation = forcedDecisionResponse.result;
+    if (forcedVariation) {
       return {
-        result: forcedVariaton.key,
+        result: forcedVariation.key,
         reasons: decideReasons,
       };
     }
@@ -1040,10 +1053,10 @@ export class DecisionService {
     const forcedDecisionResponse = this.findValidatedForcedDecision(configObj, user, flagKey, rule.key);
     decideReasons.push(...forcedDecisionResponse.reasons);
 
-    const forcedVariaton = forcedDecisionResponse.result;
-    if (forcedVariaton) {
+    const forcedVariation = forcedDecisionResponse.result;
+    if (forcedVariation) {
       return {
-        result: forcedVariaton,
+        result: forcedVariation,
         reasons: decideReasons,
         skipToEveryoneElse,
       };
@@ -1063,7 +1076,7 @@ export class DecisionService {
       configObj,
       rule,
       AUDIENCE_EVALUATION_TYPES.RULE,
-      attributes,
+      user,
       loggingKey
     );
     decideReasons.push(...decisionifUserIsInAudience.reasons);
