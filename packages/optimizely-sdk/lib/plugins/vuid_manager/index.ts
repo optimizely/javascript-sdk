@@ -18,13 +18,7 @@ import { uuid } from '../../utils/fns';
 import PersistentKeyValueCache from '../key_value_cache/persistentKeyValueCache';
 
 export interface IVuidManager {
-  load(cache: PersistentKeyValueCache): Promise<string>;
-
-  save(vuid: string, cache: PersistentKeyValueCache): Promise<void>;
-
-  makeVuid(): string;
-
-  isVuid(visitorId: string): boolean;
+  readonly vuid: string;
 }
 
 /**
@@ -89,7 +83,7 @@ export class VuidManager implements IVuidManager {
    * @param cache Caching mechanism to use for persisting the VUID outside working memory
    * @returns Current VUID stored in the VuidManager
    */
-  public async load(cache: PersistentKeyValueCache): Promise<string> {
+  private async load(cache: PersistentKeyValueCache): Promise<string> {
     const cachedValue = await cache.get(this._keyForVuid);
     if (cachedValue && this.isVuid(cachedValue)) {
       this._vuid = cachedValue;
@@ -105,7 +99,7 @@ export class VuidManager implements IVuidManager {
    * Creates a new VUID
    * @returns A new visitor unique identifier
    */
-  public makeVuid(): string {
+  private makeVuid(): string {
     const maxLength = 32;   // required by ODP server
 
     // make sure UUIDv4 is used (not UUIDv1 or UUIDv6) since the trailing 5 chars will be truncated. See TDD for details.
@@ -121,7 +115,7 @@ export class VuidManager implements IVuidManager {
    * @param vuid VUID to be stored
    * @param cache Caching mechanism to use for persisting the VUID outside working memory
    */
-  public async save(vuid: string, cache: PersistentKeyValueCache): Promise<void> {
+  private async save(vuid: string, cache: PersistentKeyValueCache): Promise<void> {
     await cache.set(this._keyForVuid, vuid);
   }
 
@@ -130,13 +124,13 @@ export class VuidManager implements IVuidManager {
    * @param vuid VistorId to check
    * @returns *true* if the VisitorId is valid otherwise *false* for invalid
    */
-  public isVuid = (vuid: string): boolean => vuid.startsWith(this._prefix);
+  private isVuid = (vuid: string): boolean => vuid.startsWith(this._prefix);
 
   /**
    * Function used in unit testing to reset the VuidManager
    * **Important**: This should not to be used in production code
    */
-  public static _reset(): void {
+  private static _reset(): void {
     this._instance._vuid = '';
   }
 }
