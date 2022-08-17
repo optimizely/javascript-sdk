@@ -17,18 +17,30 @@
 /// <reference types="jest" />
 
 import { VuidManager } from '../lib/plugins/vuid_manager';
-import InMemoryAsyncStorageCache from '../lib/plugins/key_value_cache/inMemoryAsyncStorageCache';
 import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache';
+import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 
 describe('VuidManager', () => {
-  let cache: PersistentKeyValueCache;
+  const KEY_FOR_VUID_MAP = 'optimizely-odp';
+  const KEY_FOR_VUID = 'vuid';
+  let mockCache: PersistentKeyValueCache;
 
-  beforeEach(() => {
-    cache = InMemoryAsyncStorageCache.instance;
+  beforeAll(() => {
+    mockCache = mock<PersistentKeyValueCache>();
+    when(mockCache.contains(anyString())).thenResolve(true);
+    when(mockCache.get(anyString())).thenResolve('');
+    when(mockCache.remove(anyString())).thenResolve(true);
+    when(mockCache.set(anyString(), anything())).thenResolve();
+    VuidManager.instance(instance(mockCache));
   });
+  
+  beforeEach(()=>{
+    resetCalls(mockCache);
+    VuidManager._reset();
+  })
 
   it('should make a VUID', async () => {
-    const manager = await VuidManager.instance(cache);
+    const manager = await VuidManager.instance(instance(mockCache));
 
     const vuid = manager.makeVuid();
 
@@ -38,7 +50,7 @@ describe('VuidManager', () => {
   });
 
   it('should test if a VUID is valid', async () => {
-    const manager = await VuidManager.instance(cache);
+    const manager = await VuidManager.instance(instance(mockCache));
 
     expect(manager.isVuid('vuid_123')).toBe(true);
     expect(manager.isVuid('vuid-123')).toBe(false);
@@ -46,6 +58,8 @@ describe('VuidManager', () => {
   });
 
   it('should auto-save and auto-load', async () => {
+    const cache = instance(mockCache);
+
     await cache.remove('optimizely-odp');
 
     const manager1 = await VuidManager.instance(cache);
@@ -68,41 +82,47 @@ describe('VuidManager', () => {
     expect(manager2.isVuid(vuid3)).toBe(true);
   });
 
-  describe('load()', () => {
-    it('should handle no valid optimizely-odp in the cache', async () => {
-      const manager = await VuidManager.instance(cache);
+  it('should handle no valid optimizely-odp in the cache', async () => {
+    when(mockCache.get(anyString())).thenResolve(null);
 
-      const vuid = await manager.load(cache);
+    const manager = await VuidManager.instance(instance(mockCache)); // load() called initially
 
-      expect(manager.isVuid(vuid)).toBe(true);
-    });
+    verify(mockCache.get(anyString())).once();
+    verify(mockCache.set(anyString(), anything())).once();
+    expect(manager.isVuid(manager.vuid)).toBe(true);
+  });
 
-    it('should handle a null map in the cache', async () => {
-      await cache.set('optimizely-odp', null);
-      const manager = await VuidManager.instance(cache);
+  it('should handle a vuid=null in the dictionary/map in the cache', async () => {
+    resetCalls(mockCache)
+    when(mockCache.get(anyString())).thenResolve(new Map<string, null>([[KEY_FOR_VUID, null]]));
 
-      const vuid = await manager.load(cache);
+    const manager = await VuidManager.instance(instance(mockCache));// load() called
 
-      expect(manager.isVuid(vuid)).toBe(true);
-    });
+    verify(mockCache.get(anyString())).once();
+    verify(mockCache.set(anyString(), anything())).once();
+    expect(manager.isVuid(manager.vuid)).toBe(true);
+  });
 
-    it('should handle an invalid map in the cache', async () => {
-      await cache.set('optimizely-odp', 'notAValidMap');
-      const manager = await VuidManager.instance(cache);
+  it('should handle an invalid dictionary/map in the cache', async () => {
+    const notADict = true;
+    const cacheBacking = new Map<string, boolean>([[KEY_FOR_VUID_MAP, notADict]]);
+    when(mockCache.get(anyString())).thenResolve(cacheBacking.get(KEY_FOR_VUID_MAP));
 
-      const vuid = await manager.load(cache);
+    const manager = await VuidManager.instance(instance(mockCache));
 
-      expect(manager.isVuid(vuid)).toBe(true);
-    });
+    verify(mockCache.get(anyString())).once();
+    verify(mockCache.set(anyString(), anything())).once();
+    expect(manager.isVuid(manager.vuid)).toBe(true);
+  });
 
-    it('should create a new vuid if old VUID from cache is not valid', async () => {
-      const mapContainingInvalidVuid = new Map<string, string>([['vuid', 'vuid-not-valid']]);
-      await cache.set('optimizely-odp', mapContainingInvalidVuid);
-      const manager = await VuidManager.instance(cache);
+  it('should create a new vuid if old VUID from cache is not valid', async () => {
+    const dict = new Map<string, string>([[KEY_FOR_VUID, 'vuid-not-valid']]);
+    const cacheBacking = new Map<string, Map<string, string>>([[KEY_FOR_VUID_MAP, dict]]);
+    when(mockCache.get(anyString())).thenResolve(cacheBacking.get(KEY_FOR_VUID_MAP));
 
-      const vuid = await manager.load(cache);
+    const manager = await VuidManager.instance(instance(mockCache));
 
-      expect(manager.isVuid(vuid)).toBe(true);
-    });
+    expect(manager.isVuid(manager.vuid)).toBe(true);
   });
 });
+
