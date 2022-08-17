@@ -27,12 +27,32 @@ export interface IVuidManager {
   isVuid(visitorId: string): boolean;
 }
 
+/**
+ * Manager for creating, persisting, and retrieving a Visitor Unique Identifier
+ */
 export class VuidManager implements IVuidManager {
+  /**
+   * Unique key used within the persistent value cache against which to
+   * store the VUID
+   * @private
+   */
   private _keyForVuid = 'optimizely-vuid';
 
+  /**
+   * Prefix used as part of the VUID format
+   * @private
+   */
   private readonly _prefix: string = `vuid_`;
 
+  /**
+   * Current VUID value being used
+   * @private
+   */
   private _vuid: string;
+
+  /**
+   * Get the current VUID value being used
+   */
   public get vuid(): string {
     return this._vuid;
   }
@@ -41,8 +61,17 @@ export class VuidManager implements IVuidManager {
     this._vuid = '';
   }
 
+  /**
+   * Instance of the VUID Manager
+   * @private
+   */
   private static _instance: VuidManager;
 
+  /**
+   * Gets the current instance of the VUID Manager, initializing if needed
+   * @param cache Caching mechanism to use for persisting the VUID outside working memory   *
+   * @returns An instance of VuidManager
+   */
   public static async instance(cache: PersistentKeyValueCache): Promise<VuidManager> {
     if (!this._instance) {
       this._instance = new VuidManager();
@@ -55,6 +84,11 @@ export class VuidManager implements IVuidManager {
     return this._instance;
   }
 
+  /**
+   * Attempts to load a VUID from persistent cache or generates a new VUID
+   * @param cache Caching mechanism to use for persisting the VUID outside working memory
+   * @returns Current VUID stored in the VuidManager
+   */
   public async load(cache: PersistentKeyValueCache): Promise<string> {
     const cachedValue = await cache.get(this._keyForVuid);
     if (cachedValue && this.isVuid(cachedValue)) {
@@ -67,6 +101,10 @@ export class VuidManager implements IVuidManager {
     return this._vuid;
   }
 
+  /**
+   * Creates a new VUID
+   * @returns A new visitor unique identifier
+   */
   public makeVuid(): string {
     const maxLength = 32;   // required by ODP server
 
@@ -78,12 +116,26 @@ export class VuidManager implements IVuidManager {
     return (vuidFull.length <= maxLength) ? vuidFull : vuidFull.substring(0, maxLength);
   }
 
+  /**
+   * Saves a VUID to a persistent cache
+   * @param vuid VUID to be stored
+   * @param cache Caching mechanism to use for persisting the VUID outside working memory
+   */
   public async save(vuid: string, cache: PersistentKeyValueCache): Promise<void> {
     await cache.set(this._keyForVuid, vuid);
   }
 
-  public isVuid = (visitorId: string): boolean => visitorId.startsWith(this._prefix);
+  /**
+   * Validates the format of a Visitor Unique Identifier
+   * @param vuid VistorId to check
+   * @returns *true* if the VisitorId is valid otherwise *false* for invalid
+   */
+  public isVuid = (vuid: string): boolean => vuid.startsWith(this._prefix);
 
+  /**
+   * Function used in unit testing to reset the VuidManager
+   * **Important**: This should not to be used in production code
+   */
   public static _reset(): void {
     this._instance._vuid = '';
   }
