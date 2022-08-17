@@ -28,10 +28,9 @@ export interface IVuidManager {
 }
 
 export class VuidManager implements IVuidManager {
-  private readonly _keyForVuidMap = 'optimizely-odp';
-  private readonly _keyForVuid = 'vuid';
+  private _keyForVuid = 'optimizely-vuid';
 
-  private readonly _prefix: string;
+  private readonly _prefix: string = `vuid_`;
 
   private _vuid: string;
   public get vuid(): string {
@@ -39,7 +38,6 @@ export class VuidManager implements IVuidManager {
   }
 
   private constructor() {
-    this._prefix = `${(this._keyForVuid)}_`;
     this._vuid = '';
   }
 
@@ -58,20 +56,9 @@ export class VuidManager implements IVuidManager {
   }
 
   public async load(cache: PersistentKeyValueCache): Promise<string> {
-    let validVuid = '';
-    const cachedValue = await cache.get(this._keyForVuidMap);
-    if (cachedValue) {
-      const dict = cachedValue as Map<string, string>;
-      if (typeof dict?.has === "function" && dict?.has(this._keyForVuid)) {
-        const oldVuid = dict.get(this._keyForVuid);
-        if (oldVuid) {
-          validVuid = oldVuid;
-        }
-      }
-    }
-
-    if (validVuid && this.isVuid(validVuid)) {
-      this._vuid = validVuid;
+    const cachedValue = await cache.get(this._keyForVuid);
+    if (cachedValue && this.isVuid(cachedValue)) {
+      this._vuid = cachedValue;
     } else {
       this._vuid = this.makeVuid();
       await this.save(this._vuid, cache);
@@ -86,19 +73,18 @@ export class VuidManager implements IVuidManager {
     // make sure UUIDv4 is used (not UUIDv1 or UUIDv6) since the trailing 5 chars will be truncated. See TDD for details.
     const uuidV4 = uuid();
     const formatted = uuidV4.replace(/-/g, '').toLowerCase();
-    const vuidFull = `${this._prefix}${formatted}`;
+    const vuidFull = `${(this._prefix)}${formatted}`;
 
     return (vuidFull.length <= maxLength) ? vuidFull : vuidFull.substring(0, maxLength);
   }
 
   public async save(vuid: string, cache: PersistentKeyValueCache): Promise<void> {
-    const dict = new Map<string, string>([[this._keyForVuid, vuid]]);
-    await cache.set(this._keyForVuidMap, dict);
+    await cache.set(this._keyForVuid, vuid);
   }
 
   public isVuid = (visitorId: string): boolean => visitorId.startsWith(this._prefix);
 
-  public static _reset(): void  {
+  public static _reset(): void {
     this._instance._vuid = '';
   }
 }
