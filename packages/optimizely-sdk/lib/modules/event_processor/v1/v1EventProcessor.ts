@@ -91,7 +91,7 @@ export class LogTierV1EventProcessor implements EventProcessor {
       this.queue.stop()
       return this.requestTracker.onRequestsComplete()
     } catch (e) {
-      logger.error('Error stopping EventProcessor: "%s"', e.message, e.toString())
+      logger.error('Error stopping EventProcessor: "%s"', e.message, String(e))
     }
     return Promise.resolve()
   }

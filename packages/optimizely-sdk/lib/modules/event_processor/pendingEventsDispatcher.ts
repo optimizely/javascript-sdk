@@ -62,7 +62,7 @@ export class PendingEventsDispatcher implements EventDispatcher {
         this.send(item, () => {})
       } catch (e)
         {
-          logger.debug(e.toString())
+          logger.debug(String(e))
         }
     })
   }
