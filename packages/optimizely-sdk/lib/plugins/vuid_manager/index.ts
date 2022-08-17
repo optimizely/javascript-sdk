@@ -97,4 +97,8 @@ export class VuidManager implements IVuidManager {
   }
 
   public isVuid = (visitorId: string): boolean => visitorId.startsWith(this._prefix);
+
+  public static _reset(): void  {
+    this._instance._vuid = '';
+  }
 }
