@@ -16,7 +16,7 @@
 import { LoggerFacade, ErrorHandler } from '../modules/logging';
 import { sprintf, objectValues } from '../utils/fns';
 import { NotificationCenter } from '../core/notification_center';
-import { EventProcessor } from '@optimizely/js-sdk-event-processor';
+import { EventProcessor } from '../../lib/modules/event_processor';
 
 import {
   UserAttributes,

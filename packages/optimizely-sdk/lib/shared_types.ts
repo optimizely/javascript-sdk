@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from '@optimizely/js-sdk-logging';
-import { EventProcessor } from '@optimizely/js-sdk-event-processor';
+import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from '../lib/modules/logging';
+import { EventProcessor } from '../lib/modules/event_processor';
 
 import { NotificationCenter as NotificationCenterImpl } from './core/notification_center'
 import { NOTIFICATION_TYPES } from './utils/enums';

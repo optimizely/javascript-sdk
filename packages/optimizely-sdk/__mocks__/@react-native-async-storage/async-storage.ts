@@ -1,5 +1,5 @@
 /**
- * Copyright 2020, 2022, Optimizely
+ * Copyright 2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+let items: {[key: string]: string} = {}
 
 export default class AsyncStorage {
-  static getItem(key: string): Promise<string | null> {
+
+  static getItem(key: string, callback?: (error?: Error, result?: string) => void): Promise<string | null> {
+    return new Promise(resolve => {
+      setTimeout(() => resolve(items[key] || null), 1)
+    })
+  }
+
+  static setItem(key: string, value: string, callback?: (error?: Error) => void): Promise<void> {    
     return new Promise((resolve) => {
-      switch (key) {
-        case 'keyThatExists':
-          resolve('{ "name": "Awesome Object" }');
-          break;
-        case 'keyThatDoesNotExist':
-          resolve(null);
-          break;
-      }
-    });
+      setTimeout(() => {
+        items[key] = value
+        resolve()
+      }, 1)
+    })
   }
 
-  static removeItem(): Promise<void> {
-    return Promise.resolve();
+  static removeItem(key: string, callback?: (error?: Error, result?: string) => void): Promise<string | null> {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        items[key] && delete items[key]
+        // @ts-ignore
+        resolve()
+      }, 1)
+    })
   }
 
-  static setItem(): Promise<void> {
-    return Promise.resolve();
+  static dumpItems(): {[key: string]: string} {
+    return items
+  }
+  
+  static clearStore(): void {
+    items = {}
   }
 }

@@ -20,7 +20,7 @@ import {
   getErrorHandler,
   LogLevel
 } from './modules/logging';
-import { LocalStoragePendingEventsDispatcher } from '@optimizely/js-sdk-event-processor';
+import { LocalStoragePendingEventsDispatcher } from '../lib/modules/event_processor';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
