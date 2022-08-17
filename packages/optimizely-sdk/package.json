@@ -40,7 +40,6 @@
   },
   "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/optimizely-sdk",
   "dependencies": {
-    "@babel/runtime": "^7.18.9",
     "@optimizely/js-sdk-datafile-manager": "^0.9.5",
     "json-schema": "^0.4.0",
     "murmurhash": "^2.0.1",
@@ -82,7 +81,6 @@
     "ts-jest": "^23.10.5",
     "ts-loader": "^9.3.1",
     "ts-node": "^8.10.2",
-    "tsconfig-paths": "^4.0.0",
     "typescript": "^4.7.4",
     "webpack": "^5.74.0",
     "tslib": "^2.4.0"
