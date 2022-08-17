@@ -1,5 +1,5 @@
 /**
- * Copyright 2020, 2022, Optimizely
+ * Copyright 2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+export interface Managed {
+  start(): void
 
-import { LogTierV1EventProcessor, LocalStoragePendingEventsDispatcher } from '../../../lib/modules/event_processor';
-
-export function createEventProcessor(
-  ...args: ConstructorParameters<typeof LogTierV1EventProcessor>
-): LogTierV1EventProcessor {
-  return new LogTierV1EventProcessor(...args);
+  stop(): Promise<any>
 }
-
-export default { createEventProcessor, LocalStoragePendingEventsDispatcher };

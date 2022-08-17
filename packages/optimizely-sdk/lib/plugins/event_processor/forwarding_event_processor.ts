@@ -17,7 +17,7 @@
 import {
   EventProcessor,
   ProcessableEvent,
-} from '@optimizely/js-sdk-event-processor';
+} from '../../../lib/modules/event_processor';
 import { NotificationSender } from '../../core/notification_center';
 
 import { EventDispatcher } from '../../shared_types';
@@ -26,18 +26,18 @@ import { formatEvents } from '../../core/event_builder/build_event_v1';
 
 class ForwardingEventProcessor implements EventProcessor {
   private dispatcher: EventDispatcher;
-  private notificationSender?: NotificationSender;
+  private NotificationSender?: NotificationSender;
 
   constructor(dispatcher: EventDispatcher, notificationSender?: NotificationSender) {
     this.dispatcher = dispatcher;
-    this.notificationSender = notificationSender;
+    this.NotificationSender = notificationSender;
   }
 
   process(event: ProcessableEvent): void {
     const formattedEvent = formatEvents([event]);
     this.dispatcher.dispatchEvent(formattedEvent, () => {});
-    if (this.notificationSender) {
-      this.notificationSender.sendNotifications(
+    if (this.NotificationSender) {
+      this.NotificationSender.sendNotifications(
         NOTIFICATION_TYPES.LOG_EVENT,
         formattedEvent,
       )
