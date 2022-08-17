@@ -27,22 +27,22 @@ describe('ReactNativeAsyncStorageCache', () => {
 
   describe('contains', () => {
     it('should return true if value with key exists', async () => {
-      const foundKey = await cacheInstance.contains('keyThatExists');
+      const keyWasFound = await cacheInstance.contains('keyThatExists');
 
-      expect(foundKey).toBeTruthy();
+      expect(keyWasFound).toEqual(true);
     });
 
     it('should return false if value with key does not exist', async () => {
-      const foundKey = await cacheInstance.contains('keyThatDoesNotExist');
+      const keyWasFound = await cacheInstance.contains('keyThatDoesNotExist');
 
-      expect(foundKey).toBeFalsy();
+      expect(keyWasFound).toEqual(false);
     });
   });
 
   describe('get', () => {
     it('should return correct string when item is found in cache', async () => {
       const json = await cacheInstance.get('keyThatExists');
-      const parsedObject = JSON.parse(json);
+      const parsedObject = JSON.parse(json ?? '');
 
       expect(parsedObject).toEqual({ name: 'Awesome Object' });
     });
@@ -50,7 +50,7 @@ describe('ReactNativeAsyncStorageCache', () => {
     it('should return empty string if item is not found in cache', async () => {
       const json = await cacheInstance.get('keyThatDoesNotExist');
 
-      expect(json).toEqual('');
+      expect(json).toBeNull();
     });
   });
 

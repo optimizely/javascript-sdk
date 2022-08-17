@@ -44,15 +44,15 @@ describe('BrowserAsyncStorageCache', () => {
 
   describe('contains', () => {
     it('should return true if value with key exists', async () => {
-      const foundKey = await cacheInstance.contains(KEY_THAT_EXISTS);
+      const keyWasFound = await cacheInstance.contains(KEY_THAT_EXISTS);
 
-      expect(foundKey).toBeTruthy();
+      expect(keyWasFound).toEqual(true);
     });
 
     it('should return false if value with key does not exist', async () => {
-      const foundKey = await cacheInstance.contains(NONEXISTENT_KEY);
+      const keyWasFound = await cacheInstance.contains(NONEXISTENT_KEY);
 
-      expect(foundKey).toBeFalsy();
+      expect(keyWasFound).toEqual(false);
     });
   });
 
@@ -66,7 +66,7 @@ describe('BrowserAsyncStorageCache', () => {
     it('should return empty string if item is not found in cache', async () => {
       const json = await cacheInstance.get(NONEXISTENT_KEY);
 
-      expect(json).toEqual('');
+      expect(json).toBeNull();
     });
   });
 
@@ -74,13 +74,13 @@ describe('BrowserAsyncStorageCache', () => {
     it('should return true after removing a found entry', async () => {
       const wasSuccessful = await cacheInstance.remove(KEY_THAT_EXISTS);
 
-      expect(wasSuccessful).toBeTruthy();
+      expect(wasSuccessful).toEqual(true);
     });
 
     it('should return false after trying to remove an entry that is not found ', async () => {
       const wasSuccessful = await cacheInstance.remove(NONEXISTENT_KEY);
 
-      expect(wasSuccessful).toBeFalsy();
+      expect(wasSuccessful).toEqual(false);
     });
   });
 
