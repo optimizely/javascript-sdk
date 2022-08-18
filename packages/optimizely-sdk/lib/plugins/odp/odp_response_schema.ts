@@ -22,7 +22,7 @@ import { JSONSchema4 } from 'json-schema';
 const definition = {
   $schema: 'https://json-schema.org/draft/2019-09/schema',
   $id: 'http://example.com/example.json',
-  title: 'Root Schema',
+  title: 'ODP Response Schema',
   type: 'object',
   default: {},
   required: [ ],  
@@ -39,9 +39,7 @@ const definition = {
           title: 'The customer Schema',
           type: 'object',
           default: {},
-          required: [
-            'audiences',
-          ],
+          required: [ ],
           properties: {
             audiences: {
               title: 'The audiences Schema',
@@ -112,6 +110,8 @@ const definition = {
         default: {},
         required: [
           'message',
+          'locations',
+          'path',
           'extensions'
         ],
         properties: {
@@ -120,8 +120,56 @@ const definition = {
             type: 'string',
             default: '',
             examples: [
-              'Exception while fetching data (/customer) : java.lang.RuntimeException: could not resolve _fs_user_id = invalid-user'
+              'Exception while fetching data (/customer) : java.lang.RuntimeException: could not resolve _fs_user_id = asdsdaddddd'
             ]
+          },
+          locations: {
+            title: 'The locations Schema',
+            type: 'array',
+            default: [],
+            items: {
+              title: 'A Schema',
+              type: 'object',
+              default: {},
+              required: [
+                'line',
+                'column'
+              ],
+              properties: {
+                line: {
+                  title: 'The line Schema',
+                  type: 'integer',
+                  default: 0,
+                  examples: [
+                    2
+                  ]
+                },
+                column: {
+                  title: 'The column Schema',
+                  type: 'integer',
+                  default: 0,
+                  examples: [
+                    3
+                  ]
+                }
+              },
+              examples: []
+            },
+            examples: []
+          },
+          path: {
+            title: 'The path Schema',
+            type: 'array',
+            default: [],
+            items: {
+              title: 'A Schema',
+              type: 'string',
+              default: '',
+              examples: [
+                'customer'
+              ]
+            },
+            examples: []
           },
           extensions: {
             title: 'The extensions Schema',
