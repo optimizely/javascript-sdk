@@ -24,13 +24,13 @@ describe('ReactNativeAsyncStorageCache', () => {
   const testObject = { name: 'An object', with: { some: 2, properties: ['one', 'two'] } };
   let cacheInstance: ReactNativeAsyncStorageCache;
 
-  beforeAll(()=> {
+  beforeAll(() => {
     cacheInstance = new ReactNativeAsyncStorageCache();
   });
 
   beforeEach(() => {
     AsyncStorage.clearStore();
-    AsyncStorage.setItem(TEST_OBJECT_KEY,  JSON.stringify(testObject))
+    AsyncStorage.setItem(TEST_OBJECT_KEY, JSON.stringify(testObject));
   });
 
   describe('contains', () => {
@@ -80,7 +80,7 @@ describe('ReactNativeAsyncStorageCache', () => {
     it('should resolve promise if item was successfully set in the cache', async () => {
       const anotherTestStringValue = 'This should be found too.';
 
-      await cacheInstance.set('anotherTestStringValue', anotherTestStringValue );
+      await cacheInstance.set('anotherTestStringValue', anotherTestStringValue);
 
       const itemsInReactAsyncStorage = AsyncStorage.dumpItems();
       expect(itemsInReactAsyncStorage['anotherTestStringValue']).toEqual(anotherTestStringValue);
