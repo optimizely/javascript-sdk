@@ -16,14 +16,14 @@
 
 import { ConsoleLogHandler, LogHandler, LogLevel } from '../../modules/logging';
 import { Response } from './odp_types';
-import { IOdpClient, NodeOdpClient } from './odp_client';
+import { IOdpClient, NodeOdpClient, QuerySegmentsParameters } from './odp_client';
 import { validate } from '../../utils/json_schema_validator';
 import { OdpResponseSchema } from './odp_response_schema';
 
 const QUALIFIED = 'qualified';
 
 export interface IGraphQLManager {
-  fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string): string[];
+  fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string, segmentToCheck: string[]): string[];
 }
 
 export class GraphqlManager implements IGraphQLManager {
@@ -35,8 +35,15 @@ export class GraphqlManager implements IGraphQLManager {
     this._odpClient = client ?? new NodeOdpClient(this._logger, client);
   }
 
-  public fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string): string[] {
-    const segmentsResponse = this._odpClient.querySegments(apiKey, apiHost, userKey, userValue);
+  public fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string, segmentToCheck: string[]): string[] {
+    const parameters = new QuerySegmentsParameters({
+      ApiKey: apiKey,
+      ApiHost: apiHost,
+      UserKey: userKey,
+      UserValue: userValue,
+      SegmentToCheck: segmentToCheck,
+    });
+    const segmentsResponse = this._odpClient.querySegments(parameters);
     if (!segmentsResponse) {
       return [] as string[];
     }

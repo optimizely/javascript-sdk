@@ -15,16 +15,66 @@
  */
 
 import { LogHandler } from '../../modules/logging';
+import https from 'https';
+import { QuerySegmentsParameters } from './query_segments_parameters';
 
 export interface IOdpClient {
-  querySegments(apiKey: string, apiHost: string, userKey: string, userValue: string): string;
+  querySegments(parameters: QuerySegmentsParameters): string;
 }
 
-export class OdpClient implements IOdpClient {
-  constructor(logger: LogHandler, client: unknown) {
+export class NodeOdpClient implements IOdpClient {
+  private readonly _logger: LogHandler;
+
+  constructor(logger: LogHandler) {
+    this._logger = logger;
   }
 
-  querySegments(apiKey: string, apiHost: string, userKey: string, userValue: string): string {
+  public querySegments(parameters: QuerySegmentsParameters): string {
+    const data = JSON.stringify({
+      todo: 'Buy the milk',
+    });
+    const options = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': data.length,
+        'x-api-key': apiKey,
+      },
+    };
+
+    const req = https.request(apiHost, options, res => {
+      console.log(`statusCode: ${res.statusCode}`);
+
+      res.on('data', d => {
+        process.stdout.write(d);
+      });
+    });
+
+    req.on('error', error => {
+      console.error(error);
+    });
+
+    req.write(data);
+    req.end();
+
+    return '';
+  }
+
+  private BuildRequestMessage(jsonQuery: string, parameters: QuerySegmentsParameters): unknown {
+    // TODO: Implement
+    return undefined;
+  }
+}
+
+export class BrowserOdpClient implements IOdpClient {
+  private readonly _logger: LogHandler;
+
+  constructor(logger: LogHandler) {
+    this._logger = logger;
+  }
+
+  public querySegments(parameters: QuerySegmentsParameters): string {
     return '';
   }
 }
+
