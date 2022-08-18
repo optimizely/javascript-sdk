@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { LoggerFacade } from '../../modules/logging';
-import { EventV1 as CommonEventParams } from '@optimizely/js-sdk-event-processor';
+import { EventV1 as CommonEventParams } from '../../modules/event_processor';
 
 import fns from '../../utils/fns';
 import { CONTROL_ATTRIBUTES, RESERVED_EVENT_KEYWORDS } from '../../utils/enums';
