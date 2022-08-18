@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { sprintf } from '../fns';
-import { validate as jsonSchemaValidator } from 'json-schema';
+import { JSONSchema4, validate as jsonSchemaValidator } from 'json-schema';
 
 import { ERROR_MESSAGES } from '../enums';
 import schema from '../../core/project_config/project_config_schema';
@@ -23,23 +23,32 @@ const MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';
 
 /**
  * Validate the given json object against the specified schema
- * @param  {unknown} jsonObject The object to validate against the schema
- * @return {boolean}            true if the given object is valid
+ * @param {unknown} jsonObject The object to validate against the schema
+ * @param {JSONSchema4} validationSchema Provided schema to use for validation
+ * @param {boolean} shouldThrow Should validation throw if invalid JSON object
+ * @return {boolean} true if the given object is valid; throws or false if invalid
  */
-export function validate(jsonObject: unknown): boolean {
+export function validate(jsonObject: unknown, validationSchema: JSONSchema4 = schema, shouldThrow = true): boolean {
   if (typeof jsonObject !== 'object' || jsonObject === null) {
     throw new Error(sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, MODULE_NAME));
   }
 
-  const result = jsonSchemaValidator(jsonObject, schema);
+  const result = jsonSchemaValidator(jsonObject, validationSchema);
   if (result.valid) {
     return true;
-  } else {
-    if (Array.isArray(result.errors)) {
-      throw new Error(
-        sprintf(ERROR_MESSAGES.INVALID_DATAFILE, MODULE_NAME, result.errors[0].property, result.errors[0].message)
-      );
-    }
-    throw new Error(sprintf(ERROR_MESSAGES.INVALID_JSON, MODULE_NAME));
   }
+
+  if (!shouldThrow) {
+    return false;
+  }
+
+  const moduleTitle = `${MODULE_NAME} (${validationSchema.title})`;
+
+  if (Array.isArray(result.errors)) {
+    throw new Error(
+      sprintf(ERROR_MESSAGES.INVALID_DATAFILE, moduleTitle, result.errors[0].property, result.errors[0].message),
+    );
+  }
+
+  throw new Error(sprintf(ERROR_MESSAGES.INVALID_JSON, moduleTitle));
 }

@@ -19,9 +19,9 @@ import { JSONSchema4 } from 'json-schema';
 /**
  * ODP Response JSON Schema file used to validate the project json datafile
  */
-const definition = {
+export const OdpResponseSchema = {
   $schema: 'https://json-schema.org/draft/2019-09/schema',
-  $id: 'http://example.com/example.json',
+  $id: 'https://example.com/example.json',
   title: 'ODP Response Schema',
   type: 'object',
   default: {},
@@ -197,6 +197,4 @@ const definition = {
     },
   },
   examples: [],
-};
-
-export default definition as JSONSchema4;
+} as JSONSchema4;
