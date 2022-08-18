@@ -16,7 +16,9 @@
 
 import { ConsoleLogHandler, LogHandler, LogLevel } from '../../modules/logging';
 import { Response } from './odp_types';
-import { IOdpClient, OdpClient } from './odp_client';
+import { IOdpClient, NodeOdpClient } from './odp_client';
+import { validate } from '../../utils/json_schema_validator';
+import { OdpResponseSchema } from './odp_response_schema';
 
 const QUALIFIED = 'qualified';
 
@@ -30,7 +32,7 @@ export class GraphqlManager implements IGraphQLManager {
 
   constructor(logger: LogHandler, client: IOdpClient) {
     this._logger = logger ?? new ConsoleLogHandler();
-    this._odpClient = client ?? new OdpClient(this._logger, client);
+    this._odpClient = client ?? new NodeOdpClient(this._logger, client);
   }
 
   public fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string): string[] {
@@ -61,6 +63,10 @@ export class GraphqlManager implements IGraphQLManager {
     return parsedSegments.data.customer.audiences.edges.filter(edge => edge.node.state == QUALIFIED).map(edge => edge.node.name);
   }
 
-  private _parseSegmentsResponseJson = (jsonResponse: string): Response | undefined =>
-    jsonResponse ? JSON.parse(jsonResponse) as Response : undefined;
+  private _parseSegmentsResponseJson(jsonResponse: string): Response | undefined {
+    if (validate(jsonResponse, OdpResponseSchema, false)) {
+      return JSON.parse(jsonResponse) as Response;
+    }
+    return undefined;
+  }
 }
