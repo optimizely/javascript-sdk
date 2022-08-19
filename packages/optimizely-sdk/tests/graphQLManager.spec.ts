@@ -199,12 +199,14 @@ describe('GraphQLManager', () => {
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (decode error)')).once();
   });
 
-  it('should handle 400 HTTP status code response', async () => {
-    // TODO: implement
-  });
+  it('should handle non 200 HTTP status code response', async () => {
+    when(mockOdpClient.querySegments(anything())).thenResolve(undefined);
+    const manager = new GraphqlManager(instance(mockLogger), instance(mockOdpClient));
 
-  it('should handle 500 HTTP status code response', async () => {
-    // TODO: implement
+    const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
+
+    expect(segments.length).toEqual(0);
+    verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)')).once();
   });
 });
 
