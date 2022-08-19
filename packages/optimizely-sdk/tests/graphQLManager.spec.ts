@@ -74,7 +74,7 @@ describe('GraphQLManager', () => {
     const response = manager['parseSegmentsResponseJson'](validJsonResponse) as Response;
 
     expect(response).not.toBeUndefined();
-    expect(response.errors.length).toEqual(0);
+    expect(response?.errors?.length).toEqual(0);
     expect(response?.data?.customer?.audiences?.edges).not.toBeNull();
     expect(response.data.customer.audiences.edges.length).toEqual(2);
     let node = response.data.customer.audiences.edges[0].node;
@@ -197,7 +197,6 @@ describe('GraphQLManager', () => {
 
     expect(segments.length).toEqual(0);
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (decode error)')).once();
-
   });
 
   it('should handle 400 HTTP status code response', async () => {

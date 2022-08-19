@@ -24,7 +24,6 @@ export const OdpResponseSchema = {
   $id: 'https://example.com/example.json',
   title: 'ODP Response Schema',
   type: 'object',
-  default: {},
   required: [
     'data',
   ],
@@ -32,7 +31,6 @@ export const OdpResponseSchema = {
     data: {
       title: 'The data Schema',
       type: 'object',
-      default: {},
       required: [
         'customer',
       ],
@@ -40,13 +38,11 @@ export const OdpResponseSchema = {
         customer: {
           title: 'The customer Schema',
           type: 'object',
-          default: {},
           required: [ ],
           properties: {
             audiences: {
               title: 'The audiences Schema',
               type: 'object',
-              default: {},
               required: [
                 'edges',
               ],
@@ -54,7 +50,6 @@ export const OdpResponseSchema = {
                 edges: {
                   title: 'The edges Schema',
                   type: 'array',
-                  default: [],
                   items: {
                     title: 'A Schema',
                     type: 'object',
@@ -109,18 +104,15 @@ export const OdpResponseSchema = {
       items: {
         title: 'A Schema',
         type: 'object',
-        default: {},
         required: [
           'message',
           'locations',
-          'path',
           'extensions'
         ],
         properties: {
           message: {
             title: 'The message Schema',
             type: 'string',
-            default: '',
             examples: [
               'Exception while fetching data (/customer) : java.lang.RuntimeException: could not resolve _fs_user_id = asdsdaddddd'
             ]
@@ -128,11 +120,9 @@ export const OdpResponseSchema = {
           locations: {
             title: 'The locations Schema',
             type: 'array',
-            default: [],
             items: {
               title: 'A Schema',
               type: 'object',
-              default: {},
               required: [
                 'line',
                 'column'
@@ -141,7 +131,6 @@ export const OdpResponseSchema = {
                 line: {
                   title: 'The line Schema',
                   type: 'integer',
-                  default: 0,
                   examples: [
                     2
                   ]
@@ -149,7 +138,6 @@ export const OdpResponseSchema = {
                 column: {
                   title: 'The column Schema',
                   type: 'integer',
-                  default: 0,
                   examples: [
                     3
                   ]
@@ -162,11 +150,9 @@ export const OdpResponseSchema = {
           path: {
             title: 'The path Schema',
             type: 'array',
-            default: [],
             items: {
               title: 'A Schema',
               type: 'string',
-              default: '',
               examples: [
                 'customer'
               ]
@@ -176,7 +162,6 @@ export const OdpResponseSchema = {
           extensions: {
             title: 'The extensions Schema',
             type: 'object',
-            default: {},
             required: [
               'classification'
             ],
@@ -184,7 +169,6 @@ export const OdpResponseSchema = {
               classification: {
                 title: 'The classification Schema',
                 type: 'string',
-                default: '',
                 examples: [
                   'InvalidIdentifierException'
                 ]
