@@ -165,7 +165,7 @@ describe('/lib/core/odp/lru_cache (React Native)', () => {
 
     describe('LRU Cache > Timeout', () => {
         it('should discard stale entries in the cache on peek/lookup when timeout is greater than 0', async () => {
-            const maxTimeout = 1
+            const maxTimeout = 100
 
             cache = new ReactNativeLRUCache({
                 maxSize: 1000,
@@ -180,7 +180,7 @@ describe('/lib/core/odp/lru_cache (React Native)', () => {
             assert.equal(await cache.peek('b'), 200)
             assert.equal(await cache.peek('c'), 300)
 
-            await sleep(100)
+            await sleep(150)
 
             assert.isNull(await cache.peek('a'))
             assert.isNull(await cache.peek('b'))

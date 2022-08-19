@@ -27,8 +27,8 @@ import LRUCacheElement from "./LRUCacheElement"
 export class ReactNativeLRUCache<K, V> {
     private synchronizer: Synchronizer = new Synchronizer()
     private _map: Map<K, LRUCacheElement<V>> = new Map()
-    private _maxSize: number = 100 // Defines maximum size of _map
-    private _timeout: number = 1000 * 600 // Milliseconds each entry has before it becomes stale
+    private _maxSize = 100 // Defines maximum size of _map
+    private _timeout = 1000 * 600 // Milliseconds each entry has before it becomes stale
 
     get map(): Map<K, LRUCacheElement<V>> { return this._map }
     get maxSize(): number { return this._maxSize }

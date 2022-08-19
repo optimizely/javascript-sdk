@@ -18,17 +18,20 @@
  * LRUCacheElement represents an individual generic item within the LRUCache
  */
 export class LRUCacheElement<V> {
-    public value: V | null
-    public time: number
+    private _value: V | null
+    private _time: number
+
+    get value(): V | null { return this._value }
+    get time(): number { return this._time }
 
     constructor(value: V | null = null) {
-        this.value = value
-        this.time = Date.now()
+        this._value = value
+        this._time = Date.now()
     }
 
     public is_stale(timeout: number): boolean {
         if (timeout <= 0) return false
-        return Date.now() - this.time >= timeout
+        return Date.now() - this._time >= timeout
     }
 }
 

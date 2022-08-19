@@ -165,7 +165,7 @@ describe('/lib/core/odp/lru_cache (Default)', () => {
 
     describe('LRU Cache > Timeout', () => {
         it('should discard stale entries in the cache on peek/lookup when timeout is greater than 0', async () => {
-            const maxTimeout = 1
+            const maxTimeout = 100
 
             cache = new LRUCache({
                 maxSize: 1000,
@@ -180,7 +180,7 @@ describe('/lib/core/odp/lru_cache (Default)', () => {
             assert.equal(cache.peek('b'), 200)
             assert.equal(cache.peek('c'), 300)
 
-            await sleep(100)
+            await sleep(150)
 
             assert.isNull(cache.peek('a'))
             assert.isNull(cache.peek('b'))
