@@ -14,67 +14,46 @@
  * limitations under the License.
  */
 
-import { LogHandler } from '../../modules/logging';
-import https from 'https';
+import { LogHandler, LogLevel } from '../../modules/logging';
 import { QuerySegmentsParameters } from './query_segments_parameters';
+import axios from 'axios';
 
 export interface IOdpClient {
-  querySegments(parameters: QuerySegmentsParameters): string;
+  querySegments(parameters: QuerySegmentsParameters): Promise<string | undefined>;
 }
 
-export class NodeOdpClient implements IOdpClient {
+export class OdpClient implements IOdpClient {
   private readonly _logger: LogHandler;
 
   constructor(logger: LogHandler) {
     this._logger = logger;
   }
 
-  public querySegments(parameters: QuerySegmentsParameters): string {
-    const data = JSON.stringify({
-      todo: 'Buy the milk',
-    });
-    const options = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': data.length,
-        'x-api-key': apiKey,
-      },
-    };
+  public async querySegments(parameters: QuerySegmentsParameters): Promise<string | undefined> {
+    const data = parameters.ToJson();
 
-    const req = https.request(apiHost, options, res => {
-      console.log(`statusCode: ${res.statusCode}`);
+    if (!parameters?.ApiHost || !parameters?.ApiKey) {
+      this._logger.log(LogLevel.ERROR, 'No ApiHost or ApiKey set before querying segments');
+      return;
+    }
 
-      res.on('data', d => {
-        process.stdout.write(d);
+    const response = await axios(parameters.ApiHost,
+      {
+        method: 'post',
+        url: parameters.ApiHost,
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': data.length,
+          'x-api-key': parameters.ApiKey,
+        },
+        data,
       });
-    });
 
-    req.on('error', error => {
-      console.error(error);
-    });
-
-    req.write(data);
-    req.end();
-
-    return '';
-  }
-
-  private BuildRequestMessage(jsonQuery: string, parameters: QuerySegmentsParameters): unknown {
-    // TODO: Implement
-    return undefined;
+    if (response.status !== 200) {
+      this._logger.log(LogLevel.ERROR, `Error while querying segments. Response (${response.status}): ${response.statusText}.`);
+      return;
+    }
+    
+    return response.data;
   }
 }
-
-export class BrowserOdpClient implements IOdpClient {
-  private readonly _logger: LogHandler;
-
-  constructor(logger: LogHandler) {
-    this._logger = logger;
-  }
-
-  public querySegments(parameters: QuerySegmentsParameters): string {
-    return '';
-  }
-}
-

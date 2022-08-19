@@ -41,6 +41,7 @@
   "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/optimizely-sdk",
   "dependencies": {
     "@optimizely/js-sdk-datafile-manager": "^0.9.5",
+    "axios": "^0.27.2",
     "json-schema": "^0.4.0",
     "murmurhash": "^2.0.1",
     "uuid": "^8.3.2"
@@ -87,9 +88,9 @@
     "webpack": "^5.74.0"
   },
   "peerDependencies": {
-    "@react-native-community/netinfo": "5.9.4",
+    "@babel/runtime": "^7.0.0",
     "@react-native-async-storage/async-storage": "^1.2.0",
-    "@babel/runtime": "^7.0.0"
+    "@react-native-community/netinfo": "5.9.4"
   },
   "peerDependenciesMeta": {
     "@react-native-async-storage/async-storage": {
