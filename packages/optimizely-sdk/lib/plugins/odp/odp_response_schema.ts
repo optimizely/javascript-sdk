@@ -25,7 +25,9 @@ export const OdpResponseSchema = {
   title: 'ODP Response Schema',
   type: 'object',
   default: {},
-  required: [ ],  
+  required: [
+    'data',
+  ],
   properties: {
     data: {
       title: 'The data Schema',

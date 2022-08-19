@@ -16,7 +16,7 @@
 
 import { LogHandler, LogLevel } from '../../modules/logging';
 import { QuerySegmentsParameters } from './query_segments_parameters';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 
 export interface IOdpClient {
   querySegments(parameters: QuerySegmentsParameters): Promise<string | undefined>;
@@ -47,13 +47,15 @@ export class OdpClient implements IOdpClient {
           'x-api-key': parameters.ApiKey,
         },
         data,
-      });
+      }).catch(() => {
+      this._logger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)');
+    }) as AxiosResponse;
 
     if (response.status !== 200) {
-      this._logger.log(LogLevel.ERROR, `Error while querying segments. Response (${response.status}): ${response.statusText}.`);
+      this._logger.log(LogLevel.ERROR, `Audience segments fetch failed (${response.status})`);
       return;
     }
-    
+
     return response.data;
   }
 }

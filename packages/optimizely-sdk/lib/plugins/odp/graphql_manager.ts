@@ -49,8 +49,9 @@ export class GraphqlManager implements IGraphQLManager {
       return [] as string[];
     }
 
-    const parsedSegments = this._parseSegmentsResponseJson(segmentsResponse);
+    const parsedSegments = this.parseSegmentsResponseJson(segmentsResponse);
     if (!parsedSegments) {
+      this._logger.log(LogLevel.ERROR, 'Audience segments fetch failed (decode error)');
       return [] as string[];
     }
 
@@ -71,10 +72,17 @@ export class GraphqlManager implements IGraphQLManager {
     return parsedSegments.data.customer.audiences.edges.filter(edge => edge.node.state == QUALIFIED).map(edge => edge.node.name);
   }
 
-  private _parseSegmentsResponseJson(jsonResponse: string): Response | undefined {
-    if (validate(jsonResponse, OdpResponseSchema, false)) {
-      return JSON.parse(jsonResponse) as Response;
+  private parseSegmentsResponseJson(jsonResponse: string): Response | undefined {
+    let jsonObject = {};
+    try {
+      jsonObject = JSON.parse(jsonResponse);
+    } catch {
+      this._logger.log(LogLevel.ERROR, 'Attempted to parse invalid segment response JSON.');
+      return;
     }
-    return undefined;
+    if (validate(jsonObject, OdpResponseSchema, false)) {
+      return jsonObject as Response;
+    }
+    return;
   }
 }

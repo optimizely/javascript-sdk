@@ -29,8 +29,10 @@ const MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';
  * @return {boolean} true if the given object is valid; throws or false if invalid
  */
 export function validate(jsonObject: unknown, validationSchema: JSONSchema4 = schema, shouldThrow = true): boolean {
+  const moduleTitle = `${MODULE_NAME} (${validationSchema.title})`;
+
   if (typeof jsonObject !== 'object' || jsonObject === null) {
-    throw new Error(sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, MODULE_NAME));
+    throw new Error(sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, moduleTitle));
   }
 
   const result = jsonSchemaValidator(jsonObject, validationSchema);
@@ -41,8 +43,6 @@ export function validate(jsonObject: unknown, validationSchema: JSONSchema4 = sc
   if (!shouldThrow) {
     return false;
   }
-
-  const moduleTitle = `${MODULE_NAME} (${validationSchema.title})`;
 
   if (Array.isArray(result.errors)) {
     throw new Error(
