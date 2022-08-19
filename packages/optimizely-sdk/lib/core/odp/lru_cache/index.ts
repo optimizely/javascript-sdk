@@ -15,11 +15,9 @@
  */
 
 import { LRUCache, ClientLRUCache, ServerLRUCache } from "./LRUCache";
-import { ReactNativeLRUCache } from './LRUCache.react_native'
 
 export {
     LRUCache,
     ClientLRUCache,
     ServerLRUCache,
-    ReactNativeLRUCache,
 }
