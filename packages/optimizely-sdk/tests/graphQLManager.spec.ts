@@ -74,9 +74,9 @@ describe('GraphQLManager', () => {
     const response = manager['parseSegmentsResponseJson'](validJsonResponse) as Response;
 
     expect(response).not.toBeUndefined();
-    expect(response?.errors?.length).toEqual(0);
+    expect(response?.errors).toHaveLength(0);
     expect(response?.data?.customer?.audiences?.edges).not.toBeNull();
-    expect(response.data.customer.audiences.edges.length).toEqual(2);
+    expect(response.data.customer.audiences.edges).toHaveLength(2);
     let node = response.data.customer.audiences.edges[0].node;
     expect(node.name).toEqual('has_email');
     expect(node.state).toEqual('qualified');
@@ -128,7 +128,7 @@ describe('GraphQLManager', () => {
 
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
 
-    expect(segments.length).toEqual(2);
+    expect(segments).toHaveLength(2);
     expect(segments).toContain('has_email');
     expect(segments).toContain('has_email_opted_in');
     verify(mockLogger.log(anything(), anyString())).never();
@@ -142,7 +142,7 @@ describe('GraphQLManager', () => {
 
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
 
-    expect(segments.length).toEqual(0);
+    expect(segments).toHaveLength(0);
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
@@ -159,7 +159,7 @@ describe('GraphQLManager', () => {
 
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, INVALID_USER_ID, SEGMENTS_TO_CHECK);
 
-    expect(segments.length).toEqual(0);
+    expect(segments).toHaveLength(0);
     verify(mockLogger.log(anything(), anyString())).once();
   });
 
@@ -170,7 +170,7 @@ describe('GraphQLManager', () => {
 
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
 
-    expect(segments.length).toEqual(0);
+    expect(segments).toHaveLength(0);
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (decode error)')).once();
   });
 
@@ -184,7 +184,7 @@ describe('GraphQLManager', () => {
 
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
 
-    expect(segments.length).toEqual(0);
+    expect(segments).toHaveLength(0);
     verify(mockLogger.log(anything(), anyString())).once();
   });
 
@@ -195,7 +195,7 @@ describe('GraphQLManager', () => {
 
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
 
-    expect(segments.length).toEqual(0);
+    expect(segments).toHaveLength(0);
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (decode error)')).once();
   });
 
@@ -205,7 +205,7 @@ describe('GraphQLManager', () => {
 
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
 
-    expect(segments.length).toEqual(0);
+    expect(segments).toHaveLength(0);
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)')).once();
   });
 });
