@@ -43,7 +43,7 @@ export class QuerySegmentsParameters {
    */
   public SegmentToCheck: string[] | undefined;
 
-  constructor(parameters: { UserValue: string; ApiKey: string; UserKey: string; SegmentToCheck: string[]; ApiHost: string }) {
+  constructor(parameters: { UserValue: string; ApiKey: string; UserKey: string; SegmentsToCheck: string[]; ApiHost: string }) {
     Object.assign(this, parameters);
   }
 

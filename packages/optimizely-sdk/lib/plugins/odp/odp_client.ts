@@ -16,7 +16,7 @@
 
 import { LogHandler, LogLevel } from '../../modules/logging';
 import { QuerySegmentsParameters } from './query_segments_parameters';
-import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 
 export interface IOdpClient {
   querySegments(parameters: QuerySegmentsParameters): Promise<string | undefined>;
@@ -37,22 +37,25 @@ export class OdpClient implements IOdpClient {
       return;
     }
 
-    const response = await axios(parameters.ApiHost,
-      {
-        method: 'post',
-        url: parameters.ApiHost,
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': data.length,
-          'x-api-key': parameters.ApiKey,
-        },
-        data,
-      }).catch(() => {
-      this._logger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)');
-    }) as AxiosResponse;
+    const fetchFailureMessage = 'Audience segments fetch failed';
 
-    if (response.status !== 200) {
-      this._logger.log(LogLevel.ERROR, `Audience segments fetch failed (${response.status})`);
+    let response: AxiosResponse;
+
+    try {
+      response = await axios(parameters.ApiHost,
+        {
+          method: 'post',
+          url: parameters.ApiHost,
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': data.length,
+            'x-api-key': parameters.ApiKey,
+          },
+          data,
+        });
+    } catch (error) {
+      const response = (error as AxiosError).response;
+      this._logger.log(LogLevel.ERROR, `${fetchFailureMessage} (${response?.status ?? 'network error'})`);
       return;
     }
 

@@ -42,7 +42,7 @@ export class GraphqlManager implements IGraphQLManager {
       ApiHost: apiHost,
       UserKey: userKey,
       UserValue: userValue,
-      SegmentToCheck: segmentToCheck,
+      SegmentsToCheck: segmentToCheck,
     });
     const segmentsResponse = await this._odpClient.querySegments(parameters);
     if (!segmentsResponse) {
