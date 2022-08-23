@@ -16,12 +16,13 @@
 
 /// <reference types="jest" />
 
+import fetchMock, { enableFetchMocks } from 'jest-fetch-mock';
 import { anyString, anything, instance, mock, resetCalls, verify } from 'ts-mockito';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
-import MockAdapter from 'axios-mock-adapter';
-import axios from 'axios';
 import { OdpClient } from '../lib/plugins/odp/odp_client';
 import { QuerySegmentsParameters } from '../lib/plugins/odp/query_segments_parameters';
+
+enableFetchMocks();
 
 describe('OdpClient', () => {
   const MOCK_QUERY_PARAMETERS = new QuerySegmentsParameters({
@@ -37,16 +38,14 @@ describe('OdpClient', () => {
   });
 
   let mockLogger: LogHandler;
-  let mockAxios: MockAdapter;
 
   beforeAll(() => {
     mockLogger = mock<LogHandler>();
-    mockAxios = new MockAdapter(axios);
   });
 
   beforeEach(() => {
     resetCalls(mockLogger);
-    mockAxios.reset();
+    fetchMock.resetMocks();
   });
 
   it('should get mocked segments successfully', async () => {
@@ -72,7 +71,12 @@ describe('OdpClient', () => {
         },
       },
     };
-    mockAxios.onPost(/.*/).reply(200, responseJson);
+    jest.spyOn(global, 'fetch').mockImplementation(jest.fn(() => {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(responseJson),
+      } as Response);
+    }));
     const client = new OdpClient(instance(mockLogger));
 
     const response = await client.querySegments(MOCK_QUERY_PARAMETERS);
@@ -112,7 +116,14 @@ describe('OdpClient', () => {
   });
 
   it('should handle 400 HTTP response', async () => {
-    mockAxios.onPost(/.*/).reply(400, { throwAway: 'data' });
+    const errorResponse = {
+      ok: false,
+      status: 400,
+      statusText: 'Mock 400 error message which is still a Promise.resolve()',
+    };
+    jest.spyOn(global, 'fetch').mockImplementation(jest.fn(() => {
+      return Promise.resolve(errorResponse as Response);
+    }));
     const client = new OdpClient(instance(mockLogger));
 
     const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
@@ -122,7 +133,14 @@ describe('OdpClient', () => {
   });
 
   it('should handle 500 HTTP response', async () => {
-    mockAxios.onPost(/.*/).reply(500, { throwAway: 'data' });
+    const errorResponse = {
+      ok: false,
+      status: 500,
+      statusText: 'Mock 500 error message which is still a Promise.resolve()',
+    };
+    jest.spyOn(global, 'fetch').mockImplementation(jest.fn(() => {
+      return Promise.resolve(errorResponse as Response);
+    }));
     const client = new OdpClient(instance(mockLogger));
 
     const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
@@ -132,7 +150,13 @@ describe('OdpClient', () => {
   });
 
   it('should handle a network timeout', async () => {
-    mockAxios.onPost(/.*/).timeout();
+    const errorResponse = {
+      ok: false,
+      statusText: 'Unexpected mock network issue which causes a Promise.reject()',
+    };
+    jest.spyOn(global, 'fetch').mockImplementation(jest.fn(() => {
+      return Promise.reject(errorResponse as Response);
+    }));
     const client = new OdpClient(instance(mockLogger));
 
     const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);

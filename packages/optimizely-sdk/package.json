@@ -41,7 +41,6 @@
   "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/optimizely-sdk",
   "dependencies": {
     "@optimizely/js-sdk-datafile-manager": "^0.9.5",
-    "axios": "^0.27.2",
     "json-schema": "^0.4.0",
     "murmurhash": "^2.0.1",
     "uuid": "^8.3.2"
@@ -57,12 +56,12 @@
     "@types/uuid": "^3.4.4",
     "@typescript-eslint/eslint-plugin": "^5.33.0",
     "@typescript-eslint/parser": "^5.33.0",
-    "axios-mock-adapter": "^1.21.2",
     "bluebird": "^3.4.6",
     "chai": "^4.2.0",
     "coveralls": "^3.0.2",
     "eslint": "^8.21.0",
     "jest": "^23.6.0",
+    "jest-fetch-mock": "^3.0.3",
     "json-loader": "^0.5.4",
     "karma": "^6.4.0",
     "karma-browserstack-launcher": "^1.5.1",

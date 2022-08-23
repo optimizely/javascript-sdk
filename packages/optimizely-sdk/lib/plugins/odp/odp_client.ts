@@ -16,7 +16,6 @@
 
 import { LogHandler, LogLevel } from '../../modules/logging';
 import { QuerySegmentsParameters } from './query_segments_parameters';
-import axios, { AxiosError, AxiosResponse } from 'axios';
 
 export interface IOdpClient {
   querySegments(parameters: QuerySegmentsParameters): Promise<string | undefined>;
@@ -30,35 +29,36 @@ export class OdpClient implements IOdpClient {
   }
 
   public async querySegments(parameters: QuerySegmentsParameters): Promise<string | undefined> {
-    const data = parameters.ToJson();
+    const emptyResponse = undefined;
 
     if (!parameters?.ApiHost || !parameters?.ApiKey) {
       this._logger.log(LogLevel.ERROR, 'No ApiHost or ApiKey set before querying segments');
-      return;
+      return emptyResponse;
     }
 
     const fetchFailureMessage = 'Audience segments fetch failed';
 
-    let response: AxiosResponse;
+    const method = 'POST';
+    const headers = {
+      'Content-Type': 'application/json',
+      'x-api-key': parameters.ApiKey,
+    };
+    const body = parameters.ToJson();
+
+    let response: Response;
 
     try {
-      response = await axios(parameters.ApiHost,
-        {
-          method: 'post',
-          url: parameters.ApiHost,
-          headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': data.length,
-            'x-api-key': parameters.ApiKey,
-          },
-          data,
-        });
+      response = await fetch(parameters.ApiHost, { method, headers, body });
     } catch (error) {
-      const response = (error as AxiosError).response;
-      this._logger.log(LogLevel.ERROR, `${fetchFailureMessage} (${response?.status ?? 'network error'})`);
-      return;
+      this._logger.log(LogLevel.ERROR, `${fetchFailureMessage} (network error)`);
+      return emptyResponse;
     }
 
-    return response.data;
+    if (!response.ok) {
+      this._logger.log(LogLevel.ERROR, `${fetchFailureMessage} (${response?.status ?? 'network error'})`);
+      return emptyResponse;
+    }
+
+    return response.json();
   }
 }
