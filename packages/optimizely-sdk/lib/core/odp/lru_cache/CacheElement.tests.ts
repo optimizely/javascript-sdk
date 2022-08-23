@@ -15,20 +15,20 @@
  */
 
 import { assert } from 'chai'
-import { LRUCacheElement } from './LRUCacheElement';
+import { CacheElement } from './CacheElement';
 
 const sleep = async (ms: number) => {
     return await new Promise(r => setTimeout(r, ms))
 }
 
-describe('/odp/lru_cache/LRUCacheElement', () => {
-    let element: LRUCacheElement<string>
+describe('/odp/lru_cache/CacheElement', () => {
+    let element: CacheElement<string>
 
     beforeEach(() => {
-        element = new LRUCacheElement('foo')
+        element = new CacheElement('foo')
     })
 
-    it('should initialize a valid LRUCacheElement', () => {
+    it('should initialize a valid CacheElement', () => {
         assert.exists(element)
         assert.equal(element.value, 'foo')
         assert.isNotNull(element.time)

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import LRUCacheElement from "./LRUCacheElement"
+import CacheElement from "./CacheElement"
 
 /**
  * Least-Recently Used Cache (LRU Cache) Implementation with Generic Key-Value Pairs
@@ -23,17 +23,17 @@ import LRUCacheElement from "./LRUCacheElement"
  * - Removes stale elements (entries older than their timeout) from the cache.
  */
 export class LRUCache<K, V> {
-    private _map: Map<K, LRUCacheElement<V>> = new Map()
-    private _maxSize = 100 // Defines maximum size of _map
-    private _timeout = 1000 * 600 // Milliseconds each entry has before it becomes stale
+    private _map: Map<K, CacheElement<V>> = new Map()
+    private _maxSize // Defines maximum size of _map
+    private _timeout // Milliseconds each entry has before it becomes stale
 
-    get map(): Map<K, LRUCacheElement<V>> { return this._map }
+    get map(): Map<K, CacheElement<V>> { return this._map }
     get maxSize(): number { return this._maxSize }
     get timeout(): number { return this._timeout }
 
-    constructor({ maxSize, timeout }: { maxSize?: number, timeout?: number }) {
-        if (maxSize != undefined) this._maxSize = maxSize
-        if (timeout != undefined) this._timeout = timeout
+    constructor({ maxSize, timeout }: { maxSize: number, timeout: number }) {
+        this._maxSize = maxSize
+        this._timeout = timeout
     }
 
     /**
@@ -43,18 +43,17 @@ export class LRUCache<K, V> {
     public lookup(key: K): V | null {
         if (this._maxSize <= 0) { return null }
 
-        const element: LRUCacheElement<V> | undefined = this._map.get(key)
+        const element: CacheElement<V> | undefined = this._map.get(key)
 
         if (!element) return null
-
-        this._map.delete(key)
-        this._map.set(key, element)
-
 
         if (element.is_stale(this._timeout)) {
             this._map.delete(key)
             return null
         }
+
+        this._map.delete(key)
+        this._map.set(key, element)
 
         return element.value
     }
@@ -66,9 +65,9 @@ export class LRUCache<K, V> {
     public save({ key, value }: { key: K, value: V }): void {
         if (this._maxSize <= 0) return
 
-        const element: LRUCacheElement<V> | undefined = this._map.get(key)
+        const element: CacheElement<V> | undefined = this._map.get(key)
         if (element) this._map.delete(key)
-        this._map.set(key, new LRUCacheElement(value))
+        this._map.set(key, new CacheElement(value))
 
         if (this._map.size > this._maxSize) {
             const firstMapEntryKey = this._map.keys().next().value
@@ -87,18 +86,12 @@ export class LRUCache<K, V> {
 
     /**
      * Reads value from specified key without moving elements in the LRU Cache.
-     * Removes the element if it is stale.
      * @param {K} key
      */
     public peek(key: K): V | null {
         if (this._maxSize <= 0) return null
 
-        const element: LRUCacheElement<V> | undefined = this._map.get(key)
-
-        if (element?.is_stale(this._timeout)) {
-            this._map.delete(key)
-            return null
-        }
+        const element: CacheElement<V> | undefined = this._map.get(key)
 
         return element?.value ?? null
     }

@@ -15,9 +15,9 @@
  */
 
 /**
- * LRUCacheElement represents an individual generic item within the LRUCache
+ * CacheElement represents an individual generic item within the LRUCache
  */
-export class LRUCacheElement<V> {
+export class CacheElement<V> {
     private _value: V | null
     private _time: number
 
@@ -35,4 +35,4 @@ export class LRUCacheElement<V> {
     }
 }
 
-export default LRUCacheElement
+export default CacheElement

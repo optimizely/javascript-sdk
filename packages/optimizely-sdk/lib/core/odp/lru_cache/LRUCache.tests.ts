@@ -182,9 +182,9 @@ describe('/lib/core/odp/lru_cache (Default)', () => {
 
             await sleep(150)
 
-            assert.isNull(cache.peek('a'))
-            assert.isNull(cache.peek('b'))
-            assert.isNull(cache.peek('c'))
+            assert.isNull(cache.lookup('a'))
+            assert.isNull(cache.lookup('b'))
+            assert.isNull(cache.lookup('c'))
 
             cache.save({ key: 'd', value: 400 })            // { d: 400 }
             cache.save({ key: 'a', value: 101 })            // { d: 400, a: 101 }
