@@ -22,9 +22,11 @@ import { OdpResponseSchema } from './odp_response_schema';
 import { QuerySegmentsParameters } from './query_segments_parameters';
 
 const QUALIFIED = 'qualified';
+const EMPTY_SEGMENTS_COLLECTION: string[] = [];
+const EMPTY_JSON_RESPONSE = null;
 
 export interface IGraphQLManager {
-  fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string, segmentToCheck: string[]): Promise<string[]>;
+  fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[]>;
 }
 
 export class GraphqlManager implements IGraphQLManager {
@@ -36,24 +38,24 @@ export class GraphqlManager implements IGraphQLManager {
     this._odpClient = client ?? new OdpClient(this._logger);
   }
 
-  public async fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string, segmentToCheck: string[]): Promise<string[]> {
+  public async fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[]> {
     const parameters = new QuerySegmentsParameters({
-      ApiKey: apiKey,
-      ApiHost: apiHost,
-      UserKey: userKey,
-      UserValue: userValue,
-      SegmentsToCheck: segmentToCheck,
+      apiKey,
+      apiHost,
+      userKey,
+      userValue,
+      segmentsToCheck,
     });
     const segmentsResponse = await this._odpClient.querySegments(parameters);
     if (!segmentsResponse) {
       this._logger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)');
-      return [] as string[];
+      return EMPTY_SEGMENTS_COLLECTION;
     }
 
     const parsedSegments = this.parseSegmentsResponseJson(segmentsResponse);
     if (!parsedSegments) {
       this._logger.log(LogLevel.ERROR, 'Audience segments fetch failed (decode error)');
-      return [] as string[];
+      return EMPTY_SEGMENTS_COLLECTION;
     }
 
     if (parsedSegments.errors?.length > 0) {
@@ -61,29 +63,32 @@ export class GraphqlManager implements IGraphQLManager {
 
       this._logger.log(LogLevel.WARNING, `Audience segments fetch failed (${errors})`);
 
-      return [] as string[];
+      return EMPTY_SEGMENTS_COLLECTION;
     }
 
-    if (parsedSegments?.data?.customer?.audiences?.edges === null) {
+    const edges = parsedSegments?.data?.customer?.audiences?.edges;
+    if (edges === undefined) {
       this._logger.log(LogLevel.WARNING, 'Audience segments fetch failed (decode error)');
-
-      return [] as string[];
+      return EMPTY_SEGMENTS_COLLECTION;
     }
 
-    return parsedSegments.data.customer.audiences.edges.filter(edge => edge.node.state == QUALIFIED).map(edge => edge.node.name);
+    return edges.filter(edge => edge.node.state == QUALIFIED).map(edge => edge.node.name);
   }
 
-  private parseSegmentsResponseJson(jsonResponse: string): Response | undefined {
+  private parseSegmentsResponseJson(jsonResponse: string): Response | null {
     let jsonObject = {};
+
     try {
       jsonObject = JSON.parse(jsonResponse);
     } catch {
       this._logger.log(LogLevel.ERROR, 'Attempted to parse invalid segment response JSON.');
-      return;
+      return EMPTY_JSON_RESPONSE;
     }
+
     if (validate(jsonObject, OdpResponseSchema, false)) {
       return jsonObject as Response;
     }
-    return;
+
+    return EMPTY_JSON_RESPONSE;
   }
 }

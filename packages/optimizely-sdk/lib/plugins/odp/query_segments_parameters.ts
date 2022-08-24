@@ -21,42 +21,42 @@ export class QuerySegmentsParameters {
   /**
    * Optimizely Data Platform API key
    */
-  public ApiKey: string | undefined;
+  public apiKey: string | undefined;
 
   /**
    * Fully-qualified URL to ODP endpoint
    */
-  public ApiHost: string | undefined;
+  public apiHost: string | undefined;
 
   /**
    * 'vuid' or 'fs_user_id' (client device id or fullstack id)
    */
-  public UserKey: string | undefined;
+  public userKey: string | undefined;
 
   /**
    * Value for the user key
    */
-  public UserValue: string | undefined;
+  public userValue: string | undefined;
 
   /**
    * Audience segments to check for inclusion in the experiment
    */
-  public SegmentToCheck: string[] | undefined;
+  public segmentsToCheck: string[] | undefined;
 
-  constructor(parameters: { UserValue: string; ApiKey: string; UserKey: string; SegmentsToCheck: string[]; ApiHost: string }) {
+  constructor(parameters: { apiKey: string, apiHost: string, userKey: string, userValue: string, segmentsToCheck: string[] }) {
     Object.assign(this, parameters);
   }
 
   /**
-   * Converts the QuerySegmentsParameters into JSON
-   * @returns GraphQL JSON payload
+   * Converts the QuerySegmentsParameters to a GraphQL JSON payload
+   * @returns GraphQL JSON string
    */
-  public ToJson(): string {
-    const segmentsArrayJson = JSON.stringify(this.SegmentToCheck);
+  public toGraphQLJson(): string {
+    const segmentsArrayJson = JSON.stringify(this.segmentsToCheck);
 
     const json: string[] = [];
     json.push('{"query" : "query {customer"');
-    json.push(`(${this.UserKey} : "${this.UserValue}") `);
+    json.push(`(${this.userKey} : "${this.userValue}") `);
     json.push('{audiences');
     json.push(`(subset: ${segmentsArrayJson})`);
     json.push('{edges {node {name state}}}}}"}');

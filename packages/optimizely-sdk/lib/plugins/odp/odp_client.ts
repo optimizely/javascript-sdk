@@ -17,46 +17,46 @@
 import { LogHandler, LogLevel } from '../../modules/logging';
 import { QuerySegmentsParameters } from './query_segments_parameters';
 
+const FETCH_FAILURE_MESSAGE = 'Audience segments fetch failed';
+const EMPTY_JSON_RESPONSE = null;
+
 export interface IOdpClient {
-  querySegments(parameters: QuerySegmentsParameters): Promise<string | undefined>;
+  querySegments(parameters: QuerySegmentsParameters): Promise<string | null>;
 }
 
 export class OdpClient implements IOdpClient {
+
   private readonly _logger: LogHandler;
 
   constructor(logger: LogHandler) {
     this._logger = logger;
   }
 
-  public async querySegments(parameters: QuerySegmentsParameters): Promise<string | undefined> {
-    const emptyResponse = undefined;
-
-    if (!parameters?.ApiHost || !parameters?.ApiKey) {
+  public async querySegments(parameters: QuerySegmentsParameters): Promise<string | null> {
+    if (!parameters?.apiHost || !parameters?.apiKey) {
       this._logger.log(LogLevel.ERROR, 'No ApiHost or ApiKey set before querying segments');
-      return emptyResponse;
+      return EMPTY_JSON_RESPONSE;
     }
-
-    const fetchFailureMessage = 'Audience segments fetch failed';
 
     const method = 'POST';
     const headers = {
       'Content-Type': 'application/json',
-      'x-api-key': parameters.ApiKey,
+      'x-api-key': parameters.apiKey,
     };
-    const body = parameters.ToJson();
+    const body = parameters.toGraphQLJson();
 
     let response: Response;
 
     try {
-      response = await fetch(parameters.ApiHost, { method, headers, body });
+      response = await fetch(parameters.apiHost, { method, headers, body });
     } catch (error) {
-      this._logger.log(LogLevel.ERROR, `${fetchFailureMessage} (network error)`);
-      return emptyResponse;
+      this._logger.log(LogLevel.ERROR, `${FETCH_FAILURE_MESSAGE} (network error)`);
+      return EMPTY_JSON_RESPONSE;
     }
 
     if (!response.ok) {
-      this._logger.log(LogLevel.ERROR, `${fetchFailureMessage} (${response?.status ?? 'network error'})`);
-      return emptyResponse;
+      this._logger.log(LogLevel.ERROR, `${FETCH_FAILURE_MESSAGE} (${response?.status ?? 'network error'})`);
+      return EMPTY_JSON_RESPONSE;
     }
 
     return response.json();

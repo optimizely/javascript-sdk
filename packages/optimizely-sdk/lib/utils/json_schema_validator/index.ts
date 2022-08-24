@@ -25,10 +25,10 @@ const MODULE_NAME = 'JSON_SCHEMA_VALIDATOR';
  * Validate the given json object against the specified schema
  * @param {unknown} jsonObject The object to validate against the schema
  * @param {JSONSchema4} validationSchema Provided schema to use for validation
- * @param {boolean} shouldThrow Should validation throw if invalid JSON object
+ * @param {boolean} shouldThrowOnError Should validation throw if invalid JSON object
  * @return {boolean} true if the given object is valid; throws or false if invalid
  */
-export function validate(jsonObject: unknown, validationSchema: JSONSchema4 = schema, shouldThrow = true): boolean {
+export function validate(jsonObject: unknown, validationSchema: JSONSchema4 = schema, shouldThrowOnError = true): boolean {
   const moduleTitle = `${MODULE_NAME} (${validationSchema.title})`;
 
   if (typeof jsonObject !== 'object' || jsonObject === null) {
@@ -40,7 +40,7 @@ export function validate(jsonObject: unknown, validationSchema: JSONSchema4 = sc
     return true;
   }
 
-  if (!shouldThrow) {
+  if (!shouldThrowOnError) {
     return false;
   }
 
