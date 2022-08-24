@@ -21,7 +21,6 @@ import { validate } from '../../utils/json_schema_validator';
 import { OdpResponseSchema } from './odp_response_schema';
 import { QuerySegmentsParameters } from './query_segments_parameters';
 
-
 const QUALIFIED = 'qualified';
 const EMPTY_SEGMENTS_COLLECTION: string[] = [];
 const EMPTY_JSON_RESPONSE = null;
@@ -83,7 +82,7 @@ export class GraphqlManager implements IGraphQLManager {
 
     try {
       jsonObject = JSON.parse(jsonResponse);
-    } catch (error) {
+    } catch (error: any) {
       this._errorHandler.handleError(error);
       this._logger.log(LogLevel.ERROR, 'Attempted to parse invalid segment response JSON.');
       return EMPTY_JSON_RESPONSE;

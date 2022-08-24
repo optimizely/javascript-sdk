@@ -38,6 +38,8 @@ describe('OdpClient', () => {
   });
 
   const makeClientInstance = () => new OdpClient(instance(mockErrorHandler), instance(mockLogger));
+  const setFetchSpy = (mockImplementation: { (): Promise<Response>; (...args: unknown[]): any; }) =>
+    jest.spyOn(global, 'fetch').mockImplementation(jest.fn(mockImplementation));
 
   let mockErrorHandler: ErrorHandler;
   let mockLogger: LogHandler;
@@ -76,12 +78,10 @@ describe('OdpClient', () => {
         },
       },
     };
-    jest.spyOn(global, 'fetch').mockImplementation(jest.fn(() => {
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(responseJson),
-      } as Response);
-    }));
+    setFetchSpy(() => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve(responseJson),
+    } as Response));
     const client = makeClientInstance();
 
     const response = await client.querySegments(MOCK_QUERY_PARAMETERS);
@@ -129,9 +129,7 @@ describe('OdpClient', () => {
       status: 400,
       statusText: 'Mock 400 error message which is still a Promise.resolve()',
     };
-    jest.spyOn(global, 'fetch').mockImplementation(jest.fn(() => {
-      return Promise.resolve(errorResponse as Response);
-    }));
+    setFetchSpy(() => Promise.resolve(errorResponse as Response));
     const client = makeClientInstance();
 
     const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
@@ -147,9 +145,7 @@ describe('OdpClient', () => {
       status: 500,
       statusText: 'Mock 500 error message which is still a Promise.resolve()',
     };
-    jest.spyOn(global, 'fetch').mockImplementation(jest.fn(() => {
-      return Promise.resolve(errorResponse as Response);
-    }));
+    setFetchSpy(() => Promise.resolve(errorResponse as Response));
     const client = makeClientInstance();
 
     const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
@@ -164,9 +160,7 @@ describe('OdpClient', () => {
       ok: false,
       statusText: 'Unexpected mock network issue which causes a Promise.reject()',
     };
-    jest.spyOn(global, 'fetch').mockImplementation(jest.fn(() => {
-      return Promise.reject(errorResponse as Response);
-    }));
+    setFetchSpy(() => Promise.reject(errorResponse as Response));
     const client = makeClientInstance();
 
     const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);

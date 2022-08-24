@@ -52,7 +52,7 @@ export class OdpClient implements IOdpClient {
 
     try {
       response = await fetch(parameters.apiHost, { method, headers, body });
-    } catch (error) {
+    } catch (error: any) {
       this._errorHandler.handleError(error);
       this._logger.log(LogLevel.ERROR, `${FETCH_FAILURE_MESSAGE} (network error)`);
       return EMPTY_JSON_RESPONSE;
