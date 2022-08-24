@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import { ConsoleLogHandler, LogHandler, LogLevel } from '../../modules/logging';
+import { ConsoleLogHandler, ErrorHandler, LogHandler, LogLevel, NoopErrorHandler } from '../../modules/logging';
 import { Response } from './odp_types';
 import { IOdpClient, OdpClient } from './odp_client';
 import { validate } from '../../utils/json_schema_validator';
 import { OdpResponseSchema } from './odp_response_schema';
 import { QuerySegmentsParameters } from './query_segments_parameters';
+
 
 const QUALIFIED = 'qualified';
 const EMPTY_SEGMENTS_COLLECTION: string[] = [];
@@ -30,12 +31,14 @@ export interface IGraphQLManager {
 }
 
 export class GraphqlManager implements IGraphQLManager {
+  private readonly _errorHandler: ErrorHandler;
   private readonly _logger: LogHandler;
   private readonly _odpClient: IOdpClient;
 
-  constructor(logger: LogHandler, client: IOdpClient) {
+  constructor(errorHandler: ErrorHandler, logger: LogHandler, client: IOdpClient) {
+    this._errorHandler = errorHandler ?? new NoopErrorHandler();
     this._logger = logger ?? new ConsoleLogHandler();
-    this._odpClient = client ?? new OdpClient(this._logger);
+    this._odpClient = client ?? new OdpClient(this._errorHandler, this._logger);
   }
 
   public async fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[]> {
@@ -80,7 +83,8 @@ export class GraphqlManager implements IGraphQLManager {
 
     try {
       jsonObject = JSON.parse(jsonResponse);
-    } catch {
+    } catch (error) {
+      this._errorHandler.handleError(error);
       this._logger.log(LogLevel.ERROR, 'Attempted to parse invalid segment response JSON.');
       return EMPTY_JSON_RESPONSE;
     }

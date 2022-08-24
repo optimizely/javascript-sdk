@@ -18,7 +18,7 @@
 
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock';
 import { anyString, anything, instance, mock, resetCalls, verify } from 'ts-mockito';
-import { LogHandler, LogLevel } from '../lib/modules/logging';
+import { ErrorHandler, LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpClient } from '../lib/plugins/odp/odp_client';
 import { QuerySegmentsParameters } from '../lib/plugins/odp/query_segments_parameters';
 
@@ -26,24 +26,29 @@ enableFetchMocks();
 
 describe('OdpClient', () => {
   const MOCK_QUERY_PARAMETERS = new QuerySegmentsParameters({
-    ApiKey: 'not-real-api-key',
-    ApiHost: 'https://api.example.com/v3/graphql',
-    UserKey: 'fs_user_id',
-    UserValue: 'mock-user-id',
-    SegmentsToCheck: [
+    apiKey: 'not-real-api-key',
+    apiHost: 'https://api.example.com/v3/graphql',
+    userKey: 'fs_user_id',
+    userValue: 'mock-user-id',
+    segmentsToCheck: [
       'has_email',
       'has_email_opted_in',
       'push_on_sale',
     ],
   });
 
+  const makeClientInstance = () => new OdpClient(instance(mockErrorHandler), instance(mockLogger));
+
+  let mockErrorHandler: ErrorHandler;
   let mockLogger: LogHandler;
 
   beforeAll(() => {
+    mockErrorHandler = mock<ErrorHandler>();
     mockLogger = mock<LogHandler>();
   });
 
   beforeEach(() => {
+    resetCalls(mockErrorHandler);
     resetCalls(mockLogger);
     fetchMock.resetMocks();
   });
@@ -77,41 +82,44 @@ describe('OdpClient', () => {
         json: () => Promise.resolve(responseJson),
       } as Response);
     }));
-    const client = new OdpClient(instance(mockLogger));
+    const client = makeClientInstance();
 
     const response = await client.querySegments(MOCK_QUERY_PARAMETERS);
 
     expect(response).toEqual(responseJson);
+    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
   it('should handle missing API Host', async () => {
     const missingApiHost = new QuerySegmentsParameters({
-      ApiKey: 'apiKey',
-      ApiHost: '',
-      UserKey: 'userKey',
-      UserValue: 'userValue',
-      SegmentsToCheck: ['segmentToCheck'],
+      apiKey: 'apiKey',
+      apiHost: '',
+      userKey: 'userKey',
+      userValue: 'userValue',
+      segmentsToCheck: ['segmentToCheck'],
     });
-    const client = new OdpClient(instance(mockLogger));
+    const client = makeClientInstance();
 
     await client.querySegments(missingApiHost);
 
+    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(LogLevel.ERROR, 'No ApiHost or ApiKey set before querying segments')).once();
   });
 
   it('should handle missing API Key', async () => {
     const missingApiHost = new QuerySegmentsParameters({
-      ApiKey: '',
-      ApiHost: 'apiHost',
-      UserKey: 'userKey',
-      UserValue: 'userValue',
-      SegmentsToCheck: ['segmentToCheck'],
+      apiKey: '',
+      apiHost: 'apiHost',
+      userKey: 'userKey',
+      userValue: 'userValue',
+      segmentsToCheck: ['segmentToCheck'],
     });
-    const client = new OdpClient(instance(mockLogger));
+    const client = makeClientInstance();
 
     await client.querySegments(missingApiHost);
 
+    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(LogLevel.ERROR, 'No ApiHost or ApiKey set before querying segments')).once();
   });
 
@@ -124,11 +132,12 @@ describe('OdpClient', () => {
     jest.spyOn(global, 'fetch').mockImplementation(jest.fn(() => {
       return Promise.resolve(errorResponse as Response);
     }));
-    const client = new OdpClient(instance(mockLogger));
+    const client = makeClientInstance();
 
     const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
 
-    expect(responseJson).toBeUndefined();
+    expect(responseJson).toBeNull();
+    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (400)')).once();
   });
 
@@ -141,11 +150,12 @@ describe('OdpClient', () => {
     jest.spyOn(global, 'fetch').mockImplementation(jest.fn(() => {
       return Promise.resolve(errorResponse as Response);
     }));
-    const client = new OdpClient(instance(mockLogger));
+    const client = makeClientInstance();
 
     const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
 
-    expect(responseJson).toBeUndefined();
+    expect(responseJson).toBeNull();
+    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (500)')).once();
   });
 
@@ -157,11 +167,12 @@ describe('OdpClient', () => {
     jest.spyOn(global, 'fetch').mockImplementation(jest.fn(() => {
       return Promise.reject(errorResponse as Response);
     }));
-    const client = new OdpClient(instance(mockLogger));
+    const client = makeClientInstance();
 
     const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
 
-    expect(responseJson).toBeUndefined();
+    expect(responseJson).toBeNull();
+    verify(mockErrorHandler.handleError(anything())).once();
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)')).once();
   });
 });

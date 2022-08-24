@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import { LogHandler, LogLevel } from '../../modules/logging';
+import { ErrorHandler, LogHandler, LogLevel, NoopErrorHandler } from '../../modules/logging';
 import { QuerySegmentsParameters } from './query_segments_parameters';
+import { NoOpLogger } from '../logger';
 
 const FETCH_FAILURE_MESSAGE = 'Audience segments fetch failed';
 const EMPTY_JSON_RESPONSE = null;
@@ -26,10 +27,12 @@ export interface IOdpClient {
 
 export class OdpClient implements IOdpClient {
 
+  private readonly _errorHandler: ErrorHandler;
   private readonly _logger: LogHandler;
 
-  constructor(logger: LogHandler) {
-    this._logger = logger;
+  constructor(errorHandler: ErrorHandler, logger: LogHandler) {
+    this._errorHandler = errorHandler ?? new NoopErrorHandler();
+    this._logger = logger ?? new NoOpLogger();
   }
 
   public async querySegments(parameters: QuerySegmentsParameters): Promise<string | null> {
@@ -50,6 +53,7 @@ export class OdpClient implements IOdpClient {
     try {
       response = await fetch(parameters.apiHost, { method, headers, body });
     } catch (error) {
+      this._errorHandler.handleError(error);
       this._logger.log(LogLevel.ERROR, `${FETCH_FAILURE_MESSAGE} (network error)`);
       return EMPTY_JSON_RESPONSE;
     }
