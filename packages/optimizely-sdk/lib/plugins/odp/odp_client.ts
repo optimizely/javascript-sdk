@@ -17,6 +17,7 @@
 import { ErrorHandler, LogHandler, LogLevel, NoopErrorHandler } from '../../modules/logging';
 import { QuerySegmentsParameters } from './query_segments_parameters';
 import { NoOpLogger } from '../logger';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 
 const FETCH_FAILURE_MESSAGE = 'Audience segments fetch failed';
 const EMPTY_JSON_RESPONSE = null;
@@ -41,28 +42,31 @@ export class OdpClient implements IOdpClient {
       return EMPTY_JSON_RESPONSE;
     }
 
-    const method = 'POST';
-    const headers = {
-      'Content-Type': 'application/json',
-      'x-api-key': parameters.apiKey,
-    };
-    const body = parameters.toGraphQLJson();
-
-    let response: Response;
+    let response: AxiosResponse;
 
     try {
-      response = await fetch(parameters.apiHost, { method, headers, body });
+      response = await axios(
+        {
+          method: 'post',
+          url: parameters.apiHost,
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': parameters.apiKey,
+          },
+          data: parameters.toGraphQLJson(),
+        });
     } catch (error: any) {
       this._errorHandler.handleError(error);
-      this._logger.log(LogLevel.ERROR, `${FETCH_FAILURE_MESSAGE} (network error)`);
+
+      const errorDetails = error as AxiosError;
+      this._logger.log(LogLevel.ERROR, `${FETCH_FAILURE_MESSAGE} (${errorDetails?.response?.status ?? 'network error'})`);
       return EMPTY_JSON_RESPONSE;
     }
 
-    if (!response.ok) {
-      this._logger.log(LogLevel.ERROR, `${FETCH_FAILURE_MESSAGE} (${response?.status ?? 'network error'})`);
+    if (response.status !== 200) {
       return EMPTY_JSON_RESPONSE;
     }
 
-    return response.json();
+    return response.data;
   }
 }
