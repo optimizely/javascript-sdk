@@ -23,26 +23,19 @@ import decompressResponse from 'decompress-response';
 import { LogHandler } from '../../modules/logging';
 import { NoOpLogger } from '../../plugins/logger';
 
-// Shared signature between http.request and https.request
-type ClientRequestCreator = (options: http.RequestOptions) => http.ClientRequest;
-
 export class NodeRequestHandler implements RequestHandler {
   private readonly logger: LogHandler;
+  private readonly timeout: number;
 
-  public constructor(logger?: LogHandler) {
+  public constructor(logger?: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
     this.logger = logger ?? new NoOpLogger();
+    this.timeout = timeout;
   }
 
-  public makeRequest(reqUrl: string, headers: Headers, method: string, data?: object): AbortableRequest {
-    // TODO: Use non-legacy URL parsing when we drop support for Node 6
+  public makeRequest(reqUrl: string, headers: Headers, method: string, data?: string): AbortableRequest {
     const parsedUrl = url.parse(reqUrl);
 
-    let requester: ClientRequestCreator;
-    if (parsedUrl.protocol === 'http:') {
-      requester = http.request;
-    } else if (parsedUrl.protocol === 'https:') {
-      requester = https.request;
-    } else {
+    if (parsedUrl.protocol !== 'https:') {
       return {
         responsePromise: Promise.reject(new Error(`Unsupported protocol: ${parsedUrl.protocol}`)),
         abort(): void {
@@ -50,29 +43,26 @@ export class NodeRequestHandler implements RequestHandler {
       };
     }
 
-    const requestOptions: http.RequestOptions = {
+    const request = https.request({
       ...this.getRequestOptionsFromUrl(parsedUrl),
-      method: 'GET',
+      method,
       headers: {
         ...headers,
         'accept-encoding': 'gzip,deflate',
       },
-    };
-
-    const request = requester(requestOptions);
+    });
     const responsePromise = this.getResponseFromRequest(request);
 
+    request.write(data);
     request.end();
 
     return {
-      abort(): void {
-        request.abort();
-      },
+      abort: () => request.abort(),
       responsePromise,
     };
   }
 
-  private getRequestOptionsFromUrl(url: url.UrlWithStringQuery): http.RequestOptions {
+  private getRequestOptionsFromUrl(url: url.UrlWithStringQuery): https.RequestOptions {
     return {
       hostname: url.hostname,
       path: url.path,
@@ -82,13 +72,12 @@ export class NodeRequestHandler implements RequestHandler {
   }
 
   /**
-   * Convert incomingMessage.headers (which has type http.IncomingHttpHeaders) into our Headers type defined in src/http.ts.
+   * Convert IncomingMessage.headers (which has type http.IncomingHttpHeaders) into our Headers type defined in src/http.ts.
    *
-   * Our Headers type is simplified and can't represent mutliple values for the same header name.
+   * Our Headers type is simplified and can't represent multiple values for the same header name.
    *
    * We don't currently need multiple values support, and the consumer code becomes simpler if it can assume at-most 1 value
    * per header name.
-   *
    */
   private createHeadersFromNodeIncomingMessage(incomingMessage: http.IncomingMessage): Headers {
     const headers: Headers = {};
@@ -109,18 +98,15 @@ export class NodeRequestHandler implements RequestHandler {
     return headers;
   }
 
-
   private getResponseFromRequest(request: http.ClientRequest): Promise<Response> {
-    // TODO: When we drop support for Node 6, consider using util.promisify instead of
-    // constructing own Promise
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         request.abort();
         reject(new Error('Request timed out'));
-      }, REQUEST_TIMEOUT_MS);
+      }, this.timeout);
 
       request.once('response', (incomingMessage: http.IncomingMessage) => {
-        if (request.aborted) {
+        if (request.destroyed) {
           return;
         }
 
@@ -130,13 +116,13 @@ export class NodeRequestHandler implements RequestHandler {
 
         let responseData = '';
         response.on('data', (chunk: string) => {
-          if (!request.aborted) {
+          if (!request.destroyed) {
             responseData += chunk;
           }
         });
 
         response.on('end', () => {
-          if (request.aborted) {
+          if (request.destroyed) {
             return;
           }
 
@@ -149,7 +135,8 @@ export class NodeRequestHandler implements RequestHandler {
           });
         });
       });
-
+      
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       request.on('error', (err: any) => {
         clearTimeout(timeout);
 

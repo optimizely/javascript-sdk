@@ -22,53 +22,64 @@ import { NoOpLogger } from '../../plugins/logger';
 const READY_STATE_DONE = 4;
 
 export class BrowserRequestHandler implements RequestHandler {
-  private readonly logger: LogHandler;
+  private readonly _logger: LogHandler;
+  private readonly _timeout: number;
 
-  public constructor(logger?: LogHandler) {
-    this.logger = logger ?? new NoOpLogger();
+  public constructor(logger?: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
+    this._logger = logger ?? new NoOpLogger();
+    this._timeout = timeout;
   }
 
-  public makeRequest(reqUrl: string, headers: Headers, method: string, data?: object): AbortableRequest {
-    const req = new XMLHttpRequest();
+  public makeRequest(reqUrl: string, headers: Headers, method: string, data?: string): AbortableRequest {
+    const request = new XMLHttpRequest();
 
     const responsePromise: Promise<Response> = new Promise((resolve, reject) => {
-      req.open(method, reqUrl, true);
+      request.open(method, reqUrl, true);
 
-      this.setHeadersInXhr(headers, req);
+      this.setHeadersInXhr(headers, request);
 
-      req.onreadystatechange = (): void => {
-        if (req.readyState === READY_STATE_DONE) {
-          const statusCode = req.status;
+      request.onreadystatechange = (): void => {
+        if (request.readyState === READY_STATE_DONE) {
+          const statusCode = request.status;
           if (statusCode === 0) {
             reject(new Error('Request error'));
             return;
           }
 
-          const headers = this.parseHeadersFromXhr(req);
+          const headers = this.parseHeadersFromXhr(request);
           const resp: Response = {
-            statusCode: req.status,
-            body: req.responseText,
+            statusCode: request.status,
+            body: request.responseText,
             headers,
           };
           resolve(resp);
         }
       };
 
-      req.timeout = REQUEST_TIMEOUT_MS;
+      request.timeout = this._timeout;
 
-      req.ontimeout = (): void => {
-        this.logger.log(LogLevel.WARNING, 'Request timed out');
+      request.ontimeout = (): void => {
+        this._logger.log(LogLevel.WARNING, 'Request timed out');
       };
 
-      req.send(data);
+      request.send(data);
     });
 
     return {
       responsePromise,
       abort(): void {
-        req.abort();
+        request.abort();
       },
     };
+  }
+
+  private setHeadersInXhr(headers: Headers, req: XMLHttpRequest): void {
+    Object.keys(headers).forEach(headerName => {
+      const header = headers[headerName];
+      if (typeof header === 'string') {
+        req.setRequestHeader(headerName, header);
+      }
+    });
   }
 
   private parseHeadersFromXhr(req: XMLHttpRequest): Headers {
@@ -91,12 +102,5 @@ export class BrowserRequestHandler implements RequestHandler {
       }
     });
     return headers;
-  }
-
-  private setHeadersInXhr(headers: Headers, req: XMLHttpRequest): void {
-    Object.keys(headers).forEach(headerName => {
-      const header = headers[headerName];
-      req.setRequestHeader(headerName, header!);
-    });
   }
 }

@@ -38,5 +38,5 @@ export interface AbortableRequest {
 }
 
 export interface RequestHandler {
-  makeRequest(reqUrl: string, headers: Headers, method: string, data?: object): AbortableRequest;
+  makeRequest(reqUrl: string, headers: Headers, method: string, data?: string): AbortableRequest;
 }
