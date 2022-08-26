@@ -69,7 +69,7 @@ export class OdpClient implements IOdpClient {
     };
     const data = parameters.toGraphQLJson();
 
-    const requestHandler = RequestHandlerFactory.createHandler(this._executionContextType.toString(), this._logger, this._timeout);
+    const requestHandler = RequestHandlerFactory.createHandler(ExecutionContextType[this._executionContextType], this._logger, this._timeout);
     if (!requestHandler) {
       this._logger.log(LogLevel.ERROR, 'Unable to determine execution context');
       return EMPTY_JSON_RESPONSE;
