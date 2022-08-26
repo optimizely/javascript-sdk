@@ -17,6 +17,9 @@
 import { ErrorHandler, LogHandler, LogLevel, NoopErrorHandler } from '../../modules/logging';
 import { QuerySegmentsParameters } from './query_segments_parameters';
 import { NoOpLogger } from '../logger';
+import { BrowserRequestHandler } from '../../utils/http_request_handler/browser_request_handler';
+import { NodeRequestHandler } from '../../utils/http_request_handler/node_request_handler';
+import { RequestHandler, Response } from '../../utils/http_request_handler/http';
 
 const FETCH_FAILURE_MESSAGE = 'Audience segments fetch failed';
 const EMPTY_JSON_RESPONSE = null;
@@ -29,10 +32,15 @@ export class OdpClient implements IOdpClient {
 
   private readonly _errorHandler: ErrorHandler;
   private readonly _logger: LogHandler;
+  private readonly _isNodeContext: boolean;
+  private readonly _isBrowserContext: boolean;
 
   constructor(errorHandler: ErrorHandler, logger: LogHandler) {
     this._errorHandler = errorHandler ?? new NoopErrorHandler();
     this._logger = logger ?? new NoOpLogger();
+
+    this._isNodeContext = typeof process === 'object';
+    this._isBrowserContext = typeof window === 'object';
   }
 
   public async querySegments(parameters: QuerySegmentsParameters): Promise<string | null> {
@@ -49,10 +57,18 @@ export class OdpClient implements IOdpClient {
     };
     const data = parameters.toGraphQLJson();
 
-    let response: any;
+    let requestHandler: RequestHandler;
+    if (this._isBrowserContext) {
+      requestHandler = new BrowserRequestHandler(this._logger);
+    } else if (this._isNodeContext) {
+      requestHandler = new NodeRequestHandler(this._logger);
+    } else {
+      // this will be a factory soon
+      return EMPTY_JSON_RESPONSE;
+    }
+    let response: Response;
     try {
-      throw new Error('Implementation needed');
-      response = {};
+      response = await requestHandler.makeRequest(url, headers, method, data).responsePromise;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       this._errorHandler.handleError(error);
@@ -62,10 +78,10 @@ export class OdpClient implements IOdpClient {
       return EMPTY_JSON_RESPONSE;
     }
 
-    if (response.status !== 200) {
+    if (response.statusCode !== 200) {
       return EMPTY_JSON_RESPONSE;
     }
 
-    return response.data;
+    return response.body;
   }
 }
