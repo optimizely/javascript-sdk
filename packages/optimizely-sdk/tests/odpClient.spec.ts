@@ -137,8 +137,7 @@ describe('OdpClient', () => {
   });
 
   it('should handle a network timeout', async () => {
-    //mockAxios.onPost(/.*/).timeout();
-    const client = makeClientInstance();
+    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), 1);
 
     const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
 
