@@ -97,6 +97,7 @@ export class ConsoleLogHandler implements LogHandler {
    * @memberof ConsoleLogger
    */
   constructor(config: ConsoleLogHandlerConfig = {}) {
+    
     this.logLevel = LogLevel.NOTSET
     if (config.logLevel !== undefined && isValidEnum(LogLevel, config.logLevel)) {
       this.setLogLevel(config.logLevel)
