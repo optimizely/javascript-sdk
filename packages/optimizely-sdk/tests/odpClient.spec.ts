@@ -18,11 +18,8 @@
 
 import { anyString, anything, instance, mock, resetCalls, verify } from 'ts-mockito';
 import { ErrorHandler, LogHandler, LogLevel } from '../lib/modules/logging';
-import MockAdapter from 'axios-mock-adapter';
-import axios from 'axios';
 import { OdpClient } from '../lib/plugins/odp/odp_client';
 import { QuerySegmentsParameters } from '../lib/plugins/odp/query_segments_parameters';
-
 
 describe('OdpClient', () => {
   const MOCK_QUERY_PARAMETERS = new QuerySegmentsParameters({
@@ -41,18 +38,15 @@ describe('OdpClient', () => {
 
   let mockErrorHandler: ErrorHandler;
   let mockLogger: LogHandler;
-  let mockAxios: MockAdapter;
 
   beforeAll(() => {
     mockErrorHandler = mock<ErrorHandler>();
     mockLogger = mock<LogHandler>();
-    mockAxios = new MockAdapter(axios);
   });
 
   beforeEach(() => {
     resetCalls(mockErrorHandler);
     resetCalls(mockLogger);
-    mockAxios.reset();
   });
 
   it('should get mocked segments successfully', async () => {
@@ -78,7 +72,7 @@ describe('OdpClient', () => {
         },
       },
     };
-    mockAxios.onPost(/.*/).reply(200, responseJson);
+    //mockAxios.onPost(/.*/).reply(200, responseJson);
     const client = makeClientInstance();
 
     const response = await client.querySegments(MOCK_QUERY_PARAMETERS);
@@ -121,7 +115,7 @@ describe('OdpClient', () => {
   });
 
   it('should handle 400 HTTP response', async () => {
-    mockAxios.onPost(/.*/).reply(400, { throwAway: 'data' });
+    //mockAxios.onPost(/.*/).reply(400, { throwAway: 'data' });
     const client = makeClientInstance();
 
     const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
@@ -132,7 +126,7 @@ describe('OdpClient', () => {
   });
 
   it('should handle 500 HTTP response', async () => {
-    mockAxios.onPost(/.*/).reply(500, { throwAway: 'data' });
+    //mockAxios.onPost(/.*/).reply(500, { throwAway: 'data' });
     const client = makeClientInstance();
 
     const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
@@ -143,7 +137,7 @@ describe('OdpClient', () => {
   });
 
   it('should handle a network timeout', async () => {
-    mockAxios.onPost(/.*/).timeout();
+    //mockAxios.onPost(/.*/).timeout();
     const client = makeClientInstance();
 
     const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
