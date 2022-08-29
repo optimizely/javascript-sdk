@@ -24,12 +24,12 @@ import { LogHandler } from '../../modules/logging';
 import { NoOpLogger } from '../../plugins/logger';
 
 export class NodeRequestHandler implements RequestHandler {
-  private readonly logger: LogHandler;
-  private readonly timeout: number;
+  private readonly _logger: LogHandler;
+  private readonly _timeout: number;
 
   public constructor(logger?: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
-    this.logger = logger ?? new NoOpLogger();
-    this.timeout = timeout;
+    this._logger = logger ?? new NoOpLogger();
+    this._timeout = timeout;
   }
 
   public makeRequest(reqUrl: string, headers: Headers, method: string, data?: string): AbortableRequest {
@@ -103,7 +103,7 @@ export class NodeRequestHandler implements RequestHandler {
       const timeout = setTimeout(() => {
         request.abort();
         reject(new Error('Request timed out'));
-      }, this.timeout);
+      }, this._timeout);
 
       request.once('response', (incomingMessage: http.IncomingMessage) => {
         if (request.destroyed) {

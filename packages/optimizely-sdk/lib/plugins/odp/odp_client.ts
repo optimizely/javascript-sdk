@@ -17,7 +17,7 @@
 import { ErrorHandler, LogHandler, LogLevel, NoopErrorHandler } from '../../modules/logging';
 import { QuerySegmentsParameters } from './query_segments_parameters';
 import { NoOpLogger } from '../logger';
-import { Response } from '../../utils/http_request_handler/http';
+import { RequestHandler, Response } from '../../utils/http_request_handler/http';
 import { RequestHandlerFactory } from '../../utils/http_request_handler/request_handler_factory';
 import { REQUEST_TIMEOUT_MS } from '../../utils/http_request_handler/config';
 
@@ -28,30 +28,29 @@ export interface IOdpClient {
   querySegments(parameters: QuerySegmentsParameters): Promise<string | null>;
 }
 
-export enum ExecutionContextType {
+enum ExecutionContextType {
   notDefined,
   browser,
   node,
 }
 
 export class OdpClient implements IOdpClient {
-
   private readonly _errorHandler: ErrorHandler;
   private readonly _logger: LogHandler;
   private readonly _timeout: number;
-  private readonly _executionContextType: ExecutionContextType;
+  private readonly _requestHandler: RequestHandler;
 
-
-  constructor(errorHandler?: ErrorHandler, logger?: LogHandler, timeout?: number) {
+  constructor(errorHandler?: ErrorHandler, logger?: LogHandler, requestHandler?: RequestHandler, timeout?: number) {
     this._errorHandler = errorHandler ?? new NoopErrorHandler();
     this._logger = logger ?? new NoOpLogger();
     this._timeout = timeout ?? REQUEST_TIMEOUT_MS;
 
-    this._executionContextType = ExecutionContextType.notDefined;
-    if (typeof window === 'object') {
-      this._executionContextType = ExecutionContextType.browser;
-    } else if (typeof process === 'object') {
-      this._executionContextType = ExecutionContextType.node;
+    if (requestHandler) {
+      this._requestHandler = requestHandler;
+    } else {
+      let executionContextType = typeof window === 'object' ? ExecutionContextType.browser : ExecutionContextType.notDefined;
+      executionContextType = typeof process === 'object' ? ExecutionContextType.node : executionContextType;
+      this._requestHandler = RequestHandlerFactory.createHandler(ExecutionContextType[executionContextType], this._logger, this._timeout);
     }
   }
 
@@ -69,24 +68,15 @@ export class OdpClient implements IOdpClient {
     };
     const data = parameters.toGraphQLJson();
 
-    const requestHandler = RequestHandlerFactory.createHandler(ExecutionContextType[this._executionContextType], this._logger, this._timeout);
-    if (!requestHandler) {
-      this._logger.log(LogLevel.ERROR, 'Unable to determine execution context');
-      return EMPTY_JSON_RESPONSE;
-    }
-
     let response: Response;
     try {
-      response = await requestHandler.makeRequest(url, headers, method, data).responsePromise;
+      const request = this._requestHandler.makeRequest(url, headers, method, data);
+      response = await request.responsePromise;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       this._errorHandler.handleError(error);
+      this._logger.log(LogLevel.ERROR, `${FETCH_FAILURE_MESSAGE} (${error.statusCode ?? 'network error'})`);
 
-      return EMPTY_JSON_RESPONSE;
-    }
-
-    if (response.statusCode !== 200) {
-      this._logger.log(LogLevel.ERROR, `${FETCH_FAILURE_MESSAGE} (${response.statusCode ?? 'network error'})`);
       return EMPTY_JSON_RESPONSE;
     }
 
