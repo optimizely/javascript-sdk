@@ -116,9 +116,7 @@ describe('OdpClient', () => {
       responsePromise: Promise.resolve({
         statusCode: 200,
         body: JSON.stringify(VALID_RESPONSE_JSON),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {},
       }),
     });
 
@@ -138,9 +136,7 @@ describe('OdpClient', () => {
       responsePromise: Promise.resolve({
         statusCode: 200,
         body: JSON.stringify(VALID_RESPONSE_JSON),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {},
       }),
     });
 
@@ -160,9 +156,7 @@ describe('OdpClient', () => {
       responsePromise: Promise.reject({
         statusCode: 400,
         body: '',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {},
       }),
     });
     const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
@@ -181,9 +175,7 @@ describe('OdpClient', () => {
       responsePromise: Promise.reject({
         statusCode: 400,
         body: '',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {},
       }),
     });
     const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
@@ -202,9 +194,7 @@ describe('OdpClient', () => {
       responsePromise: Promise.reject({
         statusCode: 500,
         body: '',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {},
       }),
     });
     const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
@@ -223,9 +213,7 @@ describe('OdpClient', () => {
       responsePromise: Promise.reject({
         statusCode: 500,
         body: '',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {},
       }),
     });
     const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
