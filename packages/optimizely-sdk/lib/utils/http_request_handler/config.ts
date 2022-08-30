@@ -14,4 +14,7 @@
  * limitations under the License.
  */
 
+/**
+ * Default milliseconds before request timeout
+ */
 export const REQUEST_TIMEOUT_MS = 60 * 1000; // 1 minute

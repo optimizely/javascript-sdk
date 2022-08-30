@@ -13,11 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { LogHandler } from '../../modules/logging';
 import { RequestHandler } from './http';
 import { NodeRequestHandler } from './node_request_handler';
 import { BrowserRequestHandler } from './browser_request_handler';
 
+/**
+ * Factory to create the appropriate type of RequestHandler based on a provided context
+ */
 export class RequestHandlerFactory {
   public static createHandler(type: string, logger?: LogHandler, timeout?: number): RequestHandler {
     if (type === 'node') {

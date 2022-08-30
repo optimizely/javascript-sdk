@@ -23,6 +23,9 @@ import decompressResponse from 'decompress-response';
 import { LogHandler } from '../../modules/logging';
 import { NoOpLogger } from '../../plugins/logger';
 
+/**
+ * Handles sending requests and receiving responses over HTTP via NodeJS http module
+ */
 export class NodeRequestHandler implements RequestHandler {
   private readonly _logger: LogHandler;
   private readonly _timeout: number;
@@ -32,6 +35,14 @@ export class NodeRequestHandler implements RequestHandler {
     this._timeout = timeout;
   }
 
+  /**
+   * Builds an XMLHttpRequest
+   * @param reqUrl Fully-qualified URL to which to send the request
+   * @param headers List of headers to include in the request
+   * @param method HTTP method to use
+   * @param data stringified version of data to POST, PUT, etc
+   * @returns AbortableRequest contains both the response Promise and capability to abort()
+   */
   public makeRequest(reqUrl: string, headers: Headers, method: string, data?: string): AbortableRequest {
     const parsedUrl = url.parse(reqUrl);
 
@@ -65,6 +76,12 @@ export class NodeRequestHandler implements RequestHandler {
     };
   }
 
+  /**
+   * Parses a URL into its constituent parts
+   * @param url URL object to parse
+   * @private
+   * @returns https.RequestOptions Standard request options dictionary
+   */
   private getRequestOptionsFromUrl(url: url.UrlWithStringQuery): https.RequestOptions {
     return {
       hostname: url.hostname,
@@ -74,6 +91,12 @@ export class NodeRequestHandler implements RequestHandler {
     };
   }
 
+  /**
+   * Parses headers from an http response
+   * @param incomingMessage Incoming response message to parse
+   * @private
+   * @returns Headers Dictionary of headers without duplicates
+   */
   private createHeadersFromNodeIncomingMessage(incomingMessage: http.IncomingMessage): Headers {
     const headers: Headers = {};
     Object.keys(incomingMessage.headers).forEach(headerName => {
@@ -93,6 +116,12 @@ export class NodeRequestHandler implements RequestHandler {
     return headers;
   }
 
+  /**
+   * Sends a built request handling response, errors, and events around the transmission
+   * @param request Request to send
+   * @private
+   * @returns Response Promise-wrapped, simplified response object
+   */
   private getResponseFromRequest(request: http.ClientRequest): Promise<Response> {
     return new Promise((resolve, reject) => {
       request.on('timeout', () => {

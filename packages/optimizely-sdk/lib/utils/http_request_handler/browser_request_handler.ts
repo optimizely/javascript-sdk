@@ -21,6 +21,9 @@ import { NoOpLogger } from '../../plugins/logger';
 
 const READY_STATE_DONE = 4;
 
+/**
+ * Handles sending requests and receiving responses over HTTP via XMLHttpRequest
+ */
 export class BrowserRequestHandler implements RequestHandler {
   private readonly _logger: LogHandler;
   private readonly _timeout: number;
@@ -30,6 +33,14 @@ export class BrowserRequestHandler implements RequestHandler {
     this._timeout = timeout;
   }
 
+  /**
+   * Builds an XMLHttpRequest
+   * @param reqUrl Fully-qualified URL to which to send the request
+   * @param headers List of headers to include in the request
+   * @param method HTTP method to use
+   * @param data stringified version of data to POST, PUT, etc
+   * @returns AbortableRequest contains both the response Promise and capability to abort()
+   */
   public makeRequest(reqUrl: string, headers: Headers, method: string, data?: string): AbortableRequest {
     const request = new XMLHttpRequest();
 
@@ -73,17 +84,29 @@ export class BrowserRequestHandler implements RequestHandler {
     };
   }
 
-  private setHeadersInXhr(headers: Headers, req: XMLHttpRequest): void {
+  /**
+   * Sets the header collection for an XHR
+   * @param headers Headers to set
+   * @param request Request into which headers are to be set
+   * @private
+   */
+  private setHeadersInXhr(headers: Headers, request: XMLHttpRequest): void {
     Object.keys(headers).forEach(headerName => {
       const header = headers[headerName];
       if (typeof header === 'string') {
-        req.setRequestHeader(headerName, header);
+        request.setRequestHeader(headerName, header);
       }
     });
   }
 
-  private parseHeadersFromXhr(req: XMLHttpRequest): Headers {
-    const allHeadersString = req.getAllResponseHeaders();
+  /**
+   * Parses headers from an XHR
+   * @param request Request containing headers to be retrieved
+   * @private
+   * @returns List of headers without duplicates
+   */
+  private parseHeadersFromXhr(request: XMLHttpRequest): Headers {
+    const allHeadersString = request.getAllResponseHeaders();
 
     if (allHeadersString === null) {
       return {};
