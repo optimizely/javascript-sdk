@@ -16,7 +16,7 @@
 import sinon from 'sinon';
 import { createHttpPollingDatafileManager } from './http_polling_datafile_manager';
 import * as projectConfig from '../../core/project_config';
-import * as datafileManager from '../../modules/datafile-manager/index.node';
+import datafileManager from '../../modules/datafile-manager/index.node';
  
 describe('lib/plugins/datafile_manager/http_polling_datafile_manager', function() {
   var sandbox = sinon.sandbox.create();

@@ -14,5 +14,7 @@
  * limitations under the License.
  */
 
+import NodeDatafileManager from './nodeDatafileManager';
 export * from './datafileManager';
-export { default as HttpPollingDatafileManager } from './nodeDatafileManager';
+export { NodeDatafileManager as HttpPollingDatafileManager };
+export default { HttpPollingDatafileManager: NodeDatafileManager };

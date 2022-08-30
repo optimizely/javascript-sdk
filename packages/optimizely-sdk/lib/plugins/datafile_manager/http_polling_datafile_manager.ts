@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { LoggerFacade } from '../../modules/logging';
-import { HttpPollingDatafileManager } from '../../modules/datafile-manager/index.node';
+import datafileManager from '../../modules/datafile-manager/index.node';
 import { DatafileOptions, DatafileManagerConfig, DatafileManager } from '../../shared_types';
 import { toDatafile, tryCreatingProjectConfig } from '../../core/project_config';
 import fns from '../../utils/fns';
@@ -45,5 +45,5 @@ export function createHttpPollingDatafileManager(
       datafileManagerConfig.datafile = toDatafile(configObj);
     }
   }
-  return new HttpPollingDatafileManager(datafileManagerConfig);
+  return new datafileManager.HttpPollingDatafileManager(datafileManagerConfig);
 }
