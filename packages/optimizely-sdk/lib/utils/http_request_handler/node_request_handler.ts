@@ -38,7 +38,7 @@ export class NodeRequestHandler implements RequestHandler {
     if (parsedUrl.protocol !== 'https:') {
       return {
         responsePromise: Promise.reject(new Error(`Unsupported protocol: ${parsedUrl.protocol}`)),
-        abort(): void {
+        abort: () => {
         },
       };
     }
@@ -50,14 +50,17 @@ export class NodeRequestHandler implements RequestHandler {
         ...headers,
         'accept-encoding': 'gzip,deflate',
       },
+      timeout: this._timeout,
     });
     const responsePromise = this.getResponseFromRequest(request);
 
-    request.write(data);
+    if (data) {
+      request.write(data);
+    }
     request.end();
 
     return {
-      abort: () => request.abort(),
+      abort: () => request.destroy(),
       responsePromise,
     };
   }
@@ -71,14 +74,6 @@ export class NodeRequestHandler implements RequestHandler {
     };
   }
 
-  /**
-   * Convert IncomingMessage.headers (which has type http.IncomingHttpHeaders) into our Headers type defined in src/http.ts.
-   *
-   * Our Headers type is simplified and can't represent multiple values for the same header name.
-   *
-   * We don't currently need multiple values support, and the consumer code becomes simpler if it can assume at-most 1 value
-   * per header name.
-   */
   private createHeadersFromNodeIncomingMessage(incomingMessage: http.IncomingMessage): Headers {
     const headers: Headers = {};
     Object.keys(incomingMessage.headers).forEach(headerName => {
@@ -100,10 +95,21 @@ export class NodeRequestHandler implements RequestHandler {
 
   private getResponseFromRequest(request: http.ClientRequest): Promise<Response> {
     return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        request.abort();
+      request.on('timeout', () => {
+        request.destroy();
         reject(new Error('Request timed out'));
-      }, this._timeout);
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      request.on('error', (err: any) => {
+        if (err instanceof Error) {
+          reject(err);
+        } else if (typeof err === 'string') {
+          reject(new Error(err));
+        } else {
+          reject(new Error('Request error'));
+        }
+      });
 
       request.once('response', (incomingMessage: http.IncomingMessage) => {
         if (request.destroyed) {
@@ -126,27 +132,12 @@ export class NodeRequestHandler implements RequestHandler {
             return;
           }
 
-          clearTimeout(timeout);
-
           resolve({
             statusCode: incomingMessage.statusCode,
             body: responseData,
             headers: this.createHeadersFromNodeIncomingMessage(incomingMessage),
           });
         });
-      });
-      
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      request.on('error', (err: any) => {
-        clearTimeout(timeout);
-
-        if (err instanceof Error) {
-          reject(err);
-        } else if (typeof err === 'string') {
-          reject(new Error(err));
-        } else {
-          reject(new Error('Request error'));
-        }
       });
     });
   }

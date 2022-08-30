@@ -19,7 +19,6 @@
 import nock from 'nock';
 import zlib from 'zlib';
 import { NodeRequestHandler } from '../lib/utils/http_request_handler/node_request_handler';
-import { advanceTimersByTime } from './testUtils';
 import { NoOpLogger } from '../lib/plugins/logger';
 
 beforeAll(() => {
@@ -33,6 +32,7 @@ afterAll(() => {
 describe('NodeRequestHandler', () => {
   const host = 'https://endpoint.example.com';
   const path = '/api/query';
+  const body = '{"foo":"bar"}';
 
   afterEach(async () => {
     nock.cleanAll();
@@ -40,17 +40,16 @@ describe('NodeRequestHandler', () => {
 
   describe('makeRequest', () => {
     it('should handle a 200 response back from a post', async () => {
-      const data = '{"foo":"bar"}';
       const scope = nock(host)
         .post(path)
-        .reply(200, data);
+        .reply(200, body);
 
-      const request = new NodeRequestHandler().makeRequest(`${host}${path}`, {}, 'post', data);
+      const request = new NodeRequestHandler().makeRequest(`${host}${path}`, {}, 'post', body);
       const response = await request.responsePromise;
 
       expect(response).toEqual({
         statusCode: 200,
-        body: data,
+        body,
         headers: {},
       });
       scope.done();
@@ -77,10 +76,10 @@ describe('NodeRequestHandler', () => {
         .matchHeader('if-modified-since', 'Fri, 08 Mar 2019 18:57:18 GMT')
         .get(path)
         .reply(304, '');
-      const rrequestq = new NodeRequestHandler().makeRequest(`${host}${path}`, {
+      const request = new NodeRequestHandler().makeRequest(`${host}${path}`, {
         'if-modified-since': 'Fri, 08 Mar 2019 18:57:18 GMT',
       }, 'get');
-      const response = await rrequestq.responsePromise;
+      const response = await request.responsePromise;
       expect(response).toEqual({
         statusCode: 304,
         body: '',
@@ -90,18 +89,17 @@ describe('NodeRequestHandler', () => {
     });
 
     it('should add Accept-Encoding request header and unzips a gzipped response body', async () => {
-      const data = '{"foo":"bar"}';
       const scope = nock(host)
         .matchHeader('accept-encoding', 'gzip,deflate')
         .get(path)
-        .reply(200, () => zlib.gzipSync(data), { 'content-encoding': 'gzip' });
+        .reply(200, () => zlib.gzipSync(body), { 'content-encoding': 'gzip' });
 
       const request = new NodeRequestHandler().makeRequest(`${host}${path}`, {}, 'get');
       const response = await request.responsePromise;
 
       expect(response).toMatchObject({
         statusCode: 200,
-        body: data,
+        body: body,
       });
       scope.done();
     });
@@ -111,7 +109,7 @@ describe('NodeRequestHandler', () => {
         .get(path)
         .reply(
           200,
-          { foo: 'bar' },
+          JSON.parse(body),
           {
             'last-modified': 'Fri, 08 Mar 2019 18:57:18 GMT',
           },
@@ -122,7 +120,7 @@ describe('NodeRequestHandler', () => {
 
       expect(response).toEqual({
         statusCode: 200,
-        body: '{"foo":"bar"}',
+        body,
         headers: {
           'content-type': 'application/json',
           'last-modified': 'Fri, 08 Mar 2019 18:57:18 GMT',
@@ -135,7 +133,7 @@ describe('NodeRequestHandler', () => {
       const pathWithQuery = '/datafiles/123.json?from_my_app=true';
       const scope = nock(host)
         .get(pathWithQuery)
-        .reply(200, { foo: 'bar' });
+        .reply(200, JSON.parse(body));
 
       const request = new NodeRequestHandler().makeRequest(`${host}${pathWithQuery}`, {}, 'get');
       await request.responsePromise;
@@ -176,20 +174,20 @@ describe('NodeRequestHandler', () => {
       const path = '/12/345.json';
       const scope = nock(hostWithPort)
         .get(path)
-        .reply(200, '{"foo":"bar"}');
+        .reply(200, body);
 
       const req = new NodeRequestHandler().makeRequest(`${hostWithPort}${path}`, {}, 'get');
       const resp = await req.responsePromise;
 
       expect(resp).toEqual({
         statusCode: 200,
-        body: '{"foo":"bar"}',
+        body,
         headers: {},
       });
       scope.done();
     });
 
-    xdescribe('timeout', () => {
+    describe('timeout', () => {
       beforeEach(() => {
         jest.useFakeTimers();
       });
@@ -201,26 +199,27 @@ describe('NodeRequestHandler', () => {
       it('should reject the response promise and abort the request when the response is not received before the timeout', async () => {
         const scope = nock(host)
           .get(path)
-          .delay(61000)
-          .reply(200, '{"foo":"bar"}');
+          .delay({ head: 2000, body: 2000 })
+          .reply(200, body);
 
         const abortEventListener = jest.fn();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let emittedReq: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const requestListener = (request: any): void => {
           emittedReq = request;
-          emittedReq.once('abort', abortEventListener);
+          emittedReq.once('timeout', abortEventListener);
         };
         scope.on('request', requestListener);
 
-        const request = new NodeRequestHandler(new NoOpLogger(), 10).makeRequest(`${host}${path}`, {}, 'get');
-        await advanceTimersByTime(60000);
+        const request = new NodeRequestHandler(new NoOpLogger(), 100).makeRequest(`${host}${path}`, {}, 'get');
 
         await expect(request.responsePromise).rejects.toThrow();
         expect(abortEventListener).toBeCalledTimes(1);
 
         scope.done();
         if (emittedReq) {
-          emittedReq.off('abort', abortEventListener);
+          emittedReq.off('timeout', abortEventListener);
         }
         scope.off('request', requestListener);
       });
