@@ -21,7 +21,7 @@ export class QuerySegmentsParameters {
   /**
    * Optimizely Data Platform API key
    */
-  public apiKey: string | undefined;
+  public apiKey?: string;
 
   /**
    * Fully-qualified URL to ODP endpoint
