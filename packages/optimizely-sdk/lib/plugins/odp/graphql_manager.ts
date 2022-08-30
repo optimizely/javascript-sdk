@@ -103,7 +103,7 @@ export class GraphqlManager implements IGraphQLManager {
       return EMPTY_SEGMENTS_COLLECTION;
     }
 
-    return edges.filter(edge => edge.node.state == QUALIFIED).map(edge => edge.node.name);
+    return edges.filter?(edge => edge.node.state == QUALIFIED).map(edge => edge.node.name) || [];
   }
 
   /**
