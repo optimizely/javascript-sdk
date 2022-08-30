@@ -98,7 +98,7 @@ export class GraphqlManager implements IGraphQLManager {
     }
 
     const edges = parsedSegments?.data?.customer?.audiences?.edges;
-    if (edges === undefined) {
+    if (!edges) {
       this._logger.log(LogLevel.WARNING, 'Audience segments fetch failed (decode error)');
       return EMPTY_SEGMENTS_COLLECTION;
     }
