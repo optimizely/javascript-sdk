@@ -21,25 +21,47 @@ import { RequestHandler, Response } from '../../utils/http_request_handler/http'
 import { RequestHandlerFactory } from '../../utils/http_request_handler/request_handler_factory';
 import { REQUEST_TIMEOUT_MS } from '../../utils/http_request_handler/config';
 
+/**
+ * Standard failure message for fetch errors
+ */
 const FETCH_FAILURE_MESSAGE = 'Audience segments fetch failed';
+/**
+ * Return value for scenarios with no valid JSON
+ */
 const EMPTY_JSON_RESPONSE = null;
 
+/**
+ * Interface for sending requests and handling responses to Optimizely Data Platform
+ */
 export interface IOdpClient {
   querySegments(parameters: QuerySegmentsParameters): Promise<string | null>;
 }
 
+/**
+ * Valid types of Javascript contexts in which this code is executing
+ */
 enum ExecutionContextType {
   notDefined,
   browser,
   node,
 }
 
+/**
+ * Http implementation for sending requests and handling responses to Optimizely Data Platform
+ */
 export class OdpClient implements IOdpClient {
   private readonly _errorHandler: ErrorHandler;
   private readonly _logger: LogHandler;
   private readonly _timeout: number;
   private readonly _requestHandler: RequestHandler;
 
+  /**
+   * An implementation for sending requests and handling responses to Optimizely Data Platform (ODP)
+   * @param errorHandler Handler to record exceptions
+   * @param logger Collect and record events/errors for this ODP client
+   * @param requestHandler Client implementation to send/receive requests over HTTP
+   * @param timeout Maximum milliseconds before requests are considered timed out
+   */
   constructor(errorHandler?: ErrorHandler, logger?: LogHandler, requestHandler?: RequestHandler, timeout?: number) {
     this._errorHandler = errorHandler ?? new NoopErrorHandler();
     this._logger = logger ?? new NoOpLogger();
@@ -54,6 +76,11 @@ export class OdpClient implements IOdpClient {
     }
   }
 
+  /**
+   * Handler for querying the ODP GraphQL endpoint
+   * @param parameters
+   * @returns JSON response string from ODP
+   */
   public async querySegments(parameters: QuerySegmentsParameters): Promise<string | null> {
     if (!parameters?.apiHost || !parameters?.apiKey) {
       this._logger.log(LogLevel.ERROR, 'No ApiHost or ApiKey set before querying segments');

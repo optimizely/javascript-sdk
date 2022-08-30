@@ -14,15 +14,24 @@
  * limitations under the License.
  */
 
+/**
+ * Wrapper around valid data and error responses
+ */
 export interface Response {
   data: Data;
   errors: Error[];
 }
 
+/**
+ * GraphQL response data returned from a valid query
+ */
 export interface Data {
   customer: Customer;
 }
 
+/**
+ * GraphQL response from an errant query
+ */
 export interface Error {
   message: string;
   locations: Location[];
@@ -30,27 +39,45 @@ export interface Error {
   extensions: Extension;
 }
 
+/**
+ * Profile used to group/segment an addressable market
+ */
 export interface Customer {
   audiences: Audience;
 }
 
+/**
+ * Specifies the precise place in code or data where the error occurred
+ */
 export interface Location {
   line: number;
   column: number;
 }
 
+/**
+ * Extended error information
+ */
 export interface Extension {
   classification: string;
 }
 
+/**
+ * Segment of a customer base
+ */
 export interface Audience {
   edges: Edge[];
 }
 
+/**
+ * Grouping of nodes within an audience
+ */
 export interface Edge {
   node: Node;
 }
 
+/**
+ * Atomic grouping an audience
+ */
 export interface Node {
   name: string;
   state: string;

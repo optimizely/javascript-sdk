@@ -21,25 +21,54 @@ import { validate } from '../../utils/json_schema_validator';
 import { OdpResponseSchema } from './odp_response_schema';
 import { QuerySegmentsParameters } from './query_segments_parameters';
 
+/**
+ * Expected value for a qualified/valid segment
+ */
 const QUALIFIED = 'qualified';
+/**
+ * Return value when no valid segments found
+ */
 const EMPTY_SEGMENTS_COLLECTION: string[] = [];
+/**
+ * Return value for scenarios with no valid JSON
+ */
 const EMPTY_JSON_RESPONSE = null;
 
+/**
+ * Manager for communicating with the Optimizely Data Platform GraphQL endpoint
+ */
 export interface IGraphQLManager {
   fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[]>;
 }
 
+/**
+ * Concrete implementation for communicating with the Optimizely Data Platform GraphQL endpoint
+ */
 export class GraphqlManager implements IGraphQLManager {
   private readonly _errorHandler: ErrorHandler;
   private readonly _logger: LogHandler;
   private readonly _odpClient: IOdpClient;
 
+  /**
+   * Retrieves the audience segments from the Optimizely Data Platform (ODP)
+   * @param errorHandler Handler to record exceptions
+   * @param logger Collect and record events/errors for this GraphQL implementation
+   * @param client Client to use to send queries to ODP
+   */
   constructor(errorHandler: ErrorHandler, logger: LogHandler, client: IOdpClient) {
     this._errorHandler = errorHandler ?? new NoopErrorHandler();
     this._logger = logger ?? new ConsoleLogHandler();
     this._odpClient = client ?? new OdpClient(this._errorHandler, this._logger);
   }
 
+  /**
+   * Retrieves the audience segments from ODP
+   * @param apiKey ODP public key
+   * @param apiHost Fully-qualified URL of ODP
+   * @param userKey 'vuid' or 'fs_user_id key'
+   * @param userValue Associated value to query for the user key
+   * @param segmentsToCheck Audience segments to check for experiment inclusion
+   */
   public async fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[]> {
     const parameters = new QuerySegmentsParameters({
       apiKey,
@@ -77,6 +106,12 @@ export class GraphqlManager implements IGraphQLManager {
     return edges.filter(edge => edge.node.state == QUALIFIED).map(edge => edge.node.name);
   }
 
+  /**
+   * Parses JSON response
+   * @param jsonResponse JSON response from ODP
+   * @private
+   * @returns Response Strongly-typed ODP Response object
+   */
   private parseSegmentsResponseJson(jsonResponse: string): Response | null {
     let jsonObject = {};
 
