@@ -117,7 +117,8 @@ export class GraphqlManager implements IGraphQLManager {
 
     try {
       jsonObject = JSON.parse(jsonResponse);
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       this._errorHandler.handleError(error);
       this._logger.log(LogLevel.ERROR, 'Attempted to parse invalid segment response JSON.');
       return EMPTY_JSON_RESPONSE;

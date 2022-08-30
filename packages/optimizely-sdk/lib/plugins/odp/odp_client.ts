@@ -99,7 +99,8 @@ export class OdpClient implements IOdpClient {
     try {
       const request = this._requestHandler.makeRequest(url, headers, method, data);
       response = await request.responsePromise;
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       this._errorHandler.handleError(error);
       this._logger.log(LogLevel.ERROR, `${FETCH_FAILURE_MESSAGE} (${error.statusCode ?? 'network error'})`);
 
