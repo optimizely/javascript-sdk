@@ -31,7 +31,7 @@ import eventProcessorConfigValidator from './utils/event_processor_config_valida
 import { createNotificationCenter } from './core/notification_center';
 import { default as eventProcessor } from './plugins/event_processor';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
-import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
+import { createHttpPollingDatafileManager } from './plugins/datafile_manager/browser_http_polling_datafile_manager';
 
 const logger = getLogger();
 logHelper.setLogHandler(loggerPlugin.createLogger());

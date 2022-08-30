@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { LoggerFacade } from '../../modules/logging';
-import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager';
+import { HttpPollingDatafileManager } from '../../modules/datafile-manager/index.node';
 import { DatafileOptions, DatafileManagerConfig, DatafileManager } from '../../shared_types';
 import { toDatafile, tryCreatingProjectConfig } from '../../core/project_config';
 import fns from '../../utils/fns';
