@@ -1,11 +1,11 @@
 /**
- * Copyright 2019-2020, 2022 Optimizely
+ * Copyright 2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,11 +28,13 @@ describe('BrowserRequestHandler', () => {
   describe('makeRequest', () => {
     let mockXHR: FakeXMLHttpRequestStatic;
     let xhrs: FakeXMLHttpRequest[];
+    let browserRequestHandler: BrowserRequestHandler;
 
     beforeEach(() => {
       xhrs = [];
       mockXHR = fakeXhr.useFakeXMLHttpRequest();
       mockXHR.onCreate = (request): number => xhrs.push(request);
+      browserRequestHandler = new BrowserRequestHandler(new NoOpLogger());
     });
 
     afterEach(() => {
@@ -40,7 +42,7 @@ describe('BrowserRequestHandler', () => {
     });
 
     it('should make a GET request to the argument URL', async () => {
-      const request = new BrowserRequestHandler().makeRequest(host, {}, 'get');
+      const request = browserRequestHandler.makeRequest(host, {}, 'get');
 
       expect(xhrs.length).toBe(1);
       const xhr = xhrs[0];
@@ -57,13 +59,13 @@ describe('BrowserRequestHandler', () => {
     });
 
     it('should return a 200 response', async () => {
-      const req = new BrowserRequestHandler().makeRequest(host, {}, 'get');
+      const request = browserRequestHandler.makeRequest(host, {}, 'get');
 
       const xhr = xhrs[0];
       xhr.respond(200, {}, body);
 
-      const resp = await req.responsePromise;
-      expect(resp).toEqual({
+      const response = await request.responsePromise;
+      expect(response).toEqual({
         statusCode: 200,
         headers: {},
         body,
@@ -71,13 +73,13 @@ describe('BrowserRequestHandler', () => {
     });
 
     it('should return a 404 response', async () => {
-      const req = new BrowserRequestHandler().makeRequest(host, {}, 'get');
+      const request = browserRequestHandler.makeRequest(host, {}, 'get');
 
       const xhr = xhrs[0];
       xhr.respond(404, {}, '');
 
-      const resp = await req.responsePromise;
-      expect(resp).toEqual({
+      const response = await request.responsePromise;
+      expect(response).toEqual({
         statusCode: 404,
         headers: {},
         body: '',
@@ -85,7 +87,7 @@ describe('BrowserRequestHandler', () => {
     });
 
     it('should include headers from the headers argument in the request', async () => {
-      const req = new BrowserRequestHandler().makeRequest(host, {
+      const request = browserRequestHandler.makeRequest(host, {
         'if-modified-since': dateString,
       }, 'get');
 
@@ -94,11 +96,11 @@ describe('BrowserRequestHandler', () => {
 
       xhrs[0].respond(404, {}, '');
 
-      await req.responsePromise;
+      await request.responsePromise;
     });
 
     it('should include headers from the response in the eventual response in the return value', async () => {
-      const req = new BrowserRequestHandler().makeRequest(host, {}, 'get');
+      const request = browserRequestHandler.makeRequest(host, {}, 'get');
       const xhr = xhrs[0];
       xhr.respond(
         200,
@@ -109,9 +111,9 @@ describe('BrowserRequestHandler', () => {
         body,
       );
 
-      const resp = await req.responsePromise;
+      const response = await request.responsePromise;
 
-      expect(resp).toEqual({
+      expect(response).toEqual({
         statusCode: 200,
         body,
         headers: {
@@ -122,10 +124,10 @@ describe('BrowserRequestHandler', () => {
     });
 
     it('should return a rejected promise when there is a request error', async () => {
-      const req = new BrowserRequestHandler().makeRequest(host, {}, 'get');
+      const request = browserRequestHandler.makeRequest(host, {}, 'get');
       xhrs[0].error();
 
-      await expect(req.responsePromise).rejects.toThrow();
+      await expect(request.responsePromise).rejects.toThrow();
     });
 
     it('should set a timeout on the request object', () => {

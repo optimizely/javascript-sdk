@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020, 2022 Optimizely
+ * Copyright 2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 import { AbortableRequest, Headers, RequestHandler, Response } from './http';
 import { REQUEST_TIMEOUT_MS } from './config';
 import { LogHandler, LogLevel } from '../../modules/logging';
-import { NoOpLogger } from '../../plugins/logger';
+import { throwError } from '../fns';
 
 const READY_STATE_DONE = 4;
 
@@ -28,8 +28,8 @@ export class BrowserRequestHandler implements RequestHandler {
   private readonly _logger: LogHandler;
   private readonly _timeout: number;
 
-  public constructor(logger?: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
-    this._logger = logger ?? new NoOpLogger();
+  public constructor(logger: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
+    this._logger = logger ?? throwError('Logger is required.');
     this._timeout = timeout;
   }
 
@@ -58,12 +58,12 @@ export class BrowserRequestHandler implements RequestHandler {
           }
 
           const headers = this.parseHeadersFromXhr(request);
-          const resp: Response = {
+          const response: Response = {
             statusCode: request.status,
             body: request.responseText,
             headers,
           };
-          resolve(resp);
+          resolve(response);
         }
       };
 
@@ -115,13 +115,17 @@ export class BrowserRequestHandler implements RequestHandler {
     const headerLines = allHeadersString.split('\r\n');
     const headers: Headers = {};
     headerLines.forEach(headerLine => {
-      const separatorIndex = headerLine.indexOf(': ');
-      if (separatorIndex > -1) {
-        const headerName = headerLine.slice(0, separatorIndex);
-        const headerValue = headerLine.slice(separatorIndex + 2);
-        if (headerValue.length > 0) {
-          headers[headerName] = headerValue;
+      try {
+        const separatorIndex = headerLine.indexOf(': ');
+        if (separatorIndex > -1) {
+          const headerName = headerLine.slice(0, separatorIndex);
+          const headerValue = headerLine.slice(separatorIndex + 2);
+          if (headerName && headerValue) {
+            headers[headerName] = headerValue;
+          }
         }
+      } catch {
+        this._logger.log(LogLevel.WARNING, `Unable to parse & skipped header item '${headerLine}'`);
       }
     });
     return headers;

@@ -85,7 +85,7 @@ describe('OdpClient', () => {
       userValue: 'userValue',
       segmentsToCheck: ['segmentToCheck'],
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger));
+    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
     await client.querySegments(missingApiHost);
 
@@ -101,7 +101,7 @@ describe('OdpClient', () => {
       userValue: 'userValue',
       segmentsToCheck: ['segmentToCheck'],
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger));
+    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
     await client.querySegments(missingApiHost);
 

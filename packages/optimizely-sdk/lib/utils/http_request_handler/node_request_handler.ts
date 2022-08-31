@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020, 2022 Optimizely
+ * Copyright 2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import { AbortableRequest, Headers, RequestHandler, Response } from './http';
 import { REQUEST_TIMEOUT_MS } from './config';
 import decompressResponse from 'decompress-response';
 import { LogHandler } from '../../modules/logging';
-import { NoOpLogger } from '../../plugins/logger';
+import { throwError } from '../fns';
 
 /**
  * Handles sending requests and receiving responses over HTTP via NodeJS http module
@@ -30,8 +30,8 @@ export class NodeRequestHandler implements RequestHandler {
   private readonly _logger: LogHandler;
   private readonly _timeout: number;
 
-  public constructor(logger?: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
-    this._logger = logger ?? new NoOpLogger();
+  public constructor(logger: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
+    this._logger = logger ?? throwError('Logger is required.');
     this._timeout = timeout;
   }
 

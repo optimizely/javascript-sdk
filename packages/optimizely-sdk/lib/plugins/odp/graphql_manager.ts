@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import { ConsoleLogHandler, ErrorHandler, LogHandler, LogLevel, NoopErrorHandler } from '../../modules/logging';
+import { ErrorHandler, LogHandler, LogLevel } from '../../modules/logging';
 import { Response } from './odp_types';
 import { IOdpClient, OdpClient } from './odp_client';
 import { validate } from '../../utils/json_schema_validator';
 import { OdpResponseSchema } from './odp_response_schema';
 import { QuerySegmentsParameters } from './query_segments_parameters';
+import { throwError } from '../../utils/fns';
+import { RequestHandlerFactory } from '../../utils/http_request_handler/request_handler_factory';
 
 /**
  * Expected value for a qualified/valid segment
@@ -55,10 +57,13 @@ export class GraphqlManager implements IGraphQLManager {
    * @param logger Collect and record events/errors for this GraphQL implementation
    * @param client Client to use to send queries to ODP
    */
-  constructor(errorHandler: ErrorHandler, logger: LogHandler, client: IOdpClient) {
-    this._errorHandler = errorHandler ?? new NoopErrorHandler();
-    this._logger = logger ?? new ConsoleLogHandler();
-    this._odpClient = client ?? new OdpClient(this._errorHandler, this._logger);
+  constructor(errorHandler: ErrorHandler, logger: LogHandler, client?: IOdpClient) {
+    this._errorHandler = errorHandler ?? throwError('Error Handler is required');
+    this._logger = logger ?? throwError('Logger is required');
+
+    this._odpClient = client ?? new OdpClient(this._errorHandler,
+      this._logger,
+      RequestHandlerFactory.createHandler(this._logger));
   }
 
   /**
@@ -90,7 +95,7 @@ export class GraphqlManager implements IGraphQLManager {
     }
 
     if (parsedSegments.errors?.length > 0) {
-      const errors = parsedSegments.errors.map((e) => e.message).join(';');
+      const errors = parsedSegments.errors.map((e) => e.message).join('; ');
 
       this._logger.log(LogLevel.WARNING, `Audience segments fetch failed (${errors})`);
 
@@ -103,7 +108,7 @@ export class GraphqlManager implements IGraphQLManager {
       return EMPTY_SEGMENTS_COLLECTION;
     }
 
-    return edges.filter?(edge => edge.node.state == QUALIFIED).map(edge => edge.node.name) || [];
+    return edges.filter(edge => edge.node.state == QUALIFIED).map(edge => edge.node.name);
   }
 
   /**

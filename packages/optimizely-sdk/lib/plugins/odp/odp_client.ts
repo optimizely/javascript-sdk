@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-import { ErrorHandler, LogHandler, LogLevel, NoopErrorHandler } from '../../modules/logging';
+import { ErrorHandler, LogHandler, LogLevel } from '../../modules/logging';
 import { QuerySegmentsParameters } from './query_segments_parameters';
-import { NoOpLogger } from '../logger';
 import { RequestHandler, Response } from '../../utils/http_request_handler/http';
-import { RequestHandlerFactory } from '../../utils/http_request_handler/request_handler_factory';
 import { REQUEST_TIMEOUT_MS } from '../../utils/http_request_handler/config';
+import { throwError } from '../../utils/fns';
 
 /**
  * Standard failure message for fetch errors
@@ -38,15 +37,6 @@ export interface IOdpClient {
 }
 
 /**
- * Valid types of Javascript contexts in which this code is executing
- */
-enum ExecutionContextType {
-  notDefined,
-  browser,
-  node,
-}
-
-/**
  * Http implementation for sending requests and handling responses to Optimizely Data Platform
  */
 export class OdpClient implements IOdpClient {
@@ -62,18 +52,11 @@ export class OdpClient implements IOdpClient {
    * @param requestHandler Client implementation to send/receive requests over HTTP
    * @param timeout Maximum milliseconds before requests are considered timed out
    */
-  constructor(errorHandler?: ErrorHandler, logger?: LogHandler, requestHandler?: RequestHandler, timeout?: number) {
-    this._errorHandler = errorHandler ?? new NoopErrorHandler();
-    this._logger = logger ?? new NoOpLogger();
-    this._timeout = timeout ?? REQUEST_TIMEOUT_MS;
-
-    if (requestHandler) {
-      this._requestHandler = requestHandler;
-    } else {
-      let executionContextType = typeof window === 'object' ? ExecutionContextType.browser : ExecutionContextType.notDefined;
-      executionContextType = typeof process === 'object' ? ExecutionContextType.node : executionContextType;
-      this._requestHandler = RequestHandlerFactory.createHandler(ExecutionContextType[executionContextType], this._logger, this._timeout);
-    }
+  constructor(errorHandler: ErrorHandler, logger: LogHandler, requestHandler: RequestHandler, timeout: number = REQUEST_TIMEOUT_MS) {
+    this._errorHandler = errorHandler ?? throwError('Error Handler is required');
+    this._logger = logger ?? throwError('Logger is required');
+    this._requestHandler = requestHandler ?? throwError('Implementation of RequestHandler is required');
+    this._timeout = timeout;
   }
 
   /**

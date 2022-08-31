@@ -1,11 +1,11 @@
 /**
- * Copyright 2019-2020, 2022 Optimizely
+ * Copyright 2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,6 +34,12 @@ describe('NodeRequestHandler', () => {
   const path = '/api/query';
   const body = '{"foo":"bar"}';
 
+  let nodeRequestHandler: NodeRequestHandler;
+
+  beforeEach(() => {
+    nodeRequestHandler = new NodeRequestHandler(new NoOpLogger());
+  });
+
   afterEach(async () => {
     nock.cleanAll();
   });
@@ -44,7 +50,7 @@ describe('NodeRequestHandler', () => {
         .post(path)
         .reply(200, body);
 
-      const request = new NodeRequestHandler().makeRequest(`${host}${path}`, {}, 'post', body);
+      const request = nodeRequestHandler.makeRequest(`${host}${path}`, {}, 'post', body);
       const response = await request.responsePromise;
 
       expect(response).toEqual({
@@ -60,7 +66,7 @@ describe('NodeRequestHandler', () => {
         .post(path)
         .reply(400, '');
 
-      const request = new NodeRequestHandler().makeRequest(`${host}${path}`, {}, 'post');
+      const request = nodeRequestHandler.makeRequest(`${host}${path}`, {}, 'post');
       const response = await request.responsePromise;
 
       expect(response).toEqual({
@@ -76,7 +82,7 @@ describe('NodeRequestHandler', () => {
         .matchHeader('if-modified-since', 'Fri, 08 Mar 2019 18:57:18 GMT')
         .get(path)
         .reply(304, '');
-      const request = new NodeRequestHandler().makeRequest(`${host}${path}`, {
+      const request = nodeRequestHandler.makeRequest(`${host}${path}`, {
         'if-modified-since': 'Fri, 08 Mar 2019 18:57:18 GMT',
       }, 'get');
       const response = await request.responsePromise;
@@ -94,7 +100,7 @@ describe('NodeRequestHandler', () => {
         .get(path)
         .reply(200, () => zlib.gzipSync(body), { 'content-encoding': 'gzip' });
 
-      const request = new NodeRequestHandler().makeRequest(`${host}${path}`, {}, 'get');
+      const request = nodeRequestHandler.makeRequest(`${host}${path}`, {}, 'get');
       const response = await request.responsePromise;
 
       expect(response).toMatchObject({
@@ -115,7 +121,7 @@ describe('NodeRequestHandler', () => {
           },
         );
 
-      const request = new NodeRequestHandler().makeRequest(`${host}${path}`, {}, 'get');
+      const request = nodeRequestHandler.makeRequest(`${host}${path}`, {}, 'get');
       const response = await request.responsePromise;
 
       expect(response).toEqual({
@@ -135,7 +141,7 @@ describe('NodeRequestHandler', () => {
         .get(pathWithQuery)
         .reply(200, JSON.parse(body));
 
-      const request = new NodeRequestHandler().makeRequest(`${host}${pathWithQuery}`, {}, 'get');
+      const request = nodeRequestHandler.makeRequest(`${host}${pathWithQuery}`, {}, 'get');
       await request.responsePromise;
 
       scope.done();
@@ -144,7 +150,7 @@ describe('NodeRequestHandler', () => {
     it('should throw error for a URL with http protocol (not https)', async () => {
       const invalidHttpProtocolUrl = 'http://some.example.com';
 
-      const request = new NodeRequestHandler().makeRequest(invalidHttpProtocolUrl, {}, 'get');
+      const request = nodeRequestHandler.makeRequest(invalidHttpProtocolUrl, {}, 'get');
 
       await expect(request.responsePromise).rejects.toThrow();
     });
@@ -152,7 +158,7 @@ describe('NodeRequestHandler', () => {
     it('should returns a rejected response promise when the URL protocol is unsupported', async () => {
       const invalidProtocolUrl = 'ftp://something/datafiles/123.json';
 
-      const request = new NodeRequestHandler().makeRequest(invalidProtocolUrl, {}, 'get');
+      const request = nodeRequestHandler.makeRequest(invalidProtocolUrl, {}, 'get');
 
       await expect(request.responsePromise).rejects.toThrow();
     });
@@ -164,8 +170,8 @@ describe('NodeRequestHandler', () => {
           message: 'Connection error',
           code: 'CONNECTION_ERROR',
         });
-      const req = new NodeRequestHandler().makeRequest(`${host}${path}`, {}, 'get');
-      await expect(req.responsePromise).rejects.toThrow();
+      const request = nodeRequestHandler.makeRequest(`${host}${path}`, {}, 'get');
+      await expect(request.responsePromise).rejects.toThrow();
       scope.done();
     });
 
@@ -176,10 +182,10 @@ describe('NodeRequestHandler', () => {
         .get(path)
         .reply(200, body);
 
-      const req = new NodeRequestHandler().makeRequest(`${hostWithPort}${path}`, {}, 'get');
-      const resp = await req.responsePromise;
+      const request = nodeRequestHandler.makeRequest(`${hostWithPort}${path}`, {}, 'get');
+      const response = await request.responsePromise;
 
-      expect(resp).toEqual({
+      expect(response).toEqual({
         statusCode: 200,
         body,
         headers: {},
