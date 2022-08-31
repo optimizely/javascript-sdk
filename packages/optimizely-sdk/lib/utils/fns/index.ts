@@ -153,10 +153,6 @@ export function sprintf(format: string, ...args: any[]): string {
   })
 }
 
-export function throwError(errorMessage: string): never {
-  throw new Error(errorMessage);
-}
-
 export default {
   assign,
   currentTimestamp,
@@ -172,5 +168,4 @@ export default {
   find,
   keyByUtil,
   sprintf,
-  throwExpression: throwError,
 };

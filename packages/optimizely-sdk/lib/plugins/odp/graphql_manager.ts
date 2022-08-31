@@ -20,7 +20,6 @@ import { IOdpClient, OdpClient } from './odp_client';
 import { validate } from '../../utils/json_schema_validator';
 import { OdpResponseSchema } from './odp_response_schema';
 import { QuerySegmentsParameters } from './query_segments_parameters';
-import { throwError } from '../../utils/fns';
 import { RequestHandlerFactory } from '../../utils/http_request_handler/request_handler_factory';
 
 /**
@@ -58,8 +57,8 @@ export class GraphqlManager implements IGraphQLManager {
    * @param client Client to use to send queries to ODP
    */
   constructor(errorHandler: ErrorHandler, logger: LogHandler, client?: IOdpClient) {
-    this._errorHandler = errorHandler ?? throwError('Error Handler is required');
-    this._logger = logger ?? throwError('Logger is required');
+    this._errorHandler = errorHandler;
+    this._logger = logger;
 
     this._odpClient = client ?? new OdpClient(this._errorHandler,
       this._logger,

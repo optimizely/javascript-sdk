@@ -18,7 +18,6 @@ import { ErrorHandler, LogHandler, LogLevel } from '../../modules/logging';
 import { QuerySegmentsParameters } from './query_segments_parameters';
 import { RequestHandler, Response } from '../../utils/http_request_handler/http';
 import { REQUEST_TIMEOUT_MS } from '../../utils/http_request_handler/config';
-import { throwError } from '../../utils/fns';
 
 /**
  * Standard failure message for fetch errors
@@ -53,9 +52,9 @@ export class OdpClient implements IOdpClient {
    * @param timeout Maximum milliseconds before requests are considered timed out
    */
   constructor(errorHandler: ErrorHandler, logger: LogHandler, requestHandler: RequestHandler, timeout: number = REQUEST_TIMEOUT_MS) {
-    this._errorHandler = errorHandler ?? throwError('Error Handler is required');
-    this._logger = logger ?? throwError('Logger is required');
-    this._requestHandler = requestHandler ?? throwError('Implementation of RequestHandler is required');
+    this._errorHandler = errorHandler;
+    this._logger = logger;
+    this._requestHandler = requestHandler;
     this._timeout = timeout;
   }
 

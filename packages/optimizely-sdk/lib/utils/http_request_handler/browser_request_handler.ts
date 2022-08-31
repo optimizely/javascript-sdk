@@ -17,7 +17,6 @@
 import { AbortableRequest, Headers, RequestHandler, Response } from './http';
 import { REQUEST_TIMEOUT_MS } from './config';
 import { LogHandler, LogLevel } from '../../modules/logging';
-import { throwError } from '../fns';
 
 const READY_STATE_DONE = 4;
 
@@ -29,7 +28,7 @@ export class BrowserRequestHandler implements RequestHandler {
   private readonly _timeout: number;
 
   public constructor(logger: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
-    this._logger = logger ?? throwError('Logger is required.');
+    this._logger = logger;
     this._timeout = timeout;
   }
 
