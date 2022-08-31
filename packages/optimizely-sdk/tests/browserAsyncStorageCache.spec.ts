@@ -1,5 +1,5 @@
 /**
- * Copyright 2020, 2022, Optimizely
+ * Copyright 2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,32 +16,41 @@
 
 /// <reference types="jest" />
 
-import ReactNativeAsyncStorageCache from '../lib/plugins/key_value_cache/reactNativeAsyncStorageCache';
-import AsyncStorage from '../__mocks__/@react-native-async-storage/async-storage';
+import BrowserAsyncStorageCache from '../lib/plugins/key_value_cache/browserAsyncStorageCache';
 
-describe('ReactNativeAsyncStorageCache', () => {
-  const TEST_OBJECT_KEY = 'testObject';
-  const testObject = { name: 'An object', with: { some: 2, properties: ['one', 'two'] } };
-  let cacheInstance: ReactNativeAsyncStorageCache;
+describe('BrowserAsyncStorageCache', () => {
+  const KEY_THAT_EXISTS = 'keyThatExists';
+  const VALUE_FOR_KEY_THAT_EXISTS = 'some really super value that exists for keyThatExists';
+  const NONEXISTENT_KEY = 'someKeyThatDoesNotExist';
 
-  beforeAll(() => {
-    cacheInstance = new ReactNativeAsyncStorageCache();
-  });
+  let cacheInstance: BrowserAsyncStorageCache;
 
   beforeEach(() => {
-    AsyncStorage.clearStore();
-    AsyncStorage.setItem(TEST_OBJECT_KEY, JSON.stringify(testObject));
+    const stubData = new Map<string, string>();
+    stubData.set(KEY_THAT_EXISTS, VALUE_FOR_KEY_THAT_EXISTS);
+
+    cacheInstance = new BrowserAsyncStorageCache();
+
+    jest
+      .spyOn(localStorage, 'getItem')
+      .mockImplementation((key) => key == KEY_THAT_EXISTS ? VALUE_FOR_KEY_THAT_EXISTS : null);
+    jest
+      .spyOn(localStorage, 'setItem')
+      .mockImplementation(() => 1);
+    jest
+      .spyOn(localStorage, 'removeItem')
+      .mockImplementation((key) => key == KEY_THAT_EXISTS);
   });
 
   describe('contains', () => {
     it('should return true if value with key exists', async () => {
-      const keyWasFound = await cacheInstance.contains(TEST_OBJECT_KEY);
+      const keyWasFound = await cacheInstance.contains(KEY_THAT_EXISTS);
 
       expect(keyWasFound).toBe(true);
     });
 
     it('should return false if value with key does not exist', async () => {
-      const keyWasFound = await cacheInstance.contains('keyThatDoesNotExist');
+      const keyWasFound = await cacheInstance.contains(NONEXISTENT_KEY);
 
       expect(keyWasFound).toBe(false);
     });
@@ -49,14 +58,13 @@ describe('ReactNativeAsyncStorageCache', () => {
 
   describe('get', () => {
     it('should return correct string when item is found in cache', async () => {
-      const json = await cacheInstance.get(TEST_OBJECT_KEY);
-      const parsedObject = JSON.parse(json ?? '');
+      const foundValue = await cacheInstance.get(KEY_THAT_EXISTS);
 
-      expect(parsedObject).toEqual(testObject);
+      expect(foundValue).toEqual(VALUE_FOR_KEY_THAT_EXISTS);
     });
 
     it('should return empty string if item is not found in cache', async () => {
-      const json = await cacheInstance.get('keyThatDoesNotExist');
+      const json = await cacheInstance.get(NONEXISTENT_KEY);
 
       expect(json).toBeNull();
     });
@@ -64,13 +72,13 @@ describe('ReactNativeAsyncStorageCache', () => {
 
   describe('remove', () => {
     it('should return true after removing a found entry', async () => {
-      const wasSuccessful = await cacheInstance.remove(TEST_OBJECT_KEY);
+      const wasSuccessful = await cacheInstance.remove(KEY_THAT_EXISTS);
 
       expect(wasSuccessful).toBe(true);
     });
 
     it('should return false after trying to remove an entry that is not found ', async () => {
-      const wasSuccessful = await cacheInstance.remove('keyThatDoesNotExist');
+      const wasSuccessful = await cacheInstance.remove(NONEXISTENT_KEY);
 
       expect(wasSuccessful).toBe(false);
     });
@@ -78,13 +86,7 @@ describe('ReactNativeAsyncStorageCache', () => {
 
   describe('set', () => {
     it('should resolve promise if item was successfully set in the cache', async () => {
-      const anotherTestStringValue = 'This should be found too.';
-
-      await cacheInstance.set('anotherTestStringValue', anotherTestStringValue);
-
-      const itemsInReactAsyncStorage = AsyncStorage.dumpItems();
-      expect(itemsInReactAsyncStorage['anotherTestStringValue']).toEqual(anotherTestStringValue);
-      expect(itemsInReactAsyncStorage[TEST_OBJECT_KEY]).toEqual(JSON.stringify(testObject));
+      await cacheInstance.set('newTestKey', 'a value for this newTestKey');
     });
   });
 });
