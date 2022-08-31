@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { DatafileUpdate } from "./datafileManager";
+
 export type Disposer = () => void;
 
 export type Listener = (arg?: any) => void;
@@ -44,7 +46,7 @@ export default class EventEmitter {
     };
   }
 
-  emit(eventName: string, arg?: any): void {
+  emit(eventName: string, arg?: DatafileUpdate): void {
     const listeners = this.listeners[eventName];
     if (listeners) {
       Object.keys(listeners).forEach(listenerId => {

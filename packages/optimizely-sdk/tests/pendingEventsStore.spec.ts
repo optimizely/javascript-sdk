@@ -43,9 +43,6 @@ describe('LocalStorageStore', () => {
       value: 'first',
     })
 
-    console.log("***************************")
-    console.log(store)
-
     expect(store.get('1')).toEqual({
       uuid: '1',
       timestamp: 1,
