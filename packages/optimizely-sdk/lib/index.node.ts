@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.         *
  * You may obtain a copy of the License at                                  *
  *                                                                          *
- *    http://www.apache.org/licenses/LICENSE-2.0                            *
+ *    https://www.apache.org/licenses/LICENSE-2.0                            *
  *                                                                          *
  * Unless required by applicable law or agreed to in writing, software      *
  * distributed under the License is distributed on an "AS IS" BASIS,        *
@@ -32,6 +32,8 @@ import { createNotificationCenter } from './core/notification_center';
 import { createEventProcessor } from './plugins/event_processor';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
+import { ExecutionContext } from './utils/execution_context';
+import { EXECUTION_CONTEXT_TYPE } from './utils/enums';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
@@ -40,13 +42,15 @@ const DEFAULT_EVENT_BATCH_SIZE = 10;
 const DEFAULT_EVENT_FLUSH_INTERVAL = 30000; // Unit is ms, default is 30s
 const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
 
+ExecutionContext.Current = EXECUTION_CONTEXT_TYPE.NODE;
+
 /**
  * Creates an instance of the Optimizely class
  * @param  {Config} config
  * @return {Client|null} the Optimizely client object
- *                           null on error 
+ *                           null on error
  */
- const createInstance = function(config: Config): Client | null {
+const createInstance = function(config: Config): Client | null {
   try {
     let hasLogger = false;
     let isValidInstance = false;
@@ -68,6 +72,7 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
     try {
       configValidator.validate(config);
       isValidInstance = true;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (ex: any) {
       if (hasLogger) {
         logger.error(ex);
@@ -117,6 +122,7 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
     };
 
     return new Optimizely(optimizelyOptions);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     logger.error(e);
     return null;
