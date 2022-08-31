@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,9 +18,9 @@ import {
   getLogger,
   setErrorHandler,
   getErrorHandler,
-  LogLevel
+  LogLevel,
 } from './modules/logging';
-import { LocalStoragePendingEventsDispatcher } from '../lib/modules/event_processor';
+import { LocalStoragePendingEventsDispatcher } from './modules/event_processor';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
@@ -32,6 +32,8 @@ import { createNotificationCenter } from './core/notification_center';
 import { default as eventProcessor } from './plugins/event_processor';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
+import { EXECUTION_CONTEXT_TYPE } from './utils/enums';
+import { ExecutionContext } from './utils/execution_context';
 
 const logger = getLogger();
 logHelper.setLogHandler(loggerPlugin.createLogger());
@@ -44,11 +46,13 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
 
 let hasRetriedEvents = false;
 
+ExecutionContext.Current = EXECUTION_CONTEXT_TYPE.BROWSER;
+
 /**
  * Creates an instance of the Optimizely class
  * @param  {Config} config
  * @return {Client|null} the Optimizely client object
- *                           null on error 
+ *                           null on error
  */
 const createInstance = function(config: Config): Client | null {
   try {
@@ -70,6 +74,7 @@ const createInstance = function(config: Config): Client | null {
     try {
       configValidator.validate(config);
       isValidInstance = true;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (ex: any) {
       logger.error(ex);
     }
@@ -141,11 +146,13 @@ const createInstance = function(config: Config): Client | null {
           false
         );
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       logger.error(enums.LOG_MESSAGES.UNABLE_TO_ATTACH_UNLOAD, MODULE_NAME, e.message);
     }
 
     return optimizely;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     logger.error(e);
     return null;
