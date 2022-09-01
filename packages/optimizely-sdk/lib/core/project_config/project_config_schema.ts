@@ -21,6 +21,7 @@ import { JSONSchema4 } from 'json-schema';
 
 var schemaDefinition = {
   $schema: 'http://json-schema.org/draft-04/schema#',
+  title: 'Project Config JSON Schema',
   type: 'object',
   properties: {
     projectId: {

@@ -97,7 +97,7 @@ describe('lib/core/project_config/project_config_manager', function() {
     var errorMessage = globalStubErrorHandler.handleError.lastCall.args[0].message;
     assert.strictEqual(
       errorMessage,
-      sprintf(ERROR_MESSAGES.INVALID_DATAFILE, 'JSON_SCHEMA_VALIDATOR', 'projectId', 'is missing and it is required')
+      sprintf(ERROR_MESSAGES.INVALID_DATAFILE, 'JSON_SCHEMA_VALIDATOR (Project Config JSON Schema)', 'projectId', 'is missing and it is required'),
     );
     return manager.onReady().then(function(result) {
       assert.include(result, {
