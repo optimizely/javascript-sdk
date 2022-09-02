@@ -26,7 +26,7 @@ import { NodeRequestHandler } from '../lib/utils/http_request_handler/node_reque
 describe('OdpClient', () => {
   const MOCK_QUERY_PARAMETERS = new QuerySegmentsParameters({
     apiKey: 'not-real-api-key',
-    apiHost: 'https://api.example.com/v3/graphql',
+    apiEndpoint: 'https://api.example.com/v3/graphql',
     userKey: 'fs_user_id',
     userValue: 'mock-user-id',
     segmentsToCheck: [
@@ -80,7 +80,7 @@ describe('OdpClient', () => {
   it('should handle missing API Host', async () => {
     const missingApiHost = new QuerySegmentsParameters({
       apiKey: 'apiKey',
-      apiHost: '',
+      apiEndpoint: '',
       userKey: 'userKey',
       userValue: 'userValue',
       segmentsToCheck: ['segmentToCheck'],
@@ -96,7 +96,7 @@ describe('OdpClient', () => {
   it('should handle missing API Key', async () => {
     const missingApiHost = new QuerySegmentsParameters({
       apiKey: '',
-      apiHost: 'apiHost',
+      apiEndpoint: 'apiHost',
       userKey: 'userKey',
       userValue: 'userValue',
       segmentsToCheck: ['segmentToCheck'],
@@ -119,7 +119,6 @@ describe('OdpClient', () => {
         headers: {},
       }),
     });
-
     const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
 
     const response = await client.querySegments(MOCK_QUERY_PARAMETERS) ?? '';
@@ -139,7 +138,6 @@ describe('OdpClient', () => {
         headers: {},
       }),
     });
-
     const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
     const response = await client.querySegments(MOCK_QUERY_PARAMETERS) ?? '';
@@ -165,7 +163,7 @@ describe('OdpClient', () => {
 
     expect(responseJson).toBeNull();
     verify(mockErrorHandler.handleError(anything())).once();
-    verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (400)')).once();
+    verify(mockLogger.log(LogLevel.ERROR, 'Failed to query audience segments (400)')).once();
   });
 
   it('Node should handle 400 HTTP response', async () => {
@@ -184,7 +182,7 @@ describe('OdpClient', () => {
 
     expect(responseJson).toBeNull();
     verify(mockErrorHandler.handleError(anything())).once();
-    verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (400)')).once();
+    verify(mockLogger.log(LogLevel.ERROR, 'Failed to query audience segments (400)')).once();
   });
 
   it('Browser should handle 500 HTTP response', async () => {
@@ -203,7 +201,7 @@ describe('OdpClient', () => {
 
     expect(responseJson).toBeNull();
     verify(mockErrorHandler.handleError(anything())).once();
-    verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (500)')).once();
+    verify(mockLogger.log(LogLevel.ERROR, 'Failed to query audience segments (500)')).once();
   });
 
   it('Node should handle 500 HTTP response', async () => {
@@ -222,7 +220,7 @@ describe('OdpClient', () => {
 
     expect(responseJson).toBeNull();
     verify(mockErrorHandler.handleError(anything())).once();
-    verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (500)')).once();
+    verify(mockLogger.log(LogLevel.ERROR, 'Failed to query audience segments (500)')).once();
   });
 
   it('should handle a network timeout', async () => {
@@ -237,7 +235,7 @@ describe('OdpClient', () => {
 
     expect(responseJson).toBeNull();
     verify(mockErrorHandler.handleError(anything())).once();
-    verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)')).once();
+    verify(mockLogger.log(LogLevel.ERROR, 'Failed to query audience segments (network error)')).once();
   });
 });
 

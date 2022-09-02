@@ -76,7 +76,7 @@ export class GraphqlManager implements IGraphQLManager {
   public async fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[]> {
     const parameters = new QuerySegmentsParameters({
       apiKey,
-      apiHost,
+      apiEndpoint: apiHost,
       userKey,
       userValue,
       segmentsToCheck,

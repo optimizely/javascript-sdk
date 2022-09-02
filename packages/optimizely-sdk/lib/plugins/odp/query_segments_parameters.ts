@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
+import { OdpRequestParameters } from './odp_request_parameters';
+
 /**
  * Handles parameters used in querying ODP segments
  */
-export class QuerySegmentsParameters {
-  /**
-   * Optimizely Data Platform API key
-   */
-  public apiKey?: string;
-
-  /**
-   * Fully-qualified URL to ODP endpoint
-   */
-  public apiHost: string | undefined;
-
+export class QuerySegmentsParameters extends OdpRequestParameters {
   /**
    * 'vuid' or 'fs_user_id' (client device id or fullstack id)
    */
@@ -43,7 +35,13 @@ export class QuerySegmentsParameters {
    */
   public segmentsToCheck: string[] | undefined;
 
-  constructor(parameters: { apiKey: string, apiHost: string, userKey: string, userValue: string, segmentsToCheck: string[] }) {
+  /**
+   * HTTP Verb used to send request
+   */
+  public readonly httpVerb = 'POST';
+
+  constructor(parameters: { apiKey: string, apiEndpoint: string, userKey: string, userValue: string, segmentsToCheck: string[] }) {
+    super();
     Object.assign(this, parameters);
   }
 

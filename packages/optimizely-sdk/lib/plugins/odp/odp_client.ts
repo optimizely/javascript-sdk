@@ -18,21 +18,32 @@ import { ErrorHandler, LogHandler, LogLevel } from '../../modules/logging';
 import { QuerySegmentsParameters } from './query_segments_parameters';
 import { RequestHandler, Response } from '../../utils/http_request_handler/http';
 import { REQUEST_TIMEOUT_MS } from '../../utils/http_request_handler/config';
+import { SendEventsParameters } from './send_events_parameters';
 
 /**
- * Standard failure message for fetch errors
+ * Standard message for audience querying fetch errors
  */
-const FETCH_FAILURE_MESSAGE = 'Audience segments fetch failed';
+const AUDIENCE_FETCH_FAILURE_MESSAGE = 'Failed to query audience segments';
+/**
+ * Standard message for sending events errors
+ */
+const EVENT_SENDING_FAILURE_MESSAGE = 'Failed to send ODP events';
 /**
  * Return value for scenarios with no valid JSON
  */
 const EMPTY_JSON_RESPONSE = null;
+/**
+ * Code when no valid HTTP Status Code available;
+ */
+const EMPTY_RESPONSE_CODE = 0;
 
 /**
  * Interface for sending requests and handling responses to Optimizely Data Platform
  */
 export interface IOdpClient {
   querySegments(parameters: QuerySegmentsParameters): Promise<string | null>;
+
+  sendOdpEvents(parameters: SendEventsParameters): Promise<number>;
 }
 
 /**
@@ -64,13 +75,13 @@ export class OdpClient implements IOdpClient {
    * @returns JSON response string from ODP
    */
   public async querySegments(parameters: QuerySegmentsParameters): Promise<string | null> {
-    if (!parameters?.apiHost || !parameters?.apiKey) {
+    if (!parameters?.apiEndpoint || !parameters?.apiKey) {
       this._logger.log(LogLevel.ERROR, 'No ApiHost or ApiKey set before querying segments');
       return EMPTY_JSON_RESPONSE;
     }
 
-    const method = 'POST';
-    const url = parameters.apiHost;
+    const method = parameters.httpVerb;
+    const url = parameters.apiEndpoint;
     const headers = {
       'Content-Type': 'application/json',
       'x-api-key': parameters.apiKey,
@@ -84,11 +95,40 @@ export class OdpClient implements IOdpClient {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       this._errorHandler.handleError(error);
-      this._logger.log(LogLevel.ERROR, `${FETCH_FAILURE_MESSAGE} (${error.statusCode ?? 'network error'})`);
+      this._logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (${error.statusCode ?? 'network error'})`);
 
       return EMPTY_JSON_RESPONSE;
     }
 
     return response.body;
+  }
+
+  public async sendOdpEvents(parameters: SendEventsParameters): Promise<number> {
+    if (!parameters?.apiEndpoint || !parameters?.apiKey) {
+      this._logger.log(LogLevel.ERROR, 'No ApiEndpoint or ApiKey set before attempting to send ODP events');
+      return EMPTY_RESPONSE_CODE;
+    }
+
+    const method = parameters.httpVerb;
+    const url = parameters.apiEndpoint;
+    const headers = {
+      'Content-Type': 'application/json',
+      'x-api-key': parameters.apiKey,
+    };
+    const data = parameters.toGraphQLJson();
+
+    let response: Response;
+    try {
+      const request = this._requestHandler.makeRequest(url, headers, method, data);
+      response = await request.responsePromise;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      this._errorHandler.handleError(error);
+      this._logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (${error.statusCode ?? 'network error'})`);
+
+      return EMPTY_RESPONSE_CODE;
+    }
+
+    return response.statusCode ?? 0;
   }
 }

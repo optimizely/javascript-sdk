@@ -36,14 +36,14 @@ export class NodeRequestHandler implements RequestHandler {
 
   /**
    * Builds an XMLHttpRequest
-   * @param reqUrl Fully-qualified URL to which to send the request
+   * @param requestUrl Fully-qualified URL to which to send the request
    * @param headers List of headers to include in the request
    * @param method HTTP method to use
    * @param data stringified version of data to POST, PUT, etc
    * @returns AbortableRequest contains both the response Promise and capability to abort()
    */
-  public makeRequest(reqUrl: string, headers: Headers, method: string, data?: string): AbortableRequest {
-    const parsedUrl = url.parse(reqUrl);
+  public makeRequest(requestUrl: string, headers: Headers, method: string, data?: string): AbortableRequest {
+    const parsedUrl = url.parse(requestUrl);
 
     if (parsedUrl.protocol !== 'https:') {
       return {
