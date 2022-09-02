@@ -22,42 +22,10 @@ import { OdpClient } from '../lib/plugins/odp/odp_client';
 import { QuerySegmentsParameters } from '../lib/plugins/odp/query_segments_parameters';
 import { BrowserRequestHandler } from '../lib/utils/http_request_handler/browser_request_handler';
 import { NodeRequestHandler } from '../lib/utils/http_request_handler/node_request_handler';
+import { SendEventsParameters } from '../lib/plugins/odp/send_events_parameters';
+import { OdpEvent } from '../lib/plugins/odp/odp_event';
 
 describe('OdpClient', () => {
-  const MOCK_QUERY_PARAMETERS = new QuerySegmentsParameters({
-    apiKey: 'not-real-api-key',
-    apiEndpoint: 'https://api.example.com/v3/graphql',
-    userKey: 'fs_user_id',
-    userValue: 'mock-user-id',
-    segmentsToCheck: [
-      'has_email',
-      'has_email_opted_in',
-      'push_on_sale',
-    ],
-  });
-  const VALID_RESPONSE_JSON = {
-    'data': {
-      'customer': {
-        'audiences': {
-          'edges': [
-            {
-              'node': {
-                'name': 'has_email',
-                'state': 'qualified',
-              },
-            },
-            {
-              'node': {
-                'name': 'has_email_opted_in',
-                'state': 'qualified',
-              },
-            },
-          ],
-        },
-      },
-    },
-  };
-
   let mockErrorHandler: ErrorHandler;
   let mockLogger: LogHandler;
   let mockBrowserRequestHandler: BrowserRequestHandler;
@@ -77,165 +45,310 @@ describe('OdpClient', () => {
     resetCalls(mockNodeRequestHandler);
   });
 
-  it('should handle missing API Host', async () => {
-    const missingApiHost = new QuerySegmentsParameters({
-      apiKey: 'apiKey',
-      apiEndpoint: '',
-      userKey: 'userKey',
-      userValue: 'userValue',
-      segmentsToCheck: ['segmentToCheck'],
+  describe('querySegments', () => {
+    const MOCK_QUERY_PARAMETERS = new QuerySegmentsParameters({
+      apiKey: 'not-real-api-key',
+      apiEndpoint: 'https://api.example.com/v3/graphql',
+      userKey: 'fs_user_id',
+      userValue: 'mock-user-id',
+      segmentsToCheck: [
+        'has_email',
+        'has_email_opted_in',
+        'push_on_sale',
+      ],
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
-
-    await client.querySegments(missingApiHost);
-
-    verify(mockErrorHandler.handleError(anything())).never();
-    verify(mockLogger.log(LogLevel.ERROR, 'No ApiHost or ApiKey set before querying segments')).once();
-  });
-
-  it('should handle missing API Key', async () => {
-    const missingApiHost = new QuerySegmentsParameters({
-      apiKey: '',
-      apiEndpoint: 'apiHost',
-      userKey: 'userKey',
-      userValue: 'userValue',
-      segmentsToCheck: ['segmentToCheck'],
-    });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
-
-    await client.querySegments(missingApiHost);
-
-    verify(mockErrorHandler.handleError(anything())).never();
-    verify(mockLogger.log(LogLevel.ERROR, 'No ApiHost or ApiKey set before querying segments')).once();
-  });
-
-  it('Browser: should get mocked segments successfully', async () => {
-    when(mockBrowserRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
-      abort: () => {
+    const VALID_RESPONSE_JSON = {
+      'data': {
+        'customer': {
+          'audiences': {
+            'edges': [
+              {
+                'node': {
+                  'name': 'has_email',
+                  'state': 'qualified',
+                },
+              },
+              {
+                'node': {
+                  'name': 'has_email_opted_in',
+                  'state': 'qualified',
+                },
+              },
+            ],
+          },
+        },
       },
-      responsePromise: Promise.resolve({
-        statusCode: 200,
-        body: JSON.stringify(VALID_RESPONSE_JSON),
-        headers: {},
-      }),
+    };
+
+    it('should handle missing API Host', async () => {
+      const missingApiEndpoint = new QuerySegmentsParameters({
+        apiKey: 'apiKey',
+        apiEndpoint: '',
+        userKey: 'userKey',
+        userValue: 'userValue',
+        segmentsToCheck: ['segmentToCheck'],
+      });
+      const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
+
+      await client.querySegments(missingApiEndpoint);
+
+      verify(mockErrorHandler.handleError(anything())).never();
+      verify(mockLogger.log(LogLevel.ERROR, 'No ApiHost or ApiKey set before querying segments')).once();
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
 
-    const response = await client.querySegments(MOCK_QUERY_PARAMETERS) ?? '';
+    it('should handle missing API Key', async () => {
+      const missingApiHost = new QuerySegmentsParameters({
+        apiKey: '',
+        apiEndpoint: 'apiHost',
+        userKey: 'userKey',
+        userValue: 'userValue',
+        segmentsToCheck: ['segmentToCheck'],
+      });
+      const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
-    expect(response).toEqual(JSON.stringify(VALID_RESPONSE_JSON));
-    verify(mockErrorHandler.handleError(anything())).never();
-    verify(mockLogger.log(anything(), anyString())).never();
+      await client.querySegments(missingApiHost);
+
+      verify(mockErrorHandler.handleError(anything())).never();
+      verify(mockLogger.log(LogLevel.ERROR, 'No ApiHost or ApiKey set before querying segments')).once();
+    });
+
+    it('Browser: should get mocked segments successfully', async () => {
+      when(mockBrowserRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
+        abort: () => {
+        },
+        responsePromise: Promise.resolve({
+          statusCode: 200,
+          body: JSON.stringify(VALID_RESPONSE_JSON),
+          headers: {},
+        }),
+      });
+      const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
+
+      const response = await client.querySegments(MOCK_QUERY_PARAMETERS) ?? '';
+
+      expect(response).toEqual(JSON.stringify(VALID_RESPONSE_JSON));
+      verify(mockErrorHandler.handleError(anything())).never();
+      verify(mockLogger.log(anything(), anyString())).never();
+    });
+
+    it('Node: should get mocked segments successfully', async () => {
+      when(mockNodeRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
+        abort: () => {
+        },
+        responsePromise: Promise.resolve({
+          statusCode: 200,
+          body: JSON.stringify(VALID_RESPONSE_JSON),
+          headers: {},
+        }),
+      });
+      const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
+
+      const response = await client.querySegments(MOCK_QUERY_PARAMETERS) ?? '';
+
+      expect(response).toEqual(JSON.stringify(VALID_RESPONSE_JSON));
+      verify(mockErrorHandler.handleError(anything())).never();
+      verify(mockLogger.log(anything(), anyString())).never();
+    });
+
+    it('Browser: should handle 400 HTTP response', async () => {
+      when(mockBrowserRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
+        abort: () => {
+        },
+        responsePromise: Promise.reject({
+          statusCode: 400,
+          body: '',
+          headers: {},
+        }),
+      });
+      const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
+
+      const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
+
+      expect(responseJson).toBeNull();
+      verify(mockErrorHandler.handleError(anything())).once();
+      verify(mockLogger.log(LogLevel.ERROR, 'Failed to query audience segments (400)')).once();
+    });
+
+    it('Node: should handle 400 HTTP response', async () => {
+      when(mockNodeRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
+        abort: () => {
+        },
+        responsePromise: Promise.reject({
+          statusCode: 400,
+          body: '',
+          headers: {},
+        }),
+      });
+      const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
+
+      const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
+
+      expect(responseJson).toBeNull();
+      verify(mockErrorHandler.handleError(anything())).once();
+      verify(mockLogger.log(LogLevel.ERROR, 'Failed to query audience segments (400)')).once();
+    });
+
+    it('Browser: should handle 500 HTTP response', async () => {
+      when(mockBrowserRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
+        abort: () => {
+        },
+        responsePromise: Promise.reject({
+          statusCode: 500,
+          body: '',
+          headers: {},
+        }),
+      });
+      const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
+
+      const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
+
+      expect(responseJson).toBeNull();
+      verify(mockErrorHandler.handleError(anything())).once();
+      verify(mockLogger.log(LogLevel.ERROR, 'Failed to query audience segments (500)')).once();
+    });
+
+    it('Node: should handle 500 HTTP response', async () => {
+      when(mockNodeRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
+        abort: () => {
+        },
+        responsePromise: Promise.reject({
+          statusCode: 500,
+          body: '',
+          headers: {},
+        }),
+      });
+      const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
+
+      const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
+
+      expect(responseJson).toBeNull();
+      verify(mockErrorHandler.handleError(anything())).once();
+      verify(mockLogger.log(LogLevel.ERROR, 'Failed to query audience segments (500)')).once();
+    });
+
+    it('should handle a network timeout', async () => {
+      when(mockNodeRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
+        abort: () => {
+        },
+        responsePromise: Promise.reject(new Error('Request timed out')),
+      });
+      const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler), 10);
+
+      const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
+
+      expect(responseJson).toBeNull();
+      verify(mockErrorHandler.handleError(anything())).once();
+      verify(mockLogger.log(LogLevel.ERROR, 'Failed to query audience segments (network error)')).once();
+    });
   });
 
-  it('Node: should get mocked segments successfully', async () => {
-    when(mockNodeRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
-      abort: () => {
-      },
-      responsePromise: Promise.resolve({
-        statusCode: 200,
-        body: JSON.stringify(VALID_RESPONSE_JSON),
-        headers: {},
-      }),
+  describe('sendOdpEvents', () => {
+    const MOCK_SEND_PARAMETERS = new SendEventsParameters({
+      apiKey: 'also-not-real-api-key',
+      apiEndpoint: 'https://events.example.com/v2/api',
+      events: [
+        new OdpEvent('t1', 'a1',
+          new Map([['id-key-1', 'id-value-1']]),
+          new Map(Object.entries({
+            key11: 'value-1',
+            key12: true,
+            key13: 3.5,
+          }))),
+        new OdpEvent('t2', 'a2',
+          new Map([['id-key-2', 'id-value-2']]),
+          new Map(Object.entries({
+            key2: 'value-2',
+          }))),
+      ],
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
+    const VALID_RESPONSE_CODE = 200;
 
-    const response = await client.querySegments(MOCK_QUERY_PARAMETERS) ?? '';
+    it('should handle missing API Endpoint', async () => {
+      const missingApiEndpoint = new SendEventsParameters({
+        apiKey: 'apiKey',
+        apiEndpoint: '',
+        events: [],
+      });
+      const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
-    expect(response).toEqual(JSON.stringify(VALID_RESPONSE_JSON));
-    verify(mockErrorHandler.handleError(anything())).never();
-    verify(mockLogger.log(anything(), anyString())).never();
-  });
+      await client.sendOdpEvents(missingApiEndpoint);
 
-  it('Browser should handle 400 HTTP response', async () => {
-    when(mockBrowserRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
-      abort: () => {
-      },
-      responsePromise: Promise.reject({
-        statusCode: 400,
-        body: '',
-        headers: {},
-      }),
+      verify(mockErrorHandler.handleError(anything())).never();
+      verify(mockLogger.log(LogLevel.ERROR, 'No ApiEndpoint or ApiKey set before attempting to send ODP events')).once();
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
 
-    const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
+    it('should handle missing API Key', async () => {
+      const missingApiKey = new SendEventsParameters({
+        apiKey: '',
+        apiEndpoint: 'https://some.example.com/endpoint',
+        events: [],
+      });
+      const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
-    expect(responseJson).toBeNull();
-    verify(mockErrorHandler.handleError(anything())).once();
-    verify(mockLogger.log(LogLevel.ERROR, 'Failed to query audience segments (400)')).once();
-  });
+      await client.sendOdpEvents(missingApiKey);
 
-  it('Node should handle 400 HTTP response', async () => {
-    when(mockNodeRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
-      abort: () => {
-      },
-      responsePromise: Promise.reject({
-        statusCode: 400,
-        body: '',
-        headers: {},
-      }),
+      verify(mockErrorHandler.handleError(anything())).never();
+      verify(mockLogger.log(LogLevel.ERROR, 'No ApiEndpoint or ApiKey set before attempting to send ODP events')).once();
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
-    const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
+    it('Browser: should send events successfully', async () => {
+      when(mockBrowserRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
+        abort: () => {
+        },
+        responsePromise: Promise.resolve({
+          statusCode: 200,
+          body: JSON.stringify(MOCK_SEND_PARAMETERS),
+          headers: {},
+        }),
+      });
+      const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
 
-    expect(responseJson).toBeNull();
-    verify(mockErrorHandler.handleError(anything())).once();
-    verify(mockLogger.log(LogLevel.ERROR, 'Failed to query audience segments (400)')).once();
-  });
+      const response = await client.sendOdpEvents(MOCK_SEND_PARAMETERS) ?? '';
 
-  it('Browser should handle 500 HTTP response', async () => {
-    when(mockBrowserRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
-      abort: () => {
-      },
-      responsePromise: Promise.reject({
-        statusCode: 500,
-        body: '',
-        headers: {},
-      }),
+      expect(response).toEqual(VALID_RESPONSE_CODE);
+      verify(mockErrorHandler.handleError(anything())).never();
+      verify(mockLogger.log(anything(), anyString())).never();
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
 
-    const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
+    it('Node: should send events successfully', async () => {
+      when(mockNodeRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
+        abort: () => {
+        },
+        responsePromise: Promise.resolve({
+          statusCode: 200,
+          body: JSON.stringify(MOCK_SEND_PARAMETERS),
+          headers: {},
+        }),
+      });
+      const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
-    expect(responseJson).toBeNull();
-    verify(mockErrorHandler.handleError(anything())).once();
-    verify(mockLogger.log(LogLevel.ERROR, 'Failed to query audience segments (500)')).once();
-  });
+      const response = await client.sendOdpEvents(MOCK_SEND_PARAMETERS) ?? '';
 
-  it('Node should handle 500 HTTP response', async () => {
-    when(mockNodeRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
-      abort: () => {
-      },
-      responsePromise: Promise.reject({
-        statusCode: 500,
-        body: '',
-        headers: {},
-      }),
+      expect(response).toEqual(VALID_RESPONSE_CODE);
+      verify(mockErrorHandler.handleError(anything())).never();
+      verify(mockLogger.log(anything(), anyString())).never();
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
-    const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
+    // TODO: Start here
+    it('Browser: should not retry for 400 HTTP response', async () => {
+      when(mockBrowserRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
+        abort: () => {
+        },
+        responsePromise: Promise.reject({
+          statusCode: 400,
+          body: '',
+          headers: {},
+        }),
+      });
+      const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
 
-    expect(responseJson).toBeNull();
-    verify(mockErrorHandler.handleError(anything())).once();
-    verify(mockLogger.log(LogLevel.ERROR, 'Failed to query audience segments (500)')).once();
-  });
+      const statusCode = await client.sendOdpEvents(MOCK_SEND_PARAMETERS);
 
-  it('should handle a network timeout', async () => {
-    when(mockNodeRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
-      abort: () => {
-      },
-      responsePromise: Promise.reject(new Error('Request timed out')),
+      expect(statusCode).toEqual(400);
+      verify(mockErrorHandler.handleError(anything())).once();
+      verify(mockLogger.log(LogLevel.ERROR, 'Failed to send ODP events (400)')).once();
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler), 10);
-
-    const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
-
-    expect(responseJson).toBeNull();
-    verify(mockErrorHandler.handleError(anything())).once();
-    verify(mockLogger.log(LogLevel.ERROR, 'Failed to query audience segments (network error)')).once();
   });
-});
+})
+;
 
