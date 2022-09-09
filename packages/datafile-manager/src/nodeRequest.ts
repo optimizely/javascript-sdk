@@ -93,11 +93,19 @@ function getResponseFromRequest(request: http.ClientRequest): Promise<Response> 
 
         clearTimeout(timeout);
 
-        resolve({
-          statusCode: incomingMessage.statusCode,
-          body: responseData,
-          headers: createHeadersFromNodeIncomingMessage(incomingMessage),
-        });
+        if (incomingMessage.statusCode >= 400 && incomingMessage.statusCode <= 599) {
+          reject(new Error(JSON.stringify({
+            statusCode: incomingMessage.statusCode,
+            body: responseData,
+            headers: createHeadersFromNodeIncomingMessage(incomingMessage),
+          })));
+        } else {
+          resolve({
+            statusCode: incomingMessage.statusCode,
+            body: responseData,
+            headers: createHeadersFromNodeIncomingMessage(incomingMessage),
+          });
+        }
       });
     });
 
