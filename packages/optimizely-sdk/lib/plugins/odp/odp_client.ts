@@ -31,11 +31,15 @@ const EVENT_SENDING_FAILURE_MESSAGE = 'Failed to send ODP events';
 /**
  * Return value for scenarios with no valid JSON
  */
-const EMPTY_JSON_RESPONSE = null;
+const NULL_JSON_RESPONSE = null;
 /**
  * Code when no valid HTTP Status Code available;
  */
-const EMPTY_RESPONSE_CODE = 0;
+export const RETRY_ADVISED_BUT_NO_HTTP_STATUS_AVAILABLE = 0;
+/**
+ * Defines when consumer should not retry ODP event
+ */
+const RETRY_NOT_ADVISED = null;
 
 /**
  * Interface for sending requests and handling responses to Optimizely Data Platform
@@ -43,7 +47,7 @@ const EMPTY_RESPONSE_CODE = 0;
 export interface IOdpClient {
   querySegments(parameters: QuerySegmentsParameters): Promise<string | null>;
 
-  sendOdpEvents(parameters: SendEventsParameters): Promise<number>;
+  sendOdpEvents(parameters: SendEventsParameters): Promise<number | null>;
 }
 
 /**
@@ -71,13 +75,13 @@ export class OdpClient implements IOdpClient {
 
   /**
    * Handler for querying the ODP GraphQL endpoint
-   * @param parameters
-   * @returns JSON response string from ODP
+   * @param parameters Query parameters to send to ODP
+   * @returns JSON response string from ODP or null
    */
   public async querySegments(parameters: QuerySegmentsParameters): Promise<string | null> {
     if (!parameters?.apiEndpoint || !parameters?.apiKey) {
       this._logger.log(LogLevel.ERROR, 'No ApiHost or ApiKey set before querying segments');
-      return EMPTY_JSON_RESPONSE;
+      return NULL_JSON_RESPONSE;
     }
 
     const method = parameters.httpVerb;
@@ -95,18 +99,27 @@ export class OdpClient implements IOdpClient {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       this._errorHandler.handleError(error);
-      this._logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (${error.statusCode ?? 'network error'})`);
+      this._logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (network error)`);
 
-      return EMPTY_JSON_RESPONSE;
+      return NULL_JSON_RESPONSE;
     }
 
     return response.body;
   }
 
-  public async sendOdpEvents(parameters: SendEventsParameters): Promise<number> {
+  /**
+   * Handler for sending ODP events
+   * @param parameters
+   * @returns
+   * 1. null, When there was a non-recoverable error and no retry is needed.
+   * 2. 0 If an unexpected error occurred and retrying can be useful.
+   * 3. HTTPStatus code if httpclient was able to make the request and was able to receive response.
+   *    It is recommended to retry if status code was 5xx.
+   */
+  public async sendOdpEvents(parameters: SendEventsParameters): Promise<number | null> {
     if (!parameters?.apiEndpoint || !parameters?.apiKey) {
       this._logger.log(LogLevel.ERROR, 'No ApiEndpoint or ApiKey set before attempting to send ODP events');
-      return EMPTY_RESPONSE_CODE;
+      return RETRY_NOT_ADVISED;
     }
 
     const method = parameters.httpVerb;
@@ -124,11 +137,11 @@ export class OdpClient implements IOdpClient {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       this._errorHandler.handleError(error);
-      this._logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (${error.statusCode ?? 'network error'})`);
+      this._logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (network error)`);
 
-      return EMPTY_RESPONSE_CODE;
+      return RETRY_ADVISED_BUT_NO_HTTP_STATUS_AVAILABLE;
     }
 
-    return response.statusCode ?? 0;
+    return response.statusCode ?? RETRY_ADVISED_BUT_NO_HTTP_STATUS_AVAILABLE;
   }
 }

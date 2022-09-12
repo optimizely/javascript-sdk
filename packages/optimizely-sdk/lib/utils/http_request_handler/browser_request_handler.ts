@@ -18,8 +18,6 @@ import { AbortableRequest, Headers, RequestHandler, Response } from './http';
 import { REQUEST_TIMEOUT_MS } from './config';
 import { LogHandler, LogLevel } from '../../modules/logging';
 
-const READY_STATE_DONE = 4;
-
 /**
  * Handles sending requests and receiving responses over HTTP via XMLHttpRequest
  */
@@ -49,7 +47,7 @@ export class BrowserRequestHandler implements RequestHandler {
       this.setHeadersInXhr(headers, request);
 
       request.onreadystatechange = (): void => {
-        if (request.readyState === READY_STATE_DONE) {
+        if (request.readyState === XMLHttpRequest.DONE) {
           const statusCode = request.status;
           if (statusCode === 0) {
             reject(new Error('Request error'));
