@@ -68,15 +68,15 @@ export class GraphqlManager implements IGraphQLManager {
   /**
    * Retrieves the audience segments from ODP
    * @param apiKey ODP public key
-   * @param apiHost Fully-qualified URL of ODP
+   * @param apiEndpoint Fully-qualified URL of ODP
    * @param userKey 'vuid' or 'fs_user_id key'
    * @param userValue Associated value to query for the user key
    * @param segmentsToCheck Audience segments to check for experiment inclusion
    */
-  public async fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[]> {
+  public async fetchSegments(apiKey: string, apiEndpoint: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[]> {
     const parameters = new QuerySegmentsParameters({
       apiKey,
-      apiEndpoint: apiHost,
+      apiEndpoint,
       userKey,
       userValue,
       segmentsToCheck,
