@@ -35,7 +35,7 @@ const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
 export interface IOdpClient {
   querySegments(parameters: QuerySegmentsParameters): Promise<string | null>;
 
-  sendOdpEvents(parameters: SendEventsParameters): Promise<number | null>;
+  sendEvents(parameters: SendEventsParameters): Promise<number | null>;
 }
 
 /**
@@ -104,7 +104,7 @@ export class OdpClient implements IOdpClient {
    * 3. HTTPStatus code if httpclient was able to make the request and was able to receive response.
    *    It is recommended to retry if status code was 5xx.
    */
-  public async sendOdpEvents(parameters: SendEventsParameters): Promise<number | null> {
+  public async sendEvents(parameters: SendEventsParameters): Promise<number | null> {
     if (!parameters?.apiEndpoint || !parameters?.apiKey) {
       this._logger.log(LogLevel.ERROR, 'No ApiEndpoint or ApiKey set before attempting to send ODP events');
       return null;
