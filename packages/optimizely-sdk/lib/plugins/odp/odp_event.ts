@@ -21,7 +21,8 @@ export class OdpEvent {
 
   private readonly _identifiers: Map<string, string>;
 
-  private readonly _data: Map<string, object>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private readonly _data: Map<string, any>;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(type: string, action: string, identifiers: Map<string, string>, data: Map<string, any>) {

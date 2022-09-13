@@ -39,7 +39,7 @@ export class SendEventsParameters extends OdpRequestParameters {
   /**
    * Convert events to JSON format
    */
-  public toGraphQLJson(): string {
+  public toJson(): string {
     return JSON.stringify(this.events);
   }
 }

@@ -23,23 +23,11 @@ import { SendEventsParameters } from './send_events_parameters';
 /**
  * Standard message for audience querying fetch errors
  */
-const AUDIENCE_FETCH_FAILURE_MESSAGE = 'Failed to query audience segments';
+const AUDIENCE_FETCH_FAILURE_MESSAGE = 'Audience segments fetch failed';
 /**
  * Standard message for sending events errors
  */
-const EVENT_SENDING_FAILURE_MESSAGE = 'Failed to send ODP events';
-/**
- * Return value for scenarios with no valid JSON
- */
-const NULL_JSON_RESPONSE = null;
-/**
- * Code when no valid HTTP Status Code available;
- */
-export const RETRY_ADVISED_BUT_NO_HTTP_STATUS_AVAILABLE = 0;
-/**
- * Defines when consumer should not retry ODP event
- */
-const RETRY_NOT_ADVISED = null;
+const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
 
 /**
  * Interface for sending requests and handling responses to Optimizely Data Platform
@@ -81,7 +69,7 @@ export class OdpClient implements IOdpClient {
   public async querySegments(parameters: QuerySegmentsParameters): Promise<string | null> {
     if (!parameters?.apiEndpoint || !parameters?.apiKey) {
       this._logger.log(LogLevel.ERROR, 'No ApiHost or ApiKey set before querying segments');
-      return NULL_JSON_RESPONSE;
+      return null;
     }
 
     const method = parameters.httpVerb;
@@ -101,7 +89,7 @@ export class OdpClient implements IOdpClient {
       this._errorHandler.handleError(error);
       this._logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (network error)`);
 
-      return NULL_JSON_RESPONSE;
+      return null;
     }
 
     return response.body;
@@ -119,7 +107,7 @@ export class OdpClient implements IOdpClient {
   public async sendOdpEvents(parameters: SendEventsParameters): Promise<number | null> {
     if (!parameters?.apiEndpoint || !parameters?.apiKey) {
       this._logger.log(LogLevel.ERROR, 'No ApiEndpoint or ApiKey set before attempting to send ODP events');
-      return RETRY_NOT_ADVISED;
+      return null;
     }
 
     const method = parameters.httpVerb;
@@ -128,7 +116,7 @@ export class OdpClient implements IOdpClient {
       'Content-Type': 'application/json',
       'x-api-key': parameters.apiKey,
     };
-    const data = parameters.toGraphQLJson();
+    const data = parameters.toJson();
 
     let response: Response;
     try {
@@ -139,9 +127,9 @@ export class OdpClient implements IOdpClient {
       this._errorHandler.handleError(error);
       this._logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (network error)`);
 
-      return RETRY_ADVISED_BUT_NO_HTTP_STATUS_AVAILABLE;
+      return 0;
     }
 
-    return response.statusCode ?? RETRY_ADVISED_BUT_NO_HTTP_STATUS_AVAILABLE;
+    return response.statusCode ?? 0;
   }
 }

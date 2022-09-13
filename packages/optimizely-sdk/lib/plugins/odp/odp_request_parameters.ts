@@ -18,8 +18,6 @@ export interface IOdpRequestParameters {
   apiKey: string | undefined;
   apiEndpoint: string | undefined;
   httpVerb: string;
-
-  toGraphQLJson(): string;
 }
 
 export abstract class OdpRequestParameters implements IOdpRequestParameters {
@@ -37,9 +35,4 @@ export abstract class OdpRequestParameters implements IOdpRequestParameters {
    * HTTP Verb used to send request
    */
   public abstract readonly httpVerb: string;
-
-  /**
-   * Method to convert object(s) into expected GraphQL JSON string
-   */
-  public abstract toGraphQLJson(): string;
 }

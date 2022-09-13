@@ -18,7 +18,7 @@
 
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 import { ErrorHandler, LogHandler, LogLevel } from '../lib/modules/logging';
-import { OdpClient, RETRY_ADVISED_BUT_NO_HTTP_STATUS_AVAILABLE } from '../lib/plugins/odp/odp_client';
+import { OdpClient } from '../lib/plugins/odp/odp_client';
 import { QuerySegmentsParameters } from '../lib/plugins/odp/query_segments_parameters';
 import { BrowserRequestHandler } from '../lib/utils/http_request_handler/browser_request_handler';
 import { NodeRequestHandler } from '../lib/utils/http_request_handler/node_request_handler';
@@ -71,7 +71,7 @@ describe('OdpClient', () => {
               {
                 'node': {
                   'name': 'has_email_opted_in',
-                  'state': 'qualified',
+                  'state': 'not-ready',
                 },
               },
             ],
@@ -239,7 +239,7 @@ describe('OdpClient', () => {
 
       expect(responseJson).toBeNull();
       verify(mockErrorHandler.handleError(anything())).once();
-      verify(mockLogger.log(LogLevel.ERROR, 'Failed to query audience segments (network error)')).once();
+      verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)')).once();
     });
   });
 
@@ -418,9 +418,9 @@ describe('OdpClient', () => {
 
       const statusCode = await client.sendOdpEvents(MOCK_SEND_PARAMETERS);
 
-      expect(statusCode).toBe(RETRY_ADVISED_BUT_NO_HTTP_STATUS_AVAILABLE);
+      expect(statusCode).toBe(0);
       verify(mockErrorHandler.handleError(anything())).once();
-      verify(mockLogger.log(LogLevel.ERROR, 'Failed to send ODP events (network error)')).once();
+      verify(mockLogger.log(LogLevel.ERROR, 'ODP event send failed (network error)')).once();
     });
   });
 })
