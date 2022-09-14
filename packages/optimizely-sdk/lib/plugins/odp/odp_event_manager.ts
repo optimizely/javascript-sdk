@@ -56,6 +56,13 @@ export class OdpEventManager implements IOdpEventManager {
     this._queueSize = queueSize;
   }
 
+  public registerVUID(vuid: string): void {
+
+  }
+
+  public identifyUser(vuid: string, userId: string): void {
+  }
+
   public start(): void {
     this._isRunning = true;
     eventDispatcherThread = new EventDispatcherThread();
@@ -82,12 +89,5 @@ export class OdpEventManager implements IOdpEventManager {
 
   private processEvent(event: OdpEvent): void {
 
-  }
-
-  public registerVUID(vuid: string): void {
-
-  }
-
-  public identifyUser(vuid: string, userId: string): void {
   }
 }
