@@ -15,8 +15,8 @@
  */
 
 export interface IOdpRequestParameters {
-  apiKey: string | undefined;
-  apiEndpoint: string | undefined;
+  apiKey?: string;
+  apiEndpoint?: string;
   httpVerb: string;
 }
 
@@ -24,12 +24,12 @@ export abstract class OdpRequestParameters implements IOdpRequestParameters {
   /**
    * Optimizely Data Platform API key
    */
-  public apiKey: string | undefined;
+  public apiKey?: string;
 
   /**
    * Fully-qualified URL to ODP events endpoint
    */
-  public apiEndpoint: string | undefined;
+  public apiEndpoint?: string;
 
   /**
    * HTTP Verb used to send request

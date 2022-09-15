@@ -23,17 +23,17 @@ export class QuerySegmentsParameters extends OdpRequestParameters {
   /**
    * 'vuid' or 'fs_user_id' (client device id or fullstack id)
    */
-  public userKey: string | undefined;
+  public userKey?: string;
 
   /**
    * Value for the user key
    */
-  public userValue: string | undefined;
+  public userValue?: string;
 
   /**
    * Audience segments to check for inclusion in the experiment
    */
-  public segmentsToCheck: string[] | undefined;
+  public segmentsToCheck?: string[];
 
   /**
    * HTTP Verb used to send request

@@ -15,20 +15,20 @@
  */
 
 export class OdpEvent {
-  private readonly _type: string;
+  private readonly type: string;
 
-  private readonly _action: string;
+  private readonly action: string;
 
-  private readonly _identifiers: Map<string, string>;
+  private readonly identifiers: Map<string, string>;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private readonly _data: Map<string, any>;
+  private readonly data: Map<string, any>;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(type: string, action: string, identifiers: Map<string, string>, data: Map<string, any>) {
-    this._type = type;
-    this._action = action;
-    this._identifiers = identifiers;
-    this._data = data;
+    this.type = type;
+    this.action = action;
+    this.identifiers = identifiers;
+    this.data = data;
   }
 }

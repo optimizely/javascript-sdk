@@ -74,6 +74,9 @@ export class GraphqlManager implements IGraphQLManager {
    * @param segmentsToCheck Audience segments to check for experiment inclusion
    */
   public async fetchSegments(apiKey: string, apiEndpoint: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[]> {
+    if (segmentsToCheck?.length === 0) {
+      return EMPTY_SEGMENTS_COLLECTION;
+    }
     const parameters = new QuerySegmentsParameters({
       apiKey,
       apiEndpoint,

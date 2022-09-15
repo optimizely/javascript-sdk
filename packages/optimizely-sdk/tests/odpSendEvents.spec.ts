@@ -34,6 +34,7 @@ const MOCK_SEND_PARAMETERS = new SendEventsParameters({
         key11: 'value-1',
         key12: true,
         key13: 3.5,
+        key14: null,
       }))),
     new OdpEvent('t2', 'a2',
       new Map([['id-key-2', 'id-value-2']]),
@@ -49,12 +50,14 @@ describe('OdpClient Send Events', () => {
   let mockLogger: LogHandler;
   let mockBrowserRequestHandler: BrowserRequestHandler;
   let mockNodeRequestHandler: NodeRequestHandler;
+  let mockOdpEvent: OdpEvent;
 
   beforeAll(() => {
     mockErrorHandler = mock<ErrorHandler>();
     mockLogger = mock<LogHandler>();
     mockBrowserRequestHandler = mock<BrowserRequestHandler>();
     mockNodeRequestHandler = mock<NodeRequestHandler>();
+    mockOdpEvent = mock<OdpEvent>();
   });
 
   beforeEach(() => {
@@ -62,13 +65,14 @@ describe('OdpClient Send Events', () => {
     resetCalls(mockLogger);
     resetCalls(mockBrowserRequestHandler);
     resetCalls(mockNodeRequestHandler);
+    resetCalls(mockOdpEvent);
   });
 
   it('should handle missing API Endpoint', async () => {
     const missingApiEndpoint = new SendEventsParameters({
       apiKey: 'apiKey',
       apiEndpoint: '',
-      events: [],
+      events: [instance(mockOdpEvent)],
     });
     const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
@@ -80,10 +84,11 @@ describe('OdpClient Send Events', () => {
   });
 
   it('should handle missing API Key', async () => {
+
     const missingApiKey = new SendEventsParameters({
       apiKey: '',
       apiEndpoint: 'https://some.example.com/endpoint',
-      events: [],
+      events: [instance(mockOdpEvent)],
     });
     const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 

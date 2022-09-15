@@ -24,7 +24,7 @@ export class SendEventsParameters extends OdpRequestParameters {
   /**
    * Collection of ODP events to transmit
    */
-  public events: OdpEvent[] | undefined;
+  public events?: OdpEvent[];
 
   /**
    * HTTP Verb used to send request

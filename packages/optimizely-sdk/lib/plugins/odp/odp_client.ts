@@ -67,16 +67,27 @@ export class OdpClient implements IOdpClient {
    * @returns JSON response string from ODP or null
    */
   public async querySegments(parameters: QuerySegmentsParameters): Promise<string | null> {
-    if (!parameters?.apiEndpoint || !parameters?.apiKey) {
+    const { apiEndpoint, apiKey, httpVerb, userKey, userValue, segmentsToCheck } = parameters;
+
+    if (segmentsToCheck?.length === 0) {
+      return '';
+    }
+
+    if (!apiEndpoint || !apiKey) {
       this._logger.log(LogLevel.ERROR, 'No ApiHost or ApiKey set before querying segments');
       return null;
     }
 
-    const method = parameters.httpVerb;
-    const url = parameters.apiEndpoint;
+    if (!userKey || !userValue) {
+      this._logger.log(LogLevel.ERROR, 'No UserKey or UserValue set before querying segments');
+      return null;
+    }
+
+    const method = httpVerb;
+    const url = apiEndpoint;
     const headers = {
       'Content-Type': 'application/json',
-      'x-api-key': parameters.apiKey,
+      'x-api-key': apiKey,
     };
     const data = parameters.toGraphQLJson();
 
@@ -105,16 +116,22 @@ export class OdpClient implements IOdpClient {
    *    It is recommended to retry if status code was 5xx.
    */
   public async sendEvents(parameters: SendEventsParameters): Promise<number | null> {
-    if (!parameters?.apiEndpoint || !parameters?.apiKey) {
+    const { apiEndpoint, apiKey, httpVerb, events } = parameters;
+
+    if (events?.length === 0) {
+      return null;
+    }
+
+    if (!apiEndpoint || !apiKey) {
       this._logger.log(LogLevel.ERROR, 'No ApiEndpoint or ApiKey set before attempting to send ODP events');
       return null;
     }
 
-    const method = parameters.httpVerb;
-    const url = parameters.apiEndpoint;
+    const method = httpVerb;
+    const url = apiEndpoint;
     const headers = {
       'Content-Type': 'application/json',
-      'x-api-key': parameters.apiKey,
+      'x-api-key': apiKey,
     };
     const data = parameters.toJson();
 

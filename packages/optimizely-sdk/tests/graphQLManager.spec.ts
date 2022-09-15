@@ -140,6 +140,16 @@ describe('GraphQLManager', () => {
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
+  it('should handle a request to query no segments', async () => {
+    const manager = makeManagerInstance();
+
+    const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, VALID_FS_USER_ID, []);
+
+    expect(segments).toHaveLength(0);
+    verify(mockErrorHandler.handleError(anything())).never();
+    verify(mockLogger.log(anything(), anyString())).never();
+  });
+
   it('should handle empty qualified segments', async () => {
     const responseJsonWithNoQualifiedSegments = '{"data":{"customer":{"audiences":' +
       '{"edges":[ ]}}}}';
