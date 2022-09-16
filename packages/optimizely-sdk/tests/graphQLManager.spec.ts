@@ -51,6 +51,7 @@ describe('GraphQLManager', () => {
     resetCalls(mockOdpClient);
   });
 
+
   it('should parse a successful response', () => {
     const validJsonResponse = `{
       "data": {
@@ -187,7 +188,7 @@ describe('GraphQLManager', () => {
 
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
 
-    expect(segments).toHaveLength(0);
+    expect(segments).toBeNull();
     verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (decode error)')).once();
   });
@@ -202,7 +203,7 @@ describe('GraphQLManager', () => {
 
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
 
-    expect(segments).toHaveLength(0);
+    expect(segments).toBeNull();
     verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(anything(), anyString())).once();
   });
@@ -214,7 +215,7 @@ describe('GraphQLManager', () => {
 
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
 
-    expect(segments).toHaveLength(0);
+    expect(segments).toBeNull();
     verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (decode error)')).once();
   });
@@ -225,7 +226,7 @@ describe('GraphQLManager', () => {
 
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
 
-    expect(segments).toHaveLength(0);
+    expect(segments).toBeNull();
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)')).once();
   });
 });

@@ -39,7 +39,7 @@ const EMPTY_JSON_RESPONSE = null;
  * Manager for communicating with the Optimizely Data Platform GraphQL endpoint
  */
 export interface IGraphQLManager {
-  fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[]>;
+  fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[] | null>;
 }
 
 /**
@@ -73,10 +73,12 @@ export class GraphqlManager implements IGraphQLManager {
    * @param userValue Associated value to query for the user key
    * @param segmentsToCheck Audience segments to check for experiment inclusion
    */
-  public async fetchSegments(apiKey: string, apiEndpoint: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[]> {
-    if (segmentsToCheck?.length === 0) {
-      return EMPTY_SEGMENTS_COLLECTION;
+  public async fetchSegments(apiKey: string, apiEndpoint: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[] | null> {
+    if (!apiEndpoint || !apiKey) {
+      this._logger.log(LogLevel.ERROR, 'No ApiEndpoint or ApiKey set before attempting to fetch segments');
+      return null;
     }
+
     const parameters = new QuerySegmentsParameters({
       apiKey,
       apiEndpoint,
@@ -84,16 +86,21 @@ export class GraphqlManager implements IGraphQLManager {
       userValue,
       segmentsToCheck,
     });
+
     const segmentsResponse = await this._odpClient.querySegments(parameters);
     if (!segmentsResponse) {
       this._logger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)');
+      return null;
+    }
+
+    if (segmentsToCheck?.length === 0) {
       return EMPTY_SEGMENTS_COLLECTION;
     }
 
     const parsedSegments = this.parseSegmentsResponseJson(segmentsResponse);
     if (!parsedSegments) {
       this._logger.log(LogLevel.ERROR, 'Audience segments fetch failed (decode error)');
-      return EMPTY_SEGMENTS_COLLECTION;
+      return null;
     }
 
     if (parsedSegments.errors?.length > 0) {

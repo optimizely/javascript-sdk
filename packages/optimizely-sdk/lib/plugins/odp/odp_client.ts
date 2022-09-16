@@ -69,10 +69,6 @@ export class OdpClient implements IOdpClient {
   public async querySegments(parameters: QuerySegmentsParameters): Promise<string | null> {
     const { apiEndpoint, apiKey, httpVerb, userKey, userValue, segmentsToCheck } = parameters;
 
-    if (segmentsToCheck?.length === 0) {
-      return '';
-    }
-
     if (!apiEndpoint || !apiKey) {
       this._logger.log(LogLevel.ERROR, 'No ApiHost or ApiKey set before querying segments');
       return null;
@@ -81,6 +77,10 @@ export class OdpClient implements IOdpClient {
     if (!userKey || !userValue) {
       this._logger.log(LogLevel.ERROR, 'No UserKey or UserValue set before querying segments');
       return null;
+    }
+
+    if (segmentsToCheck?.length === 0) {
+      return '';
     }
 
     const method = httpVerb;
@@ -118,17 +118,17 @@ export class OdpClient implements IOdpClient {
   public async sendEvents(parameters: SendEventsParameters): Promise<number | null> {
     const { apiEndpoint, apiKey, httpVerb, events } = parameters;
 
-    if (events?.length === 0) {
-      return null;
-    }
-
     if (!apiEndpoint || !apiKey) {
       this._logger.log(LogLevel.ERROR, 'No ApiEndpoint or ApiKey set before attempting to send ODP events');
       return null;
     }
 
+    if (events?.length === 0) {
+      return null;
+    }
+
     const method = httpVerb;
-    const url = apiEndpoint;
+    const url = apiEndpoint ?? '';
     const headers = {
       'Content-Type': 'application/json',
       'x-api-key': apiKey,

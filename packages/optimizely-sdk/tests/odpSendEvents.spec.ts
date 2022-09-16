@@ -80,11 +80,9 @@ describe('OdpClient Send Events', () => {
 
     expect(statusReturned).toBeNull();
     verify(mockErrorHandler.handleError(anything())).never();
-    verify(mockLogger.log(LogLevel.ERROR, 'No ApiEndpoint or ApiKey set before attempting to send ODP events')).once();
   });
 
   it('should handle missing API Key', async () => {
-
     const missingApiKey = new SendEventsParameters({
       apiKey: '',
       apiEndpoint: 'https://some.example.com/endpoint',
@@ -96,7 +94,6 @@ describe('OdpClient Send Events', () => {
 
     expect(statusReturned).toBeNull();
     verify(mockErrorHandler.handleError(anything())).never();
-    verify(mockLogger.log(LogLevel.ERROR, 'No ApiEndpoint or ApiKey set before attempting to send ODP events')).once();
   });
 
   it('Browser: should send events successfully', async () => {
