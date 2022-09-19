@@ -24,16 +24,16 @@ export class SendEventsParameters extends OdpRequestParameters {
   /**
    * Collection of ODP events to transmit
    */
-  public events?: OdpEvent[];
+  public readonly events: OdpEvent[];
 
-  /**
-   * HTTP Verb used to send request
-   */
-  public httpVerb = 'POST';
+  constructor(apiKey: string, apiEndpoint: string, events: OdpEvent[]) {
+    super(apiKey, apiEndpoint, 'POST');
 
-  constructor(parameters: { apiKey: string, apiEndpoint: string, events: OdpEvent[] }) {
-    super();
-    Object.assign(this, parameters);
+    if (OdpEvent.length < 1) {
+      throw new Error('Parameter events must have elements');
+    }
+
+    this.events = events;
   }
 
   /**

@@ -23,26 +23,32 @@ export class QuerySegmentsParameters extends OdpRequestParameters {
   /**
    * 'vuid' or 'fs_user_id' (client device id or fullstack id)
    */
-  public userKey?: string;
+  public readonly userKey: string;
 
   /**
    * Value for the user key
    */
-  public userValue?: string;
+  public readonly userValue: string;
 
   /**
    * Audience segments to check for inclusion in the experiment
    */
-  public segmentsToCheck?: string[];
+  public readonly segmentsToCheck: string[];
 
-  /**
-   * HTTP Verb used to send request
-   */
-  public readonly httpVerb = 'POST';
+  constructor(apiKey: string, apiEndpoint: string, userKey: string, userValue: string, segmentsToCheck: string[]) {
+    super(apiKey, apiEndpoint, 'POST');
 
-  constructor(parameters: { apiKey: string, apiEndpoint: string, userKey: string, userValue: string, segmentsToCheck: string[] }) {
-    super();
-    Object.assign(this, parameters);
+    if (!userKey || !userValue) {
+      throw new Error('Parameters userKey or userValue are required');
+    }
+
+    if (segmentsToCheck.length < 1) {
+      throw new Error('Parameter segmentsToCheck must have elements');
+    }
+
+    this.userKey = userKey;
+    this.userValue = userValue;
+    this.segmentsToCheck = segmentsToCheck;
   }
 
   /**

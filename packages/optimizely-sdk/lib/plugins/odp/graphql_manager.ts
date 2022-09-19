@@ -74,27 +74,21 @@ export class GraphqlManager implements IGraphQLManager {
    * @param segmentsToCheck Audience segments to check for experiment inclusion
    */
   public async fetchSegments(apiKey: string, apiEndpoint: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[] | null> {
-    if (!apiEndpoint || !apiKey) {
-      this._logger.log(LogLevel.ERROR, 'No ApiEndpoint or ApiKey set before attempting to fetch segments');
-      return null;
+    if (segmentsToCheck?.length === 0) {
+      return EMPTY_SEGMENTS_COLLECTION;
     }
 
-    const parameters = new QuerySegmentsParameters({
+    const parameters = new QuerySegmentsParameters(
       apiKey,
       apiEndpoint,
       userKey,
       userValue,
       segmentsToCheck,
-    });
-
+    );
     const segmentsResponse = await this._odpClient.querySegments(parameters);
     if (!segmentsResponse) {
       this._logger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)');
       return null;
-    }
-
-    if (segmentsToCheck?.length === 0) {
-      return EMPTY_SEGMENTS_COLLECTION;
     }
 
     const parsedSegments = this.parseSegmentsResponseJson(segmentsResponse);
@@ -131,6 +125,8 @@ export class GraphqlManager implements IGraphQLManager {
 
     try {
       jsonObject = JSON.parse(jsonResponse);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       this._errorHandler.handleError(error);

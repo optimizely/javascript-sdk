@@ -15,8 +15,8 @@
  */
 
 export interface IOdpRequestParameters {
-  apiKey?: string;
-  apiEndpoint?: string;
+  apiKey: string;
+  apiEndpoint: string;
   httpVerb: string;
 }
 
@@ -24,15 +24,25 @@ export abstract class OdpRequestParameters implements IOdpRequestParameters {
   /**
    * Optimizely Data Platform API key
    */
-  public apiKey?: string;
+  public readonly apiKey: string;
 
   /**
    * Fully-qualified URL to ODP events endpoint
    */
-  public apiEndpoint?: string;
+  public readonly apiEndpoint: string;
 
   /**
    * HTTP Verb used to send request
    */
-  public abstract readonly httpVerb: string;
+  public readonly httpVerb: string;
+
+  protected constructor(apiKey: string, apiEndpoint: string, httpVerb: string) {
+    if (!apiEndpoint || !apiKey) {
+      throw new Error('Parameters apiKey and apiEndpoint are required');
+    }
+
+    this.apiKey = apiKey;
+    this.apiEndpoint = apiEndpoint;
+    this.httpVerb = httpVerb ?? 'POST';
+  }
 }

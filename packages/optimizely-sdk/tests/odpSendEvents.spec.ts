@@ -24,10 +24,10 @@ import { NodeRequestHandler } from '../lib/utils/http_request_handler/node_reque
 import { SendEventsParameters } from '../lib/plugins/odp/send_events_parameters';
 import { OdpEvent } from '../lib/plugins/odp/odp_event';
 
-const MOCK_SEND_PARAMETERS = new SendEventsParameters({
-  apiKey: 'not-real-api-key',
-  apiEndpoint: 'https://events.example.com/v2/api',
-  events: [
+const MOCK_SEND_PARAMETERS = new SendEventsParameters(
+  'not-real-api-key',
+  'https://events.example.com/v2/api',
+  [
     new OdpEvent('t1', 'a1',
       new Map([['id-key-1', 'id-value-1']]),
       new Map(Object.entries({
@@ -42,7 +42,7 @@ const MOCK_SEND_PARAMETERS = new SendEventsParameters({
         key2: 'value-2',
       }))),
   ],
-});
+);
 const VALID_RESPONSE_CODE = 200;
 
 describe('OdpClient Send Events', () => {
@@ -68,32 +68,24 @@ describe('OdpClient Send Events', () => {
     resetCalls(mockOdpEvent);
   });
 
-  it('should handle missing API Endpoint', async () => {
-    const missingApiEndpoint = new SendEventsParameters({
-      apiKey: 'apiKey',
-      apiEndpoint: '',
-      events: [instance(mockOdpEvent)],
-    });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
-
-    const statusReturned = await client.sendEvents(missingApiEndpoint);
-
-    expect(statusReturned).toBeNull();
-    verify(mockErrorHandler.handleError(anything())).never();
+  it('should handle missing API Endpoint', () => {
+    expect(() => {
+      new SendEventsParameters(
+        'apiKey',
+        '',
+        [instance(mockOdpEvent)],
+      );
+    }).toThrow('Parameters apiKey and apiEndpoint are required');
   });
 
-  it('should handle missing API Key', async () => {
-    const missingApiKey = new SendEventsParameters({
-      apiKey: '',
-      apiEndpoint: 'https://some.example.com/endpoint',
-      events: [instance(mockOdpEvent)],
-    });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
-
-    const statusReturned = await client.sendEvents(missingApiKey);
-
-    expect(statusReturned).toBeNull();
-    verify(mockErrorHandler.handleError(anything())).never();
+  it('should handle missing API Key', () => {
+    expect(() => {
+      new SendEventsParameters(
+        '',
+        'https://some.example.com/endpoint',
+        [instance(mockOdpEvent)],
+      );
+    }).toThrow('Parameters apiKey and apiEndpoint are required');
   });
 
   it('Browser: should send events successfully', async () => {

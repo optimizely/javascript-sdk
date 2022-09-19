@@ -23,17 +23,17 @@ import { QuerySegmentsParameters } from '../lib/plugins/odp/query_segments_param
 import { BrowserRequestHandler } from '../lib/utils/http_request_handler/browser_request_handler';
 import { NodeRequestHandler } from '../lib/utils/http_request_handler/node_request_handler';
 
-const MOCK_QUERY_PARAMETERS = new QuerySegmentsParameters({
-  apiKey: 'not-real-api-key',
-  apiEndpoint: 'https://api.example.com/v3/graphql',
-  userKey: 'fs_user_id',
-  userValue: 'mock-user-id',
-  segmentsToCheck: [
+const MOCK_QUERY_PARAMETERS = new QuerySegmentsParameters(
+  'not-real-api-key',
+  'https://api.example.com/v3/graphql',
+  'fs_user_id',
+  'mock-user-id',
+  [
     'has_email',
     'has_email_opted_in',
     'push_on_sale',
   ],
-});
+);
 const VALID_RESPONSE_JSON = {
   'data': {
     'customer': {
@@ -78,85 +78,64 @@ describe('OdpClient Query Segments', () => {
     resetCalls(mockNodeRequestHandler);
   });
 
-  it('should handle missing API Endpoint', async () => {
-    const missingApiEndpoint = new QuerySegmentsParameters({
-      apiKey: 'apiKey',
-      apiEndpoint: '',
-      userKey: 'userKey',
-      userValue: 'userValue',
-      segmentsToCheck: ['segmentToCheck'],
-    });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
-
-    await client.querySegments(missingApiEndpoint);
-
-    verify(mockErrorHandler.handleError(anything())).never();
-    verify(mockLogger.log(LogLevel.ERROR, 'No ApiHost or ApiKey set before querying segments')).once();
+  it('should handle missing API Endpoint', () => {
+    expect(() => {
+      new QuerySegmentsParameters(
+        'apiKey',
+        '',
+        'userKey',
+        'userValue',
+        ['segmentToCheck'],
+      );
+    }).toThrow('Parameters apiKey and apiEndpoint are required');
   });
 
-  it('should handle missing API Key', async () => {
-    const missingApiHost = new QuerySegmentsParameters({
-      apiKey: '',
-      apiEndpoint: 'apiEndpoint',
-      userKey: 'userKey',
-      userValue: 'userValue',
-      segmentsToCheck: ['segmentToCheck'],
-    });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
-
-    await client.querySegments(missingApiHost);
-
-    verify(mockErrorHandler.handleError(anything())).never();
-    verify(mockLogger.log(LogLevel.ERROR, 'No ApiHost or ApiKey set before querying segments')).once();
+  it('should handle missing API Key', () => {
+    expect(() => {
+      new QuerySegmentsParameters(
+        '',
+        'apiEndpoint',
+        'userKey',
+        'userValue',
+        ['segmentToCheck'],
+      );
+    }).toThrow('Parameters apiKey and apiEndpoint are required');
   });
 
-  it('should handle missing User Key', async () => {
-    const missingApiEndpoint = new QuerySegmentsParameters({
-      apiKey: 'apiKey',
-      apiEndpoint: 'apiEndpoint',
-      userKey: '',
-      userValue: 'userValue',
-      segmentsToCheck: ['segmentToCheck'],
-    });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
-
-    await client.querySegments(missingApiEndpoint);
-
-    verify(mockErrorHandler.handleError(anything())).never();
-    verify(mockLogger.log(LogLevel.ERROR, 'No UserKey or UserValue set before querying segments')).once();
+  it('should handle missing User Key', () => {
+    expect(() => {
+      new QuerySegmentsParameters(
+        'apiKey',
+        'apiEndpoint',
+        '',
+        'userValue',
+        ['segmentToCheck'],
+      );
+    }).toThrow('Parameters userKey or userValue are required');
   });
 
-  it('should handle missing User Value', async () => {
-    const missingApiHost = new QuerySegmentsParameters({
-      apiKey: 'apiKey',
-      apiEndpoint: 'apiEndpoint',
-      userKey: 'userKey',
-      userValue: '',
-      segmentsToCheck: ['segmentToCheck'],
-    });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
-
-    await client.querySegments(missingApiHost);
-
-    verify(mockErrorHandler.handleError(anything())).never();
-    verify(mockLogger.log(LogLevel.ERROR, 'No UserKey or UserValue set before querying segments')).once();
+  it('should handle missing User Value', () => {
+    expect(() => {
+      new QuerySegmentsParameters(
+        'apiKey',
+        'apiEndpoint',
+        'userKey',
+        '',
+        ['segmentToCheck'],
+      );
+    }).toThrow('Parameters userKey or userValue are required');
   });
 
-  it('should handle no segments being requested', async () => {
-    const missingApiHost = new QuerySegmentsParameters({
-      apiKey: 'apiKey',
-      apiEndpoint: 'apiEndpoint',
-      userKey: 'userKey',
-      userValue: 'userValue',
-      segmentsToCheck: [],
-    });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
-
-    const json = await client.querySegments(missingApiHost);
-
-    verify(mockErrorHandler.handleError(anything())).never();
-    verify(mockLogger.log(anything(), anyString())).never();
-    expect(json).toBe('');
+  it('should handle no segments being requested', () => {
+    expect(() => {
+      new QuerySegmentsParameters(
+        'apiKey',
+        'apiEndpoint',
+        'userKey',
+        'userValue',
+        [],
+      );
+    }).toThrow('Parameter segmentsToCheck must have elements');
   });
 
   it('Browser: should get mocked segments successfully', async () => {
