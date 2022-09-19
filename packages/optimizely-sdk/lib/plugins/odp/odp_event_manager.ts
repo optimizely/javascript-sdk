@@ -14,9 +14,17 @@
  * limitations under the License.
  */
 
-import { LogHandler } from '../../modules/logging';
+import { LogHandler, LogLevel } from '../../modules/logging';
 import { OdpClient } from './odp_client';
 import { OdpEvent } from './odp_event';
+import { OdpEventDispatcher } from './odp_event_dispatcher';
+import { DEFAULT_FLUSH_INTERVAL } from '../../modules/event_processor';
+import { uuid } from '../../utils/fns';
+
+const DEFAULT_BATCH_SIZE = 10;
+const DEFAULT_QUEUE_SIZE = 10000;
+const FLUSH_INTERVAL = 1000;
+const MAX_RETRIES = 3;
 
 export interface IOdpEventManager {
   start(): void;
@@ -34,26 +42,32 @@ export interface IOdpEventManager {
  * Manager for persisting events to the Optimizely Data Platform
  */
 export class OdpEventManager implements IOdpEventManager {
-  private static DEFAULT_BATCH_SIZE = 10;
-  private static DEFAULT_QUEUE_SIZE = 10000;
-  private static FLUSH_INTERVAL = 1000;
-  private static MAX_RETRIES = 3;
 
-  private readonly _logger: LogHandler;
-  private readonly _batchSize: number;
-  private readonly _queueSize: number;
+  private readonly apiManager: OdpClient;
+  private readonly logger: LogHandler;
+  private readonly queueSize: number;
+  private readonly batchSize: number;
+  private readonly flushInterval: number;
 
-  private _odpConfig: OdpConfig;
-  private _isRunning = false;
-  private eventDispatcherThread: EventDispatcherThread;
+  private isRunning = false;
+
+  private odpConfig: OdpConfig;
+  private eventQueue: Array<OdpEvent>;
+  private eventDispatcher: OdpEventDispatcher;
 
   public constructor(odpConfig: OdpConfig, odpClient: OdpClient, logger: LogHandler,
-                     batchSize = OdpEventManager.DEFAULT_BATCH_SIZE,
-                     queueSize = OdpEventManager.DEFAULT_QUEUE_SIZE) {
-    this._odpConfig = odpConfig;
-    this._logger = logger;
-    this._batchSize = batchSize;
-    this._queueSize = queueSize;
+                     batchSize = DEFAULT_BATCH_SIZE,
+                     queueSize = DEFAULT_QUEUE_SIZE,
+                     flushInterval = DEFAULT_FLUSH_INTERVAL) {
+    this.apiManager = odpClient;
+    this.logger = logger;
+    this.queueSize = queueSize;
+    this.batchSize = batchSize;
+    this.flushInterval = flushInterval;
+
+    this.odpConfig = odpConfig;
+    this.eventQueue = new Array<OdpEvent>();
+    this.eventDispatcher = new OdpEventDispatcher(this.logger, this.flushInterval, this.batchSize);
   }
 
   public registerVUID(vuid: string): void {
@@ -64,18 +78,17 @@ export class OdpEventManager implements IOdpEventManager {
   }
 
   public start(): void {
-    this._isRunning = true;
-    eventDispatcherThread = new EventDispatcherThread();
-    eventDispatcherThread.start();
+    this.isRunning = true;
+    this.eventDispatcher.run();
   }
 
   public stop(): void {
-    logger.debug('Sending stop signal to ODP Event Dispatcher Thread');
-    eventDispatcherThread.signalStop();
+    this.logger.log(LogLevel.DEBUG, 'Sending stop signal to ODP Event Dispatcher');
+    this.eventDispatcher.signalStop();
   }
 
   public updateSettings(odpConfig: OdpConfig): void {
-    this._odpConfig = odpConfig;
+    this.odpConfig = odpConfig;
   }
 
   public sendEvents(events: [OdpEvent]): void {
@@ -83,11 +96,31 @@ export class OdpEventManager implements IOdpEventManager {
   }
 
   public sendEvent(event: OdpEvent): void {
-    event.setData(augmentCommonData(event.getData()));
+    event.data = this.augmentCommonData(event.data);
     this.processEvent(event);
   }
 
   private processEvent(event: OdpEvent): void {
 
+  }
+
+  private augmentCommonData(sourceData: Map<string, any>): Map<string, any> {
+    let sourceVersion = '';
+    if (window) {
+      sourceVersion = window.navigator.userAgent;
+    } else {
+      if (process) {
+        sourceVersion = process.version;
+      }
+    }
+
+    const data = new Map<string, any>();
+    data.set('idempotence_id', uuid());
+    data.set('data_source_type', 'sdk');
+    data.set('data_source', 'javascript-sdk');
+    data.set('data_source_version', sourceVersion);
+    sourceData.forEach(item => data.set(item.key, item.value));
+
+    return data;
   }
 }
