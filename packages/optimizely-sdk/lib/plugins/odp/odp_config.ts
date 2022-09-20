@@ -13,63 +13,79 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { ODP_CONFIG_STATE } from '../../utils/enums';
 
-
-enum OdpConfigState {
-  notDetermined = 0,
-  integrated = 1,
-  notIntegrated = 2,
-}
-
-class OdpConfig {
+export class OdpConfig {
   /**
-   * Fully-qualified URL for the ODP audience segments API (optional).
+   * Host of ODP audience segments API.
    * @private
    */
-  private _apiHost?: string;
+  private _apiHost: string;
+
+  /**
+   * Getter to retrieve the ODP server host
+   * @public
+   */
+  public get apiHost() {
+    return this._apiHost;
+  }
 
   /**
    * Public API key for the ODP account from which the audience segments will be fetched (optional).
    * @private
    */
-  private _apiKey?: string;
+  private _apiKey: string;
+
+  /**
+   * Getter to retrieve the ODP API key
+   * @public
+   */
+  public get apiKey() {
+    return this._apiKey;
+  }
 
   /**
    * All ODP segments used in the current datafile (associated with apiHost/apiKey).
    * @private
    */
-  private _segmentsToCheck?: string[];
+  private _segmentsToCheck: string[];
+
+  /**
+   * Getter for ODP segments to check
+   * @public
+   */
+  public get segmentsToCheck() {
+    return this._segmentsToCheck;
+  }
 
   /**
    * Indicates whether ODP is integrated for the project
    * @private
    */
-  private _odpServiceIntegrated?: OdpConfigState;
+  private _odpServiceIntegrated = ODP_CONFIG_STATE.UNDETERMINED;
 
-  //let queue = DispatchQueue(label: "odpConfig");
-
-  constructor(apiKey?: string, apiHost?: string, segmentsToCheck?: string[]) {
+  constructor(apiKey: string, apiHost: string, segmentsToCheck: string[]) {
     this._apiKey = apiKey;
     this._apiHost = apiHost;
     this._segmentsToCheck = segmentsToCheck ?? [] as string[];
-    this._odpServiceIntegrated = OdpConfigState.notDetermined;
+    this._odpServiceIntegrated = this._apiKey && this._apiHost ? ODP_CONFIG_STATE.INTEGRATED : ODP_CONFIG_STATE.UNDETERMINED;
   }
 
-  public update(apiKey?: string, apiHost?: string, segmentsToCheck?: string[]): boolean {
-    if (apiKey && apiHost) {
-      this._odpServiceIntegrated = OdpConfigState.integrated;
-    } else {
-      this._odpServiceIntegrated = OdpConfigState.notIntegrated;
-    }
+  public update(apiKey: string, apiEndpoint: string, segmentsToCheck: string[]): boolean {
+    this._odpServiceIntegrated = apiKey && apiEndpoint ? ODP_CONFIG_STATE.INTEGRATED : ODP_CONFIG_STATE.NOT_INTEGRATED;
 
-    if (this._apiKey === apiKey && this._apiHost === apiHost && this._segmentsToCheck === segmentsToCheck) {
+    if (this._apiKey === apiKey && this._apiHost === apiEndpoint && this._segmentsToCheck === segmentsToCheck) {
       return false;
     } else {
       this._apiKey = apiKey;
-      this._apiHost = apiHost;
+      this._apiHost = apiEndpoint;
       this._segmentsToCheck = segmentsToCheck;
 
       return true;
     }
+  }
+
+  public isReady(): boolean {
+    return this._apiKey !== null && this._apiKey !== '' && this._apiHost !== null && this._apiHost !== '';
   }
 }

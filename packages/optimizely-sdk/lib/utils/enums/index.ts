@@ -172,7 +172,7 @@ export const CONTROL_ATTRIBUTES = {
   BUCKETING_ID: '$opt_bucketing_id',
   STICKY_BUCKETING_KEY: '$opt_experiment_bucket_map',
   USER_AGENT: '$opt_user_agent',
-  FORCED_DECISION_NULL_RULE_KEY: '$opt_null_rule_key'
+  FORCED_DECISION_NULL_RULE_KEY: '$opt_null_rule_key',
 };
 
 export const JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
@@ -240,7 +240,7 @@ export const DECISION_MESSAGES = {
   SDK_NOT_READY: 'Optimizely SDK not configured properly yet.',
   FLAG_KEY_INVALID: 'No flag was found for key "%s".',
   VARIABLE_VALUE_INVALID: 'Variable value for key "%s" is invalid or wrong type.',
-}
+};
 
 /*
 * Notification types for use with NotificationCenter
@@ -292,7 +292,6 @@ export enum NOTIFICATION_TYPES {
   TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
 }
 
-
 /**
  * Valid types of Javascript contexts in which this code is executing
  */
@@ -300,4 +299,21 @@ export enum EXECUTION_CONTEXT_TYPE {
   NOT_DEFINED,
   BROWSER,
   NODE,
+}
+
+/**
+ * ODP User Key
+ */
+export enum ODP_USER_KEY {
+  VUID = 'vuid',
+  FS_USER_ID = 'fs_user_id',
+}
+
+/**
+ * Possible states of ODP integration
+ */
+export enum ODP_CONFIG_STATE {
+  UNDETERMINED = 0,
+  INTEGRATED,
+  NOT_INTEGRATED = 2,
 }
