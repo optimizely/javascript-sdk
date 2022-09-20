@@ -129,7 +129,7 @@ describe('GraphQLManager', () => {
       '{"edges":[{"node":{"name":"has_email",' +
       '"state":"qualified"}},{"node":{"name":' +
       '"has_email_opted_in","state":"qualified"}}]}}}}';
-    when(mockOdpClient.querySegments(anything())).thenResolve(responseJsonWithQualifiedSegments);
+    when(mockOdpClient.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck)).thenResolve(responseJsonWithQualifiedSegments);
     const manager = makeManagerInstance();
 
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
@@ -154,7 +154,7 @@ describe('GraphQLManager', () => {
   it('should handle empty qualified segments', async () => {
     const responseJsonWithNoQualifiedSegments = '{"data":{"customer":{"audiences":' +
       '{"edges":[ ]}}}}';
-    when(mockOdpClient.querySegments(anything())).thenResolve(responseJsonWithNoQualifiedSegments);
+    when(mockOdpClient.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck)).thenResolve(responseJsonWithNoQualifiedSegments);
     const manager = makeManagerInstance();
 
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
@@ -172,7 +172,7 @@ describe('GraphQLManager', () => {
       '"locations":[{"line":1,"column":8}],"path":["customer"],' +
       '"extensions":{"classification":"DataFetchingException"}}],' +
       '"data":{"customer":null}}';
-    when(mockOdpClient.querySegments(anything())).thenResolve(errorJsonResponse);
+    when(mockOdpClient.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck)).thenResolve(errorJsonResponse);
     const manager = makeManagerInstance();
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, INVALID_USER_ID, SEGMENTS_TO_CHECK);
 
@@ -183,7 +183,7 @@ describe('GraphQLManager', () => {
 
   it('should handle unrecognized JSON responses', async () => {
     const unrecognizedJson = '{"unExpectedObject":{ "withSome": "value", "thatIsNotParseable": "true" }}';
-    when(mockOdpClient.querySegments(anything())).thenResolve(unrecognizedJson);
+    when(mockOdpClient.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck)).thenResolve(unrecognizedJson);
     const manager = makeManagerInstance();
 
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
@@ -198,7 +198,7 @@ describe('GraphQLManager', () => {
       'UnknownArgument: Unknown field argument not_real_userKey @ ' +
       '\'customer\'","locations":[{"line":1,"column":17}],' +
       '"extensions":{"classification":"ValidationError"}}]}';
-    when(mockOdpClient.querySegments(anything())).thenResolve(errorJsonResponse);
+    when(mockOdpClient.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck)).thenResolve(errorJsonResponse);
     const manager = makeManagerInstance();
 
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
@@ -210,7 +210,7 @@ describe('GraphQLManager', () => {
 
   it('should handle bad responses', async () => {
     const badResponse = '{"data":{ }}';
-    when(mockOdpClient.querySegments(anything())).thenResolve(badResponse);
+    when(mockOdpClient.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck)).thenResolve(badResponse);
     const manager = makeManagerInstance();
 
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
@@ -221,7 +221,7 @@ describe('GraphQLManager', () => {
   });
 
   it('should handle non 200 HTTP status code response', async () => {
-    when(mockOdpClient.querySegments(anything())).thenResolve(null);
+    when(mockOdpClient.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck)).thenResolve(null);
     const manager = makeManagerInstance();
 
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);

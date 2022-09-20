@@ -150,7 +150,7 @@ describe('OdpClient Query Segments', () => {
     });
     const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
 
-    const response = await client.querySegments(MOCK_QUERY_PARAMETERS) ?? '';
+    const response = await client.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck) ?? '';
 
     expect(response).toEqual(JSON.stringify(VALID_RESPONSE_JSON));
     verify(mockErrorHandler.handleError(anything())).never();
@@ -169,7 +169,7 @@ describe('OdpClient Query Segments', () => {
     });
     const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
-    const response = await client.querySegments(MOCK_QUERY_PARAMETERS) ?? '';
+    const response = await client.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck) ?? '';
 
     expect(response).toEqual(JSON.stringify(VALID_RESPONSE_JSON));
     verify(mockErrorHandler.handleError(anything())).never();
@@ -188,7 +188,7 @@ describe('OdpClient Query Segments', () => {
     });
     const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
 
-    const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
+    const responseJson = await client.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck);
 
     expect(responseJson).toBe(BODY_FROM_ERROR);
     verify(mockErrorHandler.handleError(anything())).never();
@@ -207,7 +207,7 @@ describe('OdpClient Query Segments', () => {
     });
     const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
-    const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
+    const responseJson = await client.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck);
 
     expect(responseJson).toBe(BODY_FROM_ERROR);
     verify(mockErrorHandler.handleError(anything())).never();
@@ -226,7 +226,7 @@ describe('OdpClient Query Segments', () => {
     });
     const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
 
-    const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
+    const responseJson = await client.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck);
 
     expect(responseJson).toBe(BODY_FROM_ERROR);
     verify(mockErrorHandler.handleError(anything())).never();
@@ -245,7 +245,7 @@ describe('OdpClient Query Segments', () => {
     });
     const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
-    const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
+    const responseJson = await client.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck);
 
     expect(responseJson).toBe(BODY_FROM_ERROR);
     verify(mockErrorHandler.handleError(anything())).never();
@@ -260,7 +260,7 @@ describe('OdpClient Query Segments', () => {
     });
     const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler), 10);
 
-    const responseJson = await client.querySegments(MOCK_QUERY_PARAMETERS);
+    const responseJson = await client.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck);
 
     expect(responseJson).toBeNull();
     verify(mockErrorHandler.handleError(anything())).once();

@@ -13,79 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ODP_CONFIG_STATE } from '../../utils/enums';
 
-export class OdpConfig {
-  /**
-   * Host of ODP audience segments API.
-   * @private
-   */
-  private _apiHost: string;
+export class OdpEvent {
+  public type: string;
 
-  /**
-   * Getter to retrieve the ODP server host
-   * @public
-   */
-  get apiHost(): string {
-    return this._apiHost;
-  }
+  public action: string;
 
-  /**
-   * Public API key for the ODP account from which the audience segments will be fetched (optional).
-   * @private
-   */
-  private _apiKey: string;
+  public identifiers: Map<string, string>;
 
-  /**
-   * Getter to retrieve the ODP API key
-   * @public
-   */
-  get apiKey(): string {
-    return this._apiKey;
-  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public data: Map<string, any>;
 
-  /**
-   * All ODP segments used in the current datafile (associated with apiHost/apiKey).
-   * @private
-   */
-  private _segmentsToCheck: string[];
-
-  /**
-   * Getter for ODP segments to check
-   * @public
-   */
-  get segmentsToCheck(): string[] {
-    return this._segmentsToCheck;
-  }
-
-  /**
-   * Indicates whether ODP is integrated for the project
-   * @private
-   */
-  private _odpServiceIntegrated = ODP_CONFIG_STATE.UNDETERMINED;
-
-  constructor(apiKey: string, apiHost: string, segmentsToCheck: string[]) {
-    this._apiKey = apiKey;
-    this._apiHost = apiHost;
-    this._segmentsToCheck = segmentsToCheck;
-    this._odpServiceIntegrated = this._apiKey && this._apiHost ? ODP_CONFIG_STATE.INTEGRATED : ODP_CONFIG_STATE.UNDETERMINED;
-  }
-
-  public update(apiKey: string, apiEndpoint: string, segmentsToCheck: string[]): boolean {
-    this._odpServiceIntegrated = apiKey && apiEndpoint ? ODP_CONFIG_STATE.INTEGRATED : ODP_CONFIG_STATE.NOT_INTEGRATED;
-
-    if (this._apiKey === apiKey && this._apiHost === apiEndpoint && this._segmentsToCheck === segmentsToCheck) {
-      return false;
-    } else {
-      this._apiKey = apiKey;
-      this._apiHost = apiEndpoint;
-      this._segmentsToCheck = segmentsToCheck;
-
-      return true;
-    }
-  }
-
-  public isReady(): boolean {
-    return this._apiKey !== null && this._apiKey !== '' && this._apiHost !== null && this._apiHost !== '';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(type: string, action: string, identifiers?: Map<string, string>, data?: Map<string, any>) {
+    this.type = type;
+    this.action = action;
+    this.identifiers = identifiers ?? new Map<string, string>();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.data = data ?? new Map<string, any>();
   }
 }

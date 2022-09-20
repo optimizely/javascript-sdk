@@ -19,8 +19,8 @@ import { Response } from './odp_types';
 import { IOdpClient, OdpClient } from './odp_client';
 import { validate } from '../../utils/json_schema_validator';
 import { OdpResponseSchema } from './odp_response_schema';
-import { QuerySegmentsParameters } from './query_segments_parameters';
 import { RequestHandlerFactory } from '../../utils/http_request_handler/request_handler_factory';
+import { ODP_USER_KEY } from '../../utils/enums';
 
 /**
  * Expected value for a qualified/valid segment
@@ -43,7 +43,7 @@ export interface IGraphQLManager {
 }
 
 /**
- * Concrete implementation for communicating with the Optimizely Data Platform GraphQL endpoint
+ * Concrete implementation for communicating with the ODP GraphQL endpoint
  */
 export class GraphqlManager implements IGraphQLManager {
   private readonly _errorHandler: ErrorHandler;
@@ -51,7 +51,7 @@ export class GraphqlManager implements IGraphQLManager {
   private readonly _odpClient: IOdpClient;
 
   /**
-   * Retrieves the audience segments from the Optimizely Data Platform (ODP)
+   * Communicates with Optimizely Data Platform's GraphQL endpoint
    * @param errorHandler Handler to record exceptions
    * @param logger Collect and record events/errors for this GraphQL implementation
    * @param client Client to use to send queries to ODP
@@ -68,24 +68,20 @@ export class GraphqlManager implements IGraphQLManager {
   /**
    * Retrieves the audience segments from ODP
    * @param apiKey ODP public key
-   * @param apiEndpoint Fully-qualified URL of ODP
+   * @param apiHost Host of ODP endpoint
    * @param userKey 'vuid' or 'fs_user_id key'
    * @param userValue Associated value to query for the user key
    * @param segmentsToCheck Audience segments to check for experiment inclusion
    */
-  public async fetchSegments(apiKey: string, apiEndpoint: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[] | null> {
+  public async fetchSegments(apiKey: string, apiHost: string, userKey: ODP_USER_KEY, userValue: string, segmentsToCheck: string[]): Promise<string[] | null> {
     if (segmentsToCheck?.length === 0) {
       return EMPTY_SEGMENTS_COLLECTION;
     }
 
-    const parameters = new QuerySegmentsParameters(
-      apiKey,
-      apiEndpoint,
-      userKey,
-      userValue,
-      segmentsToCheck,
-    );
-    const segmentsResponse = await this._odpClient.querySegments(parameters);
+    const endpoint = `${apiHost}/v3/events`;
+    const query = this.toGraphQLJson(userKey, userValue, segmentsToCheck);
+
+    const segmentsResponse = await this._odpClient.querySegments(apiKey, endpoint, userKey, userValue, query);
     if (!segmentsResponse) {
       this._logger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)');
       return null;
@@ -112,6 +108,23 @@ export class GraphqlManager implements IGraphQLManager {
     }
 
     return edges.filter(edge => edge.node.state == QUALIFIED).map(edge => edge.node.name);
+  }
+
+  /**
+   * Converts the query parameters to a GraphQL JSON payload
+   * @returns GraphQL JSON string
+   */
+  private toGraphQLJson(userKey: string, userValue: string, segmentsToCheck: string[]): string {
+    const segmentsArrayJson = JSON.stringify(segmentsToCheck);
+
+    const json: string[] = [];
+    json.push('{"query" : "query {customer"');
+    json.push(`(${userKey} : "${userValue}") `);
+    json.push('{audiences');
+    json.push(`(subset: ${segmentsArrayJson})`);
+    json.push('{edges {node {name state}}}}}"}');
+
+    return json.join('');
   }
 
   /**

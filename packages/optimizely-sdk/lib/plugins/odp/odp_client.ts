@@ -15,10 +15,9 @@
  */
 
 import { ErrorHandler, LogHandler, LogLevel } from '../../modules/logging';
-import { QuerySegmentsParameters } from './query_segments_parameters';
 import { RequestHandler, Response } from '../../utils/http_request_handler/http';
 import { REQUEST_TIMEOUT_MS } from '../../utils/http_request_handler/config';
-import { SendEventsParameters } from './send_events_parameters';
+import { ODP_USER_KEY } from '../../utils/enums';
 
 /**
  * Standard message for audience querying fetch errors
@@ -33,9 +32,9 @@ const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
  * Interface for sending requests and handling responses to Optimizely Data Platform
  */
 export interface IOdpClient {
-  querySegments(parameters: QuerySegmentsParameters): Promise<string | null>;
+  querySegments(apiKey: string, graphQlEndpoint: string, userKey: ODP_USER_KEY, userValue: string, data: string): Promise<string | null>;
 
-  sendEvents(parameters: SendEventsParameters): Promise<number | null>;
+  sendEvents(apiKey: string, restApiEndpoint: string, data: string): Promise<number>;
 }
 
 /**
@@ -66,16 +65,24 @@ export class OdpClient implements IOdpClient {
    * @param parameters Query parameters to send to ODP
    * @returns JSON response string from ODP or null
    */
-  public async querySegments(parameters: QuerySegmentsParameters): Promise<string | null> {
-    const { apiEndpoint, apiKey, httpVerb } = parameters;
 
-    const method = httpVerb;
-    const url = apiEndpoint;
+  /**
+   * Handler for querying the ODP GraphQL endpoint
+   * @param apiKey ODP API key
+   * @param graphQlEndpoint Fully-qualified GraphQL endpoint URL
+   * @param userKey 'vuid' or 'fs_user_id'
+   * @param userValue userKey's value
+   * @param data GraphyQL query string
+   * @returns JSON response string from ODP or null
+   */
+  public async querySegments(apiKey: string, graphQlEndpoint: string, userKey: string, userValue: string, data: string): Promise<string | null> {
+
+    const method = 'POST';
+    const url = graphQlEndpoint;
     const headers = {
       'Content-Type': 'application/json',
       'x-api-key': apiKey,
     };
-    const data = parameters.toGraphQLJson();
 
     let response: Response;
     try {
@@ -96,27 +103,20 @@ export class OdpClient implements IOdpClient {
 
   /**
    * Handler for sending ODP events
-   * @param parameters
+   * @param apiKey ODP API key
+   * @param restApiEndpoint Fully-qualified REST API endpoint URL
+   * @param data JSON event data payload
    * @returns
-   * 1. null, When there was a non-recoverable error and no retry is needed.
-   * 2. 0 If an unexpected error occurred and retrying can be useful.
-   * 3. HTTPStatus code if httpclient was able to make the request and was able to receive response.
-   *    It is recommended to retry if status code was 5xx.
+   * 0 = If an unexpected error occurred and retrying can be useful
+   * Otherwise HTTPStatus code NOTE: it is recommended to retry if status code was 5xx.
    */
-  public async sendEvents(parameters: SendEventsParameters): Promise<number | null> {
-    const { apiEndpoint, apiKey, httpVerb, events } = parameters;
-
-    if (events?.length === 0) {
-      return null;
-    }
-
-    const method = httpVerb;
-    const url = apiEndpoint;
+  public async sendEvents(apiKey: string, restApiEndpoint: string, data: string): Promise<number> {
+    const method = 'POST';
+    const url = restApiEndpoint;
     const headers = {
       'Content-Type': 'application/json',
       'x-api-key': apiKey,
     };
-    const data = parameters.toJson();
 
     let response: Response;
     try {
