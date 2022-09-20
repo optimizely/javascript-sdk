@@ -17,7 +17,7 @@
 import { JSONSchema4 } from 'json-schema';
 
 /**
- * ODP Response JSON Schema file used to validate the project json datafile
+ * JSON Schema used to validate the ODP GraphQL response
  */
 export const OdpResponseSchema = {
   $schema: 'https://json-schema.org/draft/2019-09/schema',
