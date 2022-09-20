@@ -21,12 +21,12 @@ import { ErrorHandler, LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpClient } from '../lib/plugins/odp/odp_client';
 import { BrowserRequestHandler } from '../lib/utils/http_request_handler/browser_request_handler';
 import { NodeRequestHandler } from '../lib/utils/http_request_handler/node_request_handler';
-import { SendEventsParameters } from '../lib/plugins/odp/send_events_parameters';
 import { OdpEvent } from '../lib/plugins/odp/odp_event';
+import { EXECUTION_CONTEXT } from '../lib/utils/enums';
 
-const MOCK_SEND_PARAMETERS = new SendEventsParameters(
-  'not-real-api-key',
-  'https://events.example.com/v2/api',
+const API_KEY = 'not-real-api-key';
+const REST_API_ENDPOINT = 'https://events.example.com/v2/api';
+const JSON_EVENT_DATA = JSON.stringify(
   [
     new OdpEvent('t1', 'a1',
       new Map([['id-key-1', 'id-value-1']]),
@@ -46,6 +46,10 @@ const MOCK_SEND_PARAMETERS = new SendEventsParameters(
 const VALID_RESPONSE_CODE = 200;
 
 describe('OdpClient Send Events', () => {
+  const client = (type: EXECUTION_CONTEXT) => type === EXECUTION_CONTEXT.BROWSER ?
+    new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler)) :
+    new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
+
   let mockErrorHandler: ErrorHandler;
   let mockLogger: LogHandler;
   let mockBrowserRequestHandler: BrowserRequestHandler;
@@ -68,65 +72,43 @@ describe('OdpClient Send Events', () => {
     resetCalls(mockOdpEvent);
   });
 
-  it('should handle missing API Endpoint', () => {
-    expect(() => {
-      new SendEventsParameters(
-        'apiKey',
-        '',
-        [instance(mockOdpEvent)],
-      );
-    }).toThrow('Parameters apiKey and apiEndpoint are required');
-  });
-
-  it('should handle missing API Key', () => {
-    expect(() => {
-      new SendEventsParameters(
-        '',
-        'https://some.example.com/endpoint',
-        [instance(mockOdpEvent)],
-      );
-    }).toThrow('Parameters apiKey and apiEndpoint are required');
-  });
-
-  it('Browser: should send events successfully', async () => {
+  it('(browser) should send events successfully', async () => {
     when(mockBrowserRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
       abort: () => {
       },
       responsePromise: Promise.resolve({
         statusCode: 200,
-        body: JSON.stringify(MOCK_SEND_PARAMETERS),
+        body: 'body-unimportant',
         headers: {},
       }),
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
 
-    const response = await client.sendEvents(MOCK_SEND_PARAMETERS) ?? '';
+    const response = await client(EXECUTION_CONTEXT.BROWSER).sendEvents(API_KEY, REST_API_ENDPOINT, JSON_EVENT_DATA);
 
     expect(response).toEqual(VALID_RESPONSE_CODE);
     verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
-  it('Node: should send events successfully', async () => {
+  it('(node) should send events successfully', async () => {
     when(mockNodeRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
       abort: () => {
       },
       responsePromise: Promise.resolve({
         statusCode: 200,
-        body: JSON.stringify(MOCK_SEND_PARAMETERS),
+        body: 'body-unimportant',
         headers: {},
       }),
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
-    const response = await client.sendEvents(MOCK_SEND_PARAMETERS) ?? '';
+    const response = await client(EXECUTION_CONTEXT.NODE).sendEvents(API_KEY, REST_API_ENDPOINT, JSON_EVENT_DATA);
 
     expect(response).toEqual(VALID_RESPONSE_CODE);
     verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
-  it('Browser: should handle and return 400 HTTP response', async () => {
+  it('(browser) should handle and return 400 HTTP response', async () => {
     when(mockBrowserRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
       abort: () => {
       },
@@ -136,16 +118,15 @@ describe('OdpClient Send Events', () => {
         headers: {},
       }),
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
 
-    const statusCode = await client.sendEvents(MOCK_SEND_PARAMETERS);
+    const statusCode = await client(EXECUTION_CONTEXT.BROWSER).sendEvents(API_KEY, REST_API_ENDPOINT, JSON_EVENT_DATA);
 
     expect(statusCode).toEqual(400);
     verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(LogLevel.ERROR, anyString())).never();
   });
 
-  it('Node: should handle and return 400 HTTP response', async () => {
+  it('(node) should handle and return 400 HTTP response', async () => {
     when(mockNodeRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
       abort: () => {
       },
@@ -155,16 +136,15 @@ describe('OdpClient Send Events', () => {
         headers: {},
       }),
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
-    const statusCode = await client.sendEvents(MOCK_SEND_PARAMETERS);
+    const statusCode = await client(EXECUTION_CONTEXT.NODE).sendEvents(API_KEY, REST_API_ENDPOINT, JSON_EVENT_DATA);
 
     expect(statusCode).toEqual(400);
     verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(LogLevel.ERROR, anyString())).never();
   });
 
-  it('Browser: should handle and return 500 HTTP response', async () => {
+  it('(browser) should handle and return 500 HTTP response', async () => {
     when(mockBrowserRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
       abort: () => {
       },
@@ -174,16 +154,15 @@ describe('OdpClient Send Events', () => {
         headers: {},
       }),
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
 
-    const statusCode = await client.sendEvents(MOCK_SEND_PARAMETERS);
+    const statusCode = await client(EXECUTION_CONTEXT.BROWSER).sendEvents(API_KEY, REST_API_ENDPOINT, JSON_EVENT_DATA);
 
     expect(statusCode).toEqual(500);
     verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(LogLevel.ERROR, anyString())).never();
   });
 
-  it('Node: should handle and return 500 HTTP response', async () => {
+  it('(node) should handle and return 500 HTTP response', async () => {
     when(mockNodeRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
       abort: () => {
       },
@@ -193,9 +172,8 @@ describe('OdpClient Send Events', () => {
         headers: {},
       }),
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
-    const statusCode = await client.sendEvents(MOCK_SEND_PARAMETERS);
+    const statusCode = await client(EXECUTION_CONTEXT.NODE).sendEvents(API_KEY, REST_API_ENDPOINT, JSON_EVENT_DATA);
 
     expect(statusCode).toEqual(500);
     verify(mockErrorHandler.handleError(anything())).never();
@@ -210,7 +188,7 @@ describe('OdpClient Send Events', () => {
     });
     const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler), 10);
 
-    const statusCode = await client.sendEvents(MOCK_SEND_PARAMETERS);
+    const statusCode = await client.sendEvents(API_KEY, REST_API_ENDPOINT, JSON_EVENT_DATA);
 
     expect(statusCode).toBe(0);
     verify(mockErrorHandler.handleError(anything())).once();

@@ -308,3 +308,11 @@ export enum ODP_CONFIG_STATE {
   INTEGRATED,
   NOT_INTEGRATED = 2,
 }
+
+/**
+ * Flag for an execution context (browser or node)
+ */
+export enum EXECUTION_CONTEXT {
+  BROWSER = 'browser',
+  NODE = 'node',
+}

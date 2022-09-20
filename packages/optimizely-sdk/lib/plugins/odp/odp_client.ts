@@ -17,7 +17,6 @@
 import { ErrorHandler, LogHandler, LogLevel } from '../../modules/logging';
 import { RequestHandler, Response } from '../../utils/http_request_handler/http';
 import { REQUEST_TIMEOUT_MS } from '../../utils/http_request_handler/config';
-import { ODP_USER_KEY } from '../../utils/enums';
 
 /**
  * Standard message for audience querying fetch errors
@@ -32,19 +31,19 @@ const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
  * Interface for sending requests and handling responses to Optimizely Data Platform
  */
 export interface IOdpClient {
-  querySegments(apiKey: string, graphQlEndpoint: string, userKey: ODP_USER_KEY, userValue: string, data: string): Promise<string | null>;
+  querySegments(apiKey: string, graphQlEndpoint: string, userKey: string, userValue: string, graphQlQuery: string): Promise<string | null>;
 
-  sendEvents(apiKey: string, restApiEndpoint: string, data: string): Promise<number>;
+  sendEvents(apiKey: string, restApiEndpoint: string, jsonData: string): Promise<number>;
 }
 
 /**
  * Http implementation for sending requests and handling responses to Optimizely Data Platform
  */
 export class OdpClient implements IOdpClient {
-  private readonly _errorHandler: ErrorHandler;
-  private readonly _logger: LogHandler;
-  private readonly _timeout: number;
-  private readonly _requestHandler: RequestHandler;
+  private readonly errorHandler: ErrorHandler;
+  private readonly logger: LogHandler;
+  private readonly timeout: number;
+  private readonly requestHandler: RequestHandler;
 
   /**
    * An implementation for sending requests and handling responses to Optimizely Data Platform (ODP)
@@ -54,17 +53,11 @@ export class OdpClient implements IOdpClient {
    * @param timeout Maximum milliseconds before requests are considered timed out
    */
   constructor(errorHandler: ErrorHandler, logger: LogHandler, requestHandler: RequestHandler, timeout: number = REQUEST_TIMEOUT_MS) {
-    this._errorHandler = errorHandler;
-    this._logger = logger;
-    this._requestHandler = requestHandler;
-    this._timeout = timeout;
+    this.errorHandler = errorHandler;
+    this.logger = logger;
+    this.requestHandler = requestHandler;
+    this.timeout = timeout;
   }
-
-  /**
-   * Handler for querying the ODP GraphQL endpoint
-   * @param parameters Query parameters to send to ODP
-   * @returns JSON response string from ODP or null
-   */
 
   /**
    * Handler for querying the ODP GraphQL endpoint
@@ -72,11 +65,10 @@ export class OdpClient implements IOdpClient {
    * @param graphQlEndpoint Fully-qualified GraphQL endpoint URL
    * @param userKey 'vuid' or 'fs_user_id'
    * @param userValue userKey's value
-   * @param data GraphyQL query string
+   * @param graphQlQuery GraphQL formatted query string
    * @returns JSON response string from ODP or null
    */
-  public async querySegments(apiKey: string, graphQlEndpoint: string, userKey: string, userValue: string, data: string): Promise<string | null> {
-
+  public async querySegments(apiKey: string, graphQlEndpoint: string, userKey: string, userValue: string, graphQlQuery: string): Promise<string | null> {
     const method = 'POST';
     const url = graphQlEndpoint;
     const headers = {
@@ -86,14 +78,14 @@ export class OdpClient implements IOdpClient {
 
     let response: Response;
     try {
-      const request = this._requestHandler.makeRequest(url, headers, method, data);
+      const request = this.requestHandler.makeRequest(url, headers, method, graphQlQuery);
       response = await request.responsePromise;
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      this._errorHandler.handleError(error);
-      this._logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (network error)`);
+      this.errorHandler.handleError(error);
+      this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (network error)`);
 
       return null;
     }
@@ -120,14 +112,14 @@ export class OdpClient implements IOdpClient {
 
     let response: Response;
     try {
-      const request = this._requestHandler.makeRequest(url, headers, method, data);
+      const request = this.requestHandler.makeRequest(url, headers, method, data);
       response = await request.responsePromise;
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      this._errorHandler.handleError(error);
-      this._logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (network error)`);
+      this.errorHandler.handleError(error);
+      this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (network error)`);
 
       return 0;
     }

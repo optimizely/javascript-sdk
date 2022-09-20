@@ -19,21 +19,16 @@
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 import { ErrorHandler, LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpClient } from '../lib/plugins/odp/odp_client';
-import { QuerySegmentsParameters } from '../lib/plugins/odp/query_segments_parameters';
 import { BrowserRequestHandler } from '../lib/utils/http_request_handler/browser_request_handler';
 import { NodeRequestHandler } from '../lib/utils/http_request_handler/node_request_handler';
+import { EXECUTION_CONTEXT, ODP_USER_KEY } from '../lib/utils/enums';
 
-const MOCK_QUERY_PARAMETERS = new QuerySegmentsParameters(
-  'not-real-api-key',
-  'https://api.example.com/v3/graphql',
-  'fs_user_id',
-  'mock-user-id',
-  [
-    'has_email',
-    'has_email_opted_in',
-    'push_on_sale',
-  ],
-);
+const API_KEY = 'not-real-api-key';
+const GRAPHQL_ENDPOINT = 'https://api.example.com/v3/graphql';
+const USER_KEY = ODP_USER_KEY.FS_USER_ID;
+const USER_VALUE = 'mock-user-id';
+const GRAPHQL_QUERY = `{"query" : "query {customer"(fs_user_id : "mock-user-id") {audiences(subset: [\\"has_email\\", \\"has_email_opted_in\\", \\"push_on_sale\\"] {edges {node {name state}}}}}"}`;
+
 const VALID_RESPONSE_JSON = {
   'data': {
     'customer': {
@@ -56,9 +51,14 @@ const VALID_RESPONSE_JSON = {
     },
   },
 };
+
 const BODY_FROM_ERROR = '';
 
 describe('OdpClient Query Segments', () => {
+  const client = (type: EXECUTION_CONTEXT) => type === EXECUTION_CONTEXT.BROWSER ?
+    new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler)) :
+    new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
+
   let mockErrorHandler: ErrorHandler;
   let mockLogger: LogHandler;
   let mockBrowserRequestHandler: BrowserRequestHandler;
@@ -78,67 +78,7 @@ describe('OdpClient Query Segments', () => {
     resetCalls(mockNodeRequestHandler);
   });
 
-  it('should handle missing API Endpoint', () => {
-    expect(() => {
-      new QuerySegmentsParameters(
-        'apiKey',
-        '',
-        'userKey',
-        'userValue',
-        ['segmentToCheck'],
-      );
-    }).toThrow('Parameters apiKey and apiEndpoint are required');
-  });
-
-  it('should handle missing API Key', () => {
-    expect(() => {
-      new QuerySegmentsParameters(
-        '',
-        'apiEndpoint',
-        'userKey',
-        'userValue',
-        ['segmentToCheck'],
-      );
-    }).toThrow('Parameters apiKey and apiEndpoint are required');
-  });
-
-  it('should handle missing User Key', () => {
-    expect(() => {
-      new QuerySegmentsParameters(
-        'apiKey',
-        'apiEndpoint',
-        '',
-        'userValue',
-        ['segmentToCheck'],
-      );
-    }).toThrow('Parameters userKey or userValue are required');
-  });
-
-  it('should handle missing User Value', () => {
-    expect(() => {
-      new QuerySegmentsParameters(
-        'apiKey',
-        'apiEndpoint',
-        'userKey',
-        '',
-        ['segmentToCheck'],
-      );
-    }).toThrow('Parameters userKey or userValue are required');
-  });
-
-  it('should handle no segments being requested', () => {
-    expect(() => {
-      new QuerySegmentsParameters(
-        'apiKey',
-        'apiEndpoint',
-        'userKey',
-        'userValue',
-        [],
-      );
-    }).toThrow('Parameter segmentsToCheck must have elements');
-  });
-
-  it('Browser: should get mocked segments successfully', async () => {
+  it('(browser) should get mocked segments successfully', async () => {
     when(mockBrowserRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
       abort: () => {
       },
@@ -148,16 +88,15 @@ describe('OdpClient Query Segments', () => {
         headers: {},
       }),
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
 
-    const response = await client.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck) ?? '';
+    const response = await client(EXECUTION_CONTEXT.BROWSER).querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
 
     expect(response).toEqual(JSON.stringify(VALID_RESPONSE_JSON));
     verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
-  it('Node: should get mocked segments successfully', async () => {
+  it('(node) should get mocked segments successfully', async () => {
     when(mockNodeRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
       abort: () => {
       },
@@ -167,16 +106,15 @@ describe('OdpClient Query Segments', () => {
         headers: {},
       }),
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
-    const response = await client.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck) ?? '';
+    const response = await client(EXECUTION_CONTEXT.NODE).querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
 
     expect(response).toEqual(JSON.stringify(VALID_RESPONSE_JSON));
     verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
-  it('Browser: should handle 400 HTTP response', async () => {
+  it('(browser) should handle 400 HTTP response', async () => {
     when(mockBrowserRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
       abort: () => {
       },
@@ -186,16 +124,15 @@ describe('OdpClient Query Segments', () => {
         headers: {},
       }),
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
 
-    const responseJson = await client.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck);
+    const responseJson = await client(EXECUTION_CONTEXT.BROWSER).querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
 
     expect(responseJson).toBe(BODY_FROM_ERROR);
     verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(LogLevel.ERROR, anyString())).never();
   });
 
-  it('Node: should handle 400 HTTP response', async () => {
+  it('(node) should handle 400 HTTP response', async () => {
     when(mockNodeRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
       abort: () => {
       },
@@ -205,16 +142,15 @@ describe('OdpClient Query Segments', () => {
         headers: {},
       }),
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
-    const responseJson = await client.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck);
+    const responseJson = await client(EXECUTION_CONTEXT.NODE).querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
 
     expect(responseJson).toBe(BODY_FROM_ERROR);
     verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(LogLevel.ERROR, anyString())).never();
   });
 
-  it('Browser: should handle 500 HTTP response', async () => {
+  it('(browser) should handle 500 HTTP response', async () => {
     when(mockBrowserRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
       abort: () => {
       },
@@ -224,16 +160,15 @@ describe('OdpClient Query Segments', () => {
         headers: {},
       }),
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler));
 
-    const responseJson = await client.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck);
+    const responseJson = await client(EXECUTION_CONTEXT.BROWSER).querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
 
     expect(responseJson).toBe(BODY_FROM_ERROR);
     verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(LogLevel.ERROR, anyString())).never();
   });
 
-  it('Node: should handle 500 HTTP response', async () => {
+  it('(node) should handle 500 HTTP response', async () => {
     when(mockNodeRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
       abort: () => {
       },
@@ -243,9 +178,8 @@ describe('OdpClient Query Segments', () => {
         headers: {},
       }),
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
 
-    const responseJson = await client.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck);
+    const responseJson = await client(EXECUTION_CONTEXT.NODE).querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
 
     expect(responseJson).toBe(BODY_FROM_ERROR);
     verify(mockErrorHandler.handleError(anything())).never();
@@ -260,7 +194,7 @@ describe('OdpClient Query Segments', () => {
     });
     const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler), 10);
 
-    const responseJson = await client.querySegments(apiKey, graphQlEndpoint, userKey, userValue, segmentsToCheck);
+    const responseJson = await client.querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
 
     expect(responseJson).toBeNull();
     verify(mockErrorHandler.handleError(anything())).once();
