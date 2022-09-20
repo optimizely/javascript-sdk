@@ -24,7 +24,7 @@ import { OdpEvent } from './odp_event';
  * Manager for communicating with the Optimizely Data Platform REST API
  */
 export interface IRestApiManager {
-  sendEvents(apiKey: string, apiHost: string, events: OdpEvent[]): Promise<number | null>;
+  sendEvents(apiKey: string, apiHost: string, events: OdpEvent[]): Promise<boolean>;
 }
 
 /**
