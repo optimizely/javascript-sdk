@@ -115,15 +115,17 @@ export class GraphqlManager implements IGraphQLManager {
    * @returns GraphQL JSON string
    */
   private toGraphQLJson(userKey: string, userValue: string, segmentsToCheck: string[]): string {
-    const segmentsArrayJson = JSON.stringify(segmentsToCheck);
-
     const json: string[] = [];
     json.push('{"query" : "query {customer"');
     json.push(`(${userKey} : "${userValue}") `);
     json.push('{audiences');
-    json.push(`(subset: ${segmentsArrayJson})`);
-    json.push('{edges {node {name state}}}}}"}');
-
+    json.push(`(subset: [`);
+    if (segmentsToCheck) {
+      segmentsToCheck.forEach((segment, index) => {
+        json.push(`\\"${segment}\\"${index < segmentsToCheck.length - 1 ? ',' : ''}`);
+      });
+    }
+    json.push('] {edges {node {name state}}}}}"}');
     return json.join('');
   }
 
