@@ -292,12 +292,19 @@ export enum NOTIFICATION_TYPES {
   TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
 }
 
+/**
+ * ODP User Key
+ */
+export enum ODP_USER_KEY {
+  VUID = 'vuid',
+  FS_USER_ID = 'fs_user_id',
+}
 
 /**
- * Valid types of Javascript contexts in which this code is executing
+ * Possible states of ODP integration
  */
-export enum EXECUTION_CONTEXT_TYPE {
-  NOT_DEFINED,
-  BROWSER,
-  NODE,
+export enum ODP_CONFIG_STATE {
+  UNDETERMINED = 0,
+  INTEGRATED,
+  NOT_INTEGRATED = 2,
 }
