@@ -18,21 +18,18 @@ import { LogHandler } from '../../modules/logging';
 import { RequestHandler } from './http';
 import { NodeRequestHandler } from './node_request_handler';
 import { BrowserRequestHandler } from './browser_request_handler';
-import { ExecutionContext } from '../execution_context';
-import { EXECUTION_CONTEXT_TYPE } from '../enums';
 
 /**
  * Factory to create the appropriate type of RequestHandler based on a provided context
  */
 export class RequestHandlerFactory {
   public static createHandler(logger: LogHandler, timeout?: number): RequestHandler {
-    switch (ExecutionContext.Current) {
-      case EXECUTION_CONTEXT_TYPE.BROWSER:
-        return new BrowserRequestHandler(logger, timeout);
-      case EXECUTION_CONTEXT_TYPE.NODE:
-        return new NodeRequestHandler(logger, timeout);
-      default:
-        return null as unknown as RequestHandler;
+    if (window) {
+      return new BrowserRequestHandler(logger, timeout);
+    } else if (process) {
+      return new NodeRequestHandler(logger, timeout);
+    } else {
+      return null as unknown as RequestHandler;
     }
   }
 }

@@ -303,9 +303,18 @@ export enum EXECUTION_CONTEXT_TYPE {
 }
 
 /**
- * Flag for an execution context (browser or node)
+ * ODP User Key
  */
-export enum EXECUTION_CONTEXT {
-  BROWSER = 'browser',
-  NODE = 'node',
+export enum ODP_USER_KEY {
+  VUID = 'vuid',
+  FS_USER_ID = 'fs_user_id',
+}
+
+/**
+ * Possible states of ODP integration
+ */
+export enum ODP_CONFIG_STATE {
+  UNDETERMINED = 0,
+  INTEGRATED,
+  NOT_INTEGRATED = 2,
 }
