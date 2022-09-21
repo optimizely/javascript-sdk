@@ -163,7 +163,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
         processor.process(impressionEvent)
 
         await new Promise(resolve => setTimeout(resolve, 150))
-
+        // @ts-ignore
         localCallback({ statusCode: 200 })
       })
 
