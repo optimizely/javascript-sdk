@@ -165,26 +165,22 @@ export class OdpEventManager implements IOdpEventManager {
     public async run(): Promise<void> {
       while (!this.shouldStop) {
         try {
-          let nextEvent: OdpEvent;
-
-          // If batch has events, set the timeout to remaining time for flush interval,
-          // otherwise wait for the new event indefinitely
           if (this.currentBatch.length > 0) {
-            nextEvent = this.eventManager.eventQueue.poll(this.nextFlushTime - Date.now(), this.eventManager.flushInterval);
-          } else {
-            nextEvent = this.eventManager.eventQueue.poll();
+            const remainingTimeout = this.nextFlushTime - Date.now();
+            await this.pause(remainingTimeout);
           }
 
-          if (nextEvent == null) {
-            // null means no new events received and flush interval is over, dispatch whatever is in the batch.
+          const [nextEvent, ...remainingEventsInQueue] = this.eventManager.eventQueue;
+          this.eventManager.eventQueue = remainingEventsInQueue;
+
+          if (!nextEvent) {
             if (this.currentBatch.length > 0) {
               await this.flush();
             }
             continue;
           }
 
-          if (this.currentBatch.length == 0) {
-            // Batch starting, create a new flush time
+          if (this.currentBatch.length === 0) {
             this.nextFlushTime = Date.now() + this.eventManager.flushInterval;
           }
 
@@ -203,6 +199,10 @@ export class OdpEventManager implements IOdpEventManager {
 
       this.eventManager.logger.log(LogLevel.DEBUG, 'Exiting ODP Event Dispatcher Thread.');
       this.eventManager.isRunning = false;
+    }
+
+    private pause(timeoutMilliseconds: number): Promise<void> {
+      return new Promise(resolve => setTimeout(resolve, timeoutMilliseconds));
     }
 
     private async flush(): Promise<void> {
