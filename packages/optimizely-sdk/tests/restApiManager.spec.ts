@@ -19,7 +19,7 @@
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 import { IOdpClient, OdpClient } from '../lib/plugins/odp/odp_client';
 import { ErrorHandler, LogHandler } from '../lib/modules/logging';
-import { ResetApiManager } from '../lib/plugins/odp/rest_api_manager';
+import { RestApiManager } from '../lib/plugins/odp/rest_api_manager';
 import { OdpEvent } from '../lib/plugins/odp/odp_event';
 
 describe('RestApiManager', () => {
@@ -41,7 +41,7 @@ describe('RestApiManager', () => {
       }))),
   ];
 
-  const makeManagerInstance = () => new ResetApiManager(instance(mockErrorHandler), instance(mockLogger), instance(mockOdpClient));
+  const makeManagerInstance = () => new RestApiManager(instance(mockErrorHandler), instance(mockLogger), instance(mockOdpClient));
 
   let mockErrorHandler: ErrorHandler;
   let mockLogger: LogHandler;

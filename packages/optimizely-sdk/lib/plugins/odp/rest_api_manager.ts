@@ -30,7 +30,7 @@ export interface IRestApiManager {
 /**
  * Concrete implementation for accessing the ODP REST API
  */
-export class ResetApiManager implements IRestApiManager {
+export class RestApiManager implements IRestApiManager {
   private readonly errorHandler: ErrorHandler;
   private readonly logger: LogHandler;
   private readonly odpClient: IOdpClient;
