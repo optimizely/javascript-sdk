@@ -81,6 +81,8 @@ export class OdpClient implements IOdpClient {
     try {
       const request = this._requestHandler.makeRequest(url, headers, method, data);
       response = await request.responsePromise;
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       this._errorHandler.handleError(error);

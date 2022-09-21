@@ -15,11 +15,11 @@
  */
 
 import { LogHandler, LogLevel } from '../../modules/logging';
-import { OdpClient } from './odp_client';
 import { OdpEvent } from './odp_event';
 import { uuid } from '../../utils/fns';
 import { ODP_USER_KEY } from '../../utils/enums';
 import { OdpConfig } from './odp_config';
+import { RestApiManager } from './rest_api_manager';
 
 const DEFAULT_BATCH_SIZE = 10;
 const DEFAULT_QUEUE_SIZE = 10000;
@@ -45,7 +45,7 @@ export interface IOdpEventManager {
  * Manager for persisting events to the Optimizely Data Platform
  */
 export class OdpEventManager implements IOdpEventManager {
-  private readonly apiManager: OdpClient;
+  private readonly apiManager: RestApiManager;
   private readonly logger: LogHandler;
   private readonly queueSize: number;
   private readonly batchSize: number;
@@ -55,9 +55,11 @@ export class OdpEventManager implements IOdpEventManager {
 
   private odpConfig: OdpConfig;
   private eventQueue: Array<OdpEvent>;
-  private eventDispatcher;
 
-  public constructor(odpConfig: OdpConfig, apiManager: OdpClient, logger: LogHandler,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private eventDispatcher: any;
+
+  public constructor(odpConfig: OdpConfig, apiManager: RestApiManager, logger: LogHandler,
                      batchSize: number,
                      queueSize: number,
                      flushInterval: number) {
@@ -102,6 +104,7 @@ export class OdpEventManager implements IOdpEventManager {
     this.processEvent(event);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private augmentCommonData(sourceData: Map<string, any>): Map<string, any> {
     let sourceVersion = '';
     if (window) {
@@ -112,6 +115,7 @@ export class OdpEventManager implements IOdpEventManager {
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = new Map<string, any>();
     data.set('idempotence_id', uuid());
     data.set('data_source_type', 'sdk');
@@ -152,14 +156,13 @@ export class OdpEventManager implements IOdpEventManager {
     private shouldStop = false;
     private currentBatch = new Array<OdpEvent>();
     private nextFlushTime: number = Date.now();
-
     private readonly eventManager: OdpEventManager;
 
     public constructor(eventManager: OdpEventManager) {
       this.eventManager = eventManager;
     }
 
-    public run(): void {
+    public async run(): Promise<void> {
       while (!this.shouldStop) {
         try {
           let nextEvent: OdpEvent;
@@ -175,7 +178,7 @@ export class OdpEventManager implements IOdpEventManager {
           if (nextEvent == null) {
             // null means no new events received and flush interval is over, dispatch whatever is in the batch.
             if (this.currentBatch.length > 0) {
-              this.flush();
+              await this.flush();
             }
             continue;
           }
@@ -188,8 +191,11 @@ export class OdpEventManager implements IOdpEventManager {
           this.currentBatch.push(nextEvent);
 
           if (this.currentBatch.length >= this.eventManager.batchSize) {
-            this.flush();
+            await this.flush();
           }
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
           this.eventManager.logger.log(LogLevel.ERROR, err.toString());
         }
@@ -199,16 +205,16 @@ export class OdpEventManager implements IOdpEventManager {
       this.eventManager.isRunning = false;
     }
 
-    private flush(): void {
+    private async flush(): Promise<void> {
       if (this.eventManager.odpConfig.isReady()) {
-        const payload = JSON.stringify(this.currentBatch);
+        const payload = this.currentBatch;
         const endpoint = this.eventManager.odpConfig.apiHost + EVENT_URL_PATH;
-        let statusCode: number;
+        let shouldRetry: boolean;
         let numAttempts = 0;
         do {
-          statusCode = this.eventManager.apiManager.sendEvents(this.eventManager.odpConfig.apiKey, endpoint, payload);
+          shouldRetry = await this.eventManager.apiManager.sendEvents(this.eventManager.odpConfig.apiKey, endpoint, payload);
           numAttempts += 1;
-        } while (numAttempts < MAX_RETRIES && statusCode != null && (statusCode == 0 || statusCode >= 500));
+        } while (numAttempts < MAX_RETRIES && shouldRetry);
       } else {
         this.eventManager.logger.log(LogLevel.DEBUG, 'ODPConfig not ready, discarding event batch');
       }
