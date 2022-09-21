@@ -19,7 +19,7 @@
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 import { IOdpClient, OdpClient } from '../lib/plugins/odp/odp_client';
 import { ErrorHandler, LogHandler, LogLevel } from '../lib/modules/logging';
-import { GraphqlManager } from '../lib/plugins/odp/graphql_manager';
+import { GraphQlManager } from '../lib/plugins/odp/graphql_manager';
 import { Response } from '../lib/plugins/odp/odp_types';
 import { ODP_USER_KEY } from '../lib/utils/enums';
 
@@ -33,7 +33,7 @@ describe('GraphQLManager', () => {
     'push_on_sale',
   ];
 
-  const makeManagerInstance = () => new GraphqlManager(instance(mockErrorHandler), instance(mockLogger), instance(mockOdpClient));
+  const makeManagerInstance = () => new GraphQlManager(instance(mockErrorHandler), instance(mockLogger), instance(mockOdpClient));
 
   let mockErrorHandler: ErrorHandler;
   let mockLogger: LogHandler;

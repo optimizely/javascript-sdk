@@ -38,14 +38,14 @@ const EMPTY_JSON_RESPONSE = null;
 /**
  * Manager for communicating with the Optimizely Data Platform GraphQL endpoint
  */
-export interface IGraphQLManager {
+export interface IGraphQlManager {
   fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[] | null>;
 }
 
 /**
  * Concrete implementation for communicating with the ODP GraphQL endpoint
  */
-export class GraphqlManager implements IGraphQLManager {
+export class GraphQlManager implements IGraphQlManager {
   private readonly _errorHandler: ErrorHandler;
   private readonly _logger: LogHandler;
   private readonly _odpClient: IOdpClient;
@@ -78,7 +78,7 @@ export class GraphqlManager implements IGraphQLManager {
       return EMPTY_SEGMENTS_COLLECTION;
     }
 
-    const endpoint = `${apiHost}/v3/events`;
+    const endpoint = `${apiHost}/v3/graphql`;
     const query = this.toGraphQLJson(userKey, userValue, segmentsToCheck);
 
     const segmentsResponse = await this._odpClient.querySegments(apiKey, endpoint, userKey, userValue, query);
