@@ -32,6 +32,8 @@ import { createNotificationCenter } from './core/notification_center';
 import { default as eventProcessor } from './plugins/event_processor';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
+import { EXECUTION_CONTEXT_TYPE } from './utils/enums';
+import { ExecutionContext } from './utils/execution_context';
 
 const logger = getLogger();
 logHelper.setLogHandler(loggerPlugin.createLogger());
@@ -43,6 +45,8 @@ const DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
 const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
 
 let hasRetriedEvents = false;
+
+ExecutionContext.Current = EXECUTION_CONTEXT_TYPE.BROWSER;
 
 /**
  * Creates an instance of the Optimizely class
