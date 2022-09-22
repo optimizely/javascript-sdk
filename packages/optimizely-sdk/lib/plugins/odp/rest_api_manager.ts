@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-
 import { LogHandler, LogLevel } from '../../modules/logging';
-import { IOdpClient, OdpClient } from './odp_client';
 import { RequestHandlerFactory } from '../../utils/http_request_handler/request_handler_factory';
 import { OdpEvent } from './odp_event';
+import { RequestHandler } from '../../utils/http_request_handler/http';
+import { REQUEST_TIMEOUT_MS } from '../../utils/http_request_handler/config';
+
+const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
 
 /**
  * Manager for communicating with the Optimizely Data Platform REST API
@@ -32,18 +34,18 @@ export interface IRestApiManager {
  */
 export class RestApiManager implements IRestApiManager {
   private readonly logger: LogHandler;
-  private readonly odpClient: IOdpClient;
+  private readonly timeout: number;
+  private readonly requestHandler: RequestHandler;
 
   /**
    * Creates instance to access Optimizely Data Platform (ODP) REST API
    * @param logger Collect and record events/errors for this REST implementation
-   * @param client HTTP Client used to send data to ODP
+   * @param timeout Milliseconds to wait for a response
    */
-  constructor(logger: LogHandler, client?: IOdpClient) {
+  constructor(logger: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
     this.logger = logger;
-
-    this.odpClient = client ?? new OdpClient(this.logger,
-      RequestHandlerFactory.createHandler(this.logger));
+    this.timeout = timeout;
+    this.requestHandler = RequestHandlerFactory.createHandler(this.logger);
   }
 
   /**
@@ -54,20 +56,48 @@ export class RestApiManager implements IRestApiManager {
    * @returns Retry is true - if network or server error (5xx), otherwise false
    */
   public async sendEvents(apiKey: string, apiHost: string, events: OdpEvent[]): Promise<boolean> {
+    let shouldRetry = false;
+
     if (!apiKey || !apiHost) {
-      this.logger.log(LogLevel.ERROR, 'ODP event send failed (Parameters apiKey or apiHost invalid)');
-      return false;
+      this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (Parameters apiKey or apiHost invalid)`);
+      return shouldRetry;
     }
 
     if (events.length === 0) {
-      return false;
+      this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (no events)`);
+      return shouldRetry;
     }
 
     const endpoint = `${apiHost}/v3/events`;
     const data = JSON.stringify(events);
 
-    const statusCode = await this.odpClient.sendEvents(apiKey, endpoint, data);
+    const method = 'POST';
+    const headers = {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+    };
 
-    return statusCode === 0 || (statusCode >= 500 && statusCode < 600);
+    let statusCode = 0;
+    try {
+      const request = this.requestHandler.makeRequest(endpoint, headers, method, data);
+      const response = await request.responsePromise;
+      statusCode = response.statusCode ?? statusCode;
+    } catch {
+      this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (network error)`);
+    }
+
+    if (statusCode === 0) {
+      shouldRetry = true;
+    }
+
+    if (statusCode >= 400) {
+      this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (${statusCode})`);
+    }
+
+    if (statusCode >= 500) {
+      shouldRetry = true;
+    }
+
+    return shouldRetry;
   }
 }

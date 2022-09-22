@@ -17,37 +17,49 @@
 /// <reference types="jest" />
 
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
-import { IOdpClient, OdpClient } from '../lib/plugins/odp/odp_client';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
-import { GraphQlManager } from '../lib/plugins/odp/graphql_manager';
-import { Response } from '../lib/plugins/odp/odp_types';
+import { GraphQLManager } from '../lib/plugins/odp/graphql_manager';
+import { RequestHandler } from '../lib/utils/http_request_handler/http';
+import { Response as GraphQLResponse } from '../lib/plugins/odp/odp_types';
 import { ODP_USER_KEY } from '../lib/utils/enums';
+import { REQUEST_TIMEOUT_MS } from '../lib/utils/http_request_handler/config';
 
+const API_key = 'not-real-api-key';
+const GRAPHQL_ENDPOINT = 'https://some.example.com/graphql/endpoint';
+const USER_KEY = ODP_USER_KEY.FS_USER_ID;
+const USER_VALUE = 'tester-101';
+const SEGMENTS_TO_CHECK = [
+  'has_email',
+  'has_email_opted_in',
+  'push_on_sale',
+];
 describe('GraphQLManager', () => {
-  const VALID_ODP_PUBLIC_KEY = 'not-real-api-key';
-  const ODP_GRAPHQL_URL = 'https://some.example.com/graphql/endpoint';
-  const VALID_FS_USER_ID = 'tester-101';
-  const SEGMENTS_TO_CHECK = [
-    'has_email',
-    'has_email_opted_in',
-    'push_on_sale',
-  ];
-
-  const makeManagerInstance = () => new GraphQlManager(instance(mockLogger), instance(mockOdpClient));
-
   let mockLogger: LogHandler;
-  let mockOdpClient: IOdpClient;
+  let mockRequestHandler: RequestHandler;
 
   beforeAll(() => {
     mockLogger = mock<LogHandler>();
-    mockOdpClient = mock<OdpClient>();
+    mockRequestHandler = mock<RequestHandler>();
   });
 
   beforeEach(() => {
     resetCalls(mockLogger);
-    resetCalls(mockOdpClient);
+    resetCalls(mockRequestHandler);
   });
 
+  const managerInstance = () => new GraphQLManager(instance(mockLogger), REQUEST_TIMEOUT_MS, instance(mockRequestHandler));
+
+  const abortableRequest = (statusCode: number, body: string) => {
+    return {
+      abort: () => {
+      },
+      responsePromise: Promise.resolve({
+        statusCode,
+        body,
+        headers: {},
+      }),
+    };
+  };
 
   it('should parse a successful response', () => {
     const validJsonResponse = `{
@@ -72,9 +84,9 @@ describe('GraphQLManager', () => {
         }
       }
     }`;
-    const manager = makeManagerInstance();
+    const manager = managerInstance();
 
-    const response = manager['parseSegmentsResponseJson'](validJsonResponse) as Response;
+    const response = manager['parseSegmentsResponseJson'](validJsonResponse) as GraphQLResponse;
 
     expect(response).not.toBeUndefined();
     expect(response?.errors).toHaveLength(0);
@@ -92,7 +104,7 @@ describe('GraphQLManager', () => {
     const errorJsonResponse = `{
    "errors": [
         {
-            "message": "Exception while fetching data (/customer) : Exception: could not resolve _fs_user_id = asdsdaddddd",
+            "message": "Exception while fetching data (/customer) : Exception: could not resolve _fs_user_id = mock_user_id",
             "locations": [
                 {
                     "line": 2,
@@ -111,9 +123,9 @@ describe('GraphQLManager', () => {
         "customer": null
     }
 }`;
-    const manager = makeManagerInstance();
+    const manager = managerInstance();
 
-    const response = manager['parseSegmentsResponseJson'](errorJsonResponse) as Response;
+    const response = manager['parseSegmentsResponseJson'](errorJsonResponse) as GraphQLResponse;
 
     expect(response).not.toBeUndefined();
     expect(response.data.customer).toBeNull();
@@ -121,15 +133,25 @@ describe('GraphQLManager', () => {
     expect(response.errors[0].extensions.classification).toEqual('InvalidIdentifierException');
   });
 
+  it('should construct a valid GraphQL query string', () => {
+    const manager = managerInstance();
+
+    const response = manager['toGraphQLJson'](USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
+
+    expect(response)
+      .toBe(`{"query" : "query {customer"(${USER_KEY} : "${USER_VALUE}") {audiences(subset: [\\"has_email\\",\\"has_email_opted_in\\",\\"push_on_sale\\"] {edges {node {name state}}}}}"}`,
+      );
+  });
+
   it('should fetch valid qualified segments', async () => {
     const responseJsonWithQualifiedSegments = '{"data":{"customer":{"audiences":' +
       '{"edges":[{"node":{"name":"has_email",' +
       '"state":"qualified"}},{"node":{"name":' +
       '"has_email_opted_in","state":"qualified"}}]}}}}';
-    when(mockOdpClient.querySegments(anyString(), anyString(), anyString(), anyString(), anyString())).thenResolve(responseJsonWithQualifiedSegments);
-    const manager = makeManagerInstance();
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(200, responseJsonWithQualifiedSegments));
+    const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, ODP_USER_KEY.FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
+    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
 
     expect(segments).toHaveLength(2);
     expect(segments).toContain('has_email');
@@ -138,9 +160,9 @@ describe('GraphQLManager', () => {
   });
 
   it('should handle a request to query no segments', async () => {
-    const manager = makeManagerInstance();
+    const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, ODP_USER_KEY.FS_USER_ID, VALID_FS_USER_ID, []);
+    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, ODP_USER_KEY.FS_USER_ID, USER_VALUE, []);
 
     expect(segments).toHaveLength(0);
     verify(mockLogger.log(anything(), anyString())).never();
@@ -149,10 +171,10 @@ describe('GraphQLManager', () => {
   it('should handle empty qualified segments', async () => {
     const responseJsonWithNoQualifiedSegments = '{"data":{"customer":{"audiences":' +
       '{"edges":[ ]}}}}';
-    when(mockOdpClient.querySegments(anyString(), anyString(), anyString(), anyString(), anyString())).thenResolve(responseJsonWithNoQualifiedSegments);
-    const manager = makeManagerInstance();
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(200, responseJsonWithNoQualifiedSegments));
+    const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, ODP_USER_KEY.FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
+    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
 
     expect(segments).toHaveLength(0);
     verify(mockLogger.log(anything(), anyString())).never();
@@ -166,9 +188,10 @@ describe('GraphQLManager', () => {
       '"locations":[{"line":1,"column":8}],"path":["customer"],' +
       '"extensions":{"classification":"DataFetchingException"}}],' +
       '"data":{"customer":null}}';
-    when(mockOdpClient.querySegments(anyString(), anyString(), anyString(), anyString(), anyString())).thenResolve(errorJsonResponse);
-    const manager = makeManagerInstance();
-    const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, ODP_USER_KEY.FS_USER_ID, INVALID_USER_ID, SEGMENTS_TO_CHECK);
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(200, errorJsonResponse));
+    const manager = managerInstance();
+
+    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, INVALID_USER_ID, SEGMENTS_TO_CHECK);
 
     expect(segments).toHaveLength(0);
     verify(mockLogger.log(anything(), anyString())).once();
@@ -176,10 +199,10 @@ describe('GraphQLManager', () => {
 
   it('should handle unrecognized JSON responses', async () => {
     const unrecognizedJson = '{"unExpectedObject":{ "withSome": "value", "thatIsNotParseable": "true" }}';
-    when(mockOdpClient.querySegments(anyString(), anyString(), anyString(), anyString(), anyString())).thenResolve(unrecognizedJson);
-    const manager = makeManagerInstance();
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(200, unrecognizedJson));
+    const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, ODP_USER_KEY.FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
+    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
 
     expect(segments).toBeNull();
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (decode error)')).once();
@@ -190,10 +213,10 @@ describe('GraphQLManager', () => {
       'UnknownArgument: Unknown field argument not_real_userKey @ ' +
       '\'customer\'","locations":[{"line":1,"column":17}],' +
       '"extensions":{"classification":"ValidationError"}}]}';
-    when(mockOdpClient.querySegments(anyString(), anyString(), anyString(), anyString(), anyString())).thenResolve(errorJsonResponse);
-    const manager = makeManagerInstance();
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(200, errorJsonResponse));
+    const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, ODP_USER_KEY.FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
+    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
 
     expect(segments).toBeNull();
     verify(mockLogger.log(anything(), anyString())).once();
@@ -201,20 +224,34 @@ describe('GraphQLManager', () => {
 
   it('should handle bad responses', async () => {
     const badResponse = '{"data":{ }}';
-    when(mockOdpClient.querySegments(anyString(), anyString(), anyString(), anyString(), anyString())).thenResolve(badResponse);
-    const manager = makeManagerInstance();
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(200, badResponse));
+    const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, ODP_USER_KEY.FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
+    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
 
     expect(segments).toBeNull();
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (decode error)')).once();
   });
 
   it('should handle non 200 HTTP status code response', async () => {
-    when(mockOdpClient.querySegments(anyString(), anyString(), anyString(), anyString(), anyString())).thenResolve(null);
-    const manager = makeManagerInstance();
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(400, ''));
+    const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, ODP_USER_KEY.FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
+    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
+
+    expect(segments).toBeNull();
+    verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)')).once();
+  });
+
+  it('should handle a timeout', async () => {
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
+      abort: () => {
+      },
+      responsePromise: Promise.reject(new Error('Request timed out')),
+    });
+    const manager = managerInstance();
+
+    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
 
     expect(segments).toBeNull();
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)')).once();
