@@ -291,13 +291,3 @@ export enum NOTIFICATION_TYPES {
   OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
   TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
 }
-
-
-/**
- * Valid types of Javascript contexts in which this code is executing
- */
-export enum EXECUTION_CONTEXT_TYPE {
-  NOT_DEFINED,
-  BROWSER,
-  NODE,
-}
