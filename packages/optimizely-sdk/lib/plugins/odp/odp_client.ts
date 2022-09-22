@@ -33,7 +33,7 @@ const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
 export interface IOdpClient {
   querySegments(apiKey: string, apiEndpoint: string, userKey: string, userValue: string, graphQlQuery: string): Promise<string | null>;
 
-  sendEvents(apiKey: string, restApiEndpoint: string, jsonData: string): Promise<number>;
+  sendEvents(apiKey: string, apiEndpoint: string, jsonData: string): Promise<number>;
 }
 
 /**
