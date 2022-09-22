@@ -31,7 +31,7 @@ const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
  * Interface for sending requests and handling responses to Optimizely Data Platform
  */
 export interface IOdpClient {
-  querySegments(apiKey: string, graphQlEndpoint: string, userKey: string, userValue: string, graphQlQuery: string): Promise<string | null>;
+  querySegments(apiKey: string, apiEndpoint: string, userKey: string, userValue: string, graphQlQuery: string): Promise<string | null>;
 
   sendEvents(apiKey: string, restApiEndpoint: string, jsonData: string): Promise<number>;
 }
