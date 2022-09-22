@@ -41,7 +41,7 @@ describe('RestApiManager', () => {
       }))),
   ];
 
-  const makeManagerInstance = () => new RestApiManager(instance(mockErrorHandler), instance(mockLogger), instance(mockOdpClient));
+  const makeManagerInstance = () => new RestApiManager(instance(mockLogger), instance(mockOdpClient));
 
   let mockErrorHandler: ErrorHandler;
   let mockLogger: LogHandler;

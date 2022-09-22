@@ -17,18 +17,17 @@
 /// <reference types="jest" />
 
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
-import { ErrorHandler, LogHandler, LogLevel } from '../lib/modules/logging';
+import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpClient } from '../lib/plugins/odp/odp_client';
 import { BrowserRequestHandler } from '../lib/utils/http_request_handler/browser_request_handler';
 import { NodeRequestHandler } from '../lib/utils/http_request_handler/node_request_handler';
-import { EXECUTION_CONTEXT, ODP_USER_KEY } from '../lib/utils/enums';
+import { ODP_USER_KEY } from '../lib/utils/enums';
 
 const API_KEY = 'not-real-api-key';
 const GRAPHQL_ENDPOINT = 'https://api.example.com/v3/graphql';
 const USER_KEY = ODP_USER_KEY.FS_USER_ID;
 const USER_VALUE = 'mock-user-id';
 const GRAPHQL_QUERY = `{"query" : "query {customer"(fs_user_id : "mock-user-id") {audiences(subset: [\\"has_email\\", \\"has_email_opted_in\\", \\"push_on_sale\\"] {edges {node {name state}}}}}"}`;
-
 const VALID_RESPONSE_JSON = {
   'data': {
     'customer': {
@@ -51,28 +50,26 @@ const VALID_RESPONSE_JSON = {
     },
   },
 };
-
 const BODY_FROM_ERROR = '';
+const BROWSER = 'browser';
+const NODE = 'node';
 
 describe('OdpClient Query Segments', () => {
-  const client = (type: EXECUTION_CONTEXT) => type === EXECUTION_CONTEXT.BROWSER ?
-    new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockBrowserRequestHandler)) :
-    new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler));
+  const client = (type: string) => type === BROWSER ?
+    new OdpClient(instance(mockLogger), instance(mockBrowserRequestHandler)) :
+    new OdpClient(instance(mockLogger), instance(mockNodeRequestHandler));
 
-  let mockErrorHandler: ErrorHandler;
   let mockLogger: LogHandler;
   let mockBrowserRequestHandler: BrowserRequestHandler;
   let mockNodeRequestHandler: NodeRequestHandler;
 
   beforeAll(() => {
-    mockErrorHandler = mock<ErrorHandler>();
     mockLogger = mock<LogHandler>();
     mockBrowserRequestHandler = mock<BrowserRequestHandler>();
     mockNodeRequestHandler = mock<NodeRequestHandler>();
   });
 
   beforeEach(() => {
-    resetCalls(mockErrorHandler);
     resetCalls(mockLogger);
     resetCalls(mockBrowserRequestHandler);
     resetCalls(mockNodeRequestHandler);
@@ -89,10 +86,9 @@ describe('OdpClient Query Segments', () => {
       }),
     });
 
-    const response = await client(EXECUTION_CONTEXT.BROWSER).querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
+    const response = await client(BROWSER).querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
 
     expect(response).toEqual(JSON.stringify(VALID_RESPONSE_JSON));
-    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
@@ -107,10 +103,9 @@ describe('OdpClient Query Segments', () => {
       }),
     });
 
-    const response = await client(EXECUTION_CONTEXT.NODE).querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
+    const response = await client(NODE).querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
 
     expect(response).toEqual(JSON.stringify(VALID_RESPONSE_JSON));
-    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
@@ -125,10 +120,9 @@ describe('OdpClient Query Segments', () => {
       }),
     });
 
-    const responseJson = await client(EXECUTION_CONTEXT.BROWSER).querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
+    const responseJson = await client(BROWSER).querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
 
     expect(responseJson).toBe(BODY_FROM_ERROR);
-    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(LogLevel.ERROR, anyString())).never();
   });
 
@@ -143,10 +137,9 @@ describe('OdpClient Query Segments', () => {
       }),
     });
 
-    const responseJson = await client(EXECUTION_CONTEXT.NODE).querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
+    const responseJson = await client(NODE).querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
 
     expect(responseJson).toBe(BODY_FROM_ERROR);
-    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(LogLevel.ERROR, anyString())).never();
   });
 
@@ -161,10 +154,9 @@ describe('OdpClient Query Segments', () => {
       }),
     });
 
-    const responseJson = await client(EXECUTION_CONTEXT.BROWSER).querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
+    const responseJson = await client(BROWSER).querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
 
     expect(responseJson).toBe(BODY_FROM_ERROR);
-    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(LogLevel.ERROR, anyString())).never();
   });
 
@@ -179,10 +171,9 @@ describe('OdpClient Query Segments', () => {
       }),
     });
 
-    const responseJson = await client(EXECUTION_CONTEXT.NODE).querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
+    const responseJson = await client(NODE).querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
 
     expect(responseJson).toBe(BODY_FROM_ERROR);
-    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(LogLevel.ERROR, anyString())).never();
   });
 
@@ -192,12 +183,11 @@ describe('OdpClient Query Segments', () => {
       },
       responsePromise: Promise.reject(new Error('Request timed out')),
     });
-    const client = new OdpClient(instance(mockErrorHandler), instance(mockLogger), instance(mockNodeRequestHandler), 10);
+    const client = new OdpClient(instance(mockLogger), instance(mockNodeRequestHandler), 10);
 
     const responseJson = await client.querySegments(API_KEY, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, GRAPHQL_QUERY);
 
     expect(responseJson).toBeNull();
-    verify(mockErrorHandler.handleError(anything())).once();
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)')).once();
   });
 });

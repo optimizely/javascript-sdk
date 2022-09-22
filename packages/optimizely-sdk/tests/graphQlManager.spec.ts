@@ -18,7 +18,7 @@
 
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 import { IOdpClient, OdpClient } from '../lib/plugins/odp/odp_client';
-import { ErrorHandler, LogHandler, LogLevel } from '../lib/modules/logging';
+import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { GraphQlManager } from '../lib/plugins/odp/graphql_manager';
 import { Response } from '../lib/plugins/odp/odp_types';
 import { ODP_USER_KEY } from '../lib/utils/enums';
@@ -33,20 +33,17 @@ describe('GraphQLManager', () => {
     'push_on_sale',
   ];
 
-  const makeManagerInstance = () => new GraphQlManager(instance(mockErrorHandler), instance(mockLogger), instance(mockOdpClient));
+  const makeManagerInstance = () => new GraphQlManager(instance(mockLogger), instance(mockOdpClient));
 
-  let mockErrorHandler: ErrorHandler;
   let mockLogger: LogHandler;
   let mockOdpClient: IOdpClient;
 
   beforeAll(() => {
-    mockErrorHandler = mock<ErrorHandler>();
     mockLogger = mock<LogHandler>();
     mockOdpClient = mock<OdpClient>();
   });
 
   beforeEach(() => {
-    resetCalls(mockErrorHandler);
     resetCalls(mockLogger);
     resetCalls(mockOdpClient);
   });
@@ -137,7 +134,6 @@ describe('GraphQLManager', () => {
     expect(segments).toHaveLength(2);
     expect(segments).toContain('has_email');
     expect(segments).toContain('has_email_opted_in');
-    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
@@ -147,7 +143,6 @@ describe('GraphQLManager', () => {
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, ODP_USER_KEY.FS_USER_ID, VALID_FS_USER_ID, []);
 
     expect(segments).toHaveLength(0);
-    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
@@ -160,7 +155,6 @@ describe('GraphQLManager', () => {
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, ODP_USER_KEY.FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
 
     expect(segments).toHaveLength(0);
-    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
@@ -177,7 +171,6 @@ describe('GraphQLManager', () => {
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, ODP_USER_KEY.FS_USER_ID, INVALID_USER_ID, SEGMENTS_TO_CHECK);
 
     expect(segments).toHaveLength(0);
-    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(anything(), anyString())).once();
   });
 
@@ -189,7 +182,6 @@ describe('GraphQLManager', () => {
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, ODP_USER_KEY.FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
 
     expect(segments).toBeNull();
-    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (decode error)')).once();
   });
 
@@ -204,7 +196,6 @@ describe('GraphQLManager', () => {
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, ODP_USER_KEY.FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
 
     expect(segments).toBeNull();
-    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(anything(), anyString())).once();
   });
 
@@ -216,7 +207,6 @@ describe('GraphQLManager', () => {
     const segments = await manager.fetchSegments(VALID_ODP_PUBLIC_KEY, ODP_GRAPHQL_URL, ODP_USER_KEY.FS_USER_ID, VALID_FS_USER_ID, SEGMENTS_TO_CHECK);
 
     expect(segments).toBeNull();
-    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (decode error)')).once();
   });
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ErrorHandler, LogHandler, LogLevel } from '../../modules/logging';
+import { LogHandler, LogLevel } from '../../modules/logging';
 import { RequestHandler, Response } from '../../utils/http_request_handler/http';
 import { REQUEST_TIMEOUT_MS } from '../../utils/http_request_handler/config';
 
@@ -40,20 +40,17 @@ export interface IOdpClient {
  * Http implementation for sending requests and handling responses to Optimizely Data Platform
  */
 export class OdpClient implements IOdpClient {
-  private readonly errorHandler: ErrorHandler;
   private readonly logger: LogHandler;
   private readonly timeout: number;
   private readonly requestHandler: RequestHandler;
 
   /**
    * An implementation for sending requests and handling responses to Optimizely Data Platform (ODP)
-   * @param errorHandler Handler to record exceptions
    * @param logger Collect and record events/errors for this ODP client
    * @param requestHandler Client implementation to send/receive requests over HTTP
    * @param timeout Maximum milliseconds before requests are considered timed out
    */
-  constructor(errorHandler: ErrorHandler, logger: LogHandler, requestHandler: RequestHandler, timeout: number = REQUEST_TIMEOUT_MS) {
-    this.errorHandler = errorHandler;
+  constructor(logger: LogHandler, requestHandler: RequestHandler, timeout: number = REQUEST_TIMEOUT_MS) {
     this.logger = logger;
     this.requestHandler = requestHandler;
     this.timeout = timeout;
@@ -80,11 +77,7 @@ export class OdpClient implements IOdpClient {
     try {
       const request = this.requestHandler.makeRequest(url, headers, method, graphQlQuery);
       response = await request.responsePromise;
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      this.errorHandler.handleError(error);
+    } catch {
       this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (network error)`);
 
       return null;
@@ -114,11 +107,7 @@ export class OdpClient implements IOdpClient {
     try {
       const request = this.requestHandler.makeRequest(url, headers, method, data);
       response = await request.responsePromise;
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      this.errorHandler.handleError(error);
+    } catch {
       this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (network error)`);
 
       return 0;

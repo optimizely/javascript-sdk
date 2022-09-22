@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ErrorHandler, LogHandler, LogLevel } from '../../modules/logging';
+import { LogHandler, LogLevel } from '../../modules/logging';
 import { Response } from './odp_types';
 import { IOdpClient, OdpClient } from './odp_client';
 import { validate } from '../../utils/json_schema_validator';
@@ -46,23 +46,19 @@ export interface IGraphQlManager {
  * Concrete implementation for communicating with the ODP GraphQL endpoint
  */
 export class GraphQlManager implements IGraphQlManager {
-  private readonly _errorHandler: ErrorHandler;
-  private readonly _logger: LogHandler;
-  private readonly _odpClient: IOdpClient;
+  private readonly logger: LogHandler;
+  private readonly odpClient: IOdpClient;
 
   /**
    * Communicates with Optimizely Data Platform's GraphQL endpoint
-   * @param errorHandler Handler to record exceptions
    * @param logger Collect and record events/errors for this GraphQL implementation
    * @param client Client to use to send queries to ODP
    */
-  constructor(errorHandler: ErrorHandler, logger: LogHandler, client?: IOdpClient) {
-    this._errorHandler = errorHandler;
-    this._logger = logger;
+  constructor(logger: LogHandler, client?: IOdpClient) {
+    this.logger = logger;
 
-    this._odpClient = client ?? new OdpClient(this._errorHandler,
-      this._logger,
-      RequestHandlerFactory.createHandler(this._logger));
+    this.odpClient = client ?? new OdpClient(this.logger,
+      RequestHandlerFactory.createHandler(this.logger));
   }
 
   /**
@@ -74,6 +70,11 @@ export class GraphQlManager implements IGraphQlManager {
    * @param segmentsToCheck Audience segments to check for experiment inclusion
    */
   public async fetchSegments(apiKey: string, apiHost: string, userKey: ODP_USER_KEY, userValue: string, segmentsToCheck: string[]): Promise<string[] | null> {
+    if (!apiKey || !apiHost) {
+      this.logger.log(LogLevel.ERROR, 'Audience segments fetch failed (Parameters apiKey or apiHost invalid)');
+      return null;
+    }
+
     if (segmentsToCheck?.length === 0) {
       return EMPTY_SEGMENTS_COLLECTION;
     }
@@ -81,29 +82,29 @@ export class GraphQlManager implements IGraphQlManager {
     const endpoint = `${apiHost}/v3/graphql`;
     const query = this.toGraphQLJson(userKey, userValue, segmentsToCheck);
 
-    const segmentsResponse = await this._odpClient.querySegments(apiKey, endpoint, userKey, userValue, query);
+    const segmentsResponse = await this.odpClient.querySegments(apiKey, endpoint, userKey, userValue, query);
     if (!segmentsResponse) {
-      this._logger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)');
+      this.logger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)');
       return null;
     }
 
     const parsedSegments = this.parseSegmentsResponseJson(segmentsResponse);
     if (!parsedSegments) {
-      this._logger.log(LogLevel.ERROR, 'Audience segments fetch failed (decode error)');
+      this.logger.log(LogLevel.ERROR, 'Audience segments fetch failed (decode error)');
       return null;
     }
 
     if (parsedSegments.errors?.length > 0) {
       const errors = parsedSegments.errors.map((e) => e.message).join('; ');
 
-      this._logger.log(LogLevel.WARNING, `Audience segments fetch failed (${errors})`);
+      this.logger.log(LogLevel.WARNING, `Audience segments fetch failed (${errors})`);
 
       return EMPTY_SEGMENTS_COLLECTION;
     }
 
     const edges = parsedSegments?.data?.customer?.audiences?.edges;
     if (!edges) {
-      this._logger.log(LogLevel.WARNING, 'Audience segments fetch failed (decode error)');
+      this.logger.log(LogLevel.WARNING, 'Audience segments fetch failed (decode error)');
       return EMPTY_SEGMENTS_COLLECTION;
     }
 
@@ -140,12 +141,8 @@ export class GraphQlManager implements IGraphQlManager {
 
     try {
       jsonObject = JSON.parse(jsonResponse);
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      this._errorHandler.handleError(error);
-      this._logger.log(LogLevel.ERROR, 'Attempted to parse invalid segment response JSON.');
+    } catch {
+      this.logger.log(LogLevel.ERROR, 'Attempted to parse invalid segment response JSON.');
       return EMPTY_JSON_RESPONSE;
     }
 

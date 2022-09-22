@@ -15,7 +15,7 @@
  */
 
 
-import { ErrorHandler, LogHandler } from '../../modules/logging';
+import { LogHandler, LogLevel } from '../../modules/logging';
 import { IOdpClient, OdpClient } from './odp_client';
 import { RequestHandlerFactory } from '../../utils/http_request_handler/request_handler_factory';
 import { OdpEvent } from './odp_event';
@@ -31,22 +31,18 @@ export interface IRestApiManager {
  * Concrete implementation for accessing the ODP REST API
  */
 export class RestApiManager implements IRestApiManager {
-  private readonly errorHandler: ErrorHandler;
   private readonly logger: LogHandler;
   private readonly odpClient: IOdpClient;
 
   /**
    * Creates instance to access Optimizely Data Platform (ODP) REST API
-   * @param errorHandler Handler to record exceptions
    * @param logger Collect and record events/errors for this REST implementation
    * @param client HTTP Client used to send data to ODP
    */
-  constructor(errorHandler: ErrorHandler, logger: LogHandler, client?: IOdpClient) {
-    this.errorHandler = errorHandler;
+  constructor(logger: LogHandler, client?: IOdpClient) {
     this.logger = logger;
 
-    this.odpClient = client ?? new OdpClient(this.errorHandler,
-      this.logger,
+    this.odpClient = client ?? new OdpClient(this.logger,
       RequestHandlerFactory.createHandler(this.logger));
   }
 
@@ -58,6 +54,11 @@ export class RestApiManager implements IRestApiManager {
    * @returns Retry is true - if network or server error (5xx), otherwise false
    */
   public async sendEvents(apiKey: string, apiHost: string, events: OdpEvent[]): Promise<boolean> {
+    if (!apiKey || !apiHost) {
+      this.logger.log(LogLevel.ERROR, 'ODP event send failed (Parameters apiKey or apiHost invalid)');
+      return false;
+    }
+
     if (events.length === 0) {
       return false;
     }
