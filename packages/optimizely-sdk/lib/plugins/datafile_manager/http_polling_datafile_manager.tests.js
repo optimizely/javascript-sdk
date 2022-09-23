@@ -16,13 +16,13 @@
 import sinon from 'sinon';
 import { createHttpPollingDatafileManager } from './http_polling_datafile_manager';
 import * as projectConfig from '../../core/project_config';
-import * as datafileManager from '@optimizely/js-sdk-datafile-manager';
+import datafileManager from '../../modules/datafile-manager/index.node';
  
 describe('lib/plugins/datafile_manager/http_polling_datafile_manager', function() {
   var sandbox = sinon.sandbox.create();
   
-  beforeEach(() => {        
-    sandbox.stub(datafileManager,'HttpPollingDatafileManager');
+  beforeEach(() => {
+    sandbox.stub(datafileManager,'HttpPollingDatafileManager')
   });
 
   afterEach(() => {

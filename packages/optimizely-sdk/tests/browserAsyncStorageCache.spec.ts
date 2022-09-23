@@ -32,13 +32,13 @@ describe('BrowserAsyncStorageCache', () => {
     cacheInstance = new BrowserAsyncStorageCache();
 
     jest
-      .spyOn(Storage.prototype, 'getItem')
+      .spyOn(localStorage, 'getItem')
       .mockImplementation((key) => key == KEY_THAT_EXISTS ? VALUE_FOR_KEY_THAT_EXISTS : null);
     jest
-      .spyOn(Storage.prototype, 'setItem')
+      .spyOn(localStorage, 'setItem')
       .mockImplementation(() => 1);
     jest
-      .spyOn(Storage.prototype, 'removeItem')
+      .spyOn(localStorage, 'removeItem')
       .mockImplementation((key) => key == KEY_THAT_EXISTS);
   });
 
