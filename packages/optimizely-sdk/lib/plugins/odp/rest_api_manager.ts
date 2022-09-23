@@ -39,13 +39,14 @@ export class RestApiManager implements IRestApiManager {
 
   /**
    * Creates instance to access Optimizely Data Platform (ODP) REST API
-   * @param logger Collect and record events/errors for this REST implementation
+   * @param logger Collect and record events/errors for this GraphQL implementation
    * @param timeout Milliseconds to wait for a response
+   * @param requestHandler Desired request handler for testing
    */
-  constructor(logger: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
+  constructor(logger: LogHandler, timeout?: number, requestHandler?: RequestHandler) {
     this.logger = logger;
-    this.timeout = timeout;
-    this.requestHandler = RequestHandlerFactory.createHandler(this.logger);
+    this.timeout = timeout ?? REQUEST_TIMEOUT_MS;
+    this.requestHandler = requestHandler ?? RequestHandlerFactory.createHandler(this.logger);
   }
 
   /**
@@ -82,11 +83,17 @@ export class RestApiManager implements IRestApiManager {
       const request = this.requestHandler.makeRequest(endpoint, headers, method, data);
       const response = await request.responsePromise;
       statusCode = response.statusCode ?? statusCode;
-    } catch {
-      this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (network error)`);
+    } catch (err) {
+      let message = 'network error';
+      if (err instanceof Error) {
+        message = (err as Error).message;
+      }
+      this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (${message})`);
+      shouldRetry = true;
     }
 
     if (statusCode === 0) {
+      this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (network error)`);
       shouldRetry = true;
     }
 

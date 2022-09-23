@@ -17,90 +17,98 @@
 /// <reference types="jest" />
 
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
-import { IOdpClient, OdpClient } from '../lib/plugins/odp/odp_client';
-import { ErrorHandler, LogHandler } from '../lib/modules/logging';
+import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { RestApiManager } from '../lib/plugins/odp/rest_api_manager';
 import { OdpEvent } from '../lib/plugins/odp/odp_event';
+import { REQUEST_TIMEOUT_MS } from '../lib/utils/http_request_handler/config';
+import { RequestHandler } from '../lib/utils/http_request_handler/http';
+
+const VALID_ODP_PUBLIC_KEY = 'not-real-api-key';
+const ODP_REST_API_HOST = 'https://events.example.com/v2/api';
+const ODP_EVENTS = [
+  new OdpEvent('t1', 'a1',
+    new Map([['id-key-1', 'id-value-1']]),
+    new Map(Object.entries({
+      key11: 'value-1',
+      key12: true,
+      key13: 3.5,
+      key14: null,
+    }))),
+  new OdpEvent('t2', 'a2',
+    new Map([['id-key-2', 'id-value-2']]),
+    new Map(Object.entries({
+      key2: 'value-2',
+    }))),
+];
 
 describe('RestApiManager', () => {
-  const VALID_ODP_PUBLIC_KEY = 'not-real-api-key';
-  const ODP_REST_API_HOST = 'https://api.example.com';
-  const ODP_EVENTS = [
-    new OdpEvent('t1', 'a1',
-      new Map([['id-key-1', 'id-value-1']]),
-      new Map(Object.entries({
-        key11: 'value-1',
-        key12: true,
-        key13: 3.5,
-        key14: null,
-      }))),
-    new OdpEvent('t2', 'a2',
-      new Map([['id-key-2', 'id-value-2']]),
-      new Map(Object.entries({
-        key2: 'value-2',
-      }))),
-  ];
-
-  const makeManagerInstance = () => new RestApiManager(instance(mockLogger), instance(mockOdpClient));
-
-  let mockErrorHandler: ErrorHandler;
   let mockLogger: LogHandler;
-  let mockOdpClient: IOdpClient;
+  let mockRequestHandler: RequestHandler;
 
   beforeAll(() => {
-    mockErrorHandler = mock<ErrorHandler>();
     mockLogger = mock<LogHandler>();
-    mockOdpClient = mock<OdpClient>();
+    mockRequestHandler = mock<RequestHandler>();
   });
 
   beforeEach(() => {
-    resetCalls(mockErrorHandler);
     resetCalls(mockLogger);
-    resetCalls(mockOdpClient);
+    resetCalls(mockRequestHandler);
   });
 
+  const managerInstance = () => new RestApiManager(instance(mockLogger), REQUEST_TIMEOUT_MS, instance(mockRequestHandler));
+  const abortableRequest = (statusCode: number, body: string) => {
+    return {
+      abort: () => {
+      },
+      responsePromise: Promise.resolve({
+        statusCode,
+        body,
+        headers: {},
+      }),
+    };
+  };
+
   it('should should send events successfully and not suggest retry', async () => {
-    when(mockOdpClient.sendEvents(anyString(), anyString(), anyString())).thenResolve(200);
-    const manager = makeManagerInstance();
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(200, ''));
+    const manager = managerInstance();
 
     const shouldRetry = await manager.sendEvents(VALID_ODP_PUBLIC_KEY, ODP_REST_API_HOST, ODP_EVENTS);
 
     expect(shouldRetry).toBe(false);
-    verify(mockErrorHandler.handleError(anything())).never();
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
   it('should not suggest a retry for 400 HTTP response', async () => {
-    when(mockOdpClient.sendEvents(anyString(), anyString(), anyString())).thenResolve(400);
-    const manager = makeManagerInstance();
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(400, ''));
+    const manager = managerInstance();
 
     const shouldRetry = await manager.sendEvents(VALID_ODP_PUBLIC_KEY, ODP_REST_API_HOST, ODP_EVENTS);
 
     expect(shouldRetry).toBe(false);
-    verify(mockErrorHandler.handleError(anything())).never();
-    verify(mockLogger.log(anything(), anyString())).never();
+    verify(mockLogger.log(LogLevel.ERROR, 'ODP event send failed (400)')).once();
   });
 
   it('should suggest a retry for 500 HTTP response', async () => {
-    when(mockOdpClient.sendEvents(anyString(), anyString(), anyString())).thenResolve(500);
-    const manager = makeManagerInstance();
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(500, ''));
+    const manager = managerInstance();
 
     const shouldRetry = await manager.sendEvents(VALID_ODP_PUBLIC_KEY, ODP_REST_API_HOST, ODP_EVENTS);
 
     expect(shouldRetry).toBe(true);
-    verify(mockErrorHandler.handleError(anything())).never();
-    verify(mockLogger.log(anything(), anyString())).never();
+    verify(mockLogger.log(LogLevel.ERROR, 'ODP event send failed (500)')).once();
   });
 
   it('should suggest a retry for network timeout', async () => {
-    when(mockOdpClient.sendEvents(anyString(), anyString(), anyString())).thenResolve(0);
-    const manager = makeManagerInstance();
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
+      abort: () => {
+      },
+      responsePromise: Promise.reject(new Error('Request timed out')),
+    });
+    const manager = managerInstance();
 
     const shouldRetry = await manager.sendEvents(VALID_ODP_PUBLIC_KEY, ODP_REST_API_HOST, ODP_EVENTS);
 
     expect(shouldRetry).toBe(true);
-    verify(mockErrorHandler.handleError(anything())).never();
-    verify(mockLogger.log(anything(), anyString())).never();
+    verify(mockLogger.log(LogLevel.ERROR, 'ODP event send failed (Request timed out)')).once();
   });
 });
-

@@ -20,7 +20,6 @@ import { anyString, anything, instance, mock, resetCalls, verify, when } from 't
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { GraphQLManager } from '../lib/plugins/odp/graphql_manager';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
-import { Response as GraphQLResponse } from '../lib/plugins/odp/odp_types';
 import { ODP_USER_KEY } from '../lib/utils/enums';
 import { REQUEST_TIMEOUT_MS } from '../lib/utils/http_request_handler/config';
 
@@ -84,20 +83,19 @@ describe('GraphQLManager', () => {
         }
       }
     }`;
-    const manager = managerInstance();
 
-    const response = manager['parseSegmentsResponseJson'](validJsonResponse) as GraphQLResponse;
+    const response = GraphQLManager.parseSegmentsResponseJson(validJsonResponse);
 
     expect(response).not.toBeUndefined();
     expect(response?.errors).toHaveLength(0);
     expect(response?.data?.customer?.audiences?.edges).not.toBeNull();
-    expect(response.data.customer.audiences.edges).toHaveLength(2);
-    let node = response.data.customer.audiences.edges[0].node;
-    expect(node.name).toEqual('has_email');
-    expect(node.state).toEqual('qualified');
-    node = response.data.customer.audiences.edges[1].node;
-    expect(node.name).toEqual('has_email_opted_in');
-    expect(node.state).not.toEqual('qualified');
+    expect(response?.data.customer.audiences.edges).toHaveLength(2);
+    let node = response?.data.customer.audiences.edges[0].node;
+    expect(node?.name).toEqual('has_email');
+    expect(node?.state).toEqual('qualified');
+    node = response?.data.customer.audiences.edges[1].node;
+    expect(node?.name).toEqual('has_email_opted_in');
+    expect(node?.state).not.toEqual('qualified');
   });
 
   it('should parse an error response', () => {
@@ -123,20 +121,17 @@ describe('GraphQLManager', () => {
         "customer": null
     }
 }`;
-    const manager = managerInstance();
 
-    const response = manager['parseSegmentsResponseJson'](errorJsonResponse) as GraphQLResponse;
+    const response = GraphQLManager.parseSegmentsResponseJson(errorJsonResponse);
 
     expect(response).not.toBeUndefined();
-    expect(response.data.customer).toBeNull();
+    expect(response?.data.customer).toBeNull();
     expect(response?.errors).not.toBeNull();
-    expect(response.errors[0].extensions.classification).toEqual('InvalidIdentifierException');
+    expect(response?.errors[0].extensions.classification).toEqual('InvalidIdentifierException');
   });
 
   it('should construct a valid GraphQL query string', () => {
-    const manager = managerInstance();
-
-    const response = manager['toGraphQLJson'](USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
+    const response = GraphQLManager.toGraphQLJson(USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
 
     expect(response)
       .toBe(`{"query" : "query {customer"(${USER_KEY} : "${USER_VALUE}") {audiences(subset: [\\"has_email\\",\\"has_email_opted_in\\",\\"push_on_sale\\"] {edges {node {name state}}}}}"}`,
@@ -257,4 +252,3 @@ describe('GraphQLManager', () => {
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)')).once();
   });
 });
-
