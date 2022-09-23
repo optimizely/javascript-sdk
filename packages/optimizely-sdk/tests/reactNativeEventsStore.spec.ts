@@ -42,21 +42,17 @@ describe('ReactNativeEventsStore', () => {
       })
     })
   
-    it('should store all the events when set asynchronously', async (done) => {
-      const promises = []
-      promises.push(store.set('event1', {'name': 'event1'}))
-      promises.push(store.set('event2', {'name': 'event2'}))
-      promises.push(store.set('event3', {'name': 'event3'}))
-      promises.push(store.set('event4', {'name': 'event4'}))
-      Promise.all(promises).then(() => {
-        const storedPendingEvents = JSON.parse(AsyncStorage.dumpItems()[STORE_KEY])
-        expect(storedPendingEvents).toEqual({
-          "event1": { "name": "event1" },
-          "event2": { "name": "event2" },
-          "event3": { "name": "event3" },
-          "event4": { "name": "event4" },
-        })
-        done()
+    it('should store all the events when set asynchronously', async () => {
+      await store.set('event1', {'name': 'event1'})
+      await store.set('event2', {'name': 'event2'})
+      await store.set('event3', {'name': 'event3'})
+      await store.set('event4', {'name': 'event4'})
+      const storedPendingEvents = JSON.parse(AsyncStorage.dumpItems()[STORE_KEY])
+      expect(storedPendingEvents).toEqual({
+        "event1": { "name": "event1" },
+        "event2": { "name": "event2" },
+        "event3": { "name": "event3" },
+        "event4": { "name": "event4" },
       })
     })
   })
@@ -136,7 +132,7 @@ describe('ReactNativeEventsStore', () => {
       })
     })
 
-    it('should correctly remove items from the store when removed asynchronously', async (done) => {
+    it('should correctly remove items from the store when removed asynchronously', async () => {
       await store.set('event1', {'name': 'event1'})
       await store.set('event2', {'name': 'event2'})
       await store.set('event3', {'name': 'event3'})
@@ -150,14 +146,11 @@ describe('ReactNativeEventsStore', () => {
       })
 
       const promises = []
-      promises.push(store.remove('event1'))
-      promises.push(store.remove('event2'))
-      promises.push(store.remove('event3'))
-      Promise.all(promises).then(() => {
-        let storedPendingEvents = JSON.parse(AsyncStorage.dumpItems()[STORE_KEY])
-        expect(storedPendingEvents).toEqual({ "event4": { "name": "event4" }})
-        done()
-      })
+      await store.remove('event1')
+      await store.remove('event2')
+      await store.remove('event3')
+      storedPendingEvents = JSON.parse(AsyncStorage.dumpItems()[STORE_KEY])
+      expect(storedPendingEvents).toEqual({ "event4": { "name": "event4" }})
     })
   })
 

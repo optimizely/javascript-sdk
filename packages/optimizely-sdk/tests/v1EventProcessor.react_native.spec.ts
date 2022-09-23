@@ -152,7 +152,7 @@ describe('LogTierV1EventProcessorReactNative', () => {
         await processor.stop()
       })
 
-      it('should return a promise that is resolved when the dispatcher callback returns a 200 response', async (done) => {
+      it('should return a promise that is resolved when the dispatcher callback returns a 200 response', async () => {
         const processor = new LogTierV1EventProcessor({
           dispatcher: stubDispatcher,
           flushInterval: 100,
@@ -163,14 +163,11 @@ describe('LogTierV1EventProcessorReactNative', () => {
         processor.process(impressionEvent)
 
         await new Promise(resolve => setTimeout(resolve, 150))
-        processor.stop().then(() => {
-          done()
-        })
-
+        // @ts-ignore
         localCallback({ statusCode: 200 })
       })
 
-      it('should return a promise that is resolved when the dispatcher callback returns a 400 response', async (done) => {
+      it('should return a promise that is resolved when the dispatcher callback returns a 400 response', async () => {
         // This test is saying that even if the request fails to send but
         // the `dispatcher` yielded control back, then the `.stop()` promise should be resolved
         let localCallback: any
@@ -192,9 +189,6 @@ describe('LogTierV1EventProcessorReactNative', () => {
         processor.process(impressionEvent)
 
         await new Promise(resolve => setTimeout(resolve, 150))
-        processor.stop().then(() => {
-          done()
-        })
 
         localCallback({ statusCode: 400 })
       })
