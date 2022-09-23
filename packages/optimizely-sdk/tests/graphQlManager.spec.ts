@@ -46,7 +46,7 @@ describe('GraphQLManager', () => {
     resetCalls(mockRequestHandler);
   });
 
-  const managerInstance = () => new GraphQLManager(instance(mockLogger), REQUEST_TIMEOUT_MS, instance(mockRequestHandler));
+  const managerInstance = () => new GraphQLManager(instance(mockRequestHandler), instance(mockLogger), REQUEST_TIMEOUT_MS);
 
   const abortableRequest = (statusCode: number, body: string) => {
     return {

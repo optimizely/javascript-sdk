@@ -18,7 +18,6 @@ import { LogHandler, LogLevel } from '../../modules/logging';
 
 import { validate } from '../../utils/json_schema_validator';
 import { OdpResponseSchema } from './odp_response_schema';
-import { RequestHandlerFactory } from '../../utils/http_request_handler/request_handler_factory';
 import { ODP_USER_KEY } from '../../utils/enums';
 import { RequestHandler, Response as HttpResponse } from '../../utils/http_request_handler/http';
 import { Response as GraphQLResponse } from './odp_types';
@@ -58,14 +57,14 @@ export class GraphQLManager implements IGraphQLManager {
 
   /**
    * Communicates with Optimizely Data Platform's GraphQL endpoint
-   * @param logger Collect and record events/errors for this GraphQL implementation
-   * @param timeout Milliseconds to wait for a response
    * @param requestHandler Desired request handler for testing
+   * @param logger Collect and record events/errors for this GraphQL implementation
+   * @param timeout?? Milliseconds to wait for a response
    */
-  constructor(logger: LogHandler, timeout?: number, requestHandler?: RequestHandler) {
+  constructor(requestHandler: RequestHandler, logger: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
+    this.requestHandler = requestHandler;
     this.logger = logger;
-    this.timeout = timeout ?? REQUEST_TIMEOUT_MS;
-    this.requestHandler = requestHandler ?? RequestHandlerFactory.createHandler(this.logger);
+    this.timeout = timeout;
   }
 
   /**

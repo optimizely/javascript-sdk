@@ -40,7 +40,7 @@ export class OdpEvent {
    * @param type Type of event (typically "fullstack")
    * @param action Subcategory of the event type
    * @param identifiers Key-value map of user identifiers
-   * @param data Event data in a key-value map. Use wrapped primitives if needed
+   * @param data Event data in a key-value map.
    */
   constructor(type: string, action: string, identifiers?: Map<string, string>, data?: Map<string, unknown>) {
     this.type = type;

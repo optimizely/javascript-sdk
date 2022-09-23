@@ -15,7 +15,6 @@
  */
 
 import { LogHandler, LogLevel } from '../../modules/logging';
-import { RequestHandlerFactory } from '../../utils/http_request_handler/request_handler_factory';
 import { OdpEvent } from './odp_event';
 import { RequestHandler } from '../../utils/http_request_handler/http';
 import { REQUEST_TIMEOUT_MS } from '../../utils/http_request_handler/config';
@@ -39,14 +38,14 @@ export class RestApiManager implements IRestApiManager {
 
   /**
    * Creates instance to access Optimizely Data Platform (ODP) REST API
-   * @param logger Collect and record events/errors for this GraphQL implementation
-   * @param timeout Milliseconds to wait for a response
    * @param requestHandler Desired request handler for testing
+   * @param logger Collect and record events/errors for this GraphQL implementation
+   * @param timeout?? Milliseconds to wait for a response
    */
-  constructor(logger: LogHandler, timeout?: number, requestHandler?: RequestHandler) {
+  constructor(requestHandler: RequestHandler, logger: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
+    this.requestHandler = requestHandler;
     this.logger = logger;
-    this.timeout = timeout ?? REQUEST_TIMEOUT_MS;
-    this.requestHandler = requestHandler ?? RequestHandlerFactory.createHandler(this.logger);
+    this.timeout = timeout;
   }
 
   /**

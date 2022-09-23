@@ -55,7 +55,7 @@ describe('RestApiManager', () => {
     resetCalls(mockRequestHandler);
   });
 
-  const managerInstance = () => new RestApiManager(instance(mockLogger), REQUEST_TIMEOUT_MS, instance(mockRequestHandler));
+  const managerInstance = () => new RestApiManager(instance(mockRequestHandler), instance(mockLogger), REQUEST_TIMEOUT_MS);
   const abortableRequest = (statusCode: number, body: string) => {
     return {
       abort: () => {
