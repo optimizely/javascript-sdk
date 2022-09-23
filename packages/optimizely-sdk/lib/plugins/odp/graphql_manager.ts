@@ -122,13 +122,13 @@ export class GraphQLManager implements IGraphQLManager {
    * Converts the query parameters to a GraphQL JSON payload
    * @returns GraphQL JSON string
    */
-  public static toGraphQLJson(userKey: string, userValue: string, segmentsToCheck: string[]): string => ([
+  private toGraphQLJson = (userKey: string, userValue: string, segmentsToCheck: string[]): string => ([
     '{"query" : "query {customer"',
     `(${userKey} : "${userValue}") `,
     '{audiences',
     '(subset: [',
-    ... segmentsToCheck?.map((segment, index) => 
-      `\\"${segment}\\"${index < segmentsToCheck.length - 1 ? ',' : ''}`
+    ...segmentsToCheck?.map((segment, index) =>
+      `\\"${segment}\\"${index < segmentsToCheck.length - 1 ? ',' : ''}`,
     ) || '',
     '] {edges {node {name state}}}}}"}',
   ].join(''));

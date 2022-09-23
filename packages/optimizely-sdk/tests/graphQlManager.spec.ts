@@ -83,8 +83,9 @@ describe('GraphQLManager', () => {
         }
       }
     }`;
+    const manager = managerInstance();
 
-    const response = GraphQLManager.parseSegmentsResponseJson(validJsonResponse);
+    const response = manager['parseSegmentsResponseJson'](validJsonResponse);
 
     expect(response).not.toBeUndefined();
     expect(response?.errors).toHaveLength(0);
@@ -121,8 +122,9 @@ describe('GraphQLManager', () => {
         "customer": null
     }
 }`;
+    const manager = managerInstance();
 
-    const response = GraphQLManager.parseSegmentsResponseJson(errorJsonResponse);
+    const response = manager['parseSegmentsResponseJson'](errorJsonResponse);
 
     expect(response).not.toBeUndefined();
     expect(response?.data.customer).toBeNull();
@@ -131,7 +133,9 @@ describe('GraphQLManager', () => {
   });
 
   it('should construct a valid GraphQL query string', () => {
-    const response = GraphQLManager.toGraphQLJson(USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
+    const manager = managerInstance();
+
+    const response = manager['toGraphQLJson'](USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
 
     expect(response)
       .toBe(`{"query" : "query {customer"(${USER_KEY} : "${USER_VALUE}") {audiences(subset: [\\"has_email\\",\\"has_email_opted_in\\",\\"push_on_sale\\"] {edges {node {name state}}}}}"}`,
