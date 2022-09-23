@@ -87,7 +87,7 @@ export class GraphQLManager implements IGraphQLManager {
     }
 
     const endpoint = `${apiHost}/v3/graphql`;
-    const query = GraphQLManager.toGraphQLJson(userKey, userValue, segmentsToCheck);
+    const query = this.toGraphQLJson(userKey, userValue, segmentsToCheck);
 
     const segmentsResponse = await this.querySegments(apiKey, endpoint, userKey, userValue, query);
     if (!segmentsResponse) {
@@ -95,7 +95,7 @@ export class GraphQLManager implements IGraphQLManager {
       return null;
     }
 
-    const parsedSegments = GraphQLManager.parseSegmentsResponseJson(segmentsResponse);
+    const parsedSegments = this.parseSegmentsResponseJson(segmentsResponse);
     if (!parsedSegments) {
       this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (decode error)`);
       return null;
@@ -122,20 +122,16 @@ export class GraphQLManager implements IGraphQLManager {
    * Converts the query parameters to a GraphQL JSON payload
    * @returns GraphQL JSON string
    */
-  public static toGraphQLJson(userKey: string, userValue: string, segmentsToCheck: string[]): string {
-    const json: string[] = [];
-    json.push('{"query" : "query {customer"');
-    json.push(`(${userKey} : "${userValue}") `);
-    json.push('{audiences');
-    json.push(`(subset: [`);
-    if (segmentsToCheck) {
-      segmentsToCheck.forEach((segment, index) => {
-        json.push(`\\"${segment}\\"${index < segmentsToCheck.length - 1 ? ',' : ''}`);
-      });
-    }
-    json.push('] {edges {node {name state}}}}}"}');
-    return json.join('');
-  }
+  public static toGraphQLJson(userKey: string, userValue: string, segmentsToCheck: string[]): string => ([
+    '{"query" : "query {customer"',
+    `(${userKey} : "${userValue}") `,
+    '{audiences',
+    '(subset: [',
+    ... segmentsToCheck?.map((segment, index) => 
+      `\\"${segment}\\"${index < segmentsToCheck.length - 1 ? ',' : ''}`
+    ) || '',
+    '] {edges {node {name state}}}}}"}',
+  ].join(''));
 
   /**
    * Handler for querying the ODP GraphQL endpoint
@@ -168,9 +164,10 @@ export class GraphQLManager implements IGraphQLManager {
   /**
    * Parses JSON response
    * @param jsonResponse JSON response from ODP
+   * @private
    * @returns Response Strongly-typed ODP Response object
    */
-  public static parseSegmentsResponseJson(jsonResponse: string): GraphQLResponse | null {
+  private parseSegmentsResponseJson(jsonResponse: string): GraphQLResponse | null {
     let jsonObject = {};
 
     try {
