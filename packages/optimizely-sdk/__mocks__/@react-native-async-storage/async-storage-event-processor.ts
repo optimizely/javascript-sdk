@@ -1,5 +1,5 @@
 /**
- * Copyright 2020, Optimizely
+ * Copyright 2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+let items: {[key: string]: string} = {}
 
- let items: {[key: string]: string} = {}
 export default class AsyncStorage {
+
   static getItem(key: string, callback?: (error?: Error, result?: string) => void): Promise<string | null> {
-    return new Promise((resolve, reject) => {
-      switch (key) {
-        case 'keyThatExists':
-          resolve('{ "name": "Awesome Object" }')
-          break
-        case 'keyThatDoesNotExist':
-          resolve(null)
-          break
-        case 'keyWithInvalidJsonObject':
-          resolve('bad json }')
-          break
-        default:
-          setTimeout(() => resolve(items[key] || null), 1)
-      }
+    return new Promise(resolve => {
+      setTimeout(() => resolve(items[key] || null), 1)
     })
   }
 
-  static setItem(key: string, value: string, callback?: (error?: Error) => void): Promise<void> {
+  static setItem(key: string, value: string, callback?: (error?: Error) => void): Promise<void> {    
     return new Promise((resolve) => {
       setTimeout(() => {
         items[key] = value

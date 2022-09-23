@@ -73,7 +73,7 @@ export class LocalStorageStore<K extends StoreEntry> implements PendingEventsSto
   replace(map: { [key: string]: K }): void {
     try {
       // This is a temporary fix to support React Native which does not have localStorage.
-      window.localStorage && localStorage.setItem(this.LS_KEY, JSON.stringify(map))
+      typeof window !== 'undefined' ? window && window.localStorage && localStorage.setItem(this.LS_KEY, JSON.stringify(map)) : localStorage.setItem(this.LS_KEY, JSON.stringify(map))
       this.clean()
     } catch (e) {
       logger.error(String(e))
@@ -105,12 +105,12 @@ export class LocalStorageStore<K extends StoreEntry> implements PendingEventsSto
   private getMap(): { [key: string]: K } {
     try {
       // This is a temporary fix to support React Native which does not have localStorage.
-      const data = window.localStorage && localStorage.getItem(this.LS_KEY);
+      const data = typeof window !== 'undefined' ? window && window.localStorage && localStorage.getItem(this.LS_KEY): localStorage.getItem(this.LS_KEY);
       if (data) {
         return (JSON.parse(data) as { [key: string]: K }) || {}
       }
-    } catch (e) {
-      logger.error(String(e))
+    } catch (e: any) {
+      logger.error(e)
     }
     return {}
   }
