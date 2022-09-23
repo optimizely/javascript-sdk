@@ -23,7 +23,7 @@ module.exports = {
   plugins: ['karma-mocha', 'karma-webpack', require('karma-browserstack-launcher')],
 
   webpack: {
-    mode:'development',
+    mode:'production',
     module: {
       rules: [
         {

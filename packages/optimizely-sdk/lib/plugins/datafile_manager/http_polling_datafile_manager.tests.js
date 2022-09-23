@@ -21,17 +21,8 @@ import datafileManager from '../../modules/datafile-manager/index.node';
 describe('lib/plugins/datafile_manager/http_polling_datafile_manager', function() {
   var sandbox = sinon.sandbox.create();
   
-  beforeEach(() => {    
-    // console.log(datafileManager.HttpPollingDatafileManager, {
-    //   autoUpdate: true,
-    //   datafileAccessToken: 'THE_TOKEN',
-    //   updateInterval: 5000,
-    //   urlTemplate: 'http://example.com',
-    //   sdkKey: 'SDK_KEY',
-    // })    
+  beforeEach(() => {
     sandbox.stub(datafileManager,'HttpPollingDatafileManager')
-    // sandbox.stub(datafileManager.HttpPollingDatafileManager, 'NodeDatafileManager')
-    // sandbox.stub(datafileManager, 'NodeDatafileManager')
   });
 
   afterEach(() => {

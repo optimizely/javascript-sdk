@@ -47,4 +47,3 @@
    }
    return new HttpPollingDatafileManager(datafileManagerConfig);
  }
- 
