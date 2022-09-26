@@ -56,20 +56,19 @@ export class OdpEventManager implements IOdpEventManager {
   private odpConfig: OdpConfig;
   private eventQueue: Array<OdpEvent>;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private eventDispatcher: any;
 
   public constructor(odpConfig: OdpConfig, apiManager: RestApiManager, logger: LogHandler,
-                     batchSize: number,
-                     queueSize: number,
-                     flushInterval: number) {
+                     batchSize?: number,
+                     queueSize?: number,
+                     flushInterval?: number) {
     this.odpConfig = odpConfig;
     this.apiManager = apiManager;
     this.logger = logger;
 
-    this.batchSize = (batchSize != null && batchSize > 1) ? batchSize : DEFAULT_BATCH_SIZE;
-    this.queueSize = queueSize != null ? queueSize : DEFAULT_QUEUE_SIZE;
-    this.flushInterval = (flushInterval != null && flushInterval > 0) ? flushInterval : DEFAULT_FLUSH_INTERVAL;
+    this.batchSize = batchSize && batchSize > 0 ? batchSize : DEFAULT_BATCH_SIZE;
+    this.queueSize = queueSize && queueSize > 0 ? queueSize : DEFAULT_QUEUE_SIZE;
+    this.flushInterval = flushInterval && flushInterval > 0 ? flushInterval : DEFAULT_FLUSH_INTERVAL;
 
     this.eventDispatcher = new this.OdpEventDispatcher(this);
     this.eventQueue = new Array<OdpEvent>();
@@ -95,7 +94,7 @@ export class OdpEventManager implements IOdpEventManager {
     this.sendEvent(event);
   }
 
-  public sendEvents(events: [OdpEvent]): void {
+  public sendEvents(events: OdpEvent[]): void {
     events.forEach(event => this.sendEvent(event));
   }
 
@@ -104,8 +103,8 @@ export class OdpEventManager implements IOdpEventManager {
     this.processEvent(event);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private augmentCommonData(sourceData: Map<string, any>): Map<string, any> {
+  private augmentCommonData(sourceData: Map<string, unknown>): Map<string, unknown> {
+    // Try to get information from the current execution context
     let sourceVersion = '';
     if (window) {
       sourceVersion = window.navigator.userAgent;
@@ -115,20 +114,21 @@ export class OdpEventManager implements IOdpEventManager {
       }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data = new Map<string, any>();
+    const data = new Map<string, unknown>();
     data.set('idempotence_id', uuid());
     data.set('data_source_type', 'sdk');
     data.set('data_source', 'javascript-sdk');
-    data.set('data_source_version', sourceVersion);
-    sourceData.forEach(item => data.set(item.key, item.value));
+    if (sourceVersion) {
+      data.set('data_source_version', sourceVersion);
+    }
+    sourceData.forEach((value, key) => data.set(key, value));
 
     return data;
   }
 
   private processEvent(event: OdpEvent): void {
     if (!this.isRunning) {
-      this.logger.log(LogLevel.WARNING, 'Failed to Process ODP Event. ODPEventManager is not running');
+      this.logger.log(LogLevel.WARNING, 'Failed to Process ODP Event. ODPEventManager is not running.');
       return;
     }
 
@@ -138,12 +138,12 @@ export class OdpEventManager implements IOdpEventManager {
     }
 
     if (this.eventQueue.length >= this.queueSize) {
-      this.logger.log(LogLevel.WARNING, 'Failed to Process ODP Event. Event Queue full. queueSize = ' + this.queueSize);
+      this.logger.log(LogLevel.WARNING, `Failed to Process ODP Event. Event Queue full. queueSize = ${this.queueSize}.`);
       return;
     }
 
     if (!this.eventQueue.push(event)) {
-      this.logger.log(LogLevel.ERROR, 'Failed to Process ODP Event. Event Queue is not accepting any more events');
+      this.logger.log(LogLevel.ERROR, 'Failed to Process ODP Event. Event Queue is not accepting any more events.');
     }
   }
 
@@ -189,11 +189,8 @@ export class OdpEventManager implements IOdpEventManager {
           if (this.currentBatch.length >= this.eventManager.batchSize) {
             await this.flush();
           }
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (err: any) {
-          this.eventManager.logger.log(LogLevel.ERROR, err.toString());
+        } catch (err) {
+          this.eventManager.logger.log(LogLevel.ERROR, err);
         }
       }
 

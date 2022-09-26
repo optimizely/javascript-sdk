@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { ODP_CONFIG_STATE } from '../../utils/enums';
 
 export class OdpConfig {
@@ -26,7 +27,7 @@ export class OdpConfig {
    * Getter to retrieve the ODP server host
    * @public
    */
-  public get apiHost() {
+  public get apiHost(): string {
     return this._apiHost;
   }
 
@@ -40,7 +41,7 @@ export class OdpConfig {
    * Getter to retrieve the ODP API key
    * @public
    */
-  public get apiKey() {
+  public get apiKey(): string {
     return this._apiKey;
   }
 
@@ -54,7 +55,7 @@ export class OdpConfig {
    * Getter for ODP segments to check
    * @public
    */
-  public get segmentsToCheck() {
+  public get segmentsToCheck(): string[] {
     return this._segmentsToCheck;
   }
 
@@ -64,27 +65,37 @@ export class OdpConfig {
    */
   private _odpServiceIntegrated = ODP_CONFIG_STATE.UNDETERMINED;
 
-  constructor(apiKey: string, apiHost: string, segmentsToCheck: string[]) {
+  constructor(apiKey: string, apiHost: string, segmentsToCheck?: string[]) {
     this._apiKey = apiKey;
     this._apiHost = apiHost;
     this._segmentsToCheck = segmentsToCheck ?? [] as string[];
     this._odpServiceIntegrated = this._apiKey && this._apiHost ? ODP_CONFIG_STATE.INTEGRATED : ODP_CONFIG_STATE.UNDETERMINED;
   }
 
-  public update(apiKey: string, apiEndpoint: string, segmentsToCheck: string[]): boolean {
-    this._odpServiceIntegrated = apiKey && apiEndpoint ? ODP_CONFIG_STATE.INTEGRATED : ODP_CONFIG_STATE.NOT_INTEGRATED;
+  /**
+   * Update the ODP configuration details
+   * @param apiKey Public API key for the ODP account
+   * @param apiHost Host of ODP audience segments API
+   * @param segmentsToCheck Audience segments
+   * @returns true if configuration was updated successfully
+   */
+  public update(apiKey: string, apiHost: string, segmentsToCheck: string[]): boolean {
+    this._odpServiceIntegrated = apiKey && apiHost ? ODP_CONFIG_STATE.INTEGRATED : ODP_CONFIG_STATE.NOT_INTEGRATED;
 
-    if (this._apiKey === apiKey && this._apiHost === apiEndpoint && this._segmentsToCheck === segmentsToCheck) {
+    if (this._apiKey === apiKey && this._apiHost === apiHost && this._segmentsToCheck === segmentsToCheck) {
       return false;
     } else {
       this._apiKey = apiKey;
-      this._apiHost = apiEndpoint;
+      this._apiHost = apiHost;
       this._segmentsToCheck = segmentsToCheck;
 
       return true;
     }
   }
 
+  /**
+   * Determines if ODP configuration has the minimum amount of information
+   */
   public isReady(): boolean {
     return this._apiKey !== null && this._apiKey !== '' && this._apiHost !== null && this._apiHost !== '';
   }
