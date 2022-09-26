@@ -31,9 +31,8 @@ import eventProcessorConfigValidator from './utils/event_processor_config_valida
 import { createNotificationCenter } from './core/notification_center';
 import { createEventProcessor } from './plugins/event_processor/index.react_native';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
-import {
-  createHttpPollingDatafileManager,
-} from './plugins/datafile_manager/react_native_http_polling_datafile_manager';
+import { createHttpPollingDatafileManager } from
+    './plugins/datafile_manager/react_native_http_polling_datafile_manager';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
