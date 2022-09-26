@@ -298,15 +298,6 @@ export enum NOTIFICATION_TYPES {
 export const REQUEST_TIMEOUT_MS = 60 * 1000; // 1 minute
 
 /**
- * Valid types of Javascript contexts in which this code is executing
- */
-export enum EXECUTION_CONTEXT_TYPE {
-  NOT_DEFINED,
-  BROWSER,
-  NODE,
-}
-
-/**
  * ODP User Key
  */
 export enum ODP_USER_KEY {
