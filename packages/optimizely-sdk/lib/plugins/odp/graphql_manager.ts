@@ -15,7 +15,6 @@
  */
 
 import { LogHandler, LogLevel } from '../../modules/logging';
-
 import { validate } from '../../utils/json_schema_validator';
 import { OdpResponseSchema } from './odp_response_schema';
 import { ODP_USER_KEY } from '../../utils/enums';
