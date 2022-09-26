@@ -18,20 +18,20 @@ import http from 'http';
 import https from 'https';
 import url from 'url';
 import { AbortableRequest, Headers, RequestHandler, Response } from './http';
-import { REQUEST_TIMEOUT_MS } from './config';
 import decompressResponse from 'decompress-response';
 import { LogHandler } from '../../modules/logging';
+import { REQUEST_TIMEOUT_MS } from '../enums';
 
 /**
  * Handles sending requests and receiving responses over HTTP via NodeJS http module
  */
 export class NodeRequestHandler implements RequestHandler {
-  private readonly _logger: LogHandler;
-  private readonly _timeout: number;
+  private readonly logger: LogHandler;
+  private readonly timeout: number;
 
   public constructor(logger: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
-    this._logger = logger;
-    this._timeout = timeout;
+    this.logger = logger;
+    this.timeout = timeout;
   }
 
   /**
@@ -39,7 +39,7 @@ export class NodeRequestHandler implements RequestHandler {
    * @param requestUrl Fully-qualified URL to which to send the request
    * @param headers List of headers to include in the request
    * @param method HTTP method to use
-   * @param data stringified version of data to POST, PUT, etc
+   * @param data? stringified version of data to POST, PUT, etc
    * @returns AbortableRequest contains both the response Promise and capability to abort()
    */
   public makeRequest(requestUrl: string, headers: Headers, method: string, data?: string): AbortableRequest {
@@ -60,7 +60,7 @@ export class NodeRequestHandler implements RequestHandler {
         ...headers,
         'accept-encoding': 'gzip,deflate',
       },
-      timeout: this._timeout,
+      timeout: this.timeout,
     });
     const responsePromise = this.getResponseFromRequest(request);
 

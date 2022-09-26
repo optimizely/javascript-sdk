@@ -21,7 +21,6 @@ import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { GraphQLManager } from '../lib/plugins/odp/graphql_manager';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 import { ODP_USER_KEY } from '../lib/utils/enums';
-import { REQUEST_TIMEOUT_MS } from '../lib/utils/http_request_handler/config';
 
 const API_key = 'not-real-api-key';
 const GRAPHQL_ENDPOINT = 'https://some.example.com/graphql/endpoint';
@@ -32,6 +31,7 @@ const SEGMENTS_TO_CHECK = [
   'has_email_opted_in',
   'push_on_sale',
 ];
+
 describe('GraphQLManager', () => {
   let mockLogger: LogHandler;
   let mockRequestHandler: RequestHandler;
@@ -46,7 +46,7 @@ describe('GraphQLManager', () => {
     resetCalls(mockRequestHandler);
   });
 
-  const managerInstance = () => new GraphQLManager(instance(mockRequestHandler), instance(mockLogger), REQUEST_TIMEOUT_MS);
+  const managerInstance = () => new GraphQLManager(instance(mockRequestHandler), instance(mockLogger));
 
   const abortableRequest = (statusCode: number, body: string) => {
     return {
@@ -192,7 +192,7 @@ describe('GraphQLManager', () => {
 
     const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, INVALID_USER_ID, SEGMENTS_TO_CHECK);
 
-    expect(segments).toHaveLength(0);
+    expect(segments).toBeNull();
     verify(mockLogger.log(anything(), anyString())).once();
   });
 

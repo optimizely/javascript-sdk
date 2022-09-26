@@ -20,25 +20,24 @@ import { anyString, anything, instance, mock, resetCalls, verify, when } from 't
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { RestApiManager } from '../lib/plugins/odp/rest_api_manager';
 import { OdpEvent } from '../lib/plugins/odp/odp_event';
-import { REQUEST_TIMEOUT_MS } from '../lib/utils/http_request_handler/config';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 
 const VALID_ODP_PUBLIC_KEY = 'not-real-api-key';
 const ODP_REST_API_HOST = 'https://events.example.com/v2/api';
+const data1 = new Map<string, unknown>();
+data1.set('key11', 'value-1');
+data1.set('key12', true);
+data1.set('key12', 3.5);
+data1.set('key14', null);
+const data2 = new Map<string, unknown>();
+data2.set('key2', 'value-2');
 const ODP_EVENTS = [
   new OdpEvent('t1', 'a1',
     new Map([['id-key-1', 'id-value-1']]),
-    new Map(Object.entries({
-      key11: 'value-1',
-      key12: true,
-      key13: 3.5,
-      key14: null,
-    }))),
+    data1),
   new OdpEvent('t2', 'a2',
     new Map([['id-key-2', 'id-value-2']]),
-    new Map(Object.entries({
-      key2: 'value-2',
-    }))),
+    data2),
 ];
 
 describe('RestApiManager', () => {
@@ -55,7 +54,7 @@ describe('RestApiManager', () => {
     resetCalls(mockRequestHandler);
   });
 
-  const managerInstance = () => new RestApiManager(instance(mockRequestHandler), instance(mockLogger), REQUEST_TIMEOUT_MS);
+  const managerInstance = () => new RestApiManager(instance(mockRequestHandler), instance(mockLogger));
   const abortableRequest = (statusCode: number, body: string) => {
     return {
       abort: () => {

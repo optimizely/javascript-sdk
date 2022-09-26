@@ -292,6 +292,10 @@ export enum NOTIFICATION_TYPES {
   TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
 }
 
+/**
+ * Default milliseconds before request timeout
+ */
+export const REQUEST_TIMEOUT_MS = 60 * 1000; // 1 minute
 
 /**
  * Valid types of Javascript contexts in which this code is executing

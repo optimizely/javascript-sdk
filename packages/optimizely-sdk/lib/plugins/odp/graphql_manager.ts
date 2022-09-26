@@ -21,7 +21,6 @@ import { OdpResponseSchema } from './odp_response_schema';
 import { ODP_USER_KEY } from '../../utils/enums';
 import { RequestHandler, Response as HttpResponse } from '../../utils/http_request_handler/http';
 import { Response as GraphQLResponse } from './odp_types';
-import { REQUEST_TIMEOUT_MS } from '../../utils/http_request_handler/config';
 
 /**
  * Expected value for a qualified/valid segment
@@ -52,19 +51,16 @@ export interface IGraphQLManager {
  */
 export class GraphQLManager implements IGraphQLManager {
   private readonly logger: LogHandler;
-  private readonly timeout: number;
   private readonly requestHandler: RequestHandler;
 
   /**
    * Communicates with Optimizely Data Platform's GraphQL endpoint
    * @param requestHandler Desired request handler for testing
    * @param logger Collect and record events/errors for this GraphQL implementation
-   * @param timeout?? Milliseconds to wait for a response
    */
-  constructor(requestHandler: RequestHandler, logger: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
+  constructor(requestHandler: RequestHandler, logger: LogHandler) {
     this.requestHandler = requestHandler;
     this.logger = logger;
-    this.timeout = timeout;
   }
 
   /**
@@ -103,9 +99,9 @@ export class GraphQLManager implements IGraphQLManager {
     if (parsedSegments.errors?.length > 0) {
       const errors = parsedSegments.errors.map((e) => e.message).join('; ');
 
-      this.logger.log(LogLevel.WARNING, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (${errors})`);
+      this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (${errors})`);
 
-      return EMPTY_SEGMENTS_COLLECTION;
+      return null;
     }
 
     const edges = parsedSegments?.data?.customer?.audiences?.edges;

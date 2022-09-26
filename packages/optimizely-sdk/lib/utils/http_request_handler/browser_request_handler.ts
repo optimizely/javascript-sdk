@@ -15,19 +15,19 @@
  */
 
 import { AbortableRequest, Headers, RequestHandler, Response } from './http';
-import { REQUEST_TIMEOUT_MS } from './config';
 import { LogHandler, LogLevel } from '../../modules/logging';
+import { REQUEST_TIMEOUT_MS } from '../enums';
 
 /**
  * Handles sending requests and receiving responses over HTTP via XMLHttpRequest
  */
 export class BrowserRequestHandler implements RequestHandler {
-  private readonly _logger: LogHandler;
-  private readonly _timeout: number;
+  private readonly logger: LogHandler;
+  private readonly timeout: number;
 
   public constructor(logger: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
-    this._logger = logger;
-    this._timeout = timeout;
+    this.logger = logger;
+    this.timeout = timeout;
   }
 
   /**
@@ -35,7 +35,7 @@ export class BrowserRequestHandler implements RequestHandler {
    * @param requestUrl Fully-qualified URL to which to send the request
    * @param headers List of headers to include in the request
    * @param method HTTP method to use
-   * @param data stringified version of data to POST, PUT, etc
+   * @param data?? stringified version of data to POST, PUT, etc
    * @returns AbortableRequest contains both the response Promise and capability to abort()
    */
   public makeRequest(requestUrl: string, headers: Headers, method: string, data?: string): AbortableRequest {
@@ -64,10 +64,10 @@ export class BrowserRequestHandler implements RequestHandler {
         }
       };
 
-      request.timeout = this._timeout;
+      request.timeout = this.timeout;
 
       request.ontimeout = (): void => {
-        this._logger.log(LogLevel.WARNING, 'Request timed out');
+        this.logger.log(LogLevel.WARNING, 'Request timed out');
       };
 
       request.send(data);
@@ -122,7 +122,7 @@ export class BrowserRequestHandler implements RequestHandler {
           }
         }
       } catch {
-        this._logger.log(LogLevel.WARNING, `Unable to parse & skipped header item '${headerLine}'`);
+        this.logger.log(LogLevel.WARNING, `Unable to parse & skipped header item '${headerLine}'`);
       }
     });
     return headers;
