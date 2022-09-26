@@ -31,9 +31,8 @@ import eventProcessorConfigValidator from './utils/event_processor_config_valida
 import { createNotificationCenter } from './core/notification_center';
 import { createEventProcessor } from './plugins/event_processor/index.react_native';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
-import { createHttpPollingDatafileManager } from './plugins/datafile_manager/react_native_http_polling_datafile_manager';
-import { EXECUTION_CONTEXT_TYPE } from './utils/enums';
-import { ExecutionContext } from './utils/execution_context';
+import { createHttpPollingDatafileManager } from
+    './plugins/datafile_manager/react_native_http_polling_datafile_manager';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -42,8 +41,6 @@ setLogLevel(LogLevel.INFO);
 const DEFAULT_EVENT_BATCH_SIZE = 10;
 const DEFAULT_EVENT_FLUSH_INTERVAL = 1000; // Unit is ms, default is 1s
 const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
-
-ExecutionContext.Current = EXECUTION_CONTEXT_TYPE.BROWSER;
 
 /**
  * Creates an instance of the Optimizely class
