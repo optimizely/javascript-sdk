@@ -105,8 +105,8 @@ export class GraphQLManager implements IGraphQLManager {
 
     const edges = parsedSegments?.data?.customer?.audiences?.edges;
     if (!edges) {
-      this.logger.log(LogLevel.WARNING, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (decode error)`);
-      return EMPTY_SEGMENTS_COLLECTION;
+      this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (decode error)`);
+      return null;
     }
 
     return edges.filter(edge => edge.node.state == QUALIFIED).map(edge => edge.node.name);

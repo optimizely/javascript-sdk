@@ -87,11 +87,6 @@ export class RestApiManager implements IRestApiManager {
       shouldRetry = true;
     }
 
-    if (statusCode === 0) {
-      this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (network error)`);
-      shouldRetry = true;
-    }
-
     if (statusCode >= 400) {
       this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (${statusCode})`);
     }
