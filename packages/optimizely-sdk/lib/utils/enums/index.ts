@@ -291,3 +291,25 @@ export enum NOTIFICATION_TYPES {
   OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
   TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
 }
+
+/**
+ * Default milliseconds before request timeout
+ */
+export const REQUEST_TIMEOUT_MS = 60 * 1000; // 1 minute
+
+/**
+ * ODP User Key
+ */
+export enum ODP_USER_KEY {
+  VUID = 'vuid',
+  FS_USER_ID = 'fs_user_id',
+}
+
+/**
+ * Possible states of ODP integration
+ */
+export enum ODP_CONFIG_STATE {
+  UNDETERMINED = 0,
+  INTEGRATED,
+  NOT_INTEGRATED = 2,
+}

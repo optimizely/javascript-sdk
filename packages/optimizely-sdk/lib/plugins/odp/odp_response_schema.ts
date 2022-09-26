@@ -17,7 +17,7 @@
 import { JSONSchema4 } from 'json-schema';
 
 /**
- * ODP Response JSON Schema file used to validate the project json datafile
+ * JSON Schema used to validate the ODP GraphQL response
  */
 export const OdpResponseSchema = {
   $schema: 'https://json-schema.org/draft/2019-09/schema',
@@ -38,7 +38,7 @@ export const OdpResponseSchema = {
         customer: {
           title: 'The customer Schema',
           type: 'object',
-          required: [ ],
+          required: [],
           properties: {
             audiences: {
               title: 'The audiences Schema',
@@ -107,15 +107,15 @@ export const OdpResponseSchema = {
         required: [
           'message',
           'locations',
-          'extensions'
+          'extensions',
         ],
         properties: {
           message: {
             title: 'The message Schema',
             type: 'string',
             examples: [
-              'Exception while fetching data (/customer) : java.lang.RuntimeException: could not resolve _fs_user_id = asdsdaddddd'
-            ]
+              'Exception while fetching data (/customer) : java.lang.RuntimeException: could not resolve _fs_user_id = asdsdaddddd',
+            ],
           },
           locations: {
             title: 'The locations Schema',
@@ -125,27 +125,27 @@ export const OdpResponseSchema = {
               type: 'object',
               required: [
                 'line',
-                'column'
+                'column',
               ],
               properties: {
                 line: {
                   title: 'The line Schema',
                   type: 'integer',
                   examples: [
-                    2
-                  ]
+                    2,
+                  ],
                 },
                 column: {
                   title: 'The column Schema',
                   type: 'integer',
                   examples: [
-                    3
-                  ]
-                }
+                    3,
+                  ],
+                },
               },
-              examples: []
+              examples: [],
             },
-            examples: []
+            examples: [],
           },
           path: {
             title: 'The path Schema',
@@ -154,32 +154,32 @@ export const OdpResponseSchema = {
               title: 'A Schema',
               type: 'string',
               examples: [
-                'customer'
-              ]
+                'customer',
+              ],
             },
-            examples: []
+            examples: [],
           },
           extensions: {
             title: 'The extensions Schema',
             type: 'object',
             required: [
-              'classification'
+              'classification',
             ],
             properties: {
               classification: {
                 title: 'The classification Schema',
                 type: 'string',
                 examples: [
-                  'InvalidIdentifierException'
-                ]
-              }
+                  'InvalidIdentifierException',
+                ],
+              },
             },
-            examples: []
-          }
+            examples: [],
+          },
         },
-        examples: []
+        examples: [],
       },
-      examples: []
+      examples: [],
     },
   },
   examples: [],

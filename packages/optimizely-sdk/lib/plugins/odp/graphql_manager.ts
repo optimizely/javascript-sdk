@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-import { ErrorHandler, LogHandler, LogLevel } from '../../modules/logging';
-import { Response } from './odp_types';
-import { IOdpClient, OdpClient } from './odp_client';
+import { LogHandler, LogLevel } from '../../modules/logging';
 import { validate } from '../../utils/json_schema_validator';
 import { OdpResponseSchema } from './odp_response_schema';
-import { QuerySegmentsParameters } from './query_segments_parameters';
-import { RequestHandlerFactory } from '../../utils/http_request_handler/request_handler_factory';
+import { ODP_USER_KEY } from '../../utils/enums';
+import { RequestHandler, Response as HttpResponse } from '../../utils/http_request_handler/http';
+import { Response as GraphQLResponse } from './odp_types';
 
 /**
  * Expected value for a qualified/valid segment
@@ -34,80 +33,126 @@ const EMPTY_SEGMENTS_COLLECTION: string[] = [];
  * Return value for scenarios with no valid JSON
  */
 const EMPTY_JSON_RESPONSE = null;
+/**
+ * Standard message for audience querying fetch errors
+ */
+const AUDIENCE_FETCH_FAILURE_MESSAGE = 'Audience segments fetch failed';
 
 /**
  * Manager for communicating with the Optimizely Data Platform GraphQL endpoint
  */
 export interface IGraphQLManager {
-  fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[]>;
+  fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[] | null>;
 }
 
 /**
- * Concrete implementation for communicating with the Optimizely Data Platform GraphQL endpoint
+ * Concrete implementation for communicating with the ODP GraphQL endpoint
  */
-export class GraphqlManager implements IGraphQLManager {
-  private readonly _errorHandler: ErrorHandler;
-  private readonly _logger: LogHandler;
-  private readonly _odpClient: IOdpClient;
+export class GraphQLManager implements IGraphQLManager {
+  private readonly logger: LogHandler;
+  private readonly requestHandler: RequestHandler;
 
   /**
-   * Retrieves the audience segments from the Optimizely Data Platform (ODP)
-   * @param errorHandler Handler to record exceptions
+   * Communicates with Optimizely Data Platform's GraphQL endpoint
+   * @param requestHandler Desired request handler for testing
    * @param logger Collect and record events/errors for this GraphQL implementation
-   * @param client Client to use to send queries to ODP
    */
-  constructor(errorHandler: ErrorHandler, logger: LogHandler, client?: IOdpClient) {
-    this._errorHandler = errorHandler;
-    this._logger = logger;
-
-    this._odpClient = client ?? new OdpClient(this._errorHandler,
-      this._logger,
-      RequestHandlerFactory.createHandler(this._logger));
+  constructor(requestHandler: RequestHandler, logger: LogHandler) {
+    this.requestHandler = requestHandler;
+    this.logger = logger;
   }
 
   /**
    * Retrieves the audience segments from ODP
    * @param apiKey ODP public key
-   * @param apiHost Fully-qualified URL of ODP
+   * @param apiHost Host of ODP endpoint
    * @param userKey 'vuid' or 'fs_user_id key'
    * @param userValue Associated value to query for the user key
    * @param segmentsToCheck Audience segments to check for experiment inclusion
    */
-  public async fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[]> {
-    const parameters = new QuerySegmentsParameters({
-      apiKey,
-      apiHost,
-      userKey,
-      userValue,
-      segmentsToCheck,
-    });
-    const segmentsResponse = await this._odpClient.querySegments(parameters);
-    if (!segmentsResponse) {
-      this._logger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)');
+  public async fetchSegments(apiKey: string, apiHost: string, userKey: ODP_USER_KEY, userValue: string, segmentsToCheck: string[]): Promise<string[] | null> {
+    if (!apiKey || !apiHost) {
+      this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (Parameters apiKey or apiHost invalid)`);
+      return null;
+    }
+
+    if (segmentsToCheck?.length === 0) {
       return EMPTY_SEGMENTS_COLLECTION;
+    }
+
+    const endpoint = `${apiHost}/v3/graphql`;
+    const query = this.toGraphQLJson(userKey, userValue, segmentsToCheck);
+
+    const segmentsResponse = await this.querySegments(apiKey, endpoint, userKey, userValue, query);
+    if (!segmentsResponse) {
+      this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (network error)`);
+      return null;
     }
 
     const parsedSegments = this.parseSegmentsResponseJson(segmentsResponse);
     if (!parsedSegments) {
-      this._logger.log(LogLevel.ERROR, 'Audience segments fetch failed (decode error)');
-      return EMPTY_SEGMENTS_COLLECTION;
+      this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (decode error)`);
+      return null;
     }
 
     if (parsedSegments.errors?.length > 0) {
       const errors = parsedSegments.errors.map((e) => e.message).join('; ');
 
-      this._logger.log(LogLevel.WARNING, `Audience segments fetch failed (${errors})`);
+      this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (${errors})`);
 
-      return EMPTY_SEGMENTS_COLLECTION;
+      return null;
     }
 
     const edges = parsedSegments?.data?.customer?.audiences?.edges;
     if (!edges) {
-      this._logger.log(LogLevel.WARNING, 'Audience segments fetch failed (decode error)');
-      return EMPTY_SEGMENTS_COLLECTION;
+      this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (decode error)`);
+      return null;
     }
 
     return edges.filter(edge => edge.node.state == QUALIFIED).map(edge => edge.node.name);
+  }
+
+  /**
+   * Converts the query parameters to a GraphQL JSON payload
+   * @returns GraphQL JSON string
+   */
+  private toGraphQLJson = (userKey: string, userValue: string, segmentsToCheck: string[]): string => ([
+    '{"query" : "query {customer"',
+    `(${userKey} : "${userValue}") `,
+    '{audiences',
+    '(subset: [',
+    ...segmentsToCheck?.map((segment, index) =>
+      `\\"${segment}\\"${index < segmentsToCheck.length - 1 ? ',' : ''}`,
+    ) || '',
+    '] {edges {node {name state}}}}}"}',
+  ].join(''));
+
+  /**
+   * Handler for querying the ODP GraphQL endpoint
+   * @param apiKey ODP API key
+   * @param endpoint Fully-qualified GraphQL endpoint URL
+   * @param userKey 'vuid' or 'fs_user_id'
+   * @param userValue userKey's value
+   * @param query GraphQL formatted query string
+   * @returns JSON response string from ODP or null
+   */
+  private async querySegments(apiKey: string, endpoint: string, userKey: string, userValue: string, query: string): Promise<string | null> {
+    const method = 'POST';
+    const url = endpoint;
+    const headers = {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+    };
+
+    let response: HttpResponse;
+    try {
+      const request = this.requestHandler.makeRequest(url, headers, method, query);
+      response = await request.responsePromise;
+    } catch {
+      return null;
+    }
+
+    return response.body;
   }
 
   /**
@@ -116,20 +161,17 @@ export class GraphqlManager implements IGraphQLManager {
    * @private
    * @returns Response Strongly-typed ODP Response object
    */
-  private parseSegmentsResponseJson(jsonResponse: string): Response | null {
+  private parseSegmentsResponseJson(jsonResponse: string): GraphQLResponse | null {
     let jsonObject = {};
 
     try {
       jsonObject = JSON.parse(jsonResponse);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      this._errorHandler.handleError(error);
-      this._logger.log(LogLevel.ERROR, 'Attempted to parse invalid segment response JSON.');
+    } catch {
       return EMPTY_JSON_RESPONSE;
     }
 
     if (validate(jsonObject, OdpResponseSchema, false)) {
-      return jsonObject as Response;
+      return jsonObject as GraphQLResponse;
     }
 
     return EMPTY_JSON_RESPONSE;

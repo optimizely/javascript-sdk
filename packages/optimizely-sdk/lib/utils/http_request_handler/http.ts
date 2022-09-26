@@ -43,5 +43,5 @@ export interface AbortableRequest {
  * Client that handles sending requests and receiving responses
  */
 export interface RequestHandler {
-  makeRequest(reqUrl: string, headers: Headers, method: string, data?: string): AbortableRequest;
+  makeRequest(requestUrl: string, headers: Headers, method: string, data?: string): AbortableRequest;
 }
