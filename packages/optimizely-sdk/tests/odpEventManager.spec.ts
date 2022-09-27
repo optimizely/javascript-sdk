@@ -21,6 +21,7 @@ import { RestApiManager } from '../lib/plugins/odp/rest_api_manager';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpEvent } from '../lib/plugins/odp/odp_event';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
+import { OdpEventDispatcher } from '../lib/plugins/odp/odp_event_dispatcher';
 
 const API_KEY = 'test-api-key';
 const API_HOST = 'https://odp.example.com';
@@ -184,11 +185,13 @@ describe('OdpEventManager', () => {
 
   it('should dispatch events with correct payload', async () => {
     const eventManager = new OdpEventManager(spiedOdpConfig, instance(mockRestApiManager), instance(mockLogger), 1);
+    const eventDispatcher = new OdpEventDispatcher();
+    eventManager.attach(eventDispatcher);
     const processedEvent = PROCESSED_EVENTS[0];
 
     eventManager.start();
     eventManager.sendEvent(EVENTS[0]);
-    await pause(1500);
+    //await pause(1500);
 
     verify(mockRestApiManager.sendEvents(anything(), anything(), anything())).once();
     const [apiKey, apiHost, events] = capture(mockRestApiManager.sendEvents).last();
