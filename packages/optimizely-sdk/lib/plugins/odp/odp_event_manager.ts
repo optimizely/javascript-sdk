@@ -165,9 +165,12 @@ export class OdpEventManager implements IOdpEventManager {
     public async run(): Promise<void> {
       while (!this.shouldStop) {
         try {
+          console.log('batch length', this.currentBatch.length);
           if (this.currentBatch.length > 0) {
             const remainingTimeout = this.nextFlushTime - Date.now();
+            console.log('waiting');
             await this.pause(remainingTimeout);
+            console.log('waited');
           }
 
           const [nextEvent, ...remainingEventsInQueue] = this.eventManager.eventQueue;
@@ -190,7 +193,7 @@ export class OdpEventManager implements IOdpEventManager {
             await this.flush();
           }
         } catch (err) {
-          this.eventManager.logger.log(LogLevel.ERROR, err);
+          this.eventManager.logger.log(LogLevel.ERROR, err as string);
         }
       }
 
