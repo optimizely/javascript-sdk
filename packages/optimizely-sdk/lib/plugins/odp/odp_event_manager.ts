@@ -14,62 +14,44 @@
  * limitations under the License.
  */
 
-import { LogHandler, LogLevel } from '../../modules/logging';
+import { LogHandler } from '../../modules/logging';
 import { OdpEvent } from './odp_event';
 import { uuid } from '../../utils/fns';
 import { ODP_USER_KEY } from '../../utils/enums';
 import { OdpConfig } from './odp_config';
-import { RestApiManager } from './rest_api_manager';
-import { Observer } from './odp_event_dispatcher';
+import { OdpEventDispatcher } from './odp_event_dispatcher';
 
 export interface IOdpEventManager {
   start(): void;
 
-  updateSettings(odpConfig: OdpConfig): void;
-
   identifyUser(vuid: string, userId: string): void;
+
+  updateSettings(odpConfig: OdpConfig): void;
 
   sendEvents(events: OdpEvent[]): void;
 
   sendEvent(event: OdpEvent): void;
 
-  stop(): void;
-}
-
-export interface Subject {
-  attach(observer: Observer): void;
-
-  detach(observer: Observer): void;
-
-  enqueue(event: OdpEvent[]): void;
-
-  flush(): void;
+  signalStop(): void;
 }
 
 /**
  * Manager for persisting events to the Optimizely Data Platform
  */
-export class OdpEventManager implements IOdpEventManager, Subject {
-  private observers: Observer[] = [];
+export class OdpEventManager implements IOdpEventManager {
   public isRunning = false;
-  private odpConfig: OdpConfig;
 
-  private readonly apiManager: RestApiManager;
+  private readonly eventDispatcher: OdpEventDispatcher;
   private readonly logger: LogHandler;
 
-  public constructor(odpConfig: OdpConfig, apiManager: RestApiManager, logger: LogHandler) {
-    this.odpConfig = odpConfig;
-    this.apiManager = apiManager;
+  public constructor(eventDispatcher: OdpEventDispatcher, logger: LogHandler) {
+    this.eventDispatcher = eventDispatcher;
     this.logger = logger;
   }
 
   public start(): void {
     this.isRunning = true;
-    this.observers.forEach(observer => observer.start());
-  }
-
-  public updateSettings(odpConfig: OdpConfig): void {
-    this.odpConfig = odpConfig;
+    this.eventDispatcher.start();
   }
 
   public identifyUser(vuid: string, userId: string): void {
@@ -83,13 +65,17 @@ export class OdpEventManager implements IOdpEventManager, Subject {
     this.sendEvent(event);
   }
 
+  public updateSettings(odpConfig: OdpConfig): void {
+    this.eventDispatcher.updateSettings(odpConfig);
+  }
+
   public sendEvents(events: OdpEvent[]): void {
     events.forEach(event => this.sendEvent(event));
   }
 
   public sendEvent(event: OdpEvent): void {
     event.data = this.augmentCommonData(event.data);
-    this.processEvent(event);
+    (async () => await this.eventDispatcher.enqueue(event))();
   }
 
   private augmentCommonData(sourceData: Map<string, unknown>): Map<string, unknown> {
@@ -115,52 +101,9 @@ export class OdpEventManager implements IOdpEventManager, Subject {
     return data;
   }
 
-  private processEvent(event: OdpEvent): void {
-    if (!this.isRunning) {
-      this.logger.log(LogLevel.WARNING, 'Failed to Process ODP Event. ODPEventManager is not running.');
-      return;
-    }
-
-    if (!this.odpConfig.isReady()) {
-      this.logger.log(LogLevel.DEBUG, 'Unable to Process ODP Event. ODPConfig is not ready.');
-      return;
-    }
-
-    if (this.eventQueue.length >= this.queueSize) {
-      this.logger.log(LogLevel.WARNING, `Failed to Process ODP Event. Event Queue full. queueSize = ${this.queueSize}.`);
-      return;
-    }
-
-    this.observers.forEach(observer => observer.enqueue(event));
-  }
-
-  public stop(): void {
+  public signalStop(): void {
+    (async () => await this.eventDispatcher.stop())();
     this.isRunning = false;
-    this.observers.forEach(observer => observer.stop());
-  }
-
-  public attach(observer: Observer): void {
-    const isExist = this.observers.includes(observer);
-    if (isExist) {
-      return console.log('Observer already attached.');
-    }
-
-    console.log('Attached an observer.');
-    this.observers.push(observer);
-  }
-
-  public detach(observer: Observer): void {
-    const observerIndex = this.observers.indexOf(observer);
-    if (observerIndex === -1) {
-      return console.log('Observer does not exist.');
-    }
-
-    this.observers.splice(observerIndex, 1);
-    console.log('Detached an observer.');
-  }
-
-  public enqueue(events: OdpEvent[]): void {
-    this.observers.forEach(observer => observer.enqueue(events));
   }
 }
 

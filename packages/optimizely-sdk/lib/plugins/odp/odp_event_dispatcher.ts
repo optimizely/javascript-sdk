@@ -15,10 +15,11 @@
  */
 
 import { OdpEvent } from './odp_event';
-import { LogHandler } from '../../modules/logging';
+import { LogHandler, LogLevel } from '../../modules/logging';
+import { OdpConfig } from './odp_config';
+import { RestApiManager } from './rest_api_manager';
 
 const MAX_RETRIES = 3;
-const EVENT_URL_PATH = '/v3/events';
 const DEFAULT_BATCH_SIZE = 10;
 const DEFAULT_QUEUE_SIZE = 10000;
 const DEFAULT_FLUSH_INTERVAL = 1000;
@@ -26,116 +27,131 @@ const DEFAULT_FLUSH_INTERVAL = 1000;
 export enum STATE {
   STOPPED,
   RUNNING,
-  FLUSHING,
+  PROCESSING,
 }
 
-/**
- * The Observer interface declares the update method, used by subjects.
- */
-export interface Observer {
+export interface IOdpEventDispatcher {
   start(): void;
 
-  enqueue(events: OdpEvent): void;
+  updateSettings(odpConfig: OdpConfig): void;
 
-  flush(): void;
+  enqueue(event: OdpEvent): void;
 
-  stop(): void;
+  stop(): Promise<void>;
 }
 
-export class OdpEventDispatcher implements Observer {
+export class OdpEventDispatcher implements IOdpEventDispatcher {
   public state: STATE = STATE.STOPPED;
-  private currentBatch = new Array<OdpEvent>();
-  private nextFlushTime: number = Date.now();
-  private intervalId: typeof setInterval;
 
+  private queue = new Array<OdpEvent>();
+  private batch = new Array<OdpEvent>();
+  private intervalId: number | NodeJS.Timer;
+  private odpConfig: OdpConfig;
+  private shouldStopAndDrain = false;
+
+  private readonly apiManager: RestApiManager;
   private readonly logger: LogHandler;
   private readonly queueSize: number;
   private readonly batchSize: number;
   private readonly flushInterval: number;
 
-  public constructor(logger: LogHandler,
-                     batchSize?: number,
+  public constructor(odpConfig: OdpConfig,
+                     apiManager: RestApiManager,
+                     logger: LogHandler,
                      queueSize?: number,
+                     batchSize?: number,
                      flushInterval?: number) {
+    this.odpConfig = odpConfig;
+    this.apiManager = apiManager;
     this.logger = logger;
 
-    this.batchSize = batchSize && batchSize > 0 ? batchSize : DEFAULT_BATCH_SIZE;
     this.queueSize = queueSize && queueSize > 0 ? queueSize : DEFAULT_QUEUE_SIZE;
+    this.batchSize = batchSize && batchSize > 0 ? batchSize : DEFAULT_BATCH_SIZE;
     this.flushInterval = flushInterval && flushInterval > 0 ? flushInterval : DEFAULT_FLUSH_INTERVAL;
 
+    this.state = STATE.STOPPED;
+    // initialize this way due to different types based on execution context
     this.intervalId = setInterval(() => {
-    }, 1);
+    });
   }
 
   public start(): void {
     this.state = STATE.RUNNING;
+    (async () => await this.processQueue())();
   }
 
-  public async enqueue(event: OdpEvent): Promise<void> {
-    this.currentBatch.push(event);
+  public updateSettings(odpConfig: OdpConfig): void {
+    this.odpConfig = odpConfig;
+  }
 
-    if (this.currentBatch.length >= this.batchSize) {
-      clearInterval(this.intervalId);
-      await this.flush();
-      this.intervalId = setInterval(this.flush, this.flushInterval);
+  public enqueue(event: OdpEvent): void {
+    if (this.state != STATE.RUNNING) {
+      this.logger.log(LogLevel.WARNING, 'Failed to Process ODP Event. ODPEventManager is not running.');
+      return;
     }
+
+    if (!this.odpConfig.isReady()) {
+      this.logger.log(LogLevel.DEBUG, 'Unable to Process ODP Event. ODPConfig is not ready.');
+      return;
+    }
+
+    if (this.queue.length >= this.queueSize) {
+      this.logger.log(LogLevel.WARNING, `Failed to Process ODP Event. Event Queue full. queueSize = ${this.queueSize}.`);
+      return;
+    }
+
+    this.queue.push(event);
   }
 
-  public async flush(): Promise<void> {
-    this.state = STATE.FLUSHING;
-    // if (this.eventManager.odpConfig.isReady()) {
-    //   const payload = this.currentBatch;
-    //   const endpoint = this.eventManager.odpConfig.apiHost + EVENT_URL_PATH;
-    //   let shouldRetry: boolean;
-    //   let numAttempts = 0;
-    //   do {
-    //     shouldRetry = await this.eventManager.apiManager.sendEvents(this.eventManager.odpConfig.apiKey, endpoint, payload);
-    //     numAttempts += 1;
-    //   } while (numAttempts < MAX_RETRIES && shouldRetry);
-    // } else {
-    //   this.eventManager.logger.log(LogLevel.DEBUG, 'ODPConfig not ready, discarding event batch');
-    // }
-    this.currentBatch = new Array<OdpEvent>();
+  private async processQueue(): Promise<void> {
+    if (this.state !== STATE.RUNNING) {
+      return;
+    }
+
+    clearInterval(this.intervalId);
+
+    if (this.odpConfig.isReady() && this.queue.length > 0) {
+      this.state = STATE.PROCESSING;
+
+      for (let count = 0; count < this.batchSize; count += 1) {
+        const event = this.queue.shift();
+        if (event) {
+          this.batch.push(event);
+        } else {
+          break;
+        }
+      }
+
+      if (this.batch.length > 0) {
+        let shouldRetry: boolean;
+        let numAttempts = 0;
+        do {
+          shouldRetry = await this.apiManager.sendEvents(this.odpConfig.apiKey, this.odpConfig.apiHost, this.batch);
+          numAttempts += 1;
+        } while (shouldRetry && numAttempts < MAX_RETRIES);
+      }
+
+      this.batch = new Array<OdpEvent>();
+
+      if (this.shouldStopAndDrain && this.queue.length > 0) {
+        this.logger.log(LogLevel.DEBUG, 'EventDispatcher draining queue without flush interval.');
+        await this.processQueue();
+      }
+    } else {
+      this.logger.log(LogLevel.DEBUG, 'ODPConfig not ready, discarding event batch.');
+    }
+
+    if (!this.shouldStopAndDrain) {
+      this.intervalId = setInterval(() => this.processQueue(), this.flushInterval);
+    }
+
     this.state = STATE.RUNNING;
   }
 
-
-  private async dispatch(): Promise<void> {
-
-  }
-
   public async stop(): Promise<void> {
-    this.state = STATE.FLUSHING;
-    await this.flush();
+    this.logger.log(LogLevel.DEBUG, 'EventDispatcher stop requested.');
+    this.shouldStopAndDrain = true;
+    await this.processQueue();
     this.state = STATE.STOPPED;
   }
-
-  // public async run(): Promise<void> {
-  //     try {
-  //       if (this.currentBatch.length > 0) {
-  //         const remainingTimeout = this.nextFlushTime - Date.now();
-  //         await this.pause(remainingTimeout);
-  //       }
-  //
-  //       if (this.currentBatch.length === 0) {
-  //         this.nextFlushTime = Date.now() + this.eventManager.flushInterval;
-  //       }
-  //
-  //       this.currentBatch.push(nextEvent);
-  //
-  //       if (this.currentBatch.length >= this.eventManager.batchSize) {
-  //         await this.flush();
-  //       }
-  //     } catch (err) {
-  //       this.eventManager.logger.log(LogLevel.ERROR, err as string);
-  //     }
-  //   }
-  //
-  //   this.eventManager.logger.log(LogLevel.DEBUG, 'Exiting ODP Event Dispatcher Thread.');
-  //   this.eventManager.isRunning = false;
-  // }
-
-  // private pause(timeoutMilliseconds: number): Promise<void> {
-  //   return new Promise(resolve => setTimeout(resolve, timeoutMilliseconds));
-  // }
 }
