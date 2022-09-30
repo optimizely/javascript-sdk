@@ -131,12 +131,12 @@ describe('OdpEventManager', () => {
     verify(mockLogger.log(LogLevel.WARNING, 'Failed to Process ODP Event. ODPEventManager is not running.')).once();
   });
 
-  it('should log and discard events when event manager is not ready', () => {
+  it('should log and discard events when event manager\'s config is not ready', () => {
     const logger = instance(mockLogger);
     const mockOdpConfig = mock<OdpConfig>();
     when(mockOdpConfig.isReady()).thenReturn(false);
     const eventDispatcher = new OdpEventDispatcher(instance(mockOdpConfig), instance(mockRestApiManager), logger);
-    eventDispatcher['state'] = STATE.RUNNING; // simulate dispatcher already running
+    eventDispatcher['state'] = STATE.RUNNING; // simulate dispatcher already in running state
     const eventManager = new OdpEventManager(eventDispatcher, logger);
 
     eventManager.sendEvent(EVENTS[0]);
@@ -148,11 +148,13 @@ describe('OdpEventManager', () => {
     const logger = instance(mockLogger);
     const mockOdpConfig = mock<OdpConfig>();
     when(mockOdpConfig.isReady()).thenReturn(false);
+    // set queue to maximum of 1
     const eventDispatcher = new OdpEventDispatcher(mockOdpConfig, instance(mockRestApiManager), logger, 1);
-    eventDispatcher['state'] = STATE.RUNNING; // simulate dispatcher already running
-    eventDispatcher['queue'].push(EVENTS[0]);
+    eventDispatcher['state'] = STATE.RUNNING; // simulate dispatcher running
+    eventDispatcher['queue'].push(EVENTS[0]); // simulate event already in queue
     const eventManager = new OdpEventManager(eventDispatcher, logger);
 
+    // try adding the second event
     eventManager.sendEvent(EVENTS[1]);
 
     verify(mockLogger.log(LogLevel.WARNING, 'Failed to Process ODP Event. Event Queue full. queueSize = 1.')).once();
@@ -227,25 +229,30 @@ describe('OdpEventManager', () => {
     }
     await pause(1500);
 
-    // retry 3x for 2 batches or 6 calls to attempt to process the 4 events
+    // retry 3x (default) for 2 batches or 6 calls to attempt to process
     verify(mockRestApiManager.sendEvents(anything(), anything(), anything())).times(6);
   });
 
   it('should flush all scheduled events before stopping', async () => {
     const logger = instance(mockLogger);
     when(mockRestApiManager.sendEvents(anything(), anything(), anything())).thenResolve(false);
-    const eventDispatcher = new OdpEventDispatcher(odpConfig, instance(mockRestApiManager), logger, 100, 10, 100);
+    // batches of 2 with...
+    const eventDispatcher = new OdpEventDispatcher(odpConfig, instance(mockRestApiManager), logger, 100, 2, 100);
     const eventManager = new OdpEventManager(eventDispatcher, logger);
 
     eventManager.start();
+    // ...25 events should...
     for (let i = 0; i < 25; i += 1) {
       eventManager.sendEvent(makeEvent(i));
     }
+    await pause(300);
+    eventManager.signalStop();
     await pause(1500);
-    // eventManager.signalStop();
-    // TODO: These can't be succeeding since signalStop() not called above
-    verify(mockLogger.log(LogLevel.DEBUG, 'EventDispatcher stop requested.'));
-    verify(mockLogger.log(LogLevel.DEBUG, 'EventDispatcher draining queue without flush interval.'));
+
+    verify(mockLogger.log(LogLevel.DEBUG, 'EventDispatcher stop requested.')).once();
+    // ...never exceed 14
+    verify(mockLogger.log(LogLevel.DEBUG, 'EventDispatcher draining queue without flush interval.')).atMost(14);
+    verify(mockLogger.log(LogLevel.DEBUG, 'EventDispatcher stopped. Queue Count: 0')).once();
   });
 
   it('should prepare correct payload for identify user', async () => {

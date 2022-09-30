@@ -104,34 +104,37 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
   }
 
   private async processQueue(): Promise<void> {
-    if (this.state !== STATE.RUNNING) {
+    if (this.state !== STATE.RUNNING && !this.shouldStopAndDrain) {
       return;
     }
 
     clearInterval(this.intervalId);
 
-    if (this.odpConfig.isReady() && this.queue.length > 0) {
-      this.state = STATE.PROCESSING;
+    if (this.odpConfig.isReady()) {
+      if (this.queue.length > 0) {
 
-      for (let count = 0; count < this.batchSize; count += 1) {
-        const event = this.queue.shift();
-        if (event) {
-          this.batch.push(event);
-        } else {
-          break;
+        this.state = STATE.PROCESSING;
+
+        for (let count = 0; count < this.batchSize; count += 1) {
+          const event = this.queue.shift();
+          if (event) {
+            this.batch.push(event);
+          } else {
+            break;
+          }
         }
-      }
 
-      if (this.batch.length > 0) {
-        let shouldRetry: boolean;
-        let numAttempts = 0;
-        do {
-          shouldRetry = await this.apiManager.sendEvents(this.odpConfig.apiKey, this.odpConfig.apiHost, this.batch);
-          numAttempts += 1;
-        } while (shouldRetry && numAttempts < MAX_RETRIES);
-      }
+        if (this.batch.length > 0) {
+          let shouldRetry: boolean;
+          let numAttempts = 0;
+          do {
+            shouldRetry = await this.apiManager.sendEvents(this.odpConfig.apiKey, this.odpConfig.apiHost, this.batch);
+            numAttempts += 1;
+          } while (shouldRetry && numAttempts < MAX_RETRIES);
+        }
 
-      this.batch = new Array<OdpEvent>();
+        this.batch = new Array<OdpEvent>();
+      }
 
       if (this.shouldStopAndDrain && this.queue.length > 0) {
         this.logger.log(LogLevel.DEBUG, 'EventDispatcher draining queue without flush interval.');
@@ -153,5 +156,6 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
     this.shouldStopAndDrain = true;
     await this.processQueue();
     this.state = STATE.STOPPED;
+    this.logger.log(LogLevel.DEBUG, `EventDispatcher stopped. Queue Count: ${this.queue.length}`);
   }
 }
