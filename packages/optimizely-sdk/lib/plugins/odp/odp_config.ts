@@ -97,6 +97,6 @@ export class OdpConfig {
    * Determines if ODP configuration has the minimum amount of information
    */
   public isReady(): boolean {
-    return this._apiKey !== null && this._apiKey !== '' && this._apiHost !== null && this._apiHost !== '';
+    return !!this._apiKey && !!this._apiHost;
   }
 }
