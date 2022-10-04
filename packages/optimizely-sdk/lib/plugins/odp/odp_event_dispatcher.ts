@@ -211,7 +211,7 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
     } else {
       if (process) {
         // if Node/server-side context, empty queue items before ready state
-        this.logger.log(LogLevel.WARNING, 'ODPConfig not ready. Leaving events in queue.');
+        this.logger.log(LogLevel.WARNING, 'ODPConfig not ready. Discarding events in queue.');
         this.queue = new Array<OdpEvent>();
       } else {
         // in Browser/client-side context, give debug message but leave events in queue
