@@ -54,7 +54,7 @@ export class OdpEventManager implements IOdpEventManager {
     this.eventDispatcher.start();
   }
 
-  public identifyUser(vuid: string, userId: string): void {
+  public identifyUser(vuid: string?, userId: string): void {
     const identifiers = new Map<string, string>();
     if (vuid != null) {
       identifiers.set(ODP_USER_KEY.VUID, vuid);
