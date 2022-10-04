@@ -61,7 +61,7 @@ export class OdpEventManager implements IOdpEventManager {
     }
     identifiers.set(ODP_USER_KEY.FS_USER_ID, userId);
 
-    const event = new OdpEvent('fullstack', 'client_initialized', identifiers);
+    const event = new OdpEvent('fullstack', 'identified', identifiers);
     this.sendEvent(event);
   }
 
