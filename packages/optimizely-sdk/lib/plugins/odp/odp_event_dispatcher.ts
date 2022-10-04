@@ -21,7 +21,6 @@ import { RestApiManager } from './rest_api_manager';
 
 const MAX_RETRIES = 3;
 const DEFAULT_BATCH_SIZE = 10;
-const DEFAULT_QUEUE_SIZE = 10000;
 const DEFAULT_FLUSH_INTERVAL_MSECS = 1000;
 
 export enum STATE {
@@ -45,7 +44,8 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
 
   private queue = new Array<OdpEvent>();
   private batch = new Array<OdpEvent>();
-  private intervalId: number | NodeJS.Timer;
+  private timeoutId: ReturnType<typeof setTimeout> = setTimeout(() => {
+  });
   private odpConfig: OdpConfig;
   private shouldStopAndDrain = false;
 
@@ -55,24 +55,25 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
   private readonly batchSize: number;
   private readonly flushInterval: number;
 
-  public constructor(odpConfig: OdpConfig,
-                     apiManager: RestApiManager,
-                     logger: LogHandler,
-                     queueSize?: number,
-                     batchSize?: number,
-                     flushInterval?: number) {
+  public constructor(
+    { odpConfig, apiManager, logger, queueSize, batchSize, flushInterval }: {
+      odpConfig: OdpConfig,
+      apiManager: RestApiManager,
+      logger: LogHandler,
+      queueSize?: number,
+      batchSize?: number,
+      flushInterval?: number
+    }) {
     this.odpConfig = odpConfig;
     this.apiManager = apiManager;
     this.logger = logger;
 
-    this.queueSize = queueSize || DEFAULT_QUEUE_SIZE;
+    // if `process` exists Node/server-side execution context otherwise Browser
+    this.queueSize = queueSize || (process ? 10000 : 100);
     this.batchSize = batchSize || DEFAULT_BATCH_SIZE;
-    this.flushInterval = flushInterval || DEFAULT_FLUSH_INTERVAL;
+    this.flushInterval = flushInterval || DEFAULT_FLUSH_INTERVAL_MSECS;
 
     this.state = STATE.STOPPED;
-    // initialize this way due to different types based on execution context
-    this.intervalId = setInterval(() => {
-    });
   }
 
   public start(): void {
@@ -108,7 +109,7 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
       return;
     }
 
-    clearInterval(this.intervalId);
+    clearInterval(this.timeoutId);
 
     if (this.odpConfig.isReady()) {
       if (this.queue.length > 0) {
@@ -134,6 +135,7 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
         }
 
         this.batch = new Array<OdpEvent>();
+        this.state = STATE.RUNNING;
       }
 
       if (this.shouldStopAndDrain && this.queue.length > 0) {
@@ -141,14 +143,12 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
         await this.processQueue();
       }
     } else {
-      this.logger.log(LogLevel.DEBUG, 'ODPConfig not ready, discarding event batch.');
+      this.logger.log(LogLevel.DEBUG, 'ODPConfig not ready.');
     }
 
     if (!this.shouldStopAndDrain) {
-      this.intervalId = setInterval(() => this.processQueue(), this.flushInterval);
+      this.timeoutId = setTimeout(() => this.processQueue(), this.flushInterval);
     }
-
-    this.state = STATE.RUNNING;
   }
 
   public async stop(): Promise<void> {

@@ -24,11 +24,11 @@ import { OdpEventDispatcher } from './odp_event_dispatcher';
 export interface IOdpEventManager {
   start(): void;
 
-  identifyUser(vuid: string, userId: string): void;
+  registerVuid(vuid: string): void;
+
+  identifyUser(userId: string, vuid?: string): void;
 
   updateSettings(odpConfig: OdpConfig): void;
-
-  sendEvents(events: OdpEvent[]): void;
 
   sendEvent(event: OdpEvent): void;
 
@@ -39,8 +39,6 @@ export interface IOdpEventManager {
  * Manager for persisting events to the Optimizely Data Platform
  */
 export class OdpEventManager implements IOdpEventManager {
-  public isRunning = false;
-
   private readonly eventDispatcher: OdpEventDispatcher;
   private readonly logger: LogHandler;
 
@@ -50,13 +48,20 @@ export class OdpEventManager implements IOdpEventManager {
   }
 
   public start(): void {
-    this.isRunning = true;
     this.eventDispatcher.start();
   }
 
-  public identifyUser(vuid: string?, userId: string): void {
+  public registerVuid(vuid: string): void {
     const identifiers = new Map<string, string>();
-    if (vuid != null) {
+    identifiers.set(ODP_USER_KEY.VUID, vuid);
+
+    const event = new OdpEvent('fullstack', 'client_initialized', identifiers);
+    this.sendEvent(event);
+  }
+
+  public identifyUser(userId: string, vuid?: string): void {
+    const identifiers = new Map<string, string>();
+    if (vuid) {
       identifiers.set(ODP_USER_KEY.VUID, vuid);
     }
     identifiers.set(ODP_USER_KEY.FS_USER_ID, userId);
@@ -69,13 +74,9 @@ export class OdpEventManager implements IOdpEventManager {
     this.eventDispatcher.updateSettings(odpConfig);
   }
 
-  public sendEvents(events: OdpEvent[]): void {
-    events.forEach(event => this.sendEvent(event));
-  }
-
   public sendEvent(event: OdpEvent): void {
     event.data = this.augmentCommonData(event.data);
-    (async () => await this.eventDispatcher.enqueue(event))();
+    this.eventDispatcher.enqueue(event);
   }
 
   private augmentCommonData(sourceData: Map<string, unknown>): Map<string, unknown> {
@@ -101,9 +102,8 @@ export class OdpEventManager implements IOdpEventManager {
     return data;
   }
 
-  public signalStop(): void {
-    (async () => await this.eventDispatcher.stop())();
-    this.isRunning = false;
+  public async signalStop(): Promise<void> {
+    await this.eventDispatcher.stop();
   }
 }
 
