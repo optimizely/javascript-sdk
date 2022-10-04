@@ -65,9 +65,9 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
     this.apiManager = apiManager;
     this.logger = logger;
 
-    this.queueSize = queueSize && queueSize > 0 ? queueSize : DEFAULT_QUEUE_SIZE;
-    this.batchSize = batchSize && batchSize > 0 ? batchSize : DEFAULT_BATCH_SIZE;
-    this.flushInterval = flushInterval && flushInterval > 0 ? flushInterval : DEFAULT_FLUSH_INTERVAL;
+    this.queueSize = queueSize || DEFAULT_QUEUE_SIZE;
+    this.batchSize = batchSize || DEFAULT_BATCH_SIZE;
+    this.flushInterval = flushInterval || DEFAULT_FLUSH_INTERVAL;
 
     this.state = STATE.STOPPED;
     // initialize this way due to different types based on execution context
