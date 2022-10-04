@@ -23,12 +23,18 @@ const MAX_RETRIES = 3;
 const DEFAULT_BATCH_SIZE = 10;
 const DEFAULT_FLUSH_INTERVAL_MSECS = 1000;
 
+/**
+ * Event dispatcher's execution states
+ */
 export enum STATE {
   STOPPED,
   RUNNING,
   PROCESSING,
 }
 
+/**
+ * Queue processor for dispatching events to the Optimizely Data Platform (ODP)
+ */
 export interface IOdpEventDispatcher {
   start(): void;
 
@@ -39,20 +45,65 @@ export interface IOdpEventDispatcher {
   stop(): Promise<void>;
 }
 
+/**
+ * Concreate implementation of a processor for dispatching events to the Optimizely Data Platform (ODP)
+ */
 export class OdpEventDispatcher implements IOdpEventDispatcher {
+  /**
+   * Current state of the event processor
+   */
   public state: STATE = STATE.STOPPED;
-
+  /**
+   * Queue for holding all events to be eventually dispatched
+   * @private
+   */
   private queue = new Array<OdpEvent>();
+  /**
+   * Current batch of events being processed
+   * @private
+   */
   private batch = new Array<OdpEvent>();
+  /**
+   * Identifier of the currently running timeout so clearTimeout() can be called
+   * @private
+   */
   private timeoutId: ReturnType<typeof setTimeout> = setTimeout(() => {
   });
+  /**
+   * ODP configuration settings in used
+   * @private
+   */
   private odpConfig: OdpConfig;
+  /**
+   * Signal that the dispatcher should drain the queue and shutdown
+   * @private
+   */
   private shouldStopAndDrain = false;
 
+  /**
+   * REST API Manager used to send the events
+   * @private
+   */
   private readonly apiManager: RestApiManager;
+  /**
+   * Handler for recording execution logs
+   * @private
+   */
   private readonly logger: LogHandler;
+  /**
+   * Maximum queue size
+   * @private
+   */
   private readonly queueSize: number;
+  /**
+   * Maximum number of events to process at once
+   * @private
+   */
   private readonly batchSize: number;
+  /**
+   * Milliseconds between setTimeout() to process new batches
+   * @private
+   */
   private readonly flushInterval: number;
 
   public constructor(
@@ -76,15 +127,26 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
     this.state = STATE.STOPPED;
   }
 
+  /**
+   * Begin processing any events in the queue
+   */
   public start(): void {
     this.state = STATE.RUNNING;
     (async () => await this.processQueue())();
   }
 
+  /**
+   * Update the ODP configuration in use
+   * @param odpConfig New settings to apply
+   */
   public updateSettings(odpConfig: OdpConfig): void {
     this.odpConfig = odpConfig;
   }
 
+  /**
+   * Add a new event to the main queue
+   * @param event ODP Event to be queued
+   */
   public enqueue(event: OdpEvent): void {
     if (this.state != STATE.RUNNING) {
       this.logger.log(LogLevel.WARNING, 'Failed to Process ODP Event. ODPEventManager is not running.');
@@ -104,12 +166,16 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
     this.queue.push(event);
   }
 
+  /**
+   * Process any events in the main queue in batches
+   * @private
+   */
   private async processQueue(): Promise<void> {
     if (this.state !== STATE.RUNNING && !this.shouldStopAndDrain) {
       return;
     }
 
-    clearInterval(this.timeoutId);
+    clearTimeout(this.timeoutId);
 
     if (this.odpConfig.isReady()) {
       if (this.queue.length > 0) {
@@ -143,7 +209,14 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
         await this.processQueue();
       }
     } else {
-      this.logger.log(LogLevel.DEBUG, 'ODPConfig not ready.');
+      if (process) {
+        // if Node/server-side context, empty queue items before ready state
+        this.logger.log(LogLevel.WARNING, 'ODPConfig not ready. Leaving events in queue.');
+        this.queue = new Array<OdpEvent>();
+      } else {
+        // in Browser/client-side context, give debug message but leave events in queue
+        this.logger.log(LogLevel.DEBUG, 'ODPConfig not ready. Leaving events in queue.');
+      }
     }
 
     if (!this.shouldStopAndDrain) {
@@ -151,6 +224,9 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
     }
   }
 
+  /**
+   * Drain the event queue sending all remaining events in batches to ODP then shutdown processing
+   */
   public async stop(): Promise<void> {
     this.logger.log(LogLevel.DEBUG, 'EventDispatcher stop requested.');
     this.shouldStopAndDrain = true;
