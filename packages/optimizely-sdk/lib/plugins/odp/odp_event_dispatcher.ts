@@ -22,7 +22,7 @@ import { RestApiManager } from './rest_api_manager';
 const MAX_RETRIES = 3;
 const DEFAULT_BATCH_SIZE = 10;
 const DEFAULT_QUEUE_SIZE = 10000;
-const DEFAULT_FLUSH_INTERVAL = 1000;
+const DEFAULT_FLUSH_INTERVAL_MSECS = 1000;
 
 export enum STATE {
   STOPPED,
