@@ -36,9 +36,9 @@ export enum STATE {
  * Queue processor for dispatching events to the Optimizely Data Platform (ODP)
  */
 export interface IOdpEventDispatcher {
-  start(): void;
-
   updateSettings(odpConfig: OdpConfig): void;
+
+  start(): void;
 
   enqueue(event: OdpEvent): void;
 
@@ -46,7 +46,7 @@ export interface IOdpEventDispatcher {
 }
 
 /**
- * Concreate implementation of a processor for dispatching events to the Optimizely Data Platform (ODP)
+ * Concrete implementation of a processor for dispatching events to the Optimizely Data Platform (ODP)
  */
 export class OdpEventDispatcher implements IOdpEventDispatcher {
   /**
@@ -59,27 +59,15 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
    */
   private queue = new Array<OdpEvent>();
   /**
-   * Current batch of events being processed
+   * Identifier of the currently running timeout so clearCurrentTimeout() can be called
    * @private
    */
-  private batch = new Array<OdpEvent>();
-  /**
-   * Identifier of the currently running timeout so clearTimeout() can be called
-   * @private
-   */
-  private timeoutId: ReturnType<typeof setTimeout> = setTimeout(() => {
-  });
+  private timeoutId?: NodeJS.Timeout | number;
   /**
    * ODP configuration settings in used
    * @private
    */
   private odpConfig: OdpConfig;
-  /**
-   * Signal that the dispatcher should drain the queue and shutdown
-   * @private
-   */
-  private shouldStopAndDrain = false;
-
   /**
    * REST API Manager used to send the events
    * @private
@@ -128,14 +116,6 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
   }
 
   /**
-   * Begin processing any events in the queue
-   */
-  public start(): void {
-    this.state = STATE.RUNNING;
-    (async () => await this.processQueue())();
-  }
-
-  /**
    * Update the ODP configuration in use
    * @param odpConfig New settings to apply
    */
@@ -144,11 +124,20 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
   }
 
   /**
+   * Begin processing any events in the queue
+   */
+  public start(): void {
+    this.state = STATE.RUNNING;
+
+    this.setNewTimeout();
+  }
+
+  /**
    * Add a new event to the main queue
    * @param event ODP Event to be queued
    */
   public enqueue(event: OdpEvent): void {
-    if (this.state != STATE.RUNNING) {
+    if (this.state === STATE.STOPPED) {
       this.logger.log(LogLevel.WARNING, 'Failed to Process ODP Event. ODPEventManager is not running.');
       return;
     }
@@ -164,6 +153,8 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
     }
 
     this.queue.push(event);
+
+    this.processQueue();
   }
 
   /**
@@ -171,66 +162,127 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
    * @private
    */
   private async processQueue(): Promise<void> {
-    if (this.state !== STATE.RUNNING && !this.shouldStopAndDrain) {
+    if (this.state !== STATE.RUNNING) {
       return;
     }
 
-    clearTimeout(this.timeoutId);
-
-    if (this.odpConfig.isReady()) {
-      if (this.queue.length > 0) {
-
-        this.state = STATE.PROCESSING;
-
-        for (let count = 0; count < this.batchSize; count += 1) {
-          const event = this.queue.shift();
-          if (event) {
-            this.batch.push(event);
-          } else {
-            break;
-          }
-        }
-
-        if (this.batch.length > 0) {
-          let shouldRetry: boolean;
-          let numAttempts = 0;
-          do {
-            shouldRetry = await this.apiManager.sendEvents(this.odpConfig.apiKey, this.odpConfig.apiHost, this.batch);
-            numAttempts += 1;
-          } while (shouldRetry && numAttempts < MAX_RETRIES);
-        }
-
-        this.batch = new Array<OdpEvent>();
-        this.state = STATE.RUNNING;
-      }
-
-      if (this.shouldStopAndDrain && this.queue.length > 0) {
-        this.logger.log(LogLevel.DEBUG, 'EventDispatcher draining queue without flush interval.');
-        await this.processQueue();
-      }
-    } else {
-      if (process) {
-        // if Node/server-side context, empty queue items before ready state
-        this.logger.log(LogLevel.WARNING, 'ODPConfig not ready. Discarding events in queue.');
-        this.queue = new Array<OdpEvent>();
-      } else {
-        // in Browser/client-side context, give debug message but leave events in queue
-        this.logger.log(LogLevel.DEBUG, 'ODPConfig not ready. Leaving events in queue.');
-      }
+    if (!this.isOdpConfigurationReady()) {
+      return;
     }
 
-    if (!this.shouldStopAndDrain) {
-      this.timeoutId = setTimeout(() => this.processQueue(), this.flushInterval);
+    if (!this.queueHasBatches()) {
+      return;
     }
+
+    this.clearCurrentTimeout();
+
+    this.state = STATE.PROCESSING;
+
+    while (this.queueHasBatches()) {
+      await this.makeAndSendBatch();
+    }
+
+    this.state = STATE.RUNNING;
+
+    this.setNewTimeout();
   }
 
   /**
-   * Drain the event queue sending all remaining events in batches to ODP then shutdown processing
+   * Process all events in the main queue in batches until empty
+   * @private
+   */
+  private async flushQueue(): Promise<void> {
+    if (this.state !== STATE.RUNNING) {
+      return;
+    }
+
+    if (!this.isOdpConfigurationReady()) {
+      return;
+    }
+
+    if (!this.queueContainsItems()) {
+      return;
+    }
+
+    this.clearCurrentTimeout();
+
+    this.state = STATE.PROCESSING;
+
+    while (this.queueContainsItems()) {
+      await this.makeAndSendBatch();
+    }
+
+    this.state = STATE.RUNNING;
+
+    this.setNewTimeout();
+  }
+
+  private clearCurrentTimeout(): void {
+    clearTimeout(this.timeoutId);
+    this.timeoutId = undefined;
+  }
+
+  private setNewTimeout(): void {
+    if (this.timeoutId !== undefined) {
+      return;
+    }
+    this.timeoutId = setTimeout(() => this.flushQueue(), this.flushInterval);
+  }
+
+  private async makeAndSendBatch(): Promise<void> {
+    const batch = new Array<OdpEvent>();
+
+    for (let count = 0; count < this.batchSize; count += 1) {
+      const event = this.queue.shift();
+      if (event) {
+        batch.push(event);
+      } else {
+        break;
+      }
+    }
+
+    if (batch.length > 0) {
+      let shouldRetry: boolean;
+      let attemptNumber = 0;
+      do {
+        shouldRetry = await this.apiManager.sendEvents(this.odpConfig.apiKey, this.odpConfig.apiHost, batch);
+        attemptNumber += 1;
+      } while (shouldRetry && attemptNumber < MAX_RETRIES);
+    }
+  }
+
+  private queueHasBatches(): boolean {
+    return this.queueContainsItems() && this.queue.length % this.batchSize === 0;
+  }
+
+  private queueContainsItems(): boolean {
+    return this.queue.length > 0;
+  }
+
+  private isOdpConfigurationReady(): boolean {
+    if (this.odpConfig.isReady()) {
+      return true;
+    }
+
+    if (process) {
+      // if Node/server-side context, empty queue items before ready state
+      this.logger.log(LogLevel.WARNING, 'ODPConfig not ready. Discarding events in queue.');
+      this.queue = new Array<OdpEvent>();
+    } else {
+      // in Browser/client-side context, give debug message but leave events in queue
+      this.logger.log(LogLevel.DEBUG, 'ODPConfig not ready. Leaving events in queue.');
+    }
+    return false;
+  }
+
+  /**
+   * Drain the queue sending all remaining events in batches then stop processing
    */
   public async stop(): Promise<void> {
     this.logger.log(LogLevel.DEBUG, 'EventDispatcher stop requested.');
-    this.shouldStopAndDrain = true;
-    await this.processQueue();
+
+    await this.flushQueue();
+
     this.state = STATE.STOPPED;
     this.logger.log(LogLevel.DEBUG, `EventDispatcher stopped. Queue Count: ${this.queue.length}`);
   }

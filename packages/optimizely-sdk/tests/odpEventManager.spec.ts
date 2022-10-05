@@ -16,7 +16,7 @@
 
 import { OdpConfig } from '../lib/plugins/odp/odp_config';
 import { OdpEventManager } from '../lib/plugins/odp/odp_event_manager';
-import { anything, capture, instance, mock, resetCalls, verify, when } from 'ts-mockito';
+import { anyString, anything, capture, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 import { RestApiManager } from '../lib/plugins/odp/rest_api_manager';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpEvent } from '../lib/plugins/odp/odp_event';
@@ -132,7 +132,7 @@ describe('OdpEventManager', () => {
     verify(mockLogger.log(LogLevel.WARNING, 'Failed to Process ODP Event. ODPEventManager is not running.')).once();
   });
 
-  it('should log and discard events when event manager\'s config is not ready', () => {
+  it('should log and discard events when event manager config is not ready', () => {
     const logger = instance(mockLogger);
     const mockOdpConfig = mock<OdpConfig>();
     when(mockOdpConfig.isReady()).thenReturn(false);
@@ -147,6 +147,26 @@ describe('OdpEventManager', () => {
     eventManager.sendEvent(EVENTS[0]);
 
     verify(mockLogger.log(LogLevel.DEBUG, 'Unable to Process ODP Event. ODPConfig is not ready.')).once();
+  });
+
+  it('should discard events with invalid data', () => {
+    const logger = instance(mockLogger);
+    const eventDispatcher = new OdpEventDispatcher({ odpConfig, apiManager: instance(mockApiManager), logger });
+    const eventManager = new OdpEventManager(eventDispatcher, logger);
+    // make an event with invalid data key-value entry
+    const badEvent = new OdpEvent(
+      't3',
+      'a3',
+      new Map([['id-key-3', 'id-value-3']]),
+      new Map(Object.entries({
+        'key-1': false,
+        'key-2': { random: 'object', whichShouldFail: true },
+      })),
+    );
+    eventManager.sendEvent(badEvent);
+
+    verify(mockLogger.log(LogLevel.ERROR, 'Event data found to be invalid.')).once();
+    verify(mockLogger.log(LogLevel.DEBUG, anyString())).once();
   });
 
   it('should log a max queue hit and discard ', () => {
@@ -195,9 +215,8 @@ describe('OdpEventManager', () => {
       odpConfig,
       apiManager: instance(mockApiManager),
       logger,
-      queueSize: 100,
-      batchSize: 10,
-      flushInterval: 100,
+      batchSize: 10, // with batch size of 10...
+      flushInterval: 250,
     });
     const eventManager = new OdpEventManager(eventDispatcher, logger);
 
@@ -207,7 +226,8 @@ describe('OdpEventManager', () => {
     }
     await pause(1500);
 
-    // 3 batches:  batch #1 with 10, batch #2 with 10, and batch #3 with 5 = 25 events
+    // ...there should be 3 batches:
+    // batch #1 with 10, batch #2 with 10, and batch #3 (after flushInterval lapsed) with 5 = 25 events
     verify(mockApiManager.sendEvents(anything(), anything(), anything())).thrice();
   });
 
@@ -217,7 +237,6 @@ describe('OdpEventManager', () => {
       odpConfig,
       apiManager: instance(mockApiManager),
       logger,
-      queueSize: 100,
       batchSize: 10,
       flushInterval: 100,
     });
@@ -225,8 +244,9 @@ describe('OdpEventManager', () => {
 
     eventManager.start();
     EVENTS.forEach(event => eventManager.sendEvent(event));
-    await pause(1500);
+    await pause(1000);
 
+    // sending 1 batch of 2 events after flushInterval since batchSize is 10
     verify(mockApiManager.sendEvents(anything(), anything(), anything())).once();
     const [apiKey, apiHost, events] = capture(mockApiManager.sendEvents).last();
     expect(apiKey).toEqual(API_KEY);
@@ -242,13 +262,11 @@ describe('OdpEventManager', () => {
     // all events should fail ie shouldRetry = true
     when(mockApiManager.sendEvents(anything(), anything(), anything())).thenResolve(true);
     const logger = instance(mockLogger);
-    // batch size of 2
     const eventDispatcher = new OdpEventDispatcher({
       odpConfig,
       apiManager: instance(mockApiManager),
       logger,
-      queueSize: 100,
-      batchSize: 2,
+      batchSize: 2,    // batch size of 2
       flushInterval: 100,
     });
     const eventManager = new OdpEventManager(eventDispatcher, logger);
@@ -267,13 +285,11 @@ describe('OdpEventManager', () => {
   it('should flush all scheduled events before stopping', async () => {
     const logger = instance(mockLogger);
     when(mockApiManager.sendEvents(anything(), anything(), anything())).thenResolve(false);
-    // batches of 2 with...
     const eventDispatcher = new OdpEventDispatcher({
       odpConfig,
       apiManager: instance(mockApiManager),
       logger,
-      queueSize: 100,
-      batchSize: 2,
+      batchSize: 2,  // batches of 2 with...
       flushInterval: 100,
     });
     const eventManager = new OdpEventManager(eventDispatcher, logger);
@@ -301,7 +317,6 @@ describe('OdpEventManager', () => {
       odpConfig,
       apiManager,
       logger,
-      queueSize: 100,
       batchSize: 10,
       flushInterval: 100,
     });
@@ -337,8 +352,6 @@ describe('OdpEventManager', () => {
       odpConfig,
       apiManager,
       logger,
-      queueSize: 100,
-      batchSize: 10,
       flushInterval: 100,
     });
     const eventManager = new OdpEventManager(eventDispatcher, logger);

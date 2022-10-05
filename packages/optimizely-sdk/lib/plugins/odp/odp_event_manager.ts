@@ -67,7 +67,7 @@ export class OdpEventManager implements IOdpEventManager {
 
   /**
    * Register a new visitor user id (VUID) in ODP
-   * @param vuid Visitor user id to send
+   * @param vuid Visitor User ID to send
    */
   public registerVuid(vuid: string): void {
     const identifiers = new Map<string, string>();
@@ -100,7 +100,8 @@ export class OdpEventManager implements IOdpEventManager {
   public sendEvent(event: OdpEvent): void {
     const foundInvalidDataInKeys = this.findKeysWithInvalidData(event.data);
     if (foundInvalidDataInKeys.length > 0) {
-      this.logger.log(LogLevel.ERROR, `Event data found to be invalid (${foundInvalidDataInKeys.join(', ')}`);
+      this.logger.log(LogLevel.ERROR, `Event data found to be invalid.`);
+      this.logger.log(LogLevel.DEBUG, `Invalid event data keys (${foundInvalidDataInKeys.join(', ')})`);
     } else {
       event.data = this.augmentCommonData(event.data);
       this.eventDispatcher.enqueue(event);
@@ -160,4 +161,3 @@ export class OdpEventManager implements IOdpEventManager {
     await this.eventDispatcher.stop();
   }
 }
-
