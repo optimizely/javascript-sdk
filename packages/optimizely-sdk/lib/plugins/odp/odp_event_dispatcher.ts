@@ -217,11 +217,19 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
     this.setNewTimeout();
   }
 
+  /**
+   * Clear the currently running timout
+   * @private
+   */
   private clearCurrentTimeout(): void {
     clearTimeout(this.timeoutId);
     this.timeoutId = undefined;
   }
 
+  /**
+   * Start a new timeout
+   * @private
+   */
   private setNewTimeout(): void {
     if (this.timeoutId !== undefined) {
       return;
@@ -229,6 +237,10 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
     this.timeoutId = setTimeout(() => this.flushQueue(), this.flushInterval);
   }
 
+  /**
+   * Make a batch and send it to ODP
+   * @private
+   */
   private async makeAndSendBatch(): Promise<void> {
     const batch = new Array<OdpEvent>();
 
@@ -251,14 +263,27 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
     }
   }
 
+  /**
+   * Check if main queue has any full/even batches available
+   * @private
+   */
   private queueHasBatches(): boolean {
     return this.queueContainsItems() && this.queue.length % this.batchSize === 0;
   }
 
+  /**
+   * Check if main queue has any items
+   * @private
+   */
   private queueContainsItems(): boolean {
     return this.queue.length > 0;
   }
 
+  /**
+   * Check if the ODP Configuration is ready and log if not.
+   * Potentially clear queue if server-side
+   * @private
+   */
   private isOdpConfigurationReady(): boolean {
     if (this.odpConfig.isReady()) {
       return true;
