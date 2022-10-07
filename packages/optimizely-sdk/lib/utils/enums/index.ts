@@ -30,6 +30,7 @@ export const ERROR_MESSAGES = {
   DATAFILE_AND_SDK_KEY_MISSING: '%s: You must provide at least one of sdkKey or datafile. Cannot start Optimizely',
   EXPERIMENT_KEY_NOT_IN_DATAFILE: '%s: Experiment key %s is not in datafile.',
   FEATURE_NOT_IN_DATAFILE: '%s: Feature key %s is not in datafile.',
+  FETCH_SEGMENTS_FAILED: '%s: Unable to fetch qualified segments - missing ODP API Key/Host.',
   IMPROPERLY_FORMATTED_EXPERIMENT: '%s: Experiment key %s is improperly formatted.',
   INVALID_ATTRIBUTES: '%s: Provided attributes are in an invalid format.',
   INVALID_BUCKETING_ID: '%s: Unable to generate hash for bucketing ID %s: %s',
