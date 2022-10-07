@@ -20,6 +20,7 @@ import { uuid } from '../../utils/fns';
 import { ODP_USER_KEY } from '../../utils/enums';
 import { OdpConfig } from './odp_config';
 import { OdpEventDispatcher } from './odp_event_dispatcher';
+import packageJson from '../../../package.json';
 
 /**
  * Manager for persisting events to the Optimizely Data Platform (ODP)
@@ -132,25 +133,13 @@ export class OdpEventManager implements IOdpEventManager {
    * @private
    */
   private augmentCommonData(sourceData: Map<string, unknown>): Map<string, unknown> {
-    // Try to get information from the current execution context
-    let sourceVersion = '';
-    if (window) {
-      sourceVersion = window.navigator.userAgent;
-    } else {
-      if (process) {
-        sourceVersion = process.version;
-      }
-    }
-
     const data = new Map<string, unknown>();
     data.set('idempotence_id', uuid());
     data.set('data_source_type', 'sdk');
     data.set('data_source', 'javascript-sdk');
-    if (sourceVersion) {
-      data.set('data_source_version', sourceVersion);
-    }
-    sourceData.forEach((value, key) => data.set(key, value));
+    data.set('data_source_version', packageJson.version);
 
+    sourceData.forEach((value, key) => data.set(key, value));
     return data;
   }
 
