@@ -22,6 +22,7 @@ import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpEvent } from '../lib/plugins/odp/odp_event';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 import { OdpEventDispatcher, STATE } from '../lib/plugins/odp/odp_event_dispatcher';
+import { OptimizelyOptions } from '../lib/shared_types';
 
 const API_KEY = 'test-api-key';
 const API_HOST = 'https://odp.example.com';
@@ -108,16 +109,22 @@ describe('OdpEventManager', () => {
   let mockLogger: LogHandler;
   let mockApiManager: RestApiManager;
   let odpConfig: OdpConfig;
+  let mockOptimizelyOptions: OptimizelyOptions;
 
   beforeAll(() => {
     mockLogger = mock<LogHandler>();
     mockApiManager = mock<RestApiManager>();
     odpConfig = new OdpConfig(API_KEY, API_HOST, []);
+
+    mockOptimizelyOptions = mock<OptimizelyOptions>();
+    when(mockOptimizelyOptions.clientEngine).thenReturn('javascript-sdk');
+    when(mockOptimizelyOptions.clientVersion).thenReturn('4.9.2');
   });
 
   beforeEach(() => {
     resetCalls(mockLogger);
     resetCalls(mockApiManager);
+    resetCalls(mockOptimizelyOptions);
   });
 
   it('should log and discard events when event manager not running', () => {
@@ -193,7 +200,7 @@ describe('OdpEventManager', () => {
   it('should add additional information to each event', () => {
     const logger = instance(mockLogger);
     const eventDispatcher = new OdpEventDispatcher({ odpConfig, apiManager: instance(mockApiManager), logger });
-    const eventManager = new OdpEventManager(eventDispatcher, logger);
+    const eventManager = new OdpEventManager(eventDispatcher, logger, instance(mockOptimizelyOptions));
     const processedEventData = PROCESSED_EVENTS[0].data;
 
     const eventData = eventManager['augmentCommonData'](EVENTS[0].data);
@@ -240,7 +247,7 @@ describe('OdpEventManager', () => {
       batchSize: 10,
       flushInterval: 100,
     });
-    const eventManager = new OdpEventManager(eventDispatcher, logger);
+    const eventManager = new OdpEventManager(eventDispatcher, logger, instance(mockOptimizelyOptions));
 
     eventManager.start();
     EVENTS.forEach(event => eventManager.sendEvent(event));
@@ -320,7 +327,7 @@ describe('OdpEventManager', () => {
       batchSize: 10,
       flushInterval: 100,
     });
-    const eventManager = new OdpEventManager(eventDispatcher, logger);
+    const eventManager = new OdpEventManager(eventDispatcher, logger, instance(mockOptimizelyOptions));
     const vuid = 'vuid_330e05cad15746d9af8a75b8d10';
 
     eventManager.start();
@@ -354,7 +361,7 @@ describe('OdpEventManager', () => {
       logger,
       flushInterval: 100,
     });
-    const eventManager = new OdpEventManager(eventDispatcher, logger);
+    const eventManager = new OdpEventManager(eventDispatcher, logger, instance(mockOptimizelyOptions));
     const vuid = 'vuid_330e05cad15746d9af8a75b8d10';
     const fsUserId = 'test-fs-user-id';
 

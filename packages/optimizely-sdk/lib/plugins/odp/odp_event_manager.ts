@@ -20,7 +20,7 @@ import { uuid } from '../../utils/fns';
 import { ODP_USER_KEY } from '../../utils/enums';
 import { OdpConfig } from './odp_config';
 import { OdpEventDispatcher } from './odp_event_dispatcher';
-import packageJson from '../../../package.json';
+import { OptimizelyOptions } from '../../shared_types';
 
 /**
  * Manager for persisting events to the Optimizely Data Platform (ODP)
@@ -45,10 +45,12 @@ export interface IOdpEventManager {
 export class OdpEventManager implements IOdpEventManager {
   private readonly eventDispatcher: OdpEventDispatcher;
   private readonly logger: LogHandler;
+  private readonly config?: OptimizelyOptions;
 
-  public constructor(eventDispatcher: OdpEventDispatcher, logger: LogHandler) {
+  public constructor(eventDispatcher: OdpEventDispatcher, logger: LogHandler, config?: OptimizelyOptions) {
     this.eventDispatcher = eventDispatcher;
     this.logger = logger;
+    this.config = config;
   }
 
   /**
@@ -136,8 +138,13 @@ export class OdpEventManager implements IOdpEventManager {
     const data = new Map<string, unknown>();
     data.set('idempotence_id', uuid());
     data.set('data_source_type', 'sdk');
-    data.set('data_source', 'javascript-sdk');
-    data.set('data_source_version', packageJson.version);
+
+    if (this.config?.clientEngine) {
+      data.set('data_source', this.config?.clientEngine);
+    }
+    if (this.config?.clientVersion) {
+      data.set('data_source_version', this.config?.clientVersion);
+    }
 
     sourceData.forEach((value, key) => data.set(key, value));
     return data;
