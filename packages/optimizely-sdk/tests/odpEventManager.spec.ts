@@ -22,11 +22,9 @@ import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpEvent } from '../lib/plugins/odp/odp_event';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 import { OdpEventDispatcher, STATE } from '../lib/plugins/odp/odp_event_dispatcher';
-import { OptimizelyOptions } from '../lib/shared_types';
 
 const API_KEY = 'test-api-key';
 const API_HOST = 'https://odp.example.com';
-const MOCK_PROCESS_VERSION = 'v16.17.0';
 const MOCK_IDEMPOTENCE_ID = 'c1dc758e-f095-4f09-9b49-172d74c53880';
 const EVENTS: OdpEvent[] = [
   new OdpEvent(
@@ -50,6 +48,9 @@ const EVENTS: OdpEvent[] = [
     })),
   ),
 ];
+// naming for object destructuring
+const clientEngine = 'javascript-sdk';
+const clientVersion = '4.9.2';
 const PROCESSED_EVENTS: OdpEvent[] = [
   new OdpEvent(
     't1',
@@ -58,8 +59,8 @@ const PROCESSED_EVENTS: OdpEvent[] = [
     new Map(Object.entries({
       'idempotence_id': MOCK_IDEMPOTENCE_ID,
       'data_source_type': 'sdk',
-      'data_source': 'javascript-sdk',
-      'data_source_version': MOCK_PROCESS_VERSION,
+      'data_source': clientEngine,
+      'data_source_version': clientVersion,
       'key-1': 'value1',
       'key-2': null,
       'key-3': 3.3,
@@ -73,8 +74,8 @@ const PROCESSED_EVENTS: OdpEvent[] = [
     new Map(Object.entries({
       'idempotence_id': MOCK_IDEMPOTENCE_ID,
       'data_source_type': 'sdk',
-      'data_source': 'javascript-sdk',
-      'data_source_version': MOCK_PROCESS_VERSION,
+      'data_source': clientEngine,
+      'data_source_version': clientVersion,
       'key-2': 'value2',
     })),
   ),
@@ -109,28 +110,22 @@ describe('OdpEventManager', () => {
   let mockLogger: LogHandler;
   let mockApiManager: RestApiManager;
   let odpConfig: OdpConfig;
-  let mockOptimizelyOptions: OptimizelyOptions;
 
   beforeAll(() => {
     mockLogger = mock<LogHandler>();
     mockApiManager = mock<RestApiManager>();
     odpConfig = new OdpConfig(API_KEY, API_HOST, []);
-
-    mockOptimizelyOptions = mock<OptimizelyOptions>();
-    when(mockOptimizelyOptions.clientEngine).thenReturn('javascript-sdk');
-    when(mockOptimizelyOptions.clientVersion).thenReturn('4.9.2');
   });
 
   beforeEach(() => {
     resetCalls(mockLogger);
     resetCalls(mockApiManager);
-    resetCalls(mockOptimizelyOptions);
   });
 
   it('should log and discard events when event manager not running', () => {
     const logger = instance(mockLogger);
     const eventDispatcher = new OdpEventDispatcher({ odpConfig, apiManager: instance(mockApiManager), logger });
-    const eventManager = new OdpEventManager(eventDispatcher, logger);
+    const eventManager = new OdpEventManager({ eventDispatcher, logger });
     // since we've not called start() then...
 
     eventManager.sendEvent(EVENTS[0]);
@@ -149,7 +144,7 @@ describe('OdpEventManager', () => {
       logger,
     });
     eventDispatcher['state'] = STATE.RUNNING; // simulate dispatcher already in running state
-    const eventManager = new OdpEventManager(eventDispatcher, logger);
+    const eventManager = new OdpEventManager({ eventDispatcher, logger });
 
     eventManager.sendEvent(EVENTS[0]);
 
@@ -159,7 +154,7 @@ describe('OdpEventManager', () => {
   it('should discard events with invalid data', () => {
     const logger = instance(mockLogger);
     const eventDispatcher = new OdpEventDispatcher({ odpConfig, apiManager: instance(mockApiManager), logger });
-    const eventManager = new OdpEventManager(eventDispatcher, logger);
+    const eventManager = new OdpEventManager({ eventDispatcher, logger });
     // make an event with invalid data key-value entry
     const badEvent = new OdpEvent(
       't3',
@@ -189,7 +184,7 @@ describe('OdpEventManager', () => {
     });
     eventDispatcher['state'] = STATE.RUNNING; // simulate dispatcher running
     eventDispatcher['queue'].push(EVENTS[0]); // simulate event already in queue
-    const eventManager = new OdpEventManager(eventDispatcher, logger);
+    const eventManager = new OdpEventManager({ eventDispatcher, logger });
 
     // try adding the second event
     eventManager.sendEvent(EVENTS[1]);
@@ -200,7 +195,7 @@ describe('OdpEventManager', () => {
   it('should add additional information to each event', () => {
     const logger = instance(mockLogger);
     const eventDispatcher = new OdpEventDispatcher({ odpConfig, apiManager: instance(mockApiManager), logger });
-    const eventManager = new OdpEventManager(eventDispatcher, logger, instance(mockOptimizelyOptions));
+    const eventManager = new OdpEventManager({ eventDispatcher, logger, clientEngine, clientVersion });
     const processedEventData = PROCESSED_EVENTS[0].data;
 
     const eventData = eventManager['augmentCommonData'](EVENTS[0].data);
@@ -208,7 +203,7 @@ describe('OdpEventManager', () => {
     expect((eventData.get('idempotence_id') as string).length).toEqual((processedEventData.get('idempotence_id') as string).length);
     expect(eventData.get('data_source_type')).toEqual(processedEventData.get('data_source_type'));
     expect(eventData.get('data_source')).toEqual(processedEventData.get('data_source'));
-    expect(eventData.get('data_source_version')).not.toBeNull();
+    expect(eventData.get('data_source_version')).toEqual(processedEventData.get('data_source_version'));
     expect(eventData.get('key-1')).toEqual(processedEventData.get('key-1'));
     expect(eventData.get('key-2')).toEqual(processedEventData.get('key-2'));
     expect(eventData.get('key-3')).toEqual(processedEventData.get('key-3'));
@@ -225,7 +220,7 @@ describe('OdpEventManager', () => {
       batchSize: 10, // with batch size of 10...
       flushInterval: 250,
     });
-    const eventManager = new OdpEventManager(eventDispatcher, logger);
+    const eventManager = new OdpEventManager({ eventDispatcher, logger });
 
     eventManager.start();
     for (let i = 0; i < 25; i += 1) {
@@ -247,7 +242,7 @@ describe('OdpEventManager', () => {
       batchSize: 10,
       flushInterval: 100,
     });
-    const eventManager = new OdpEventManager(eventDispatcher, logger, instance(mockOptimizelyOptions));
+    const eventManager = new OdpEventManager({ eventDispatcher, logger, clientEngine, clientVersion });
 
     eventManager.start();
     EVENTS.forEach(event => eventManager.sendEvent(event));
@@ -276,7 +271,7 @@ describe('OdpEventManager', () => {
       batchSize: 2,    // batch size of 2
       flushInterval: 100,
     });
-    const eventManager = new OdpEventManager(eventDispatcher, logger);
+    const eventManager = new OdpEventManager({ eventDispatcher, logger });
 
     eventManager.start();
     // send 4 events
@@ -299,7 +294,7 @@ describe('OdpEventManager', () => {
       batchSize: 2,  // batches of 2 with...
       flushInterval: 100,
     });
-    const eventManager = new OdpEventManager(eventDispatcher, logger);
+    const eventManager = new OdpEventManager({ eventDispatcher, logger });
 
     eventManager.start();
     // ...25 events should...
@@ -327,7 +322,7 @@ describe('OdpEventManager', () => {
       batchSize: 10,
       flushInterval: 100,
     });
-    const eventManager = new OdpEventManager(eventDispatcher, logger, instance(mockOptimizelyOptions));
+    const eventManager = new OdpEventManager({ eventDispatcher, logger, clientEngine, clientVersion });
     const vuid = 'vuid_330e05cad15746d9af8a75b8d10';
 
     eventManager.start();
@@ -361,7 +356,7 @@ describe('OdpEventManager', () => {
       logger,
       flushInterval: 100,
     });
-    const eventManager = new OdpEventManager(eventDispatcher, logger, instance(mockOptimizelyOptions));
+    const eventManager = new OdpEventManager({ eventDispatcher, logger, clientEngine, clientVersion });
     const vuid = 'vuid_330e05cad15746d9af8a75b8d10';
     const fsUserId = 'test-fs-user-id';
 
@@ -386,12 +381,13 @@ describe('OdpEventManager', () => {
   });
 
   it('should apply updated ODP configuration when available', () => {
+    const logger = instance(mockLogger);
     const eventDispatcher = new OdpEventDispatcher({
       odpConfig,
       apiManager: instance(mockApiManager),
-      logger: instance(mockLogger),
+      logger,
     });
-    const eventManager = new OdpEventManager(eventDispatcher, mockLogger);
+    const eventManager = new OdpEventManager({ eventDispatcher, logger });
     const apiKey = 'testing-api-key';
     const apiHost = 'https://some.other.example.com';
     const segmentsToCheck = ['empty-cart', '1-item-cart'];

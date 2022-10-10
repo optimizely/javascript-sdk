@@ -158,10 +158,11 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
   }
 
   /**
-   * Process any events in the main queue in batches
+   * Process events in the main queue
+   * @param shouldFlush Flush all events regardless of available queue event count
    * @private
    */
-  private async processQueue(): Promise<void> {
+  private async processQueue(shouldFlush = false): Promise<void> {
     if (this.state !== STATE.RUNNING) {
       return;
     }
@@ -170,51 +171,35 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
       return;
     }
 
-    if (!this.queueHasBatches()) {
-      return;
+    // Flush interval occurred & queue has items
+    if (shouldFlush && this.queueContainsItems()) {
+      // clear the queue completely
+      this.clearCurrentTimeout();
+
+      this.state = STATE.PROCESSING;
+
+      while (this.queueContainsItems()) {
+        await this.makeAndSendBatch();
+      }
+
+      this.state = STATE.RUNNING;
+
+      this.setNewTimeout();
     }
+    // Check if queue has a full batch available
+    else if (this.queueHasBatches()) {
+      this.clearCurrentTimeout();
 
-    this.clearCurrentTimeout();
+      this.state = STATE.PROCESSING;
 
-    this.state = STATE.PROCESSING;
+      while (this.queueHasBatches()) {
+        await this.makeAndSendBatch();
+      }
 
-    while (this.queueHasBatches()) {
-      await this.makeAndSendBatch();
+      this.state = STATE.RUNNING;
+
+      this.setNewTimeout();
     }
-
-    this.state = STATE.RUNNING;
-
-    this.setNewTimeout();
-  }
-
-  /**
-   * Process all events in the main queue in batches until empty
-   * @private
-   */
-  private async flushQueue(): Promise<void> {
-    if (this.state !== STATE.RUNNING) {
-      return;
-    }
-
-    if (!this.isOdpConfigurationReady()) {
-      return;
-    }
-
-    if (!this.queueContainsItems()) {
-      return;
-    }
-
-    this.clearCurrentTimeout();
-
-    this.state = STATE.PROCESSING;
-
-    while (this.queueContainsItems()) {
-      await this.makeAndSendBatch();
-    }
-
-    this.state = STATE.RUNNING;
-
-    this.setNewTimeout();
   }
 
   /**
@@ -234,7 +219,7 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
     if (this.timeoutId !== undefined) {
       return;
     }
-    this.timeoutId = setTimeout(() => this.flushQueue(), this.flushInterval);
+    this.timeoutId = setTimeout(() => this.processQueue(true), this.flushInterval);
   }
 
   /**
@@ -306,7 +291,7 @@ export class OdpEventDispatcher implements IOdpEventDispatcher {
   public async stop(): Promise<void> {
     this.logger.log(LogLevel.DEBUG, 'EventDispatcher stop requested.');
 
-    await this.flushQueue();
+    await this.processQueue(true);
 
     this.state = STATE.STOPPED;
     this.logger.log(LogLevel.DEBUG, `EventDispatcher stopped. Queue Count: ${this.queue.length}`);

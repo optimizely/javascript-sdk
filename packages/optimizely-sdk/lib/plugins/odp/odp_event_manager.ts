@@ -20,7 +20,6 @@ import { uuid } from '../../utils/fns';
 import { ODP_USER_KEY } from '../../utils/enums';
 import { OdpConfig } from './odp_config';
 import { OdpEventDispatcher } from './odp_event_dispatcher';
-import { OptimizelyOptions } from '../../shared_types';
 
 /**
  * Manager for persisting events to the Optimizely Data Platform (ODP)
@@ -45,12 +44,19 @@ export interface IOdpEventManager {
 export class OdpEventManager implements IOdpEventManager {
   private readonly eventDispatcher: OdpEventDispatcher;
   private readonly logger: LogHandler;
-  private readonly config?: OptimizelyOptions;
+  private readonly clientEngine?: string;
+  private readonly clientVersion?: string;
 
-  public constructor(eventDispatcher: OdpEventDispatcher, logger: LogHandler, config?: OptimizelyOptions) {
+  public constructor({ eventDispatcher, logger, clientEngine, clientVersion }: {
+    eventDispatcher: OdpEventDispatcher,
+    logger: LogHandler,
+    clientEngine?: string,
+    clientVersion?: string,
+  }) {
     this.eventDispatcher = eventDispatcher;
     this.logger = logger;
-    this.config = config;
+    this.clientEngine = clientEngine;
+    this.clientVersion = clientVersion;
   }
 
   /**
@@ -139,11 +145,11 @@ export class OdpEventManager implements IOdpEventManager {
     data.set('idempotence_id', uuid());
     data.set('data_source_type', 'sdk');
 
-    if (this.config?.clientEngine) {
-      data.set('data_source', this.config?.clientEngine);
+    if (this.clientEngine) {
+      data.set('data_source', this.clientEngine);
     }
-    if (this.config?.clientVersion) {
-      data.set('data_source_version', this.config?.clientVersion);
+    if (this.clientVersion) {
+      data.set('data_source_version', this.clientVersion);
     }
 
     sourceData.forEach((value, key) => data.set(key, value));
