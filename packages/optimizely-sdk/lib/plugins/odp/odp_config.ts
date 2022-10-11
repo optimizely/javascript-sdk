@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { ODP_CONFIG_STATE } from '../../utils/enums';
-
 export class OdpConfig {
   /**
    * Host of ODP audience segments API.
@@ -59,27 +57,10 @@ export class OdpConfig {
     return this._segmentsToCheck;
   }
 
-  /**
-   * Indicates whether ODP is integrated for the project
-   * @private
-   */
-  private _odpServiceIntegrated = ODP_CONFIG_STATE.UNDETERMINED;
-
   constructor(apiKey: string, apiHost: string, segmentsToCheck?: string[]) {
     this._apiKey = apiKey;
     this._apiHost = apiHost;
     this._segmentsToCheck = segmentsToCheck ?? [];
-    this._odpServiceIntegrated = OdpConfig.determineOdpServiceIntegration(this._apiKey, this.apiHost);
-  }
-
-  /**
-   * Determine the value of Service Integration enum
-   * @param apiKey ODP API Key
-   * @param apiHost Server host of the API
-   * @private
-   */
-  private static determineOdpServiceIntegration(apiKey: string, apiHost: string): ODP_CONFIG_STATE {
-    return apiKey && apiHost ? ODP_CONFIG_STATE.INTEGRATED : ODP_CONFIG_STATE.NOT_INTEGRATED;
   }
 
   /**
@@ -90,8 +71,6 @@ export class OdpConfig {
    * @returns true if configuration was updated successfully
    */
   public update(apiKey: string, apiHost: string, segmentsToCheck: string[]): boolean {
-    this._odpServiceIntegrated = OdpConfig.determineOdpServiceIntegration(apiKey, apiHost);
-
     if (this._apiKey === apiKey && this._apiHost === apiHost && this._segmentsToCheck === segmentsToCheck) {
       return false;
     } else {
