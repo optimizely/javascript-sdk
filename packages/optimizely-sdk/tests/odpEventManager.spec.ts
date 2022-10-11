@@ -125,7 +125,7 @@ describe('OdpEventManager', () => {
   it('should log and discard events when event manager not running', () => {
     const logger = instance(mockLogger);
     const eventDispatcher = new OdpEventDispatcher({ odpConfig, apiManager: instance(mockApiManager), logger });
-    const eventManager = new OdpEventManager({ eventDispatcher, logger });
+    const eventManager = new OdpEventManager({ eventDispatcher, logger, clientEngine, clientVersion });
     // since we've not called start() then...
 
     eventManager.sendEvent(EVENTS[0]);
@@ -144,7 +144,7 @@ describe('OdpEventManager', () => {
       logger,
     });
     eventDispatcher['state'] = STATE.RUNNING; // simulate dispatcher already in running state
-    const eventManager = new OdpEventManager({ eventDispatcher, logger });
+    const eventManager = new OdpEventManager({ eventDispatcher, logger, clientEngine, clientVersion });
 
     eventManager.sendEvent(EVENTS[0]);
 
@@ -154,7 +154,7 @@ describe('OdpEventManager', () => {
   it('should discard events with invalid data', () => {
     const logger = instance(mockLogger);
     const eventDispatcher = new OdpEventDispatcher({ odpConfig, apiManager: instance(mockApiManager), logger });
-    const eventManager = new OdpEventManager({ eventDispatcher, logger });
+    const eventManager = new OdpEventManager({ eventDispatcher, logger, clientEngine, clientVersion });
     // make an event with invalid data key-value entry
     const badEvent = new OdpEvent(
       't3',
@@ -184,7 +184,7 @@ describe('OdpEventManager', () => {
     });
     eventDispatcher['state'] = STATE.RUNNING; // simulate dispatcher running
     eventDispatcher['queue'].push(EVENTS[0]); // simulate event already in queue
-    const eventManager = new OdpEventManager({ eventDispatcher, logger });
+    const eventManager = new OdpEventManager({ eventDispatcher, logger, clientEngine, clientVersion });
 
     // try adding the second event
     eventManager.sendEvent(EVENTS[1]);
@@ -220,7 +220,7 @@ describe('OdpEventManager', () => {
       batchSize: 10, // with batch size of 10...
       flushInterval: 250,
     });
-    const eventManager = new OdpEventManager({ eventDispatcher, logger });
+    const eventManager = new OdpEventManager({ eventDispatcher, logger, clientEngine, clientVersion });
 
     eventManager.start();
     for (let i = 0; i < 25; i += 1) {
@@ -271,7 +271,7 @@ describe('OdpEventManager', () => {
       batchSize: 2,    // batch size of 2
       flushInterval: 100,
     });
-    const eventManager = new OdpEventManager({ eventDispatcher, logger });
+    const eventManager = new OdpEventManager({ eventDispatcher, logger, clientEngine, clientVersion });
 
     eventManager.start();
     // send 4 events
@@ -294,7 +294,7 @@ describe('OdpEventManager', () => {
       batchSize: 2,  // batches of 2 with...
       flushInterval: 100,
     });
-    const eventManager = new OdpEventManager({ eventDispatcher, logger });
+    const eventManager = new OdpEventManager({ eventDispatcher, logger, clientEngine, clientVersion });
 
     eventManager.start();
     // ...25 events should...
@@ -387,7 +387,7 @@ describe('OdpEventManager', () => {
       apiManager: instance(mockApiManager),
       logger,
     });
-    const eventManager = new OdpEventManager({ eventDispatcher, logger });
+    const eventManager = new OdpEventManager({ eventDispatcher, logger, clientEngine, clientVersion });
     const apiKey = 'testing-api-key';
     const apiHost = 'https://some.other.example.com';
     const segmentsToCheck = ['empty-cart', '1-item-cart'];

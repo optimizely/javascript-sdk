@@ -44,14 +44,14 @@ export interface IOdpEventManager {
 export class OdpEventManager implements IOdpEventManager {
   private readonly eventDispatcher: OdpEventDispatcher;
   private readonly logger: LogHandler;
-  private readonly clientEngine?: string;
-  private readonly clientVersion?: string;
+  private readonly clientEngine: string;
+  private readonly clientVersion: string;
 
   public constructor({ eventDispatcher, logger, clientEngine, clientVersion }: {
     eventDispatcher: OdpEventDispatcher,
     logger: LogHandler,
-    clientEngine?: string,
-    clientVersion?: string,
+    clientEngine: string,
+    clientVersion: string,
   }) {
     this.eventDispatcher = eventDispatcher;
     this.logger = logger;
@@ -144,13 +144,8 @@ export class OdpEventManager implements IOdpEventManager {
     const data = new Map<string, unknown>();
     data.set('idempotence_id', uuid());
     data.set('data_source_type', 'sdk');
-
-    if (this.clientEngine) {
-      data.set('data_source', this.clientEngine);
-    }
-    if (this.clientVersion) {
-      data.set('data_source_version', this.clientVersion);
-    }
+    data.set('data_source', this.clientEngine);
+    data.set('data_source_version', this.clientVersion);
 
     sourceData.forEach((value, key) => data.set(key, value));
     return data;
