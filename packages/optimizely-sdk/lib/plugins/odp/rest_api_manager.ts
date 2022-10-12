@@ -65,7 +65,7 @@ export class RestApiManager implements IRestApiManager {
     }
 
     const endpoint = `${apiHost}/v3/events`;
-    const data = JSON.stringify(events);
+    const data = JSON.stringify(events, this.replacer);
 
     const method = 'POST';
     const headers = {
@@ -96,5 +96,13 @@ export class RestApiManager implements IRestApiManager {
     }
 
     return shouldRetry;
+  }
+
+  private replacer(_: unknown, value: unknown) {
+    if (value instanceof Map) {
+      return Object.fromEntries(value);
+    } else {
+      return value;
+    }
   }
 }
