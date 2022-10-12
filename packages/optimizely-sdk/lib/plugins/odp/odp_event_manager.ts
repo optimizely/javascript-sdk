@@ -24,7 +24,7 @@ import { RestApiManager } from './rest_api_manager';
 const MAX_RETRIES = 3;
 const DEFAULT_BATCH_SIZE = 10;
 const DEFAULT_FLUSH_INTERVAL_MSECS = 1000;
-const DEFAULT_BROWSER_QUEUE_SIZE = 10;
+const DEFAULT_BROWSER_QUEUE_SIZE = 100;
 const DEFAULT_SERVER_QUEUE_SIZE = 10000;
 
 /**
@@ -255,19 +255,15 @@ export class OdpEventManager implements IOdpEventManager {
     }
 
     // Flush interval occurred & queue has items
-    if (shouldFlush && this.queueContainsItems()) {
+    if (shouldFlush) {
       // clear the queue completely
       this.clearCurrentTimeout();
 
       this.state = STATE.PROCESSING;
 
       while (this.queueContainsItems()) {
-        this.makeAndSendBatch();
+        this.makeAndSend1Batch();
       }
-
-      this.state = STATE.RUNNING;
-
-      this.setNewTimeout();
     }
     // Check if queue has a full batch available
     else if (this.queueHasBatches()) {
@@ -276,13 +272,12 @@ export class OdpEventManager implements IOdpEventManager {
       this.state = STATE.PROCESSING;
 
       while (this.queueHasBatches()) {
-        this.makeAndSendBatch();
+        this.makeAndSend1Batch();
       }
-
-      this.state = STATE.RUNNING;
-
-      this.setNewTimeout();
     }
+
+    this.state = STATE.RUNNING;
+    this.setNewTimeout();
   }
 
   /**
@@ -309,9 +304,10 @@ export class OdpEventManager implements IOdpEventManager {
    * Make a batch and send it to ODP
    * @private
    */
-  private makeAndSendBatch(): void {
+  private makeAndSend1Batch(): void {
     const batch = new Array<OdpEvent>();
 
+    // remove a batch from the queue
     for (let count = 0; count < this.batchSize; count += 1) {
       const event = this.queue.shift();
       if (event) {
@@ -322,6 +318,7 @@ export class OdpEventManager implements IOdpEventManager {
     }
 
     if (batch.length > 0) {
+      // put sending the event on another event loop
       setTimeout(async () => {
         let shouldRetry: boolean;
         let attemptNumber = 0;

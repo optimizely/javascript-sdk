@@ -16,7 +16,7 @@
 
 import { OdpConfig } from '../lib/plugins/odp/odp_config';
 import { OdpEventManager, STATE } from '../lib/plugins/odp/odp_event_manager';
-import { anything, capture, instance, mock, resetCalls, verify, when } from 'ts-mockito';
+import { anything, capture, instance, mock, resetCalls, spy, verify, when } from 'ts-mockito';
 import { RestApiManager } from '../lib/plugins/odp/rest_api_manager';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpEvent } from '../lib/plugins/odp/odp_event';
@@ -202,6 +202,20 @@ describe('OdpEventManager', () => {
     expect(eventData.get('key-2')).toEqual(processedEventData.get('key-2'));
     expect(eventData.get('key-3')).toEqual(processedEventData.get('key-3'));
     expect(eventData.get('key-4')).toEqual(processedEventData.get('key-4'));
+  });
+
+  it('should attempt to flush an empty queue at flush intervals', async () => {
+    const eventManager = new OdpEventManager({
+      odpConfig, apiManager, logger, clientEngine, clientVersion,
+      flushInterval: 100,
+    });
+    const spiedEventManager = spy(eventManager);
+
+    eventManager.start();
+    // do not add events to the queue, but allow for...
+    await pause(400); // at least 3 flush intervals executions (giving a little longer)
+
+    verify(spiedEventManager['processQueue'](anything())).atLeast(3);
   });
 
   it('should dispatch events in correct number of batches', async () => {
