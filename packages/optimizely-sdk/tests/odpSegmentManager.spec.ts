@@ -16,20 +16,20 @@
 
 /// <reference types="jest" />
 
-import { ODP_USER_KEY } from './../../../utils/enums/index';
-import { RequestHandler } from './../../../utils/http_request_handler/http';
-import { GraphQLManager } from './../../../plugins/odp/graphql_manager';
-import { mock, resetCalls, instance, verify, anything, when } from 'ts-mockito';
+import { mock, resetCalls, instance } from 'ts-mockito';
 
-import { LogHandler } from './../../../../../logging/src/models';
-import { LRUCache } from './../lru_cache/LRUCache';
+import { LogHandler } from '../lib/modules/logging';
+import { GraphQLManager } from '../lib/plugins/odp/graphql_manager';
+import { ODP_USER_KEY } from '../lib/utils/enums';
+import { RequestHandler } from '../lib/utils/http_request_handler/http';
 
-import { assert } from 'chai';
-import { OdpConfig } from '../OdpConfig';
-import { OdpSegmentManager } from './OdpSegmentManager';
-import { OptimizelyOdpOption } from '../OdpOption';
+import { LRUCache } from '../lib/core/odp/lru_cache/LRUCache';
 
-describe('/lib/core/odp/segment_manager (Default)', () => {
+import { OdpSegmentManager } from '../lib/plugins/odp/odp_segment_manager';
+import { OdpConfig } from '../lib/plugins/odp/odp_config';
+import { OdpOption } from '../lib/plugins/odp/odp_option';
+
+describe('OdpSegmentManager', () => {
   class MockZaiusApiManager extends GraphQLManager {
     public async fetchSegments(
       apiKey: string,
@@ -50,7 +50,7 @@ describe('/lib/core/odp/segment_manager (Default)', () => {
   let odpConfig: OdpConfig;
   const apiManager = new MockZaiusApiManager(instance(mockRequestHandler), instance(mockLogHandler));
 
-  let options: Array<OptimizelyOdpOption> = [];
+  let options: Array<OdpOption> = [];
 
   const userKey: ODP_USER_KEY = ODP_USER_KEY.VUID;
   const userValue = 'test-user';
@@ -59,7 +59,9 @@ describe('/lib/core/odp/segment_manager (Default)', () => {
     resetCalls(mockLogHandler);
     resetCalls(mockRequestHandler);
 
-    odpConfig = new OdpConfig();
+    const API_KEY = 'test-api-key';
+    const API_HOST = 'https://odp.example.com';
+    odpConfig = new OdpConfig(API_KEY, API_HOST, []);
     const segmentsCache = new LRUCache<string, Array<string>>({
       maxSize: 1000,
       timeout: 1000,
@@ -73,7 +75,7 @@ describe('/lib/core/odp/segment_manager (Default)', () => {
     setCache(userKey, '123', ['a']);
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
-    assert.deepEqual(segments, ['new-customer']);
+    expect(segments).toEqual(['new-customer']);
   });
 
   it('should fetch segments successfully on cache hit.', async () => {
@@ -81,24 +83,24 @@ describe('/lib/core/odp/segment_manager (Default)', () => {
     setCache(userKey, userValue, ['a']);
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
-    assert.deepEqual(segments, ['a']);
+    expect(segments).toEqual(['a']);
   });
 
   it('should throw an error when fetching segments returns an error.', async () => {
     odpConfig.update('host', 'invalid-key', ['new-customer']);
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, []);
-    assert.isNull(segments);
+    expect(segments).toBeNull;
   });
 
   it('should ignore the cache if the option is included in the options array.', async () => {
     odpConfig.update('host', 'valid', ['new-customer']);
     setCache(userKey, userValue, ['a']);
-    options = [OptimizelyOdpOption.IGNORE_CACHE];
+    options = [OdpOption.IGNORE_CACHE];
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
-    assert.deepEqual(segments, ['new-customer']);
-    assert.equal(cacheCount(), 1);
+    expect(segments).toEqual(['new-customer']);
+    expect(cacheCount()).toBe(1);
   });
 
   it('should reset the cache if the option is included in the options array.', async () => {
@@ -106,16 +108,16 @@ describe('/lib/core/odp/segment_manager (Default)', () => {
     setCache(userKey, userValue, ['a']);
     setCache(userKey, '123', ['a']);
     setCache(userKey, '456', ['a']);
-    options = [OptimizelyOdpOption.RESET_CACHE];
+    options = [OdpOption.RESET_CACHE];
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
-    assert.deepEqual(segments, ['new-customer']);
-    assert.deepEqual(peekCache(userKey, userValue), segments);
-    assert.equal(cacheCount(), 1);
+    expect(segments).toEqual(['new-customer']);
+    expect(peekCache(userKey, userValue)).toEqual(segments);
+    expect(cacheCount()).toBe(1);
   });
 
   it('should make a valid cache key.', () => {
-    assert.equal('vuid-$-test-user', manager.makeCacheKey(userKey, userValue));
+    expect('vuid-$-test-user').toBe(manager.makeCacheKey(userKey, userValue));
   });
 
   // Utility Functions

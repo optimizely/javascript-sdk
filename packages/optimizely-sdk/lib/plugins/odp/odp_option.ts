@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
-import { OdpSegmentManager } from './OdpSegmentManager';
-
-export default OdpSegmentManager;
+// Options for defining behavior of OdpSegmentManager's caching mechanism when calling fetchSegments()
+export enum OdpOption {
+  IGNORE_CACHE,
+  RESET_CACHE,
+}

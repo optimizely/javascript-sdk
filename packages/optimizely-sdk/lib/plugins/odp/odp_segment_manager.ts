@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-import { ODP_USER_KEY, ERROR_MESSAGES } from './../../../utils/enums/index';
-import { getLogger } from '@optimizely/js-sdk-logging';
-import { LRUCache } from './../lru_cache/LRUCache';
-import { GraphQLManager } from '../../../../lib/plugins/odp/graphql_manager';
-import { OdpConfig } from '../OdpConfig';
-import { OptimizelyOdpOption } from '../OdpOption';
-import { LogHandler } from '../../../modules/logging';
-import { LogLevel } from '../../../modules/logging/models';
+import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
+import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
+import { LRUCache } from './../../core/odp/lru_cache/LRUCache';
+import { GraphQLManager } from './graphql_manager';
+import { OdpConfig } from './odp_config';
+import { OdpOption } from './odp_option';
 
 // Schedules connections to ODP for audience segmentation and caches the results.
 export class OdpSegmentManager {
@@ -43,7 +41,8 @@ export class OdpSegmentManager {
   }
 
   /**
-   * Attempts to fetch and return a list of the user's qualified segments.
+   * Attempts to fetch and return a list of a user's qualified segments from the local segments cache.
+   * If no cached data exists for the target user, this fetches and caches data from the ODP server instead.
    * @param userKey Key used for identifying the id type.
    * @param userValue The id value itself.
    * @param options An array of OptimizelySegmentOption used to ignore and/or reset the cache.
@@ -52,7 +51,7 @@ export class OdpSegmentManager {
   async fetchQualifiedSegments(
     userKey: ODP_USER_KEY,
     userValue: string,
-    options: Array<OptimizelyOdpOption>
+    options: Array<OdpOption>
   ): Promise<Array<string> | null> {
     const odpApiHost = this.odpConfig.apiHost;
     const odpApiKey = this.odpConfig.apiKey;
@@ -70,8 +69,8 @@ export class OdpSegmentManager {
 
     const cacheKey = this.makeCacheKey(userKey, userValue);
 
-    const ignoreCache = options.includes(OptimizelyOdpOption.IGNORE_CACHE);
-    const resetCache = options.includes(OptimizelyOdpOption.RESET_CACHE);
+    const ignoreCache = options.includes(OdpOption.IGNORE_CACHE);
+    const resetCache = options.includes(OdpOption.RESET_CACHE);
 
     if (resetCache) this.reset();
 
@@ -93,10 +92,19 @@ export class OdpSegmentManager {
     return segments;
   }
 
+  /**
+   * Clears the segments cache
+   */
   reset(): void {
     this.segmentsCache.reset();
   }
 
+  /**
+   * Creates a key used to identify which user fetchQualifiedSegments should lookup and save to in the segments cache
+   * @param userKey User type based on ODP_USER_KEY, such as "vuid" or "fs_user_id"
+   * @param userValue Arbitrary string, such as "test-user"
+   * @returns Concatenates inputs and returns the string "{userKey}-$-{userValue}"
+   */
   makeCacheKey(userKey: string, userValue: string): string {
     return `${userKey}-$-${userValue}`;
   }
