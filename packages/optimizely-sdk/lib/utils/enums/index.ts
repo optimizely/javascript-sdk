@@ -30,7 +30,7 @@ export const ERROR_MESSAGES = {
   DATAFILE_AND_SDK_KEY_MISSING: '%s: You must provide at least one of sdkKey or datafile. Cannot start Optimizely',
   EXPERIMENT_KEY_NOT_IN_DATAFILE: '%s: Experiment key %s is not in datafile.',
   FEATURE_NOT_IN_DATAFILE: '%s: Feature key %s is not in datafile.',
-  FETCH_SEGMENTS_FAILED: '%s: Unable to fetch qualified segments - missing ODP API Key/Host.',
+  FETCH_SEGMENTS_FAILED_INVALID_IDENTIFIER: '%s: Audience segments fetch failed. (invalid identifier)',
   IMPROPERLY_FORMATTED_EXPERIMENT: '%s: Experiment key %s is improperly formatted.',
   INVALID_ATTRIBUTES: '%s: Provided attributes are in an invalid format.',
   INVALID_BUCKETING_ID: '%s: Unable to generate hash for bucketing ID %s: %s',
@@ -117,10 +117,14 @@ export const LOG_MESSAGES = {
   USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE: '%s: User %s does not meet conditions for targeting rule %s.',
   USER_MEETS_CONDITIONS_FOR_TARGETING_RULE: '%s: User %s meets conditions for targeting rule %s.',
   USER_HAS_VARIATION: '%s: User %s is in variation %s of experiment %s.',
-  USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED: 'Variation (%s) is mapped to flag (%s), rule (%s) and user (%s) in the forced decision map.',
-  USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED: 'Variation (%s) is mapped to flag (%s) and user (%s) in the forced decision map.',
-  USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID: 'Invalid variation is mapped to flag (%s), rule (%s) and user (%s) in the forced decision map.',
-  USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID: 'Invalid variation is mapped to flag (%s) and user (%s) in the forced decision map.',
+  USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED:
+    'Variation (%s) is mapped to flag (%s), rule (%s) and user (%s) in the forced decision map.',
+  USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED:
+    'Variation (%s) is mapped to flag (%s) and user (%s) in the forced decision map.',
+  USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID:
+    'Invalid variation is mapped to flag (%s), rule (%s) and user (%s) in the forced decision map.',
+  USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID:
+    'Invalid variation is mapped to flag (%s) and user (%s) in the forced decision map.',
   USER_HAS_FORCED_VARIATION: '%s: Variation %s is mapped to experiment %s and user %s in the forced variation map.',
   USER_HAS_NO_VARIATION: '%s: User %s is in no variation of experiment %s.',
   USER_HAS_NO_FORCED_VARIATION: '%s: User %s is not in the forced variation map.',
@@ -173,7 +177,7 @@ export const CONTROL_ATTRIBUTES = {
   BUCKETING_ID: '$opt_bucketing_id',
   STICKY_BUCKETING_KEY: '$opt_experiment_bucket_map',
   USER_AGENT: '$opt_user_agent',
-  FORCED_DECISION_NULL_RULE_KEY: '$opt_null_rule_key'
+  FORCED_DECISION_NULL_RULE_KEY: '$opt_null_rule_key',
 };
 
 export const JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
@@ -234,57 +238,57 @@ export const DATAFILE_VERSIONS = {
  */
 export const enum VERSION_TYPE {
   PRE_RELEASE_VERSION_DELIMITER = '-',
-  BUILD_VERSION_DELIMITER = '+'
+  BUILD_VERSION_DELIMITER = '+',
 }
 
 export const DECISION_MESSAGES = {
   SDK_NOT_READY: 'Optimizely SDK not configured properly yet.',
   FLAG_KEY_INVALID: 'No flag was found for key "%s".',
   VARIABLE_VALUE_INVALID: 'Variable value for key "%s" is invalid or wrong type.',
-}
+};
 
 /*
-* Notification types for use with NotificationCenter
-* Format is EVENT: <list of parameters to callback>
-*
-* SDK consumers can use these to register callbacks with the notification center.
-*
-*  @deprecated since 3.1.0
-*  ACTIVATE: An impression event will be sent to Optimizely
-*  Callbacks will receive an object argument with the following properties:
-*    - experiment {Object}
-*    - userId {string}
-*    - attributes {Object|undefined}
-*    - variation {Object}
-*    - logEvent {Object}
-*
-*  DECISION: A decision is made in the system. i.e. user activation,
-*  feature access or feature-variable value retrieval
-*  Callbacks will receive an object argument with the following properties:
-*    - type {string}
-*    - userId {string}
-*    - attributes {Object|undefined}
-*    - decisionInfo {Object|undefined}
-*
-*  LOG_EVENT: A batch of events, which could contain impressions and/or conversions,
-*  will be sent to Optimizely
-*  Callbacks will receive an object argument with the following properties:
-*    - url {string}
-*    - httpVerb {string}
-*    - params {Object}
-*
-*  OPTIMIZELY_CONFIG_UPDATE: This Optimizely instance has been updated with a new
-*  config
-*
-*  TRACK: A conversion event will be sent to Optimizely
-*  Callbacks will receive the an object argument with the following properties:
-*    - eventKey {string}
-*    - userId {string}
-*    - attributes {Object|undefined}
-*    - eventTags {Object|undefined}
-*    - logEvent {Object}
-*
-*/
+ * Notification types for use with NotificationCenter
+ * Format is EVENT: <list of parameters to callback>
+ *
+ * SDK consumers can use these to register callbacks with the notification center.
+ *
+ *  @deprecated since 3.1.0
+ *  ACTIVATE: An impression event will be sent to Optimizely
+ *  Callbacks will receive an object argument with the following properties:
+ *    - experiment {Object}
+ *    - userId {string}
+ *    - attributes {Object|undefined}
+ *    - variation {Object}
+ *    - logEvent {Object}
+ *
+ *  DECISION: A decision is made in the system. i.e. user activation,
+ *  feature access or feature-variable value retrieval
+ *  Callbacks will receive an object argument with the following properties:
+ *    - type {string}
+ *    - userId {string}
+ *    - attributes {Object|undefined}
+ *    - decisionInfo {Object|undefined}
+ *
+ *  LOG_EVENT: A batch of events, which could contain impressions and/or conversions,
+ *  will be sent to Optimizely
+ *  Callbacks will receive an object argument with the following properties:
+ *    - url {string}
+ *    - httpVerb {string}
+ *    - params {Object}
+ *
+ *  OPTIMIZELY_CONFIG_UPDATE: This Optimizely instance has been updated with a new
+ *  config
+ *
+ *  TRACK: A conversion event will be sent to Optimizely
+ *  Callbacks will receive the an object argument with the following properties:
+ *    - eventKey {string}
+ *    - userId {string}
+ *    - attributes {Object|undefined}
+ *    - eventTags {Object|undefined}
+ *    - logEvent {Object}
+ *
+ */
 export enum NOTIFICATION_TYPES {
   ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
   DECISION = 'DECISION:type, userId, attributes, decisionInfo',

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,26 +17,26 @@
 import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
 import { LRUCache } from './../../core/odp/lru_cache/LRUCache';
-import { GraphQLManager } from './graphql_manager';
+import { GraphQLManager as OdpSegmentApiManager } from './graphql_manager';
 import { OdpConfig } from './odp_config';
-import { OdpOption } from './odp_option';
+import { OptimizelySegmentOption } from './optimizely_segment_option';
 
 // Schedules connections to ODP for audience segmentation and caches the results.
 export class OdpSegmentManager {
   odpConfig: OdpConfig;
   segmentsCache: LRUCache<string, Array<string>>;
-  zaiusManager: GraphQLManager;
+  odpSegmentApiManager: OdpSegmentApiManager;
   logger: LogHandler;
 
   constructor(
     odpConfig: OdpConfig,
     segmentsCache: LRUCache<string, Array<string>>,
-    zaiusManager: GraphQLManager,
+    odpSegmentApiManager: OdpSegmentApiManager,
     logger?: LogHandler
   ) {
     this.odpConfig = odpConfig;
     this.segmentsCache = segmentsCache;
-    this.zaiusManager = zaiusManager;
+    this.odpSegmentApiManager = odpSegmentApiManager;
     this.logger = logger || getLogger('OdpSegmentManager');
   }
 
@@ -51,13 +51,12 @@ export class OdpSegmentManager {
   async fetchQualifiedSegments(
     userKey: ODP_USER_KEY,
     userValue: string,
-    options: Array<OdpOption>
+    options: Array<OptimizelySegmentOption>
   ): Promise<Array<string> | null> {
-    const odpApiHost = this.odpConfig.apiHost;
-    const odpApiKey = this.odpConfig.apiKey;
+    const { apiHost: odpApiHost, apiKey: odpApiKey } = this.odpConfig;
 
     if (!odpApiKey || !odpApiHost) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.FETCH_SEGMENTS_FAILED);
+      this.logger.log(LogLevel.WARNING, ERROR_MESSAGES.FETCH_SEGMENTS_FAILED_INVALID_IDENTIFIER);
       return null;
     }
 
@@ -69,15 +68,15 @@ export class OdpSegmentManager {
 
     const cacheKey = this.makeCacheKey(userKey, userValue);
 
-    const ignoreCache = options.includes(OdpOption.IGNORE_CACHE);
-    const resetCache = options.includes(OdpOption.RESET_CACHE);
+    const ignoreCache = options.includes(OptimizelySegmentOption.IGNORE_CACHE);
+    const resetCache = options.includes(OptimizelySegmentOption.RESET_CACHE);
 
     if (resetCache) this.reset();
 
     if (!ignoreCache && !resetCache) {
       const cachedSegments = this.segmentsCache.lookup(cacheKey);
       if (cachedSegments) {
-        this.logger.log(LogLevel.DEBUG, `ODP cache hit. Returning segments from cache "${cacheKey}".`);
+        this.logger.log(LogLevel.DEBUG, 'ODP cache hit. Returning segments from cache "%s".', cacheKey);
         return cachedSegments;
       }
       this.logger.log(LogLevel.DEBUG, `ODP cache miss.`);
@@ -85,7 +84,13 @@ export class OdpSegmentManager {
 
     this.logger.log(LogLevel.DEBUG, `Making a call to ODP server.`);
 
-    const segments = await this.zaiusManager.fetchSegments(odpApiKey, odpApiHost, userKey, userValue, segmentsToCheck);
+    const segments = await this.odpSegmentApiManager.fetchSegments(
+      odpApiKey,
+      odpApiHost,
+      userKey,
+      userValue,
+      segmentsToCheck
+    );
 
     if (segments && !ignoreCache) this.segmentsCache.save({ key: cacheKey, value: segments });
 

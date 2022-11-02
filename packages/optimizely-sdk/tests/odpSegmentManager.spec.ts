@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,7 +19,7 @@
 import { mock, resetCalls, instance } from 'ts-mockito';
 
 import { LogHandler } from '../lib/modules/logging';
-import { GraphQLManager } from '../lib/plugins/odp/graphql_manager';
+import { GraphQLManager as OdpSegmentApiManager } from '../lib/plugins/odp/graphql_manager';
 import { ODP_USER_KEY } from '../lib/utils/enums';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 
@@ -27,10 +27,10 @@ import { LRUCache } from '../lib/core/odp/lru_cache/LRUCache';
 
 import { OdpSegmentManager } from '../lib/plugins/odp/odp_segment_manager';
 import { OdpConfig } from '../lib/plugins/odp/odp_config';
-import { OdpOption } from '../lib/plugins/odp/odp_option';
+import { OptimizelySegmentOption } from '../lib/plugins/odp/optimizely_segment_option';
 
 describe('OdpSegmentManager', () => {
-  class MockZaiusApiManager extends GraphQLManager {
+  class MockZaiusApiManager extends OdpSegmentApiManager {
     public async fetchSegments(
       apiKey: string,
       apiHost: string,
@@ -50,7 +50,7 @@ describe('OdpSegmentManager', () => {
   let odpConfig: OdpConfig;
   const apiManager = new MockZaiusApiManager(instance(mockRequestHandler), instance(mockLogHandler));
 
-  let options: Array<OdpOption> = [];
+  let options: Array<OptimizelySegmentOption> = [];
 
   const userKey: ODP_USER_KEY = ODP_USER_KEY.VUID;
   const userValue = 'test-user';
@@ -96,7 +96,7 @@ describe('OdpSegmentManager', () => {
   it('should ignore the cache if the option is included in the options array.', async () => {
     odpConfig.update('host', 'valid', ['new-customer']);
     setCache(userKey, userValue, ['a']);
-    options = [OdpOption.IGNORE_CACHE];
+    options = [OptimizelySegmentOption.IGNORE_CACHE];
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
     expect(segments).toEqual(['new-customer']);
@@ -108,7 +108,7 @@ describe('OdpSegmentManager', () => {
     setCache(userKey, userValue, ['a']);
     setCache(userKey, '123', ['a']);
     setCache(userKey, '456', ['a']);
-    options = [OdpOption.RESET_CACHE];
+    options = [OptimizelySegmentOption.RESET_CACHE];
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
     expect(segments).toEqual(['new-customer']);
