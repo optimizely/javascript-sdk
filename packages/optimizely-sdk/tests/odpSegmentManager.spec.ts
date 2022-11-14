@@ -22,11 +22,11 @@ import { LogHandler } from '../lib/modules/logging';
 import { ODP_USER_KEY } from '../lib/utils/enums';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 
-import { OdpSegmentManager } from '../lib/core/odp/segment_manager/odp_segment_manager';
+import { OdpSegmentManager } from '../lib/core/odp/odp_segment_manager';
 import { OdpConfig } from '../lib/core/odp/odp_config';
 import { LRUCache } from '../lib/utils/lru_cache';
 import { OptimizelySegmentOption } from './../lib/core/odp/optimizely_segment_option';
-import { OdpSegmentApiManager } from '../lib/core/odp/segment_manager/odp_segment_api_manager';
+import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
 
 describe('OdpSegmentManager', () => {
   class MockOdpSegmentApiManager extends OdpSegmentApiManager {

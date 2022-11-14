@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { LogHandler, LogLevel } from '../../../modules/logging';
-import { OdpEvent } from '../odp_event';
-import { RequestHandler } from '../../../utils/http_request_handler/http';
+import { LogHandler, LogLevel } from '../../modules/logging';
+import { OdpEvent } from './odp_event';
+import { RequestHandler } from '../../utils/http_request_handler/http';
 
 const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
 

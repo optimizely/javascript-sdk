@@ -18,7 +18,7 @@
 
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
-import { OdpSegmentApiManager } from '../lib/core/odp/segment_manager/odp_segment_api_manager';
+import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 import { ODP_USER_KEY } from '../lib/utils/enums';
 

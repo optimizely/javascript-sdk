@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { LogHandler, LogLevel } from '../../../modules/logging';
-import { validate } from '../../../utils/json_schema_validator';
-import { OdpResponseSchema } from '../odp_response_schema';
-import { ODP_USER_KEY } from '../../../utils/enums';
-import { RequestHandler, Response as HttpResponse } from '../../../utils/http_request_handler/http';
-import { Response as GraphQLResponse } from '../odp_types';
+import { LogHandler, LogLevel } from '../../modules/logging';
+import { validate } from '../../utils/json_schema_validator';
+import { OdpResponseSchema } from './odp_response_schema';
+import { ODP_USER_KEY } from '../../utils/enums';
+import { RequestHandler, Response as HttpResponse } from '../../utils/http_request_handler/http';
+import { Response as GraphQLResponse } from './odp_types';
 
 /**
  * Expected value for a qualified/valid segment

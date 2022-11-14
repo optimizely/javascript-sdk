@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { LogHandler, LogLevel } from '../../../modules/logging';
-import { OdpEvent } from '../odp_event';
-import { uuid } from '../../../utils/fns';
-import { ODP_USER_KEY } from '../../../utils/enums';
-import { OdpConfig } from '../odp_config';
+import { LogHandler, LogLevel } from '../../modules/logging';
+import { OdpEvent } from './odp_event';
+import { uuid } from '../../utils/fns';
+import { ODP_USER_KEY } from '../../utils/enums';
+import { OdpConfig } from './odp_config';
 import { OdpEventApiManager } from './odp_event_api_manager';
 
 const MAX_RETRIES = 3;
