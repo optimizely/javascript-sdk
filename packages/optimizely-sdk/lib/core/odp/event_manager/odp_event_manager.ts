@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { LogHandler, LogLevel } from '../../modules/logging';
-import { OdpEvent } from './odp_event';
-import { uuid } from '../../utils/fns';
-import { ODP_USER_KEY } from '../../utils/enums';
-import { OdpConfig } from './odp_config';
-import { RestApiManager } from './rest_api_manager';
+import { LogHandler, LogLevel } from '../../../modules/logging';
+import { OdpEvent } from '../odp_event';
+import { uuid } from '../../../utils/fns';
+import { ODP_USER_KEY } from '../../../utils/enums';
+import { OdpConfig } from '../odp_config';
+import { OdpEventApiManager } from './odp_event_api_manager';
 
 const MAX_RETRIES = 3;
 const DEFAULT_BATCH_SIZE = 10;
@@ -80,7 +80,7 @@ export class OdpEventManager implements IOdpEventManager {
    * REST API Manager used to send the events
    * @private
    */
-  private readonly apiManager: RestApiManager;
+  private readonly apiManager: OdpEventApiManager;
   /**
    * Handler for recording execution logs
    * @private
@@ -113,23 +113,23 @@ export class OdpEventManager implements IOdpEventManager {
   private readonly clientVersion: string;
 
   public constructor({
-                       odpConfig,
-                       apiManager,
-                       logger,
-                       clientEngine,
-                       clientVersion,
-                       queueSize,
-                       batchSize,
-                       flushInterval,
-                     }: {
-    odpConfig: OdpConfig,
-    apiManager: RestApiManager,
-    logger: LogHandler,
-    clientEngine: string,
-    clientVersion: string,
-    queueSize?: number,
-    batchSize?: number,
-    flushInterval?: number
+    odpConfig,
+    apiManager,
+    logger,
+    clientEngine,
+    clientVersion,
+    queueSize,
+    batchSize,
+    flushInterval,
+  }: {
+    odpConfig: OdpConfig;
+    apiManager: OdpEventApiManager;
+    logger: LogHandler;
+    clientEngine: string;
+    clientVersion: string;
+    queueSize?: number;
+    batchSize?: number;
+    flushInterval?: number;
   }) {
     this.odpConfig = odpConfig;
     this.apiManager = apiManager;
@@ -231,7 +231,11 @@ export class OdpEventManager implements IOdpEventManager {
     }
 
     if (this.queue.length >= this.queueSize) {
-      this.logger.log(LogLevel.WARNING, 'Failed to Process ODP Event. Event Queue full. queueSize = %s.', this.queue.length);
+      this.logger.log(
+        LogLevel.WARNING,
+        'Failed to Process ODP Event. Event Queue full. queueSize = %s.',
+        this.queue.length
+      );
       return;
     }
 
@@ -379,7 +383,7 @@ export class OdpEventManager implements IOdpEventManager {
   private invalidDataFound(data: Map<string, unknown>): boolean {
     const validTypes: string[] = ['string', 'number', 'boolean'];
     let foundInvalidValue = false;
-    data.forEach((value) => {
+    data.forEach(value => {
       if (!validTypes.includes(typeof value) && value !== null) {
         foundInvalidValue = true;
       }

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { OdpConfig } from '../lib/plugins/odp/odp_config';
-import { OdpEventManager, STATE } from '../lib/plugins/odp/odp_event_manager';
+import { OdpConfig } from '../lib/core/odp/odp_config';
+import { OdpEventManager, STATE } from '../lib/core/odp/event_manager/odp_event_manager';
 import { anything, capture, instance, mock, resetCalls, spy, verify, when } from 'ts-mockito';
-import { RestApiManager } from '../lib/plugins/odp/rest_api_manager';
+import { OdpEventApiManager } from '../lib/core/odp/event_manager/odp_event_api_manager';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
-import { OdpEvent } from '../lib/plugins/odp/odp_event';
+import { OdpEvent } from '../lib/core/odp/odp_event';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 
 const API_KEY = 'test-api-key';
@@ -30,21 +30,25 @@ const EVENTS: OdpEvent[] = [
     't1',
     'a1',
     new Map([['id-key-1', 'id-value-1']]),
-    new Map(Object.entries({
-      'key-1': 'value1',
-      'key-2': null,
-      'key-3': 3.3,
-      'key-4': true,
-    })),
+    new Map(
+      Object.entries({
+        'key-1': 'value1',
+        'key-2': null,
+        'key-3': 3.3,
+        'key-4': true,
+      })
+    )
   ),
   new OdpEvent(
     't2',
     'a2',
     new Map([['id-key-2', 'id-value-2']]),
-    new Map(Object.entries({
-      'key-2': 'value2',
-      'data_source': 'my-source',
-    })),
+    new Map(
+      Object.entries({
+        'key-2': 'value2',
+        data_source: 'my-source',
+      })
+    )
   ),
 ];
 // naming for object destructuring
@@ -55,28 +59,32 @@ const PROCESSED_EVENTS: OdpEvent[] = [
     't1',
     'a1',
     new Map([['id-key-1', 'id-value-1']]),
-    new Map(Object.entries({
-      'idempotence_id': MOCK_IDEMPOTENCE_ID,
-      'data_source_type': 'sdk',
-      'data_source': clientEngine,
-      'data_source_version': clientVersion,
-      'key-1': 'value1',
-      'key-2': null,
-      'key-3': 3.3,
-      'key-4': true,
-    })),
+    new Map(
+      Object.entries({
+        idempotence_id: MOCK_IDEMPOTENCE_ID,
+        data_source_type: 'sdk',
+        data_source: clientEngine,
+        data_source_version: clientVersion,
+        'key-1': 'value1',
+        'key-2': null,
+        'key-3': 3.3,
+        'key-4': true,
+      })
+    )
   ),
   new OdpEvent(
     't2',
     'a2',
     new Map([['id-key-2', 'id-value-2']]),
-    new Map(Object.entries({
-      'idempotence_id': MOCK_IDEMPOTENCE_ID,
-      'data_source_type': 'sdk',
-      'data_source': clientEngine,
-      'data_source_version': clientVersion,
-      'key-2': 'value2',
-    })),
+    new Map(
+      Object.entries({
+        idempotence_id: MOCK_IDEMPOTENCE_ID,
+        data_source_type: 'sdk',
+        data_source: clientEngine,
+        data_source_version: clientVersion,
+        'key-2': 'value2',
+      })
+    )
   ),
 ];
 const makeEvent = (id: number) => {
@@ -95,8 +103,7 @@ const pause = (timeoutMilliseconds: number): Promise<void> => {
 };
 const abortableRequest = (statusCode: number, body: string) => {
   return {
-    abort: () => {
-    },
+    abort: () => {},
     responsePromise: Promise.resolve({
       statusCode,
       body,
@@ -107,15 +114,15 @@ const abortableRequest = (statusCode: number, body: string) => {
 
 describe('OdpEventManager', () => {
   let mockLogger: LogHandler;
-  let mockApiManager: RestApiManager;
+  let mockApiManager: OdpEventApiManager;
 
   let odpConfig: OdpConfig;
   let logger: LogHandler;
-  let apiManager: RestApiManager;
+  let apiManager: OdpEventApiManager;
 
   beforeAll(() => {
     mockLogger = mock<LogHandler>();
-    mockApiManager = mock<RestApiManager>();
+    mockApiManager = mock<OdpEventApiManager>();
 
     odpConfig = new OdpConfig(API_KEY, API_HOST, []);
     logger = instance(mockLogger);
@@ -129,7 +136,11 @@ describe('OdpEventManager', () => {
 
   it('should log and discard events when event manager not running', () => {
     const eventManager = new OdpEventManager({
-      odpConfig, apiManager, logger, clientEngine, clientVersion,
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
     });
     // since we've not called start() then...
 
@@ -144,7 +155,11 @@ describe('OdpEventManager', () => {
     when(mockOdpConfig.isReady()).thenReturn(false);
     const odpConfig = instance(mockOdpConfig);
     const eventManager = new OdpEventManager({
-      odpConfig, apiManager, logger, clientEngine, clientVersion,
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
     });
     eventManager['state'] = STATE.RUNNING; // simulate running without calling start()
 
@@ -155,17 +170,23 @@ describe('OdpEventManager', () => {
 
   it('should discard events with invalid data', () => {
     const eventManager = new OdpEventManager({
-      odpConfig, apiManager, logger, clientEngine, clientVersion,
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
     });
     // make an event with invalid data key-value entry
     const badEvent = new OdpEvent(
       't3',
       'a3',
       new Map([['id-key-3', 'id-value-3']]),
-      new Map(Object.entries({
-        'key-1': false,
-        'key-2': { random: 'object', whichShouldFail: true },
-      })),
+      new Map(
+        Object.entries({
+          'key-1': false,
+          'key-2': { random: 'object', whichShouldFail: true },
+        })
+      )
     );
     eventManager.sendEvent(badEvent);
 
@@ -175,7 +196,12 @@ describe('OdpEventManager', () => {
   it('should log a max queue hit and discard ', () => {
     // set queue to maximum of 1
     const eventManager = new OdpEventManager({
-      odpConfig, apiManager, logger, clientEngine, clientVersion, queueSize: 1, // With max queue size set to 1...
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+      queueSize: 1, // With max queue size set to 1...
     });
     eventManager['state'] = STATE.RUNNING;
     eventManager['queue'].push(EVENTS[0]); // simulate 1 event already in the queue then...
@@ -183,18 +209,26 @@ describe('OdpEventManager', () => {
     // ...try adding the second event
     eventManager.sendEvent(EVENTS[1]);
 
-    verify(mockLogger.log(LogLevel.WARNING, 'Failed to Process ODP Event. Event Queue full. queueSize = %s.', 1)).once();
+    verify(
+      mockLogger.log(LogLevel.WARNING, 'Failed to Process ODP Event. Event Queue full. queueSize = %s.', 1)
+    ).once();
   });
 
   it('should add additional information to each event', () => {
     const eventManager = new OdpEventManager({
-      odpConfig, apiManager, logger, clientEngine, clientVersion,
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
     });
     const processedEventData = PROCESSED_EVENTS[0].data;
 
     const eventData = eventManager['augmentCommonData'](EVENTS[0].data);
 
-    expect((eventData.get('idempotence_id') as string).length).toEqual((processedEventData.get('idempotence_id') as string).length);
+    expect((eventData.get('idempotence_id') as string).length).toEqual(
+      (processedEventData.get('idempotence_id') as string).length
+    );
     expect(eventData.get('data_source_type')).toEqual(processedEventData.get('data_source_type'));
     expect(eventData.get('data_source')).toEqual(processedEventData.get('data_source'));
     expect(eventData.get('data_source_version')).toEqual(processedEventData.get('data_source_version'));
@@ -206,7 +240,11 @@ describe('OdpEventManager', () => {
 
   it('should attempt to flush an empty queue at flush intervals', async () => {
     const eventManager = new OdpEventManager({
-      odpConfig, apiManager, logger, clientEngine, clientVersion,
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
       flushInterval: 100,
     });
     const spiedEventManager = spy(eventManager);
@@ -222,7 +260,11 @@ describe('OdpEventManager', () => {
     when(mockApiManager.sendEvents(anything(), anything(), anything())).thenResolve(false);
     const apiManager = instance(mockApiManager);
     const eventManager = new OdpEventManager({
-      odpConfig, apiManager, logger, clientEngine, clientVersion,
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
       batchSize: 10, // with batch size of 10...
       flushInterval: 250,
     });
@@ -240,7 +282,13 @@ describe('OdpEventManager', () => {
 
   it('should dispatch events with correct payload', async () => {
     const eventManager = new OdpEventManager({
-      odpConfig, apiManager, logger, clientEngine, clientVersion, batchSize: 10, flushInterval: 100,
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+      batchSize: 10,
+      flushInterval: 100,
     });
 
     eventManager.start();
@@ -264,8 +312,12 @@ describe('OdpEventManager', () => {
     when(mockApiManager.sendEvents(anything(), anything(), anything())).thenResolve(true);
     const apiManager = instance(mockApiManager);
     const eventManager = new OdpEventManager({
-      odpConfig, apiManager, logger, clientEngine, clientVersion,
-      batchSize: 2,    // batch size of 2
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+      batchSize: 2, // batch size of 2
       flushInterval: 100,
     });
 
@@ -284,8 +336,12 @@ describe('OdpEventManager', () => {
     when(mockApiManager.sendEvents(anything(), anything(), anything())).thenResolve(false);
     const apiManager = instance(mockApiManager);
     const eventManager = new OdpEventManager({
-      odpConfig, apiManager, logger, clientEngine, clientVersion,
-      batchSize: 2,  // batches of 2 with...
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+      batchSize: 2, // batches of 2 with...
       flushInterval: 100,
     });
 
@@ -303,10 +359,18 @@ describe('OdpEventManager', () => {
 
   it('should prepare correct payload for register VUID', async () => {
     const mockRequestHandler: RequestHandler = mock<RequestHandler>();
-    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(200, ''));
-    const apiManager = new RestApiManager(instance(mockRequestHandler), logger);
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(
+      abortableRequest(200, '')
+    );
+    const apiManager = new OdpEventApiManager(instance(mockRequestHandler), logger);
     const eventManager = new OdpEventManager({
-      odpConfig, apiManager, logger, clientEngine, clientVersion, batchSize: 10, flushInterval: 100,
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+      batchSize: 10,
+      flushInterval: 100,
     });
     const vuid = 'vuid_330e05cad15746d9af8a75b8d10';
 
@@ -323,7 +387,7 @@ describe('OdpEventManager', () => {
     const event = events[0];
     expect(event.type).toEqual('fullstack');
     expect(event.action).toEqual('client_initialized');
-    expect(event.identifiers).toEqual({ 'vuid': vuid });
+    expect(event.identifiers).toEqual({ vuid: vuid });
     expect(event.data.idempotence_id.length).toBe(36); // uuid length
     expect(event.data.data_source_type).toEqual('sdk');
     expect(event.data.data_source).toEqual('javascript-sdk');
@@ -332,10 +396,17 @@ describe('OdpEventManager', () => {
 
   it('should prepare correct payload for identify user', async () => {
     const mockRequestHandler: RequestHandler = mock<RequestHandler>();
-    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(200, ''));
-    const apiManager = new RestApiManager(instance(mockRequestHandler), logger);
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(
+      abortableRequest(200, '')
+    );
+    const apiManager = new OdpEventApiManager(instance(mockRequestHandler), logger);
     const eventManager = new OdpEventManager({
-      odpConfig, apiManager, logger, clientEngine, clientVersion, flushInterval: 100,
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+      flushInterval: 100,
     });
     const vuid = 'vuid_330e05cad15746d9af8a75b8d10';
     const fsUserId = 'test-fs-user-id';
@@ -353,7 +424,7 @@ describe('OdpEventManager', () => {
     const event = events[0];
     expect(event.type).toEqual('fullstack');
     expect(event.action).toEqual('identified');
-    expect(event.identifiers).toEqual({ 'vuid': vuid, 'fs_user_id': fsUserId });
+    expect(event.identifiers).toEqual({ vuid: vuid, fs_user_id: fsUserId });
     expect(event.data.idempotence_id.length).toBe(36); // uuid length
     expect(event.data.data_source_type).toEqual('sdk');
     expect(event.data.data_source).toEqual('javascript-sdk');
@@ -362,7 +433,11 @@ describe('OdpEventManager', () => {
 
   it('should apply updated ODP configuration when available', () => {
     const eventManager = new OdpEventManager({
-      odpConfig, apiManager, logger, clientEngine, clientVersion,
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
     });
     const apiKey = 'testing-api-key';
     const apiHost = 'https://some.other.example.com';

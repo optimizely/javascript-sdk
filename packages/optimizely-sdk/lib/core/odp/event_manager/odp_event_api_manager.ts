@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-import { LogHandler, LogLevel } from '../../modules/logging';
-import { OdpEvent } from './odp_event';
-import { RequestHandler } from '../../utils/http_request_handler/http';
+import { LogHandler, LogLevel } from '../../../modules/logging';
+import { OdpEvent } from '../odp_event';
+import { RequestHandler } from '../../../utils/http_request_handler/http';
 
 const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
 
 /**
  * Manager for communicating with the Optimizely Data Platform REST API
  */
-export interface IRestApiManager {
+export interface IOdpEventApiManager {
   sendEvents(apiKey: string, apiHost: string, events: OdpEvent[]): Promise<boolean>;
 }
 
 /**
  * Concrete implementation for accessing the ODP REST API
  */
-export class RestApiManager implements IRestApiManager {
+export class OdpEventApiManager implements IOdpEventApiManager {
   private readonly logger: LogHandler;
   private readonly requestHandler: RequestHandler;
 

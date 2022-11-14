@@ -18,8 +18,8 @@
 
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
-import { RestApiManager } from '../lib/plugins/odp/rest_api_manager';
-import { OdpEvent } from '../lib/plugins/odp/odp_event';
+import { OdpEventApiManager } from '../lib/core/odp/event_manager/odp_event_api_manager';
+import { OdpEvent } from '../lib/core/odp/odp_event';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 
 const VALID_ODP_PUBLIC_KEY = 'not-real-api-key';
@@ -32,15 +32,11 @@ data1.set('key14', null);
 const data2 = new Map<string, unknown>();
 data2.set('key2', 'value-2');
 const ODP_EVENTS = [
-  new OdpEvent('t1', 'a1',
-    new Map([['id-key-1', 'id-value-1']]),
-    data1),
-  new OdpEvent('t2', 'a2',
-    new Map([['id-key-2', 'id-value-2']]),
-    data2),
+  new OdpEvent('t1', 'a1', new Map([['id-key-1', 'id-value-1']]), data1),
+  new OdpEvent('t2', 'a2', new Map([['id-key-2', 'id-value-2']]), data2),
 ];
 
-describe('RestApiManager', () => {
+describe('OdpEventApiManager', () => {
   let mockLogger: LogHandler;
   let mockRequestHandler: RequestHandler;
 
@@ -54,11 +50,10 @@ describe('RestApiManager', () => {
     resetCalls(mockRequestHandler);
   });
 
-  const managerInstance = () => new RestApiManager(instance(mockRequestHandler), instance(mockLogger));
+  const managerInstance = () => new OdpEventApiManager(instance(mockRequestHandler), instance(mockLogger));
   const abortableRequest = (statusCode: number, body: string) => {
     return {
-      abort: () => {
-      },
+      abort: () => {},
       responsePromise: Promise.resolve({
         statusCode,
         body,
@@ -68,7 +63,9 @@ describe('RestApiManager', () => {
   };
 
   it('should should send events successfully and not suggest retry', async () => {
-    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(200, ''));
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(
+      abortableRequest(200, '')
+    );
     const manager = managerInstance();
 
     const shouldRetry = await manager.sendEvents(VALID_ODP_PUBLIC_KEY, ODP_REST_API_HOST, ODP_EVENTS);
@@ -78,7 +75,9 @@ describe('RestApiManager', () => {
   });
 
   it('should not suggest a retry for 400 HTTP response', async () => {
-    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(400, ''));
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(
+      abortableRequest(400, '')
+    );
     const manager = managerInstance();
 
     const shouldRetry = await manager.sendEvents(VALID_ODP_PUBLIC_KEY, ODP_REST_API_HOST, ODP_EVENTS);
@@ -88,7 +87,9 @@ describe('RestApiManager', () => {
   });
 
   it('should suggest a retry for 500 HTTP response', async () => {
-    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(500, ''));
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(
+      abortableRequest(500, '')
+    );
     const manager = managerInstance();
 
     const shouldRetry = await manager.sendEvents(VALID_ODP_PUBLIC_KEY, ODP_REST_API_HOST, ODP_EVENTS);
@@ -99,8 +100,7 @@ describe('RestApiManager', () => {
 
   it('should suggest a retry for network timeout', async () => {
     when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
-      abort: () => {
-      },
+      abort: () => {},
       responsePromise: Promise.reject(new Error('Request timed out')),
     });
     const manager = managerInstance();

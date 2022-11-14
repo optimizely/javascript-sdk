@@ -19,18 +19,17 @@
 import { mock, resetCalls, instance } from 'ts-mockito';
 
 import { LogHandler } from '../lib/modules/logging';
-import { GraphQLManager as OdpSegmentApiManager } from '../lib/plugins/odp/graphql_manager';
 import { ODP_USER_KEY } from '../lib/utils/enums';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 
-import { LRUCache } from '../lib/core/odp/lru_cache/LRUCache';
-
-import { OdpSegmentManager } from '../lib/plugins/odp/odp_segment_manager';
-import { OdpConfig } from '../lib/plugins/odp/odp_config';
-import { OptimizelySegmentOption } from '../lib/plugins/odp/optimizely_segment_option';
+import { OdpSegmentManager } from '../lib/core/odp/segment_manager/odp_segment_manager';
+import { OdpConfig } from '../lib/core/odp/odp_config';
+import { LRUCache } from '../lib/utils/lru_cache';
+import { OptimizelySegmentOption } from './../lib/core/odp/optimizely_segment_option';
+import { OdpSegmentApiManager } from '../lib/core/odp/segment_manager/odp_segment_api_manager';
 
 describe('OdpSegmentManager', () => {
-  class MockZaiusApiManager extends OdpSegmentApiManager {
+  class MockOdpSegmentApiManager extends OdpSegmentApiManager {
     public async fetchSegments(
       apiKey: string,
       apiHost: string,
@@ -48,7 +47,7 @@ describe('OdpSegmentManager', () => {
 
   let manager: OdpSegmentManager;
   let odpConfig: OdpConfig;
-  const apiManager = new MockZaiusApiManager(instance(mockRequestHandler), instance(mockLogHandler));
+  const apiManager = new MockOdpSegmentApiManager(instance(mockRequestHandler), instance(mockLogHandler));
 
   let options: Array<OptimizelySegmentOption> = [];
 

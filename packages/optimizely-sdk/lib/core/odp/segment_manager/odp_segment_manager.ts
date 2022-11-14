@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
-import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
-import { LRUCache } from './../../core/odp/lru_cache/LRUCache';
-import { GraphQLManager as OdpSegmentApiManager } from './graphql_manager';
-import { OdpConfig } from './odp_config';
-import { OptimizelySegmentOption } from './optimizely_segment_option';
+import { getLogger, LogHandler, LogLevel } from '../../../modules/logging';
+import { ERROR_MESSAGES, ODP_USER_KEY } from '../../../utils/enums';
+import { LRUCache } from '../../../utils/lru_cache';
+import { OdpSegmentApiManager } from './odp_segment_api_manager';
+import { OdpConfig } from '../odp_config';
+import { OptimizelySegmentOption } from '../optimizely_segment_option';
 
 // Schedules connections to ODP for audience segmentation and caches the results.
 export class OdpSegmentManager {
