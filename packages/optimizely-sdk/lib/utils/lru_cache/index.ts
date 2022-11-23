@@ -14,25 +14,8 @@
  * limitations under the License.
  */
 
-/**
- * CacheElement represents an individual generic item within the LRUCache
- */
-export class CacheElement<V> {
-    private _value: V | null
-    private _time: number
+import { LRUCache } from './lru_cache';
+import { BrowserLRUCache } from './browser_lru_cache';
+import { ServerLRUCache } from './server_lru_cache';
 
-    get value(): V | null { return this._value }
-    get time(): number { return this._time }
-
-    constructor(value: V | null = null) {
-        this._value = value
-        this._time = Date.now()
-    }
-
-    public is_stale(timeout: number): boolean {
-        if (timeout <= 0) return false
-        return Date.now() - this._time >= timeout
-    }
-}
-
-export default CacheElement
+export { LRUCache, BrowserLRUCache, ServerLRUCache };

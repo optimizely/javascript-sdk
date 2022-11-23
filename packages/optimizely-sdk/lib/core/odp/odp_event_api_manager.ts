@@ -23,14 +23,14 @@ const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
 /**
  * Manager for communicating with the Optimizely Data Platform REST API
  */
-export interface IRestApiManager {
+export interface IOdpEventApiManager {
   sendEvents(apiKey: string, apiHost: string, events: OdpEvent[]): Promise<boolean>;
 }
 
 /**
  * Concrete implementation for accessing the ODP REST API
  */
-export class RestApiManager implements IRestApiManager {
+export class OdpEventApiManager implements IOdpEventApiManager {
   private readonly logger: LogHandler;
   private readonly requestHandler: RequestHandler;
 

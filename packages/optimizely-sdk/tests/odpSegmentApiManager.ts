@@ -18,7 +18,7 @@
 
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
-import { GraphQLManager } from '../lib/plugins/odp/graphql_manager';
+import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 import { ODP_USER_KEY } from '../lib/utils/enums';
 
@@ -26,13 +26,9 @@ const API_key = 'not-real-api-key';
 const GRAPHQL_ENDPOINT = 'https://some.example.com/graphql/endpoint';
 const USER_KEY = ODP_USER_KEY.FS_USER_ID;
 const USER_VALUE = 'tester-101';
-const SEGMENTS_TO_CHECK = [
-  'has_email',
-  'has_email_opted_in',
-  'push_on_sale',
-];
+const SEGMENTS_TO_CHECK = ['has_email', 'has_email_opted_in', 'push_on_sale'];
 
-describe('GraphQLManager', () => {
+describe('OdpSegmentApiManager', () => {
   let mockLogger: LogHandler;
   let mockRequestHandler: RequestHandler;
 
@@ -46,12 +42,11 @@ describe('GraphQLManager', () => {
     resetCalls(mockRequestHandler);
   });
 
-  const managerInstance = () => new GraphQLManager(instance(mockRequestHandler), instance(mockLogger));
+  const managerInstance = () => new OdpSegmentApiManager(instance(mockRequestHandler), instance(mockLogger));
 
   const abortableRequest = (statusCode: number, body: string) => {
     return {
-      abort: () => {
-      },
+      abort: () => {},
       responsePromise: Promise.resolve({
         statusCode,
         body,
@@ -137,17 +132,20 @@ describe('GraphQLManager', () => {
 
     const response = manager['toGraphQLJson'](USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
 
-    expect(response)
-      .toBe(`{"query" : "query {customer"(${USER_KEY} : "${USER_VALUE}") {audiences(subset: [\\"has_email\\",\\"has_email_opted_in\\",\\"push_on_sale\\"] {edges {node {name state}}}}}"}`,
-      );
+    expect(response).toBe(
+      `{"query" : "query {customer"(${USER_KEY} : "${USER_VALUE}") {audiences(subset: [\\"has_email\\",\\"has_email_opted_in\\",\\"push_on_sale\\"] {edges {node {name state}}}}}"}`
+    );
   });
 
   it('should fetch valid qualified segments', async () => {
-    const responseJsonWithQualifiedSegments = '{"data":{"customer":{"audiences":' +
+    const responseJsonWithQualifiedSegments =
+      '{"data":{"customer":{"audiences":' +
       '{"edges":[{"node":{"name":"has_email",' +
       '"state":"qualified"}},{"node":{"name":' +
       '"has_email_opted_in","state":"qualified"}}]}}}}';
-    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(200, responseJsonWithQualifiedSegments));
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(
+      abortableRequest(200, responseJsonWithQualifiedSegments)
+    );
     const manager = managerInstance();
 
     const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
@@ -168,9 +166,10 @@ describe('GraphQLManager', () => {
   });
 
   it('should handle empty qualified segments', async () => {
-    const responseJsonWithNoQualifiedSegments = '{"data":{"customer":{"audiences":' +
-      '{"edges":[ ]}}}}';
-    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(200, responseJsonWithNoQualifiedSegments));
+    const responseJsonWithNoQualifiedSegments = '{"data":{"customer":{"audiences":' + '{"edges":[ ]}}}}';
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(
+      abortableRequest(200, responseJsonWithNoQualifiedSegments)
+    );
     const manager = managerInstance();
 
     const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
@@ -181,16 +180,25 @@ describe('GraphQLManager', () => {
 
   it('should handle error with invalid identifier', async () => {
     const INVALID_USER_ID = 'invalid-user';
-    const errorJsonResponse = '{"errors":[{"message":' +
+    const errorJsonResponse =
+      '{"errors":[{"message":' +
       '"Exception while fetching data (/customer) : ' +
       `Exception: could not resolve _fs_user_id = ${INVALID_USER_ID}",` +
       '"locations":[{"line":1,"column":8}],"path":["customer"],' +
       '"extensions":{"classification":"DataFetchingException"}}],' +
       '"data":{"customer":null}}';
-    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(200, errorJsonResponse));
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(
+      abortableRequest(200, errorJsonResponse)
+    );
     const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, INVALID_USER_ID, SEGMENTS_TO_CHECK);
+    const segments = await manager.fetchSegments(
+      API_key,
+      GRAPHQL_ENDPOINT,
+      USER_KEY,
+      INVALID_USER_ID,
+      SEGMENTS_TO_CHECK
+    );
 
     expect(segments).toBeNull();
     verify(mockLogger.log(anything(), anyString())).once();
@@ -198,7 +206,9 @@ describe('GraphQLManager', () => {
 
   it('should handle unrecognized JSON responses', async () => {
     const unrecognizedJson = '{"unExpectedObject":{ "withSome": "value", "thatIsNotParseable": "true" }}';
-    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(200, unrecognizedJson));
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(
+      abortableRequest(200, unrecognizedJson)
+    );
     const manager = managerInstance();
 
     const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
@@ -208,11 +218,14 @@ describe('GraphQLManager', () => {
   });
 
   it('should handle other exception types', async () => {
-    const errorJsonResponse = '{"errors":[{"message":"Validation error of type ' +
+    const errorJsonResponse =
+      '{"errors":[{"message":"Validation error of type ' +
       'UnknownArgument: Unknown field argument not_real_userKey @ ' +
       '\'customer\'","locations":[{"line":1,"column":17}],' +
       '"extensions":{"classification":"ValidationError"}}]}';
-    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(200, errorJsonResponse));
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(
+      abortableRequest(200, errorJsonResponse)
+    );
     const manager = managerInstance();
 
     const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
@@ -223,7 +236,9 @@ describe('GraphQLManager', () => {
 
   it('should handle bad responses', async () => {
     const badResponse = '{"data":{ }}';
-    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(200, badResponse));
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(
+      abortableRequest(200, badResponse)
+    );
     const manager = managerInstance();
 
     const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
@@ -233,7 +248,9 @@ describe('GraphQLManager', () => {
   });
 
   it('should handle non 200 HTTP status code response', async () => {
-    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(abortableRequest(400, ''));
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(
+      abortableRequest(400, '')
+    );
     const manager = managerInstance();
 
     const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
@@ -244,8 +261,7 @@ describe('GraphQLManager', () => {
 
   it('should handle a timeout', async () => {
     when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
-      abort: () => {
-      },
+      abort: () => {},
       responsePromise: Promise.reject(new Error('Request timed out')),
     });
     const manager = managerInstance();

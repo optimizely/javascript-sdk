@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-import { LRUCache, ClientLRUCache, ServerLRUCache } from "./LRUCache";
+import LRUCache from './lru_cache';
 
-export {
-    LRUCache,
-    ClientLRUCache,
-    ServerLRUCache,
+export class BrowserLRUCache<K, V> extends LRUCache<K, V> {
+  constructor() {
+    super({
+      maxSize: 100,
+      timeout: 600 * 1000, // 600 secs
+    });
+  }
 }

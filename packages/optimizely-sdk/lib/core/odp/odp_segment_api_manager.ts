@@ -41,14 +41,20 @@ const AUDIENCE_FETCH_FAILURE_MESSAGE = 'Audience segments fetch failed';
 /**
  * Manager for communicating with the Optimizely Data Platform GraphQL endpoint
  */
-export interface IGraphQLManager {
-  fetchSegments(apiKey: string, apiHost: string, userKey: string, userValue: string, segmentsToCheck: string[]): Promise<string[] | null>;
+export interface IOdpSegmentApiManager {
+  fetchSegments(
+    apiKey: string,
+    apiHost: string,
+    userKey: string,
+    userValue: string,
+    segmentsToCheck: string[]
+  ): Promise<string[] | null>;
 }
 
 /**
  * Concrete implementation for communicating with the ODP GraphQL endpoint
  */
-export class GraphQLManager implements IGraphQLManager {
+export class OdpSegmentApiManager implements IOdpSegmentApiManager {
   private readonly logger: LogHandler;
   private readonly requestHandler: RequestHandler;
 
@@ -70,7 +76,13 @@ export class GraphQLManager implements IGraphQLManager {
    * @param userValue Associated value to query for the user key
    * @param segmentsToCheck Audience segments to check for experiment inclusion
    */
-  public async fetchSegments(apiKey: string, apiHost: string, userKey: ODP_USER_KEY, userValue: string, segmentsToCheck: string[]): Promise<string[] | null> {
+  public async fetchSegments(
+    apiKey: string,
+    apiHost: string,
+    userKey: ODP_USER_KEY,
+    userValue: string,
+    segmentsToCheck: string[]
+  ): Promise<string[] | null> {
     if (!apiKey || !apiHost) {
       this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (Parameters apiKey or apiHost invalid)`);
       return null;
@@ -96,7 +108,7 @@ export class GraphQLManager implements IGraphQLManager {
     }
 
     if (parsedSegments.errors?.length > 0) {
-      const errors = parsedSegments.errors.map((e) => e.message).join('; ');
+      const errors = parsedSegments.errors.map(e => e.message).join('; ');
 
       this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (${errors})`);
 
@@ -116,16 +128,17 @@ export class GraphQLManager implements IGraphQLManager {
    * Converts the query parameters to a GraphQL JSON payload
    * @returns GraphQL JSON string
    */
-  private toGraphQLJson = (userKey: string, userValue: string, segmentsToCheck: string[]): string => ([
-    '{"query" : "query {customer"',
-    `(${userKey} : "${userValue}") `,
-    '{audiences',
-    '(subset: [',
-    ...segmentsToCheck?.map((segment, index) =>
-      `\\"${segment}\\"${index < segmentsToCheck.length - 1 ? ',' : ''}`,
-    ) || '',
-    '] {edges {node {name state}}}}}"}',
-  ].join(''));
+  private toGraphQLJson = (userKey: string, userValue: string, segmentsToCheck: string[]): string =>
+    [
+      '{"query" : "query {customer"',
+      `(${userKey} : "${userValue}") `,
+      '{audiences',
+      '(subset: [',
+      ...(segmentsToCheck?.map(
+        (segment, index) => `\\"${segment}\\"${index < segmentsToCheck.length - 1 ? ',' : ''}`
+      ) || ''),
+      '] {edges {node {name state}}}}}"}',
+    ].join('');
 
   /**
    * Handler for querying the ODP GraphQL endpoint
@@ -136,7 +149,13 @@ export class GraphQLManager implements IGraphQLManager {
    * @param query GraphQL formatted query string
    * @returns JSON response string from ODP or null
    */
-  private async querySegments(apiKey: string, endpoint: string, userKey: string, userValue: string, query: string): Promise<string | null> {
+  private async querySegments(
+    apiKey: string,
+    endpoint: string,
+    userKey: string,
+    userValue: string,
+    query: string
+  ): Promise<string | null> {
     const method = 'POST';
     const url = endpoint;
     const headers = {
