@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ export class OdpConfig {
    * Host of ODP audience segments API.
    * @private
    */
-  private _apiHost: string;
+  private _apiHost = '';
 
   /**
    * Getter to retrieve the ODP server host
@@ -33,7 +33,7 @@ export class OdpConfig {
    * Public API key for the ODP account from which the audience segments will be fetched (optional).
    * @private
    */
-  private _apiKey: string;
+  private _apiKey = '';
 
   /**
    * Getter to retrieve the ODP API key
@@ -57,9 +57,9 @@ export class OdpConfig {
     return this._segmentsToCheck;
   }
 
-  constructor(apiKey: string, apiHost: string, segmentsToCheck?: string[]) {
-    this._apiKey = apiKey;
-    this._apiHost = apiHost;
+  constructor(apiKey?: string, apiHost?: string, segmentsToCheck?: string[]) {
+    if (apiKey) this._apiKey = apiKey;
+    if (apiHost) this._apiHost = apiHost;
     this._segmentsToCheck = segmentsToCheck ?? [];
   }
 
@@ -70,13 +70,13 @@ export class OdpConfig {
    * @param segmentsToCheck Audience segments
    * @returns true if configuration was updated successfully
    */
-  public update(apiKey: string, apiHost: string, segmentsToCheck: string[]): boolean {
+  public update(apiKey?: string, apiHost?: string, segmentsToCheck?: string[]): boolean {
     if (this._apiKey === apiKey && this._apiHost === apiHost && this._segmentsToCheck === segmentsToCheck) {
       return false;
     } else {
-      this._apiKey = apiKey;
-      this._apiHost = apiHost;
-      this._segmentsToCheck = segmentsToCheck;
+      if (apiKey) this._apiKey = apiKey;
+      if (apiHost) this._apiHost = apiHost;
+      if (segmentsToCheck) this._segmentsToCheck = segmentsToCheck;
 
       return true;
     }
@@ -87,5 +87,18 @@ export class OdpConfig {
    */
   public isReady(): boolean {
     return !!this._apiKey && !!this._apiHost;
+  }
+
+  /**
+   * Detects if there are any changes between the current and incoming ODP Configs
+   * @param config ODP Configuration
+   * @returns Boolean based on if the current ODP Config is equivalent to the incoming ODP Config
+   */
+  public equals(config: OdpConfig): boolean {
+    return (
+      this._apiHost == config._apiHost &&
+      this._apiKey == config._apiKey &&
+      JSON.stringify(this.segmentsToCheck) == JSON.stringify(config._segmentsToCheck)
+    );
   }
 }

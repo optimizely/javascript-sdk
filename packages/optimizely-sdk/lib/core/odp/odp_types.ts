@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,4 +81,22 @@ export interface Edge {
 export interface Node {
   name: string;
   state: string;
+}
+
+/**
+ * Checks a map of data for type validity
+ * @param data Arbitrary data map of string keys to any value
+ * @returns Boolean based on if data consists solely of valid types or not.
+ */
+export function areOdpDataTypesValid(data: Map<string, any>): boolean {
+  const validTypes = ['string', 'number', 'boolean', undefined];
+  let isValid = true;
+
+  data.forEach(item => {
+    if (!validTypes.includes(typeof item)) {
+      isValid = false;
+    }
+  });
+
+  return isValid;
 }

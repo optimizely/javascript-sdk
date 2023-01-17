@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,5 +112,13 @@ export class OdpSegmentManager {
    */
   makeCacheKey(userKey: string, userValue: string): string {
     return `${userKey}-$-${userValue}`;
+  }
+
+  /**
+   * Updates the ODP Config settings of ODP Segment Manager
+   * @param config New ODP Config that will overwrite the existing config
+   */
+  public updateSettings(config: OdpConfig): void {
+    this.odpConfig = config;
   }
 }

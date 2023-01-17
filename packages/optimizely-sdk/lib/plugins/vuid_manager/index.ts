@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,14 +100,14 @@ export class VuidManager implements IVuidManager {
    * @returns A new visitor unique identifier
    */
   private makeVuid(): string {
-    const maxLength = 32;   // required by ODP server
+    const maxLength = 32; // required by ODP server
 
     // make sure UUIDv4 is used (not UUIDv1 or UUIDv6) since the trailing 5 chars will be truncated. See TDD for details.
     const uuidV4 = uuid();
     const formatted = uuidV4.replace(/-/g, '').toLowerCase();
-    const vuidFull = `${(this._prefix)}${formatted}`;
+    const vuidFull = `${this._prefix}${formatted}`;
 
-    return (vuidFull.length <= maxLength) ? vuidFull : vuidFull.substring(0, maxLength);
+    return vuidFull.length <= maxLength ? vuidFull : vuidFull.substring(0, maxLength);
   }
 
   /**

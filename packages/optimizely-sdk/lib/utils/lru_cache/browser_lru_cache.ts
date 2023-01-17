@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-import LRUCache from './lru_cache';
+import LRUCache, { ISegmentsCacheConfig } from './lru_cache';
+
+export const BrowserLRUCacheConfig: ISegmentsCacheConfig = {
+  DEFAULT_CAPACITY: 100,
+  DEFAULT_TIMEOUT_SECS: 600,
+};
 
 export class BrowserLRUCache<K, V> extends LRUCache<K, V> {
   constructor() {
     super({
-      maxSize: 100,
-      timeout: 600 * 1000, // 600 secs
+      maxSize: BrowserLRUCacheConfig.DEFAULT_CAPACITY,
+      timeout: BrowserLRUCacheConfig.DEFAULT_TIMEOUT_SECS * 1000,
     });
   }
 }
