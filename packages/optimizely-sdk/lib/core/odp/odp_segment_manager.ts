@@ -24,13 +24,13 @@ import { OptimizelySegmentOption } from './optimizely_segment_option';
 // Schedules connections to ODP for audience segmentation and caches the results.
 export class OdpSegmentManager {
   odpConfig: OdpConfig;
-  segmentsCache: LRUCache<string, Array<string>>;
+  segmentsCache: LRUCache<string, Set<string>>;
   odpSegmentApiManager: OdpSegmentApiManager;
   logger: LogHandler;
 
   constructor(
     odpConfig: OdpConfig,
-    segmentsCache: LRUCache<string, Array<string>>,
+    segmentsCache: LRUCache<string, Set<string>>,
     odpSegmentApiManager: OdpSegmentApiManager,
     logger?: LogHandler
   ) {
@@ -45,14 +45,14 @@ export class OdpSegmentManager {
    * If no cached data exists for the target user, this fetches and caches data from the ODP server instead.
    * @param userKey Key used for identifying the id type.
    * @param userValue The id value itself.
-   * @param options An array of OptimizelySegmentOption used to ignore and/or reset the cache.
+   * @param options An Set of OptimizelySegmentOption used to ignore and/or reset the cache.
    * @returns Qualified segments for the user from the cache or the ODP server if the cache is empty.
    */
   async fetchQualifiedSegments(
     userKey: ODP_USER_KEY,
     userValue: string,
-    options: Array<OptimizelySegmentOption>
-  ): Promise<Array<string> | null> {
+    options: Set<OptimizelySegmentOption>
+  ): Promise<Set<string> | null> {
     const { apiHost: odpApiHost, apiKey: odpApiKey } = this.odpConfig;
 
     if (!odpApiKey || !odpApiHost) {
@@ -61,15 +61,15 @@ export class OdpSegmentManager {
     }
 
     const segmentsToCheck = this.odpConfig.segmentsToCheck;
-    if (!segmentsToCheck || segmentsToCheck.length <= 0) {
+    if (!segmentsToCheck || segmentsToCheck.size <= 0) {
       this.logger.log(LogLevel.DEBUG, 'No segments are used in the project. Returning an empty list.');
-      return [];
+      return new Set();
     }
 
     const cacheKey = this.makeCacheKey(userKey, userValue);
 
-    const ignoreCache = options.includes(OptimizelySegmentOption.IGNORE_CACHE);
-    const resetCache = options.includes(OptimizelySegmentOption.RESET_CACHE);
+    const ignoreCache = options.has(OptimizelySegmentOption.IGNORE_CACHE);
+    const resetCache = options.has(OptimizelySegmentOption.RESET_CACHE);
 
     if (resetCache) this.reset();
 

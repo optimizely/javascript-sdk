@@ -47,20 +47,20 @@ export class OdpConfig {
    * All ODP segments used in the current datafile (associated with apiHost/apiKey).
    * @private
    */
-  private _segmentsToCheck: string[];
+  private _segmentsToCheck: Set<string>;
 
   /**
    * Getter for ODP segments to check
    * @public
    */
-  public get segmentsToCheck(): string[] {
+  public get segmentsToCheck(): Set<string> {
     return this._segmentsToCheck;
   }
 
-  constructor(apiKey?: string, apiHost?: string, segmentsToCheck?: string[]) {
+  constructor(apiKey?: string, apiHost?: string, segmentsToCheck?: Set<string>) {
     if (apiKey) this._apiKey = apiKey;
     if (apiHost) this._apiHost = apiHost;
-    this._segmentsToCheck = segmentsToCheck ?? [];
+    this._segmentsToCheck = segmentsToCheck ?? new Set<string>('');
   }
 
   /**
@@ -70,7 +70,7 @@ export class OdpConfig {
    * @param segmentsToCheck Audience segments
    * @returns true if configuration was updated successfully
    */
-  public update(apiKey?: string, apiHost?: string, segmentsToCheck?: string[]): boolean {
+  public update(apiKey?: string, apiHost?: string, segmentsToCheck?: Set<string>): boolean {
     if (this._apiKey === apiKey && this._apiHost === apiHost && this._segmentsToCheck === segmentsToCheck) {
       return false;
     } else {
@@ -98,7 +98,16 @@ export class OdpConfig {
     return (
       this._apiHost == config._apiHost &&
       this._apiKey == config._apiKey &&
-      JSON.stringify(this.segmentsToCheck) == JSON.stringify(config._segmentsToCheck)
+      this.segmentsToCheck.size == config._segmentsToCheck.size &&
+      this.checkSetEquality(this.segmentsToCheck, config._segmentsToCheck)
     );
+  }
+
+  private checkSetEquality(setA: Set<string>, setB: Set<string>) {
+    let isEqual = true;
+    setA.forEach(item => {
+      if (!setB.has(item)) isEqual = false;
+    });
+    return isEqual;
   }
 }

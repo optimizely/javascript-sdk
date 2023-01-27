@@ -28,7 +28,7 @@ const QUALIFIED = 'qualified';
 /**
  * Return value when no valid segments found
  */
-const EMPTY_SEGMENTS_COLLECTION: string[] = [];
+const EMPTY_SEGMENTS_COLLECTION = new Set<string>();
 /**
  * Return value for scenarios with no valid JSON
  */
@@ -47,8 +47,8 @@ export interface IOdpSegmentApiManager {
     apiHost: string,
     userKey: string,
     userValue: string,
-    segmentsToCheck: string[]
-  ): Promise<string[] | null>;
+    segmentsToCheck: Set<string>
+  ): Promise<Set<string> | null>;
 }
 
 /**
@@ -81,14 +81,14 @@ export class OdpSegmentApiManager implements IOdpSegmentApiManager {
     apiHost: string,
     userKey: ODP_USER_KEY,
     userValue: string,
-    segmentsToCheck: string[]
-  ): Promise<string[] | null> {
+    segmentsToCheck: Set<string>
+  ): Promise<Set<string> | null> {
     if (!apiKey || !apiHost) {
       this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (Parameters apiKey or apiHost invalid)`);
       return null;
     }
 
-    if (segmentsToCheck?.length === 0) {
+    if (segmentsToCheck?.size === 0) {
       return EMPTY_SEGMENTS_COLLECTION;
     }
 
@@ -121,21 +121,22 @@ export class OdpSegmentApiManager implements IOdpSegmentApiManager {
       return null;
     }
 
-    return edges.filter(edge => edge.node.state == QUALIFIED).map(edge => edge.node.name);
+    const qualifiedSegmentsArray = edges.filter(edge => edge.node.state == QUALIFIED).map(edge => edge.node.name);
+    return new Set(qualifiedSegmentsArray);
   }
 
   /**
    * Converts the query parameters to a GraphQL JSON payload
    * @returns GraphQL JSON string
    */
-  private toGraphQLJson = (userKey: string, userValue: string, segmentsToCheck: string[]): string =>
+  private toGraphQLJson = (userKey: string, userValue: string, segmentsToCheck: Set<string>): string =>
     [
       '{"query" : "query {customer"',
       `(${userKey} : "${userValue}") `,
       '{audiences',
       '(subset: [',
-      ...(segmentsToCheck?.map(
-        (segment, index) => `\\"${segment}\\"${index < segmentsToCheck.length - 1 ? ',' : ''}`
+      ...(Array.from(segmentsToCheck)?.map(
+        (segment, index) => `\\"${segment}\\"${index < segmentsToCheck.size - 1 ? ',' : ''}`
       ) || ''),
       '] {edges {node {name state}}}}}"}',
     ].join('');

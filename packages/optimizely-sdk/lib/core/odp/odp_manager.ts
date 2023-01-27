@@ -29,7 +29,6 @@ import { OdpEventApiManager } from './odp_event_api_manager';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
 import { areOdpDataTypesValid } from './odp_types';
 import { OdpEvent } from './odp_event';
-import { VuidManager } from '../../plugins/vuid_manager';
 
 // Orchestrates segments manager, event manager, and ODP configuration
 export class OdpManager {
@@ -38,6 +37,8 @@ export class OdpManager {
   enabled: boolean;
   odpConfig: OdpConfig;
   logger: LogHandler;
+
+  // Note: VuidManager only utilized in Browser variation at /plugins/odp_manager/index.browser.ts
 
   /**
    * ODP Segment Manager which provides an interface to the remote ODP server (GraphQL API) for audience segments mapping.
@@ -73,7 +74,7 @@ export class OdpManager {
     disable: boolean,
     requestHandler: RequestHandler,
     logger?: LogHandler,
-    segmentsCache?: LRUCache<string, string[]>,
+    segmentsCache?: LRUCache<string, Set<string>>,
     segmentManager?: OdpSegmentManager,
     eventManager?: OdpEventManager,
     clientEngine?: string,
@@ -129,7 +130,7 @@ export class OdpManager {
    * @param apiHost Host of ODP APIs for Audience Segments and Events
    * @param segmentsToCheck List of audience segments included in the new ODP Config
    */
-  public updateSettings(apiKey?: string, apiHost?: string, segmentsToCheck?: string[]): boolean {
+  public updateSettings(apiKey?: string, apiHost?: string, segmentsToCheck?: Set<string>): boolean {
     if (!this.enabled) return false;
 
     const configChanged = this.odpConfig.update(apiKey, apiHost, segmentsToCheck);
@@ -154,15 +155,16 @@ export class OdpManager {
   /**
    * Attempts to fetch and return a list of a user's qualified segments from the local segments cache.
    * If no cached data exists for the target user, this fetches and caches data from the ODP server instead.
-   * @param userId Unique identifier of a target user.
-   * @param options An array of OptimizelySegmentOption used to ignore and/or reset the cache.
-   * @returns
+   * @param {ODP_USER_KEY}                    userKey - Identifies the user id type.
+   * @param {string}                          userId  - Unique identifier of a target user.
+   * @param {Set<OptimizelySegmentOption}     options - A set of OptimizelySegmentOption used to ignore and/or reset the cache.
+   * @returns {Promise<string[] | null>}      A promise holding either a list of qualified segments or null.
    */
   public async fetchQualifiedSegments(
     userKey: ODP_USER_KEY,
     userId: string,
-    options: Array<OptimizelySegmentOption>
-  ): Promise<string[] | null> {
+    options: Set<OptimizelySegmentOption>
+  ): Promise<Set<string> | null> {
     if (!this.enabled || !this._segmentManager) {
       this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_ENABLED);
       return null;
