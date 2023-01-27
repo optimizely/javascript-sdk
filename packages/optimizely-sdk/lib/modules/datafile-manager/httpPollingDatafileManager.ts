@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,9 @@ import { AbortableRequest, Response, Headers } from './http';
 import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE } from './config';
 import BackoffController from './backoffController';
 import PersistentKeyValueCache from './persistentKeyValueCache';
+
+import { NotificationRegistry } from './../../core/notification_center/notification_registry';
+import { NOTIFICATION_TYPES } from '../../../lib/utils/enums';
 
 const logger = getLogger('DatafileManager');
 
@@ -95,6 +98,8 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
 
   private cache: PersistentKeyValueCache;
 
+  private sdkKey: string;
+
   // When true, this means the update interval timeout fired before the current
   // sync completed. In that case, we should sync again immediately upon
   // completion of the current request, instead of waiting another update
@@ -117,6 +122,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
 
     this.cache = cache;
     this.cacheKey = 'opt-datafile-' + sdkKey;
+    this.sdkKey = sdkKey;
     this.isReadyPromiseSettled = false;
     this.readyPromiseResolver = (): void => {};
     this.readyPromiseRejecter = (): void => {};
@@ -233,6 +239,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
           datafile,
         };
         this.emitter.emit(UPDATE_EVT, datafileUpdate);
+        NotificationRegistry.getNotificationCenter(this.sdkKey, logger)?.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE)
       }
     }
   }

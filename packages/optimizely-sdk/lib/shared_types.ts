@@ -1,5 +1,5 @@
 /**
- * Copyright 2020-2022, Optimizely
+ * Copyright 2020-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from '../lib/modules/logging';
 import { EventProcessor } from '../lib/modules/event_processor';
+import { OdpManager } from './core/odp/odp_manager';
 
 import { NotificationCenter as NotificationCenterImpl } from './core/notification_center'
 import { NOTIFICATION_TYPES } from './utils/enums';
@@ -261,6 +262,7 @@ export interface OptimizelyOptions {
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
   defaultDecideOptions?: OptimizelyDecideOption[];
+  odpManager?: OdpManager;
   notificationCenter: NotificationCenterImpl;
 }
 
@@ -389,6 +391,8 @@ export interface Config extends ConfigLite {
   eventMaxQueueSize?: number;
   // sdk key
   sdkKey?: string;
+  // odp manager
+  odpManager?: OdpManager;
 }
 
 /**
