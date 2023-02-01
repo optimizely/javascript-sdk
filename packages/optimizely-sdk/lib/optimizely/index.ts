@@ -186,10 +186,11 @@ export default class Optimizely {
       if (this.projectConfigManager.getConfig() != null) {
         this.updateODPSettings();
       }
-      const sdkKey = this.projectConfigManager.getConfig()?.sdkKey;
-      if (sdkKey != null) {
-        NotificationRegistry.getNotificationCenter(sdkKey, this.logger)
+      if (config.sdkKey != null) {
+        NotificationRegistry.getNotificationCenter(config.sdkKey, this.logger)
           ?.addNotificationListener(enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, () => this.updateODPSettings());
+      } else {        
+        this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.ODP_SDK_KEY_MISSING_NOTIFICATION_CENTER_FAILURE);
       }
     }
   }

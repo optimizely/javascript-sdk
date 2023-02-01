@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { getLogger, LogHandler } from '../../modules/logging';
+import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import { NotificationCenter, createNotificationCenter } from '../../core/notification_center';
 
 /**
@@ -25,15 +25,27 @@ export class NotificationRegistry {
 
   constructor() {}
 
-  public static getNotificationCenter(sdkKey?: string, logger?: LogHandler): NotificationCenter | null {
-    if (!sdkKey) return null;
+  /**
+   * Retrieves an SDK Key's corresponding notification center in the registry if it exists, otherwise it creates one
+   * @param sdkKey SDK Key to be used for the notification center tied to the ODP Manager
+   * @param logger Logger to be used for the corresponding notification center
+   * @returns {NotificationCenter | undefined} a notification center instance for ODP Manager if a valid SDK Key is provided, otherwise undefined
+   */
+  public static getNotificationCenter(
+    sdkKey?: string,
+    logger: LogHandler = getLogger()
+  ): NotificationCenter | undefined {
+    if (!sdkKey) {
+      logger.log(LogLevel.ERROR, 'No SDK key provided to getNotificationCenter.');
+      return undefined;
+    }
 
     let notificationCenter;
     if (this._notificationCenters.has(sdkKey)) {
-      notificationCenter = this._notificationCenters.get(sdkKey) || null;
+      notificationCenter = this._notificationCenters.get(sdkKey);
     } else {
       notificationCenter = createNotificationCenter({
-        logger: logger || getLogger(),
+        logger,
         errorHandler: { handleError: () => {} },
       });
       this._notificationCenters.set(sdkKey, notificationCenter);
@@ -43,7 +55,9 @@ export class NotificationRegistry {
   }
 
   public static removeNotificationCenter(sdkKey?: string): void {
-    if (!sdkKey) return;
+    if (!sdkKey) {
+      return;
+    }
 
     const notificationCenter = this._notificationCenters.get(sdkKey);
     if (notificationCenter) {

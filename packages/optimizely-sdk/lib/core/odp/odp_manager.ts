@@ -74,7 +74,7 @@ export class OdpManager {
     disable: boolean,
     requestHandler: RequestHandler,
     logger?: LogHandler,
-    segmentsCache?: LRUCache<string, Set<string>>,
+    segmentsCache?: LRUCache<string, string[]>,
     segmentManager?: OdpSegmentManager,
     eventManager?: OdpEventManager,
     clientEngine?: string,
@@ -108,9 +108,8 @@ export class OdpManager {
     }
 
     // Set up Events Manager (Events REST API Interface)
-    if (eventManager) {
-      eventManager.updateSettings(this.odpConfig);
-      this._eventManager = eventManager;
+    if (this._eventManager) {
+      this._eventManager.updateSettings(this.odpConfig);
     } else {
       this._eventManager = new OdpEventManager({
         odpConfig: this.odpConfig,
@@ -130,7 +129,7 @@ export class OdpManager {
    * @param apiHost Host of ODP APIs for Audience Segments and Events
    * @param segmentsToCheck List of audience segments included in the new ODP Config
    */
-  public updateSettings(apiKey?: string, apiHost?: string, segmentsToCheck?: Set<string>): boolean {
+  public updateSettings(apiKey?: string, apiHost?: string, segmentsToCheck?: string[]): boolean {
     if (!this.enabled) return false;
 
     const configChanged = this.odpConfig.update(apiKey, apiHost, segmentsToCheck);
@@ -157,14 +156,14 @@ export class OdpManager {
    * If no cached data exists for the target user, this fetches and caches data from the ODP server instead.
    * @param {ODP_USER_KEY}                    userKey - Identifies the user id type.
    * @param {string}                          userId  - Unique identifier of a target user.
-   * @param {Set<OptimizelySegmentOption}     options - A set of OptimizelySegmentOption used to ignore and/or reset the cache.
+   * @param {Array<OptimizelySegmentOption}   options - An array of OptimizelySegmentOption used to ignore and/or reset the cache.
    * @returns {Promise<string[] | null>}      A promise holding either a list of qualified segments or null.
    */
   public async fetchQualifiedSegments(
     userKey: ODP_USER_KEY,
     userId: string,
-    options: Set<OptimizelySegmentOption>
-  ): Promise<Set<string> | null> {
+    options: Array<OptimizelySegmentOption>
+  ): Promise<string[] | null> {
     if (!this.enabled || !this._segmentManager) {
       this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_ENABLED);
       return null;

@@ -32,7 +32,7 @@ export class BrowserOdpManager extends OdpManager {
   constructor(
     disable: boolean,
     logger?: LogHandler,
-    segmentsCache?: LRUCache<string, Set<string>>,
+    segmentsCache?: LRUCache<string, string[]>,
     segmentManager?: OdpSegmentManager,
     eventManager?: OdpEventManager
   ) {

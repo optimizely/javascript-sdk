@@ -103,7 +103,7 @@ export interface ProjectConfig {
   integrationKeyMap?: { [key: string]: Integration };
   publicKeyForOdp?: string;
   hostForOdp?: string;
-  allSegments: Set<string>;
+  allSegments: string[];
 }
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -167,13 +167,13 @@ export const createProjectConfig = function (
   projectConfig.audiencesById = keyBy(projectConfig.audiences, 'id');
   assign(projectConfig.audiencesById, keyBy(projectConfig.typedAudiences, 'id'));
 
-  projectConfig.allSegments = new Set<string>([])
+  projectConfig.allSegments = []
 
   Object.keys(projectConfig.audiencesById)
     .map((audience) => getAudienceSegments(projectConfig.audiencesById[audience]))
     .forEach(audienceSegments => {
       audienceSegments.forEach(segment => {
-        projectConfig.allSegments.add(segment)
+        projectConfig.allSegments.push(segment)
       })
     })
 

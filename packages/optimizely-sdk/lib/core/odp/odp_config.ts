@@ -47,20 +47,20 @@ export class OdpConfig {
    * All ODP segments used in the current datafile (associated with apiHost/apiKey).
    * @private
    */
-  private _segmentsToCheck: Set<string>;
+  private _segmentsToCheck: string[];
 
   /**
    * Getter for ODP segments to check
    * @public
    */
-  public get segmentsToCheck(): Set<string> {
+  public get segmentsToCheck(): string[] {
     return this._segmentsToCheck;
   }
 
-  constructor(apiKey?: string, apiHost?: string, segmentsToCheck?: Set<string>) {
+  constructor(apiKey?: string, apiHost?: string, segmentsToCheck?: string[]) {
     if (apiKey) this._apiKey = apiKey;
     if (apiHost) this._apiHost = apiHost;
-    this._segmentsToCheck = segmentsToCheck ?? new Set<string>('');
+    this._segmentsToCheck = segmentsToCheck ?? [];
   }
 
   /**
@@ -70,7 +70,7 @@ export class OdpConfig {
    * @param segmentsToCheck Audience segments
    * @returns true if configuration was updated successfully
    */
-  public update(apiKey?: string, apiHost?: string, segmentsToCheck?: Set<string>): boolean {
+  public update(apiKey?: string, apiHost?: string, segmentsToCheck?: string[]): boolean {
     if (this._apiKey === apiKey && this._apiHost === apiHost && this._segmentsToCheck === segmentsToCheck) {
       return false;
     } else {
@@ -98,16 +98,18 @@ export class OdpConfig {
     return (
       this._apiHost == config._apiHost &&
       this._apiKey == config._apiKey &&
-      this.segmentsToCheck.size == config._segmentsToCheck.size &&
-      this.checkSetEquality(this.segmentsToCheck, config._segmentsToCheck)
+      this.segmentsToCheck.length == config._segmentsToCheck.length &&
+      this.checkArrayEquality(this.segmentsToCheck, config._segmentsToCheck)
     );
   }
 
-  private checkSetEquality(setA: Set<string>, setB: Set<string>) {
-    let isEqual = true;
-    setA.forEach(item => {
-      if (!setB.has(item)) isEqual = false;
-    });
-    return isEqual;
+  /**
+   * Checks two string arrays for equality.
+   * @param arrayA First Array to be compared against.
+   * @param arrayB Second Array to be compared against.
+   * @returns {boolean} True if both arrays are equal, otherwise returns false.
+   */
+  private checkArrayEquality(arrayA: string[], arrayB: string[]): boolean {
+    return arrayA.length === arrayB.length && arrayA.every((item, index) => item === arrayB[index]);
   }
 }

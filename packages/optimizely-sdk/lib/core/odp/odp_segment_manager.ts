@@ -24,13 +24,13 @@ import { OptimizelySegmentOption } from './optimizely_segment_option';
 // Schedules connections to ODP for audience segmentation and caches the results.
 export class OdpSegmentManager {
   odpConfig: OdpConfig;
-  segmentsCache: LRUCache<string, Set<string>>;
+  segmentsCache: LRUCache<string, string[]>;
   odpSegmentApiManager: OdpSegmentApiManager;
   logger: LogHandler;
 
   constructor(
     odpConfig: OdpConfig,
-    segmentsCache: LRUCache<string, Set<string>>,
+    segmentsCache: LRUCache<string, string[]>,
     odpSegmentApiManager: OdpSegmentApiManager,
     logger?: LogHandler
   ) {
@@ -51,8 +51,8 @@ export class OdpSegmentManager {
   async fetchQualifiedSegments(
     userKey: ODP_USER_KEY,
     userValue: string,
-    options: Set<OptimizelySegmentOption>
-  ): Promise<Set<string> | null> {
+    options: Array<OptimizelySegmentOption>
+  ): Promise<string[] | null> {
     const { apiHost: odpApiHost, apiKey: odpApiKey } = this.odpConfig;
 
     if (!odpApiKey || !odpApiHost) {
@@ -61,15 +61,15 @@ export class OdpSegmentManager {
     }
 
     const segmentsToCheck = this.odpConfig.segmentsToCheck;
-    if (!segmentsToCheck || segmentsToCheck.size <= 0) {
+    if (!segmentsToCheck || segmentsToCheck.length <= 0) {
       this.logger.log(LogLevel.DEBUG, 'No segments are used in the project. Returning an empty list.');
-      return new Set();
+      return [];
     }
 
     const cacheKey = this.makeCacheKey(userKey, userValue);
 
-    const ignoreCache = options.has(OptimizelySegmentOption.IGNORE_CACHE);
-    const resetCache = options.has(OptimizelySegmentOption.RESET_CACHE);
+    const ignoreCache = options.includes(OptimizelySegmentOption.IGNORE_CACHE);
+    const resetCache = options.includes(OptimizelySegmentOption.RESET_CACHE);
 
     if (resetCache) this.reset();
 

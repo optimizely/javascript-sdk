@@ -124,7 +124,7 @@ describe('OdpEventManager', () => {
     mockLogger = mock<LogHandler>();
     mockApiManager = mock<OdpEventApiManager>();
 
-    odpConfig = new OdpConfig(API_KEY, API_HOST, new Set());
+    odpConfig = new OdpConfig(API_KEY, API_HOST, []);
     logger = instance(mockLogger);
     apiManager = instance(mockApiManager);
   });
@@ -441,9 +441,7 @@ describe('OdpEventManager', () => {
     });
     const apiKey = 'testing-api-key';
     const apiHost = 'https://some.other.example.com';
-    const segmentsToCheck = new Set<string>();
-    segmentsToCheck.add('empty-cart');
-    segmentsToCheck.add('1-item-cart');
+    const segmentsToCheck = ['empty-cart', '1-item-cart'];
     const differentOdpConfig = new OdpConfig(apiKey, apiHost, segmentsToCheck);
 
     eventManager.updateSettings(differentOdpConfig);

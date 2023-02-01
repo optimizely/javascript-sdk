@@ -21,7 +21,7 @@ import { NotificationRegistry } from './notification_registry';
 describe('Notification Registry', () => {
   it('Returns null notification center when SDK Key is null', () => {
     const notificationCenter = NotificationRegistry.getNotificationCenter();
-    expect(notificationCenter).to.be.null;
+    expect(notificationCenter).to.be.undefined;
   });
 
   it('Returns the same notification center when SDK Keys are the same and not null', () => {

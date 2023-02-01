@@ -17,7 +17,7 @@ import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from '../lib/modules
 import { EventProcessor } from '../lib/modules/event_processor';
 import { OdpManager } from './core/odp/odp_manager';
 
-import { NotificationCenter as NotificationCenterImpl } from './core/notification_center'
+import { NotificationCenter as NotificationCenterImpl } from './core/notification_center';
 import { NOTIFICATION_TYPES } from './utils/enums';
 
 export interface BucketerParams {
@@ -42,11 +42,10 @@ export type UserAttributes = {
   // TODO[OASIS-6649]: Don't use any type
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   [name: string]: any;
-}
+};
 
 export interface ExperimentBucketMap {
-  [experiment_id: string]:
-  { variation_id: string }
+  [experiment_id: string]: { variation_id: string };
 }
 
 // Information about past bucketing decisions for a user.
@@ -65,7 +64,7 @@ export interface UserProfileService {
 }
 
 export interface DatafileManagerConfig {
-  sdkKey: string,
+  sdkKey: string;
   datafile?: string;
 }
 
@@ -115,7 +114,7 @@ export interface EventDispatcher {
    *        After the event has at least been queued for dispatch, call this function to return
    *        control back to the Client.
    */
-  dispatchEvent: (event: Event, callback: (response: { statusCode: number; }) => void) => void;
+  dispatchEvent: (event: Event, callback: (response: { statusCode: number }) => void) => void;
 }
 
 export interface VariationVariable {
@@ -165,9 +164,9 @@ export interface FeatureFlag {
   rolloutId: string;
   key: string;
   id: string;
-  experimentIds: string[],
-  variables: FeatureVariable[],
-  variableKeyMap: { [key: string]: FeatureVariable }
+  experimentIds: string[];
+  variables: FeatureVariable[];
+  variableKeyMap: { [key: string]: FeatureVariable };
   groupId?: string;
 }
 
@@ -176,7 +175,7 @@ export type Condition = {
   type: string;
   match?: string;
   value: string | number | boolean | null;
-}
+};
 
 export interface Audience {
   id: string;
@@ -215,7 +214,7 @@ export interface Group {
 }
 
 export interface FeatureKeyMap {
-  [key: string]: FeatureFlag
+  [key: string]: FeatureFlag;
 }
 
 export interface OnReadyResult {
@@ -225,7 +224,7 @@ export interface OnReadyResult {
 
 export type ObjectWithUnknownProperties = {
   [key: string]: unknown;
-}
+};
 
 export interface Rollout {
   id: string;
@@ -238,7 +237,7 @@ export enum OptimizelyDecideOption {
   ENABLED_FLAGS_ONLY = 'ENABLED_FLAGS_ONLY',
   IGNORE_USER_PROFILE_SERVICE = 'IGNORE_USER_PROFILE_SERVICE',
   INCLUDE_REASONS = 'INCLUDE_REASONS',
-  EXCLUDE_VARIABLES = 'EXCLUDE_VARIABLES'
+  EXCLUDE_VARIABLES = 'EXCLUDE_VARIABLES',
 }
 
 /**
@@ -256,7 +255,7 @@ export interface OptimizelyOptions {
   eventProcessor: EventProcessor;
   isValidInstance: boolean;
   jsonSchemaValidator?: {
-    validate(jsonObject: unknown): boolean,
+    validate(jsonObject: unknown): boolean;
   };
   logger: LoggerFacade;
   sdkKey?: string;
@@ -287,43 +286,15 @@ export interface OptimizelyVariable {
 
 export interface Client {
   notificationCenter: NotificationCenter;
-  createUserContext(
-    userId: string,
-    attributes?: UserAttributes
-  ): OptimizelyUserContext | null;
-  activate(
-    experimentKey: string,
-    userId: string,
-    attributes?: UserAttributes
-  ): string | null;
-  track(
-    eventKey: string,
-    userId: string,
-    attributes?: UserAttributes,
-    eventTags?: EventTags
-  ): void;
-  getVariation(
-    experimentKey: string,
-    userId: string,
-    attributes?: UserAttributes
-  ): string | null;
+  createUserContext(userId: string, attributes?: UserAttributes): OptimizelyUserContext | null;
+  activate(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
+  track(eventKey: string, userId: string, attributes?: UserAttributes, eventTags?: EventTags): void;
+  getVariation(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
   setForcedVariation(experimentKey: string, userId: string, variationKey: string | null): boolean;
   getForcedVariation(experimentKey: string, userId: string): string | null;
-  isFeatureEnabled(
-    featureKey: string,
-    userId: string,
-    attributes?: UserAttributes
-  ): boolean;
-  getEnabledFeatures(
-    userId: string,
-    attributes?: UserAttributes
-  ): string[];
-  getFeatureVariable(
-    featureKey: string,
-    variableKey: string,
-    userId: string,
-    attributes?: UserAttributes
-  ): unknown;
+  isFeatureEnabled(featureKey: string, userId: string, attributes?: UserAttributes): boolean;
+  getEnabledFeatures(userId: string, attributes?: UserAttributes): string[];
+  getFeatureVariable(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): unknown;
   getFeatureVariableBoolean(
     featureKey: string,
     variableKey: string,
@@ -348,12 +319,7 @@ export interface Client {
     userId: string,
     attributes?: UserAttributes
   ): string | null;
-  getFeatureVariableJSON(
-    featureKey: string,
-    variableKey: string,
-    userId: string,
-    attributes?: UserAttributes
-  ): unknown;
+  getFeatureVariableJSON(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): unknown;
   getAllFeatureVariables(
     featureKey: string,
     userId: string,
@@ -381,17 +347,11 @@ export interface TrackListenerPayload extends ListenerPayload {
  * For compatibility with the previous declaration file
  */
 export interface Config extends ConfigLite {
-  // options for Datafile Manager
-  datafileOptions?: DatafileOptions;
-  // limit of events to dispatch in a batch
-  eventBatchSize?: number;
-  // maximum time for an event to stay in the queue
-  eventFlushInterval?: number;
-  // maximum size for the event queue
-  eventMaxQueueSize?: number;
-  // sdk key
+  datafileOptions?: DatafileOptions; // Options for Datafile Manager
+  eventBatchSize?: number; // Maximum size of events to be dispatched in a batch
+  eventFlushInterval?: number; // Maximum time for an event to be enqueued
+  eventMaxQueueSize?: number; // Maximum size for the event queue
   sdkKey?: string;
-  // odp manager
   odpManager?: OdpManager;
 }
 
@@ -410,7 +370,7 @@ export interface ConfigLite {
   eventDispatcher?: EventDispatcher;
   // The object to validate against the schema
   jsonSchemaValidator?: {
-    validate(jsonObject: unknown): boolean,
+    validate(jsonObject: unknown): boolean;
   };
   // level of logging i.e debug, info, error, warning etc
   logLevel?: LogLevel | string;
@@ -426,15 +386,15 @@ export interface ConfigLite {
 
 export type OptimizelyExperimentsMap = {
   [experimentKey: string]: OptimizelyExperiment;
-}
+};
 
 export type OptimizelyVariablesMap = {
   [variableKey: string]: OptimizelyVariable;
-}
+};
 
 export type OptimizelyFeaturesMap = {
   [featureKey: string]: OptimizelyFeature;
-}
+};
 
 export type OptimizelyAttribute = {
   id: string;
@@ -497,17 +457,9 @@ export interface OptimizelyUserContext {
   getUserId(): string;
   getAttributes(): UserAttributes;
   setAttribute(key: string, value: unknown): void;
-  decide(
-    key: string,
-    options?: OptimizelyDecideOption[]
-  ): OptimizelyDecision;
-  decideForKeys(
-    keys: string[],
-    options?: OptimizelyDecideOption[],
-  ): { [key: string]: OptimizelyDecision };
-  decideAll(
-    options?: OptimizelyDecideOption[],
-  ): { [key: string]: OptimizelyDecision };
+  decide(key: string, options?: OptimizelyDecideOption[]): OptimizelyDecision;
+  decideForKeys(keys: string[], options?: OptimizelyDecideOption[]): { [key: string]: OptimizelyDecision };
+  decideAll(options?: OptimizelyDecideOption[]): { [key: string]: OptimizelyDecision };
   trackEvent(eventName: string, eventTags?: EventTags): void;
   setForcedDecision(context: OptimizelyDecisionContext, decision: OptimizelyForcedDecision): boolean;
   getForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null;

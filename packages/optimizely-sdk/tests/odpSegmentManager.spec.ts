@@ -35,8 +35,8 @@ describe('OdpSegmentManager', () => {
       apiHost: string,
       userKey: ODP_USER_KEY,
       userValue: string,
-      segmentsToCheck: Set<string>
-    ): Promise<Set<string> | null> {
+      segmentsToCheck: string[]
+    ): Promise<string[] | null> {
       if (apiKey == 'invalid-key') return null;
       return segmentsToCheck;
     }
@@ -49,7 +49,7 @@ describe('OdpSegmentManager', () => {
   let odpConfig: OdpConfig;
   const apiManager = new MockOdpSegmentApiManager(instance(mockRequestHandler), instance(mockLogHandler));
 
-  let options: Set<OptimizelySegmentOption> = new Set();
+  let options: Array<OptimizelySegmentOption> = [];
 
   const userKey: ODP_USER_KEY = ODP_USER_KEY.VUID;
   const userValue = 'test-user';
@@ -60,8 +60,8 @@ describe('OdpSegmentManager', () => {
 
     const API_KEY = 'test-api-key';
     const API_HOST = 'https://odp.example.com';
-    odpConfig = new OdpConfig(API_KEY, API_HOST, new Set());
-    const segmentsCache = new LRUCache<string, Set<string>>({
+    odpConfig = new OdpConfig(API_KEY, API_HOST, []);
+    const segmentsCache = new LRUCache<string, string[]>({
       maxSize: 1000,
       timeout: 1000,
     });
@@ -70,47 +70,47 @@ describe('OdpSegmentManager', () => {
   });
 
   it('should fetch segments successfully on cache miss.', async () => {
-    odpConfig.update('host', 'valid', new Set('new-customer'));
-    setCache(userKey, '123', new Set('a'));
+    odpConfig.update('host', 'valid', ['new-customer']);
+    setCache(userKey, '123', ['a']);
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
-    expect(segments).toEqual(new Set('new-customer'));
+    expect(segments).toEqual(['new-customer']);
   });
 
   it('should fetch segments successfully on cache hit.', async () => {
-    odpConfig.update('host', 'valid', new Set('new-customer'));
-    setCache(userKey, userValue, new Set('a'));
+    odpConfig.update('host', 'valid', ['new-customer']);
+    setCache(userKey, userValue, ['a']);
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
-    expect(segments).toEqual(new Set('a'));
+    expect(segments).toEqual(['a']);
   });
 
   it('should throw an error when fetching segments returns an error.', async () => {
-    odpConfig.update('host', 'invalid-key', new Set('new-customer'));
+    odpConfig.update('host', 'invalid-key', ['new-customer']);
 
-    const segments = await manager.fetchQualifiedSegments(userKey, userValue, new Set());
+    const segments = await manager.fetchQualifiedSegments(userKey, userValue, []);
     expect(segments).toBeNull;
   });
 
   it('should ignore the cache if the option is included in the options array.', async () => {
-    odpConfig.update('host', 'valid', new Set('new-customer'));
-    setCache(userKey, userValue, new Set('a'));
-    options = new Set([OptimizelySegmentOption.IGNORE_CACHE]);
+    odpConfig.update('host', 'valid', ['new-customer']);
+    setCache(userKey, userValue, ['a']);
+    options = [OptimizelySegmentOption.IGNORE_CACHE];
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
-    expect(segments).toEqual(new Set('new-customer'));
+    expect(segments).toEqual(['new-customer']);
     expect(cacheCount()).toBe(1);
   });
 
   it('should reset the cache if the option is included in the options array.', async () => {
-    odpConfig.update('host', 'valid', new Set('new-customer'));
-    setCache(userKey, userValue, new Set('a'));
-    setCache(userKey, '123', new Set('a'));
-    setCache(userKey, '456', new Set('a'));
-    options = new Set([OptimizelySegmentOption.RESET_CACHE]);
+    odpConfig.update('host', 'valid', ['new-customer']);
+    setCache(userKey, userValue, ['a']);
+    setCache(userKey, '123', ['a']);
+    setCache(userKey, '456', ['a']);
+    options = [OptimizelySegmentOption.RESET_CACHE];
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
-    expect(segments).toEqual(new Set('new-customer'));
+    expect(segments).toEqual(['new-customer']);
     expect(peekCache(userKey, userValue)).toEqual(segments);
     expect(cacheCount()).toBe(1);
   });
@@ -121,7 +121,7 @@ describe('OdpSegmentManager', () => {
 
   // Utility Functions
 
-  function setCache(userKey: string, userValue: string, value: Set<string>) {
+  function setCache(userKey: string, userValue: string, value: string[]) {
     const cacheKey = manager.makeCacheKey(userKey, userValue);
     manager.segmentsCache.save({
       key: cacheKey,
@@ -129,7 +129,7 @@ describe('OdpSegmentManager', () => {
     });
   }
 
-  function peekCache(userKey: string, userValue: string): Set<string> | null {
+  function peekCache(userKey: string, userValue: string): string[] | null {
     const cacheKey = manager.makeCacheKey(userKey, userValue);
     return manager.segmentsCache.peek(cacheKey);
   }

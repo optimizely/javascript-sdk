@@ -26,7 +26,7 @@ const API_key = 'not-real-api-key';
 const GRAPHQL_ENDPOINT = 'https://some.example.com/graphql/endpoint';
 const USER_KEY = ODP_USER_KEY.FS_USER_ID;
 const USER_VALUE = 'tester-101';
-const SEGMENTS_TO_CHECK = new Set(['has_email', 'has_email_opted_in', 'push_on_sale']);
+const SEGMENTS_TO_CHECK = ['has_email', 'has_email_opted_in', 'push_on_sale'];
 
 describe('OdpSegmentApiManager', () => {
   let mockLogger: LogHandler;
@@ -150,7 +150,7 @@ describe('OdpSegmentApiManager', () => {
 
     const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
 
-    if (segments) expect(segments.size).toEqual(2);
+    expect(segments?.length).toEqual(2);
     expect(segments).toContain('has_email');
     expect(segments).toContain('has_email_opted_in');
     verify(mockLogger.log(anything(), anyString())).never();
@@ -164,10 +164,10 @@ describe('OdpSegmentApiManager', () => {
       GRAPHQL_ENDPOINT,
       ODP_USER_KEY.FS_USER_ID,
       USER_VALUE,
-      new Set()
+      []
     );
 
-    if (segments) expect(segments.size).toEqual(0);
+    if (segments) expect(segments.length).toEqual(0);
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
@@ -180,7 +180,7 @@ describe('OdpSegmentApiManager', () => {
 
     const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
 
-    if (segments) expect(segments.size).toEqual(0);
+    if (segments) expect(segments.length).toEqual(0);
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
