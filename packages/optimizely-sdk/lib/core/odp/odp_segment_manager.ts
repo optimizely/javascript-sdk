@@ -45,7 +45,7 @@ export class OdpSegmentManager {
    * If no cached data exists for the target user, this fetches and caches data from the ODP server instead.
    * @param userKey Key used for identifying the id type.
    * @param userValue The id value itself.
-   * @param options An Set of OptimizelySegmentOption used to ignore and/or reset the cache.
+   * @param options An array of OptimizelySegmentOption used to ignore and/or reset the cache.
    * @returns Qualified segments for the user from the cache or the ODP server if the cache is empty.
    */
   async fetchQualifiedSegments(
