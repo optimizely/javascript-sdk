@@ -238,8 +238,10 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
         const datafileUpdate: DatafileUpdate = {
           datafile,
         };
+        NotificationRegistry.getNotificationCenter(this.sdkKey, logger)?.sendNotifications(
+          NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE
+        );
         this.emitter.emit(UPDATE_EVT, datafileUpdate);
-        NotificationRegistry.getNotificationCenter(this.sdkKey, logger)?.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE)
       }
     }
   }

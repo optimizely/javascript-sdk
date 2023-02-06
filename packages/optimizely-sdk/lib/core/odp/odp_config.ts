@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { checkArrayEquality } from '../../../lib/utils/fns';
+
 export class OdpConfig {
   /**
    * Host of ODP audience segments API.
@@ -98,18 +100,7 @@ export class OdpConfig {
     return (
       this._apiHost == config._apiHost &&
       this._apiKey == config._apiKey &&
-      this.segmentsToCheck.length == config._segmentsToCheck.length &&
-      this.checkArrayEquality(this.segmentsToCheck, config._segmentsToCheck)
+      checkArrayEquality(this.segmentsToCheck, config._segmentsToCheck)
     );
-  }
-
-  /**
-   * Checks two string arrays for equality.
-   * @param arrayA First Array to be compared against.
-   * @param arrayB Second Array to be compared against.
-   * @returns {boolean} True if both arrays are equal, otherwise returns false.
-   */
-  private checkArrayEquality(arrayA: string[], arrayB: string[]): boolean {
-    return arrayA.length === arrayB.length && arrayA.every((item, index) => item === arrayB[index]);
   }
 }

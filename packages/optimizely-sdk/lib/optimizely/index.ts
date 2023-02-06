@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.         *
  * You may obtain a copy of the License at                                  *
  *                                                                          *
- *    http://www.apache.org/licenses/LICENSE-2.0                            *
+ *    https://www.apache.org/licenses/LICENSE-2.0                           *
  *                                                                          *
  * Unless required by applicable law or agreed to in writing, software      *
  * distributed under the License is distributed on an "AS IS" BASIS,        *
@@ -172,7 +172,22 @@ export default class Optimizely {
 
     const eventProcessorStartedPromise = this.eventProcessor.start();
 
-    this.readyPromise = Promise.all([projectConfigManagerReadyPromise, eventProcessorStartedPromise]).then(function(promiseResults) {
+    this.readyPromise = Promise.all([projectConfigManagerReadyPromise, eventProcessorStartedPromise]).then((promiseResults) => {
+      
+      if (config.odpManager != null) {
+        this.odpManager = config.odpManager;
+        this.odpManager.eventManager?.start();
+        if (this.projectConfigManager.getConfig() != null) {
+          this.updateODPSettings();
+        }
+        if (config.sdkKey != null) {
+          NotificationRegistry.getNotificationCenter(config.sdkKey, this.logger)
+            ?.addNotificationListener(enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, () => this.updateODPSettings());
+        } else {
+          this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.ODP_SDK_KEY_MISSING_NOTIFICATION_CENTER_FAILURE);
+        }
+      }
+
       // Only return status from project config promise because event processor promise does not return any status.
       return promiseResults[0];
     })
@@ -180,26 +195,6 @@ export default class Optimizely {
     this.readyTimeouts = {};
     this.nextReadyTimeoutId = 0;
 
-    if (config.odpManager != null) {
-      this.odpManager = config.odpManager;
-      this.odpManager.eventManager?.start();
-      if (this.projectConfigManager.getConfig() != null) {
-        this.updateODPSettings();
-      }
-      if (config.sdkKey != null) {
-        NotificationRegistry.getNotificationCenter(config.sdkKey, this.logger)
-          ?.addNotificationListener(enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, () => this.updateODPSettings());
-      } else {        
-        this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.ODP_SDK_KEY_MISSING_NOTIFICATION_CENTER_FAILURE);
-      }
-    }
-  }
-
-  updateODPSettings(): void {
-    const projectConfig = this.projectConfigManager.getConfig();
-    if (this.odpManager != null && projectConfig != null) {
-      this.odpManager.updateSettings(projectConfig.publicKeyForOdp, projectConfig.hostForOdp, projectConfig.allSegments);
-    }
   }
 
   /**
@@ -1342,7 +1337,9 @@ export default class Optimizely {
     try {
       this.notificationCenter.clearAllNotificationListeners();
       const sdkKey = this.projectConfigManager.getConfig()?.sdkKey;
-      if (sdkKey) NotificationRegistry.removeNotificationCenter(sdkKey);
+      if (sdkKey) {
+        NotificationRegistry.removeNotificationCenter(sdkKey);
+      }
 
       const eventProcessorStoppedPromise = this.eventProcessor.stop();
       if (this.disposeOnUpdate) {
@@ -1701,4 +1698,13 @@ export default class Optimizely {
     return this.decideForKeys(user, allFlagKeys, options);
   }
 
+  /**
+   * Updates ODP Config with most recent ODP key, host, and segments from the project config
+   */
+  updateODPSettings(): void {
+    const projectConfig = this.projectConfigManager.getConfig();
+    if (this.odpManager != null && projectConfig != null) {
+      this.odpManager.updateSettings(projectConfig.publicKeyForOdp, projectConfig.hostForOdp, projectConfig.allSegments);
+    }
+  }
 }
