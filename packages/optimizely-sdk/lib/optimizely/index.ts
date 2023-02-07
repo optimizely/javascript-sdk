@@ -173,15 +173,13 @@ export default class Optimizely {
     const eventProcessorStartedPromise = this.eventProcessor.start();
 
     this.readyPromise = Promise.all([projectConfigManagerReadyPromise, eventProcessorStartedPromise]).then((promiseResults) => {
-      
       if (config.odpManager != null) {
         this.odpManager = config.odpManager;
         this.odpManager.eventManager?.start();
-        if (this.projectConfigManager.getConfig() != null) {
-          this.updateODPSettings();
-        }
-        if (config.sdkKey != null) {
-          NotificationRegistry.getNotificationCenter(config.sdkKey, this.logger)
+        this.updateODPSettings();
+        const sdkKey = this.projectConfigManager.getConfig()?.sdkKey;
+        if (sdkKey != null) {
+          NotificationRegistry.getNotificationCenter(sdkKey, this.logger)
             ?.addNotificationListener(enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, () => this.updateODPSettings());
         } else {
           this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.ODP_SDK_KEY_MISSING_NOTIFICATION_CENTER_FAILURE);
