@@ -15,6 +15,7 @@
  */
 /// <reference types="jest" />
 
+import { expect, describe, it, beforeAll, beforeEach } from '@jest/globals';
 import { BrowserLRUCache } from './../lib/utils/lru_cache/browser_lru_cache';
 import { OdpSegmentManager } from './../lib/core/odp/odp_segment_manager';
 import { LOG_MESSAGES } from './../lib/utils/enums/index';
@@ -25,7 +26,6 @@ import { anything, capture, instance, mock, resetCalls, spy, verify, when } from
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 import { LRUCache } from '../lib/utils/lru_cache';
-import { expect } from 'chai';
 import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
 import { OdpEventManager, STATE } from '../lib/core/odp/odp_event_manager';
 
@@ -51,7 +51,10 @@ describe('OdpManager', () => {
   let mockEventManager: OdpEventManager;
   let mockSegmentManager: OdpSegmentManager;
 
-  const segmentsCache = new LRUCache<string, Array<string>>({
+  let eventManagerInstance: OdpEventManager;
+  let segmentManagerInstance: OdpSegmentManager;
+
+  const segmentsCache = new LRUCache<string, string[]>({
     maxSize: 1000,
     timeout: 1000,
   });
@@ -66,6 +69,9 @@ describe('OdpManager', () => {
 
     mockEventManager = mock<OdpEventManager>();
     mockSegmentManager = mock<OdpSegmentManager>();
+
+    eventManagerInstance = instance(mockEventManager);
+    segmentManagerInstance = instance(mockSegmentManager);
   });
 
   beforeEach(() => {
@@ -79,8 +85,8 @@ describe('OdpManager', () => {
     const manager = new OdpManager(true, requestHandler, logger);
 
     manager.updateSettings('valid', 'host', []);
-    expect(manager.odpConfig.apiKey).to.equal('');
-    expect(manager.odpConfig.apiHost).to.equal('');
+    expect(manager.odpConfig.apiKey).toEqual('');
+    expect(manager.odpConfig.apiHost).toEqual('');
 
     await manager.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, 'user1', []);
     verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_ENABLED)).twice();
@@ -88,16 +94,18 @@ describe('OdpManager', () => {
     manager.identifyUser('user1');
     verify(mockLogger.log(LogLevel.DEBUG, LOG_MESSAGES.ODP_IDENTIFY_FAILED_ODP_DISABLED)).once();
 
-    expect(manager.eventManager).to.be.null;
-    expect(manager.segmentManager).to.be.null;
+    expect(manager.eventManager).toBeNull;
+    expect(manager.segmentManager).toBeNull;
   });
 
-  it('should start ODP Event manager when ODP Manager is initialized', async () => {
-    const manager = new OdpManager(false, requestHandler, logger, undefined, mockSegmentManager, mockEventManager);
-    expect(manager.eventManager?.state).to.equal(STATE.RUNNING);
+  it('should start ODP Event manager when ODP Manager is initialized', () => {
+    const manager = new OdpManager(false, requestHandler, logger, undefined);
+
+    expect(manager.eventManager).not.toBeNull();
+    expect(manager.eventManager?.state).toEqual(STATE.RUNNING);
   });
 
-  it('should be able to fetch qualified segments with a valid OdpConfig and enabled OdpManager instance', async () => {
+  it('should be able to fetch qualified segments with a valid OdpConfig and enabled OdpManager instance', () => {
     // const segmentManager = new OdpSegmentManager(
     //   new OdpConfig(API_KEY, API_HOST, []),
     //   new BrowserLRUCache(),
@@ -106,7 +114,7 @@ describe('OdpManager', () => {
     // );
 
     const manager = new OdpManager(false, requestHandler, logger, undefined, mockSegmentManager);
-    expect(manager.segmentManager).to.exist;
+    expect(manager.segmentManager).not.toBeNull();
 
     // await manager.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, 'user1', []);
     // verify(manager.segmentManager?.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, 'user1', [])).once();

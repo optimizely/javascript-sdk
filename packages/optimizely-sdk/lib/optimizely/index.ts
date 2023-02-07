@@ -1,11 +1,11 @@
 /****************************************************************************
- * Copyright 2020-2022, Optimizely, Inc. and contributors                   *
+ * Copyright 2020-2023, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
  * You may obtain a copy of the License at                                  *
  *                                                                          *
- *    http://www.apache.org/licenses/LICENSE-2.0                            *
+ *    https://www.apache.org/licenses/LICENSE-2.0                           *
  *                                                                          *
  * Unless required by applicable law or agreed to in writing, software      *
  * distributed under the License is distributed on an "AS IS" BASIS,        *
@@ -17,6 +17,7 @@ import { LoggerFacade, ErrorHandler } from '../modules/logging';
 import { sprintf, objectValues } from '../utils/fns';
 import { NotificationCenter } from '../core/notification_center';
 import { EventProcessor } from '../../lib/modules/event_processor';
+import { OdpManager } from './../core/odp/odp_manager';
 
 import {
   UserAttributes,
@@ -29,7 +30,8 @@ import {
   FeatureVariable,
   OptimizelyOptions,
   OptimizelyDecideOption,
-  OptimizelyDecision
+  OptimizelyDecision,
+  NotificationListener
 } from '../shared_types';
 import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
@@ -37,6 +39,7 @@ import { createProjectConfigManager, ProjectConfigManager } from '../core/projec
 import { createDecisionService, DecisionService, DecisionObj } from '../core/decision_service';
 import { getImpressionEvent, getConversionEvent } from '../core/event_builder';
 import { buildImpressionEvent, buildConversionEvent } from '../core/event_builder/event_helpers';
+import { NotificationRegistry } from '../core/notification_center/notification_registry';
 import fns from '../utils/fns'
 import { validate } from '../utils/attributes_validator';
 import * as enums from '../utils/enums';
@@ -81,6 +84,7 @@ export default class Optimizely {
   private decisionService: DecisionService;
   private eventProcessor: EventProcessor;
   private defaultDecideOptions: { [key: string]: boolean };
+  private odpManager?: OdpManager;
   public notificationCenter: NotificationCenter;
 
   constructor(config: OptimizelyOptions) {
@@ -168,13 +172,27 @@ export default class Optimizely {
 
     const eventProcessorStartedPromise = this.eventProcessor.start();
 
-    this.readyPromise = Promise.all([projectConfigManagerReadyPromise, eventProcessorStartedPromise]).then(function(promiseResults) {
+    this.readyPromise = Promise.all([projectConfigManagerReadyPromise, eventProcessorStartedPromise]).then((promiseResults) => {
+      if (config.odpManager != null) {
+        this.odpManager = config.odpManager;
+        this.odpManager.eventManager?.start();
+        this.updateODPSettings();
+        const sdkKey = this.projectConfigManager.getConfig()?.sdkKey;
+        if (sdkKey != null) {
+          NotificationRegistry.getNotificationCenter(sdkKey, this.logger)
+            ?.addNotificationListener(enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, () => this.updateODPSettings());
+        } else {
+          this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.ODP_SDK_KEY_MISSING_NOTIFICATION_CENTER_FAILURE);
+        }
+      }
+
       // Only return status from project config promise because event processor promise does not return any status.
       return promiseResults[0];
     })
 
     this.readyTimeouts = {};
     this.nextReadyTimeoutId = 0;
+
   }
 
   /**
@@ -1315,6 +1333,12 @@ export default class Optimizely {
    */
   close(): Promise<{ success: boolean; reason?: string }> {
     try {
+      this.notificationCenter.clearAllNotificationListeners();
+      const sdkKey = this.projectConfigManager.getConfig()?.sdkKey;
+      if (sdkKey) {
+        NotificationRegistry.removeNotificationCenter(sdkKey);
+      }
+
       const eventProcessorStoppedPromise = this.eventProcessor.stop();
       if (this.disposeOnUpdate) {
         this.disposeOnUpdate();
@@ -1672,4 +1696,13 @@ export default class Optimizely {
     return this.decideForKeys(user, allFlagKeys, options);
   }
 
+  /**
+   * Updates ODP Config with most recent ODP key, host, and segments from the project config
+   */
+  updateODPSettings(): void {
+    const projectConfig = this.projectConfigManager.getConfig();
+    if (this.odpManager != null && projectConfig != null) {
+      this.odpManager.updateSettings(projectConfig.publicKeyForOdp, projectConfig.hostForOdp, projectConfig.allSegments);
+    }
+  }
 }

@@ -1,11 +1,11 @@
 /**
- * Copyright 2016-2022, Optimizely
+ * Copyright 2016-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -103,7 +103,7 @@ export interface ProjectConfig {
   integrationKeyMap?: { [key: string]: Integration };
   publicKeyForOdp?: string;
   hostForOdp?: string;
-  allSegments: Set<string>;
+  allSegments: string[];
 }
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -167,13 +167,13 @@ export const createProjectConfig = function (
   projectConfig.audiencesById = keyBy(projectConfig.audiences, 'id');
   assign(projectConfig.audiencesById, keyBy(projectConfig.typedAudiences, 'id'));
 
-  projectConfig.allSegments = new Set<string>([])
+  projectConfig.allSegments = []
 
   Object.keys(projectConfig.audiencesById)
     .map((audience) => getAudienceSegments(projectConfig.audiencesById[audience]))
     .forEach(audienceSegments => {
       audienceSegments.forEach(segment => {
-        projectConfig.allSegments.add(segment)
+        projectConfig.allSegments.push(segment)
       })
     })
 

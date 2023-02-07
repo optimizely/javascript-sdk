@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { checkArrayEquality } from '../../../lib/utils/fns';
+
 export class OdpConfig {
   /**
    * Host of ODP audience segments API.
@@ -98,7 +100,7 @@ export class OdpConfig {
     return (
       this._apiHost == config._apiHost &&
       this._apiKey == config._apiKey &&
-      JSON.stringify(this.segmentsToCheck) == JSON.stringify(config._segmentsToCheck)
+      checkArrayEquality(this.segmentsToCheck, config._segmentsToCheck)
     );
   }
 }

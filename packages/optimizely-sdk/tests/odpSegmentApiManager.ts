@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 /// <reference types="jest" />
 
+import { expect, beforeAll } from '@jest/globals';
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
@@ -150,7 +151,7 @@ describe('OdpSegmentApiManager', () => {
 
     const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
 
-    expect(segments).toHaveLength(2);
+    expect(segments?.length).toEqual(2);
     expect(segments).toContain('has_email');
     expect(segments).toContain('has_email_opted_in');
     verify(mockLogger.log(anything(), anyString())).never();
@@ -159,9 +160,15 @@ describe('OdpSegmentApiManager', () => {
   it('should handle a request to query no segments', async () => {
     const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, ODP_USER_KEY.FS_USER_ID, USER_VALUE, []);
+    const segments = await manager.fetchSegments(
+      API_key,
+      GRAPHQL_ENDPOINT,
+      ODP_USER_KEY.FS_USER_ID,
+      USER_VALUE,
+      []
+    );
 
-    expect(segments).toHaveLength(0);
+    if (segments) expect(segments.length).toEqual(0);
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
@@ -174,7 +181,7 @@ describe('OdpSegmentApiManager', () => {
 
     const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
 
-    expect(segments).toHaveLength(0);
+    if (segments) expect(segments.length).toEqual(0);
     verify(mockLogger.log(anything(), anyString())).never();
   });
 

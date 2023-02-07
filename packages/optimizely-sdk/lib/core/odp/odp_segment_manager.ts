@@ -24,13 +24,13 @@ import { OptimizelySegmentOption } from './optimizely_segment_option';
 // Schedules connections to ODP for audience segmentation and caches the results.
 export class OdpSegmentManager {
   odpConfig: OdpConfig;
-  segmentsCache: LRUCache<string, Array<string>>;
+  segmentsCache: LRUCache<string, string[]>;
   odpSegmentApiManager: OdpSegmentApiManager;
   logger: LogHandler;
 
   constructor(
     odpConfig: OdpConfig,
-    segmentsCache: LRUCache<string, Array<string>>,
+    segmentsCache: LRUCache<string, string[]>,
     odpSegmentApiManager: OdpSegmentApiManager,
     logger?: LogHandler
   ) {
@@ -52,7 +52,7 @@ export class OdpSegmentManager {
     userKey: ODP_USER_KEY,
     userValue: string,
     options: Array<OptimizelySegmentOption>
-  ): Promise<Array<string> | null> {
+  ): Promise<string[] | null> {
     const { apiHost: odpApiHost, apiKey: odpApiKey } = this.odpConfig;
 
     if (!odpApiKey || !odpApiHost) {

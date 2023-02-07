@@ -61,7 +61,7 @@ describe('OdpSegmentManager', () => {
     const API_KEY = 'test-api-key';
     const API_HOST = 'https://odp.example.com';
     odpConfig = new OdpConfig(API_KEY, API_HOST, []);
-    const segmentsCache = new LRUCache<string, Array<string>>({
+    const segmentsCache = new LRUCache<string, string[]>({
       maxSize: 1000,
       timeout: 1000,
     });
@@ -121,7 +121,7 @@ describe('OdpSegmentManager', () => {
 
   // Utility Functions
 
-  function setCache(userKey: string, userValue: string, value: Array<string>) {
+  function setCache(userKey: string, userValue: string, value: string[]) {
     const cacheKey = manager.makeCacheKey(userKey, userValue);
     manager.segmentsCache.save({
       key: cacheKey,
@@ -129,7 +129,7 @@ describe('OdpSegmentManager', () => {
     });
   }
 
-  function peekCache(userKey: string, userValue: string): Array<string> | null {
+  function peekCache(userKey: string, userValue: string): string[] | null {
     const cacheKey = manager.makeCacheKey(userKey, userValue);
     return manager.segmentsCache.peek(cacheKey);
   }

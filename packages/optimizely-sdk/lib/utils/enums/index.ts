@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2016-2022, Optimizely, Inc. and contributors                   *
+ * Copyright 2016-2023, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -57,6 +57,8 @@ export const ERROR_MESSAGES = {
   ODP_INVALID_DATA: '%s: ODP data is not valid',
   ODP_NOT_INTEGRATED: '%s: ODP is not integrated',
   ODP_NOT_ENABLED: '%s: ODP is not enabled',
+  ODP_SDK_KEY_MISSING_NOTIFICATION_CENTER_FAILURE:
+    '%s: You must provide an sdkKey. Cannot start Notification Center for ODP Integration.',
   UNDEFINED_ATTRIBUTE: '%s: Provided attribute: %s has an undefined value.',
   UNRECOGNIZED_ATTRIBUTE: '%s: Unrecognized attribute %s provided. Pruning before sending event to Optimizely.',
   UNABLE_TO_CAST_VALUE: '%s: Unable to cast value %s to type %s, returning null.',
