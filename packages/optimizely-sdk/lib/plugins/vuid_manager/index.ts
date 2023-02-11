@@ -85,7 +85,7 @@ export class VuidManager implements IVuidManager {
    */
   private async load(cache: PersistentKeyValueCache): Promise<string> {
     const cachedValue = await cache.get(this._keyForVuid);
-    if (cachedValue && this.isVuid(cachedValue)) {
+    if (cachedValue && VuidManager.isVuid(cachedValue)) {
       this._vuid = cachedValue;
     } else {
       this._vuid = this.makeVuid();
@@ -124,7 +124,7 @@ export class VuidManager implements IVuidManager {
    * @param vuid VistorId to check
    * @returns *true* if the VisitorId is valid otherwise *false* for invalid
    */
-  private isVuid = (vuid: string): boolean => vuid.startsWith(this._prefix);
+  static isVuid = (vuid: string): boolean => vuid.startsWith(this._instance._prefix);
 
   /**
    * Function used in unit testing to reset the VuidManager

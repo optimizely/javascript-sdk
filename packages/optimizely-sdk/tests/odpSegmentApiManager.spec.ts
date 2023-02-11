@@ -16,7 +16,7 @@
 
 /// <reference types="jest" />
 
-import { expect, beforeAll } from '@jest/globals';
+import { expect, beforeAll, describe, beforeEach, it } from '@jest/globals';
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
@@ -160,13 +160,7 @@ describe('OdpSegmentApiManager', () => {
   it('should handle a request to query no segments', async () => {
     const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(
-      API_key,
-      GRAPHQL_ENDPOINT,
-      ODP_USER_KEY.FS_USER_ID,
-      USER_VALUE,
-      []
-    );
+    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, ODP_USER_KEY.FS_USER_ID, USER_VALUE, []);
 
     if (segments) expect(segments.length).toEqual(0);
     verify(mockLogger.log(anything(), anyString())).never();

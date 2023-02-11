@@ -67,18 +67,16 @@ export class OdpConfig {
 
   /**
    * Update the ODP configuration details
-   * @param apiKey Public API key for the ODP account
-   * @param apiHost Host of ODP audience segments API
-   * @param segmentsToCheck Audience segments
+   * @param {OdpConfig} config New ODP Config to potentially update self with
    * @returns true if configuration was updated successfully
    */
-  public update(apiKey?: string, apiHost?: string, segmentsToCheck?: string[]): boolean {
-    if (this._apiKey === apiKey && this._apiHost === apiHost && this._segmentsToCheck === segmentsToCheck) {
+  public update(config: OdpConfig): boolean {
+    if (this.equals(config)) {
       return false;
     } else {
-      if (apiKey) this._apiKey = apiKey;
-      if (apiHost) this._apiHost = apiHost;
-      if (segmentsToCheck) this._segmentsToCheck = segmentsToCheck;
+      if (config.apiKey) this._apiKey = config.apiKey;
+      if (config.apiHost) this._apiHost = config.apiHost;
+      if (config.segmentsToCheck) this._segmentsToCheck = config.segmentsToCheck;
 
       return true;
     }
@@ -93,14 +91,14 @@ export class OdpConfig {
 
   /**
    * Detects if there are any changes between the current and incoming ODP Configs
-   * @param config ODP Configuration
+   * @param configToCompare ODP Configuration to check self against for equality
    * @returns Boolean based on if the current ODP Config is equivalent to the incoming ODP Config
    */
-  public equals(config: OdpConfig): boolean {
+  public equals(configToCompare: OdpConfig): boolean {
     return (
-      this._apiHost == config._apiHost &&
-      this._apiKey == config._apiKey &&
-      checkArrayEquality(this.segmentsToCheck, config._segmentsToCheck)
+      this._apiHost == configToCompare._apiHost &&
+      this._apiKey == configToCompare._apiKey &&
+      checkArrayEquality(this.segmentsToCheck, configToCompare._segmentsToCheck)
     );
   }
 }

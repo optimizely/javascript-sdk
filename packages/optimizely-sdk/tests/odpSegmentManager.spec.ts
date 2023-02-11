@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,9 @@ describe('OdpSegmentManager', () => {
   const userKey: ODP_USER_KEY = ODP_USER_KEY.VUID;
   const userValue = 'test-user';
 
+  const validTestOdpConfig = new OdpConfig('valid-key', 'host', ['new-customer']);
+  const invalidTestOdpConfig = new OdpConfig('invalid-key', 'host', ['new-customer']);
+
   beforeEach(() => {
     resetCalls(mockLogHandler);
     resetCalls(mockRequestHandler);
@@ -70,7 +73,7 @@ describe('OdpSegmentManager', () => {
   });
 
   it('should fetch segments successfully on cache miss.', async () => {
-    odpConfig.update('host', 'valid', ['new-customer']);
+    odpConfig.update(validTestOdpConfig);
     setCache(userKey, '123', ['a']);
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
@@ -78,7 +81,7 @@ describe('OdpSegmentManager', () => {
   });
 
   it('should fetch segments successfully on cache hit.', async () => {
-    odpConfig.update('host', 'valid', ['new-customer']);
+    odpConfig.update(validTestOdpConfig);
     setCache(userKey, userValue, ['a']);
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
@@ -86,14 +89,14 @@ describe('OdpSegmentManager', () => {
   });
 
   it('should throw an error when fetching segments returns an error.', async () => {
-    odpConfig.update('host', 'invalid-key', ['new-customer']);
+    odpConfig.update(invalidTestOdpConfig);
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, []);
     expect(segments).toBeNull;
   });
 
   it('should ignore the cache if the option is included in the options array.', async () => {
-    odpConfig.update('host', 'valid', ['new-customer']);
+    odpConfig.update(validTestOdpConfig);
     setCache(userKey, userValue, ['a']);
     options = [OptimizelySegmentOption.IGNORE_CACHE];
 
@@ -103,7 +106,7 @@ describe('OdpSegmentManager', () => {
   });
 
   it('should reset the cache if the option is included in the options array.', async () => {
-    odpConfig.update('host', 'valid', ['new-customer']);
+    odpConfig.update(validTestOdpConfig);
     setCache(userKey, userValue, ['a']);
     setCache(userKey, '123', ['a']);
     setCache(userKey, '456', ['a']);

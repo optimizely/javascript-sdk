@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import { uuid } from '../../utils/fns';
 import { ODP_USER_KEY } from '../../utils/enums';
 import { OdpConfig } from './odp_config';
 import { OdpEventApiManager } from './odp_event_api_manager';
+import { invalidOdpDataFound } from './odp_utils';
 
 const MAX_RETRIES = 3;
 const DEFAULT_BATCH_SIZE = 10;
@@ -206,7 +207,7 @@ export class OdpEventManager implements IOdpEventManager {
    * @param event ODP Event to forward
    */
   public sendEvent(event: OdpEvent): void {
-    if (this.invalidDataFound(event.data)) {
+    if (invalidOdpDataFound(event.data)) {
       this.logger.log(LogLevel.ERROR, 'Event data found to be invalid.');
     } else {
       event.data = this.augmentCommonData(event.data);
@@ -372,23 +373,6 @@ export class OdpEventManager implements IOdpEventManager {
       this.logger.log(LogLevel.DEBUG, 'ODPConfig not ready. Leaving events in queue.');
     }
     return false;
-  }
-
-  /**
-   * Validate event data value types
-   * @param data Event data to be validated
-   * @returns True if an invalid type was found in the data otherwise False
-   * @private
-   */
-  private invalidDataFound(data: Map<string, unknown>): boolean {
-    const validTypes: string[] = ['string', 'number', 'boolean'];
-    let foundInvalidValue = false;
-    data.forEach(value => {
-      if (!validTypes.includes(typeof value) && value !== null) {
-        foundInvalidValue = true;
-      }
-    });
-    return foundInvalidValue;
   }
 
   /**

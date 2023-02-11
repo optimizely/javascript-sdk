@@ -54,11 +54,14 @@ export const ERROR_MESSAGES = {
   NO_JSON_PROVIDED: '%s: No JSON object to validate against schema.',
   NO_VARIATION_FOR_EXPERIMENT_KEY: '%s: No variation key %s defined in datafile for experiment %s.',
   ODP_EVENT_FAILED: '%s: ODP event send failed (invalid url)',
+  ODP_INITIALIZATION_FAILED: '%s: ODP failed to initialize.',
   ODP_INVALID_DATA: '%s: ODP data is not valid',
-  ODP_NOT_INTEGRATED: '%s: ODP is not integrated',
   ODP_NOT_ENABLED: '%s: ODP is not enabled',
+  ODP_NOT_INTEGRATED: '%s: ODP is not integrated',
   ODP_SDK_KEY_MISSING_NOTIFICATION_CENTER_FAILURE:
     '%s: You must provide an sdkKey. Cannot start Notification Center for ODP Integration.',
+  ODP_VUID_INITIALIZATION_FAILED: '%s: ODP VUID initialization failed.',
+  ODP_VUID_REGISTRATION_FAILED: '%s: ODP VUID failed to be registered.',
   UNDEFINED_ATTRIBUTE: '%s: Provided attribute: %s has an undefined value.',
   UNRECOGNIZED_ATTRIBUTE: '%s: Unrecognized attribute %s provided. Pruning before sending event to Optimizely.',
   UNABLE_TO_CAST_VALUE: '%s: Unable to cast value %s to type %s, returning null.',
@@ -97,6 +100,7 @@ export const LOG_MESSAGES = {
   NOT_TRACKING_USER: '%s: Not tracking user %s.',
   ODP_IDENTIFY_FAILED_ODP_DISABLED: '%s: ODP identify event for user %s is not dispatched (ODP disabled).',
   ODP_IDENTIFY_FAILED_ODP_NOT_INTEGRATED: '%s: ODP identify event %s is not dispatched (ODP not integrated).',
+  ODP_IDENTIFY_FAILED_VUID_MISSING: '%s: ODP identify event %s was not dispatched (Unable to fetch VUID).',
   PARSED_REVENUE_VALUE: '%s: Parsed revenue value "%s" from event tags.',
   PARSED_NUMERIC_VALUE: '%s: Parsed event value "%s" from event tags.',
   RETURNING_STORED_VARIATION:

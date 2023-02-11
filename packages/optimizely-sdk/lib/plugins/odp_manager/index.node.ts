@@ -21,31 +21,35 @@ import { OdpManager } from '../../core/odp/odp_manager';
 import { OdpSegmentManager } from '../../core/odp/odp_segment_manager';
 import { OdpEventManager } from '../../core/odp/odp_event_manager';
 import { getLogger, LogHandler } from '../../modules/logging';
-import { NODE_CLIENT_ENGINE, NODE_CLIENT_VERSION } from '../../utils/enums';
+import { ERROR_MESSAGES, LOG_LEVEL, NODE_CLIENT_ENGINE, NODE_CLIENT_VERSION } from '../../utils/enums';
 
 // Server-side Node Plugin for ODP Manager
 export class NodeOdpManager extends OdpManager {
   constructor(
     disable: boolean,
-    logger?: LogHandler,
+    logger: LogHandler = getLogger(),
     segmentsCache?: LRUCache<string, string[]>,
     segmentManager?: OdpSegmentManager,
     eventManager?: OdpEventManager
   ) {
-    const nodeLogger = logger || getLogger('OdpManager');
-    const nodeRequestHandler = new NodeRequestHandler(nodeLogger);
+    if (disable) {
+      logger.log(LOG_LEVEL.INFO, ERROR_MESSAGES.ODP_NOT_ENABLED);
+      return;
+    }
+
+    const nodeRequestHandler = new NodeRequestHandler(logger);
     const nodeClientEngine = NODE_CLIENT_ENGINE;
     const nodeClientVersion = NODE_CLIENT_VERSION;
 
-    super(
+    super({
       disable,
-      nodeRequestHandler,
-      nodeLogger,
+      requestHandler: nodeRequestHandler,
+      logger,
+      clientEngine: nodeClientEngine,
+      clientVersion: nodeClientVersion,
       segmentsCache,
       segmentManager,
       eventManager,
-      nodeClientEngine,
-      nodeClientVersion
-    );
+    });
   }
 }

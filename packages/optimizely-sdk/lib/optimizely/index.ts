@@ -59,6 +59,8 @@ import {
   NOTIFICATION_TYPES
 } from '../utils/enums';
 
+import { OdpConfig } from '../../lib/core/odp/odp_config';
+
 const MODULE_NAME = 'OPTIMIZELY';
 
 const DEFAULT_ONREADY_TIMEOUT = 30000;
@@ -1702,7 +1704,9 @@ export default class Optimizely {
   updateODPSettings(): void {
     const projectConfig = this.projectConfigManager.getConfig();
     if (this.odpManager != null && projectConfig != null) {
-      this.odpManager.updateSettings(projectConfig.publicKeyForOdp, projectConfig.hostForOdp, projectConfig.allSegments);
+      this.odpManager.updateSettings(
+        new OdpConfig(projectConfig.publicKeyForOdp, projectConfig.hostForOdp, projectConfig.allSegments)
+      );
     }
   }
 }
