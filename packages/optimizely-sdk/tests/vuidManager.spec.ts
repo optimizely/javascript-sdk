@@ -15,6 +15,7 @@
  */
 
 /// <reference types="jest" />
+import { expect, describe, it, beforeAll, beforeEach } from '@jest/globals';
 
 import { VuidManager } from '../lib/plugins/vuid_manager';
 import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache';

@@ -96,8 +96,8 @@ export class OdpConfig {
    */
   public equals(configToCompare: OdpConfig): boolean {
     return (
-      this._apiHost == configToCompare._apiHost &&
-      this._apiKey == configToCompare._apiKey &&
+      this._apiHost === configToCompare._apiHost &&
+      this._apiKey === configToCompare._apiKey &&
       checkArrayEquality(this.segmentsToCheck, configToCompare._segmentsToCheck)
     );
   }

@@ -23,7 +23,10 @@ import { OdpEventManager } from '../../core/odp/odp_event_manager';
 import { getLogger, LogHandler } from '../../modules/logging';
 import { ERROR_MESSAGES, LOG_LEVEL, NODE_CLIENT_ENGINE, NODE_CLIENT_VERSION } from '../../utils/enums';
 
-// Server-side Node Plugin for ODP Manager
+/**
+ * Server-side Node Plugin for ODP Manager.
+ * Note: As this is still a work-in-progress. Please avoid using the Node ODP Manager.
+ */
 export class NodeOdpManager extends OdpManager {
   constructor(
     disable: boolean,

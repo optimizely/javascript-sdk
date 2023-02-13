@@ -146,11 +146,18 @@ export class OdpEventManager implements IOdpEventManager {
   }
 
   /**
-   * Update ODP configuration settings
-   * @param odpConfig New configuration to apply
+   * Update ODP configuration settings.
+   * @param newConfig New configuration to apply
    */
-  public updateSettings(odpConfig: OdpConfig): void {
-    this.odpConfig = odpConfig;
+  public updateSettings(newConfig: OdpConfig): void {
+    this.odpConfig = newConfig;
+  }
+
+  /**
+   * Cleans up all pending events; occurs every time the ODP Config is updated.
+   */
+  public flush(): void {
+    this.processQueue(true);
   }
 
   /**
