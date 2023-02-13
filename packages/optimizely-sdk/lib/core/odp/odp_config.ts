@@ -21,7 +21,7 @@ export class OdpConfig {
    * Host of ODP audience segments API.
    * @private
    */
-  private _apiHost = '';
+  private _apiHost: string;
 
   /**
    * Getter to retrieve the ODP server host
@@ -35,7 +35,7 @@ export class OdpConfig {
    * Public API key for the ODP account from which the audience segments will be fetched (optional).
    * @private
    */
-  private _apiKey = '';
+  private _apiKey: string;
 
   /**
    * Getter to retrieve the ODP API key
@@ -60,8 +60,8 @@ export class OdpConfig {
   }
 
   constructor(apiKey?: string, apiHost?: string, segmentsToCheck?: string[]) {
-    if (apiKey) this._apiKey = apiKey;
-    if (apiHost) this._apiHost = apiHost;
+    this._apiKey = apiKey ?? '';
+    this._apiHost = apiHost ?? '';
     this._segmentsToCheck = segmentsToCheck ?? [];
   }
 

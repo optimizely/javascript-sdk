@@ -162,7 +162,7 @@ describe('OdpSegmentApiManager', () => {
 
     const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, ODP_USER_KEY.FS_USER_ID, USER_VALUE, []);
 
-    if (segments) expect(segments.length).toEqual(0);
+    expect(segments?.length).toEqual(0);
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
@@ -175,7 +175,7 @@ describe('OdpSegmentApiManager', () => {
 
     const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
 
-    if (segments) expect(segments.length).toEqual(0);
+    expect(segments?.length).toEqual(0);
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
