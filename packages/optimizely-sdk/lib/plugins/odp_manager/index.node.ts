@@ -17,40 +17,41 @@
 import { NodeRequestHandler } from '../../utils/http_request_handler/node_request_handler';
 
 import { LRUCache } from '../../utils/lru_cache';
+import { ServerLRUCache } from './../../utils/lru_cache/server_lru_cache';
+
 import { OdpManager } from '../../core/odp/odp_manager';
 import { OdpSegmentManager } from '../../core/odp/odp_segment_manager';
 import { OdpEventManager } from '../../core/odp/odp_event_manager';
 import { getLogger, LogHandler } from '../../modules/logging';
 import { ERROR_MESSAGES, LOG_LEVEL, NODE_CLIENT_ENGINE, NODE_CLIENT_VERSION } from '../../utils/enums';
 
+interface NodeOdpManagerConfig {
+  disable: boolean;
+  logger?: LogHandler;
+  segmentsCache?: LRUCache<string, string[]>;
+  segmentManager?: OdpSegmentManager;
+  eventManager?: OdpEventManager;
+}
+
 /**
  * Server-side Node Plugin for ODP Manager.
  * Note: As this is still a work-in-progress. Please avoid using the Node ODP Manager.
  */
 export class NodeOdpManager extends OdpManager {
-  constructor(
-    disable: boolean,
-    logger: LogHandler = getLogger(),
-    segmentsCache?: LRUCache<string, string[]>,
-    segmentManager?: OdpSegmentManager,
-    eventManager?: OdpEventManager
-  ) {
-    if (disable) {
-      logger.log(LOG_LEVEL.INFO, ERROR_MESSAGES.ODP_NOT_ENABLED);
-      return;
-    }
+  constructor({ disable, logger, segmentsCache, segmentManager, eventManager }: NodeOdpManagerConfig) {
+    const nodeLogger = logger || getLogger();
 
-    const nodeRequestHandler = new NodeRequestHandler(logger);
+    const nodeRequestHandler = new NodeRequestHandler(nodeLogger);
     const nodeClientEngine = NODE_CLIENT_ENGINE;
     const nodeClientVersion = NODE_CLIENT_VERSION;
 
     super({
       disable,
       requestHandler: nodeRequestHandler,
-      logger,
+      logger: nodeLogger,
       clientEngine: nodeClientEngine,
       clientVersion: nodeClientVersion,
-      segmentsCache,
+      segmentsCache: segmentsCache || new ServerLRUCache<string, string[]>(),
       segmentManager,
       eventManager,
     });

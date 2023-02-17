@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/// <reference types="jest" />
 
 import { expect, describe, it, beforeAll, beforeEach } from '@jest/globals';
-import { anything, instance, mock, resetCalls, verify } from 'ts-mockito';
+import { anything, capture, instance, mock, resetCalls, verify } from 'ts-mockito';
 
 import { LOG_MESSAGES } from './../lib/utils/enums/index';
 import { ERROR_MESSAGES, ODP_USER_KEY } from './../lib/utils/enums/index';
@@ -37,11 +36,15 @@ const keyA = 'key-a';
 const hostA = 'host-a';
 const segmentsA = ['a'];
 const userA = 'fs-user-a';
+const vuidA = 'vuid_a';
+const odpConfigA = new OdpConfig(keyA, hostA, segmentsA);
 
 const keyB = 'key-b';
 const hostB = 'host-b';
 const segmentsB = ['b'];
 const userB = 'fs-user-b';
+const vuidB = 'vuid_b';
+const odpConfigB = new OdpConfig(keyB, hostB, segmentsB);
 
 describe('OdpManager', () => {
   let mockLogger: LogHandler;
@@ -88,10 +91,9 @@ describe('OdpManager', () => {
     resetCalls(mockSegmentManager);
   });
 
-  const browserOdpManagerInstance = (config?: OdpConfig) =>
+  const browserOdpManagerInstance = () =>
     new BrowserOdpManager({
       disable: false,
-      odpConfig: config || undefined,
       eventManager,
       segmentManager,
     });
@@ -99,11 +101,11 @@ describe('OdpManager', () => {
   it('should register VUID automatically on BrowserOdpManager initialization', async () => {
     const browserOdpManager = browserOdpManagerInstance();
     const vuidManager = await VuidManager.instance(BrowserOdpManager.cache);
+    expect(browserOdpManager.vuid).toBe(vuidManager.vuid);
   });
 
   it('should drop relevant calls when OdpManager is initialized with the disabled flag, except for VUID', async () => {
     const browserOdpManager = new BrowserOdpManager({ disable: true, logger });
-    await new Promise(resolve => setTimeout(resolve, 400));
 
     verify(mockLogger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_ENABLED)).once();
 
@@ -119,7 +121,6 @@ describe('OdpManager', () => {
     expect(browserOdpManager.eventManager).toBeUndefined;
     expect(browserOdpManager.segmentManager).toBeUndefined;
 
-    verify(mockEventManager.registerVuid(anything())).once();
     const vuidManager = await VuidManager.instance(BrowserOdpManager.cache);
     expect(vuidManager.vuid.slice(0, 5)).toBe('vuid_');
   });
@@ -141,51 +142,60 @@ describe('OdpManager', () => {
   it('should use new settings in event manager when ODP Config is updated', async () => {
     const browserOdpManager = new BrowserOdpManager({
       disable: false,
-      odpConfig: new OdpConfig(keyA, hostA, segmentsA),
-      eventManager: new OdpEventManager({
-        odpConfig,
-        apiManager: eventApiManager,
-        logger,
-        clientEngine: '',
-        clientVersion: '',
-        batchSize: 1,
-        flushInterval: 250,
-      }),
+      eventManager,
     });
 
-    await new Promise(resolve => setTimeout(resolve, 400));
-    verify(mockEventApiManager.sendEvents(keyA, hostA, anything())).once(); // Called once with intializeVuid
+    expect(browserOdpManager.eventManager).toBeDefined();
+    verify(mockEventManager.updateSettings(anything())).once();
+    verify(mockEventManager.start()).once();
+
+    await new Promise(resolve => setTimeout(resolve, 200)); // Wait for VuidManager to fetch from cache.
+
+    verify(mockEventManager.registerVuid(anything())).once();
+
+    const didUpdateA = browserOdpManager.updateSettings(odpConfigA);
+    expect(didUpdateA).toBe(true);
+    expect(browserOdpManager.odpConfig.equals(odpConfigA)).toBe(true);
+
+    const updateSettingsArgsA = capture(mockEventManager.updateSettings).last();
+    expect(updateSettingsArgsA[0]).toStrictEqual(odpConfigA);
 
     browserOdpManager.identifyUser(userA);
+    const identifyUserArgsA = capture(mockEventManager.identifyUser).last();
+    expect(identifyUserArgsA[0]).toStrictEqual(userA);
 
-    await new Promise(resolve => setTimeout(resolve, 400));
+    const didUpdateB = browserOdpManager.updateSettings(odpConfigB);
+    expect(didUpdateB).toBe(true);
+    expect(browserOdpManager.odpConfig.equals(odpConfigB)).toBe(true);
 
-    verify(mockEventApiManager.sendEvents(keyA, hostA, anything())).twice(); // Called again with identifyUser
+    const updateSettingsArgsB = capture(mockEventManager.updateSettings).last();
+    expect(updateSettingsArgsB[0]).toStrictEqual(odpConfigB);
 
-    browserOdpManager.updateSettings(new OdpConfig(keyB, hostB, segmentsB));
     browserOdpManager.eventManager.identifyUser(userB);
-
-    await new Promise(resolve => setTimeout(resolve, 400));
-    verify(mockEventApiManager.sendEvents(keyB, hostB, anything())).once();
+    const identifyUserArgsB = capture(mockEventManager.identifyUser).last();
+    expect(identifyUserArgsB[0]).toStrictEqual(userB);
   });
 
-  it('should use new settings in segment manager when ODP Config is updated', async () => {
+  it('should use new settings in segment manager when ODP Config is updated', () => {
     const browserOdpManager = new BrowserOdpManager({
       disable: false,
-      odpConfig: new OdpConfig(keyA, hostA, segmentsA),
       segmentManager: new OdpSegmentManager(odpConfig, new BrowserLRUCache<string, string[]>(), segmentApiManager),
     });
 
-    browserOdpManager.fetchQualifiedSegments(ODP_USER_KEY.VUID, userA);
+    const didUpdateA = browserOdpManager.updateSettings(new OdpConfig(keyA, hostA, segmentsA));
+    expect(didUpdateA).toBe(true);
 
-    await new Promise(resolve => setTimeout(resolve, 400));
-    verify(mockSegmentApiManager.fetchSegments(keyA, hostA, ODP_USER_KEY.VUID, userA, anything())).once();
+    browserOdpManager.fetchQualifiedSegments(ODP_USER_KEY.VUID, vuidA);
+    const fetchQualifiedSegmentsArgsA = capture(mockSegmentApiManager.fetchSegments).last();
+    expect(fetchQualifiedSegmentsArgsA).toStrictEqual([keyA, hostA, ODP_USER_KEY.VUID, vuidA, segmentsA]);
 
-    browserOdpManager.updateSettings(new OdpConfig(keyB, hostB, segmentsB));
-    browserOdpManager.fetchQualifiedSegments(ODP_USER_KEY.VUID, userB);
+    const didUpdateB = browserOdpManager.updateSettings(new OdpConfig(keyB, hostB, segmentsB));
+    expect(didUpdateB).toBe(true);
 
-    await new Promise(resolve => setTimeout(resolve, 400));
-    verify(mockSegmentApiManager.fetchSegments(keyB, hostB, ODP_USER_KEY.VUID, userB, anything())).once();
+    browserOdpManager.fetchQualifiedSegments(ODP_USER_KEY.VUID, vuidB);
+
+    const fetchQualifiedSegmentsArgsB = capture(mockSegmentApiManager.fetchSegments).last();
+    expect(fetchQualifiedSegmentsArgsB).toStrictEqual([keyB, hostB, ODP_USER_KEY.VUID, vuidB, segmentsB]);
   });
 
   it('should get event manager', () => {

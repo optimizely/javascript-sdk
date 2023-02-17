@@ -153,14 +153,17 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
   assign(projectConfig.audiencesById, keyBy(projectConfig.typedAudiences, 'id'));
 
   projectConfig.allSegments = [];
+  const allSegmentsSet = new Set<string>();
 
   Object.keys(projectConfig.audiencesById)
     .map(audience => getAudienceSegments(projectConfig.audiencesById[audience]))
     .forEach(audienceSegments => {
       audienceSegments.forEach(segment => {
-        projectConfig.allSegments.push(segment);
+        allSegmentsSet.add(segment);
       });
     });
+
+  projectConfig.allSegments = Array.from(allSegmentsSet);
 
   projectConfig.attributeKeyMap = keyBy(projectConfig.attributes, 'key');
   projectConfig.eventKeyMap = keyBy(projectConfig.events, 'key');

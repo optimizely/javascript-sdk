@@ -48,7 +48,6 @@ interface OdpManagerConfig {
   logger?: LogHandler;
   clientEngine?: string;
   clientVersion?: string;
-  odpConfig?: OdpConfig;
   segmentsCache?: LRUCache<string, string[]>;
   eventManager?: OdpEventManager;
   segmentManager?: OdpSegmentManager;
@@ -60,29 +59,19 @@ interface OdpManagerConfig {
 export class OdpManager {
   enabled: boolean;
   logger: LogHandler;
-  odpConfig!: OdpConfig;
+  odpConfig: OdpConfig = new OdpConfig();
 
   /**
    * ODP Segment Manager which provides an interface to the remote ODP server (GraphQL API) for audience segments mapping.
    * It fetches all qualified segments for the given user context and manages the segments cache for all user contexts.
-   * @private
    */
-  private _segmentManager!: OdpSegmentManager;
-
-  public get segmentManager(): OdpSegmentManager {
-    return this._segmentManager;
-  }
+  public segmentManager!: OdpSegmentManager;
 
   /**
    * ODP Event Manager which provides an interface to the remote ODP server (REST API) for events.
    * It will queue all pending events (persistent) and send them (in batches of up to 10 events) to the ODP server when possible.
-   * @private
    */
-  private _eventManager!: OdpEventManager;
-
-  public get eventManager(): OdpEventManager {
-    return this._eventManager;
-  }
+  public eventManager!: OdpEventManager;
 
   constructor({
     disable,
@@ -90,7 +79,6 @@ export class OdpManager {
     logger,
     clientEngine,
     clientVersion,
-    odpConfig,
     segmentsCache,
     eventManager,
     segmentManager,
@@ -103,14 +91,12 @@ export class OdpManager {
       return;
     }
 
-    this.odpConfig = odpConfig || new OdpConfig();
-
     // Set up Segment Manager (Audience Segments GraphQL API Interface)
     if (segmentManager) {
-      this._segmentManager = segmentManager;
-      this._segmentManager.odpConfig = this.odpConfig;
+      this.segmentManager = segmentManager;
+      this.segmentManager.odpConfig = this.odpConfig;
     } else {
-      this._segmentManager = new OdpSegmentManager(
+      this.segmentManager = new OdpSegmentManager(
         this.odpConfig,
         segmentsCache || new BrowserLRUCache<string, string[]>(),
         new OdpSegmentApiManager(requestHandler, this.logger)
@@ -119,10 +105,10 @@ export class OdpManager {
 
     // Set up Events Manager (Events REST API Interface)
     if (eventManager) {
-      this._eventManager = eventManager;
-      this._eventManager.updateSettings(this.odpConfig);
+      this.eventManager = eventManager;
+      this.eventManager.updateSettings(this.odpConfig);
     } else {
-      this._eventManager = new OdpEventManager({
+      this.eventManager = new OdpEventManager({
         odpConfig: this.odpConfig,
         apiManager: new OdpEventApiManager(requestHandler, this.logger),
         logger: this.logger,
@@ -131,7 +117,7 @@ export class OdpManager {
       });
     }
 
-    this._eventManager.start();
+    this.eventManager.start();
   }
 
   /**
@@ -142,16 +128,14 @@ export class OdpManager {
       return false;
     }
 
-    this._eventManager.flush();
+    this.eventManager.flush();
 
     const newConfig = new OdpConfig(apiKey, apiHost, segmentsToCheck);
     const configDidUpdate = this.odpConfig.update(newConfig);
 
     if (configDidUpdate) {
-      this.odpConfig = newConfig;
-      this._eventManager.updateSettings(this.odpConfig);
-      this._segmentManager.reset();
-      this._segmentManager.updateSettings(this.odpConfig);
+      this.odpConfig.update(newConfig);
+      this.segmentManager.reset();
       return true;
     }
 
@@ -162,7 +146,9 @@ export class OdpManager {
    * Attempts to stop the current instance of ODP Manager's event manager, if it exists and is running.
    */
   public close(): void {
-    this._eventManager.stop();
+    if (this.enabled) {
+      this.eventManager.stop();
+    }
   }
 
   /**
@@ -183,15 +169,16 @@ export class OdpManager {
       return null;
     }
 
-    return this._segmentManager.fetchQualifiedSegments(userKey, userId, options);
+    return this.segmentManager.fetchQualifiedSegments(userKey, userId, options);
   }
 
   /**
    * Identifies a user via the ODP Event Manager
-   * @param userId Unique identifier of a target user.
+   * @param {string}  fsUserId  Unique identifier of a target user.
+   * @param {string}  vuid      (Optional) Secondary unique identifier of a target user.
    * @returns
    */
-  public identifyUser(userId: string): void {
+  public identifyUser(fsUserId: string, vuid?: string): void {
     if (!this.enabled) {
       this.logger.log(LogLevel.DEBUG, LOG_MESSAGES.ODP_IDENTIFY_FAILED_ODP_DISABLED);
       return;
@@ -202,7 +189,7 @@ export class OdpManager {
       return;
     }
 
-    this.eventManager.identifyUser(userId);
+    this.eventManager.identifyUser(fsUserId, vuid);
   }
 
   /**

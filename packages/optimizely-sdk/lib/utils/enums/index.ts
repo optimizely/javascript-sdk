@@ -58,6 +58,7 @@ export const ERROR_MESSAGES = {
   ODP_INVALID_DATA: '%s: ODP data is not valid',
   ODP_NOT_ENABLED: '%s: ODP is not enabled',
   ODP_NOT_INTEGRATED: '%s: ODP is not integrated',
+  ODP_SEND_EVENT_FAILED_VUID_MISSING: '%s: ODP send event %s was not dispatched (Unable to fetch VUID).',
   ODP_SDK_KEY_MISSING_NOTIFICATION_CENTER_FAILURE:
     '%s: You must provide an sdkKey. Cannot start Notification Center for ODP Integration.',
   ODP_VUID_INITIALIZATION_FAILED: '%s: ODP VUID initialization failed.',
@@ -100,7 +101,6 @@ export const LOG_MESSAGES = {
   NOT_TRACKING_USER: '%s: Not tracking user %s.',
   ODP_IDENTIFY_FAILED_ODP_DISABLED: '%s: ODP identify event for user %s is not dispatched (ODP disabled).',
   ODP_IDENTIFY_FAILED_ODP_NOT_INTEGRATED: '%s: ODP identify event %s is not dispatched (ODP not integrated).',
-  ODP_IDENTIFY_FAILED_VUID_MISSING: '%s: ODP identify event %s was not dispatched (Unable to fetch VUID).',
   PARSED_REVENUE_VALUE: '%s: Parsed revenue value "%s" from event tags.',
   PARSED_NUMERIC_VALUE: '%s: Parsed event value "%s" from event tags.',
   RETURNING_STORED_VARIATION:

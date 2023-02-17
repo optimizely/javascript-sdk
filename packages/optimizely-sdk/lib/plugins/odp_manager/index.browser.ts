@@ -16,29 +16,26 @@
 
 import packageJSON from '../../../package.json';
 
-import BrowserAsyncStorageCache from '../key_value_cache/browserAsyncStorageCache';
-
+import { ERROR_MESSAGES, JAVASCRIPT_CLIENT_ENGINE, LOG_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
+import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import { BrowserRequestHandler } from './../../utils/http_request_handler/browser_request_handler';
-import { LRUCache } from '../../utils/lru_cache';
+
+import BrowserAsyncStorageCache from '../key_value_cache/browserAsyncStorageCache';
+import PersistentKeyValueCache from '../key_value_cache/persistentKeyValueCache';
+import { BrowserLRUCache, LRUCache } from '../../utils/lru_cache';
 
 import { VuidManager } from './../vuid_manager/index';
 
-import { OdpConfig } from './../../core/odp/odp_config';
 import { OdpManager } from '../../core/odp/odp_manager';
 import { OdpEvent } from '../../core/odp/odp_event';
 import { invalidOdpDataFound } from '../../core/odp/odp_utils';
-import { OdpEventApiManager } from '../../core/odp/odp_event_api_manager';
-import { OdpEventManager, STATE } from '../../core/odp/odp_event_manager';
-import { OdpSegmentApiManager } from '../../core/odp/odp_segment_api_manager';
+import { OdpEventManager } from '../../core/odp/odp_event_manager';
 import { OdpSegmentManager } from '../../core/odp/odp_segment_manager';
-import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
-import { ERROR_MESSAGES, JAVASCRIPT_CLIENT_ENGINE, LOG_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
-import PersistentKeyValueCache from '../key_value_cache/persistentKeyValueCache';
+import { OptimizelySegmentOption } from '../../core/odp/optimizely_segment_option';
 
 interface BrowserOdpManagerConfig {
   disable: boolean;
   logger?: LogHandler;
-  odpConfig?: OdpConfig;
   segmentsCache?: LRUCache<string, string[]>;
   eventManager?: OdpEventManager;
   segmentManager?: OdpSegmentManager;
@@ -49,7 +46,7 @@ export class BrowserOdpManager extends OdpManager {
   static cache = new BrowserAsyncStorageCache();
   vuid?: string;
 
-  constructor({ disable, logger, odpConfig, segmentsCache, eventManager, segmentManager }: BrowserOdpManagerConfig) {
+  constructor({ disable, logger, segmentsCache, eventManager, segmentManager }: BrowserOdpManagerConfig) {
     const browserLogger = logger || getLogger();
 
     const browserRequestHandler = new BrowserRequestHandler(browserLogger);
@@ -62,18 +59,13 @@ export class BrowserOdpManager extends OdpManager {
       logger: browserLogger,
       clientEngine: browserClientEngine,
       clientVersion: browserClientVersion,
-      odpConfig,
-      segmentsCache,
+      segmentsCache: segmentsCache || new BrowserLRUCache<string, string[]>(),
       eventManager,
       segmentManager,
     });
 
     this.logger = browserLogger;
-
-    // TODO: Think of better way to trigger initializeVuid after this.eventManager is guaranteed to exist. Promise?
-    setTimeout(() => {
-      this.initializeVuid(BrowserOdpManager.cache);
-    }, 200);
+    this.initializeVuid(BrowserOdpManager.cache);
   }
 
   /**
@@ -82,12 +74,37 @@ export class BrowserOdpManager extends OdpManager {
   private async initializeVuid(cache: PersistentKeyValueCache): Promise<void> {
     const vuidManager = await VuidManager.instance(cache);
     this.vuid = vuidManager.vuid;
-    if (this.eventManager) {
-      this.eventManager.registerVuid(vuidManager.vuid);
-    } else {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_VUID_REGISTRATION_FAILED);
+    this.registerVuid(this.vuid);
+  }
+
+  private registerVuid(vuid: string) {
+    try {
+      this.eventManager.registerVuid(vuid);
+    } catch (e) {
+      this.logger.log(this.enabled ? LogLevel.ERROR : LogLevel.DEBUG, ERROR_MESSAGES.ODP_VUID_REGISTRATION_FAILED);
     }
-    return;
+  }
+
+  /**
+   * @override
+   * Attempts to fetch and return a list of a user's qualified segments from the local segments cache.
+   * If no cached data exists for the target user, this fetches and caches data from the ODP server instead.
+   * @param   {ODP_USER_KEY}                    userKey - Identifies the user id type. // Note: Unused in browser implementation.
+   * @param   {string}                          userId  - Unique identifier of a target user.
+   * @param   {Array<OptimizelySegmentOption>}  options - An array of OptimizelySegmentOption used to ignore and/or reset the cache.
+   * @returns {Promise<string[] | null>}        A promise holding either a list of qualified segments or null.
+   */
+  public async fetchQualifiedSegments(
+    userKey: ODP_USER_KEY,
+    userId: string,
+    options: Array<OptimizelySegmentOption> = []
+  ): Promise<string[] | null> {
+    if (VuidManager.isVuid(userId)) {
+      this.vuid = userId;
+      return super.fetchQualifiedSegments(ODP_USER_KEY.VUID, userId, options);
+    }
+
+    return super.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, userId, options);
   }
 
   /**
@@ -96,29 +113,14 @@ export class BrowserOdpManager extends OdpManager {
    * - Additionally, also passes VUID to help identify client-side users
    * @param userId Unique identifier of a target user.
    */
-  public async identifyUser(userId: string): Promise<void> {
-    if (!this.enabled) {
-      this.logger.log(LogLevel.DEBUG, LOG_MESSAGES.ODP_IDENTIFY_FAILED_ODP_DISABLED);
+  public identifyUser(userId: string): void {
+    if (VuidManager.isVuid(userId)) {
+      this.vuid = userId;
+      super.identifyUser('', userId);
       return;
     }
 
-    if (!this.odpConfig.isReady()) {
-      this.logger.log(LogLevel.DEBUG, LOG_MESSAGES.ODP_IDENTIFY_FAILED_ODP_NOT_INTEGRATED);
-      return;
-    }
-
-    try {
-      const vuidManager = await VuidManager.instance(BrowserOdpManager.cache);
-      let vuid = vuidManager.vuid;
-      let fsUserId: string | undefined = userId;
-      if (VuidManager.isVuid(fsUserId)) {
-        vuid = fsUserId;
-        fsUserId = undefined;
-      }
-      this.eventManager.identifyUser(vuid, fsUserId);
-    } catch (e) {
-      this.logger.log(LogLevel.ERROR, LOG_MESSAGES.ODP_IDENTIFY_FAILED_VUID_MISSING);
-    }
+    super.identifyUser(userId);
   }
 
   /**
@@ -130,35 +132,17 @@ export class BrowserOdpManager extends OdpManager {
    * @param identifiers A map of identifiers
    * @param data A map of associated data; default event data will be included here before sending to ODP
    */
-  public async sendEvent(
-    type: string,
-    action: string,
-    identifiers: Map<string, string>,
-    data: Map<string, any>
-  ): Promise<void> {
-    if (!this.enabled) {
-      throw new Error(ERROR_MESSAGES.ODP_NOT_ENABLED);
-    }
+  public sendEvent(type: string, action: string, identifiers: Map<string, string>, data: Map<string, any>): void {
+    const identifiersWithVuid = new Map(identifiers);
 
-    if (!this.odpConfig.isReady()) {
-      throw new Error(ERROR_MESSAGES.ODP_NOT_INTEGRATED);
-    }
-
-    if (invalidOdpDataFound(data)) {
-      throw new Error(ERROR_MESSAGES.ODP_INVALID_DATA);
-    }
-
-    try {
-      const identifiersWithVuid = new Map(identifiers);
-
-      if (!identifiers.has(ODP_USER_KEY.VUID)) {
-        const vuidManager = await VuidManager.instance(BrowserOdpManager.cache);
-        identifiersWithVuid.set(ODP_USER_KEY.VUID, vuidManager.vuid);
+    if (!identifiers.has(ODP_USER_KEY.VUID)) {
+      if (this.vuid) {
+        identifiersWithVuid.set(ODP_USER_KEY.VUID, this.vuid);
+      } else {
+        throw new Error(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_VUID_MISSING);
       }
-
-      this.eventManager.sendEvent(new OdpEvent(type, action, identifiers, data));
-    } catch (e) {
-      this.logger.log(LogLevel.ERROR, LOG_MESSAGES.ODP_IDENTIFY_FAILED_VUID_MISSING);
     }
+
+    super.sendEvent(type, action, identifiersWithVuid, data);
   }
 }
