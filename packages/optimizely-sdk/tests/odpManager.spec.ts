@@ -28,7 +28,7 @@ import { BrowserLRUCache } from './../lib/utils/lru_cache/browser_lru_cache';
 import { OdpManager } from './../lib/core/odp/odp_manager';
 import { OdpConfig } from '../lib/core/odp/odp_config';
 import { OdpEventApiManager } from '../lib/core/odp/odp_event_api_manager';
-import { OdpEventManager, STATE } from '../lib/core/odp/odp_event_manager';
+import { OdpEventManager } from '../lib/core/odp/odp_event_manager';
 import { OdpSegmentManager } from './../lib/core/odp/odp_segment_manager';
 import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
 
@@ -102,7 +102,7 @@ describe('OdpManager', () => {
     odpManager.updateSettings(new OdpConfig('valid', 'host', []));
     expect(odpManager.odpConfig).toBeUndefined;
 
-    await odpManager.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, 'user1', []);
+    await odpManager.fetchQualifiedSegments('user1', []);
     verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_ENABLED)).once();
 
     odpManager.identifyUser('user1');
@@ -170,7 +170,7 @@ describe('OdpManager', () => {
 
     expect(odpManager.odpConfig.apiKey).toBe(keyA);
     expect(odpManager.odpConfig.apiHost).toBe(hostA);
-    odpManager.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, userA);
+    odpManager.fetchQualifiedSegments(userA);
 
     await new Promise(resolve => setTimeout(resolve, 400));
     verify(mockSegmentApiManager.fetchSegments(keyA, hostA, ODP_USER_KEY.FS_USER_ID, userA, anything())).once();
@@ -178,7 +178,7 @@ describe('OdpManager', () => {
     odpManager.updateSettings(new OdpConfig(keyB, hostB, segmentsB));
     expect(odpManager.odpConfig.apiKey).toBe(keyB);
     expect(odpManager.odpConfig.apiHost).toBe(hostB);
-    odpManager.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, userB);
+    odpManager.fetchQualifiedSegments(userB);
 
     await new Promise(resolve => setTimeout(resolve, 400));
     verify(mockSegmentApiManager.fetchSegments(keyB, hostB, ODP_USER_KEY.FS_USER_ID, userB, anything())).once();

@@ -15,9 +15,11 @@
  */
 
 import { LogHandler, LogLevel } from '../../modules/logging';
-import { OdpEvent } from './odp_event';
+
 import { uuid } from '../../utils/fns';
-import { ODP_USER_KEY } from '../../utils/enums';
+import { ERROR_MESSAGES, ODP_USER_KEY, ODP_EVENT_TYPE } from '../../utils/enums';
+
+import { OdpEvent } from './odp_event';
 import { OdpConfig } from './odp_config';
 import { OdpEventApiManager } from './odp_event_api_manager';
 import { invalidOdpDataFound } from './odp_utils';
@@ -189,23 +191,30 @@ export class OdpEventManager implements IOdpEventManager {
     const identifiers = new Map<string, string>();
     identifiers.set(ODP_USER_KEY.VUID, vuid);
 
-    const event = new OdpEvent('fullstack', 'client_initialized', identifiers);
+    const event = new OdpEvent(ODP_EVENT_TYPE, 'client_initialized', identifiers);
     this.sendEvent(event);
   }
 
   /**
    * Associate a full-stack userid with an established VUID
-   * @param userId Full-stack User ID
-   * @param vuid Visitor User ID
+   * @param {string} userId   (Optional) Full-stack User ID
+   * @param {string} vuid     (Optional) Visitor User ID
    */
-  public identifyUser(userId: string, vuid?: string): void {
+  public identifyUser(userId?: string, vuid?: string): void {
     const identifiers = new Map<string, string>();
+    if (!userId && !vuid) {
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_UID_MISSING);
+    }
+
     if (vuid) {
       identifiers.set(ODP_USER_KEY.VUID, vuid);
     }
-    identifiers.set(ODP_USER_KEY.FS_USER_ID, userId);
 
-    const event = new OdpEvent('fullstack', 'identified', identifiers);
+    if (userId) {
+      identifiers.set(ODP_USER_KEY.FS_USER_ID, userId);
+    }
+
+    const event = new OdpEvent(ODP_EVENT_TYPE, 'identified', identifiers);
     this.sendEvent(event);
   }
 

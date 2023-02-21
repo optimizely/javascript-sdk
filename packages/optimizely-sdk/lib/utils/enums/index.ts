@@ -54,15 +54,27 @@ export const ERROR_MESSAGES = {
   NO_JSON_PROVIDED: '%s: No JSON object to validate against schema.',
   NO_VARIATION_FOR_EXPERIMENT_KEY: '%s: No variation key %s defined in datafile for experiment %s.',
   ODP_EVENT_FAILED: '%s: ODP event send failed (invalid url)',
+  ODP_FETCH_QUALIFIED_SEGMENTS_SEGMENTS_MANAGER_MISSING:
+    '%s: ODP unable to fetch qualified segments (Segments Manager not initialized).',
+  ODP_IDENTIFY_FAILED_EVENT_MANAGER_MISSING:
+    '%s: ODP identify event %s is not dispatched (Event Manager not instantiated).',
   ODP_INITIALIZATION_FAILED: '%s: ODP failed to initialize.',
   ODP_INVALID_DATA: '%s: ODP data is not valid',
+  ODP_MANAGER_UPDATE_SETTINGS_FAILED_EVENT_MANAGER_MISSING:
+    '%s: ODP Manager failed to update OdpConfig settings for internal event manager. (Event Manager not initialized).',
+  ODP_MANAGER_UPDATE_SETTINGS_FAILED_SEGMENTS_MANAGER_MISSING:
+    '%s: ODP Manager failed to update OdpConfig settings for internal segments manager. (Segments Manager not initialized).',
   ODP_NOT_ENABLED: '%s: ODP is not enabled',
   ODP_NOT_INTEGRATED: '%s: ODP is not integrated',
+  ODP_SEND_EVENT_FAILED_EVENT_MANAGER_MISSING:
+    '%s: ODP send event %s was not dispatched (Event Manager not instantiated).',
+  ODP_SEND_EVENT_FAILED_UID_MISSING: '%s: ODP send event %s was not dispatched (No valid user identifier provided).',
   ODP_SEND_EVENT_FAILED_VUID_MISSING: '%s: ODP send event %s was not dispatched (Unable to fetch VUID).',
   ODP_SDK_KEY_MISSING_NOTIFICATION_CENTER_FAILURE:
     '%s: You must provide an sdkKey. Cannot start Notification Center for ODP Integration.',
   ODP_VUID_INITIALIZATION_FAILED: '%s: ODP VUID initialization failed.',
   ODP_VUID_REGISTRATION_FAILED: '%s: ODP VUID failed to be registered.',
+  ODP_VUID_REGISTRATION_FAILED_EVENT_MANAGER_MISSING: '%s: ODP register vuid failed. (Event Manager not instantiated).',
   UNDEFINED_ATTRIBUTE: '%s: Provided attribute: %s has an undefined value.',
   UNRECOGNIZED_ATTRIBUTE: '%s: Unrecognized attribute %s provided. Pruning before sending event to Optimizely.',
   UNABLE_TO_CAST_VALUE: '%s: Unable to cast value %s to type %s, returning null.',
@@ -323,3 +335,5 @@ export enum ODP_USER_KEY {
   VUID = 'vuid',
   FS_USER_ID = 'fs_user_id',
 }
+
+export const ODP_EVENT_TYPE = 'fullstack';

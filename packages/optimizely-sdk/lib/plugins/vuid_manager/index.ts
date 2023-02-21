@@ -26,17 +26,18 @@ export interface IVuidManager {
  */
 export class VuidManager implements IVuidManager {
   /**
+   * Prefix used as part of the VUID format
+   * @public
+   * @readonly
+   */
+  static readonly vuid_prefix: string = `vuid_`;
+
+  /**
    * Unique key used within the persistent value cache against which to
    * store the VUID
    * @private
    */
   private _keyForVuid = 'optimizely-vuid';
-
-  /**
-   * Prefix used as part of the VUID format
-   * @private
-   */
-  private readonly _prefix: string = `vuid_`;
 
   /**
    * Current VUID value being used
@@ -105,7 +106,7 @@ export class VuidManager implements IVuidManager {
     // make sure UUIDv4 is used (not UUIDv1 or UUIDv6) since the trailing 5 chars will be truncated. See TDD for details.
     const uuidV4 = uuid();
     const formatted = uuidV4.replace(/-/g, '').toLowerCase();
-    const vuidFull = `${this._prefix}${formatted}`;
+    const vuidFull = `${VuidManager.vuid_prefix}${formatted}`;
 
     return vuidFull.length <= maxLength ? vuidFull : vuidFull.substring(0, maxLength);
   }
@@ -124,7 +125,7 @@ export class VuidManager implements IVuidManager {
    * @param vuid VistorId to check
    * @returns *true* if the VisitorId is valid otherwise *false* for invalid
    */
-  static isVuid = (vuid: string): boolean => vuid.startsWith(this._instance._prefix);
+  static isVuid = (vuid: string): boolean => vuid.startsWith(VuidManager.vuid_prefix);
 
   /**
    * Function used in unit testing to reset the VuidManager

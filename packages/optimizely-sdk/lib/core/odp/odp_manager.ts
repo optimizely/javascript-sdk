@@ -17,12 +17,15 @@
 import packageJSON from '../../../package.json';
 
 import { LOG_MESSAGES } from './../../utils/enums/index';
+import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
+import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
+
 import { RequestHandler } from './../../utils/http_request_handler/http';
 import { BrowserLRUCache } from './../../utils/lru_cache/browser_lru_cache';
 import { LRUCache } from './../../utils/lru_cache/lru_cache';
-import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
 
-import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
+import { VuidManager } from '../../plugins/vuid_manager';
+
 import { OdpConfig } from './odp_config';
 import { OdpEventManager } from './odp_event_manager';
 import { OdpSegmentManager } from './odp_segment_manager';
@@ -65,13 +68,13 @@ export class OdpManager {
    * ODP Segment Manager which provides an interface to the remote ODP server (GraphQL API) for audience segments mapping.
    * It fetches all qualified segments for the given user context and manages the segments cache for all user contexts.
    */
-  public segmentManager!: OdpSegmentManager;
+  public segmentManager: OdpSegmentManager | undefined;
 
   /**
    * ODP Event Manager which provides an interface to the remote ODP server (REST API) for events.
    * It will queue all pending events (persistent) and send them (in batches of up to 10 events) to the ODP server when possible.
    */
-  public eventManager!: OdpEventManager;
+  public eventManager: OdpEventManager | undefined;
 
   constructor({
     disable,
@@ -94,7 +97,7 @@ export class OdpManager {
     // Set up Segment Manager (Audience Segments GraphQL API Interface)
     if (segmentManager) {
       this.segmentManager = segmentManager;
-      this.segmentManager.odpConfig = this.odpConfig;
+      this.segmentManager.updateSettings(this.odpConfig);
     } else {
       this.segmentManager = new OdpSegmentManager(
         this.odpConfig,
@@ -128,6 +131,16 @@ export class OdpManager {
       return false;
     }
 
+    if (!this.eventManager) {
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_MANAGER_UPDATE_SETTINGS_FAILED_EVENT_MANAGER_MISSING);
+      return false;
+    }
+
+    if (!this.segmentManager) {
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_MANAGER_UPDATE_SETTINGS_FAILED_SEGMENTS_MANAGER_MISSING);
+      return false;
+    }
+
     this.eventManager.flush();
 
     const newConfig = new OdpConfig(apiKey, apiHost, segmentsToCheck);
@@ -135,7 +148,7 @@ export class OdpManager {
 
     if (configDidUpdate) {
       this.odpConfig.update(newConfig);
-      this.segmentManager.reset();
+      this.segmentManager?.reset();
       return true;
     }
 
@@ -146,21 +159,21 @@ export class OdpManager {
    * Attempts to stop the current instance of ODP Manager's event manager, if it exists and is running.
    */
   public close(): void {
-    if (this.enabled) {
-      this.eventManager.stop();
+    if (!this.enabled) {
+      return;
     }
+
+    this.eventManager?.stop();
   }
 
   /**
    * Attempts to fetch and return a list of a user's qualified segments from the local segments cache.
    * If no cached data exists for the target user, this fetches and caches data from the ODP server instead.
-   * @param {ODP_USER_KEY}                    userKey - Identifies the user id type.
    * @param {string}                          userId  - Unique identifier of a target user.
    * @param {Array<OptimizelySegmentOption>}  options - An array of OptimizelySegmentOption used to ignore and/or reset the cache.
    * @returns {Promise<string[] | null>}      A promise holding either a list of qualified segments or null.
    */
   public async fetchQualifiedSegments(
-    userKey: ODP_USER_KEY,
     userId: string,
     options: Array<OptimizelySegmentOption> = []
   ): Promise<string[] | null> {
@@ -169,16 +182,24 @@ export class OdpManager {
       return null;
     }
 
-    return this.segmentManager.fetchQualifiedSegments(userKey, userId, options);
+    if (!this.segmentManager) {
+      throw new Error(ERROR_MESSAGES.ODP_FETCH_QUALIFIED_SEGMENTS_SEGMENTS_MANAGER_MISSING);
+    }
+
+    if (VuidManager.isVuid(userId)) {
+      return this.segmentManager.fetchQualifiedSegments(ODP_USER_KEY.VUID, userId, options);
+    }
+
+    return this.segmentManager.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, userId, options);
   }
 
   /**
    * Identifies a user via the ODP Event Manager
-   * @param {string}  fsUserId  Unique identifier of a target user.
-   * @param {string}  vuid      (Optional) Secondary unique identifier of a target user.
+   * @param {string}  userId    (Optional) Custom unique identifier of a target user.
+   * @param {string}  vuid      (Optional) Secondary unique identifier of a target user, primarily used by client SDKs.
    * @returns
    */
-  public identifyUser(fsUserId: string, vuid?: string): void {
+  public identifyUser(userId?: string, vuid?: string): void {
     if (!this.enabled) {
       this.logger.log(LogLevel.DEBUG, LOG_MESSAGES.ODP_IDENTIFY_FAILED_ODP_DISABLED);
       return;
@@ -189,17 +210,23 @@ export class OdpManager {
       return;
     }
 
-    this.eventManager.identifyUser(fsUserId, vuid);
+    if (!this.eventManager) {
+      throw new Error(ERROR_MESSAGES.ODP_IDENTIFY_FAILED_EVENT_MANAGER_MISSING);
+    }
+
+    if (userId && VuidManager.isVuid(userId)) {
+      this.eventManager.identifyUser(undefined, userId);
+      return;
+    }
+
+    this.eventManager.identifyUser(userId, vuid);
   }
 
   /**
    * Sends an event to the ODP Server via the ODP Events API
-   * @param {string}                type The event type
-   * @param {string}                action The event action name
-   * @param {Map<string, string>}   identifiers A map of identifiers
-   * @param {Map<string, any>}      data A map of associated data; default event data will be included here before sending to ODP
+   * @param {OdpEvent}  > ODP Event to send to event manager
    */
-  public sendEvent(type: string, action: string, identifiers: Map<string, string>, data: Map<string, any>): void {
+  public sendEvent({ type, action, identifiers, data }: OdpEvent): void {
     if (!this.enabled) {
       throw new Error(ERROR_MESSAGES.ODP_NOT_ENABLED);
     }
@@ -210,6 +237,10 @@ export class OdpManager {
 
     if (invalidOdpDataFound(data)) {
       throw new Error(ERROR_MESSAGES.ODP_INVALID_DATA);
+    }
+
+    if (!this.eventManager) {
+      throw new Error(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_EVENT_MANAGER_MISSING);
     }
 
     this.eventManager.sendEvent(new OdpEvent(type, action, identifiers, data));

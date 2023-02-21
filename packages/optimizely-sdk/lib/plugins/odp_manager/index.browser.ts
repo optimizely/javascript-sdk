@@ -78,6 +78,11 @@ export class BrowserOdpManager extends OdpManager {
   }
 
   private registerVuid(vuid: string) {
+    if (!this.eventManager) {
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_VUID_REGISTRATION_FAILED_EVENT_MANAGER_MISSING);
+      return;
+    }
+
     try {
       this.eventManager.registerVuid(vuid);
     } catch (e) {
@@ -87,40 +92,18 @@ export class BrowserOdpManager extends OdpManager {
 
   /**
    * @override
-   * Attempts to fetch and return a list of a user's qualified segments from the local segments cache.
-   * If no cached data exists for the target user, this fetches and caches data from the ODP server instead.
-   * @param   {ODP_USER_KEY}                    userKey - Identifies the user id type. // Note: Unused in browser implementation.
-   * @param   {string}                          userId  - Unique identifier of a target user.
-   * @param   {Array<OptimizelySegmentOption>}  options - An array of OptimizelySegmentOption used to ignore and/or reset the cache.
-   * @returns {Promise<string[] | null>}        A promise holding either a list of qualified segments or null.
-   */
-  public async fetchQualifiedSegments(
-    userKey: ODP_USER_KEY,
-    userId: string,
-    options: Array<OptimizelySegmentOption> = []
-  ): Promise<string[] | null> {
-    if (VuidManager.isVuid(userId)) {
-      this.vuid = userId;
-      return super.fetchQualifiedSegments(ODP_USER_KEY.VUID, userId, options);
-    }
-
-    return super.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, userId, options);
-  }
-
-  /**
-   * @override
    * - Still identifies a user via the ODP Event Manager
    * - Additionally, also passes VUID to help identify client-side users
-   * @param userId Unique identifier of a target user.
+   * @param fsUserId Unique identifier of a target user.
    */
-  public identifyUser(userId: string): void {
-    if (VuidManager.isVuid(userId)) {
-      this.vuid = userId;
-      super.identifyUser('', userId);
+  public identifyUser(fsUserId?: string, vuid?: string): void {
+    if (fsUserId && VuidManager.isVuid(fsUserId)) {
+      this.vuid = fsUserId;
+      super.identifyUser(undefined, fsUserId);
       return;
     }
 
-    super.identifyUser(userId);
+    super.identifyUser(fsUserId, vuid);
   }
 
   /**
@@ -132,8 +115,8 @@ export class BrowserOdpManager extends OdpManager {
    * @param identifiers A map of identifiers
    * @param data A map of associated data; default event data will be included here before sending to ODP
    */
-  public sendEvent(type: string, action: string, identifiers: Map<string, string>, data: Map<string, any>): void {
-    const identifiersWithVuid = new Map(identifiers);
+  public sendEvent({ type, action, identifiers, data }: OdpEvent): void {
+    const identifiersWithVuid = new Map<string, string>(identifiers);
 
     if (!identifiers.has(ODP_USER_KEY.VUID)) {
       if (this.vuid) {
@@ -143,6 +126,6 @@ export class BrowserOdpManager extends OdpManager {
       }
     }
 
-    super.sendEvent(type, action, identifiersWithVuid, data);
+    super.sendEvent({ type, action, identifiers: identifiersWithVuid, data });
   }
 }
