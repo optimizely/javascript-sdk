@@ -204,6 +204,7 @@ export class OdpEventManager implements IOdpEventManager {
     const identifiers = new Map<string, string>();
     if (!userId && !vuid) {
       this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_UID_MISSING);
+      return;
     }
 
     if (vuid) {

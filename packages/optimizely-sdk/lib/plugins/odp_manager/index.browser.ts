@@ -16,7 +16,7 @@
 
 import packageJSON from '../../../package.json';
 
-import { ERROR_MESSAGES, JAVASCRIPT_CLIENT_ENGINE, LOG_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
+import { ERROR_MESSAGES, JAVASCRIPT_CLIENT_ENGINE, ODP_USER_KEY } from '../../utils/enums';
 import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import { BrowserRequestHandler } from './../../utils/http_request_handler/browser_request_handler';
 
@@ -28,10 +28,8 @@ import { VuidManager } from './../vuid_manager/index';
 
 import { OdpManager } from '../../core/odp/odp_manager';
 import { OdpEvent } from '../../core/odp/odp_event';
-import { invalidOdpDataFound } from '../../core/odp/odp_utils';
 import { OdpEventManager } from '../../core/odp/odp_event_manager';
 import { OdpSegmentManager } from '../../core/odp/odp_segment_manager';
-import { OptimizelySegmentOption } from '../../core/odp/optimizely_segment_option';
 
 interface BrowserOdpManagerConfig {
   disable: boolean;
@@ -98,7 +96,6 @@ export class BrowserOdpManager extends OdpManager {
    */
   public identifyUser(fsUserId?: string, vuid?: string): void {
     if (fsUserId && VuidManager.isVuid(fsUserId)) {
-      this.vuid = fsUserId;
       super.identifyUser(undefined, fsUserId);
       return;
     }
@@ -110,10 +107,7 @@ export class BrowserOdpManager extends OdpManager {
    * @override
    * - Sends an event to the ODP Server via the ODP Events API
    * - Intercepts identifiers and injects VUID before sending event
-   * @param type The event type
-   * @param action The event action name
-   * @param identifiers A map of identifiers
-   * @param data A map of associated data; default event data will be included here before sending to ODP
+   * @param {OdpEvent} odpEvent  > ODP Event to send to event manager
    */
   public sendEvent({ type, action, identifiers, data }: OdpEvent): void {
     const identifiersWithVuid = new Map<string, string>(identifiers);

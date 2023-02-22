@@ -329,7 +329,7 @@ export enum NOTIFICATION_TYPES {
 export const REQUEST_TIMEOUT_MS = 60 * 1000; // 1 minute
 
 /**
- * ODP User Key
+ * ODP User Key Options
  */
 export enum ODP_USER_KEY {
   VUID = 'vuid',
@@ -337,3 +337,11 @@ export enum ODP_USER_KEY {
 }
 
 export const ODP_EVENT_TYPE = 'fullstack';
+
+/**
+ * ODP Event Action Options
+ */
+export enum ODP_EVENT_ACTION {
+  IDENTIFIED = 'identified',
+  INITIALIZED = 'client_initialized',
+}
