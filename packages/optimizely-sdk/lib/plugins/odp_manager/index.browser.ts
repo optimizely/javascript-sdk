@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-import packageJSON from '../../../package.json';
-
-import { ERROR_MESSAGES, JAVASCRIPT_CLIENT_ENGINE, ODP_USER_KEY } from '../../utils/enums';
+import { BROWSER_CLIENT_VERSION, ERROR_MESSAGES, JAVASCRIPT_CLIENT_ENGINE, ODP_USER_KEY } from '../../utils/enums';
 import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import { BrowserRequestHandler } from './../../utils/http_request_handler/browser_request_handler';
 
@@ -49,7 +47,7 @@ export class BrowserOdpManager extends OdpManager {
 
     const browserRequestHandler = new BrowserRequestHandler(browserLogger);
     const browserClientEngine = JAVASCRIPT_CLIENT_ENGINE;
-    const browserClientVersion = packageJSON.version;
+    const browserClientVersion = BROWSER_CLIENT_VERSION;
 
     super({
       disable,

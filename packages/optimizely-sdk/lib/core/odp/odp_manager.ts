@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-import packageJSON from '../../../package.json';
-
-import { LOG_MESSAGES } from './../../utils/enums/index';
+import { BROWSER_CLIENT_VERSION, LOG_MESSAGES } from './../../utils/enums/index';
 import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
 
@@ -116,7 +114,7 @@ export class OdpManager {
         apiManager: new OdpEventApiManager(requestHandler, this.logger),
         logger: this.logger,
         clientEngine: clientEngine || 'javascript-sdk',
-        clientVersion: clientVersion || packageJSON.version,
+        clientVersion: clientVersion || BROWSER_CLIENT_VERSION,
       });
     }
 

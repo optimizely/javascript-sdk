@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
+
 import { LoggerFacade, ErrorHandler } from '../modules/logging';
 import { sprintf, objectValues } from '../utils/fns';
 import { NotificationCenter } from '../core/notification_center';
 import { EventProcessor } from '../../lib/modules/event_processor';
-import { OdpManager } from './../core/odp/odp_manager';
+
+import { OdpManager } from '../core/odp/odp_manager';
+import { OdpConfig } from '../core/odp/odp_config';
 
 import {
   UserAttributes,
@@ -31,7 +34,6 @@ import {
   OptimizelyOptions,
   OptimizelyDecideOption,
   OptimizelyDecision,
-  NotificationListener
 } from '../shared_types';
 import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
@@ -58,8 +60,6 @@ import {
   DECISION_NOTIFICATION_TYPES,
   NOTIFICATION_TYPES
 } from '../utils/enums';
-
-import { OdpConfig } from '../../lib/core/odp/odp_config';
 
 const MODULE_NAME = 'OPTIMIZELY';
 
