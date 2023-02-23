@@ -15,7 +15,6 @@
  */
 /// <reference types="jest" />
 
-import { expect, describe, it, beforeAll, beforeEach } from '@jest/globals';
 import { anything, instance, mock, resetCalls, verify } from 'ts-mockito';
 
 import { LOG_MESSAGES } from './../lib/utils/enums/index';

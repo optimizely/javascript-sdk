@@ -16,7 +16,6 @@
 
 /// <reference types="jest" />
 
-import { expect, describe, it, beforeEach } from '@jest/globals';
 import { mock, resetCalls, instance } from 'ts-mockito';
 
 import { LogHandler } from '../lib/modules/logging';

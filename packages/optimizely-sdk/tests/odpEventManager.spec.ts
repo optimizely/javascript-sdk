@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { expect, describe, it, beforeAll, beforeEach } from '@jest/globals';
-
 import { ODP_EVENT_ACTION, ODP_EVENT_TYPE } from './../lib/utils/enums/index';
 
 import { OdpConfig } from '../lib/core/odp/odp_config';

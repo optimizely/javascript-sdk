@@ -16,7 +16,6 @@
 
 /// <reference types="jest" />
 
-import { expect, beforeAll, describe, beforeEach, it } from '@jest/globals';
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';

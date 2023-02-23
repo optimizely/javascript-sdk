@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { expect, describe, it, beforeAll, beforeEach } from '@jest/globals';
 import { anything, capture, instance, mock, resetCalls, verify } from 'ts-mockito';
 
 import { LOG_MESSAGES } from './../lib/utils/enums/index';
