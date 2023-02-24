@@ -1,11 +1,11 @@
 /**
- * Copyright 2016-2022, Optimizely
+ * Copyright 2016-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -836,8 +836,8 @@ describe('lib/core/project_config', function () {
       })
 
       it('should contain all expected unique odp segments in allSegments', () => {
-        assert.equal(config.allSegments.size, 3)
-        assert.deepEqual(config.allSegments, new Set(['odp-segment-1', 'odp-segment-2', 'odp-segment-3']))
+        assert.equal(config.allSegments.length, 3)
+        assert.deepEqual(config.allSegments, ['odp-segment-1', 'odp-segment-2', 'odp-segment-3'])
       })
     });
 
@@ -863,7 +863,7 @@ describe('lib/core/project_config', function () {
       })
 
       it('should contain all expected unique odp segments in all segments', () => {
-        assert.equal(config.allSegments.size, 0)
+        assert.equal(config.allSegments.length, 0)
       })
     });
 

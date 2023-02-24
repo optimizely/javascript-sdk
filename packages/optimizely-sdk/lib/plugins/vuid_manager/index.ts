@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,17 +26,18 @@ export interface IVuidManager {
  */
 export class VuidManager implements IVuidManager {
   /**
+   * Prefix used as part of the VUID format
+   * @public
+   * @readonly
+   */
+  static readonly vuid_prefix: string = `vuid_`;
+
+  /**
    * Unique key used within the persistent value cache against which to
    * store the VUID
    * @private
    */
   private _keyForVuid = 'optimizely-vuid';
-
-  /**
-   * Prefix used as part of the VUID format
-   * @private
-   */
-  private readonly _prefix: string = `vuid_`;
 
   /**
    * Current VUID value being used
@@ -85,7 +86,7 @@ export class VuidManager implements IVuidManager {
    */
   private async load(cache: PersistentKeyValueCache): Promise<string> {
     const cachedValue = await cache.get(this._keyForVuid);
-    if (cachedValue && this.isVuid(cachedValue)) {
+    if (cachedValue && VuidManager.isVuid(cachedValue)) {
       this._vuid = cachedValue;
     } else {
       this._vuid = this.makeVuid();
@@ -100,14 +101,14 @@ export class VuidManager implements IVuidManager {
    * @returns A new visitor unique identifier
    */
   private makeVuid(): string {
-    const maxLength = 32;   // required by ODP server
+    const maxLength = 32; // required by ODP server
 
     // make sure UUIDv4 is used (not UUIDv1 or UUIDv6) since the trailing 5 chars will be truncated. See TDD for details.
     const uuidV4 = uuid();
     const formatted = uuidV4.replace(/-/g, '').toLowerCase();
-    const vuidFull = `${(this._prefix)}${formatted}`;
+    const vuidFull = `${VuidManager.vuid_prefix}${formatted}`;
 
-    return (vuidFull.length <= maxLength) ? vuidFull : vuidFull.substring(0, maxLength);
+    return vuidFull.length <= maxLength ? vuidFull : vuidFull.substring(0, maxLength);
   }
 
   /**
@@ -124,7 +125,7 @@ export class VuidManager implements IVuidManager {
    * @param vuid VistorId to check
    * @returns *true* if the VisitorId is valid otherwise *false* for invalid
    */
-  private isVuid = (vuid: string): boolean => vuid.startsWith(this._prefix);
+  static isVuid = (vuid: string): boolean => vuid.startsWith(VuidManager.vuid_prefix);
 
   /**
    * Function used in unit testing to reset the VuidManager

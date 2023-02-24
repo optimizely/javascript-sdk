@@ -1,5 +1,5 @@
 /**
- * Copyright 2021, Optimizely
+ * Copyright 2021, 2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { DatafileManager, DatafileUpdateListener} from '../../shared_types';
+import { DatafileManager, DatafileUpdateListener } from '../../shared_types';
 
+/**
+ * No-operation Datafile Manager for Lite Bundle designed for Edge platforms
+ * https://github.com/optimizely/javascript-sdk/issues/699
+ */
 class NoOpDatafileManager implements DatafileManager {
-
   /* eslint-disable @typescript-eslint/no-unused-vars */
   on(_eventName: string, _listener: DatafileUpdateListener): () => void {
-      return (): void => {}
+    return (): void => {};
   }
 
   get(): string {

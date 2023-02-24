@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -150,7 +150,7 @@ describe('OdpSegmentApiManager', () => {
 
     const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
 
-    expect(segments).toHaveLength(2);
+    expect(segments?.length).toEqual(2);
     expect(segments).toContain('has_email');
     expect(segments).toContain('has_email_opted_in');
     verify(mockLogger.log(anything(), anyString())).never();
@@ -161,7 +161,7 @@ describe('OdpSegmentApiManager', () => {
 
     const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, ODP_USER_KEY.FS_USER_ID, USER_VALUE, []);
 
-    expect(segments).toHaveLength(0);
+    expect(segments?.length).toEqual(0);
     verify(mockLogger.log(anything(), anyString())).never();
   });
 
@@ -174,7 +174,7 @@ describe('OdpSegmentApiManager', () => {
 
     const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
 
-    expect(segments).toHaveLength(0);
+    expect(segments?.length).toEqual(0);
     verify(mockLogger.log(anything(), anyString())).never();
   });
 

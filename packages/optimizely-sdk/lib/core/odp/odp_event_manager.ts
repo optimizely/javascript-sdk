@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,14 @@
  */
 
 import { LogHandler, LogLevel } from '../../modules/logging';
-import { OdpEvent } from './odp_event';
+
 import { uuid } from '../../utils/fns';
-import { ODP_USER_KEY } from '../../utils/enums';
+import { ERROR_MESSAGES, ODP_USER_KEY, ODP_EVENT_TYPE } from '../../utils/enums';
+
+import { OdpEvent } from './odp_event';
 import { OdpConfig } from './odp_config';
 import { OdpEventApiManager } from './odp_event_api_manager';
+import { invalidOdpDataFound } from './odp_utils';
 
 const MAX_RETRIES = 3;
 const DEFAULT_BATCH_SIZE = 10;
@@ -145,11 +148,18 @@ export class OdpEventManager implements IOdpEventManager {
   }
 
   /**
-   * Update ODP configuration settings
-   * @param odpConfig New configuration to apply
+   * Update ODP configuration settings.
+   * @param newConfig New configuration to apply
    */
-  public updateSettings(odpConfig: OdpConfig): void {
-    this.odpConfig = odpConfig;
+  public updateSettings(newConfig: OdpConfig): void {
+    this.odpConfig = newConfig;
+  }
+
+  /**
+   * Cleans up all pending events; occurs every time the ODP Config is updated.
+   */
+  public flush(): void {
+    this.processQueue(true);
   }
 
   /**
@@ -181,23 +191,31 @@ export class OdpEventManager implements IOdpEventManager {
     const identifiers = new Map<string, string>();
     identifiers.set(ODP_USER_KEY.VUID, vuid);
 
-    const event = new OdpEvent('fullstack', 'client_initialized', identifiers);
+    const event = new OdpEvent(ODP_EVENT_TYPE, 'client_initialized', identifiers);
     this.sendEvent(event);
   }
 
   /**
    * Associate a full-stack userid with an established VUID
-   * @param userId Full-stack User ID
-   * @param vuid Visitor User ID
+   * @param {string} userId   (Optional) Full-stack User ID
+   * @param {string} vuid     (Optional) Visitor User ID
    */
-  public identifyUser(userId: string, vuid?: string): void {
+  public identifyUser(userId?: string, vuid?: string): void {
     const identifiers = new Map<string, string>();
+    if (!userId && !vuid) {
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_UID_MISSING);
+      return;
+    }
+
     if (vuid) {
       identifiers.set(ODP_USER_KEY.VUID, vuid);
     }
-    identifiers.set(ODP_USER_KEY.FS_USER_ID, userId);
 
-    const event = new OdpEvent('fullstack', 'identified', identifiers);
+    if (userId) {
+      identifiers.set(ODP_USER_KEY.FS_USER_ID, userId);
+    }
+
+    const event = new OdpEvent(ODP_EVENT_TYPE, 'identified', identifiers);
     this.sendEvent(event);
   }
 
@@ -206,7 +224,7 @@ export class OdpEventManager implements IOdpEventManager {
    * @param event ODP Event to forward
    */
   public sendEvent(event: OdpEvent): void {
-    if (this.invalidDataFound(event.data)) {
+    if (invalidOdpDataFound(event.data)) {
       this.logger.log(LogLevel.ERROR, 'Event data found to be invalid.');
     } else {
       event.data = this.augmentCommonData(event.data);
@@ -372,23 +390,6 @@ export class OdpEventManager implements IOdpEventManager {
       this.logger.log(LogLevel.DEBUG, 'ODPConfig not ready. Leaving events in queue.');
     }
     return false;
-  }
-
-  /**
-   * Validate event data value types
-   * @param data Event data to be validated
-   * @returns True if an invalid type was found in the data otherwise False
-   * @private
-   */
-  private invalidDataFound(data: Map<string, unknown>): boolean {
-    const validTypes: string[] = ['string', 'number', 'boolean'];
-    let foundInvalidValue = false;
-    data.forEach(value => {
-      if (!validTypes.includes(typeof value) && value !== null) {
-        foundInvalidValue = true;
-      }
-    });
-    return foundInvalidValue;
   }
 
   /**

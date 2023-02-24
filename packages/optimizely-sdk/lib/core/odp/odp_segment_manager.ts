@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,21 +21,50 @@ import { OdpSegmentApiManager } from './odp_segment_api_manager';
 import { OdpConfig } from './odp_config';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
 
-// Schedules connections to ODP for audience segmentation and caches the results.
+/**
+ * Schedules connections to ODP for audience segmentation and caches the results.
+ */
 export class OdpSegmentManager {
-  odpConfig: OdpConfig;
-  segmentsCache: LRUCache<string, Array<string>>;
-  odpSegmentApiManager: OdpSegmentApiManager;
-  logger: LogHandler;
+  /**
+   * ODP configuration settings in used
+   * @private
+   */
+  private odpConfig: OdpConfig;
+
+  /**
+   * Holds cached audience segments
+   * @private
+   */
+  private _segmentsCache: LRUCache<string, string[]>;
+
+  /**
+   * Getter for private segments cache
+   * @public
+   */
+  public get segmentsCache(): LRUCache<string, string[]> {
+    return this._segmentsCache;
+  }
+
+  /**
+   * GraphQL API Manager used to fetch segments
+   * @private
+   */
+  private odpSegmentApiManager: OdpSegmentApiManager;
+
+  /**
+   * Handler for recording execution logs
+   * @private
+   */
+  private readonly logger: LogHandler;
 
   constructor(
     odpConfig: OdpConfig,
-    segmentsCache: LRUCache<string, Array<string>>,
+    segmentsCache: LRUCache<string, string[]>,
     odpSegmentApiManager: OdpSegmentApiManager,
     logger?: LogHandler
   ) {
     this.odpConfig = odpConfig;
-    this.segmentsCache = segmentsCache;
+    this._segmentsCache = segmentsCache;
     this.odpSegmentApiManager = odpSegmentApiManager;
     this.logger = logger || getLogger('OdpSegmentManager');
   }
@@ -52,7 +81,7 @@ export class OdpSegmentManager {
     userKey: ODP_USER_KEY,
     userValue: string,
     options: Array<OptimizelySegmentOption>
-  ): Promise<Array<string> | null> {
+  ): Promise<string[] | null> {
     const { apiHost: odpApiHost, apiKey: odpApiKey } = this.odpConfig;
 
     if (!odpApiKey || !odpApiHost) {
@@ -74,7 +103,7 @@ export class OdpSegmentManager {
     if (resetCache) this.reset();
 
     if (!ignoreCache && !resetCache) {
-      const cachedSegments = this.segmentsCache.lookup(cacheKey);
+      const cachedSegments = this._segmentsCache.lookup(cacheKey);
       if (cachedSegments) {
         this.logger.log(LogLevel.DEBUG, 'ODP cache hit. Returning segments from cache "%s".', cacheKey);
         return cachedSegments;
@@ -92,7 +121,7 @@ export class OdpSegmentManager {
       segmentsToCheck
     );
 
-    if (segments && !ignoreCache) this.segmentsCache.save({ key: cacheKey, value: segments });
+    if (segments && !ignoreCache) this._segmentsCache.save({ key: cacheKey, value: segments });
 
     return segments;
   }
@@ -101,7 +130,7 @@ export class OdpSegmentManager {
    * Clears the segments cache
    */
   reset(): void {
-    this.segmentsCache.reset();
+    this._segmentsCache.reset();
   }
 
   /**
@@ -112,5 +141,13 @@ export class OdpSegmentManager {
    */
   makeCacheKey(userKey: string, userValue: string): string {
     return `${userKey}-$-${userValue}`;
+  }
+
+  /**
+   * Updates the ODP Config settings of ODP Segment Manager
+   * @param config New ODP Config that will overwrite the existing config
+   */
+  public updateSettings(config: OdpConfig): void {
+    this.odpConfig = config;
   }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import { ODP_EVENT_ACTION, ODP_EVENT_TYPE } from './../lib/utils/enums/index';
 
 import { OdpConfig } from '../lib/core/odp/odp_config';
 import { OdpEventManager, STATE } from '../lib/core/odp/odp_event_manager';
@@ -422,8 +424,8 @@ describe('OdpEventManager', () => {
     expect(method).toEqual('POST');
     const events = JSON.parse(data as string);
     const event = events[0];
-    expect(event.type).toEqual('fullstack');
-    expect(event.action).toEqual('identified');
+    expect(event.type).toEqual(ODP_EVENT_TYPE);
+    expect(event.action).toEqual(ODP_EVENT_ACTION.IDENTIFIED);
     expect(event.identifiers).toEqual({ vuid: vuid, fs_user_id: fsUserId });
     expect(event.data.idempotence_id.length).toBe(36); // uuid length
     expect(event.data.data_source_type).toEqual('sdk');
@@ -448,7 +450,7 @@ describe('OdpEventManager', () => {
 
     expect(eventManager['odpConfig'].apiKey).toEqual(apiKey);
     expect(eventManager['odpConfig'].apiHost).toEqual(apiHost);
-    expect(eventManager['odpConfig'].segmentsToCheck).toContain(segmentsToCheck[0]);
-    expect(eventManager['odpConfig'].segmentsToCheck).toContain(segmentsToCheck[1]);
+    expect(eventManager['odpConfig'].segmentsToCheck).toContain(Array.from(segmentsToCheck)[0]);
+    expect(eventManager['odpConfig'].segmentsToCheck).toContain(Array.from(segmentsToCheck)[1]);
   });
 });
