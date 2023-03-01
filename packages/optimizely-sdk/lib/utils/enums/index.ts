@@ -26,6 +26,7 @@ export const LOG_LEVEL = {
 };
 
 export const ERROR_MESSAGES = {
+  BROWSER_ODP_MANAGER_INITIALIZATION_FAILED: '%s: Error initialization Browser ODP Manager.',
   CONDITION_EVALUATOR_ERROR: '%s: Error evaluating audience condition of type %s: %s',
   DATAFILE_AND_SDK_KEY_MISSING: '%s: You must provide at least one of sdkKey or datafile. Cannot start Optimizely',
   EXPERIMENT_KEY_NOT_IN_DATAFILE: '%s: Experiment key %s is not in datafile.',
@@ -50,6 +51,7 @@ export const ERROR_MESSAGES = {
   INVALID_ROLLOUT_ID: '%s: Invalid rollout ID %s attached to feature %s',
   INVALID_USER_ID: '%s: Provided user ID is in an invalid format.',
   INVALID_USER_PROFILE_SERVICE: '%s: Provided user profile service instance is in an invalid format: %s.',
+  LOCAL_STORAGE_DOES_NOT_EXIST: 'Error accessing window localStorage.',
   NO_DATAFILE_SPECIFIED: '%s: No datafile specified. Cannot start optimizely.',
   NO_JSON_PROVIDED: '%s: No JSON object to validate against schema.',
   NO_VARIATION_FOR_EXPERIMENT_KEY: '%s: No variation key %s defined in datafile for experiment %s.',
@@ -60,6 +62,10 @@ export const ERROR_MESSAGES = {
     '%s: ODP identify event %s is not dispatched (Event Manager not instantiated).',
   ODP_INITIALIZATION_FAILED: '%s: ODP failed to initialize.',
   ODP_INVALID_DATA: '%s: ODP data is not valid',
+  ODP_EVENT_FAILED_ODP_MANAGER_MISSING: '%s: ODP Event failed to send. (ODP Manager not initialized).',
+  ODP_FETCH_QUALIFIED_SEGMENTS_FAILED_ODP_MANAGER_MISSING:
+    '%s: ODP failed to Fetch Qualified Segments. (ODP Manager not initialized).',
+  ODP_IDENTIFY_USER_FAILED_ODP_MANAGER_MISSING: '%s: ODP failed to Identify User. (ODP Manager not initialized).',
   ODP_MANAGER_UPDATE_SETTINGS_FAILED_EVENT_MANAGER_MISSING:
     '%s: ODP Manager failed to update OdpConfig settings for internal event manager. (Event Manager not initialized).',
   ODP_MANAGER_UPDATE_SETTINGS_FAILED_SEGMENTS_MANAGER_MISSING:
@@ -337,7 +343,7 @@ export enum ODP_USER_KEY {
   FS_USER_ID = 'fs_user_id',
 }
 
-export const ODP_EVENT_TYPE = 'fullstack';
+export const ODP_DEFAULT_EVENT_TYPE = 'fullstack';
 
 /**
  * ODP Event Action Options

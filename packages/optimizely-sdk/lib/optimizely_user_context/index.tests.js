@@ -976,5 +976,42 @@ describe('lib/optimizely_user_context', function() {
         sinon.assert.notCalled(stubLogHandler.log);
       });
     });
+
+    describe('#fetchQualifiedSegments', () => {
+      it('should successfully call fetch qualified segments', async () => {
+        fakeOptimizely = {
+          fetchQualifiedSegments: sinon.stub().returns(true)
+        };
+        const user = new OptimizelyUserContext({
+          optimizely: fakeOptimizely,
+          userId,
+        });
+
+        const fetchedQualifiedSegments = await user.fetchQualifiedSegments();
+        assert.deepEqual(fetchedQualifiedSegments, true);
+        
+        sinon.assert.calledWithExactly(
+          fakeOptimizely.fetchQualifiedSegments,
+          userId,
+          undefined,
+        );
+
+        assert.deepEqual(user.qualifiedSegments, []);
+      });
+    })
+
+    describe('#isQualifiedFor', () => {
+      it('should successfully return the expected result for if a user is qualified for a particular segment or not', () => {
+        const user = new OptimizelyUserContext({
+          optimizely: fakeOptimizely,
+          userId,
+          qualifiedSegments: ['a', 'b']
+        });
+
+        assert.deepEqual(user.isQualifiedFor('a'), true);
+        assert.deepEqual(user.isQualifiedFor('b'), true);
+        assert.deepEqual(user.isQualifiedFor('c'), false);
+      })
+    })
   });
 });

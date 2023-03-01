@@ -1,3 +1,4 @@
+import { ERROR_MESSAGES } from './../../utils/enums/index';
 /**
  * Copyright 2022, Optimizely
  *
@@ -14,27 +15,61 @@
  * limitations under the License.
  */
 
+import { tryWithLocalStorage } from '../../utils/local_storage/tryLocalStorage';
 import PersistentKeyValueCache from './persistentKeyValueCache';
+import { getLogger } from '../../modules/logging';
 
 export default class BrowserAsyncStorageCache implements PersistentKeyValueCache {
+  logger = getLogger();
+
   async contains(key: string): Promise<boolean> {
-    return localStorage.getItem(key) !== null;
+    return tryWithLocalStorage<boolean>({
+      browserCallback: (localStorage: Storage) => {
+        return localStorage.getItem(key) !== null;
+      },
+      nonBrowserCallback: () => {
+        this.logger.error(ERROR_MESSAGES.LOCAL_STORAGE_DOES_NOT_EXIST);
+        return false;
+      },
+    });
   }
 
   async get(key: string): Promise<string | null> {
-    return localStorage.getItem(key);
+    return tryWithLocalStorage<string | null>({
+      browserCallback: (localStorage: Storage) => {
+        return localStorage.getItem(key);
+      },
+      nonBrowserCallback: () => {
+        this.logger.error(ERROR_MESSAGES.LOCAL_STORAGE_DOES_NOT_EXIST);
+        return null;
+      },
+    });
   }
 
   async remove(key: string): Promise<boolean> {
     if (await this.contains(key)) {
-        localStorage.removeItem(key);
-        return true;
-      } else {
-        return false;
-      }
+      tryWithLocalStorage({
+        browserCallback: (localStorage: Storage) => {
+          localStorage.removeItem(key);
+        },
+        nonBrowserCallback: () => {
+          this.logger.error(ERROR_MESSAGES.LOCAL_STORAGE_DOES_NOT_EXIST);
+        },
+      });
+      return true;
+    } else {
+      return false;
+    }
   }
 
   async set(key: string, val: string): Promise<void> {
-    return localStorage.setItem(key, val);
+    return tryWithLocalStorage({
+      browserCallback: (localStorage: Storage) => {
+        localStorage.setItem(key, val);
+      },
+      nonBrowserCallback: () => {
+        this.logger.error(ERROR_MESSAGES.LOCAL_STORAGE_DOES_NOT_EXIST);
+      },
+    });
   }
 }

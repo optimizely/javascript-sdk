@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2016-2022, Optimizely, Inc. and contributors                   *
+ * Copyright 2016-2023, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -10136,6 +10136,46 @@ describe('lib/optimizely', function() {
       sinon.assert.calledOnce(eventDispatcherSpy);
       sinon.assert.calledOnce(notificationListener);
       sinon.assert.calledWithExactly(notificationListener, eventDispatcherSpy.getCall(0).args[0]);
+    });
+  });
+
+  describe('odp', () => {
+    it('should call logger with log level of "info" when odp disabled', () => {
+      //...
+    });
+
+    it('should send an identify event when called with odp enabled', () => {
+      //...
+    });
+
+    it('should flush the odp event queue as part of the close() function call', () => {
+      //...
+    })
+
+    describe('odp service config overrides', () => {
+      it('should accept custom cache size and timeout overrides defined in odp service config', () => {
+        //...
+      });
+
+      it('should accept a valid custom cache', () => {
+        //...
+      });
+
+      it('should call logger with log level of "error" when custom cache is invalid', () => {
+        //...
+      });
+
+      it('should accept a custom segment mananger override defined in odp service config', () => {
+        //...
+      });
+
+      it('should accept a custom event manager override defined in odp service config', () => {
+        //...
+      });
+
+      it('should call logger with log level of "error" when odp service config is invalid', () => {
+        //...
+      });
     });
   });
 });

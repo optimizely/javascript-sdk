@@ -16,6 +16,11 @@
 
 import CacheElement from './cache_element';
 
+export interface LRUCacheConfig {
+  maxSize: number;
+  timeout: number;
+}
+
 /**
  * Least-Recently Used Cache (LRU Cache) Implementation with Generic Key-Value Pairs
  * Analogous to a Map that has a specified max size and a timeout per element.
@@ -37,7 +42,7 @@ export class LRUCache<K, V> {
     return this._timeout;
   }
 
-  constructor({ maxSize, timeout }: { maxSize: number; timeout: number }) {
+  constructor({ maxSize, timeout }: LRUCacheConfig) {
     this._maxSize = maxSize;
     this._timeout = timeout;
   }

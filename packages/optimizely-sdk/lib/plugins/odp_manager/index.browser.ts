@@ -28,6 +28,7 @@ import { OdpManager } from '../../core/odp/odp_manager';
 import { OdpEvent } from '../../core/odp/odp_event';
 import { OdpEventManager } from '../../core/odp/odp_event_manager';
 import { OdpSegmentManager } from '../../core/odp/odp_segment_manager';
+import { OdpServiceConfig } from '../../core/odp/odp_service_config';
 
 interface BrowserOdpManagerConfig {
   disable: boolean;
@@ -121,3 +122,21 @@ export class BrowserOdpManager extends OdpManager {
     super.sendEvent({ type, action, identifiers: identifiersWithVuid, data });
   }
 }
+
+export const createBrowserOdpManager = (config?: OdpServiceConfig): BrowserOdpManager => {
+  if (!config) {
+    return new BrowserOdpManager({
+      disable: false,
+    });
+  }
+
+  return new BrowserOdpManager({
+    disable: config?.odpServicesDisabled || false,
+    segmentsCache: new BrowserLRUCache<string, string[]>({
+      maxSize: config?.odpSegmentsCacheSize,
+      timeout: config?.odpSegmentsCacheTimeout,
+    }),
+    segmentManager: config?.odpSegmentManager,
+    eventManager: config?.odpEventManager,
+  });
+};

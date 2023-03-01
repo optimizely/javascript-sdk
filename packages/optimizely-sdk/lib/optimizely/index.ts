@@ -17,10 +17,12 @@
 import { LoggerFacade, ErrorHandler } from '../modules/logging';
 import { sprintf, objectValues } from '../utils/fns';
 import { NotificationCenter } from '../core/notification_center';
-import { EventProcessor } from '../../lib/modules/event_processor';
+import { EventProcessor } from '../modules/event_processor';
 
 import { OdpManager } from '../core/odp/odp_manager';
 import { OdpConfig } from '../core/odp/odp_config';
+import { OdpEvent } from '../core/odp/odp_event';
+import { OptimizelySegmentOption } from '../core/odp/optimizely_segment_option';
 
 import {
   UserAttributes,
@@ -44,12 +46,12 @@ import { buildImpressionEvent, buildConversionEvent } from '../core/event_builde
 import { NotificationRegistry } from '../core/notification_center/notification_registry';
 import fns from '../utils/fns'
 import { validate } from '../utils/attributes_validator';
-import * as enums from '../utils/enums';
 import * as eventTagsValidator from '../utils/event_tags_validator';
 import * as projectConfig from '../core/project_config';
 import * as userProfileServiceValidator from '../utils/user_profile_service_validator';
 import * as stringValidator from '../utils/string_value_validator';
 import * as decision from '../core/decision';
+
 import {
   ERROR_MESSAGES,
   LOG_LEVEL,
@@ -58,7 +60,11 @@ import {
   DECISION_MESSAGES,
   FEATURE_VARIABLE_TYPES,
   DECISION_NOTIFICATION_TYPES,
-  NOTIFICATION_TYPES
+  NOTIFICATION_TYPES,
+  NODE_CLIENT_ENGINE,
+  NODE_CLIENT_VERSION,
+  ODP_EVENT_ACTION,
+  ODP_DEFAULT_EVENT_TYPE
 } from '../utils/enums';
 
 const MODULE_NAME = 'OPTIMIZELY';
@@ -98,11 +104,11 @@ export default class Optimizely {
         MODULE_NAME,
         clientEngine,
       );
-      clientEngine = enums.NODE_CLIENT_ENGINE;
+      clientEngine = NODE_CLIENT_ENGINE;
     }
 
     this.clientEngine = clientEngine;
-    this.clientVersion = config.clientVersion || enums.NODE_CLIENT_VERSION;
+    this.clientVersion = config.clientVersion || NODE_CLIENT_VERSION;
     this.errorHandler = config.errorHandler;
     this.isOptimizelyConfigValid = config.isValidInstance;
     this.logger = config.logger;
@@ -182,7 +188,7 @@ export default class Optimizely {
         const sdkKey = this.projectConfigManager.getConfig()?.sdkKey;
         if (sdkKey != null) {
           NotificationRegistry.getNotificationCenter(sdkKey, this.logger)
-            ?.addNotificationListener(enums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, () => this.updateODPSettings());
+            ?.addNotificationListener(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, () => this.updateODPSettings());
         } else {
           this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.ODP_SDK_KEY_MISSING_NOTIFICATION_CENTER_FAILURE);
         }
@@ -252,7 +258,7 @@ export default class Optimizely {
         const decisionObj = {
           experiment: experiment,
           variation: variation,
-          decisionSource: enums.DECISION_SOURCES.EXPERIMENT
+          decisionSource: DECISION_SOURCES.EXPERIMENT
         }
 
         this.sendImpressionEvent(
@@ -404,7 +410,7 @@ export default class Optimizely {
       if (!projectConfig.eventWithKeyExists(configObj, eventKey)) {
         this.logger.log(
           LOG_LEVEL.WARNING,
-          enums.LOG_MESSAGES.EVENT_KEY_NOT_FOUND,
+          LOG_MESSAGES.EVENT_KEY_NOT_FOUND,
           MODULE_NAME,
           eventKey,
         );
@@ -423,7 +429,7 @@ export default class Optimizely {
         clientVersion: this.clientVersion,
         configObj: configObj,
       });
-      this.logger.log(LOG_LEVEL.INFO, enums.LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId);
+      this.logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.TRACK_EVENT, MODULE_NAME, eventKey, userId);
       // TODO is it okay to not pass a projectConfig as second argument
       this.eventProcessor.process(conversionEvent);
       this.emitNotificationCenterTrack(eventKey, userId, attributes, eventTags);
@@ -1333,8 +1339,12 @@ export default class Optimizely {
    *
    * @return {Promise}
    */
-  close(): Promise<{ success: boolean; reason?: string }> {
+  public close(): Promise<{ success: boolean; reason?: string }> {
     try {
+      if (this.odpManager) {
+        this.odpManager.close();
+      }
+
       this.notificationCenter.clearAllNotificationListeners();
       const sdkKey = this.projectConfigManager.getConfig()?.sdkKey;
       if (sdkKey) {
@@ -1701,12 +1711,79 @@ export default class Optimizely {
   /**
    * Updates ODP Config with most recent ODP key, host, and segments from the project config
    */
-  updateODPSettings(): void {
+  public updateODPSettings(): void {
     const projectConfig = this.projectConfigManager.getConfig();
     if (this.odpManager != null && projectConfig != null) {
       this.odpManager.updateSettings(
         new OdpConfig(projectConfig.publicKeyForOdp, projectConfig.hostForOdp, projectConfig.allSegments)
       );
     }
+  }
+
+  /**
+   * Sends an action as an ODP Event with optional custom parameters including type, identifiers, and data
+   * @param {Object} odpEvent
+   * @param {ODP_EVENT_ACTION}    odpEvent.action         Subcategory of the event type (i.e. "client_initialized", or "")
+   * @param {string}              odpEvent.type           (Optional) Type of event (Defaults to "fullstack")
+   * @param {Map<string, string>} odpEvent.identifiers    (Optional) Key-value map of user identifiers
+   * @param {Map<string, string>} odpEvent.data           (Optional) Event data in a key-value map.
+   */
+  public sendOdpEvent({
+    type,
+    action,
+    identifiers,
+    data,
+  }: {
+    type?: string;
+    action: ODP_EVENT_ACTION;
+    identifiers?: Map<string, string>;
+    data?: Map<string, unknown>;
+  }): void {
+    if (!this.odpManager) {
+      this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED_ODP_MANAGER_MISSING)
+    }
+
+    try {
+      const odpEvent = new OdpEvent(
+        type || ODP_DEFAULT_EVENT_TYPE,
+        action,
+        identifiers || new Map(),
+        data || new Map()
+      );
+      this.odpManager!.sendEvent(odpEvent);
+    } catch (e) {
+      this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED)
+    }
+  }
+  
+  /**
+   * Identifies user with ODP server in a fire-and-forget manner.
+   * @param {string} userId 
+   */
+  public identifyUser(userId: string): void {
+    if (!this.odpManager) {
+      this.logger.error(ERROR_MESSAGES.ODP_IDENTIFY_USER_FAILED_ODP_MANAGER_MISSING)
+      return;
+    }
+
+    this.odpManager.identifyUser(userId);
+  }
+
+  /**
+   * Fetches list of qualified segments from ODP for a particular userId.
+   * @param {string}                          userId 
+   * @param {Array<OptimizelySegmentOption>}  options 
+   * @returns {Promise<string[] | null>}
+   */
+  public async fetchQualifiedSegments(
+    userId: string,
+    options?: Array<OptimizelySegmentOption>
+  ): Promise<string[] | null> {
+    if (!this.odpManager) {
+      this.logger.error(ERROR_MESSAGES.ODP_FETCH_QUALIFIED_SEGMENTS_FAILED_ODP_MANAGER_MISSING)
+      return null;
+    }
+
+    return await this.odpManager.fetchQualifiedSegments(userId, options);
   }
 }

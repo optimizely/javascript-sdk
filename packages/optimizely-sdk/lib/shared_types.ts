@@ -15,10 +15,13 @@
  */
 import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from '../lib/modules/logging';
 import { EventProcessor } from '../lib/modules/event_processor';
-import { OdpManager } from './core/odp/odp_manager';
 
 import { NotificationCenter as NotificationCenterImpl } from './core/notification_center';
-import { NOTIFICATION_TYPES } from './utils/enums';
+import { NOTIFICATION_TYPES, ODP_EVENT_ACTION } from './utils/enums';
+
+import { OdpManager } from './core/odp/odp_manager';
+import { OdpServiceConfig } from './core/odp/odp_service_config';
+import { OptimizelySegmentOption } from './core/odp/optimizely_segment_option';
 
 export interface BucketerParams {
   experimentId: string;
@@ -328,6 +331,14 @@ export interface Client {
   getOptimizelyConfig(): OptimizelyConfig | null;
   onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
   close(): Promise<{ success: boolean; reason?: string }>;
+  sendOdpEvent(payload: {
+    type?: string;
+    action: ODP_EVENT_ACTION;
+    identifiers?: Map<string, string>;
+    data?: Map<string, unknown>;
+  }): void;
+  identifyUser(userId: string): void;
+  fetchQualifiedSegments(userId: string, options: OptimizelySegmentOption[]): Promise<string[] | null>;
 }
 
 export interface ActivateListenerPayload extends ListenerPayload {
@@ -353,6 +364,7 @@ export interface Config extends ConfigLite {
   eventMaxQueueSize?: number; // Maximum size for the event queue
   sdkKey?: string;
   odpManager?: OdpManager;
+  odpServiceConfig?: OdpServiceConfig; // Configuration preferences for default OdpManager
 }
 
 /**

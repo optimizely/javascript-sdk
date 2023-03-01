@@ -24,10 +24,37 @@ import packageJSON from '../package.json';
 import optimizelyFactory from './index.browser';
 import configValidator from './utils/config_validator';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
+import OptimizelyUserContext from './optimizely_user_context';
 
 var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
 
-describe('javascript-sdk', function () {
+class MockLocalStorage {
+  store = {};
+
+  constructor() {}
+  
+  getItem(key) {
+    return this.store[key];
+  }
+
+  setItem(key, value) {
+    this.store[key] = value.toString();
+  }
+
+  clear() {
+    this.store = {};
+  }
+
+  removeItem(key) {
+    delete this.store[key];
+  }
+}
+
+global.window = {
+  localStorage: new MockLocalStorage()
+};
+
+describe('javascript-sdk (Browser)', function () {
   var clock;
   beforeEach(function () {
     sinon.stub(optimizelyFactory.eventDispatcher, 'dispatchEvent');
@@ -532,5 +559,58 @@ describe('javascript-sdk', function () {
         });
       });
     });
+
+    describe('#odp', () => {
+      const fakeErrorHandler = { handleError: function () { } };
+      const fakeEventDispatcher = { dispatchEvent: function () { } };
+      let silentLogger;
+
+      const testFsUserId = 'fs_test_user';
+      const testVuid = 'vuid_test_user'
+
+      beforeEach(function () {
+        silentLogger = optimizelyFactory.logging.createLogger({
+          logLevel: optimizelyFactory.enums.LOG_LEVEL.INFO,
+          logToConsole: false,
+        });
+        sinon.spy(console, 'error');
+        sinon.stub(configValidator, 'validate');
+
+        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+
+        sinon.stub(LocalStoragePendingEventsDispatcher.prototype, 'sendPendingEvents');
+      });
+
+      afterEach(function () {
+        LocalStoragePendingEventsDispatcher.prototype.sendPendingEvents.restore();
+        optimizelyFactory.__internalResetRetryState();
+        console.error.restore();
+        configValidator.validate.restore();
+        delete global.XMLHttpRequest
+      });
+
+      it('should send identify event when initialized with odp enabled', () => {
+        const optimizelyBrowserClientInstance = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfigWithFeatures(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          odpServiceConfig: {
+            odpServicesDisabled: false, // ODP Enabled
+          }
+        });
+
+        const user = new OptimizelyUserContext({
+          optimizely: fakeOptimizely,
+          testFsUserId,
+          qualifiedSegments: ['a', 'b']
+        });
+
+        sinon.assert.calledWithExactly(
+          optimizelyBrowserClientInstance.identifyUser,
+          testFsUserId,
+        );
+      });
+    })
   });
 });

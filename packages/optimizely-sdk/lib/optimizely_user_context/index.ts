@@ -23,6 +23,14 @@ import {
   UserAttributes,
 } from '../../lib/shared_types';
 import { CONTROL_ATTRIBUTES } from '../utils/enums';
+import { OptimizelySegmentOption } from '../core/odp/optimizely_segment_option';
+
+interface OptimizelyUserContextConfig {
+  optimizely: Optimizely;
+  userId: string;
+  attributes?: UserAttributes;
+  qualifiedSegments?: string[];
+}
 
 export default class OptimizelyUserContext {
   private optimizely: Optimizely;
@@ -35,15 +43,17 @@ export default class OptimizelyUserContext {
     optimizely,
     userId,
     attributes,
-  }: {
-    optimizely: Optimizely,
-    userId: string,
-    attributes?: UserAttributes,
-  }) {
+    qualifiedSegments,
+  }: OptimizelyUserContextConfig) {
     this.optimizely = optimizely;
     this.userId = userId;
     this.attributes = { ...attributes } ?? {};
     this.forcedDecisionsMap = {};
+    this.qualifiedSegments = qualifiedSegments ?? [];
+
+    if (optimizely && userId) {
+      optimizely.identifyUser(userId);
+    }
   }
 
   /**
@@ -212,10 +222,6 @@ export default class OptimizelyUserContext {
     return null;
   }
 
-  public isQualifiedFor(segment: string): boolean {
-    return this._qualifiedSegments.indexOf(segment) > -1;
-  }
-
   private cloneUserContext(): OptimizelyUserContext {
     const userContext = new OptimizelyUserContext({
       optimizely: this.getOptimizely(),
@@ -232,5 +238,28 @@ export default class OptimizelyUserContext {
     }
 
     return userContext;
+  }
+
+  /**
+   * Fetches a target user's list of qualified segments filtered by any given segment options and stores in qualifiedSegments.
+   * @param {OptimizelySegmentOption[]} options   (Optional) List of segment options used to filter qualified segment results.
+   * @returns Boolean representing if segments were populated.
+   */
+  public async fetchQualifiedSegments(options?: OptimizelySegmentOption[]): Promise<boolean> {
+    const segments = await this.optimizely.fetchQualifiedSegments(this.userId, options)
+    if (segments) {
+      this.qualifiedSegments = [...segments];
+    }
+
+    return !!segments;
+  }
+
+  /**
+   * Returns a boolean representing if a user is qualified for a particular segment.
+   * @param   {string}  segment   Target segment to be evaluated for user qualification. 
+   * @returns {boolean}           Boolean representing if a user qualified for the passed in segment.
+   */
+  public isQualifiedFor(segment: string): boolean {
+    return this._qualifiedSegments.indexOf(segment) > -1;
   }
 }
