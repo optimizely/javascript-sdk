@@ -123,6 +123,11 @@ export class BrowserOdpManager extends OdpManager {
   }
 }
 
+/**
+ * Instantiates and returns the Browser variation of ODP Manager.
+ * @param {OdpServiceConfig} config   Configuration for Browser ODP Manager
+ * @returns Configured ODP Manager of the Browser variant.
+ */
 export const createBrowserOdpManager = (config?: OdpServiceConfig): BrowserOdpManager => {
   if (!config) {
     return new BrowserOdpManager({

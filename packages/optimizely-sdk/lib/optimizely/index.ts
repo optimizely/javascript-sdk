@@ -1763,10 +1763,9 @@ export default class Optimizely {
   public identifyUser(userId: string): void {
     if (!this.odpManager) {
       this.logger.error(ERROR_MESSAGES.ODP_IDENTIFY_USER_FAILED_ODP_MANAGER_MISSING)
-      return;
+    } else {
+      this.odpManager.identifyUser(userId);
     }
-
-    this.odpManager.identifyUser(userId);
   }
 
   /**

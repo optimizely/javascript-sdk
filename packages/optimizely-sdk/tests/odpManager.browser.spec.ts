@@ -106,7 +106,7 @@ describe('OdpManager', () => {
   it('should drop relevant calls when OdpManager is initialized with the disabled flag, except for VUID', async () => {
     const browserOdpManager = new BrowserOdpManager({ disable: true, logger });
 
-    verify(mockLogger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_ENABLED)).once();
+    verify(mockLogger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED)).once();
 
     browserOdpManager.updateSettings(new OdpConfig('valid', 'host', []));
     expect(browserOdpManager.odpConfig).toBeUndefined;

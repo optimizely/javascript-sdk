@@ -66,6 +66,8 @@ export const ERROR_MESSAGES = {
   ODP_FETCH_QUALIFIED_SEGMENTS_FAILED_ODP_MANAGER_MISSING:
     '%s: ODP failed to Fetch Qualified Segments. (ODP Manager not initialized).',
   ODP_IDENTIFY_USER_FAILED_ODP_MANAGER_MISSING: '%s: ODP failed to Identify User. (ODP Manager not initialized).',
+  ODP_IDENTIFY_USER_FAILED_USER_CONTEXT_INITIALIZATION:
+    '%s: ODP failed to Identify User. (Failed during User Context Initialization).',
   ODP_MANAGER_UPDATE_SETTINGS_FAILED_EVENT_MANAGER_MISSING:
     '%s: ODP Manager failed to update OdpConfig settings for internal event manager. (Event Manager not initialized).',
   ODP_MANAGER_UPDATE_SETTINGS_FAILED_SEGMENTS_MANAGER_MISSING:
@@ -117,6 +119,7 @@ export const LOG_MESSAGES = {
   NO_ROLLOUT_EXISTS: '%s: There is no rollout of feature %s.',
   NOT_ACTIVATING_USER: '%s: Not activating user %s for experiment %s.',
   NOT_TRACKING_USER: '%s: Not tracking user %s.',
+  ODP_DISABLED: 'ODP Disabled.',
   ODP_IDENTIFY_FAILED_ODP_DISABLED: '%s: ODP identify event for user %s is not dispatched (ODP disabled).',
   ODP_IDENTIFY_FAILED_ODP_NOT_INTEGRATED: '%s: ODP identify event %s is not dispatched (ODP not integrated).',
   PARSED_REVENUE_VALUE: '%s: Parsed revenue value "%s" from event tags.',

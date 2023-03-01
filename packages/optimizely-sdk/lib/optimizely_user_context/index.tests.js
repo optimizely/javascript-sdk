@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2020-2022, Optimizely, Inc. and contributors                   *
+ * Copyright 2020-2023, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -325,7 +325,7 @@ describe('lib/optimizely_user_context', function() {
         });
         var result = user.setForcedDecision({ flagKey: 'feature_1' }, '3324490562');
         assert.strictEqual(result, true);
-        sinon.assert.notCalled(stubLogHandler.log);
+        sinon.assert.calledOnce(stubLogHandler.log); // Called once in the case of User Context logging an error when failing to run identifyUser
       });
 
       it('should return true when provided empty string flagKey', function() {
@@ -338,7 +338,7 @@ describe('lib/optimizely_user_context', function() {
         });
         var result = user.setForcedDecision({ flagKey: '' }, '3324490562');
         assert.strictEqual(result, true);
-        sinon.assert.notCalled(stubLogHandler.log);
+        sinon.assert.calledOnce(stubLogHandler.log); // Called once in the case of User Context logging an error when failing to run identifyUser
       });
 
       it('should return true when provided flagKey and variationKey', function() {
@@ -351,7 +351,7 @@ describe('lib/optimizely_user_context', function() {
         });
         var result = user.setForcedDecision({ flagKey: 'feature_1' }, '3324490562');
         assert.strictEqual(result, true);
-        sinon.assert.notCalled(stubLogHandler.log);
+        sinon.assert.calledOnce(stubLogHandler.log); // Called once in the case of User Context logging an error when failing to run identifyUser
       });
 
       describe('when valid forced decision is set', function() {
@@ -891,7 +891,7 @@ describe('lib/optimizely_user_context', function() {
         var result2 = user.removeForcedDecision('non-existent_feature');
         assert.strictEqual(result2, false);
 
-        sinon.assert.notCalled(stubLogHandler.log);
+        sinon.assert.calledOnce(stubLogHandler.log); // Called once in the case of User Context logging an error when failing to run identifyUser
       });
 
       it('should successfully remove forced decision when multiple forced decisions set with same feature key', function() {
@@ -947,7 +947,7 @@ describe('lib/optimizely_user_context', function() {
         });
         var result = user.removeAllForcedDecisions();
         assert.strictEqual(result, true);
-        sinon.assert.notCalled(stubLogHandler.log);
+        sinon.assert.calledOnce(stubLogHandler.log); // Called once in the case of User Context logging an error when failing to run identifyUser
       });
 
       it('should return true when all forced decisions have been removed successfully', function() {
@@ -973,7 +973,7 @@ describe('lib/optimizely_user_context', function() {
         assert.strictEqual(user.getForcedDecision({ flagKey: 'feature_1' }), null);
         assert.strictEqual(user.getForcedDecision({ flagKey: 'feature_1', ruleKey: 'exp_with_audience' }), null);
 
-        sinon.assert.notCalled(stubLogHandler.log);
+        sinon.assert.calledOnce(stubLogHandler.log); // Called once in the case of User Context logging an error when failing to run identifyUser
       });
     });
 

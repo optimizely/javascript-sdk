@@ -88,7 +88,7 @@ export class OdpManager {
     this.logger = logger || getLogger();
 
     if (!this.enabled) {
-      this.logger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_ENABLED);
+      this.logger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED);
       return;
     }
 
@@ -181,7 +181,8 @@ export class OdpManager {
     }
 
     if (!this.segmentManager) {
-      throw new Error(ERROR_MESSAGES.ODP_FETCH_QUALIFIED_SEGMENTS_SEGMENTS_MANAGER_MISSING);
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_FETCH_QUALIFIED_SEGMENTS_SEGMENTS_MANAGER_MISSING);
+      return null;
     }
 
     if (VuidManager.isVuid(userId)) {
@@ -209,7 +210,8 @@ export class OdpManager {
     }
 
     if (!this.eventManager) {
-      throw new Error(ERROR_MESSAGES.ODP_IDENTIFY_FAILED_EVENT_MANAGER_MISSING);
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_IDENTIFY_FAILED_EVENT_MANAGER_MISSING);
+      return;
     }
 
     if (userId && VuidManager.isVuid(userId)) {
