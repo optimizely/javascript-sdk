@@ -26,7 +26,7 @@ export const LOG_LEVEL = {
 };
 
 export const ERROR_MESSAGES = {
-  BROWSER_ODP_MANAGER_INITIALIZATION_FAILED: '%s: Error initialization Browser ODP Manager.',
+  BROWSER_ODP_MANAGER_INITIALIZATION_FAILED: '%s: Error initializing Browser ODP Manager.',
   CONDITION_EVALUATOR_ERROR: '%s: Error evaluating audience condition of type %s: %s',
   DATAFILE_AND_SDK_KEY_MISSING: '%s: You must provide at least one of sdkKey or datafile. Cannot start Optimizely',
   EXPERIMENT_KEY_NOT_IN_DATAFILE: '%s: Experiment key %s is not in datafile.',

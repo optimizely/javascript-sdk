@@ -26,6 +26,11 @@ import configValidator from './utils/config_validator';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import OptimizelyUserContext from './optimizely_user_context';
 import { LOG_MESSAGES } from './utils/enums';
+import { OdpSegmentManager } from './core/odp/odp_segment_manager';
+import { BrowserLRUCache } from './utils/lru_cache';
+import { OdpConfig } from './core/odp/odp_config';
+import { OdpSegmentApiManager } from './core/odp/odp_segment_api_manager';
+import { BrowserRequestHandler } from './utils/http_request_handler/browser_request_handler';
 
 var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
 
@@ -637,37 +642,103 @@ describe('javascript-sdk (Browser)', function() {
         sinon.assert.calledWith(logger.log, optimizelyFactory.enums.LOG_LEVEL.INFO, LOG_MESSAGES.ODP_DISABLED);
       });
 
-      it('should accept a custom cache size', () => {
-        // TODO
-      })
+      it('should accept a valid custom cache size', () => {
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfigWithFeatures(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger: logger,
+          odpServiceConfig: {
+            odpSegmentsCacheSize: 10,
+          },
+        });
+
+        sinon.assert.calledWith(
+          logger.log,
+          optimizelyFactory.enums.LOG_LEVEL.DEBUG,
+          'Provisioning cache with maxSize of 10'
+        );
+      });
 
       it('should accept a custom cache timeout', () => {
-        // TODO
-      })
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfigWithFeatures(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger: logger,
+          odpServiceConfig: {
+            odpSegmentsCacheTimeout: 10,
+          },
+        });
+
+        sinon.assert.calledWith(
+          logger.log,
+          optimizelyFactory.enums.LOG_LEVEL.DEBUG,
+          'Provisioning cache with timeout of 10'
+        );
+      });
 
       it('should accept both a custom cache size and timeout', () => {
-        // TODO
-      })
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfigWithFeatures(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger: logger,
+          odpServiceConfig: {
+            odpSegmentsCacheSize: 10,
+            odpSegmentsCacheTimeout: 10,
+          },
+        });
 
-      it('should accept a valid custom cache', () => {
-        // TODO
-      })
+        sinon.assert.calledWith(
+          logger.log,
+          optimizelyFactory.enums.LOG_LEVEL.DEBUG,
+          'Provisioning cache with maxSize of 10'
+        );
+
+        sinon.assert.calledWith(
+          logger.log,
+          optimizelyFactory.enums.LOG_LEVEL.DEBUG,
+          'Provisioning cache with timeout of 10'
+        );
+      });
 
       it('should accept a valid custom odp segment manager', () => {
+        const segmentManager = new OdpSegmentManager(
+          new OdpConfig(),
+          new BrowserLRUCache(),
+          new OdpSegmentApiManager(new BrowserRequestHandler(), logger),
+          logger
+        );
+
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfigWithFeatures(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger: logger,
+          odpServiceConfig: {
+            odpSegmentManager: segmentManager,
+          },
+        });
+
         // TODO
-      })
+      });
 
       it('should accept a valid custom odp event manager', () => {
         // TODO
-      })
+      });
 
       it('should send an odp event with sendOdpEvent', () => {
         // TODO
-      })
+      });
 
       it('should log an error when attempting to send an odp event when odp is disabled', () => {
         // TODO
-      })
+      });
     });
   });
 });

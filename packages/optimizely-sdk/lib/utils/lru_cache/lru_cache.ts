@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { getLogger } from '../../modules/logging';
+import { LOG_MESSAGES } from '../enums';
 import CacheElement from './cache_element';
 
 export interface LRUCacheConfig {
@@ -43,6 +45,11 @@ export class LRUCache<K, V> {
   }
 
   constructor({ maxSize, timeout }: LRUCacheConfig) {
+    const logger = getLogger();
+
+    logger.debug(`Provisioning cache with maxSize of ${maxSize}`);
+    logger.debug(`Provisioning cache with timeout of ${timeout}`);
+
     this._maxSize = maxSize;
     this._timeout = timeout;
   }
