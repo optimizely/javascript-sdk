@@ -30,7 +30,7 @@ interface OptimizelyUserContextConfig {
   optimizely: Optimizely;
   userId: string;
   attributes?: UserAttributes;
-  qualifiedSegments?: string[];
+  shouldIdentifyUser?: boolean;
 }
 
 export default class OptimizelyUserContext {
@@ -40,26 +40,23 @@ export default class OptimizelyUserContext {
   private forcedDecisionsMap: { [key: string]: { [key: string]: OptimizelyForcedDecision } };
   private _qualifiedSegments: string[] = [];
 
-  constructor({ optimizely, userId, attributes, qualifiedSegments }: OptimizelyUserContextConfig) {
+  constructor({ optimizely, userId, attributes, shouldIdentifyUser }: OptimizelyUserContextConfig) {
     this.optimizely = optimizely;
     this.userId = userId;
     this.attributes = { ...attributes } ?? {};
     this.forcedDecisionsMap = {};
-    this.qualifiedSegments = qualifiedSegments ?? [];
 
-    this.identifyUser();
+    if (shouldIdentifyUser == null || shouldIdentifyUser) {
+      this.identifyUser();
+    }
   }
 
   /**
    * On user context instantiation, fire event to attempt to identify user to ODP.
+   * Note: This fails if ODP is not enabled.
    */
   identifyUser(): void {
-    try {
-      this.optimizely.identifyUser(this.userId);
-    } catch (e) {
-      const logger = getLogger('Optimizely User Context');
-      logger.error(ERROR_MESSAGES.ODP_IDENTIFY_USER_FAILED_USER_CONTEXT_INITIALIZATION);
-    }
+    this.optimizely.identifyUser(this.userId);
   }
 
   /**
@@ -219,6 +216,7 @@ export default class OptimizelyUserContext {
 
   private cloneUserContext(): OptimizelyUserContext {
     const userContext = new OptimizelyUserContext({
+      shouldIdentifyUser: false,
       optimizely: this.getOptimizely(),
       userId: this.getUserId(),
       attributes: this.getAttributes(),
@@ -240,7 +238,7 @@ export default class OptimizelyUserContext {
    * @param {OptimizelySegmentOption[]} options   (Optional) List of segment options used to filter qualified segment results.
    * @returns Boolean representing if segments were populated.
    */
-  public async fetchQualifiedSegments(options?: OptimizelySegmentOption[]): Promise<boolean> {
+  async fetchQualifiedSegments(options?: OptimizelySegmentOption[]): Promise<boolean> {
     const segments = await this.optimizely.fetchQualifiedSegments(this.userId, options);
     if (segments) {
       this.qualifiedSegments = [...segments];
@@ -254,7 +252,7 @@ export default class OptimizelyUserContext {
    * @param   {string}  segment   Target segment to be evaluated for user qualification.
    * @returns {boolean}           Boolean representing if a user qualified for the passed in segment.
    */
-  public isQualifiedFor(segment: string): boolean {
+  isQualifiedFor(segment: string): boolean {
     return this._qualifiedSegments.indexOf(segment) > -1;
   }
 }

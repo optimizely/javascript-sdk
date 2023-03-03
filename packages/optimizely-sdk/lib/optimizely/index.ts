@@ -87,12 +87,12 @@ export default class Optimizely {
   private clientEngine: string;
   private clientVersion: string;
   private errorHandler: ErrorHandler;
-  private logger: LoggerFacade;
+  protected logger: LoggerFacade;
   private projectConfigManager: ProjectConfigManager;
   private decisionService: DecisionService;
   private eventProcessor: EventProcessor;
   private defaultDecideOptions: { [key: string]: boolean };
-  private odpManager?: OdpManager;
+  protected odpManager?: OdpManager;
   public notificationCenter: NotificationCenter;
 
   constructor(config: OptimizelyOptions) {
@@ -173,13 +173,13 @@ export default class Optimizely {
         if (config.odpManager != null) {
           this.odpManager = config.odpManager;
           this.odpManager.eventManager?.start();
-          this.updateODPSettings();
+          this.updateOdpSettings();
           const sdkKey = this.projectConfigManager.getConfig()?.sdkKey;
           if (sdkKey != null) {
             NotificationRegistry.getNotificationCenter(
               sdkKey,
               this.logger
-            )?.addNotificationListener(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, () => this.updateODPSettings());
+            )?.addNotificationListener(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, () => this.updateOdpSettings());
           } else {
             this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.ODP_SDK_KEY_MISSING_NOTIFICATION_CENTER_FAILURE);
           }
@@ -574,7 +574,7 @@ export default class Optimizely {
    * @return {boolean}                      True if inputs are valid
    *
    */
-  private validateInputs(stringInputs: StringInputs, userAttributes?: unknown, eventTags?: unknown): boolean {
+  protected validateInputs(stringInputs: StringInputs, userAttributes?: unknown, eventTags?: unknown): boolean {
     try {
       if (stringInputs.hasOwnProperty('user_id')) {
         const userId = stringInputs['user_id'];
@@ -1294,7 +1294,7 @@ export default class Optimizely {
    *
    * @return {Promise}
    */
-  public close(): Promise<{ success: boolean; reason?: string }> {
+  close(): Promise<{ success: boolean; reason?: string }> {
     try {
       if (this.odpManager) {
         this.odpManager.close();
@@ -1442,6 +1442,7 @@ export default class Optimizely {
       optimizely: this,
       userId,
       attributes,
+      shouldIdentifyUser: false,
     });
   }
 
@@ -1629,7 +1630,7 @@ export default class Optimizely {
   /**
    * Updates ODP Config with most recent ODP key, host, and segments from the project config
    */
-  public updateODPSettings(): void {
+  private updateOdpSettings(): void {
     const projectConfig = this.projectConfigManager.getConfig();
     if (this.odpManager != null && projectConfig != null) {
       this.odpManager.updateSettings(
@@ -1640,6 +1641,7 @@ export default class Optimizely {
 
   /**
    * Sends an action as an ODP Event with optional custom parameters including type, identifiers, and data
+   * Note: Since this depends on this.odpManager, it must await Optimizely client's onReady() promise resolution.
    * @param {Object} odpEvent
    * @param {ODP_EVENT_ACTION}    odpEvent.action         Subcategory of the event type (i.e. "client_initialized", or "")
    * @param {string}              odpEvent.type           (Optional) Type of event (Defaults to "fullstack")
@@ -1670,7 +1672,7 @@ export default class Optimizely {
       );
       this.odpManager!.sendEvent(odpEvent);
     } catch (e) {
-      this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED);
+      this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED, e);
     }
   }
 
@@ -1679,9 +1681,7 @@ export default class Optimizely {
    * @param {string} userId
    */
   public identifyUser(userId: string): void {
-    if (!this.odpManager) {
-      this.logger.error(ERROR_MESSAGES.ODP_IDENTIFY_USER_FAILED_ODP_MANAGER_MISSING);
-    } else {
+    if (this.odpManager && this.odpManager.enabled) {
       this.odpManager.identifyUser(userId);
     }
   }

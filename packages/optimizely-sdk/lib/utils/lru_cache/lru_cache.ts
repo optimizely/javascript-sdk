@@ -15,7 +15,6 @@
  */
 
 import { getLogger } from '../../modules/logging';
-import { LOG_MESSAGES } from '../enums';
 import CacheElement from './cache_element';
 
 export interface LRUCacheConfig {

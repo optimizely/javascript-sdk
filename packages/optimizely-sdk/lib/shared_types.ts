@@ -20,8 +20,6 @@ import { NotificationCenter as NotificationCenterImpl } from './core/notificatio
 import { NOTIFICATION_TYPES, ODP_EVENT_ACTION } from './utils/enums';
 
 import { OdpManager } from './core/odp/odp_manager';
-import { OdpServiceConfig } from './core/odp/odp_service_config';
-import { OptimizelySegmentOption } from './core/odp/optimizely_segment_option';
 
 export interface BucketerParams {
   experimentId: string;
@@ -337,8 +335,6 @@ export interface Client {
     identifiers?: Map<string, string>;
     data?: Map<string, unknown>;
   }): void;
-  identifyUser(userId: string): void;
-  fetchQualifiedSegments(userId: string, options: OptimizelySegmentOption[]): Promise<string[] | null>;
 }
 
 export interface ActivateListenerPayload extends ListenerPayload {
@@ -364,7 +360,6 @@ export interface Config extends ConfigLite {
   eventMaxQueueSize?: number; // Maximum size for the event queue
   sdkKey?: string;
   odpManager?: OdpManager;
-  odpServiceConfig?: OdpServiceConfig; // Configuration preferences for default OdpManager
 }
 
 /**

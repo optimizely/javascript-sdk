@@ -55,7 +55,7 @@ export const ERROR_MESSAGES = {
   NO_DATAFILE_SPECIFIED: '%s: No datafile specified. Cannot start optimizely.',
   NO_JSON_PROVIDED: '%s: No JSON object to validate against schema.',
   NO_VARIATION_FOR_EXPERIMENT_KEY: '%s: No variation key %s defined in datafile for experiment %s.',
-  ODP_EVENT_FAILED: '%s: ODP event send failed (invalid url)',
+  ODP_EVENT_FAILED: 'ODP event send failed.',
   ODP_FETCH_QUALIFIED_SEGMENTS_SEGMENTS_MANAGER_MISSING:
     '%s: ODP unable to fetch qualified segments (Segments Manager not initialized).',
   ODP_IDENTIFY_FAILED_EVENT_MANAGER_MISSING:
@@ -72,7 +72,7 @@ export const ERROR_MESSAGES = {
     '%s: ODP Manager failed to update OdpConfig settings for internal event manager. (Event Manager not initialized).',
   ODP_MANAGER_UPDATE_SETTINGS_FAILED_SEGMENTS_MANAGER_MISSING:
     '%s: ODP Manager failed to update OdpConfig settings for internal segments manager. (Segments Manager not initialized).',
-  ODP_NOT_ENABLED: '%s: ODP is not enabled',
+  ODP_NOT_ENABLED: 'ODP is not enabled',
   ODP_NOT_INTEGRATED: '%s: ODP is not integrated',
   ODP_SEND_EVENT_FAILED_EVENT_MANAGER_MISSING:
     '%s: ODP send event %s was not dispatched (Event Manager not instantiated).',

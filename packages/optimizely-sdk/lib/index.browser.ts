@@ -21,13 +21,13 @@ import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
-import Optimizely from './optimizely';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
 import { default as eventProcessor } from './plugins/event_processor';
 import { OptimizelyDecideOption, Client, Config, OptimizelyOptions } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/browser_http_polling_datafile_manager';
-import { createBrowserOdpManager } from './plugins/odp_manager/index.browser';
+import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
+import BrowserOptimizely from './optimizely/index.browser';
 
 const logger = getLogger();
 logHelper.setLogHandler(loggerPlugin.createLogger());
@@ -114,16 +114,6 @@ const createInstance = function(config: Config): Client | null {
       notificationCenter,
     };
 
-    let browserOdpManager = config.odpManager;
-
-    if (!browserOdpManager) {
-      try {
-        browserOdpManager = createBrowserOdpManager(config.odpServiceConfig);
-      } catch (e) {
-        logger.error(enums.ERROR_MESSAGES.BROWSER_ODP_MANAGER_INITIALIZATION_FAILED, e.message);
-      }
-    }
-
     const optimizelyOptions: OptimizelyOptions = {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       ...config,
@@ -135,10 +125,10 @@ const createInstance = function(config: Config): Client | null {
         : undefined,
       notificationCenter,
       isValidInstance: isValidInstance,
-      odpManager: browserOdpManager,
+      odpManager: config.odpManager || new BrowserOdpManager({ disable: false, logger }),
     };
 
-    const optimizely = new Optimizely(optimizelyOptions);
+    const optimizely = new BrowserOptimizely(optimizelyOptions);
 
     try {
       if (typeof window.addEventListener === 'function') {

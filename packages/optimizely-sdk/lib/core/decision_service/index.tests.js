@@ -68,6 +68,7 @@ describe('lib/core/decision_service', function() {
     describe('#getVariation', function() {
       it('should return the correct variation for the given experiment key and user ID for a running experiment', function() {
         user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: {},
           userId: 'tester'
         });
@@ -86,6 +87,7 @@ describe('lib/core/decision_service', function() {
 
       it('should return the whitelisted variation if the user is whitelisted', function() {
         user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: {},
           userId: 'user2'
         });
@@ -108,6 +110,7 @@ describe('lib/core/decision_service', function() {
 
       it('should return null if the user does not meet audience conditions', function() {
         user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: {},
           userId: 'user3'
         });
@@ -136,6 +139,7 @@ describe('lib/core/decision_service', function() {
 
       it('should return null if the experiment is not running', function() {
         user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: {},
           userId: 'user1'
         });
@@ -165,6 +169,7 @@ describe('lib/core/decision_service', function() {
             },
           };
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'decision_service_user',
             attributes,
@@ -222,6 +227,7 @@ describe('lib/core/decision_service', function() {
           });
           experiment = configObj.experimentIdMap['111127'];
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'decision_service_user',
           });
@@ -250,6 +256,7 @@ describe('lib/core/decision_service', function() {
           });
           experiment = configObj.experimentIdMap['111127'];
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'decision_service_user',
           });
@@ -276,6 +283,7 @@ describe('lib/core/decision_service', function() {
           userProfileLookupStub.returns(null);
           experiment = configObj.experimentIdMap['111127'];
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'decision_service_user',
           });
@@ -308,6 +316,7 @@ describe('lib/core/decision_service', function() {
           });
           experiment = configObj.experimentIdMap['111127'];
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'decision_service_user',
           });
@@ -343,6 +352,7 @@ describe('lib/core/decision_service', function() {
             experiment_bucket_map: {}, // no decisions for user
           });
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'decision_service_user',
           });
@@ -378,6 +388,7 @@ describe('lib/core/decision_service', function() {
           userProfileLookupStub.throws(new Error('I am an error'));
           experiment = configObj.experimentIdMap['111127'];
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'decision_service_user',
           });
@@ -403,6 +414,7 @@ describe('lib/core/decision_service', function() {
           userProfileSaveStub.throws(new Error('I am an error'));
           experiment = configObj.experimentIdMap['111127'];
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'decision_service_user',
           });
@@ -456,6 +468,7 @@ describe('lib/core/decision_service', function() {
             experiment = configObj.experimentIdMap['111127'];
 
             user = new OptimizelyUserContext({
+              shouldIdentifyUser: false,
               optimizely: {},
               userId: 'decision_service_user',
               attributes,
@@ -500,6 +513,7 @@ describe('lib/core/decision_service', function() {
             };
 
             user = new OptimizelyUserContext({
+              shouldIdentifyUser: false,
               optimizely: {},
               userId: 'decision_service_user',
               attributes,
@@ -544,6 +558,7 @@ describe('lib/core/decision_service', function() {
             };
 
             user = new OptimizelyUserContext({
+              shouldIdentifyUser: false,
               optimizely: {},
               userId: 'decision_service_user',
               attributes,
@@ -579,6 +594,7 @@ describe('lib/core/decision_service', function() {
             };
 
             user = new OptimizelyUserContext({
+              shouldIdentifyUser: false,
               optimizely: {},
               userId: 'decision_service_user',
               attributes,
@@ -1146,6 +1162,7 @@ describe('lib/core/decision_service', function() {
         },
       });
       user = new OptimizelyUserContext({
+        shouldIdentifyUser: false,
         optimizely: {},
         userId: 'test_user',
         attributes: userAttributesWithBucketingId,
@@ -1248,6 +1265,7 @@ describe('lib/core/decision_service', function() {
           var experiment;
           beforeEach(function() {
             user = new OptimizelyUserContext({
+              shouldIdentifyUser: false,
               optimizely: {},
               userId: 'user1',
               attributes: {
@@ -1489,6 +1507,7 @@ describe('lib/core/decision_service', function() {
           var getVariationStub;
           beforeEach(function() {
             user = new OptimizelyUserContext({
+              shouldIdentifyUser: false,
               optimizely: {},
               userId: 'user1',
             });
@@ -1523,6 +1542,7 @@ describe('lib/core/decision_service', function() {
           var user;
           beforeEach(function() {
             user = new OptimizelyUserContext({
+              shouldIdentifyUser: false,
               optimizely: {},
               userId: 'user1',
             });
@@ -1583,6 +1603,7 @@ describe('lib/core/decision_service', function() {
           var user;
           beforeEach(function() {
             user = new OptimizelyUserContext({
+              shouldIdentifyUser: false,
               optimizely: {},
               userId: 'user1',
             });
@@ -1642,6 +1663,7 @@ describe('lib/core/decision_service', function() {
 
           it('returns a decision with a variation and experiment from the audience targeting rule', function() {
             user = new OptimizelyUserContext({
+              shouldIdentifyUser: false,
               optimizely: {},
               userId: 'user1',
               attributes: { test_attribute: 'test_value' },
@@ -1778,6 +1800,7 @@ describe('lib/core/decision_service', function() {
 
           it('returns a decision with a variation and experiment from the everyone else targeting rule', function() {
             user = new OptimizelyUserContext({
+              shouldIdentifyUser: false,
               optimizely: {},
               userId: 'user1',
               attributes: {},
@@ -1913,6 +1936,7 @@ describe('lib/core/decision_service', function() {
 
           it('returns a decision with no variation, no experiment and source rollout', function() {
             user = new OptimizelyUserContext({
+              shouldIdentifyUser: false,
               optimizely: {},
               userId: 'user1',
             });
@@ -1960,6 +1984,7 @@ describe('lib/core/decision_service', function() {
 
           it('returns a decision with a variation and experiment from the everyone else targeting rule', function() {
             user = new OptimizelyUserContext({
+              shouldIdentifyUser: false,
               optimizely: {},
               userId: 'user1',
               attributes: { test_attribute: 'test_value' }
@@ -2109,6 +2134,7 @@ describe('lib/core/decision_service', function() {
           // No attributes passed to the user context, so user is not in the audience for the experiment
           // It should fall through to the rollout
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'user1'
           });
@@ -2203,6 +2229,7 @@ describe('lib/core/decision_service', function() {
 
         it('returns a decision with no variation, no experiment and source rollout', function() {
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'user1'
           });
@@ -2239,6 +2266,7 @@ describe('lib/core/decision_service', function() {
         it('returns a decision with a variation in mutex group bucket less than 2500', function() {
           generateBucketValueStub.returns(2400);
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'user1',
             attributes: { experiment_attr: 'group_experiment' }
@@ -2268,6 +2296,7 @@ describe('lib/core/decision_service', function() {
         it('returns a decision with a variation in mutex group bucket range 2500 to 5000', function() {
           generateBucketValueStub.returns(4000);
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'user1',
             attributes: { experiment_attr: 'group_experiment' }
@@ -2297,6 +2326,7 @@ describe('lib/core/decision_service', function() {
         it('returns a decision with a variation in mutex group bucket range 5000 to 7500', function() {
           generateBucketValueStub.returns(6500);
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'user1',
             attributes: { experiment_attr: 'group_experiment' }
@@ -2326,6 +2356,7 @@ describe('lib/core/decision_service', function() {
         it('returns a decision with variation and source rollout in mutex group bucket greater than 7500', function() {
           generateBucketValueStub.returns(8000);
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'user1',
             attributes: { experiment_attr: 'group_experiment' }
@@ -2373,6 +2404,7 @@ describe('lib/core/decision_service', function() {
         it('returns a decision with variation for rollout in mutex group with audience mismatch', function() {
           generateBucketValueStub.returns(2400);
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'user1',
             attributes: { experiment_attr: 'group_experiment_invalid' }
@@ -2429,6 +2461,7 @@ describe('lib/core/decision_service', function() {
         it('returns a decision with a variation in mutex group bucket less than 2500', function() {
           generateBucketValueStub.returns(2400);
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'user1',
             attributes: { experiment_attr: 'group_experiment' }
@@ -2459,6 +2492,7 @@ describe('lib/core/decision_service', function() {
         it('returns a decision with a variation in mutex group bucket range 2500 to 5000', function() {
           generateBucketValueStub.returns(4000);
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'user1',
             attributes: { experiment_attr: 'group_experiment' }
@@ -2489,6 +2523,7 @@ describe('lib/core/decision_service', function() {
         it('returns a decision with a variation in mutex group bucket range 5000 to 7500', function() {
           generateBucketValueStub.returns(6500);
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'user1',
             attributes: { experiment_attr: 'group_experiment' }
@@ -2519,6 +2554,7 @@ describe('lib/core/decision_service', function() {
         it('returns a decision with variation and source rollout in mutex group bucket greater than 7500', function() {
           generateBucketValueStub.returns(8000);
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'user1',
             attributes: { experiment_attr: 'group_experiment' }
@@ -2566,6 +2602,7 @@ describe('lib/core/decision_service', function() {
         it('returns a decision with variation for rollout in mutex group bucket range 2500 to 5000', function() {
           generateBucketValueStub.returns(4000);
           user = new OptimizelyUserContext({
+            shouldIdentifyUser: false,
             optimizely: {},
             userId: 'user1',
             attributes: { experiment_attr: 'group_experiment_invalid' }
@@ -2634,6 +2671,7 @@ describe('lib/core/decision_service', function() {
 
       it('should call buildBucketerParams with user Id when bucketing Id is not provided in the attributes', function() {
         user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: {},
           userId: 'testUser',
           attributes: { test_attribute: 'test_value' }
@@ -2651,6 +2689,7 @@ describe('lib/core/decision_service', function() {
           $opt_bucketing_id: 'abcdefg',
         };
         user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: {},
           userId: 'testUser',
           attributes,

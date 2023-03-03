@@ -38,17 +38,18 @@ describe('lib/optimizely_user_context', function() {
     var options = 'fakeOption';
     describe('#setAttribute', function() {
       fakeOptimizely = {
-        decide: sinon.stub().returns({})
-      }
+        decide: sinon.stub().returns({}),
+      };
       it('should set attributes when provided at instantiation of OptimizelyUserContext', function() {
         var userId = 'user1';
         var attributes = { test_attribute: 'test_value' };
         var user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId,
-          attributes
+          attributes,
         });
-        user.setAttribute('k1', { 'hello': 'there' });
+        user.setAttribute('k1', { hello: 'there' });
         user.setAttribute('k2', true);
         user.setAttribute('k3', 100);
         user.setAttribute('k4', 3.5);
@@ -57,7 +58,7 @@ describe('lib/optimizely_user_context', function() {
 
         var newAttributes = user.getAttributes();
         assert.deepEqual(newAttributes['test_attribute'], 'test_value');
-        assert.deepEqual(newAttributes['k1'], { 'hello': 'there' });
+        assert.deepEqual(newAttributes['k1'], { hello: 'there' });
         assert.deepEqual(newAttributes['k2'], true);
         assert.deepEqual(newAttributes['k3'], 100);
         assert.deepEqual(newAttributes['k4'], 3.5);
@@ -66,10 +67,11 @@ describe('lib/optimizely_user_context', function() {
       it('should set attributes when none provided at instantiation of OptimizelyUserContext', function() {
         var userId = 'user2';
         var user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId,
         });
-        user.setAttribute('k1', { 'hello': 'there' });
+        user.setAttribute('k1', { hello: 'there' });
         user.setAttribute('k2', true);
         user.setAttribute('k3', 100);
         user.setAttribute('k4', 3.5);
@@ -77,7 +79,7 @@ describe('lib/optimizely_user_context', function() {
         assert.deepEqual(user.getUserId(), userId);
 
         var newAttributes = user.getAttributes();
-        assert.deepEqual(newAttributes['k1'], { 'hello': 'there' });
+        assert.deepEqual(newAttributes['k1'], { hello: 'there' });
         assert.deepEqual(newAttributes['k2'], true);
         assert.deepEqual(newAttributes['k3'], 100);
         assert.deepEqual(newAttributes['k4'], 3.5);
@@ -87,17 +89,18 @@ describe('lib/optimizely_user_context', function() {
         var userId = 'user3';
         var attributes = { test_attribute: 'test_value' };
         var user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId,
           attributes,
         });
-        user.setAttribute('k1', { 'hello': 'there' });
+        user.setAttribute('k1', { hello: 'there' });
         user.setAttribute('test_attribute', 'overwritten_value');
         assert.deepEqual(user.getOptimizely(), fakeOptimizely);
         assert.deepEqual(user.getUserId(), userId);
 
         var newAttributes = user.getAttributes();
-        assert.deepEqual(newAttributes['k1'], { 'hello': 'there' });
+        assert.deepEqual(newAttributes['k1'], { hello: 'there' });
         assert.deepEqual(newAttributes['test_attribute'], 'overwritten_value');
         assert.deepEqual(Object.keys(newAttributes).length, 2);
       });
@@ -105,6 +108,7 @@ describe('lib/optimizely_user_context', function() {
       it('should allow to set attributes with value of null', function() {
         var userId = 'user4';
         var user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId,
         });
@@ -120,31 +124,33 @@ describe('lib/optimizely_user_context', function() {
         var userId = 'user1';
         var attributes = { initial_attribute: 'initial_value' };
         var user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId,
           attributes,
         });
-        attributes["attribute2"] = 100;
+        attributes['attribute2'] = 100;
         assert.deepEqual(user.getAttributes(), { initial_attribute: 'initial_value' });
-        user.setAttribute("attribute3", "hello");
-        assert.deepEqual(attributes, { initial_attribute: 'initial_value', 'attribute2': 100 });
+        user.setAttribute('attribute3', 'hello');
+        assert.deepEqual(attributes, { initial_attribute: 'initial_value', attribute2: 100 });
       });
 
       it('should not change user attributes if returned by getAttributes object is updated', function() {
         var userId = 'user1';
         var attributes = { initial_attribute: 'initial_value' };
         var user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId,
           attributes,
         });
         var attributes2 = user.getAttributes();
-        attributes2['new_attribute'] = { "value": 100 };
+        attributes2['new_attribute'] = { value: 100 };
         assert.deepEqual(user.getAttributes(), attributes);
         var expectedAttributes = {
           initial_attribute: 'initial_value',
-          new_attribute: { "value": 100 }
-        }
+          new_attribute: { value: 100 },
+        };
         assert.deepEqual(attributes2, expectedAttributes);
       });
     });
@@ -162,30 +168,25 @@ describe('lib/optimizely_user_context', function() {
           reasons: [],
         };
         fakeOptimizely = {
-          decide: sinon.stub().returns(fakeDecision)
+          decide: sinon.stub().returns(fakeDecision),
         };
         var user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId,
         });
         var decision = user.decide(flagKey, options);
-        sinon.assert.calledWithExactly(
-          fakeOptimizely.decide,
-          user,
-          flagKey,
-          options
-        );
+        sinon.assert.calledWithExactly(fakeOptimizely.decide, user, flagKey, options);
         assert.deepEqual(decision, fakeDecision);
       });
-  });
+    });
 
     describe('#decideForKeys', function() {
       it('should return an expected decision results object', function() {
         var flagKey1 = 'feature_1';
         var flagKey2 = 'feature_2';
         var fakeDecisionMap = {
-          flagKey1:
-          {
+          flagKey1: {
             variationKey: '18257766532',
             enabled: true,
             variables: {},
@@ -194,8 +195,7 @@ describe('lib/optimizely_user_context', function() {
             userContext: 'fakeUserContext',
             reasons: [],
           },
-          flagKey2:
-          {
+          flagKey2: {
             variationKey: 'variation_with_traffic',
             enabled: true,
             variables: {},
@@ -206,19 +206,15 @@ describe('lib/optimizely_user_context', function() {
           },
         };
         fakeOptimizely = {
-          decideForKeys: sinon.stub().returns(fakeDecisionMap)
+          decideForKeys: sinon.stub().returns(fakeDecisionMap),
         };
         var user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId,
         });
         var decisionMap = user.decideForKeys([flagKey1, flagKey2], options);
-        sinon.assert.calledWithExactly(
-          fakeOptimizely.decideForKeys,
-          user,
-          [flagKey1, flagKey2],
-          options
-        );
+        sinon.assert.calledWithExactly(fakeOptimizely.decideForKeys, user, [flagKey1, flagKey2], options);
         assert.deepEqual(decisionMap, fakeDecisionMap);
       });
     });
@@ -229,8 +225,7 @@ describe('lib/optimizely_user_context', function() {
         var flagKey2 = 'feature_2';
         var flagKey3 = 'feature_3';
         var fakeDecisionMap = {
-          flagKey1:
-          {
+          flagKey1: {
             variationKey: '18257766532',
             enabled: true,
             variables: {},
@@ -239,8 +234,7 @@ describe('lib/optimizely_user_context', function() {
             userContext: 'fakeUserContext',
             reasons: [],
           },
-          flagKey2:
-          {
+          flagKey2: {
             variationKey: 'variation_with_traffic',
             enabled: true,
             variables: {},
@@ -249,8 +243,7 @@ describe('lib/optimizely_user_context', function() {
             userContext: 'fakeUserContext',
             reasons: [],
           },
-          flagKey3:
-          {
+          flagKey3: {
             variationKey: '',
             enabled: false,
             variables: {},
@@ -261,18 +254,15 @@ describe('lib/optimizely_user_context', function() {
           },
         };
         fakeOptimizely = {
-          decideAll: sinon.stub().returns(fakeDecisionMap)
+          decideAll: sinon.stub().returns(fakeDecisionMap),
         };
         var user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId,
         });
         var decisionMap = user.decideAll(options);
-        sinon.assert.calledWithExactly(
-          fakeOptimizely.decideAll,
-          user,
-          options
-        );
+        sinon.assert.calledWithExactly(fakeOptimizely.decideAll, user, options);
         assert.deepEqual(decisionMap, fakeDecisionMap);
       });
     });
@@ -280,11 +270,12 @@ describe('lib/optimizely_user_context', function() {
     describe('#trackEvent', function() {
       it('should call track from optimizely client', function() {
         fakeOptimizely = {
-          track: sinon.stub()
+          track: sinon.stub(),
         };
         var eventName = 'myEvent';
-        var eventTags = { 'eventTag1': 1000 }
+        var eventTags = { eventTag1: 1000 };
         var user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId,
         });
@@ -294,7 +285,7 @@ describe('lib/optimizely_user_context', function() {
           eventName,
           user.getUserId(),
           user.getAttributes(),
-          eventTags,
+          eventTags
         );
       });
     });
@@ -317,41 +308,41 @@ describe('lib/optimizely_user_context', function() {
       });
       it('should return true when client is not ready', function() {
         fakeOptimizely = {
-          isValidInstance: sinon.stub().returns(false)
+          isValidInstance: sinon.stub().returns(false),
         };
         var user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId,
         });
         var result = user.setForcedDecision({ flagKey: 'feature_1' }, '3324490562');
         assert.strictEqual(result, true);
-        sinon.assert.calledOnce(stubLogHandler.log); // Called once in the case of User Context logging an error when failing to run identifyUser
       });
 
       it('should return true when provided empty string flagKey', function() {
         fakeOptimizely = {
-          isValidInstance: sinon.stub().returns(true)
+          isValidInstance: sinon.stub().returns(true),
         };
         var user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId: 'user123',
         });
         var result = user.setForcedDecision({ flagKey: '' }, '3324490562');
         assert.strictEqual(result, true);
-        sinon.assert.calledOnce(stubLogHandler.log); // Called once in the case of User Context logging an error when failing to run identifyUser
       });
 
       it('should return true when provided flagKey and variationKey', function() {
         fakeOptimizely = {
-          isValidInstance: sinon.stub().returns(true)
+          isValidInstance: sinon.stub().returns(true),
         };
         var user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId: 'user123',
         });
         var result = user.setForcedDecision({ flagKey: 'feature_1' }, '3324490562');
         assert.strictEqual(result, true);
-        sinon.assert.calledOnce(stubLogHandler.log); // Called once in the case of User Context logging an error when failing to run identifyUser
       });
 
       describe('when valid forced decision is set', function() {
@@ -373,7 +364,7 @@ describe('lib/optimizely_user_context', function() {
             notificationCenter,
           });
 
-          sinon.stub(optlyInstance.decisionService.logger, 'log')
+          sinon.stub(optlyInstance.decisionService.logger, 'log');
           sinon.stub(eventDispatcher, 'dispatchEvent');
           sinon.stub(optlyInstance.notificationCenter, 'sendNotifications');
         });
@@ -388,11 +379,11 @@ describe('lib/optimizely_user_context', function() {
           var flagKey = 'feature_1';
           var ruleKey = 'exp_with_audience';
           var variationKey = '3324490633';
-  
+
           var user = optlyInstance.createUserContext(userId);
           user.setForcedDecision({ flagKey: flagKey, ruleKey }, { variationKey });
           var decision = user.decide(flagKey, options);
-          
+
           assert.equal(decision.variationKey, variationKey);
           assert.equal(decision.ruleKey, ruleKey);
           assert.equal(decision.enabled, true);
@@ -406,29 +397,24 @@ describe('lib/optimizely_user_context', function() {
           var featureKey = 'feature_1';
           var variationKey = '3324490562';
           user.setForcedDecision({ flagKey: featureKey }, { variationKey });
-          var decision = user.decide(
-            featureKey,
-            [
-              OptimizelyDecideOption.INCLUDE_REASONS,
-              OptimizelyDecideOption.DISABLE_DECISION_EVENT
-            ]
-          );
+          var decision = user.decide(featureKey, [
+            OptimizelyDecideOption.INCLUDE_REASONS,
+            OptimizelyDecideOption.DISABLE_DECISION_EVENT,
+          ]);
           assert.equal(decision.variationKey, variationKey);
           assert.equal(decision.ruleKey, null);
           assert.equal(decision.enabled, true);
           assert.equal(decision.userContext.getUserId(), userId);
           assert.deepEqual(decision.userContext.getAttributes(), {});
           assert.deepEqual(Object.keys(decision.userContext.forcedDecisionsMap).length, 1);
-          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey][CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY], { variationKey });
+          assert.deepEqual(
+            decision.userContext.forcedDecisionsMap[featureKey][CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY],
+            { variationKey }
+          );
           assert.equal(
             true,
             decision.reasons.includes(
-              sprintf(
-                LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
-                variationKey,
-                featureKey,
-                userId,
-              )
+              sprintf(LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED, variationKey, featureKey, userId)
             )
           );
 
@@ -448,16 +434,14 @@ describe('lib/optimizely_user_context', function() {
           assert.equal(decision.userContext.getUserId(), userId);
           assert.deepEqual(decision.userContext.getAttributes(), {});
           assert.deepEqual(Object.values(decision.userContext.forcedDecisionsMap).length, 1);
-          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey][CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY], { variationKey });
+          assert.deepEqual(
+            decision.userContext.forcedDecisionsMap[featureKey][CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY],
+            { variationKey }
+          );
           assert.equal(
             true,
             decision.reasons.includes(
-              sprintf(
-                LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
-                variationKey,
-                featureKey,
-                userId,
-              )
+              sprintf(LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED, variationKey, featureKey, userId)
             )
           );
 
@@ -503,12 +487,12 @@ describe('lib/optimizely_user_context', function() {
                     LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED,
                     variationKey,
                     featureKey,
-                    userId,
-                  )
+                    userId
+                  ),
                 ],
               },
-            }
-          ]
+            },
+          ];
           assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
 
@@ -537,7 +521,7 @@ describe('lib/optimizely_user_context', function() {
                 variationKey,
                 featureKey,
                 ruleKey,
-                userId,
+                userId
               )
             )
           );
@@ -580,18 +564,17 @@ describe('lib/optimizely_user_context', function() {
                 },
                 decisionEventDispatched: true,
                 reasons: [
-
                   sprintf(
                     LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED,
                     variationKey,
                     featureKey,
                     ruleKey,
-                    userId,
-                  )
+                    userId
+                  ),
                 ],
               },
-            }
-          ]
+            },
+          ];
           assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
 
@@ -615,7 +598,10 @@ describe('lib/optimizely_user_context', function() {
           sinon.assert.called(stubLogHandler.log);
           var logMessage = optlyInstance.decisionService.logger.log.args[4];
           assert.strictEqual(logMessage[0], 2);
-          assert.strictEqual(logMessage[1], 'Variation (%s) is mapped to flag (%s), rule (%s) and user (%s) in the forced decision map.');
+          assert.strictEqual(
+            logMessage[1],
+            'Variation (%s) is mapped to flag (%s), rule (%s) and user (%s) in the forced decision map.'
+          );
           assert.strictEqual(logMessage[2], variationKey);
           assert.strictEqual(logMessage[3], featureKey);
           assert.strictEqual(logMessage[4], ruleKey);
@@ -660,8 +646,8 @@ describe('lib/optimizely_user_context', function() {
                 decisionEventDispatched: true,
                 reasons: [],
               },
-            }
-          ]
+            },
+          ];
           assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
       });
@@ -697,15 +683,14 @@ describe('lib/optimizely_user_context', function() {
           assert.equal(decision.variationKey, '18257766532');
           assert.equal(decision.ruleKey, '18322080788');
           assert.deepEqual(Object.keys(decision.userContext.forcedDecisionsMap).length, 1);
-          assert.deepEqual(decision.userContext.forcedDecisionsMap[featureKey][CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY], { variationKey });
+          assert.deepEqual(
+            decision.userContext.forcedDecisionsMap[featureKey][CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY],
+            { variationKey }
+          );
           assert.equal(
             true,
             decision.reasons.includes(
-              sprintf(
-                LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID,
-                featureKey,
-                userId,
-              )
+              sprintf(LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID, featureKey, userId)
             )
           );
         });
@@ -731,7 +716,7 @@ describe('lib/optimizely_user_context', function() {
                 LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
                 featureKey,
                 ruleKey,
-                userId,
+                userId
               )
             )
           );
@@ -758,7 +743,7 @@ describe('lib/optimizely_user_context', function() {
                 LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID,
                 featureKey,
                 ruleKey,
-                userId,
+                userId
               )
             )
           );
@@ -865,9 +850,10 @@ describe('lib/optimizely_user_context', function() {
 
       it('should return true when client is not ready and the forced decision has been removed successfully', function() {
         fakeOptimizely = {
-          isValidInstance: sinon.stub().returns(false)
+          isValidInstance: sinon.stub().returns(false),
         };
         var user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId: 'user123',
         });
@@ -878,9 +864,10 @@ describe('lib/optimizely_user_context', function() {
 
       it('should return true when the forced decision has been removed successfully and false otherwise', function() {
         fakeOptimizely = {
-          isValidInstance: sinon.stub().returns(true)
+          isValidInstance: sinon.stub().returns(true),
         };
         var user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId: 'user123',
         });
@@ -890,15 +877,14 @@ describe('lib/optimizely_user_context', function() {
 
         var result2 = user.removeForcedDecision('non-existent_feature');
         assert.strictEqual(result2, false);
-
-        sinon.assert.calledOnce(stubLogHandler.log); // Called once in the case of User Context logging an error when failing to run identifyUser
       });
 
       it('should successfully remove forced decision when multiple forced decisions set with same feature key', function() {
         fakeOptimizely = {
-          isValidInstance: sinon.stub().returns(true)
+          isValidInstance: sinon.stub().returns(true),
         };
         var user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId: 'user123',
         });
@@ -939,22 +925,23 @@ describe('lib/optimizely_user_context', function() {
 
       it('should return true when client is not ready', function() {
         fakeOptimizely = {
-          isValidInstance: sinon.stub().returns(false)
+          isValidInstance: sinon.stub().returns(false),
         };
         var user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId,
         });
         var result = user.removeAllForcedDecisions();
         assert.strictEqual(result, true);
-        sinon.assert.calledOnce(stubLogHandler.log); // Called once in the case of User Context logging an error when failing to run identifyUser
       });
 
       it('should return true when all forced decisions have been removed successfully', function() {
         fakeOptimizely = {
-          isValidInstance: sinon.stub().returns(true)
+          isValidInstance: sinon.stub().returns(true),
         };
         var user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId,
         });
@@ -964,7 +951,9 @@ describe('lib/optimizely_user_context', function() {
         assert.deepEqual(Object.keys(user.forcedDecisionsMap['feature_1']).length, 2);
 
         assert.deepEqual(user.getForcedDecision({ flagKey: 'feature_1' }), { variationKey: '3324490562' });
-        assert.deepEqual(user.getForcedDecision({ flagKey: 'feature_1', ruleKey: 'exp_with_audience' }), { variationKey: 'b' });
+        assert.deepEqual(user.getForcedDecision({ flagKey: 'feature_1', ruleKey: 'exp_with_audience' }), {
+          variationKey: 'b',
+        });
 
         var result1 = user.removeAllForcedDecisions();
         assert.strictEqual(result1, true);
@@ -972,46 +961,43 @@ describe('lib/optimizely_user_context', function() {
 
         assert.strictEqual(user.getForcedDecision({ flagKey: 'feature_1' }), null);
         assert.strictEqual(user.getForcedDecision({ flagKey: 'feature_1', ruleKey: 'exp_with_audience' }), null);
-
-        sinon.assert.calledOnce(stubLogHandler.log); // Called once in the case of User Context logging an error when failing to run identifyUser
       });
     });
 
-    describe('#fetchQualifiedSegments', () => {
+    describe('fetchQualifiedSegments', () => {
       it('should successfully call fetch qualified segments', async () => {
         fakeOptimizely = {
-          fetchQualifiedSegments: sinon.stub().returns(true)
+          fetchQualifiedSegments: sinon.stub().returns(true),
         };
         const user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId,
         });
 
         const fetchedQualifiedSegments = await user.fetchQualifiedSegments();
         assert.deepEqual(fetchedQualifiedSegments, true);
-        
-        sinon.assert.calledWithExactly(
-          fakeOptimizely.fetchQualifiedSegments,
-          userId,
-          undefined,
-        );
+
+        sinon.assert.calledWithExactly(fakeOptimizely.fetchQualifiedSegments, userId, undefined);
 
         assert.deepEqual(user.qualifiedSegments, []);
       });
-    })
+    });
 
-    describe('#isQualifiedFor', () => {
+    describe('isQualifiedFor', () => {
       it('should successfully return the expected result for if a user is qualified for a particular segment or not', () => {
         const user = new OptimizelyUserContext({
+          shouldIdentifyUser: false,
           optimizely: fakeOptimizely,
           userId,
-          qualifiedSegments: ['a', 'b']
         });
+
+        user.qualifiedSegments = ['a', 'b'];
 
         assert.deepEqual(user.isQualifiedFor('a'), true);
         assert.deepEqual(user.isQualifiedFor('b'), true);
         assert.deepEqual(user.isQualifiedFor('c'), false);
-      })
-    })
+      });
+    });
   });
 });

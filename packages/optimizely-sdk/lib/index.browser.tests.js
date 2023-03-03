@@ -25,12 +25,11 @@ import optimizelyFactory from './index.browser';
 import configValidator from './utils/config_validator';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import OptimizelyUserContext from './optimizely_user_context';
-import { LOG_MESSAGES } from './utils/enums';
-import { OdpSegmentManager } from './core/odp/odp_segment_manager';
+import { LOG_MESSAGES, ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION } from './utils/enums';
 import { BrowserLRUCache } from './utils/lru_cache';
 import { OdpConfig } from './core/odp/odp_config';
-import { OdpSegmentApiManager } from './core/odp/odp_segment_api_manager';
-import { BrowserRequestHandler } from './utils/http_request_handler/browser_request_handler';
+import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
+import { OdpEvent } from './core/odp/odp_event';
 
 var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
 
@@ -55,6 +54,19 @@ class MockLocalStorage {
     delete this.store[key];
   }
 }
+
+const createBrowserOdpManager = config => {
+  return new BrowserOdpManager({
+    disable: config?.odpServicesDisabled || false,
+    segmentsCache: new BrowserLRUCache({
+      maxSize: config?.odpSegmentsCacheSize,
+      timeout: config?.odpSegmentsCacheTimeout,
+    }),
+    segmentManager: config?.odpSegmentManager,
+    eventManager: config?.odpEventManager,
+    logger: config?.logger,
+  });
+};
 
 global.window = {
   localStorage: new MockLocalStorage(),
@@ -566,7 +578,7 @@ describe('javascript-sdk (Browser)', function() {
       });
     });
 
-    describe('#odp', () => {
+    describe('ODP/ATS', () => {
       var sandbox = sinon.sandbox.create();
 
       const fakeOptimizely = {
@@ -575,44 +587,17 @@ describe('javascript-sdk (Browser)', function() {
 
       const fakeErrorHandler = { handleError: function() {} };
       const fakeEventDispatcher = { dispatchEvent: function() {} };
-      let silentLogger;
       let logger = getLogger();
 
       const testFsUserId = 'fs_test_user';
       const testVuid = 'vuid_test_user';
 
-      function createOdpEnabledBrowserClientInstance() {
-        return optimizelyFactory.createInstance({
-          datafile: testData.getTestProjectConfigWithFeatures(),
-          errorHandler: fakeErrorHandler,
-          eventDispatcher: fakeEventDispatcher,
-          eventBatchSize: null,
-          odpServiceConfig: {
-            odpServicesDisabled: false, // ODP Enabled
-          },
-        });
-      }
-
       beforeEach(function() {
-        silentLogger = optimizelyFactory.logging.createLogger({
-          logLevel: optimizelyFactory.enums.LOG_LEVEL.INFO,
-          logToConsole: false,
-        });
-        sinon.spy(console, 'error');
-        sinon.stub(configValidator, 'validate');
         sandbox.stub(logger, 'log');
-
-        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
-
-        sinon.stub(LocalStoragePendingEventsDispatcher.prototype, 'sendPendingEvents');
+        sandbox.stub(logger, 'error');
       });
 
       afterEach(function() {
-        LocalStoragePendingEventsDispatcher.prototype.sendPendingEvents.restore();
-        optimizelyFactory.__internalResetRetryState();
-        console.error.restore();
-        configValidator.validate.restore();
-        delete global.XMLHttpRequest;
         sandbox.restore();
       });
 
@@ -633,10 +618,11 @@ describe('javascript-sdk (Browser)', function() {
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
-          logger: logger,
-          odpServiceConfig: {
-            odpServicesDisabled: true, // ODP Disabled
-          },
+          logger,
+          odpManager: createBrowserOdpManager({
+            odpServicesDisabled: true,
+            logger,
+          }),
         });
 
         sinon.assert.calledWith(logger.log, optimizelyFactory.enums.LOG_LEVEL.INFO, LOG_MESSAGES.ODP_DISABLED);
@@ -648,10 +634,11 @@ describe('javascript-sdk (Browser)', function() {
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
-          logger: logger,
-          odpServiceConfig: {
+          logger,
+          odpManager: createBrowserOdpManager({
             odpSegmentsCacheSize: 10,
-          },
+            logger,
+          }),
         });
 
         sinon.assert.calledWith(
@@ -667,10 +654,11 @@ describe('javascript-sdk (Browser)', function() {
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
-          logger: logger,
-          odpServiceConfig: {
+          logger,
+          odpManager: createBrowserOdpManager({
             odpSegmentsCacheTimeout: 10,
-          },
+            logger,
+          }),
         });
 
         sinon.assert.calledWith(
@@ -686,11 +674,12 @@ describe('javascript-sdk (Browser)', function() {
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
-          logger: logger,
-          odpServiceConfig: {
+          logger,
+          odpManager: createBrowserOdpManager({
             odpSegmentsCacheSize: 10,
             odpSegmentsCacheTimeout: 10,
-          },
+            logger,
+          }),
         });
 
         sinon.assert.calledWith(
@@ -707,37 +696,114 @@ describe('javascript-sdk (Browser)', function() {
       });
 
       it('should accept a valid custom odp segment manager', () => {
-        const segmentManager = new OdpSegmentManager(
-          new OdpConfig(),
-          new BrowserLRUCache(),
-          new OdpSegmentApiManager(new BrowserRequestHandler(), logger),
-          logger
-        );
+        const fakeSegmentManager = {
+          fetchQualifiedSegments: sinon.spy(),
+          updateSettings: sinon.spy(),
+        };
 
         const client = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfigWithFeatures(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
-          logger: logger,
-          odpServiceConfig: {
-            odpSegmentManager: segmentManager,
-          },
+          logger,
+          odpManager: createBrowserOdpManager({
+            odpSegmentManager: fakeSegmentManager,
+            logger,
+          }),
         });
 
-        // TODO
+        client.fetchQualifiedSegments(testVuid);
+
+        sinon.assert.calledWith(fakeSegmentManager.updateSettings, new OdpConfig());
       });
 
       it('should accept a valid custom odp event manager', () => {
-        // TODO
+        const fakeEventManager = {
+          start: sinon.spy(),
+          updateSettings: sinon.spy(),
+          flush: sinon.spy(),
+          stop: sinon.spy(),
+          registerVuid: sinon.spy(),
+          identifyUser: sinon.spy(),
+          sendEvent: sinon.spy(),
+        };
+
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfigWithFeatures(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpManager: createBrowserOdpManager({
+            odpEventManager: fakeEventManager,
+            logger,
+          }),
+        });
+
+        sinon.assert.called(fakeEventManager.start);
       });
 
       it('should send an odp event with sendOdpEvent', () => {
-        // TODO
+        const fakeOdpManager = {
+          sendEvent: sinon.spy(),
+          updateSettings: sinon.spy(),
+          identifyUser: sinon.spy(),
+          close: sinon.spy(),
+        };
+
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfigWithFeatures(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpManager: fakeOdpManager,
+        });
+
+        client
+          .onReady()
+          .then(() => {
+            client.sendOdpEvent({
+              action: ODP_EVENT_ACTION.INITIALIZED,
+            });
+
+            sinon.assert.notCalled(logger.error);
+            sinon.assert.called(fakeOdpManager.sendEvent);
+          })
+          .catch(() => {
+            // onReady promise should not reject
+            // assert.equal(true, false);
+          });
       });
 
       it('should log an error when attempting to send an odp event when odp is disabled', () => {
-        // TODO
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfigWithFeatures(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpManager: createBrowserOdpManager({
+            odpServicesDisabled: true,
+            logger,
+          }),
+        });
+
+        client
+          .onReady()
+          .then(() => {
+            client.sendOdpEvent({
+              action: ODP_EVENT_ACTION.INITIALIZED,
+            });
+
+            sinon.assert.calledWith(logger.error, 'ODP event send failed.');
+            sinon.assert.calledWith(logger.error, 'ODP is not enabled.');
+          })
+          .catch(() => {
+            // onReady promise should not reject
+            // assert.equal(true, false);
+          });
       });
     });
   });

@@ -25,8 +25,8 @@ export const tryWithLocalStorage = <K>({
   browserCallback,
   nonBrowserCallback,
 }: {
-  browserCallback: (localStorage: Storage) => K;
+  browserCallback: (localStorage?: Storage) => K;
   nonBrowserCallback: () => K;
 }): K => {
-  return typeof window !== 'undefined' ? window && window.localStorage && browserCallback(window.localStorage) : nonBrowserCallback();
+  return typeof window !== 'undefined' ? browserCallback(window?.localStorage) : nonBrowserCallback();
 };

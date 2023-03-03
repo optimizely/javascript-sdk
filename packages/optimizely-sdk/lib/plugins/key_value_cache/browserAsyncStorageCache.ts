@@ -24,8 +24,8 @@ export default class BrowserAsyncStorageCache implements PersistentKeyValueCache
 
   async contains(key: string): Promise<boolean> {
     return tryWithLocalStorage<boolean>({
-      browserCallback: (localStorage: Storage) => {
-        return localStorage.getItem(key) !== null;
+      browserCallback: (localStorage?: Storage) => {
+        return localStorage?.getItem(key) !== null;
       },
       nonBrowserCallback: () => {
         this.logger.error(ERROR_MESSAGES.LOCAL_STORAGE_DOES_NOT_EXIST);
@@ -34,10 +34,10 @@ export default class BrowserAsyncStorageCache implements PersistentKeyValueCache
     });
   }
 
-  async get(key: string): Promise<string | null> {
-    return tryWithLocalStorage<string | null>({
-      browserCallback: (localStorage: Storage) => {
-        return localStorage.getItem(key);
+  async get(key: string): Promise<string | null | undefined> {
+    return tryWithLocalStorage<string | null | undefined>({
+      browserCallback: (localStorage?: Storage) => {
+        return localStorage?.getItem(key);
       },
       nonBrowserCallback: () => {
         this.logger.error(ERROR_MESSAGES.LOCAL_STORAGE_DOES_NOT_EXIST);
@@ -49,8 +49,8 @@ export default class BrowserAsyncStorageCache implements PersistentKeyValueCache
   async remove(key: string): Promise<boolean> {
     if (await this.contains(key)) {
       tryWithLocalStorage({
-        browserCallback: (localStorage: Storage) => {
-          localStorage.removeItem(key);
+        browserCallback: (localStorage?: Storage) => {
+          localStorage?.removeItem(key);
         },
         nonBrowserCallback: () => {
           this.logger.error(ERROR_MESSAGES.LOCAL_STORAGE_DOES_NOT_EXIST);
@@ -64,8 +64,8 @@ export default class BrowserAsyncStorageCache implements PersistentKeyValueCache
 
   async set(key: string, val: string): Promise<void> {
     return tryWithLocalStorage({
-      browserCallback: (localStorage: Storage) => {
-        localStorage.setItem(key, val);
+      browserCallback: (localStorage?: Storage) => {
+        localStorage?.setItem(key, val);
       },
       nonBrowserCallback: () => {
         this.logger.error(ERROR_MESSAGES.LOCAL_STORAGE_DOES_NOT_EXIST);
