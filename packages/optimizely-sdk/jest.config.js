@@ -8,7 +8,8 @@ module.exports = {
     "uuid": require.resolve('uuid'),
   },
   "testPathIgnorePatterns" : [
-    "tests/testUtils.ts" 
+    "tests/testUtils.ts",
+    "dist"
   ],
   "moduleFileExtensions": [
     "ts",

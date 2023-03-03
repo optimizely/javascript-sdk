@@ -57,20 +57,26 @@ class MockLocalStorage {
 
 const createBrowserOdpManager = config => {
   return new BrowserOdpManager({
-    disable: config?.odpServicesDisabled || false,
+    disable: config?.disabled || false,
     segmentsCache: new BrowserLRUCache({
-      maxSize: config?.odpSegmentsCacheSize,
-      timeout: config?.odpSegmentsCacheTimeout,
+      maxSize: config?.segmentsCacheSize,
+      timeout: config?.segmentsCacheTimeout,
     }),
-    segmentManager: config?.odpSegmentManager,
-    eventManager: config?.odpEventManager,
+    segmentManager: config?.segmentManager,
+    eventManager: config?.eventManager,
     logger: config?.logger,
   });
 };
 
-global.window = {
-  localStorage: new MockLocalStorage(),
-};
+if (!global.window) {
+  try {
+    global.window = {
+      localStorage: new MockLocalStorage(),
+    };
+  } catch (e) {
+    console.error('Unable to overwrite global.window.');
+  }
+}
 
 describe('javascript-sdk (Browser)', function() {
   var clock;
@@ -620,7 +626,7 @@ describe('javascript-sdk (Browser)', function() {
           eventBatchSize: null,
           logger,
           odpManager: createBrowserOdpManager({
-            odpServicesDisabled: true,
+            disabled: true,
             logger,
           }),
         });
@@ -636,7 +642,7 @@ describe('javascript-sdk (Browser)', function() {
           eventBatchSize: null,
           logger,
           odpManager: createBrowserOdpManager({
-            odpSegmentsCacheSize: 10,
+            segmentsCacheSize: 10,
             logger,
           }),
         });
@@ -656,7 +662,7 @@ describe('javascript-sdk (Browser)', function() {
           eventBatchSize: null,
           logger,
           odpManager: createBrowserOdpManager({
-            odpSegmentsCacheTimeout: 10,
+            segmentsCacheTimeout: 10,
             logger,
           }),
         });
@@ -676,8 +682,8 @@ describe('javascript-sdk (Browser)', function() {
           eventBatchSize: null,
           logger,
           odpManager: createBrowserOdpManager({
-            odpSegmentsCacheSize: 10,
-            odpSegmentsCacheTimeout: 10,
+            segmentsCacheSize: 10,
+            segmentsCacheTimeout: 10,
             logger,
           }),
         });
@@ -708,7 +714,7 @@ describe('javascript-sdk (Browser)', function() {
           eventBatchSize: null,
           logger,
           odpManager: createBrowserOdpManager({
-            odpSegmentManager: fakeSegmentManager,
+            segmentManager: fakeSegmentManager,
             logger,
           }),
         });
@@ -736,7 +742,7 @@ describe('javascript-sdk (Browser)', function() {
           eventBatchSize: null,
           logger,
           odpManager: createBrowserOdpManager({
-            odpEventManager: fakeEventManager,
+            eventManager: fakeEventManager,
             logger,
           }),
         });
@@ -744,7 +750,8 @@ describe('javascript-sdk (Browser)', function() {
         sinon.assert.called(fakeEventManager.start);
       });
 
-      it('should send an odp event with sendOdpEvent', () => {
+      // TODO: Finish this test
+      it('should send an odp event with sendOdpEvent', async () => {
         const fakeOdpManager = {
           sendEvent: sinon.spy(),
           updateSettings: sinon.spy(),
@@ -761,23 +768,21 @@ describe('javascript-sdk (Browser)', function() {
           odpManager: fakeOdpManager,
         });
 
-        client
-          .onReady()
-          .then(() => {
-            client.sendOdpEvent({
-              action: ODP_EVENT_ACTION.INITIALIZED,
-            });
-
-            sinon.assert.notCalled(logger.error);
-            sinon.assert.called(fakeOdpManager.sendEvent);
-          })
-          .catch(() => {
-            // onReady promise should not reject
-            // assert.equal(true, false);
+        try {
+          const readyData = await client.onReady();
+          assert.equal(readyData.success, true);
+          assert.isEmpty(readyData.reason);
+          client.sendOdpEvent({
+            action: ODP_EVENT_ACTION.INITIALIZED,
           });
+
+          sinon.assert.notCalled(logger.error);
+          sinon.assert.called(fakeOdpManager.sendEvent);
+        } catch (e) {}
       });
 
-      it('should log an error when attempting to send an odp event when odp is disabled', () => {
+      // TODO: Finish this test
+      it('should log an error when attempting to send an odp event when odp is disabled', async () => {
         const client = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfigWithFeatures(),
           errorHandler: fakeErrorHandler,
@@ -785,25 +790,22 @@ describe('javascript-sdk (Browser)', function() {
           eventBatchSize: null,
           logger,
           odpManager: createBrowserOdpManager({
-            odpServicesDisabled: true,
+            disabled: true,
             logger,
           }),
         });
 
-        client
-          .onReady()
-          .then(() => {
-            client.sendOdpEvent({
-              action: ODP_EVENT_ACTION.INITIALIZED,
-            });
-
-            sinon.assert.calledWith(logger.error, 'ODP event send failed.');
-            sinon.assert.calledWith(logger.error, 'ODP is not enabled.');
-          })
-          .catch(() => {
-            // onReady promise should not reject
-            // assert.equal(true, false);
+        try {
+          const readyData = await client.onReady();
+          assert.equal(readyData.success, true);
+          assert.isEmpty(readyData.reason);
+          client.sendOdpEvent({
+            action: ODP_EVENT_ACTION.INITIALIZED,
           });
+
+          sinon.assert.calledWith(logger.error, 'ODP event send failed.');
+          sinon.assert.calledWith(logger.error, 'ODP is not enabled.');
+        } catch (e) {}
       });
     });
   });

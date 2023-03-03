@@ -105,6 +105,7 @@ export class BrowserOdpManager extends OdpManager {
    * @override
    * - Sends an event to the ODP Server via the ODP Events API
    * - Intercepts identifiers and injects VUID before sending event
+   * - Identifiers must contain at least one key-value pair
    * @param {OdpEvent} odpEvent  > ODP Event to send to event manager
    */
   public sendEvent({ type, action, identifiers, data }: OdpEvent): void {

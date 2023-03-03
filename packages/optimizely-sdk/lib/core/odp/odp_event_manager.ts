@@ -17,7 +17,7 @@
 import { LogHandler, LogLevel } from '../../modules/logging';
 
 import { uuid } from '../../utils/fns';
-import { ERROR_MESSAGES, ODP_USER_KEY, ODP_DEFAULT_EVENT_TYPE } from '../../utils/enums';
+import { ERROR_MESSAGES, ODP_USER_KEY, ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION } from '../../utils/enums';
 
 import { OdpEvent } from './odp_event';
 import { OdpConfig } from './odp_config';
@@ -191,7 +191,7 @@ export class OdpEventManager implements IOdpEventManager {
     const identifiers = new Map<string, string>();
     identifiers.set(ODP_USER_KEY.VUID, vuid);
 
-    const event = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, 'client_initialized', identifiers);
+    const event = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.INITIALIZED, identifiers);
     this.sendEvent(event);
   }
 
@@ -215,7 +215,7 @@ export class OdpEventManager implements IOdpEventManager {
       identifiers.set(ODP_USER_KEY.FS_USER_ID, userId);
     }
 
-    const event = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, 'identified', identifiers);
+    const event = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.IDENTIFIED, identifiers);
     this.sendEvent(event);
   }
 

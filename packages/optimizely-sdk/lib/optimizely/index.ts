@@ -1663,13 +1663,10 @@ export default class Optimizely {
       this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED_ODP_MANAGER_MISSING);
     }
 
+    const odpEventType = type ?? ODP_DEFAULT_EVENT_TYPE;
+
     try {
-      const odpEvent = new OdpEvent(
-        type || ODP_DEFAULT_EVENT_TYPE,
-        action,
-        identifiers || new Map(),
-        data || new Map()
-      );
+      const odpEvent = new OdpEvent(odpEventType, action, identifiers, data);
       this.odpManager!.sendEvent(odpEvent);
     } catch (e) {
       this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED, e);

@@ -40,6 +40,8 @@ import { createForwardingEventProcessor } from '../plugins/event_processor/forwa
 import { createEventProcessor } from '../plugins/event_processor';
 import { createNotificationCenter } from '../core/notification_center';
 import { createHttpPollingDatafileManager } from '../plugins/datafile_manager/http_polling_datafile_manager';
+import { OdpManager } from '../core/odp/odp_manager';
+import { getLogger } from '../modules/logging';
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
@@ -66,15 +68,17 @@ describe('lib/optimizely', function() {
       handleError: sinon.stub(),
     };
     logging.setErrorHandler(globalStubErrorHandler);
-    ProjectConfigManagerStub = sinon.stub(projectConfigManager, 'createProjectConfigManager').callsFake(function(config) {
-      var currentConfig = config.datafile ? projectConfig.createProjectConfig(config.datafile) : null;
-      return {
-        stop: sinon.stub(),
-        getConfig: sinon.stub().returns(currentConfig),
-        onUpdate: sinon.stub().returns(function() {}),
-        onReady: sinon.stub().returns({ then: function() {} }),
-      };
-    });
+    ProjectConfigManagerStub = sinon
+      .stub(projectConfigManager, 'createProjectConfigManager')
+      .callsFake(function(config) {
+        var currentConfig = config.datafile ? projectConfig.createProjectConfig(config.datafile) : null;
+        return {
+          stop: sinon.stub(),
+          getConfig: sinon.stub().returns(currentConfig),
+          onUpdate: sinon.stub().returns(function() {}),
+          onReady: sinon.stub().returns({ then: function() {} }),
+        };
+      });
     sinon.stub(eventDispatcher, 'dispatchEvent');
     clock = sinon.useFakeTimers(new Date());
   });
@@ -258,7 +262,7 @@ describe('lib/optimizely', function() {
             sdkKey: '12345',
             datafileManager: createHttpPollingDatafileManager('12345', createdLogger),
             notificationCenter,
-            eventProcessor,            
+            eventProcessor,
           });
           sinon.assert.notCalled(stubErrorHandler.handleError);
         });
@@ -268,7 +272,7 @@ describe('lib/optimizely', function() {
           let datafileOptions = {
             autoUpdate: true,
             updateInterval: 2 * 60 * 1000,
-          }
+          };
           let datafileManager = createHttpPollingDatafileManager('12345', createdLogger, undefined, datafileOptions);
           new Optimizely({
             clientEngine: 'node-sdk',
@@ -289,7 +293,7 @@ describe('lib/optimizely', function() {
             datafile: config,
             jsonSchemaValidator: jsonSchemaValidator,
             sdkKey: '12345',
-            datafileManager: datafileManager
+            datafileManager: datafileManager,
           });
         });
       });
@@ -304,7 +308,7 @@ describe('lib/optimizely', function() {
           jsonSchemaValidator: jsonSchemaValidator,
           logger: createdLogger,
           notificationCenter,
-          eventProcessor
+          eventProcessor,
         });
         assert.instanceOf(optlyInstance, Optimizely);
         var optlyInstance2 = new Optimizely({
@@ -458,7 +462,6 @@ describe('lib/optimizely', function() {
                           variation_key: 'variationWithAudience',
                           enabled: true,
                         },
-
                       },
                     ],
                     events: [
@@ -819,13 +822,18 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.DEBUG,
-          LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser'
+          LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,
+          'DECISION_SERVICE',
+          'testUser'
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'testExperiment'
+          LOG_MESSAGES.NOT_ACTIVATING_USER,
+          'OPTIMIZELY',
+          'testUser',
+          'testExperiment'
         );
       });
 
@@ -835,19 +843,27 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.DEBUG,
-          LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser'
+          LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,
+          'DECISION_SERVICE',
+          'testUser'
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'testExperimentWithAudiences'
+          LOG_MESSAGES.USER_NOT_IN_EXPERIMENT,
+          'DECISION_SERVICE',
+          'testUser',
+          'testExperimentWithAudiences'
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'testExperimentWithAudiences'
+          LOG_MESSAGES.NOT_ACTIVATING_USER,
+          'OPTIMIZELY',
+          'testUser',
+          'testExperimentWithAudiences'
         );
       });
 
@@ -857,19 +873,27 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.DEBUG,
-          LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser'
+          LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,
+          'DECISION_SERVICE',
+          'testUser'
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'groupExperiment1'
+          LOG_MESSAGES.USER_NOT_IN_EXPERIMENT,
+          'DECISION_SERVICE',
+          'testUser',
+          'groupExperiment1'
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          LOG_MESSAGES.NOT_ACTIVATING_USER, 'OPTIMIZELY', 'testUser', 'groupExperiment1'
+          LOG_MESSAGES.NOT_ACTIVATING_USER,
+          'OPTIMIZELY',
+          'testUser',
+          'groupExperiment1'
         );
       });
 
@@ -1690,14 +1714,18 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           logCall1,
           LOG_LEVEL.WARNING,
-          LOG_MESSAGES.EVENT_KEY_NOT_FOUND, 'OPTIMIZELY', 'invalidEventKey'
+          LOG_MESSAGES.EVENT_KEY_NOT_FOUND,
+          'OPTIMIZELY',
+          'invalidEventKey'
         );
 
         var logCall2 = createdLogger.log.getCall(1);
         sinon.assert.calledWithExactly(
           logCall2,
           LOG_LEVEL.WARNING,
-          LOG_MESSAGES.NOT_TRACKING_USER, 'OPTIMIZELY', 'testUser'
+          LOG_MESSAGES.NOT_TRACKING_USER,
+          'OPTIMIZELY',
+          'testUser'
         );
 
         sinon.assert.notCalled(errorHandler.handleError);
@@ -1781,7 +1809,9 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.DEBUG,
-          LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser'
+          LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,
+          'DECISION_SERVICE',
+          'testUser'
         );
       });
 
@@ -1814,19 +1844,26 @@ describe('lib/optimizely', function() {
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.DEBUG,
-          LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION, 'DECISION_SERVICE', 'testUser'
+          LOG_MESSAGES.USER_HAS_NO_FORCED_VARIATION,
+          'DECISION_SERVICE',
+          'testUser'
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', 'testUser', 'testExperimentWithAudiences'
+          LOG_MESSAGES.USER_NOT_IN_EXPERIMENT,
+          'DECISION_SERVICE',
+          'testUser',
+          'testExperimentWithAudiences'
         );
 
         sinon.assert.calledWithExactly(
           createdLogger.log,
           LOG_LEVEL.INFO,
-          LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'testExperimentNotRunning'
+          LOG_MESSAGES.EXPERIMENT_NOT_RUNNING,
+          'DECISION_SERVICE',
+          'testExperimentNotRunning'
         );
       });
 
@@ -2458,9 +2495,9 @@ describe('lib/optimizely', function() {
                         variation_id: '111129',
                         metadata: {
                           flag_key: '',
-                          rule_key: "testExperiment",
-                          rule_type: "experiment",
-                          variation_key: "variation",
+                          rule_key: 'testExperiment',
+                          rule_type: 'experiment',
+                          variation_key: 'variation',
                           enabled: true,
                         },
                       },
@@ -2520,9 +2557,9 @@ describe('lib/optimizely', function() {
                         variation_id: '111129',
                         metadata: {
                           flag_key: '',
-                          rule_key: "testExperiment",
-                          rule_type: "experiment",
-                          variation_key: "variation",
+                          rule_key: 'testExperiment',
+                          rule_type: 'experiment',
+                          variation_key: 'variation',
                           enabled: true,
                         },
                       },
@@ -3048,7 +3085,9 @@ describe('lib/optimizely', function() {
                     createdLogger.log,
                     LOG_LEVEL.INFO,
                     '%s: Feature %s is not enabled for user %s.',
-                    'OPTIMIZELY', 'test_feature', 'user1'
+                    'OPTIMIZELY',
+                    'test_feature',
+                    'user1'
                   );
 
                   var expectedArguments = {
@@ -3240,7 +3279,7 @@ describe('lib/optimizely', function() {
                       variableKey: 'button_info',
                       variableValue: {
                         num_buttons: 1,
-                        text: "first variation",
+                        text: 'first variation',
                       },
                       variableType: FEATURE_VARIABLE_TYPES.JSON,
                       source: DECISION_SOURCES.FEATURE_TEST,
@@ -3394,11 +3433,9 @@ describe('lib/optimizely', function() {
                 });
 
                 it('returns the right value from getAllFeatureVariables and send notification with featureEnabled true', function() {
-                  var result = optlyInstance.getAllFeatureVariables(
-                    'test_feature_for_experiment',
-                    'user1',
-                    { test_attribute: 'test_value' }
-                  );
+                  var result = optlyInstance.getAllFeatureVariables('test_feature_for_experiment', 'user1', {
+                    test_attribute: 'test_value',
+                  });
                   assert.deepEqual(result, {
                     is_button_animated: true,
                     button_width: 20.25,
@@ -3597,11 +3634,9 @@ describe('lib/optimizely', function() {
                 });
 
                 it('returns the right value from getAllFeatureVariables and send notification with featureEnabled false', function() {
-                  var result = optlyInstance.getAllFeatureVariables(
-                    'test_feature_for_experiment',
-                    'user1',
-                    { test_attribute: 'test_value' }
-                  );
+                  var result = optlyInstance.getAllFeatureVariables('test_feature_for_experiment', 'user1', {
+                    test_attribute: 'test_value',
+                  });
                   assert.deepEqual(result, {
                     is_button_animated: false,
                     button_width: 50.55,
@@ -3883,11 +3918,9 @@ describe('lib/optimizely', function() {
                 });
 
                 it('returns the right value from getAllFeatureVariables and send notification with featureEnabled true', function() {
-                  var result = optlyInstance.getAllFeatureVariables(
-                    'test_feature',
-                    'user1',
-                    { test_attribute: 'test_value' }
-                  );
+                  var result = optlyInstance.getAllFeatureVariables('test_feature', 'user1', {
+                    test_attribute: 'test_value',
+                  });
                   assert.deepEqual(result, {
                     new_content: true,
                     price: 4.99,
@@ -4031,7 +4064,7 @@ describe('lib/optimizely', function() {
                   });
                   assert.deepEqual(result, {
                     count: 1,
-                    message: 'Hello'
+                    message: 'Hello',
                   });
                   sinon.assert.calledWith(decisionListener, {
                     type: DECISION_NOTIFICATION_TYPES.FEATURE_VARIABLE,
@@ -4161,11 +4194,9 @@ describe('lib/optimizely', function() {
                 });
 
                 it('returns the default value from getAllFeatureVariables and send notification with featureEnabled false', function() {
-                  var result = optlyInstance.getAllFeatureVariables(
-                    'test_feature',
-                    'user1',
-                    { test_attribute: 'test_value' }
-                  );
+                  var result = optlyInstance.getAllFeatureVariables('test_feature', 'user1', {
+                    test_attribute: 'test_value',
+                  });
                   assert.deepEqual(result, {
                     new_content: false,
                     price: 14.99,
@@ -4456,11 +4487,9 @@ describe('lib/optimizely', function() {
               });
 
               it('returns the default value from getAllFeatureVariables and send notification with featureEnabled false', function() {
-                var result = optlyInstance.getAllFeatureVariables(
-                  'test_feature_for_experiment',
-                  'user1',
-                  { test_attribute: 'test_value' }
-                );
+                var result = optlyInstance.getAllFeatureVariables('test_feature_for_experiment', 'user1', {
+                  test_attribute: 'test_value',
+                });
                 assert.deepEqual(result, {
                   is_button_animated: false,
                   button_width: 50.55,
@@ -4469,7 +4498,7 @@ describe('lib/optimizely', function() {
                   button_info: {
                     num_buttons: 0,
                     text: 'default value',
-                  }
+                  },
                 });
                 sinon.assert.calledWith(decisionListener, {
                   type: DECISION_NOTIFICATION_TYPES.ALL_FEATURE_VARIABLES,
@@ -4486,7 +4515,7 @@ describe('lib/optimizely', function() {
                       button_info: {
                         num_buttons: 0,
                         text: 'default value',
-                      }
+                      },
                     },
                     source: DECISION_SOURCES.ROLLOUT,
                     sourceInfo: {},
@@ -4562,7 +4591,7 @@ describe('lib/optimizely', function() {
       });
 
       it('should create multiple instances of OptimizelyUserContext', function() {
-        var userId1 = 'testUser1'
+        var userId1 = 'testUser1';
         var userId2 = 'testUser2';
         var attributes1 = { test_attribute: 'test_value' };
         var user1 = optlyInstance.createUserContext(userId1, attributes1);
@@ -4643,8 +4672,8 @@ describe('lib/optimizely', function() {
             ruleKey: null,
             flagKey: flagKey,
             userContext: user,
-            reasons: [ sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, flagKey) ],
-          }
+            reasons: [sprintf(DECISION_MESSAGES.FLAG_KEY_INVALID, flagKey)],
+          };
           assert.deepEqual(decision, expectedDecision);
           sinon.assert.notCalled(eventDispatcher.dispatchEvent);
         });
@@ -4664,8 +4693,8 @@ describe('lib/optimizely', function() {
             ruleKey: null,
             flagKey: flagKey,
             userContext: user,
-            reasons: [ DECISION_MESSAGES.SDK_NOT_READY ],
-          }
+            reasons: [DECISION_MESSAGES.SDK_NOT_READY],
+          };
           assert.deepEqual(decision, expectedDecision);
           sinon.assert.notCalled(eventDispatcher.dispatchEvent);
         });
@@ -4686,7 +4715,7 @@ describe('lib/optimizely', function() {
             flagKey: flagKey,
             userContext: user,
             reasons: [],
-          }
+          };
           assert.deepEqual(decision, expectedDecision);
           sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
           var expectedImpressionEvent = {
@@ -4743,7 +4772,7 @@ describe('lib/optimizely', function() {
           };
           var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
           assert.deepEqual(callArgs[0], expectedImpressionEvent);
-          sinon.assert.callCount(optlyInstance.notificationCenter.sendNotifications, 4)
+          sinon.assert.callCount(optlyInstance.notificationCenter.sendNotifications, 4);
           var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(3).args;
           var expectedNotificationCallArgs = [
             NOTIFICATION_TYPES.DECISION,
@@ -4754,14 +4783,14 @@ describe('lib/optimizely', function() {
               decisionInfo: {
                 flagKey: 'feature_2',
                 enabled: true,
-                ruleKey: "exp_no_audience",
-                variationKey: "variation_with_traffic",
+                ruleKey: 'exp_no_audience',
+                variationKey: 'variation_with_traffic',
                 variables: { i_42: 42 },
                 decisionEventDispatched: true,
                 reasons: [],
               },
-            }
-          ]
+            },
+          ];
           assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
 
@@ -4772,7 +4801,7 @@ describe('lib/optimizely', function() {
             optimizely: optlyInstance,
             userId,
           });
-          var decision = optlyInstance.decide(user, flagKey, [ OptimizelyDecideOption.DISABLE_DECISION_EVENT ]);
+          var decision = optlyInstance.decide(user, flagKey, [OptimizelyDecideOption.DISABLE_DECISION_EVENT]);
           var expectedDecision = {
             variationKey: 'variation_with_traffic',
             enabled: true,
@@ -4781,7 +4810,7 @@ describe('lib/optimizely', function() {
             flagKey: flagKey,
             userContext: user,
             reasons: [],
-          }
+          };
           assert.deepEqual(decision, expectedDecision);
           sinon.assert.notCalled(eventDispatcher.dispatchEvent);
           sinon.assert.calledTwice(optlyInstance.notificationCenter.sendNotifications);
@@ -4795,14 +4824,14 @@ describe('lib/optimizely', function() {
               decisionInfo: {
                 flagKey: 'feature_2',
                 enabled: true,
-                ruleKey: "exp_no_audience",
-                variationKey: "variation_with_traffic",
+                ruleKey: 'exp_no_audience',
+                variationKey: 'variation_with_traffic',
                 variables: { i_42: 42 },
                 decisionEventDispatched: false,
                 reasons: [],
               },
-            }
-          ]
+            },
+          ];
           assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
 
@@ -4812,7 +4841,10 @@ describe('lib/optimizely', function() {
             optimizely: optlyInstance,
             userId,
           });
-          var decision = optlyInstance.decide(user, flagKey, [ OptimizelyDecideOption.DISABLE_DECISION_EVENT, OptimizelyDecideOption.EXCLUDE_VARIABLES ]);
+          var decision = optlyInstance.decide(user, flagKey, [
+            OptimizelyDecideOption.DISABLE_DECISION_EVENT,
+            OptimizelyDecideOption.EXCLUDE_VARIABLES,
+          ]);
           var expectedDecision = {
             variationKey: 'variation_with_traffic',
             enabled: true,
@@ -4821,7 +4853,7 @@ describe('lib/optimizely', function() {
             flagKey: flagKey,
             userContext: user,
             reasons: [],
-          }
+          };
           assert.deepEqual(decision, expectedDecision);
           sinon.assert.notCalled(eventDispatcher.dispatchEvent);
           sinon.assert.calledOnce(optlyInstance.notificationCenter.sendNotifications);
@@ -4836,13 +4868,13 @@ describe('lib/optimizely', function() {
                 flagKey: 'feature_2',
                 enabled: true,
                 ruleKey: 'exp_no_audience',
-                variationKey: "variation_with_traffic",
+                variationKey: 'variation_with_traffic',
                 variables: {},
                 decisionEventDispatched: false,
                 reasons: [],
               },
-            }
-          ]
+            },
+          ];
           assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
 
@@ -4862,7 +4894,7 @@ describe('lib/optimizely', function() {
             flagKey: flagKey,
             userContext: user,
             reasons: [],
-          }
+          };
           assert.deepEqual(decision, expectedDecision);
           sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
           sinon.assert.callCount(optlyInstance.notificationCenter.sendNotifications, 4);
@@ -4882,8 +4914,8 @@ describe('lib/optimizely', function() {
                 decisionEventDispatched: true,
                 reasons: [],
               },
-            }
-          ]
+            },
+          ];
           assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
 
@@ -4906,7 +4938,7 @@ describe('lib/optimizely', function() {
             flagKey: flagKey,
             userContext: user,
             reasons: [],
-          }
+          };
           assert.deepEqual(decision, expectedDecision);
           sinon.assert.notCalled(eventDispatcher.dispatchEvent);
           sinon.assert.calledTwice(optlyInstance.notificationCenter.sendNotifications);
@@ -4926,8 +4958,8 @@ describe('lib/optimizely', function() {
                 decisionEventDispatched: false,
                 reasons: [],
               },
-            }
-          ]
+            },
+          ];
           assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
 
@@ -4947,7 +4979,7 @@ describe('lib/optimizely', function() {
             flagKey: flagKey,
             userContext: user,
             reasons: [],
-          }
+          };
           assert.deepEqual(decision, expectedDecision);
           sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
           sinon.assert.callCount(optlyInstance.notificationCenter.sendNotifications, 4);
@@ -4967,8 +4999,8 @@ describe('lib/optimizely', function() {
                 decisionEventDispatched: true,
                 reasons: [],
               },
-            }
-          ]
+            },
+          ];
           assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
       });
@@ -4984,7 +5016,7 @@ describe('lib/optimizely', function() {
             logger: createdLogger,
             isValidInstance: true,
             eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOption.EXCLUDE_VARIABLES ],
+            defaultDecideOptions: [OptimizelyDecideOption.EXCLUDE_VARIABLES],
             eventProcessor,
             notificationCenter,
           });
@@ -5006,7 +5038,7 @@ describe('lib/optimizely', function() {
           var flagKey = 'feature_2';
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
-            userId
+            userId,
           });
           var decision = optlyInstance.decide(user, flagKey);
           var expectedDecisionObj = {
@@ -5017,7 +5049,7 @@ describe('lib/optimizely', function() {
             flagKey: flagKey,
             userContext: user,
             reasons: [],
-          }
+          };
           assert.deepEqual(decision, expectedDecisionObj);
           sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
           sinon.assert.calledThrice(optlyInstance.notificationCenter.sendNotifications);
@@ -5037,8 +5069,8 @@ describe('lib/optimizely', function() {
                 decisionEventDispatched: true,
                 reasons: [],
               },
-            }
-          ]
+            },
+          ];
           assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
 
@@ -5046,9 +5078,9 @@ describe('lib/optimizely', function() {
           var flagKey = 'feature_2';
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
-            userId
+            userId,
           });
-          var decision = optlyInstance.decide(user, flagKey, [ OptimizelyDecideOption.DISABLE_DECISION_EVENT ]);
+          var decision = optlyInstance.decide(user, flagKey, [OptimizelyDecideOption.DISABLE_DECISION_EVENT]);
           var expectedDecisionObj = {
             variationKey: 'variation_with_traffic',
             enabled: true,
@@ -5057,7 +5089,7 @@ describe('lib/optimizely', function() {
             flagKey: flagKey,
             userContext: user,
             reasons: [],
-          }
+          };
           assert.deepEqual(decision, expectedDecisionObj);
           sinon.assert.notCalled(eventDispatcher.dispatchEvent);
           sinon.assert.calledOnce(optlyInstance.notificationCenter.sendNotifications);
@@ -5077,8 +5109,8 @@ describe('lib/optimizely', function() {
                 decisionEventDispatched: false,
                 reasons: [],
               },
-            }
-          ]
+            },
+          ];
           assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
       });
@@ -5094,7 +5126,7 @@ describe('lib/optimizely', function() {
             logger: createdLogger,
             isValidInstance: true,
             eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOption.DISABLE_DECISION_EVENT ],
+            defaultDecideOptions: [OptimizelyDecideOption.DISABLE_DECISION_EVENT],
             notificationCenter,
             eventProcessor,
           });
@@ -5108,10 +5140,10 @@ describe('lib/optimizely', function() {
 
         it('should make a decision and do not dispatch an event', function() {
           var flagKey = 'feature_2';
-          var expectedVariables= optlyInstance.getAllFeatureVariables(flagKey, userId);
+          var expectedVariables = optlyInstance.getAllFeatureVariables(flagKey, userId);
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
-            userId
+            userId,
           });
           var decision = optlyInstance.decide(user, flagKey);
           var expectedDecisionObj = {
@@ -5122,7 +5154,7 @@ describe('lib/optimizely', function() {
             flagKey: flagKey,
             userContext: user,
             reasons: [],
-          }
+          };
           assert.deepEqual(decision, expectedDecisionObj);
           sinon.assert.notCalled(eventDispatcher.dispatchEvent);
           sinon.assert.calledTwice(optlyInstance.notificationCenter.sendNotifications);
@@ -5142,8 +5174,8 @@ describe('lib/optimizely', function() {
                 decisionEventDispatched: false,
                 reasons: [],
               },
-            }
-          ]
+            },
+          ];
           assert.deepEqual(notificationCallArgs, expectedNotificationCallArgs);
         });
       });
@@ -5159,7 +5191,7 @@ describe('lib/optimizely', function() {
             logger: createdLogger,
             isValidInstance: true,
             eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOption.INCLUDE_REASONS ],
+            defaultDecideOptions: [OptimizelyDecideOption.INCLUDE_REASONS],
             notificationCenter,
             eventProcessor,
           });
@@ -5173,20 +5205,16 @@ describe('lib/optimizely', function() {
 
         it('should include reason when experiment is not running', function() {
           var newConfig = optlyInstance.projectConfigManager.getConfig();
-          newConfig.experiments[0].status = "NotRunning";
+          newConfig.experiments[0].status = 'NotRunning';
           optlyInstance.projectConfigManager.getConfig.returns(newConfig);
-          var flagKey = "feature_1";
+          var flagKey = 'feature_1';
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
-            userId
+            userId,
           });
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
-            sprintf(
-              LOG_MESSAGES.EXPERIMENT_NOT_RUNNING,
-              'DECISION_SERVICE',
-              'exp_with_audience'
-            )
+            sprintf(LOG_MESSAGES.EXPERIMENT_NOT_RUNNING, 'DECISION_SERVICE', 'exp_with_audience')
           );
         });
 
@@ -5199,12 +5227,13 @@ describe('lib/optimizely', function() {
             lookup: sinon.stub().returns({
               user_id: userId,
               experiment_bucket_map: {
-                '10420810910': { // "exp_no_audience"
+                '10420810910': {
+                  // "exp_no_audience"
                   variation_id: variationId2,
                 },
               },
             }),
-            save: sinon.stub()
+            save: sinon.stub(),
           };
           var optlyInstanceWithUserProfile = new Optimizely({
             clientEngine: 'node-sdk',
@@ -5216,23 +5245,17 @@ describe('lib/optimizely', function() {
             logger: createdLogger,
             isValidInstance: true,
             eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOption.INCLUDE_REASONS ],
+            defaultDecideOptions: [OptimizelyDecideOption.INCLUDE_REASONS],
             notificationCenter,
             eventProcessor,
           });
           var user = new OptimizelyUserContext({
             optimizely: optlyInstanceWithUserProfile,
-            userId
+            userId,
           });
           var decision = optlyInstanceWithUserProfile.decide(user, flagKey);
           expect(decision.reasons).to.include(
-            sprintf(
-              LOG_MESSAGES.RETURNING_STORED_VARIATION,
-              'DECISION_SERVICE',
-              variationKey2,
-              experimentKey,
-              userId
-            )
+            sprintf(LOG_MESSAGES.RETURNING_STORED_VARIATION, 'DECISION_SERVICE', variationKey2, experimentKey, userId)
           );
         });
 
@@ -5244,16 +5267,11 @@ describe('lib/optimizely', function() {
           optlyInstance.projectConfigManager.getConfig.returns(newConfig);
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
-            userId
+            userId,
           });
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
-            sprintf(
-              LOG_MESSAGES.USER_FORCED_IN_VARIATION,
-              'DECISION_SERVICE',
-              userId,
-              variationKey
-            )
+            sprintf(LOG_MESSAGES.USER_FORCED_IN_VARIATION, 'DECISION_SERVICE', userId, variationKey)
           );
         });
 
@@ -5267,17 +5285,11 @@ describe('lib/optimizely', function() {
           optlyInstance.projectConfigManager.getConfig.returns(newConfig);
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
-            userId
+            userId,
           });
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
-            sprintf(
-              LOG_MESSAGES.USER_HAS_FORCED_VARIATION,
-              'DECISION_SERVICE',
-              variationKey,
-              experimentKey,
-              userId
-            )
+            sprintf(LOG_MESSAGES.USER_HAS_FORCED_VARIATION, 'DECISION_SERVICE', variationKey, experimentKey, userId)
           );
         });
 
@@ -5289,16 +5301,11 @@ describe('lib/optimizely', function() {
           optlyInstance.projectConfigManager.getConfig.returns(newConfig);
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
-            userId
+            userId,
           });
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
-            sprintf(
-              LOG_MESSAGES.FORCED_BUCKETING_FAILED,
-              'DECISION_SERVICE',
-              variationKey,
-              userId
-            )
+            sprintf(LOG_MESSAGES.FORCED_BUCKETING_FAILED, 'DECISION_SERVICE', variationKey, userId)
           );
         });
 
@@ -5306,17 +5313,12 @@ describe('lib/optimizely', function() {
           var flagKey = 'feature_1';
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
-            userId
+            userId,
           });
           user.setAttribute('country', 'US');
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
-            sprintf(
-              LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
-              'DECISION_SERVICE',
-              userId,
-              '1'
-            )
+            sprintf(LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE, 'DECISION_SERVICE', userId, '1')
           );
         });
 
@@ -5324,17 +5326,12 @@ describe('lib/optimizely', function() {
           var flagKey = 'feature_1';
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
-            userId
+            userId,
           });
           user.setAttribute('country', 'CA');
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
-            sprintf(
-              LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE,
-              'DECISION_SERVICE',
-              userId,
-              '1'
-            )
+            sprintf(LOG_MESSAGES.USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE, 'DECISION_SERVICE', userId, '1')
           );
         });
 
@@ -5342,17 +5339,12 @@ describe('lib/optimizely', function() {
           var flagKey = 'feature_1';
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
-            userId
+            userId,
           });
           user.setAttribute('country', 'US');
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
-            sprintf(
-              LOG_MESSAGES.USER_IN_ROLLOUT,
-              'DECISION_SERVICE',
-              userId,
-              flagKey
-            )
+            sprintf(LOG_MESSAGES.USER_IN_ROLLOUT, 'DECISION_SERVICE', userId, flagKey)
           );
         });
 
@@ -5360,17 +5352,12 @@ describe('lib/optimizely', function() {
           var flagKey = 'feature_1';
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
-            userId
+            userId,
           });
           user.setAttribute('country', 'KO');
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
-            sprintf(
-              LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE,
-              'DECISION_SERVICE',
-              userId,
-              'Everyone Else'
-            )
+            sprintf(LOG_MESSAGES.USER_MEETS_CONDITIONS_FOR_TARGETING_RULE, 'DECISION_SERVICE', userId, 'Everyone Else')
           );
         });
 
@@ -5378,17 +5365,12 @@ describe('lib/optimizely', function() {
           var flagKey = 'feature_1';
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
-            userId
+            userId,
           });
           user.setAttribute('browser', 'safari');
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
-            sprintf(
-              LOG_MESSAGES.USER_NOT_BUCKETED_INTO_TARGETING_RULE,
-              'DECISION_SERVICE',
-              userId,
-              '2'
-            )
+            sprintf(LOG_MESSAGES.USER_NOT_BUCKETED_INTO_TARGETING_RULE, 'DECISION_SERVICE', userId, '2')
           );
         });
 
@@ -5398,17 +5380,11 @@ describe('lib/optimizely', function() {
           var variationKey = 'variation_with_traffic';
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
-            userId
+            userId,
           });
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
-            sprintf(
-              LOG_MESSAGES.USER_HAS_VARIATION,
-              'DECISION_SERVICE',
-              userId,
-              variationKey,
-              experimentKey,
-            )
+            sprintf(LOG_MESSAGES.USER_HAS_VARIATION, 'DECISION_SERVICE', userId, variationKey, experimentKey)
           );
         });
 
@@ -5417,21 +5393,16 @@ describe('lib/optimizely', function() {
           var experimentKey = 'exp_no_audience';
           var newConfig = optlyInstance.projectConfigManager.getConfig();
           newConfig.experiments[1].trafficAllocation = [];
-          newConfig.experiments[1].trafficAllocation.push({ endOfRange: 0, entityId: 'any' })
+          newConfig.experiments[1].trafficAllocation.push({ endOfRange: 0, entityId: 'any' });
           optlyInstance.projectConfigManager.getConfig.returns(newConfig);
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
             userId,
-            attributes: { 'age': 25 },
+            attributes: { age: 25 },
           });
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
-            sprintf(
-              LOG_MESSAGES.USER_HAS_NO_VARIATION,
-              'DECISION_SERVICE',
-              userId,
-              experimentKey,
-            )
+            sprintf(LOG_MESSAGES.USER_HAS_NO_VARIATION, 'DECISION_SERVICE', userId, experimentKey)
           );
         });
 
@@ -5449,13 +5420,7 @@ describe('lib/optimizely', function() {
           });
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
-            sprintf(
-              LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP,
-              'BUCKETER',
-              userId,
-              experimentKey,
-              groupId
-            )
+            sprintf(LOG_MESSAGES.USER_BUCKETED_INTO_EXPERIMENT_IN_GROUP, 'BUCKETER', userId, experimentKey, groupId)
           );
         });
 
@@ -5470,11 +5435,7 @@ describe('lib/optimizely', function() {
           });
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
-            sprintf(
-              LOG_MESSAGES.FEATURE_HAS_NO_EXPERIMENTS,
-              'DECISION_SERVICE',
-              flagKey
-            )
+            sprintf(LOG_MESSAGES.FEATURE_HAS_NO_EXPERIMENTS, 'DECISION_SERVICE', flagKey)
           );
         });
 
@@ -5487,12 +5448,7 @@ describe('lib/optimizely', function() {
           });
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
-            sprintf(
-              LOG_MESSAGES.USER_NOT_IN_EXPERIMENT,
-              'DECISION_SERVICE',
-              userId,
-              experimentKey
-            )
+            sprintf(LOG_MESSAGES.USER_NOT_IN_EXPERIMENT, 'DECISION_SERVICE', userId, experimentKey)
           );
         });
 
@@ -5531,7 +5487,7 @@ describe('lib/optimizely', function() {
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
             userId,
-            attirutes: { 'country': 25 }
+            attirutes: { country: 25 },
           });
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
@@ -5556,7 +5512,7 @@ describe('lib/optimizely', function() {
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
             userId,
-            attirutes: { 'age': 10000 }
+            attirutes: { age: 10000 },
           });
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
@@ -5581,7 +5537,7 @@ describe('lib/optimizely', function() {
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
             userId,
-            attirutes: { 'age': 25 }
+            attirutes: { age: 25 },
           });
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
@@ -5606,7 +5562,7 @@ describe('lib/optimizely', function() {
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
             userId,
-            attirutes: { 'age': 25 }
+            attirutes: { age: 25 },
           });
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
@@ -5631,7 +5587,7 @@ describe('lib/optimizely', function() {
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
             userId,
-            attirutes: { 'age': 25 }
+            attirutes: { age: 25 },
           });
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
@@ -5656,7 +5612,7 @@ describe('lib/optimizely', function() {
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
             userId,
-            attirutes: { 'age': 25 }
+            attirutes: { age: 25 },
           });
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
@@ -5680,7 +5636,7 @@ describe('lib/optimizely', function() {
           optlyInstance.projectConfigManager.getConfig.returns(newConfig);
           var user = new OptimizelyUserContext({
             optimizely: optlyInstance,
-            userId
+            userId,
           });
           var decision = optlyInstance.decide(user, flagKey);
           expect(decision.reasons).to.include(
@@ -5699,7 +5655,7 @@ describe('lib/optimizely', function() {
         var mockUserProfileServiceInstance;
         var optlyInstanceWithUserProfile;
         it('should bucket if there was no previously bucketed variation and save bucketing decision to the user profile', function() {
-          var flagKey = 'feature_2';           // embedding experiment: 'exp_no_audience'
+          var flagKey = 'feature_2'; // embedding experiment: 'exp_no_audience'
           var variationId1 = '10418551353';
           var variationKey1 = 'variation_with_traffic';
           mockUserProfileServiceInstance = {
@@ -5707,7 +5663,7 @@ describe('lib/optimizely', function() {
               user_id: userId,
               experiment_bucket_map: {},
             }),
-            save: sinon.stub()
+            save: sinon.stub(),
           };
           optlyInstanceWithUserProfile = new Optimizely({
             clientEngine: 'node-sdk',
@@ -5724,7 +5680,7 @@ describe('lib/optimizely', function() {
           });
           var user = new OptimizelyUserContext({
             optimizely: optlyInstanceWithUserProfile,
-            userId
+            userId,
           });
           var decision1 = optlyInstanceWithUserProfile.decide(user, flagKey);
           // should return variationId1 as no stored variation exists
@@ -5735,7 +5691,7 @@ describe('lib/optimizely', function() {
 
         describe('with IGNORE_USER_PROFILE_SERVICE flag in decide options', function() {
           it('should bypass user profile service', function() {
-            var flagKey = 'feature_2';           // embedding experiment: 'exp_no_audience'
+            var flagKey = 'feature_2'; // embedding experiment: 'exp_no_audience'
             var variationId1 = '10418551353';
             var variationId2 = '10418510624';
             var variationKey1 = 'variation_with_traffic';
@@ -5744,12 +5700,13 @@ describe('lib/optimizely', function() {
               lookup: sinon.stub().returns({
                 user_id: userId,
                 experiment_bucket_map: {
-                  '10420810910': { // 'exp_no_audience'
+                  '10420810910': {
+                    // 'exp_no_audience'
                     variation_id: variationId2,
                   },
                 },
               }),
-              save: sinon.stub()
+              save: sinon.stub(),
             };
             optlyInstanceWithUserProfile = new Optimizely({
               clientEngine: 'node-sdk',
@@ -5766,12 +5723,14 @@ describe('lib/optimizely', function() {
             });
             var user = new OptimizelyUserContext({
               optimizely: optlyInstanceWithUserProfile,
-              userId
+              userId,
             });
             var decision1 = optlyInstanceWithUserProfile.decide(user, flagKey);
             // should return variationId2 set by UPS
             assert.equal(variationKey2, decision1.variationKey);
-            var decision2 = optlyInstanceWithUserProfile.decide(user, flagKey, [ OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE ]);
+            var decision2 = optlyInstanceWithUserProfile.decide(user, flagKey, [
+              OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE,
+            ]);
             // should ignore variationId2 set by UPS and return variationId1
             assert.equal(variationKey1, decision2.variationKey);
             // also should not save either
@@ -5781,19 +5740,20 @@ describe('lib/optimizely', function() {
 
         describe('with IGNORE_USER_PROFILE_SERVICE flag in default decide options', function() {
           it('should bypass user profile service', function() {
-            var flagKey = 'feature_2';           // embedding experiment: 'exp_no_audience'
+            var flagKey = 'feature_2'; // embedding experiment: 'exp_no_audience'
             var variationId2 = '10418510624';
             var variationKey1 = 'variation_with_traffic';
             mockUserProfileServiceInstance = {
               lookup: sinon.stub().returns({
                 user_id: userId,
                 experiment_bucket_map: {
-                  '10420810910': { // 'exp_no_audience'
+                  '10420810910': {
+                    // 'exp_no_audience'
                     variation_id: variationId2,
                   },
                 },
               }),
-              save: sinon.stub()
+              save: sinon.stub(),
             };
             optlyInstanceWithUserProfile = new Optimizely({
               clientEngine: 'node-sdk',
@@ -5805,13 +5765,13 @@ describe('lib/optimizely', function() {
               logger: createdLogger,
               isValidInstance: true,
               eventBatchSize: 1,
-              defaultDecideOptions: [ OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE ],
+              defaultDecideOptions: [OptimizelyDecideOption.IGNORE_USER_PROFILE_SERVICE],
               notificationCenter,
               eventProcessor,
             });
             var user = new OptimizelyUserContext({
               optimizely: optlyInstanceWithUserProfile,
-              userId
+              userId,
             });
             var decision = optlyInstanceWithUserProfile.decide(user, flagKey);
             // should ignore variationId2 set by UPS and return variationId1
@@ -5851,7 +5811,7 @@ describe('lib/optimizely', function() {
         var flagKey = 'feature_2';
         var user = optlyInstance.createUserContext(userId);
         var expectedVariables = optlyInstance.getAllFeatureVariables(flagKey, userId);
-        var decisionsMap = optlyInstance.decideForKeys(user, [ flagKey ]);
+        var decisionsMap = optlyInstance.decideForKeys(user, [flagKey]);
         var decision = decisionsMap[flagKey];
         var expectedDecision = {
           variationKey: 'variation_with_traffic',
@@ -5861,11 +5821,11 @@ describe('lib/optimizely', function() {
           flagKey: flagKey,
           userContext: user,
           reasons: [],
-        }
+        };
         assert.deepEqual(Object.values(decisionsMap).length, 1);
         assert.deepEqual(decision, expectedDecision);
         sinon.assert.calledOnce(eventDispatcher.dispatchEvent);
-        sinon.assert.callCount(optlyInstance.notificationCenter.sendNotifications, 4)
+        sinon.assert.callCount(optlyInstance.notificationCenter.sendNotifications, 4);
         var notificationCallArgs = optlyInstance.notificationCenter.sendNotifications.getCall(3).args;
         var decisionEventDispatched = notificationCallArgs[1].decisionInfo.decisionEventDispatched;
         assert.deepEqual(decisionEventDispatched, true);
@@ -5887,7 +5847,7 @@ describe('lib/optimizely', function() {
           flagKey: flagKeysArray[0],
           userContext: user,
           reasons: [],
-        }
+        };
         var expectedDecision2 = {
           variationKey: 'variation_with_traffic',
           enabled: true,
@@ -5896,7 +5856,7 @@ describe('lib/optimizely', function() {
           flagKey: flagKeysArray[1],
           userContext: user,
           reasons: [],
-        }
+        };
         assert.deepEqual(Object.values(decisionsMap).length, 2);
         assert.deepEqual(decision1, expectedDecision1);
         assert.deepEqual(decision2, expectedDecision2);
@@ -5908,7 +5868,11 @@ describe('lib/optimizely', function() {
         var flagKey2 = 'feature_3';
         var user = optlyInstance.createUserContext(userId, { gender: 'female' });
         var expectedVariables = optlyInstance.getAllFeatureVariables(flagKey1, userId);
-        var decisionsMap = optlyInstance.decideForKeys(user, [ flagKey1, flagKey2 ], [ OptimizelyDecideOption.ENABLED_FLAGS_ONLY ]);
+        var decisionsMap = optlyInstance.decideForKeys(
+          user,
+          [flagKey1, flagKey2],
+          [OptimizelyDecideOption.ENABLED_FLAGS_ONLY]
+        );
         var decision = decisionsMap[flagKey1];
         var expectedDecision = {
           variationKey: 'variation_with_traffic',
@@ -5918,7 +5882,7 @@ describe('lib/optimizely', function() {
           flagKey: flagKey1,
           userContext: user,
           reasons: [],
-        }
+        };
         assert.deepEqual(Object.values(decisionsMap).length, 1);
         assert.deepEqual(decision, expectedDecision);
         sinon.assert.calledTwice(eventDispatcher.dispatchEvent);
@@ -5969,7 +5933,7 @@ describe('lib/optimizely', function() {
             flagKey: allFlagKeysArray[0],
             userContext: user,
             reasons: [],
-          }
+          };
           var expectedDecision2 = {
             variationKey: 'variation_with_traffic',
             enabled: true,
@@ -5978,7 +5942,7 @@ describe('lib/optimizely', function() {
             flagKey: allFlagKeysArray[1],
             userContext: user,
             reasons: [],
-          }
+          };
           var expectedDecision3 = {
             variationKey: null,
             enabled: false,
@@ -5987,7 +5951,7 @@ describe('lib/optimizely', function() {
             flagKey: allFlagKeysArray[2],
             userContext: user,
             reasons: [],
-          }
+          };
           assert.deepEqual(Object.values(decisionsMap).length, allFlagKeysArray.length);
           assert.deepEqual(decision1, expectedDecision1);
           assert.deepEqual(decision2, expectedDecision2);
@@ -6001,7 +5965,7 @@ describe('lib/optimizely', function() {
           var user = optlyInstance.createUserContext(userId, { gender: 'female' });
           var expectedVariables1 = optlyInstance.getAllFeatureVariables(flagKey1, userId);
           var expectedVariables2 = optlyInstance.getAllFeatureVariables(flagKey2, userId);
-          var decisionsMap = optlyInstance.decideAll(user, [ OptimizelyDecideOption.ENABLED_FLAGS_ONLY ]);
+          var decisionsMap = optlyInstance.decideAll(user, [OptimizelyDecideOption.ENABLED_FLAGS_ONLY]);
           var decision1 = decisionsMap[flagKey1];
           var decision2 = decisionsMap[flagKey2];
           var expectedDecision1 = {
@@ -6012,7 +5976,7 @@ describe('lib/optimizely', function() {
             flagKey: flagKey1,
             userContext: user,
             reasons: [],
-          }
+          };
           var expectedDecision2 = {
             variationKey: 'variation_with_traffic',
             enabled: true,
@@ -6021,7 +5985,7 @@ describe('lib/optimizely', function() {
             flagKey: flagKey2,
             userContext: user,
             reasons: [],
-          }
+          };
           assert.deepEqual(Object.values(decisionsMap).length, 2);
           assert.deepEqual(decision1, expectedDecision1);
           assert.deepEqual(decision2, expectedDecision2);
@@ -6040,7 +6004,7 @@ describe('lib/optimizely', function() {
             logger: createdLogger,
             isValidInstance: true,
             eventBatchSize: 1,
-            defaultDecideOptions: [ OptimizelyDecideOption.ENABLED_FLAGS_ONLY ],
+            defaultDecideOptions: [OptimizelyDecideOption.ENABLED_FLAGS_ONLY],
             eventProcessor,
             notificationCenter,
           });
@@ -6069,7 +6033,7 @@ describe('lib/optimizely', function() {
             flagKey: flagKey1,
             userContext: user,
             reasons: [],
-          }
+          };
           var expectedDecision2 = {
             variationKey: 'variation_with_traffic',
             enabled: true,
@@ -6078,7 +6042,7 @@ describe('lib/optimizely', function() {
             flagKey: flagKey2,
             userContext: user,
             reasons: [],
-          }
+          };
           assert.deepEqual(Object.values(decisionsMap).length, 2);
           assert.deepEqual(decision1, expectedDecision1);
           assert.deepEqual(decision2, expectedDecision2);
@@ -6089,7 +6053,7 @@ describe('lib/optimizely', function() {
           var flagKey1 = 'feature_1';
           var flagKey2 = 'feature_2';
           var user = optlyInstance.createUserContext(userId, { gender: 'female' });
-          var decisionsMap = optlyInstance.decideAll(user, [ OptimizelyDecideOption.EXCLUDE_VARIABLES ]);
+          var decisionsMap = optlyInstance.decideAll(user, [OptimizelyDecideOption.EXCLUDE_VARIABLES]);
           var decision1 = decisionsMap[flagKey1];
           var decision2 = decisionsMap[flagKey2];
           var expectedDecision1 = {
@@ -6100,7 +6064,7 @@ describe('lib/optimizely', function() {
             flagKey: flagKey1,
             userContext: user,
             reasons: [],
-          }
+          };
           var expectedDecision2 = {
             variationKey: 'variation_with_traffic',
             enabled: true,
@@ -6109,7 +6073,7 @@ describe('lib/optimizely', function() {
             flagKey: flagKey2,
             userContext: user,
             reasons: [],
-          }
+          };
           assert.deepEqual(Object.values(decisionsMap).length, 2);
           assert.deepEqual(decision1, expectedDecision1);
           assert.deepEqual(decision2, expectedDecision2);
@@ -6243,7 +6207,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.isFeatureEnabled('test_feature_for_experiment', 'user1');
         assert.strictEqual(result, false);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Optimizely object is not valid. Failing isFeatureEnabled.'
         );
       });
@@ -6341,7 +6305,7 @@ describe('lib/optimizely', function() {
             };
             var callArgs = eventDispatcher.dispatchEvent.getCalls()[0].args;
             assert.deepEqual(callArgs[0], expectedImpressionEvent);
-            assert.isFunction(callArgs[1]);            
+            assert.isFunction(callArgs[1]);
             assert.equal(
               buildLogMessageFromArgs(createdLogger.log.lastCall.args),
               'OPTIMIZELY: Feature test_feature_for_experiment is enabled for user user1.'
@@ -6680,7 +6644,7 @@ describe('lib/optimizely', function() {
           assert.strictEqual(result, false);
           sinon.assert.notCalled(eventDispatcher.dispatchEvent);
           assert.equal(
-              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: Feature test_feature is not enabled for user user1.'
           );
         });
@@ -6693,7 +6657,7 @@ describe('lib/optimizely', function() {
           assert.strictEqual(result, false);
           sinon.assert.notCalled(eventDispatcher.dispatchEvent);
           assert.equal(
-              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: Feature test_feature is not enabled for user user1.'
           );
         });
@@ -6787,7 +6751,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getEnabledFeatures('user1', { test_attribute: 'test_value' });
         assert.deepEqual(result, []);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Optimizely object is not valid. Failing getEnabledFeatures.'
         );
       });
@@ -6831,15 +6795,13 @@ describe('lib/optimizely', function() {
         optlyInstance.notificationCenter.addNotificationListener(enums.NOTIFICATION_TYPES.DECISION, decisionListener);
         var result = optlyInstance.getEnabledFeatures('test_user', attributes);
         assert.strictEqual(result.length, 5);
-        assert.deepEqual(result,
-          [
-            'test_feature_2',
-            'test_feature_for_experiment',
-            'shared_feature',
-            'test_feature_in_exclusion_group',
-            'test_feature_in_multiple_experiments'
-          ]
-        );
+        assert.deepEqual(result, [
+          'test_feature_2',
+          'test_feature_for_experiment',
+          'shared_feature',
+          'test_feature_in_exclusion_group',
+          'test_feature_in_multiple_experiments',
+        ]);
 
         sinon.assert.calledWithExactly(decisionListener.getCall(0), {
           type: DECISION_NOTIFICATION_TYPES.FEATURE,
@@ -7097,7 +7059,7 @@ describe('lib/optimizely', function() {
               'OPTIMIZELY',
               '2',
               'num_buttons',
-              'test_feature_for_experiment',
+              'test_feature_for_experiment'
             );
             sinon.assert.calledWith(
               createdLogger.log,
@@ -7106,7 +7068,7 @@ describe('lib/optimizely', function() {
               'OPTIMIZELY',
               'true',
               'is_button_animated',
-              'test_feature_for_experiment',
+              'test_feature_for_experiment'
             );
             sinon.assert.calledWith(
               createdLogger.log,
@@ -7151,7 +7113,7 @@ describe('lib/optimizely', function() {
               );
               assert.strictEqual(result, false);
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "is_button_animated" is not used in variation "variation". Returning default value.'
               );
             });
@@ -7162,7 +7124,7 @@ describe('lib/optimizely', function() {
               });
               assert.strictEqual(result, 50.55);
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "button_width" is not used in variation "variation". Returning default value.'
               );
             });
@@ -7173,7 +7135,7 @@ describe('lib/optimizely', function() {
               });
               assert.strictEqual(result, 10);
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "num_buttons" is not used in variation "variation". Returning default value.'
               );
             });
@@ -7184,7 +7146,7 @@ describe('lib/optimizely', function() {
               });
               assert.strictEqual(result, 'Buy me');
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "button_txt" is not used in variation "variation". Returning default value.'
               );
             });
@@ -7198,7 +7160,7 @@ describe('lib/optimizely', function() {
                 text: 'default value',
               });
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "button_info" is not used in variation "variation". Returning default value.'
               );
             });
@@ -7212,7 +7174,7 @@ describe('lib/optimizely', function() {
               );
               assert.strictEqual(result, false);
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "is_button_animated" is not used in variation "variation". Returning default value.'
               );
             });
@@ -7226,7 +7188,7 @@ describe('lib/optimizely', function() {
               );
               assert.strictEqual(result, 50.55);
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "button_width" is not used in variation "variation". Returning default value.'
               );
             });
@@ -7240,7 +7202,7 @@ describe('lib/optimizely', function() {
               );
               assert.strictEqual(result, 10);
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "num_buttons" is not used in variation "variation". Returning default value.'
               );
             });
@@ -7254,21 +7216,18 @@ describe('lib/optimizely', function() {
               );
               assert.strictEqual(result, 'Buy me');
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "button_txt" is not used in variation "variation". Returning default value.'
               );
             });
 
             it('returns the variable default value from getFeatureVariableJSON', function() {
-              var result = optlyInstance.getFeatureVariableJSON(
-                'test_feature_for_experiment',
-                'button_info',
-                'user1',
-                { test_attribute: 'test_value' }
-              );
+              var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_info', 'user1', {
+                test_attribute: 'test_value',
+              });
               assert.deepEqual(result, {
                 num_buttons: 0,
-                text: "default value",
+                text: 'default value',
               });
               assert.equal(
                 buildLogMessageFromArgs(createdLogger.log.lastCall.args),
@@ -7287,7 +7246,7 @@ describe('lib/optimizely', function() {
                 button_txt: 'Buy me',
                 button_info: {
                   num_buttons: 0,
-                  text: "default value",
+                  text: 'default value',
                 },
               });
               sinon.assert.calledWith(
@@ -7406,7 +7365,7 @@ describe('lib/optimizely', function() {
             });
             assert.deepEqual(result, {
               num_buttons: 0,
-              text: "default value",
+              text: 'default value',
             });
             assert.equal(
               buildLogMessageFromArgs(createdLogger.log.lastCall.args),
@@ -7492,7 +7451,7 @@ describe('lib/optimizely', function() {
               button_txt: 'Buy me',
               button_info: {
                 num_buttons: 0,
-                text: "default value",
+                text: 'default value',
               },
             });
             assert.deepEqual(createdLogger.log.args, [
@@ -7502,7 +7461,7 @@ describe('lib/optimizely', function() {
                 'OPTIMIZELY',
                 'test_feature_for_experiment',
                 'user1',
-                '10'
+                '10',
               ],
               [
                 LOG_LEVEL.INFO,
@@ -7510,7 +7469,7 @@ describe('lib/optimizely', function() {
                 'OPTIMIZELY',
                 'test_feature_for_experiment',
                 'user1',
-                'false'
+                'false',
               ],
               [
                 LOG_LEVEL.INFO,
@@ -7518,7 +7477,7 @@ describe('lib/optimizely', function() {
                 'OPTIMIZELY',
                 'test_feature_for_experiment',
                 'user1',
-                'Buy me'
+                'Buy me',
               ],
               [
                 LOG_LEVEL.INFO,
@@ -7526,7 +7485,7 @@ describe('lib/optimizely', function() {
                 'OPTIMIZELY',
                 'test_feature_for_experiment',
                 'user1',
-                '50.55'
+                '50.55',
               ],
               [
                 LOG_LEVEL.INFO,
@@ -7534,9 +7493,9 @@ describe('lib/optimizely', function() {
                 'OPTIMIZELY',
                 'test_feature_for_experiment',
                 'user1',
-                '{ "num_buttons": 0, "text": "default value"}'
-              ]
-            ]);            
+                '{ "num_buttons": 0, "text": "default value"}',
+              ],
+            ]);
           });
         });
       });
@@ -7691,51 +7650,48 @@ describe('lib/optimizely', function() {
                 message: 'Hello audience',
               },
             });
-            assert.deepEqual(
-              createdLogger.log.args,
+            assert.deepEqual(createdLogger.log.args, [
               [
-                [
-                  LOG_LEVEL.INFO,
-                  '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
-                  'OPTIMIZELY',
-                  'true',
-                  'new_content',
-                  'test_feature'
-                ],
-                [
-                  LOG_LEVEL.INFO,
-                  '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
-                  'OPTIMIZELY',
-                  '395',
-                  'lasers',
-                  'test_feature'
-                ],
-                [
-                  LOG_LEVEL.INFO,
-                  '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
-                  'OPTIMIZELY',
-                  '4.99',
-                  'price',
-                  'test_feature'
-                ],
-                [
-                  LOG_LEVEL.INFO,
-                  '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
-                  'OPTIMIZELY',
-                  'Hello audience',
-                  'message',
-                  'test_feature'
-                ],
-                [
-                  LOG_LEVEL.INFO,
-                  '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
-                  'OPTIMIZELY',
-                  '{ "count": 2, "message": "Hello audience" }',
-                  'message_info',
-                  'test_feature'
-                ]
-              ]              
-            )
+                LOG_LEVEL.INFO,
+                '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
+                'OPTIMIZELY',
+                'true',
+                'new_content',
+                'test_feature',
+              ],
+              [
+                LOG_LEVEL.INFO,
+                '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
+                'OPTIMIZELY',
+                '395',
+                'lasers',
+                'test_feature',
+              ],
+              [
+                LOG_LEVEL.INFO,
+                '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
+                'OPTIMIZELY',
+                '4.99',
+                'price',
+                'test_feature',
+              ],
+              [
+                LOG_LEVEL.INFO,
+                '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
+                'OPTIMIZELY',
+                'Hello audience',
+                'message',
+                'test_feature',
+              ],
+              [
+                LOG_LEVEL.INFO,
+                '%s: Got variable value "%s" for variable "%s" of feature flag "%s"',
+                'OPTIMIZELY',
+                '{ "count": 2, "message": "Hello audience" }',
+                'message_info',
+                'test_feature',
+              ],
+            ]);
           });
 
           describe('when the variable is not used in the variation', function() {
@@ -7749,7 +7705,7 @@ describe('lib/optimizely', function() {
               });
               assert.strictEqual(result, false);
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "new_content" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7760,7 +7716,7 @@ describe('lib/optimizely', function() {
               });
               assert.strictEqual(result, 14.99);
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "price" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7771,7 +7727,7 @@ describe('lib/optimizely', function() {
               });
               assert.strictEqual(result, 400);
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "lasers" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7782,7 +7738,7 @@ describe('lib/optimizely', function() {
               });
               assert.strictEqual(result, 'Hello');
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "message" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7796,7 +7752,7 @@ describe('lib/optimizely', function() {
                 message: 'Hello',
               });
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "message_info" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7807,7 +7763,7 @@ describe('lib/optimizely', function() {
               });
               assert.strictEqual(result, false);
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "new_content" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7818,7 +7774,7 @@ describe('lib/optimizely', function() {
               });
               assert.strictEqual(result, 14.99);
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "price" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7829,7 +7785,7 @@ describe('lib/optimizely', function() {
               });
               assert.strictEqual(result, 400);
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "lasers" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7840,7 +7796,7 @@ describe('lib/optimizely', function() {
               });
               assert.strictEqual(result, 'Hello');
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "message" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7851,10 +7807,10 @@ describe('lib/optimizely', function() {
               });
               assert.deepEqual(result, {
                 count: 1,
-                message: 'Hello'
+                message: 'Hello',
               });
               assert.equal(
-          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+                buildLogMessageFromArgs(createdLogger.log.lastCall.args),
                 'OPTIMIZELY: Variable "message_info" is not used in variation "594032". Returning default value.'
               );
             });
@@ -7873,47 +7829,43 @@ describe('lib/optimizely', function() {
                   message: 'Hello',
                 },
               });
-              assert.deepEqual(
-                createdLogger.log.args,
+              assert.deepEqual(createdLogger.log.args, [
                 [
-                  [
-                    LOG_LEVEL.INFO,
-                    '%s: Variable "%s" is not used in variation "%s". Returning default value.',
-                    'OPTIMIZELY',
-                    'new_content',
-                    '594032'
-                  ],
-                  [
-                    LOG_LEVEL.INFO,
-                    '%s: Variable "%s" is not used in variation "%s". Returning default value.',
-                    'OPTIMIZELY',
-                    'lasers',
-                    '594032'
-                  ],
-                  [
-                    LOG_LEVEL.INFO,
-                    '%s: Variable "%s" is not used in variation "%s". Returning default value.',
-                    'OPTIMIZELY',
-                    'price',
-                    '594032'
-                  ],
-                  [
-                    LOG_LEVEL.INFO,
-                    '%s: Variable "%s" is not used in variation "%s". Returning default value.',
-                    'OPTIMIZELY',
-                    'message',
-                    '594032'
-                  ],
-                  [
-                    LOG_LEVEL.INFO,
-                    '%s: Variable "%s" is not used in variation "%s". Returning default value.',
-                    'OPTIMIZELY',
-                    'message_info',
-                    '594032'
-                  ]
-                ]
-                
-              )
+                  LOG_LEVEL.INFO,
+                  '%s: Variable "%s" is not used in variation "%s". Returning default value.',
+                  'OPTIMIZELY',
+                  'new_content',
+                  '594032',
+                ],
+                [
+                  LOG_LEVEL.INFO,
+                  '%s: Variable "%s" is not used in variation "%s". Returning default value.',
+                  'OPTIMIZELY',
+                  'lasers',
+                  '594032',
+                ],
+                [
+                  LOG_LEVEL.INFO,
+                  '%s: Variable "%s" is not used in variation "%s". Returning default value.',
+                  'OPTIMIZELY',
+                  'price',
+                  '594032',
+                ],
+                [
+                  LOG_LEVEL.INFO,
+                  '%s: Variable "%s" is not used in variation "%s". Returning default value.',
+                  'OPTIMIZELY',
+                  'message',
+                  '594032',
+                ],
+                [
+                  LOG_LEVEL.INFO,
+                  '%s: Variable "%s" is not used in variation "%s". Returning default value.',
+                  'OPTIMIZELY',
+                  'message_info',
+                  '594032',
+                ],
+              ]);
             });
           });
         });
@@ -7987,7 +7939,7 @@ describe('lib/optimizely', function() {
             });
             assert.deepEqual(result, {
               count: 1,
-              message: 'Hello'
+              message: 'Hello',
             });
             assert.equal(
               buildLogMessageFromArgs(createdLogger.log.lastCall.args),
@@ -8045,7 +7997,7 @@ describe('lib/optimizely', function() {
             });
             assert.deepEqual(result, {
               count: 1,
-              message: 'Hello'
+              message: 'Hello',
             });
             assert.equal(
               buildLogMessageFromArgs(createdLogger.log.lastCall.args),
@@ -8067,51 +8019,48 @@ describe('lib/optimizely', function() {
                 message: 'Hello',
               },
             });
-            assert.deepEqual(
-              createdLogger.log.args,
+            assert.deepEqual(createdLogger.log.args, [
               [
-                [
-                  LOG_LEVEL.INFO,
-                  '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
-                  'OPTIMIZELY',
-                  'test_feature',
-                  'user1',
-                  'false'
-                ],
-                [
-                  LOG_LEVEL.INFO,
-                  '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
-                  'OPTIMIZELY',
-                  'test_feature',
-                  'user1',
-                  '400'
-                ],
-                [
-                  LOG_LEVEL.INFO,
-                  '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
-                  'OPTIMIZELY',
-                  'test_feature',
-                  'user1',
-                  '14.99'
-                ],
-                [
-                  LOG_LEVEL.INFO,
-                  '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
-                  'OPTIMIZELY',
-                  'test_feature',
-                  'user1',
-                  'Hello'
-                ],
-                [
-                  LOG_LEVEL.INFO,
-                  '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
-                  'OPTIMIZELY',
-                  'test_feature',
-                  'user1',
-                  '{ "count": 1, "message": "Hello" }'
-                ]
-              ]
-            )
+                LOG_LEVEL.INFO,
+                '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
+                'OPTIMIZELY',
+                'test_feature',
+                'user1',
+                'false',
+              ],
+              [
+                LOG_LEVEL.INFO,
+                '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
+                'OPTIMIZELY',
+                'test_feature',
+                'user1',
+                '400',
+              ],
+              [
+                LOG_LEVEL.INFO,
+                '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
+                'OPTIMIZELY',
+                'test_feature',
+                'user1',
+                '14.99',
+              ],
+              [
+                LOG_LEVEL.INFO,
+                '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
+                'OPTIMIZELY',
+                'test_feature',
+                'user1',
+                'Hello',
+              ],
+              [
+                LOG_LEVEL.INFO,
+                '%s: Feature "%s" is not enabled for user %s. Returning the default variable value "%s".',
+                'OPTIMIZELY',
+                'test_feature',
+                'user1',
+                '{ "count": 1, "message": "Hello" }',
+              ],
+            ]);
           });
         });
       });
@@ -8136,7 +8085,7 @@ describe('lib/optimizely', function() {
           });
           assert.strictEqual(result, false);
           assert.equal(
-              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "is_button_animated" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8147,7 +8096,7 @@ describe('lib/optimizely', function() {
           });
           assert.strictEqual(result, 50.55);
           assert.equal(
-              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_width" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8158,7 +8107,7 @@ describe('lib/optimizely', function() {
           });
           assert.strictEqual(result, 10);
           assert.equal(
-              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "num_buttons" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8169,7 +8118,7 @@ describe('lib/optimizely', function() {
           });
           assert.strictEqual(result, 'Buy me');
           assert.equal(
-              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_txt" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8183,7 +8132,7 @@ describe('lib/optimizely', function() {
             text: 'default value',
           });
           assert.equal(
-              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_info" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8197,7 +8146,7 @@ describe('lib/optimizely', function() {
           );
           assert.strictEqual(result, false);
           assert.equal(
-              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "is_button_animated" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8208,7 +8157,7 @@ describe('lib/optimizely', function() {
           });
           assert.strictEqual(result, 50.55);
           assert.equal(
-              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_width" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8219,7 +8168,7 @@ describe('lib/optimizely', function() {
           });
           assert.strictEqual(result, 10);
           assert.equal(
-              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "num_buttons" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8230,7 +8179,7 @@ describe('lib/optimizely', function() {
           });
           assert.strictEqual(result, 'Buy me');
           assert.equal(
-              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_txt" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8244,7 +8193,7 @@ describe('lib/optimizely', function() {
             text: 'default value',
           });
           assert.equal(
-              buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
             'OPTIMIZELY: User "user1" is not in any variation or rollout rule. Returning default value for variable "button_info" of feature flag "test_feature_for_experiment".'
           );
         });
@@ -8263,51 +8212,48 @@ describe('lib/optimizely', function() {
               text: 'default value',
             },
           });
-          assert.deepEqual(
-            createdLogger.log.args,
+          assert.deepEqual(createdLogger.log.args, [
             [
-              [
-                LOG_LEVEL.INFO,
-                '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
-                'OPTIMIZELY',
-                'user1',
-                'num_buttons',
-                'test_feature_for_experiment'
-              ],
-              [
-                LOG_LEVEL.INFO,
-                '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
-                'OPTIMIZELY',
-                'user1',
-                'is_button_animated',
-                'test_feature_for_experiment'
-              ],
-              [
-                LOG_LEVEL.INFO,
-                '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
-                'OPTIMIZELY',
-                'user1',
-                'button_txt',
-                'test_feature_for_experiment'
-              ],
-              [
-                LOG_LEVEL.INFO,
-                '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
-                'OPTIMIZELY',
-                'user1',
-                'button_width',
-                'test_feature_for_experiment'
-              ],
-              [
-                LOG_LEVEL.INFO,
-                '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
-                'OPTIMIZELY',
-                'user1',
-                'button_info',
-                'test_feature_for_experiment'
-              ]
-            ]
-          );
+              LOG_LEVEL.INFO,
+              '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
+              'OPTIMIZELY',
+              'user1',
+              'num_buttons',
+              'test_feature_for_experiment',
+            ],
+            [
+              LOG_LEVEL.INFO,
+              '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
+              'OPTIMIZELY',
+              'user1',
+              'is_button_animated',
+              'test_feature_for_experiment',
+            ],
+            [
+              LOG_LEVEL.INFO,
+              '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
+              'OPTIMIZELY',
+              'user1',
+              'button_txt',
+              'test_feature_for_experiment',
+            ],
+            [
+              LOG_LEVEL.INFO,
+              '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
+              'OPTIMIZELY',
+              'user1',
+              'button_width',
+              'test_feature_for_experiment',
+            ],
+            [
+              LOG_LEVEL.INFO,
+              '%s: User "%s" is not in any variation or rollout rule. Returning default value for variable "%s" of feature flag "%s".',
+              'OPTIMIZELY',
+              'user1',
+              'button_info',
+              'test_feature_for_experiment',
+            ],
+          ]);
         });
       });
 
@@ -8317,7 +8263,7 @@ describe('lib/optimizely', function() {
         });
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8328,7 +8274,7 @@ describe('lib/optimizely', function() {
         });
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8337,7 +8283,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'is_button_animated');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8348,7 +8294,7 @@ describe('lib/optimizely', function() {
         });
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8359,7 +8305,7 @@ describe('lib/optimizely', function() {
         });
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8368,7 +8314,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_width');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8379,7 +8325,7 @@ describe('lib/optimizely', function() {
         });
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8390,7 +8336,7 @@ describe('lib/optimizely', function() {
         });
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8399,7 +8345,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'num_buttons');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8410,7 +8356,7 @@ describe('lib/optimizely', function() {
         });
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8421,7 +8367,7 @@ describe('lib/optimizely', function() {
         });
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8430,7 +8376,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_txt');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8441,7 +8387,7 @@ describe('lib/optimizely', function() {
         });
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8452,7 +8398,7 @@ describe('lib/optimizely', function() {
         });
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8461,7 +8407,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariable('test_feature_for_experiment', 'button_info');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8524,7 +8470,7 @@ describe('lib/optimizely', function() {
         );
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8538,7 +8484,7 @@ describe('lib/optimizely', function() {
         );
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8547,7 +8493,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariableBoolean('test_feature_for_experiment', 'is_button_animated');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8558,7 +8504,7 @@ describe('lib/optimizely', function() {
         });
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8569,7 +8515,7 @@ describe('lib/optimizely', function() {
         });
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8578,7 +8524,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariableDouble('test_feature_for_experiment', 'button_width');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8589,7 +8535,7 @@ describe('lib/optimizely', function() {
         });
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8600,7 +8546,7 @@ describe('lib/optimizely', function() {
         });
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8609,7 +8555,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariableInteger('test_feature_for_experiment', 'num_buttons');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8620,7 +8566,7 @@ describe('lib/optimizely', function() {
         });
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8631,7 +8577,7 @@ describe('lib/optimizely', function() {
         });
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8640,7 +8586,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariableString('test_feature_for_experiment', 'button_txt');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8651,7 +8597,7 @@ describe('lib/optimizely', function() {
         });
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8662,7 +8608,7 @@ describe('lib/optimizely', function() {
         });
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8671,7 +8617,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariableJSON('test_feature_for_experiment', 'button_info');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'OPTIMIZELY: Provided user_id is in an invalid format.'
         );
       });
@@ -8746,7 +8692,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariable('thisIsNotAValidKey<><><>', 'is_button_animated', 'user1');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8755,7 +8701,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariable('thisIsNotAValidKey<><><>', 'button_width', 'user1');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8764,7 +8710,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariable('thisIsNotAValidKey<><><>', 'num_buttons', 'user1');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8773,7 +8719,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariable('thisIsNotAValidKey<><><>', 'button_txt', 'user1');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8782,7 +8728,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariable('thisIsNotAValidKey<><><>', 'button_info', 'user1');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8795,7 +8741,7 @@ describe('lib/optimizely', function() {
         );
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.'
         );
       });
@@ -8804,7 +8750,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariableBoolean('thisIsNotAValidKey<><><>', 'is_button_animated', 'user1');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8813,7 +8759,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariableDouble('thisIsNotAValidKey<><><>', 'button_width', 'user1');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8822,7 +8768,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariableInteger('thisIsNotAValidKey<><><>', 'num_buttons', 'user1');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8831,7 +8777,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariableString('thisIsNotAValidKey<><><>', 'button_txt', 'user1');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8840,7 +8786,7 @@ describe('lib/optimizely', function() {
         var result = optlyInstance.getFeatureVariableJSON('thisIsNotAValidKey<><><>', 'button_info', 'user1');
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Feature key thisIsNotAValidKey<><><> is not in datafile.'
         );
       });
@@ -8853,7 +8799,7 @@ describe('lib/optimizely', function() {
         );
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.'
         );
       });
@@ -8866,7 +8812,7 @@ describe('lib/optimizely', function() {
         );
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.'
         );
       });
@@ -8879,7 +8825,7 @@ describe('lib/optimizely', function() {
         );
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.'
         );
       });
@@ -8892,7 +8838,7 @@ describe('lib/optimizely', function() {
         );
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.'
         );
       });
@@ -8905,7 +8851,7 @@ describe('lib/optimizely', function() {
         );
         assert.strictEqual(result, null);
         assert.equal(
-            buildLogMessageFromArgs(createdLogger.log.lastCall.args),
+          buildLogMessageFromArgs(createdLogger.log.lastCall.args),
           'PROJECT_CONFIG: Variable with key "thisIsNotAVariableKey****" associated with feature with key "test_feature_for_experiment" is not in datafile.'
         );
       });
@@ -9271,7 +9217,10 @@ describe('lib/optimizely', function() {
         optlyInstance.projectConfigManager.getConfig().audiencesById,
         sinon.match.any
       );
-      assert.deepEqual(evalSpy.getCalls()[0].args[2].getAttributes(), { house: '...Slytherinnn...sss.', favorite_ice_cream: 'matcha' });
+      assert.deepEqual(evalSpy.getCalls()[0].args[2].getAttributes(), {
+        house: '...Slytherinnn...sss.',
+        favorite_ice_cream: 'matcha',
+      });
     });
 
     it('can exclude a user from a rollout with complex audience conditions via isFeatureEnabled', function() {
@@ -9678,7 +9627,7 @@ describe('lib/optimizely', function() {
           process: sinon.stub(),
           start: sinon.stub(),
           stop: sinon.stub(),
-        };        
+        };
       });
 
       describe('when the event processor stop method returns a promise that fulfills', function() {
@@ -10094,7 +10043,7 @@ describe('lib/optimizely', function() {
       optlyInstance = new Optimizely({
         clientEngine: 'node-sdk',
         datafile: testData.getTestProjectConfig(),
-        errorHandler,        
+        errorHandler,
         logger,
         isValidInstance: true,
         eventBatchSize: 1,
@@ -10139,11 +10088,67 @@ describe('lib/optimizely', function() {
     });
   });
 
-
-  // TODO: Finish these tests for ODP general ODP Manager
+  // TODO: Finish these tests in ODP Node.js Implementation
   describe('odp', () => {
+    var optlyInstanceWithOdp;
+    var bucketStub;
+    var fakeDecisionResponse;
+    var notificationCenter = createNotificationCenter({ logger: createdLogger, errorHandler });
+    var eventProcessor = createForwardingEventProcessor(eventDispatcher, notificationCenter);
+    var createdLogger = logger.createLogger({
+      logLevel: LOG_LEVEL.INFO,
+      logToConsole: false,
+    });
+
+    beforeEach(function() {
+      optlyInstanceWithOdp = new Optimizely({
+        clientEngine: 'node-sdk',
+        datafile: testData.getTestProjectConfig(),
+        errorHandler: errorHandler,
+        eventDispatcher: eventDispatcher,
+        jsonSchemaValidator: jsonSchemaValidator,
+        logger: createdLogger,
+        isValidInstance: true,
+        eventBatchSize: 1,
+        eventProcessor,
+        notificationCenter,
+        odpManager: new OdpManager({
+          disable: false,
+        }),
+      });
+
+      bucketStub = sinon.stub(bucketer, 'bucket');
+      sinon.stub(errorHandler, 'handleError');
+      sinon.stub(createdLogger, 'log');
+      sinon.stub(fns, 'uuid').returns('a68cf1ad-0393-4e18-af87-efe8f01a7c9c');
+    });
+
+    afterEach(function() {
+      bucketer.bucket.restore();
+      errorHandler.handleError.restore();
+      createdLogger.log.restore();
+      fns.uuid.restore();
+    });
+
     it('should call logger with log level of "info" when odp disabled', () => {
-      //...
+      new Optimizely({
+        clientEngine: 'node-sdk',
+        datafile: testData.getTestProjectConfig(),
+        errorHandler: errorHandler,
+        eventDispatcher: eventDispatcher,
+        jsonSchemaValidator: jsonSchemaValidator,
+        logger: createdLogger,
+        isValidInstance: true,
+        eventBatchSize: 1,
+        eventProcessor,
+        notificationCenter,
+        odpManager: new OdpManager({
+          disable: true,
+          logger: createdLogger,
+        }),
+      });
+
+      sinon.assert.calledWith(createdLogger.log, LOG_LEVEL.INFO, LOG_MESSAGES.ODP_DISABLED);
     });
 
     it('should send an identify event when called with odp enabled', () => {
@@ -10152,9 +10157,9 @@ describe('lib/optimizely', function() {
 
     it('should flush the odp event queue as part of the close() function call', () => {
       //...
-    })
+    });
 
-    describe('odp service config overrides', () => {
+    describe('odp manager overrides', () => {
       it('should accept custom cache size and timeout overrides defined in odp service config', () => {
         //...
       });

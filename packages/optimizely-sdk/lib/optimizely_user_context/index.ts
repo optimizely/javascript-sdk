@@ -22,9 +22,8 @@ import {
   OptimizelyForcedDecision,
   UserAttributes,
 } from '../../lib/shared_types';
-import { CONTROL_ATTRIBUTES, ERROR_MESSAGES } from '../utils/enums';
+import { CONTROL_ATTRIBUTES } from '../utils/enums';
 import { OptimizelySegmentOption } from '../core/odp/optimizely_segment_option';
-import { getLogger } from '../modules/logging';
 
 interface OptimizelyUserContextConfig {
   optimizely: Optimizely;

@@ -388,7 +388,7 @@ describe('OdpEventManager', () => {
     const events = JSON.parse(data as string);
     const event = events[0];
     expect(event.type).toEqual('fullstack');
-    expect(event.action).toEqual('client_initialized');
+    expect(event.action).toEqual(ODP_EVENT_ACTION.INITIALIZED);
     expect(event.identifiers).toEqual({ vuid: vuid });
     expect(event.data.idempotence_id.length).toBe(36); // uuid length
     expect(event.data.data_source_type).toEqual('sdk');
