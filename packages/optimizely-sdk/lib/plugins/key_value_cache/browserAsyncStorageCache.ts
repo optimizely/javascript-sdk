@@ -1,6 +1,5 @@
-import { ERROR_MESSAGES } from './../../utils/enums/index';
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +17,7 @@ import { ERROR_MESSAGES } from './../../utils/enums/index';
 import { tryWithLocalStorage } from '../../utils/local_storage/tryLocalStorage';
 import PersistentKeyValueCache from './persistentKeyValueCache';
 import { getLogger } from '../../modules/logging';
+import { ERROR_MESSAGES } from './../../utils/enums/index';
 
 export default class BrowserAsyncStorageCache implements PersistentKeyValueCache {
   logger = getLogger();

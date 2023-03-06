@@ -1008,7 +1008,7 @@ describe('lib/optimizely', function() {
           var activate = optlyInstance.activate('testExperiment', 'user1');
           assert.strictEqual(activate, 'control');
 
-          sinon.assert.calledThrice(Optimizely.prototype.validateInputs);
+          sinon.assert.calledTwice(Optimizely.prototype.validateInputs);
 
           var logMessage0 = buildLogMessageFromArgs(createdLogger.log.args[0]);
           assert.strictEqual(
@@ -1920,7 +1920,7 @@ describe('lib/optimizely', function() {
           var getVariation = optlyInstance.getVariation('testExperiment', 'user1');
           assert.strictEqual(getVariation, 'control');
 
-          sinon.assert.calledTwice(Optimizely.prototype.validateInputs);
+          sinon.assert.calledOnce(Optimizely.prototype.validateInputs);
 
           sinon.assert.calledTwice(createdLogger.log);
 

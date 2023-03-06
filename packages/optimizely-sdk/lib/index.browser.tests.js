@@ -55,19 +55,6 @@ class MockLocalStorage {
   }
 }
 
-const createBrowserOdpManager = config => {
-  return new BrowserOdpManager({
-    disable: config?.disabled || false,
-    segmentsCache: new BrowserLRUCache({
-      maxSize: config?.segmentsCacheSize,
-      timeout: config?.segmentsCacheTimeout,
-    }),
-    segmentManager: config?.segmentManager,
-    eventManager: config?.eventManager,
-    logger: config?.logger,
-  });
-};
-
 if (!global.window) {
   try {
     global.window = {
@@ -607,7 +594,7 @@ describe('javascript-sdk (Browser)', function() {
         sandbox.restore();
       });
 
-      it('should send identify event when initialized with odp enabled', () => {
+      it('should send identify event by default when initialized', () => {
         new OptimizelyUserContext({
           optimizely: fakeOptimizely,
           userId: testFsUserId,
@@ -625,9 +612,11 @@ describe('javascript-sdk (Browser)', function() {
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: createBrowserOdpManager({
-            disabled: true,
+          odpManager: BrowserOdpManager.createBrowserOdpManager({
             logger,
+            odpOptions: {
+              disabled: true,
+            },
           }),
         });
 
@@ -641,9 +630,11 @@ describe('javascript-sdk (Browser)', function() {
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: createBrowserOdpManager({
-            segmentsCacheSize: 10,
+          odpManager: BrowserOdpManager.createBrowserOdpManager({
             logger,
+            odpOptions: {
+              segmentsCacheSize: 10,
+            },
           }),
         });
 
@@ -661,9 +652,11 @@ describe('javascript-sdk (Browser)', function() {
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: createBrowserOdpManager({
-            segmentsCacheTimeout: 10,
+          odpManager: BrowserOdpManager.createBrowserOdpManager({
             logger,
+            odpOptions: {
+              segmentsCacheTimeout: 10,
+            },
           }),
         });
 
@@ -681,10 +674,12 @@ describe('javascript-sdk (Browser)', function() {
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: createBrowserOdpManager({
-            segmentsCacheSize: 10,
-            segmentsCacheTimeout: 10,
+          odpManager: BrowserOdpManager.createBrowserOdpManager({
             logger,
+            odpOptions: {
+              segmentsCacheSize: 10,
+              segmentsCacheTimeout: 10,
+            },
           }),
         });
 
@@ -713,9 +708,11 @@ describe('javascript-sdk (Browser)', function() {
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: createBrowserOdpManager({
-            segmentManager: fakeSegmentManager,
+          odpManager: BrowserOdpManager.createBrowserOdpManager({
             logger,
+            odpOptions: {
+              segmentManager: fakeSegmentManager,
+            },
           }),
         });
 
@@ -741,9 +738,11 @@ describe('javascript-sdk (Browser)', function() {
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: createBrowserOdpManager({
-            eventManager: fakeEventManager,
+          odpManager: BrowserOdpManager.createBrowserOdpManager({
             logger,
+            odpOptions: {
+              eventManager: fakeEventManager,
+            },
           }),
         });
 
@@ -789,9 +788,11 @@ describe('javascript-sdk (Browser)', function() {
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: createBrowserOdpManager({
-            disabled: true,
+          odpManager: BrowserOdpManager.createBrowserOdpManager({
             logger,
+            odpOptions: {
+              disabled: true,
+            },
           }),
         });
 

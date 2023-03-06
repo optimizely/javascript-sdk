@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import LRUCache, { ISegmentsCacheConfig, LRUCacheConfig } from './lru_cache';
+import LRUCache, { ISegmentsCacheConfig } from './lru_cache';
+
+export interface BrowserLRUCacheConfig {
+  maxSize?: number;
+  timeout?: number;
+}
 
 export const BrowserLRUCacheConfig: ISegmentsCacheConfig = {
   DEFAULT_CAPACITY: 100,
@@ -22,7 +27,7 @@ export const BrowserLRUCacheConfig: ISegmentsCacheConfig = {
 };
 
 export class BrowserLRUCache<K, V> extends LRUCache<K, V> {
-  constructor(config?: LRUCacheConfig) {
+  constructor(config?: BrowserLRUCacheConfig) {
     super({
       maxSize: config?.maxSize || BrowserLRUCacheConfig.DEFAULT_CAPACITY,
       timeout: config?.timeout || BrowserLRUCacheConfig.DEFAULT_TIMEOUT_SECS * 1000,

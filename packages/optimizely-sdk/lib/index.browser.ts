@@ -125,7 +125,7 @@ const createInstance = function(config: Config): Client | null {
         : undefined,
       notificationCenter,
       isValidInstance: isValidInstance,
-      odpManager: config.odpManager || new BrowserOdpManager({ disable: false, logger }),
+      odpManager: BrowserOdpManager.createBrowserOdpManager({ logger, odpOptions: config.odpOptions }),
     };
 
     const optimizely = new BrowserOptimizely(optimizelyOptions);

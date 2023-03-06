@@ -485,7 +485,7 @@ export default class Optimizely {
         const variationKey = this.decisionService.getVariation(
           configObj,
           experiment,
-          this.createUserContext(userId, attributes) as OptimizelyUserContext
+          this.createInternalUserContext(userId, attributes) as OptimizelyUserContext
         ).result;
         const decisionNotificationType = projectConfig.isFeatureExperiment(configObj, experiment.id)
           ? DECISION_NOTIFICATION_TYPES.FEATURE_TEST
@@ -657,7 +657,7 @@ export default class Optimizely {
       }
 
       let sourceInfo = {};
-      const user = this.createUserContext(userId, attributes) as OptimizelyUserContext;
+      const user = this.createInternalUserContext(userId, attributes) as OptimizelyUserContext;
       const decisionObj = this.decisionService.getVariationForFeature(configObj, feature, user).result;
       const decisionSource = decisionObj.decisionSource;
       const experimentKey = decision.getExperimentKey(decisionObj);
@@ -833,7 +833,7 @@ export default class Optimizely {
       return null;
     }
 
-    const user = this.createUserContext(userId, attributes) as OptimizelyUserContext;
+    const user = this.createInternalUserContext(userId, attributes) as OptimizelyUserContext;
     const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, user).result;
     const featureEnabled = decision.getFeatureEnabledFromVariation(decisionObj);
     const variableValue = this.getFeatureVariableValueFromVariation(
@@ -1165,7 +1165,7 @@ export default class Optimizely {
         return null;
       }
 
-      const user = this.createUserContext(userId, attributes) as OptimizelyUserContext;
+      const user = this.createInternalUserContext(userId, attributes) as OptimizelyUserContext;
 
       const decisionObj = this.decisionService.getVariationForFeature(configObj, featureFlag, user).result;
       const featureEnabled = decision.getFeatureEnabledFromVariation(decisionObj);
@@ -1438,6 +1438,26 @@ export default class Optimizely {
       return null;
     }
 
+    return new OptimizelyUserContext({
+      optimizely: this,
+      userId,
+      attributes,
+      shouldIdentifyUser: true,
+    });
+  }
+
+  /**
+   * Creates an internal context of the user for which decision APIs will be called.
+   *
+   * A user context will be created successfully even when the SDK is not fully configured yet, so no
+   * this.isValidInstance() check is performed here.
+   *
+   * @param  {string}          userId      The user ID to be used for bucketing.
+   * @param  {UserAttributes}  attributes  Optional user attributes.
+   * @return {OptimizelyUserContext|null}  An OptimizelyUserContext associated with this OptimizelyClient or
+   *                                       null if provided inputs are invalid
+   */
+  private createInternalUserContext(userId: string, attributes?: UserAttributes): OptimizelyUserContext | null {
     return new OptimizelyUserContext({
       optimizely: this,
       userId,

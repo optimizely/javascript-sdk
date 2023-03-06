@@ -20,6 +20,9 @@ import { NotificationCenter as NotificationCenterImpl } from './core/notificatio
 import { NOTIFICATION_TYPES, ODP_EVENT_ACTION } from './utils/enums';
 
 import { OdpManager } from './core/odp/odp_manager';
+import { OdpSegmentManager } from './core/odp/odp_segment_manager';
+import { LRUCache } from './utils/lru_cache';
+import { OdpEventManager } from './core/odp/odp_event_manager';
 
 export interface BucketerParams {
   experimentId: string;
@@ -74,6 +77,15 @@ export interface DatafileOptions {
   updateInterval?: number;
   urlTemplate?: string;
   datafileAccessToken?: string;
+}
+
+export interface OdpOptions {
+  disabled?: boolean;
+  segmentsCache?: LRUCache<string, string[]>;
+  segmentsCacheSize?: number;
+  segmentsCacheTimeout?: number;
+  segmentManager?: OdpSegmentManager;
+  eventManager?: OdpEventManager;
 }
 
 export interface ListenerPayload {
@@ -285,6 +297,12 @@ export interface OptimizelyVariable {
   value: string;
 }
 
+export interface BrowserClient extends Client {
+  getVuid(): string;
+  // TODO: In the future, will add a function to allow overriding the VUID.
+  createUserContext(userId?: string, attributes?: UserAttributes): OptimizelyUserContext | null;
+}
+
 export interface Client {
   notificationCenter: NotificationCenter;
   createUserContext(userId: string, attributes?: UserAttributes): OptimizelyUserContext | null;
@@ -359,7 +377,7 @@ export interface Config extends ConfigLite {
   eventFlushInterval?: number; // Maximum time for an event to be enqueued
   eventMaxQueueSize?: number; // Maximum size for the event queue
   sdkKey?: string;
-  odpManager?: OdpManager;
+  odpOptions?: OdpOptions;
 }
 
 /**
