@@ -69,11 +69,11 @@ const umdBundle = {
     commonjs({
       namedExports: {
         '@optimizely/js-sdk-event-processor': ['LogTierV1EventProcessor', 'LocalStoragePendingEventsDispatcher'],
+        'json-schema': ['validate'],
       },
     }),
     typescript(typescriptPluginOptions),
   ],
-  external: ['json-schema'],
   input: 'lib/index.browser.ts',
   output: [
     {
@@ -81,9 +81,6 @@ const umdBundle = {
       format: 'umd',
       file: 'dist/optimizely.browser.umd.js',
       exports: 'named',
-      globals: {
-        'json-schema': 'json-schema',
-      },
     },
     {
       name: 'optimizelySdk',
@@ -92,9 +89,6 @@ const umdBundle = {
       exports: 'named',
       plugins: [terser()],
       sourcemap: true,
-      globals: {
-        'json-schema': 'json-schema',
-      },
     },
   ],
 };

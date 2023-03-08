@@ -133,7 +133,7 @@ describe('OdpSegmentApiManager', () => {
     const response = manager['toGraphQLJson'](USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
 
     expect(response).toBe(
-      `{"query" : "query {customer"(${USER_KEY} : "${USER_VALUE}") {audiences(subset: [\\"has_email\\",\\"has_email_opted_in\\",\\"push_on_sale\\"] {edges {node {name state}}}}}"}`
+      `{"query" : "query {customer(${USER_KEY} : \\"${USER_VALUE}\\") {audiences(subset: [\\"has_email\\",\\"has_email_opted_in\\",\\"push_on_sale\\"]) {edges {node {name state}}}}}"}`
     );
   });
 

@@ -490,6 +490,7 @@ export interface OptimizelyUserContext {
   getForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null;
   removeForcedDecision(context: OptimizelyDecisionContext): boolean;
   removeAllForcedDecisions(): boolean;
+  fetchQualifiedSegments(): Promise<boolean>;
   isQualifiedFor(segment: string): boolean;
 }
 
