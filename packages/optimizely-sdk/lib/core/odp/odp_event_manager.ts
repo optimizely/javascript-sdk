@@ -17,7 +17,7 @@
 import { LogHandler, LogLevel } from '../../modules/logging';
 
 import { uuid } from '../../utils/fns';
-import { ERROR_MESSAGES, ODP_USER_KEY, ODP_EVENT_TYPE } from '../../utils/enums';
+import { ERROR_MESSAGES, ODP_USER_KEY, ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION } from '../../utils/enums';
 
 import { OdpEvent } from './odp_event';
 import { OdpConfig } from './odp_config';
@@ -140,7 +140,17 @@ export class OdpEventManager implements IOdpEventManager {
     this.clientEngine = clientEngine;
     this.clientVersion = clientVersion;
 
-    this.queueSize = queueSize || (process ? DEFAULT_SERVER_QUEUE_SIZE : DEFAULT_BROWSER_QUEUE_SIZE);
+    let defaultQueueSize = DEFAULT_BROWSER_QUEUE_SIZE;
+
+    try {
+      if (process) {
+        defaultQueueSize = DEFAULT_SERVER_QUEUE_SIZE;
+      }
+    } catch (e) {
+      // TODO: Create Browser and Non-Browser specific variants of ODP Event Manager to avoid this try/catch
+    }
+
+    this.queueSize = queueSize || defaultQueueSize;
     this.batchSize = batchSize || DEFAULT_BATCH_SIZE;
     this.flushInterval = flushInterval || DEFAULT_FLUSH_INTERVAL_MSECS;
 
@@ -191,7 +201,7 @@ export class OdpEventManager implements IOdpEventManager {
     const identifiers = new Map<string, string>();
     identifiers.set(ODP_USER_KEY.VUID, vuid);
 
-    const event = new OdpEvent(ODP_EVENT_TYPE, 'client_initialized', identifiers);
+    const event = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.INITIALIZED, identifiers);
     this.sendEvent(event);
   }
 
@@ -215,7 +225,7 @@ export class OdpEventManager implements IOdpEventManager {
       identifiers.set(ODP_USER_KEY.FS_USER_ID, userId);
     }
 
-    const event = new OdpEvent(ODP_EVENT_TYPE, 'identified', identifiers);
+    const event = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.IDENTIFIED, identifiers);
     this.sendEvent(event);
   }
 
@@ -381,14 +391,20 @@ export class OdpEventManager implements IOdpEventManager {
       return true;
     }
 
-    if (process) {
-      // if Node/server-side context, empty queue items before ready state
-      this.logger.log(LogLevel.WARNING, 'ODPConfig not ready. Discarding events in queue.');
-      this.queue = new Array<OdpEvent>();
-    } else {
-      // in Browser/client-side context, give debug message but leave events in queue
+    try {
+      if (process) {
+        // if Node/server-side context, empty queue items before ready state
+        this.logger.log(LogLevel.WARNING, 'ODPConfig not ready. Discarding events in queue.');
+        this.queue = new Array<OdpEvent>();
+      } else {
+        // in Browser/client-side context, give debug message but leave events in queue
+        this.logger.log(LogLevel.DEBUG, 'ODPConfig not ready. Leaving events in queue.');
+      }
+    } catch (e) {
+      // TODO: Create Browser and Non-Browser specific variants of ODP Event Manager to avoid this try/catch
       this.logger.log(LogLevel.DEBUG, 'ODPConfig not ready. Leaving events in queue.');
     }
+
     return false;
   }
 

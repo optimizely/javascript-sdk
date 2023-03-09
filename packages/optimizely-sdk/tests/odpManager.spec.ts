@@ -96,7 +96,7 @@ describe('OdpManager', () => {
 
   it('should drop relevant calls when OdpManager is initialized with the disabled flag', async () => {
     const odpManager = new OdpManager({ disable: true, requestHandler, logger });
-    verify(mockLogger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_ENABLED)).once();
+    verify(mockLogger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED)).once();
 
     odpManager.updateSettings(new OdpConfig('valid', 'host', []));
     expect(odpManager.odpConfig).toBeUndefined;

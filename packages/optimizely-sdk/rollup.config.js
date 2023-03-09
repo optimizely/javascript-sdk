@@ -28,20 +28,13 @@ const typescriptPluginOptions = {
     './lib/**/*.tests.ts',
     './lib/**/*.umdtests.js',
     './lib/tests',
-    'node_modules'
+    'node_modules',
   ],
-  include: [
-    './lib/**/*.ts',
-    './lib/**/*.js',
-  ],
+  include: ['./lib/**/*.ts', './lib/**/*.js'],
 };
 
-const cjsBundleFor = (platform) => ({
-  plugins: [
-    resolve(),
-    commonjs(),
-    typescript(typescriptPluginOptions),
-  ],
+const cjsBundleFor = platform => ({
+  plugins: [resolve(), commonjs(), typescript(typescriptPluginOptions)],
   external: ['https', 'http', 'url'].concat(Object.keys({ ...dependencies, ...peerDependencies } || {})),
   input: `lib/index.${platform}.ts`,
   output: {
@@ -53,7 +46,7 @@ const cjsBundleFor = (platform) => ({
   },
 });
 
-const esmBundleFor = (platform) => ({
+const esmBundleFor = platform => ({
   ...cjsBundleFor(platform),
   output: [
     {
@@ -68,7 +61,7 @@ const esmBundleFor = (platform) => ({
       sourcemap: true,
     },
   ],
-})
+});
 
 const umdBundle = {
   plugins: [
@@ -76,6 +69,7 @@ const umdBundle = {
     commonjs({
       namedExports: {
         '@optimizely/js-sdk-event-processor': ['LogTierV1EventProcessor', 'LocalStoragePendingEventsDispatcher'],
+        'json-schema': ['validate'],
       },
     }),
     typescript(typescriptPluginOptions),
@@ -101,11 +95,7 @@ const umdBundle = {
 
 // A separate bundle for json schema validator.
 const jsonSchemaBundle = {
-  plugins: [
-    resolve(),
-    commonjs(),
-    typescript(typescriptPluginOptions),
-  ],
+  plugins: [resolve(), commonjs(), typescript(typescriptPluginOptions)],
   external: ['json-schema', 'uuid'],
   input: 'lib/utils/json_schema_validator/index.ts',
   output: {
@@ -133,15 +123,15 @@ const bundles = {
 //   --config-cjs will build all three cjs-* bundles
 //   --config-umd will build only the umd bundle
 //   --config-umd --config-json will build both umd and the json-schema bundles
-export default (args) => {
+export default args => {
   const patterns = Object.keys(args)
-    .filter((arg) => arg.startsWith('config-'))
-    .map((arg) => arg.replace(/config-/, ''));
+    .filter(arg => arg.startsWith('config-'))
+    .map(arg => arg.replace(/config-/, ''));
 
   // default to matching all bundles
   if (!patterns.length) patterns.push(/.*/);
 
   return Object.entries(bundles)
-    .filter(([name, config]) => patterns.some((pattern) => name.match(pattern)))
+    .filter(([name, config]) => patterns.some(pattern => name.match(pattern)))
     .map(([name, config]) => config);
 };

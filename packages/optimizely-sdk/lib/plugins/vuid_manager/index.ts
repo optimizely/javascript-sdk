@@ -125,7 +125,7 @@ export class VuidManager implements IVuidManager {
    * @param vuid VistorId to check
    * @returns *true* if the VisitorId is valid otherwise *false* for invalid
    */
-  static isVuid = (vuid: string): boolean => vuid.startsWith(VuidManager.vuid_prefix);
+  static isVuid = (vuid: string): boolean => vuid?.startsWith(VuidManager.vuid_prefix) || false;
 
   /**
    * Function used in unit testing to reset the VuidManager

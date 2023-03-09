@@ -16,7 +16,7 @@
 
 import { anything, capture, instance, mock, resetCalls, verify } from 'ts-mockito';
 
-import { LOG_MESSAGES } from './../lib/utils/enums/index';
+import { LOG_MESSAGES, ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION } from './../lib/utils/enums/index';
 import { ERROR_MESSAGES, ODP_USER_KEY } from './../lib/utils/enums/index';
 
 import { LogHandler, LogLevel } from '../lib/modules/logging';
@@ -30,6 +30,7 @@ import { OdpEventManager, STATE } from '../lib/core/odp/odp_event_manager';
 import { OdpSegmentManager } from './../lib/core/odp/odp_segment_manager';
 import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
 import { VuidManager } from '../lib/plugins/vuid_manager';
+import { OdpEvent } from '../lib/core/odp/odp_event';
 
 const keyA = 'key-a';
 const hostA = 'host-a';
@@ -46,40 +47,48 @@ const vuidB = 'vuid_b';
 const odpConfigB = new OdpConfig(keyB, hostB, segmentsB);
 
 describe('OdpManager', () => {
-  let mockLogger: LogHandler;
-  let mockRequestHandler: RequestHandler;
-
   let odpConfig: OdpConfig;
-  let logger: LogHandler;
-  let requestHandler: RequestHandler;
+
+  let mockLogger: LogHandler;
+  let fakeLogger: LogHandler;
+
+  let mockRequestHandler: RequestHandler;
+  let fakeRequestHandler: RequestHandler;
 
   let mockEventApiManager: OdpEventApiManager;
-  let mockEventManager: OdpEventManager;
-  let mockSegmentApiManager: OdpSegmentApiManager;
-  let mockSegmentManager: OdpSegmentManager;
+  let fakeEventApiManager: OdpEventApiManager;
 
-  let eventApiManager: OdpEventApiManager;
-  let eventManager: OdpEventManager;
-  let segmentApiManager: OdpSegmentApiManager;
-  let segmentManager: OdpSegmentManager;
+  let mockEventManager: OdpEventManager;
+  let fakeEventManager: OdpEventManager;
+
+  let mockSegmentApiManager: OdpSegmentApiManager;
+  let fakeSegmentApiManager: OdpSegmentApiManager;
+
+  let mockSegmentManager: OdpSegmentManager;
+  let fakeSegmentManager: OdpSegmentManager;
+
+  let mockBrowserOdpManager: BrowserOdpManager;
+  let fakeBrowserOdpManager: BrowserOdpManager;
 
   beforeAll(() => {
     mockLogger = mock<LogHandler>();
     mockRequestHandler = mock<RequestHandler>();
 
     odpConfig = new OdpConfig();
-    logger = instance(mockLogger);
-    requestHandler = instance(mockRequestHandler);
+    fakeLogger = instance(mockLogger);
+    fakeRequestHandler = instance(mockRequestHandler);
 
     mockEventApiManager = mock<OdpEventApiManager>();
     mockEventManager = mock<OdpEventManager>();
     mockSegmentApiManager = mock<OdpSegmentApiManager>();
     mockSegmentManager = mock<OdpSegmentManager>();
+    mockBrowserOdpManager = mock<BrowserOdpManager>();
 
-    eventApiManager = instance(mockEventApiManager);
-    eventManager = instance(mockEventManager);
-    segmentApiManager = instance(mockSegmentApiManager);
-    segmentManager = instance(mockSegmentManager);
+    fakeEventApiManager = instance(mockEventApiManager);
+    fakeEventManager = instance(mockEventManager);
+    fakeSegmentApiManager = instance(mockSegmentApiManager);
+    fakeSegmentManager = instance(mockSegmentManager);
+    fakeBrowserOdpManager = instance(mockBrowserOdpManager);
   });
 
   beforeEach(() => {
@@ -93,8 +102,8 @@ describe('OdpManager', () => {
   const browserOdpManagerInstance = () =>
     new BrowserOdpManager({
       disable: false,
-      eventManager,
-      segmentManager,
+      eventManager: fakeEventManager,
+      segmentManager: fakeSegmentManager,
     });
 
   it('should register VUID automatically on BrowserOdpManager initialization', async () => {
@@ -104,9 +113,9 @@ describe('OdpManager', () => {
   });
 
   it('should drop relevant calls when OdpManager is initialized with the disabled flag, except for VUID', async () => {
-    const browserOdpManager = new BrowserOdpManager({ disable: true, logger });
+    const browserOdpManager = new BrowserOdpManager({ disable: true, logger: fakeLogger });
 
-    verify(mockLogger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_ENABLED)).once();
+    verify(mockLogger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED)).once();
 
     browserOdpManager.updateSettings(new OdpConfig('valid', 'host', []));
     expect(browserOdpManager.odpConfig).toBeUndefined;
@@ -141,7 +150,7 @@ describe('OdpManager', () => {
   it('should use new settings in event manager when ODP Config is updated', async () => {
     const browserOdpManager = new BrowserOdpManager({
       disable: false,
-      eventManager,
+      eventManager: fakeEventManager,
     });
 
     expect(browserOdpManager.eventManager).toBeDefined();
@@ -178,7 +187,7 @@ describe('OdpManager', () => {
   it('should use new settings in segment manager when ODP Config is updated', () => {
     const browserOdpManager = new BrowserOdpManager({
       disable: false,
-      segmentManager: new OdpSegmentManager(odpConfig, new BrowserLRUCache<string, string[]>(), segmentApiManager),
+      segmentManager: new OdpSegmentManager(odpConfig, new BrowserLRUCache<string, string[]>(), fakeSegmentApiManager),
     });
 
     const didUpdateA = browserOdpManager.updateSettings(new OdpConfig(keyA, hostA, segmentsA));
@@ -215,5 +224,33 @@ describe('OdpManager', () => {
       disable: false,
     });
     expect(browserOdpManagerB.eventManager).not.toBe(null);
+  });
+
+  it("should call event manager's sendEvent if ODP Event is valid", () => {
+    const browserOdpManager = new BrowserOdpManager({
+      disable: false,
+      eventManager: fakeEventManager,
+    });
+
+    const odpConfig = new OdpConfig('key', 'host', []);
+
+    browserOdpManager.updateSettings(odpConfig);
+
+    // Test Valid OdpEvent - calls event manager with valid OdpEvent object
+    const validIdentifiers = new Map();
+    validIdentifiers.set('vuid', vuidA);
+
+    const validOdpEvent = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.INITIALIZED, validIdentifiers);
+
+    browserOdpManager.sendEvent(validOdpEvent);
+    verify(mockEventManager.sendEvent(anything())).once();
+
+    // Test Invalid OdpEvents - logs error and short circuits
+    // Does not include `vuid` in identifiers does not have a local this.vuid populated in BrowserOdpManager
+    const invalidOdpEvent = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.INITIALIZED, undefined);
+
+    expect(() => {
+      browserOdpManager.sendEvent(invalidOdpEvent);
+    }).toThrow(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_VUID_MISSING);
   });
 });

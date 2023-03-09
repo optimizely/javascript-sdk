@@ -130,14 +130,14 @@ export class OdpSegmentApiManager implements IOdpSegmentApiManager {
    */
   private toGraphQLJson = (userKey: string, userValue: string, segmentsToCheck: string[]): string =>
     [
-      '{"query" : "query {customer"',
-      `(${userKey} : "${userValue}") `,
+      '{"query" : "query {customer',
+      `(${userKey} : \\"${userValue}\\") `,
       '{audiences',
       '(subset: [',
       ...(segmentsToCheck?.map(
         (segment, index) => `\\"${segment}\\"${index < segmentsToCheck.length - 1 ? ',' : ''}`
       ) || ''),
-      '] {edges {node {name state}}}}}"}',
+      ']) {edges {node {name state}}}}}"}',
     ].join('');
 
   /**

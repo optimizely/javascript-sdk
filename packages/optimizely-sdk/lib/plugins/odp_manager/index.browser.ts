@@ -15,7 +15,7 @@
  */
 
 import { BROWSER_CLIENT_VERSION, ERROR_MESSAGES, JAVASCRIPT_CLIENT_ENGINE, ODP_USER_KEY } from '../../utils/enums';
-import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
+import { getLogger, LoggerFacade, LogHandler, LogLevel } from '../../modules/logging';
 import { BrowserRequestHandler } from './../../utils/http_request_handler/browser_request_handler';
 
 import BrowserAsyncStorageCache from '../key_value_cache/browserAsyncStorageCache';
@@ -28,6 +28,7 @@ import { OdpManager } from '../../core/odp/odp_manager';
 import { OdpEvent } from '../../core/odp/odp_event';
 import { OdpEventManager } from '../../core/odp/odp_event_manager';
 import { OdpSegmentManager } from '../../core/odp/odp_segment_manager';
+import { OdpOptions } from '../../shared_types';
 
 interface BrowserOdpManagerConfig {
   disable: boolean;
@@ -105,6 +106,7 @@ export class BrowserOdpManager extends OdpManager {
    * @override
    * - Sends an event to the ODP Server via the ODP Events API
    * - Intercepts identifiers and injects VUID before sending event
+   * - Identifiers must contain at least one key-value pair
    * @param {OdpEvent} odpEvent  > ODP Event to send to event manager
    */
   public sendEvent({ type, action, identifiers, data }: OdpEvent): void {
@@ -119,5 +121,30 @@ export class BrowserOdpManager extends OdpManager {
     }
 
     super.sendEvent({ type, action, identifiers: identifiersWithVuid, data });
+  }
+
+  public static createBrowserOdpManager({
+    logger = getLogger(),
+    odpOptions,
+  }: {
+    logger: LoggerFacade;
+    odpOptions?: OdpOptions;
+  }): BrowserOdpManager {
+    if (!odpOptions) {
+      return new BrowserOdpManager({ disable: false, logger });
+    }
+
+    return new BrowserOdpManager({
+      disable: odpOptions.disabled || false,
+      segmentsCache:
+        odpOptions?.segmentsCache ||
+        new BrowserLRUCache<string, string[]>({
+          maxSize: odpOptions.segmentsCacheSize,
+          timeout: odpOptions.segmentsCacheTimeout,
+        }),
+      segmentManager: odpOptions.segmentManager,
+      eventManager: odpOptions.eventManager,
+      logger,
+    });
   }
 }

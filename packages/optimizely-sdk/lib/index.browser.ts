@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, 2019-2022 Optimizely
+ * Copyright 2016-2017, 2019-2023 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,20 @@
  * limitations under the License.
  */
 import logHelper from './modules/logging/logger';
-import {
-  getLogger,
-  setErrorHandler,
-  getErrorHandler,
-  LogLevel,
-} from './modules/logging';
+import { getLogger, setErrorHandler, getErrorHandler, LogLevel } from './modules/logging';
 import { LocalStoragePendingEventsDispatcher } from './modules/event_processor';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
-import Optimizely from './optimizely';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
 import { default as eventProcessor } from './plugins/event_processor';
-import { OptimizelyDecideOption, Client, Config } from './shared_types';
+import { OptimizelyDecideOption, Client, Config, OptimizelyOptions } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/browser_http_polling_datafile_manager';
+import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
+import BrowserOptimizely from './optimizely/index.browser';
 
 const logger = getLogger();
 logHelper.setLogHandler(loggerPlugin.createLogger());
@@ -53,7 +49,7 @@ let hasRetriedEvents = false;
 const createInstance = function(config: Config): Client | null {
   try {
     // TODO warn about setting per instance errorHandler / logger / logLevel
-    let isValidInstance = false
+    let isValidInstance = false;
 
     if (config.errorHandler) {
       setErrorHandler(config.errorHandler);
@@ -71,7 +67,7 @@ const createInstance = function(config: Config): Client | null {
       configValidator.validate(config);
       isValidInstance = true;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (ex: any) {
+    } catch (ex) {
       logger.error(ex);
     }
 
@@ -114,22 +110,25 @@ const createInstance = function(config: Config): Client | null {
       dispatcher: eventDispatcher,
       flushInterval: eventFlushInterval,
       batchSize: eventBatchSize,
-      maxQueueSize:  config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
+      maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
       notificationCenter,
-    }
+    };
 
-    const optimizelyOptions = {
+    const optimizelyOptions: OptimizelyOptions = {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       ...config,
       eventProcessor: eventProcessor.createEventProcessor(eventProcessorConfig),
       logger,
       errorHandler,
-      datafileManager: config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
+      datafileManager: config.sdkKey
+        ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions)
+        : undefined,
       notificationCenter,
-      isValidInstance: isValidInstance
+      isValidInstance: isValidInstance,
+      odpManager: BrowserOdpManager.createBrowserOdpManager({ logger, odpOptions: config.odpOptions }),
     };
 
-    const optimizely = new Optimizely(optimizelyOptions);
+    const optimizely = new BrowserOptimizely(optimizelyOptions);
 
     try {
       if (typeof window.addEventListener === 'function') {
@@ -143,13 +142,13 @@ const createInstance = function(config: Config): Client | null {
         );
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
+    } catch (e) {
       logger.error(enums.LOG_MESSAGES.UNABLE_TO_ATTACH_UNLOAD, MODULE_NAME, e.message);
     }
 
     return optimizely;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (e: any) {
+  } catch (e) {
     logger.error(e);
     return null;
   }
@@ -163,8 +162,8 @@ const __internalResetRetryState = function(): void {
  * Entry point into the Optimizely Browser SDK
  */
 
-const setLogHandler = logHelper.setLogHandler
-const setLogLevel = logHelper.setLogLevel
+const setLogHandler = logHelper.setLogHandler;
+const setLogLevel = logHelper.setLogLevel;
 export {
   loggerPlugin as logging,
   defaultErrorHandler as errorHandler,
@@ -189,4 +188,4 @@ export default {
   OptimizelyDecideOption,
 };
 
-export * from './export_types'
+export * from './export_types';

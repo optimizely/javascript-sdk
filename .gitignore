@@ -10,3 +10,6 @@ dist/
 # user-specific ignores ought to be defined in user's `core.excludesfile`
 .idea/*
 .DS_STORE
+
+browserstack.err
+local.log

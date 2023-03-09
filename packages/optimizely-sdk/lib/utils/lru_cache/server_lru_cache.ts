@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import LRUCache, { ISegmentsCacheConfig } from './lru_cache';
+import LRUCache, { ISegmentsCacheConfig, LRUCacheConfig } from './lru_cache';
 
 export const ServerLRUCacheConfig: ISegmentsCacheConfig = {
   DEFAULT_CAPACITY: 10000,
@@ -22,10 +22,10 @@ export const ServerLRUCacheConfig: ISegmentsCacheConfig = {
 };
 
 export class ServerLRUCache<K, V> extends LRUCache<K, V> {
-  constructor() {
+  constructor(config?: LRUCacheConfig) {
     super({
-      maxSize: ServerLRUCacheConfig.DEFAULT_CAPACITY,
-      timeout: ServerLRUCacheConfig.DEFAULT_TIMEOUT_SECS * 1000,
+      maxSize: config?.maxSize || ServerLRUCacheConfig.DEFAULT_CAPACITY,
+      timeout: config?.timeout || ServerLRUCacheConfig.DEFAULT_TIMEOUT_SECS * 1000,
     });
   }
 }

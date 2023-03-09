@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
+import { getLogger } from '../../modules/logging';
 import CacheElement from './cache_element';
+
+export interface LRUCacheConfig {
+  maxSize: number;
+  timeout: number;
+}
 
 /**
  * Least-Recently Used Cache (LRU Cache) Implementation with Generic Key-Value Pairs
@@ -37,7 +43,12 @@ export class LRUCache<K, V> {
     return this._timeout;
   }
 
-  constructor({ maxSize, timeout }: { maxSize: number; timeout: number }) {
+  constructor({ maxSize, timeout }: LRUCacheConfig) {
+    const logger = getLogger();
+
+    logger.debug(`Provisioning cache with maxSize of ${maxSize}`);
+    logger.debug(`Provisioning cache with timeout of ${timeout}`);
+
     this._maxSize = maxSize;
     this._timeout = timeout;
   }

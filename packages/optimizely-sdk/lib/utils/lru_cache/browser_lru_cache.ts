@@ -16,16 +16,21 @@
 
 import LRUCache, { ISegmentsCacheConfig } from './lru_cache';
 
+export interface BrowserLRUCacheConfig {
+  maxSize?: number;
+  timeout?: number;
+}
+
 export const BrowserLRUCacheConfig: ISegmentsCacheConfig = {
   DEFAULT_CAPACITY: 100,
   DEFAULT_TIMEOUT_SECS: 600,
 };
 
 export class BrowserLRUCache<K, V> extends LRUCache<K, V> {
-  constructor() {
+  constructor(config?: BrowserLRUCacheConfig) {
     super({
-      maxSize: BrowserLRUCacheConfig.DEFAULT_CAPACITY,
-      timeout: BrowserLRUCacheConfig.DEFAULT_TIMEOUT_SECS * 1000,
+      maxSize: config?.maxSize || BrowserLRUCacheConfig.DEFAULT_CAPACITY,
+      timeout: config?.timeout || BrowserLRUCacheConfig.DEFAULT_TIMEOUT_SECS * 1000,
     });
   }
 }
