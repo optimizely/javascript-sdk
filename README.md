@@ -18,7 +18,9 @@ Optimizely Rollouts is [free feature flags](https://www.optimizely.com/free-feat
 
 > For **Browser** applications, refer to the [JavaScript SDK's developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-sdk) for detailed instructions on getting started with using the SDK within client-side applications.
 
-> For **React** and **React Native** applications, refer to the [Optimizely React SDK GitHub Repo here](https://github.com/optimizely/react-sdk).
+> For **React** applications, refer to the [React SDK developer documentation](https://github.com/optimizely/react-sdk).
+
+> For **React Native** applications, refer to the [JavaScript (React Native) variant of the developer documentation](https://github.com/optimizely/react-native-sdk).
 
 > For **Node.js** applications, refer to the [JavaScript (Node) variant of the developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-node-sdk).
 
