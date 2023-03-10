@@ -16,11 +16,11 @@ Optimizely Rollouts is [free feature flags](https://www.optimizely.com/free-feat
 
 ## Get Started
 
-> For **Browser** applications, Refer to the [JavaScript SDK's developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-sdk) for detailed instructions on getting started with using the SDK within client-side applications.
+> For **Browser** applications, refer to the [JavaScript SDK's developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-sdk) for detailed instructions on getting started with using the SDK within client-side applications.
 
-> For **React** and **React Native** applications, you may refer to the [Optimizely React SDK GitHub Repo here](https://github.com/optimizely/react-sdk).
+> For **React** and **React Native** applications, refer to the [Optimizely React SDK GitHub Repo here](https://github.com/optimizely/react-sdk).
 
-> For **Node.js** applications, you may refer to the [JavaScript (Node) variant of the developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-node-sdk).
+> For **Node.js** applications, refer to the [JavaScript (Node) variant of the developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-node-sdk).
 
 > For **Edge Functions**, we provide starter kits that utilize the Optimizely JavaScript SDK for the following platforms:
 > - [Akamai (Edgeworkers)](https://github.com/optimizely/akamai-edgeworker-starter-kit)
@@ -28,6 +28,8 @@ Optimizely Rollouts is [free feature flags](https://www.optimizely.com/free-feat
 > - [Cloudflare Worker](https://github.com/optimizely/cloudflare-worker-template)
 > - [Fastly Compute@Edge](https://github.com/optimizely/fastly-compute-starter-kit)
 > - [Vercel Functions](https://github.com/optimizely/vercel-examples/tree/main/edge-functions/feature-flag-optimizely)
+>
+> Note: These starter kits use the **Lite** variant of the JavaScript SDK which excludes the datafile manager and event processor packages.
 
 ### Prerequisites
 
@@ -43,7 +45,9 @@ Other environments likely are compatible, too, but note that we don't officially
 
 ### Requirements
 
-* Node 8.0+
+* JavaScript (Browser): Modern web browser that is ES5-compliant.
+
+* JavaScript (Node): Node 8.0+
 
 * The following peer dependencies may be required for use in production:
 
