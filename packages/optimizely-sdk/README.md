@@ -37,8 +37,7 @@ Ensure the SDK supports all of the platforms you're targeting. In particular, th
 - Node.js >= 8.0.0. By extension, environments like AWS Lambda, Google Cloud Functions, and Auth0 Webtasks are supported as well. Older Node.js releases likely work too (try `npm test` to validate for yourself), but are not formally supported.
 - [Modern Web Browsers, such as IE 10+, Firefox 21+, Safari 6+, and Chrome 23+](https://caniuse.com/#feat=es5)
 
-In addition
-Other environments likely are compatible, too, but note that we don't officially support them:
+In addition, other environments are likely compatible but are not formally supported including:
 - Progressive Web Apps, WebViews, and hybrid mobile apps like those built with React Native and Apache Cordova.
 - [Cloudflare Workers](https://developers.cloudflare.com/workers/) and [Fly](https://fly.io/), both of which are powered by recent releases of V8.
 - Anywhere else you can think of that might embed a JavaScript engine. The sky is the limit; experiment everywhere! 🚀
@@ -159,7 +158,7 @@ Regarding `EventDispatcher`s: In Node.js and browser environments, the default `
 
 ## Use the JavaScript SDK (Node)
 
-See the [Optimizely Feature Experimentation developer documentation for JavaScript (Node)](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-sdk) to learn how to set up your first JavaScript project and use the SDK for server-side applications.
+See the [Optimizely Feature Experimentation developer documentation for JavaScript (Node)](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-node-sdk) to learn how to set up your first JavaScript project and use the SDK for server-side applications.
 
 ### Initialization (Node)
 
@@ -237,7 +236,7 @@ To access the Feature Management configuration in the Optimizely dashboard, plea
 
 ## Credits
 
-`@optimizely/optimizely-sdk` is developed and maintained by [Optimizely](https://optimizely.com) and many [contributors](https://github.com/optimizely/javascript-sdk/graphs/contributors). If you're interested in learning more about what Optimizely Feature Experimentation can do for your company, please [get in touch](mailto:eng@optimizely.com)!
+`@optimizely/optimizely-sdk` is developed and maintained by [Optimizely](https://optimizely.com) and many [contributors](https://github.com/optimizely/javascript-sdk/graphs/contributors). If you're interested in learning more about what Optimizely Feature Experimentation can do for your company you can visit the [official Optimizely Feature Experimentation product page here](https://www.optimizely.com/products/experiment/feature-experimentation/) to learn more.
 
 First-party code (under `packages/optimizely-sdk/lib/`, `packages/datafile-manager/lib`, `packages/datafile-manager/src`, `packages/datafile-manager/__test__`, `packages/event-processor/src`, `packages/event-processor/__tests__`, `packages/logging/src`, `packages/logging/__tests__`, `packages/utils/src`, `packages/utils/__tests__`) is copyright Optimizely, Inc. and contributors, licensed under Apache 2.0.
 
