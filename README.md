@@ -6,7 +6,7 @@
 [![Coveralls](https://img.shields.io/coveralls/optimizely/javascript-sdk.svg)](https://coveralls.io/github/optimizely/javascript-sdk)
 [![license](https://img.shields.io/github/license/optimizely/javascript-sdk.svg)](https://choosealicense.com/licenses/apache-2.0/)
 
-This repository houses the JavaScript SDK for use with Optimizely Feature Experimentation, Optimizely Full Stack (legacy), and Optimizely Rollouts.
+This repository houses the JavaScript SDK for use with Optimizely Feature Experimentation and Optimizely Full Stack (legacy).
 
 Optimizely Feature Experimentation is an A/B testing and feature management tool for product development teams that enables you to experiment at every step. Using Optimizely Feature Experimentation allows for every feature on your roadmap to be an opportunity to discover hidden insights. Learn more at [Optimizely.com](https://www.optimizely.com/products/experiment/feature-experimentation/), or see the [developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/welcome).
 
