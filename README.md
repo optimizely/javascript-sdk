@@ -18,9 +18,9 @@ Optimizely Rollouts is [free feature flags](https://www.optimizely.com/free-feat
 
 > For **Browser** applications, refer to the [JavaScript SDK's developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-sdk) for detailed instructions on getting started with using the SDK within client-side applications.
 
-> For **React** applications, refer to the [React SDK developer documentation](https://github.com/optimizely/react-sdk).
+> For **React** applications, refer to the [React SDK developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-react-sdk).
 
-> For **React Native** applications, refer to the [JavaScript (React Native) variant of the developer documentation](https://github.com/optimizely/react-native-sdk).
+> For **React Native** applications, refer to the [JavaScript (React Native) variant of the developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-react-native-sdk).
 
 > For **Node.js** applications, refer to the [JavaScript (Node) variant of the developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-node-sdk).
 
@@ -29,7 +29,7 @@ Optimizely Rollouts is [free feature flags](https://www.optimizely.com/free-feat
 > - [AWS Lambda@Edge](https://github.com/optimizely/aws-lambda-at-edge-starter-kit)
 > - [Cloudflare Worker](https://github.com/optimizely/cloudflare-worker-template)
 > - [Fastly Compute@Edge](https://github.com/optimizely/fastly-compute-starter-kit)
-> - [Vercel Functions](https://github.com/optimizely/vercel-examples/tree/main/edge-functions/feature-flag-optimizely)
+> - [Vercel Edge Middleware](https://github.com/optimizely/vercel-examples/tree/main/edge-middleware/feature-flag-optimizely)
 >
 > Note: These starter kits use the **Lite** variant of the JavaScript SDK which excludes the datafile manager and event processor packages.
 
