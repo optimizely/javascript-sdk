@@ -1663,7 +1663,7 @@ export default class Optimizely {
    * Sends an action as an ODP Event with optional custom parameters including type, identifiers, and data
    * Note: Since this depends on this.odpManager, it must await Optimizely client's onReady() promise resolution.
    * @param {Object} odpEvent
-   * @param {ODP_EVENT_ACTION}    odpEvent.action         Subcategory of the event type (i.e. "client_initialized", or "identified")
+   * @param {ODP_EVENT_ACTION}    odpEvent.action         Subcategory of the event type (i.e. "client_initialized", or "")
    * @param {string}              odpEvent.type           (Optional) Type of event (Defaults to "fullstack")
    * @param {Map<string, string>} odpEvent.identifiers    (Optional) Key-value map of user identifiers
    * @param {Map<string, string>} odpEvent.data           (Optional) Event data in a key-value map.
