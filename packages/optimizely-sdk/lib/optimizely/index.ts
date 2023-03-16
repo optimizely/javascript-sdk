@@ -1697,9 +1697,9 @@ export default class Optimizely {
    * Identifies user with ODP server in a fire-and-forget manner.
    * @param {string} userId
    */
-  public identifyUser(userId: string): void {
+  public async identifyUser(userId: string): Promise<void> {
     if (this.odpManager && this.odpManager.enabled) {
-      this.odpManager.identifyUser(userId);
+      return this.odpManager.identifyUser(userId);
     }
   }
 

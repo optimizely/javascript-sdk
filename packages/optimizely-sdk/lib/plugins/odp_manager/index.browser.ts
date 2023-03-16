@@ -1,3 +1,4 @@
+import { LOG_LEVEL } from './../../utils/enums/index';
 /**
  * Copyright 2023, Optimizely
  *
@@ -96,13 +97,24 @@ export class BrowserOdpManager extends OdpManager {
    * - Additionally, also passes VUID to help identify client-side users
    * @param fsUserId Unique identifier of a target user.
    */
-  public identifyUser(fsUserId?: string, vuid?: string): void {
+  public async identifyUser(fsUserId?: string, vuid?: string): Promise<void> {
     if (fsUserId && VuidManager.isVuid(fsUserId)) {
-      super.identifyUser(undefined, fsUserId);
-      return;
+      return super.identifyUser(undefined, fsUserId);
     }
 
-    super.identifyUser(fsUserId, vuid);
+    if (fsUserId && vuid && VuidManager.isVuid(vuid)) {
+      return super.identifyUser(fsUserId, vuid);
+    }
+
+    try {
+      const vuidManager = await VuidManager.instance(BrowserOdpManager.cache);
+      let cachedVuid = vuidManager.vuid;
+
+      return super.identifyUser(fsUserId, vuid || cachedVuid);
+    } catch (e) {
+      this.logger.log(LOG_LEVEL.DEBUG, 'BrowserOdpManager unable to get vuid from VuidManager.');
+      return;
+    }
   }
 
   /**

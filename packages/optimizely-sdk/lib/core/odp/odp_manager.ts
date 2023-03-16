@@ -198,7 +198,7 @@ export class OdpManager {
    * @param {string}  vuid      (Optional) Secondary unique identifier of a target user, primarily used by client SDKs.
    * @returns
    */
-  public identifyUser(userId?: string, vuid?: string): void {
+  public async identifyUser(userId?: string, vuid?: string): Promise<void> {
     if (!this.enabled) {
       this.logger.log(LogLevel.DEBUG, LOG_MESSAGES.ODP_IDENTIFY_FAILED_ODP_DISABLED);
       return;
