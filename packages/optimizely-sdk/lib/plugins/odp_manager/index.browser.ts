@@ -29,6 +29,9 @@ import { OdpEvent } from '../../core/odp/odp_event';
 import { OdpEventManager } from '../../core/odp/odp_event_manager';
 import { OdpSegmentManager } from '../../core/odp/odp_segment_manager';
 import { OdpOptions } from '../../shared_types';
+import { OdpConfig } from '../../core/odp/odp_config';
+import { OdpSegmentApiManager } from '../../core/odp/odp_segment_api_manager';
+import { OdpEventApiManager } from '../../core/odp/odp_event_api_manager';
 
 interface BrowserOdpManagerConfig {
   disable: boolean;
@@ -134,6 +137,41 @@ export class BrowserOdpManager extends OdpManager {
       return new BrowserOdpManager({ disable: false, logger });
     }
 
+    let browserSegmentManager;
+    if (odpOptions.segmentsRequestHandler || odpOptions.segmentsApiTimeout) {
+      browserSegmentManager = new OdpSegmentManager(
+        new OdpConfig(),
+        new BrowserLRUCache<string, string[]>(),
+        new OdpSegmentApiManager(
+          odpOptions.segmentsRequestHandler || new BrowserRequestHandler(logger, odpOptions.segmentsApiTimeout),
+          logger
+        )
+      );
+    }
+
+    let browserEventManager;
+    if (
+      odpOptions.eventRequestHandler ||
+      odpOptions.eventApiTimeout ||
+      odpOptions.eventFlushInterval ||
+      odpOptions.eventBatchSize ||
+      odpOptions.eventQueueSize
+    ) {
+      browserEventManager = new OdpEventManager({
+        odpConfig: new OdpConfig(),
+        apiManager: new OdpEventApiManager(
+          odpOptions.eventRequestHandler || new BrowserRequestHandler(logger, odpOptions.eventApiTimeout),
+          logger
+        ),
+        logger: logger,
+        clientEngine: 'javascript-sdk',
+        clientVersion: BROWSER_CLIENT_VERSION,
+        flushInterval: odpOptions.eventFlushInterval,
+        batchSize: odpOptions.eventBatchSize,
+        queueSize: odpOptions.eventQueueSize,
+      });
+    }
+
     return new BrowserOdpManager({
       disable: odpOptions.disabled || false,
       segmentsCache:
@@ -142,8 +180,8 @@ export class BrowserOdpManager extends OdpManager {
           maxSize: odpOptions.segmentsCacheSize,
           timeout: odpOptions.segmentsCacheTimeout,
         }),
-      segmentManager: odpOptions.segmentManager,
-      eventManager: odpOptions.eventManager,
+      segmentManager: odpOptions.segmentManager || browserSegmentManager,
+      eventManager: odpOptions.eventManager || browserEventManager,
       logger,
     });
   }

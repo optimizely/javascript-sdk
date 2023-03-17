@@ -23,6 +23,7 @@ import { OdpManager } from './core/odp/odp_manager';
 import { OdpSegmentManager } from './core/odp/odp_segment_manager';
 import { LRUCache } from './utils/lru_cache';
 import { OdpEventManager } from './core/odp/odp_event_manager';
+import { RequestHandler } from '../lib/utils/http_request_handler/http';
 
 export interface BucketerParams {
   experimentId: string;
@@ -84,7 +85,14 @@ export interface OdpOptions {
   segmentsCache?: LRUCache<string, string[]>;
   segmentsCacheSize?: number;
   segmentsCacheTimeout?: number;
+  segmentsApiTimeout?: number;
+  segmentsRequestHandler?: RequestHandler;
   segmentManager?: OdpSegmentManager;
+  eventApiTimeout?: number;
+  eventFlushInterval?: number;
+  eventBatchSize?: number;
+  eventQueueSize?: number;
+  eventRequestHandler?: RequestHandler;
   eventManager?: OdpEventManager;
 }
 

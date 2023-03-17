@@ -253,4 +253,13 @@ describe('OdpManager', () => {
       browserOdpManager.sendEvent(invalidOdpEvent);
     }).toThrow(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_VUID_MISSING);
   });
+
+  describe('createBrowserOdpManager()', () => {
+    it('should instantiate BrowserOdpManager correctly when calling createBrowserOdpManager with custom OdpOptions', () => {
+      // const browserOdpManager = createBrowserOdpManager({
+      // TODO Test OdpOptions
+      // })
+      // TODO Assert for OdpOptions
+    });
+  });
 });
