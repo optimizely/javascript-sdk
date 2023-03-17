@@ -1,4 +1,3 @@
-import { LOG_LEVEL } from './../../utils/enums/index';
 /**
  * Copyright 2023, Optimizely
  *
@@ -17,6 +16,7 @@ import { LOG_LEVEL } from './../../utils/enums/index';
 
 import { BROWSER_CLIENT_VERSION, ERROR_MESSAGES, JAVASCRIPT_CLIENT_ENGINE, ODP_USER_KEY } from '../../utils/enums';
 import { getLogger, LoggerFacade, LogHandler, LogLevel } from '../../modules/logging';
+
 import { BrowserRequestHandler } from './../../utils/http_request_handler/browser_request_handler';
 
 import BrowserAsyncStorageCache from '../key_value_cache/browserAsyncStorageCache';
@@ -108,11 +108,10 @@ export class BrowserOdpManager extends OdpManager {
 
     try {
       const vuidManager = await VuidManager.instance(BrowserOdpManager.cache);
-      let cachedVuid = vuidManager.vuid;
 
-      return super.identifyUser(fsUserId, vuid || cachedVuid);
+      return super.identifyUser(fsUserId, vuid || vuidManager.vuid);
     } catch (e) {
-      this.logger.log(LOG_LEVEL.DEBUG, 'BrowserOdpManager unable to get vuid from VuidManager.');
+      this.logger.log(LogLevel.WARNING, ERROR_MESSAGES.ODP_IDENTIFY_USER_FAILED);
       return;
     }
   }
