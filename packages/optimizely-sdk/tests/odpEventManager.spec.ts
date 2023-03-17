@@ -55,7 +55,7 @@ const EVENTS: OdpEvent[] = [
 ];
 // naming for object destructuring
 const clientEngine = 'javascript-sdk';
-const clientVersion = '4.9.2';
+const clientVersion = '4.9.3';
 const PROCESSED_EVENTS: OdpEvent[] = [
   new OdpEvent(
     't1',
