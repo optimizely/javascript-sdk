@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - Safari versions earlier than `13.0`.
 - Dropped support for Node JS versions earlier than `14`.
 
+## [4.9.3] - March 17, 2022
+
+### Changed
+- Updated README.md and package.json files to reflect that this SDK supports both Optimizely Feature Experimentation and Optimizely Full Stack ([#803](https://github.com/optimizely/javascript-sdk/pull/803)).
+
 ## [4.9.2] - June 27, 2022
 
 ### Changed
