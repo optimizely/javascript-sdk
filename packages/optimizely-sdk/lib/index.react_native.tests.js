@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020, 2022 Optimizely
+ * Copyright 2019-2020, 2022-2023 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,8 +48,8 @@ describe('javascript-sdk/react-native', function () {
     });
 
     describe('createInstance', function () {
-      var fakeErrorHandler = { handleError: function () { } };
-      var fakeEventDispatcher = { dispatchEvent: function () { } };
+      var fakeErrorHandler = { handleError: function () {} };
+      var fakeEventDispatcher = { dispatchEvent: function () {} };
       var silentLogger;
 
       beforeEach(function () {
@@ -74,7 +74,7 @@ describe('javascript-sdk/react-native', function () {
             logger: silentLogger,
           });
           // Invalid datafile causes onReady Promise rejection - catch this error
-          optlyInstance.onReady().catch(function () { });
+          optlyInstance.onReady().catch(function () {});
         });
       });
 
@@ -86,10 +86,10 @@ describe('javascript-sdk/react-native', function () {
           logger: silentLogger,
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
-        optlyInstance.onReady().catch(function () { });
+        optlyInstance.onReady().catch(function () {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.9.2');
+        assert.equal(optlyInstance.clientVersion, '4.9.3');
       });
 
       it('should set the React Native JS client engine and javascript SDK version', function () {
@@ -100,7 +100,7 @@ describe('javascript-sdk/react-native', function () {
           logger: silentLogger,
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
-        optlyInstance.onReady().catch(function () { });
+        optlyInstance.onReady().catch(function () {});
         assert.equal('react-native-js-sdk', optlyInstance.clientEngine);
         assert.equal(packageJSON.version, optlyInstance.clientVersion);
       });
@@ -114,7 +114,7 @@ describe('javascript-sdk/react-native', function () {
           logger: silentLogger,
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
-        optlyInstance.onReady().catch(function () { });
+        optlyInstance.onReady().catch(function () {});
         assert.equal('react-native-sdk', optlyInstance.clientEngine);
       });
 
@@ -137,7 +137,7 @@ describe('javascript-sdk/react-native', function () {
             logger: silentLogger,
           });
           optlyInstance.activate('testExperiment', 'testUser');
-          clock.tick(30001)
+          clock.tick(30001);
           sinon.assert.calledOnce(optimizelyFactory.eventDispatcher.dispatchEvent);
         });
       });
@@ -171,7 +171,7 @@ describe('javascript-sdk/react-native', function () {
         });
 
         it('should call logging.setLogHandler with the supplied logger', function () {
-          var fakeLogger = { log: function () { } };
+          var fakeLogger = { log: function () {} };
           optimizelyFactory.createInstance({
             datafile: testData.getTestProjectConfig(),
             logger: fakeLogger,
