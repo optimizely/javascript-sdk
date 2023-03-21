@@ -97,16 +97,18 @@ export class BrowserOdpManager extends OdpManager {
    * - Additionally, also passes VUID to help identify client-side users
    * @param fsUserId Unique identifier of a target user.
    */
-  public async identifyUser(fsUserId?: string, vuid?: string): Promise<void> {
+  public identifyUser(fsUserId?: string, vuid?: string): void {
     if (fsUserId && VuidManager.isVuid(fsUserId)) {
-      return super.identifyUser(undefined, fsUserId);
+      super.identifyUser(undefined, fsUserId);
+      return;
     }
 
     if (fsUserId && vuid && VuidManager.isVuid(vuid)) {
-      return super.identifyUser(fsUserId, vuid);
+      super.identifyUser(fsUserId, vuid);
+      return;
     }
 
-    return super.identifyUser(fsUserId, vuid || this.vuid);
+    super.identifyUser(fsUserId, vuid || this.vuid);
   }
 
   /**
