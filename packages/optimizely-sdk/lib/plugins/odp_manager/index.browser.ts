@@ -16,6 +16,7 @@
 
 import { BROWSER_CLIENT_VERSION, ERROR_MESSAGES, JAVASCRIPT_CLIENT_ENGINE, ODP_USER_KEY } from '../../utils/enums';
 import { getLogger, LoggerFacade, LogHandler, LogLevel } from '../../modules/logging';
+
 import { BrowserRequestHandler } from './../../utils/http_request_handler/browser_request_handler';
 
 import BrowserAsyncStorageCache from '../key_value_cache/browserAsyncStorageCache';
@@ -102,7 +103,12 @@ export class BrowserOdpManager extends OdpManager {
       return;
     }
 
-    super.identifyUser(fsUserId, vuid);
+    if (fsUserId && vuid && VuidManager.isVuid(vuid)) {
+      super.identifyUser(fsUserId, vuid);
+      return;
+    }
+
+    super.identifyUser(fsUserId, vuid || this.vuid);
   }
 
   /**
