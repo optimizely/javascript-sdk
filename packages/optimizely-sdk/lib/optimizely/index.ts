@@ -1699,7 +1699,7 @@ export default class Optimizely {
    */
   public identifyUser(userId: string): void {
     if (this.odpManager && this.odpManager.enabled) {
-      return this.odpManager.identifyUser(userId);
+      this.odpManager.identifyUser(userId);
     }
   }
 
