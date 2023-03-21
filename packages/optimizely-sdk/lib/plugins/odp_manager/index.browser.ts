@@ -106,14 +106,7 @@ export class BrowserOdpManager extends OdpManager {
       return super.identifyUser(fsUserId, vuid);
     }
 
-    try {
-      const vuidManager = await VuidManager.instance(BrowserOdpManager.cache);
-
-      return super.identifyUser(fsUserId, vuid || vuidManager.vuid);
-    } catch (e) {
-      this.logger.log(LogLevel.WARNING, ERROR_MESSAGES.ODP_IDENTIFY_USER_FAILED);
-      return;
-    }
+    return super.identifyUser(fsUserId, vuid || this.vuid);
   }
 
   /**

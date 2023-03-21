@@ -65,7 +65,6 @@ export const ERROR_MESSAGES = {
   ODP_EVENT_FAILED_ODP_MANAGER_MISSING: '%s: ODP Event failed to send. (ODP Manager not initialized).',
   ODP_FETCH_QUALIFIED_SEGMENTS_FAILED_ODP_MANAGER_MISSING:
     '%s: ODP failed to Fetch Qualified Segments. (ODP Manager not initialized).',
-  ODP_IDENTIFY_USER_FAILED: '%s: ODP failed to Identify User.',
   ODP_IDENTIFY_USER_FAILED_ODP_MANAGER_MISSING: '%s: ODP failed to Identify User. (ODP Manager not initialized).',
   ODP_IDENTIFY_USER_FAILED_USER_CONTEXT_INITIALIZATION:
     '%s: ODP failed to Identify User. (Failed during User Context Initialization).',
