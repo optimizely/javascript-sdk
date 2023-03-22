@@ -49,7 +49,7 @@ export class BrowserOdpManager extends OdpManager {
 
     if (odpOptions?.segmentsRequestHandler) {
       customSegmentRequestHandler = odpOptions.segmentsRequestHandler;
-    } else if (odpOptions?.eventApiTimeout) {
+    } else if (odpOptions?.segmentsApiTimeout) {
       customSegmentRequestHandler = new BrowserRequestHandler(browserLogger, odpOptions.segmentsApiTimeout);
     }
 
@@ -69,7 +69,7 @@ export class BrowserOdpManager extends OdpManager {
           timeout: odpOptions?.segmentsCacheTimeout,
         }),
       segmentRequestHandler: customSegmentRequestHandler || new BrowserRequestHandler(browserLogger),
-      eventRequestHandler: new BrowserRequestHandler(browserLogger),
+      eventRequestHandler: customEventRequestHandler || new BrowserRequestHandler(browserLogger),
       logger: browserLogger,
       clientEngine: browserClientEngine,
       clientVersion: browserClientVersion,

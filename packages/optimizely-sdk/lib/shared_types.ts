@@ -88,10 +88,10 @@ export interface OdpOptions {
   segmentsApiTimeout?: number;
   segmentsRequestHandler?: RequestHandler;
   segmentManager?: OdpSegmentManager;
-  eventApiTimeout?: number;
   eventFlushInterval?: number;
   eventBatchSize?: number;
   eventQueueSize?: number;
+  eventApiTimeout?: number;
   eventRequestHandler?: RequestHandler;
   eventManager?: OdpEventManager;
 }

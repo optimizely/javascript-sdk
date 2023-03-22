@@ -143,6 +143,7 @@ export class OdpEventManager implements IOdpEventManager {
     let defaultQueueSize = DEFAULT_BROWSER_QUEUE_SIZE;
 
     try {
+      // TODO: Consider refactoring to use typeof process and combine w/above line
       if (process) {
         defaultQueueSize = DEFAULT_SERVER_QUEUE_SIZE;
       }
