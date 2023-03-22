@@ -102,8 +102,10 @@ describe('OdpManager', () => {
   const browserOdpManagerInstance = () =>
     new BrowserOdpManager({
       disable: false,
-      eventManager: fakeEventManager,
-      segmentManager: fakeSegmentManager,
+      odpOptions: {
+        eventManager: fakeEventManager,
+        segmentManager: fakeSegmentManager,
+      },
     });
 
   it('should register VUID automatically on BrowserOdpManager initialization', async () => {
@@ -150,7 +152,9 @@ describe('OdpManager', () => {
   it('should use new settings in event manager when ODP Config is updated', async () => {
     const browserOdpManager = new BrowserOdpManager({
       disable: false,
-      eventManager: fakeEventManager,
+      odpOptions: {
+        eventManager: fakeEventManager,
+      },
     });
 
     expect(browserOdpManager.eventManager).toBeDefined();
@@ -187,13 +191,24 @@ describe('OdpManager', () => {
   it('should use new settings in segment manager when ODP Config is updated', () => {
     const browserOdpManager = new BrowserOdpManager({
       disable: false,
-      segmentManager: new OdpSegmentManager(odpConfig, new BrowserLRUCache<string, string[]>(), fakeSegmentApiManager),
+      odpOptions: {
+        segmentManager: new OdpSegmentManager(
+          odpConfig,
+          new BrowserLRUCache<string, string[]>(),
+          fakeSegmentApiManager
+        ),
+      },
     });
 
     const didUpdateA = browserOdpManager.updateSettings(new OdpConfig(keyA, hostA, segmentsA));
     expect(didUpdateA).toBe(true);
 
     browserOdpManager.fetchQualifiedSegments(vuidA);
+
+    verify(
+      mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_FETCH_QUALIFIED_SEGMENTS_SEGMENTS_MANAGER_MISSING)
+    ).never();
+
     const fetchQualifiedSegmentsArgsA = capture(mockSegmentApiManager.fetchSegments).last();
     expect(fetchQualifiedSegmentsArgsA).toStrictEqual([keyA, hostA, ODP_USER_KEY.VUID, vuidA, segmentsA]);
 
@@ -229,7 +244,9 @@ describe('OdpManager', () => {
   it("should call event manager's sendEvent if ODP Event is valid", () => {
     const browserOdpManager = new BrowserOdpManager({
       disable: false,
-      eventManager: fakeEventManager,
+      odpOptions: {
+        eventManager: fakeEventManager,
+      },
     });
 
     const odpConfig = new OdpConfig('key', 'host', []);
@@ -252,14 +269,5 @@ describe('OdpManager', () => {
     expect(() => {
       browserOdpManager.sendEvent(invalidOdpEvent);
     }).toThrow(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_VUID_MISSING);
-  });
-
-  describe('createBrowserOdpManager()', () => {
-    it('should instantiate BrowserOdpManager correctly when calling createBrowserOdpManager with custom OdpOptions', () => {
-      // const browserOdpManager = createBrowserOdpManager({
-      // TODO Test OdpOptions
-      // })
-      // TODO Assert for OdpOptions
-    });
   });
 });

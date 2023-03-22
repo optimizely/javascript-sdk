@@ -27,19 +27,12 @@ import { VuidManager } from './../vuid_manager/index';
 
 import { OdpManager } from '../../core/odp/odp_manager';
 import { OdpEvent } from '../../core/odp/odp_event';
-import { OdpEventManager } from '../../core/odp/odp_event_manager';
-import { OdpSegmentManager } from '../../core/odp/odp_segment_manager';
 import { OdpOptions } from '../../shared_types';
-import { OdpConfig } from '../../core/odp/odp_config';
-import { OdpSegmentApiManager } from '../../core/odp/odp_segment_api_manager';
-import { OdpEventApiManager } from '../../core/odp/odp_event_api_manager';
 
 interface BrowserOdpManagerConfig {
   disable: boolean;
   logger?: LogHandler;
-  segmentsCache?: LRUCache<string, string[]>;
-  eventManager?: OdpEventManager;
-  segmentManager?: OdpSegmentManager;
+  odpOptions?: OdpOptions;
 }
 
 // Client-side Browser Plugin for ODP Manager
@@ -47,22 +40,20 @@ export class BrowserOdpManager extends OdpManager {
   static cache = new BrowserAsyncStorageCache();
   vuid?: string;
 
-  constructor({ disable, logger, segmentsCache, eventManager, segmentManager }: BrowserOdpManagerConfig) {
-    const browserLogger = logger || getLogger();
+  constructor({ disable, logger, odpOptions }: BrowserOdpManagerConfig) {
+    const browserLogger = logger || getLogger('BrowserOdpManager');
 
-    const browserRequestHandler = new BrowserRequestHandler(browserLogger);
+    const browserDefaultRequestHandler = new BrowserRequestHandler(browserLogger);
     const browserClientEngine = JAVASCRIPT_CLIENT_ENGINE;
     const browserClientVersion = BROWSER_CLIENT_VERSION;
 
     super({
       disable,
-      requestHandler: browserRequestHandler,
+      defaultRequestHandler: browserDefaultRequestHandler,
       logger: browserLogger,
       clientEngine: browserClientEngine,
       clientVersion: browserClientVersion,
-      segmentsCache: segmentsCache || new BrowserLRUCache<string, string[]>(),
-      eventManager,
-      segmentManager,
+      odpOptions,
     });
 
     this.logger = browserLogger;
@@ -130,65 +121,5 @@ export class BrowserOdpManager extends OdpManager {
     }
 
     super.sendEvent({ type, action, identifiers: identifiersWithVuid, data });
-  }
-
-  public static createBrowserOdpManager({
-    logger = getLogger(),
-    odpOptions,
-  }: {
-    logger: LoggerFacade;
-    odpOptions?: OdpOptions;
-  }): BrowserOdpManager {
-    if (!odpOptions) {
-      return new BrowserOdpManager({ disable: false, logger });
-    }
-
-    let browserSegmentManager;
-    if (odpOptions.segmentsRequestHandler || odpOptions.segmentsApiTimeout) {
-      browserSegmentManager = new OdpSegmentManager(
-        new OdpConfig(),
-        new BrowserLRUCache<string, string[]>(),
-        new OdpSegmentApiManager(
-          odpOptions.segmentsRequestHandler || new BrowserRequestHandler(logger, odpOptions.segmentsApiTimeout),
-          logger
-        )
-      );
-    }
-
-    let browserEventManager;
-    if (
-      odpOptions.eventRequestHandler ||
-      odpOptions.eventApiTimeout ||
-      odpOptions.eventFlushInterval ||
-      odpOptions.eventBatchSize ||
-      odpOptions.eventQueueSize
-    ) {
-      browserEventManager = new OdpEventManager({
-        odpConfig: new OdpConfig(),
-        apiManager: new OdpEventApiManager(
-          odpOptions.eventRequestHandler || new BrowserRequestHandler(logger, odpOptions.eventApiTimeout),
-          logger
-        ),
-        logger: logger,
-        clientEngine: 'javascript-sdk',
-        clientVersion: BROWSER_CLIENT_VERSION,
-        flushInterval: odpOptions.eventFlushInterval,
-        batchSize: odpOptions.eventBatchSize,
-        queueSize: odpOptions.eventQueueSize,
-      });
-    }
-
-    return new BrowserOdpManager({
-      disable: odpOptions.disabled || false,
-      segmentsCache:
-        odpOptions?.segmentsCache ||
-        new BrowserLRUCache<string, string[]>({
-          maxSize: odpOptions.segmentsCacheSize,
-          timeout: odpOptions.segmentsCacheTimeout,
-        }),
-      segmentManager: odpOptions.segmentManager || browserSegmentManager,
-      eventManager: odpOptions.eventManager || browserEventManager,
-      logger,
-    });
   }
 }

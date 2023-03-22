@@ -47,7 +47,7 @@ describe('OdpManager', () => {
 
   let odpConfig: OdpConfig;
   let logger: LogHandler;
-  let requestHandler: RequestHandler;
+  let defaultRequestHandler: RequestHandler;
 
   let mockEventApiManager: OdpEventApiManager;
   let mockEventManager: OdpEventManager;
@@ -65,7 +65,7 @@ describe('OdpManager', () => {
 
     odpConfig = new OdpConfig();
     logger = instance(mockLogger);
-    requestHandler = instance(mockRequestHandler);
+    defaultRequestHandler = instance(mockRequestHandler);
 
     mockEventApiManager = mock<OdpEventApiManager>();
     mockEventManager = mock<OdpEventManager>();
@@ -89,13 +89,15 @@ describe('OdpManager', () => {
   const odpManagerInstance = (config?: OdpConfig) =>
     new OdpManager({
       disable: false,
-      requestHandler,
-      eventManager,
-      segmentManager,
+      defaultRequestHandler,
+      odpOptions: {
+        eventManager,
+        segmentManager,
+      },
     });
 
   it('should drop relevant calls when OdpManager is initialized with the disabled flag', async () => {
-    const odpManager = new OdpManager({ disable: true, requestHandler, logger });
+    const odpManager = new OdpManager({ disable: true, defaultRequestHandler, logger });
     verify(mockLogger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED)).once();
 
     odpManager.updateSettings(new OdpConfig('valid', 'host', []));
@@ -128,16 +130,18 @@ describe('OdpManager', () => {
   it('should use new settings in event manager when ODP Config is updated', async () => {
     const odpManager = new OdpManager({
       disable: false,
-      requestHandler,
-      eventManager: new OdpEventManager({
-        odpConfig,
-        apiManager: eventApiManager,
-        logger,
-        clientEngine: '',
-        clientVersion: '',
-        batchSize: 1,
-        flushInterval: 250,
-      }),
+      defaultRequestHandler,
+      odpOptions: {
+        eventManager: new OdpEventManager({
+          odpConfig,
+          apiManager: eventApiManager,
+          logger,
+          clientEngine: '',
+          clientVersion: '',
+          batchSize: 1,
+          flushInterval: 250,
+        }),
+      },
     });
 
     odpManager.updateSettings(new OdpConfig(keyA, hostA, segmentsA));
@@ -161,25 +165,25 @@ describe('OdpManager', () => {
   it('should use new settings in segment manager when ODP Config is updated', async () => {
     const odpManager = new OdpManager({
       disable: false,
-      requestHandler,
-      segmentManager: new OdpSegmentManager(odpConfig, new BrowserLRUCache<string, string[]>(), segmentApiManager),
+      defaultRequestHandler,
+      odpOptions: {
+        segmentManager: new OdpSegmentManager(odpConfig, new BrowserLRUCache<string, string[]>(), segmentApiManager),
+      },
     });
 
     odpManager.updateSettings(new OdpConfig(keyA, hostA, segmentsA));
 
     expect(odpManager.odpConfig.apiKey).toBe(keyA);
     expect(odpManager.odpConfig.apiHost).toBe(hostA);
-    odpManager.fetchQualifiedSegments(userA);
 
-    await new Promise(resolve => setTimeout(resolve, 400));
+    await odpManager.fetchQualifiedSegments(userA);
     verify(mockSegmentApiManager.fetchSegments(keyA, hostA, ODP_USER_KEY.FS_USER_ID, userA, anything())).once();
 
     odpManager.updateSettings(new OdpConfig(keyB, hostB, segmentsB));
     expect(odpManager.odpConfig.apiKey).toBe(keyB);
     expect(odpManager.odpConfig.apiHost).toBe(hostB);
-    odpManager.fetchQualifiedSegments(userB);
 
-    await new Promise(resolve => setTimeout(resolve, 400));
+    await odpManager.fetchQualifiedSegments(userB);
     verify(mockSegmentApiManager.fetchSegments(keyB, hostB, ODP_USER_KEY.FS_USER_ID, userB, anything())).once();
   });
 
@@ -189,7 +193,8 @@ describe('OdpManager', () => {
 
     const odpManagerB = new OdpManager({
       disable: false,
-      requestHandler,
+      defaultRequestHandler,
+      logger,
     });
     expect(odpManagerB.eventManager).not.toBe(null);
   });
@@ -200,7 +205,7 @@ describe('OdpManager', () => {
 
     const odpManagerB = new OdpManager({
       disable: false,
-      requestHandler,
+      defaultRequestHandler,
     });
     expect(odpManagerB.eventManager).not.toBe(null);
   });

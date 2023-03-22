@@ -10088,6 +10088,7 @@ describe('lib/optimizely', function() {
     });
   });
 
+  // Note: /lib/index.browser.tests.js contains relevant Opti Client x Browser ODP Tests
   // TODO: Finish these tests in ODP Node.js Implementation
   describe('odp', () => {
     var optlyInstanceWithOdp;

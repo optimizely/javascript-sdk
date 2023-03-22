@@ -47,13 +47,15 @@ export class NodeOdpManager extends OdpManager {
 
     super({
       disable,
-      requestHandler: nodeRequestHandler,
+      defaultRequestHandler: nodeRequestHandler,
       logger: nodeLogger,
       clientEngine: nodeClientEngine,
       clientVersion: nodeClientVersion,
-      segmentsCache: segmentsCache || new ServerLRUCache<string, string[]>(),
-      segmentManager,
-      eventManager,
+      odpOptions: {
+        segmentsCache: segmentsCache || new ServerLRUCache<string, string[]>(),
+        segmentManager,
+        eventManager,
+      },
     });
   }
 }

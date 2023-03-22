@@ -19,8 +19,9 @@ import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
 
 import { RequestHandler } from './../../utils/http_request_handler/http';
+import { BrowserRequestHandler } from '../../utils/http_request_handler/browser_request_handler';
+
 import { BrowserLRUCache } from './../../utils/lru_cache/browser_lru_cache';
-import { LRUCache } from './../../utils/lru_cache/lru_cache';
 
 import { VuidManager } from '../../plugins/vuid_manager';
 
@@ -32,6 +33,7 @@ import { OdpEventApiManager } from './odp_event_api_manager';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
 import { invalidOdpDataFound } from './odp_utils';
 import { OdpEvent } from './odp_event';
+import { OdpOptions } from '../../shared_types';
 
 /**
  * @param {boolean}                     disable Flag for disabling ODP Manager.
@@ -45,13 +47,11 @@ import { OdpEvent } from './odp_event';
  */
 interface OdpManagerConfig {
   disable: boolean;
-  requestHandler: RequestHandler;
+  defaultRequestHandler: RequestHandler;
   logger?: LogHandler;
   clientEngine?: string;
   clientVersion?: string;
-  segmentsCache?: LRUCache<string, string[]>;
-  eventManager?: OdpEventManager;
-  segmentManager?: OdpSegmentManager;
+  odpOptions?: OdpOptions;
 }
 
 /**
@@ -74,47 +74,53 @@ export class OdpManager {
    */
   public eventManager: OdpEventManager | undefined;
 
-  constructor({
-    disable,
-    requestHandler,
-    logger,
-    clientEngine,
-    clientVersion,
-    segmentsCache,
-    eventManager,
-    segmentManager,
-  }: OdpManagerConfig) {
+  constructor({ disable, defaultRequestHandler, logger, clientEngine, clientVersion, odpOptions }: OdpManagerConfig) {
     this.enabled = !disable;
     this.logger = logger || getLogger();
 
-    if (!this.enabled) {
+    if (disable) {
       this.logger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED);
       return;
     }
 
     // Set up Segment Manager (Audience Segments GraphQL API Interface)
-    if (segmentManager) {
-      this.segmentManager = segmentManager;
+    if (odpOptions?.segmentManager) {
+      this.segmentManager = odpOptions.segmentManager;
       this.segmentManager.updateSettings(this.odpConfig);
     } else {
       this.segmentManager = new OdpSegmentManager(
         this.odpConfig,
-        segmentsCache || new BrowserLRUCache<string, string[]>(),
-        new OdpSegmentApiManager(requestHandler, this.logger)
+        odpOptions?.segmentsCache ||
+          new BrowserLRUCache<string, string[]>({
+            maxSize: odpOptions?.segmentsCacheSize,
+            timeout: odpOptions?.segmentsCacheTimeout,
+          }),
+        new OdpSegmentApiManager(odpOptions?.segmentsRequestHandler || defaultRequestHandler, this.logger)
       );
     }
 
     // Set up Events Manager (Events REST API Interface)
-    if (eventManager) {
-      this.eventManager = eventManager;
+    if (odpOptions?.eventManager) {
+      this.eventManager = odpOptions.eventManager;
       this.eventManager.updateSettings(this.odpConfig);
     } else {
+      let customEventRequestHandler;
+
+      if (odpOptions?.eventRequestHandler) {
+        customEventRequestHandler = odpOptions.eventRequestHandler;
+      } else if (odpOptions?.eventApiTimeout) {
+        customEventRequestHandler = new BrowserRequestHandler(this.logger, odpOptions.eventApiTimeout);
+      }
+
       this.eventManager = new OdpEventManager({
         odpConfig: this.odpConfig,
-        apiManager: new OdpEventApiManager(requestHandler, this.logger),
+        apiManager: new OdpEventApiManager(customEventRequestHandler || defaultRequestHandler, this.logger),
         logger: this.logger,
         clientEngine: clientEngine || 'javascript-sdk',
         clientVersion: clientVersion || BROWSER_CLIENT_VERSION,
+        flushInterval: odpOptions?.eventFlushInterval,
+        batchSize: odpOptions?.eventBatchSize,
+        queueSize: odpOptions?.eventQueueSize,
       });
     }
 

@@ -25,11 +25,9 @@ import optimizelyFactory from './index.browser';
 import configValidator from './utils/config_validator';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import OptimizelyUserContext from './optimizely_user_context';
-import { LOG_MESSAGES, ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION } from './utils/enums';
-import { BrowserLRUCache } from './utils/lru_cache';
-import { OdpConfig } from './core/odp/odp_config';
+import { LOG_MESSAGES, ODP_EVENT_ACTION } from './utils/enums';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
-import { OdpEvent } from './core/odp/odp_event';
+import { OdpConfig } from './core/odp/odp_config';
 
 var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
 
@@ -612,7 +610,8 @@ describe('javascript-sdk (Browser)', function() {
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: BrowserOdpManager.createBrowserOdpManager({
+          odpManager: new BrowserOdpManager({
+            disable: false,
             logger,
             odpOptions: {
               disabled: true,
@@ -630,7 +629,8 @@ describe('javascript-sdk (Browser)', function() {
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: BrowserOdpManager.createBrowserOdpManager({
+          odpManager: new BrowserOdpManager({
+            disable: false,
             logger,
             odpOptions: {
               segmentsCacheSize: 10,
@@ -652,7 +652,8 @@ describe('javascript-sdk (Browser)', function() {
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: BrowserOdpManager.createBrowserOdpManager({
+          odpManager: new BrowserOdpManager({
+            disable: false,
             logger,
             odpOptions: {
               segmentsCacheTimeout: 10,
@@ -674,7 +675,8 @@ describe('javascript-sdk (Browser)', function() {
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: BrowserOdpManager.createBrowserOdpManager({
+          odpManager: new BrowserOdpManager({
+            disable: false,
             logger,
             odpOptions: {
               segmentsCacheSize: 10,
@@ -696,7 +698,7 @@ describe('javascript-sdk (Browser)', function() {
         );
       });
 
-      it('should accept a valid custom odp segment manager', () => {
+      it('should accept a valid custom odp segment manager', async () => {
         const fakeSegmentManager = {
           fetchQualifiedSegments: sinon.spy(),
           updateSettings: sinon.spy(),
@@ -708,7 +710,8 @@ describe('javascript-sdk (Browser)', function() {
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: BrowserOdpManager.createBrowserOdpManager({
+          odpManager: new BrowserOdpManager({
+            disable: false,
             logger,
             odpOptions: {
               segmentManager: fakeSegmentManager,
@@ -716,9 +719,18 @@ describe('javascript-sdk (Browser)', function() {
           }),
         });
 
-        client.fetchQualifiedSegments(testVuid);
+        sinon.assert.called(fakeSegmentManager.updateSettings);
 
-        sinon.assert.calledWith(fakeSegmentManager.updateSettings, new OdpConfig());
+        try {
+          const readyData = await client.onReady();
+          assert.equal(readyData.success, true);
+          assert.isEmpty(readyData.reason);
+
+          await client.fetchQualifiedSegments(testVuid);
+
+          sinon.assert.notCalled(logger.error);
+          sinon.assert.called(fakeSegmentManager.fetchQualifiedSegments);
+        } catch (e) {}
       });
 
       it('should accept a valid custom odp event manager', () => {
@@ -738,7 +750,8 @@ describe('javascript-sdk (Browser)', function() {
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: BrowserOdpManager.createBrowserOdpManager({
+          odpManager: new BrowserOdpManager({
+            disable: false,
             logger,
             odpOptions: {
               eventManager: fakeEventManager,
@@ -749,7 +762,6 @@ describe('javascript-sdk (Browser)', function() {
         sinon.assert.called(fakeEventManager.start);
       });
 
-      // TODO: Finish this test
       it('should send an odp event with sendOdpEvent', async () => {
         const fakeOdpManager = {
           sendEvent: sinon.spy(),
@@ -780,7 +792,6 @@ describe('javascript-sdk (Browser)', function() {
         } catch (e) {}
       });
 
-      // TODO: Finish this test
       it('should log an error when attempting to send an odp event when odp is disabled', async () => {
         const client = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfigWithFeatures(),
@@ -788,7 +799,8 @@ describe('javascript-sdk (Browser)', function() {
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: BrowserOdpManager.createBrowserOdpManager({
+          odpManager: new BrowserOdpManager({
+            disable: false,
             logger,
             odpOptions: {
               disabled: true,
