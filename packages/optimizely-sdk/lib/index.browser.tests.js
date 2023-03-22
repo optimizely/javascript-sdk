@@ -694,6 +694,7 @@ describe('javascript-sdk (Browser)', function() {
         );
       });
 
+      // TODO: Patch VUID Promise Pattern (@Andy)
       it('should accept a valid custom odp segment manager', async () => {
         const fakeSegmentManager = {
           fetchQualifiedSegments: sinon.spy(),
@@ -756,6 +757,7 @@ describe('javascript-sdk (Browser)', function() {
         sinon.assert.called(fakeEventManager.start);
       });
 
+      // TODO: Patch VUID Promise Pattern (@Andy)
       it('should send an odp event with sendOdpEvent', async () => {
         const fakeOdpManager = {
           sendEvent: sinon.spy(),
@@ -786,6 +788,7 @@ describe('javascript-sdk (Browser)', function() {
         } catch (e) {}
       });
 
+      // TODO: Patch VUID Promise Pattern (@Andy)
       it('should log an error when attempting to send an odp event when odp is disabled', async () => {
         const client = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfigWithFeatures(),
