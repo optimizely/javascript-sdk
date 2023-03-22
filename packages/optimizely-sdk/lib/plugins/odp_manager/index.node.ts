@@ -47,7 +47,8 @@ export class NodeOdpManager extends OdpManager {
 
     super({
       disable,
-      defaultRequestHandler: nodeRequestHandler,
+      segmentRequestHandler: nodeRequestHandler,
+      eventRequestHandler: nodeRequestHandler,
       logger: nodeLogger,
       clientEngine: nodeClientEngine,
       clientVersion: nodeClientVersion,

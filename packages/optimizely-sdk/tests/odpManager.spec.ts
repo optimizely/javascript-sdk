@@ -89,7 +89,8 @@ describe('OdpManager', () => {
   const odpManagerInstance = (config?: OdpConfig) =>
     new OdpManager({
       disable: false,
-      defaultRequestHandler,
+      segmentRequestHandler: defaultRequestHandler,
+      eventRequestHandler: defaultRequestHandler,
       odpOptions: {
         eventManager,
         segmentManager,
@@ -97,7 +98,12 @@ describe('OdpManager', () => {
     });
 
   it('should drop relevant calls when OdpManager is initialized with the disabled flag', async () => {
-    const odpManager = new OdpManager({ disable: true, defaultRequestHandler, logger });
+    const odpManager = new OdpManager({
+      disable: true,
+      segmentRequestHandler: defaultRequestHandler,
+      eventRequestHandler: defaultRequestHandler,
+      logger,
+    });
     verify(mockLogger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED)).once();
 
     odpManager.updateSettings(new OdpConfig('valid', 'host', []));
@@ -130,7 +136,8 @@ describe('OdpManager', () => {
   it('should use new settings in event manager when ODP Config is updated', async () => {
     const odpManager = new OdpManager({
       disable: false,
-      defaultRequestHandler,
+      segmentRequestHandler: defaultRequestHandler,
+      eventRequestHandler: defaultRequestHandler,
       odpOptions: {
         eventManager: new OdpEventManager({
           odpConfig,
@@ -165,7 +172,8 @@ describe('OdpManager', () => {
   it('should use new settings in segment manager when ODP Config is updated', async () => {
     const odpManager = new OdpManager({
       disable: false,
-      defaultRequestHandler,
+      segmentRequestHandler: defaultRequestHandler,
+      eventRequestHandler: defaultRequestHandler,
       odpOptions: {
         segmentManager: new OdpSegmentManager(odpConfig, new BrowserLRUCache<string, string[]>(), segmentApiManager),
       },
@@ -193,7 +201,8 @@ describe('OdpManager', () => {
 
     const odpManagerB = new OdpManager({
       disable: false,
-      defaultRequestHandler,
+      segmentRequestHandler: defaultRequestHandler,
+      eventRequestHandler: defaultRequestHandler,
       logger,
     });
     expect(odpManagerB.eventManager).not.toBe(null);
@@ -205,7 +214,8 @@ describe('OdpManager', () => {
 
     const odpManagerB = new OdpManager({
       disable: false,
-      defaultRequestHandler,
+      segmentRequestHandler: defaultRequestHandler,
+      eventRequestHandler: defaultRequestHandler,
     });
     expect(odpManagerB.eventManager).not.toBe(null);
   });

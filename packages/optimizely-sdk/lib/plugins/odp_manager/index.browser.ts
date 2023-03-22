@@ -43,13 +43,29 @@ export class BrowserOdpManager extends OdpManager {
   constructor({ disable, logger, odpOptions }: BrowserOdpManagerConfig) {
     const browserLogger = logger || getLogger('BrowserOdpManager');
 
-    const browserDefaultRequestHandler = new BrowserRequestHandler(browserLogger);
     const browserClientEngine = JAVASCRIPT_CLIENT_ENGINE;
     const browserClientVersion = BROWSER_CLIENT_VERSION;
 
+    let customSegmentRequestHandler;
+
+    if (odpOptions?.segmentsRequestHandler) {
+      customSegmentRequestHandler = odpOptions.segmentsRequestHandler;
+    } else if (odpOptions?.eventApiTimeout) {
+      customSegmentRequestHandler = new BrowserRequestHandler(browserLogger, odpOptions.segmentsApiTimeout);
+    }
+
+    let customEventRequestHandler;
+
+    if (odpOptions?.eventRequestHandler) {
+      customEventRequestHandler = odpOptions.eventRequestHandler;
+    } else if (odpOptions?.eventApiTimeout) {
+      customEventRequestHandler = new BrowserRequestHandler(browserLogger, odpOptions.eventApiTimeout);
+    }
+
     super({
       disable,
-      defaultRequestHandler: browserDefaultRequestHandler,
+      segmentRequestHandler: customSegmentRequestHandler || new BrowserRequestHandler(browserLogger),
+      eventRequestHandler: new BrowserRequestHandler(browserLogger),
       logger: browserLogger,
       clientEngine: browserClientEngine,
       clientVersion: browserClientVersion,

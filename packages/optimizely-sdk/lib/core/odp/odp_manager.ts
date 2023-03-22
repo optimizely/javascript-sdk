@@ -47,7 +47,8 @@ import { OdpOptions } from '../../shared_types';
  */
 interface OdpManagerConfig {
   disable: boolean;
-  defaultRequestHandler: RequestHandler;
+  segmentRequestHandler: RequestHandler;
+  eventRequestHandler: RequestHandler;
   logger?: LogHandler;
   clientEngine?: string;
   clientVersion?: string;
@@ -74,7 +75,15 @@ export class OdpManager {
    */
   public eventManager: OdpEventManager | undefined;
 
-  constructor({ disable, defaultRequestHandler, logger, clientEngine, clientVersion, odpOptions }: OdpManagerConfig) {
+  constructor({
+    disable,
+    segmentRequestHandler,
+    eventRequestHandler,
+    logger,
+    clientEngine,
+    clientVersion,
+    odpOptions,
+  }: OdpManagerConfig) {
     this.enabled = !disable;
     this.logger = logger || getLogger();
 
@@ -95,7 +104,7 @@ export class OdpManager {
             maxSize: odpOptions?.segmentsCacheSize,
             timeout: odpOptions?.segmentsCacheTimeout,
           }),
-        new OdpSegmentApiManager(odpOptions?.segmentsRequestHandler || defaultRequestHandler, this.logger)
+        new OdpSegmentApiManager(segmentRequestHandler, this.logger)
       );
     }
 
@@ -104,17 +113,9 @@ export class OdpManager {
       this.eventManager = odpOptions.eventManager;
       this.eventManager.updateSettings(this.odpConfig);
     } else {
-      let customEventRequestHandler;
-
-      if (odpOptions?.eventRequestHandler) {
-        customEventRequestHandler = odpOptions.eventRequestHandler;
-      } else if (odpOptions?.eventApiTimeout) {
-        customEventRequestHandler = new BrowserRequestHandler(this.logger, odpOptions.eventApiTimeout);
-      }
-
       this.eventManager = new OdpEventManager({
         odpConfig: this.odpConfig,
-        apiManager: new OdpEventApiManager(customEventRequestHandler || defaultRequestHandler, this.logger),
+        apiManager: new OdpEventApiManager(eventRequestHandler, this.logger),
         logger: this.logger,
         clientEngine: clientEngine || 'javascript-sdk',
         clientVersion: clientVersion || BROWSER_CLIENT_VERSION,
