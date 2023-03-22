@@ -611,7 +611,6 @@ describe('javascript-sdk (Browser)', function() {
           eventBatchSize: null,
           logger,
           odpManager: new BrowserOdpManager({
-            disable: false,
             logger,
             odpOptions: {
               disabled: true,
@@ -630,7 +629,6 @@ describe('javascript-sdk (Browser)', function() {
           eventBatchSize: null,
           logger,
           odpManager: new BrowserOdpManager({
-            disable: false,
             logger,
             odpOptions: {
               segmentsCacheSize: 10,
@@ -653,7 +651,6 @@ describe('javascript-sdk (Browser)', function() {
           eventBatchSize: null,
           logger,
           odpManager: new BrowserOdpManager({
-            disable: false,
             logger,
             odpOptions: {
               segmentsCacheTimeout: 10,
@@ -676,7 +673,6 @@ describe('javascript-sdk (Browser)', function() {
           eventBatchSize: null,
           logger,
           odpManager: new BrowserOdpManager({
-            disable: false,
             logger,
             odpOptions: {
               segmentsCacheSize: 10,
@@ -711,7 +707,6 @@ describe('javascript-sdk (Browser)', function() {
           eventBatchSize: null,
           logger,
           odpManager: new BrowserOdpManager({
-            disable: false,
             logger,
             odpOptions: {
               segmentManager: fakeSegmentManager,
@@ -751,7 +746,6 @@ describe('javascript-sdk (Browser)', function() {
           eventBatchSize: null,
           logger,
           odpManager: new BrowserOdpManager({
-            disable: false,
             logger,
             odpOptions: {
               eventManager: fakeEventManager,
@@ -800,7 +794,6 @@ describe('javascript-sdk (Browser)', function() {
           eventBatchSize: null,
           logger,
           odpManager: new BrowserOdpManager({
-            disable: false,
             logger,
             odpOptions: {
               disabled: true,

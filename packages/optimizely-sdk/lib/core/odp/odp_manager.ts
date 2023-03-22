@@ -19,9 +19,8 @@ import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
 
 import { RequestHandler } from './../../utils/http_request_handler/http';
-import { BrowserRequestHandler } from '../../utils/http_request_handler/browser_request_handler';
 
-import { BrowserLRUCache } from './../../utils/lru_cache/browser_lru_cache';
+import { LRUCache } from './../../utils/lru_cache/lru_cache';
 
 import { VuidManager } from '../../plugins/vuid_manager';
 
@@ -36,17 +35,16 @@ import { OdpEvent } from './odp_event';
 import { OdpOptions } from '../../shared_types';
 
 /**
- * @param {boolean}                     disable Flag for disabling ODP Manager.
- * @param {RequestHandler}              requestHandler HTTP request handler that will be used by Segment and Event Managers.
+ * @param {LRUCache<string, string>[]}  segmentLRUCache Cache to be used for storing segments.
+ * @param {RequestHandler}              segmentRequestHandler HTTP request handler that will be used by the ODP Segment Manager.
+ * @param {RequestHandler}              eventRequestHandler HTTP request handler that will be used by the ODP Event Manager.
  * @param {LogHandler}                  logger (Optional) Accepts custom LogHandler. Defaults to the default global LogHandler.
  * @param {string}                      clientEngine (Optional) String denoting specific client engine being used. Defaults to 'javascript-sdk'.
  * @param {string}                      clientVersion (Optional) String denoting specific client version. Defaults to current version value from package.json.
- * @param {LRUCache<string, string[]>}  segmentsCache (Optional) Accepts a custom LRUCache. Defaults to BrowserLRUCache.
- * @param {OdpEventManager}             eventManager (Optional) Accepts a custom ODPEventManager.
- * @param {OdpSegmentManager}           segmentManager (Optional) Accepts a custom ODPSegmentManager.
+ * @param {OdpOptions}                  odpOptions (Optional) Configuration settings for various ODP options from segment cache size to event flush interval.
  */
 interface OdpManagerConfig {
-  disable: boolean;
+  segmentLRUCache: LRUCache<string, string[]>;
   segmentRequestHandler: RequestHandler;
   eventRequestHandler: RequestHandler;
   logger?: LogHandler;
@@ -76,7 +74,7 @@ export class OdpManager {
   public eventManager: OdpEventManager | undefined;
 
   constructor({
-    disable,
+    segmentLRUCache,
     segmentRequestHandler,
     eventRequestHandler,
     logger,
@@ -84,10 +82,10 @@ export class OdpManager {
     clientVersion,
     odpOptions,
   }: OdpManagerConfig) {
-    this.enabled = !disable;
+    this.enabled = !odpOptions?.disabled;
     this.logger = logger || getLogger();
 
-    if (disable) {
+    if (!this.enabled) {
       this.logger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED);
       return;
     }
@@ -99,11 +97,7 @@ export class OdpManager {
     } else {
       this.segmentManager = new OdpSegmentManager(
         this.odpConfig,
-        odpOptions?.segmentsCache ||
-          new BrowserLRUCache<string, string[]>({
-            maxSize: odpOptions?.segmentsCacheSize,
-            timeout: odpOptions?.segmentsCacheTimeout,
-          }),
+        segmentLRUCache,
         new OdpSegmentApiManager(segmentRequestHandler, this.logger)
       );
     }

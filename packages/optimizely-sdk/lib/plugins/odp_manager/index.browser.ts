@@ -21,7 +21,7 @@ import { BrowserRequestHandler } from './../../utils/http_request_handler/browse
 
 import BrowserAsyncStorageCache from '../key_value_cache/browserAsyncStorageCache';
 import PersistentKeyValueCache from '../key_value_cache/persistentKeyValueCache';
-import { BrowserLRUCache, LRUCache } from '../../utils/lru_cache';
+import { BrowserLRUCache } from '../../utils/lru_cache';
 
 import { VuidManager } from './../vuid_manager/index';
 
@@ -30,7 +30,6 @@ import { OdpEvent } from '../../core/odp/odp_event';
 import { OdpOptions } from '../../shared_types';
 
 interface BrowserOdpManagerConfig {
-  disable: boolean;
   logger?: LogHandler;
   odpOptions?: OdpOptions;
 }
@@ -40,7 +39,7 @@ export class BrowserOdpManager extends OdpManager {
   static cache = new BrowserAsyncStorageCache();
   vuid?: string;
 
-  constructor({ disable, logger, odpOptions }: BrowserOdpManagerConfig) {
+  constructor({ logger, odpOptions }: BrowserOdpManagerConfig) {
     const browserLogger = logger || getLogger('BrowserOdpManager');
 
     const browserClientEngine = JAVASCRIPT_CLIENT_ENGINE;
@@ -63,7 +62,12 @@ export class BrowserOdpManager extends OdpManager {
     }
 
     super({
-      disable,
+      segmentLRUCache:
+        odpOptions?.segmentsCache ||
+        new BrowserLRUCache<string, string[]>({
+          maxSize: odpOptions?.segmentsCacheSize,
+          timeout: odpOptions?.segmentsCacheTimeout,
+        }),
       segmentRequestHandler: customSegmentRequestHandler || new BrowserRequestHandler(browserLogger),
       eventRequestHandler: new BrowserRequestHandler(browserLogger),
       logger: browserLogger,

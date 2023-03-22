@@ -16,13 +16,18 @@
 
 import LRUCache, { ISegmentsCacheConfig, LRUCacheConfig } from './lru_cache';
 
+export interface ServerLRUCacheConfig {
+  maxSize?: number;
+  timeout?: number;
+}
+
 export const ServerLRUCacheConfig: ISegmentsCacheConfig = {
   DEFAULT_CAPACITY: 10000,
   DEFAULT_TIMEOUT_SECS: 600,
 };
 
 export class ServerLRUCache<K, V> extends LRUCache<K, V> {
-  constructor(config?: LRUCacheConfig) {
+  constructor(config?: ServerLRUCacheConfig) {
     super({
       maxSize: config?.maxSize || ServerLRUCacheConfig.DEFAULT_CAPACITY,
       timeout: config?.timeout || ServerLRUCacheConfig.DEFAULT_TIMEOUT_SECS * 1000,

@@ -101,7 +101,6 @@ describe('OdpManager', () => {
 
   const browserOdpManagerInstance = () =>
     new BrowserOdpManager({
-      disable: false,
       odpOptions: {
         eventManager: fakeEventManager,
         segmentManager: fakeSegmentManager,
@@ -115,7 +114,7 @@ describe('OdpManager', () => {
   });
 
   it('should drop relevant calls when OdpManager is initialized with the disabled flag, except for VUID', async () => {
-    const browserOdpManager = new BrowserOdpManager({ disable: true, logger: fakeLogger });
+    const browserOdpManager = new BrowserOdpManager({ logger: fakeLogger, odpOptions: { disabled: true } });
 
     verify(mockLogger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED)).once();
 
@@ -151,7 +150,6 @@ describe('OdpManager', () => {
 
   it('should use new settings in event manager when ODP Config is updated', async () => {
     const browserOdpManager = new BrowserOdpManager({
-      disable: false,
       odpOptions: {
         eventManager: fakeEventManager,
       },
@@ -190,7 +188,6 @@ describe('OdpManager', () => {
 
   it('should use new settings in segment manager when ODP Config is updated', () => {
     const browserOdpManager = new BrowserOdpManager({
-      disable: false,
       odpOptions: {
         segmentManager: new OdpSegmentManager(
           odpConfig,
@@ -225,9 +222,7 @@ describe('OdpManager', () => {
     const browserOdpManagerA = browserOdpManagerInstance();
     expect(browserOdpManagerA.eventManager).not.toBe(null);
 
-    const browserOdpManagerB = new BrowserOdpManager({
-      disable: false,
-    });
+    const browserOdpManagerB = new BrowserOdpManager({});
     expect(browserOdpManagerB.eventManager).not.toBe(null);
   });
 
@@ -235,15 +230,12 @@ describe('OdpManager', () => {
     const browserOdpManagerA = browserOdpManagerInstance();
     expect(browserOdpManagerA.segmentManager).not.toBe(null);
 
-    const browserOdpManagerB = new BrowserOdpManager({
-      disable: false,
-    });
+    const browserOdpManagerB = new BrowserOdpManager({});
     expect(browserOdpManagerB.eventManager).not.toBe(null);
   });
 
   it("should call event manager's sendEvent if ODP Event is valid", () => {
     const browserOdpManager = new BrowserOdpManager({
-      disable: false,
       odpOptions: {
         eventManager: fakeEventManager,
       },

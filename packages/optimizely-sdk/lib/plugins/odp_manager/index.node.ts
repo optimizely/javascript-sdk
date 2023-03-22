@@ -16,21 +16,17 @@
 
 import { NodeRequestHandler } from '../../utils/http_request_handler/node_request_handler';
 
-import { LRUCache } from '../../utils/lru_cache';
 import { ServerLRUCache } from './../../utils/lru_cache/server_lru_cache';
 
 import { OdpManager } from '../../core/odp/odp_manager';
-import { OdpSegmentManager } from '../../core/odp/odp_segment_manager';
-import { OdpEventManager } from '../../core/odp/odp_event_manager';
 import { getLogger, LogHandler } from '../../modules/logging';
-import { ERROR_MESSAGES, LOG_LEVEL, NODE_CLIENT_ENGINE, NODE_CLIENT_VERSION } from '../../utils/enums';
+import { NODE_CLIENT_ENGINE, NODE_CLIENT_VERSION } from '../../utils/enums';
+import { OdpOptions } from '../../../lib/shared_types';
 
 interface NodeOdpManagerConfig {
   disable: boolean;
   logger?: LogHandler;
-  segmentsCache?: LRUCache<string, string[]>;
-  segmentManager?: OdpSegmentManager;
-  eventManager?: OdpEventManager;
+  odpOptions?: OdpOptions;
 }
 
 /**
@@ -38,7 +34,7 @@ interface NodeOdpManagerConfig {
  * Note: As this is still a work-in-progress. Please avoid using the Node ODP Manager.
  */
 export class NodeOdpManager extends OdpManager {
-  constructor({ disable, logger, segmentsCache, segmentManager, eventManager }: NodeOdpManagerConfig) {
+  constructor({ logger, odpOptions }: NodeOdpManagerConfig) {
     const nodeLogger = logger || getLogger();
 
     const nodeRequestHandler = new NodeRequestHandler(nodeLogger);
@@ -46,17 +42,18 @@ export class NodeOdpManager extends OdpManager {
     const nodeClientVersion = NODE_CLIENT_VERSION;
 
     super({
-      disable,
+      segmentLRUCache:
+        odpOptions?.segmentsCache ||
+        new ServerLRUCache<string, string[]>({
+          maxSize: odpOptions?.segmentsCacheSize,
+          timeout: odpOptions?.segmentsCacheTimeout,
+        }),
       segmentRequestHandler: nodeRequestHandler,
       eventRequestHandler: nodeRequestHandler,
       logger: nodeLogger,
       clientEngine: nodeClientEngine,
       clientVersion: nodeClientVersion,
-      odpOptions: {
-        segmentsCache: segmentsCache || new ServerLRUCache<string, string[]>(),
-        segmentManager,
-        eventManager,
-      },
+      odpOptions,
     });
   }
 }
