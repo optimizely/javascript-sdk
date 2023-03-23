@@ -438,7 +438,7 @@ describe('OdpManager', () => {
       expect(browserOdpManager.eventManager.apiManager.requestHandler.timeout).toBe(4000);
     });
 
-    it('Browser default Events API Request Handler timeout should be used when odpOptions does not include eventssApiTimeout', () => {
+    it('Browser default Events API Request Handler timeout should be used when odpOptions does not include eventsApiTimeout', () => {
       const odpOptions: OdpOptions = {
       };
 
