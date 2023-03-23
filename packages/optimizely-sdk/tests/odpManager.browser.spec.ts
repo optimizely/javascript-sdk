@@ -471,7 +471,6 @@ describe('OdpManager', () => {
       expect(browserOdpManager.eventManager.batchSize).toBe(1);
     });
 
-
     it('Custom odpOptions.eventBatchSize overrides default Event Manager batch size', () => {
       const odpOptions: OdpOptions = {
         eventBatchSize: 2,
