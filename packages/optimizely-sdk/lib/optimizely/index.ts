@@ -1668,7 +1668,7 @@ export default class Optimizely {
    * @param {Map<string, string>} odpEvent.identifiers    (Optional) Key-value map of user identifiers
    * @param {Map<string, string>} odpEvent.data           (Optional) Event data in a key-value map.
    */
-  public sendOdpEvent({
+  public async sendOdpEvent({
     type,
     action,
     identifiers,
@@ -1678,16 +1678,17 @@ export default class Optimizely {
     action: ODP_EVENT_ACTION;
     identifiers?: Map<string, string>;
     data?: Map<string, unknown>;
-  }): void {
+  }): Promise<void> {
     if (!this.odpManager) {
       this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED_ODP_MANAGER_MISSING);
+      return;
     }
 
     const odpEventType = type ?? ODP_DEFAULT_EVENT_TYPE;
 
     try {
       const odpEvent = new OdpEvent(odpEventType, action, identifiers, data);
-      this.odpManager!.sendEvent(odpEvent);
+      await this.odpManager.sendEvent(odpEvent);
     } catch (e) {
       this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED, e);
     }
@@ -1697,9 +1698,9 @@ export default class Optimizely {
    * Identifies user with ODP server in a fire-and-forget manner.
    * @param {string} userId
    */
-  public identifyUser(userId: string): void {
+  public async identifyUser(userId: string): Promise<void> {
     if (this.odpManager && this.odpManager.enabled) {
-      this.odpManager.identifyUser(userId);
+      await this.odpManager.identifyUser(userId);
     }
   }
 

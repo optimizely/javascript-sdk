@@ -54,6 +54,8 @@ export interface IOdpEventManager {
   identifyUser(userId: string, vuid?: string): void;
 
   sendEvent(event: OdpEvent): void;
+
+  flush(): void;
 }
 
 /**
@@ -141,18 +143,17 @@ export class OdpEventManager implements IOdpEventManager {
     this.clientVersion = clientVersion;
 
     let defaultQueueSize = DEFAULT_BROWSER_QUEUE_SIZE;
+    // browser only accepts batchSize = 1
+    this.batchSize = 1
 
-    try {
-      // TODO: Consider refactoring to use typeof process and combine w/above line
-      if (process) {
-        defaultQueueSize = DEFAULT_SERVER_QUEUE_SIZE;
-      }
-    } catch (e) {
-      // TODO: Create Browser and Non-Browser specific variants of ODP Event Manager to avoid this try/catch
+    if (typeof process  !== 'undefined') {
+      defaultQueueSize = DEFAULT_SERVER_QUEUE_SIZE;
+      this.batchSize = batchSize || DEFAULT_BATCH_SIZE;
+    } else if (typeof batchSize !== 'undefined' && batchSize !== 1) {
+      this.logger.log(LogLevel.WARNING, 'ODP event batch size must be 1 in the browser.');
     }
 
     this.queueSize = queueSize || defaultQueueSize;
-    this.batchSize = batchSize || DEFAULT_BATCH_SIZE;
     this.flushInterval = flushInterval || DEFAULT_FLUSH_INTERVAL_MSECS;
 
     this.state = STATE.STOPPED;
@@ -392,17 +393,12 @@ export class OdpEventManager implements IOdpEventManager {
       return true;
     }
 
-    try {
-      if (process) {
-        // if Node/server-side context, empty queue items before ready state
-        this.logger.log(LogLevel.WARNING, 'ODPConfig not ready. Discarding events in queue.');
-        this.queue = new Array<OdpEvent>();
-      } else {
-        // in Browser/client-side context, give debug message but leave events in queue
-        this.logger.log(LogLevel.DEBUG, 'ODPConfig not ready. Leaving events in queue.');
-      }
-    } catch (e) {
-      // TODO: Create Browser and Non-Browser specific variants of ODP Event Manager to avoid this try/catch
+    if (typeof process !== 'undefined') {
+      // if Node/server-side context, empty queue items before ready state
+      this.logger.log(LogLevel.WARNING, 'ODPConfig not ready. Discarding events in queue.');
+      this.queue = new Array<OdpEvent>();
+    } else {
+      // in Browser/client-side context, give debug message but leave events in queue
       this.logger.log(LogLevel.DEBUG, 'ODPConfig not ready. Leaving events in queue.');
     }
 
