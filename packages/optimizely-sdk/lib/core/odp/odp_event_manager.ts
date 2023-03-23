@@ -153,7 +153,13 @@ export class OdpEventManager implements IOdpEventManager {
 
     this.queueSize = queueSize || defaultQueueSize;
     this.batchSize = batchSize || DEFAULT_BATCH_SIZE;
-    this.flushInterval = flushInterval || DEFAULT_FLUSH_INTERVAL_MSECS;
+    if (flushInterval === 0) {
+      // disable event batching
+      this.batchSize = 1;
+      this.flushInterval = 0;
+    } else {
+      this.flushInterval = flushInterval || DEFAULT_FLUSH_INTERVAL_MSECS;
+    }
 
     this.state = STATE.STOPPED;
   }
