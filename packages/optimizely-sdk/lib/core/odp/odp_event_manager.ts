@@ -22,7 +22,7 @@ import { ERROR_MESSAGES, ODP_USER_KEY, ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION 
 import { OdpEvent } from './odp_event';
 import { OdpConfig } from './odp_config';
 import { OdpEventApiManager } from './odp_event_api_manager';
-import { invalidOdpDataFound } from './odp_utils';
+import { invalidOdpDataFound, browserMode } from './odp_utils';
 
 const MAX_RETRIES = 3;
 const DEFAULT_BATCH_SIZE = 10;
@@ -146,7 +146,7 @@ export class OdpEventManager implements IOdpEventManager {
     // browser only accepts batchSize = 1
     this.batchSize = 1
 
-    if (typeof process  !== 'undefined') {
+    if (!browserMode()) {
       defaultQueueSize = DEFAULT_SERVER_QUEUE_SIZE;
       this.batchSize = batchSize || DEFAULT_BATCH_SIZE;
     } else if (typeof batchSize !== 'undefined' && batchSize !== 1) {
@@ -393,7 +393,7 @@ export class OdpEventManager implements IOdpEventManager {
       return true;
     }
 
-    if (typeof process !== 'undefined') {
+    if (!browserMode()) {
       // if Node/server-side context, empty queue items before ready state
       this.logger.log(LogLevel.WARNING, 'ODPConfig not ready. Discarding events in queue.');
       this.queue = new Array<OdpEvent>();

@@ -30,3 +30,14 @@ export function invalidOdpDataFound(data: Map<string, any>): boolean {
   });
   return foundInvalidValue;
 }
+
+/**
+ * Determine if the runtime environment is a browser
+ * @returns True if in the browser
+ * @private
+ */
+export function browserMode(): boolean {
+   return !(typeof process !== "undefined" &&
+    process.versions != null &&
+    process.versions.node != null);
+}

@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 import { LogHandler, LogLevel } from '../../modules/logging';
 import { OdpEvent } from './odp_event';
+import { browserMode } from './odp_utils';
 import { RequestHandler } from '../../utils/http_request_handler/http';
 import { ODP_EVENT_BROWSER_ENDPOINT } from '../../utils/enums';
 
@@ -45,7 +46,7 @@ export class OdpEventApiManager implements IOdpEventApiManager {
   constructor(requestHandler: RequestHandler, logger: LogHandler) {
     this.requestHandler = requestHandler;
     this.logger = logger;
-    this.browserMode = typeof process === 'undefined';
+    this.browserMode = browserMode()
   }
 
   /**

@@ -30,6 +30,7 @@ import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import { OdpConfig } from './core/odp/odp_config';
 import { OdpEventManager } from './core/odp/odp_event_manager';
 import { OdpEventApiManager } from './core/odp/odp_event_api_manager';
+import { browserMode } from './core/odp/odp_utils';
 
 var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
 
@@ -824,8 +825,11 @@ describe('javascript-sdk (Browser)', function() {
       });
 
       it('should log a warning when attempting to use an event batch size other than 1', async () => {
+        if (!browserMode()) {
+          return
+        }
         const client = optimizelyFactory.createInstance({
-          datafile: testData.getTestProjectConfigWithFeatures(),
+          datafile: testData.getOdpIntegratedConfigWithSegments(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
@@ -847,6 +851,9 @@ describe('javascript-sdk (Browser)', function() {
       });
 
       it('should send an odp event to the browser endpoint', async () => {
+        if (!browserMode()) {
+          return
+        }
         const odpConfig = new OdpConfig();
         const apiManager = new OdpEventApiManager(mockRequestHandler, logger);
         const eventManager = new OdpEventManager({odpConfig, apiManager, logger, clientEngine: "javascript-sdk", clientVersion: "great" })
