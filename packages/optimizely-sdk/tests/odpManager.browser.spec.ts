@@ -126,7 +126,7 @@ describe('OdpManager', () => {
     await browserOdpManager.fetchQualifiedSegments('vuid_user1', []);
     verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_ENABLED)).once();
 
-    browserOdpManager.identifyUser('vuid_user1');
+    await browserOdpManager.identifyUser('vuid_user1');
     verify(mockLogger.log(LogLevel.DEBUG, LOG_MESSAGES.ODP_IDENTIFY_FAILED_ODP_DISABLED)).once();
 
     expect(browserOdpManager.eventManager).toBeUndefined;
@@ -172,7 +172,7 @@ describe('OdpManager', () => {
     const updateSettingsArgsA = capture(mockEventManager.updateSettings).last();
     expect(updateSettingsArgsA[0]).toStrictEqual(odpConfigA);
 
-    browserOdpManager.identifyUser(userA);
+    await browserOdpManager.identifyUser(userA);
     const identifyUserArgsA = capture(mockEventManager.identifyUser).last();
     expect(identifyUserArgsA[0]).toStrictEqual(userA);
 
@@ -183,7 +183,7 @@ describe('OdpManager', () => {
     const updateSettingsArgsB = capture(mockEventManager.updateSettings).last();
     expect(updateSettingsArgsB[0]).toStrictEqual(odpConfigB);
 
-    browserOdpManager.eventManager!.identifyUser(userB);
+    await browserOdpManager.eventManager!.identifyUser(userB);
     const identifyUserArgsB = capture(mockEventManager.identifyUser).last();
     expect(identifyUserArgsB[0]).toStrictEqual(userB);
   });
@@ -236,7 +236,7 @@ describe('OdpManager', () => {
     expect(browserOdpManagerB.eventManager).not.toBe(null);
   });
 
-  it("should call event manager's sendEvent if ODP Event is valid", () => {
+  it("should call event manager's sendEvent if ODP Event is valid", async () => {
     const browserOdpManager = new BrowserOdpManager({
       odpOptions: {
         eventManager: fakeEventManager,
@@ -253,16 +253,16 @@ describe('OdpManager', () => {
 
     const validOdpEvent = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.INITIALIZED, validIdentifiers);
 
-    browserOdpManager.sendEvent(validOdpEvent);
+    await browserOdpManager.sendEvent(validOdpEvent);
     verify(mockEventManager.sendEvent(anything())).once();
 
     // Test Invalid OdpEvents - logs error and short circuits
     // Does not include `vuid` in identifiers does not have a local this.vuid populated in BrowserOdpManager
+    browserOdpManager.vuid = undefined;
     const invalidOdpEvent = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.INITIALIZED, undefined);
 
-    expect(() => {
-      browserOdpManager.sendEvent(invalidOdpEvent);
-    }).toThrow(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_VUID_MISSING);
+    await expect(browserOdpManager.sendEvent(invalidOdpEvent))
+      .rejects.toThrow(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_VUID_MISSING)
   });
 
   describe('Populates BrowserOdpManager correctly with all odpOptions', () => {
