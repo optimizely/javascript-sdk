@@ -24,6 +24,7 @@ import { RequestHandler } from '../lib/utils/http_request_handler/http';
 import { BrowserLRUCache } from './../lib/utils/lru_cache/browser_lru_cache';
 
 import { BrowserOdpManager } from './../lib/plugins/odp_manager/index.browser';
+import { OdpOptions } from './../lib/shared_types';
 import { OdpConfig } from '../lib/core/odp/odp_config';
 import { OdpEventApiManager } from '../lib/core/odp/odp_event_api_manager';
 import { OdpEventManager, STATE } from '../lib/core/odp/odp_event_manager';
@@ -31,6 +32,7 @@ import { OdpSegmentManager } from './../lib/core/odp/odp_segment_manager';
 import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
 import { VuidManager } from '../lib/plugins/vuid_manager';
 import { OdpEvent } from '../lib/core/odp/odp_event';
+import { BrowserRequestHandler } from '../lib/utils/http_request_handler/browser_request_handler';
 
 const keyA = 'key-a';
 const hostA = 'host-a';
@@ -101,9 +103,10 @@ describe('OdpManager', () => {
 
   const browserOdpManagerInstance = () =>
     new BrowserOdpManager({
-      disable: false,
-      eventManager: fakeEventManager,
-      segmentManager: fakeSegmentManager,
+      odpOptions: {
+        eventManager: fakeEventManager,
+        segmentManager: fakeSegmentManager,
+      },
     });
 
   it('should register VUID automatically on BrowserOdpManager initialization', async () => {
@@ -113,7 +116,7 @@ describe('OdpManager', () => {
   });
 
   it('should drop relevant calls when OdpManager is initialized with the disabled flag, except for VUID', async () => {
-    const browserOdpManager = new BrowserOdpManager({ disable: true, logger: fakeLogger });
+    const browserOdpManager = new BrowserOdpManager({ logger: fakeLogger, odpOptions: { disabled: true } });
 
     verify(mockLogger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED)).once();
 
@@ -149,8 +152,9 @@ describe('OdpManager', () => {
 
   it('should use new settings in event manager when ODP Config is updated', async () => {
     const browserOdpManager = new BrowserOdpManager({
-      disable: false,
-      eventManager: fakeEventManager,
+      odpOptions: {
+        eventManager: fakeEventManager,
+      },
     });
 
     expect(browserOdpManager.eventManager).toBeDefined();
@@ -186,14 +190,24 @@ describe('OdpManager', () => {
 
   it('should use new settings in segment manager when ODP Config is updated', () => {
     const browserOdpManager = new BrowserOdpManager({
-      disable: false,
-      segmentManager: new OdpSegmentManager(odpConfig, new BrowserLRUCache<string, string[]>(), fakeSegmentApiManager),
+      odpOptions: {
+        segmentManager: new OdpSegmentManager(
+          odpConfig,
+          new BrowserLRUCache<string, string[]>(),
+          fakeSegmentApiManager
+        ),
+      },
     });
 
     const didUpdateA = browserOdpManager.updateSettings(new OdpConfig(keyA, hostA, segmentsA));
     expect(didUpdateA).toBe(true);
 
     browserOdpManager.fetchQualifiedSegments(vuidA);
+
+    verify(
+      mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_FETCH_QUALIFIED_SEGMENTS_SEGMENTS_MANAGER_MISSING)
+    ).never();
+
     const fetchQualifiedSegmentsArgsA = capture(mockSegmentApiManager.fetchSegments).last();
     expect(fetchQualifiedSegmentsArgsA).toStrictEqual([keyA, hostA, ODP_USER_KEY.VUID, vuidA, segmentsA]);
 
@@ -210,9 +224,7 @@ describe('OdpManager', () => {
     const browserOdpManagerA = browserOdpManagerInstance();
     expect(browserOdpManagerA.eventManager).not.toBe(null);
 
-    const browserOdpManagerB = new BrowserOdpManager({
-      disable: false,
-    });
+    const browserOdpManagerB = new BrowserOdpManager({});
     expect(browserOdpManagerB.eventManager).not.toBe(null);
   });
 
@@ -220,16 +232,15 @@ describe('OdpManager', () => {
     const browserOdpManagerA = browserOdpManagerInstance();
     expect(browserOdpManagerA.segmentManager).not.toBe(null);
 
-    const browserOdpManagerB = new BrowserOdpManager({
-      disable: false,
-    });
+    const browserOdpManagerB = new BrowserOdpManager({});
     expect(browserOdpManagerB.eventManager).not.toBe(null);
   });
 
   it("should call event manager's sendEvent if ODP Event is valid", () => {
     const browserOdpManager = new BrowserOdpManager({
-      disable: false,
-      eventManager: fakeEventManager,
+      odpOptions: {
+        eventManager: fakeEventManager,
+      },
     });
 
     const odpConfig = new OdpConfig('key', 'host', []);
@@ -252,5 +263,359 @@ describe('OdpManager', () => {
     expect(() => {
       browserOdpManager.sendEvent(invalidOdpEvent);
     }).toThrow(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_VUID_MISSING);
+  });
+
+  describe('Populates BrowserOdpManager correctly with all odpOptions', () => {
+    it('odpOptions.disabled = true disables BrowserOdpManager', () => {
+      const odpOptions: OdpOptions = {
+        disabled: true,
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      expect(browserOdpManager.enabled).toBe(false);
+    });
+
+    it('Custom odpOptions.segmentsCache overrides default LRUCache', () => {
+      const odpOptions: OdpOptions = {
+        segmentsCache: new BrowserLRUCache<string, string[]>({
+          maxSize: 2,
+          timeout: 4000,
+        }),
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      // @ts-ignore
+      expect(browserOdpManager.segmentManager?._segmentsCache.maxSize).toBe(2);
+
+      // @ts-ignore
+      expect(browserOdpManager.segmentManager?._segmentsCache.timeout).toBe(4000);
+    });
+
+    it('Custom odpOptions.segmentsCacheSize overrides default LRUCache size', () => {
+      const odpOptions: OdpOptions = {
+        segmentsCacheSize: 2,
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      // @ts-ignore
+      expect(browserOdpManager.segmentManager?._segmentsCache.maxSize).toBe(2);
+    });
+
+    it('Custom odpOptions.segmentsCacheTimeout overrides default LRUCache timeout', () => {
+      const odpOptions: OdpOptions = {
+        segmentsCacheTimeout: 4000,
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      // @ts-ignore
+      expect(browserOdpManager.segmentManager?._segmentsCache.timeout).toBe(4000);
+    });
+
+    it('Custom odpOptions.segmentsApiTimeout overrides default Segment API Request Handler timeout', () => {
+      const odpOptions: OdpOptions = {
+        segmentsApiTimeout: 4000,
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      // @ts-ignore
+      expect(browserOdpManager.segmentManager.odpSegmentApiManager.requestHandler.timeout).toBe(4000);
+    });
+
+    it('Custom odpOptions.segmentsRequestHandler overrides default Segment API Request Handler', () => {
+      const odpOptions: OdpOptions = {
+        segmentsRequestHandler: new BrowserRequestHandler(fakeLogger, 4000),
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      // @ts-ignore
+      expect(browserOdpManager.segmentManager.odpSegmentApiManager.requestHandler.timeout).toBe(4000);
+    });
+
+    it('Custom odpOptions.segmentRequestHandler override takes precedence over odpOptions.eventApiTimeout', () => {
+      const odpOptions: OdpOptions = {
+        segmentsApiTimeout: 2,
+        segmentsRequestHandler: new BrowserRequestHandler(fakeLogger, 1),
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      // @ts-ignore
+      expect(browserOdpManager.segmentManager.odpSegmentApiManager.requestHandler.timeout).toBe(1);
+    });
+
+    it('Custom odpOptions.segmentManager overrides default Segment Manager', () => {
+      const customSegmentManager = new OdpSegmentManager(
+        odpConfig,
+        new BrowserLRUCache<string, string[]>(),
+        fakeSegmentApiManager
+      );
+
+      const odpOptions: OdpOptions = {
+        segmentManager: customSegmentManager,
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      // @ts-ignore
+      expect(browserOdpManager.segmentManager).toBe(customSegmentManager);
+    });
+
+    it('Custom odpOptions.segmentManager override takes precedence over all other segments-related odpOptions', () => {
+      const customSegmentManager = new OdpSegmentManager(
+        odpConfig,
+        new BrowserLRUCache<string, string[]>({
+          maxSize: 1,
+          timeout: 1,
+        }),
+        new OdpSegmentApiManager(new BrowserRequestHandler(fakeLogger, 1), fakeLogger)
+      );
+
+      const odpOptions: OdpOptions = {
+        segmentsCacheSize: 2,
+        segmentsCacheTimeout: 2,
+        segmentsCache: new BrowserLRUCache<string, string[]>({ maxSize: 2, timeout: 2 }),
+        segmentsApiTimeout: 2,
+        segmentsRequestHandler: new BrowserRequestHandler(fakeLogger, 2),
+        segmentManager: customSegmentManager,
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      // @ts-ignore
+      expect(browserOdpManager.segmentManager?._segmentsCache.maxSize).toBe(1);
+
+      // @ts-ignore
+      expect(browserOdpManager.segmentManager?._segmentsCache.timeout).toBe(1);
+
+      // @ts-ignore
+      expect(browserOdpManager.segmentManager.odpSegmentApiManager.requestHandler.timeout).toBe(1);
+
+      // @ts-ignore
+      expect(browserOdpManager.segmentManager).toBe(customSegmentManager);
+    });
+
+    it('Custom odpOptions.eventApiTimeout overrides default Event API Request Handler timeout', () => {
+      const odpOptions: OdpOptions = {
+        eventApiTimeout: 4000,
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.apiManager.requestHandler.timeout).toBe(4000);
+    });
+
+    it('Custom odpOptions.eventFlushInterval overrides default Event Manager flush interval', () => {
+      const odpOptions: OdpOptions = {
+        eventFlushInterval: 4000,
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.flushInterval).toBe(4000);
+    });
+
+    it('Custom odpOptions.eventBatchSize overrides default Event Manager batch size', () => {
+      const odpOptions: OdpOptions = {
+        eventBatchSize: 2,
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.batchSize).toBe(2);
+    });
+
+    it('Custom odpOptions.eventQueueSize overrides default Event Manager queue size', () => {
+      const odpOptions: OdpOptions = {
+        eventQueueSize: 2,
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.queueSize).toBe(2);
+    });
+
+    it('Custom odpOptions.eventRequestHandler overrides default Event Manager request handler', () => {
+      const odpOptions: OdpOptions = {
+        eventRequestHandler: new BrowserRequestHandler(fakeLogger, 4000),
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.apiManager.requestHandler.timeout).toBe(4000);
+    });
+
+    it('Custom odpOptions.eventRequestHandler override takes precedence over odpOptions.eventApiTimeout', () => {
+      const odpOptions: OdpOptions = {
+        eventApiTimeout: 2,
+        eventBatchSize: 2,
+        eventFlushInterval: 2,
+        eventQueueSize: 2,
+        eventRequestHandler: new BrowserRequestHandler(fakeLogger, 1),
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.apiManager.requestHandler.timeout).toBe(1);
+    });
+
+    it('Custom odpOptions.eventManager overrides default Event Manager', () => {
+      const fakeClientEngine = 'test-javascript-sdk';
+      const fakeClientVersion = '1.2.3';
+
+      const customEventManager = new OdpEventManager({
+        odpConfig,
+        apiManager: fakeEventApiManager,
+        logger: fakeLogger,
+        clientEngine: fakeClientEngine,
+        clientVersion: fakeClientVersion,
+      });
+
+      const odpOptions: OdpOptions = {
+        eventManager: customEventManager,
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager).toBe(customEventManager);
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.clientEngine).toBe(fakeClientEngine);
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.clientVersion).toBe(fakeClientVersion);
+    });
+
+    it('Custom odpOptions.eventManager override takes precedence over all other event-related odpOptions', () => {
+      const fakeClientEngine = 'test-javascript-sdk';
+      const fakeClientVersion = '1.2.3';
+
+      const customEventManager = new OdpEventManager({
+        odpConfig,
+        apiManager: new OdpEventApiManager(new BrowserRequestHandler(fakeLogger, 1), fakeLogger),
+        logger: fakeLogger,
+        clientEngine: fakeClientEngine,
+        clientVersion: fakeClientVersion,
+        queueSize: 1,
+        batchSize: 1,
+        flushInterval: 1,
+      });
+
+      const odpOptions: OdpOptions = {
+        eventApiTimeout: 2,
+        eventBatchSize: 2,
+        eventFlushInterval: 2,
+        eventQueueSize: 2,
+        eventRequestHandler: new BrowserRequestHandler(fakeLogger, 3),
+        eventManager: customEventManager,
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager).toBe(customEventManager);
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.clientEngine).toBe(fakeClientEngine);
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.clientVersion).toBe(fakeClientVersion);
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.batchSize).toBe(1);
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.flushInterval).toBe(1);
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.queueSize).toBe(1);
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.apiManager.requestHandler.timeout).toBe(1);
+    });
+
+    it('Custom odpOptions micro values (non-request/manager) override all expected fields for both segments and event managers', () => {
+      const odpOptions: OdpOptions = {
+        segmentsCacheSize: 4,
+        segmentsCacheTimeout: 4,
+        segmentsCache: new BrowserLRUCache<string, string[]>({ maxSize: 4, timeout: 4 }),
+        segmentsApiTimeout: 4,
+        eventApiTimeout: 4,
+        eventBatchSize: 4,
+        eventFlushInterval: 4,
+        eventQueueSize: 4,
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      // @ts-ignore
+      expect(browserOdpManager.segmentManager?._segmentsCache.maxSize).toBe(4);
+
+      // @ts-ignore
+      expect(browserOdpManager.segmentManager?._segmentsCache.timeout).toBe(4);
+
+      // @ts-ignore
+      expect(browserOdpManager.segmentManager.odpSegmentApiManager.requestHandler.timeout).toBe(4);
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.batchSize).toBe(4);
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.flushInterval).toBe(4);
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.queueSize).toBe(4);
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.apiManager.requestHandler.timeout).toBe(4);
+    });
   });
 });

@@ -16,26 +16,22 @@
 
 import { BROWSER_CLIENT_VERSION, ERROR_MESSAGES, JAVASCRIPT_CLIENT_ENGINE, ODP_USER_KEY } from '../../utils/enums';
 import { getLogger, LoggerFacade, LogHandler, LogLevel } from '../../modules/logging';
+
 import { BrowserRequestHandler } from './../../utils/http_request_handler/browser_request_handler';
 
 import BrowserAsyncStorageCache from '../key_value_cache/browserAsyncStorageCache';
 import PersistentKeyValueCache from '../key_value_cache/persistentKeyValueCache';
-import { BrowserLRUCache, LRUCache } from '../../utils/lru_cache';
+import { BrowserLRUCache } from '../../utils/lru_cache';
 
 import { VuidManager } from './../vuid_manager/index';
 
 import { OdpManager } from '../../core/odp/odp_manager';
 import { OdpEvent } from '../../core/odp/odp_event';
-import { OdpEventManager } from '../../core/odp/odp_event_manager';
-import { OdpSegmentManager } from '../../core/odp/odp_segment_manager';
 import { OdpOptions } from '../../shared_types';
 
 interface BrowserOdpManagerConfig {
-  disable: boolean;
   logger?: LogHandler;
-  segmentsCache?: LRUCache<string, string[]>;
-  eventManager?: OdpEventManager;
-  segmentManager?: OdpSegmentManager;
+  odpOptions?: OdpOptions;
 }
 
 // Client-side Browser Plugin for ODP Manager
@@ -43,22 +39,41 @@ export class BrowserOdpManager extends OdpManager {
   static cache = new BrowserAsyncStorageCache();
   vuid?: string;
 
-  constructor({ disable, logger, segmentsCache, eventManager, segmentManager }: BrowserOdpManagerConfig) {
-    const browserLogger = logger || getLogger();
+  constructor({ logger, odpOptions }: BrowserOdpManagerConfig) {
+    const browserLogger = logger || getLogger('BrowserOdpManager');
 
-    const browserRequestHandler = new BrowserRequestHandler(browserLogger);
     const browserClientEngine = JAVASCRIPT_CLIENT_ENGINE;
     const browserClientVersion = BROWSER_CLIENT_VERSION;
 
+    let customSegmentRequestHandler;
+
+    if (odpOptions?.segmentsRequestHandler) {
+      customSegmentRequestHandler = odpOptions.segmentsRequestHandler;
+    } else if (odpOptions?.segmentsApiTimeout) {
+      customSegmentRequestHandler = new BrowserRequestHandler(browserLogger, odpOptions.segmentsApiTimeout);
+    }
+
+    let customEventRequestHandler;
+
+    if (odpOptions?.eventRequestHandler) {
+      customEventRequestHandler = odpOptions.eventRequestHandler;
+    } else if (odpOptions?.eventApiTimeout) {
+      customEventRequestHandler = new BrowserRequestHandler(browserLogger, odpOptions.eventApiTimeout);
+    }
+
     super({
-      disable,
-      requestHandler: browserRequestHandler,
+      segmentLRUCache:
+        odpOptions?.segmentsCache ||
+        new BrowserLRUCache<string, string[]>({
+          maxSize: odpOptions?.segmentsCacheSize,
+          timeout: odpOptions?.segmentsCacheTimeout,
+        }),
+      segmentRequestHandler: customSegmentRequestHandler || new BrowserRequestHandler(browserLogger),
+      eventRequestHandler: customEventRequestHandler || new BrowserRequestHandler(browserLogger),
       logger: browserLogger,
       clientEngine: browserClientEngine,
       clientVersion: browserClientVersion,
-      segmentsCache: segmentsCache || new BrowserLRUCache<string, string[]>(),
-      eventManager,
-      segmentManager,
+      odpOptions,
     });
 
     this.logger = browserLogger;
@@ -99,7 +114,12 @@ export class BrowserOdpManager extends OdpManager {
       return;
     }
 
-    super.identifyUser(fsUserId, vuid);
+    if (fsUserId && vuid && VuidManager.isVuid(vuid)) {
+      super.identifyUser(fsUserId, vuid);
+      return;
+    }
+
+    super.identifyUser(fsUserId, vuid || this.vuid);
   }
 
   /**
@@ -121,30 +141,5 @@ export class BrowserOdpManager extends OdpManager {
     }
 
     super.sendEvent({ type, action, identifiers: identifiersWithVuid, data });
-  }
-
-  public static createBrowserOdpManager({
-    logger = getLogger(),
-    odpOptions,
-  }: {
-    logger: LoggerFacade;
-    odpOptions?: OdpOptions;
-  }): BrowserOdpManager {
-    if (!odpOptions) {
-      return new BrowserOdpManager({ disable: false, logger });
-    }
-
-    return new BrowserOdpManager({
-      disable: odpOptions.disabled || false,
-      segmentsCache:
-        odpOptions?.segmentsCache ||
-        new BrowserLRUCache<string, string[]>({
-          maxSize: odpOptions.segmentsCacheSize,
-          timeout: odpOptions.segmentsCacheTimeout,
-        }),
-      segmentManager: odpOptions.segmentManager,
-      eventManager: odpOptions.eventManager,
-      logger,
-    });
   }
 }

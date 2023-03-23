@@ -17,7 +17,6 @@ import { assert, expect } from 'chai';
 import sinon from 'sinon';
 import { sprintf } from '../utils/fns';
 import { NOTIFICATION_TYPES } from '../utils/enums';
-import eventProcessor from '../plugins/event_processor';
 import * as logging from '../modules/logging';
 
 import Optimizely from './';
@@ -40,8 +39,7 @@ import { createForwardingEventProcessor } from '../plugins/event_processor/forwa
 import { createEventProcessor } from '../plugins/event_processor';
 import { createNotificationCenter } from '../core/notification_center';
 import { createHttpPollingDatafileManager } from '../plugins/datafile_manager/http_polling_datafile_manager';
-import { OdpManager } from '../core/odp/odp_manager';
-import { getLogger } from '../modules/logging';
+import { NodeOdpManager } from '../plugins/odp_manager/index.node';
 
 var ERROR_MESSAGES = enums.ERROR_MESSAGES;
 var LOG_LEVEL = enums.LOG_LEVEL;
@@ -10088,6 +10086,7 @@ describe('lib/optimizely', function() {
     });
   });
 
+  // Note: /lib/index.browser.tests.js contains relevant Opti Client x Browser ODP Tests
   // TODO: Finish these tests in ODP Node.js Implementation
   describe('odp', () => {
     var optlyInstanceWithOdp;
@@ -10112,9 +10111,7 @@ describe('lib/optimizely', function() {
         eventBatchSize: 1,
         eventProcessor,
         notificationCenter,
-        odpManager: new OdpManager({
-          disable: false,
-        }),
+        odpManager: new NodeOdpManager({}),
       });
 
       bucketStub = sinon.stub(bucketer, 'bucket');
@@ -10142,9 +10139,11 @@ describe('lib/optimizely', function() {
         eventBatchSize: 1,
         eventProcessor,
         notificationCenter,
-        odpManager: new OdpManager({
-          disable: true,
+        odpManager: new NodeOdpManager({
           logger: createdLogger,
+          odpOptions: {
+            disabled: true,
+          },
         }),
       });
 

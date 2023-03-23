@@ -19,7 +19,7 @@ import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
 
 import { RequestHandler } from './../../utils/http_request_handler/http';
-import { BrowserLRUCache } from './../../utils/lru_cache/browser_lru_cache';
+
 import { LRUCache } from './../../utils/lru_cache/lru_cache';
 
 import { VuidManager } from '../../plugins/vuid_manager';
@@ -32,26 +32,25 @@ import { OdpEventApiManager } from './odp_event_api_manager';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
 import { invalidOdpDataFound } from './odp_utils';
 import { OdpEvent } from './odp_event';
+import { OdpOptions } from '../../shared_types';
 
 /**
- * @param {boolean}                     disable Flag for disabling ODP Manager.
- * @param {RequestHandler}              requestHandler HTTP request handler that will be used by Segment and Event Managers.
+ * @param {LRUCache<string, string>[]}  segmentLRUCache Cache to be used for storing segments.
+ * @param {RequestHandler}              segmentRequestHandler HTTP request handler that will be used by the ODP Segment Manager.
+ * @param {RequestHandler}              eventRequestHandler HTTP request handler that will be used by the ODP Event Manager.
  * @param {LogHandler}                  logger (Optional) Accepts custom LogHandler. Defaults to the default global LogHandler.
  * @param {string}                      clientEngine (Optional) String denoting specific client engine being used. Defaults to 'javascript-sdk'.
  * @param {string}                      clientVersion (Optional) String denoting specific client version. Defaults to current version value from package.json.
- * @param {LRUCache<string, string[]>}  segmentsCache (Optional) Accepts a custom LRUCache. Defaults to BrowserLRUCache.
- * @param {OdpEventManager}             eventManager (Optional) Accepts a custom ODPEventManager.
- * @param {OdpSegmentManager}           segmentManager (Optional) Accepts a custom ODPSegmentManager.
+ * @param {OdpOptions}                  odpOptions (Optional) Configuration settings for various ODP options from segment cache size to event flush interval.
  */
 interface OdpManagerConfig {
-  disable: boolean;
-  requestHandler: RequestHandler;
+  segmentLRUCache: LRUCache<string, string[]>;
+  segmentRequestHandler: RequestHandler;
+  eventRequestHandler: RequestHandler;
   logger?: LogHandler;
   clientEngine?: string;
   clientVersion?: string;
-  segmentsCache?: LRUCache<string, string[]>;
-  eventManager?: OdpEventManager;
-  segmentManager?: OdpSegmentManager;
+  odpOptions?: OdpOptions;
 }
 
 /**
@@ -75,16 +74,15 @@ export class OdpManager {
   public eventManager: OdpEventManager | undefined;
 
   constructor({
-    disable,
-    requestHandler,
+    segmentLRUCache,
+    segmentRequestHandler,
+    eventRequestHandler,
     logger,
     clientEngine,
     clientVersion,
-    segmentsCache,
-    eventManager,
-    segmentManager,
+    odpOptions,
   }: OdpManagerConfig) {
-    this.enabled = !disable;
+    this.enabled = !odpOptions?.disabled;
     this.logger = logger || getLogger();
 
     if (!this.enabled) {
@@ -93,28 +91,31 @@ export class OdpManager {
     }
 
     // Set up Segment Manager (Audience Segments GraphQL API Interface)
-    if (segmentManager) {
-      this.segmentManager = segmentManager;
+    if (odpOptions?.segmentManager) {
+      this.segmentManager = odpOptions.segmentManager;
       this.segmentManager.updateSettings(this.odpConfig);
     } else {
       this.segmentManager = new OdpSegmentManager(
         this.odpConfig,
-        segmentsCache || new BrowserLRUCache<string, string[]>(),
-        new OdpSegmentApiManager(requestHandler, this.logger)
+        segmentLRUCache,
+        new OdpSegmentApiManager(segmentRequestHandler, this.logger)
       );
     }
 
     // Set up Events Manager (Events REST API Interface)
-    if (eventManager) {
-      this.eventManager = eventManager;
+    if (odpOptions?.eventManager) {
+      this.eventManager = odpOptions.eventManager;
       this.eventManager.updateSettings(this.odpConfig);
     } else {
       this.eventManager = new OdpEventManager({
         odpConfig: this.odpConfig,
-        apiManager: new OdpEventApiManager(requestHandler, this.logger),
+        apiManager: new OdpEventApiManager(eventRequestHandler, this.logger),
         logger: this.logger,
         clientEngine: clientEngine || 'javascript-sdk',
         clientVersion: clientVersion || BROWSER_CLIENT_VERSION,
+        flushInterval: odpOptions?.eventFlushInterval,
+        batchSize: odpOptions?.eventBatchSize,
+        queueSize: odpOptions?.eventQueueSize,
       });
     }
 
