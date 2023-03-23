@@ -336,6 +336,13 @@ describe('OdpManager', () => {
       expect(browserOdpManager.segmentManager.odpSegmentApiManager.requestHandler.timeout).toBe(4000);
     });
 
+    it('Browser default Segments API Request Handler timeout should be used when odpOptions does not include segmentsApiTimeout', () => {
+      const browserOdpManager = new BrowserOdpManager({});
+
+      // @ts-ignore
+      expect(browserOdpManager.segmentManager.odpSegmentApiManager.requestHandler.timeout).toBe(10000);
+    });
+
     it('Custom odpOptions.segmentsRequestHandler overrides default Segment API Request Handler', () => {
       const odpOptions: OdpOptions = {
         segmentsRequestHandler: new BrowserRequestHandler(fakeLogger, 4000),
@@ -429,6 +436,18 @@ describe('OdpManager', () => {
 
       // @ts-ignore
       expect(browserOdpManager.eventManager.apiManager.requestHandler.timeout).toBe(4000);
+    });
+
+    it('Browser default Events API Request Handler timeout should be used when odpOptions does not include eventssApiTimeout', () => {
+      const odpOptions: OdpOptions = {
+      };
+
+      const browserOdpManager = new BrowserOdpManager({
+        odpOptions,
+      });
+
+      // @ts-ignore
+      expect(browserOdpManager.eventManager.apiManager.requestHandler.timeout).toBe(10000);
     });
 
     it('Custom odpOptions.eventFlushInterval overrides default Event Manager flush interval', () => {

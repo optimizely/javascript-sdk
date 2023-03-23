@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { BROWSER_CLIENT_VERSION, ERROR_MESSAGES, JAVASCRIPT_CLIENT_ENGINE, ODP_USER_KEY } from '../../utils/enums';
+import { 
+  BROWSER_CLIENT_VERSION, 
+  ERROR_MESSAGES, 
+  JAVASCRIPT_CLIENT_ENGINE, 
+  ODP_USER_KEY, 
+  REQUEST_TIMEOUT_ODP_SEGMENTS_MS, 
+  REQUEST_TIMEOUT_ODP_EVENTS_MS 
+} from '../../utils/enums';
 import { getLogger, LoggerFacade, LogHandler, LogLevel } from '../../modules/logging';
 
 import { BrowserRequestHandler } from './../../utils/http_request_handler/browser_request_handler';
@@ -49,16 +56,22 @@ export class BrowserOdpManager extends OdpManager {
 
     if (odpOptions?.segmentsRequestHandler) {
       customSegmentRequestHandler = odpOptions.segmentsRequestHandler;
-    } else if (odpOptions?.segmentsApiTimeout) {
-      customSegmentRequestHandler = new BrowserRequestHandler(browserLogger, odpOptions.segmentsApiTimeout);
+    } else {
+      customSegmentRequestHandler = new BrowserRequestHandler(
+        browserLogger, 
+        odpOptions?.segmentsApiTimeout || REQUEST_TIMEOUT_ODP_SEGMENTS_MS
+      );
     }
 
     let customEventRequestHandler;
 
     if (odpOptions?.eventRequestHandler) {
       customEventRequestHandler = odpOptions.eventRequestHandler;
-    } else if (odpOptions?.eventApiTimeout) {
-      customEventRequestHandler = new BrowserRequestHandler(browserLogger, odpOptions.eventApiTimeout);
+    } else {
+      customEventRequestHandler = new BrowserRequestHandler(
+        browserLogger, 
+        odpOptions?.eventApiTimeout || REQUEST_TIMEOUT_ODP_EVENTS_MS
+      );
     }
 
     super({
@@ -68,8 +81,8 @@ export class BrowserOdpManager extends OdpManager {
           maxSize: odpOptions?.segmentsCacheSize,
           timeout: odpOptions?.segmentsCacheTimeout,
         }),
-      segmentRequestHandler: customSegmentRequestHandler || new BrowserRequestHandler(browserLogger),
-      eventRequestHandler: customEventRequestHandler || new BrowserRequestHandler(browserLogger),
+      segmentRequestHandler: customSegmentRequestHandler,
+      eventRequestHandler: customEventRequestHandler,
       logger: browserLogger,
       clientEngine: browserClientEngine,
       clientVersion: browserClientVersion,
