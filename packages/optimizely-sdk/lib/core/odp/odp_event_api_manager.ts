@@ -41,7 +41,6 @@ export class OdpEventApiManager implements IOdpEventApiManager {
    * Creates instance to access Optimizely Data Platform (ODP) REST API
    * @param requestHandler Desired request handler for testing
    * @param logger Collect and record events/errors for this GraphQL implementation
-   * @param browserMode true if running in browser
    */
   constructor(requestHandler: RequestHandler, logger: LogHandler) {
     this.requestHandler = requestHandler;
