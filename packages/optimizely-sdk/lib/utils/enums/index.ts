@@ -337,6 +337,8 @@ export enum NOTIFICATION_TYPES {
  * Default milliseconds before request timeout
  */
 export const REQUEST_TIMEOUT_MS = 60 * 1000; // 1 minute
+export const REQUEST_TIMEOUT_ODP_SEGMENTS_MS = 10 * 1000;  // 10 secs
+export const REQUEST_TIMEOUT_ODP_EVENTS_MS = 10 * 1000;  // 10 secs
 
 /**
  * ODP User Key Options
