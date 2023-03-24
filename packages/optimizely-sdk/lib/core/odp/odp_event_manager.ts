@@ -142,19 +142,28 @@ export class OdpEventManager implements IOdpEventManager {
     this.clientEngine = clientEngine;
     this.clientVersion = clientVersion;
 
-    let defaultQueueSize = DEFAULT_BROWSER_QUEUE_SIZE;
-    // browser only accepts batchSize = 1
-    this.batchSize = 1
+    const isBrowser = browserMode();
 
-    if (!browserMode()) {
-      defaultQueueSize = DEFAULT_SERVER_QUEUE_SIZE;
-      this.batchSize = batchSize || DEFAULT_BATCH_SIZE;
-    } else if (typeof batchSize !== 'undefined' && batchSize !== 1) {
-      this.logger.log(LogLevel.WARNING, 'ODP event batch size must be 1 in the browser.');
+    const defaultQueueSize = isBrowser ? DEFAULT_BROWSER_QUEUE_SIZE : DEFAULT_SERVER_QUEUE_SIZE;
+    this.queueSize = queueSize || defaultQueueSize;
+    this.batchSize = batchSize || DEFAULT_BATCH_SIZE;
+
+    if (flushInterval === 0 || isBrowser) {
+      // disable event batching
+      this.batchSize = 1;
+      this.flushInterval = 0;
+    } else {
+      this.flushInterval = flushInterval || DEFAULT_FLUSH_INTERVAL_MSECS;
     }
 
-    this.queueSize = queueSize || defaultQueueSize;
-    this.flushInterval = flushInterval || DEFAULT_FLUSH_INTERVAL_MSECS;
+    if (isBrowser) {
+      if (typeof batchSize !== 'undefined' && batchSize !== 1) {
+        this.logger.log(LogLevel.WARNING, 'ODP event batch size must be 1 in the browser.');
+      }
+      if (typeof flushInterval !== 'undefined' && flushInterval !== 0) {
+        this.logger.log(LogLevel.WARNING, 'ODP event flush interval must be 0 in the browser.');
+      }
+    }
 
     this.state = STATE.STOPPED;
   }
