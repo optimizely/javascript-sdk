@@ -25,9 +25,12 @@ import optimizelyFactory from './index.browser';
 import configValidator from './utils/config_validator';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import OptimizelyUserContext from './optimizely_user_context';
-import { LOG_MESSAGES, ODP_EVENT_ACTION } from './utils/enums';
+import { LOG_MESSAGES, ODP_EVENT_ACTION, ODP_EVENT_BROWSER_ENDPOINT } from './utils/enums';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import { OdpConfig } from './core/odp/odp_config';
+import { OdpEventManager } from './core/odp/odp_event_manager';
+import { OdpEventApiManager } from './core/odp/odp_event_api_manager';
+import { isBrowserContext } from './core/odp/odp_utils';
 
 var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
 
@@ -582,14 +585,29 @@ describe('javascript-sdk (Browser)', function() {
 
       const testFsUserId = 'fs_test_user';
       const testVuid = 'vuid_test_user';
+      var clock;
+      const requestParams = new Map;
+      const mockRequestHandler = {
+        makeRequest: (endpoint, headers, method, data) => {
+          requestParams.set('endpoint', endpoint);
+          requestParams.set('headers', headers);
+          requestParams.set('method', method);
+          requestParams.set('data', data);
+          return {responsePromise: (async()=>{return {statusCode: 200}})()}
+        },
+        args: requestParams
+      };
 
       beforeEach(function() {
         sandbox.stub(logger, 'log');
         sandbox.stub(logger, 'error');
+        clock = sinon.useFakeTimers(new Date());
       });
 
       afterEach(function() {
         sandbox.restore();
+        clock.restore()
+        requestParams.clear()
       });
 
       it('should send identify event by default when initialized', () => {
@@ -672,13 +690,10 @@ describe('javascript-sdk (Browser)', function() {
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: new BrowserOdpManager({
-            logger,
-            odpOptions: {
-              segmentsCacheSize: 10,
-              segmentsCacheTimeout: 10,
-            },
-          }),
+          odpOptions: {
+            segmentsCacheSize: 10,
+            segmentsCacheTimeout: 10,
+          },
         });
 
         sinon.assert.calledWith(
@@ -694,7 +709,6 @@ describe('javascript-sdk (Browser)', function() {
         );
       });
 
-      // TODO: Patch VUID Promise Pattern (@Andy)
       it('should accept a valid custom odp segment manager', async () => {
         const fakeSegmentManager = {
           fetchQualifiedSegments: sinon.spy(),
@@ -707,29 +721,25 @@ describe('javascript-sdk (Browser)', function() {
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: new BrowserOdpManager({
-            logger,
-            odpOptions: {
-              segmentManager: fakeSegmentManager,
-            },
-          }),
+          odpOptions: {
+            segmentManager: fakeSegmentManager,
+          },
         });
 
         sinon.assert.called(fakeSegmentManager.updateSettings);
 
-        try {
-          const readyData = await client.onReady();
-          assert.equal(readyData.success, true);
-          assert.isEmpty(readyData.reason);
+        const readyData = await client.onReady();
+        assert.equal(readyData.success, true);
+        assert.isUndefined(readyData.reason);
 
-          await client.fetchQualifiedSegments(testVuid);
+        await client.fetchQualifiedSegments(testVuid);
 
-          sinon.assert.notCalled(logger.error);
-          sinon.assert.called(fakeSegmentManager.fetchQualifiedSegments);
-        } catch (e) {}
+        sinon.assert.notCalled(logger.error);
+        sinon.assert.called(fakeSegmentManager.fetchQualifiedSegments);
+
       });
 
-      it('should accept a valid custom odp event manager', () => {
+      it('should accept a valid custom odp event manager', async () => {
         const fakeEventManager = {
           start: sinon.spy(),
           updateSettings: sinon.spy(),
@@ -746,49 +756,51 @@ describe('javascript-sdk (Browser)', function() {
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: new BrowserOdpManager({
-            logger,
-            odpOptions: {
-              eventManager: fakeEventManager,
-            },
-          }),
+          odpOptions: {
+            disabled: false,
+            eventManager: fakeEventManager,
+          }
         });
+        const readyData = await client.onReady();
+        assert.equal(readyData.success, true);
+        assert.isUndefined(readyData.reason);
 
         sinon.assert.called(fakeEventManager.start);
       });
 
-      // TODO: Patch VUID Promise Pattern (@Andy)
       it('should send an odp event with sendOdpEvent', async () => {
-        const fakeOdpManager = {
-          sendEvent: sinon.spy(),
+        const fakeEventManager = {
           updateSettings: sinon.spy(),
+          start: sinon.spy(),
+          stop: sinon.spy(),
+          registerVuid: sinon.spy(),
           identifyUser: sinon.spy(),
-          close: sinon.spy(),
+          sendEvent: sinon.spy(),
+          flush: sinon.spy(),
         };
 
         const client = optimizelyFactory.createInstance({
-          datafile: testData.getTestProjectConfigWithFeatures(),
+          datafile: testData.getOdpIntegratedConfigWithSegments(),
           errorHandler: fakeErrorHandler,
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: fakeOdpManager,
+          odpOptions: {
+            eventManager: fakeEventManager
+          }
         });
 
-        try {
-          const readyData = await client.onReady();
-          assert.equal(readyData.success, true);
-          assert.isEmpty(readyData.reason);
-          client.sendOdpEvent({
-            action: ODP_EVENT_ACTION.INITIALIZED,
-          });
+        const readyData = await client.onReady();
+        assert.equal(readyData.success, true);
+        assert.isUndefined(readyData.reason);
+        await client.sendOdpEvent({
+          action: ODP_EVENT_ACTION.INITIALIZED,
+        });
 
-          sinon.assert.notCalled(logger.error);
-          sinon.assert.called(fakeOdpManager.sendEvent);
-        } catch (e) {}
+        sinon.assert.notCalled(logger.error);
+        sinon.assert.called(fakeEventManager.sendEvent);
       });
 
-      // TODO: Patch VUID Promise Pattern (@Andy)
       it('should log an error when attempting to send an odp event when odp is disabled', async () => {
         const client = optimizelyFactory.createInstance({
           datafile: testData.getTestProjectConfigWithFeatures(),
@@ -796,25 +808,98 @@ describe('javascript-sdk (Browser)', function() {
           eventDispatcher: fakeEventDispatcher,
           eventBatchSize: null,
           logger,
-          odpManager: new BrowserOdpManager({
-            logger,
-            odpOptions: {
-              disabled: true,
-            },
-          }),
+          odpOptions: {
+            disabled: true,
+          },
         });
 
-        try {
-          const readyData = await client.onReady();
-          assert.equal(readyData.success, true);
-          assert.isEmpty(readyData.reason);
-          client.sendOdpEvent({
-            action: ODP_EVENT_ACTION.INITIALIZED,
-          });
+        const readyData = await client.onReady();
+        assert.equal(readyData.success, true);
+        assert.isUndefined(readyData.reason);
+        await client.sendOdpEvent({
+          action: ODP_EVENT_ACTION.INITIALIZED,
+        });
 
-          sinon.assert.calledWith(logger.error, 'ODP event send failed.');
-          sinon.assert.calledWith(logger.error, 'ODP is not enabled.');
-        } catch (e) {}
+        sinon.assert.calledWith(logger.error, 'ODP event send failed.');
+        sinon.assert.calledWith(logger.log, optimizelyFactory.enums.LOG_LEVEL.INFO, 'ODP Disabled.');
+      });
+
+      it('should log a warning when attempting to use an event batch size other than 1', async () => {
+        if (!isBrowserContext()) {
+          return
+        }
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getOdpIntegratedConfigWithSegments(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpOptions: {
+            eventBatchSize: 5
+          },
+        });
+
+        const readyData = await client.onReady();
+        assert.equal(readyData.success, true);
+        assert.isUndefined(readyData.reason);
+        await client.sendOdpEvent({
+          action: ODP_EVENT_ACTION.INITIALIZED,
+        });
+
+        sinon.assert.calledWith(logger.log, optimizelyFactory.enums.LOG_LEVEL.WARNING, 'ODP event batch size must be 1 in the browser.');
+        assert(client.odpManager.eventManager.batchSize, 1);
+      });
+
+      it('should send an odp event to the browser endpoint', async () => {
+        if (!isBrowserContext()) {
+          return
+        }
+        const odpConfig = new OdpConfig();
+        const apiManager = new OdpEventApiManager(mockRequestHandler, logger);
+        const eventManager = new OdpEventManager({odpConfig, apiManager, logger, clientEngine: "javascript-sdk", clientVersion: "great" })
+
+        let datafile = testData.getOdpIntegratedConfigWithSegments();
+
+        const client = optimizelyFactory.createInstance({
+          datafile,
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpOptions: {
+            odpConfig,
+            eventManager
+          }
+        });
+
+        const readyData = await client.onReady();
+        assert.equal(readyData.success, true);
+        assert.isUndefined(readyData.reason);
+        await client.sendOdpEvent({
+          action: ODP_EVENT_ACTION.INITIALIZED,
+        });
+
+        // wait for request to be sent
+        clock.tick(100);
+
+        let publicKey = datafile.integrations[0].publicKey;
+
+        let requestEndpoint = new URL(requestParams.get('endpoint'));
+        assert.equal(requestEndpoint.origin + requestEndpoint.pathname, ODP_EVENT_BROWSER_ENDPOINT)
+        assert.equal(requestParams.get('method'), 'GET')
+
+        let searchParams = requestEndpoint.searchParams;
+        assert.lengthOf(searchParams.get('idempotence_id'), 36);
+        assert.equal(searchParams.get('data_source'), 'javascript-sdk');
+        assert.equal(searchParams.get('data_source_type'), 'sdk');
+        assert.equal(searchParams.get('data_source_version'), 'great');
+        assert.equal(searchParams.get('tracker_id'), publicKey);
+        assert.equal(searchParams.get('event_type'), 'fullstack');
+        assert.equal(searchParams.get('vdl_action'), ODP_EVENT_ACTION.INITIALIZED);
+        assert.isTrue(searchParams.get('vuid').startsWith('vuid_'));
+        assert.isNotNull(searchParams.get('data_source_version'));
+
+        sinon.assert.notCalled(logger.error);
       });
     });
   });

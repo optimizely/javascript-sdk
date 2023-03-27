@@ -349,6 +349,7 @@ export enum ODP_USER_KEY {
 }
 
 export const ODP_DEFAULT_EVENT_TYPE = 'fullstack';
+export const ODP_EVENT_BROWSER_ENDPOINT = 'https://jumbe.zaius.com/v2/zaius.gif';
 
 /**
  * ODP Event Action Options

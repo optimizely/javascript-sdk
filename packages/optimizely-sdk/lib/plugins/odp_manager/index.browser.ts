@@ -45,6 +45,7 @@ interface BrowserOdpManagerConfig {
 export class BrowserOdpManager extends OdpManager {
   static cache = new BrowserAsyncStorageCache();
   vuid?: string;
+  initPromise?: Promise<void>
 
   constructor({ logger, odpOptions }: BrowserOdpManagerConfig) {
     const browserLogger = logger || getLogger('BrowserOdpManager');
@@ -90,7 +91,9 @@ export class BrowserOdpManager extends OdpManager {
     });
 
     this.logger = browserLogger;
-    this.initializeVuid(BrowserOdpManager.cache);
+    this.initPromise = this.initializeVuid(BrowserOdpManager.cache).catch(e => {
+      this.logger.log(this.enabled ? LogLevel.ERROR : LogLevel.DEBUG, e);
+    });
   }
 
   /**
@@ -121,7 +124,8 @@ export class BrowserOdpManager extends OdpManager {
    * - Additionally, also passes VUID to help identify client-side users
    * @param fsUserId Unique identifier of a target user.
    */
-  public identifyUser(fsUserId?: string, vuid?: string): void {
+  public async identifyUser(fsUserId?: string, vuid?: string): Promise<void> {
+    await this.initPromise;
     if (fsUserId && VuidManager.isVuid(fsUserId)) {
       super.identifyUser(undefined, fsUserId);
       return;
@@ -142,7 +146,8 @@ export class BrowserOdpManager extends OdpManager {
    * - Identifiers must contain at least one key-value pair
    * @param {OdpEvent} odpEvent  > ODP Event to send to event manager
    */
-  public sendEvent({ type, action, identifiers, data }: OdpEvent): void {
+  public async sendEvent({ type, action, identifiers, data }: OdpEvent): Promise<void> {
+    await this.initPromise;
     const identifiersWithVuid = new Map<string, string>(identifiers);
 
     if (!identifiers.has(ODP_USER_KEY.VUID)) {

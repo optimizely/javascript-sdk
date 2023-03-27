@@ -22,7 +22,7 @@ import { ERROR_MESSAGES, ODP_USER_KEY, ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION 
 import { OdpEvent } from './odp_event';
 import { OdpConfig } from './odp_config';
 import { OdpEventApiManager } from './odp_event_api_manager';
-import { invalidOdpDataFound } from './odp_utils';
+import { invalidOdpDataFound, isBrowserContext } from './odp_utils';
 
 const MAX_RETRIES = 3;
 const DEFAULT_BATCH_SIZE = 10;
@@ -54,6 +54,8 @@ export interface IOdpEventManager {
   identifyUser(userId: string, vuid?: string): void;
 
   sendEvent(event: OdpEvent): void;
+
+  flush(): void;
 }
 
 /**
@@ -95,12 +97,12 @@ export class OdpEventManager implements IOdpEventManager {
    */
   private readonly queueSize: number;
   /**
-   * Maximum number of events to process at once
+   * Maximum number of events to process at once. Ignored in browser context
    * @private
    */
   private readonly batchSize: number;
   /**
-   * Milliseconds between setTimeout() to process new batches
+   * Milliseconds between setTimeout() to process new batches. Ignored in browser context
    * @private
    */
   private readonly flushInterval: number;
@@ -140,25 +142,27 @@ export class OdpEventManager implements IOdpEventManager {
     this.clientEngine = clientEngine;
     this.clientVersion = clientVersion;
 
-    let defaultQueueSize = DEFAULT_BROWSER_QUEUE_SIZE;
+    const isBrowser = isBrowserContext();
 
-    try {
-      // TODO: Consider refactoring to use typeof process and combine w/above line
-      if (process) {
-        defaultQueueSize = DEFAULT_SERVER_QUEUE_SIZE;
-      }
-    } catch (e) {
-      // TODO: Create Browser and Non-Browser specific variants of ODP Event Manager to avoid this try/catch
-    }
-
+    const defaultQueueSize = isBrowser ? DEFAULT_BROWSER_QUEUE_SIZE : DEFAULT_SERVER_QUEUE_SIZE;
     this.queueSize = queueSize || defaultQueueSize;
     this.batchSize = batchSize || DEFAULT_BATCH_SIZE;
-    if (flushInterval === 0) {
+
+    if (flushInterval === 0 || isBrowser) {
       // disable event batching
       this.batchSize = 1;
       this.flushInterval = 0;
     } else {
       this.flushInterval = flushInterval || DEFAULT_FLUSH_INTERVAL_MSECS;
+    }
+
+    if (isBrowser) {
+      if (typeof batchSize !== 'undefined' && batchSize !== 1) {
+        this.logger.log(LogLevel.WARNING, 'ODP event batch size must be 1 in the browser.');
+      }
+      if (typeof flushInterval !== 'undefined' && flushInterval !== 0) {
+        this.logger.log(LogLevel.WARNING, 'ODP event flush interval must be 0 in the browser.');
+      }
     }
 
     this.state = STATE.STOPPED;
@@ -398,17 +402,12 @@ export class OdpEventManager implements IOdpEventManager {
       return true;
     }
 
-    try {
-      if (process) {
-        // if Node/server-side context, empty queue items before ready state
-        this.logger.log(LogLevel.WARNING, 'ODPConfig not ready. Discarding events in queue.');
-        this.queue = new Array<OdpEvent>();
-      } else {
-        // in Browser/client-side context, give debug message but leave events in queue
-        this.logger.log(LogLevel.DEBUG, 'ODPConfig not ready. Leaving events in queue.');
-      }
-    } catch (e) {
-      // TODO: Create Browser and Non-Browser specific variants of ODP Event Manager to avoid this try/catch
+    if (!isBrowserContext()) {
+      // if Node/server-side context, empty queue items before ready state
+      this.logger.log(LogLevel.WARNING, 'ODPConfig not ready. Discarding events in queue.');
+      this.queue = new Array<OdpEvent>();
+    } else {
+      // in Browser/client-side context, give debug message but leave events in queue
       this.logger.log(LogLevel.DEBUG, 'ODPConfig not ready. Leaving events in queue.');
     }
 
