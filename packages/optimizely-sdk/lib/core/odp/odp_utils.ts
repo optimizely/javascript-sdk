@@ -36,7 +36,7 @@ export function invalidOdpDataFound(data: Map<string, any>): boolean {
  * @returns True if in the browser
  * @private
  */
-export function browserMode(): boolean {
+export function isBrowserContext(): boolean {
    return !(typeof process !== "undefined" &&
     process.versions != null &&
     process.versions.node != null);

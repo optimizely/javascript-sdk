@@ -22,7 +22,7 @@ import { ERROR_MESSAGES, ODP_USER_KEY, ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION 
 import { OdpEvent } from './odp_event';
 import { OdpConfig } from './odp_config';
 import { OdpEventApiManager } from './odp_event_api_manager';
-import { invalidOdpDataFound, browserMode } from './odp_utils';
+import { invalidOdpDataFound, isBrowserContext } from './odp_utils';
 
 const MAX_RETRIES = 3;
 const DEFAULT_BATCH_SIZE = 10;
@@ -97,12 +97,12 @@ export class OdpEventManager implements IOdpEventManager {
    */
   private readonly queueSize: number;
   /**
-   * Maximum number of events to process at once
+   * Maximum number of events to process at once. Ignored in browser context
    * @private
    */
   private readonly batchSize: number;
   /**
-   * Milliseconds between setTimeout() to process new batches
+   * Milliseconds between setTimeout() to process new batches. Ignored in browser context
    * @private
    */
   private readonly flushInterval: number;
@@ -142,7 +142,7 @@ export class OdpEventManager implements IOdpEventManager {
     this.clientEngine = clientEngine;
     this.clientVersion = clientVersion;
 
-    const isBrowser = browserMode();
+    const isBrowser = isBrowserContext();
 
     const defaultQueueSize = isBrowser ? DEFAULT_BROWSER_QUEUE_SIZE : DEFAULT_SERVER_QUEUE_SIZE;
     this.queueSize = queueSize || defaultQueueSize;
@@ -402,7 +402,7 @@ export class OdpEventManager implements IOdpEventManager {
       return true;
     }
 
-    if (!browserMode()) {
+    if (!isBrowserContext()) {
       // if Node/server-side context, empty queue items before ready state
       this.logger.log(LogLevel.WARNING, 'ODPConfig not ready. Discarding events in queue.');
       this.queue = new Array<OdpEvent>();

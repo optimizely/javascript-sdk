@@ -16,7 +16,7 @@
 
 import { LogHandler, LogLevel } from '../../modules/logging';
 import { OdpEvent } from './odp_event';
-import { browserMode } from './odp_utils';
+import { isBrowserContext } from './odp_utils';
 import { RequestHandler } from '../../utils/http_request_handler/http';
 import { ODP_EVENT_BROWSER_ENDPOINT } from '../../utils/enums';
 
@@ -35,7 +35,7 @@ export interface IOdpEventApiManager {
 export class OdpEventApiManager implements IOdpEventApiManager {
   private readonly logger: LogHandler;
   private readonly requestHandler: RequestHandler;
-  private readonly browserMode: boolean;
+  private readonly isBrowser: boolean;
 
   /**
    * Creates instance to access Optimizely Data Platform (ODP) REST API
@@ -45,7 +45,7 @@ export class OdpEventApiManager implements IOdpEventApiManager {
   constructor(requestHandler: RequestHandler, logger: LogHandler) {
     this.requestHandler = requestHandler;
     this.logger = logger;
-    this.browserMode = browserMode()
+    this.isBrowser = isBrowserContext()
   }
 
   /**
@@ -68,14 +68,14 @@ export class OdpEventApiManager implements IOdpEventApiManager {
       return shouldRetry;
     }
 
-    if (events.length > 1 && this.browserMode) {
+    if (events.length > 1 && this.isBrowser) {
       this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (browser only supports batch size 1)`);
       return shouldRetry;
     }
 
     let method, endpoint, headers, data;
 
-    if (this.browserMode) {
+    if (this.isBrowser) {
       method = 'GET';
       const event = events[0];
       const url = new URL(ODP_EVENT_BROWSER_ENDPOINT);
