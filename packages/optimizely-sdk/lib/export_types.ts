@@ -35,6 +35,7 @@ export {
   NotificationListener,
   Config,
   Client,
+  BrowserClient,
   ActivateListenerPayload,
   TrackListenerPayload,
   NotificationCenter,
