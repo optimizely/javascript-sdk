@@ -38,4 +38,5 @@ export {
   ActivateListenerPayload,
   TrackListenerPayload,
   NotificationCenter,
+  OptimizelySegmentOption,
 } from './shared_types';

@@ -24,6 +24,7 @@ import { OdpSegmentManager } from './core/odp/odp_segment_manager';
 import { LRUCache } from './utils/lru_cache';
 import { OdpEventManager } from './core/odp/odp_event_manager';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
+import { OptimizelySegmentOption } from './core/odp/optimizely_segment_option';
 import { IOptimizelyUserContext as OptimizelyUserContext } from './optimizely_user_context';
 
 export interface BucketerParams {
@@ -534,3 +535,5 @@ export interface OptimizelyDecisionContext {
 export interface OptimizelyForcedDecision {
   variationKey: string;
 }
+
+export { OptimizelySegmentOption };
