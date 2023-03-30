@@ -24,6 +24,7 @@ import { OdpSegmentManager } from './core/odp/odp_segment_manager';
 import { LRUCache } from './utils/lru_cache';
 import { OdpEventManager } from './core/odp/odp_event_manager';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
+import { IOptimizelyUserContext as OptimizelyUserContext } from './optimizely_user_context';
 
 export interface BucketerParams {
   experimentId: string;
@@ -486,21 +487,7 @@ export interface OptimizelyConfig {
   getDatafile(): string;
 }
 
-export interface OptimizelyUserContext {
-  getUserId(): string;
-  getAttributes(): UserAttributes;
-  setAttribute(key: string, value: unknown): void;
-  decide(key: string, options?: OptimizelyDecideOption[]): OptimizelyDecision;
-  decideForKeys(keys: string[], options?: OptimizelyDecideOption[]): { [key: string]: OptimizelyDecision };
-  decideAll(options?: OptimizelyDecideOption[]): { [key: string]: OptimizelyDecision };
-  trackEvent(eventName: string, eventTags?: EventTags): void;
-  setForcedDecision(context: OptimizelyDecisionContext, decision: OptimizelyForcedDecision): boolean;
-  getForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null;
-  removeForcedDecision(context: OptimizelyDecisionContext): boolean;
-  removeAllForcedDecisions(): boolean;
-  fetchQualifiedSegments(): Promise<boolean>;
-  isQualifiedFor(segment: string): boolean;
-}
+export { OptimizelyUserContext };
 
 export interface OptimizelyDecision {
   variationKey: string | null;

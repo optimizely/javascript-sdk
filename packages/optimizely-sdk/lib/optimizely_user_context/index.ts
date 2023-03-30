@@ -32,7 +32,24 @@ interface OptimizelyUserContextConfig {
   shouldIdentifyUser?: boolean;
 }
 
-export default class OptimizelyUserContext {
+export interface IOptimizelyUserContext {
+  qualifiedSegments: string[];
+  getUserId(): string;
+  getAttributes(): UserAttributes;
+  setAttribute(key: string, value: unknown): void;
+  decide(key: string, options?: OptimizelyDecideOption[]): OptimizelyDecision;
+  decideForKeys(keys: string[], options?: OptimizelyDecideOption[]): { [key: string]: OptimizelyDecision };
+  decideAll(options?: OptimizelyDecideOption[]): { [key: string]: OptimizelyDecision };
+  trackEvent(eventName: string, eventTags?: EventTags): void;
+  setForcedDecision(context: OptimizelyDecisionContext, decision: OptimizelyForcedDecision): boolean;
+  getForcedDecision(context: OptimizelyDecisionContext): OptimizelyForcedDecision | null;
+  removeForcedDecision(context: OptimizelyDecisionContext): boolean;
+  removeAllForcedDecisions(): boolean;
+  fetchQualifiedSegments(options?: OptimizelySegmentOption[]): Promise<boolean>;
+  isQualifiedFor(segment: string): boolean;
+}
+
+export default class OptimizelyUserContext implements IOptimizelyUserContext {
   private optimizely: Optimizely;
   private userId: string;
   private attributes: UserAttributes;
