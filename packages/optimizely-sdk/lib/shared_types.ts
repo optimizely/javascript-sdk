@@ -13,6 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/**
+ * This file contains the shared type definitions collected from the SDK.
+ * These shared type definitions include ones that will be referenced by external consumers via export_types.ts.
+ */
+
 import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from '../lib/modules/logging';
 import { EventProcessor } from '../lib/modules/event_processor';
 
