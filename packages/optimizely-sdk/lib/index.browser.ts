@@ -24,7 +24,7 @@ import * as loggerPlugin from './plugins/logger';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
 import { default as eventProcessor } from './plugins/event_processor';
-import { OptimizelyDecideOption, Client, Config, OptimizelyOptions } from './shared_types';
+import { OptimizelyDecideOption, BrowserClient, Config, OptimizelyOptions } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/browser_http_polling_datafile_manager';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import BrowserOptimizely from './optimizely/index.browser';
@@ -43,10 +43,10 @@ let hasRetriedEvents = false;
 /**
  * Creates an instance of the Optimizely class
  * @param  {Config} config
- * @return {Client|null} the Optimizely client object
+ * @return {BrowserClient|null} the Optimizely client object
  *                           null on error
  */
-const createInstance = function(config: Config): Client | null {
+const createInstance = function(config: Config): BrowserClient | null {
   try {
     // TODO warn about setting per instance errorHandler / logger / logLevel
     let isValidInstance = false;

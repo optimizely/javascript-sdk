@@ -308,7 +308,7 @@ export interface OptimizelyVariable {
 }
 
 export interface BrowserClient extends Client {
-  getVuid(): string;
+  getVuid(): string | undefined;
   // TODO: In the future, will add a function to allow overriding the VUID.
   createUserContext(userId?: string, attributes?: UserAttributes): OptimizelyUserContext | null;
 }
