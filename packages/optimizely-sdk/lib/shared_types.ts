@@ -17,7 +17,7 @@ import { ErrorHandler, LogHandler, LogLevel, LoggerFacade } from '../lib/modules
 import { EventProcessor } from '../lib/modules/event_processor';
 
 import { NotificationCenter as NotificationCenterImpl } from './core/notification_center';
-import { NOTIFICATION_TYPES, ODP_EVENT_ACTION } from './utils/enums';
+import { NOTIFICATION_TYPES } from './utils/enums';
 
 import { OdpManager } from './core/odp/odp_manager';
 import { OdpSegmentManager } from './core/odp/odp_segment_manager';
@@ -357,12 +357,12 @@ export interface Client {
   getOptimizelyConfig(): OptimizelyConfig | null;
   onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
   close(): Promise<{ success: boolean; reason?: string }>;
-  sendOdpEvent(payload: {
-    type?: string;
-    action: ODP_EVENT_ACTION;
-    identifiers?: Map<string, string>;
-    data?: Map<string, unknown>;
-  }): void;
+  sendOdpEvent(
+    action: string,
+    type?: string,
+    identifiers?: Map<string, string>,
+    data?: Map<string, unknown>
+  ): Promise<void>;
 }
 
 export interface ActivateListenerPayload extends ListenerPayload {
