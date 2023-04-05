@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import LRUCache, { ISegmentsCacheConfig, LRUCacheConfig } from './lru_cache';
+import LRUCache, { ISegmentsCacheConfig } from './lru_cache';
 
 export interface ServerLRUCacheConfig {
   maxSize?: number;

@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import { 
-  BROWSER_CLIENT_VERSION, 
-  ERROR_MESSAGES, 
-  JAVASCRIPT_CLIENT_ENGINE, 
-  ODP_USER_KEY, 
-  REQUEST_TIMEOUT_ODP_SEGMENTS_MS, 
-  REQUEST_TIMEOUT_ODP_EVENTS_MS 
+import {
+  BROWSER_CLIENT_VERSION,
+  ERROR_MESSAGES,
+  JAVASCRIPT_CLIENT_ENGINE,
+  ODP_USER_KEY,
+  REQUEST_TIMEOUT_ODP_SEGMENTS_MS,
+  REQUEST_TIMEOUT_ODP_EVENTS_MS,
 } from '../../utils/enums';
-import { getLogger, LoggerFacade, LogHandler, LogLevel } from '../../modules/logging';
+import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 
 import { BrowserRequestHandler } from './../../utils/http_request_handler/browser_request_handler';
 
@@ -45,7 +45,7 @@ interface BrowserOdpManagerConfig {
 export class BrowserOdpManager extends OdpManager {
   static cache = new BrowserAsyncStorageCache();
   vuid?: string;
-  initPromise?: Promise<void>
+  initPromise?: Promise<void>;
 
   constructor({ logger, odpOptions }: BrowserOdpManagerConfig) {
     const browserLogger = logger || getLogger('BrowserOdpManager');
@@ -59,7 +59,7 @@ export class BrowserOdpManager extends OdpManager {
       customSegmentRequestHandler = odpOptions.segmentsRequestHandler;
     } else {
       customSegmentRequestHandler = new BrowserRequestHandler(
-        browserLogger, 
+        browserLogger,
         odpOptions?.segmentsApiTimeout || REQUEST_TIMEOUT_ODP_SEGMENTS_MS
       );
     }
@@ -70,7 +70,7 @@ export class BrowserOdpManager extends OdpManager {
       customEventRequestHandler = odpOptions.eventRequestHandler;
     } else {
       customEventRequestHandler = new BrowserRequestHandler(
-        browserLogger, 
+        browserLogger,
         odpOptions?.eventApiTimeout || REQUEST_TIMEOUT_ODP_EVENTS_MS
       );
     }
