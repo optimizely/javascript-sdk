@@ -23,6 +23,8 @@ import { OdpManager } from '../core/odp/odp_manager';
 import { OdpConfig } from '../core/odp/odp_config';
 import { OdpEvent } from '../core/odp/odp_event';
 import { OptimizelySegmentOption } from '../core/odp/optimizely_segment_option';
+import { BrowserOdpManager } from '../plugins/odp_manager/index.browser';
+import { isBrowserContext } from '../core/odp/odp_utils';
 
 import {
   UserAttributes,
@@ -63,7 +65,6 @@ import {
   NOTIFICATION_TYPES,
   NODE_CLIENT_ENGINE,
   NODE_CLIENT_VERSION,
-  ODP_EVENT_ACTION,
   ODP_DEFAULT_EVENT_TYPE,
 } from '../utils/enums';
 
@@ -1441,19 +1442,27 @@ export default class Optimizely {
    * A user context will be created successfully even when the SDK is not fully configured yet, so no
    * this.isValidInstance() check is performed here.
    *
-   * @param  {string}          userId      The user ID to be used for bucketing.
-   * @param  {UserAttributes}  attributes  Optional user attributes.
+   * @param  {string}          userId      (Optional) The user ID to be used for bucketing.
+   * @param  {UserAttributes}  attributes  (Optional) user attributes.
    * @return {OptimizelyUserContext|null}  An OptimizelyUserContext associated with this OptimizelyClient or
    *                                       null if provided inputs are invalid
    */
-  createUserContext(userId: string, attributes?: UserAttributes): OptimizelyUserContext | null {
-    if (!this.validateInputs({ user_id: userId }, attributes)) {
+  createUserContext(userId?: string, attributes?: UserAttributes): OptimizelyUserContext | null {
+    let userIdentifier;
+
+    if (isBrowserContext() && !userId) {
+      userIdentifier = userId || this.getVuid();
+    } else {
+      userIdentifier = userId;
+    }
+
+    if (!userIdentifier || !this.validateInputs({ user_id: userIdentifier }, attributes)) {
       return null;
     }
 
     return new OptimizelyUserContext({
       optimizely: this,
-      userId,
+      userId: userIdentifier,
       attributes,
       shouldIdentifyUser: true,
     });
@@ -1727,5 +1736,18 @@ export default class Optimizely {
     }
 
     return await this.odpManager.fetchQualifiedSegments(userId, options);
+  }
+
+  /**
+   * @returns {string|undefined}    Currently provisioned VUID from local ODP Manager or undefined if
+   *                                ODP Manager has not been instantiated yet for any reason.
+   */
+  getVuid(): string | undefined {
+    if (!this.odpManager) {
+      this.logger?.error('Unable to get VUID - ODP Manager is not instantiated yet.');
+      return undefined;
+    }
+
+    return (this.odpManager as BrowserOdpManager).vuid;
   }
 }

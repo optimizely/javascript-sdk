@@ -313,15 +313,11 @@ export interface OptimizelyVariable {
   value: string;
 }
 
-export interface BrowserClient extends Client {
-  getVuid(): string | undefined;
-  // TODO: In the future, will add a function to allow overriding the VUID.
-  createUserContext(userId?: string, attributes?: UserAttributes): OptimizelyUserContext | null;
-}
-
 export interface Client {
+  // TODO: In the future, will add a function to allow overriding the VUID.
+  getVuid(): string | undefined;
+  createUserContext(userId?: string, attributes?: UserAttributes): OptimizelyUserContext | null;
   notificationCenter: NotificationCenter;
-  createUserContext(userId: string, attributes?: UserAttributes): OptimizelyUserContext | null;
   activate(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
   track(eventKey: string, userId: string, attributes?: UserAttributes, eventTags?: EventTags): void;
   getVariation(experimentKey: string, userId: string, attributes?: UserAttributes): string | null;
