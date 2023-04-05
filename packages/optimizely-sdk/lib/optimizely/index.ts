@@ -168,6 +168,19 @@ export default class Optimizely {
 
     const eventProcessorStartedPromise = this.eventProcessor.start();
 
+    // TODO: Look into making VUID Initialization a dependent promise for Browser Contexts
+
+    // let dependentPromises: Promise<any>[] = [projectConfigManagerReadyPromise];
+
+    // if (isBrowserContext()) {
+    //   const odpManagerVuidInitializedPromise = (config.odpManager as BrowserOdpManager).initPromise;
+    //   if (odpManagerVuidInitializedPromise) {
+    //     dependentPromises.push(odpManagerVuidInitializedPromise);
+    //   }
+    // }
+
+    // this.readyPromise = Promise.all(dependentPromises).then(promiseResults => {
+
     this.readyPromise = Promise.all([projectConfigManagerReadyPromise, eventProcessorStartedPromise]).then(
       promiseResults => {
         if (config.odpManager != null) {
