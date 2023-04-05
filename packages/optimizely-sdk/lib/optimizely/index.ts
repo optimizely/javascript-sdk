@@ -1743,6 +1743,11 @@ export default class Optimizely {
    *                                ODP Manager has not been instantiated yet for any reason.
    */
   getVuid(): string | undefined {
+    if (!isBrowserContext()) {
+      this.logger.log(LOG_LEVEL.WARNING, 'getVuid() unavailable in non-browser contexts', MODULE_NAME);
+      return undefined;
+    }
+
     if (!this.odpManager) {
       this.logger?.error('Unable to get VUID - ODP Manager is not instantiated yet.');
       return undefined;
