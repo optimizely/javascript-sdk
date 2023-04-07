@@ -30,13 +30,3 @@ export function invalidOdpDataFound(data: Map<string, any>): boolean {
   });
   return foundInvalidValue;
 }
-
-/**
- * TODO: Consider moving this into general utilities
- * Determine if the runtime environment is a browser
- * @returns True if in the browser
- * @private
- */
-export function isBrowserContext(): boolean {
-  return !(typeof process !== 'undefined' && process.versions != null && process.versions.node != null);
-}

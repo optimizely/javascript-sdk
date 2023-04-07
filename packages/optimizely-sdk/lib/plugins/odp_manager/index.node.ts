@@ -77,4 +77,12 @@ export class NodeOdpManager extends OdpManager {
 
     this.eventManager!.start();    
   }
+
+  public isVuidEnabled(): boolean {
+    return true;
+  }
+
+  public getVuid(): string | undefined {
+    return undefined;
+  }
 }

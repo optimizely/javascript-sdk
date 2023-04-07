@@ -181,4 +181,12 @@ export class BrowserOdpManager extends OdpManager {
 
     super.sendEvent({ type, action, identifiers: identifiersWithVuid, data });
   }
+
+  public isVuidEnabled(): boolean {
+    return true;
+  }
+
+  public getVuid(): string | undefined {
+    return this.vuid;
+  }
 }

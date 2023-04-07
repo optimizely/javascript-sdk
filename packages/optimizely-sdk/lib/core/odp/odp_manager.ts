@@ -227,4 +227,8 @@ export abstract class OdpManager {
 
     this.eventManager.sendEvent(new OdpEvent(type, action, identifiers, data));
   }
+
+  public abstract isVuidEnabled(): boolean;
+
+  public abstract getVuid(): string | undefined;
 }
