@@ -22,6 +22,8 @@ import { OdpManager } from '../../core/odp/odp_manager';
 import { getLogger, LogHandler } from '../../modules/logging';
 import { NODE_CLIENT_ENGINE, NODE_CLIENT_VERSION } from '../../utils/enums';
 import { OdpOptions } from '../../../lib/shared_types';
+import { NodeOdpEventApiManager } from '../odp/event_api_manager/index.node';
+import { NodeOdpEventManager } from '../odp/event_manager/index.node';
 
 interface NodeOdpManagerConfig {
   disable: boolean;
@@ -55,5 +57,24 @@ export class NodeOdpManager extends OdpManager {
       clientVersion: nodeClientVersion,
       odpOptions,
     });
+
+    // Set up Events Manager (Events REST API Interface)
+    if (odpOptions?.eventManager) {
+      this.eventManager = odpOptions.eventManager;
+      this.eventManager.updateSettings(this.odpConfig);
+    } else {
+      this.eventManager = new NodeOdpEventManager({
+        odpConfig: this.odpConfig,
+        apiManager: new NodeOdpEventApiManager(nodeRequestHandler, this.logger),
+        logger: this.logger,
+        clientEngine: nodeClientEngine,
+        clientVersion: nodeClientVersion,
+        flushInterval: odpOptions?.eventFlushInterval,
+        batchSize: odpOptions?.eventBatchSize,
+        queueSize: odpOptions?.eventQueueSize,
+      });
+    }
+
+    this.eventManager!.start();    
   }
 }

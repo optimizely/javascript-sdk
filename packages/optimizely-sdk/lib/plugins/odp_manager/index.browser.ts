@@ -35,6 +35,8 @@ import { VuidManager } from './../vuid_manager/index';
 import { OdpManager } from '../../core/odp/odp_manager';
 import { OdpEvent } from '../../core/odp/odp_event';
 import { OdpOptions } from '../../shared_types';
+import { BrowserOdpEventApiManager } from '../odp/event_api_manager/index.browser';
+import { BrowserOdpEventManager } from '../odp/event_manager/index.browser';
 
 interface BrowserOdpManagerConfig {
   logger?: LogHandler;
@@ -89,6 +91,25 @@ export class BrowserOdpManager extends OdpManager {
       clientVersion: browserClientVersion,
       odpOptions,
     });
+
+    // Set up Events Manager (Events REST API Interface)
+    if (odpOptions?.eventManager) {
+      this.eventManager = odpOptions.eventManager;
+      this.eventManager.updateSettings(this.odpConfig);
+    } else {
+      this.eventManager = new BrowserOdpEventManager({
+        odpConfig: this.odpConfig,
+        apiManager: new BrowserOdpEventApiManager(customEventRequestHandler, this.logger),
+        logger: this.logger,
+        clientEngine: browserClientEngine || 'javascript-sdk',
+        clientVersion: browserClientVersion || BROWSER_CLIENT_VERSION,
+        flushInterval: odpOptions?.eventFlushInterval,
+        batchSize: odpOptions?.eventBatchSize,
+        queueSize: odpOptions?.eventQueueSize,
+      });
+    }
+
+    this.eventManager!.start();
 
     this.logger = browserLogger;
     this.initPromise = this.initializeVuid(BrowserOdpManager.cache).catch(e => {

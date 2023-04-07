@@ -56,7 +56,7 @@ interface OdpManagerConfig {
 /**
  * Orchestrates segments manager, event manager, and ODP configuration
  */
-export class OdpManager {
+export abstract class OdpManager {
   enabled: boolean;
   logger: LogHandler;
   odpConfig: OdpConfig = new OdpConfig();
@@ -101,25 +101,6 @@ export class OdpManager {
         new OdpSegmentApiManager(segmentRequestHandler, this.logger)
       );
     }
-
-    // Set up Events Manager (Events REST API Interface)
-    if (odpOptions?.eventManager) {
-      this.eventManager = odpOptions.eventManager;
-      this.eventManager.updateSettings(this.odpConfig);
-    } else {
-      this.eventManager = new OdpEventManager({
-        odpConfig: this.odpConfig,
-        apiManager: new OdpEventApiManager(eventRequestHandler, this.logger),
-        logger: this.logger,
-        clientEngine: clientEngine || 'javascript-sdk',
-        clientVersion: clientVersion || BROWSER_CLIENT_VERSION,
-        flushInterval: odpOptions?.eventFlushInterval,
-        batchSize: odpOptions?.eventBatchSize,
-        queueSize: odpOptions?.eventQueueSize,
-      });
-    }
-
-    this.eventManager.start();
   }
 
   /**
