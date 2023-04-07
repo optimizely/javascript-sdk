@@ -26,7 +26,6 @@ import { NodeOdpEventApiManager } from '../odp/event_api_manager/index.node';
 import { NodeOdpEventManager } from '../odp/event_manager/index.node';
 
 interface NodeOdpManagerConfig {
-  disable: boolean;
   logger?: LogHandler;
   odpOptions?: OdpOptions;
 }
@@ -75,11 +74,11 @@ export class NodeOdpManager extends OdpManager {
       });
     }
 
-    this.eventManager!.start();    
+    this.eventManager!.start();
   }
 
   public isVuidEnabled(): boolean {
-    return true;
+    return false;
   }
 
   public getVuid(): string | undefined {

@@ -28,7 +28,6 @@ import { OdpConfig } from './odp_config';
 import { OdpEventManager } from './odp_event_manager';
 import { OdpSegmentManager } from './odp_segment_manager';
 import { OdpSegmentApiManager } from './odp_segment_api_manager';
-import { OdpEventApiManager } from './odp_event_api_manager';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
 import { invalidOdpDataFound } from './odp_utils';
 import { OdpEvent } from './odp_event';
@@ -73,15 +72,7 @@ export abstract class OdpManager {
    */
   public eventManager: OdpEventManager | undefined;
 
-  constructor({
-    segmentLRUCache,
-    segmentRequestHandler,
-    eventRequestHandler,
-    logger,
-    clientEngine,
-    clientVersion,
-    odpOptions,
-  }: OdpManagerConfig) {
+  constructor({ segmentLRUCache, segmentRequestHandler, logger, odpOptions }: OdpManagerConfig) {
     this.enabled = !odpOptions?.disabled;
     this.logger = logger || getLogger();
 

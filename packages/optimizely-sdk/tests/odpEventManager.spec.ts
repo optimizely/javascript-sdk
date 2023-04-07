@@ -17,9 +17,10 @@
 import { ODP_EVENT_ACTION, ODP_DEFAULT_EVENT_TYPE } from './../lib/utils/enums/index';
 
 import { OdpConfig } from '../lib/core/odp/odp_config';
-import { OdpEventManager, STATE } from '../lib/core/odp/odp_event_manager';
+import { STATE } from '../lib/core/odp/odp_event_manager';
+import { NodeOdpEventManager as OdpEventManager } from '../lib/plugins/odp/event_manager/index.node';
 import { anything, capture, instance, mock, resetCalls, spy, verify, when } from 'ts-mockito';
-import { OdpEventApiManager } from '../lib/core/odp/odp_event_api_manager';
+import { NodeOdpEventApiManager as OdpEventApiManager } from '../lib/plugins/odp/event_api_manager/index.node';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpEvent } from '../lib/core/odp/odp_event';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';

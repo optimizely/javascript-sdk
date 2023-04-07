@@ -1,4 +1,3 @@
-import { LRUCache } from './../lib/utils/lru_cache/lru_cache';
 /**
  * Copyright 2023, Optimizely
  *
@@ -25,10 +24,10 @@ import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 import { BrowserLRUCache } from './../lib/utils/lru_cache/browser_lru_cache';
 
-import { OdpManager } from './../lib/core/odp/odp_manager';
+import { NodeOdpManager as OdpManager } from './../lib/plugins/odp_manager/index.node';
 import { OdpConfig } from '../lib/core/odp/odp_config';
-import { OdpEventApiManager } from '../lib/core/odp/odp_event_api_manager';
-import { OdpEventManager } from '../lib/core/odp/odp_event_manager';
+import { NodeOdpEventApiManager as OdpEventApiManager } from '../lib/plugins/odp/event_api_manager/index.node';
+import { NodeOdpEventManager as OdpEventManager } from '../lib/plugins/odp/event_manager/index.node';
 import { OdpSegmentManager } from './../lib/core/odp/odp_segment_manager';
 import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
 import { ServerLRUCache } from '../lib/utils/lru_cache';
@@ -90,23 +89,21 @@ describe('OdpManager', () => {
 
   const odpManagerInstance = (config?: OdpConfig) =>
     new OdpManager({
-      segmentLRUCache: new ServerLRUCache(),
-      segmentRequestHandler: defaultRequestHandler,
-      eventRequestHandler: defaultRequestHandler,
       odpOptions: {
         eventManager,
         segmentManager,
+        segmentsRequestHandler: defaultRequestHandler,
+        eventRequestHandler: defaultRequestHandler,
       },
     });
 
   it('should drop relevant calls when OdpManager is initialized with the disabled flag', async () => {
     const odpManager = new OdpManager({
-      segmentLRUCache: new ServerLRUCache(),
-      segmentRequestHandler: defaultRequestHandler,
-      eventRequestHandler: defaultRequestHandler,
       logger,
       odpOptions: {
         disabled: true,
+        segmentsRequestHandler: defaultRequestHandler,
+        eventRequestHandler: defaultRequestHandler,
       },
     });
     verify(mockLogger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED)).once();
@@ -140,10 +137,9 @@ describe('OdpManager', () => {
 
   it('should use new settings in event manager when ODP Config is updated', async () => {
     const odpManager = new OdpManager({
-      segmentLRUCache: new ServerLRUCache(),
-      segmentRequestHandler: defaultRequestHandler,
-      eventRequestHandler: defaultRequestHandler,
       odpOptions: {
+        segmentsRequestHandler: defaultRequestHandler,
+        eventRequestHandler: defaultRequestHandler,
         eventManager: new OdpEventManager({
           odpConfig,
           apiManager: eventApiManager,
@@ -176,11 +172,10 @@ describe('OdpManager', () => {
 
   it('should use new settings in segment manager when ODP Config is updated', async () => {
     const odpManager = new OdpManager({
-      segmentLRUCache: new ServerLRUCache(),
-      segmentRequestHandler: defaultRequestHandler,
-      eventRequestHandler: defaultRequestHandler,
       odpOptions: {
         segmentManager: new OdpSegmentManager(odpConfig, new BrowserLRUCache<string, string[]>(), segmentApiManager),
+        segmentsRequestHandler: defaultRequestHandler,
+        eventRequestHandler: defaultRequestHandler,
       },
     });
 
@@ -205,10 +200,11 @@ describe('OdpManager', () => {
     expect(odpManagerA.eventManager).not.toBe(null);
 
     const odpManagerB = new OdpManager({
-      segmentLRUCache: new ServerLRUCache(),
-      segmentRequestHandler: defaultRequestHandler,
-      eventRequestHandler: defaultRequestHandler,
       logger,
+      odpOptions: {
+        segmentsRequestHandler: defaultRequestHandler,
+        eventRequestHandler: defaultRequestHandler,
+      },
     });
     expect(odpManagerB.eventManager).not.toBe(null);
   });
@@ -218,9 +214,10 @@ describe('OdpManager', () => {
     expect(odpManagerA.segmentManager).not.toBe(null);
 
     const odpManagerB = new OdpManager({
-      segmentLRUCache: new ServerLRUCache(),
-      segmentRequestHandler: defaultRequestHandler,
-      eventRequestHandler: defaultRequestHandler,
+      odpOptions: {
+        segmentsRequestHandler: defaultRequestHandler,
+        eventRequestHandler: defaultRequestHandler,
+      },
     });
     expect(odpManagerB.eventManager).not.toBe(null);
   });

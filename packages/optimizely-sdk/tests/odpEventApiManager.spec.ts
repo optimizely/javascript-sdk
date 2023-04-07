@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
-import { OdpEventApiManager } from '../lib/core/odp/odp_event_api_manager';
+import { NodeOdpEventApiManager } from '../lib/plugins/odp/event_api_manager/index.node';
 import { OdpEvent } from '../lib/core/odp/odp_event';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 
@@ -36,7 +36,7 @@ const ODP_EVENTS = [
   new OdpEvent('t2', 'a2', new Map([['id-key-2', 'id-value-2']]), data2),
 ];
 
-describe('OdpEventApiManager', () => {
+describe('NodeOdpEventApiManager', () => {
   let mockLogger: LogHandler;
   let mockRequestHandler: RequestHandler;
 
@@ -50,7 +50,7 @@ describe('OdpEventApiManager', () => {
     resetCalls(mockRequestHandler);
   });
 
-  const managerInstance = () => new OdpEventApiManager(instance(mockRequestHandler), instance(mockLogger));
+  const managerInstance = () => new NodeOdpEventApiManager(instance(mockRequestHandler), instance(mockLogger));
   const abortableRequest = (statusCode: number, body: string) => {
     return {
       abort: () => {},
