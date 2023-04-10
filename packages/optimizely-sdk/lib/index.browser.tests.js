@@ -28,9 +28,8 @@ import OptimizelyUserContext from './optimizely_user_context';
 import { LOG_MESSAGES, ODP_EVENT_ACTION, ODP_EVENT_BROWSER_ENDPOINT } from './utils/enums';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import { OdpConfig } from './core/odp/odp_config';
-import { OdpEventManager } from './core/odp/odp_event_manager';
-import { OdpEventApiManager } from './core/odp/odp_event_api_manager';
-import { isBrowserContext } from './core/odp/odp_utils';
+import { BrowserOdpEventManager } from './plugins/odp/event_manager/index.browser';
+import { BrowserOdpEventApiManager } from './plugins/odp/event_api_manager/index.browser';
 
 var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
 
@@ -824,9 +823,6 @@ describe('javascript-sdk (Browser)', function() {
       });
 
       it('should log a warning when attempting to use an event batch size other than 1', async () => {
-        if (!isBrowserContext()) {
-          return;
-        }
         const client = optimizelyFactory.createInstance({
           datafile: testData.getOdpIntegratedConfigWithSegments(),
           errorHandler: fakeErrorHandler,
@@ -852,12 +848,9 @@ describe('javascript-sdk (Browser)', function() {
       });
 
       it('should send an odp event to the browser endpoint', async () => {
-        if (!isBrowserContext()) {
-          return;
-        }
         const odpConfig = new OdpConfig();
-        const apiManager = new OdpEventApiManager(mockRequestHandler, logger);
-        const eventManager = new OdpEventManager({
+        const apiManager = new BrowserOdpEventApiManager(mockRequestHandler, logger);
+        const eventManager = new BrowserOdpEventManager({
           odpConfig,
           apiManager,
           logger,

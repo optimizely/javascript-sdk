@@ -26,8 +26,8 @@ import { BrowserLRUCache } from './../lib/utils/lru_cache/browser_lru_cache';
 import { BrowserOdpManager } from './../lib/plugins/odp_manager/index.browser';
 import { OdpOptions } from './../lib/shared_types';
 import { OdpConfig } from '../lib/core/odp/odp_config';
-import { OdpEventApiManager } from '../lib/core/odp/odp_event_api_manager';
-import { OdpEventManager, STATE } from '../lib/core/odp/odp_event_manager';
+import { BrowserOdpEventApiManager } from '../lib/plugins/odp/event_api_manager/index.browser';
+import { BrowserOdpEventManager } from '../lib/plugins/odp/event_manager/index.browser';
 import { OdpSegmentManager } from './../lib/core/odp/odp_segment_manager';
 import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
 import { VuidManager } from '../lib/plugins/vuid_manager';
@@ -57,11 +57,11 @@ describe('OdpManager', () => {
   let mockRequestHandler: RequestHandler;
   let fakeRequestHandler: RequestHandler;
 
-  let mockEventApiManager: OdpEventApiManager;
-  let fakeEventApiManager: OdpEventApiManager;
+  let mockEventApiManager: BrowserOdpEventApiManager;
+  let fakeEventApiManager: BrowserOdpEventApiManager;
 
-  let mockEventManager: OdpEventManager;
-  let fakeEventManager: OdpEventManager;
+  let mockEventManager: BrowserOdpEventManager;
+  let fakeEventManager: BrowserOdpEventManager;
 
   let mockSegmentApiManager: OdpSegmentApiManager;
   let fakeSegmentApiManager: OdpSegmentApiManager;
@@ -80,8 +80,8 @@ describe('OdpManager', () => {
     fakeLogger = instance(mockLogger);
     fakeRequestHandler = instance(mockRequestHandler);
 
-    mockEventApiManager = mock<OdpEventApiManager>();
-    mockEventManager = mock<OdpEventManager>();
+    mockEventApiManager = mock<BrowserOdpEventApiManager>();
+    mockEventManager = mock<BrowserOdpEventManager>();
     mockSegmentApiManager = mock<OdpSegmentApiManager>();
     mockSegmentManager = mock<OdpSegmentManager>();
     mockBrowserOdpManager = mock<BrowserOdpManager>();
@@ -261,8 +261,9 @@ describe('OdpManager', () => {
     browserOdpManager.vuid = undefined;
     const invalidOdpEvent = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.INITIALIZED, undefined);
 
-    await expect(browserOdpManager.sendEvent(invalidOdpEvent))
-      .rejects.toThrow(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_VUID_MISSING)
+    await expect(browserOdpManager.sendEvent(invalidOdpEvent)).rejects.toThrow(
+      ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_VUID_MISSING
+    );
   });
 
   describe('Populates BrowserOdpManager correctly with all odpOptions', () => {
@@ -439,8 +440,7 @@ describe('OdpManager', () => {
     });
 
     it('Browser default Events API Request Handler timeout should be used when odpOptions does not include eventsApiTimeout', () => {
-      const odpOptions: OdpOptions = {
-      };
+      const odpOptions: OdpOptions = {};
 
       const browserOdpManager = new BrowserOdpManager({
         odpOptions,
@@ -450,7 +450,7 @@ describe('OdpManager', () => {
       expect(browserOdpManager.eventManager.apiManager.requestHandler.timeout).toBe(10000);
     });
 
-    it('Custom odpOptions.eventFlushInterval overrides default Event Manager flush interval', () => {
+    it('Custom odpOptions.eventFlushInterval cannot override the default Event Manager flush interval', () => {
       const odpOptions: OdpOptions = {
         eventFlushInterval: 4000,
       };
@@ -460,7 +460,7 @@ describe('OdpManager', () => {
       });
 
       // @ts-ignore
-      expect(browserOdpManager.eventManager.flushInterval).toBe(4000);
+      expect(browserOdpManager.eventManager.flushInterval).toBe(0); // Note: Browser flush interval is always 0 due to use of Pixel API
     });
 
     it('Default ODP event flush interval is used when odpOptions does not include eventFlushInterval', () => {
@@ -471,7 +471,7 @@ describe('OdpManager', () => {
       });
 
       // @ts-ignore
-      expect(browserOdpManager.eventManager.flushInterval).toBe(1000);
+      expect(browserOdpManager.eventManager.flushInterval).toBe(0);
     });
 
     it('ODP event batch size set to one when odpOptions.eventFlushInterval set to 0', () => {
@@ -490,7 +490,7 @@ describe('OdpManager', () => {
       expect(browserOdpManager.eventManager.batchSize).toBe(1);
     });
 
-    it('Custom odpOptions.eventBatchSize overrides default Event Manager batch size', () => {
+    it('Custom odpOptions.eventBatchSize does not override default Event Manager batch size', () => {
       const odpOptions: OdpOptions = {
         eventBatchSize: 2,
       };
@@ -500,7 +500,7 @@ describe('OdpManager', () => {
       });
 
       // @ts-ignore
-      expect(browserOdpManager.eventManager.batchSize).toBe(2);
+      expect(browserOdpManager.eventManager.batchSize).toBe(1); // Note: Browser event batch size is always 1 due to use of Pixel API
     });
 
     it('Custom odpOptions.eventQueueSize overrides default Event Manager queue size', () => {
@@ -550,7 +550,7 @@ describe('OdpManager', () => {
       const fakeClientEngine = 'test-javascript-sdk';
       const fakeClientVersion = '1.2.3';
 
-      const customEventManager = new OdpEventManager({
+      const customEventManager = new BrowserOdpEventManager({
         odpConfig,
         apiManager: fakeEventApiManager,
         logger: fakeLogger,
@@ -580,9 +580,9 @@ describe('OdpManager', () => {
       const fakeClientEngine = 'test-javascript-sdk';
       const fakeClientVersion = '1.2.3';
 
-      const customEventManager = new OdpEventManager({
+      const customEventManager = new BrowserOdpEventManager({
         odpConfig,
-        apiManager: new OdpEventApiManager(new BrowserRequestHandler(fakeLogger, 1), fakeLogger),
+        apiManager: new BrowserOdpEventApiManager(new BrowserRequestHandler(fakeLogger, 1), fakeLogger),
         logger: fakeLogger,
         clientEngine: fakeClientEngine,
         clientVersion: fakeClientVersion,
@@ -617,7 +617,7 @@ describe('OdpManager', () => {
       expect(browserOdpManager.eventManager.batchSize).toBe(1);
 
       // @ts-ignore
-      expect(browserOdpManager.eventManager.flushInterval).toBe(1);
+      expect(browserOdpManager.eventManager.flushInterval).toBe(0); // Note: Browser event flush interval will always be 0 due to use of Pixel API
 
       // @ts-ignore
       expect(browserOdpManager.eventManager.queueSize).toBe(1);
@@ -652,10 +652,10 @@ describe('OdpManager', () => {
       expect(browserOdpManager.segmentManager.odpSegmentApiManager.requestHandler.timeout).toBe(4);
 
       // @ts-ignore
-      expect(browserOdpManager.eventManager.batchSize).toBe(4);
+      expect(browserOdpManager.eventManager.batchSize).toBe(1); // Note: Browser batch size will always be 1 due to use of Pixel API
 
       // @ts-ignore
-      expect(browserOdpManager.eventManager.flushInterval).toBe(4);
+      expect(browserOdpManager.eventManager.flushInterval).toBe(0); // Note: Browser event flush interval will always be 0 due to use of Pixel API
 
       // @ts-ignore
       expect(browserOdpManager.eventManager.queueSize).toBe(4);

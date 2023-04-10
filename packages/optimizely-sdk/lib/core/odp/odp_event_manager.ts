@@ -22,7 +22,7 @@ import { ERROR_MESSAGES, ODP_USER_KEY, ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION 
 import { OdpEvent } from './odp_event';
 import { OdpConfig } from './odp_config';
 import { OdpEventApiManager } from './odp_event_api_manager';
-import { invalidOdpDataFound, isBrowserContext } from './odp_utils';
+import { invalidOdpDataFound } from './odp_utils';
 
 const MAX_RETRIES = 3;
 const DEFAULT_BATCH_SIZE = 10;
@@ -61,16 +61,16 @@ export interface IOdpEventManager {
 /**
  * Concrete implementation of a manager for persisting events to the Optimizely Data Platform
  */
-export class OdpEventManager implements IOdpEventManager {
+export abstract class OdpEventManager implements IOdpEventManager {
   /**
    * Current state of the event processor
    */
   public state: STATE = STATE.STOPPED;
   /**
    * Queue for holding all events to be eventually dispatched
-   * @private
+   * @protected
    */
-  private queue = new Array<OdpEvent>();
+  protected queue = new Array<OdpEvent>();
   /**
    * Identifier of the currently running timeout so clearCurrentTimeout() can be called
    * @private
@@ -93,19 +93,19 @@ export class OdpEventManager implements IOdpEventManager {
   private readonly logger: LogHandler;
   /**
    * Maximum queue size
-   * @private
+   * @protected
    */
-  private readonly queueSize: number;
+  protected queueSize!: number;
   /**
    * Maximum number of events to process at once. Ignored in browser context
-   * @private
+   * @protected
    */
-  private readonly batchSize: number;
+  protected  batchSize!: number;
   /**
    * Milliseconds between setTimeout() to process new batches. Ignored in browser context
-   * @private
+   * @protected
    */
-  private readonly flushInterval: number;
+  protected flushInterval!: number;
   /**
    * Type of execution context eg node, js, react
    * @private
@@ -141,32 +141,15 @@ export class OdpEventManager implements IOdpEventManager {
     this.logger = logger;
     this.clientEngine = clientEngine;
     this.clientVersion = clientVersion;
-
-    const isBrowser = isBrowserContext();
-
-    const defaultQueueSize = isBrowser ? DEFAULT_BROWSER_QUEUE_SIZE : DEFAULT_SERVER_QUEUE_SIZE;
-    this.queueSize = queueSize || defaultQueueSize;
-    this.batchSize = batchSize || DEFAULT_BATCH_SIZE;
-
-    if (flushInterval === 0 || isBrowser) {
-      // disable event batching
-      this.batchSize = 1;
-      this.flushInterval = 0;
-    } else {
-      this.flushInterval = flushInterval || DEFAULT_FLUSH_INTERVAL_MSECS;
-    }
-
-    if (isBrowser) {
-      if (typeof batchSize !== 'undefined' && batchSize !== 1) {
-        this.logger.log(LogLevel.WARNING, 'ODP event batch size must be 1 in the browser.');
-      }
-      if (typeof flushInterval !== 'undefined' && flushInterval !== 0) {
-        this.logger.log(LogLevel.WARNING, 'ODP event flush interval must be 0 in the browser.');
-      }
-    }
-
+    this.initParams(batchSize, queueSize, flushInterval);
     this.state = STATE.STOPPED;
   }
+
+  protected abstract initParams(
+    batchSize: number | undefined,
+    queueSize: number | undefined,
+    flushInterval: number | undefined,
+  ): void;
 
   /**
    * Update ODP configuration settings.
@@ -401,18 +384,11 @@ export class OdpEventManager implements IOdpEventManager {
     if (this.odpConfig.isReady()) {
       return true;
     }
-
-    if (!isBrowserContext()) {
-      // if Node/server-side context, empty queue items before ready state
-      this.logger.log(LogLevel.WARNING, 'ODPConfig not ready. Discarding events in queue.');
-      this.queue = new Array<OdpEvent>();
-    } else {
-      // in Browser/client-side context, give debug message but leave events in queue
-      this.logger.log(LogLevel.DEBUG, 'ODPConfig not ready. Leaving events in queue.');
-    }
-
+    this.discardEventsIfNeeded();
     return false;
   }
+
+  protected abstract discardEventsIfNeeded(): void;
 
   /**
    * Add additional common data including an idempotent ID and execution context to event data
@@ -429,5 +405,9 @@ export class OdpEventManager implements IOdpEventManager {
 
     sourceData.forEach((value, key) => data.set(key, value));
     return data;
+  }
+
+  protected getLogger(): LogHandler {
+    return this.logger;
   }
 }

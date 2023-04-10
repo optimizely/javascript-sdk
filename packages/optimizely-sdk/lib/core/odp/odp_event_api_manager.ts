@@ -16,9 +16,7 @@
 
 import { LogHandler, LogLevel } from '../../modules/logging';
 import { OdpEvent } from './odp_event';
-import { isBrowserContext } from './odp_utils';
 import { RequestHandler } from '../../utils/http_request_handler/http';
-import { ODP_EVENT_BROWSER_ENDPOINT } from '../../utils/enums';
 
 const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
 
@@ -32,10 +30,9 @@ export interface IOdpEventApiManager {
 /**
  * Concrete implementation for accessing the ODP REST API
  */
-export class OdpEventApiManager implements IOdpEventApiManager {
+export abstract class OdpEventApiManager implements IOdpEventApiManager {
   private readonly logger: LogHandler;
   private readonly requestHandler: RequestHandler;
-  private readonly isBrowser: boolean;
 
   /**
    * Creates instance to access Optimizely Data Platform (ODP) REST API
@@ -45,7 +42,10 @@ export class OdpEventApiManager implements IOdpEventApiManager {
   constructor(requestHandler: RequestHandler, logger: LogHandler) {
     this.requestHandler = requestHandler;
     this.logger = logger;
-    this.isBrowser = isBrowserContext()
+  }
+
+  public getLogger(): LogHandler {
+    return this.logger;
   }
 
   /**
@@ -68,39 +68,11 @@ export class OdpEventApiManager implements IOdpEventApiManager {
       return shouldRetry;
     }
 
-    if (events.length > 1 && this.isBrowser) {
-      this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (browser only supports batch size 1)`);
+    if (!this.shouldSendEvents(events)) {
       return shouldRetry;
     }
 
-    let method, endpoint, headers, data;
-
-    if (this.isBrowser) {
-      method = 'GET';
-      const event = events[0];
-      const url = new URL(ODP_EVENT_BROWSER_ENDPOINT);
-      event.identifiers.forEach((v, k) =>{
-          url.searchParams.append(k, v);
-      });
-      event.data.forEach((v, k) =>{
-          url.searchParams.append(k, v as string);
-      });
-      url.searchParams.append('tracker_id', apiKey);
-      url.searchParams.append('event_type', event.type);
-      url.searchParams.append('vdl_action', event.action);
-      endpoint = url.toString();
-      headers = {};
-    } else {
-      method = 'POST';
-      endpoint = `${apiHost}/v3/events`;
-      headers = {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-      };
-      data = JSON.stringify(events, this.replacer);
-    }
-
-
+    const { method, endpoint, headers, data } = this.generateRequestData(apiHost, apiKey, events);
 
     let statusCode = 0;
     try {
@@ -127,11 +99,12 @@ export class OdpEventApiManager implements IOdpEventApiManager {
     return shouldRetry;
   }
 
-  private replacer(_: unknown, value: unknown) {
-    if (value instanceof Map) {
-      return Object.fromEntries(value);
-    } else {
-      return value;
-    }
+  protected abstract shouldSendEvents(events: OdpEvent[]): boolean;
+
+  protected abstract generateRequestData(apiHost: string, apiKey: string, events: OdpEvent[]): {
+    method: string,
+    endpoint: string,
+    headers: {[key: string]: string},
+    data: string,
   }
 }

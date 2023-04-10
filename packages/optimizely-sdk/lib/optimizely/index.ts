@@ -23,8 +23,6 @@ import { OdpManager } from '../core/odp/odp_manager';
 import { OdpConfig } from '../core/odp/odp_config';
 import { OdpEvent } from '../core/odp/odp_event';
 import { OptimizelySegmentOption } from '../core/odp/optimizely_segment_option';
-import { BrowserOdpManager } from '../plugins/odp_manager/index.browser';
-import { isBrowserContext } from '../core/odp/odp_utils';
 
 import {
   UserAttributes,
@@ -1450,7 +1448,7 @@ export default class Optimizely {
   createUserContext(userId?: string, attributes?: UserAttributes): OptimizelyUserContext | null {
     let userIdentifier;
 
-    if (isBrowserContext() && !userId) {
+    if (this.odpManager?.isVuidEnabled() && !userId) {
       userIdentifier = userId || this.getVuid();
     } else {
       userIdentifier = userId;
@@ -1743,16 +1741,16 @@ export default class Optimizely {
    *                                ODP Manager has not been instantiated yet for any reason.
    */
   getVuid(): string | undefined {
-    if (!isBrowserContext()) {
-      this.logger.log(LOG_LEVEL.WARNING, 'getVuid() unavailable in non-browser contexts', MODULE_NAME);
-      return undefined;
-    }
-
     if (!this.odpManager) {
       this.logger?.error('Unable to get VUID - ODP Manager is not instantiated yet.');
       return undefined;
     }
-
-    return (this.odpManager as BrowserOdpManager).vuid;
+    
+    if (!this.odpManager.isVuidEnabled()) {
+      this.logger.log(LOG_LEVEL.WARNING, 'getVuid() unavailable for this platform', MODULE_NAME);
+      return undefined;
+    }
+    
+    return this.odpManager.getVuid();
   }
 }

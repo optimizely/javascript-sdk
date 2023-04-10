@@ -18,13 +18,23 @@ import { NodeRequestHandler } from '../../utils/http_request_handler/node_reques
 
 import { ServerLRUCache } from './../../utils/lru_cache/server_lru_cache';
 
+import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
+import {
+  LOG_MESSAGES,
+  NODE_CLIENT_ENGINE,
+  NODE_CLIENT_VERSION,
+  REQUEST_TIMEOUT_ODP_EVENTS_MS,
+  REQUEST_TIMEOUT_ODP_SEGMENTS_MS,
+} from '../../utils/enums';
+
 import { OdpManager } from '../../core/odp/odp_manager';
-import { getLogger, LogHandler } from '../../modules/logging';
-import { NODE_CLIENT_ENGINE, NODE_CLIENT_VERSION } from '../../utils/enums';
 import { OdpOptions } from '../../../lib/shared_types';
+import { NodeOdpEventApiManager } from '../odp/event_api_manager/index.node';
+import { NodeOdpEventManager } from '../odp/event_manager/index.node';
+import { OdpSegmentManager } from '../../core/odp/odp_segment_manager';
+import { OdpSegmentApiManager } from '../../core/odp/odp_segment_api_manager';
 
 interface NodeOdpManagerConfig {
-  disable: boolean;
   logger?: LogHandler;
   odpOptions?: OdpOptions;
 }
@@ -35,25 +45,82 @@ interface NodeOdpManagerConfig {
  */
 export class NodeOdpManager extends OdpManager {
   constructor({ logger, odpOptions }: NodeOdpManagerConfig) {
-    const nodeLogger = logger || getLogger();
+    super();
 
-    const nodeRequestHandler = new NodeRequestHandler(nodeLogger);
+    this.logger = logger || getLogger();
+
+    if (odpOptions?.disabled) {
+      this.enabled = false;
+      this.logger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED);
+      return;
+    }
+
     const nodeClientEngine = NODE_CLIENT_ENGINE;
     const nodeClientVersion = NODE_CLIENT_VERSION;
 
-    super({
-      segmentLRUCache:
+    let customSegmentRequestHandler;
+
+    if (odpOptions?.segmentsRequestHandler) {
+      customSegmentRequestHandler = odpOptions.segmentsRequestHandler;
+    } else {
+      customSegmentRequestHandler = new NodeRequestHandler(
+        this.logger,
+        odpOptions?.segmentsApiTimeout || REQUEST_TIMEOUT_ODP_SEGMENTS_MS
+      );
+    }
+
+    // Set up Segment Manager (Audience Segments GraphQL API Interface)
+    if (odpOptions?.segmentManager) {
+      this.segmentManager = odpOptions.segmentManager;
+      this.segmentManager.updateSettings(this.odpConfig);
+    } else {
+      this.segmentManager = new OdpSegmentManager(
+        this.odpConfig,
         odpOptions?.segmentsCache ||
-        new ServerLRUCache<string, string[]>({
-          maxSize: odpOptions?.segmentsCacheSize,
-          timeout: odpOptions?.segmentsCacheTimeout,
-        }),
-      segmentRequestHandler: nodeRequestHandler,
-      eventRequestHandler: nodeRequestHandler,
-      logger: nodeLogger,
-      clientEngine: nodeClientEngine,
-      clientVersion: nodeClientVersion,
-      odpOptions,
-    });
+          new ServerLRUCache<string, string[]>({
+            maxSize: odpOptions?.segmentsCacheSize,
+            timeout: odpOptions?.segmentsCacheTimeout,
+          }),
+        new OdpSegmentApiManager(customSegmentRequestHandler, this.logger)
+      );
+    }
+
+    let customEventRequestHandler;
+
+    if (odpOptions?.eventRequestHandler) {
+      customEventRequestHandler = odpOptions.eventRequestHandler;
+    } else {
+      customEventRequestHandler = new NodeRequestHandler(
+        this.logger,
+        odpOptions?.eventApiTimeout || REQUEST_TIMEOUT_ODP_EVENTS_MS
+      );
+    }
+
+    // Set up Events Manager (Events REST API Interface)
+    if (odpOptions?.eventManager) {
+      this.eventManager = odpOptions.eventManager;
+      this.eventManager.updateSettings(this.odpConfig);
+    } else {
+      this.eventManager = new NodeOdpEventManager({
+        odpConfig: this.odpConfig,
+        apiManager: new NodeOdpEventApiManager(customEventRequestHandler, this.logger),
+        logger: this.logger,
+        clientEngine: nodeClientEngine,
+        clientVersion: nodeClientVersion,
+        flushInterval: odpOptions?.eventFlushInterval,
+        batchSize: odpOptions?.eventBatchSize,
+        queueSize: odpOptions?.eventQueueSize,
+      });
+    }
+
+    this.eventManager!.start();
+  }
+
+  public isVuidEnabled(): boolean {
+    return false;
+  }
+
+  public getVuid(): string | undefined {
+    return undefined;
   }
 }
