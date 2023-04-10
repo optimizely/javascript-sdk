@@ -21,6 +21,7 @@ import {
   ODP_USER_KEY,
   REQUEST_TIMEOUT_ODP_SEGMENTS_MS,
   REQUEST_TIMEOUT_ODP_EVENTS_MS,
+  LOG_MESSAGES,
 } from '../../utils/enums';
 import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 
@@ -37,6 +38,8 @@ import { OdpEvent } from '../../core/odp/odp_event';
 import { OdpOptions } from '../../shared_types';
 import { BrowserOdpEventApiManager } from '../odp/event_api_manager/index.browser';
 import { BrowserOdpEventManager } from '../odp/event_manager/index.browser';
+import { OdpSegmentManager } from '../../core/odp/odp_segment_manager';
+import { OdpSegmentApiManager } from '../../core/odp/odp_segment_api_manager';
 
 interface BrowserOdpManagerConfig {
   logger?: LogHandler;
@@ -50,7 +53,15 @@ export class BrowserOdpManager extends OdpManager {
   initPromise?: Promise<void>;
 
   constructor({ logger, odpOptions }: BrowserOdpManagerConfig) {
-    const browserLogger = logger || getLogger('BrowserOdpManager');
+    super();
+
+    this.logger = logger || getLogger();
+
+    if (odpOptions?.disabled) {
+      this.enabled = false;
+      this.logger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED);
+      return;
+    }
 
     const browserClientEngine = JAVASCRIPT_CLIENT_ENGINE;
     const browserClientVersion = BROWSER_CLIENT_VERSION;
@@ -61,8 +72,24 @@ export class BrowserOdpManager extends OdpManager {
       customSegmentRequestHandler = odpOptions.segmentsRequestHandler;
     } else {
       customSegmentRequestHandler = new BrowserRequestHandler(
-        browserLogger,
+        this.logger,
         odpOptions?.segmentsApiTimeout || REQUEST_TIMEOUT_ODP_SEGMENTS_MS
+      );
+    }
+
+    // Set up Segment Manager (Audience Segments GraphQL API Interface)
+    if (odpOptions?.segmentManager) {
+      this.segmentManager = odpOptions.segmentManager;
+      this.segmentManager.updateSettings(this.odpConfig);
+    } else {
+      this.segmentManager = new OdpSegmentManager(
+        this.odpConfig,
+        odpOptions?.segmentsCache ||
+          new BrowserLRUCache<string, string[]>({
+            maxSize: odpOptions?.segmentsCacheSize,
+            timeout: odpOptions?.segmentsCacheTimeout,
+          }),
+        new OdpSegmentApiManager(customSegmentRequestHandler, this.logger)
       );
     }
 
@@ -72,22 +99,10 @@ export class BrowserOdpManager extends OdpManager {
       customEventRequestHandler = odpOptions.eventRequestHandler;
     } else {
       customEventRequestHandler = new BrowserRequestHandler(
-        browserLogger,
+        this.logger,
         odpOptions?.eventApiTimeout || REQUEST_TIMEOUT_ODP_EVENTS_MS
       );
     }
-
-    super({
-      segmentLRUCache:
-        odpOptions?.segmentsCache ||
-        new BrowserLRUCache<string, string[]>({
-          maxSize: odpOptions?.segmentsCacheSize,
-          timeout: odpOptions?.segmentsCacheTimeout,
-        }),
-      segmentRequestHandler: customSegmentRequestHandler,
-      logger: browserLogger,
-      odpOptions,
-    });
 
     // Set up Events Manager (Events REST API Interface)
     if (odpOptions?.eventManager) {
@@ -108,7 +123,6 @@ export class BrowserOdpManager extends OdpManager {
 
     this.eventManager!.start();
 
-    this.logger = browserLogger;
     this.initPromise = this.initializeVuid(BrowserOdpManager.cache).catch(e => {
       this.logger.log(this.enabled ? LogLevel.ERROR : LogLevel.DEBUG, e);
     });

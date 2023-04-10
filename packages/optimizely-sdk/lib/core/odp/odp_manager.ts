@@ -14,47 +14,25 @@
  * limitations under the License.
  */
 
-import { BROWSER_CLIENT_VERSION, LOG_MESSAGES } from './../../utils/enums/index';
+import { LOG_MESSAGES } from './../../utils/enums/index';
 import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
-
-import { RequestHandler } from './../../utils/http_request_handler/http';
-
-import { LRUCache } from './../../utils/lru_cache/lru_cache';
 
 import { VuidManager } from '../../plugins/vuid_manager';
 
 import { OdpConfig } from './odp_config';
 import { OdpEventManager } from './odp_event_manager';
 import { OdpSegmentManager } from './odp_segment_manager';
-import { OdpSegmentApiManager } from './odp_segment_api_manager';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
 import { invalidOdpDataFound } from './odp_utils';
 import { OdpEvent } from './odp_event';
-import { OdpOptions } from '../../shared_types';
-
-/**
- * @param {LRUCache<string, string>[]}  segmentLRUCache Cache to be used for storing segments.
- * @param {RequestHandler}              segmentRequestHandler HTTP request handler that will be used by the ODP Segment Manager.
- * @param {RequestHandler}              eventRequestHandler HTTP request handler that will be used by the ODP Event Manager.
- * @param {LogHandler}                  logger (Optional) Accepts custom LogHandler. Defaults to the default global LogHandler.
- * @param {string}                      clientEngine (Optional) String denoting specific client engine being used. Defaults to 'javascript-sdk'.
- * @param {string}                      clientVersion (Optional) String denoting specific client version. Defaults to current version value from package.json.
- * @param {OdpOptions}                  odpOptions (Optional) Configuration settings for various ODP options from segment cache size to event flush interval.
- */
-interface OdpManagerConfig {
-  segmentLRUCache: LRUCache<string, string[]>;
-  segmentRequestHandler: RequestHandler;
-  logger?: LogHandler;
-  odpOptions?: OdpOptions;
-}
 
 /**
  * Orchestrates segments manager, event manager, and ODP configuration
  */
 export abstract class OdpManager {
-  enabled: boolean;
-  logger: LogHandler;
+  enabled = true;
+  logger: LogHandler = getLogger();
   odpConfig: OdpConfig = new OdpConfig();
 
   /**
@@ -69,27 +47,7 @@ export abstract class OdpManager {
    */
   public eventManager: OdpEventManager | undefined;
 
-  constructor({ segmentLRUCache, segmentRequestHandler, logger, odpOptions }: OdpManagerConfig) {
-    this.enabled = !odpOptions?.disabled;
-    this.logger = logger || getLogger();
-
-    if (!this.enabled) {
-      this.logger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED);
-      return;
-    }
-
-    // Set up Segment Manager (Audience Segments GraphQL API Interface)
-    if (odpOptions?.segmentManager) {
-      this.segmentManager = odpOptions.segmentManager;
-      this.segmentManager.updateSettings(this.odpConfig);
-    } else {
-      this.segmentManager = new OdpSegmentManager(
-        this.odpConfig,
-        segmentLRUCache,
-        new OdpSegmentApiManager(segmentRequestHandler, this.logger)
-      );
-    }
-  }
+  constructor() {}
 
   /**
    * Provides a method to update ODP Manager's ODP Config API Key, API Host, and Audience Segments

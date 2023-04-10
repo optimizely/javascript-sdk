@@ -18,17 +18,21 @@ import { NodeRequestHandler } from '../../utils/http_request_handler/node_reques
 
 import { ServerLRUCache } from './../../utils/lru_cache/server_lru_cache';
 
-import { OdpManager } from '../../core/odp/odp_manager';
-import { getLogger, LogHandler } from '../../modules/logging';
+import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import {
+  LOG_MESSAGES,
   NODE_CLIENT_ENGINE,
   NODE_CLIENT_VERSION,
   REQUEST_TIMEOUT_ODP_EVENTS_MS,
   REQUEST_TIMEOUT_ODP_SEGMENTS_MS,
 } from '../../utils/enums';
+
+import { OdpManager } from '../../core/odp/odp_manager';
 import { OdpOptions } from '../../../lib/shared_types';
 import { NodeOdpEventApiManager } from '../odp/event_api_manager/index.node';
 import { NodeOdpEventManager } from '../odp/event_manager/index.node';
+import { OdpSegmentManager } from '../../core/odp/odp_segment_manager';
+import { OdpSegmentApiManager } from '../../core/odp/odp_segment_api_manager';
 
 interface NodeOdpManagerConfig {
   logger?: LogHandler;
@@ -41,9 +45,16 @@ interface NodeOdpManagerConfig {
  */
 export class NodeOdpManager extends OdpManager {
   constructor({ logger, odpOptions }: NodeOdpManagerConfig) {
-    const nodeLogger = logger || getLogger();
+    super();
 
-    const nodeRequestHandler = new NodeRequestHandler(nodeLogger);
+    this.logger = logger || getLogger();
+
+    if (odpOptions?.disabled) {
+      this.enabled = false;
+      this.logger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED);
+      return;
+    }
+
     const nodeClientEngine = NODE_CLIENT_ENGINE;
     const nodeClientVersion = NODE_CLIENT_VERSION;
 
@@ -53,8 +64,24 @@ export class NodeOdpManager extends OdpManager {
       customSegmentRequestHandler = odpOptions.segmentsRequestHandler;
     } else {
       customSegmentRequestHandler = new NodeRequestHandler(
-        nodeLogger,
+        this.logger,
         odpOptions?.segmentsApiTimeout || REQUEST_TIMEOUT_ODP_SEGMENTS_MS
+      );
+    }
+
+    // Set up Segment Manager (Audience Segments GraphQL API Interface)
+    if (odpOptions?.segmentManager) {
+      this.segmentManager = odpOptions.segmentManager;
+      this.segmentManager.updateSettings(this.odpConfig);
+    } else {
+      this.segmentManager = new OdpSegmentManager(
+        this.odpConfig,
+        odpOptions?.segmentsCache ||
+          new ServerLRUCache<string, string[]>({
+            maxSize: odpOptions?.segmentsCacheSize,
+            timeout: odpOptions?.segmentsCacheTimeout,
+          }),
+        new OdpSegmentApiManager(customSegmentRequestHandler, this.logger)
       );
     }
 
@@ -64,22 +91,10 @@ export class NodeOdpManager extends OdpManager {
       customEventRequestHandler = odpOptions.eventRequestHandler;
     } else {
       customEventRequestHandler = new NodeRequestHandler(
-        nodeLogger,
+        this.logger,
         odpOptions?.eventApiTimeout || REQUEST_TIMEOUT_ODP_EVENTS_MS
       );
     }
-
-    super({
-      segmentLRUCache:
-        odpOptions?.segmentsCache ||
-        new ServerLRUCache<string, string[]>({
-          maxSize: odpOptions?.segmentsCacheSize,
-          timeout: odpOptions?.segmentsCacheTimeout,
-        }),
-      segmentRequestHandler: customSegmentRequestHandler,
-      logger: nodeLogger,
-      odpOptions,
-    });
 
     // Set up Events Manager (Events REST API Interface)
     if (odpOptions?.eventManager) {

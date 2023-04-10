@@ -10091,7 +10091,6 @@ describe('lib/optimizely', function() {
   describe('odp', () => {
     var optlyInstanceWithOdp;
     var bucketStub;
-    var fakeDecisionResponse;
     var notificationCenter = createNotificationCenter({ logger: createdLogger, errorHandler });
     var eventProcessor = createForwardingEventProcessor(eventDispatcher, notificationCenter);
     var createdLogger = logger.createLogger({
