@@ -20,7 +20,12 @@ import { ServerLRUCache } from './../../utils/lru_cache/server_lru_cache';
 
 import { OdpManager } from '../../core/odp/odp_manager';
 import { getLogger, LogHandler } from '../../modules/logging';
-import { NODE_CLIENT_ENGINE, NODE_CLIENT_VERSION } from '../../utils/enums';
+import {
+  NODE_CLIENT_ENGINE,
+  NODE_CLIENT_VERSION,
+  REQUEST_TIMEOUT_ODP_EVENTS_MS,
+  REQUEST_TIMEOUT_ODP_SEGMENTS_MS,
+} from '../../utils/enums';
 import { OdpOptions } from '../../../lib/shared_types';
 import { NodeOdpEventApiManager } from '../odp/event_api_manager/index.node';
 import { NodeOdpEventManager } from '../odp/event_manager/index.node';
@@ -42,6 +47,28 @@ export class NodeOdpManager extends OdpManager {
     const nodeClientEngine = NODE_CLIENT_ENGINE;
     const nodeClientVersion = NODE_CLIENT_VERSION;
 
+    let customSegmentRequestHandler;
+
+    if (odpOptions?.segmentsRequestHandler) {
+      customSegmentRequestHandler = odpOptions.segmentsRequestHandler;
+    } else {
+      customSegmentRequestHandler = new NodeRequestHandler(
+        nodeLogger,
+        odpOptions?.segmentsApiTimeout || REQUEST_TIMEOUT_ODP_SEGMENTS_MS
+      );
+    }
+
+    let customEventRequestHandler;
+
+    if (odpOptions?.eventRequestHandler) {
+      customEventRequestHandler = odpOptions.eventRequestHandler;
+    } else {
+      customEventRequestHandler = new NodeRequestHandler(
+        nodeLogger,
+        odpOptions?.eventApiTimeout || REQUEST_TIMEOUT_ODP_EVENTS_MS
+      );
+    }
+
     super({
       segmentLRUCache:
         odpOptions?.segmentsCache ||
@@ -49,11 +76,8 @@ export class NodeOdpManager extends OdpManager {
           maxSize: odpOptions?.segmentsCacheSize,
           timeout: odpOptions?.segmentsCacheTimeout,
         }),
-      segmentRequestHandler: nodeRequestHandler,
-      eventRequestHandler: nodeRequestHandler,
+      segmentRequestHandler: customSegmentRequestHandler,
       logger: nodeLogger,
-      clientEngine: nodeClientEngine,
-      clientVersion: nodeClientVersion,
       odpOptions,
     });
 
@@ -64,7 +88,7 @@ export class NodeOdpManager extends OdpManager {
     } else {
       this.eventManager = new NodeOdpEventManager({
         odpConfig: this.odpConfig,
-        apiManager: new NodeOdpEventApiManager(nodeRequestHandler, this.logger),
+        apiManager: new NodeOdpEventApiManager(customEventRequestHandler, this.logger),
         logger: this.logger,
         clientEngine: nodeClientEngine,
         clientVersion: nodeClientVersion,

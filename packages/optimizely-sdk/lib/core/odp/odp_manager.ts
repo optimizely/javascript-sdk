@@ -45,10 +45,7 @@ import { OdpOptions } from '../../shared_types';
 interface OdpManagerConfig {
   segmentLRUCache: LRUCache<string, string[]>;
   segmentRequestHandler: RequestHandler;
-  eventRequestHandler: RequestHandler;
   logger?: LogHandler;
-  clientEngine?: string;
-  clientVersion?: string;
   odpOptions?: OdpOptions;
 }
 

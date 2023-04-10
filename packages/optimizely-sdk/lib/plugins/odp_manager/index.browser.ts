@@ -85,10 +85,7 @@ export class BrowserOdpManager extends OdpManager {
           timeout: odpOptions?.segmentsCacheTimeout,
         }),
       segmentRequestHandler: customSegmentRequestHandler,
-      eventRequestHandler: customEventRequestHandler,
       logger: browserLogger,
-      clientEngine: browserClientEngine,
-      clientVersion: browserClientVersion,
       odpOptions,
     });
 
@@ -101,8 +98,8 @@ export class BrowserOdpManager extends OdpManager {
         odpConfig: this.odpConfig,
         apiManager: new BrowserOdpEventApiManager(customEventRequestHandler, this.logger),
         logger: this.logger,
-        clientEngine: browserClientEngine || 'javascript-sdk',
-        clientVersion: browserClientVersion || BROWSER_CLIENT_VERSION,
+        clientEngine: browserClientEngine,
+        clientVersion: browserClientVersion,
         flushInterval: odpOptions?.eventFlushInterval,
         batchSize: odpOptions?.eventBatchSize,
         queueSize: odpOptions?.eventQueueSize,
