@@ -180,27 +180,29 @@ export default class Optimizely {
 
     // this.readyPromise = Promise.all(dependentPromises).then(promiseResults => {
 
-    this.readyPromise = Promise.all([projectConfigManagerReadyPromise, eventProcessorStartedPromise]).then(
-      promiseResults => {
-        if (config.odpManager != null) {
-          this.odpManager = config.odpManager;
-          this.odpManager.eventManager?.start();
-          this.updateOdpSettings();
-          const sdkKey = this.projectConfigManager.getConfig()?.sdkKey;
-          if (sdkKey != null) {
-            NotificationRegistry.getNotificationCenter(
-              sdkKey,
-              this.logger
-            )?.addNotificationListener(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, () => this.updateOdpSettings());
-          } else {
-            this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.ODP_SDK_KEY_MISSING_NOTIFICATION_CENTER_FAILURE);
-          }
+    this.readyPromise = Promise.all([
+      projectConfigManagerReadyPromise,
+      eventProcessorStartedPromise,
+      // config.odpManager.initPromise,
+    ]).then(promiseResults => {
+      if (config.odpManager != null) {
+        this.odpManager = config.odpManager;
+        this.odpManager.eventManager?.start();
+        this.updateOdpSettings();
+        const sdkKey = this.projectConfigManager.getConfig()?.sdkKey;
+        if (sdkKey != null) {
+          NotificationRegistry.getNotificationCenter(
+            sdkKey,
+            this.logger
+          )?.addNotificationListener(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, () => this.updateOdpSettings());
+        } else {
+          this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.ODP_SDK_KEY_MISSING_NOTIFICATION_CENTER_FAILURE);
         }
-
-        // Only return status from project config promise because event processor promise does not return any status.
-        return promiseResults[0];
       }
-    );
+
+      // Only return status from project config promise because event processor promise does not return any status.
+      return promiseResults[0];
+    });
 
     this.readyTimeouts = {};
     this.nextReadyTimeoutId = 0;
@@ -1687,12 +1689,12 @@ export default class Optimizely {
    * @param {Map<string, string>} identifiers    (Optional) Key-value map of user identifiers
    * @param {Map<string, string>} data           (Optional) Event data in a key-value map.
    */
-  public async sendOdpEvent(
+  public sendOdpEvent(
     action: string,
     type?: string,
     identifiers?: Map<string, string>,
     data?: Map<string, unknown>
-  ): Promise<void> {
+  ): void {
     if (!this.odpManager) {
       this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED_ODP_MANAGER_MISSING);
       return;
@@ -1702,7 +1704,7 @@ export default class Optimizely {
 
     try {
       const odpEvent = new OdpEvent(odpEventType, action, identifiers, data);
-      await this.odpManager.sendEvent(odpEvent);
+      this.odpManager.sendEvent(odpEvent);
     } catch (e) {
       this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED, e);
     }
@@ -1712,9 +1714,9 @@ export default class Optimizely {
    * Identifies user with ODP server in a fire-and-forget manner.
    * @param {string} userId
    */
-  public async identifyUser(userId: string): Promise<void> {
+  public identifyUser(userId: string): void {
     if (this.odpManager && this.odpManager.enabled) {
-      await this.odpManager.identifyUser(userId);
+      this.odpManager.identifyUser(userId);
     }
   }
 
@@ -1745,12 +1747,12 @@ export default class Optimizely {
       this.logger?.error('Unable to get VUID - ODP Manager is not instantiated yet.');
       return undefined;
     }
-    
+
     if (!this.odpManager.isVuidEnabled()) {
       this.logger.log(LOG_LEVEL.WARNING, 'getVuid() unavailable for this platform', MODULE_NAME);
       return undefined;
     }
-    
+
     return this.odpManager.getVuid();
   }
 }

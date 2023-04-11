@@ -359,12 +359,7 @@ export interface Client {
   getOptimizelyConfig(): OptimizelyConfig | null;
   onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
   close(): Promise<{ success: boolean; reason?: string }>;
-  sendOdpEvent(
-    action: string,
-    type?: string,
-    identifiers?: Map<string, string>,
-    data?: Map<string, unknown>
-  ): Promise<void>;
+  sendOdpEvent(action: string, type?: string, identifiers?: Map<string, string>, data?: Map<string, unknown>): void;
 }
 
 export interface ActivateListenerPayload extends ListenerPayload {

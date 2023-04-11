@@ -31,6 +31,7 @@ import { OdpEvent } from './odp_event';
  * Orchestrates segments manager, event manager, and ODP configuration
  */
 export abstract class OdpManager {
+  initPromise?: Promise<void>;
   enabled = true;
   logger: LogHandler = getLogger();
   odpConfig: OdpConfig = new OdpConfig();

@@ -795,7 +795,8 @@ describe('javascript-sdk (Browser)', function() {
         const readyData = await client.onReady();
         assert.equal(readyData.success, true);
         assert.isUndefined(readyData.reason);
-        await client.sendOdpEvent(ODP_EVENT_ACTION.INITIALIZED);
+
+        client.sendOdpEvent(ODP_EVENT_ACTION.INITIALIZED);
 
         sinon.assert.notCalled(logger.error);
         sinon.assert.called(fakeEventManager.sendEvent);
@@ -816,7 +817,8 @@ describe('javascript-sdk (Browser)', function() {
         const readyData = await client.onReady();
         assert.equal(readyData.success, true);
         assert.isUndefined(readyData.reason);
-        await client.sendOdpEvent(ODP_EVENT_ACTION.INITIALIZED);
+
+        client.sendOdpEvent(ODP_EVENT_ACTION.INITIALIZED);
 
         sinon.assert.calledWith(logger.error, 'ODP event send failed.');
         sinon.assert.calledWith(logger.log, optimizelyFactory.enums.LOG_LEVEL.INFO, 'ODP Disabled.');
@@ -837,7 +839,8 @@ describe('javascript-sdk (Browser)', function() {
         const readyData = await client.onReady();
         assert.equal(readyData.success, true);
         assert.isUndefined(readyData.reason);
-        await client.sendOdpEvent(ODP_EVENT_ACTION.INITIALIZED);
+
+        client.sendOdpEvent(ODP_EVENT_ACTION.INITIALIZED);
 
         sinon.assert.calledWith(
           logger.log,
@@ -875,7 +878,8 @@ describe('javascript-sdk (Browser)', function() {
         const readyData = await client.onReady();
         assert.equal(readyData.success, true);
         assert.isUndefined(readyData.reason);
-        await client.sendOdpEvent(ODP_EVENT_ACTION.INITIALIZED);
+
+        client.sendOdpEvent(ODP_EVENT_ACTION.INITIALIZED);
 
         // wait for request to be sent
         clock.tick(100);

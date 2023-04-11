@@ -50,6 +50,7 @@ export class NodeOdpManager extends OdpManager {
     this.logger = logger || getLogger();
 
     if (odpOptions?.disabled) {
+      this.initPromise = Promise.resolve();
       this.enabled = false;
       this.logger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED);
       return;
