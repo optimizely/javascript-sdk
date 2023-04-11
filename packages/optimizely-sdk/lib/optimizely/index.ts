@@ -63,7 +63,6 @@ import {
   NOTIFICATION_TYPES,
   NODE_CLIENT_ENGINE,
   NODE_CLIENT_VERSION,
-  ODP_EVENT_ACTION,
   ODP_DEFAULT_EVENT_TYPE,
 } from '../utils/enums';
 
@@ -168,27 +167,42 @@ export default class Optimizely {
 
     const eventProcessorStartedPromise = this.eventProcessor.start();
 
-    this.readyPromise = Promise.all([projectConfigManagerReadyPromise, eventProcessorStartedPromise]).then(
-      promiseResults => {
-        if (config.odpManager != null) {
-          this.odpManager = config.odpManager;
-          this.odpManager.eventManager?.start();
-          this.updateOdpSettings();
-          const sdkKey = this.projectConfigManager.getConfig()?.sdkKey;
-          if (sdkKey != null) {
-            NotificationRegistry.getNotificationCenter(
-              sdkKey,
-              this.logger
-            )?.addNotificationListener(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, () => this.updateOdpSettings());
-          } else {
-            this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.ODP_SDK_KEY_MISSING_NOTIFICATION_CENTER_FAILURE);
-          }
-        }
+    // TODO: Look into making VUID Initialization a dependent promise for Browser Contexts
 
-        // Only return status from project config promise because event processor promise does not return any status.
-        return promiseResults[0];
+    // let dependentPromises: Promise<any>[] = [projectConfigManagerReadyPromise];
+
+    // if (isBrowserContext()) {
+    //   const odpManagerVuidInitializedPromise = (config.odpManager as BrowserOdpManager).initPromise;
+    //   if (odpManagerVuidInitializedPromise) {
+    //     dependentPromises.push(odpManagerVuidInitializedPromise);
+    //   }
+    // }
+
+    // this.readyPromise = Promise.all(dependentPromises).then(promiseResults => {
+
+    this.readyPromise = Promise.all([
+      projectConfigManagerReadyPromise,
+      eventProcessorStartedPromise,
+      // config.odpManager.initPromise,
+    ]).then(promiseResults => {
+      if (config.odpManager != null) {
+        this.odpManager = config.odpManager;
+        this.odpManager.eventManager?.start();
+        this.updateOdpSettings();
+        const sdkKey = this.projectConfigManager.getConfig()?.sdkKey;
+        if (sdkKey != null) {
+          NotificationRegistry.getNotificationCenter(
+            sdkKey,
+            this.logger
+          )?.addNotificationListener(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, () => this.updateOdpSettings());
+        } else {
+          this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.ODP_SDK_KEY_MISSING_NOTIFICATION_CENTER_FAILURE);
+        }
       }
-    );
+
+      // Only return status from project config promise because event processor promise does not return any status.
+      return promiseResults[0];
+    });
 
     this.readyTimeouts = {};
     this.nextReadyTimeoutId = 0;
@@ -1428,19 +1442,27 @@ export default class Optimizely {
    * A user context will be created successfully even when the SDK is not fully configured yet, so no
    * this.isValidInstance() check is performed here.
    *
-   * @param  {string}          userId      The user ID to be used for bucketing.
-   * @param  {UserAttributes}  attributes  Optional user attributes.
+   * @param  {string}          userId      (Optional) The user ID to be used for bucketing.
+   * @param  {UserAttributes}  attributes  (Optional) user attributes.
    * @return {OptimizelyUserContext|null}  An OptimizelyUserContext associated with this OptimizelyClient or
    *                                       null if provided inputs are invalid
    */
-  createUserContext(userId: string, attributes?: UserAttributes): OptimizelyUserContext | null {
-    if (!this.validateInputs({ user_id: userId }, attributes)) {
+  createUserContext(userId?: string, attributes?: UserAttributes): OptimizelyUserContext | null {
+    let userIdentifier;
+
+    if (this.odpManager?.isVuidEnabled() && !userId) {
+      userIdentifier = userId || this.getVuid();
+    } else {
+      userIdentifier = userId;
+    }
+
+    if (!userIdentifier || !this.validateInputs({ user_id: userIdentifier }, attributes)) {
       return null;
     }
 
     return new OptimizelyUserContext({
       optimizely: this,
-      userId,
+      userId: userIdentifier,
       attributes,
       shouldIdentifyUser: true,
     });
@@ -1662,23 +1684,17 @@ export default class Optimizely {
   /**
    * Sends an action as an ODP Event with optional custom parameters including type, identifiers, and data
    * Note: Since this depends on this.odpManager, it must await Optimizely client's onReady() promise resolution.
-   * @param {Object} odpEvent
-   * @param {ODP_EVENT_ACTION}    odpEvent.action         Subcategory of the event type (i.e. "client_initialized", or "identified")
-   * @param {string}              odpEvent.type           (Optional) Type of event (Defaults to "fullstack")
-   * @param {Map<string, string>} odpEvent.identifiers    (Optional) Key-value map of user identifiers
-   * @param {Map<string, string>} odpEvent.data           (Optional) Event data in a key-value map.
+   * @param {string}              action         Subcategory of the event type (i.e. "client_initialized", "identified", or a custom action)
+   * @param {string}              type           (Optional) Type of event (Defaults to "fullstack")
+   * @param {Map<string, string>} identifiers    (Optional) Key-value map of user identifiers
+   * @param {Map<string, string>} data           (Optional) Event data in a key-value map.
    */
-  public async sendOdpEvent({
-    type,
-    action,
-    identifiers,
-    data,
-  }: {
-    type?: string;
-    action: ODP_EVENT_ACTION;
-    identifiers?: Map<string, string>;
-    data?: Map<string, unknown>;
-  }): Promise<void> {
+  public sendOdpEvent(
+    action: string,
+    type?: string,
+    identifiers?: Map<string, string>,
+    data?: Map<string, unknown>
+  ): void {
     if (!this.odpManager) {
       this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED_ODP_MANAGER_MISSING);
       return;
@@ -1688,7 +1704,7 @@ export default class Optimizely {
 
     try {
       const odpEvent = new OdpEvent(odpEventType, action, identifiers, data);
-      await this.odpManager.sendEvent(odpEvent);
+      this.odpManager.sendEvent(odpEvent);
     } catch (e) {
       this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED, e);
     }
@@ -1698,9 +1714,9 @@ export default class Optimizely {
    * Identifies user with ODP server in a fire-and-forget manner.
    * @param {string} userId
    */
-  public async identifyUser(userId: string): Promise<void> {
+  public identifyUser(userId: string): void {
     if (this.odpManager && this.odpManager.enabled) {
-      await this.odpManager.identifyUser(userId);
+      this.odpManager.identifyUser(userId);
     }
   }
 
@@ -1720,5 +1736,23 @@ export default class Optimizely {
     }
 
     return await this.odpManager.fetchQualifiedSegments(userId, options);
+  }
+
+  /**
+   * @returns {string|undefined}    Currently provisioned VUID from local ODP Manager or undefined if
+   *                                ODP Manager has not been instantiated yet for any reason.
+   */
+  getVuid(): string | undefined {
+    if (!this.odpManager) {
+      this.logger?.error('Unable to get VUID - ODP Manager is not instantiated yet.');
+      return undefined;
+    }
+
+    if (!this.odpManager.isVuidEnabled()) {
+      this.logger.log(LOG_LEVEL.WARNING, 'getVuid() unavailable for this platform', MODULE_NAME);
+      return undefined;
+    }
+
+    return this.odpManager.getVuid();
   }
 }

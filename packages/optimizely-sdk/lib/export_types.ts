@@ -13,6 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/**
+ * This file contains a collection of all types to be externally exported.
+ */
+
 export {
   UserAttributes,
   OptimizelyConfig,
@@ -38,4 +43,5 @@ export {
   ActivateListenerPayload,
   TrackListenerPayload,
   NotificationCenter,
+  OptimizelySegmentOption,
 } from './shared_types';

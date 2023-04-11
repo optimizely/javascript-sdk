@@ -28,9 +28,8 @@ import OptimizelyUserContext from './optimizely_user_context';
 import { LOG_MESSAGES, ODP_EVENT_ACTION, ODP_EVENT_BROWSER_ENDPOINT } from './utils/enums';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import { OdpConfig } from './core/odp/odp_config';
-import { OdpEventManager } from './core/odp/odp_event_manager';
-import { OdpEventApiManager } from './core/odp/odp_event_api_manager';
-import { isBrowserContext } from './core/odp/odp_utils';
+import { BrowserOdpEventManager } from './plugins/odp/event_manager/index.browser';
+import { BrowserOdpEventApiManager } from './plugins/odp/event_api_manager/index.browser';
 
 var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
 
@@ -586,16 +585,20 @@ describe('javascript-sdk (Browser)', function() {
       const testFsUserId = 'fs_test_user';
       const testVuid = 'vuid_test_user';
       var clock;
-      const requestParams = new Map;
+      const requestParams = new Map();
       const mockRequestHandler = {
         makeRequest: (endpoint, headers, method, data) => {
           requestParams.set('endpoint', endpoint);
           requestParams.set('headers', headers);
           requestParams.set('method', method);
           requestParams.set('data', data);
-          return {responsePromise: (async()=>{return {statusCode: 200}})()}
+          return {
+            responsePromise: (async () => {
+              return { statusCode: 200 };
+            })(),
+          };
         },
-        args: requestParams
+        args: requestParams,
       };
 
       beforeEach(function() {
@@ -606,8 +609,8 @@ describe('javascript-sdk (Browser)', function() {
 
       afterEach(function() {
         sandbox.restore();
-        clock.restore()
-        requestParams.clear()
+        clock.restore();
+        requestParams.clear();
       });
 
       it('should send identify event by default when initialized', () => {
@@ -736,7 +739,6 @@ describe('javascript-sdk (Browser)', function() {
 
         sinon.assert.notCalled(logger.error);
         sinon.assert.called(fakeSegmentManager.fetchQualifiedSegments);
-
       });
 
       it('should accept a valid custom odp event manager', async () => {
@@ -759,7 +761,7 @@ describe('javascript-sdk (Browser)', function() {
           odpOptions: {
             disabled: false,
             eventManager: fakeEventManager,
-          }
+          },
         });
         const readyData = await client.onReady();
         assert.equal(readyData.success, true);
@@ -786,16 +788,15 @@ describe('javascript-sdk (Browser)', function() {
           eventBatchSize: null,
           logger,
           odpOptions: {
-            eventManager: fakeEventManager
-          }
+            eventManager: fakeEventManager,
+          },
         });
 
         const readyData = await client.onReady();
         assert.equal(readyData.success, true);
         assert.isUndefined(readyData.reason);
-        await client.sendOdpEvent({
-          action: ODP_EVENT_ACTION.INITIALIZED,
-        });
+
+        client.sendOdpEvent(ODP_EVENT_ACTION.INITIALIZED);
 
         sinon.assert.notCalled(logger.error);
         sinon.assert.called(fakeEventManager.sendEvent);
@@ -816,18 +817,14 @@ describe('javascript-sdk (Browser)', function() {
         const readyData = await client.onReady();
         assert.equal(readyData.success, true);
         assert.isUndefined(readyData.reason);
-        await client.sendOdpEvent({
-          action: ODP_EVENT_ACTION.INITIALIZED,
-        });
+
+        client.sendOdpEvent(ODP_EVENT_ACTION.INITIALIZED);
 
         sinon.assert.calledWith(logger.error, 'ODP event send failed.');
         sinon.assert.calledWith(logger.log, optimizelyFactory.enums.LOG_LEVEL.INFO, 'ODP Disabled.');
       });
 
       it('should log a warning when attempting to use an event batch size other than 1', async () => {
-        if (!isBrowserContext()) {
-          return
-        }
         const client = optimizelyFactory.createInstance({
           datafile: testData.getOdpIntegratedConfigWithSegments(),
           errorHandler: fakeErrorHandler,
@@ -835,28 +832,34 @@ describe('javascript-sdk (Browser)', function() {
           eventBatchSize: null,
           logger,
           odpOptions: {
-            eventBatchSize: 5
+            eventBatchSize: 5,
           },
         });
 
         const readyData = await client.onReady();
         assert.equal(readyData.success, true);
         assert.isUndefined(readyData.reason);
-        await client.sendOdpEvent({
-          action: ODP_EVENT_ACTION.INITIALIZED,
-        });
 
-        sinon.assert.calledWith(logger.log, optimizelyFactory.enums.LOG_LEVEL.WARNING, 'ODP event batch size must be 1 in the browser.');
+        client.sendOdpEvent(ODP_EVENT_ACTION.INITIALIZED);
+
+        sinon.assert.calledWith(
+          logger.log,
+          optimizelyFactory.enums.LOG_LEVEL.WARNING,
+          'ODP event batch size must be 1 in the browser.'
+        );
         assert(client.odpManager.eventManager.batchSize, 1);
       });
 
       it('should send an odp event to the browser endpoint', async () => {
-        if (!isBrowserContext()) {
-          return
-        }
         const odpConfig = new OdpConfig();
-        const apiManager = new OdpEventApiManager(mockRequestHandler, logger);
-        const eventManager = new OdpEventManager({odpConfig, apiManager, logger, clientEngine: "javascript-sdk", clientVersion: "great" })
+        const apiManager = new BrowserOdpEventApiManager(mockRequestHandler, logger);
+        const eventManager = new BrowserOdpEventManager({
+          odpConfig,
+          apiManager,
+          logger,
+          clientEngine: 'javascript-sdk',
+          clientVersion: 'great',
+        });
 
         let datafile = testData.getOdpIntegratedConfigWithSegments();
 
@@ -868,16 +871,15 @@ describe('javascript-sdk (Browser)', function() {
           logger,
           odpOptions: {
             odpConfig,
-            eventManager
-          }
+            eventManager,
+          },
         });
 
         const readyData = await client.onReady();
         assert.equal(readyData.success, true);
         assert.isUndefined(readyData.reason);
-        await client.sendOdpEvent({
-          action: ODP_EVENT_ACTION.INITIALIZED,
-        });
+
+        client.sendOdpEvent(ODP_EVENT_ACTION.INITIALIZED);
 
         // wait for request to be sent
         clock.tick(100);
@@ -885,8 +887,8 @@ describe('javascript-sdk (Browser)', function() {
         let publicKey = datafile.integrations[0].publicKey;
 
         let requestEndpoint = new URL(requestParams.get('endpoint'));
-        assert.equal(requestEndpoint.origin + requestEndpoint.pathname, ODP_EVENT_BROWSER_ENDPOINT)
-        assert.equal(requestParams.get('method'), 'GET')
+        assert.equal(requestEndpoint.origin + requestEndpoint.pathname, ODP_EVENT_BROWSER_ENDPOINT);
+        assert.equal(requestParams.get('method'), 'GET');
 
         let searchParams = requestEndpoint.searchParams;
         assert.lengthOf(searchParams.get('idempotence_id'), 36);

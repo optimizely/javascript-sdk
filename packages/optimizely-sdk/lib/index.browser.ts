@@ -27,7 +27,7 @@ import { default as eventProcessor } from './plugins/event_processor';
 import { OptimizelyDecideOption, Client, Config, OptimizelyOptions } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/browser_http_polling_datafile_manager';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
-import BrowserOptimizely from './optimizely/index.browser';
+import Optimizely from './optimizely';
 
 const logger = getLogger();
 logHelper.setLogHandler(loggerPlugin.createLogger());
@@ -128,7 +128,7 @@ const createInstance = function(config: Config): Client | null {
       odpManager: new BrowserOdpManager({ logger, odpOptions: config.odpOptions }),
     };
 
-    const optimizely = new BrowserOptimizely(optimizelyOptions);
+    const optimizely = new Optimizely(optimizelyOptions);
 
     try {
       if (typeof window.addEventListener === 'function') {

@@ -4605,7 +4605,7 @@ describe('lib/optimizely', function() {
       });
 
       it('should call the error handler for invalid user ID and return null', function() {
-        assert.isNull(optlyInstance.createUserContext(null));
+        assert.isNull(optlyInstance.createUserContext(1));
         sinon.assert.calledOnce(errorHandler.handleError);
         var errorMessage = errorHandler.handleError.lastCall.args[0].message;
         assert.strictEqual(errorMessage, sprintf(ERROR_MESSAGES.INVALID_INPUT_FORMAT, 'OPTIMIZELY', 'user_id'));
@@ -10091,7 +10091,6 @@ describe('lib/optimizely', function() {
   describe('odp', () => {
     var optlyInstanceWithOdp;
     var bucketStub;
-    var fakeDecisionResponse;
     var notificationCenter = createNotificationCenter({ logger: createdLogger, errorHandler });
     var eventProcessor = createForwardingEventProcessor(eventDispatcher, notificationCenter);
     var createdLogger = logger.createLogger({
