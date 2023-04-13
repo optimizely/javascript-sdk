@@ -134,8 +134,8 @@ describe('OdpSegmentManager', () => {
 
   function peekCache(userKey: string, userValue: string): string[] | null {
     const cacheKey = manager.makeCacheKey(userKey, userValue);
-    return manager.segmentsCache.peek(cacheKey);
+    return (manager.segmentsCache as LRUCache<string, string[]>).peek(cacheKey);
   }
 
-  const cacheCount = () => manager.segmentsCache.map.size;
+  const cacheCount = () => (manager.segmentsCache as LRUCache<string, string[]>).map.size;
 });

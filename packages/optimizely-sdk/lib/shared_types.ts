@@ -27,7 +27,7 @@ import { NOTIFICATION_TYPES } from './utils/enums';
 
 import { OdpManager } from './core/odp/odp_manager';
 import { OdpSegmentManager } from './core/odp/odp_segment_manager';
-import { LRUCache } from './utils/lru_cache';
+import { ICache } from './utils/lru_cache';
 import { OdpEventManager } from './core/odp/odp_event_manager';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 import { OptimizelySegmentOption } from './core/odp/optimizely_segment_option';
@@ -90,7 +90,7 @@ export interface DatafileOptions {
 
 export interface OdpOptions {
   disabled?: boolean;
-  segmentsCache?: LRUCache<string, string[]>;
+  segmentsCache?: ICache<string, string[]>;
   segmentsCacheSize?: number;
   segmentsCacheTimeout?: number;
   segmentsApiTimeout?: number;
@@ -534,3 +534,5 @@ export interface OptimizelyForcedDecision {
 }
 
 export { OptimizelySegmentOption };
+
+export { ICache };

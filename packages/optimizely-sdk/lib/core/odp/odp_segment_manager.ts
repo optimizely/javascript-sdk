@@ -16,7 +16,7 @@
 
 import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
-import { LRUCache } from '../../utils/lru_cache';
+import { ICache } from '../../utils/lru_cache';
 import { OdpSegmentApiManager } from './odp_segment_api_manager';
 import { OdpConfig } from './odp_config';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
@@ -35,13 +35,13 @@ export class OdpSegmentManager {
    * Holds cached audience segments
    * @private
    */
-  private _segmentsCache: LRUCache<string, string[]>;
+  private _segmentsCache: ICache<string, string[]>;
 
   /**
    * Getter for private segments cache
    * @public
    */
-  public get segmentsCache(): LRUCache<string, string[]> {
+  public get segmentsCache(): ICache<string, string[]> {
     return this._segmentsCache;
   }
 
@@ -59,7 +59,7 @@ export class OdpSegmentManager {
 
   constructor(
     odpConfig: OdpConfig,
-    segmentsCache: LRUCache<string, string[]>,
+    segmentsCache: ICache<string, string[]>,
     odpSegmentApiManager: OdpSegmentApiManager,
     logger?: LogHandler
   ) {

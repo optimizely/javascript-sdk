@@ -22,13 +22,19 @@ export interface LRUCacheConfig {
   timeout: number;
 }
 
+export interface ICache<K, V> {
+  lookup(key: K): V | null;
+  save({ key, value }: { key: K; value: V }): void;
+  reset(): void;
+}
+
 /**
  * Least-Recently Used Cache (LRU Cache) Implementation with Generic Key-Value Pairs
  * Analogous to a Map that has a specified max size and a timeout per element.
  * - Removes the least-recently used element from the cache if max size exceeded.
  * - Removes stale elements (entries older than their timeout) from the cache.
  */
-export class LRUCache<K, V> {
+export class LRUCache<K, V> implements ICache<K, V> {
   private _map: Map<K, CacheElement<V>> = new Map();
   private _maxSize; // Defines maximum size of _map
   private _timeout; // Milliseconds each entry has before it becomes stale
@@ -36,9 +42,11 @@ export class LRUCache<K, V> {
   get map(): Map<K, CacheElement<V>> {
     return this._map;
   }
+
   get maxSize(): number {
     return this._maxSize;
   }
+
   get timeout(): number {
     return this._timeout;
   }
