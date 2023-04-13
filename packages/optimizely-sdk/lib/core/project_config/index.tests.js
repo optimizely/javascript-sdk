@@ -853,6 +853,15 @@ describe('lib/core/project_config', function() {
       });
     });
 
+    describe('#withoutValidIntegrationKey', () => {
+      it('should throw an error when parsing the project config due to integrations not containing a key', () => {
+        const odpIntegratedConfigWithoutKey = testDatafile.getOdpIntegratedConfigWithoutKey();
+        assert.throws(() => {
+          projectConfig.createProjectConfig(odpIntegratedConfigWithoutKey);
+        });
+      });
+    });
+
     describe('#withoutIntegrations', () => {
       var config;
       beforeEach(() => {

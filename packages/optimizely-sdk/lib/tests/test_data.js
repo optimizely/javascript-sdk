@@ -3377,6 +3377,32 @@ export var getOdpIntegratedConfigWithoutSegments = function() {
   return cloneDeep(odpIntegratedConfigWithoutSegments);
 };
 
+var odpIntegratedConfigWithoutKey = {
+  version: '4',
+  rollouts: [],
+  anonymizeIP: true,
+  projectId: '10431130345',
+  variables: [],
+  featureFlags: [],
+  experiments: [],
+  audiences: [],
+  groups: [],
+  attributes: [],
+  accountId: '10367498574',
+  events: [],
+  integrations: [
+    {
+      host: 'https://api.zaius.com',
+      publicKey: 'W4WzcEs-ABgXorzY7h1LCQ',
+    },
+  ],
+  revision: '100',
+};
+
+export var getOdpIntegratedConfigWithoutKey = function() {
+  return cloneDeep(odpIntegratedConfigWithoutKey);
+};
+
 export var typedAudiencesById = {
   3468206642: {
     id: '3468206642',
@@ -3935,6 +3961,7 @@ export default {
   getTypedAudiencesConfig: getTypedAudiencesConfig,
   getOdpIntegratedConfigWithSegments: getOdpIntegratedConfigWithSegments,
   getOdpIntegratedConfigWithoutSegments: getOdpIntegratedConfigWithoutSegments,
+  getOdpIntegratedConfigWithoutKey: getOdpIntegratedConfigWithoutKey,
   typedAudiencesById: typedAudiencesById,
   getMutexFeatureTestsConfig: getMutexFeatureTestsConfig,
   getSimilarRuleKeyConfig: getSimilarRuleKeyConfig,

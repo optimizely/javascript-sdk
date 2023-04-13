@@ -188,9 +188,13 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
 
   if (projectConfig.integrations) {
     projectConfig.integrationKeyMap = keyBy(projectConfig.integrations, 'key');
-    projectConfig.integrations
-      .filter(integration => integration.key === 'odp')
-      .forEach(integration => {
+
+    projectConfig.integrations.forEach(integration => {
+      if (!('key' in integration)) {
+        throw new Error(sprintf(ERROR_MESSAGES.MISSING_INTEGRATION_KEY, MODULE_NAME));
+      }
+
+      if (integration.key === 'odp') {
         if (integration.publicKey && !projectConfig.publicKeyForOdp) {
           projectConfig.publicKeyForOdp = integration.publicKey;
         }
@@ -198,7 +202,8 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
         if (integration.host && !projectConfig.hostForOdp) {
           projectConfig.hostForOdp = integration.host;
         }
-      });
+      }
+    });
   }
 
   projectConfig.experimentKeyMap = keyBy(projectConfig.experiments, 'key');

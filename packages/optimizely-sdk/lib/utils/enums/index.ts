@@ -52,6 +52,7 @@ export const ERROR_MESSAGES = {
   INVALID_USER_ID: '%s: Provided user ID is in an invalid format.',
   INVALID_USER_PROFILE_SERVICE: '%s: Provided user profile service instance is in an invalid format: %s.',
   LOCAL_STORAGE_DOES_NOT_EXIST: 'Error accessing window localStorage.',
+  MISSING_INTEGRATION_KEY: '%s: Integration key missing from datafile. All integrations should include a key.',
   NO_DATAFILE_SPECIFIED: '%s: No datafile specified. Cannot start optimizely.',
   NO_JSON_PROVIDED: '%s: No JSON object to validate against schema.',
   NO_VARIATION_FOR_EXPERIMENT_KEY: '%s: No variation key %s defined in datafile for experiment %s.',
@@ -337,8 +338,8 @@ export enum NOTIFICATION_TYPES {
  * Default milliseconds before request timeout
  */
 export const REQUEST_TIMEOUT_MS = 60 * 1000; // 1 minute
-export const REQUEST_TIMEOUT_ODP_SEGMENTS_MS = 10 * 1000;  // 10 secs
-export const REQUEST_TIMEOUT_ODP_EVENTS_MS = 10 * 1000;  // 10 secs
+export const REQUEST_TIMEOUT_ODP_SEGMENTS_MS = 10 * 1000; // 10 secs
+export const REQUEST_TIMEOUT_ODP_EVENTS_MS = 10 * 1000; // 10 secs
 
 /**
  * ODP User Key Options
