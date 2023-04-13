@@ -343,9 +343,7 @@ var decideConfig = {
     {
       experiments: [
         {
-          audienceIds: [
-            '13389130056'
-          ],
+          audienceIds: ['13389130056'],
           forcedVariations: {},
           id: '3332020515',
           key: '3332020515',
@@ -354,22 +352,20 @@ var decideConfig = {
           trafficAllocation: [
             {
               endOfRange: 10000,
-              entityId: '3324490633'
-            }
+              entityId: '3324490633',
+            },
           ],
           variations: [
             {
               featureEnabled: true,
               id: '3324490633',
               key: '3324490633',
-              variables: []
-            }
-          ]
+              variables: [],
+            },
+          ],
         },
         {
-          audienceIds: [
-            '12208130097'
-          ],
+          audienceIds: ['12208130097'],
           forcedVariations: {},
           id: '3332020494',
           key: '3332020494',
@@ -378,17 +374,17 @@ var decideConfig = {
           trafficAllocation: [
             {
               endOfRange: 0,
-              entityId: '3324490562'
-            }
+              entityId: '3324490562',
+            },
           ],
           variations: [
             {
               featureEnabled: true,
               id: '3324490562',
               key: '3324490562',
-              variables: []
-            }
-          ]
+              variables: [],
+            },
+          ],
         },
         {
           status: 'Running',
@@ -398,8 +394,8 @@ var decideConfig = {
               variables: [],
               id: '18257766532',
               key: '18257766532',
-              featureEnabled: true
-            }
+              featureEnabled: true,
+            },
           ],
           id: '18322080788',
           key: '18322080788',
@@ -407,14 +403,14 @@ var decideConfig = {
           trafficAllocation: [
             {
               entityId: '18257766532',
-              endOfRange: 10000
-            }
+              endOfRange: 10000,
+            },
           ],
-          forcedVariations: {}
-        }
+          forcedVariations: {},
+        },
       ],
-      id: '3319450668'
-    }
+      id: '3319450668',
+    },
   ],
   anonymizeIP: true,
   botFiltering: true,
@@ -424,9 +420,7 @@ var decideConfig = {
   variables: [],
   featureFlags: [
     {
-      experimentIds: [
-        '10390977673'
-      ],
+      experimentIds: ['10390977673'],
       id: '4482920077',
       key: 'feature_1',
       rolloutId: '3319450668',
@@ -435,48 +429,46 @@ var decideConfig = {
           defaultValue: '42',
           id: '2687470095',
           key: 'i_42',
-          type: 'integer'
+          type: 'integer',
         },
         {
           defaultValue: '4.2',
           id: '2689280165',
           key: 'd_4_2',
-          type: 'double'
+          type: 'double',
         },
         {
           defaultValue: 'true',
           id: '2689660112',
           key: 'b_true',
-          type: 'boolean'
+          type: 'boolean',
         },
         {
           defaultValue: 'foo',
           id: '2696150066',
           key: 's_foo',
-          type: 'string'
+          type: 'string',
         },
         {
           defaultValue: {
-            value: 1
+            value: 1,
           },
           id: '2696150067',
           key: 'j_1',
           type: 'string',
-          subType: 'json'
+          subType: 'json',
         },
         {
           defaultValue: 'invalid',
           id: '2696150068',
           key: 'i_1',
           type: 'invalid',
-          subType: ''
-        }
-      ]
+          subType: '',
+        },
+      ],
     },
     {
-      experimentIds: [
-        '10420810910'
-      ],
+      experimentIds: ['10420810910'],
       id: '4482920078',
       key: 'feature_2',
       rolloutId: '',
@@ -485,17 +477,17 @@ var decideConfig = {
           defaultValue: '42',
           id: '2687470095',
           key: 'i_42',
-          type: 'integer'
-        }
-      ]
+          type: 'integer',
+        },
+      ],
     },
     {
       experimentIds: [],
       id: '44829230000',
       key: 'feature_3',
       rolloutId: '',
-      variables: []
-    }
+      variables: [],
+    },
   ],
   experiments: [
     {
@@ -505,27 +497,25 @@ var decideConfig = {
       trafficAllocation: [
         {
           entityId: '10389729780',
-          endOfRange: 10000
-        }
+          endOfRange: 10000,
+        },
       ],
-      audienceIds: [
-        '13389141123'
-      ],
+      audienceIds: ['13389141123'],
       variations: [
         {
           variables: [],
           featureEnabled: true,
           id: '10389729780',
-          key: 'a'
+          key: 'a',
         },
         {
           variables: [],
           id: '10416523121',
-          key: 'b'
-        }
+          key: 'b',
+        },
       ],
       forcedVariations: {},
-      id: '10390977673'
+      id: '10390977673',
     },
     {
       status: 'Running',
@@ -534,8 +524,8 @@ var decideConfig = {
       trafficAllocation: [
         {
           entityId: '10418551353',
-          endOfRange: 10000
-        }
+          endOfRange: 10000,
+        },
       ],
       audienceIds: [],
       variations: [
@@ -543,70 +533,73 @@ var decideConfig = {
           variables: [],
           featureEnabled: true,
           id: '10418551353',
-          key: 'variation_with_traffic'
+          key: 'variation_with_traffic',
         },
         {
           variables: [],
           featureEnabled: false,
           id: '10418510624',
-          key: 'variation_no_traffic'
-        }
+          key: 'variation_no_traffic',
+        },
       ],
       forcedVariations: {},
-      id: '10420810910'
-    }
+      id: '10420810910',
+    },
   ],
   audiences: [
     {
       id: '13389141123',
-      conditions: '["and",["or",["or",{ "match": "exact", "name": "gender", "type": "custom_attribute", "value": "f"}]]]',
-      name: 'gender'
+      conditions:
+        '["and",["or",["or",{ "match": "exact", "name": "gender", "type": "custom_attribute", "value": "f"}]]]',
+      name: 'gender',
     },
     {
       id: '13389130056',
-      conditions: '["and",["or",["or",{ "match": "exact","name": "country","type": "custom_attribute","value": "US"}]]]',
-      name: 'US'
+      conditions:
+        '["and",["or",["or",{ "match": "exact","name": "country","type": "custom_attribute","value": "US"}]]]',
+      name: 'US',
     },
     {
       id: '12208130097',
-      conditions: '["and",["or",["or",{"match": "exact","name": "browser","type": "custom_attribute","value": "safari"}]]]',
-      name: 'safari'
+      conditions:
+        '["and",["or",["or",{"match": "exact","name": "browser","type": "custom_attribute","value": "safari"}]]]',
+      name: 'safari',
     },
     {
-      id: "age_18",
+      id: 'age_18',
       conditions: '["and",["or",["or",{"match": "gt","name": "age","type": "custom_attribute","value": 18}]]]',
-      name: 'age_18'
+      name: 'age_18',
     },
     {
       id: 'invalid_format',
       conditions: '[]',
-      name: 'invalid_format'
+      name: 'invalid_format',
     },
     {
       id: 'invalid_condition',
       conditions: '["and",["or",["or",{"match": "gt","name": "age","type": "custom_attribute","value": "US"}]]]',
-      name: 'invalid_condition'
+      name: 'invalid_condition',
     },
     {
       id: 'invalid_type',
       conditions: '["and",["or",["or",{"match": "gt","name": "age","type": "invalid","value": 18}]]]',
-      name: 'invalid_type'
+      name: 'invalid_type',
     },
     {
       id: 'invalid_match',
       conditions: '["and",["or",["or",{"match": "invalid","name": "age","type": "custom_attribute","value": 18}]]]',
-      name: 'invalid_match'
+      name: 'invalid_match',
     },
     {
       id: 'nil_value',
       conditions: '["and",["or",["or",{"match": "gt","name": "age","type": "custom_attribute"}]]]',
-      name: 'nil_value'
+      name: 'nil_value',
     },
     {
       id: 'invalid_name',
       conditions: '["and",["or",["or",{"match": "gt","type": "custom_attribute","value": 18}]]]',
-      name: 'invalid_name'
-    }
+      name: 'invalid_name',
+    },
   ],
   groups: [
     {
@@ -614,8 +607,8 @@ var decideConfig = {
       trafficAllocation: [
         {
           entityId: '10390965532',
-          endOfRange: 10000
-        }
+          endOfRange: 10000,
+        },
       ],
       experiments: [
         {
@@ -625,8 +618,8 @@ var decideConfig = {
           trafficAllocation: [
             {
               entityId: '10389752311',
-              endOfRange: 10000
-            }
+              endOfRange: 10000,
+            },
           ],
           audienceIds: [],
           variations: [
@@ -634,11 +627,11 @@ var decideConfig = {
               variables: [],
               featureEnabled: false,
               id: '10389752311',
-              key: 'a'
-            }
+              key: 'a',
+            },
           ],
           forcedVariations: {},
-          id: '10390965532'
+          id: '10390965532',
         },
         {
           status: 'Running',
@@ -647,8 +640,8 @@ var decideConfig = {
           trafficAllocation: [
             {
               entityId: '10418524243',
-              endOfRange: 10000
-            }
+              endOfRange: 10000,
+            },
           ],
           audienceIds: [],
           variations: [
@@ -656,45 +649,40 @@ var decideConfig = {
               variables: [],
               featureEnabled: false,
               id: '10418524243',
-              key: 'a'
-            }
+              key: 'a',
+            },
           ],
           forcedVariations: {},
-          id: '10420843432'
-        }
+          id: '10420843432',
+        },
       ],
-      id: '13142870430'
-    }
+      id: '13142870430',
+    },
   ],
   attributes: [
     {
       id: '10401066117',
-      key: 'gender'
+      key: 'gender',
     },
     {
       id: '10401066170',
-      key: 'testvar'
-    }
+      key: 'testvar',
+    },
   ],
   accountId: '10367498574',
   events: [
     {
-      experimentIds: [
-        '10420810910'
-      ],
+      experimentIds: ['10420810910'],
       id: '10404198134',
-      key: 'event1'
+      key: 'event1',
     },
     {
-      experimentIds: [
-        '10420810910',
-        '10390977673'
-      ],
+      experimentIds: ['10420810910', '10390977673'],
       id: '10404198135',
-      key: 'event_multiple_running_exp_attached'
-    }
+      key: 'event_multiple_running_exp_attached',
+    },
   ],
-  revision: '241'
+  revision: '241',
 };
 
 export var getParsedAudiences = [
@@ -705,11 +693,11 @@ export var getParsedAudiences = [
   },
 ];
 
-export var getTestProjectConfig = function () {
+export var getTestProjectConfig = function() {
   return cloneDeep(config);
 };
 
-export var getTestDecideProjectConfig = function () {
+export var getTestDecideProjectConfig = function() {
   return cloneDeep(decideConfig);
 };
 
@@ -1044,30 +1032,27 @@ var configWithFeatures = {
       key: 'test_experiment3',
       status: 'Running',
       layerId: '6',
-      audienceConditions: [
-        "or",
-        "11160"
-      ],
+      audienceConditions: ['or', '11160'],
       audienceIds: ['11160'],
       id: '111134',
       forcedVariations: {},
       trafficAllocation: [
         {
           entityId: '222239',
-          endOfRange: 2500
+          endOfRange: 2500,
         },
         {
           entityId: '',
-          endOfRange: 5000
+          endOfRange: 5000,
         },
         {
           entityId: '',
-          endOfRange: 7500
+          endOfRange: 7500,
         },
         {
           entityId: '',
-          endOfRange: 10000
-        }
+          endOfRange: 10000,
+        },
       ],
       variations: [
         {
@@ -1075,33 +1060,30 @@ var configWithFeatures = {
           key: 'control',
           variables: [],
           featureEnabled: false,
-        }
+        },
       ],
     },
     {
       key: 'test_experiment4',
       status: 'Running',
       layerId: '7',
-      audienceConditions: [
-        "or",
-        "11160"
-      ],
+      audienceConditions: ['or', '11160'],
       audienceIds: ['11160'],
       id: '111135',
       forcedVariations: {},
       trafficAllocation: [
         {
           entityId: '222240',
-          endOfRange: 5000
+          endOfRange: 5000,
         },
         {
           entityId: '',
-          endOfRange: 7500
+          endOfRange: 7500,
         },
         {
           entityId: '',
-          endOfRange: 10000
-        }
+          endOfRange: 10000,
+        },
       ],
       variations: [
         {
@@ -1109,29 +1091,26 @@ var configWithFeatures = {
           key: 'control',
           variables: [],
           featureEnabled: false,
-        }
+        },
       ],
     },
     {
       key: 'test_experiment5',
       status: 'Running',
       layerId: '8',
-      audienceConditions: [
-        "or",
-        "11160"
-      ],
+      audienceConditions: ['or', '11160'],
       audienceIds: ['11160'],
       id: '111136',
       forcedVariations: {},
       trafficAllocation: [
         {
           entityId: '222241',
-          endOfRange: 7500
+          endOfRange: 7500,
         },
         {
           entityId: '',
-          endOfRange: 10000
-        }
+          endOfRange: 10000,
+        },
       ],
       variations: [
         {
@@ -1139,7 +1118,7 @@ var configWithFeatures = {
           key: 'control',
           variables: [],
           featureEnabled: false,
-        }
+        },
       ],
     },
   ],
@@ -1159,7 +1138,7 @@ var configWithFeatures = {
       name: 'Test attribute users 3',
       conditions:
         '["and", ["or", ["or", {"match": "exact", "name": "experiment_attr", "type": "custom_attribute", "value": "group_experiment"}]]]',
-    }
+    },
   ],
   revision: '35',
   groups: [
@@ -1315,10 +1294,7 @@ var configWithFeatures = {
           id: '42222',
           key: 'group_2_exp_1',
           status: 'Running',
-          audienceConditions: [
-            "or",
-            "11160"
-          ],
+          audienceConditions: ['or', '11160'],
           audienceIds: ['11160'],
           layerId: '211183',
           variations: [
@@ -1332,25 +1308,22 @@ var configWithFeatures = {
           trafficAllocation: [
             {
               entityId: '38901',
-              endOfRange: 10000
-            }
+              endOfRange: 10000,
+            },
           ],
           variationKeyMap: {
             var_1: {
               key: 'var_1',
               id: '38901',
               featureEnabled: false,
-            }
-          }
+            },
+          },
         },
         {
           id: '42223',
           key: 'group_2_exp_2',
           status: 'Running',
-          audienceConditions: [
-            "or",
-            "11160"
-          ],
+          audienceConditions: ['or', '11160'],
           audienceIds: ['11160'],
           layerId: '211184',
           variations: [
@@ -1364,18 +1337,15 @@ var configWithFeatures = {
           trafficAllocation: [
             {
               entityId: '38905',
-              endOfRange: 10000
-            }
+              endOfRange: 10000,
+            },
           ],
         },
         {
           id: '42224',
           key: 'group_2_exp_3',
           status: 'Running',
-          audienceConditions: [
-            "or",
-            "11160"
-          ],
+          audienceConditions: ['or', '11160'],
           audienceIds: ['11160'],
           layerId: '211185',
           variations: [
@@ -1389,30 +1359,30 @@ var configWithFeatures = {
           trafficAllocation: [
             {
               entityId: '38906',
-              endOfRange: 10000
-            }
+              endOfRange: 10000,
+            },
           ],
-        }
+        },
       ],
       trafficAllocation: [
         {
           entityId: '42222',
-          endOfRange: 2500
+          endOfRange: 2500,
         },
         {
           entityId: '42223',
-          endOfRange: 5000
+          endOfRange: 5000,
         },
         {
           entityId: '42224',
-          endOfRange: 7500
+          endOfRange: 7500,
         },
         {
           entityId: '',
-          endOfRange: 10000
+          endOfRange: 10000,
         },
       ],
-    }
+    },
   ],
   attributes: [
     {
@@ -1457,9 +1427,9 @@ var configWithFeatures = {
                   value: 'Hello audience',
                 },
                 {
-                  id: "8765345281230956",
+                  id: '8765345281230956',
                   value: '{ "count": 2, "message": "Hello audience" }',
-                }
+                },
               ],
             },
           ],
@@ -1502,7 +1472,7 @@ var configWithFeatures = {
                 {
                   id: '8765345281230956',
                   value: '{ "count": 1, "message": "Hello" }',
-                }
+                },
               ],
             },
           ],
@@ -1638,7 +1608,7 @@ var configWithFeatures = {
   variables: [],
 };
 
-export var getTestProjectConfigWithFeatures = function () {
+export var getTestProjectConfigWithFeatures = function() {
   return cloneDeep(configWithFeatures);
 };
 
@@ -2005,7 +1975,7 @@ export var datafileWithFeaturesExpectedData = {
       8765345281230956: {
         id: '8765345281230956',
         value: '{ "count": 2, "message": "Hello audience" }',
-      }
+      },
     },
     594038: {
       4919852825313280: {
@@ -2027,7 +1997,7 @@ export var datafileWithFeaturesExpectedData = {
       8765345281230956: {
         id: '8765345281230956',
         value: '{ "count": 1, "message": "Hello" }',
-      }
+      },
     },
     594061: {
       5060590313668608: {
@@ -2330,7 +2300,7 @@ export var datafileWithFeaturesExpectedData = {
           type: 'json',
           key: 'button_info',
           id: '1547854156498475',
-          defaultValue: "{ \"num_buttons\": 0, \"text\": \"default value\"}"
+          defaultValue: '{ "num_buttons": 0, "text": "default value"}',
         },
       ],
       experimentIds: ['594098'],
@@ -2363,7 +2333,7 @@ export var datafileWithFeaturesExpectedData = {
           id: '6199684360044544',
         },
         button_info: {
-          defaultValue: "{ \"num_buttons\": 0, \"text\": \"default value\"}",
+          defaultValue: '{ "num_buttons": 0, "text": "default value"}',
           id: '1547854156498475',
           key: 'button_info',
           type: 'json',
@@ -2741,7 +2711,7 @@ var unsupportedVersionConfig = {
   projectId: '111001',
 };
 
-export var getUnsupportedVersionConfig = function () {
+export var getUnsupportedVersionConfig = function() {
   return cloneDeep(unsupportedVersionConfig);
 };
 
@@ -3141,264 +3111,269 @@ var typedAudiencesConfig = {
   revision: '3',
 };
 
-export var getTypedAudiencesConfig = function () {
+export var getTypedAudiencesConfig = function() {
   return cloneDeep(typedAudiencesConfig);
 };
 
 var odpIntegratedConfigWithSegments = {
-  "version": "4",
-  "sendFlagDecisions": true,
-  "rollouts": [
+  version: '4',
+  sendFlagDecisions: true,
+  rollouts: [
     {
-      "experiments": [
+      experiments: [
         {
-          "audienceIds": ["13389130056"],
-          "forcedVariations": {},
-          "id": "3332020515",
-          "key": "rollout-rule-1",
-          "layerId": "3319450668",
-          "status": "Running",
-          "trafficAllocation": [
+          audienceIds: ['13389130056'],
+          forcedVariations: {},
+          id: '3332020515',
+          key: 'rollout-rule-1',
+          layerId: '3319450668',
+          status: 'Running',
+          trafficAllocation: [
             {
-              "endOfRange": 10000,
-              "entityId": "3324490633"
-            }
+              endOfRange: 10000,
+              entityId: '3324490633',
+            },
           ],
-          "variations": [
+          variations: [
             {
-              "featureEnabled": true,
-              "id": "3324490633",
-              "key": "rollout-variation-on",
-              "variables": []
-            }
-          ]
+              featureEnabled: true,
+              id: '3324490633',
+              key: 'rollout-variation-on',
+              variables: [],
+            },
+          ],
         },
         {
-          "audienceIds": [],
-          "forcedVariations": {},
-          "id": "3332020556",
-          "key": "rollout-rule-2",
-          "layerId": "3319450668",
-          "status": "Running",
-          "trafficAllocation": [
+          audienceIds: [],
+          forcedVariations: {},
+          id: '3332020556',
+          key: 'rollout-rule-2',
+          layerId: '3319450668',
+          status: 'Running',
+          trafficAllocation: [
             {
-              "endOfRange": 10000,
-              "entityId": "3324490644"
-            }
+              endOfRange: 10000,
+              entityId: '3324490644',
+            },
           ],
-          "variations": [
+          variations: [
             {
-              "featureEnabled": false,
-              "id": "3324490644",
-              "key": "rollout-variation-off",
-              "variables": []
-            }
-          ]
-        }
+              featureEnabled: false,
+              id: '3324490644',
+              key: 'rollout-variation-off',
+              variables: [],
+            },
+          ],
+        },
       ],
-      "id": "3319450668"
-    }
+      id: '3319450668',
+    },
   ],
-  "anonymizeIP": true,
-  "botFiltering": true,
-  "projectId": "10431130345",
-  "variables": [],
-  "featureFlags": [
+  anonymizeIP: true,
+  botFiltering: true,
+  projectId: '10431130345',
+  variables: [],
+  featureFlags: [
     {
-      "experimentIds": ["10390977673"],
-      "id": "4482920077",
-      "key": "flag-segment",
-      "rolloutId": "3319450668",
-      "variables": [
+      experimentIds: ['10390977673'],
+      id: '4482920077',
+      key: 'flag-segment',
+      rolloutId: '3319450668',
+      variables: [
         {
-          "defaultValue": "42",
-          "id": "2687470095",
-          "key": "i_42",
-          "type": "integer"
-        }
-      ]
-    }
-  ],
-  "experiments": [
-    {
-      "status": "Running",
-      "key": "experiment-segment",
-      "layerId": "10420273888",
-      "trafficAllocation": [
-        {
-          "entityId": "10389729780",
-          "endOfRange": 10000
-        }
+          defaultValue: '42',
+          id: '2687470095',
+          key: 'i_42',
+          type: 'integer',
+        },
       ],
-      "audienceIds": ["$opt_dummy_audience"],
-      "audienceConditions": ["or", "13389142234", "13389141123"],
-      "variations": [
+    },
+  ],
+  experiments: [
+    {
+      status: 'Running',
+      key: 'experiment-segment',
+      layerId: '10420273888',
+      trafficAllocation: [
         {
-          "variables": [],
-          "featureEnabled": true,
-          "id": "10389729780",
-          "key": "variation-a"
+          entityId: '10389729780',
+          endOfRange: 10000,
+        },
+      ],
+      audienceIds: ['$opt_dummy_audience'],
+      audienceConditions: ['or', '13389142234', '13389141123'],
+      variations: [
+        {
+          variables: [],
+          featureEnabled: true,
+          id: '10389729780',
+          key: 'variation-a',
         },
         {
-          "variables": [],
-          "id": "10416523121",
-          "key": "variation-b"
-        }
+          variables: [],
+          id: '10416523121',
+          key: 'variation-b',
+        },
       ],
-      "forcedVariations": {},
-      "id": "10390977673"
-    }
+      forcedVariations: {},
+      id: '10390977673',
+    },
   ],
-  "groups": [],
-  "integrations": [
+  groups: [],
+  integrations: [
     {
-      "key": "odp",
-      "host": "https://api.zaius.com",
-      "publicKey": "W4WzcEs-ABgXorzY7h1LCQ"
+      key: 'odp',
+      host: 'https://api.zaius.com',
+      publicKey: 'W4WzcEs-ABgXorzY7h1LCQ',
     },
     {
-      "key": "odp",
-      "a": "1",
-      "b": "2",
+      key: 'odp',
+      host: 'https://api.zzzzaius.com',
+      publicKey: 'W4WzcEs-ABgXorzssssY7h1LCQ',
     },
     {
-      "key": "x",
-      "test": "foobar"
-    }
+      key: 'odp',
+      a: '1',
+      b: '2',
+    },
+    {
+      key: 'x',
+      test: 'foobar',
+    },
   ],
-  "typedAudiences": [
+  typedAudiences: [
     {
-      "id": "13389142234",
-      "conditions": [
-        "and",
+      id: '13389142234',
+      conditions: [
+        'and',
         [
-          "or",
+          'or',
           [
-            "or",
+            'or',
             {
-              "value": "odp-segment-1",
-              "type": "third_party_dimension",
-              "name": "odp.audiences",
-              "match": "qualified"
-            }
-          ]
-        ]
+              value: 'odp-segment-1',
+              type: 'third_party_dimension',
+              name: 'odp.audiences',
+              match: 'qualified',
+            },
+          ],
+        ],
       ],
-      "name": "odp-segment-1"
+      name: 'odp-segment-1',
     },
     {
-      "id": "13389142234",
-      "conditions": [
-        "and",
+      id: '13389142234',
+      conditions: [
+        'and',
         [
-          "or",
+          'or',
           [
-            "or",
+            'or',
             {
-              "value": "odp-segment-1",
-              "type": "third_party_dimension",
-              "name": "odp.audiences",
-              "match": "qualified"
-            }
-          ]
-        ]
+              value: 'odp-segment-1',
+              type: 'third_party_dimension',
+              name: 'odp.audiences',
+              match: 'qualified',
+            },
+          ],
+        ],
       ],
-      "name": "odp-segment-1"
+      name: 'odp-segment-1',
     },
     {
-      "id": "13389130056",
-      "conditions": [
-        "and",
+      id: '13389130056',
+      conditions: [
+        'and',
         [
-          "or",
+          'or',
           [
-            "or",
+            'or',
             {
-              "value": "odp-segment-2",
-              "type": "third_party_dimension",
-              "name": "odp.audiences",
-              "match": "qualified"
+              value: 'odp-segment-2',
+              type: 'third_party_dimension',
+              name: 'odp.audiences',
+              match: 'qualified',
             },
             {
-              "value": "us",
-              "type": "custom_attribute",
-              "name": "country",
-              "match": "exact"
-            }
+              value: 'us',
+              type: 'custom_attribute',
+              name: 'country',
+              match: 'exact',
+            },
           ],
           [
-            "or",
+            'or',
             {
-              "value": "odp-segment-3",
-              "type": "third_party_dimension",
-              "name": "odp.audiences",
-              "match": "qualified"
-            }
-          ]
-        ]
+              value: 'odp-segment-3',
+              type: 'third_party_dimension',
+              name: 'odp.audiences',
+              match: 'qualified',
+            },
+          ],
+        ],
       ],
-      "name": "odp-segment-2"
-    }
+      name: 'odp-segment-2',
+    },
   ],
-  "audiences": [
+  audiences: [
     {
-      "id": "13389141123",
-      "conditions": "[\"and\", [\"or\", [\"or\", {\"match\": \"gt\", \"name\": \"age\", \"type\": \"custom_attribute\", \"value\": 20}]]]",
-      "name": "adult"
-    }
+      id: '13389141123',
+      conditions: '["and", ["or", ["or", {"match": "gt", "name": "age", "type": "custom_attribute", "value": 20}]]]',
+      name: 'adult',
+    },
   ],
-  "attributes": [
+  attributes: [
     {
-      "id": "10401066117",
-      "key": "gender"
+      id: '10401066117',
+      key: 'gender',
     },
     {
-      "id": "10401066170",
-      "key": "testvar"
-    }
+      id: '10401066170',
+      key: 'testvar',
+    },
   ],
-  "accountId": "10367498574",
-  "events": [],
-  "revision": "101"
-}
+  accountId: '10367498574',
+  events: [],
+  revision: '101',
+};
 
-export var getOdpIntegratedConfigWithSegments = function () {
+export var getOdpIntegratedConfigWithSegments = function() {
   return cloneDeep(odpIntegratedConfigWithSegments);
 };
 
 var odpIntegratedConfigWithoutSegments = {
-  "version": "4",
-  "rollouts": [],
-  "anonymizeIP": true,
-  "projectId": "10431130345",
-  "variables": [],
-  "featureFlags": [],
-  "experiments": [],
-  "audiences": [],
-  "groups": [],
-  "attributes": [],
-  "accountId": "10367498574",
-  "events": [],
-  "integrations": [
+  version: '4',
+  rollouts: [],
+  anonymizeIP: true,
+  projectId: '10431130345',
+  variables: [],
+  featureFlags: [],
+  experiments: [],
+  audiences: [],
+  groups: [],
+  attributes: [],
+  accountId: '10367498574',
+  events: [],
+  integrations: [
     {
-      "key": "odp",
-      "host": "https://api.zaius.com",
-      "publicKey": "W4WzcEs-ABgXorzY7h1LCQ"
+      key: 'odp',
+      host: 'https://api.zaius.com',
+      publicKey: 'W4WzcEs-ABgXorzY7h1LCQ',
     },
     {
-      "key": "odp",
-      "a": "1",
-      "b": "2",
+      key: 'odp',
+      a: '1',
+      b: '2',
     },
     {
-      "key": "x",
-      "test": "foobar"
-    }
+      key: 'x',
+      test: 'foobar',
+    },
   ],
-  "revision": "100"
-}
+  revision: '100',
+};
 
-export var getOdpIntegratedConfigWithoutSegments = function () {
+export var getOdpIntegratedConfigWithoutSegments = function() {
   return cloneDeep(odpIntegratedConfigWithoutSegments);
 };
 
@@ -3536,7 +3511,7 @@ var mutexFeatureTestsConfig = {
   revision: '12',
 };
 
-export var getMutexFeatureTestsConfig = function () {
+export var getMutexFeatureTestsConfig = function() {
   return cloneDeep(mutexFeatureTestsConfig);
 };
 
@@ -3544,13 +3519,13 @@ export var rolloutDecisionObj = {
   experiment: null,
   variation: null,
   decisionSource: 'rollout',
-}
+};
 
 export var featureTestDecisionObj = {
   experiment: {
     trafficAllocation: [
       { endOfRange: 5000, entityId: '594096' },
-      { endOfRange: 10000, entityId: '594097' }
+      { endOfRange: 10000, entityId: '594097' },
     ],
     layerId: '594093',
     forcedVariations: {},
@@ -3594,345 +3569,359 @@ export var featureTestDecisionObj = {
     variables: [],
   },
   decisionSource: 'feature-test',
-}
+};
 
 var similarRuleKeyConfig = {
-  version: "4",
+  version: '4',
   rollouts: [
     {
       experiments: [
         {
-          status: "Running",
+          status: 'Running',
           audienceConditions: [],
           audienceIds: [],
           variations: [
             {
               variables: [],
-              id: "5452",
-              key: "on",
-              featureEnabled: true
-            }
+              id: '5452',
+              key: 'on',
+              featureEnabled: true,
+            },
           ],
           forcedVariations: {},
-          key: "targeted_delivery",
-          layerId: "9300000004981",
+          key: 'targeted_delivery',
+          layerId: '9300000004981',
           trafficAllocation: [
             {
-              entityId: "5452",
-              endOfRange: 10000
-            }
+              entityId: '5452',
+              endOfRange: 10000,
+            },
           ],
-          id: "9300000004981"
-        }, {
-          status: "Running",
+          id: '9300000004981',
+        },
+        {
+          status: 'Running',
           audienceConditions: [],
           audienceIds: [],
           variations: [
             {
               variables: [],
-              id: "5451",
-              key: "off",
-              featureEnabled: false
-            }
+              id: '5451',
+              key: 'off',
+              featureEnabled: false,
+            },
           ],
           forcedVariations: {},
-          key: "default-rollout-2029-20301771717",
-          layerId: "default-layer-rollout-2029-20301771717",
+          key: 'default-rollout-2029-20301771717',
+          layerId: 'default-layer-rollout-2029-20301771717',
           trafficAllocation: [
             {
-              entityId: "5451",
-              endOfRange: 10000
-            }
+              entityId: '5451',
+              endOfRange: 10000,
+            },
           ],
-          id: "default-rollout-2029-20301771717"
-        }
+          id: 'default-rollout-2029-20301771717',
+        },
       ],
-      id: "rollout-2029-20301771717"
-    }, {
+      id: 'rollout-2029-20301771717',
+    },
+    {
       experiments: [
         {
-          status: "Running",
+          status: 'Running',
           audienceConditions: [],
           audienceIds: [],
           variations: [
             {
               variables: [],
-              id: "5450",
-              key: "on",
-              featureEnabled: true
-            }
+              id: '5450',
+              key: 'on',
+              featureEnabled: true,
+            },
           ],
           forcedVariations: {},
-          key: "targeted_delivery",
-          layerId: "9300000004979",
+          key: 'targeted_delivery',
+          layerId: '9300000004979',
           trafficAllocation: [
             {
-              entityId: "5450",
-              endOfRange: 10000
-            }
+              entityId: '5450',
+              endOfRange: 10000,
+            },
           ],
-          id: "9300000004979"
-        }, {
-          status: "Running",
+          id: '9300000004979',
+        },
+        {
+          status: 'Running',
           audienceConditions: [],
           audienceIds: [],
           variations: [
             {
               variables: [],
-              id: "5449",
-              key: "off",
-              featureEnabled: false
-            }
+              id: '5449',
+              key: 'off',
+              featureEnabled: false,
+            },
           ],
           forcedVariations: {},
-          key: "default-rollout-2028-20301771717",
-          layerId: "default-layer-rollout-2028-20301771717",
+          key: 'default-rollout-2028-20301771717',
+          layerId: 'default-layer-rollout-2028-20301771717',
           trafficAllocation: [
             {
-              entityId: "5449",
-              endOfRange: 10000
-            }
+              entityId: '5449',
+              endOfRange: 10000,
+            },
           ],
-          id: "default-rollout-2028-20301771717"
-        }
+          id: 'default-rollout-2028-20301771717',
+        },
       ],
-      id: "rollout-2028-20301771717"
-    }, {
+      id: 'rollout-2028-20301771717',
+    },
+    {
       experiments: [
         {
-          status: "Running",
+          status: 'Running',
           audienceConditions: [],
           audienceIds: [],
           variations: [
             {
               variables: [],
-              id: "5448",
-              key: "on",
-              featureEnabled: true
-            }
+              id: '5448',
+              key: 'on',
+              featureEnabled: true,
+            },
           ],
           forcedVariations: {},
-          key: "targeted_delivery",
-          layerId: "9300000004977",
+          key: 'targeted_delivery',
+          layerId: '9300000004977',
           trafficAllocation: [
             {
-              entityId: "5448",
-              endOfRange: 10000
-            }
+              entityId: '5448',
+              endOfRange: 10000,
+            },
           ],
-          id: "9300000004977"
-        }, {
-          status: "Running",
+          id: '9300000004977',
+        },
+        {
+          status: 'Running',
           audienceConditions: [],
           audienceIds: [],
           variations: [
             {
               variables: [],
-              id: "5447",
-              key: "off",
-              featureEnabled: false
-            }
+              id: '5447',
+              key: 'off',
+              featureEnabled: false,
+            },
           ],
           forcedVariations: {},
-          key: "default-rollout-2027-20301771717",
-          layerId: "default-layer-rollout-2027-20301771717",
+          key: 'default-rollout-2027-20301771717',
+          layerId: 'default-layer-rollout-2027-20301771717',
           trafficAllocation: [
             {
-              entityId: "5447",
-              endOfRange: 10000
-            }
+              entityId: '5447',
+              endOfRange: 10000,
+            },
           ],
-          id: "default-rollout-2027-20301771717"
-        }
+          id: 'default-rollout-2027-20301771717',
+        },
       ],
-      id: "rollout-2027-20301771717"
-    }
+      id: 'rollout-2027-20301771717',
+    },
   ],
   typedAudiences: [],
   anonymizeIP: true,
-  projectId: "20286295225",
+  projectId: '20286295225',
   variables: [],
   featureFlags: [
     {
       experimentIds: [],
-      rolloutId: "rollout-2029-20301771717",
+      rolloutId: 'rollout-2029-20301771717',
       variables: [],
-      id: "2029",
-      key: "flag_3"
-    }, {
+      id: '2029',
+      key: 'flag_3',
+    },
+    {
       experimentIds: [],
-      rolloutId: "rollout-2028-20301771717",
+      rolloutId: 'rollout-2028-20301771717',
       variables: [],
-      id: "2028",
-      key: "flag_2"
-    }, {
+      id: '2028',
+      key: 'flag_2',
+    },
+    {
       experimentIds: [],
-      rolloutId: "rollout-2027-20301771717",
+      rolloutId: 'rollout-2027-20301771717',
       variables: [],
-      id: "2027",
-      key: "flag_1"
-    }
+      id: '2027',
+      key: 'flag_1',
+    },
   ],
   experiments: [],
   audiences: [
     {
-      conditions: "[\"or\", {\"match\": \"exact\", \"name\": \"$opt_dummy_attribute\", \"type\": \"custom_attribute\", \"value\": \"$opt_dummy_value\"}]",
-      id: "$opt_dummy_audience",
-      name: "Optimizely-Generated Audience for Backwards Compatibility"
-    }
+      conditions:
+        '["or", {"match": "exact", "name": "$opt_dummy_attribute", "type": "custom_attribute", "value": "$opt_dummy_value"}]',
+      id: '$opt_dummy_audience',
+      name: 'Optimizely-Generated Audience for Backwards Compatibility',
+    },
   ],
   groups: [],
   attributes: [],
   botFiltering: false,
-  accountId: "19947277778",
+  accountId: '19947277778',
   events: [],
-  revision: "11",
-  sendFlagDecisions: true
-}
+  revision: '11',
+  sendFlagDecisions: true,
+};
 
-export var getSimilarRuleKeyConfig = function () {
+export var getSimilarRuleKeyConfig = function() {
   return cloneDeep(similarRuleKeyConfig);
 };
 
 var similarExperimentKeysConfig = {
-  version: "4",
+  version: '4',
   rollouts: [],
   typedAudiences: [
     {
-      id: "20415611520",
+      id: '20415611520',
       conditions: [
-        "and",
+        'and',
         [
-          "or",
+          'or',
           [
-            "or", {
+            'or',
+            {
               value: true,
-              type: "custom_attribute",
-              name: "hiddenLiveEnabled",
-              match: "exact"
-            }
-          ]
-        ]
+              type: 'custom_attribute',
+              name: 'hiddenLiveEnabled',
+              match: 'exact',
+            },
+          ],
+        ],
       ],
-      name: "test1"
-    }, {
-      id: "20406066925",
+      name: 'test1',
+    },
+    {
+      id: '20406066925',
       conditions: [
-        "and",
+        'and',
         [
-          "or",
+          'or',
           [
-            "or", {
+            'or',
+            {
               value: false,
-              type: "custom_attribute",
-              name: "hiddenLiveEnabled",
-              match: "exact"
-            }
-          ]
-        ]
+              type: 'custom_attribute',
+              name: 'hiddenLiveEnabled',
+              match: 'exact',
+            },
+          ],
+        ],
       ],
-      name: "test2"
-    }
+      name: 'test2',
+    },
   ],
   anonymizeIP: true,
-  projectId: "20430981610",
+  projectId: '20430981610',
   variables: [],
   featureFlags: [
     {
-      experimentIds: ["9300000007569"],
-      rolloutId: "",
+      experimentIds: ['9300000007569'],
+      rolloutId: '',
       variables: [],
-      id: "3045",
-      key: "flag1"
-    }, {
-      experimentIds: ["9300000007573"],
-      rolloutId: "",
+      id: '3045',
+      key: 'flag1',
+    },
+    {
+      experimentIds: ['9300000007573'],
+      rolloutId: '',
       variables: [],
-      id: "3046",
-      key: "flag2"
-    }
+      id: '3046',
+      key: 'flag2',
+    },
   ],
   experiments: [
     {
-      status: "Running",
-      audienceConditions: [
-        "or", "20415611520"
-      ],
-      audienceIds: ["20415611520"],
+      status: 'Running',
+      audienceConditions: ['or', '20415611520'],
+      audienceIds: ['20415611520'],
       variations: [
         {
           variables: [],
-          id: "8045",
-          key: "variation1",
-          featureEnabled: true
-        }
+          id: '8045',
+          key: 'variation1',
+          featureEnabled: true,
+        },
       ],
       forcedVariations: {},
-      key: "targeted_delivery",
-      layerId: "9300000007569",
+      key: 'targeted_delivery',
+      layerId: '9300000007569',
       trafficAllocation: [
         {
-          entityId: "8045",
-          endOfRange: 10000
-        }
+          entityId: '8045',
+          endOfRange: 10000,
+        },
       ],
-      id: "9300000007569"
-    }, {
-      status: "Running",
-      audienceConditions: [
-        "or", "20406066925"
-      ],
-      audienceIds: ["20406066925"],
+      id: '9300000007569',
+    },
+    {
+      status: 'Running',
+      audienceConditions: ['or', '20406066925'],
+      audienceIds: ['20406066925'],
       variations: [
         {
           variables: [],
-          id: "8048",
-          key: "variation2",
-          featureEnabled: true
-        }
+          id: '8048',
+          key: 'variation2',
+          featureEnabled: true,
+        },
       ],
       forcedVariations: {},
-      key: "targeted_delivery",
-      layerId: "9300000007573",
+      key: 'targeted_delivery',
+      layerId: '9300000007573',
       trafficAllocation: [
         {
-          entityId: "8048",
-          endOfRange: 10000
-        }
+          entityId: '8048',
+          endOfRange: 10000,
+        },
       ],
-      id: "9300000007573"
-    }
+      id: '9300000007573',
+    },
   ],
   audiences: [
     {
-      id: "20415611520",
-      conditions: "[\"or\", {\"match\": \"exact\", \"name\": \"$opt_dummy_attribute\", \"type\": \"custom_attribute\", \"value\": \"$opt_dummy_value\"}]",
-      name: "test1"
-    }, {
-      id: "20406066925",
-      conditions: "[\"or\", {\"match\": \"exact\", \"name\": \"$opt_dummy_attribute\", \"type\": \"custom_attribute\", \"value\": \"$opt_dummy_value\"}]",
-      name: "test2"
-    }, {
-      conditions: "[\"or\", {\"match\": \"exact\", \"name\": \"$opt_dummy_attribute\", \"type\": \"custom_attribute\", \"value\": \"$opt_dummy_value\"}]",
-      id: "$opt_dummy_audience",
-      name: "Optimizely-Generated Audience for Backwards Compatibility"
-    }
+      id: '20415611520',
+      conditions:
+        '["or", {"match": "exact", "name": "$opt_dummy_attribute", "type": "custom_attribute", "value": "$opt_dummy_value"}]',
+      name: 'test1',
+    },
+    {
+      id: '20406066925',
+      conditions:
+        '["or", {"match": "exact", "name": "$opt_dummy_attribute", "type": "custom_attribute", "value": "$opt_dummy_value"}]',
+      name: 'test2',
+    },
+    {
+      conditions:
+        '["or", {"match": "exact", "name": "$opt_dummy_attribute", "type": "custom_attribute", "value": "$opt_dummy_value"}]',
+      id: '$opt_dummy_audience',
+      name: 'Optimizely-Generated Audience for Backwards Compatibility',
+    },
   ],
   groups: [],
   attributes: [
     {
-      id: "20408641883",
-      key: "hiddenLiveEnabled"
-    }
+      id: '20408641883',
+      key: 'hiddenLiveEnabled',
+    },
   ],
   botFiltering: false,
-  accountId: "17882702980",
+  accountId: '17882702980',
   events: [],
-  revision: "25",
-  sendFlagDecisions: true
-}
+  revision: '25',
+  sendFlagDecisions: true,
+};
 
-export var getSimilarExperimentKeyConfig = function () {
+export var getSimilarExperimentKeyConfig = function() {
   return cloneDeep(similarExperimentKeysConfig);
 };
 
@@ -3949,5 +3938,5 @@ export default {
   typedAudiencesById: typedAudiencesById,
   getMutexFeatureTestsConfig: getMutexFeatureTestsConfig,
   getSimilarRuleKeyConfig: getSimilarRuleKeyConfig,
-  getSimilarExperimentKeyConfig: getSimilarExperimentKeyConfig
+  getSimilarExperimentKeyConfig: getSimilarExperimentKeyConfig,
 };

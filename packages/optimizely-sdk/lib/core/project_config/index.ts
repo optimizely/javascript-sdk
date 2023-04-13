@@ -191,8 +191,13 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
     projectConfig.integrations
       .filter(integration => integration.key === 'odp')
       .forEach(integration => {
-        if (integration.publicKey) projectConfig.publicKeyForOdp = integration.publicKey;
-        if (integration.host) projectConfig.hostForOdp = integration.host;
+        if (integration.publicKey && !projectConfig.publicKeyForOdp) {
+          projectConfig.publicKeyForOdp = integration.publicKey;
+        }
+
+        if (integration.host && !projectConfig.hostForOdp) {
+          projectConfig.hostForOdp = integration.host;
+        }
       });
   }
 
