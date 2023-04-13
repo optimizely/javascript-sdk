@@ -29,8 +29,8 @@ export const ServerLRUCacheConfig: ISegmentsCacheConfig = {
 export class ServerLRUCache<K, V> extends LRUCache<K, V> {
   constructor(config?: ServerLRUCacheConfig) {
     super({
-      maxSize: config?.maxSize || ServerLRUCacheConfig.DEFAULT_CAPACITY,
-      timeout: config?.timeout || ServerLRUCacheConfig.DEFAULT_TIMEOUT_SECS * 1000,
+      maxSize: config?.maxSize?? ServerLRUCacheConfig.DEFAULT_CAPACITY,
+      timeout: config?.timeout?? ServerLRUCacheConfig.DEFAULT_TIMEOUT_SECS * 1000,
     });
   }
 }
