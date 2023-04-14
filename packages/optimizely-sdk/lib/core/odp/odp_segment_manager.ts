@@ -100,7 +100,9 @@ export class OdpSegmentManager {
     const ignoreCache = options.includes(OptimizelySegmentOption.IGNORE_CACHE);
     const resetCache = options.includes(OptimizelySegmentOption.RESET_CACHE);
 
-    if (resetCache) this.reset();
+    if (resetCache) {
+      this.reset();
+    }
 
     if (!ignoreCache && !resetCache) {
       const cachedSegments = this._segmentsCache.lookup(cacheKey);
@@ -121,7 +123,9 @@ export class OdpSegmentManager {
       segmentsToCheck
     );
 
-    if (segments && !ignoreCache) this._segmentsCache.save({ key: cacheKey, value: segments });
+    if (segments && !ignoreCache) {
+      this._segmentsCache.save({ key: cacheKey, value: segments });
+    }
 
     return segments;
   }
