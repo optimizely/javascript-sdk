@@ -95,7 +95,7 @@ describe('OdpSegmentManager', () => {
     expect(segments).toBeNull;
   });
 
-  it('should ignore the cache if the option is included in the options array.', async () => {
+  it('should ignore the cache if the option enum is included in the options array.', async () => {
     odpConfig.update(validTestOdpConfig);
     setCache(userKey, userValue, ['a']);
     options = [OptimizelySegmentOption.IGNORE_CACHE];
@@ -105,12 +105,37 @@ describe('OdpSegmentManager', () => {
     expect(cacheCount()).toBe(1);
   });
 
-  it('should reset the cache if the option is included in the options array.', async () => {
+  it('should ignore the cache if the option string is included in the options array.', async () => {
+    odpConfig.update(validTestOdpConfig);
+    setCache(userKey, userValue, ['a']);
+    // @ts-ignore
+    options = ['IGNORE_CACHE'];
+
+    const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
+    expect(segments).toEqual(['new-customer']);
+    expect(cacheCount()).toBe(1);
+  });
+
+  it('should reset the cache if the option enum is included in the options array.', async () => {
     odpConfig.update(validTestOdpConfig);
     setCache(userKey, userValue, ['a']);
     setCache(userKey, '123', ['a']);
     setCache(userKey, '456', ['a']);
     options = [OptimizelySegmentOption.RESET_CACHE];
+
+    const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
+    expect(segments).toEqual(['new-customer']);
+    expect(peekCache(userKey, userValue)).toEqual(segments);
+    expect(cacheCount()).toBe(1);
+  });
+
+  it('should reset the cache if the option string is included in the options array.', async () => {
+    odpConfig.update(validTestOdpConfig);
+    setCache(userKey, userValue, ['a']);
+    setCache(userKey, '123', ['a']);
+    setCache(userKey, '456', ['a']);
+    // @ts-ignore
+    options = ['RESET_CACHE'];
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
     expect(segments).toEqual(['new-customer']);

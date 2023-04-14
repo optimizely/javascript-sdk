@@ -421,6 +421,32 @@ describe('lib/optimizely_user_context', function() {
           sinon.assert.notCalled(eventDispatcher.dispatchEvent);
         });
 
+        it('should return forced decision object when forced decision is set for a flag and do NOT dispatch an event with DISABLE_DECISION_EVENT string passed in decide options', function() {
+          var user = optlyInstance.createUserContext(userId);
+          var featureKey = 'feature_1';
+          var variationKey = '3324490562';
+          user.setForcedDecision({ flagKey: featureKey }, { variationKey });
+          var decision = user.decide(featureKey, ['INCLUDE_REASONS', 'DISABLE_DECISION_EVENT']);
+          assert.equal(decision.variationKey, variationKey);
+          assert.equal(decision.ruleKey, null);
+          assert.equal(decision.enabled, true);
+          assert.equal(decision.userContext.getUserId(), userId);
+          assert.deepEqual(decision.userContext.getAttributes(), {});
+          assert.deepEqual(Object.keys(decision.userContext.forcedDecisionsMap).length, 1);
+          assert.deepEqual(
+            decision.userContext.forcedDecisionsMap[featureKey][CONTROL_ATTRIBUTES.FORCED_DECISION_NULL_RULE_KEY],
+            { variationKey }
+          );
+          assert.equal(
+            true,
+            decision.reasons.includes(
+              sprintf(LOG_MESSAGES.USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED, variationKey, featureKey, userId)
+            )
+          );
+
+          sinon.assert.notCalled(eventDispatcher.dispatchEvent);
+        });
+
         it('should return forced decision object when forced decision is set for a flag and dispatch an event', function() {
           var user = optlyInstance.createUserContext(userId);
           var featureKey = 'feature_1';
