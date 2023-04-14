@@ -1456,7 +1456,11 @@ export default class Optimizely {
       userIdentifier = userId;
     }
 
-    if (!userIdentifier || !this.validateInputs({ user_id: userIdentifier }, attributes)) {
+    if (
+      userIdentifier === null ||
+      userIdentifier === undefined ||
+      !this.validateInputs({ user_id: userIdentifier }, attributes)
+    ) {
       return null;
     }
 
