@@ -770,7 +770,7 @@ describe('javascript-sdk (Browser)', function() {
         sinon.assert.called(fakeEventManager.start);
       });
 
-      it('should send an odp event with sendOdpEvent', async () => {
+      it('should send an odp event when calling sendOdpEvent with valid parameters', async () => {
         const fakeEventManager = {
           updateSettings: sinon.spy(),
           start: sinon.spy(),
@@ -800,6 +800,38 @@ describe('javascript-sdk (Browser)', function() {
 
         sinon.assert.notCalled(logger.error);
         sinon.assert.called(fakeEventManager.sendEvent);
+      });
+
+      it('should not send an odp event when calling sendOdpEvent with an empty string as the action', async () => {
+        const fakeEventManager = {
+          updateSettings: sinon.spy(),
+          start: sinon.spy(),
+          stop: sinon.spy(),
+          registerVuid: sinon.spy(),
+          identifyUser: sinon.spy(),
+          sendEvent: sinon.spy(),
+          flush: sinon.spy(),
+        };
+
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getOdpIntegratedConfigWithSegments(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpOptions: {
+            eventManager: fakeEventManager,
+          },
+        });
+
+        const readyData = await client.onReady();
+        assert.equal(readyData.success, true);
+        assert.isUndefined(readyData.reason);
+
+        client.sendOdpEvent('');
+
+        sinon.assert.called(logger.error);
+        // sinon.assert.called(fakeEventManager.sendEvent);
       });
 
       it('should log an error when attempting to send an odp event when odp is disabled', async () => {

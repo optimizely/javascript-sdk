@@ -156,6 +156,12 @@ export abstract class OdpManager {
    * @param {OdpEvent}  > ODP Event to send to event manager
    */
   public sendEvent({ type, action, identifiers, data }: OdpEvent): void {
+    let mType = type;
+
+    if (typeof mType != 'string' || mType === '') {
+      mType = 'fullstack';
+    }
+
     if (!this.enabled) {
       throw new Error(ERROR_MESSAGES.ODP_NOT_ENABLED);
     }
@@ -172,10 +178,46 @@ export abstract class OdpManager {
       throw new Error(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_EVENT_MANAGER_MISSING);
     }
 
-    this.eventManager.sendEvent(new OdpEvent(type, action, identifiers, data));
+    if (typeof action != 'string' || action === '') {
+      throw new Error('ODP action is not valid (cannot be empty).');
+    }
+
+    const normalizedIdentifiers = normalizeFsUserIdentifiers(identifiers);
+
+    this.eventManager.sendEvent(new OdpEvent(mType, action, normalizedIdentifiers, data));
   }
 
   public abstract isVuidEnabled(): boolean;
 
   public abstract getVuid(): string | undefined;
+}
+
+function normalizeFsUserIdentifiers(identifiers: Map<string, string>): Map<string, string> {
+  let fsUserId;
+  const mIdentifiers = structuredClone(identifiers);
+
+  if (identifiers.has('fs-user-id')) {
+    fsUserId = identifiers.get('fs-user-id');
+    mIdentifiers.delete('fs-user-id');
+  }
+
+  if (identifiers.has('FS-USER-ID')) {
+    if (fsUserId) {
+      throw new Error('Conflicting variant of fs_user_id.');
+    }
+
+    fsUserId = identifiers.get('FS-USER-ID');
+    mIdentifiers.delete('FS-USER-ID');
+  }
+
+  if (identifiers.has('FS_USER_ID')) {
+    if (fsUserId) {
+      throw new Error('Conflicting variant of fs_user_id.');
+    }
+
+    fsUserId = identifiers.get('FS_USER_ID');
+    mIdentifiers.delete('FS_USER_ID');
+  }
+
+  return mIdentifiers;
 }
