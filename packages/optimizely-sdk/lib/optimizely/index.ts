@@ -19,7 +19,7 @@ import { sprintf, objectValues } from '../utils/fns';
 import { NotificationCenter } from '../core/notification_center';
 import { EventProcessor } from '../modules/event_processor';
 
-import { OdpManager } from '../core/odp/odp_manager';
+import { IOdpManager } from '../core/odp/odp_manager';
 import { OdpConfig } from '../core/odp/odp_config';
 import { OdpEvent } from '../core/odp/odp_event';
 import { OptimizelySegmentOption } from '../core/odp/optimizely_segment_option';
@@ -36,6 +36,7 @@ import {
   OptimizelyOptions,
   OptimizelyDecideOption,
   OptimizelyDecision,
+  Client,
 } from '../shared_types';
 import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
@@ -75,7 +76,7 @@ type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 
 
 type StringInputs = Partial<Record<InputKey, unknown>>;
 
-export default class Optimizely {
+export default class Optimizely implements Client {
   private isOptimizelyConfigValid: boolean;
   private disposeOnUpdate: (() => void) | null;
   private readyPromise: Promise<{ success: boolean; reason?: string }>;
@@ -91,7 +92,7 @@ export default class Optimizely {
   private decisionService: DecisionService;
   private eventProcessor: EventProcessor;
   private defaultDecideOptions: { [key: string]: boolean };
-  protected odpManager?: OdpManager;
+  protected odpManager?: IOdpManager;
   public notificationCenter: NotificationCenter;
 
   constructor(config: OptimizelyOptions) {

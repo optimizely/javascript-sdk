@@ -993,7 +993,7 @@ describe('lib/optimizely_user_context', function() {
     describe('fetchQualifiedSegments', () => {
       it('should successfully call fetch qualified segments', async () => {
         fakeOptimizely = {
-          fetchQualifiedSegments: sinon.stub().returns(true),
+          fetchQualifiedSegments: sinon.stub().returns(['a']),
         };
         const user = new OptimizelyUserContext({
           shouldIdentifyUser: false,
@@ -1006,7 +1006,7 @@ describe('lib/optimizely_user_context', function() {
 
         sinon.assert.calledWithExactly(fakeOptimizely.fetchQualifiedSegments, userId, undefined);
 
-        assert.deepEqual(user.qualifiedSegments, []);
+        assert.deepEqual(user.qualifiedSegments, ['a']);
       });
     });
 

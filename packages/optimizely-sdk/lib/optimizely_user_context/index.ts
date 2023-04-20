@@ -255,11 +255,7 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
   async fetchQualifiedSegments(options?: OptimizelySegmentOption[]): Promise<boolean> {
     const segments = await this.optimizely.fetchQualifiedSegments(this.userId, options);
 
-    if (segments) {
-      this.qualifiedSegments = [...segments];
-    } else {
-      this.qualifiedSegments = null;
-    }
+    this.qualifiedSegments = segments;
 
     return !!segments;
   }

@@ -17,14 +17,25 @@
 import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
 import { ICache } from '../../utils/lru_cache';
-import { OdpSegmentApiManager } from './odp_segment_api_manager';
+import { IOdpSegmentApiManager } from './odp_segment_api_manager';
 import { OdpConfig } from './odp_config';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
+
+export interface IOdpSegmentManager {
+  fetchQualifiedSegments(
+    userKey: ODP_USER_KEY,
+    userValue: string,
+    options: Array<OptimizelySegmentOption>
+  ): Promise<string[] | null>;
+  reset(): void;
+  makeCacheKey(userKey: string, userValue: string): string;
+  updateSettings(config: OdpConfig): void;
+}
 
 /**
  * Schedules connections to ODP for audience segmentation and caches the results.
  */
-export class OdpSegmentManager {
+export class OdpSegmentManager implements IOdpSegmentManager {
   /**
    * ODP configuration settings in used
    * @private
@@ -49,7 +60,7 @@ export class OdpSegmentManager {
    * GraphQL API Manager used to fetch segments
    * @private
    */
-  private odpSegmentApiManager: OdpSegmentApiManager;
+  private odpSegmentApiManager: IOdpSegmentApiManager;
 
   /**
    * Handler for recording execution logs
@@ -60,7 +71,7 @@ export class OdpSegmentManager {
   constructor(
     odpConfig: OdpConfig,
     segmentsCache: ICache<string, string[]>,
-    odpSegmentApiManager: OdpSegmentApiManager,
+    odpSegmentApiManager: IOdpSegmentApiManager,
     logger?: LogHandler
   ) {
     this.odpConfig = odpConfig;
@@ -153,5 +164,6 @@ export class OdpSegmentManager {
    */
   public updateSettings(config: OdpConfig): void {
     this.odpConfig = config;
+    this._segmentsCache.reset();
   }
 }

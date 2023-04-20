@@ -25,13 +25,16 @@ import { EventProcessor } from '../lib/modules/event_processor';
 import { NotificationCenter as NotificationCenterImpl } from './core/notification_center';
 import { NOTIFICATION_TYPES } from './utils/enums';
 
-import { OdpManager } from './core/odp/odp_manager';
-import { OdpSegmentManager } from './core/odp/odp_segment_manager';
+import { IOptimizelyUserContext as OptimizelyUserContext } from './optimizely_user_context';
+
 import { ICache } from './utils/lru_cache';
-import { OdpEventManager } from './core/odp/odp_event_manager';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 import { OptimizelySegmentOption } from './core/odp/optimizely_segment_option';
-import { IOptimizelyUserContext as OptimizelyUserContext } from './optimizely_user_context';
+import { IOdpSegmentApiManager } from './core/odp/odp_segment_api_manager';
+import { IOdpSegmentManager } from './core/odp/odp_segment_manager';
+import { IOdpEventApiManager } from './core/odp/odp_event_api_manager';
+import { IOdpEventManager } from './core/odp/odp_event_manager';
+import { IOdpManager } from './core/odp/odp_manager';
 
 export interface BucketerParams {
   experimentId: string;
@@ -95,13 +98,13 @@ export interface OdpOptions {
   segmentsCacheTimeout?: number;
   segmentsApiTimeout?: number;
   segmentsRequestHandler?: RequestHandler;
-  segmentManager?: OdpSegmentManager;
+  segmentManager?: IOdpSegmentManager;
   eventFlushInterval?: number;
   eventBatchSize?: number;
   eventQueueSize?: number;
   eventApiTimeout?: number;
   eventRequestHandler?: RequestHandler;
-  eventManager?: OdpEventManager;
+  eventManager?: IOdpEventManager;
 }
 
 export interface ListenerPayload {
@@ -290,7 +293,7 @@ export interface OptimizelyOptions {
   sdkKey?: string;
   userProfileService?: UserProfileService | null;
   defaultDecideOptions?: OptimizelyDecideOption[];
-  odpManager?: OdpManager;
+  odpManager?: IOdpManager;
   notificationCenter: NotificationCenterImpl;
 }
 
@@ -533,6 +536,15 @@ export interface OptimizelyForcedDecision {
   variationKey: string;
 }
 
-export { OptimizelySegmentOption };
+// ODP Exports
 
-export { ICache };
+export {
+  ICache,
+  RequestHandler,
+  OptimizelySegmentOption,
+  IOdpSegmentApiManager,
+  IOdpSegmentManager,
+  IOdpEventApiManager,
+  IOdpEventManager,
+  IOdpManager,
+};

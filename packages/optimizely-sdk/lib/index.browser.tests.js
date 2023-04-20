@@ -714,7 +714,7 @@ describe('javascript-sdk (Browser)', function() {
 
       it('should accept a valid custom odp segment manager', async () => {
         const fakeSegmentManager = {
-          fetchQualifiedSegments: sinon.spy(),
+          fetchQualifiedSegments: sinon.stub().returns(['a']),
           updateSettings: sinon.spy(),
         };
 
@@ -735,7 +735,8 @@ describe('javascript-sdk (Browser)', function() {
         assert.equal(readyData.success, true);
         assert.isUndefined(readyData.reason);
 
-        await client.fetchQualifiedSegments(testVuid);
+        const segments = await client.fetchQualifiedSegments(testVuid);
+        assert.deepEqual(segments, ['a']);
 
         sinon.assert.notCalled(logger.error);
         sinon.assert.called(fakeSegmentManager.fetchQualifiedSegments);
