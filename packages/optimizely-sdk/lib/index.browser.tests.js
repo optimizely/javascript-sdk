@@ -870,12 +870,10 @@ describe('javascript-sdk (Browser)', function() {
 
         client.sendOdpEvent('dummy-action', '');
 
-        sinon.assert.calledWith(fakeEventManager.sendEvent, {
-          action: 'dummy-action',
-          type: 'fullstack',
-          identifiers: new Map(),
-          data: new Map(),
-        });
+        const sendEventArgs = fakeEventManager.sendEvent.args;
+
+        const expectedEventArgs = new OdpEvent('fullstack', 'dummy-action', new Map(), new Map());
+        assert.deepEqual(JSON.stringify(sendEventArgs[0][0], JSON.stringify(expectedEventArgs)));
       });
 
       it('should log an error when attempting to send an odp event when odp is disabled', async () => {

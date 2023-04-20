@@ -192,6 +192,7 @@ export abstract class OdpManager implements IOdpManager {
       throw new Error('ODP action is not valid (cannot be empty).');
     }
 
+    this.eventManager.sendEvent(new OdpEvent(mType, action, identifiers, data));
   }
 
   abstract isVuidEnabled(): boolean;
