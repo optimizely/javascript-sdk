@@ -139,7 +139,12 @@ export default class Optimizely implements Client {
         configObj.revision,
         configObj.projectId
       );
+
       this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE);
+
+      NotificationRegistry.getNotificationCenter(config.sdkKey)?.sendNotifications(
+        NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE
+      );
     });
 
     const projectConfigManagerReadyPromise = this.projectConfigManager.onReady();
