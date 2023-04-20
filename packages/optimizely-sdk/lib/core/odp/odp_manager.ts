@@ -166,6 +166,12 @@ export abstract class OdpManager implements IOdpManager {
    * @param {OdpEvent}  > ODP Event to send to event manager
    */
   sendEvent({ type, action, identifiers, data }: OdpEvent): void {
+    let mType = type;
+
+    if (typeof mType !== 'string' || mType === '') {
+      mType = 'fullstack';
+    }
+
     if (!this.enabled) {
       throw new Error(ERROR_MESSAGES.ODP_NOT_ENABLED);
     }
@@ -182,7 +188,10 @@ export abstract class OdpManager implements IOdpManager {
       throw new Error(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_EVENT_MANAGER_MISSING);
     }
 
-    this.eventManager.sendEvent(new OdpEvent(type, action, identifiers, data));
+    if (typeof action !== 'string' || action === '') {
+      throw new Error('ODP action is not valid (cannot be empty).');
+    }
+
   }
 
   abstract isVuidEnabled(): boolean;

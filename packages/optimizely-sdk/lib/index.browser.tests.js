@@ -30,6 +30,7 @@ import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import { OdpConfig } from './core/odp/odp_config';
 import { BrowserOdpEventManager } from './plugins/odp/event_manager/index.browser';
 import { BrowserOdpEventApiManager } from './plugins/odp/event_api_manager/index.browser';
+import { OdpEvent } from './core/odp/odp_event';
 
 var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
 
@@ -771,7 +772,7 @@ describe('javascript-sdk (Browser)', function() {
         sinon.assert.called(fakeEventManager.start);
       });
 
-      it('should send an odp event with sendOdpEvent', async () => {
+      it('should send an odp event when calling sendOdpEvent with valid parameters', async () => {
         const fakeEventManager = {
           updateSettings: sinon.spy(),
           start: sinon.spy(),
@@ -801,6 +802,80 @@ describe('javascript-sdk (Browser)', function() {
 
         sinon.assert.notCalled(logger.error);
         sinon.assert.called(fakeEventManager.sendEvent);
+      });
+
+      it('should throw an error and not send an odp event when calling sendOdpEvent with an invalid action input', async () => {
+        const fakeEventManager = {
+          updateSettings: sinon.spy(),
+          start: sinon.spy(),
+          stop: sinon.spy(),
+          registerVuid: sinon.spy(),
+          identifyUser: sinon.spy(),
+          sendEvent: sinon.spy(),
+          flush: sinon.spy(),
+        };
+
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getOdpIntegratedConfigWithSegments(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpOptions: {
+            eventManager: fakeEventManager,
+          },
+        });
+
+        const readyData = await client.onReady();
+        assert.equal(readyData.success, true);
+        assert.isUndefined(readyData.reason);
+
+        client.sendOdpEvent('');
+        sinon.assert.called(logger.error);
+
+        client.sendOdpEvent(null);
+        sinon.assert.calledTwice(logger.error);
+
+        client.sendOdpEvent(undefined);
+        sinon.assert.calledThrice(logger.error);
+
+        sinon.assert.notCalled(fakeEventManager.sendEvent);
+      });
+
+      it('should use fullstack as a fallback value for the odp event when calling sendOdpEvent with an empty type input', async () => {
+        const fakeEventManager = {
+          updateSettings: sinon.spy(),
+          start: sinon.spy(),
+          stop: sinon.spy(),
+          registerVuid: sinon.spy(),
+          identifyUser: sinon.spy(),
+          sendEvent: sinon.spy(),
+          flush: sinon.spy(),
+        };
+
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getOdpIntegratedConfigWithSegments(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpOptions: {
+            eventManager: fakeEventManager,
+          },
+        });
+
+        const readyData = await client.onReady();
+        assert.equal(readyData.success, true);
+        assert.isUndefined(readyData.reason);
+
+        client.sendOdpEvent('dummy-action', '');
+
+        sinon.assert.calledWith(fakeEventManager.sendEvent, {
+          action: 'dummy-action',
+          type: 'fullstack',
+          identifiers: new Map(),
+          data: new Map(),
+        });
       });
 
       it('should log an error when attempting to send an odp event when odp is disabled', async () => {

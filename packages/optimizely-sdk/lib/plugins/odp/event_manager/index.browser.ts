@@ -1,16 +1,20 @@
-import { OdpEventManager } from "../../../../lib/core/odp/odp_event_manager";
+import { IOdpEventManager, OdpEventManager } from '../../../../lib/core/odp/odp_event_manager';
 import { LogLevel } from '../../../modules/logging';
 
 const DEFAULT_BROWSER_QUEUE_SIZE = 100;
 
-export class BrowserOdpEventManager extends OdpEventManager {
-  protected initParams(batchSize: number | undefined, queueSize: number | undefined, flushInterval: number | undefined): void {
+export class BrowserOdpEventManager extends OdpEventManager implements IOdpEventManager {
+  protected initParams(
+    batchSize: number | undefined,
+    queueSize: number | undefined,
+    flushInterval: number | undefined
+  ): void {
     this.queueSize = queueSize || DEFAULT_BROWSER_QUEUE_SIZE;
 
     // disable event batching for browser
     this.batchSize = 1;
     this.flushInterval = 0;
-    
+
     if (typeof batchSize !== 'undefined' && batchSize !== 1) {
       this.getLogger().log(LogLevel.WARNING, 'ODP event batch size must be 1 in the browser.');
     }
