@@ -873,7 +873,7 @@ describe('javascript-sdk (Browser)', function() {
         const sendEventArgs = fakeEventManager.sendEvent.args;
 
         const expectedEventArgs = new OdpEvent('fullstack', 'dummy-action', new Map(), new Map());
-        assert.deepEqual(JSON.stringify(sendEventArgs[0][0], JSON.stringify(expectedEventArgs)));
+        assert.deepEqual(JSON.stringify(sendEventArgs[0][0]), JSON.stringify(expectedEventArgs));
       });
 
       it('should log an error when attempting to send an odp event when odp is disabled', async () => {
