@@ -65,6 +65,8 @@ import {
   NODE_CLIENT_ENGINE,
   NODE_CLIENT_VERSION,
   ODP_DEFAULT_EVENT_TYPE,
+  FS_USER_ID_ALIAS,
+  ODP_USER_KEY,
 } from '../utils/enums';
 
 const MODULE_NAME = 'OPTIMIZELY';
@@ -1712,8 +1714,27 @@ export default class Optimizely implements Client {
 
     const odpEventType = type ?? ODP_DEFAULT_EVENT_TYPE;
 
+    const odpIdentifiers = new Map(identifiers);
+
+    if (identifiers && identifiers.size > 0) {
+      try {
+        identifiers.forEach((identifier_value, identifier_key) => {
+          // Catch for fs-user-id, FS-USER-ID, and FS_USER_ID and assign value to fs_user_id identifier.
+          if (
+            FS_USER_ID_ALIAS === identifier_key.toLowerCase() ||
+            ODP_USER_KEY.FS_USER_ID === identifier_key.toLowerCase()
+          ) {
+            odpIdentifiers.delete(identifier_key);
+            odpIdentifiers.set(ODP_USER_KEY.FS_USER_ID, identifier_value);
+          }
+        });
+      } catch (e) {
+        this.logger.warn(LOG_MESSAGES.ODP_SEND_EVENT_IDENTIFIER_CONVERSION_FAILED);
+      }
+    }
+
     try {
-      const odpEvent = new OdpEvent(odpEventType, action, identifiers, data);
+      const odpEvent = new OdpEvent(odpEventType, action, odpIdentifiers, data);
       this.odpManager.sendEvent(odpEvent);
     } catch (e) {
       this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED, e);
