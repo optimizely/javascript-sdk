@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2020, Optimizely
+ * Copyright 2016-2020, 2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf } from '@optimizely/js-sdk-utils';
+import { sprintf } from '../fns';
 import { assert } from 'chai';
 
 import { validate } from './';
@@ -33,7 +33,7 @@ describe('lib/utils/json_schema_validator', function() {
       it('should throw an error if no json object is passed in', function() {
         assert.throws(function() {
           validate();
-        }, sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, 'JSON_SCHEMA_VALIDATOR'));
+        }, sprintf(ERROR_MESSAGES.NO_JSON_PROVIDED, 'JSON_SCHEMA_VALIDATOR (Project Config JSON Schema)'));
       });
 
       it('should validate specified Optimizely datafile', function() {

@@ -1,5 +1,5 @@
 /**
- * Copyright 2020, Optimizely
+ * Copyright 2020, 2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { objectValues } from '@optimizely/js-sdk-utils';
-import { LogHandler, ErrorHandler } from '@optimizely/js-sdk-logging';
-import { NOTIFICATION_TYPES as notificationTypesEnum } from '@optimizely/js-sdk-utils';
+import { LogHandler, ErrorHandler } from '../../modules/logging';
+import { objectValues } from '../../utils/fns';
 import { NotificationListener, ListenerPayload } from '../../shared_types';
 
 import {
@@ -117,7 +116,7 @@ export class NotificationCenter {
       const returnId = this.listenerId;
       this.listenerId += 1;
       return returnId;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
       return -1;
@@ -160,7 +159,7 @@ export class NotificationCenter {
         this.notificationListeners[typeToRemove].splice(indexToRemove, 1);
         return true;
       }
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
     }
@@ -178,7 +177,7 @@ export class NotificationCenter {
           this.notificationListeners[notificationTypeEnum] = [];
         }
       );
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
     }
@@ -186,12 +185,12 @@ export class NotificationCenter {
 
   /**
    * Remove all previously added notification listeners for the argument type
-   * @param   {notificationTypesEnum}    notificationType One of NOTIFICATION_TYPES
+   * @param   {NOTIFICATION_TYPES}    notificationType One of NOTIFICATION_TYPES
    */
-  clearNotificationListeners(notificationType: notificationTypesEnum): void {
+  clearNotificationListeners(notificationType: NOTIFICATION_TYPES): void {
     try {
       this.notificationListeners[notificationType] = [];
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
     }
@@ -213,7 +212,7 @@ export class NotificationCenter {
           const callback = listenerEntry.callback;
           try {
             callback(notificationData);
-          } catch (ex) {
+          } catch (ex: any) {
             this.logger.log(
               LOG_LEVEL.ERROR,
               LOG_MESSAGES.NOTIFICATION_LISTENER_EXCEPTION,
@@ -224,7 +223,7 @@ export class NotificationCenter {
           }
         }
       );
-    } catch (e) {
+    } catch (e: any) {
       this.logger.log(LOG_LEVEL.ERROR, e.message);
       this.errorHandler.handleError(e);
     }
@@ -238,4 +237,10 @@ export class NotificationCenter {
  */
 export function createNotificationCenter(options: NotificationCenterOptions): NotificationCenter {
   return new NotificationCenter(options);
+}
+
+export interface NotificationSender {
+  // TODO[OASIS-6649]: Don't use any type
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  sendNotifications(notificationType: NOTIFICATION_TYPES, notificationData?: any): void
 }

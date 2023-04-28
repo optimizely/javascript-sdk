@@ -1,11 +1,11 @@
 /**
- * Copyright 2016-2022, Optimizely
+ * Copyright 2016-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,23 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  find,
-  objectEntries,
-  objectValues,
-  sprintf
-} from '@optimizely/js-sdk-utils';
+import { find, objectEntries, objectValues, sprintf, assign, keyBy } from '../../utils/fns';
 
-import fns from '../../utils/fns';
-import {
-  ERROR_MESSAGES,
-  LOG_LEVEL,
-  LOG_MESSAGES,
-  FEATURE_VARIABLE_TYPES,
-} from '../../utils/enums';
+import { ERROR_MESSAGES, LOG_LEVEL, LOG_MESSAGES, FEATURE_VARIABLE_TYPES } from '../../utils/enums';
 import configValidator from '../../utils/config_validator';
 
-import { LogHandler } from '@optimizely/js-sdk-logging';
+import { LogHandler } from '../../modules/logging';
 import {
   Audience,
   Experiment,
@@ -42,6 +31,7 @@ import {
   Variation,
   VariableType,
   VariationVariable,
+  Integration,
 } from '../../shared_types';
 
 interface TryCreatingProjectConfigConfig {
@@ -49,7 +39,7 @@ interface TryCreatingProjectConfigConfig {
   // eslint-disable-next-line  @typescript-eslint/ban-types
   datafile: string | object;
   jsonSchemaValidator?: {
-    validate(jsonObject: unknown): boolean,
+    validate(jsonObject: unknown): boolean;
   };
   logger: LogHandler;
 }
@@ -97,6 +87,11 @@ export interface ProjectConfig {
   accountId: string;
   flagRulesMap: { [key: string]: Experiment[] };
   flagVariationsMap: { [key: string]: Variation[] };
+  integrations: Integration[];
+  integrationKeyMap?: { [key: string]: Integration };
+  publicKeyForOdp?: string;
+  hostForOdp?: string;
+  allSegments: string[];
 }
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -105,27 +100,27 @@ const MODULE_NAME = 'PROJECT_CONFIG';
 
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
-  const datafileCopy = fns.assign({}, datafile);
+  const datafileCopy = assign({}, datafile);
   datafileCopy.audiences = (datafile.audiences || []).map((audience: Audience) => {
-    return fns.assign({}, audience);
+    return assign({}, audience);
   });
   datafileCopy.experiments = (datafile.experiments || []).map((experiment: Experiment) => {
-    return fns.assign({}, experiment);
+    return assign({}, experiment);
   });
   datafileCopy.featureFlags = (datafile.featureFlags || []).map((featureFlag: FeatureFlag) => {
-    return fns.assign({}, featureFlag);
+    return assign({}, featureFlag);
   });
   datafileCopy.groups = (datafile.groups || []).map((group: Group) => {
-    const groupCopy = fns.assign({}, group);
-    groupCopy.experiments = (group.experiments || []).map((experiment) => {
-      return fns.assign({}, experiment);
+    const groupCopy = assign({}, group);
+    groupCopy.experiments = (group.experiments || []).map(experiment => {
+      return assign({}, experiment);
     });
     return groupCopy;
   });
   datafileCopy.rollouts = (datafile.rollouts || []).map((rollout: Rollout) => {
-    const rolloutCopy = fns.assign({}, rollout);
-    rolloutCopy.experiments = (rollout.experiments || []).map((experiment) => {
-      return fns.assign({}, experiment);
+    const rolloutCopy = assign({}, rollout);
+    rolloutCopy.experiments = (rollout.experiments || []).map(experiment => {
+      return assign({}, experiment);
     });
     return rolloutCopy;
   });
@@ -142,10 +137,7 @@ function createMutationSafeDatafileCopy(datafile: any): ProjectConfig {
  * @param  {string|null}   datafileStr   JSON string representation of the datafile
  * @return {ProjectConfig} Object representing project configuration
  */
-export const createProjectConfig = function(
-  datafileObj?: JSON,
-  datafileStr: string | null = null
-): ProjectConfig {
+export const createProjectConfig = function(datafileObj?: JSON, datafileStr: string | null = null): ProjectConfig {
   const projectConfig = createMutationSafeDatafileCopy(datafileObj);
 
   projectConfig.__datafileStr = datafileStr === null ? JSON.stringify(datafileObj) : datafileStr;
@@ -154,49 +146,70 @@ export const createProjectConfig = function(
    * Conditions of audiences in projectConfig.typedAudiences are not
    * expected to be string-encoded as they are here in projectConfig.audiences.
    */
-  (projectConfig.audiences || []).forEach((audience) => {
+  (projectConfig.audiences || []).forEach(audience => {
     audience.conditions = JSON.parse(audience.conditions as string);
   });
-  projectConfig.audiencesById = fns.keyBy(projectConfig.audiences, 'id');
-  fns.assign(projectConfig.audiencesById, fns.keyBy(projectConfig.typedAudiences, 'id'));
+  projectConfig.audiencesById = keyBy(projectConfig.audiences, 'id');
+  assign(projectConfig.audiencesById, keyBy(projectConfig.typedAudiences, 'id'));
 
-  projectConfig.attributeKeyMap = fns.keyBy(projectConfig.attributes, 'key');
-  projectConfig.eventKeyMap = fns.keyBy(projectConfig.events, 'key');
-  projectConfig.groupIdMap = fns.keyBy(projectConfig.groups, 'id');
+  projectConfig.allSegments = [];
+  const allSegmentsSet = new Set<string>();
+
+  Object.keys(projectConfig.audiencesById)
+    .map(audience => getAudienceSegments(projectConfig.audiencesById[audience]))
+    .forEach(audienceSegments => {
+      audienceSegments.forEach(segment => {
+        allSegmentsSet.add(segment);
+      });
+    });
+
+  projectConfig.allSegments = Array.from(allSegmentsSet);
+
+  projectConfig.attributeKeyMap = keyBy(projectConfig.attributes, 'key');
+  projectConfig.eventKeyMap = keyBy(projectConfig.events, 'key');
+  projectConfig.groupIdMap = keyBy(projectConfig.groups, 'id');
 
   let experiments;
-  Object.keys(projectConfig.groupIdMap || {}).forEach((Id) => {
+  Object.keys(projectConfig.groupIdMap || {}).forEach(Id => {
     experiments = projectConfig.groupIdMap[Id].experiments;
-    (experiments || []).forEach((experiment) => {
-      projectConfig.experiments.push(fns.assign(experiment, { groupId: Id }));
+    (experiments || []).forEach(experiment => {
+      projectConfig.experiments.push(assign(experiment, { groupId: Id }));
     });
   });
 
-  projectConfig.rolloutIdMap = fns.keyBy(projectConfig.rollouts || [], 'id');
-  objectValues(projectConfig.rolloutIdMap || {}).forEach(
-    (rollout) => {
-      (rollout.experiments || []).forEach((experiment) => {
-        projectConfig.experiments.push(experiment);
-        // Creates { <variationKey>: <variation> } map inside of the experiment
-        experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
-      });
-    }
-  );
+  projectConfig.rolloutIdMap = keyBy(projectConfig.rollouts || [], 'id');
+  objectValues(projectConfig.rolloutIdMap || {}).forEach(rollout => {
+    (rollout.experiments || []).forEach(experiment => {
+      projectConfig.experiments.push(experiment);
+      // Creates { <variationKey>: <variation> } map inside of the experiment
+      experiment.variationKeyMap = keyBy(experiment.variations, 'key');
+    });
+  });
 
-  projectConfig.experimentKeyMap = fns.keyBy(projectConfig.experiments, 'key');
-  projectConfig.experimentIdMap = fns.keyBy(projectConfig.experiments, 'id');
+  if (projectConfig.integrations) {
+    projectConfig.integrationKeyMap = keyBy(projectConfig.integrations, 'key');
+    projectConfig.integrations
+      .filter(integration => integration.key === 'odp')
+      .forEach(integration => {
+        if (integration.publicKey) projectConfig.publicKeyForOdp = integration.publicKey;
+        if (integration.host) projectConfig.hostForOdp = integration.host;
+      });
+  }
+
+  projectConfig.experimentKeyMap = keyBy(projectConfig.experiments, 'key');
+  projectConfig.experimentIdMap = keyBy(projectConfig.experiments, 'id');
 
   projectConfig.variationIdMap = {};
   projectConfig.variationVariableUsageMap = {};
-  (projectConfig.experiments || []).forEach((experiment) => {
+  (projectConfig.experiments || []).forEach(experiment => {
     // Creates { <variationKey>: <variation> } map inside of the experiment
-    experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
+    experiment.variationKeyMap = keyBy(experiment.variations, 'key');
 
     // Creates { <variationId>: { key: <variationKey>, id: <variationId> } } mapping for quick lookup
-    fns.assign(projectConfig.variationIdMap, fns.keyBy(experiment.variations, 'id'));
-    objectValues(experiment.variationKeyMap || {}).forEach((variation) => {
+    assign(projectConfig.variationIdMap, keyBy(experiment.variations, 'id'));
+    objectValues(experiment.variationKeyMap || {}).forEach(variation => {
       if (variation.variables) {
-        projectConfig.variationVariableUsageMap[variation.id] = fns.keyBy(variation.variables, 'id');
+        projectConfig.variationVariableUsageMap[variation.id] = keyBy(variation.variables, 'id');
       }
     });
   });
@@ -205,29 +218,27 @@ export const createProjectConfig = function(
   // for checking that experiment is a feature experiment or not.
   projectConfig.experimentFeatureMap = {};
 
-  projectConfig.featureKeyMap = fns.keyBy(projectConfig.featureFlags || [], 'key');
-  objectValues(projectConfig.featureKeyMap || {}).forEach(
-    (feature) => {
-      // Json type is represented in datafile as a subtype of string for the sake of backwards compatibility.
-      // Converting it to a first-class json type while creating Project Config
-      feature.variables.forEach((variable) => {
-        if (variable.type === FEATURE_VARIABLE_TYPES.STRING && variable.subType === FEATURE_VARIABLE_TYPES.JSON) {
-          variable.type = FEATURE_VARIABLE_TYPES.JSON as VariableType;
-          delete variable.subType;
-        }
-      });
+  projectConfig.featureKeyMap = keyBy(projectConfig.featureFlags || [], 'key');
+  objectValues(projectConfig.featureKeyMap || {}).forEach(feature => {
+    // Json type is represented in datafile as a subtype of string for the sake of backwards compatibility.
+    // Converting it to a first-class json type while creating Project Config
+    feature.variables.forEach(variable => {
+      if (variable.type === FEATURE_VARIABLE_TYPES.STRING && variable.subType === FEATURE_VARIABLE_TYPES.JSON) {
+        variable.type = FEATURE_VARIABLE_TYPES.JSON as VariableType;
+        delete variable.subType;
+      }
+    });
 
-      feature.variableKeyMap = fns.keyBy(feature.variables, 'key');
-      (feature.experimentIds || []).forEach((experimentId) => {
-        // Add this experiment in experiment-feature map.
-        if (projectConfig.experimentFeatureMap[experimentId]) {
-          projectConfig.experimentFeatureMap[experimentId].push(feature.id);
-        } else {
-          projectConfig.experimentFeatureMap[experimentId] = [feature.id];
-        }
-      });
-    }
-  );
+    feature.variableKeyMap = keyBy(feature.variables, 'key');
+    (feature.experimentIds || []).forEach(experimentId => {
+      // Add this experiment in experiment-feature map.
+      if (projectConfig.experimentFeatureMap[experimentId]) {
+        projectConfig.experimentFeatureMap[experimentId].push(feature.id);
+      } else {
+        projectConfig.experimentFeatureMap[experimentId] = [feature.id];
+      }
+    });
+  });
 
   // all rules (experiment rules and delivery rules) for each flag
   projectConfig.flagRulesMap = {};
@@ -254,22 +265,49 @@ export const createProjectConfig = function(
   // - we collect variations used in each rule (experiment rules and delivery rules)
   projectConfig.flagVariationsMap = {};
 
-  objectEntries(projectConfig.flagRulesMap || {}).forEach(
-    ([flagKey, rules]) => {
-      const variations: OptimizelyVariation[] = [];
-      rules.forEach(rule => {
-        rule.variations.forEach(variation => {
-          if (!find(variations, item => item.id === variation.id)) {
-            variations.push(variation);
-          }
-        });
+  objectEntries(projectConfig.flagRulesMap || {}).forEach(([flagKey, rules]) => {
+    const variations: OptimizelyVariation[] = [];
+    rules.forEach(rule => {
+      rule.variations.forEach(variation => {
+        if (!find(variations, item => item.id === variation.id)) {
+          variations.push(variation);
+        }
       });
-      projectConfig.flagVariationsMap[flagKey] = variations;
-    }
-  );
+    });
+    projectConfig.flagVariationsMap[flagKey] = variations;
+  });
 
   return projectConfig;
 };
+
+/**
+ * Extract all audience segments used in this audience's conditions
+ * @param  {Audience}     audience  Object representing the audience being parsed
+ * @return {string[]}               List of all audience segments
+ */
+export const getAudienceSegments = function(audience: Audience): string[] {
+  if (!audience.conditions) return [];
+  return getSegmentsFromConditions(audience.conditions);
+};
+
+// eslint-disable-next-line  @typescript-eslint/no-explicit-any
+const getSegmentsFromConditions = (condition: any): string[] => {
+  const segments = [];
+
+  if (isLogicalOperator(condition)) {
+    return [];
+  } else if (Array.isArray(condition)) {
+    condition.forEach(nextCondition => segments.push(...getSegmentsFromConditions(nextCondition)));
+  } else if (condition['match'] === 'qualified') {
+    segments.push(condition['value']);
+  }
+
+  return segments;
+};
+
+function isLogicalOperator(condition: string): boolean {
+  return ['and', 'or', 'not'].includes(condition);
+}
 
 /**
  * Get experiment ID for the provided experiment key
@@ -321,7 +359,7 @@ export const getAttributeId = function(
         LOG_LEVEL.WARNING,
         'Attribute %s unexpectedly has reserved prefix %s; using attribute ID instead of reserved attribute name.',
         attributeKey,
-        RESERVED_ATTRIBUTE_PREFIX,
+        RESERVED_ATTRIBUTE_PREFIX
       );
     }
     return attribute.id;
@@ -425,7 +463,7 @@ export const getVariationKeyFromId = function(projectConfig: ProjectConfig, vari
  * @param  {string}         variationId     ID of the variation
  * @return {Variation|null}    Variation or null if the variation ID is not found
  */
- export const getVariationFromId = function(projectConfig: ProjectConfig, variationId: string): Variation | null {
+export const getVariationFromId = function(projectConfig: ProjectConfig, variationId: string): Variation | null {
   if (projectConfig.variationIdMap.hasOwnProperty(variationId)) {
     return projectConfig.variationIdMap[variationId];
   }
@@ -511,18 +549,22 @@ export const getExperimentFromId = function(
 };
 
 /**
-* Returns flag variation for specified flagKey and variationKey
-* @param  {flagKey}        string
-* @param  {variationKey}   string
-* @return {Variation|null}
-*/
-export const getFlagVariationByKey = function(projectConfig: ProjectConfig, flagKey: string, variationKey: string): Variation | null {
+ * Returns flag variation for specified flagKey and variationKey
+ * @param  {flagKey}        string
+ * @param  {variationKey}   string
+ * @return {Variation|null}
+ */
+export const getFlagVariationByKey = function(
+  projectConfig: ProjectConfig,
+  flagKey: string,
+  variationKey: string
+): Variation | null {
   if (!projectConfig) {
     return null;
   }
 
   const variations = projectConfig.flagVariationsMap[flagKey];
-  const result = find(variations, item => item.key === variationKey)
+  const result = find(variations, item => item.key === variationKey);
   if (result) {
     return result;
   }
@@ -580,13 +622,7 @@ export const getVariableForFeature = function(
 
   const variable = feature.variableKeyMap[variableKey];
   if (!variable) {
-    logger.log(
-      LOG_LEVEL.ERROR,
-      ERROR_MESSAGES.VARIABLE_KEY_NOT_IN_DATAFILE,
-      MODULE_NAME,
-      variableKey,
-      featureKey,
-    );
+    logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.VARIABLE_KEY_NOT_IN_DATAFILE, MODULE_NAME, variableKey, featureKey);
     return null;
   }
 
@@ -616,12 +652,7 @@ export const getVariableValueForVariation = function(
   }
 
   if (!projectConfig.variationVariableUsageMap.hasOwnProperty(variation.id)) {
-    logger.log(
-      LOG_LEVEL.ERROR,
-      ERROR_MESSAGES.VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT,
-      MODULE_NAME,
-      variation.id,
-    );
+    logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.VARIATION_ID_NOT_IN_DATAFILE_NO_EXPERIMENT, MODULE_NAME, variation.id);
     return null;
   }
 
@@ -657,13 +688,7 @@ export const getTypeCastValue = function(
   switch (variableType) {
     case FEATURE_VARIABLE_TYPES.BOOLEAN:
       if (variableValue !== 'true' && variableValue !== 'false') {
-        logger.log(
-          LOG_LEVEL.ERROR,
-          ERROR_MESSAGES.UNABLE_TO_CAST_VALUE,
-          MODULE_NAME,
-          variableValue,
-          variableType,
-        );
+        logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType);
         castValue = null;
       } else {
         castValue = variableValue === 'true';
@@ -673,13 +698,7 @@ export const getTypeCastValue = function(
     case FEATURE_VARIABLE_TYPES.INTEGER:
       castValue = parseInt(variableValue, 10);
       if (isNaN(castValue)) {
-        logger.log(
-          LOG_LEVEL.ERROR,
-          ERROR_MESSAGES.UNABLE_TO_CAST_VALUE,
-          MODULE_NAME,
-          variableValue,
-          variableType,
-        );
+        logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType);
         castValue = null;
       }
       break;
@@ -687,13 +706,7 @@ export const getTypeCastValue = function(
     case FEATURE_VARIABLE_TYPES.DOUBLE:
       castValue = parseFloat(variableValue);
       if (isNaN(castValue)) {
-        logger.log(
-          LOG_LEVEL.ERROR,
-          ERROR_MESSAGES.UNABLE_TO_CAST_VALUE,
-          MODULE_NAME,
-          variableValue,
-          variableType,
-        );
+        logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType);
         castValue = null;
       }
       break;
@@ -702,13 +715,7 @@ export const getTypeCastValue = function(
       try {
         castValue = JSON.parse(variableValue);
       } catch (e) {
-        logger.log(
-          LOG_LEVEL.ERROR,
-          ERROR_MESSAGES.UNABLE_TO_CAST_VALUE,
-          MODULE_NAME,
-          variableValue,
-          variableType,
-        );
+        logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.UNABLE_TO_CAST_VALUE, MODULE_NAME, variableValue, variableType);
         castValue = null;
       }
       break;
@@ -746,7 +753,7 @@ export const eventWithKeyExists = function(projectConfig: ProjectConfig, eventKe
  * Returns true if experiment belongs to any feature, false otherwise.
  * @param   {ProjectConfig}       projectConfig
  * @param   {string}              experimentId
- * @returns {boolean} 
+ * @returns {boolean}
  */
 export const isFeatureExperiment = function(projectConfig: ProjectConfig, experimentId: string): boolean {
   return projectConfig.experimentFeatureMap.hasOwnProperty(experimentId);
@@ -759,7 +766,7 @@ export const isFeatureExperiment = function(projectConfig: ProjectConfig, experi
  */
 export const toDatafile = function(projectConfig: ProjectConfig): string {
   return projectConfig.__datafileStr;
-}
+};
 
 /**
  * @typedef   {Object}
@@ -821,7 +828,7 @@ export const tryCreatingProjectConfig = function(
  */
 export const getSendFlagDecisionsValue = function(projectConfig: ProjectConfig): boolean {
   return !!projectConfig.sendFlagDecisions;
-}
+};
 
 export default {
   createProjectConfig,
@@ -846,6 +853,7 @@ export default {
   getTypeCastValue,
   getSendFlagDecisionsValue,
   getAudiencesById,
+  getAudienceSegments,
   eventWithKeyExists,
   isFeatureExperiment,
   toDatafile,

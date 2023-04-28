@@ -5,13 +5,16 @@
     "paths": {
       "*": [
         "./typings/*"
-      ]
+      ],
     },
+    "resolveJsonModule": true,
     "allowJs": true,
     "declaration": true,
     "module": "esnext",
     "outDir": "./dist",
-    "sourceMap": true
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "useUnknownInCatchVariables": false
   },
   "exclude": [
     "./dist",
@@ -23,6 +26,8 @@
   ],
   "include": [
     "./lib/**/*.ts",
-    "./lib/**/*.js"
+    "./lib/**/*.js",
+    "./lib/modules/**/*.ts",
+    "./lib/modules/**/**/*.ts"
   ]
 }

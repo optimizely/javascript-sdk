@@ -17,10 +17,11 @@
 /**
  * Project Config JSON Schema file used to validate the project json datafile
  */
- import { JSONSchema4 } from 'json-schema';
+import { JSONSchema4 } from 'json-schema';
 
- var schemaDefinition = {
+var schemaDefinition = {
   $schema: 'http://json-schema.org/draft-04/schema#',
+  title: 'Project Config JSON Schema',
   type: 'object',
   properties: {
     projectId: {
@@ -275,6 +276,24 @@
       type: 'string',
       required: true,
     },
+    integrations: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          key: {
+            type: 'string',
+            required: true
+          },
+          host: {
+            type: 'string'
+          },
+          publicKey: {
+            type: 'string'
+          }
+        }
+      }
+    }
   },
 };
 

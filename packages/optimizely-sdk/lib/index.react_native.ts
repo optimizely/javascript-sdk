@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,12 +15,12 @@
  */
 import {
   getLogger,
-  setLogHandler,
-  setLogLevel,
   setErrorHandler,
   getErrorHandler,
-  LogLevel
-} from '@optimizely/js-sdk-logging';
+  LogLevel,
+  setLogHandler,
+  setLogLevel
+} from './modules/logging';
 import * as enums from './utils/enums';
 import Optimizely from './optimizely';
 import configValidator from './utils/config_validator';
@@ -29,9 +29,10 @@ import * as loggerPlugin from './plugins/logger/index.react_native';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
-import { createEventProcessor } from './plugins/event_processor';
+import { createEventProcessor } from './plugins/event_processor/index.react_native';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
-import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
+import { createHttpPollingDatafileManager } from
+    './plugins/datafile_manager/react_native_http_polling_datafile_manager';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -45,9 +46,9 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
  * Creates an instance of the Optimizely class
  * @param  {Config} config
  * @return {Client|null} the Optimizely client object
- *                           null on error 
+ *                           null on error
  */
- const createInstance = function(config: Config): Client | null {
+const createInstance = function(config: Config): Client | null {
   try {
     // TODO warn about setting per instance errorHandler / logger / logLevel
     let isValidInstance = false;
@@ -67,7 +68,8 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
     try {
       configValidator.validate(config);
       isValidInstance = true;
-    } catch (ex) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (ex: any) {
       logger.error(ex);
     }
 
@@ -117,7 +119,8 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
     }
 
     return new Optimizely(optimizelyOptions);
-  } catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (e: any) {
     logger.error(e);
     return null;
   }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021, Optimizely
+ * Copyright 2021-2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 import {
   EventProcessor,
   ProcessableEvent,
-} from '@optimizely/js-sdk-event-processor';
-import { NotificationCenter } from '@optimizely/js-sdk-utils';
+} from '../../../lib/modules/event_processor';
+import { NotificationSender } from '../../core/notification_center';
 
 import { EventDispatcher } from '../../shared_types';
 import { NOTIFICATION_TYPES } from '../../utils/enums';
@@ -26,18 +26,18 @@ import { formatEvents } from '../../core/event_builder/build_event_v1';
 
 class ForwardingEventProcessor implements EventProcessor {
   private dispatcher: EventDispatcher;
-  private notificationCenter?: NotificationCenter;
+  private NotificationSender?: NotificationSender;
 
-  constructor(dispatcher: EventDispatcher, notificationCenter?: NotificationCenter) {
+  constructor(dispatcher: EventDispatcher, notificationSender?: NotificationSender) {
     this.dispatcher = dispatcher;
-    this.notificationCenter = notificationCenter;
+    this.NotificationSender = notificationSender;
   }
 
   process(event: ProcessableEvent): void {
     const formattedEvent = formatEvents([event]);
     this.dispatcher.dispatchEvent(formattedEvent, () => {});
-    if (this.notificationCenter) {
-      this.notificationCenter.sendNotifications(
+    if (this.NotificationSender) {
+      this.NotificationSender.sendNotifications(
         NOTIFICATION_TYPES.LOG_EVENT,
         formattedEvent,
       )
@@ -51,6 +51,6 @@ class ForwardingEventProcessor implements EventProcessor {
   }
 }
 
-export function createForwardingEventProcessor(dispatcher: EventDispatcher, notificationCenter?: NotificationCenter): EventProcessor {
-  return new ForwardingEventProcessor(dispatcher, notificationCenter);
+export function createForwardingEventProcessor(dispatcher: EventDispatcher, notificationSender?: NotificationSender): EventProcessor {
+  return new ForwardingEventProcessor(dispatcher, notificationSender);
 }

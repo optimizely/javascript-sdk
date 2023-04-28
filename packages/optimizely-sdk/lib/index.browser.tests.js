@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2020, 2022 Optimizely
+ * Copyright 2016-2020, 2022-2023 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as logging from '@optimizely/js-sdk-logging';
+import logging, { getLogger } from './modules/logging/logger';
 
 import { assert } from 'chai';
 import sinon from 'sinon';
@@ -24,10 +24,48 @@ import packageJSON from '../package.json';
 import optimizelyFactory from './index.browser';
 import configValidator from './utils/config_validator';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
+import OptimizelyUserContext from './optimizely_user_context';
+import { LOG_MESSAGES, ODP_EVENT_ACTION, ODP_EVENT_BROWSER_ENDPOINT } from './utils/enums';
+import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
+import { OdpConfig } from './core/odp/odp_config';
+import { BrowserOdpEventManager } from './plugins/odp/event_manager/index.browser';
+import { BrowserOdpEventApiManager } from './plugins/odp/event_api_manager/index.browser';
 
 var LocalStoragePendingEventsDispatcher = eventProcessor.LocalStoragePendingEventsDispatcher;
 
-describe('javascript-sdk', function() {
+class MockLocalStorage {
+  store = {};
+
+  constructor() {}
+
+  getItem(key) {
+    return this.store[key];
+  }
+
+  setItem(key, value) {
+    this.store[key] = value.toString();
+  }
+
+  clear() {
+    this.store = {};
+  }
+
+  removeItem(key) {
+    delete this.store[key];
+  }
+}
+
+if (!global.window) {
+  try {
+    global.window = {
+      localStorage: new MockLocalStorage(),
+    };
+  } catch (e) {
+    console.error('Unable to overwrite global.window.');
+  }
+}
+
+describe('javascript-sdk (Browser)', function() {
   var clock;
   beforeEach(function() {
     sinon.stub(optimizelyFactory.eventDispatcher, 'dispatchEvent');
@@ -72,7 +110,7 @@ describe('javascript-sdk', function() {
         optimizelyFactory.__internalResetRetryState();
         console.error.restore();
         configValidator.validate.restore();
-        delete global.XMLHttpRequest
+        delete global.XMLHttpRequest;
       });
 
       describe('when an eventDispatcher is not passed in', function() {
@@ -148,7 +186,7 @@ describe('javascript-sdk', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.9.1');
+        assert.equal(optlyInstance.clientVersion, '4.9.3');
       });
 
       it('should set the JavaScript client engine and version', function() {
@@ -403,7 +441,7 @@ describe('javascript-sdk', function() {
             errorHandler: fakeErrorHandler,
             eventDispatcher: fakeEventDispatcher,
             logger: silentLogger,
-          });          
+          });
           sinon.assert.calledWithExactly(
             eventProcessor.createEventProcessor,
             sinon.match({
@@ -530,6 +568,340 @@ describe('javascript-sdk', function() {
             );
           });
         });
+      });
+    });
+
+    describe('ODP/ATS', () => {
+      var sandbox = sinon.sandbox.create();
+
+      const fakeOptimizely = {
+        identifyUser: sinon.stub().returns(),
+      };
+
+      const fakeErrorHandler = { handleError: function() {} };
+      const fakeEventDispatcher = { dispatchEvent: function() {} };
+      let logger = getLogger();
+
+      const testFsUserId = 'fs_test_user';
+      const testVuid = 'vuid_test_user';
+      var clock;
+      const requestParams = new Map();
+      const mockRequestHandler = {
+        makeRequest: (endpoint, headers, method, data) => {
+          requestParams.set('endpoint', endpoint);
+          requestParams.set('headers', headers);
+          requestParams.set('method', method);
+          requestParams.set('data', data);
+          return {
+            responsePromise: (async () => {
+              return { statusCode: 200 };
+            })(),
+          };
+        },
+        args: requestParams,
+      };
+
+      beforeEach(function() {
+        sandbox.stub(logger, 'log');
+        sandbox.stub(logger, 'error');
+        clock = sinon.useFakeTimers(new Date());
+      });
+
+      afterEach(function() {
+        sandbox.restore();
+        clock.restore();
+        requestParams.clear();
+      });
+
+      it('should send identify event by default when initialized', () => {
+        new OptimizelyUserContext({
+          optimizely: fakeOptimizely,
+          userId: testFsUserId,
+        });
+
+        sinon.assert.calledOnce(fakeOptimizely.identifyUser);
+
+        sinon.assert.calledWith(fakeOptimizely.identifyUser, testFsUserId);
+      });
+
+      it('should log info when odp is disabled', () => {
+        const disabledClient = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfigWithFeatures(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpManager: new BrowserOdpManager({
+            logger,
+            odpOptions: {
+              disabled: true,
+            },
+          }),
+        });
+
+        sinon.assert.calledWith(logger.log, optimizelyFactory.enums.LOG_LEVEL.INFO, LOG_MESSAGES.ODP_DISABLED);
+      });
+
+      it('should accept a valid custom cache size', () => {
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfigWithFeatures(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpManager: new BrowserOdpManager({
+            logger,
+            odpOptions: {
+              segmentsCacheSize: 10,
+            },
+          }),
+        });
+
+        sinon.assert.calledWith(
+          logger.log,
+          optimizelyFactory.enums.LOG_LEVEL.DEBUG,
+          'Provisioning cache with maxSize of 10'
+        );
+      });
+
+      it('should accept a custom cache timeout', () => {
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfigWithFeatures(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpManager: new BrowserOdpManager({
+            logger,
+            odpOptions: {
+              segmentsCacheTimeout: 10,
+            },
+          }),
+        });
+
+        sinon.assert.calledWith(
+          logger.log,
+          optimizelyFactory.enums.LOG_LEVEL.DEBUG,
+          'Provisioning cache with timeout of 10'
+        );
+      });
+
+      it('should accept both a custom cache size and timeout', () => {
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfigWithFeatures(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpOptions: {
+            segmentsCacheSize: 10,
+            segmentsCacheTimeout: 10,
+          },
+        });
+
+        sinon.assert.calledWith(
+          logger.log,
+          optimizelyFactory.enums.LOG_LEVEL.DEBUG,
+          'Provisioning cache with maxSize of 10'
+        );
+
+        sinon.assert.calledWith(
+          logger.log,
+          optimizelyFactory.enums.LOG_LEVEL.DEBUG,
+          'Provisioning cache with timeout of 10'
+        );
+      });
+
+      it('should accept a valid custom odp segment manager', async () => {
+        const fakeSegmentManager = {
+          fetchQualifiedSegments: sinon.spy(),
+          updateSettings: sinon.spy(),
+        };
+
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfigWithFeatures(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpOptions: {
+            segmentManager: fakeSegmentManager,
+          },
+        });
+
+        sinon.assert.called(fakeSegmentManager.updateSettings);
+
+        const readyData = await client.onReady();
+        assert.equal(readyData.success, true);
+        assert.isUndefined(readyData.reason);
+
+        await client.fetchQualifiedSegments(testVuid);
+
+        sinon.assert.notCalled(logger.error);
+        sinon.assert.called(fakeSegmentManager.fetchQualifiedSegments);
+      });
+
+      it('should accept a valid custom odp event manager', async () => {
+        const fakeEventManager = {
+          start: sinon.spy(),
+          updateSettings: sinon.spy(),
+          flush: sinon.spy(),
+          stop: sinon.spy(),
+          registerVuid: sinon.spy(),
+          identifyUser: sinon.spy(),
+          sendEvent: sinon.spy(),
+        };
+
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfigWithFeatures(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpOptions: {
+            disabled: false,
+            eventManager: fakeEventManager,
+          },
+        });
+        const readyData = await client.onReady();
+        assert.equal(readyData.success, true);
+        assert.isUndefined(readyData.reason);
+
+        sinon.assert.called(fakeEventManager.start);
+      });
+
+      it('should send an odp event with sendOdpEvent', async () => {
+        const fakeEventManager = {
+          updateSettings: sinon.spy(),
+          start: sinon.spy(),
+          stop: sinon.spy(),
+          registerVuid: sinon.spy(),
+          identifyUser: sinon.spy(),
+          sendEvent: sinon.spy(),
+          flush: sinon.spy(),
+        };
+
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getOdpIntegratedConfigWithSegments(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpOptions: {
+            eventManager: fakeEventManager,
+          },
+        });
+
+        const readyData = await client.onReady();
+        assert.equal(readyData.success, true);
+        assert.isUndefined(readyData.reason);
+
+        client.sendOdpEvent(ODP_EVENT_ACTION.INITIALIZED);
+
+        sinon.assert.notCalled(logger.error);
+        sinon.assert.called(fakeEventManager.sendEvent);
+      });
+
+      it('should log an error when attempting to send an odp event when odp is disabled', async () => {
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfigWithFeatures(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpOptions: {
+            disabled: true,
+          },
+        });
+
+        const readyData = await client.onReady();
+        assert.equal(readyData.success, true);
+        assert.isUndefined(readyData.reason);
+
+        client.sendOdpEvent(ODP_EVENT_ACTION.INITIALIZED);
+
+        sinon.assert.calledWith(logger.error, 'ODP event send failed.');
+        sinon.assert.calledWith(logger.log, optimizelyFactory.enums.LOG_LEVEL.INFO, 'ODP Disabled.');
+      });
+
+      it('should log a warning when attempting to use an event batch size other than 1', async () => {
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getOdpIntegratedConfigWithSegments(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpOptions: {
+            eventBatchSize: 5,
+          },
+        });
+
+        const readyData = await client.onReady();
+        assert.equal(readyData.success, true);
+        assert.isUndefined(readyData.reason);
+
+        client.sendOdpEvent(ODP_EVENT_ACTION.INITIALIZED);
+
+        sinon.assert.calledWith(
+          logger.log,
+          optimizelyFactory.enums.LOG_LEVEL.WARNING,
+          'ODP event batch size must be 1 in the browser.'
+        );
+        assert(client.odpManager.eventManager.batchSize, 1);
+      });
+
+      it('should send an odp event to the browser endpoint', async () => {
+        const odpConfig = new OdpConfig();
+        const apiManager = new BrowserOdpEventApiManager(mockRequestHandler, logger);
+        const eventManager = new BrowserOdpEventManager({
+          odpConfig,
+          apiManager,
+          logger,
+          clientEngine: 'javascript-sdk',
+          clientVersion: 'great',
+        });
+
+        let datafile = testData.getOdpIntegratedConfigWithSegments();
+
+        const client = optimizelyFactory.createInstance({
+          datafile,
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpOptions: {
+            odpConfig,
+            eventManager,
+          },
+        });
+
+        const readyData = await client.onReady();
+        assert.equal(readyData.success, true);
+        assert.isUndefined(readyData.reason);
+
+        client.sendOdpEvent(ODP_EVENT_ACTION.INITIALIZED);
+
+        // wait for request to be sent
+        clock.tick(100);
+
+        let publicKey = datafile.integrations[0].publicKey;
+
+        let requestEndpoint = new URL(requestParams.get('endpoint'));
+        assert.equal(requestEndpoint.origin + requestEndpoint.pathname, ODP_EVENT_BROWSER_ENDPOINT);
+        assert.equal(requestParams.get('method'), 'GET');
+
+        let searchParams = requestEndpoint.searchParams;
+        assert.lengthOf(searchParams.get('idempotence_id'), 36);
+        assert.equal(searchParams.get('data_source'), 'javascript-sdk');
+        assert.equal(searchParams.get('data_source_type'), 'sdk');
+        assert.equal(searchParams.get('data_source_version'), 'great');
+        assert.equal(searchParams.get('tracker_id'), publicKey);
+        assert.equal(searchParams.get('event_type'), 'fullstack');
+        assert.equal(searchParams.get('vdl_action'), ODP_EVENT_ACTION.INITIALIZED);
+        assert.isTrue(searchParams.get('vuid').startsWith('vuid_'));
+        assert.isNotNull(searchParams.get('data_source_version'));
+
+        sinon.assert.notCalled(logger.error);
       });
     });
   });

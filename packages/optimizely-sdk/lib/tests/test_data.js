@@ -705,11 +705,11 @@ export var getParsedAudiences = [
   },
 ];
 
-export var getTestProjectConfig = function() {
+export var getTestProjectConfig = function () {
   return cloneDeep(config);
 };
 
-export var getTestDecideProjectConfig = function() {
+export var getTestDecideProjectConfig = function () {
   return cloneDeep(decideConfig);
 };
 
@@ -816,7 +816,7 @@ var configWithFeatures = {
           key: 'button_txt',
           id: '5636734406623232',
           defaultValue: 'Buy me',
-        },        
+        },
         {
           type: 'double',
           key: 'button_width',
@@ -1044,7 +1044,7 @@ var configWithFeatures = {
       key: 'test_experiment3',
       status: 'Running',
       layerId: '6',
-      audienceConditions : [
+      audienceConditions: [
         "or",
         "11160"
       ],
@@ -1117,8 +1117,8 @@ var configWithFeatures = {
       status: 'Running',
       layerId: '8',
       audienceConditions: [
-          "or",
-          "11160"
+        "or",
+        "11160"
       ],
       audienceIds: ['11160'],
       id: '111136',
@@ -1158,8 +1158,8 @@ var configWithFeatures = {
       id: '11160',
       name: 'Test attribute users 3',
       conditions:
-      '["and", ["or", ["or", {"match": "exact", "name": "experiment_attr", "type": "custom_attribute", "value": "group_experiment"}]]]',
-  }
+        '["and", ["or", ["or", {"match": "exact", "name": "experiment_attr", "type": "custom_attribute", "value": "group_experiment"}]]]',
+    }
   ],
   revision: '35',
   groups: [
@@ -1316,17 +1316,17 @@ var configWithFeatures = {
           key: 'group_2_exp_1',
           status: 'Running',
           audienceConditions: [
-              "or",
-              "11160"
+            "or",
+            "11160"
           ],
           audienceIds: ['11160'],
           layerId: '211183',
           variations: [
-              {
-                key: 'var_1',
-                id: '38901',
-                featureEnabled: false,
-              },
+            {
+              key: 'var_1',
+              id: '38901',
+              featureEnabled: false,
+            },
           ],
           forcedVariations: {},
           trafficAllocation: [
@@ -1348,8 +1348,8 @@ var configWithFeatures = {
           key: 'group_2_exp_2',
           status: 'Running',
           audienceConditions: [
-              "or",
-              "11160"
+            "or",
+            "11160"
           ],
           audienceIds: ['11160'],
           layerId: '211184',
@@ -1373,8 +1373,8 @@ var configWithFeatures = {
           key: 'group_2_exp_3',
           status: 'Running',
           audienceConditions: [
-              "or",
-              "11160"
+            "or",
+            "11160"
           ],
           audienceIds: ['11160'],
           layerId: '211185',
@@ -1638,7 +1638,7 @@ var configWithFeatures = {
   variables: [],
 };
 
-export var getTestProjectConfigWithFeatures = function() {
+export var getTestProjectConfigWithFeatures = function () {
   return cloneDeep(configWithFeatures);
 };
 
@@ -2003,7 +2003,7 @@ export var datafileWithFeaturesExpectedData = {
         value: 'Hello audience',
       },
       8765345281230956: {
-        id:'8765345281230956',
+        id: '8765345281230956',
         value: '{ "count": 2, "message": "Hello audience" }',
       }
     },
@@ -2025,7 +2025,7 @@ export var datafileWithFeaturesExpectedData = {
         value: 'Hello',
       },
       8765345281230956: {
-        id:'8765345281230956',
+        id: '8765345281230956',
         value: '{ "count": 1, "message": "Hello" }',
       }
     },
@@ -2083,7 +2083,7 @@ export var datafileWithFeaturesExpectedData = {
         id: '6199684360044544',
       },
       1547854156498475: {
-        id:'1547854156498475',
+        id: '1547854156498475',
         value: '{ "num_buttons": 1, "text": "first variation"}',
       },
     },
@@ -2105,7 +2105,7 @@ export var datafileWithFeaturesExpectedData = {
         id: '6199684360044544',
       },
       1547854156498475: {
-        id:'1547854156498475',
+        id: '1547854156498475',
         value: '{ "num_buttons": 2, "text": "second variation"}',
       },
     },
@@ -2127,7 +2127,7 @@ export var datafileWithFeaturesExpectedData = {
         id: '6199684360044544',
       },
       1547854156498475: {
-        id:'1547854156498475',
+        id: '1547854156498475',
         value: '{ "num_buttons": 3, "text": "third variation"}',
       },
     },
@@ -2741,7 +2741,7 @@ var unsupportedVersionConfig = {
   projectId: '111001',
 };
 
-export var getUnsupportedVersionConfig = function() {
+export var getUnsupportedVersionConfig = function () {
   return cloneDeep(unsupportedVersionConfig);
 };
 
@@ -3141,8 +3141,265 @@ var typedAudiencesConfig = {
   revision: '3',
 };
 
-export var getTypedAudiencesConfig = function() {
+export var getTypedAudiencesConfig = function () {
   return cloneDeep(typedAudiencesConfig);
+};
+
+var odpIntegratedConfigWithSegments = {
+  "version": "4",
+  "sendFlagDecisions": true,
+  "rollouts": [
+    {
+      "experiments": [
+        {
+          "audienceIds": ["13389130056"],
+          "forcedVariations": {},
+          "id": "3332020515",
+          "key": "rollout-rule-1",
+          "layerId": "3319450668",
+          "status": "Running",
+          "trafficAllocation": [
+            {
+              "endOfRange": 10000,
+              "entityId": "3324490633"
+            }
+          ],
+          "variations": [
+            {
+              "featureEnabled": true,
+              "id": "3324490633",
+              "key": "rollout-variation-on",
+              "variables": []
+            }
+          ]
+        },
+        {
+          "audienceIds": [],
+          "forcedVariations": {},
+          "id": "3332020556",
+          "key": "rollout-rule-2",
+          "layerId": "3319450668",
+          "status": "Running",
+          "trafficAllocation": [
+            {
+              "endOfRange": 10000,
+              "entityId": "3324490644"
+            }
+          ],
+          "variations": [
+            {
+              "featureEnabled": false,
+              "id": "3324490644",
+              "key": "rollout-variation-off",
+              "variables": []
+            }
+          ]
+        }
+      ],
+      "id": "3319450668"
+    }
+  ],
+  "anonymizeIP": true,
+  "botFiltering": true,
+  "projectId": "10431130345",
+  "variables": [],
+  "featureFlags": [
+    {
+      "experimentIds": ["10390977673"],
+      "id": "4482920077",
+      "key": "flag-segment",
+      "rolloutId": "3319450668",
+      "variables": [
+        {
+          "defaultValue": "42",
+          "id": "2687470095",
+          "key": "i_42",
+          "type": "integer"
+        }
+      ]
+    }
+  ],
+  "experiments": [
+    {
+      "status": "Running",
+      "key": "experiment-segment",
+      "layerId": "10420273888",
+      "trafficAllocation": [
+        {
+          "entityId": "10389729780",
+          "endOfRange": 10000
+        }
+      ],
+      "audienceIds": ["$opt_dummy_audience"],
+      "audienceConditions": ["or", "13389142234", "13389141123"],
+      "variations": [
+        {
+          "variables": [],
+          "featureEnabled": true,
+          "id": "10389729780",
+          "key": "variation-a"
+        },
+        {
+          "variables": [],
+          "id": "10416523121",
+          "key": "variation-b"
+        }
+      ],
+      "forcedVariations": {},
+      "id": "10390977673"
+    }
+  ],
+  "groups": [],
+  "integrations": [
+    {
+      "key": "odp",
+      "host": "https://api.zaius.com",
+      "publicKey": "W4WzcEs-ABgXorzY7h1LCQ"
+    },
+    {
+      "key": "odp",
+      "a": "1",
+      "b": "2",
+    },
+    {
+      "key": "x",
+      "test": "foobar"
+    }
+  ],
+  "typedAudiences": [
+    {
+      "id": "13389142234",
+      "conditions": [
+        "and",
+        [
+          "or",
+          [
+            "or",
+            {
+              "value": "odp-segment-1",
+              "type": "third_party_dimension",
+              "name": "odp.audiences",
+              "match": "qualified"
+            }
+          ]
+        ]
+      ],
+      "name": "odp-segment-1"
+    },
+    {
+      "id": "13389142234",
+      "conditions": [
+        "and",
+        [
+          "or",
+          [
+            "or",
+            {
+              "value": "odp-segment-1",
+              "type": "third_party_dimension",
+              "name": "odp.audiences",
+              "match": "qualified"
+            }
+          ]
+        ]
+      ],
+      "name": "odp-segment-1"
+    },
+    {
+      "id": "13389130056",
+      "conditions": [
+        "and",
+        [
+          "or",
+          [
+            "or",
+            {
+              "value": "odp-segment-2",
+              "type": "third_party_dimension",
+              "name": "odp.audiences",
+              "match": "qualified"
+            },
+            {
+              "value": "us",
+              "type": "custom_attribute",
+              "name": "country",
+              "match": "exact"
+            }
+          ],
+          [
+            "or",
+            {
+              "value": "odp-segment-3",
+              "type": "third_party_dimension",
+              "name": "odp.audiences",
+              "match": "qualified"
+            }
+          ]
+        ]
+      ],
+      "name": "odp-segment-2"
+    }
+  ],
+  "audiences": [
+    {
+      "id": "13389141123",
+      "conditions": "[\"and\", [\"or\", [\"or\", {\"match\": \"gt\", \"name\": \"age\", \"type\": \"custom_attribute\", \"value\": 20}]]]",
+      "name": "adult"
+    }
+  ],
+  "attributes": [
+    {
+      "id": "10401066117",
+      "key": "gender"
+    },
+    {
+      "id": "10401066170",
+      "key": "testvar"
+    }
+  ],
+  "accountId": "10367498574",
+  "events": [],
+  "revision": "101"
+}
+
+export var getOdpIntegratedConfigWithSegments = function () {
+  return cloneDeep(odpIntegratedConfigWithSegments);
+};
+
+var odpIntegratedConfigWithoutSegments = {
+  "version": "4",
+  "rollouts": [],
+  "anonymizeIP": true,
+  "projectId": "10431130345",
+  "variables": [],
+  "featureFlags": [],
+  "experiments": [],
+  "audiences": [],
+  "groups": [],
+  "attributes": [],
+  "accountId": "10367498574",
+  "events": [],
+  "integrations": [
+    {
+      "key": "odp",
+      "host": "https://api.zaius.com",
+      "publicKey": "W4WzcEs-ABgXorzY7h1LCQ"
+    },
+    {
+      "key": "odp",
+      "a": "1",
+      "b": "2",
+    },
+    {
+      "key": "x",
+      "test": "foobar"
+    }
+  ],
+  "revision": "100"
+}
+
+export var getOdpIntegratedConfigWithoutSegments = function () {
+  return cloneDeep(odpIntegratedConfigWithoutSegments);
 };
 
 export var typedAudiencesById = {
@@ -3279,7 +3536,7 @@ var mutexFeatureTestsConfig = {
   revision: '12',
 };
 
-export var getMutexFeatureTestsConfig = function() {
+export var getMutexFeatureTestsConfig = function () {
   return cloneDeep(mutexFeatureTestsConfig);
 };
 
@@ -3533,7 +3790,7 @@ var similarRuleKeyConfig = {
   sendFlagDecisions: true
 }
 
-export var getSimilarRuleKeyConfig = function() {
+export var getSimilarRuleKeyConfig = function () {
   return cloneDeep(similarRuleKeyConfig);
 };
 
@@ -3675,7 +3932,7 @@ var similarExperimentKeysConfig = {
   sendFlagDecisions: true
 }
 
-export var getSimilarExperimentKeyConfig = function() {
+export var getSimilarExperimentKeyConfig = function () {
   return cloneDeep(similarExperimentKeysConfig);
 };
 
@@ -3687,6 +3944,8 @@ export default {
   datafileWithFeaturesExpectedData: datafileWithFeaturesExpectedData,
   getUnsupportedVersionConfig: getUnsupportedVersionConfig,
   getTypedAudiencesConfig: getTypedAudiencesConfig,
+  getOdpIntegratedConfigWithSegments: getOdpIntegratedConfigWithSegments,
+  getOdpIntegratedConfigWithoutSegments: getOdpIntegratedConfigWithoutSegments,
   typedAudiencesById: typedAudiencesById,
   getMutexFeatureTestsConfig: getMutexFeatureTestsConfig,
   getSimilarRuleKeyConfig: getSimilarRuleKeyConfig,

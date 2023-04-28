@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LoggerFacade } from '@optimizely/js-sdk-logging';
-import { HttpPollingDatafileManager } from '@optimizely/js-sdk-datafile-manager';
+import { LoggerFacade } from '../../modules/logging';
+import datafileManager from '../../modules/datafile-manager/index.node';
 import { DatafileOptions, DatafileManagerConfig, DatafileManager } from '../../shared_types';
 import { toDatafile, tryCreatingProjectConfig } from '../../core/project_config';
 import fns from '../../utils/fns';
@@ -45,5 +45,5 @@ export function createHttpPollingDatafileManager(
       datafileManagerConfig.datafile = toDatafile(configObj);
     }
   }
-  return new HttpPollingDatafileManager(datafileManagerConfig);
+  return new datafileManager.HttpPollingDatafileManager(datafileManagerConfig);
 }

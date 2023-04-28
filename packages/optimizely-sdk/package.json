@@ -1,7 +1,7 @@
 {
   "name": "@optimizely/optimizely-sdk",
-  "version": "4.9.1",
-  "description": "JavaScript SDK for Optimizely X Full Stack",
+  "version": "4.9.3",
+  "description": "JavaScript SDK for Optimizely Feature Experimentation, Optimizely Full Stack (legacy), and Optimizely Rollouts",
   "module": "dist/optimizely.browser.es.js",
   "main": "dist/optimizely.node.min.js",
   "browser": "dist/optimizely.browser.min.js",
@@ -10,7 +10,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit && eslint 'lib/**/*.js' 'lib/**/*.ts'",
-    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.ts' 'lib/**/*.tests.js'",
+    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.ts' 'lib/**/*.tests.js' && jest",
     "posttest": "npm run lint",
     "test-ci": "npm run test-xbrowser && npm run test-umdbrowser",
     "test-xbrowser": "karma start karma.bs.conf.js --single-run",
@@ -30,7 +30,7 @@
   },
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=14.0.0"
   },
   "keywords": [
     "optimizely"
@@ -40,45 +40,73 @@
   },
   "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/optimizely-sdk",
   "dependencies": {
-    "@optimizely/js-sdk-datafile-manager": "^0.9.1",
-    "@optimizely/js-sdk-event-processor": "^0.9.2",
-    "@optimizely/js-sdk-logging": "^0.3.1",
-    "@optimizely/js-sdk-utils": "^0.4.0",
+    "@optimizely/js-sdk-datafile-manager": "^0.9.5",
+    "decompress-response": "^4.2.1",
     "json-schema": "^0.4.0",
-    "murmurhash": "0.0.2"
+    "murmurhash": "^2.0.1",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@react-native-async-storage/async-storage": "^1.2.0",
+    "@react-native-community/netinfo": "^5.9.10",
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
     "@types/chai": "^4.2.11",
+    "@types/jest": "^23.3.14",
     "@types/mocha": "^5.2.7",
-    "@typescript-eslint/eslint-plugin": "^3.2.0",
-    "@typescript-eslint/parser": "^3.2.0",
+    "@types/nise": "^1.4.0",
+    "@types/node": "^18.7.18",
+    "@types/uuid": "^3.4.4",
+    "@typescript-eslint/eslint-plugin": "^5.33.0",
+    "@typescript-eslint/parser": "^5.33.0",
     "bluebird": "^3.4.6",
     "chai": "^4.2.0",
     "coveralls": "^3.0.2",
-    "eslint": "^6.7.2",
+    "eslint": "^8.21.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "jest": "^28.1.3",
+    "jest-environment-jsdom": "^29.0.0",
+    "jest-localstorage-mock": "^2.4.22",
     "json-loader": "^0.5.4",
-    "karma": "^4.4.1",
+    "karma": "^6.4.0",
     "karma-browserstack-launcher": "^1.5.1",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.1.1",
     "karma-mocha": "^1.3.0",
-    "karma-webpack": "^4.0.2",
+    "karma-webpack": "^5.0.0",
     "lodash": "^4.17.11",
     "mocha": "^5.2.0",
     "mocha-lcov-reporter": "^1.3.0",
-    "nock": "^7.7.2",
+    "nise": "^1.4.10",
+    "nock": "11.9.1",
     "nyc": "^15.0.1",
+    "prettier": "^1.19.1",
     "promise-polyfill": "8.1.0",
     "rollup": "2.2.0",
     "rollup-plugin-terser": "^5.3.0",
     "rollup-plugin-typescript2": "^0.27.1",
     "sinon": "^2.3.1",
-    "ts-loader": "^7.0.5",
+    "ts-jest": "^28.0.8",
+    "ts-loader": "^9.3.1",
+    "ts-mockito": "^2.6.1",
     "ts-node": "^8.10.2",
-    "typescript": "^4.0.3",
-    "webpack": "^4.42.1"
+    "tslib": "^2.4.0",
+    "typescript": "^4.7.4",
+    "webpack": "^5.74.0"
+  },
+  "peerDependencies": {
+    "@babel/runtime": "^7.0.0",
+    "@react-native-async-storage/async-storage": "^1.2.0",
+    "@react-native-community/netinfo": "5.9.4"
+  },
+  "peerDependenciesMeta": {
+    "@react-native-async-storage/async-storage": {
+      "optional": true
+    },
+    "@react-native-community/netinfo": {
+      "optional": true
+    }
   },
   "publishConfig": {
     "access": "public"

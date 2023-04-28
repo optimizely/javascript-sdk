@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import { sprintf } from '@optimizely/js-sdk-utils';
-import { LogHandler } from '@optimizely/js-sdk-logging';
+import { LogHandler } from '../../modules/logging';
+import { sprintf } from '../../utils/fns';
 
 import fns from '../../utils/fns';
 import { bucket } from '../bucketer';
@@ -184,7 +184,7 @@ export class DecisionService {
       configObj,
       experiment,
       AUDIENCE_EVALUATION_TYPES.EXPERIMENT,
-      attributes,
+      user,
       ''
     );
     decideReasons.push(...decisionifUserIsInAudience.reasons);
@@ -362,7 +362,7 @@ export class DecisionService {
     configObj: ProjectConfig,
     experiment: Experiment,
     evaluationAttribute: string,
-    attributes?: UserAttributes,
+    user: OptimizelyUserContext,
     loggingKey?: string | number,
   ): DecisionResponse<boolean> {
     const decideReasons: (string | number)[][] = [];
@@ -383,7 +383,7 @@ export class DecisionService {
       loggingKey || experiment.key,
       JSON.stringify(experimentAudienceConditions),
     ]);
-    const result = this.audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, attributes);
+    const result = this.audienceEvaluator.evaluate(experimentAudienceConditions, audiencesById, user);
     this.logger.log(
       LOG_LEVEL.INFO,
       LOG_MESSAGES.AUDIENCE_EVALUATION_RESULT_COMBINED,
@@ -484,7 +484,7 @@ export class DecisionService {
 
     try {
       return this.userProfileService.lookup(userId);
-    } catch (ex) {
+    } catch (ex: any) {
       this.logger.log(
         LOG_LEVEL.ERROR,
         ERROR_MESSAGES.USER_PROFILE_LOOKUP_ERROR,
@@ -532,7 +532,7 @@ export class DecisionService {
         experiment.key,
         userId,
       );
-    } catch (ex) {
+    } catch (ex: any) {
       this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.USER_PROFILE_SAVE_ERROR, MODULE_NAME, userId, ex.message);
     }
   }
@@ -784,7 +784,7 @@ export class DecisionService {
    * @param     {ruleKey}               ruleKey              A ruleKey (optional).
    * @return    {DecisionResponse<Variation|null>}  DecisionResponse object containing valid variation object and decide reasons.
    */
-   findValidatedForcedDecision(
+  findValidatedForcedDecision(
     config: ProjectConfig,
     user: OptimizelyUserContext,
     flagKey: string,
@@ -972,7 +972,7 @@ export class DecisionService {
           reasons: decideReasons,
         };
       }
-    } catch (ex) {
+    } catch (ex: any) {
       // catching experiment not in datafile
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       decideReasons.push(ex.message);
@@ -1065,7 +1065,7 @@ export class DecisionService {
         );
         return false;
       }
-    } catch (ex) {
+    } catch (ex: any) {
       // catching experiment not in datafile
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       return false;
@@ -1075,7 +1075,7 @@ export class DecisionService {
       try {
         this.removeForcedVariation(userId, experimentId, experimentKey);
         return true;
-      } catch (ex) {
+      } catch (ex: any) {
         this.logger.log(LOG_LEVEL.ERROR, ex.message);
         return false;
       }
@@ -1097,7 +1097,7 @@ export class DecisionService {
     try {
       this.setInForcedVariationMap(userId, experimentId, variationId);
       return true;
-    } catch (ex) {
+    } catch (ex: any) {
       this.logger.log(LOG_LEVEL.ERROR, ex.message);
       return false;
     }
@@ -1116,10 +1116,10 @@ export class DecisionService {
     const forcedDecisionResponse = this.findValidatedForcedDecision(configObj, user, flagKey, rule.key);
     decideReasons.push(...forcedDecisionResponse.reasons);
 
-    const forcedVariaton = forcedDecisionResponse.result;
-    if (forcedVariaton) {
+    const forcedVariation = forcedDecisionResponse.result;
+    if (forcedVariation) {
       return {
-        result: forcedVariaton.key,
+        result: forcedVariation.key,
         reasons: decideReasons,
       };
     }
@@ -1148,10 +1148,10 @@ export class DecisionService {
     const forcedDecisionResponse = this.findValidatedForcedDecision(configObj, user, flagKey, rule.key);
     decideReasons.push(...forcedDecisionResponse.reasons);
 
-    const forcedVariaton = forcedDecisionResponse.result;
-    if (forcedVariaton) {
+    const forcedVariation = forcedDecisionResponse.result;
+    if (forcedVariation) {
       return {
-        result: forcedVariaton,
+        result: forcedVariation,
         reasons: decideReasons,
         skipToEveryoneElse,
       };
@@ -1171,7 +1171,7 @@ export class DecisionService {
       configObj,
       rule,
       AUDIENCE_EVALUATION_TYPES.RULE,
-      attributes,
+      user,
       loggingKey
     );
     decideReasons.push(...decisionifUserIsInAudience.reasons);

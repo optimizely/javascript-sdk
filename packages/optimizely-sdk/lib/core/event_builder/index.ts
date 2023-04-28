@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2021, Optimizely
+ * Copyright 2016-2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LoggerFacade } from '@optimizely/js-sdk-logging';
-import { EventV1 as CommonEventParams } from '@optimizely/js-sdk-event-processor';
+import { LoggerFacade } from '../../modules/logging';
+import { EventV1 as CommonEventParams } from '../../modules/event_processor';
 
 import fns from '../../utils/fns';
 import { CONTROL_ATTRIBUTES, RESERVED_EVENT_KEYWORDS } from '../../utils/enums';

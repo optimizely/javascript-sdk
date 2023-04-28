@@ -1,11 +1,11 @@
 /****************************************************************************
- * Copyright 2016-2022, Optimizely, Inc. and contributors                   *
+ * Copyright 2016-2023, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
  * You may obtain a copy of the License at                                  *
  *                                                                          *
- *    http://www.apache.org/licenses/LICENSE-2.0                            *
+ *    https://www.apache.org/licenses/LICENSE-2.0                            *
  *                                                                          *
  * Unless required by applicable law or agreed to in writing, software      *
  * distributed under the License is distributed on an "AS IS" BASIS,        *
@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-
-import { NOTIFICATION_TYPES as notificationTypesEnum } from '@optimizely/js-sdk-utils';
 
 /**
  * Contains global enums used throughout the library
@@ -28,10 +26,14 @@ export const LOG_LEVEL = {
 };
 
 export const ERROR_MESSAGES = {
+  BROWSER_ODP_MANAGER_INITIALIZATION_FAILED: '%s: Error initializing Browser ODP Manager.',
   CONDITION_EVALUATOR_ERROR: '%s: Error evaluating audience condition of type %s: %s',
   DATAFILE_AND_SDK_KEY_MISSING: '%s: You must provide at least one of sdkKey or datafile. Cannot start Optimizely',
   EXPERIMENT_KEY_NOT_IN_DATAFILE: '%s: Experiment key %s is not in datafile.',
   FEATURE_NOT_IN_DATAFILE: '%s: Feature key %s is not in datafile.',
+  FETCH_SEGMENTS_FAILED_INVALID_IDENTIFIER: '%s: Audience segments fetch failed. (invalid identifier)',
+  FETCH_SEGMENTS_FAILED_NETWORK_ERROR: '%s: Audience segments fetch failed. (network error)',
+  FETCH_SEGMENTS_FAILED_DECODE_ERROR: '%s: Audience segments fetch failed. (decode error)',
   IMPROPERLY_FORMATTED_EXPERIMENT: '%s: Experiment key %s is improperly formatted.',
   INVALID_ATTRIBUTES: '%s: Provided attributes are in an invalid format.',
   INVALID_BUCKETING_ID: '%s: Unable to generate hash for bucketing ID %s: %s',
@@ -49,9 +51,38 @@ export const ERROR_MESSAGES = {
   INVALID_ROLLOUT_ID: '%s: Invalid rollout ID %s attached to feature %s',
   INVALID_USER_ID: '%s: Provided user ID is in an invalid format.',
   INVALID_USER_PROFILE_SERVICE: '%s: Provided user profile service instance is in an invalid format: %s.',
+  LOCAL_STORAGE_DOES_NOT_EXIST: 'Error accessing window localStorage.',
   NO_DATAFILE_SPECIFIED: '%s: No datafile specified. Cannot start optimizely.',
   NO_JSON_PROVIDED: '%s: No JSON object to validate against schema.',
   NO_VARIATION_FOR_EXPERIMENT_KEY: '%s: No variation key %s defined in datafile for experiment %s.',
+  ODP_EVENT_FAILED: 'ODP event send failed.',
+  ODP_FETCH_QUALIFIED_SEGMENTS_SEGMENTS_MANAGER_MISSING:
+    '%s: ODP unable to fetch qualified segments (Segments Manager not initialized).',
+  ODP_IDENTIFY_FAILED_EVENT_MANAGER_MISSING:
+    '%s: ODP identify event %s is not dispatched (Event Manager not instantiated).',
+  ODP_INITIALIZATION_FAILED: '%s: ODP failed to initialize.',
+  ODP_INVALID_DATA: '%s: ODP data is not valid',
+  ODP_EVENT_FAILED_ODP_MANAGER_MISSING: '%s: ODP Event failed to send. (ODP Manager not initialized).',
+  ODP_FETCH_QUALIFIED_SEGMENTS_FAILED_ODP_MANAGER_MISSING:
+    '%s: ODP failed to Fetch Qualified Segments. (ODP Manager not initialized).',
+  ODP_IDENTIFY_USER_FAILED_ODP_MANAGER_MISSING: '%s: ODP failed to Identify User. (ODP Manager not initialized).',
+  ODP_IDENTIFY_USER_FAILED_USER_CONTEXT_INITIALIZATION:
+    '%s: ODP failed to Identify User. (Failed during User Context Initialization).',
+  ODP_MANAGER_UPDATE_SETTINGS_FAILED_EVENT_MANAGER_MISSING:
+    '%s: ODP Manager failed to update OdpConfig settings for internal event manager. (Event Manager not initialized).',
+  ODP_MANAGER_UPDATE_SETTINGS_FAILED_SEGMENTS_MANAGER_MISSING:
+    '%s: ODP Manager failed to update OdpConfig settings for internal segments manager. (Segments Manager not initialized).',
+  ODP_NOT_ENABLED: 'ODP is not enabled',
+  ODP_NOT_INTEGRATED: '%s: ODP is not integrated',
+  ODP_SEND_EVENT_FAILED_EVENT_MANAGER_MISSING:
+    '%s: ODP send event %s was not dispatched (Event Manager not instantiated).',
+  ODP_SEND_EVENT_FAILED_UID_MISSING: '%s: ODP send event %s was not dispatched (No valid user identifier provided).',
+  ODP_SEND_EVENT_FAILED_VUID_MISSING: '%s: ODP send event %s was not dispatched (Unable to fetch VUID).',
+  ODP_SDK_KEY_MISSING_NOTIFICATION_CENTER_FAILURE:
+    '%s: You must provide an sdkKey. Cannot start Notification Center for ODP Integration.',
+  ODP_VUID_INITIALIZATION_FAILED: '%s: ODP VUID initialization failed.',
+  ODP_VUID_REGISTRATION_FAILED: '%s: ODP VUID failed to be registered.',
+  ODP_VUID_REGISTRATION_FAILED_EVENT_MANAGER_MISSING: '%s: ODP register vuid failed. (Event Manager not instantiated).',
   UNDEFINED_ATTRIBUTE: '%s: Provided attribute: %s has an undefined value.',
   UNRECOGNIZED_ATTRIBUTE: '%s: Unrecognized attribute %s provided. Pruning before sending event to Optimizely.',
   UNABLE_TO_CAST_VALUE: '%s: Unable to cast value %s to type %s, returning null.',
@@ -88,6 +119,9 @@ export const LOG_MESSAGES = {
   NO_ROLLOUT_EXISTS: '%s: There is no rollout of feature %s.',
   NOT_ACTIVATING_USER: '%s: Not activating user %s for experiment %s.',
   NOT_TRACKING_USER: '%s: Not tracking user %s.',
+  ODP_DISABLED: 'ODP Disabled.',
+  ODP_IDENTIFY_FAILED_ODP_DISABLED: '%s: ODP identify event for user %s is not dispatched (ODP disabled).',
+  ODP_IDENTIFY_FAILED_ODP_NOT_INTEGRATED: '%s: ODP identify event %s is not dispatched (ODP not integrated).',
   PARSED_REVENUE_VALUE: '%s: Parsed revenue value "%s" from event tags.',
   PARSED_NUMERIC_VALUE: '%s: Parsed event value "%s" from event tags.',
   RETURNING_STORED_VARIATION:
@@ -118,10 +152,14 @@ export const LOG_MESSAGES = {
   USER_DOESNT_MEET_CONDITIONS_FOR_TARGETING_RULE: '%s: User %s does not meet conditions for targeting rule %s.',
   USER_MEETS_CONDITIONS_FOR_TARGETING_RULE: '%s: User %s meets conditions for targeting rule %s.',
   USER_HAS_VARIATION: '%s: User %s is in variation %s of experiment %s.',
-  USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED: 'Variation (%s) is mapped to flag (%s), rule (%s) and user (%s) in the forced decision map.',
-  USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED: 'Variation (%s) is mapped to flag (%s) and user (%s) in the forced decision map.',
-  USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID: 'Invalid variation is mapped to flag (%s), rule (%s) and user (%s) in the forced decision map.',
-  USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID: 'Invalid variation is mapped to flag (%s) and user (%s) in the forced decision map.',
+  USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED:
+    'Variation (%s) is mapped to flag (%s), rule (%s) and user (%s) in the forced decision map.',
+  USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED:
+    'Variation (%s) is mapped to flag (%s) and user (%s) in the forced decision map.',
+  USER_HAS_FORCED_DECISION_WITH_RULE_SPECIFIED_BUT_INVALID:
+    'Invalid variation is mapped to flag (%s), rule (%s) and user (%s) in the forced decision map.',
+  USER_HAS_FORCED_DECISION_WITH_NO_RULE_SPECIFIED_BUT_INVALID:
+    'Invalid variation is mapped to flag (%s) and user (%s) in the forced decision map.',
   USER_HAS_FORCED_VARIATION: '%s: Variation %s is mapped to experiment %s and user %s in the forced variation map.',
   USER_HAS_NO_VARIATION: '%s: User %s is in no variation of experiment %s.',
   USER_HAS_NO_FORCED_VARIATION: '%s: User %s is not in the forced variation map.',
@@ -174,7 +212,7 @@ export const CONTROL_ATTRIBUTES = {
   BUCKETING_ID: '$opt_bucketing_id',
   STICKY_BUCKETING_KEY: '$opt_experiment_bucket_map',
   USER_AGENT: '$opt_user_agent',
-  FORCED_DECISION_NULL_RULE_KEY: '$opt_null_rule_key'
+  FORCED_DECISION_NULL_RULE_KEY: '$opt_null_rule_key',
 };
 
 export const JAVASCRIPT_CLIENT_ENGINE = 'javascript-sdk';
@@ -182,9 +220,8 @@ export const NODE_CLIENT_ENGINE = 'node-sdk';
 export const REACT_CLIENT_ENGINE = 'react-sdk';
 export const REACT_NATIVE_CLIENT_ENGINE = 'react-native-sdk';
 export const REACT_NATIVE_JS_CLIENT_ENGINE = 'react-native-js-sdk';
-export const NODE_CLIENT_VERSION = '4.9.1';
-
-export const NOTIFICATION_TYPES = notificationTypesEnum;
+export const BROWSER_CLIENT_VERSION = '4.9.3';
+export const NODE_CLIENT_VERSION = '4.9.3';
 
 export const DECISION_NOTIFICATION_TYPES = {
   AB_TEST: 'ab-test',
@@ -237,11 +274,87 @@ export const DATAFILE_VERSIONS = {
  */
 export const enum VERSION_TYPE {
   PRE_RELEASE_VERSION_DELIMITER = '-',
-  BUILD_VERSION_DELIMITER = '+'
+  BUILD_VERSION_DELIMITER = '+',
 }
 
 export const DECISION_MESSAGES = {
   SDK_NOT_READY: 'Optimizely SDK not configured properly yet.',
   FLAG_KEY_INVALID: 'No flag was found for key "%s".',
   VARIABLE_VALUE_INVALID: 'Variable value for key "%s" is invalid or wrong type.',
+};
+
+/*
+ * Notification types for use with NotificationCenter
+ * Format is EVENT: <list of parameters to callback>
+ *
+ * SDK consumers can use these to register callbacks with the notification center.
+ *
+ *  @deprecated since 3.1.0
+ *  ACTIVATE: An impression event will be sent to Optimizely
+ *  Callbacks will receive an object argument with the following properties:
+ *    - experiment {Object}
+ *    - userId {string}
+ *    - attributes {Object|undefined}
+ *    - variation {Object}
+ *    - logEvent {Object}
+ *
+ *  DECISION: A decision is made in the system. i.e. user activation,
+ *  feature access or feature-variable value retrieval
+ *  Callbacks will receive an object argument with the following properties:
+ *    - type {string}
+ *    - userId {string}
+ *    - attributes {Object|undefined}
+ *    - decisionInfo {Object|undefined}
+ *
+ *  LOG_EVENT: A batch of events, which could contain impressions and/or conversions,
+ *  will be sent to Optimizely
+ *  Callbacks will receive an object argument with the following properties:
+ *    - url {string}
+ *    - httpVerb {string}
+ *    - params {Object}
+ *
+ *  OPTIMIZELY_CONFIG_UPDATE: This Optimizely instance has been updated with a new
+ *  config
+ *
+ *  TRACK: A conversion event will be sent to Optimizely
+ *  Callbacks will receive the an object argument with the following properties:
+ *    - eventKey {string}
+ *    - userId {string}
+ *    - attributes {Object|undefined}
+ *    - eventTags {Object|undefined}
+ *    - logEvent {Object}
+ *
+ */
+export enum NOTIFICATION_TYPES {
+  ACTIVATE = 'ACTIVATE:experiment, user_id,attributes, variation, event',
+  DECISION = 'DECISION:type, userId, attributes, decisionInfo',
+  LOG_EVENT = 'LOG_EVENT:logEvent',
+  OPTIMIZELY_CONFIG_UPDATE = 'OPTIMIZELY_CONFIG_UPDATE',
+  TRACK = 'TRACK:event_key, user_id, attributes, event_tags, event',
+}
+
+/**
+ * Default milliseconds before request timeout
+ */
+export const REQUEST_TIMEOUT_MS = 60 * 1000; // 1 minute
+export const REQUEST_TIMEOUT_ODP_SEGMENTS_MS = 10 * 1000;  // 10 secs
+export const REQUEST_TIMEOUT_ODP_EVENTS_MS = 10 * 1000;  // 10 secs
+
+/**
+ * ODP User Key Options
+ */
+export enum ODP_USER_KEY {
+  VUID = 'vuid',
+  FS_USER_ID = 'fs_user_id',
+}
+
+export const ODP_DEFAULT_EVENT_TYPE = 'fullstack';
+export const ODP_EVENT_BROWSER_ENDPOINT = 'https://jumbe.zaius.com/v2/zaius.gif';
+
+/**
+ * ODP Event Action Options
+ */
+export enum ODP_EVENT_ACTION {
+  IDENTIFIED = 'identified',
+  INITIALIZED = 'client_initialized',
 }

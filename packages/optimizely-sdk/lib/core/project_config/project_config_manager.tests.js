@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020 Optimizely
+ * Copyright 2019-2020, 2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ import sinon from 'sinon';
 import { assert } from 'chai';
 import { cloneDeep } from 'lodash';
 
-import { sprintf } from '@optimizely/js-sdk-utils';
-import * as logging from '@optimizely/js-sdk-logging';
-import * as datafileManager from '@optimizely/js-sdk-datafile-manager';
+import { sprintf } from '../../utils/fns';
+import * as logging from '../../modules/logging';
+import datafileManager from '../../modules/datafile-manager/index.node';
 
 import * as projectConfig from './index';
 import { ERROR_MESSAGES, LOG_MESSAGES } from '../../utils/enums';
@@ -97,7 +97,7 @@ describe('lib/core/project_config/project_config_manager', function() {
     var errorMessage = globalStubErrorHandler.handleError.lastCall.args[0].message;
     assert.strictEqual(
       errorMessage,
-      sprintf(ERROR_MESSAGES.INVALID_DATAFILE, 'JSON_SCHEMA_VALIDATOR', 'projectId', 'is missing and it is required')
+      sprintf(ERROR_MESSAGES.INVALID_DATAFILE, 'JSON_SCHEMA_VALIDATOR (Project Config JSON Schema)', 'projectId', 'is missing and it is required'),
     );
     return manager.onReady().then(function(result) {
       assert.include(result, {

@@ -1,5 +1,5 @@
 /**
- * Copyright 2020-2021 Optimizely
+ * Copyright 2020-2022 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 import commonjs from '@rollup/plugin-commonjs';
 import { terser } from 'rollup-plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
-import { dependencies } from './package.json';
+import { dependencies, peerDependencies } from './package.json';
 import typescript from 'rollup-plugin-typescript2';
 
 const typescriptPluginOptions = {
@@ -28,21 +28,14 @@ const typescriptPluginOptions = {
     './lib/**/*.tests.ts',
     './lib/**/*.umdtests.js',
     './lib/tests',
-    'node_modules'
+    'node_modules',
   ],
-  include: [
-    './lib/**/*.ts',
-    './lib/**/*.js'
-  ],
+  include: ['./lib/**/*.ts', './lib/**/*.js'],
 };
 
-const cjsBundleFor = (platform) => ({
-  plugins: [
-    resolve(),
-    commonjs(),
-    typescript(typescriptPluginOptions),
-  ],
-  external: ['https', 'http', 'url'].concat(Object.keys(dependencies || {})),
+const cjsBundleFor = platform => ({
+  plugins: [resolve(), commonjs(), typescript(typescriptPluginOptions)],
+  external: ['https', 'http', 'url'].concat(Object.keys({ ...dependencies, ...peerDependencies } || {})),
   input: `lib/index.${platform}.ts`,
   output: {
     exports: 'named',
@@ -53,7 +46,7 @@ const cjsBundleFor = (platform) => ({
   },
 });
 
-const esmBundleFor = (platform) => ({
+const esmBundleFor = platform => ({
   ...cjsBundleFor(platform),
   output: [
     {
@@ -68,23 +61,15 @@ const esmBundleFor = (platform) => ({
       sourcemap: true,
     },
   ],
-})
+});
 
 const umdBundle = {
   plugins: [
     resolve({ browser: true }),
     commonjs({
       namedExports: {
-        '@optimizely/js-sdk-logging': [
-          'ConsoleLogHandler',
-          'getLogger',
-          'setLogLevel',
-          'LogLevel',
-          'setLogHandler',
-          'setErrorHandler',
-          'getErrorHandler',
-        ],
         '@optimizely/js-sdk-event-processor': ['LogTierV1EventProcessor', 'LocalStoragePendingEventsDispatcher'],
+        'json-schema': ['validate'],
       },
     }),
     typescript(typescriptPluginOptions),
@@ -110,12 +95,8 @@ const umdBundle = {
 
 // A separate bundle for json schema validator.
 const jsonSchemaBundle = {
-  plugins: [
-    resolve(),
-    commonjs(),
-    typescript(typescriptPluginOptions),
-  ],
-  external: ['json-schema', '@optimizely/js-sdk-utils'],
+  plugins: [resolve(), commonjs(), typescript(typescriptPluginOptions)],
+  external: ['json-schema', 'uuid'],
   input: 'lib/utils/json_schema_validator/index.ts',
   output: {
     exports: 'named',
@@ -142,15 +123,15 @@ const bundles = {
 //   --config-cjs will build all three cjs-* bundles
 //   --config-umd will build only the umd bundle
 //   --config-umd --config-json will build both umd and the json-schema bundles
-export default (args) => {
+export default args => {
   const patterns = Object.keys(args)
-    .filter((arg) => arg.startsWith('config-'))
-    .map((arg) => arg.replace(/config-/, ''));
+    .filter(arg => arg.startsWith('config-'))
+    .map(arg => arg.replace(/config-/, ''));
 
   // default to matching all bundles
   if (!patterns.length) patterns.push(/.*/);
 
   return Object.entries(bundles)
-    .filter(([name, config]) => patterns.some((pattern) => name.match(pattern)))
+    .filter(([name, config]) => patterns.some(pattern => name.match(pattern)))
     .map(([name, config]) => config);
 };

@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2017, 2020, Optimizely, Inc. and contributors                  *
+ * Copyright 2017, 2020, 2022, Optimizely, Inc. and contributors                  *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -18,7 +18,7 @@
  * Provides utility method for validating that the given user profile service implementation is valid.
  */
 
-import { sprintf } from '@optimizely/js-sdk-utils';
+import { sprintf } from '../../utils/fns';
 import { ObjectWithUnknownProperties } from '../../shared_types';
 
 import { ERROR_MESSAGES } from '../enums';

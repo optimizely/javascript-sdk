@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { sprintf } from '@optimizely/js-sdk-utils';
-import { getLogger } from '@optimizely/js-sdk-logging';
+import { getLogger } from '../../modules/logging';
+import { sprintf } from '../../utils/fns';
 
 import { ERROR_MESSAGES } from '../../utils/enums';
 import { createOptimizelyConfig } from '../optimizely_config';
@@ -105,7 +105,7 @@ export class ProjectConfigManager {
           reason: getErrorMessage(handleNewDatafileException, 'Invalid datafile'),
         });
       }
-    } catch (ex) {
+    } catch (ex: any) {
       logger.error(ex);
       this.readyPromise = Promise.resolve({
         success: false,

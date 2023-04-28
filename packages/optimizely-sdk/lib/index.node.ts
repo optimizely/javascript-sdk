@@ -1,11 +1,11 @@
 /****************************************************************************
- * Copyright 2016-2017, 2019-2022 Optimizely, Inc. and contributors        *
+ * Copyright 2016-2017, 2019-2023 Optimizely, Inc. and contributors        *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
  * You may obtain a copy of the License at                                  *
  *                                                                          *
- *    http://www.apache.org/licenses/LICENSE-2.0                            *
+ *    https://www.apache.org/licenses/LICENSE-2.0                            *
  *                                                                          *
  * Unless required by applicable law or agreed to in writing, software      *
  * distributed under the License is distributed on an "AS IS" BASIS,        *
@@ -13,14 +13,7 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import {
-  getLogger,
-  setLogHandler,
-  setLogLevel,
-  setErrorHandler,
-  getErrorHandler,
-  LogLevel
-} from '@optimizely/js-sdk-logging';
+import { getLogger, setErrorHandler, getErrorHandler, LogLevel, setLogHandler, setLogLevel } from './modules/logging';
 import Optimizely from './optimizely';
 import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
@@ -32,6 +25,7 @@ import { createNotificationCenter } from './core/notification_center';
 import { createEventProcessor } from './plugins/event_processor';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
+import { NodeOdpManager } from './plugins/odp_manager/index.node';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
@@ -44,9 +38,9 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
  * Creates an instance of the Optimizely class
  * @param  {Config} config
  * @return {Client|null} the Optimizely client object
- *                           null on error 
+ *                           null on error
  */
- const createInstance = function(config: Config): Client | null {
+const createInstance = function(config: Config): Client | null {
   try {
     let hasLogger = false;
     let isValidInstance = false;
@@ -68,6 +62,7 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
     try {
       configValidator.validate(config);
       isValidInstance = true;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (ex) {
       if (hasLogger) {
         logger.error(ex);
@@ -99,9 +94,9 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
       dispatcher: config.eventDispatcher || defaultEventDispatcher,
       flushInterval: eventFlushInterval,
       batchSize: eventBatchSize,
-      maxQueueSize:  config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
+      maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
       notificationCenter,
-    }
+    };
 
     const eventProcessor = createEventProcessor(eventProcessorConfig);
 
@@ -111,12 +106,16 @@ const DEFAULT_EVENT_MAX_QUEUE_SIZE = 10000;
       eventProcessor,
       logger,
       errorHandler,
-      datafileManager: config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
+      datafileManager: config.sdkKey
+        ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions)
+        : undefined,
       notificationCenter,
       isValidInstance: isValidInstance,
+      odpManager: new NodeOdpManager({ logger, odpOptions: config.odpOptions }),
     };
 
     return new Optimizely(optimizelyOptions);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e) {
     logger.error(e);
     return null;
@@ -148,4 +147,4 @@ export default {
   OptimizelyDecideOption,
 };
 
-export * from './export_types'
+export * from './export_types';

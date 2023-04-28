@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2021, Optimizely
+ * Copyright 2019-2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { getLogger } from '@optimizely/js-sdk-logging';
+import { getLogger } from '../../modules/logging';
 
 import fns from '../../utils/fns';
 import * as eventTagUtils from '../../utils/event_tag_utils';
