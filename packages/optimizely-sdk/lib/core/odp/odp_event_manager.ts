@@ -247,11 +247,6 @@ export abstract class OdpEventManager implements IOdpEventManager {
       return;
     }
 
-    if (!this.odpConfig.isReady()) {
-      this.logger.log(LogLevel.DEBUG, 'Unable to Process ODP Event. ODPConfig is not ready.');
-      return;
-    }
-
     if (this.queue.length >= this.queueSize) {
       this.logger.log(
         LogLevel.WARNING,
