@@ -58,6 +58,7 @@ export interface Location {
  * Extended error information
  */
 export interface Extension {
+  code: string;
   classification: string;
 }
 
