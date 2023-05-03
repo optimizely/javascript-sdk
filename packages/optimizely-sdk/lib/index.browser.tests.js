@@ -907,7 +907,7 @@ describe('javascript-sdk (Browser)', function() {
       it('should send odp client_initialized on client instantiation', async () => {
         const odpConfig = new OdpConfig();
         const apiManager = new BrowserOdpEventApiManager(mockRequestHandler, logger);
-        apiManager.sendEvents = sinon.spy();
+        sinon.spy(apiManager, 'sendEvents');
         const eventManager = new BrowserOdpEventManager({
            odpConfig,
            apiManager,
@@ -930,7 +930,12 @@ describe('javascript-sdk (Browser)', function() {
         assert.equal(readyData.success, true);
         assert.isUndefined(readyData.reason);
 
-        setTimeout(() => sinon.assert.callCount(apiManager.sendEvents, 1), 100);
+        clock.tick(100);
+
+        const [,,events] = apiManager.sendEvents.getCall(0).args;
+        const [firstEvent] = events;
+        assert.equal(firstEvent.action, 'client_initialized');
+        assert.equal(firstEvent.type, 'fullstack');
       });
     });
   });
