@@ -168,7 +168,8 @@ describe('OdpEventManager', () => {
 
     eventManager.sendEvent(EVENTS[0]);
 
-    verify(mockLogger.log(LogLevel.DEBUG, 'Unable to Process ODP Event. ODPConfig is not ready.')).once();
+    // In a Node context, the events should be discarded
+    verify(mockLogger.log(LogLevel.WARNING, 'ODPConfig not ready. Discarding events in queue.')).once();
   });
 
   it('should discard events with invalid data', () => {
