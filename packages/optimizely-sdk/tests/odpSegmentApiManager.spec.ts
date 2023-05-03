@@ -185,6 +185,32 @@ describe('OdpSegmentApiManager', () => {
       '"Exception while fetching data (/customer) : ' +
       `Exception: could not resolve _fs_user_id = ${INVALID_USER_ID}",` +
       '"locations":[{"line":1,"column":8}],"path":["customer"],' +
+      '"extensions":{"code": "INVALID_IDENTIFIER_EXCEPTION","classification":"DataFetchingException"}}],' +
+      '"data":{"customer":null}}';
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(
+      abortableRequest(200, errorJsonResponse)
+    );
+    const manager = managerInstance();
+
+    const segments = await manager.fetchSegments(
+      API_key,
+      GRAPHQL_ENDPOINT,
+      USER_KEY,
+      INVALID_USER_ID,
+      SEGMENTS_TO_CHECK
+    );
+
+    expect(segments).toBeNull();
+    verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (invalid identifier)')).once();
+  });
+
+  it('should handle other fetch error responses', async () => {
+    const INVALID_USER_ID = 'invalid-user';
+    const errorJsonResponse =
+      '{"errors":[{"message":' +
+      '"Exception while fetching data (/customer) : ' +
+      `Exception: could not resolve _fs_user_id = ${INVALID_USER_ID}",` +
+      '"locations":[{"line":1,"column":8}],"path":["customer"],' +
       '"extensions":{"classification":"DataFetchingException"}}],' +
       '"data":{"customer":null}}';
     when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(
@@ -201,7 +227,7 @@ describe('OdpSegmentApiManager', () => {
     );
 
     expect(segments).toBeNull();
-    verify(mockLogger.log(anything(), anyString())).once();
+    verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (DataFetchingException)')).once();
   });
 
   it('should handle unrecognized JSON responses', async () => {
