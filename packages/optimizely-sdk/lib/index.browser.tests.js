@@ -187,7 +187,7 @@ describe('javascript-sdk (Browser)', function() {
         optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.9.3');
+        assert.equal(optlyInstance.clientVersion, '5.0.0-beta.1');
       });
 
       it('should set the JavaScript client engine and version', function() {
@@ -1055,9 +1055,9 @@ describe('javascript-sdk (Browser)', function() {
         const apiManager = new BrowserOdpEventApiManager(mockRequestHandler, logger);
         sinon.spy(apiManager, 'sendEvents');
         const eventManager = new BrowserOdpEventManager({
-           odpConfig,
-           apiManager,
-           logger,
+          odpConfig,
+          apiManager,
+          logger,
         });
         const datafile = testData.getOdpIntegratedConfigWithSegments();
         const client = optimizelyFactory.createInstance({
@@ -1078,7 +1078,7 @@ describe('javascript-sdk (Browser)', function() {
 
         clock.tick(100);
 
-        const [,,events] = apiManager.sendEvents.getCall(0).args;
+        const [, , events] = apiManager.sendEvents.getCall(0).args;
         const [firstEvent] = events;
         assert.equal(firstEvent.action, 'client_initialized');
         assert.equal(firstEvent.type, 'fullstack');
