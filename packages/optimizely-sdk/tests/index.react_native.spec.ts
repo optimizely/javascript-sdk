@@ -45,8 +45,8 @@ describe('javascript-sdk/react-native', () => {
     });
 
     describe('createInstance', () => {
-      var fakeErrorHandler = { handleError: function () {} };
-      var fakeEventDispatcher = { dispatchEvent: function () {} };
+      var fakeErrorHandler = { handleError: function() {} };
+      var fakeEventDispatcher = { dispatchEvent: function() {} };
       // @ts-ignore
       var silentLogger;
 
@@ -64,7 +64,7 @@ describe('javascript-sdk/react-native', () => {
       });
 
       it('should not throw if the provided config is not valid', () => {
-        expect(function () {
+        expect(function() {
           var optlyInstance = optimizelyFactory.createInstance({
             datafile: {},
             // @ts-ignore
@@ -72,7 +72,7 @@ describe('javascript-sdk/react-native', () => {
           });
           // Invalid datafile causes onReady Promise rejection - catch this error
           // @ts-ignore
-          optlyInstance.onReady().catch(function () {});
+          optlyInstance.onReady().catch(function() {});
         }).not.toThrow();
       });
 
@@ -86,11 +86,11 @@ describe('javascript-sdk/react-native', () => {
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
         // @ts-ignore
-        optlyInstance.onReady().catch(function () {});
+        optlyInstance.onReady().catch(function() {});
 
         expect(optlyInstance).toBeInstanceOf(Optimizely);
         // @ts-ignore
-        expect(optlyInstance.clientVersion).toEqual('4.9.3');
+        expect(optlyInstance.clientVersion).toEqual('5.0.0-beta');
       });
 
       it('should set the React Native JS client engine and javascript SDK version', () => {
@@ -103,7 +103,7 @@ describe('javascript-sdk/react-native', () => {
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
         // @ts-ignore
-        optlyInstance.onReady().catch(function () {});
+        optlyInstance.onReady().catch(function() {});
         // @ts-ignore
         expect('react-native-js-sdk').toEqual(optlyInstance.clientEngine);
         // @ts-ignore
@@ -121,7 +121,7 @@ describe('javascript-sdk/react-native', () => {
         });
         // Invalid datafile causes onReady Promise rejection - catch this error
         // @ts-ignore
-        optlyInstance.onReady().catch(function () {});
+        optlyInstance.onReady().catch(function() {});
         // @ts-ignore
         expect('react-native-sdk').toEqual(optlyInstance.clientEngine);
       });
@@ -154,41 +154,67 @@ describe('javascript-sdk/react-native', () => {
           jest.resetAllMocks();
         });
 
-          it(
-            'should call logging.setLogHandler with the supplied logger',
-            () => {
-              var fakeLogger = { log: function () { } };
-              optimizelyFactory.createInstance({
-                datafile: testData.getTestProjectConfig(),
-                // @ts-ignore
-                logger: fakeLogger,
-              });
-              expect(logging.setLogHandler).toBeCalledTimes(1);
-              expect(logging.setLogHandler).toBeCalledWith(fakeLogger);
-            }
+        it('should call logging.setLogHandler with the supplied logger', () => {
+          var fakeLogger = { log: function() {} };
+          optimizelyFactory.createInstance({
+            datafile: testData.getTestProjectConfig(),
+            // @ts-ignore
+            logger: fakeLogger,
+          });
+          expect(logging.setLogHandler).toBeCalledTimes(1);
+          expect(logging.setLogHandler).toBeCalledWith(fakeLogger);
+        });
+      });
+
+      describe('event processor configuration', () => {
+        // @ts-ignore
+        var eventProcessorSpy;
+        beforeEach(() => {
+          eventProcessorSpy = jest.spyOn(eventProcessor, 'createEventProcessor');
+        });
+
+        afterEach(() => {
+          jest.resetAllMocks();
+        });
+
+        it('should use default event flush interval when none is provided', () => {
+          optimizelyFactory.createInstance({
+            datafile: testData.getTestProjectConfigWithFeatures(),
+            errorHandler: fakeErrorHandler,
+            eventDispatcher: fakeEventDispatcher,
+            // @ts-ignore
+            logger: silentLogger,
+          });
+
+          expect(
+            // @ts-ignore
+            eventProcessorSpy
+          ).toBeCalledWith(
+            expect.objectContaining({
+              flushInterval: 1000,
+            })
           );
         });
 
-        describe('event processor configuration', () => {
-          // @ts-ignore
-          var eventProcessorSpy;
+        describe('with an invalid flush interval', () => {
           beforeEach(() => {
-            eventProcessorSpy = jest.spyOn(eventProcessor, 'createEventProcessor');
+            jest.spyOn(eventProcessorConfigValidator, 'validateEventFlushInterval').mockImplementation(() => false);
           });
 
           afterEach(() => {
             jest.resetAllMocks();
           });
 
-          it('should use default event flush interval when none is provided', () => {
+          it('should ignore the event flush interval and use the default instead', () => {
             optimizelyFactory.createInstance({
               datafile: testData.getTestProjectConfigWithFeatures(),
               errorHandler: fakeErrorHandler,
               eventDispatcher: fakeEventDispatcher,
               // @ts-ignore
               logger: silentLogger,
+              // @ts-ignore
+              eventFlushInterval: ['invalid', 'flush', 'interval'],
             });
-
             expect(
               // @ts-ignore
               eventProcessorSpy
@@ -198,73 +224,73 @@ describe('javascript-sdk/react-native', () => {
               })
             );
           });
+        });
 
-          describe('with an invalid flush interval', () => {
-            beforeEach(() => {
-              jest.spyOn(eventProcessorConfigValidator, 'validateEventFlushInterval').mockImplementation(() => false);
-            });
-
-            afterEach(() => {
-              jest.resetAllMocks();
-            });
-
-            it('should ignore the event flush interval and use the default instead', () => {
-              optimizelyFactory.createInstance({
-                datafile: testData.getTestProjectConfigWithFeatures(),
-                errorHandler: fakeErrorHandler,
-                eventDispatcher: fakeEventDispatcher,
-                // @ts-ignore
-                logger: silentLogger,
-                // @ts-ignore
-                eventFlushInterval: ['invalid', 'flush', 'interval'],
-              });
-              expect(
-                // @ts-ignore
-                eventProcessorSpy
-              ).toBeCalledWith(
-                expect.objectContaining({
-                  flushInterval: 1000,
-                })
-              );
-            });
+        describe('with a valid flush interval', () => {
+          beforeEach(() => {
+            jest.spyOn(eventProcessorConfigValidator, 'validateEventFlushInterval').mockImplementation(() => true);
           });
 
-          describe('with a valid flush interval', () => {
-            beforeEach(() => {
-              jest.spyOn(eventProcessorConfigValidator, 'validateEventFlushInterval').mockImplementation(() => true);
-            });
-
-            afterEach(() => {
-              jest.resetAllMocks();
-            });
-
-            it('should use the provided event flush interval', () => {
-              optimizelyFactory.createInstance({
-                datafile: testData.getTestProjectConfigWithFeatures(),
-                errorHandler: fakeErrorHandler,
-                eventDispatcher: fakeEventDispatcher,
-                // @ts-ignore
-                logger: silentLogger,
-                eventFlushInterval: 9000,
-              });
-              expect(
-                // @ts-ignore
-                eventProcessorSpy
-              ).toBeCalledWith(
-                expect.objectContaining({
-                  flushInterval: 9000,
-                })
-              );
-            });
+          afterEach(() => {
+            jest.resetAllMocks();
           });
 
-          it('should use default event batch size when none is provided', () => {
+          it('should use the provided event flush interval', () => {
             optimizelyFactory.createInstance({
               datafile: testData.getTestProjectConfigWithFeatures(),
               errorHandler: fakeErrorHandler,
               eventDispatcher: fakeEventDispatcher,
               // @ts-ignore
               logger: silentLogger,
+              eventFlushInterval: 9000,
+            });
+            expect(
+              // @ts-ignore
+              eventProcessorSpy
+            ).toBeCalledWith(
+              expect.objectContaining({
+                flushInterval: 9000,
+              })
+            );
+          });
+        });
+
+        it('should use default event batch size when none is provided', () => {
+          optimizelyFactory.createInstance({
+            datafile: testData.getTestProjectConfigWithFeatures(),
+            errorHandler: fakeErrorHandler,
+            eventDispatcher: fakeEventDispatcher,
+            // @ts-ignore
+            logger: silentLogger,
+          });
+          expect(
+            // @ts-ignore
+            eventProcessorSpy
+          ).toBeCalledWith(
+            expect.objectContaining({
+              batchSize: 10,
+            })
+          );
+        });
+
+        describe('with an invalid event batch size', () => {
+          beforeEach(() => {
+            jest.spyOn(eventProcessorConfigValidator, 'validateEventBatchSize').mockImplementation(() => false);
+          });
+
+          afterEach(() => {
+            jest.resetAllMocks();
+          });
+
+          it('should ignore the event batch size and use the default instead', () => {
+            optimizelyFactory.createInstance({
+              datafile: testData.getTestProjectConfigWithFeatures(),
+              errorHandler: fakeErrorHandler,
+              eventDispatcher: fakeEventDispatcher,
+              // @ts-ignore
+              logger: silentLogger,
+              // @ts-ignore
+              eventBatchSize: null,
             });
             expect(
               // @ts-ignore
@@ -275,63 +301,34 @@ describe('javascript-sdk/react-native', () => {
               })
             );
           });
+        });
 
-          describe('with an invalid event batch size', () => {
-            beforeEach(() => {
-              jest.spyOn(eventProcessorConfigValidator, 'validateEventBatchSize').mockImplementation(() => false);
-            });
-
-            afterEach(() => {
-              jest.resetAllMocks();
-            });
-
-            it('should ignore the event batch size and use the default instead', () => {
-              optimizelyFactory.createInstance({
-                datafile: testData.getTestProjectConfigWithFeatures(),
-                errorHandler: fakeErrorHandler,
-                eventDispatcher: fakeEventDispatcher,
-                // @ts-ignore
-                logger: silentLogger,
-                // @ts-ignore
-                eventBatchSize: null,
-              });
-              expect(
-                // @ts-ignore
-                eventProcessorSpy
-              ).toBeCalledWith(
-                expect.objectContaining({
-                  batchSize: 10,
-                })
-              );
-            });
+        describe('with a valid event batch size', () => {
+          beforeEach(() => {
+            jest.spyOn(eventProcessorConfigValidator, 'validateEventBatchSize').mockImplementation(() => true);
           });
 
-          describe('with a valid event batch size', () => {
-            beforeEach(() => {
-              jest.spyOn(eventProcessorConfigValidator, 'validateEventBatchSize').mockImplementation(() => true);
-            });
+          afterEach(() => {
+            jest.resetAllMocks();
+          });
 
-            afterEach(() => {
-              jest.resetAllMocks();
+          it('should use the provided event batch size', () => {
+            optimizelyFactory.createInstance({
+              datafile: testData.getTestProjectConfigWithFeatures(),
+              errorHandler: fakeErrorHandler,
+              eventDispatcher: fakeEventDispatcher,
+              // @ts-ignore
+              logger: silentLogger,
+              eventBatchSize: 300,
             });
-
-            it('should use the provided event batch size', () => {
-              optimizelyFactory.createInstance({
-                datafile: testData.getTestProjectConfigWithFeatures(),
-                errorHandler: fakeErrorHandler,
-                eventDispatcher: fakeEventDispatcher,
-                // @ts-ignore
-                logger: silentLogger,
-                eventBatchSize: 300,
-              });
-              expect(
-                // @ts-ignore
-                eventProcessorSpy
-              ).toBeCalledWith(
-                expect.objectContaining({
-                  batchSize: 300,
-                })
-              );
+            expect(
+              // @ts-ignore
+              eventProcessorSpy
+            ).toBeCalledWith(
+              expect.objectContaining({
+                batchSize: 300,
+              })
+            );
           });
         });
       });

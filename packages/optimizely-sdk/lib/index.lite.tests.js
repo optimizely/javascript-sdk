@@ -22,9 +22,9 @@ import * as loggerPlugin from './plugins/logger';
 import optimizelyFactory from './index.lite';
 import configValidator from './utils/config_validator';
 
-describe('optimizelyFactory', function () {
-  describe('APIs', function () {
-    it('should expose logger, errorHandler, eventDispatcher and enums', function () {
+describe('optimizelyFactory', function() {
+  describe('APIs', function() {
+    it('should expose logger, errorHandler, eventDispatcher and enums', function() {
       assert.isDefined(optimizelyFactory.logging);
       assert.isDefined(optimizelyFactory.logging.createLogger);
       assert.isDefined(optimizelyFactory.logging.createNoOpLogger);
@@ -33,39 +33,39 @@ describe('optimizelyFactory', function () {
       assert.isDefined(optimizelyFactory.enums);
     });
 
-    describe('createInstance', function () {
-      var fakeErrorHandler = { handleError: function () { } };
-      var fakeEventDispatcher = { dispatchEvent: function () { } };
+    describe('createInstance', function() {
+      var fakeErrorHandler = { handleError: function() {} };
+      var fakeEventDispatcher = { dispatchEvent: function() {} };
       var fakeLogger;
 
-      beforeEach(function () {
+      beforeEach(function() {
         fakeLogger = { log: sinon.spy(), setLogLevel: sinon.spy() };
         sinon.stub(loggerPlugin, 'createLogger').returns(fakeLogger);
         sinon.stub(configValidator, 'validate');
         sinon.stub(console, 'error');
       });
 
-      afterEach(function () {
+      afterEach(function() {
         loggerPlugin.createLogger.restore();
         configValidator.validate.restore();
         console.error.restore();
       });
 
-      it('should not throw if the provided config is not valid and log an error if logger is passed in', function () {
+      it('should not throw if the provided config is not valid and log an error if logger is passed in', function() {
         configValidator.validate.throws(new Error('Invalid config or something'));
         var localLogger = loggerPlugin.createLogger({ logLevel: enums.LOG_LEVEL.INFO });
-        assert.doesNotThrow(function () {
+        assert.doesNotThrow(function() {
           var optlyInstance = optimizelyFactory.createInstance({
             datafile: {},
             logger: localLogger,
           });
           // Invalid datafile causes onReady Promise rejection - catch this
-          optlyInstance.onReady().catch(function () { });
+          optlyInstance.onReady().catch(function() {});
         });
         sinon.assert.calledWith(localLogger.log, enums.LOG_LEVEL.ERROR);
       });
 
-      it('should create an instance of optimizely', function () {
+      it('should create an instance of optimizely', function() {
         var optlyInstance = optimizelyFactory.createInstance({
           datafile: {},
           errorHandler: fakeErrorHandler,
@@ -73,10 +73,10 @@ describe('optimizelyFactory', function () {
           logger: fakeLogger,
         });
         // Invalid datafile causes onReady Promise rejection - catch this
-        optlyInstance.onReady().catch(function () { });
+        optlyInstance.onReady().catch(function() {});
 
         assert.instanceOf(optlyInstance, Optimizely);
-        assert.equal(optlyInstance.clientVersion, '4.9.3');
+        assert.equal(optlyInstance.clientVersion, '5.0.0-beta');
       });
     });
   });
