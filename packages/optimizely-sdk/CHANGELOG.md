@@ -7,12 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-## 5.0.0-beta.1
+## 5.0.0-beta
 May 4, 2023
 
 ### New Features  
 
-The 5.0.0-beta.1 release introduces a new primary feature, [Advanced Audience Targeting]( https://docs.developers.optimizely.com/feature-experimentation/docs/optimizely-data-platform-advanced-audience-targeting) enabled through integration with [Optimizely Data Platform (ODP)](https://docs.developers.optimizely.com/optimizely-data-platform/docs) ([#765](https://github.com/optimizely/javascript-sdk/pull/765), [#775](https://github.com/optimizely/javascript-sdk/pull/775), [#776](https://github.com/optimizely/javascript-sdk/pull/776), [#777](https://github.com/optimizely/javascript-sdk/pull/777), [#778](https://github.com/optimizely/javascript-sdk/pull/778), [#786](https://github.com/optimizely/javascript-sdk/pull/786), [#789](https://github.com/optimizely/javascript-sdk/pull/789), [#790](https://github.com/optimizely/javascript-sdk/pull/790), [#797](https://github.com/optimizely/javascript-sdk/pull/797), [#799](https://github.com/optimizely/javascript-sdk/pull/799), [#808](https://github.com/optimizely/javascript-sdk/pull/808)).
+The 5.0.0-beta release introduces a new primary feature, [Advanced Audience Targeting]( https://docs.developers.optimizely.com/feature-experimentation/docs/optimizely-data-platform-advanced-audience-targeting) enabled through integration with [Optimizely Data Platform (ODP)](https://docs.developers.optimizely.com/optimizely-data-platform/docs) ([#765](https://github.com/optimizely/javascript-sdk/pull/765), [#775](https://github.com/optimizely/javascript-sdk/pull/775), [#776](https://github.com/optimizely/javascript-sdk/pull/776), [#777](https://github.com/optimizely/javascript-sdk/pull/777), [#778](https://github.com/optimizely/javascript-sdk/pull/778), [#786](https://github.com/optimizely/javascript-sdk/pull/786), [#789](https://github.com/optimizely/javascript-sdk/pull/789), [#790](https://github.com/optimizely/javascript-sdk/pull/790), [#797](https://github.com/optimizely/javascript-sdk/pull/797), [#799](https://github.com/optimizely/javascript-sdk/pull/799), [#808](https://github.com/optimizely/javascript-sdk/pull/808)).
 
 You can use ODP, a high-performance [Customer Data Platform (CDP)]( https://www.optimizely.com/optimization-glossary/customer-data-platform/), to easily create complex real-time segments (RTS) using first-party and 50+ third-party data sources out of the box. You can create custom schemas that support the user attributes important for your business, and stitch together user behavior done on different devices to better understand and target your customers for personalized user experiences. ODP can be used as a single source of truth for these segments in any Optimizely or 3rd party tool.  
 
