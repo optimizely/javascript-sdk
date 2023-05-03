@@ -21,11 +21,7 @@ import { getLogger } from '../../modules/logging';
 
 import fns from '../../utils/fns';
 import projectConfig from './';
-import {
-  ERROR_MESSAGES,
-  FEATURE_VARIABLE_TYPES,
-  LOG_LEVEL,
-} from '../../utils/enums';
+import { ERROR_MESSAGES, FEATURE_VARIABLE_TYPES, LOG_LEVEL } from '../../utils/enums';
 import * as loggerPlugin from '../../plugins/logger';
 import testDatafile from '../../tests/test_data';
 import configValidator from '../../utils/config_validator';
@@ -33,13 +29,13 @@ import configValidator from '../../utils/config_validator';
 var buildLogMessageFromArgs = args => sprintf(args[1], ...args.splice(2));
 var logger = getLogger();
 
-describe('lib/core/project_config', function () {
-  describe('createProjectConfig method', function () {
-    it('should set properties correctly when createProjectConfig is called', function () {
+describe('lib/core/project_config', function() {
+  describe('createProjectConfig method', function() {
+    it('should set properties correctly when createProjectConfig is called', function() {
       var testData = testDatafile.getTestProjectConfig();
       var configObj = projectConfig.createProjectConfig(testData);
 
-      forEach(testData.audiences, function (audience) {
+      forEach(testData.audiences, function(audience) {
         audience.conditions = JSON.parse(audience.conditions);
       });
 
@@ -48,8 +44,8 @@ describe('lib/core/project_config', function () {
       assert.strictEqual(configObj.revision, testData.revision);
       assert.deepEqual(configObj.events, testData.events);
       assert.deepEqual(configObj.audiences, testData.audiences);
-      testData.groups.forEach(function (group) {
-        group.experiments.forEach(function (experiment) {
+      testData.groups.forEach(function(group) {
+        group.experiments.forEach(function(experiment) {
           experiment.groupId = group.id;
           experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
         });
@@ -64,14 +60,14 @@ describe('lib/core/project_config', function () {
       assert.deepEqual(configObj.groupIdMap, expectedGroupIdMap);
 
       var expectedExperiments = testData.experiments;
-      forEach(configObj.groupIdMap, function (group, Id) {
-        forEach(group.experiments, function (experiment) {
+      forEach(configObj.groupIdMap, function(group, Id) {
+        forEach(group.experiments, function(experiment) {
           experiment.groupId = Id;
           expectedExperiments.push(experiment);
         });
       });
 
-      forEach(expectedExperiments, function (experiment) {
+      forEach(expectedExperiments, function(experiment) {
         experiment.variationKeyMap = fns.keyBy(experiment.variations, 'key');
       });
 
@@ -174,35 +170,35 @@ describe('lib/core/project_config', function () {
       };
     });
 
-    it('should not mutate the datafile', function () {
+    it('should not mutate the datafile', function() {
       var datafile = testDatafile.getTypedAudiencesConfig();
       var datafileClone = cloneDeep(datafile);
       projectConfig.createProjectConfig(datafile);
       assert.deepEqual(datafileClone, datafile);
     });
 
-    describe('feature management', function () {
+    describe('feature management', function() {
       var configObj;
-      beforeEach(function () {
+      beforeEach(function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
       });
 
-      it('creates a rolloutIdMap from rollouts in the datafile', function () {
+      it('creates a rolloutIdMap from rollouts in the datafile', function() {
         assert.deepEqual(configObj.rolloutIdMap, testDatafile.datafileWithFeaturesExpectedData.rolloutIdMap);
       });
 
-      it('creates a variationVariableUsageMap from rollouts and experiments with features in the datafile', function () {
+      it('creates a variationVariableUsageMap from rollouts and experiments with features in the datafile', function() {
         assert.deepEqual(
           configObj.variationVariableUsageMap,
           testDatafile.datafileWithFeaturesExpectedData.variationVariableUsageMap
         );
       });
 
-      it('creates a featureKeyMap from feature flags in the datafile', function () {
+      it('creates a featureKeyMap from feature flags in the datafile', function() {
         assert.deepEqual(configObj.featureKeyMap, testDatafile.datafileWithFeaturesExpectedData.featureKeyMap);
       });
 
-      it('adds variations from rollout experiments to variationIdMap', function () {
+      it('adds variations from rollout experiments to variationIdMap', function() {
         assert.deepEqual(configObj.variationIdMap['594032'], {
           variables: [
             { value: 'true', id: '4919852825313280' },
@@ -252,24 +248,24 @@ describe('lib/core/project_config', function () {
       });
     });
 
-    describe('flag variations', function () {
+    describe('flag variations', function() {
       var configObj;
-      beforeEach(function () {
+      beforeEach(function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTestDecideProjectConfig());
       });
 
-      it('it should populate flagVariationsMap correctly', function () {
+      it('it should populate flagVariationsMap correctly', function() {
         var allVariationsForFlag = configObj.flagVariationsMap;
         var feature1Variations = allVariationsForFlag.feature_1;
         var feature2Variations = allVariationsForFlag.feature_2;
         var feature3Variations = allVariationsForFlag.feature_3;
-        var feature1VariationsKeys = feature1Variations.map((variation) => {
+        var feature1VariationsKeys = feature1Variations.map(variation => {
           return variation.key;
         }, {});
-        var feature2VariationsKeys = feature2Variations.map((variation) => {
+        var feature2VariationsKeys = feature2Variations.map(variation => {
           return variation.key;
         }, {});
-        var feature3VariationsKeys = feature3Variations.map((variation) => {
+        var feature3VariationsKeys = feature3Variations.map(variation => {
           return variation.key;
         }, {});
 
@@ -280,52 +276,52 @@ describe('lib/core/project_config', function () {
     });
   });
 
-  describe('projectConfig helper methods', function () {
+  describe('projectConfig helper methods', function() {
     var testData = cloneDeep(testDatafile.getTestProjectConfig());
     var configObj;
     var createdLogger = loggerPlugin.createLogger({ logLevel: LOG_LEVEL.INFO });
 
-    beforeEach(function () {
+    beforeEach(function() {
       configObj = projectConfig.createProjectConfig(cloneDeep(testData));
       sinon.stub(createdLogger, 'log');
     });
 
-    afterEach(function () {
+    afterEach(function() {
       createdLogger.log.restore();
     });
 
-    it('should retrieve experiment ID for valid experiment key in getExperimentId', function () {
+    it('should retrieve experiment ID for valid experiment key in getExperimentId', function() {
       assert.strictEqual(
         projectConfig.getExperimentId(configObj, testData.experiments[0].key),
         testData.experiments[0].id
       );
     });
 
-    it('should throw error for invalid experiment key in getExperimentId', function () {
-      assert.throws(function () {
+    it('should throw error for invalid experiment key in getExperimentId', function() {
+      assert.throws(function() {
         projectConfig.getExperimentId(configObj, 'invalidExperimentKey');
       }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'invalidExperimentKey'));
     });
 
-    it('should retrieve layer ID for valid experiment key in getLayerId', function () {
+    it('should retrieve layer ID for valid experiment key in getLayerId', function() {
       assert.strictEqual(projectConfig.getLayerId(configObj, '111127'), '4');
     });
 
-    it('should throw error for invalid experiment key in getLayerId', function () {
-      assert.throws(function () {
+    it('should throw error for invalid experiment key in getLayerId', function() {
+      assert.throws(function() {
         projectConfig.getLayerId(configObj, 'invalidExperimentKey');
       }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, 'PROJECT_CONFIG', 'invalidExperimentKey'));
     });
 
-    it('should retrieve attribute ID for valid attribute key in getAttributeId', function () {
+    it('should retrieve attribute ID for valid attribute key in getAttributeId', function() {
       assert.strictEqual(projectConfig.getAttributeId(configObj, 'browser_type'), '111094');
     });
 
-    it('should retrieve attribute ID for reserved attribute key in getAttributeId', function () {
+    it('should retrieve attribute ID for reserved attribute key in getAttributeId', function() {
       assert.strictEqual(projectConfig.getAttributeId(configObj, '$opt_user_agent'), '$opt_user_agent');
     });
 
-    it('should return null for invalid attribute key in getAttributeId', function () {
+    it('should return null for invalid attribute key in getAttributeId', function() {
       assert.isNull(projectConfig.getAttributeId(configObj, 'invalidAttributeKey', createdLogger));
       assert.strictEqual(
         buildLogMessageFromArgs(createdLogger.log.lastCall.args),
@@ -333,7 +329,7 @@ describe('lib/core/project_config', function () {
       );
     });
 
-    it('should return null for invalid attribute key in getAttributeId', function () {
+    it('should return null for invalid attribute key in getAttributeId', function() {
       // Adding attribute in key map with reserved prefix
       configObj.attributeKeyMap['$opt_some_reserved_attribute'] = {
         id: '42',
@@ -346,65 +342,65 @@ describe('lib/core/project_config', function () {
       );
     });
 
-    it('should retrieve event ID for valid event key in getEventId', function () {
+    it('should retrieve event ID for valid event key in getEventId', function() {
       assert.strictEqual(projectConfig.getEventId(configObj, 'testEvent'), '111095');
     });
 
-    it('should return null for invalid event key in getEventId', function () {
+    it('should return null for invalid event key in getEventId', function() {
       assert.isNull(projectConfig.getEventId(configObj, 'invalidEventKey'));
     });
 
-    it('should retrieve experiment status for valid experiment key in getExperimentStatus', function () {
+    it('should retrieve experiment status for valid experiment key in getExperimentStatus', function() {
       assert.strictEqual(
         projectConfig.getExperimentStatus(configObj, testData.experiments[0].key),
         testData.experiments[0].status
       );
     });
 
-    it('should throw error for invalid experiment key in getExperimentStatus', function () {
-      assert.throws(function () {
+    it('should throw error for invalid experiment key in getExperimentStatus', function() {
+      assert.throws(function() {
         projectConfig.getExperimentStatus(configObj, 'invalidExperimentKey');
       }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_KEY, 'PROJECT_CONFIG', 'invalidExperimentKey'));
     });
 
-    it('should return true if experiment status is set to Running in isActive', function () {
+    it('should return true if experiment status is set to Running in isActive', function() {
       assert.isTrue(projectConfig.isActive(configObj, 'testExperiment'));
     });
 
-    it('should return false if experiment status is not set to Running in isActive', function () {
+    it('should return false if experiment status is not set to Running in isActive', function() {
       assert.isFalse(projectConfig.isActive(configObj, 'testExperimentNotRunning'));
     });
 
-    it('should return true if experiment status is set to Running in isRunning', function () {
+    it('should return true if experiment status is set to Running in isRunning', function() {
       assert.isTrue(projectConfig.isRunning(configObj, 'testExperiment'));
     });
 
-    it('should return false if experiment status is not set to Running in isRunning', function () {
+    it('should return false if experiment status is not set to Running in isRunning', function() {
       assert.isFalse(projectConfig.isRunning(configObj, 'testExperimentLaunched'));
     });
 
-    it('should retrieve variation key for valid experiment key and variation ID in getVariationKeyFromId', function () {
+    it('should retrieve variation key for valid experiment key and variation ID in getVariationKeyFromId', function() {
       assert.deepEqual(
         projectConfig.getVariationKeyFromId(configObj, testData.experiments[0].variations[0].id),
         testData.experiments[0].variations[0].key
       );
     });
 
-    it('should retrieve traffic allocation given valid experiment key in getTrafficAllocation', function () {
+    it('should retrieve traffic allocation given valid experiment key in getTrafficAllocation', function() {
       assert.deepEqual(
         projectConfig.getTrafficAllocation(configObj, testData.experiments[0].id),
         testData.experiments[0].trafficAllocation
       );
     });
 
-    it('should throw error for invalid experient key in getTrafficAllocation', function () {
-      assert.throws(function () {
+    it('should throw error for invalid experient key in getTrafficAllocation', function() {
+      assert.throws(function() {
         projectConfig.getTrafficAllocation(configObj, 'invalidExperimentId');
       }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, 'PROJECT_CONFIG', 'invalidExperimentId'));
     });
 
-    describe('#getVariationIdFromExperimentAndVariationKey', function () {
-      it('should return the variation id for the given experiment key and variation key', function () {
+    describe('#getVariationIdFromExperimentAndVariationKey', function() {
+      it('should return the variation id for the given experiment key and variation key', function() {
         assert.strictEqual(
           projectConfig.getVariationIdFromExperimentAndVariationKey(
             configObj,
@@ -416,45 +412,36 @@ describe('lib/core/project_config', function () {
       });
     });
 
-    describe('#getSendFlagDecisionsValue', function () {
-      it('should return false when sendFlagDecisions is undefined', function () {
+    describe('#getSendFlagDecisionsValue', function() {
+      it('should return false when sendFlagDecisions is undefined', function() {
         configObj.sendFlagDecisions = undefined;
-        assert.deepEqual(
-          projectConfig.getSendFlagDecisionsValue(configObj),
-          false
-        );
+        assert.deepEqual(projectConfig.getSendFlagDecisionsValue(configObj), false);
       });
 
-      it('should return false when sendFlagDecisions is set to false', function () {
+      it('should return false when sendFlagDecisions is set to false', function() {
         configObj.sendFlagDecisions = false;
-        assert.deepEqual(
-          projectConfig.getSendFlagDecisionsValue(configObj),
-          false
-        );
+        assert.deepEqual(projectConfig.getSendFlagDecisionsValue(configObj), false);
       });
 
-      it('should return true when sendFlagDecisions is set to true', function () {
+      it('should return true when sendFlagDecisions is set to true', function() {
         configObj.sendFlagDecisions = true;
-        assert.deepEqual(
-          projectConfig.getSendFlagDecisionsValue(configObj),
-          true
-        );
+        assert.deepEqual(projectConfig.getSendFlagDecisionsValue(configObj), true);
       });
     });
 
-    describe('feature management', function () {
+    describe('feature management', function() {
       var featureManagementLogger = loggerPlugin.createLogger({ logLevel: LOG_LEVEL.INFO });
-      beforeEach(function () {
+      beforeEach(function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
         sinon.stub(featureManagementLogger, 'log');
       });
 
-      afterEach(function () {
+      afterEach(function() {
         featureManagementLogger.log.restore();
       });
 
-      describe('getVariableForFeature', function () {
-        it('should return a variable object for a valid variable and feature key', function () {
+      describe('getVariableForFeature', function() {
+        it('should return a variable object for a valid variable and feature key', function() {
           var featureKey = 'test_feature_for_experiment';
           var variableKey = 'num_buttons';
           var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
@@ -466,7 +453,7 @@ describe('lib/core/project_config', function () {
           });
         });
 
-        it('should return null for an invalid variable key and a valid feature key', function () {
+        it('should return null for an invalid variable key and a valid feature key', function() {
           var featureKey = 'test_feature_for_experiment';
           var variableKey = 'notARealVariable____';
           var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
@@ -478,7 +465,7 @@ describe('lib/core/project_config', function () {
           );
         });
 
-        it('should return null for an invalid feature key', function () {
+        it('should return null for an invalid feature key', function() {
           var featureKey = 'notARealFeature_____';
           var variableKey = 'num_buttons';
           var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
@@ -490,7 +477,7 @@ describe('lib/core/project_config', function () {
           );
         });
 
-        it('should return null for an invalid variable key and an invalid feature key', function () {
+        it('should return null for an invalid variable key and an invalid feature key', function() {
           var featureKey = 'notARealFeature_____';
           var variableKey = 'notARealVariable____';
           var result = projectConfig.getVariableForFeature(configObj, featureKey, variableKey, featureManagementLogger);
@@ -503,8 +490,8 @@ describe('lib/core/project_config', function () {
         });
       });
 
-      describe('getVariableValueForVariation', function () {
-        it('returns a value for a valid variation and variable', function () {
+      describe('getVariableValueForVariation', function() {
+        it('returns a value for a valid variation and variable', function() {
           var variation = configObj.variationIdMap['594096'];
           var variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
           var result = projectConfig.getVariableValueForVariation(
@@ -528,7 +515,7 @@ describe('lib/core/project_config', function () {
           assert.strictEqual(result, '20.25');
         });
 
-        it('returns null for a null variation', function () {
+        it('returns null for a null variation', function() {
           var variation = null;
           var variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
           var result = projectConfig.getVariableValueForVariation(
@@ -540,7 +527,7 @@ describe('lib/core/project_config', function () {
           assert.strictEqual(result, null);
         });
 
-        it('returns null for a null variable', function () {
+        it('returns null for a null variable', function() {
           var variation = configObj.variationIdMap['594096'];
           var variable = null;
           var result = projectConfig.getVariableValueForVariation(
@@ -552,7 +539,7 @@ describe('lib/core/project_config', function () {
           assert.strictEqual(result, null);
         });
 
-        it('returns null for a null variation and null variable', function () {
+        it('returns null for a null variation and null variable', function() {
           var variation = null;
           var variable = null;
           var result = projectConfig.getVariableValueForVariation(
@@ -564,7 +551,7 @@ describe('lib/core/project_config', function () {
           assert.strictEqual(result, null);
         });
 
-        it('returns null for a variation whose id is not in the datafile', function () {
+        it('returns null for a variation whose id is not in the datafile', function() {
           var variation = {
             key: 'some_variation',
             id: '999999999999',
@@ -580,7 +567,7 @@ describe('lib/core/project_config', function () {
           assert.strictEqual(result, null);
         });
 
-        it('returns null if the variation does not have a value for this variable', function () {
+        it('returns null if the variation does not have a value for this variable', function() {
           var variation = configObj.variationIdMap['595008']; // This variation has no variable values associated with it
           var variable = configObj.featureKeyMap.test_feature_for_experiment.variableKeyMap.num_buttons;
           var result = projectConfig.getVariableValueForVariation(
@@ -593,15 +580,15 @@ describe('lib/core/project_config', function () {
         });
       });
 
-      describe('getTypeCastValue', function () {
-        it('can cast a boolean', function () {
+      describe('getTypeCastValue', function() {
+        it('can cast a boolean', function() {
           var result = projectConfig.getTypeCastValue('true', FEATURE_VARIABLE_TYPES.BOOLEAN, featureManagementLogger);
           assert.strictEqual(result, true);
           result = projectConfig.getTypeCastValue('false', FEATURE_VARIABLE_TYPES.BOOLEAN, featureManagementLogger);
           assert.strictEqual(result, false);
         });
 
-        it('can cast an integer', function () {
+        it('can cast an integer', function() {
           var result = projectConfig.getTypeCastValue('50', FEATURE_VARIABLE_TYPES.INTEGER, featureManagementLogger);
           assert.strictEqual(result, 50);
           var result = projectConfig.getTypeCastValue('-7', FEATURE_VARIABLE_TYPES.INTEGER, featureManagementLogger);
@@ -610,7 +597,7 @@ describe('lib/core/project_config', function () {
           assert.strictEqual(result, 0);
         });
 
-        it('can cast a double', function () {
+        it('can cast a double', function() {
           var result = projectConfig.getTypeCastValue('89.99', FEATURE_VARIABLE_TYPES.DOUBLE, featureManagementLogger);
           assert.strictEqual(result, 89.99);
           var result = projectConfig.getTypeCastValue(
@@ -625,7 +612,7 @@ describe('lib/core/project_config', function () {
           assert.strictEqual(result, 10);
         });
 
-        it('can return a string unmodified', function () {
+        it('can return a string unmodified', function() {
           var result = projectConfig.getTypeCastValue(
             'message',
             FEATURE_VARIABLE_TYPES.STRING,
@@ -634,7 +621,7 @@ describe('lib/core/project_config', function () {
           assert.strictEqual(result, 'message');
         });
 
-        it('returns null and logs an error for an invalid boolean', function () {
+        it('returns null and logs an error for an invalid boolean', function() {
           var result = projectConfig.getTypeCastValue(
             'notabool',
             FEATURE_VARIABLE_TYPES.BOOLEAN,
@@ -647,7 +634,7 @@ describe('lib/core/project_config', function () {
           );
         });
 
-        it('returns null and logs an error for an invalid integer', function () {
+        it('returns null and logs an error for an invalid integer', function() {
           var result = projectConfig.getTypeCastValue(
             'notanint',
             FEATURE_VARIABLE_TYPES.INTEGER,
@@ -660,7 +647,7 @@ describe('lib/core/project_config', function () {
           );
         });
 
-        it('returns null and logs an error for an invalid double', function () {
+        it('returns null and logs an error for an invalid double', function() {
           var result = projectConfig.getTypeCastValue(
             'notadouble',
             FEATURE_VARIABLE_TYPES.DOUBLE,
@@ -675,32 +662,32 @@ describe('lib/core/project_config', function () {
       });
     });
 
-    describe('#getAudiencesById', function () {
-      beforeEach(function () {
+    describe('#getAudiencesById', function() {
+      beforeEach(function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
       });
 
-      it('should retrieve audiences by checking first in typedAudiences, and then second in audiences', function () {
+      it('should retrieve audiences by checking first in typedAudiences, and then second in audiences', function() {
         assert.deepEqual(projectConfig.getAudiencesById(configObj), testDatafile.typedAudiencesById);
       });
     });
 
-    describe('#getExperimentAudienceConditions', function () {
-      it('should retrieve audiences for valid experiment key', function () {
+    describe('#getExperimentAudienceConditions', function() {
+      it('should retrieve audiences for valid experiment key', function() {
         configObj = projectConfig.createProjectConfig(cloneDeep(testData));
         assert.deepEqual(projectConfig.getExperimentAudienceConditions(configObj, testData.experiments[1].id), [
           '11154',
         ]);
       });
 
-      it('should throw error for invalid experiment key', function () {
+      it('should throw error for invalid experiment key', function() {
         configObj = projectConfig.createProjectConfig(cloneDeep(testData));
-        assert.throws(function () {
+        assert.throws(function() {
           projectConfig.getExperimentAudienceConditions(configObj, 'invalidExperimentId');
         }, sprintf(ERROR_MESSAGES.INVALID_EXPERIMENT_ID, 'PROJECT_CONFIG', 'invalidExperimentId'));
       });
 
-      it('should return experiment audienceIds if experiment has no audienceConditions', function () {
+      it('should return experiment audienceIds if experiment has no audienceConditions', function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
         var result = projectConfig.getExperimentAudienceConditions(configObj, '11564051718');
         assert.deepEqual(result, [
@@ -714,7 +701,7 @@ describe('lib/core/project_config', function () {
         ]);
       });
 
-      it('should return experiment audienceConditions if experiment has audienceConditions', function () {
+      it('should return experiment audienceConditions if experiment has audienceConditions', function() {
         configObj = projectConfig.createProjectConfig(testDatafile.getTypedAudiencesConfig());
         // audience_combinations_experiment has both audienceConditions and audienceIds
         // audienceConditions should be preferred over audienceIds
@@ -727,20 +714,20 @@ describe('lib/core/project_config', function () {
       });
     });
 
-    describe('#isFeatureExperiment', function () {
-      it('returns true for a feature test', function () {
+    describe('#isFeatureExperiment', function() {
+      it('returns true for a feature test', function() {
         var config = projectConfig.createProjectConfig(testDatafile.getTestProjectConfigWithFeatures());
         var result = projectConfig.isFeatureExperiment(config, '594098'); // id of 'testing_my_feature'
         assert.isTrue(result);
       });
 
-      it('returns false for an A/B test', function () {
+      it('returns false for an A/B test', function() {
         var config = projectConfig.createProjectConfig(testDatafile.getTestProjectConfig());
         var result = projectConfig.isFeatureExperiment(config, '111127'); // id of 'testExperiment'
         assert.isFalse(result);
       });
 
-      it('returns true for a feature test in a mutex group', function () {
+      it('returns true for a feature test in a mutex group', function() {
         var config = projectConfig.createProjectConfig(testDatafile.getMutexFeatureTestsConfig());
         var result = projectConfig.isFeatureExperiment(config, '17128410791'); // id of 'f_test1'
         assert.isTrue(result);
@@ -749,62 +736,62 @@ describe('lib/core/project_config', function () {
       });
     });
 
-    describe('#getAudienceSegments', function () {
-      it('returns all qualified segments from an audience', function () {
+    describe('#getAudienceSegments', function() {
+      it('returns all qualified segments from an audience', function() {
         const dummyQualifiedAudienceJson = {
-          "id": "13389142234",
-          "conditions": [
-            "and",
+          id: '13389142234',
+          conditions: [
+            'and',
             [
-              "or",
+              'or',
               [
-                "or",
+                'or',
                 {
-                  "value": "odp-segment-1",
-                  "type": "third_party_dimension",
-                  "name": "odp.audiences",
-                  "match": "qualified"
-                }
-              ]
-            ]
+                  value: 'odp-segment-1',
+                  type: 'third_party_dimension',
+                  name: 'odp.audiences',
+                  match: 'qualified',
+                },
+              ],
+            ],
           ],
-          "name": "odp-segment-1"
+          name: 'odp-segment-1',
         };
 
         const dummyQualifiedAudienceJsonSegments = projectConfig.getAudienceSegments(dummyQualifiedAudienceJson);
         assert.deepEqual(dummyQualifiedAudienceJsonSegments, ['odp-segment-1']);
 
         const dummyUnqualifiedAudienceJson = {
-          "id": "13389142234",
-          "conditions": [
-            "and",
+          id: '13389142234',
+          conditions: [
+            'and',
             [
-              "or",
+              'or',
               [
-                "or",
+                'or',
                 {
-                  "value": "odp-segment-1",
-                  "type": "third_party_dimension",
-                  "name": "odp.audiences",
-                  "match": "invalid"
-                }
-              ]
-            ]
+                  value: 'odp-segment-1',
+                  type: 'third_party_dimension',
+                  name: 'odp.audiences',
+                  match: 'invalid',
+                },
+              ],
+            ],
           ],
-          "name": "odp-segment-1"
+          name: 'odp-segment-1',
         };
 
         const dummyUnqualifiedAudienceJsonSegments = projectConfig.getAudienceSegments(dummyUnqualifiedAudienceJson);
         assert.deepEqual(dummyUnqualifiedAudienceJsonSegments, []);
       });
 
-      it('returns false for an A/B test', function () {
+      it('returns false for an A/B test', function() {
         var config = projectConfig.createProjectConfig(testDatafile.getTestProjectConfig());
         var result = projectConfig.isFeatureExperiment(config, '111127'); // id of 'testExperiment'
         assert.isFalse(result);
       });
 
-      it('returns true for a feature test in a mutex group', function () {
+      it('returns true for a feature test in a mutex group', function() {
         var config = projectConfig.createProjectConfig(testDatafile.getMutexFeatureTestsConfig());
         var result = projectConfig.isFeatureExperiment(config, '17128410791'); // id of 'f_test1'
         assert.isTrue(result);
@@ -815,7 +802,6 @@ describe('lib/core/project_config', function () {
   });
 
   describe('integrations', () => {
-
     describe('#withSegments', () => {
       var config;
       beforeEach(() => {
@@ -824,21 +810,21 @@ describe('lib/core/project_config', function () {
 
       it('should convert integrations from the datafile into the project config', () => {
         assert.exists(config.integrations);
-        assert.equal(config.integrations.length, 3);
+        assert.equal(config.integrations.length, 4);
       });
 
       it('should populate the public key value from the odp integration', () => {
-        assert.exists(config.publicKeyForOdp)
-      })
+        assert.exists(config.publicKeyForOdp);
+      });
 
       it('should populate the host value from the odp integration', () => {
-        assert.exists(config.hostForOdp)
-      })
+        assert.exists(config.hostForOdp);
+      });
 
       it('should contain all expected unique odp segments in allSegments', () => {
-        assert.equal(config.allSegments.length, 3)
-        assert.deepEqual(config.allSegments, ['odp-segment-1', 'odp-segment-2', 'odp-segment-3'])
-      })
+        assert.equal(config.allSegments.length, 3);
+        assert.deepEqual(config.allSegments, ['odp-segment-1', 'odp-segment-2', 'odp-segment-3']);
+      });
     });
 
     describe('#withoutSegments', () => {
@@ -853,25 +839,34 @@ describe('lib/core/project_config', function () {
       });
 
       it('should populate the public key value from the odp integration', () => {
-        assert.exists(config.publicKeyForOdp)
-        assert.equal(config.publicKeyForOdp, 'W4WzcEs-ABgXorzY7h1LCQ')
-      })
+        assert.exists(config.publicKeyForOdp);
+        assert.equal(config.publicKeyForOdp, 'W4WzcEs-ABgXorzY7h1LCQ');
+      });
 
       it('should populate the host value from the odp integration', () => {
-        assert.exists(config.hostForOdp)
-        assert.equal(config.hostForOdp, 'https://api.zaius.com')
-      })
+        assert.exists(config.hostForOdp);
+        assert.equal(config.hostForOdp, 'https://api.zaius.com');
+      });
 
       it('should contain all expected unique odp segments in all segments', () => {
-        assert.equal(config.allSegments.length, 0)
-      })
+        assert.equal(config.allSegments.length, 0);
+      });
+    });
+
+    describe('#withoutValidIntegrationKey', () => {
+      it('should throw an error when parsing the project config due to integrations not containing a key', () => {
+        const odpIntegratedConfigWithoutKey = testDatafile.getOdpIntegratedConfigWithoutKey();
+        assert.throws(() => {
+          projectConfig.createProjectConfig(odpIntegratedConfigWithoutKey);
+        });
+      });
     });
 
     describe('#withoutIntegrations', () => {
       var config;
       beforeEach(() => {
-        const odpIntegratedConfigWithSegments = testDatafile.getOdpIntegratedConfigWithSegments()
-        const noIntegrationsConfigWithSegments = { ...odpIntegratedConfigWithSegments, integrations: [] }
+        const odpIntegratedConfigWithSegments = testDatafile.getOdpIntegratedConfigWithSegments();
+        const noIntegrationsConfigWithSegments = { ...odpIntegratedConfigWithSegments, integrations: [] };
         config = projectConfig.createProjectConfig(noIntegrationsConfigWithSegments);
       });
 
@@ -879,13 +874,12 @@ describe('lib/core/project_config', function () {
         assert.equal(config.integrations.length, 0);
       });
     });
-
-  })
+  });
 });
 
-describe('#tryCreatingProjectConfig', function () {
+describe('#tryCreatingProjectConfig', function() {
   var stubJsonSchemaValidator;
-  beforeEach(function () {
+  beforeEach(function() {
     stubJsonSchemaValidator = {
       validate: sinon.stub().returns(true),
     };
@@ -893,25 +887,22 @@ describe('#tryCreatingProjectConfig', function () {
     sinon.spy(logger, 'error');
   });
 
-  afterEach(function () {
+  afterEach(function() {
     configValidator.validateDatafile.restore();
     logger.error.restore();
   });
 
-  it('returns a project config object created by createProjectConfig when all validation is applied and there are no errors', function () {
+  it('returns a project config object created by createProjectConfig when all validation is applied and there are no errors', function() {
     var configDatafile = {
       foo: 'bar',
-      experiments: [
-        { key: 'a' },
-        { key: 'b' }
-      ]
-    }
+      experiments: [{ key: 'a' }, { key: 'b' }],
+    };
     configValidator.validateDatafile.returns(configDatafile);
     var configObj = {
       foo: 'bar',
       experimentKeyMap: {
-        "a": { key: "a", variationKeyMap: {} },
-        "b": { key: "b", variationKeyMap: {} }
+        a: { key: 'a', variationKeyMap: {} },
+        b: { key: 'b', variationKeyMap: {} },
       },
     };
 
@@ -923,10 +914,10 @@ describe('#tryCreatingProjectConfig', function () {
       logger: logger,
     });
 
-    assert.deepInclude(result.configObj, configObj)
+    assert.deepInclude(result.configObj, configObj);
   });
 
-  it('returns an error when validateDatafile throws', function () {
+  it('returns an error when validateDatafile throws', function() {
     configValidator.validateDatafile.throws();
     stubJsonSchemaValidator.validate.returns(true);
     var { error } = projectConfig.tryCreatingProjectConfig({
@@ -937,7 +928,7 @@ describe('#tryCreatingProjectConfig', function () {
     assert.isNotNull(error);
   });
 
-  it('returns an error when jsonSchemaValidator.validate throws', function () {
+  it('returns an error when jsonSchemaValidator.validate throws', function() {
     configValidator.validateDatafile.returns(true);
     stubJsonSchemaValidator.validate.throws();
     var { error } = projectConfig.tryCreatingProjectConfig({
@@ -948,15 +939,11 @@ describe('#tryCreatingProjectConfig', function () {
     assert.isNotNull(error);
   });
 
-  it('skips json validation when jsonSchemaValidator is not provided', function () {
-
+  it('skips json validation when jsonSchemaValidator is not provided', function() {
     var configDatafile = {
       foo: 'bar',
-      experiments: [
-        { key: 'a' },
-        { key: 'b' }
-      ]
-    }
+      experiments: [{ key: 'a' }, { key: 'b' }],
+    };
 
     configValidator.validateDatafile.returns(configDatafile);
 

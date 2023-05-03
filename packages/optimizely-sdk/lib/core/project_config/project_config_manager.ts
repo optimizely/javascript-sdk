@@ -18,11 +18,7 @@ import { sprintf } from '../../utils/fns';
 
 import { ERROR_MESSAGES } from '../../utils/enums';
 import { createOptimizelyConfig } from '../optimizely_config';
-import {
-  OnReadyResult,
-  OptimizelyConfig,
-  DatafileManager,
-} from '../../shared_types';
+import { OnReadyResult, OptimizelyConfig, DatafileManager } from '../../shared_types';
 import { ProjectConfig, toDatafile, tryCreatingProjectConfig } from '../project_config';
 
 const logger = getLogger();
@@ -31,12 +27,12 @@ const MODULE_NAME = 'PROJECT_CONFIG_MANAGER';
 interface ProjectConfigManagerConfig {
   // TODO[OASIS-6649]: Don't use object type
   // eslint-disable-next-line  @typescript-eslint/ban-types
-  datafile?: string | object,
+  datafile?: string | object;
   jsonSchemaValidator?: {
-    validate(jsonObject: unknown): boolean,
+    validate(jsonObject: unknown): boolean;
   };
-  sdkKey?: string,
-  datafileManager?: DatafileManager
+  sdkKey?: string;
+  datafileManager?: DatafileManager;
 }
 
 /**
@@ -74,7 +70,9 @@ export class ProjectConfigManager {
       this.jsonSchemaValidator = config.jsonSchemaValidator;
 
       if (!config.datafile && !config.sdkKey) {
-        const datafileAndSdkKeyMissingError = new Error(sprintf(ERROR_MESSAGES.DATAFILE_AND_SDK_KEY_MISSING, MODULE_NAME));
+        const datafileAndSdkKeyMissingError = new Error(
+          sprintf(ERROR_MESSAGES.DATAFILE_AND_SDK_KEY_MISSING, MODULE_NAME)
+        );
         this.readyPromise = Promise.resolve({
           success: false,
           reason: getErrorMessage(datafileAndSdkKeyMissingError),
@@ -88,7 +86,7 @@ export class ProjectConfigManager {
         handleNewDatafileException = this.handleNewDatafile(config.datafile);
       }
 
-      if (config.sdkKey &&  config.datafileManager) {
+      if (config.sdkKey && config.datafileManager) {
         this.datafileManager = config.datafileManager;
         this.datafileManager.start();
         this.readyPromise = this.datafileManager
@@ -105,7 +103,7 @@ export class ProjectConfigManager {
           reason: getErrorMessage(handleNewDatafileException, 'Invalid datafile'),
         });
       }
-    } catch (ex: any) {
+    } catch (ex) {
       logger.error(ex);
       this.readyPromise = Promise.resolve({
         success: false,
@@ -137,7 +135,7 @@ export class ProjectConfigManager {
     return {
       success: false,
       reason: getErrorMessage(null, 'Datafile manager is not provided'),
-    }
+    };
   }
 
   /**
@@ -180,7 +178,7 @@ export class ProjectConfigManager {
     const { configObj, error } = tryCreatingProjectConfig({
       datafile: newDatafile,
       jsonSchemaValidator: this.jsonSchemaValidator,
-      logger: logger
+      logger: logger,
     });
 
     if (error) {
@@ -190,7 +188,7 @@ export class ProjectConfigManager {
       if (configObj && oldRevision !== configObj.revision) {
         this.configObj = configObj;
         this.optimizelyConfigObj = null;
-        this.updateListeners.forEach((listener) => listener(configObj));
+        this.updateListeners.forEach(listener => listener(configObj));
       }
     }
 
@@ -248,7 +246,7 @@ export class ProjectConfigManager {
    * @param  {Function} listener
    * @return {Function}
    */
-  onUpdate(listener: (config: ProjectConfig) => void): (() => void) {
+  onUpdate(listener: (config: ProjectConfig) => void): () => void {
     this.updateListeners.push(listener);
     return () => {
       const index = this.updateListeners.indexOf(listener);

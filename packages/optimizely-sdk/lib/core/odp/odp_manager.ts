@@ -21,16 +21,29 @@ import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
 import { VuidManager } from '../../plugins/vuid_manager';
 
 import { OdpConfig } from './odp_config';
-import { OdpEventManager } from './odp_event_manager';
-import { OdpSegmentManager } from './odp_segment_manager';
+import { IOdpEventManager } from './odp_event_manager';
+import { IOdpSegmentManager } from './odp_segment_manager';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
 import { invalidOdpDataFound } from './odp_utils';
 import { OdpEvent } from './odp_event';
 
+export interface IOdpManager {
+  enabled: boolean;
+  segmentManager: IOdpSegmentManager | undefined;
+  eventManager: IOdpEventManager | undefined;
+  updateSettings({ apiKey, apiHost, segmentsToCheck }: OdpConfig): boolean;
+  close(): void;
+  fetchQualifiedSegments(userId: string, options?: Array<OptimizelySegmentOption>): Promise<string[] | null>;
+  identifyUser(userId?: string, vuid?: string): void;
+  sendEvent({ type, action, identifiers, data }: OdpEvent): void;
+  isVuidEnabled(): boolean;
+  getVuid(): string | undefined;
+}
+
 /**
  * Orchestrates segments manager, event manager, and ODP configuration
  */
-export abstract class OdpManager {
+export abstract class OdpManager implements IOdpManager {
   initPromise?: Promise<void>;
   enabled = true;
   logger: LogHandler = getLogger();
@@ -40,20 +53,20 @@ export abstract class OdpManager {
    * ODP Segment Manager which provides an interface to the remote ODP server (GraphQL API) for audience segments mapping.
    * It fetches all qualified segments for the given user context and manages the segments cache for all user contexts.
    */
-  public segmentManager: OdpSegmentManager | undefined;
+  segmentManager: IOdpSegmentManager | undefined;
 
   /**
    * ODP Event Manager which provides an interface to the remote ODP server (REST API) for events.
    * It will queue all pending events (persistent) and send them (in batches of up to 10 events) to the ODP server when possible.
    */
-  public eventManager: OdpEventManager | undefined;
+  eventManager: IOdpEventManager | undefined;
 
   constructor() {}
 
   /**
    * Provides a method to update ODP Manager's ODP Config API Key, API Host, and Audience Segments
    */
-  public updateSettings({ apiKey, apiHost, segmentsToCheck }: OdpConfig): boolean {
+  updateSettings({ apiKey, apiHost, segmentsToCheck }: OdpConfig): boolean {
     if (!this.enabled) {
       return false;
     }
@@ -85,7 +98,7 @@ export abstract class OdpManager {
   /**
    * Attempts to stop the current instance of ODP Manager's event manager, if it exists and is running.
    */
-  public close(): void {
+  close(): void {
     if (!this.enabled) {
       return;
     }
@@ -100,10 +113,7 @@ export abstract class OdpManager {
    * @param {Array<OptimizelySegmentOption>}  options - An array of OptimizelySegmentOption used to ignore and/or reset the cache.
    * @returns {Promise<string[] | null>}      A promise holding either a list of qualified segments or null.
    */
-  public async fetchQualifiedSegments(
-    userId: string,
-    options: Array<OptimizelySegmentOption> = []
-  ): Promise<string[] | null> {
+  async fetchQualifiedSegments(userId: string, options: Array<OptimizelySegmentOption> = []): Promise<string[] | null> {
     if (!this.enabled) {
       this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_ENABLED);
       return null;
@@ -127,7 +137,7 @@ export abstract class OdpManager {
    * @param {string}  vuid      (Optional) Secondary unique identifier of a target user, primarily used by client SDKs.
    * @returns
    */
-  public identifyUser(userId?: string, vuid?: string): void {
+  identifyUser(userId?: string, vuid?: string): void {
     if (!this.enabled) {
       this.logger.log(LogLevel.DEBUG, LOG_MESSAGES.ODP_IDENTIFY_FAILED_ODP_DISABLED);
       return;
@@ -155,7 +165,13 @@ export abstract class OdpManager {
    * Sends an event to the ODP Server via the ODP Events API
    * @param {OdpEvent}  > ODP Event to send to event manager
    */
-  public sendEvent({ type, action, identifiers, data }: OdpEvent): void {
+  sendEvent({ type, action, identifiers, data }: OdpEvent): void {
+    let mType = type;
+
+    if (typeof mType !== 'string' || mType === '') {
+      mType = 'fullstack';
+    }
+
     if (!this.enabled) {
       throw new Error(ERROR_MESSAGES.ODP_NOT_ENABLED);
     }
@@ -172,10 +188,14 @@ export abstract class OdpManager {
       throw new Error(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_EVENT_MANAGER_MISSING);
     }
 
-    this.eventManager.sendEvent(new OdpEvent(type, action, identifiers, data));
+    if (typeof action !== 'string' || action === '') {
+      throw new Error('ODP action is not valid (cannot be empty).');
+    }
+
+    this.eventManager.sendEvent(new OdpEvent(mType, action, identifiers, data));
   }
 
-  public abstract isVuidEnabled(): boolean;
+  abstract isVuidEnabled(): boolean;
 
-  public abstract getVuid(): string | undefined;
+  abstract getVuid(): string | undefined;
 }

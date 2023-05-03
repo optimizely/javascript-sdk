@@ -21,14 +21,10 @@ import { ERROR_MESSAGES, ODP_USER_KEY, ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION 
 
 import { OdpEvent } from './odp_event';
 import { OdpConfig } from './odp_config';
-import { OdpEventApiManager } from './odp_event_api_manager';
+import { IOdpEventApiManager } from './odp_event_api_manager';
 import { invalidOdpDataFound } from './odp_utils';
 
 const MAX_RETRIES = 3;
-const DEFAULT_BATCH_SIZE = 10;
-const DEFAULT_FLUSH_INTERVAL_MSECS = 1000;
-const DEFAULT_BROWSER_QUEUE_SIZE = 100;
-const DEFAULT_SERVER_QUEUE_SIZE = 10000;
 
 /**
  * Event dispatcher's execution states
@@ -51,7 +47,7 @@ export interface IOdpEventManager {
 
   registerVuid(vuid: string): void;
 
-  identifyUser(userId: string, vuid?: string): void;
+  identifyUser(userId?: string, vuid?: string): void;
 
   sendEvent(event: OdpEvent): void;
 
@@ -85,7 +81,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
    * REST API Manager used to send the events
    * @private
    */
-  private readonly apiManager: OdpEventApiManager;
+  private readonly apiManager: IOdpEventApiManager;
   /**
    * Handler for recording execution logs
    * @private
@@ -100,7 +96,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
    * Maximum number of events to process at once. Ignored in browser context
    * @protected
    */
-  protected  batchSize!: number;
+  protected batchSize!: number;
   /**
    * Milliseconds between setTimeout() to process new batches. Ignored in browser context
    * @protected
@@ -128,7 +124,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
     flushInterval,
   }: {
     odpConfig: OdpConfig;
-    apiManager: OdpEventApiManager;
+    apiManager: IOdpEventApiManager;
     logger: LogHandler;
     clientEngine: string;
     clientVersion: string;
@@ -148,7 +144,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
   protected abstract initParams(
     batchSize: number | undefined,
     queueSize: number | undefined,
-    flushInterval: number | undefined,
+    flushInterval: number | undefined
   ): void;
 
   /**

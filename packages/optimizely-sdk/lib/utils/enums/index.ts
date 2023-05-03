@@ -52,6 +52,7 @@ export const ERROR_MESSAGES = {
   INVALID_USER_ID: '%s: Provided user ID is in an invalid format.',
   INVALID_USER_PROFILE_SERVICE: '%s: Provided user profile service instance is in an invalid format: %s.',
   LOCAL_STORAGE_DOES_NOT_EXIST: 'Error accessing window localStorage.',
+  MISSING_INTEGRATION_KEY: '%s: Integration key missing from datafile. All integrations should include a key.',
   NO_DATAFILE_SPECIFIED: '%s: No datafile specified. Cannot start optimizely.',
   NO_JSON_PROVIDED: '%s: No JSON object to validate against schema.',
   NO_VARIATION_FOR_EXPERIMENT_KEY: '%s: No variation key %s defined in datafile for experiment %s.',
@@ -122,6 +123,8 @@ export const LOG_MESSAGES = {
   ODP_DISABLED: 'ODP Disabled.',
   ODP_IDENTIFY_FAILED_ODP_DISABLED: '%s: ODP identify event for user %s is not dispatched (ODP disabled).',
   ODP_IDENTIFY_FAILED_ODP_NOT_INTEGRATED: '%s: ODP identify event %s is not dispatched (ODP not integrated).',
+  ODP_SEND_EVENT_IDENTIFIER_CONVERSION_FAILED:
+    '%s: sendOdpEvent failed to parse through and convert fs_user_id aliases',
   PARSED_REVENUE_VALUE: '%s: Parsed revenue value "%s" from event tags.',
   PARSED_NUMERIC_VALUE: '%s: Parsed event value "%s" from event tags.',
   RETURNING_STORED_VARIATION:
@@ -337,8 +340,8 @@ export enum NOTIFICATION_TYPES {
  * Default milliseconds before request timeout
  */
 export const REQUEST_TIMEOUT_MS = 60 * 1000; // 1 minute
-export const REQUEST_TIMEOUT_ODP_SEGMENTS_MS = 10 * 1000;  // 10 secs
-export const REQUEST_TIMEOUT_ODP_EVENTS_MS = 10 * 1000;  // 10 secs
+export const REQUEST_TIMEOUT_ODP_SEGMENTS_MS = 10 * 1000; // 10 secs
+export const REQUEST_TIMEOUT_ODP_EVENTS_MS = 10 * 1000; // 10 secs
 
 /**
  * ODP User Key Options
@@ -347,6 +350,11 @@ export enum ODP_USER_KEY {
   VUID = 'vuid',
   FS_USER_ID = 'fs_user_id',
 }
+
+/**
+ * Alias for fs_user_id to catch for and automatically convert to fs_user_id
+ */
+export const FS_USER_ID_ALIAS = 'fs-user-id';
 
 export const ODP_DEFAULT_EVENT_TYPE = 'fullstack';
 export const ODP_EVENT_BROWSER_ENDPOINT = 'https://jumbe.zaius.com/v2/zaius.gif';

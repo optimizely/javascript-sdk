@@ -19,7 +19,7 @@ import { sprintf, objectValues } from '../utils/fns';
 import { NotificationCenter } from '../core/notification_center';
 import { EventProcessor } from '../modules/event_processor';
 
-import { OdpManager } from '../core/odp/odp_manager';
+import { IOdpManager } from '../core/odp/odp_manager';
 import { OdpConfig } from '../core/odp/odp_config';
 import { OdpEvent } from '../core/odp/odp_event';
 import { OptimizelySegmentOption } from '../core/odp/optimizely_segment_option';
@@ -36,6 +36,7 @@ import {
   OptimizelyOptions,
   OptimizelyDecideOption,
   OptimizelyDecision,
+  Client,
 } from '../shared_types';
 import { newErrorDecision } from '../optimizely_decision';
 import OptimizelyUserContext from '../optimizely_user_context';
@@ -64,6 +65,8 @@ import {
   NODE_CLIENT_ENGINE,
   NODE_CLIENT_VERSION,
   ODP_DEFAULT_EVENT_TYPE,
+  FS_USER_ID_ALIAS,
+  ODP_USER_KEY,
 } from '../utils/enums';
 
 const MODULE_NAME = 'OPTIMIZELY';
@@ -75,7 +78,7 @@ type InputKey = 'feature_key' | 'user_id' | 'variable_key' | 'experiment_key' | 
 
 type StringInputs = Partial<Record<InputKey, unknown>>;
 
-export default class Optimizely {
+export default class Optimizely implements Client {
   private isOptimizelyConfigValid: boolean;
   private disposeOnUpdate: (() => void) | null;
   private readyPromise: Promise<{ success: boolean; reason?: string }>;
@@ -91,7 +94,7 @@ export default class Optimizely {
   private decisionService: DecisionService;
   private eventProcessor: EventProcessor;
   private defaultDecideOptions: { [key: string]: boolean };
-  protected odpManager?: OdpManager;
+  protected odpManager?: IOdpManager;
   public notificationCenter: NotificationCenter;
 
   constructor(config: OptimizelyOptions) {
@@ -138,7 +141,12 @@ export default class Optimizely {
         configObj.revision,
         configObj.projectId
       );
+
       this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE);
+
+      NotificationRegistry.getNotificationCenter(config.sdkKey)?.sendNotifications(
+        NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE
+      );
     });
 
     const projectConfigManagerReadyPromise = this.projectConfigManager.onReady();
@@ -1456,7 +1464,11 @@ export default class Optimizely {
       userIdentifier = userId;
     }
 
-    if (!userIdentifier || !this.validateInputs({ user_id: userIdentifier }, attributes)) {
+    if (
+      userIdentifier === null ||
+      userIdentifier === undefined ||
+      !this.validateInputs({ user_id: userIdentifier }, attributes)
+    ) {
       return null;
     }
 
@@ -1702,8 +1714,27 @@ export default class Optimizely {
 
     const odpEventType = type ?? ODP_DEFAULT_EVENT_TYPE;
 
+    const odpIdentifiers = new Map(identifiers);
+
+    if (identifiers && identifiers.size > 0) {
+      try {
+        identifiers.forEach((identifier_value, identifier_key) => {
+          // Catch for fs-user-id, FS-USER-ID, and FS_USER_ID and assign value to fs_user_id identifier.
+          if (
+            FS_USER_ID_ALIAS === identifier_key.toLowerCase() ||
+            ODP_USER_KEY.FS_USER_ID === identifier_key.toLowerCase()
+          ) {
+            odpIdentifiers.delete(identifier_key);
+            odpIdentifiers.set(ODP_USER_KEY.FS_USER_ID, identifier_value);
+          }
+        });
+      } catch (e) {
+        this.logger.warn(LOG_MESSAGES.ODP_SEND_EVENT_IDENTIFIER_CONVERSION_FAILED);
+      }
+    }
+
     try {
-      const odpEvent = new OdpEvent(odpEventType, action, identifiers, data);
+      const odpEvent = new OdpEvent(odpEventType, action, odpIdentifiers, data);
       this.odpManager.sendEvent(odpEvent);
     } catch (e) {
       this.logger.error(ERROR_MESSAGES.ODP_EVENT_FAILED, e);

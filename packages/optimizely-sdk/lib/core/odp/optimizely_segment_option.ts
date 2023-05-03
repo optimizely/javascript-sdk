@@ -16,6 +16,6 @@
 
 // Options for defining behavior of OdpSegmentManager's caching mechanism when calling fetchSegments()
 export enum OptimizelySegmentOption {
-  IGNORE_CACHE,
-  RESET_CACHE,
+  IGNORE_CACHE = 'IGNORE_CACHE',
+  RESET_CACHE = 'RESET_CACHE',
 }

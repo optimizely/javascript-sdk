@@ -44,4 +44,5 @@ export {
   TrackListenerPayload,
   NotificationCenter,
   OptimizelySegmentOption,
+  ICache,
 } from './shared_types';

@@ -33,7 +33,7 @@ interface OptimizelyUserContextConfig {
 }
 
 export interface IOptimizelyUserContext {
-  qualifiedSegments: string[];
+  qualifiedSegments: string[] | null;
   getUserId(): string;
   getAttributes(): UserAttributes;
   setAttribute(key: string, value: unknown): void;
@@ -54,7 +54,7 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
   private userId: string;
   private attributes: UserAttributes;
   private forcedDecisionsMap: { [key: string]: { [key: string]: OptimizelyForcedDecision } };
-  private _qualifiedSegments: string[] = [];
+  private _qualifiedSegments: string[] | null = null;
 
   constructor({ optimizely, userId, attributes, shouldIdentifyUser = true }: OptimizelyUserContextConfig) {
     this.optimizely = optimizely;
@@ -96,12 +96,12 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
     return this.optimizely;
   }
 
-  public get qualifiedSegments(): string[] {
+  public get qualifiedSegments(): string[] | null {
     return this._qualifiedSegments;
   }
 
-  public set qualifiedSegments(qualifiedSegments: string[]) {
-    this._qualifiedSegments = [...qualifiedSegments];
+  public set qualifiedSegments(qualifiedSegments: string[] | null) {
+    this._qualifiedSegments = qualifiedSegments;
   }
 
   /**
@@ -242,9 +242,7 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
       userContext.forcedDecisionsMap = { ...this.forcedDecisionsMap };
     }
 
-    if (this._qualifiedSegments) {
-      userContext._qualifiedSegments = [...this._qualifiedSegments];
-    }
+    userContext._qualifiedSegments = this._qualifiedSegments;
 
     return userContext;
   }
@@ -256,9 +254,8 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
    */
   async fetchQualifiedSegments(options?: OptimizelySegmentOption[]): Promise<boolean> {
     const segments = await this.optimizely.fetchQualifiedSegments(this.userId, options);
-    if (segments) {
-      this.qualifiedSegments = [...segments];
-    }
+
+    this.qualifiedSegments = segments;
 
     return !!segments;
   }
@@ -269,6 +266,10 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
    * @returns {boolean}           Boolean representing if a user qualified for the passed in segment.
    */
   isQualifiedFor(segment: string): boolean {
+    if (!this._qualifiedSegments) {
+      return false;
+    }
+
     return this._qualifiedSegments.indexOf(segment) > -1;
   }
 }

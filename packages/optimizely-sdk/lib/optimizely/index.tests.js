@@ -4588,6 +4588,25 @@ describe('lib/optimizely', function() {
         assert.deepEqual(userId, user.getUserId());
       });
 
+      it('should create OptimizelyUserContext when input userId is an empty string', function() {
+        var userId = '';
+        var user = optlyInstance.createUserContext(userId);
+        assert.instanceOf(user, OptimizelyUserContext);
+        assert.deepEqual(optlyInstance, user.getOptimizely());
+        assert.deepEqual({}, user.getAttributes());
+        assert.deepEqual(userId, user.getUserId());
+      });
+
+      it('should return null OptimizelyUserContext when input userId is null', function() {
+        var user = optlyInstance.createUserContext(null);
+        assert.deepEqual(null, user);
+      });
+
+      it('should return null OptimizelyUserContext when input userId is undefined', function() {
+        var user = optlyInstance.createUserContext(undefined);
+        assert.deepEqual(null, user);
+      });
+
       it('should create multiple instances of OptimizelyUserContext', function() {
         var userId1 = 'testUser1';
         var userId2 = 'testUser2';
@@ -10150,36 +10169,36 @@ describe('lib/optimizely', function() {
     });
 
     it('should send an identify event when called with odp enabled', () => {
-      //...
+      // TODO
     });
 
     it('should flush the odp event queue as part of the close() function call', () => {
-      //...
+      // TODO
     });
 
     describe('odp manager overrides', () => {
       it('should accept custom cache size and timeout overrides defined in odp service config', () => {
-        //...
+        // TODO
       });
 
       it('should accept a valid custom cache', () => {
-        //...
+        // TODO
       });
 
       it('should call logger with log level of "error" when custom cache is invalid', () => {
-        //...
+        // TODO
       });
 
       it('should accept a custom segment mananger override defined in odp service config', () => {
-        //...
+        // TODO
       });
 
       it('should accept a custom event manager override defined in odp service config', () => {
-        //...
+        // TODO
       });
 
       it('should call logger with log level of "error" when odp service config is invalid', () => {
-        //...
+        // TODO
       });
     });
   });

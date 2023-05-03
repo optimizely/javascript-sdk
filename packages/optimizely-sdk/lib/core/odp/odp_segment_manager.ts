@@ -16,15 +16,26 @@
 
 import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
-import { LRUCache } from '../../utils/lru_cache';
-import { OdpSegmentApiManager } from './odp_segment_api_manager';
+import { ICache } from '../../utils/lru_cache';
+import { IOdpSegmentApiManager } from './odp_segment_api_manager';
 import { OdpConfig } from './odp_config';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
+
+export interface IOdpSegmentManager {
+  fetchQualifiedSegments(
+    userKey: ODP_USER_KEY,
+    userValue: string,
+    options: Array<OptimizelySegmentOption>
+  ): Promise<string[] | null>;
+  reset(): void;
+  makeCacheKey(userKey: string, userValue: string): string;
+  updateSettings(config: OdpConfig): void;
+}
 
 /**
  * Schedules connections to ODP for audience segmentation and caches the results.
  */
-export class OdpSegmentManager {
+export class OdpSegmentManager implements IOdpSegmentManager {
   /**
    * ODP configuration settings in used
    * @private
@@ -35,13 +46,13 @@ export class OdpSegmentManager {
    * Holds cached audience segments
    * @private
    */
-  private _segmentsCache: LRUCache<string, string[]>;
+  private _segmentsCache: ICache<string, string[]>;
 
   /**
    * Getter for private segments cache
    * @public
    */
-  public get segmentsCache(): LRUCache<string, string[]> {
+  public get segmentsCache(): ICache<string, string[]> {
     return this._segmentsCache;
   }
 
@@ -49,7 +60,7 @@ export class OdpSegmentManager {
    * GraphQL API Manager used to fetch segments
    * @private
    */
-  private odpSegmentApiManager: OdpSegmentApiManager;
+  private odpSegmentApiManager: IOdpSegmentApiManager;
 
   /**
    * Handler for recording execution logs
@@ -59,8 +70,8 @@ export class OdpSegmentManager {
 
   constructor(
     odpConfig: OdpConfig,
-    segmentsCache: LRUCache<string, string[]>,
-    odpSegmentApiManager: OdpSegmentApiManager,
+    segmentsCache: ICache<string, string[]>,
+    odpSegmentApiManager: IOdpSegmentApiManager,
     logger?: LogHandler
   ) {
     this.odpConfig = odpConfig;
@@ -100,7 +111,9 @@ export class OdpSegmentManager {
     const ignoreCache = options.includes(OptimizelySegmentOption.IGNORE_CACHE);
     const resetCache = options.includes(OptimizelySegmentOption.RESET_CACHE);
 
-    if (resetCache) this.reset();
+    if (resetCache) {
+      this.reset();
+    }
 
     if (!ignoreCache && !resetCache) {
       const cachedSegments = this._segmentsCache.lookup(cacheKey);
@@ -121,7 +134,9 @@ export class OdpSegmentManager {
       segmentsToCheck
     );
 
-    if (segments && !ignoreCache) this._segmentsCache.save({ key: cacheKey, value: segments });
+    if (segments && !ignoreCache) {
+      this._segmentsCache.save({ key: cacheKey, value: segments });
+    }
 
     return segments;
   }
@@ -149,5 +164,6 @@ export class OdpSegmentManager {
    */
   public updateSettings(config: OdpConfig): void {
     this.odpConfig = config;
+    this._segmentsCache.reset();
   }
 }
