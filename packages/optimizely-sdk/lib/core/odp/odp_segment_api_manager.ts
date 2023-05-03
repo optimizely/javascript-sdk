@@ -108,9 +108,13 @@ export class OdpSegmentApiManager implements IOdpSegmentApiManager {
     }
 
     if (parsedSegments.errors?.length > 0) {
-      const errors = parsedSegments.errors.map(e => e.message).join('; ');
+      const { code, classification } = parsedSegments.errors[0].extensions;
 
-      this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (${errors})`);
+      if (code == "INVALID_IDENTIFIER_EXCEPTION") {
+        this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (invalid identifier)`);
+      } else {
+        this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (${classification})`);
+      }
 
       return null;
     }
