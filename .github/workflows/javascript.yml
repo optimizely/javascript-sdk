@@ -11,14 +11,13 @@ jobs:
     uses: optimizely/javascript-sdk/.github/workflows/lint_markdown.yml@master
 
   lint:
-    name: Lint codebase
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - name: Set up Node
       uses: actions/setup-node@v3
       with:
-        node-version: 18
+        node-version: 12
         cache-dependency-path: packages/optimizely-sdk/package-lock.json
         cache: 'npm'
     - name: Run linting
@@ -28,14 +27,12 @@ jobs:
         npm run lint
 
   integration_tests:
-    name: Run integration tests
     uses: optimizely/javascript-sdk/.github/workflows/integration_test.yml@master
     secrets:
       CI_USER_TOKEN: ${{ secrets.CI_USER_TOKEN }}
       TRAVIS_COM_TOKEN: ${{ secrets.TRAVIS_COM_TOKEN }}
 
   fullstack_production_suite:
-    name: Trigger fullstack production suite
     uses: optimizely/javascript-sdk/.github/workflows/integration_test.yml@master
     with:
       FULLSTACK_TEST_REPO: ProdTesting
@@ -44,7 +41,6 @@ jobs:
       TRAVIS_COM_TOKEN: ${{ secrets.TRAVIS_COM_TOKEN }}
 
   crossbrowser_and_umd_unit_tests:
-    name: Cross-browser & UMD unit tests
     runs-on: ubuntu-latest
     env:
       BROWSER_STACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
@@ -57,7 +53,7 @@ jobs:
     - name: Set up Node
       uses: actions/setup-node@v3
       with:
-        node-version: 18
+        node-version: 14
         cache: 'npm'
         cache-dependency-path: packages/optimizely-sdk/package-lock.json
     - name: Cross-browser and umd unit tests
@@ -67,11 +63,10 @@ jobs:
         npm run test-ci
 
   unit_tests:
-    name: Run unit tests on Node ${{ matrix.node }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [ '16', '18' ]
+        node: ['14', '16', '18' ]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Node ${{ matrix.node }}
@@ -98,7 +93,7 @@ jobs:
   # As testing against multiple versions need this to
   # finish the parallel build
   finish:
-    name: Check Coveralls coverage
+    name: Coveralls coverage
     needs: unit_tests
     runs-on: ubuntu-latest
     steps:
@@ -111,7 +106,6 @@ jobs:
           base-path: ./packages/optimizely-sdk
         
   test_sub_packages:
-    name: Test sub package: ${{ matrix.package }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -124,7 +118,7 @@ jobs:
     - name: Set up Node
       uses: actions/setup-node@v3
       with:
-        node-version: 18
+        node-version: 12
         cache: 'npm'
         cache-dependency-path: ${{ matrix.package }}/package-lock.json
     - name: Test sub packages
