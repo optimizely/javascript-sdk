@@ -1049,6 +1049,40 @@ describe('javascript-sdk (Browser)', function() {
 
         sinon.assert.notCalled(logger.error);
       });
+
+      it('should send odp client_initialized on client instantiation', async () => {
+        const odpConfig = new OdpConfig();
+        const apiManager = new BrowserOdpEventApiManager(mockRequestHandler, logger);
+        sinon.spy(apiManager, 'sendEvents');
+        const eventManager = new BrowserOdpEventManager({
+           odpConfig,
+           apiManager,
+           logger,
+        });
+        const datafile = testData.getOdpIntegratedConfigWithSegments();
+        const client = optimizelyFactory.createInstance({
+          datafile,
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpOptions: {
+            odpConfig,
+            eventManager,
+          },
+        });
+
+        const readyData = await client.onReady();
+        assert.equal(readyData.success, true);
+        assert.isUndefined(readyData.reason);
+
+        clock.tick(100);
+
+        const [,,events] = apiManager.sendEvents.getCall(0).args;
+        const [firstEvent] = events;
+        assert.equal(firstEvent.action, 'client_initialized');
+        assert.equal(firstEvent.type, 'fullstack');
+      });
     });
   });
 });
