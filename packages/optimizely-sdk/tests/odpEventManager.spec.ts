@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { ODP_EVENT_ACTION, ODP_DEFAULT_EVENT_TYPE } from './../lib/utils/enums/index';
-
+import { ODP_EVENT_ACTION, ODP_DEFAULT_EVENT_TYPE } from '../lib/utils/enums';
 import { OdpConfig } from '../lib/core/odp/odp_config';
 import { STATE } from '../lib/core/odp/odp_event_manager';
-import { NodeOdpEventManager as OdpEventManager } from '../lib/plugins/odp/event_manager/index.node';
+import { BrowserOdpEventManager } from "../lib/plugins/odp/event_manager/index.browser";
+import { NodeOdpEventManager, NodeOdpEventManager as OdpEventManager } from '../lib/plugins/odp/event_manager/index.node';
 import { anything, capture, instance, mock, resetCalls, spy, verify, when } from 'ts-mockito';
 import { NodeOdpEventApiManager as OdpEventApiManager } from '../lib/plugins/odp/event_api_manager/index.node';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
@@ -90,6 +90,30 @@ const PROCESSED_EVENTS: OdpEvent[] = [
     )
   ),
 ];
+const EVENT_WITH_EMPTY_IDENTIFIER  = new OdpEvent(
+    't4',
+    'a4',
+    new Map(),
+    new Map(
+        Object.entries({
+          'key-53f3': true,
+          'key-a04a': 123,
+          'key-2ab4': "Linus Torvalds",
+        })
+    )
+);
+const EVENT_WITH_UNDEFINED_IDENTIFIER  = new OdpEvent(
+    't4',
+    'a4',
+    undefined,
+    new Map(
+        Object.entries({
+          'key-53f3': false,
+          'key-a04a': 456,
+          'key-2ab4': "Bill Gates",
+        })
+    )
+);
 const makeEvent = (id: number) => {
   const identifiers = new Map<string, string>();
   identifiers.set('identifier1', 'value1-' + id);
@@ -454,5 +478,39 @@ describe('OdpEventManager', () => {
     expect(eventManager['odpConfig'].apiHost).toEqual(apiHost);
     expect(eventManager['odpConfig'].segmentsToCheck).toContain(Array.from(segmentsToCheck)[0]);
     expect(eventManager['odpConfig'].segmentsToCheck).toContain(Array.from(segmentsToCheck)[1]);
+  });
+
+  it('should error when no identifiers are provided in Node', () => {
+    const eventManager = new NodeOdpEventManager({
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+    });
+
+    eventManager.start();
+    eventManager.sendEvent(EVENT_WITH_EMPTY_IDENTIFIER);
+    eventManager.sendEvent(EVENT_WITH_UNDEFINED_IDENTIFIER);
+    eventManager.stop();
+
+    verify(mockLogger.log(LogLevel.ERROR, 'ODP events should have at least one key-value pair in identifiers.')).twice();
+  });
+
+  it('should never error when no identifiers are provided in Browser', () => {
+    const eventManager = new BrowserOdpEventManager({
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+    });
+
+    eventManager.start();
+    eventManager.sendEvent(EVENT_WITH_EMPTY_IDENTIFIER);
+    eventManager.sendEvent(EVENT_WITH_UNDEFINED_IDENTIFIER);
+    eventManager.stop();
+
+    verify(mockLogger.log(LogLevel.ERROR, 'ODP events should have at least one key-value pair in identifiers.')).never();
   });
 });
