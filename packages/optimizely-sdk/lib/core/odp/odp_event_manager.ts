@@ -243,6 +243,11 @@ export abstract class OdpEventManager implements IOdpEventManager {
       return;
     }
 
+    if (!this.hasNecessaryIdentifiers(event)) {
+      this.logger.log(LogLevel.ERROR, 'ODP events should have at least one key-value pair in identifiers.');
+      return;
+    }
+
     if (this.queue.length >= this.queueSize) {
       this.logger.log(
         LogLevel.WARNING,
@@ -256,6 +261,8 @@ export abstract class OdpEventManager implements IOdpEventManager {
 
     this.processQueue();
   }
+
+  protected abstract hasNecessaryIdentifiers(event: OdpEvent): boolean;
 
   /**
    * Process events in the main queue

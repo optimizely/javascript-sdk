@@ -1,5 +1,6 @@
 import { IOdpEventManager, OdpEventManager } from '../../../../lib/core/odp/odp_event_manager';
 import { LogLevel } from '../../../modules/logging';
+import {OdpEvent} from "../../../core/odp/odp_event";
 
 const DEFAULT_BROWSER_QUEUE_SIZE = 100;
 
@@ -28,4 +29,6 @@ export class BrowserOdpEventManager extends OdpEventManager implements IOdpEvent
     // in Browser/client-side context, give debug message but leave events in queue
     this.getLogger().log(LogLevel.DEBUG, 'ODPConfig not ready. Leaving events in queue.');
   }
+
+  protected hasNecessaryIdentifiers = (event: OdpEvent): boolean => event.identifiers.size >= 0;
 }
