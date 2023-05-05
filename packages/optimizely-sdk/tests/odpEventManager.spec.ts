@@ -94,25 +94,21 @@ const EVENT_WITH_EMPTY_IDENTIFIER  = new OdpEvent(
     't4',
     'a4',
     new Map(),
-    new Map(
-        Object.entries({
-          'key-53f3': true,
-          'key-a04a': 123,
-          'key-2ab4': "Linus Torvalds",
-        })
-    )
+    new Map<string, unknown>([
+      ['key-53f3', true],
+      ['key-a04a', 123],
+      ['key-2ab4', 'Linus Torvalds'],
+    ]),
 );
 const EVENT_WITH_UNDEFINED_IDENTIFIER  = new OdpEvent(
     't4',
     'a4',
     undefined,
-    new Map(
-        Object.entries({
-          'key-53f3': false,
-          'key-a04a': 456,
-          'key-2ab4': "Bill Gates",
-        })
-    )
+    new Map<string, unknown>([
+      ['key-53f3', false],
+      ['key-a04a', 456],
+      ['key-2ab4', 'Bill Gates']
+    ]),
 );
 const makeEvent = (id: number) => {
   const identifiers = new Map<string, string>();

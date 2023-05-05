@@ -1,6 +1,6 @@
 import { IOdpEventManager, OdpEventManager } from '../../../../lib/core/odp/odp_event_manager';
 import { LogLevel } from '../../../modules/logging';
-import {OdpEvent} from "../../../core/odp/odp_event";
+import { OdpEvent } from "../../../core/odp/odp_event";
 
 const DEFAULT_BROWSER_QUEUE_SIZE = 100;
 
