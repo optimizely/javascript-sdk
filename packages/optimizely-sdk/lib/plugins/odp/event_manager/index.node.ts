@@ -29,4 +29,6 @@ export class NodeOdpEventManager extends OdpEventManager implements IOdpEventMan
     this.getLogger().log(LogLevel.WARNING, 'ODPConfig not ready. Discarding events in queue.');
     this.queue = new Array<OdpEvent>();
   }
+
+  protected hasNecessaryIdentifiers = (event: OdpEvent): boolean => event.identifiers.size >= 1;
 }
