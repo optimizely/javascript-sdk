@@ -33,14 +33,12 @@ const EVENTS: OdpEvent[] = [
     't1',
     'a1',
     new Map([['id-key-1', 'id-value-1']]),
-    new Map(
-      Object.entries({
-        'key-1': 'value1',
-        'key-2': null,
-        'key-3': 3.3,
-        'key-4': true,
-      })
-    )
+    new Map<string, unknown>([
+        ['key-1', 'value1'],
+        ['key-2', null],
+        ['key-3', 3.3],
+        ['key-4', true],
+    ]),
   ),
   new OdpEvent(
     't2',
@@ -205,12 +203,10 @@ describe('OdpEventManager', () => {
       't3',
       'a3',
       new Map([['id-key-3', 'id-value-3']]),
-      new Map(
-        Object.entries({
-          'key-1': false,
-          'key-2': { random: 'object', whichShouldFail: true },
-        })
-      )
+      new Map<string, unknown>([
+          ['key-1', false],
+          ['key-2', { random: 'object', whichShouldFail: true }],
+      ]),
     );
     eventManager.sendEvent(badEvent);
 
