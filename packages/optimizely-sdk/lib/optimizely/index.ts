@@ -15,7 +15,7 @@
  ***************************************************************************/
 
 import { LoggerFacade, ErrorHandler } from '../modules/logging';
-import { sprintf, objectValues } from '../utils/fns';
+import { sprintf, objectValues, isBrowser } from '../utils/fns';
 import { NotificationCenter } from '../core/notification_center';
 import { EventProcessor } from '../modules/event_processor';
 
@@ -68,6 +68,8 @@ import {
   FS_USER_ID_ALIAS,
   ODP_USER_KEY,
 } from '../utils/enums';
+
+import { BrowserOdpManager } from '../../lib/plugins/odp_manager/index.browser';
 
 const MODULE_NAME = 'OPTIMIZELY';
 
@@ -175,24 +177,20 @@ export default class Optimizely implements Client {
 
     const eventProcessorStartedPromise = this.eventProcessor.start();
 
-    // TODO: Look into making VUID Initialization a dependent promise for Browser Contexts
-
-    // let dependentPromises: Promise<any>[] = [projectConfigManagerReadyPromise];
-
-    // if (isBrowserContext()) {
-    //   const odpManagerVuidInitializedPromise = (config.odpManager as BrowserOdpManager).initPromise;
-    //   if (odpManagerVuidInitializedPromise) {
-    //     dependentPromises.push(odpManagerVuidInitializedPromise);
-    //   }
-    // }
-
-    // this.readyPromise = Promise.all(dependentPromises).then(promiseResults => {
-
-    this.readyPromise = Promise.all([
+    const dependentPromises: Array<Promise<any> | void> = [
       projectConfigManagerReadyPromise,
       eventProcessorStartedPromise,
-      // config.odpManager.initPromise,
-    ]).then(promiseResults => {
+    ];
+
+    // Adds VUID initialization promise as a dependency for Browser...
+    if (isBrowser()) {
+      const odpManagerVuidInitializedPromise = (config.odpManager as BrowserOdpManager).initPromise;
+      if (odpManagerVuidInitializedPromise) {
+        dependentPromises.push(odpManagerVuidInitializedPromise);
+      }
+    }
+
+    this.readyPromise = Promise.all(dependentPromises).then(promiseResults => {
       if (config.odpManager != null) {
         this.odpManager = config.odpManager;
         this.odpManager.eventManager?.start();

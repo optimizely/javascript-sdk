@@ -1,6 +1,6 @@
-import { OdpEvent } from "../../../core/odp/odp_event";
-import { OdpEventApiManager } from "../../../core/odp/odp_event_api_manager";
-import { LogHandler, LogLevel } from '../../../modules/logging';
+import { OdpEvent } from '../../../core/odp/odp_event';
+import { OdpEventApiManager } from '../../../core/odp/odp_event_api_manager';
+import { LogLevel } from '../../../modules/logging';
 import { ODP_EVENT_BROWSER_ENDPOINT } from '../../../utils/enums';
 
 const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
@@ -14,15 +14,19 @@ export class BrowserOdpEventApiManager extends OdpEventApiManager {
     return false;
   }
 
-  protected generateRequestData(apiHost: string, apiKey: string, events: OdpEvent[]): { method: string; endpoint: string; headers: { [key: string]: string; }; data: string; } {
-    const method = 'GET'; 
+  protected generateRequestData(
+    apiHost: string,
+    apiKey: string,
+    events: OdpEvent[]
+  ): { method: string; endpoint: string; headers: { [key: string]: string }; data: string } {
+    const method = 'GET';
     const event = events[0];
     const url = new URL(ODP_EVENT_BROWSER_ENDPOINT);
-    event.identifiers.forEach((v, k) =>{
-        url.searchParams.append(k, v);
+    event.identifiers.forEach((v, k) => {
+      url.searchParams.append(k, v);
     });
-    event.data.forEach((v, k) =>{
-        url.searchParams.append(k, v as string);
+    event.data.forEach((v, k) => {
+      url.searchParams.append(k, v as string);
     });
     url.searchParams.append('tracker_id', apiKey);
     url.searchParams.append('event_type', event.type);
@@ -32,7 +36,7 @@ export class BrowserOdpEventApiManager extends OdpEventApiManager {
       method,
       endpoint,
       headers: {},
-      data: "",
+      data: '',
     };
   }
 }
