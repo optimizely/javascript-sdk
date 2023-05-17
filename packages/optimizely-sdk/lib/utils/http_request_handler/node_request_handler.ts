@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Optimizely
+ * Copyright 2022-2023 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import http from 'http';
 import https from 'https';
 import url from 'url';
@@ -62,17 +61,14 @@ export class NodeRequestHandler implements RequestHandler {
       },
       timeout: this.timeout,
     });
-    const responsePromise = this.getResponseFromRequest(request);
+    const abortableRequest = this.getAbortableRequestFromRequest(request);
 
     if (data) {
       request.write(data);
     }
     request.end();
 
-    return {
-      abort: () => request.destroy(),
-      responsePromise,
-    };
+    return abortableRequest;
   }
 
   /**
@@ -119,11 +115,19 @@ export class NodeRequestHandler implements RequestHandler {
    * Sends a built request handling response, errors, and events around the transmission
    * @param request Request to send
    * @private
-   * @returns Response Promise-wrapped, simplified response object
+   * @returns AbortableRequest with simplified response promise
    */
-  private getResponseFromRequest(request: http.ClientRequest): Promise<Response> {
-    return new Promise((resolve, reject) => {
+  private getAbortableRequestFromRequest(request: http.ClientRequest): AbortableRequest {
+    let aborted = false;
+  
+    const abort = () => {
+      aborted = true;
+      request.destroy();
+    };
+
+    const responsePromise: Promise<Response> = new Promise((resolve, reject) => {
       request.on('timeout', () => {
+        aborted = true;
         request.destroy();
         reject(new Error('Request timed out'));
       });
@@ -140,7 +144,7 @@ export class NodeRequestHandler implements RequestHandler {
       });
 
       request.once('response', (incomingMessage: http.IncomingMessage) => {
-        if (request.destroyed) {
+        if (aborted) {
           return;
         }
 
@@ -150,13 +154,13 @@ export class NodeRequestHandler implements RequestHandler {
 
         let responseData = '';
         response.on('data', (chunk: string) => {
-          if (!request.destroyed) {
+          if (!aborted) {
             responseData += chunk;
           }
         });
 
         response.on('end', () => {
-          if (request.destroyed) {
+          if (aborted) {
             return;
           }
 
@@ -168,5 +172,7 @@ export class NodeRequestHandler implements RequestHandler {
         });
       });
     });
+
+    return { abort, responsePromise };
   }
 }
