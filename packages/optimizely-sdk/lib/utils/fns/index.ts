@@ -51,7 +51,7 @@ function isSafeInteger(number: unknown): boolean {
 
 export function keyBy<K>(arr: K[], key: string): { [key: string]: K } {
   if (!arr) return {};
-  return keyByUtil(arr, function (item) {
+  return keyByUtil(arr, function(item) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (item as any)[key];
   });
@@ -62,84 +62,84 @@ function isNumber(value: unknown): boolean {
 }
 
 export function uuid(): string {
-  return v4()
+  return v4();
 }
 
-export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>
+export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 
 export function getTimestamp(): number {
-  return new Date().getTime()
+  return new Date().getTime();
 }
 
 /**
-* Validates a value is a valid TypeScript enum
-*
-* @export
-* @param {object} enumToCheck
-* @param {*} value
-* @returns {boolean}
-*/
+ * Validates a value is a valid TypeScript enum
+ *
+ * @export
+ * @param {object} enumToCheck
+ * @param {*} value
+ * @returns {boolean}
+ */
 // TODO[OASIS-6649]: Don't use any type
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 export function isValidEnum(enumToCheck: { [key: string]: any }, value: number | string): boolean {
-  let found = false
+  let found = false;
 
-  const keys = Object.keys(enumToCheck)
+  const keys = Object.keys(enumToCheck);
   for (let index = 0; index < keys.length; index++) {
     if (value === enumToCheck[keys[index]]) {
-      found = true
-      break
+      found = true;
+      break;
     }
   }
-  return found
+  return found;
 }
 
 export function groupBy<K>(arr: K[], grouperFn: (item: K) => string): Array<K[]> {
-  const grouper: { [key: string]: K[] } = {}
+  const grouper: { [key: string]: K[] } = {};
 
   arr.forEach(item => {
-    const key = grouperFn(item)
-    grouper[key] = grouper[key] || []
-    grouper[key].push(item)
-  })
+    const key = grouperFn(item);
+    grouper[key] = grouper[key] || [];
+    grouper[key].push(item);
+  });
 
-  return objectValues(grouper)
+  return objectValues(grouper);
 }
 
 export function objectValues<K>(obj: { [key: string]: K }): K[] {
-  return Object.keys(obj).map(key => obj[key])
+  return Object.keys(obj).map(key => obj[key]);
 }
 
 export function objectEntries<K>(obj: { [key: string]: K }): [string, K][] {
-  return Object.keys(obj).map(key => [key, obj[key]])
+  return Object.keys(obj).map(key => [key, obj[key]]);
 }
 
 export function find<K>(arr: K[], cond: (arg: K) => boolean): K | undefined {
-  let found
+  let found;
 
   for (const item of arr) {
     if (cond(item)) {
-      found = item
-      break
+      found = item;
+      break;
     }
   }
 
-  return found
+  return found;
 }
 
 export function keyByUtil<K>(arr: K[], keyByFn: (item: K) => string): { [key: string]: K } {
-  const map: { [key: string]: K } = {}
+  const map: { [key: string]: K } = {};
   arr.forEach(item => {
-    const key = keyByFn(item)
-    map[key] = item
-  })
-  return map
+    const key = keyByFn(item);
+    map[key] = item;
+  });
+  return map;
 }
 
 // TODO[OASIS-6649]: Don't use any type
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 export function sprintf(format: string, ...args: any[]): string {
-  let i = 0
+  let i = 0;
   return format.replace(/%s/g, function() {
     const arg = args[i++];
     const type = typeof arg;
@@ -150,10 +150,8 @@ export function sprintf(format: string, ...args: any[]): string {
     } else {
       return String(arg);
     }
-  })
+  });
 }
-
-
 
 /**
  * Checks two string arrays for equality.
@@ -163,6 +161,18 @@ export function sprintf(format: string, ...args: any[]): string {
  */
 export function checkArrayEquality(arrayA: string[], arrayB: string[]): boolean {
   return arrayA.length === arrayB.length && arrayA.every((item, index) => item === arrayB[index]);
+}
+
+/**
+ * Checks the current running context
+ * @returns {boolean} True if window object exists.
+ */
+export function isBrowser(): boolean {
+  if (typeof window === 'object' && typeof process !== 'object' && typeof require !== 'function') {
+    return true;
+  }
+
+  return false;
 }
 
 export default {
@@ -181,4 +191,5 @@ export default {
   find,
   keyByUtil,
   sprintf,
+  isBrowser,
 };
