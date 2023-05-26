@@ -25,6 +25,7 @@ import optimizelyFactory from './index.browser';
 import configValidator from './utils/config_validator';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import OptimizelyUserContext from './optimizely_user_context';
+
 import { LOG_MESSAGES, ODP_EVENT_ACTION, ODP_EVENT_BROWSER_ENDPOINT } from './utils/enums';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import { OdpConfig } from './core/odp/odp_config';
@@ -642,6 +643,38 @@ describe('javascript-sdk (Browser)', function() {
         });
 
         sinon.assert.calledWith(logger.log, optimizelyFactory.enums.LOG_LEVEL.INFO, LOG_MESSAGES.ODP_DISABLED);
+      });
+
+      it('should include the VUID instantation promise of Browser ODP Manager in the Optimizely client onReady promise dependency array', () => {
+        const client = optimizelyFactory.createInstance({
+          datafile: testData.getTestProjectConfigWithFeatures(),
+          errorHandler: fakeErrorHandler,
+          eventDispatcher: fakeEventDispatcher,
+          eventBatchSize: null,
+          logger,
+          odpManager: new BrowserOdpManager({
+            logger,
+          }),
+        });
+
+        client
+          .onReady()
+          .then(() => {
+            assert.isDefined(client.odpManager.initPromise);
+            client.odpManager.initPromise
+              .then(() => {
+                assert.isTrue(true);
+              })
+              .catch(() => {
+                assert.isTrue(false);
+              });
+            assert.isDefined(client.odpManager.getVuid());
+          })
+          .catch(() => {
+            assert.isTrue(false);
+          });
+
+        sinon.assert.neverCalledWith(logger.log, optimizelyFactory.enums.LOG_LEVEL.ERROR);
       });
 
       it('should accept a valid custom cache size', () => {

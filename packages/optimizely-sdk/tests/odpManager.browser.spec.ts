@@ -31,7 +31,6 @@ import { BrowserOdpEventManager } from '../lib/plugins/odp/event_manager/index.b
 import { OdpSegmentManager } from './../lib/core/odp/odp_segment_manager';
 import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
 import { VuidManager } from '../lib/plugins/vuid_manager';
-import { OdpEvent } from '../lib/core/odp/odp_event';
 import { BrowserRequestHandler } from '../lib/utils/http_request_handler/browser_request_handler';
 
 const keyA = 'key-a';

@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ export class OdpSegmentApiManager implements IOdpSegmentApiManager {
    * @param userValue Associated value to query for the user key
    * @param segmentsToCheck Audience segments to check for experiment inclusion
    */
-  public async fetchSegments(
+  async fetchSegments(
     apiKey: string,
     apiHost: string,
     userKey: ODP_USER_KEY,
@@ -110,7 +110,7 @@ export class OdpSegmentApiManager implements IOdpSegmentApiManager {
     if (parsedSegments.errors?.length > 0) {
       const { code, classification } = parsedSegments.errors[0].extensions;
 
-      if (code == "INVALID_IDENTIFIER_EXCEPTION") {
+      if (code == 'INVALID_IDENTIFIER_EXCEPTION') {
         this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (invalid identifier)`);
       } else {
         this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (${classification})`);

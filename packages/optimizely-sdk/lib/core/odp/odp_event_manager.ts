@@ -61,59 +61,69 @@ export abstract class OdpEventManager implements IOdpEventManager {
   /**
    * Current state of the event processor
    */
-  public state: STATE = STATE.STOPPED;
+  state: STATE = STATE.STOPPED;
+
   /**
    * Queue for holding all events to be eventually dispatched
    * @protected
    */
   protected queue = new Array<OdpEvent>();
+
   /**
    * Identifier of the currently running timeout so clearCurrentTimeout() can be called
    * @private
    */
   private timeoutId?: NodeJS.Timeout | number;
+
   /**
-   * ODP configuration settings in used
+   * ODP configuration settings for identifying the target API and segments
    * @private
    */
   private odpConfig: OdpConfig;
+
   /**
    * REST API Manager used to send the events
    * @private
    */
   private readonly apiManager: IOdpEventApiManager;
+
   /**
    * Handler for recording execution logs
    * @private
    */
   private readonly logger: LogHandler;
+
   /**
    * Maximum queue size
    * @protected
    */
   protected queueSize!: number;
+
   /**
    * Maximum number of events to process at once. Ignored in browser context
    * @protected
    */
   protected batchSize!: number;
+
   /**
    * Milliseconds between setTimeout() to process new batches. Ignored in browser context
    * @protected
    */
   protected flushInterval!: number;
+
   /**
    * Type of execution context eg node, js, react
    * @private
    */
   private readonly clientEngine: string;
+
   /**
    * Version of the client being used
    * @private
    */
   private readonly clientVersion: string;
 
-  public constructor({
+  constructor({
     odpConfig,
     apiManager,
     logger,
@@ -151,21 +161,21 @@ export abstract class OdpEventManager implements IOdpEventManager {
    * Update ODP configuration settings.
    * @param newConfig New configuration to apply
    */
-  public updateSettings(newConfig: OdpConfig): void {
+  updateSettings(newConfig: OdpConfig): void {
     this.odpConfig = newConfig;
   }
 
   /**
    * Cleans up all pending events; occurs every time the ODP Config is updated.
    */
-  public flush(): void {
+  flush(): void {
     this.processQueue(true);
   }
 
   /**
    * Start processing events in the queue
    */
-  public start(): void {
+  start(): void {
     this.state = STATE.RUNNING;
 
     this.setNewTimeout();
@@ -174,7 +184,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
   /**
    * Drain the queue sending all remaining events in batches then stop processing
    */
-  public async stop(): Promise<void> {
+  async stop(): Promise<void> {
     this.logger.log(LogLevel.DEBUG, 'Stop requested.');
 
     await this.processQueue(true);
@@ -187,7 +197,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
    * Register a new visitor user id (VUID) in ODP
    * @param vuid Visitor User ID to send
    */
-  public registerVuid(vuid: string): void {
+  registerVuid(vuid: string): void {
     const identifiers = new Map<string, string>();
     identifiers.set(ODP_USER_KEY.VUID, vuid);
 
@@ -200,7 +210,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
    * @param {string} userId   (Optional) Full-stack User ID
    * @param {string} vuid     (Optional) Visitor User ID
    */
-  public identifyUser(userId?: string, vuid?: string): void {
+  identifyUser(userId?: string, vuid?: string): void {
     const identifiers = new Map<string, string>();
     if (!userId && !vuid) {
       this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_UID_MISSING);
@@ -223,7 +233,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
    * Send an event to ODP via dispatch queue
    * @param event ODP Event to forward
    */
-  public sendEvent(event: OdpEvent): void {
+  sendEvent(event: OdpEvent): void {
     if (invalidOdpDataFound(event.data)) {
       this.logger.log(LogLevel.ERROR, 'Event data found to be invalid.');
     } else {

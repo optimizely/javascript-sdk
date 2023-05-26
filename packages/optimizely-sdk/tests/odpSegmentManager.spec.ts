@@ -30,7 +30,7 @@ import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
 
 describe('OdpSegmentManager', () => {
   class MockOdpSegmentApiManager extends OdpSegmentApiManager {
-    public async fetchSegments(
+    async fetchSegments(
       apiKey: string,
       apiHost: string,
       userKey: ODP_USER_KEY,

@@ -1,5 +1,5 @@
 /**
- * Copyright 2017, 2019-2020, 2022, Optimizely
+ * Copyright 2017, 2019-2020, 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -163,18 +163,6 @@ export function checkArrayEquality(arrayA: string[], arrayB: string[]): boolean 
   return arrayA.length === arrayB.length && arrayA.every((item, index) => item === arrayB[index]);
 }
 
-/**
- * Checks the current running context
- * @returns {boolean} True if window object exists.
- */
-export function isBrowser(): boolean {
-  if (typeof window === 'object' && typeof process !== 'object' && typeof require !== 'function') {
-    return true;
-  }
-
-  return false;
-}
-
 export default {
   assign,
   checkArrayEquality,
@@ -191,5 +179,4 @@ export default {
   find,
   keyByUtil,
   sprintf,
-  isBrowser,
 };

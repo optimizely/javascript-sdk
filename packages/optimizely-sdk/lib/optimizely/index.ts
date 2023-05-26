@@ -15,7 +15,7 @@
  ***************************************************************************/
 
 import { LoggerFacade, ErrorHandler } from '../modules/logging';
-import { sprintf, objectValues, isBrowser } from '../utils/fns';
+import { sprintf, objectValues } from '../utils/fns';
 import { NotificationCenter } from '../core/notification_center';
 import { EventProcessor } from '../modules/event_processor';
 
@@ -180,17 +180,11 @@ export default class Optimizely implements Client {
     const dependentPromises: Array<Promise<any> | void> = [
       projectConfigManagerReadyPromise,
       eventProcessorStartedPromise,
+      config.odpManager?.initPromise,
     ];
 
-    // Adds VUID initialization promise as a dependency for Browser...
-    if (isBrowser()) {
-      const odpManagerVuidInitializedPromise = (config.odpManager as BrowserOdpManager).initPromise;
-      if (odpManagerVuidInitializedPromise) {
-        dependentPromises.push(odpManagerVuidInitializedPromise);
-      }
-    }
-
     this.readyPromise = Promise.all(dependentPromises).then(promiseResults => {
+      // If no odpManager exists yet, creates a new one
       if (config.odpManager != null) {
         this.odpManager = config.odpManager;
         this.odpManager.eventManager?.start();

@@ -31,10 +31,7 @@ export class NotificationRegistry {
    * @param logger Logger to be used for the corresponding notification center
    * @returns {NotificationCenter | undefined} a notification center instance for ODP Manager if a valid SDK Key is provided, otherwise undefined
    */
-  public static getNotificationCenter(
-    sdkKey?: string,
-    logger: LogHandler = getLogger()
-  ): NotificationCenter | undefined {
+  static getNotificationCenter(sdkKey?: string, logger: LogHandler = getLogger()): NotificationCenter | undefined {
     if (!sdkKey) {
       logger.log(LogLevel.ERROR, 'No SDK key provided to getNotificationCenter.');
       return undefined;
@@ -54,7 +51,7 @@ export class NotificationRegistry {
     return notificationCenter;
   }
 
-  public static removeNotificationCenter(sdkKey?: string): void {
+  static removeNotificationCenter(sdkKey?: string): void {
     if (!sdkKey) {
       return;
     }

@@ -65,7 +65,7 @@ export class LRUCache<K, V> implements ICache<K, V> {
    * Returns a valid, non-stale value from LRU Cache based on an input key.
    * Additionally moves the element to the end of the cache and removes from cache if stale.
    */
-  public lookup(key: K): V | null {
+  lookup(key: K): V | null {
     if (this._maxSize <= 0) {
       return null;
     }
@@ -89,7 +89,7 @@ export class LRUCache<K, V> implements ICache<K, V> {
    * Inserts/moves an input key-value pair to the end of the LRU Cache.
    * Removes the least-recently used element if the cache exceeds it's maxSize.
    */
-  public save({ key, value }: { key: K; value: V }): void {
+  save({ key, value }: { key: K; value: V }): void {
     if (this._maxSize <= 0) return;
 
     const element: CacheElement<V> | undefined = this._map.get(key);
@@ -105,7 +105,7 @@ export class LRUCache<K, V> implements ICache<K, V> {
   /**
    * Clears the LRU Cache
    */
-  public reset(): void {
+  reset(): void {
     if (this._maxSize <= 0) return;
 
     this._map.clear();
@@ -115,7 +115,7 @@ export class LRUCache<K, V> implements ICache<K, V> {
    * Reads value from specified key without moving elements in the LRU Cache.
    * @param {K} key
    */
-  public peek(key: K): V | null {
+  peek(key: K): V | null {
     if (this._maxSize <= 0) return null;
 
     const element: CacheElement<V> | undefined = this._map.get(key);
