@@ -27,16 +27,31 @@ import { OptimizelySegmentOption } from './optimizely_segment_option';
 import { invalidOdpDataFound } from './odp_utils';
 import { OdpEvent } from './odp_event';
 
+/**
+ * Manager for handling internal all business logic related to
+ * Optimizely Data Platform (ODP) / Advanced Audience Targeting (AAT)
+ */
 export interface IOdpManager {
+  initPromise?: Promise<void>;
+
   enabled: boolean;
+
   segmentManager: IOdpSegmentManager | undefined;
+
   eventManager: IOdpEventManager | undefined;
+
   updateSettings({ apiKey, apiHost, segmentsToCheck }: OdpConfig): boolean;
+
   close(): void;
+
   fetchQualifiedSegments(userId: string, options?: Array<OptimizelySegmentOption>): Promise<string[] | null>;
+
   identifyUser(userId?: string, vuid?: string): void;
+
   sendEvent({ type, action, identifiers, data }: OdpEvent): void;
+
   isVuidEnabled(): boolean;
+
   getVuid(): string | undefined;
 }
 
@@ -44,10 +59,15 @@ export interface IOdpManager {
  * Orchestrates segments manager, event manager, and ODP configuration
  */
 export abstract class OdpManager implements IOdpManager {
+  /**
+   * Promise that returns when the OdpManager is finished initializing
+   */
   initPromise?: Promise<void>;
+
+  /**
+   * Switch to enable/disable ODP Manager functionality
+   */
   enabled = true;
-  logger: LogHandler = getLogger();
-  odpConfig: OdpConfig = new OdpConfig();
 
   /**
    * ODP Segment Manager which provides an interface to the remote ODP server (GraphQL API) for audience segments mapping.
@@ -61,7 +81,18 @@ export abstract class OdpManager implements IOdpManager {
    */
   eventManager: IOdpEventManager | undefined;
 
-  constructor() {}
+  /**
+   * Handler for recording execution logs
+   * @protected
+   */
+  protected logger: LogHandler = getLogger(); // TODO: Consider making private and moving instantiation to constructor
+
+  /**
+   * ODP configuration settings for identifying the target API and segments
+   */
+  odpConfig: OdpConfig = new OdpConfig(); // TODO: Consider making private and adding public accessors
+
+  constructor() {} // TODO: Consider accepting logger as a parameter and initializing it in constructor instead
 
   /**
    * Provides a method to update ODP Manager's ODP Config API Key, API Host, and Audience Segments
@@ -195,7 +226,13 @@ export abstract class OdpManager implements IOdpManager {
     this.eventManager.sendEvent(new OdpEvent(mType, action, identifiers, data));
   }
 
+  /**
+   * Identifies if the VUID feature is enabled
+   */
   abstract isVuidEnabled(): boolean;
 
+  /**
+   * Returns VUID value if it exists
+   */
   abstract getVuid(): string | undefined;
 }

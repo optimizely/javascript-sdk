@@ -48,7 +48,7 @@ export class VuidManager implements IVuidManager {
   /**
    * Get the current VUID value being used
    */
-  public get vuid(): string {
+  get vuid(): string {
     return this._vuid;
   }
 
@@ -67,7 +67,7 @@ export class VuidManager implements IVuidManager {
    * @param cache Caching mechanism to use for persisting the VUID outside working memory   *
    * @returns An instance of VuidManager
    */
-  public static async instance(cache: PersistentKeyValueCache): Promise<VuidManager> {
+  static async instance(cache: PersistentKeyValueCache): Promise<VuidManager> {
     if (!this._instance) {
       this._instance = new VuidManager();
     }
@@ -83,6 +83,7 @@ export class VuidManager implements IVuidManager {
    * Attempts to load a VUID from persistent cache or generates a new VUID
    * @param cache Caching mechanism to use for persisting the VUID outside working memory
    * @returns Current VUID stored in the VuidManager
+   * @private
    */
   private async load(cache: PersistentKeyValueCache): Promise<string> {
     const cachedValue = await cache.get(this._keyForVuid);
@@ -99,6 +100,7 @@ export class VuidManager implements IVuidManager {
   /**
    * Creates a new VUID
    * @returns A new visitor unique identifier
+   * @private
    */
   private makeVuid(): string {
     const maxLength = 32; // required by ODP server
@@ -115,6 +117,7 @@ export class VuidManager implements IVuidManager {
    * Saves a VUID to a persistent cache
    * @param vuid VUID to be stored
    * @param cache Caching mechanism to use for persisting the VUID outside working memory
+   * @private
    */
   private async save(vuid: string, cache: PersistentKeyValueCache): Promise<void> {
     await cache.set(this._keyForVuid, vuid);
@@ -130,6 +133,7 @@ export class VuidManager implements IVuidManager {
   /**
    * Function used in unit testing to reset the VuidManager
    * **Important**: This should not to be used in production code
+   * @private
    */
   private static _reset(): void {
     this._instance._vuid = '';

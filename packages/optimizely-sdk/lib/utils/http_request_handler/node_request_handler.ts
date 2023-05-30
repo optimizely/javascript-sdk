@@ -28,7 +28,7 @@ export class NodeRequestHandler implements RequestHandler {
   private readonly logger: LogHandler;
   private readonly timeout: number;
 
-  public constructor(logger: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
+  constructor(logger: LogHandler, timeout: number = REQUEST_TIMEOUT_MS) {
     this.logger = logger;
     this.timeout = timeout;
   }
@@ -41,14 +41,13 @@ export class NodeRequestHandler implements RequestHandler {
    * @param data? stringified version of data to POST, PUT, etc
    * @returns AbortableRequest contains both the response Promise and capability to abort()
    */
-  public makeRequest(requestUrl: string, headers: Headers, method: string, data?: string): AbortableRequest {
+  makeRequest(requestUrl: string, headers: Headers, method: string, data?: string): AbortableRequest {
     const parsedUrl = url.parse(requestUrl);
 
     if (parsedUrl.protocol !== 'https:') {
       return {
         responsePromise: Promise.reject(new Error(`Unsupported protocol: ${parsedUrl.protocol}`)),
-        abort: () => {
-        },
+        abort: () => {},
       };
     }
 
@@ -119,7 +118,7 @@ export class NodeRequestHandler implements RequestHandler {
    */
   private getAbortableRequestFromRequest(request: http.ClientRequest): AbortableRequest {
     let aborted = false;
-  
+
     const abort = () => {
       aborted = true;
       request.destroy();

@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,22 +18,22 @@ export class OdpEvent {
   /**
    * Type of event (typically "fullstack")
    */
-  public type: string;
+  type: string;
 
   /**
    * Subcategory of the event type
    */
-  public action: string;
+  action: string;
 
   /**
    * Key-value map of user identifiers
    */
-  public identifiers: Map<string, string>;
+  identifiers: Map<string, string>;
 
   /**
    * Event data in a key-value map
    */
-  public data: Map<string, unknown>;
+  data: Map<string, unknown>;
 
   /**
    * Event to be sent and stored in the Optimizely Data Platform

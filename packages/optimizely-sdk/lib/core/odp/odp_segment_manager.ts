@@ -52,7 +52,7 @@ export class OdpSegmentManager implements IOdpSegmentManager {
    * Getter for private segments cache
    * @public
    */
-  public get segmentsCache(): ICache<string, string[]> {
+  get segmentsCache(): ICache<string, string[]> {
     return this._segmentsCache;
   }
 
@@ -162,7 +162,7 @@ export class OdpSegmentManager implements IOdpSegmentManager {
    * Updates the ODP Config settings of ODP Segment Manager
    * @param config New ODP Config that will overwrite the existing config
    */
-  public updateSettings(config: OdpConfig): void {
+  updateSettings(config: OdpConfig): void {
     this.odpConfig = config;
     this._segmentsCache.reset();
   }

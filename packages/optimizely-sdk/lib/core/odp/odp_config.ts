@@ -27,7 +27,7 @@ export class OdpConfig {
    * Getter to retrieve the ODP server host
    * @public
    */
-  public get apiHost(): string {
+  get apiHost(): string {
     return this._apiHost;
   }
 
@@ -41,7 +41,7 @@ export class OdpConfig {
    * Getter to retrieve the ODP API key
    * @public
    */
-  public get apiKey(): string {
+  get apiKey(): string {
     return this._apiKey;
   }
 
@@ -55,7 +55,7 @@ export class OdpConfig {
    * Getter for ODP segments to check
    * @public
    */
-  public get segmentsToCheck(): string[] {
+  get segmentsToCheck(): string[] {
     return this._segmentsToCheck;
   }
 
@@ -70,7 +70,7 @@ export class OdpConfig {
    * @param {OdpConfig} config New ODP Config to potentially update self with
    * @returns true if configuration was updated successfully
    */
-  public update(config: OdpConfig): boolean {
+  update(config: OdpConfig): boolean {
     if (this.equals(config)) {
       return false;
     } else {
@@ -85,7 +85,7 @@ export class OdpConfig {
   /**
    * Determines if ODP configuration has the minimum amount of information
    */
-  public isReady(): boolean {
+  isReady(): boolean {
     return !!this._apiKey && !!this._apiHost;
   }
 
@@ -94,7 +94,7 @@ export class OdpConfig {
    * @param configToCompare ODP Configuration to check self against for equality
    * @returns Boolean based on if the current ODP Config is equivalent to the incoming ODP Config
    */
-  public equals(configToCompare: OdpConfig): boolean {
+  equals(configToCompare: OdpConfig): boolean {
     return (
       this._apiHost === configToCompare._apiHost &&
       this._apiKey === configToCompare._apiKey &&

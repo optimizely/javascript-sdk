@@ -130,6 +130,7 @@ export class BrowserOdpManager extends OdpManager {
 
   /**
    * Upon initializing BrowserOdpManager, accesses or creates new VUID from Browser cache and registers it via the Event Manager
+   * @private
    */
   private async initializeVuid(cache: PersistentKeyValueCache): Promise<void> {
     const vuidManager = await VuidManager.instance(cache);
@@ -156,7 +157,7 @@ export class BrowserOdpManager extends OdpManager {
    * - Additionally, also passes VUID to help identify client-side users
    * @param fsUserId Unique identifier of a target user.
    */
-  public identifyUser(fsUserId?: string, vuid?: string): void {
+  identifyUser(fsUserId?: string, vuid?: string): void {
     if (fsUserId && VuidManager.isVuid(fsUserId)) {
       super.identifyUser(undefined, fsUserId);
       return;
@@ -177,7 +178,7 @@ export class BrowserOdpManager extends OdpManager {
    * - Identifiers must contain at least one key-value pair
    * @param {OdpEvent} odpEvent  > ODP Event to send to event manager
    */
-  public sendEvent({ type, action, identifiers, data }: OdpEvent): void {
+  sendEvent({ type, action, identifiers, data }: OdpEvent): void {
     const identifiersWithVuid = new Map<string, string>(identifiers);
 
     if (!identifiers.has(ODP_USER_KEY.VUID)) {
@@ -191,11 +192,11 @@ export class BrowserOdpManager extends OdpManager {
     super.sendEvent({ type, action, identifiers: identifiersWithVuid, data });
   }
 
-  public isVuidEnabled(): boolean {
+  isVuidEnabled(): boolean {
     return true;
   }
 
-  public getVuid(): string | undefined {
+  getVuid(): string | undefined {
     return this.vuid;
   }
 }

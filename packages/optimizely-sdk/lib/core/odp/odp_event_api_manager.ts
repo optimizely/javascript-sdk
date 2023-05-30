@@ -31,7 +31,16 @@ export interface IOdpEventApiManager {
  * Concrete implementation for accessing the ODP REST API
  */
 export abstract class OdpEventApiManager implements IOdpEventApiManager {
+  /**
+   * Handler for recording execution logs
+   * @private
+   */
   private readonly logger: LogHandler;
+
+  /**
+   * Handler for making external HTTP/S requests
+   * @private
+   */
   private readonly requestHandler: RequestHandler;
 
   /**
@@ -44,7 +53,7 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
     this.logger = logger;
   }
 
-  public getLogger(): LogHandler {
+  getLogger(): LogHandler {
     return this.logger;
   }
 
@@ -55,7 +64,7 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
    * @param events ODP events to send
    * @returns Retry is true - if network or server error (5xx), otherwise false
    */
-  public async sendEvents(apiKey: string, apiHost: string, events: OdpEvent[]): Promise<boolean> {
+  async sendEvents(apiKey: string, apiHost: string, events: OdpEvent[]): Promise<boolean> {
     let shouldRetry = false;
 
     if (!apiKey || !apiHost) {
@@ -101,10 +110,14 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
 
   protected abstract shouldSendEvents(events: OdpEvent[]): boolean;
 
-  protected abstract generateRequestData(apiHost: string, apiKey: string, events: OdpEvent[]): {
-    method: string,
-    endpoint: string,
-    headers: {[key: string]: string},
-    data: string,
-  }
+  protected abstract generateRequestData(
+    apiHost: string,
+    apiKey: string,
+    events: OdpEvent[]
+  ): {
+    method: string;
+    endpoint: string;
+    headers: { [key: string]: string };
+    data: string;
+  };
 }
