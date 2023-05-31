@@ -74,9 +74,13 @@ export class OptimizelyConfig {
       return resultMap;
     }, {});
 
+    const variableIdMap = OptimizelyConfig.getVariableIdMap(configObj);
+
     const experimentsMapById = OptimizelyConfig.getExperimentsMapById(configObj, featureIdVariablesMap);
     this.experimentsMap = OptimizelyConfig.getExperimentsKeyMap(experimentsMapById);
-    this.featuresMap = OptimizelyConfig.getFeaturesMap(configObj, featureIdVariablesMap, experimentsMapById);
+    this.featuresMap = OptimizelyConfig.getFeaturesMap(
+      configObj, featureIdVariablesMap, experimentsMapById, variableIdMap
+    );
     this.datafile = datafile;
   }
 
@@ -302,9 +306,9 @@ export class OptimizelyConfig {
     configObj: ProjectConfig,
     featureVariableIdMap: FeatureVariablesMap,
     featureId: string,
-    experiments: Experiment[]
+    experiments: Experiment[],
+    variableIdMap: {[id: string]: FeatureVariable}
   ): OptimizelyExperiment[] {
-    const variableIdMap = OptimizelyConfig.getVariableIdMap(configObj);
     return experiments.map((experiment) => {
       return {
         id: experiment.id,
@@ -399,7 +403,8 @@ export class OptimizelyConfig {
   static getFeaturesMap(
     configObj: ProjectConfig,
     featureVariableIdMap: FeatureVariablesMap,
-    experimentsMapById: OptimizelyExperimentsMap
+    experimentsMapById: OptimizelyExperimentsMap,
+    variableIdMap: {[id: string]: FeatureVariable}
   ): OptimizelyFeaturesMap {
     const featuresMap: OptimizelyFeaturesMap = {};
     configObj.featureFlags.forEach((featureFlag) => {
@@ -428,7 +433,8 @@ export class OptimizelyConfig {
           configObj,
           featureVariableIdMap,
           featureFlag.id,
-          rollout.experiments
+          rollout.experiments,
+          variableIdMap,
         );
       }
       featuresMap[featureFlag.key] = {
