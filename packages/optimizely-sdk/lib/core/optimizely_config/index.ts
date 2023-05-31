@@ -76,7 +76,9 @@ export class OptimizelyConfig {
 
     const variableIdMap = OptimizelyConfig.getVariableIdMap(configObj);
 
-    const experimentsMapById = OptimizelyConfig.getExperimentsMapById(configObj, featureIdVariablesMap);
+    const experimentsMapById = OptimizelyConfig.getExperimentsMapById(
+      configObj, featureIdVariablesMap, variableIdMap
+    );
     this.experimentsMap = OptimizelyConfig.getExperimentsKeyMap(experimentsMapById);
     this.featuresMap = OptimizelyConfig.getFeaturesMap(
       configObj, featureIdVariablesMap, experimentsMapById, variableIdMap
@@ -246,7 +248,7 @@ export class OptimizelyConfig {
    * Gets Map of all experiment variations and variables including rollouts
    * @param       {Variation[]}                           variations
    * @param       {FeatureVariablesMap}                   featureIdVariableMap
-   * @param       {[id: string]: FeatureVariable}         variableIdMap
+   * @param       {{[id: string]: FeatureVariable}}       variableIdMap
    * @param       {string}                                featureId
    * @returns     {[key: string]: Variation}              Variations mapped by key
    */
@@ -296,11 +298,12 @@ export class OptimizelyConfig {
 
   /**
    * Gets list of rollout experiments
-   * @param       {ProjectConfig}               configObj
-   * @param       {FeatureVariablesMap}         featureVariableIdMap
-   * @param       {string}                      featureId
-   * @param       {Experiment[]}                experiments
-   * @returns     {OptimizelyExperiment[]}      List of Optimizely rollout experiments
+   * @param       {ProjectConfig}                     configObj
+   * @param       {FeatureVariablesMap}               featureVariableIdMap
+   * @param       {string}                            featureId
+   * @param       {Experiment[]}                      experiments
+   * @param       {{[id: string]: FeatureVariable}}   variableIdMap
+   * @returns     {OptimizelyExperiment[]}            List of Optimizely rollout experiments
    */
   static getDeliveryRules(
     configObj: ProjectConfig,
@@ -343,13 +346,14 @@ export class OptimizelyConfig {
    * Get experiments mapped by their id's which are not part of a rollout
    * @param       {ProjectConfig}                           configObj
    * @param       {FeatureVariablesMap}                     featureIdVariableMap
+   * @param       {{[id: string]: FeatureVariable}}         variableIdMap
    * @returns     {[id: string]: OptimizelyExperiment}      Experiments mapped by id
    */
   static getExperimentsMapById(
     configObj: ProjectConfig,
-    featureIdVariableMap: FeatureVariablesMap
+    featureIdVariableMap: FeatureVariablesMap,
+    variableIdMap: {[id: string]: FeatureVariable}
   ): { [id: string]: OptimizelyExperiment } {
-    const variableIdMap = OptimizelyConfig.getVariableIdMap(configObj);
     const rolloutExperimentIds = this.getRolloutExperimentIds(configObj.rollouts);
 
     const experiments = configObj.experiments;
@@ -395,10 +399,11 @@ export class OptimizelyConfig {
 
   /**
    * Gets Map of all FeatureFlags and associated experiment map inside it
-   * @param       {ProjectConfig}              configObj
-   * @param       {FeatureVariablesMap}        featureVariableIdMap
-   * @param       {OptimizelyExperimentsMap}   experimentsMapById
-   * @returns     {OptimizelyFeaturesMap}      OptimizelyFeature mapped by key
+   * @param       {ProjectConfig}                     configObj
+   * @param       {FeatureVariablesMap}               featureVariableIdMap
+   * @param       {OptimizelyExperimentsMap}          experimentsMapById
+   * @param       {{[id: string]: FeatureVariable}}   variableIdMap
+   * @returns     {OptimizelyFeaturesMap}             OptimizelyFeature mapped by key
    */
   static getFeaturesMap(
     configObj: ProjectConfig,
