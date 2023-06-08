@@ -149,6 +149,8 @@ export default class Optimizely implements Client {
       NotificationRegistry.getNotificationCenter(config.sdkKey)?.sendNotifications(
         NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE
       );
+      
+      this.updateOdpSettings();
     });
 
     const projectConfigManagerReadyPromise = this.projectConfigManager.onReady();
