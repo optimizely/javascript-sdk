@@ -1,3 +1,4 @@
 {
-    "jest.rootPath": "./packages/optimizely-sdk/"
+    "jest.rootPath": "./packages/optimizely-sdk/",
+    "jest.jestCommandLine": "npm run test --"
 }
