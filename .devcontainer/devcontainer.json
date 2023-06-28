@@ -21,7 +21,6 @@
 			"extensions": [
 				"eamodio.gitlens",
 				"Orta.vscode-jest",
-				"esbenp.prettier-vscode",
 				"ms-vscode.test-adapter-converter",
 				"Gruntfuggly.todo-tree",
 				"redhat.vscode-yaml"
