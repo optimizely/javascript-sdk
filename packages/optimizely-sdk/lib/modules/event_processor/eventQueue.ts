@@ -67,8 +67,9 @@ export class SingleEventQueue<K> implements EventQueue<K> {
     this.sink = sink
   }
 
-  start(): void {
+  start(): Promise<any> {
     // no-op
+    return Promise.resolve()
   }
 
   stop(): Promise<any> {
@@ -114,9 +115,11 @@ export class DefaultEventQueue<K> implements EventQueue<K> {
     this.started = false
   }
 
-  start(): void {
+  start(): Promise<any> {
     this.started = true
     // dont start the timer until the first event is enqueued
+
+    return Promise.resolve();
   }
 
   stop(): Promise<any> {

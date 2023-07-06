@@ -97,6 +97,6 @@ export class LogTierV1EventProcessor implements EventProcessor {
   }
 
   async start(): Promise<void> {
-    this.queue.start()
+    await this.queue.start()
   }
 }

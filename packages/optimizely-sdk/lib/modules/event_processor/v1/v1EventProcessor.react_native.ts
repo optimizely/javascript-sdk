@@ -205,7 +205,7 @@ export class LogTierV1EventProcessor implements EventProcessor {
   }
 
   public async start(): Promise<void> {
-    this.queue.start()
+    await this.queue.start()
     this.unsubscribeNetInfo = addConnectionListener(this.connectionListener.bind(this))
 
     await this.processPendingEvents()
