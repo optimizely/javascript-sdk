@@ -184,7 +184,7 @@ export default class Optimizely implements Client {
       eventProcessorStartedPromise,
     ];
 
-    if (config.odpManager && config.odpManager.initPromise) {
+    if (config.odpManager?.initPromise) {
       dependentPromises.push(config.odpManager.initPromise);
     }
     
