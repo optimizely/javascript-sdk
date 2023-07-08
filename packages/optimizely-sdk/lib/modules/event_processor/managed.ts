@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 export interface Managed {
-  start(): void
+  start(): Promise<any>
 
   stop(): Promise<any>
 }

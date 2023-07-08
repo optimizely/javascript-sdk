@@ -179,12 +179,15 @@ export default class Optimizely implements Client {
 
     const eventProcessorStartedPromise = this.eventProcessor.start();
 
-    const dependentPromises: Array<Promise<any> | void> = [
+    const dependentPromises: Array<Promise<any>> = [
       projectConfigManagerReadyPromise,
       eventProcessorStartedPromise,
-      config.odpManager?.initPromise,
     ];
 
+    if (config.odpManager?.initPromise) {
+      dependentPromises.push(config.odpManager.initPromise);
+    }
+    
     this.readyPromise = Promise.all(dependentPromises).then(promiseResults => {
       // If no odpManager exists yet, creates a new one
       if (config.odpManager != null) {
