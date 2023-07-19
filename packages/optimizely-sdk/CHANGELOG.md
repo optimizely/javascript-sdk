@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [5.0.0-beta.2] - July 19, 2023
+
+### Performance Improvements
+- Improved OptimizelyConfig class instantiation performance from O(n^2) to O(n) where n = number of feature flags ([#828](https://github.com/optimizely/javascript-sdk/pull/828))
+
+### Bug fixes
+
+- Fixed ODP config update issue on datafile update ([#830](https://github.com/optimizely/javascript-sdk/pull/830))
+
 ## [4.9.4] - June 8, 2023
 
 ### Performance Improvements
