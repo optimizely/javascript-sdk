@@ -15,6 +15,7 @@
       },
       "browser": {
         "types": "./dist/index.browser.d.ts",
+        "import": "./dist/optimizely.browser.es.min.js",
         "default": "./dist/optimizely.browser.min.js"
       },
       "react-native": {
@@ -25,9 +26,36 @@
     },
     "./lite":  {
       "types": "./dist/index.lite.d.ts",
+      "node": "./dist/optimizely.lite.min.js",     
+      "import": "./dist/optimizely.lite.es.min.js",
+      "default": "./dist/optimizely.lite.min.js"
+    },
+    "./dist/optimizely.lite.es": {
+      "types": "./dist/index.lite.d.ts",
       "default": "./dist/optimizely.lite.es.js"
+    },
+    "./dist/optimizely.lite.es.js": {
+      "types": "./dist/index.lite.d.ts",
+      "default": "./dist/optimizely.lite.es.js"
+    },
+    "./dist/optimizely.lite.es.min": {
+      "types": "./dist/index.lite.d.ts",
+      "default": "./dist/optimizely.lite.es.min.js"
+    },
+    "./dist/optimizely.lite.es.min.js": {
+      "types": "./dist/index.lite.d.ts",
+      "default": "./dist/optimizely.lite.es.min.js"
+    },
+    "./dist/optimizely.lite.min": {
+      "types": "./dist/index.lite.d.ts",
+      "default": "./dist/optimizely.lite.min.js"
+    },
+    "./dist/optimizely.lite.min.js": {
+      "types": "./dist/index.lite.d.ts",
+      "default": "./dist/optimizely.lite.min.js"
     }
   },
+
   "scripts": {
     "clean": "rm -rf dist",
     "clean:win": "(if exist dist rd /s/q dist)",
