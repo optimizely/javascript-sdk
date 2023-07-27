@@ -24,9 +24,9 @@
       },
       "default": "./dist/optimizely.node.min.js"
     },
-    "./lite":  {
+    "./lite": {
       "types": "./dist/index.lite.d.ts",
-      "node": "./dist/optimizely.lite.min.js",     
+      "node": "./dist/optimizely.lite.min.js",
       "import": "./dist/optimizely.lite.es.min.js",
       "default": "./dist/optimizely.lite.min.js"
     },
@@ -53,9 +53,13 @@
     "./dist/optimizely.lite.min.js": {
       "types": "./dist/index.lite.d.ts",
       "default": "./dist/optimizely.lite.min.js"
-    }
+    },
+    "./dist/*.js": "./dist/*.js",
+    "./dist/*.ts": "./dist/*.ts",
+    "./dist/*": ["./dist/*.js", "./dist/*/index.js", "./dist/*/index.ts"],
+    "./lib/*.ts": "./lib/*.ts",
+    "./lib/*": ["./lib/*.ts", "./lib/*/index.ts"]
   },
-
   "scripts": {
     "clean": "rm -rf dist",
     "clean:win": "(if exist dist rd /s/q dist)",
