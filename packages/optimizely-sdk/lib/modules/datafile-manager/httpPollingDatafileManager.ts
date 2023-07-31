@@ -19,7 +19,7 @@ import { sprintf } from '../../../lib/utils/fns';
 import { DatafileManager, DatafileManagerConfig, DatafileUpdate } from './datafileManager';
 import EventEmitter, { Disposer } from './eventEmitter';
 import { AbortableRequest, Response, Headers } from './http';
-import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE } from './config';
+import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './config';
 import BackoffController from './backoffController';
 import PersistentKeyValueCache from './persistentKeyValueCache';
 
@@ -145,16 +145,22 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     this.datafileUrl = sprintf(urlTemplate, sdkKey);
 
     this.emitter = new EventEmitter();
+
     this.autoUpdate = autoUpdate;
+
     if (isValidUpdateInterval(updateInterval)) {
       this.updateInterval = updateInterval;
     } else {
-      logger.warn('Invalid updateInterval %s, defaulting to %s', updateInterval, DEFAULT_UPDATE_INTERVAL);
+      logger.warn(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE);
       this.updateInterval = DEFAULT_UPDATE_INTERVAL;
     }
+
     this.currentTimeout = null;
+
     this.currentRequest = null;
+
     this.backoffController = new BackoffController();
+
     this.syncOnCurrentRequestComplete = false;
   }
 
