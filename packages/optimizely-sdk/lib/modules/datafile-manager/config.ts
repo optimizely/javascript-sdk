@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-export const DEFAULT_UPDATE_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const DEFAULT_UPDATE_INTERVAL_MINUTES = 5;
+/** Standard interval (5 minutes in milliseconds) for polling datafile updates.; */
+export const DEFAULT_UPDATE_INTERVAL = DEFAULT_UPDATE_INTERVAL_MINUTES * 60 * 1000;
 
-export const MIN_UPDATE_INTERVAL = 1000;
+const MIN_UPDATE_INTERVAL_SECONDS = 30;
+/** Minimum allowed interval (30 seconds in milliseconds) for polling datafile updates. */
+export const MIN_UPDATE_INTERVAL = MIN_UPDATE_INTERVAL_SECONDS * 1000;
+
+export const UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE = `Polling interval below ${MIN_UPDATE_INTERVAL_SECONDS} seconds. Defaulting to ${DEFAULT_UPDATE_INTERVAL_MINUTES} minutes.`;
 
 export const DEFAULT_URL_TEMPLATE = `https://cdn.optimizely.com/datafiles/%s.json`;
 

@@ -40,6 +40,7 @@ export interface DatafileManagerConfig {
   autoUpdate?: boolean;
   datafile?: string;
   sdkKey: string;
+  /** Polling interval in milliseconds to check for datafile updates. */
   updateInterval?: number;
   urlTemplate?: string;
   cache?: PersistentKeyValueCache;
