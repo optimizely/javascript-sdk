@@ -22,7 +22,7 @@ const MIN_UPDATE_INTERVAL_SECONDS = 30;
 /** Minimum allowed interval (30 seconds in milliseconds) for polling datafile updates. */
 export const MIN_UPDATE_INTERVAL = MIN_UPDATE_INTERVAL_SECONDS * 1000;
 
-export const UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE = `Polling interval below ${MIN_UPDATE_INTERVAL_SECONDS} seconds. Defaulting to ${DEFAULT_UPDATE_INTERVAL_MINUTES} minutes.`;
+export const UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE = `Polling intervals below ${MIN_UPDATE_INTERVAL_SECONDS} seconds are not recommended.`;
 
 export const DEFAULT_URL_TEMPLATE = `https://cdn.optimizely.com/datafiles/%s.json`;
 
