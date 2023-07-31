@@ -1,0 +1,23 @@
+name: "Enhancement"
+description: Create a new ticket for a Enhancement.
+title: "[ENHANCEMENT] - <title>"
+labels: [
+  "enhancement"
+]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "Application"
+      description: How would the enhancement work?
+      placeholder: Short description...
+    validations:
+      required: true
+  - type: textarea
+    id: use
+    attributes:
+      label: "Usage"
+      description: When would the enhancement be useful?
+      placeholder: Short description...
+    validations:
+      required: true
