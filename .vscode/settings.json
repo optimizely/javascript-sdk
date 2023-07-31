@@ -1,0 +1,5 @@
+{
+    "jest.rootPath": "/workspaces/javascript-sdk/packages/optimizely-sdk",
+    "jest.jestCommandLine": "npm run test --",
+    "jest.autoRevealOutput": "on-exec-error"
+}
