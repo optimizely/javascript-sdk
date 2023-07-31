@@ -1,8 +1,12 @@
 <!--
-  Thanks for filing in issue! Are you proposing an enhancement or reporting a bug?
+  Thanks for filing in issue! Are you requesting a new feature? If so, please share your feedback with us on the following link.
+-->
+## Feedback requesting a new feature can be shared [here.](https://feedback.optimizely.com/)
 
+<!--
   If proposing an enhancement, please describe your use case in as much detail as you think is needed to convey the value of the enhancement.
 -->
+
 ## How would the enhancement work?
 
 ## When would the enhancement be useful?
