@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 
-import { anyString, anything, instance, mock, resetCalls, verify } from 'ts-mockito';
-import { LogLevel, LoggerFacade, setLogHandler, setLogLevel } from '../lib/modules/logging';
+import { resetCalls, spy, verify } from 'ts-mockito';
+import { LogLevel, LoggerFacade, getLogger, setLogLevel } from '../lib/modules/logging';
 import { DatafileManagerConfig } from '../lib/modules/datafile-manager/datafileManager';
 import { UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from '../lib/modules/datafile-manager/config';
 import HttpPollingDatafileManager from '../lib/modules/datafile-manager/httpPollingDatafileManager';
 import { Headers, AbortableRequest } from '../lib/modules/datafile-manager/http';
 
 describe('HttpPollingDatafileManager polling', () => {
-    let mockLogger: LoggerFacade = mock<LoggerFacade>();
+    let spiedLogger: LoggerFacade;
 
     const loggerName = 'DatafileManager';
     const sdkKey = 'not-real-sdk';
 
     beforeAll(() => {
-        mockLogger = mock<LoggerFacade>();
         setLogLevel(LogLevel.DEBUG);
-        setLogHandler(instance(mockLogger));
+        const actualLogger = getLogger(loggerName);
+        spiedLogger = spy(actualLogger);
     });
 
     beforeEach(() => {
-        resetCalls(mockLogger);
+        resetCalls(spiedLogger);
     });
 
 
@@ -46,7 +46,8 @@ describe('HttpPollingDatafileManager polling', () => {
             updateInterval: below30Seconds,
         });
 
-        verify(mockLogger.warn(`${loggerName}: ${UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE}`)).once();
+        
+        verify(spiedLogger.warn(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE)).once();
     });
 
     it('should not log when polling interval above 30s', () => {
@@ -57,7 +58,7 @@ describe('HttpPollingDatafileManager polling', () => {
             updateInterval: oneMinute,
         });
 
-        verify(mockLogger.log(anything(), anyString())).never();
+        verify(spiedLogger.warn(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE)).never();
     });
 });
 
@@ -70,3 +71,4 @@ class TestDatafileManager extends HttpPollingDatafileManager {
         throw new Error(`Method not implemented: ${reqUrl} with headers ${headers}`);
     }
 }
+
