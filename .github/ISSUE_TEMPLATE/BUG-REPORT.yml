@@ -12,16 +12,22 @@ body:
       required: true
 - type: textarea
   attributes:
+    label: SDK Version
+    description: Version of the SDK in use?
+  validations:
+    required: true
+- type: textarea
+  attributes:
     label: Current Behavior
     description: A concise description of what you're experiencing.
   validations:
-    required: false
+    required: true
 - type: textarea
   attributes:
     label: Expected Behavior
     description: A concise description of what you expected to happen.
   validations:
-    required: false
+    required: true
 - type: textarea
   attributes:
     label: Steps To Reproduce
@@ -32,28 +38,69 @@ body:
       1. Run '...'
       1. See error...
   validations:
-    required: false
+    required: true
+- type: dropdown
+  attributes:
+    label: SDK Type
+    description: Please select the type of JS SDK.
+    multiple: false
+    options:
+      - Browser
+      - Node
+      - React Native
+      - Edge/Lite
+  validations:
+    required: true
 - type: textarea
   attributes:
-    label: Environment
-    description: |
-      examples:
-        - **OS**: Ubuntu 20.04
-        - **Node**: 13.14.0
-        - **npm**: 7.6.3
-    value: |
-        - OS:
-        - Node:
-        - npm:
-    render: markdown
+    label: Node Version
+    description: What version of Node are you using?
   validations:
     required: false
 - type: textarea
   attributes:
-    label: Anything else?
-    description: |
-      Links? References? Anything that will give us more context about the issue you are encountering!
-
-      Tip: You can attach images or log files by clicking this area to highlight it and then dragging files in.
+    label: Browsers impacted
+    description: What browsers are impacted?
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Link
+    description: Link to code demonstrating the problem.
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Logs
+    description: Logs/stack traces related to the problem (do not include sensitive information).
+  validations:
+    required: false
+- type: dropdown
+  attributes:
+    label: Severity
+    description: What is the severity of the problem?
+    multiple: true
+    options:
+      - Blocking development
+      - Affecting users
+      - Minor issue
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Workaround/Solution
+    description: Do you have any workaround or solution in mind for the problem?
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: "Recent Change"
+    description: Has this issue started happening after an update or experiment change?
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Conflicts
+    description: Are there other libraries/dependencies potentially in conflict?
   validations:
     required: false

@@ -1,5 +1,5 @@
 name: "Enhancement"
-description: Create a new ticket for a Enhancement.
+description: Create a new ticket for a Enhancement/Tech-initiative for the benefit of the SDK which would be considered for a minor version update.
 title: "[ENHANCEMENT] - <title>"
 labels: [
   "enhancement"
@@ -8,16 +8,40 @@ body:
   - type: textarea
     id: description
     attributes:
-      label: "Application"
-      description: How would the enhancement work?
+      label: "Description"
+      description: Briefly describe the enhancement in a few sentences.
       placeholder: Short description...
     validations:
       required: true
   - type: textarea
-    id: use
+    id: benefits
     attributes:
-      label: "Usage"
-      description: When would the enhancement be useful?
-      placeholder: Short description...
+      label: "Benefits"
+      description: How would the enhancement benefit to your product or usage?
+      placeholder: Benefits...
     validations:
       required: true
+  - type: textarea
+    id: detail
+    attributes:
+      label: "Detail"
+      description: How would you like the enhancement to work? Please provide as much detail as possible
+      placeholder: Detailed description...
+    validations:
+      required: false
+  - type: textarea
+    id: examples
+    attributes:
+      label: "Examples"
+      description: Are there any examples of this enhancement in other products/services? If so, please provide links or references.
+      placeholder: Links/References...
+    validations:
+      required: false
+  - type: textarea
+    id: risks
+    attributes:
+      label: "Risks/Downsides"
+      description: Do you think this enhancement could have any potential downsides or risks?
+      placeholder: Risks/Downsides...
+    validations:
+      required: false
