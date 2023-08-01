@@ -2,7 +2,9 @@
 	"name": "Javascript SDK",
 	"image": "mcr.microsoft.com/devcontainers/typescript-node:1-18-bookworm",
 
-	"postCreateCommand": "cd packages/optimizely-sdk && npm install -g npm && npm install",
+	"postCreateCommand": "cd /workspaces/javascript-sdk/packages/optimizely-sdk && npm install -g npm && npm install",
+
+	"postStartCommand": "cd /workspaces/javascript-sdk/packages/optimizely-sdk",
 
 	"customizations": {
 		"vscode": {
