@@ -1,9 +1,7 @@
-name: "Enhancement"
+name: Enhancement
 description: Create a new ticket for a Enhancement/Tech-initiative for the benefit of the SDK which would be considered for a minor version update.
-title: "[ENHANCEMENT] - <title>"
-labels: [
-  "enhancement"
-]
+title: "[ENHANCEMENT] <title>"
+labels: ["enhancement"]
 body:
   - type: textarea
     id: description
