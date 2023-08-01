@@ -72,7 +72,7 @@ body:
 - type: textarea
   attributes:
     label: Logs
-    description: Logs/stack traces related to the problem (do not include sensitive information).
+    description: Logs/stack traces related to the problem (⚠️do not include sensitive information).
   validations:
     required: false
 - type: dropdown
