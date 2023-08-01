@@ -124,8 +124,8 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     this.cacheKey = 'opt-datafile-' + sdkKey;
     this.sdkKey = sdkKey;
     this.isReadyPromiseSettled = false;
-    this.readyPromiseResolver = (): void => {};
-    this.readyPromiseRejecter = (): void => {};
+    this.readyPromiseResolver = (): void => { };
+    this.readyPromiseRejecter = (): void => { };
     this.readyPromise = new Promise((resolve, reject) => {
       this.readyPromiseResolver = resolve;
       this.readyPromiseRejecter = reject;
@@ -148,11 +148,9 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
 
     this.autoUpdate = autoUpdate;
 
-    if (isValidUpdateInterval(updateInterval)) {
-      this.updateInterval = updateInterval;
-    } else {
+    this.updateInterval = updateInterval;
+    if (!isValidUpdateInterval(this.updateInterval)) {
       logger.warn(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE);
-      this.updateInterval = DEFAULT_UPDATE_INTERVAL;
     }
 
     this.currentTimeout = null;
