@@ -4,8 +4,6 @@
 
 	"postCreateCommand": "cd /workspaces/javascript-sdk/packages/optimizely-sdk && npm install -g npm && npm install",
 
-	"postStartCommand": "cd /workspaces/javascript-sdk/packages/optimizely-sdk",
-
 	"customizations": {
 		"vscode": {
 			"extensions": [
