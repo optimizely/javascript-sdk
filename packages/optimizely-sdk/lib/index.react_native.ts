@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2022 Optimizely
+ * Copyright 2019-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import { createEventProcessor } from './plugins/event_processor/index.react_nati
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { createHttpPollingDatafileManager } from
     './plugins/datafile_manager/react_native_http_polling_datafile_manager';
+import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -111,6 +112,7 @@ const createInstance = function(config: Config): Client | null {
       datafileManager:  config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
       notificationCenter,
       isValidInstance: isValidInstance,
+      odpManager: new BrowserOdpManager({ logger, odpOptions: config.odpOptions }),
     };
 
     // If client engine is react, convert it to react native.
