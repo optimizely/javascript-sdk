@@ -30,7 +30,7 @@ const logger = getLogger('DatafileManager');
 
 const UPDATE_EVT = 'update';
 
-function isValidUpdateInterval(updateInterval: number): boolean {
+function isAboveMinimumThreshold(updateInterval: number): boolean {
   return updateInterval >= MIN_UPDATE_INTERVAL;
 }
 
@@ -149,7 +149,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     this.autoUpdate = autoUpdate;
 
     this.updateInterval = updateInterval;
-    if (!isValidUpdateInterval(this.updateInterval)) {
+    if (!isAboveMinimumThreshold(this.updateInterval)) {
       logger.warn(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE);
     }
 
