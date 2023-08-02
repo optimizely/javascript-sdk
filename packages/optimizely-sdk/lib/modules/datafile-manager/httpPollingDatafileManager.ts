@@ -145,7 +145,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     this.autoUpdate = autoUpdate;
 
     this.updateInterval = updateInterval;
-    if (this.updateInterval <= MIN_UPDATE_INTERVAL) {
+    if (this.updateInterval < MIN_UPDATE_INTERVAL) {
       logger.warn(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE);
     }
 
