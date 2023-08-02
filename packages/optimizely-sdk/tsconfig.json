@@ -15,9 +15,6 @@
     "sourceMap": true,
     "skipLibCheck": true,
     "useUnknownInCatchVariables": false,
-    "typeRoots": [
-        "node_modules/@types"
-    ],
   },
   "exclude": [
     "./dist",
