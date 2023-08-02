@@ -16,10 +16,8 @@
 
 import { resetCalls, spy, verify } from 'ts-mockito';
 import { LogLevel, LoggerFacade, getLogger, setLogLevel } from '../lib/modules/logging';
-import { DatafileManagerConfig } from '../lib/modules/datafile-manager/datafileManager';
 import { UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from '../lib/modules/datafile-manager/config';
-import HttpPollingDatafileManager from '../lib/modules/datafile-manager/httpPollingDatafileManager';
-import { Headers, AbortableRequest } from '../lib/modules/datafile-manager/http';
+import { TestDatafileManager } from './httpPollingDatafileManager.spec';
 
 describe('HttpPollingDatafileManager polling', () => {
     let spiedLogger: LoggerFacade;
@@ -61,14 +59,3 @@ describe('HttpPollingDatafileManager polling', () => {
         verify(spiedLogger.warn(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE)).never();
     });
 });
-
-class TestDatafileManager extends HttpPollingDatafileManager {
-    protected getConfigDefaults(): Partial<DatafileManagerConfig> {
-        return {};
-    }
-
-    protected makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest {
-        throw new Error(`Method not implemented: ${reqUrl} with headers ${headers}`);
-    }
-}
-
