@@ -9,6 +9,7 @@
   "typings": "dist/index.browser.d.ts",
   "scripts": {
     "clean": "rm -rf dist",
+    "clean:win": "(if exist dist rd /s/q dist)",
     "lint": "tsc --noEmit && eslint 'lib/**/*.js' 'lib/**/*.ts'",
     "test": "TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register -r lib/tests/exit_on_unhandled_rejection.js 'lib/**/*.tests.ts' 'lib/**/*.tests.js' && jest",
     "posttest": "npm run lint",
@@ -18,10 +19,12 @@
     "test-karma-local": "karma start karma.local_chrome.bs.conf.js && npm run build-browser-umd && karma start karma.local_chrome.umd.conf.js",
     "prebuild": "npm run clean",
     "build": "rollup -c && cp dist/index.lite.d.ts dist/optimizely.lite.es.d.ts && cp dist/index.lite.d.ts dist/optimizely.lite.es.min.d.ts && cp dist/index.lite.d.ts dist/optimizely.lite.min.d.ts",
+    "build:win": "rollup -c && type nul > dist/optimizely.lite.es.d.ts && type nul > dist/optimizely.lite.es.min.d.ts && type nul > dist/optimizely.lite.min.d.ts",
     "build-browser-umd": "rollup -c --config-umd",
     "coveralls": "nyc --reporter=lcov npm test",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run test-ci"
+    "postbuild:win": "@powershell copy \"dist/index.lite.d.ts\" \"dist/optimizely.lite.es.d.ts\" && @powershell copy \"dist/index.lite.d.ts\" \"dist/optimizely.lite.es.min.d.ts\" && @powershell copy \"dist/index.lite.d.ts\" \"dist/optimizely.lite.min.d.ts\""
   },
   "repository": {
     "type": "git",
