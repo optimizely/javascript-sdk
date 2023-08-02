@@ -30,10 +30,6 @@ const logger = getLogger('DatafileManager');
 
 const UPDATE_EVT = 'update';
 
-function isAboveMinimumThreshold(updateInterval: number): boolean {
-  return updateInterval >= MIN_UPDATE_INTERVAL;
-}
-
 function isSuccessStatusCode(statusCode: number): boolean {
   return statusCode >= 200 && statusCode < 400;
 }
@@ -149,7 +145,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     this.autoUpdate = autoUpdate;
 
     this.updateInterval = updateInterval;
-    if (!isAboveMinimumThreshold(this.updateInterval)) {
+    if (this.updateInterval >= MIN_UPDATE_INTERVAL) {
       logger.warn(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE);
     }
 
