@@ -166,6 +166,9 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     if (!this.isStarted) {
       logger.debug('Datafile manager started');
       this.isStarted = true;
+
+      console.log('>>> this.backoffController in start():', this.backoffController);
+
       this.backoffController.reset();
       this.setDatafileFromCacheIfAvailable();
       this.syncDatafile();
