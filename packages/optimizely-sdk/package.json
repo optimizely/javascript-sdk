@@ -24,7 +24,6 @@
     "coveralls": "nyc --reporter=lcov npm test",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run test-ci"
-    "postbuild:win": "@powershell copy \"dist/index.lite.d.ts\" \"dist/optimizely.lite.es.d.ts\" && @powershell copy \"dist/index.lite.d.ts\" \"dist/optimizely.lite.es.min.d.ts\" && @powershell copy \"dist/index.lite.d.ts\" \"dist/optimizely.lite.min.d.ts\""
   },
   "repository": {
     "type": "git",
