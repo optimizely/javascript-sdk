@@ -14,10 +14,7 @@
     "outDir": "./dist",
     "sourceMap": true,
     "skipLibCheck": true,
-    "useUnknownInCatchVariables": false,
-    "typeRoots": [
-        "node_modules/@types"
-    ],
+    "useUnknownInCatchVariables": false
   },
   "exclude": [
     "./dist",
