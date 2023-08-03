@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,7 +19,7 @@ import { sprintf } from '../../../lib/utils/fns';
 import { DatafileManager, DatafileManagerConfig, DatafileUpdate } from './datafileManager';
 import EventEmitter, { Disposer } from './eventEmitter';
 import { AbortableRequest, Response, Headers } from './http';
-import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE } from './config';
+import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './config';
 import BackoffController from './backoffController';
 import PersistentKeyValueCache from './persistentKeyValueCache';
 
@@ -29,10 +29,6 @@ import { NOTIFICATION_TYPES } from '../../../lib/utils/enums';
 const logger = getLogger('DatafileManager');
 
 const UPDATE_EVT = 'update';
-
-function isValidUpdateInterval(updateInterval: number): boolean {
-  return updateInterval >= MIN_UPDATE_INTERVAL;
-}
 
 function isSuccessStatusCode(statusCode: number): boolean {
   return statusCode >= 200 && statusCode < 400;
@@ -124,8 +120,8 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     this.cacheKey = 'opt-datafile-' + sdkKey;
     this.sdkKey = sdkKey;
     this.isReadyPromiseSettled = false;
-    this.readyPromiseResolver = (): void => {};
-    this.readyPromiseRejecter = (): void => {};
+    this.readyPromiseResolver = (): void => { };
+    this.readyPromiseRejecter = (): void => { };
     this.readyPromise = new Promise((resolve, reject) => {
       this.readyPromiseResolver = resolve;
       this.readyPromiseRejecter = reject;
@@ -145,16 +141,20 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     this.datafileUrl = sprintf(urlTemplate, sdkKey);
 
     this.emitter = new EventEmitter();
+
     this.autoUpdate = autoUpdate;
-    if (isValidUpdateInterval(updateInterval)) {
-      this.updateInterval = updateInterval;
-    } else {
-      logger.warn('Invalid updateInterval %s, defaulting to %s', updateInterval, DEFAULT_UPDATE_INTERVAL);
-      this.updateInterval = DEFAULT_UPDATE_INTERVAL;
+
+    this.updateInterval = updateInterval;
+    if (this.updateInterval < MIN_UPDATE_INTERVAL) {
+      logger.warn(UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE);
     }
+
     this.currentTimeout = null;
+
     this.currentRequest = null;
+
     this.backoffController = new BackoffController();
+
     this.syncOnCurrentRequestComplete = false;
   }
 

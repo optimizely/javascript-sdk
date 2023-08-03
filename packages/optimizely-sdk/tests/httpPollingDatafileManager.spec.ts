@@ -35,7 +35,7 @@ import BackoffController from '../lib/modules/datafile-manager/backoffController
 
 // Test implementation:
 //   - Does not make any real requests: just resolves with queued responses (tests push onto queuedResponses)
-class TestDatafileManager extends HttpPollingDatafileManager {
+export class TestDatafileManager extends HttpPollingDatafileManager {
   queuedResponses: (Response | Error)[] = [];
 
   responsePromises: Promise<Response>[] = [];

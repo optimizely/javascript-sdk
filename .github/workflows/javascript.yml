@@ -17,7 +17,7 @@ jobs:
     - name: Set up Node
       uses: actions/setup-node@v3
       with:
-        node-version: 12
+        node-version: 14
         cache-dependency-path: packages/optimizely-sdk/package-lock.json
         cache: 'npm'
     - name: Run linting
@@ -118,7 +118,7 @@ jobs:
     - name: Set up Node
       uses: actions/setup-node@v3
       with:
-        node-version: 12
+        node-version: 14
         cache: 'npm'
         cache-dependency-path: ${{ matrix.package }}/package-lock.json
     - name: Test sub packages
