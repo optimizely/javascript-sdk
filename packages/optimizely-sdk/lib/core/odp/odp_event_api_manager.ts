@@ -26,7 +26,6 @@ export const ODP_CONFIG_NOT_READY_MESSAGE = 'ODP config not ready';
  * Manager for communicating with the Optimizely Data Platform REST API
  */
 export interface IOdpEventApiManager {
-  // sendEvents(apiKey: string, apiHost: string, events: OdpEvent[]): Promise<boolean>;
   sendEvents(events: OdpEvent[]): Promise<boolean>;
   updateSettings(odpConfig: OdpConfig): void;
 }
