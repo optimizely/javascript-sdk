@@ -16,11 +16,12 @@
 
 /// <reference types="jest" />
 
-import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
+import { anyString, anything, capture, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { NodeOdpEventApiManager } from '../lib/plugins/odp/event_api_manager/index.node';
 import { OdpEvent } from '../lib/core/odp/odp_event';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
+import { OdpConfig } from '../lib/core/odp/odp_config';
 
 const VALID_ODP_PUBLIC_KEY = 'not-real-api-key';
 const ODP_REST_API_HOST = 'https://events.example.com/v2/api';
@@ -36,6 +37,11 @@ const ODP_EVENTS = [
   new OdpEvent('t2', 'a2', new Map([['id-key-2', 'id-value-2']]), data2),
 ];
 
+const API_KEY = 'test-api-key';
+const API_HOST = 'https://odp.example.com';
+
+const odpConfig = new OdpConfig(API_KEY, API_HOST, []);
+
 describe('NodeOdpEventApiManager', () => {
   let mockLogger: LogHandler;
   let mockRequestHandler: RequestHandler;
@@ -50,7 +56,12 @@ describe('NodeOdpEventApiManager', () => {
     resetCalls(mockRequestHandler);
   });
 
-  const managerInstance = () => new NodeOdpEventApiManager(instance(mockRequestHandler), instance(mockLogger));
+  const managerInstance = () => {
+    const manager = new NodeOdpEventApiManager(instance(mockRequestHandler), instance(mockLogger));
+    manager.updateSettings(odpConfig);
+    return manager;
+  }
+
   const abortableRequest = (statusCode: number, body: string) => {
     return {
       abort: () => {},
@@ -68,7 +79,7 @@ describe('NodeOdpEventApiManager', () => {
     );
     const manager = managerInstance();
 
-    const shouldRetry = await manager.sendEvents(VALID_ODP_PUBLIC_KEY, ODP_REST_API_HOST, ODP_EVENTS);
+    const shouldRetry = await manager.sendEvents(ODP_EVENTS);
 
     expect(shouldRetry).toBe(false);
     verify(mockLogger.log(anything(), anyString())).never();
@@ -80,7 +91,7 @@ describe('NodeOdpEventApiManager', () => {
     );
     const manager = managerInstance();
 
-    const shouldRetry = await manager.sendEvents(VALID_ODP_PUBLIC_KEY, ODP_REST_API_HOST, ODP_EVENTS);
+    const shouldRetry = await manager.sendEvents(ODP_EVENTS);
 
     expect(shouldRetry).toBe(false);
     verify(mockLogger.log(LogLevel.ERROR, 'ODP event send failed (400)')).once();
@@ -92,7 +103,7 @@ describe('NodeOdpEventApiManager', () => {
     );
     const manager = managerInstance();
 
-    const shouldRetry = await manager.sendEvents(VALID_ODP_PUBLIC_KEY, ODP_REST_API_HOST, ODP_EVENTS);
+    const shouldRetry = await manager.sendEvents(ODP_EVENTS);
 
     expect(shouldRetry).toBe(true);
     verify(mockLogger.log(LogLevel.ERROR, 'ODP event send failed (500)')).once();
@@ -105,9 +116,37 @@ describe('NodeOdpEventApiManager', () => {
     });
     const manager = managerInstance();
 
-    const shouldRetry = await manager.sendEvents(VALID_ODP_PUBLIC_KEY, ODP_REST_API_HOST, ODP_EVENTS);
+    const shouldRetry = await manager.sendEvents(ODP_EVENTS);
 
     expect(shouldRetry).toBe(true);
     verify(mockLogger.log(LogLevel.ERROR, 'ODP event send failed (Request timed out)')).once();
+  });
+
+  it('should send events to updated host on settings update', async () => {
+    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
+      abort: () => {},
+      responsePromise: Promise.reject(new Error('Request timed out')),
+    });
+
+    const manager = managerInstance();
+
+    await manager.sendEvents(ODP_EVENTS);
+
+    const updatetdOdpConfig = new OdpConfig(
+      'updated-key',
+      'https://updatedhost.test',
+      ['updated-seg'],
+    )
+    
+    manager.updateSettings(updatetdOdpConfig);
+    await manager.sendEvents(ODP_EVENTS);
+
+    verify(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).twice();
+
+    const [initUrl] = capture(mockRequestHandler.makeRequest).first();
+    expect(initUrl).toEqual(`${API_HOST}/v3/events`);
+
+    const [finalUrl] = capture(mockRequestHandler.makeRequest).last();
+    expect(finalUrl).toEqual(`${updatetdOdpConfig.apiHost}/v3/events`);
   });
 });

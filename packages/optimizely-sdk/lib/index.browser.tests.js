@@ -1111,7 +1111,7 @@ describe('javascript-sdk (Browser)', function() {
 
         clock.tick(100);
 
-        const [, , events] = apiManager.sendEvents.getCall(0).args;
+        const [events] = apiManager.sendEvents.getCall(0).args;
         const [firstEvent] = events;
         assert.equal(firstEvent.action, 'client_initialized');
         assert.equal(firstEvent.type, 'fullstack');

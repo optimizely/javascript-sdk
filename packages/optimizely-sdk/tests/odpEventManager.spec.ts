@@ -20,10 +20,9 @@ import { STATE } from '../lib/core/odp/odp_event_manager';
 import { BrowserOdpEventManager } from "../lib/plugins/odp/event_manager/index.browser";
 import { NodeOdpEventManager, NodeOdpEventManager as OdpEventManager } from '../lib/plugins/odp/event_manager/index.node';
 import { anything, capture, instance, mock, resetCalls, spy, verify, when } from 'ts-mockito';
-import { NodeOdpEventApiManager as OdpEventApiManager } from '../lib/plugins/odp/event_api_manager/index.node';
+import { IOdpEventApiManager } from '../lib/core/odp/odp_event_api_manager';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpEvent } from '../lib/core/odp/odp_event';
-import { RequestHandler } from '../lib/utils/http_request_handler/http';
 
 const API_KEY = 'test-api-key';
 const API_HOST = 'https://odp.example.com';
@@ -135,16 +134,15 @@ const abortableRequest = (statusCode: number, body: string) => {
 
 describe('OdpEventManager', () => {
   let mockLogger: LogHandler;
-  let mockApiManager: OdpEventApiManager;
+  let mockApiManager: IOdpEventApiManager;
 
   let odpConfig: OdpConfig;
   let logger: LogHandler;
-  let apiManager: OdpEventApiManager;
+  let apiManager: IOdpEventApiManager;
 
   beforeAll(() => {
     mockLogger = mock<LogHandler>();
-    mockApiManager = mock<OdpEventApiManager>();
-
+    mockApiManager = mock<IOdpEventApiManager>();
     odpConfig = new OdpConfig(API_KEY, API_HOST, []);
     logger = instance(mockLogger);
     apiManager = instance(mockApiManager);
@@ -153,6 +151,55 @@ describe('OdpEventManager', () => {
   beforeEach(() => {
     resetCalls(mockLogger);
     resetCalls(mockApiManager);
+  });
+
+  it('should update api manager setting with odp config on instantiation', () => {
+    when(mockApiManager.sendEvents(anything())).thenResolve(false);
+    when(mockApiManager.updateSettings(anything())).thenReturn(undefined);
+
+    const apiManager = instance(mockApiManager); 
+
+    const eventManager = new OdpEventManager({
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+    });
+
+    const [passedConfig] = capture(mockApiManager.updateSettings).last();
+    expect(passedConfig).toEqual(odpConfig);
+  });
+  
+  it('should update api manager setting with updatetd odp config on updateSettings', () => {
+    when(mockApiManager.sendEvents(anything())).thenResolve(false);
+    when(mockApiManager.updateSettings(anything())).thenReturn(undefined);
+
+    const apiManager = instance(mockApiManager); 
+
+    const eventManager = new OdpEventManager({
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+    });
+
+    const updatetdOdpConfig = new OdpConfig(
+      'updated-key',
+      'https://updatedhost.test',
+      ['updated-seg'],
+    )
+    
+    eventManager.updateSettings(updatetdOdpConfig);
+
+    verify(mockApiManager.updateSettings(anything())).twice();
+
+    const [initConfig] = capture(mockApiManager.updateSettings).first();
+    expect(initConfig).toEqual(odpConfig);
+
+    const [finalConfig] = capture(mockApiManager.updateSettings).last();
+    expect(finalConfig).toEqual(updatetdOdpConfig);
   });
 
   it('should log and discard events when event manager not running', () => {
@@ -277,7 +324,7 @@ describe('OdpEventManager', () => {
   });
 
   it('should dispatch events in correct number of batches', async () => {
-    when(mockApiManager.sendEvents(anything(), anything(), anything())).thenResolve(false);
+    when(mockApiManager.sendEvents(anything())).thenResolve(false);
     const apiManager = instance(mockApiManager);
     const eventManager = new OdpEventManager({
       odpConfig,
@@ -297,7 +344,7 @@ describe('OdpEventManager', () => {
 
     // ...there should be 3 batches:
     // batch #1 with 10, batch #2 with 10, and batch #3 (after flushInterval lapsed) with 5 = 25 events
-    verify(mockApiManager.sendEvents(anything(), anything(), anything())).thrice();
+    verify(mockApiManager.sendEvents(anything())).thrice();
   });
 
   it('should dispatch events with correct payload', async () => {
@@ -316,10 +363,8 @@ describe('OdpEventManager', () => {
     await pause(1000);
 
     // sending 1 batch of 2 events after flushInterval since batchSize is 10
-    verify(mockApiManager.sendEvents(anything(), anything(), anything())).once();
-    const [apiKey, apiHost, events] = capture(mockApiManager.sendEvents).last();
-    expect(apiKey).toEqual(API_KEY);
-    expect(apiHost).toEqual(API_HOST);
+    verify(mockApiManager.sendEvents(anything())).once();
+    const [events] = capture(mockApiManager.sendEvents).last();
     expect(events.length).toEqual(2);
     expect(events[0].identifiers.size).toEqual(PROCESSED_EVENTS[0].identifiers.size);
     expect(events[0].data.size).toEqual(PROCESSED_EVENTS[0].data.size);
@@ -329,7 +374,7 @@ describe('OdpEventManager', () => {
 
   it('should retry failed events', async () => {
     // all events should fail ie shouldRetry = true
-    when(mockApiManager.sendEvents(anything(), anything(), anything())).thenResolve(true);
+    when(mockApiManager.sendEvents(anything())).thenResolve(true);
     const apiManager = instance(mockApiManager);
     const eventManager = new OdpEventManager({
       odpConfig,
@@ -349,11 +394,11 @@ describe('OdpEventManager', () => {
     await pause(1500);
 
     // retry 3x (default) for 2 batches or 6 calls to attempt to process
-    verify(mockApiManager.sendEvents(anything(), anything(), anything())).times(6);
+    verify(mockApiManager.sendEvents(anything())).times(6);
   });
 
   it('should flush all scheduled events before stopping', async () => {
-    when(mockApiManager.sendEvents(anything(), anything(), anything())).thenResolve(false);
+    when(mockApiManager.sendEvents(anything())).thenResolve(false);
     const apiManager = instance(mockApiManager);
     const eventManager = new OdpEventManager({
       odpConfig,
@@ -378,56 +423,57 @@ describe('OdpEventManager', () => {
   });
 
   it('should prepare correct payload for register VUID', async () => {
-    const mockRequestHandler: RequestHandler = mock<RequestHandler>();
-    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(
-      abortableRequest(200, '')
-    );
-    const apiManager = new OdpEventApiManager(instance(mockRequestHandler), logger);
+    when(mockApiManager.sendEvents(anything())).thenResolve(false);
+    when(mockApiManager.updateSettings(anything())).thenReturn(undefined);
+
+    const apiManager = instance(mockApiManager);
+
     const eventManager = new OdpEventManager({
       odpConfig,
       apiManager,
       logger,
       clientEngine,
       clientVersion,
-      batchSize: 10,
-      flushInterval: 100,
+      batchSize: 10, // with batch size of 10...
+      flushInterval: 250,
     });
+
     const vuid = 'vuid_330e05cad15746d9af8a75b8d10';
+    const fsUserId = 'test-fs-user-id';
 
     eventManager.start();
     eventManager.registerVuid(vuid);
     await pause(1500);
 
-    const [requestUrl, headers, method, data] = capture(mockRequestHandler.makeRequest).last();
-    expect(requestUrl).toEqual(`${API_HOST}/v3/events`);
-    expect(headers['Content-Type']).toEqual('application/json');
-    expect(headers['x-api-key']).toEqual('test-api-key');
-    expect(method).toEqual('POST');
-    const events = JSON.parse(data as string);
-    const event = events[0];
+    const [events] = capture(mockApiManager.sendEvents).last();
+    expect(events.length).toBe(1);
+
+    const [event] = events;
     expect(event.type).toEqual('fullstack');
     expect(event.action).toEqual(ODP_EVENT_ACTION.INITIALIZED);
-    expect(event.identifiers).toEqual({ vuid: vuid });
-    expect(event.data.idempotence_id.length).toBe(36); // uuid length
-    expect(event.data.data_source_type).toEqual('sdk');
-    expect(event.data.data_source).toEqual('javascript-sdk');
-    expect(event.data.data_source_version).not.toBeNull();
+    expect(event.identifiers).toEqual(new Map([['vuid', vuid]]));
+    expect((event.data.get("idempotence_id") as string).length).toBe(36); // uuid length
+    expect((event.data.get("data_source_type") as string)).toEqual('sdk');
+    expect((event.data.get("data_source") as string)).toEqual('javascript-sdk');
+    expect(event.data.get("data_source_version") as string).not.toBeNull();
   });
 
-  it('should prepare correct payload for identify user', async () => {
-    const mockRequestHandler: RequestHandler = mock<RequestHandler>();
-    when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn(
-      abortableRequest(200, '')
-    );
-    const apiManager = new OdpEventApiManager(instance(mockRequestHandler), logger);
+  it('should send correct event payload for identify user', async () => {
+    when(mockApiManager.sendEvents(anything())).thenResolve(false);
+    when(mockApiManager.updateSettings(anything())).thenReturn(undefined);
+
+    const apiManager = instance(mockApiManager);
+
     const eventManager = new OdpEventManager({
       odpConfig,
       apiManager,
       logger,
       clientEngine,
       clientVersion,
-      flushInterval: 100,
+      batchSize: 10, // with batch size of 10...
+      flushInterval: 250,
     });
+
     const vuid = 'vuid_330e05cad15746d9af8a75b8d10';
     const fsUserId = 'test-fs-user-id';
 
@@ -435,20 +481,17 @@ describe('OdpEventManager', () => {
     eventManager.identifyUser(fsUserId, vuid);
     await pause(1500);
 
-    const [requestUrl, headers, method, data] = capture(mockRequestHandler.makeRequest).last();
-    expect(requestUrl).toEqual(`${API_HOST}/v3/events`);
-    expect(headers['Content-Type']).toEqual('application/json');
-    expect(headers['x-api-key']).toEqual('test-api-key');
-    expect(method).toEqual('POST');
-    const events = JSON.parse(data as string);
-    const event = events[0];
+    const [events] = capture(mockApiManager.sendEvents).last();
+    expect(events.length).toBe(1);
+
+    const [event] = events;
     expect(event.type).toEqual(ODP_DEFAULT_EVENT_TYPE);
     expect(event.action).toEqual(ODP_EVENT_ACTION.IDENTIFIED);
-    expect(event.identifiers).toEqual({ vuid: vuid, fs_user_id: fsUserId });
-    expect(event.data.idempotence_id.length).toBe(36); // uuid length
-    expect(event.data.data_source_type).toEqual('sdk');
-    expect(event.data.data_source).toEqual('javascript-sdk');
-    expect(event.data.data_source_version).not.toBeNull();
+    expect(event.identifiers).toEqual(new Map([['vuid', vuid], ['fs_user_id', fsUserId]]));
+    expect((event.data.get("idempotence_id") as string).length).toBe(36); // uuid length
+    expect((event.data.get("data_source_type") as string)).toEqual('sdk');
+    expect((event.data.get("data_source") as string)).toEqual('javascript-sdk');
+    expect(event.data.get("data_source_version") as string).not.toBeNull();
   });
 
   it('should apply updated ODP configuration when available', () => {
