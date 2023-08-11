@@ -2,6 +2,7 @@ import { OdpEvent } from '../../../core/odp/odp_event';
 import { OdpEventApiManager } from '../../../core/odp/odp_event_api_manager';
 import { LogLevel } from '../../../modules/logging';
 import { ODP_EVENT_BROWSER_ENDPOINT } from '../../../utils/enums';
+import { ODP_CONFIG_NOT_READY_MESSAGE } from '../../../core/odp/odp_event_api_manager';
 
 const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
 
@@ -15,10 +16,15 @@ export class BrowserOdpEventApiManager extends OdpEventApiManager {
   }
 
   protected generateRequestData(
-    apiHost: string,
-    apiKey: string,
     events: OdpEvent[]
   ): { method: string; endpoint: string; headers: { [key: string]: string }; data: string } {
+    // the caller should ensure odpConfig is ready before calling
+    if (!this.odpConfig?.isReady()) {
+      this.getLogger().log(LogLevel.ERROR, ODP_CONFIG_NOT_READY_MESSAGE);
+      throw new Error(ODP_CONFIG_NOT_READY_MESSAGE);
+    }
+
+    const apiKey = this.odpConfig.apiKey;
     const method = 'GET';
     const event = events[0];
     const url = new URL(ODP_EVENT_BROWSER_ENDPOINT);

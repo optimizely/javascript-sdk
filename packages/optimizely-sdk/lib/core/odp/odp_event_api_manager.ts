@@ -17,14 +17,17 @@
 import { LogHandler, LogLevel } from '../../modules/logging';
 import { OdpEvent } from './odp_event';
 import { RequestHandler } from '../../utils/http_request_handler/http';
+import { OdpConfig } from './odp_config';
 
 const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
+export const ODP_CONFIG_NOT_READY_MESSAGE = 'ODP config not ready';
 
 /**
  * Manager for communicating with the Optimizely Data Platform REST API
  */
 export interface IOdpEventApiManager {
-  sendEvents(apiKey: string, apiHost: string, events: OdpEvent[]): Promise<boolean>;
+  sendEvents(events: OdpEvent[]): Promise<boolean>;
+  updateSettings(odpConfig: OdpConfig): void;
 }
 
 /**
@@ -44,6 +47,11 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
   private readonly requestHandler: RequestHandler;
 
   /**
+   * ODP configuration settings for identifying the target API and segments
+   */
+  protected odpConfig?: OdpConfig;
+
+  /**
    * Creates instance to access Optimizely Data Platform (ODP) REST API
    * @param requestHandler Desired request handler for testing
    * @param logger Collect and record events/errors for this GraphQL implementation
@@ -53,22 +61,28 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
     this.logger = logger;
   }
 
+  /**
+   * Updates odpConfig of the api manager instance
+   * @param odpConfig 
+   */
+  updateSettings(odpConfig: OdpConfig): void {
+    this.odpConfig = odpConfig;
+  }
+
   getLogger(): LogHandler {
     return this.logger;
   }
 
   /**
    * Service for sending ODP events to REST API
-   * @param apiKey ODP public key
-   * @param apiHost Host of ODP endpoint
    * @param events ODP events to send
    * @returns Retry is true - if network or server error (5xx), otherwise false
    */
-  async sendEvents(apiKey: string, apiHost: string, events: OdpEvent[]): Promise<boolean> {
+  async sendEvents(events: OdpEvent[]): Promise<boolean> {
     let shouldRetry = false;
 
-    if (!apiKey || !apiHost) {
-      this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (Parameters apiKey or apiHost invalid)`);
+    if (!this.odpConfig?.isReady()) {
+      this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (${ODP_CONFIG_NOT_READY_MESSAGE})`);
       return shouldRetry;
     }
 
@@ -81,7 +95,7 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
       return shouldRetry;
     }
 
-    const { method, endpoint, headers, data } = this.generateRequestData(apiHost, apiKey, events);
+    const { method, endpoint, headers, data } = this.generateRequestData(events);
 
     let statusCode = 0;
     try {
@@ -111,8 +125,6 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
   protected abstract shouldSendEvents(events: OdpEvent[]): boolean;
 
   protected abstract generateRequestData(
-    apiHost: string,
-    apiKey: string,
     events: OdpEvent[]
   ): {
     method: string;
