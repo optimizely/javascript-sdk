@@ -24,7 +24,7 @@ export class BrowserOdpEventApiManager extends OdpEventApiManager {
       throw new Error(ODP_CONFIG_NOT_READY_MESSAGE);
     }
 
-    const apiKey = this.odpConfig!.apiKey;
+    const apiKey = this.odpConfig.apiKey;
     const method = 'GET';
     const event = events[0];
     const url = new URL(ODP_EVENT_BROWSER_ENDPOINT);

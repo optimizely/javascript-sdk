@@ -63,7 +63,7 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
   }
 
   /**
-   * Updatets odpConfig of the api manager instance
+   * Updates odpConfig of the api manager instance
    * @param odpConfig 
    */
   updateSettings(odpConfig: OdpConfig): void {
@@ -76,8 +76,6 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
 
   /**
    * Service for sending ODP events to REST API
-   * @param apiKey ODP public key
-   * @param apiHost Host of ODP endpoint
    * @param events ODP events to send
    * @returns Retry is true - if network or server error (5xx), otherwise false
    */

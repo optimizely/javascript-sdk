@@ -23,8 +23,6 @@ import { OdpEvent } from '../lib/core/odp/odp_event';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 import { OdpConfig } from '../lib/core/odp/odp_config';
 
-const VALID_ODP_PUBLIC_KEY = 'not-real-api-key';
-const ODP_REST_API_HOST = 'https://events.example.com/v2/api';
 const data1 = new Map<string, unknown>();
 data1.set('key11', 'value-1');
 data1.set('key12', true);
@@ -132,13 +130,13 @@ describe('NodeOdpEventApiManager', () => {
 
     await manager.sendEvents(ODP_EVENTS);
 
-    const updatetdOdpConfig = new OdpConfig(
+    const updatedOdpConfig = new OdpConfig(
       'updated-key',
       'https://updatedhost.test',
       ['updated-seg'],
     )
     
-    manager.updateSettings(updatetdOdpConfig);
+    manager.updateSettings(updatedOdpConfig);
     await manager.sendEvents(ODP_EVENTS);
 
     verify(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).twice();
@@ -147,6 +145,6 @@ describe('NodeOdpEventApiManager', () => {
     expect(initUrl).toEqual(`${API_HOST}/v3/events`);
 
     const [finalUrl] = capture(mockRequestHandler.makeRequest).last();
-    expect(finalUrl).toEqual(`${updatetdOdpConfig.apiHost}/v3/events`);
+    expect(finalUrl).toEqual(`${updatedOdpConfig.apiHost}/v3/events`);
   });
 });

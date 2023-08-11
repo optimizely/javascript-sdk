@@ -185,13 +185,13 @@ describe('OdpEventManager', () => {
       clientVersion,
     });
 
-    const updatetdOdpConfig = new OdpConfig(
+    const updatedOdpConfig = new OdpConfig(
       'updated-key',
       'https://updatedhost.test',
       ['updated-seg'],
     )
     
-    eventManager.updateSettings(updatetdOdpConfig);
+    eventManager.updateSettings(updatedOdpConfig);
 
     verify(mockApiManager.updateSettings(anything())).twice();
 
@@ -199,7 +199,7 @@ describe('OdpEventManager', () => {
     expect(initConfig).toEqual(odpConfig);
 
     const [finalConfig] = capture(mockApiManager.updateSettings).last();
-    expect(finalConfig).toEqual(updatetdOdpConfig);
+    expect(finalConfig).toEqual(updatedOdpConfig);
   });
 
   it('should log and discard events when event manager not running', () => {
@@ -434,7 +434,7 @@ describe('OdpEventManager', () => {
       logger,
       clientEngine,
       clientVersion,
-      batchSize: 10, // with batch size of 10...
+      batchSize: 10,
       flushInterval: 250,
     });
 
@@ -470,7 +470,7 @@ describe('OdpEventManager', () => {
       logger,
       clientEngine,
       clientVersion,
-      batchSize: 10, // with batch size of 10...
+      batchSize: 10,
       flushInterval: 250,
     });
 
