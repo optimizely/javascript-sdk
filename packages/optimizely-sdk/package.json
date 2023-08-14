@@ -43,7 +43,6 @@
   },
   "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/optimizely-sdk",
   "dependencies": {
-    "@optimizely/js-sdk-datafile-manager": "^0.9.5",
     "decompress-response": "^4.2.1",
     "json-schema": "^0.4.0",
     "murmurhash": "^2.0.1",
