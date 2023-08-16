@@ -1,6 +1,17 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "target": "es5",
+    "module": "esnext",
+    "lib": [
+      "es2015",
+      "dom"
+    ],
+    "declaration": true,
+    "strict": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {
       "*": [
@@ -9,8 +20,6 @@
     },
     "resolveJsonModule": true,
     "allowJs": true,
-    "declaration": true,
-    "module": "esnext",
     "outDir": "./dist",
     "sourceMap": true,
     "skipLibCheck": true,
