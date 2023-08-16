@@ -111,17 +111,6 @@ Using `deno` (no installation required):
 import optimizely from "npm:@optimizely/optimizely-sdk"
 ```
 
-### Packages
-
-This repository is a monorepo. It houses the main Javascript SDK and its supporting packages.
-
-| Package | Version | Docs | Description |
-| - | - | - | - |
-| [`@optimizely/optimizely-sdk`](/packages/optimizely-sdk) | [![npm](https://img.shields.io/npm/v/%40optimizely%2Foptimizely-sdk.svg)](https://www.npmjs.com/package/@optimizely/optimizely-sdk) | [![](https://img.shields.io/badge/API%20Docs-site-green.svg?style=flat-square)](https://docs.developers.optimizely.com/full-stack/docs/javascript-node-sdk) | (Primary Package) The Optimizely JavaScript SDK   |
-| [`@optimizely/js-sdk-utils`](/packages/utils) | [![npm](https://img.shields.io/npm/v/%40optimizely%2Fjs-sdk-utils.svg)](https://www.npmjs.com/package/@optimizely/js-sdk-utils) | | (Consolidated*) Utility functions for Optimizely packages
-
-> \* Consolidated packages have been copied over and included as modules within the main `@optimizely/optimizely-sdk` package to avoid requiring maintaining and utilizing multiple de-coupled dependencies. (Related PRs [#749](https://github.com/optimizely/javascript-sdk/pull/749), [#755](https://github.com/optimizely/javascript-sdk/pull/755/files), [#761](https://github.com/optimizely/javascript-sdk/pull/761), [#781](https://github.com/optimizely/javascript-sdk/pull/781))
-
 ## Use the JavaScript SDK (Browser)
 
 See the [Optimizely Feature Experimentation developer documentation for JavaScript (Browser)](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-sdk) to learn how to set up your first JavaScript project and use the SDK for client-side applications.

@@ -105,24 +105,3 @@ jobs:
           parallel-finished: true
           base-path: ./packages/optimizely-sdk
         
-  test_sub_packages:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        package: [ 'packages/utils' ]
-    steps:
-    - uses: actions/checkout@v3
-    - name: Move to package ${{ matrix.package }}
-      run: |
-        cd ${{ matrix.package }}
-    - name: Set up Node
-      uses: actions/setup-node@v3
-      with:
-        node-version: 14
-        cache: 'npm'
-        cache-dependency-path: ${{ matrix.package }}/package-lock.json
-    - name: Test sub packages
-      working-directory: ./${{ matrix.package }}
-      run: |
-        npm install
-        npm test
