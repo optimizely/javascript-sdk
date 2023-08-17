@@ -43,7 +43,7 @@ export class BrowserOdpEventApiManager extends OdpEventApiManager {
     const apiKey = this.odpConfig.apiKey;
     const method = 'GET';
     const event = events[0];
-    const url = new URL(pixelApiEndpoint!);
+    const url = new URL(pixelApiEndpoint);
     event.identifiers.forEach((v, k) => {
       url.searchParams.append(k, v);
     });
