@@ -114,7 +114,7 @@ export class NodeOdpManager extends OdpManager {
       });
     }
 
-    this.eventManager!.start();
+    this.eventManager.start();
 
     this.initPromise = Promise.resolve();
   }
