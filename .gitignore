@@ -1,5 +1,5 @@
 node_modules/
-/packages/*/optimizely-*.tgz
+optimizely-*.tgz
 
 npm-debug.log
 lerna-debug.log

@@ -28,8 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/optimizely/javascript-sdk.git",
-    "directory": "packages/optimizely-sdk"
+    "url": "git+https://github.com/optimizely/javascript-sdk.git"
   },
   "license": "Apache-2.0",
   "engines": {
@@ -41,7 +40,7 @@
   "bugs": {
     "url": "https://github.com/optimizely/javascript-sdk/issues"
   },
-  "homepage": "https://github.com/optimizely/javascript-sdk/tree/master/packages/optimizely-sdk",
+  "homepage": "https://github.com/optimizely/javascript-sdk",
   "dependencies": {
     "decompress-response": "^4.2.1",
     "json-schema": "^0.4.0",
