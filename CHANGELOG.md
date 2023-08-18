@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed odp event sending not working for Europe and Asia-Pacific regions ([#852](https://github.com/optimizely/javascript-sdk/pull/852))
 
 ### Changed
-- Remove 1 second polling floor to allow datafile polling at any frequency but or intervals under 30 seconds, log a warning ([#841](https://github.com/optimizely/javascript-sdk/pull/841)).
+- Remove 1 second polling floor to allow datafile polling at any frequency but for intervals under 30 seconds, log a warning ([#841](https://github.com/optimizely/javascript-sdk/pull/841)).
 
 ## [5.0.0-beta2] - July 19, 2023
 
