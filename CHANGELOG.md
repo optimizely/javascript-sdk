@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [5.0.0-beta3] - August 18, 2023
 
 ### Bug fixes
-- Fixed odp event sending not working for Europe and Asia region ([#852](https://github.com/optimizely/javascript-sdk/pull/852))
+- Fixed odp event sending not working for Europe and Asia-Pacific regions ([#852](https://github.com/optimizely/javascript-sdk/pull/852))
 
 
 ## [5.0.0-beta2] - July 19, 2023
