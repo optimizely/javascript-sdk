@@ -24,7 +24,6 @@ import { OdpConfig } from './odp_config';
 import { IOdpEventApiManager } from './odp_event_api_manager';
 import { invalidOdpDataFound } from './odp_utils';
 import { IUserAgentParser } from './user_agent_parser';
-import { UserAgentInfo } from './user_agent_info';
 
 const MAX_RETRIES = 3;
 
@@ -170,14 +169,14 @@ export abstract class OdpEventManager implements IOdpEventManager {
 
     if (userAgentParser) {
       const userAgentInfo = new Map<string, unknown>();
-      const { os, device } = userAgentParser.parseUserAgentInfo();;
+      const { os, device } = userAgentParser.parseUserAgentInfo();
       userAgentInfo.set('os', os.name);
       userAgentInfo.set('os_version', os.version);
       userAgentInfo.set('device_type', device.type);
       userAgentInfo.set('model', device.model);
 
       this.userAgentData = new Map<string, unknown>();
-      for (let [key, value] of Array.from(userAgentInfo.entries())) {
+      for (const [key, value] of Array.from(userAgentInfo.entries())) {
         if (value) {
           this.userAgentData.set(key, value);
         }
