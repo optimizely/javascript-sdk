@@ -23,6 +23,8 @@ import { anything, capture, instance, mock, resetCalls, spy, verify, when } from
 import { IOdpEventApiManager } from '../lib/core/odp/odp_event_api_manager';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpEvent } from '../lib/core/odp/odp_event';
+import { IUserAgentParser } from '../lib/core/odp/user_agent_parser';
+import { UserAgentInfo } from '../lib/core/odp/user_agent_info';
 
 const API_KEY = 'test-api-key';
 const API_HOST = 'https://odp.example.com';
@@ -370,6 +372,41 @@ describe('OdpEventManager', () => {
     expect(events[0].data.size).toEqual(PROCESSED_EVENTS[0].data.size);
     expect(events[1].identifiers.size).toEqual(PROCESSED_EVENTS[1].identifiers.size);
     expect(events[1].data.size).toEqual(PROCESSED_EVENTS[1].data.size);
+  });
+
+  it('should augment events with data from user agent parser', async () => {
+    const userAgentParser : IUserAgentParser = {
+      parseUserAgentInfo: function (): UserAgentInfo {
+        return {
+          os: { 'name': 'windows', 'version': '11' },
+          device: { 'type': 'laptop', 'model': 'thinkpad' },
+        }
+      }
+    }
+
+    const eventManager = new OdpEventManager({
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+      batchSize: 10,
+      flushInterval: 100,
+      userAgentParser,
+    });
+
+    eventManager.start();
+    EVENTS.forEach(event => eventManager.sendEvent(event));
+    await pause(1000);
+
+    verify(mockApiManager.sendEvents(anything())).called();
+    const [events] = capture(mockApiManager.sendEvents).last();
+    const event = events[0];
+
+    expect(event.data.get('os')).toEqual('windows');
+    expect(event.data.get('os_version')).toEqual('11');
+    expect(event.data.get('device_type')).toEqual('laptop');
+    expect(event.data.get('model')).toEqual('thinkpad');
   });
 
   it('should retry failed events', async () => {
