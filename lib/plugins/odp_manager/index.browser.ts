@@ -118,6 +118,7 @@ export class BrowserOdpManager extends OdpManager {
         flushInterval: odpOptions?.eventFlushInterval,
         batchSize: odpOptions?.eventBatchSize,
         queueSize: odpOptions?.eventQueueSize,
+        userAgentParser: odpOptions?.userAgentParser,
       });
     }
 

@@ -35,6 +35,7 @@ import { IOdpSegmentManager } from './core/odp/odp_segment_manager';
 import { IOdpEventApiManager } from './core/odp/odp_event_api_manager';
 import { IOdpEventManager } from './core/odp/odp_event_manager';
 import { IOdpManager } from './core/odp/odp_manager';
+import { IUserAgentParser } from './core/odp/user_agent_parser';
 
 export interface BucketerParams {
   experimentId: string;
@@ -105,6 +106,7 @@ export interface OdpOptions {
   eventApiTimeout?: number;
   eventRequestHandler?: RequestHandler;
   eventManager?: IOdpEventManager;
+  userAgentParser?: IUserAgentParser;
 }
 
 export interface ListenerPayload {

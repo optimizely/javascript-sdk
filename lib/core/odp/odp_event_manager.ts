@@ -23,6 +23,7 @@ import { OdpEvent } from './odp_event';
 import { OdpConfig } from './odp_config';
 import { IOdpEventApiManager } from './odp_event_api_manager';
 import { invalidOdpDataFound } from './odp_utils';
+import { IUserAgentParser } from './user_agent_parser';
 
 const MAX_RETRIES = 3;
 
@@ -123,6 +124,19 @@ export abstract class OdpEventManager implements IOdpEventManager {
    */
   private readonly clientVersion: string;
 
+  /**
+   * Version of the client being used
+   * @private
+   */
+  private readonly userAgentParser?: IUserAgentParser;
+
+
+  /**
+   * Information about the user agent
+   * @private
+   */
+  private readonly userAgentData?: Map<string, unknown>;
+
   constructor({
     odpConfig,
     apiManager,
@@ -132,6 +146,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
     queueSize,
     batchSize,
     flushInterval,
+    userAgentParser,
   }: {
     odpConfig: OdpConfig;
     apiManager: IOdpEventApiManager;
@@ -141,6 +156,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
     queueSize?: number;
     batchSize?: number;
     flushInterval?: number;
+    userAgentParser?: IUserAgentParser;
   }) {
     this.odpConfig = odpConfig;
     this.apiManager = apiManager;
@@ -149,6 +165,22 @@ export abstract class OdpEventManager implements IOdpEventManager {
     this.clientVersion = clientVersion;
     this.initParams(batchSize, queueSize, flushInterval);
     this.state = STATE.STOPPED;
+    this.userAgentParser = userAgentParser;
+
+    if (userAgentParser) {
+      const { os, device } = userAgentParser.parseUserAgentInfo();
+
+      const userAgentInfo: Record<string, unknown> = {
+        'os': os.name,
+        'os_version': os.version,
+        'device_type': device.type,
+        'model': device.model,
+      };
+
+      this.userAgentData = new Map<string, unknown>(
+        Object.entries(userAgentInfo).filter(([key, value]) => value != null && value != undefined)
+      );
+    }
 
     this.apiManager.updateSettings(odpConfig);
   }
@@ -408,7 +440,8 @@ export abstract class OdpEventManager implements IOdpEventManager {
    * @private
    */
   private augmentCommonData(sourceData: Map<string, unknown>): Map<string, unknown> {
-    const data = new Map<string, unknown>();
+    const data = new Map<string, unknown>(this.userAgentData);
+  
     data.set('idempotence_id', uuid());
     data.set('data_source_type', 'sdk');
     data.set('data_source', this.clientEngine);
