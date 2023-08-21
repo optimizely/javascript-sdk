@@ -168,19 +168,18 @@ export abstract class OdpEventManager implements IOdpEventManager {
     this.userAgentParser = userAgentParser;
 
     if (userAgentParser) {
-      const userAgentInfo = new Map<string, unknown>();
       const { os, device } = userAgentParser.parseUserAgentInfo();
-      userAgentInfo.set('os', os.name);
-      userAgentInfo.set('os_version', os.version);
-      userAgentInfo.set('device_type', device.type);
-      userAgentInfo.set('model', device.model);
 
-      this.userAgentData = new Map<string, unknown>();
-      for (const [key, value] of Array.from(userAgentInfo.entries())) {
-        if (value) {
-          this.userAgentData.set(key, value);
-        }
-      }
+      const userAgentInfo: Record<string, unknown> = {
+        'os': os.name,
+        'os_version': os.version,
+        'device_type': device.type,
+        'model': device.model,
+      };
+
+      this.userAgentData = new Map<string, unknown>(
+        Object.entries(userAgentInfo).filter(([key, value]) => value != null && value != undefined)
+      );
     }
 
     this.apiManager.updateSettings(odpConfig);
