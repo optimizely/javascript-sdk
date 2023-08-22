@@ -1,6 +1,6 @@
-import { OdpEvent } from '../../../../lib/core/odp/odp_event';
-import { IOdpEventManager, OdpEventManager } from '../../../../lib/core/odp/odp_event_manager';
-import { LogLevel } from '../../../../lib/modules/logging';
+import { OdpEvent } from '../../../core/odp/odp_event';
+import { IOdpEventManager, OdpEventManager } from '../../../core/odp/odp_event_manager';
+import { LogLevel } from '../../../modules/logging';
 
 const DEFAULT_BATCH_SIZE = 10;
 const DEFAULT_FLUSH_INTERVAL_MSECS = 1000;

@@ -1,4 +1,4 @@
-import { IOdpEventManager, OdpEventManager } from '../../../../lib/core/odp/odp_event_manager';
+import { IOdpEventManager, OdpEventManager } from '../../../core/odp/odp_event_manager';
 import { LogLevel } from '../../../modules/logging';
 import { OdpEvent } from "../../../core/odp/odp_event";
 

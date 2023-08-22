@@ -17,7 +17,7 @@
 import {
   EventProcessor,
   ProcessableEvent,
-} from '../../../lib/modules/event_processor';
+} from '../../modules/event_processor';
 import { NotificationSender } from '../../core/notification_center';
 
 import { EventDispatcher } from '../../shared_types';

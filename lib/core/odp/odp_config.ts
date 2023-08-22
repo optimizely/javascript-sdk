@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { checkArrayEquality } from '../../../lib/utils/fns';
+import { checkArrayEquality } from '../../utils/fns';
 
 export class OdpConfig {
   /**

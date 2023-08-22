@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { EventTags } from '../../../lib/modules/event_processor';
+import { EventTags } from '../../modules/event_processor';
 import { LoggerFacade } from '../../modules/logging';
 
 import {

@@ -69,8 +69,6 @@ import {
   ODP_USER_KEY,
 } from '../utils/enums';
 
-import { BrowserOdpManager } from '../../lib/plugins/odp_manager/index.browser';
-
 const MODULE_NAME = 'OPTIMIZELY';
 
 const DEFAULT_ONREADY_TIMEOUT = 30000;
