@@ -28,7 +28,7 @@ import {
 } from '../../utils/enums';
 
 import { OdpManager } from '../../core/odp/odp_manager';
-import { OdpOptions } from '../../../lib/shared_types';
+import { OdpOptions } from '../../shared_types';
 import { NodeOdpEventApiManager } from '../odp/event_api_manager/index.node';
 import { NodeOdpEventManager } from '../odp/event_manager/index.node';
 import { OdpSegmentManager } from '../../core/odp/odp_segment_manager';
