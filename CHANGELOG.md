@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [5.0.0-beta4] - August 22, 2023
+
+### New Features
+- Added support for configurable user agent parser for ODP ([#854](https://github.com/optimizely/javascript-sdk/pull/854))
+
+### Bug fixes
+- Fixed typescript compilation failure due to missing types ([#856](https://github.com/optimizely/javascript-sdk/pull/856))
+
 ## [5.0.0-beta3] - August 18, 2023
 
 ### Bug fixes
