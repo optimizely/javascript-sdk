@@ -30,6 +30,7 @@ import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import Optimizely from './optimizely';
 import { IUserAgentParser } from './core/odp/user_agent_parser';
 import { getUserAgentParser } from './plugins/odp/user_agent_parser/index.browser';
+import * as commonExports from './common_exports';
 
 const logger = getLogger();
 logHelper.setLogHandler(loggerPlugin.createLogger());
@@ -181,7 +182,10 @@ export {
   getUserAgentParser,
 };
 
+export * from './common_exports';
+
 export default {
+  ...commonExports,
   logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,

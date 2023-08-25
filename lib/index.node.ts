@@ -26,6 +26,7 @@ import { createEventProcessor } from './plugins/event_processor';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
 import { NodeOdpManager } from './plugins/odp_manager/index.node';
+import * as commonExports from './common_exports';
 
 const logger = getLogger();
 setLogLevel(LogLevel.ERROR);
@@ -136,7 +137,10 @@ export {
   OptimizelyDecideOption,
 };
 
+export * from './common_exports';
+
 export default {
+  ...commonExports,
   logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
