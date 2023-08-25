@@ -34,6 +34,7 @@ import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { createHttpPollingDatafileManager } from
     './plugins/datafile_manager/react_native_http_polling_datafile_manager';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
+import * as commonExports from './common_exports';
 
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -142,7 +143,10 @@ export {
   OptimizelyDecideOption,
 };
 
+export * from './common_exports';
+
 export default {
+  ...commonExports,
   logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
