@@ -80,7 +80,7 @@ module.exports = {
       os_version: '7',
       browser: 'ie',
       device: null,
-      browser_version: '10.0',
+      browser_version: '11.0',
     },
     bs_opera_mac: {
       base: 'BrowserStack',
