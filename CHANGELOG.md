@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [5.0.0-beta5] - September 1, 2023
+
+### Changed
+- Exported logging related types and values from the package entrypoint ([#858](https://github.com/optimizely/javascript-sdk/pull/858))
+- Removed /lib directory from the published pacakage ([#862](https://github.com/optimizely/javascript-sdk/pull/862))
+
 ## [5.0.0-beta4] - August 22, 2023
 
 ### New Features
