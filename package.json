@@ -115,8 +115,7 @@
     "access": "public"
   },
   "files": [
-    "dist/",
-    "lib/"
+    "dist/"
   ],
   "nyc": {
     "temp-dir": "coverage/raw"
