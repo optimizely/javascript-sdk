@@ -27,6 +27,8 @@ import { OptimizelySegmentOption } from './optimizely_segment_option';
 import { invalidOdpDataFound } from './odp_utils';
 import { OdpEvent } from './odp_event';
 
+const ODP_CONFIG_INVALID = "ODP Configuration is not valid";
+
 /**
  * Manager for handling internal all business logic related to
  * Optimizely Data Platform (ODP) / Advanced Audience Targeting (AAT)
@@ -40,7 +42,7 @@ export interface IOdpManager {
 
   eventManager: IOdpEventManager | undefined;
 
-  updateSettings({ apiKey, apiHost, segmentsToCheck }: OdpConfig): boolean;
+  updateSettings(config: OdpConfig): boolean;
 
   close(): void;
 
@@ -83,21 +85,32 @@ export abstract class OdpManager implements IOdpManager {
 
   /**
    * Handler for recording execution logs
-   * @protected
    */
-  protected logger: LogHandler = getLogger(); // TODO: Consider making private and moving instantiation to constructor
+  protected logger: LogHandler;
 
   /**
    * ODP configuration settings for identifying the target API and segments
    */
-  odpConfig: OdpConfig = new OdpConfig(); // TODO: Consider making private and adding public accessors
+  protected odpConfig: OdpConfig;
 
-  constructor() {} // TODO: Consider accepting logger as a parameter and initializing it in constructor instead
+  constructor(config?: OdpConfig, logger?: LogHandler) {
+    this.logger = logger ?? getLogger();
+    this.odpConfig = config ?? new OdpConfig();
+
+    if (!config?.isValid()) {
+      this.logger.log(LogLevel.WARNING, ODP_CONFIG_INVALID);
+    }
+  }
 
   /**
    * Provides a method to update ODP Manager's ODP Config API Key, API Host, and Audience Segments
    */
-  updateSettings({ apiKey, apiHost, segmentsToCheck }: OdpConfig): boolean {
+  updateSettings(config: OdpConfig): boolean {
+    if (!config.isValid()) {
+      this.logger.log(LogLevel.WARNING, ODP_CONFIG_INVALID);
+      return false;
+    }
+
     if (!this.enabled) {
       return false;
     }
@@ -114,12 +127,12 @@ export abstract class OdpManager implements IOdpManager {
 
     this.eventManager.flush();
 
-    const newConfig = new OdpConfig(apiKey, apiHost, segmentsToCheck);
-    const configDidUpdate = this.odpConfig.update(newConfig);
+    // TODO: Patch this.odpConfig
+    const configDidUpdate =this.odpConfig.update(config);
 
+    // TODO: Pass to segment and chain down to segment api manager
     if (configDidUpdate) {
-      this.odpConfig.update(newConfig);
-      this.segmentManager?.reset();
+      this.segmentManager?.updateSettings(config);
       return true;
     }
 
@@ -145,6 +158,11 @@ export abstract class OdpManager implements IOdpManager {
    * @returns {Promise<string[] | null>}      A promise holding either a list of qualified segments or null.
    */
   async fetchQualifiedSegments(userId: string, options: Array<OptimizelySegmentOption> = []): Promise<string[] | null> {
+    if (!this._odpConfig) {      
+      this.logger.log(LogLevel.WARNING, ODP_CONFIG_INVALID);
+      return null;
+    }
+
     if (!this.enabled) {
       this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_ENABLED);
       return null;
@@ -169,13 +187,13 @@ export abstract class OdpManager implements IOdpManager {
    * @returns
    */
   identifyUser(userId?: string, vuid?: string): void {
-    if (!this.enabled) {
-      this.logger.log(LogLevel.DEBUG, LOG_MESSAGES.ODP_IDENTIFY_FAILED_ODP_DISABLED);
+    if (!this._odpConfig) {      
+      this.logger.log(LogLevel.WARNING, ODP_CONFIG_INVALID);
       return;
     }
 
-    if (!this.odpConfig.isReady()) {
-      this.logger.log(LogLevel.DEBUG, LOG_MESSAGES.ODP_IDENTIFY_FAILED_ODP_NOT_INTEGRATED);
+    if (!this.enabled) {
+      this.logger.log(LogLevel.DEBUG, LOG_MESSAGES.ODP_IDENTIFY_FAILED_ODP_DISABLED);
       return;
     }
 
@@ -205,10 +223,6 @@ export abstract class OdpManager implements IOdpManager {
 
     if (!this.enabled) {
       throw new Error(ERROR_MESSAGES.ODP_NOT_ENABLED);
-    }
-
-    if (!this.odpConfig.isReady()) {
-      throw new Error(ERROR_MESSAGES.ODP_NOT_INTEGRATED);
     }
 
     if (invalidOdpDataFound(data)) {
