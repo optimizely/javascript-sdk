@@ -73,19 +73,25 @@ export class OdpConfig {
   update(config: OdpConfig): boolean {
     if (this.equals(config)) {
       return false;
-    } else {
-      if (config.apiKey) this._apiKey = config.apiKey;
-      if (config.apiHost) this._apiHost = config.apiHost;
-      if (config.segmentsToCheck) this._segmentsToCheck = config.segmentsToCheck;
-
-      return true;
     }
+
+    if (config.apiKey) {
+      this._apiKey = config.apiKey;
+    }
+    if (config.apiHost) {
+      this._apiHost = config.apiHost;
+    }
+    if (config.segmentsToCheck) {
+      this._segmentsToCheck = config.segmentsToCheck;
+    }
+    
+    return true;
   }
 
   /**
    * Determines if ODP configuration has the minimum amount of information
    */
-  isReady(): boolean {
+  isValid(): boolean {
     return !!this._apiKey && !!this._apiHost;
   }
 
