@@ -27,7 +27,6 @@ export interface IOdpSegmentManager {
     userValue: string,
     options: Array<OptimizelySegmentOption>
   ): Promise<string[] | null>;
-  reset(): void;
   makeCacheKey(userKey: string, userValue: string): string;
   updateSettings(config: OdpConfig): void;
 }
@@ -112,7 +111,7 @@ export class OdpSegmentManager implements IOdpSegmentManager {
     const resetCache = options.includes(OptimizelySegmentOption.RESET_CACHE);
 
     if (resetCache) {
-      this.reset();
+      this._segmentsCache.reset();
     }
 
     if (!ignoreCache && !resetCache) {
@@ -139,13 +138,6 @@ export class OdpSegmentManager implements IOdpSegmentManager {
     }
 
     return segments;
-  }
-
-  /**
-   * Clears the segments cache
-   */
-  reset(): void {
-    this._segmentsCache.reset();
   }
 
   /**
