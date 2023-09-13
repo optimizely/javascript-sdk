@@ -17,7 +17,7 @@ export class BrowserOdpEventApiManager extends OdpEventApiManager {
   }
 
   private getPixelApiEndpoint(): string {
-    if (!this.odpConfig?.isReady()) {
+    if (!this.odpConfig?.isValid()) {
       throw new Error(ODP_CONFIG_NOT_READY_MESSAGE);
     }
     const apiHost = this.odpConfig.apiHost;
@@ -29,11 +29,11 @@ export class BrowserOdpEventApiManager extends OdpEventApiManager {
     events: OdpEvent[]
   ): { method: string; endpoint: string; headers: { [key: string]: string }; data: string } {
     // the caller should ensure odpConfig is ready before calling
-    if (!this.odpConfig?.isReady()) {
+    if (!this.odpConfig?.isValid()) {
       this.getLogger().log(LogLevel.ERROR, ODP_CONFIG_NOT_READY_MESSAGE);
       throw new Error(ODP_CONFIG_NOT_READY_MESSAGE);
     }
-    
+
     // this cannot be cached cause OdpConfig is mutable
     // and can be updated in place and it is done so in odp
     // manager. We should make OdpConfig immutable and

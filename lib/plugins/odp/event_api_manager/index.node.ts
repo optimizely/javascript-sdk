@@ -11,14 +11,14 @@ export class NodeOdpEventApiManager extends OdpEventApiManager {
     events: OdpEvent[]
   ): { method: string; endpoint: string; headers: { [key: string]: string }; data: string } {
     // the caller should ensure odpConfig is ready before calling
-    if (!this.odpConfig?.isReady()) {
+    if (!this.odpConfig?.isValid()) {
       this.getLogger().log(LogLevel.ERROR, ODP_CONFIG_NOT_READY_MESSAGE);
       throw new Error(ODP_CONFIG_NOT_READY_MESSAGE);
     }
-    
+
     const apiHost = this.odpConfig.apiHost;
     const apiKey = this.odpConfig.apiKey;
-    
+
     return {
       method: 'POST',
       endpoint: `${apiHost}/v3/events`,
