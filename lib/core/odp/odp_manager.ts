@@ -91,11 +91,14 @@ export abstract class OdpManager implements IOdpManager {
   /**
    * ODP configuration settings for identifying the target API and segments
    */
-  protected odpConfig: OdpConfig;
+  private _odpConfig: OdpConfig;
+  public get odpConfig(): OdpConfig {
+    return this._odpConfig;
+  }
 
   constructor(config?: OdpConfig, logger?: LogHandler) {
     this.logger = logger ?? getLogger();
-    this.odpConfig = config ?? new OdpConfig();
+    this._odpConfig = config ?? new OdpConfig();
 
     if (!config?.isValid()) {
       this.logger.log(LogLevel.WARNING, ODP_CONFIG_INVALID);
@@ -158,7 +161,7 @@ export abstract class OdpManager implements IOdpManager {
    * @returns {Promise<string[] | null>}      A promise holding either a list of qualified segments or null.
    */
   async fetchQualifiedSegments(userId: string, options: Array<OptimizelySegmentOption> = []): Promise<string[] | null> {
-    if (!this._odpConfig) {      
+    if (!this.odpConfig) {      
       this.logger.log(LogLevel.WARNING, ODP_CONFIG_INVALID);
       return null;
     }
@@ -187,7 +190,7 @@ export abstract class OdpManager implements IOdpManager {
    * @returns
    */
   identifyUser(userId?: string, vuid?: string): void {
-    if (!this._odpConfig) {      
+    if (!this.odpConfig) {      
       this.logger.log(LogLevel.WARNING, ODP_CONFIG_INVALID);
       return;
     }

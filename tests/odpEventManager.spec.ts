@@ -222,7 +222,7 @@ describe('OdpEventManager', () => {
 
   it('should log and discard events when event manager config is not ready', () => {
     const mockOdpConfig = mock<OdpConfig>();
-    when(mockOdpConfig.isReady()).thenReturn(false);
+    when(mockOdpConfig.isValid()).thenReturn(false);
     const odpConfig = instance(mockOdpConfig);
     const eventManager = new OdpEventManager({
       odpConfig,
