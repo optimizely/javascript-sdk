@@ -375,7 +375,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
    */
   private makeAndSend1Batch(): void {
     const batch = new Array<OdpEvent>();
-    
+
     // remove a batch from the queue
     for (let count = 0; count < this.batchSize; count += 1) {
       const event = this.queue.shift();
@@ -424,7 +424,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
    * @private
    */
   private isOdpConfigurationReady(): boolean {
-    if (this.odpConfig.isReady()) {
+    if (this.odpConfig.isValid()) {
       return true;
     }
     this.discardEventsIfNeeded();
@@ -441,7 +441,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
    */
   private augmentCommonData(sourceData: Map<string, unknown>): Map<string, unknown> {
     const data = new Map<string, unknown>(this.userAgentData);
-  
+
     data.set('idempotence_id', uuid());
     data.set('data_source_type', 'sdk');
     data.set('data_source', this.clientEngine);

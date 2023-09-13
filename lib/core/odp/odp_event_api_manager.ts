@@ -81,7 +81,7 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
   async sendEvents(events: OdpEvent[]): Promise<boolean> {
     let shouldRetry = false;
 
-    if (!this.odpConfig?.isReady()) {
+    if (!this.odpConfig?.isValid()) {
       this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (${ODP_CONFIG_NOT_READY_MESSAGE})`);
       return shouldRetry;
     }
