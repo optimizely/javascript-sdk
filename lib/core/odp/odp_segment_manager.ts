@@ -28,7 +28,7 @@ export interface IOdpSegmentManager {
     options: Array<OptimizelySegmentOption>
   ): Promise<string[] | null>;
   makeCacheKey(userKey: string, userValue: string): string;
-  updateSettings(config: OdpConfig): void;
+  updateSettings(newConfig: OdpConfig): void;
 }
 
 /**
@@ -152,10 +152,10 @@ export class OdpSegmentManager implements IOdpSegmentManager {
 
   /**
    * Updates the ODP Config settings of ODP Segment Manager
-   * @param config New ODP Config that will overwrite the existing config
+   * @param newconfig New ODP Config that will overwrite the existing config
    */
-  updateSettings(config: OdpConfig): void {
-    this.odpConfig = config;
+  updateSettings(newconfig: OdpConfig): void {
+    this.odpConfig = newconfig;
     this._segmentsCache.reset();
   }
 }

@@ -42,7 +42,7 @@ export interface IOdpManager {
 
   eventManager: IOdpEventManager | undefined;
 
-  updateSettings(config: OdpConfig): boolean;
+  updateSettings(newConfig: OdpConfig): boolean;
 
   close(): void;
 
@@ -106,10 +106,11 @@ export abstract class OdpManager implements IOdpManager {
   }
 
   /**
-   * Provides a method to update ODP Manager's ODP Config API Key, API Host, and Audience Segments
+   * Provides a method to update ODP Manager's ODP Config API Key, API Host, and Audience Segments   * 
+   * @param newconfig New ODP Config that will overwrite the existing config
    */
-  updateSettings(config: OdpConfig): boolean {
-    if (!config.isValid()) {
+  updateSettings(newConfig: OdpConfig): boolean {
+    if (!newConfig.isValid()) {
       this.logger.log(LogLevel.WARNING, ODP_CONFIG_INVALID);
       return false;
     }
@@ -130,9 +131,9 @@ export abstract class OdpManager implements IOdpManager {
 
     this.eventManager.flush();
 
-    this._odpConfig = config;
+    this._odpConfig = newConfig;
 
-    this.segmentManager?.updateSettings(config);
+    this.segmentManager?.updateSettings(newConfig);
 
     return true;
   }
