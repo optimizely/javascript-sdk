@@ -90,28 +90,30 @@ export abstract class OdpManager implements IOdpManager {
   /**
    * Handler for recording execution logs
    * @protected
+   * @optional
    */
   protected logger: LogHandler;
 
   /**
    * ODP configuration settings for identifying the target API and segments
-   * @private
+   * @private 
+   * @optional
    */
   private _odpConfig: OdpConfig;
 
   /**
    * Getter for ODP configuration settings
-   * @public
+   * @private
    * @returns ODP configuration settings in use
    */
-  public get odpConfig(): OdpConfig {
+  private get odpConfig(): OdpConfig {
     return this._odpConfig;
   }
 
-  constructor(config?: OdpConfig, logger?: LogHandler) {
+  constructor(config: OdpConfig, logger?: LogHandler) {
     this.logger = logger ?? getLogger();
-    this._odpConfig = config ?? new OdpConfig();
 
+    this._odpConfig = config;
     if (!config?.isValid()) {
       this.logger.log(LogLevel.WARNING, ODP_CONFIG_INVALID);
     }
@@ -143,9 +145,10 @@ export abstract class OdpManager implements IOdpManager {
       return false;
     }
 
-    this.eventManager.flush();
-
     this._odpConfig = newConfig;
+
+    this.eventManager.flush();
+    this.eventManager.updateSettings(newConfig);
 
     this.segmentManager?.updateSettings(newConfig);
 
