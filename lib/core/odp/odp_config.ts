@@ -65,6 +65,8 @@ export class OdpConfig {
 
   /**
    * Determines if ODP configuration has the minimum amount of information
+   * @public
+   * @returns boolean indicating if ODP configuration is valid
    */
   public isValid(): boolean {
     return !!this._apiKey && !!this._apiHost;
