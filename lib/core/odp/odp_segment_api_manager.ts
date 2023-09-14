@@ -20,6 +20,7 @@ import { OdpResponseSchema } from './odp_response_schema';
 import { ODP_USER_KEY } from '../../utils/enums';
 import { RequestHandler, Response as HttpResponse } from '../../utils/http_request_handler/http';
 import { Response as GraphQLResponse } from './odp_types';
+import { OdpConfig } from './odp_config';
 
 /**
  * Expected value for a qualified/valid segment
@@ -43,11 +44,8 @@ const AUDIENCE_FETCH_FAILURE_MESSAGE = 'Audience segments fetch failed';
  */
 export interface IOdpSegmentApiManager {
   fetchSegments(
-    apiKey: string,
-    apiHost: string,
     userKey: string,
     userValue: string,
-    segmentsToCheck: string[]
   ): Promise<string[] | null>;
 }
 
@@ -55,8 +53,20 @@ export interface IOdpSegmentApiManager {
  * Concrete implementation for communicating with the ODP GraphQL endpoint
  */
 export class OdpSegmentApiManager implements IOdpSegmentApiManager {
+  /**
+   * Handler for logging
+   */
   private readonly logger: LogHandler;
+
+  /**
+   *  Handler for making requests
+   */
   private readonly requestHandler: RequestHandler;
+
+  /**
+   * ODP configuration settings in use
+   */
+  private odpConfig = new OdpConfig();
 
   /**
    * Communicates with Optimizely Data Platform's GraphQL endpoint
@@ -70,23 +80,16 @@ export class OdpSegmentApiManager implements IOdpSegmentApiManager {
 
   /**
    * Retrieves the audience segments from ODP
-   * @param apiKey ODP public key
-   * @param apiHost Host of ODP endpoint
+   * @public
    * @param userKey 'vuid' or 'fs_user_id key'
    * @param userValue Associated value to query for the user key
-   * @param segmentsToCheck Audience segments to check for experiment inclusion
+   * @returns List of audience segments or null
    */
-  async fetchSegments(
-    apiKey: string,
-    apiHost: string,
+  public async fetchSegments(
     userKey: ODP_USER_KEY,
     userValue: string,
-    segmentsToCheck: string[]
   ): Promise<string[] | null> {
-    if (!apiKey || !apiHost) {
-      this.logger.log(LogLevel.ERROR, `${AUDIENCE_FETCH_FAILURE_MESSAGE} (Parameters apiKey or apiHost invalid)`);
-      return null;
-    }
+    const { apiKey, apiHost, segmentsToCheck } = this.odpConfig;
 
     if (segmentsToCheck?.length === 0) {
       return EMPTY_SEGMENTS_COLLECTION;
@@ -130,6 +133,10 @@ export class OdpSegmentApiManager implements IOdpSegmentApiManager {
 
   /**
    * Converts the query parameters to a GraphQL JSON payload
+   * @private
+   * @param userKey 'vuid' or 'fs_user_id'
+   * @param userValue userKey's value
+   * @param segmentsToCheck List of segments to check
    * @returns GraphQL JSON string
    */
   private toGraphQLJson = (userKey: string, userValue: string, segmentsToCheck: string[]): string =>
@@ -180,8 +187,8 @@ export class OdpSegmentApiManager implements IOdpSegmentApiManager {
 
   /**
    * Parses JSON response
-   * @param jsonResponse JSON response from ODP
    * @private
+   * @param jsonResponse JSON response from ODP
    * @returns Response Strongly-typed ODP Response object
    */
   private parseSegmentsResponseJson(jsonResponse: string): GraphQLResponse | null {
