@@ -63,35 +63,47 @@ export interface IOdpManager {
 export abstract class OdpManager implements IOdpManager {
   /**
    * Promise that returns when the OdpManager is finished initializing
+   * @public
    */
-  initPromise?: Promise<void>;
+  public initPromise?: Promise<void>;
 
   /**
    * Switch to enable/disable ODP Manager functionality
+   * @public
    */
-  enabled = true;
+  public enabled = true;
 
   /**
-   * ODP Segment Manager which provides an interface to the remote ODP server (GraphQL API) for audience segments mapping.
-   * It fetches all qualified segments for the given user context and manages the segments cache for all user contexts.
+   * ODP Segment Manager which provides an interface to the remote ODP server (GraphQL API) for audience segments mapping
+   * It fetches all qualified segments for the given user context and manages the segments cache for all user contexts
+   * @public
    */
-  segmentManager: IOdpSegmentManager | undefined;
+  public segmentManager: IOdpSegmentManager | undefined;
 
   /**
    * ODP Event Manager which provides an interface to the remote ODP server (REST API) for events.
    * It will queue all pending events (persistent) and send them (in batches of up to 10 events) to the ODP server when possible.
+   * @public
    */
-  eventManager: IOdpEventManager | undefined;
+  public eventManager: IOdpEventManager | undefined;
 
   /**
    * Handler for recording execution logs
+   * @protected
    */
   protected logger: LogHandler;
 
   /**
    * ODP configuration settings for identifying the target API and segments
+   * @private
    */
   private _odpConfig: OdpConfig;
+
+  /**
+   * Getter for ODP configuration settings
+   * @public
+   * @returns ODP configuration settings in use
+   */
   public get odpConfig(): OdpConfig {
     return this._odpConfig;
   }
@@ -106,10 +118,12 @@ export abstract class OdpManager implements IOdpManager {
   }
 
   /**
-   * Provides a method to update ODP Manager's ODP Config API Key, API Host, and Audience Segments   * 
+   * Provides a method to update ODP Manager's ODP Config API Key, API Host, and Audience Segments   
+   * @public
    * @param newconfig New ODP Config that will overwrite the existing config
+   * @returns {boolean} True if the update was successful, false otherwise
    */
-  updateSettings(newConfig: OdpConfig): boolean {
+  public updateSettings(newConfig: OdpConfig): boolean {
     if (!newConfig.isValid()) {
       this.logger.log(LogLevel.WARNING, ODP_CONFIG_INVALID);
       return false;
@@ -140,8 +154,9 @@ export abstract class OdpManager implements IOdpManager {
 
   /**
    * Attempts to stop the current instance of ODP Manager's event manager, if it exists and is running.
+   * @public
    */
-  close(): void {
+  public close(): void {
     if (!this.enabled) {
       return;
     }
@@ -152,11 +167,12 @@ export abstract class OdpManager implements IOdpManager {
   /**
    * Attempts to fetch and return a list of a user's qualified segments from the local segments cache.
    * If no cached data exists for the target user, this fetches and caches data from the ODP server instead.
+   * @public
    * @param {string}                          userId  - Unique identifier of a target user.
    * @param {Array<OptimizelySegmentOption>}  options - An array of OptimizelySegmentOption used to ignore and/or reset the cache.
    * @returns {Promise<string[] | null>}      A promise holding either a list of qualified segments or null.
    */
-  async fetchQualifiedSegments(userId: string, options: Array<OptimizelySegmentOption> = []): Promise<string[] | null> {
+  public async fetchQualifiedSegments(userId: string, options: Array<OptimizelySegmentOption> = []): Promise<string[] | null> {
     if (!this.odpConfig) {
       this.logger.log(LogLevel.WARNING, ODP_CONFIG_INVALID);
       return null;
@@ -181,11 +197,11 @@ export abstract class OdpManager implements IOdpManager {
 
   /**
    * Identifies a user via the ODP Event Manager
+   * @public
    * @param {string}  userId    (Optional) Custom unique identifier of a target user.
    * @param {string}  vuid      (Optional) Secondary unique identifier of a target user, primarily used by client SDKs.
-   * @returns
    */
-  identifyUser(userId?: string, vuid?: string): void {
+  public identifyUser(userId?: string, vuid?: string): void {
     if (!this.odpConfig) {
       this.logger.log(LogLevel.WARNING, ODP_CONFIG_INVALID);
       return;
@@ -211,9 +227,10 @@ export abstract class OdpManager implements IOdpManager {
 
   /**
    * Sends an event to the ODP Server via the ODP Events API
+   * @public
    * @param {OdpEvent}  > ODP Event to send to event manager
    */
-  sendEvent({ type, action, identifiers, data }: OdpEvent): void {
+  public sendEvent({ type, action, identifiers, data }: OdpEvent): void {
     let mType = type;
 
     if (typeof mType !== 'string' || mType === '') {
