@@ -130,16 +130,11 @@ export abstract class OdpManager implements IOdpManager {
 
     this.eventManager.flush();
 
-    // TODO: Patch this.odpConfig
-    const configDidUpdate =this.odpConfig.update(config);
+    this._odpConfig = config;
 
-    // TODO: Pass to segment and chain down to segment api manager
-    if (configDidUpdate) {
-      this.segmentManager?.updateSettings(config);
-      return true;
-    }
+    this.segmentManager?.updateSettings(config);
 
-    return false;
+    return true;
   }
 
   /**
@@ -161,7 +156,7 @@ export abstract class OdpManager implements IOdpManager {
    * @returns {Promise<string[] | null>}      A promise holding either a list of qualified segments or null.
    */
   async fetchQualifiedSegments(userId: string, options: Array<OptimizelySegmentOption> = []): Promise<string[] | null> {
-    if (!this.odpConfig) {      
+    if (!this.odpConfig) {
       this.logger.log(LogLevel.WARNING, ODP_CONFIG_INVALID);
       return null;
     }
@@ -190,7 +185,7 @@ export abstract class OdpManager implements IOdpManager {
    * @returns
    */
   identifyUser(userId?: string, vuid?: string): void {
-    if (!this.odpConfig) {      
+    if (!this.odpConfig) {
       this.logger.log(LogLevel.WARNING, ODP_CONFIG_INVALID);
       return;
     }
