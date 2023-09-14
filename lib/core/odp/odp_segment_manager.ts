@@ -125,13 +125,7 @@ export class OdpSegmentManager implements IOdpSegmentManager {
 
     this.logger.log(LogLevel.DEBUG, `Making a call to ODP server.`);
 
-    const segments = await this.odpSegmentApiManager.fetchSegments(
-      odpApiKey,
-      odpApiHost,
-      userKey,
-      userValue,
-      segmentsToCheck
-    );
+    const segments = await this.odpSegmentApiManager.fetchSegments(userKey, userValue);
 
     if (segments && !ignoreCache) {
       this._segmentsCache.save({ key: cacheKey, value: segments });
@@ -157,5 +151,6 @@ export class OdpSegmentManager implements IOdpSegmentManager {
   updateSettings(newconfig: OdpConfig): void {
     this.odpConfig = newconfig;
     this._segmentsCache.reset();
+    this.odpSegmentApiManager.updateSettings(newconfig);
   }
 }

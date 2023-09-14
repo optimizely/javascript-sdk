@@ -47,6 +47,7 @@ export interface IOdpSegmentApiManager {
     userKey: string,
     userValue: string,
   ): Promise<string[] | null>;
+  updateSettings(newConfig: OdpConfig): void;
 }
 
 /**
@@ -55,16 +56,19 @@ export interface IOdpSegmentApiManager {
 export class OdpSegmentApiManager implements IOdpSegmentApiManager {
   /**
    * Handler for logging
+   * @private
    */
   private readonly logger: LogHandler;
 
   /**
-   *  Handler for making requests
+   * Handler for making requests
+   * @private
    */
   private readonly requestHandler: RequestHandler;
 
   /**
    * ODP configuration settings in use
+   * @private
    */
   private odpConfig = new OdpConfig();
 
@@ -76,6 +80,15 @@ export class OdpSegmentApiManager implements IOdpSegmentApiManager {
   constructor(requestHandler: RequestHandler, logger: LogHandler) {
     this.requestHandler = requestHandler;
     this.logger = logger;
+  }
+
+  /**
+   * Updates the ODP configuration settings
+   * @public
+   * @param newConfig New ODP configuration settings
+   */
+  public updateSettings(newConfig: OdpConfig): void {
+    this.odpConfig = newConfig;
   }
 
   /**
