@@ -97,7 +97,6 @@ export abstract class OdpManager implements IOdpManager {
   /**
    * ODP configuration settings for identifying the target API and segments
    * @private 
-   * @optional
    */
   private _odpConfig: OdpConfig;
 
@@ -110,11 +109,11 @@ export abstract class OdpManager implements IOdpManager {
     return this._odpConfig;
   }
 
-  constructor(config: OdpConfig, logger?: LogHandler) {
+  constructor(odpConfig: OdpConfig, logger?: LogHandler) {
     this.logger = logger ?? getLogger();
 
-    this._odpConfig = config;
-    if (!config?.isValid()) {
+    this._odpConfig = odpConfig;
+    if (!odpConfig?.isValid()) {
       this.logger.log(LogLevel.WARNING, ODP_CONFIG_INVALID);
     }
   }
