@@ -21,12 +21,14 @@ import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
 import { ODP_USER_KEY } from '../lib/utils/enums';
+import { OdpConfig } from '../lib/core/odp/odp_config';
 
-const API_key = 'not-real-api-key';
-const GRAPHQL_ENDPOINT = 'https://some.example.com/graphql/endpoint';
+const API_KEY = 'not-real-api-key';
+const API_HOST = 'https://odp-host.example.com/';
 const USER_KEY = ODP_USER_KEY.FS_USER_ID;
 const USER_VALUE = 'tester-101';
 const SEGMENTS_TO_CHECK = ['has_email', 'has_email_opted_in', 'push_on_sale'];
+const ODP_CONFIG = new OdpConfig(API_KEY, API_HOST, SEGMENTS_TO_CHECK);
 
 describe('OdpSegmentApiManager', () => {
   let mockLogger: LogHandler;
@@ -42,11 +44,11 @@ describe('OdpSegmentApiManager', () => {
     resetCalls(mockRequestHandler);
   });
 
-  const managerInstance = () => new OdpSegmentApiManager(instance(mockRequestHandler), instance(mockLogger));
+  const managerInstance = () => new OdpSegmentApiManager(instance(mockRequestHandler), instance(mockLogger), ODP_CONFIG);
 
   const abortableRequest = (statusCode: number, body: string) => {
     return {
-      abort: () => {},
+      abort: () => { },
       responsePromise: Promise.resolve({
         statusCode,
         body,
@@ -148,7 +150,7 @@ describe('OdpSegmentApiManager', () => {
     );
     const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
+    const segments = await manager.fetchSegments(USER_KEY, USER_VALUE);
 
     expect(segments?.length).toEqual(2);
     expect(segments).toContain('has_email');
@@ -158,8 +160,10 @@ describe('OdpSegmentApiManager', () => {
 
   it('should handle a request to query no segments', async () => {
     const manager = managerInstance();
+    const emptySegmentsToCheckOdpConfig = new OdpConfig(API_KEY, API_HOST, []);
+    manager.updateSettings(emptySegmentsToCheckOdpConfig);
 
-    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, ODP_USER_KEY.FS_USER_ID, USER_VALUE, []);
+    const segments = await manager.fetchSegments(ODP_USER_KEY.FS_USER_ID, USER_VALUE);
 
     expect(segments?.length).toEqual(0);
     verify(mockLogger.log(anything(), anyString())).never();
@@ -172,7 +176,7 @@ describe('OdpSegmentApiManager', () => {
     );
     const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
+    const segments = await manager.fetchSegments(USER_KEY, USER_VALUE);
 
     expect(segments?.length).toEqual(0);
     verify(mockLogger.log(anything(), anyString())).never();
@@ -192,13 +196,7 @@ describe('OdpSegmentApiManager', () => {
     );
     const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(
-      API_key,
-      GRAPHQL_ENDPOINT,
-      USER_KEY,
-      INVALID_USER_ID,
-      SEGMENTS_TO_CHECK
-    );
+    const segments = await manager.fetchSegments(USER_KEY, INVALID_USER_ID);
 
     expect(segments).toBeNull();
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (invalid identifier)')).once();
@@ -218,13 +216,7 @@ describe('OdpSegmentApiManager', () => {
     );
     const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(
-      API_key,
-      GRAPHQL_ENDPOINT,
-      USER_KEY,
-      INVALID_USER_ID,
-      SEGMENTS_TO_CHECK
-    );
+    const segments = await manager.fetchSegments(USER_KEY, INVALID_USER_ID);
 
     expect(segments).toBeNull();
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (DataFetchingException)')).once();
@@ -237,7 +229,7 @@ describe('OdpSegmentApiManager', () => {
     );
     const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
+    const segments = await manager.fetchSegments(USER_KEY, USER_VALUE);
 
     expect(segments).toBeNull();
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (decode error)')).once();
@@ -254,7 +246,7 @@ describe('OdpSegmentApiManager', () => {
     );
     const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
+    const segments = await manager.fetchSegments(USER_KEY, USER_VALUE);
 
     expect(segments).toBeNull();
     verify(mockLogger.log(anything(), anyString())).once();
@@ -267,7 +259,7 @@ describe('OdpSegmentApiManager', () => {
     );
     const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
+    const segments = await manager.fetchSegments(USER_KEY, USER_VALUE);
 
     expect(segments).toBeNull();
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (decode error)')).once();
@@ -279,7 +271,7 @@ describe('OdpSegmentApiManager', () => {
     );
     const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
+    const segments = await manager.fetchSegments(USER_KEY, USER_VALUE);
 
     expect(segments).toBeNull();
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)')).once();
@@ -287,12 +279,12 @@ describe('OdpSegmentApiManager', () => {
 
   it('should handle a timeout', async () => {
     when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
-      abort: () => {},
+      abort: () => { },
       responsePromise: Promise.reject(new Error('Request timed out')),
     });
     const manager = managerInstance();
 
-    const segments = await manager.fetchSegments(API_key, GRAPHQL_ENDPOINT, USER_KEY, USER_VALUE, SEGMENTS_TO_CHECK);
+    const segments = await manager.fetchSegments(USER_KEY, USER_VALUE);
 
     expect(segments).toBeNull();
     verify(mockLogger.log(LogLevel.ERROR, 'Audience segments fetch failed (network error)')).once();

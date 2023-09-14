@@ -31,14 +31,13 @@ import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
 describe('OdpSegmentManager', () => {
   class MockOdpSegmentApiManager extends OdpSegmentApiManager {
     async fetchSegments(
-      apiKey: string,
-      apiHost: string,
       userKey: ODP_USER_KEY,
       userValue: string,
-      segmentsToCheck: string[]
     ): Promise<string[] | null> {
-      if (apiKey == 'invalid-key') return null;
-      return segmentsToCheck;
+      if (this.odpConfig.apiHost == 'invalid-key') {
+        return null;
+      }
+      return this.odpConfig.segmentsToCheck;
     }
   }
 
@@ -73,7 +72,7 @@ describe('OdpSegmentManager', () => {
   });
 
   it('should fetch segments successfully on cache miss.', async () => {
-    odpConfig.update(validTestOdpConfig);
+    manager.updateSettings(validTestOdpConfig);
     setCache(userKey, '123', ['a']);
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
@@ -81,7 +80,7 @@ describe('OdpSegmentManager', () => {
   });
 
   it('should fetch segments successfully on cache hit.', async () => {
-    odpConfig.update(validTestOdpConfig);
+    manager.updateSettings(validTestOdpConfig);
     setCache(userKey, userValue, ['a']);
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
@@ -89,14 +88,14 @@ describe('OdpSegmentManager', () => {
   });
 
   it('should throw an error when fetching segments returns an error.', async () => {
-    odpConfig.update(invalidTestOdpConfig);
+    manager.updateSettings(invalidTestOdpConfig);
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, []);
     expect(segments).toBeNull;
   });
 
   it('should ignore the cache if the option enum is included in the options array.', async () => {
-    odpConfig.update(validTestOdpConfig);
+    manager.updateSettings(validTestOdpConfig);
     setCache(userKey, userValue, ['a']);
     options = [OptimizelySegmentOption.IGNORE_CACHE];
 
@@ -106,10 +105,9 @@ describe('OdpSegmentManager', () => {
   });
 
   it('should ignore the cache if the option string is included in the options array.', async () => {
-    odpConfig.update(validTestOdpConfig);
+    manager.updateSettings(validTestOdpConfig);
     setCache(userKey, userValue, ['a']);
-    // @ts-ignore
-    options = ['IGNORE_CACHE'];
+    options = [OptimizelySegmentOption.RESET_CACHE];
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
     expect(segments).toEqual(['new-customer']);
@@ -117,7 +115,7 @@ describe('OdpSegmentManager', () => {
   });
 
   it('should reset the cache if the option enum is included in the options array.', async () => {
-    odpConfig.update(validTestOdpConfig);
+    manager.updateSettings(validTestOdpConfig);
     setCache(userKey, userValue, ['a']);
     setCache(userKey, '123', ['a']);
     setCache(userKey, '456', ['a']);
@@ -130,12 +128,11 @@ describe('OdpSegmentManager', () => {
   });
 
   it('should reset the cache if the option string is included in the options array.', async () => {
-    odpConfig.update(validTestOdpConfig);
+    manager.updateSettings(validTestOdpConfig);
     setCache(userKey, userValue, ['a']);
     setCache(userKey, '123', ['a']);
     setCache(userKey, '456', ['a']);
-    // @ts-ignore
-    options = ['RESET_CACHE'];
+    options = [OptimizelySegmentOption.RESET_CACHE];
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
     expect(segments).toEqual(['new-customer']);

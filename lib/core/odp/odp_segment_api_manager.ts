@@ -68,18 +68,19 @@ export class OdpSegmentApiManager implements IOdpSegmentApiManager {
 
   /**
    * ODP configuration settings in use
-   * @private
+   * @protected  // needed for testing
    */
-  private odpConfig = new OdpConfig();
+  protected odpConfig: OdpConfig;
 
   /**
    * Communicates with Optimizely Data Platform's GraphQL endpoint
    * @param requestHandler Desired request handler for testing
    * @param logger Collect and record events/errors for this GraphQL implementation
    */
-  constructor(requestHandler: RequestHandler, logger: LogHandler) {
+  constructor(requestHandler: RequestHandler, logger: LogHandler, odpConfig?: OdpConfig) {
     this.requestHandler = requestHandler;
     this.logger = logger;
+    this.odpConfig = odpConfig || new OdpConfig();
   }
 
   /**
