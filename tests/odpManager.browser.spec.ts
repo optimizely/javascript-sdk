@@ -169,7 +169,7 @@ describe('OdpManager', () => {
 
     const didUpdateA = browserOdpManager.updateSettings(odpConfigA);
     expect(didUpdateA).toBe(true);
-    expect(browserOdpManager.odpConfig.equals(odpConfigA)).toBe(true);
+    expect(browserOdpManager.odpConfig).toEqual(odpConfigA);
 
     const updateSettingsArgsA = capture(mockEventManager.updateSettings).last();
     expect(updateSettingsArgsA[0]).toStrictEqual(odpConfigA);
@@ -180,12 +180,12 @@ describe('OdpManager', () => {
 
     const didUpdateB = browserOdpManager.updateSettings(odpConfigB);
     expect(didUpdateB).toBe(true);
-    expect(browserOdpManager.odpConfig.equals(odpConfigB)).toBe(true);
+    expect(browserOdpManager.odpConfig).toEqual(odpConfigB);
 
     const updateSettingsArgsB = capture(mockEventManager.updateSettings).last();
     expect(updateSettingsArgsB[0]).toStrictEqual(odpConfigB);
 
-    await browserOdpManager.eventManager!.identifyUser(userB);
+    browserOdpManager.eventManager.identifyUser(userB);
     const identifyUserArgsB = capture(mockEventManager.identifyUser).last();
     expect(identifyUserArgsB[0]).toStrictEqual(userB);
   });
