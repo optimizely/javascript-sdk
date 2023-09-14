@@ -153,19 +153,8 @@ export function sprintf(format: string, ...args: any[]): string {
   });
 }
 
-/**
- * Checks two string arrays for equality.
- * @param arrayA First Array to be compared against.
- * @param arrayB Second Array to be compared against.
- * @returns {boolean} True if both arrays are equal, otherwise returns false.
- */
-export function checkArrayEquality(arrayA: string[], arrayB: string[]): boolean {
-  return arrayA.length === arrayB.length && arrayA.every((item, index) => item === arrayB[index]);
-}
-
 export default {
   assign,
-  checkArrayEquality,
   currentTimestamp,
   isSafeInteger,
   keyBy,

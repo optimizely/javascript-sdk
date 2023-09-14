@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { checkArrayEquality } from '../../utils/fns';
-
 export class OdpConfig {
   /**
    * Host of ODP audience segments API.
@@ -27,7 +25,7 @@ export class OdpConfig {
    * Getter to retrieve the ODP server host
    * @public
    */
-  get apiHost(): string {
+  public get apiHost(): string {
     return this._apiHost;
   }
 
@@ -41,7 +39,7 @@ export class OdpConfig {
    * Getter to retrieve the ODP API key
    * @public
    */
-  get apiKey(): string {
+  public get apiKey(): string {
     return this._apiKey;
   }
 
@@ -55,7 +53,7 @@ export class OdpConfig {
    * Getter for ODP segments to check
    * @public
    */
-  get segmentsToCheck(): string[] {
+  public get segmentsToCheck(): string[] {
     return this._segmentsToCheck;
   }
 
@@ -66,45 +64,9 @@ export class OdpConfig {
   }
 
   /**
-   * Update the ODP configuration details
-   * @param {OdpConfig} config New ODP Config to potentially update self with
-   * @returns true if configuration was updated successfully
-   */
-  update(config: OdpConfig): boolean {
-    if (this.equals(config)) {
-      return false;
-    }
-
-    if (config.apiKey) {
-      this._apiKey = config.apiKey;
-    }
-    if (config.apiHost) {
-      this._apiHost = config.apiHost;
-    }
-    if (config.segmentsToCheck) {
-      this._segmentsToCheck = config.segmentsToCheck;
-    }
-    
-    return true;
-  }
-
-  /**
    * Determines if ODP configuration has the minimum amount of information
    */
-  isValid(): boolean {
+  public isValid(): boolean {
     return !!this._apiKey && !!this._apiHost;
-  }
-
-  /**
-   * Detects if there are any changes between the current and incoming ODP Configs
-   * @param configToCompare ODP Configuration to check self against for equality
-   * @returns Boolean based on if the current ODP Config is equivalent to the incoming ODP Config
-   */
-  equals(configToCompare: OdpConfig): boolean {
-    return (
-      this._apiHost === configToCompare._apiHost &&
-      this._apiKey === configToCompare._apiKey &&
-      checkArrayEquality(this.segmentsToCheck, configToCompare._segmentsToCheck)
-    );
   }
 }
