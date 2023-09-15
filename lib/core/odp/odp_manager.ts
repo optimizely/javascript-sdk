@@ -120,6 +120,11 @@ export abstract class OdpManager implements IOdpManager {
    * @returns {boolean} True if the update was successful, false otherwise
    */
   public updateSettings(newConfig: OdpConfig): boolean {
+    if (newConfig.equals(this._odpConfig)) {
+      this.logger.log(LogLevel.WARNING, "New ODP Config is the same as the existing config.");
+      return false;
+    }
+
     if (!newConfig.isValid()) {
       this.logger.log(LogLevel.WARNING, ODP_CONFIG_INVALID);
       return false;
