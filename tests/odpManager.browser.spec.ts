@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /**
  * Copyright 2023, Optimizely
  *
@@ -14,9 +15,9 @@
  * limitations under the License.
  */
 
-import { anything, capture, instance, mock, resetCalls, verify, when } from 'ts-mockito';
+import { anything, capture, instance, mock, resetCalls, verify } from 'ts-mockito';
 
-import { LOG_MESSAGES, ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION } from './../lib/utils/enums/index';
+import { LOG_MESSAGES } from './../lib/utils/enums/index';
 import { ERROR_MESSAGES, ODP_USER_KEY } from './../lib/utils/enums/index';
 
 import { LogHandler, LogLevel } from '../lib/modules/logging';
@@ -24,7 +25,7 @@ import { RequestHandler } from '../lib/utils/http_request_handler/http';
 import { BrowserLRUCache } from './../lib/utils/lru_cache/browser_lru_cache';
 
 import { BrowserOdpManager } from './../lib/plugins/odp_manager/index.browser';
-import { IOdpEventManager, OdpOptions } from './../lib/shared_types';
+import { OdpOptions } from './../lib/shared_types';
 import { OdpConfig } from '../lib/core/odp/odp_config';
 import { BrowserOdpEventApiManager } from '../lib/plugins/odp/event_api_manager/index.browser';
 import { BrowserOdpEventManager } from '../lib/plugins/odp/event_manager/index.browser';
@@ -32,9 +33,6 @@ import { OdpSegmentManager } from './../lib/core/odp/odp_segment_manager';
 import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
 import { VuidManager } from '../lib/plugins/vuid_manager';
 import { BrowserRequestHandler } from '../lib/utils/http_request_handler/browser_request_handler';
-import { IUserAgentParser } from '../lib/core/odp/user_agent_parser';
-import { UserAgentInfo } from '../lib/core/odp/user_agent_info';
-import { OdpEvent } from '../lib/core/odp/odp_event';
 
 const keyA = 'key-a';
 const hostA = 'host-a';
@@ -57,7 +55,6 @@ describe('OdpManager', () => {
   let fakeLogger: LogHandler;
 
   let mockRequestHandler: RequestHandler;
-  let fakeRequestHandler: RequestHandler;
 
   let mockEventApiManager: BrowserOdpEventApiManager;
   let fakeEventApiManager: BrowserOdpEventApiManager;
@@ -71,28 +68,22 @@ describe('OdpManager', () => {
   let mockSegmentManager: OdpSegmentManager;
   let fakeSegmentManager: OdpSegmentManager;
 
-  let mockBrowserOdpManager: BrowserOdpManager;
-  let fakeBrowserOdpManager: BrowserOdpManager;
-
   beforeAll(() => {
     mockLogger = mock<LogHandler>();
     mockRequestHandler = mock<RequestHandler>();
 
     odpConfig = new OdpConfig();
     fakeLogger = instance(mockLogger);
-    fakeRequestHandler = instance(mockRequestHandler);
 
     mockEventApiManager = mock<BrowserOdpEventApiManager>();
     mockEventManager = mock<BrowserOdpEventManager>();
     mockSegmentApiManager = mock<OdpSegmentApiManager>();
     mockSegmentManager = mock<OdpSegmentManager>();
-    mockBrowserOdpManager = mock<BrowserOdpManager>();
 
     fakeEventApiManager = instance(mockEventApiManager);
     fakeEventManager = instance(mockEventManager);
     fakeSegmentApiManager = instance(mockSegmentApiManager);
     fakeSegmentManager = instance(mockSegmentManager);
-    fakeBrowserOdpManager = instance(mockBrowserOdpManager);
   });
 
   beforeEach(() => {
@@ -185,7 +176,7 @@ describe('OdpManager', () => {
     const updateSettingsArgsB = capture(mockEventManager.updateSettings).last();
     expect(updateSettingsArgsB[0]).toStrictEqual(odpConfigB);
 
-    browserOdpManager.eventManager.identifyUser(userB);
+    browserOdpManager.eventManager?.identifyUser(userB);
     const identifyUserArgsB = capture(mockEventManager.identifyUser).last();
     expect(identifyUserArgsB[0]).toStrictEqual(userB);
   });
