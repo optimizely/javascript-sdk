@@ -15,10 +15,10 @@
  */
 /// <reference types="jest" />
 
-import { instance, mock, resetCalls, verify } from 'ts-mockito';
+import { anything, instance, mock, resetCalls, verify } from 'ts-mockito';
 
 import { LOG_MESSAGES } from './../lib/utils/enums/index';
-import { ERROR_MESSAGES } from './../lib/utils/enums/index';
+import { ERROR_MESSAGES, ODP_USER_KEY } from './../lib/utils/enums/index';
 
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { RequestHandler } from '../lib/utils/http_request_handler/http';
@@ -30,6 +30,7 @@ import { NodeOdpEventApiManager as OdpEventApiManager } from '../lib/plugins/odp
 import { NodeOdpEventManager as OdpEventManager } from '../lib/plugins/odp/event_manager/index.node';
 import { OdpSegmentManager } from './../lib/core/odp/odp_segment_manager';
 import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
+import { ServerLRUCache } from '../lib/utils/lru_cache';
 
 const keyA = 'key-a';
 const hostA = 'host-a';
@@ -86,7 +87,7 @@ describe('OdpManager', () => {
     resetCalls(mockSegmentManager);
   });
 
-  const odpManagerInstance = () =>
+  const odpManagerInstance = (config?: OdpConfig) =>
     new OdpManager({
       odpOptions: {
         eventManager,
@@ -184,12 +185,14 @@ describe('OdpManager', () => {
     expect(odpManager.odpConfig.apiHost).toBe(hostA);
 
     await odpManager.fetchQualifiedSegments(userA);
+    verify(mockSegmentApiManager.fetchSegments(keyA, hostA, ODP_USER_KEY.FS_USER_ID, userA, anything())).once();
 
     odpManager.updateSettings(new OdpConfig(keyB, hostB, segmentsB));
     expect(odpManager.odpConfig.apiKey).toBe(keyB);
     expect(odpManager.odpConfig.apiHost).toBe(hostB);
 
     await odpManager.fetchQualifiedSegments(userB);
+    verify(mockSegmentApiManager.fetchSegments(keyB, hostB, ODP_USER_KEY.FS_USER_ID, userB, anything())).once();
   });
 
   it('should get event manager', () => {
