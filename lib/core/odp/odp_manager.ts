@@ -90,7 +90,6 @@ export abstract class OdpManager implements IOdpManager {
   /**
    * Handler for recording execution logs
    * @protected
-   * @optional
    */
   protected logger: LogHandler;
 
@@ -109,13 +108,9 @@ export abstract class OdpManager implements IOdpManager {
     return this._odpConfig;
   }
 
-  constructor(odpConfig: OdpConfig, logger?: LogHandler) {
+  constructor(odpConfig?: OdpConfig, logger?: LogHandler) {
+    this._odpConfig = odpConfig || new OdpConfig();
     this.logger = logger ?? getLogger();
-
-    this._odpConfig = odpConfig;
-    if (!odpConfig?.isValid()) {
-      this.logger.log(LogLevel.WARNING, ODP_CONFIG_INVALID);
-    }
   }
 
   /**
