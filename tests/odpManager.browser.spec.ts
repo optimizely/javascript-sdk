@@ -159,8 +159,8 @@ describe('OdpManager', () => {
     verify(mockEventManager.registerVuid(anything())).once();
 
     const didUpdateA = browserOdpManager.updateSettings(odpConfigA);
-    expect(didUpdateA).toBe(true);
-    expect(browserOdpManager.odpConfig).toEqual(odpConfigA);
+    expect(didUpdateA).toBe(true);    
+    expect(browserOdpManager.odpConfig.equals(odpConfigA)).toBe(true);
 
     const updateSettingsArgsA = capture(mockEventManager.updateSettings).last();
     expect(updateSettingsArgsA[0]).toStrictEqual(odpConfigA);
@@ -170,8 +170,8 @@ describe('OdpManager', () => {
     expect(identifyUserArgsA[0]).toStrictEqual(userA);
 
     const didUpdateB = browserOdpManager.updateSettings(odpConfigB);
-    expect(didUpdateB).toBe(true);
-    expect(browserOdpManager.odpConfig).toEqual(odpConfigB);
+    expect(didUpdateB).toBe(true);    
+    expect(browserOdpManager.odpConfig.equals(odpConfigB)).toBe(true);
 
     const updateSettingsArgsB = capture(mockEventManager.updateSettings).last();
     expect(updateSettingsArgsB[0]).toStrictEqual(odpConfigB);
@@ -202,7 +202,7 @@ describe('OdpManager', () => {
     ).never();
 
     const fetchQualifiedSegmentsArgsA = capture(mockSegmentApiManager.fetchSegments).last();
-    expect(fetchQualifiedSegmentsArgsA).toStrictEqual([keyA, hostA, ODP_USER_KEY.VUID, vuidA, segmentsA]);
+    expect(fetchQualifiedSegmentsArgsA).toStrictEqual([ODP_USER_KEY.VUID, vuidA]);
 
     const didUpdateB = browserOdpManager.updateSettings(new OdpConfig(keyB, hostB, segmentsB));
     expect(didUpdateB).toBe(true);
@@ -210,7 +210,7 @@ describe('OdpManager', () => {
     browserOdpManager.fetchQualifiedSegments(vuidB);
 
     const fetchQualifiedSegmentsArgsB = capture(mockSegmentApiManager.fetchSegments).last();
-    expect(fetchQualifiedSegmentsArgsB).toStrictEqual([keyB, hostB, ODP_USER_KEY.VUID, vuidB, segmentsB]);
+    expect(fetchQualifiedSegmentsArgsB).toStrictEqual([ODP_USER_KEY.VUID, vuidB]);
   });
 
   it('should get event manager', () => {
