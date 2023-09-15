@@ -102,10 +102,10 @@ export abstract class OdpManager implements IOdpManager {
 
   /**
    * Getter for ODP configuration settings
-   * @private
+   * @public
    * @returns ODP configuration settings in use
    */
-  private get odpConfig(): OdpConfig {
+  public get odpConfig(): OdpConfig {
     return this._odpConfig;
   }
 
