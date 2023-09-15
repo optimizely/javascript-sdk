@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { checkArrayEquality } from "lib/utils/fns";
+
 export class OdpConfig {
   /**
    * Host of ODP audience segments API.
@@ -57,6 +59,9 @@ export class OdpConfig {
     return this._segmentsToCheck;
   }
 
+  // TODO: NotReady=0, Ready=1 { Invalid, Valid } 
+  // public OdpState: enum = false;
+
   constructor(apiKey?: string, apiHost?: string, segmentsToCheck?: string[]) {
     this._apiKey = apiKey ?? '';
     this._apiHost = apiHost ?? '';
@@ -70,5 +75,18 @@ export class OdpConfig {
    */
   public isValid(): boolean {
     return !!this._apiKey && !!this._apiHost;
+  }
+
+  /**
+   * Detects if there are any changes between the current and incoming ODP Configs
+   * @param configToCompare ODP Configuration to check self against for equality
+   * @returns Boolean based on if the current ODP Config is equivalent to the incoming ODP Config
+   */
+  equals(configToCompare: OdpConfig): boolean {
+    return (
+      this._apiHost === configToCompare._apiHost &&
+      this._apiKey === configToCompare._apiKey &&
+      checkArrayEquality(this.segmentsToCheck, configToCompare._segmentsToCheck)
+    );
   }
 }
