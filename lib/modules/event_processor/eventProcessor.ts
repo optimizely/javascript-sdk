@@ -57,13 +57,20 @@ export function validateAndGetBatchSize(batchSize: number): number {
   return batchSize
 }
 
-export function getQueue(batchSize: number, flushInterval: number, sink: EventQueueSink<ProcessableEvent>, batchComparator: (eventA: ProcessableEvent, eventB: ProcessableEvent) => boolean ): EventQueue<ProcessableEvent> {
+export function getQueue(
+  batchSize: number, 
+  flushInterval: number, 
+  batchComparator: (eventA: ProcessableEvent, eventB: ProcessableEvent) => boolean,
+  sink: EventQueueSink<ProcessableEvent>,
+  closingSink?: EventQueueSink<ProcessableEvent>
+): EventQueue<ProcessableEvent> {
   let queue: EventQueue<ProcessableEvent>
   if (batchSize > 1) {
     queue = new DefaultEventQueue<ProcessableEvent>({
       flushInterval,
       maxQueueSize: batchSize,
       sink,
+      closingSink,
       batchComparator,
     })
   } else {

@@ -15,10 +15,11 @@
  */
 import logHelper from './modules/logging/logger';
 import { getLogger, setErrorHandler, getErrorHandler, LogLevel } from './modules/logging';
-import { LocalStoragePendingEventsDispatcher } from './modules/event_processor';
+import { EventDispatcher, LocalStoragePendingEventsDispatcher } from './modules/event_processor';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
+import sendBeaconEventDispatcher from './plugins/event_dispatcher/send_beacon_dispatcher';
 import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
@@ -90,6 +91,9 @@ const createInstance = function(config: Config): Client | null {
       eventDispatcher = config.eventDispatcher;
     }
 
+    const closingDispatcher = (window.navigator && 'sendBeacon' in window.navigator) ?
+      sendBeaconEventDispatcher : undefined;
+
     let eventBatchSize = config.eventBatchSize;
     let eventFlushInterval = config.eventFlushInterval;
 
@@ -111,6 +115,7 @@ const createInstance = function(config: Config): Client | null {
 
     const eventProcessorConfig = {
       dispatcher: eventDispatcher,
+      closingDispatcher,
       flushInterval: eventFlushInterval,
       batchSize: eventBatchSize,
       maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
@@ -172,6 +177,7 @@ export {
   loggerPlugin as logging,
   defaultErrorHandler as errorHandler,
   defaultEventDispatcher as eventDispatcher,
+  sendBeaconEventDispatcher,
   enums,
   setLogHandler as setLogger,
   setLogLevel,
@@ -189,6 +195,7 @@ export default {
   logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
+  sendBeaconEventDispatcher,
   enums,
   setLogger: setLogHandler,
   setLogLevel,
