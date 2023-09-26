@@ -15,7 +15,7 @@
  */
 import logHelper from './modules/logging/logger';
 import { getLogger, setErrorHandler, getErrorHandler, LogLevel } from './modules/logging';
-import { EventDispatcher, LocalStoragePendingEventsDispatcher } from './modules/event_processor';
+import { LocalStoragePendingEventsDispatcher } from './modules/event_processor';
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
