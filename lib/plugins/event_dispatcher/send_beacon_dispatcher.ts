@@ -16,7 +16,7 @@
 
 import { EventDispatcher } from '../../modules/event_processor/eventDispatcher';
 
-interface Event {
+export type Event = {
   url: string;
   httpVerb: 'POST';
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
@@ -35,6 +35,7 @@ export const dispatchEvent = function(
 ): void {
   const params = eventObj.params;
   const url: string = eventObj.url;
+  
   const blob = new Blob([JSON.stringify(params)], {
     type: "application/json",
   });

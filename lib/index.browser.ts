@@ -91,8 +91,11 @@ const createInstance = function(config: Config): Client | null {
       eventDispatcher = config.eventDispatcher;
     }
 
-    const closingDispatcher = (window.navigator && 'sendBeacon' in window.navigator) ?
-      sendBeaconEventDispatcher : undefined;
+    let closingDispatcher = config.closingEventDispatcher;
+
+    if (!closingDispatcher && window.navigator && 'sendBeacon' in window.navigator) {
+      closingDispatcher = sendBeaconEventDispatcher;
+    }
 
     let eventBatchSize = config.eventBatchSize;
     let eventFlushInterval = config.eventFlushInterval;
