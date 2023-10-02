@@ -33,9 +33,7 @@ export const dispatchEvent = function(
   eventObj: Event,
   callback: (response: { statusCode: number; }) => void
 ): void {
-  const params = eventObj.params;
-  const url: string = eventObj.url;
-  
+  const { params, url } = eventObj;
   const blob = new Blob([JSON.stringify(params)], {
     type: "application/json",
   });
