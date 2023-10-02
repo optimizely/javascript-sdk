@@ -1,5 +1,5 @@
 /**
- * Copyright 2021-2023, Optimizely
+ * Copyright 2021-2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 import {
   EventProcessor,
   ProcessableEvent,
-} from '../../modules/event_processor';
+} from '../../../lib/modules/event_processor';
 import { NotificationSender } from '../../core/notification_center';
 
 import { EventDispatcher } from '../../shared_types';

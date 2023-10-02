@@ -31,7 +31,6 @@ import { createNotificationCenter } from './core/notification_center';
 import { createForwardingEventProcessor } from './plugins/event_processor/forwarding_event_processor';
 import { OptimizelyDecideOption, Client, ConfigLite } from './shared_types';
 import { createNoOpDatafileManager } from './plugins/datafile_manager/no_op_datafile_manager';
-import * as commonExports from './common_exports';
   
 const logger = getLogger();
 setLogHandler(loggerPlugin.createLogger());
@@ -103,10 +102,7 @@ export {
   OptimizelyDecideOption,
 };
 
-export * from './common_exports';
-
 export default {
-  ...commonExports,
   logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
   eventDispatcher: noOpEventDispatcher,

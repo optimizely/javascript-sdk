@@ -7,28 +7,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-## [5.0.0-beta5] - September 1, 2023
-
-### Changed
-- Exported logging related types and values from the package entrypoint ([#858](https://github.com/optimizely/javascript-sdk/pull/858))
-- Removed /lib directory from the published pacakage ([#862](https://github.com/optimizely/javascript-sdk/pull/862))
-
-## [5.0.0-beta4] - August 22, 2023
-
-### New Features
-- Added support for configurable user agent parser for ODP ([#854](https://github.com/optimizely/javascript-sdk/pull/854))
-
-### Bug fixes
-- Fixed typescript compilation failure due to missing types ([#856](https://github.com/optimizely/javascript-sdk/pull/856))
-
-## [5.0.0-beta3] - August 18, 2023
-
-### Bug fixes
-- Fixed odp event sending not working for Europe and Asia-Pacific regions ([#852](https://github.com/optimizely/javascript-sdk/pull/852))
-
-### Changed
-- Remove 1 second polling floor to allow datafile polling at any frequency but for intervals under 30 seconds, log a warning ([#841](https://github.com/optimizely/javascript-sdk/pull/841)).
-
 ## [5.0.0-beta2] - July 19, 2023
 
 ### Performance Improvements

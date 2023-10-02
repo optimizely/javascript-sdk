@@ -1,5 +1,5 @@
 /**
- * Copyright 2020, 2022-2023 Optimizely
+ * Copyright 2020, 2022, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { LogTierV1EventProcessor, LocalStoragePendingEventsDispatcher } from '../../modules/event_processor';
+import { LogTierV1EventProcessor, LocalStoragePendingEventsDispatcher } from '../../../lib/modules/event_processor';
 
 export function createEventProcessor(
   ...args: ConstructorParameters<typeof LogTierV1EventProcessor>

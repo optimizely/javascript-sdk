@@ -223,8 +223,8 @@ export const NODE_CLIENT_ENGINE = 'node-sdk';
 export const REACT_CLIENT_ENGINE = 'react-sdk';
 export const REACT_NATIVE_CLIENT_ENGINE = 'react-native-sdk';
 export const REACT_NATIVE_JS_CLIENT_ENGINE = 'react-native-js-sdk';
-export const BROWSER_CLIENT_VERSION = '5.0.0-beta5';
-export const NODE_CLIENT_VERSION = '5.0.0-beta5';
+export const BROWSER_CLIENT_VERSION = '5.0.0-beta2';
+export const NODE_CLIENT_VERSION = '5.0.0-beta2';
 
 export const DECISION_NOTIFICATION_TYPES = {
   AB_TEST: 'ab-test',
@@ -357,6 +357,7 @@ export enum ODP_USER_KEY {
 export const FS_USER_ID_ALIAS = 'fs-user-id';
 
 export const ODP_DEFAULT_EVENT_TYPE = 'fullstack';
+export const ODP_EVENT_BROWSER_ENDPOINT = 'https://jumbe.zaius.com/v2/zaius.gif';
 
 /**
  * ODP Event Action Options
