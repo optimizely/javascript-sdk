@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and      *
  * limitations under the License.                                           *
  ***************************************************************************/
-import Optimizely from '../optimizely';
+import Optimizely from '../../lib/optimizely';
 import {
   EventTags,
   OptimizelyDecideOption,
@@ -21,7 +21,7 @@ import {
   OptimizelyDecisionContext,
   OptimizelyForcedDecision,
   UserAttributes,
-} from '../shared_types';
+} from '../../lib/shared_types';
 import { CONTROL_ATTRIBUTES } from '../utils/enums';
 import { OptimizelySegmentOption } from '../core/odp/optimizely_segment_option';
 

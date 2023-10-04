@@ -15,7 +15,7 @@
  */
 
 import { getLogger } from '../logging';
-import { sprintf } from '../../utils/fns';
+import { sprintf } from '../../../lib/utils/fns';
 import { DatafileManager, DatafileManagerConfig, DatafileUpdate } from './datafileManager';
 import EventEmitter, { Disposer } from './eventEmitter';
 import { AbortableRequest, Response, Headers } from './http';
@@ -24,7 +24,7 @@ import BackoffController from './backoffController';
 import PersistentKeyValueCache from './persistentKeyValueCache';
 
 import { NotificationRegistry } from './../../core/notification_center/notification_registry';
-import { NOTIFICATION_TYPES } from '../../utils/enums';
+import { NOTIFICATION_TYPES } from '../../../lib/utils/enums';
 
 const logger = getLogger('DatafileManager');
 
