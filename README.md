@@ -16,22 +16,22 @@ Optimizely Rollouts is [free feature flags](https://www.optimizely.com/free-feat
 
 ## Get Started
 
-> For **Browser** applications, refer to the [JavaScript SDK's developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-sdk) for detailed instructions on getting started with using the SDK within client-side applications.
+For **Browser** applications, refer to the [JavaScript SDK's developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-sdk) for detailed instructions on getting started with using the SDK within client-side applications.
 
-> For **React** applications, refer to the [React SDK developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-react-sdk).
+For **React** applications, refer to the [React SDK developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-react-sdk).
 
-> For **React Native** applications, refer to the [JavaScript (React Native) variant of the developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-react-native-sdk).
+For **React Native** applications, refer to the [JavaScript (React Native) variant of the developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-react-native-sdk).
 
-> For **Node.js** applications, refer to the [JavaScript (Node) variant of the developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-node-sdk).
+For **Node.js** applications, refer to the [JavaScript (Node) variant of the developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-node-sdk).
 
-> For **Edge Functions**, we provide starter kits that utilize the Optimizely JavaScript SDK for the following platforms:
-> - [Akamai (Edgeworkers)](https://github.com/optimizely/akamai-edgeworker-starter-kit)
-> - [AWS Lambda@Edge](https://github.com/optimizely/aws-lambda-at-edge-starter-kit)
-> - [Cloudflare Worker](https://github.com/optimizely/cloudflare-worker-template)
-> - [Fastly Compute@Edge](https://github.com/optimizely/fastly-compute-starter-kit)
-> - [Vercel Edge Middleware](https://github.com/optimizely/vercel-examples/tree/main/edge-middleware/feature-flag-optimizely)
->
-> Note: These starter kits use the **Lite** variant of the JavaScript SDK which excludes the datafile manager and event processor packages.
+For **Edge Functions**, we provide starter kits that utilize the Optimizely JavaScript SDK for the following platforms:
+- [Akamai (Edgeworkers)](https://github.com/optimizely/akamai-edgeworker-starter-kit)
+- [AWS Lambda@Edge](https://github.com/optimizely/aws-lambda-at-edge-starter-kit)
+- [Cloudflare Worker](https://github.com/optimizely/cloudflare-worker-template)
+- [Fastly Compute@Edge](https://github.com/optimizely/fastly-compute-starter-kit)
+- [Vercel Edge Middleware](https://github.com/optimizely/vercel-examples/tree/main/edge-middleware/feature-flag-optimizely)
+
+Note: These starter kits use the **Lite** variant of the JavaScript SDK which excludes the datafile manager and event processor packages.
 
 ### Prerequisites
 
@@ -110,6 +110,21 @@ Using `deno` (no installation required):
 ```javascript
 import optimizely from "npm:@optimizely/optimizely-sdk"
 ```
+
+### Packages
+
+This repository is a monorepo. It houses the main Javascript SDK and its supporting packages.
+
+| Package | Version | Docs | Description |
+| - | - | - | - |
+| [`@optimizely/optimizely-sdk`](/packages/optimizely-sdk) | [![npm](https://img.shields.io/npm/v/%40optimizely%2Foptimizely-sdk.svg)](https://www.npmjs.com/package/@optimizely/optimizely-sdk) | [![](https://img.shields.io/badge/API%20Docs-site-green.svg?style=flat-square)](https://docs.developers.optimizely.com/full-stack/docs/javascript-node-sdk) | (Primary Package) The Optimizely JavaScript SDK   |
+| [`@optimizely/js-sdk-datafile-manager`](/packages/datafile-manager) | [![npm](https://img.shields.io/npm/v/%40optimizely%2Fjs-sdk-datafile-manager.svg)](https://www.npmjs.com/package/@optimizely/js-sdk-datafile-manager) | [![](https://img.shields.io/badge/API%20Docs-site-green.svg?style=flat-square)](https://docs.developers.optimizely.com/full-stack/docs/initialize-sdk-javascript-node#customize-datafile-management-behavior) | (Consolidated*) Datafile Manager for Optimizely SDK
+| [`@optimizely/js-sdk-event-processor`](/packages/event-processor) | [![npm](https://img.shields.io/npm/v/%40optimizely%2Fjs-sdk-event-processor.svg)](https://www.npmjs.com/package/@optimizely/js-sdk-event-processor) | [![](https://img.shields.io/badge/API%20Docs-site-green.svg?style=flat-square)](https://docs.developers.optimizely.com/full-stack/docs/event-batching-javascript-node) | (Consolidated*) Event Batching support for Optimizely SDK
+| [`@optimizely/js-sdk-logging`](/packages/logging) | [![npm](https://img.shields.io/npm/v/%40optimizely%2Fjs-sdk-logging.svg)](https://www.npmjs.com/package/@optimizely/js-sdk-logging) | [![](https://img.shields.io/badge/API%20Docs-site-green.svg?style=flat-square)](https://docs.developers.optimizely.com/full-stack/docs/customize-logger-javascript-node) | (Consolidated*) Logging Manager for Optimizely SDK
+| [`@optimizely/js-sdk-utils`](/packages/utils) | [![npm](https://img.shields.io/npm/v/%40optimizely%2Fjs-sdk-utils.svg)](https://www.npmjs.com/package/@optimizely/js-sdk-utils) | | (Consolidated*) Utility functions for Optimizely packages
+
+> \* Consolidated packages have been copied over and included as modules within the main `@optimizely/optimizely-sdk` package to avoid requiring maintaining and utilizing multiple de-coupled dependencies. (Related PRs [#749](https://github.com/optimizely/javascript-sdk/pull/749), [#755](https://github.com/optimizely/javascript-sdk/pull/755/files), [#761](https://github.com/optimizely/javascript-sdk/pull/761), [#781](https://github.com/optimizely/javascript-sdk/pull/781))
+
 ## Use the JavaScript SDK (Browser)
 
 See the [Optimizely Feature Experimentation developer documentation for JavaScript (Browser)](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-sdk) to learn how to set up your first JavaScript project and use the SDK for client-side applications.

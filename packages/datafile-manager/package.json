@@ -1,0 +1,69 @@
+{
+  "name": "@optimizely/js-sdk-datafile-manager",
+  "version": "0.9.5",
+  "description": "Optimizely Full Stack Datafile Manager",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/optimizely/javascript-sdk.git",
+    "directory": "packages/datafile-manager"
+  },
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "main": "lib/index.node.js",
+  "browser": "lib/index.browser.js",
+  "react-native": "lib/index.react_native.js",
+  "types": "lib/index.node.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "__test__"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@react-native-async-storage/async-storage": "^1.2.0",
+    "@types/jest": "^26.0.3",
+    "@types/nise": "^1.4.0",
+    "@types/nock": "^9.3.1",
+    "@types/node": "^11.11.7",
+    "@typescript-eslint/eslint-plugin": "^3.3.0",
+    "@typescript-eslint/parser": "^3.3.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "jest": "^27.0.1",
+    "nise": "^1.4.10",
+    "nock": "^10.0.6",
+    "prettier": "^1.19.1",
+    "ts-jest": "^27.0.1",
+    "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "@optimizely/js-sdk-logging": "^0.3.1",
+    "@optimizely/js-sdk-utils": "^0.4.0",
+    "decompress-response": "^4.2.1"
+  },
+  "peerDependencies": {
+    "@react-native-async-storage/async-storage": "^1.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@react-native-async-storage/async-storage": {
+      "optional": true
+    }
+  },
+  "scripts": {
+    "clean": "rm -rf lib",
+    "lint": "tsc --noEmit && eslint --fix 'src/**/*.ts' '__test__/**/*.ts'",
+    "test": "jest",
+    "posttest": "npm run lint",
+    "prebuild": "npm run clean",
+    "build": "tsc",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test"
+  }
+}

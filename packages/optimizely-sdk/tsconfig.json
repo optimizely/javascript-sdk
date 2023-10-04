@@ -1,0 +1,33 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "*": [
+        "./typings/*"
+      ],
+    },
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "declaration": true,
+    "module": "esnext",
+    "outDir": "./dist",
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "useUnknownInCatchVariables": false
+  },
+  "exclude": [
+    "./dist",
+    "./lib/**/*.tests.js",
+    "./lib/**/*.tests.ts",
+    "./lib/**/*.umdtests.js",
+    "./lib/tests",
+    "node_modules"
+  ],
+  "include": [
+    "./lib/**/*.ts",
+    "./lib/**/*.js",
+    "./lib/modules/**/*.ts",
+    "./lib/modules/**/**/*.ts"
+  ]
+}
