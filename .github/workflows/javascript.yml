@@ -18,10 +18,10 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 14
-        cache-dependency-path: ./package-lock.json
+        cache-dependency-path: packages/optimizely-sdk/package-lock.json
         cache: 'npm'
     - name: Run linting
-      working-directory: .
+      working-directory: ./packages/optimizely-sdk
       run: |
         npm install
         npm run lint
@@ -47,14 +47,17 @@ jobs:
       BROWSER_STACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
     steps:
     - uses: actions/checkout@v3
+    - name: Move to package
+      run: |
+        cd packages/optimizely-sdk
     - name: Set up Node
       uses: actions/setup-node@v3
       with:
         node-version: 14
         cache: 'npm'
-        cache-dependency-path: ./package-lock.json
+        cache-dependency-path: packages/optimizely-sdk/package-lock.json
     - name: Cross-browser and umd unit tests
-      working-directory: .
+      working-directory: ./packages/optimizely-sdk
       run: |
         npm install
         npm run test-ci
@@ -71,9 +74,9 @@ jobs:
       with:
         node-version: ${{ matrix.node }}
         cache: 'npm'
-        cache-dependency-path: ./package-lock.json
+        cache-dependency-path: packages/optimizely-sdk/package-lock.json
     - name: Unit tests
-      working-directory: .
+      working-directory: ./packages/optimizely-sdk
       run: |
         npm install
         npm run coveralls
@@ -81,11 +84,11 @@ jobs:
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }} 
-        path-to-lcov: ./coverage/lcov.info
+        path-to-lcov: ./packages/optimizely-sdk/coverage/lcov.info
         flag-name: run-${{ matrix.node }}
         # This is a parallel build so need this
         parallel: true
-        base-path: .
+        base-path: ./packages/optimizely-sdk
 
   # As testing against multiple versions need this to
   # finish the parallel build
@@ -98,7 +101,28 @@ jobs:
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.github_token }}
-          path-to-lcov: ./coverage/lcov.info
+          path-to-lcov: ./packages/optimizely-sdk/coverage/lcov.info
           parallel-finished: true
-          base-path: .
+          base-path: ./packages/optimizely-sdk
         
+  test_sub_packages:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [ 'packages/utils', 'packages/event-processor', 'packages/logging', 'packages/datafile-manager']
+    steps:
+    - uses: actions/checkout@v3
+    - name: Move to package ${{ matrix.package }}
+      run: |
+        cd ${{ matrix.package }}
+    - name: Set up Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 14
+        cache: 'npm'
+        cache-dependency-path: ${{ matrix.package }}/package-lock.json
+    - name: Test sub packages
+      working-directory: ./${{ matrix.package }}
+      run: |
+        npm install
+        npm test
