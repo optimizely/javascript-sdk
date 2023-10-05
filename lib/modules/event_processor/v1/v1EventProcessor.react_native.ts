@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,7 +104,7 @@ export class LogTierV1EventProcessor implements EventProcessor {
     
     flushInterval = validateAndGetFlushInterval(flushInterval)
     batchSize = validateAndGetBatchSize(batchSize)
-    this.queue = getQueue(batchSize, flushInterval, this.drainQueue.bind(this), areEventContextsEqual)
+    this.queue = getQueue(batchSize, flushInterval, areEventContextsEqual, this.drainQueue.bind(this))
     this.pendingEventsStore = new ReactNativeEventsStore(maxQueueSize, PENDING_EVENTS_STORE_KEY)
     this.eventBufferStore = new ReactNativeEventsStore(maxQueueSize, EVENT_BUFFER_STORE_KEY)
   }

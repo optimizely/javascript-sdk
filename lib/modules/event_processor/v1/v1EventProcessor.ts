@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022-2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,31 +36,41 @@ const logger = getLogger('LogTierV1EventProcessor')
 
 export class LogTierV1EventProcessor implements EventProcessor {
   private dispatcher: EventDispatcher
+  private closingDispatcher?: EventDispatcher
   private queue: EventQueue<ProcessableEvent>
   private notificationCenter?: NotificationSender
   private requestTracker: RequestTracker
 
   constructor({
     dispatcher,
+    closingDispatcher,
     flushInterval = DEFAULT_FLUSH_INTERVAL,
     batchSize = DEFAULT_BATCH_SIZE,
     notificationCenter,
   }: {
     dispatcher: EventDispatcher
+    closingDispatcher?: EventDispatcher
     flushInterval?: number
     batchSize?: number
     notificationCenter?: NotificationSender
   }) {
     this.dispatcher = dispatcher
+    this.closingDispatcher = closingDispatcher
     this.notificationCenter = notificationCenter
     this.requestTracker = new RequestTracker()
     
     flushInterval = validateAndGetFlushInterval(flushInterval)
     batchSize = validateAndGetBatchSize(batchSize)
-    this.queue = getQueue(batchSize, flushInterval, this.drainQueue.bind(this), areEventContextsEqual)
+    this.queue = getQueue(
+      batchSize,
+      flushInterval,
+      areEventContextsEqual,
+      this.drainQueue.bind(this, false),
+      this.drainQueue.bind(this, true),
+    );
   }
 
-  drainQueue(buffer: ProcessableEvent[]): Promise<void> {
+  private drainQueue(useClosingDispatcher: boolean, buffer: ProcessableEvent[]): Promise<void> {
     const reqPromise = new Promise<void>(resolve => {
       logger.debug('draining queue with %s events', buffer.length)
 
@@ -70,7 +80,10 @@ export class LogTierV1EventProcessor implements EventProcessor {
       }
 
       const formattedEvent = formatEvents(buffer)
-      this.dispatcher.dispatchEvent(formattedEvent, () => {
+      const dispatcher = useClosingDispatcher && this.closingDispatcher
+        ? this.closingDispatcher : this.dispatcher;
+
+      dispatcher.dispatchEvent(formattedEvent, () => {
         resolve()
       })
       sendEventNotification(this.notificationCenter, formattedEvent)
