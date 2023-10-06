@@ -1,35 +1,3 @@
-// // module.exports = {
-// //   "transform": {
-// //     "^.+\\.tsx?$": "ts-jest"
-// //   },
-// //   "testRegex": "(/tests/.*|(\\.|/)(test|spec))\\.tsx?$",
-// //   "moduleFileExtensions": [
-// //     "ts",
-// //     "tsx",
-// //     "js",
-// //     "jsx",
-// //     "json",
-// //     "node"
-// //   ],
-// // }
-
-// module.exports = {
-//   transform: {
-//     "^.+\\.tsx?$": "ts-jest"
-//   },
-//   testRegex: '(/tests/.*|(\\.|/)(test|spec))\\.tsx?$',
-//   "moduleFileExtensions": [
-//     "ts",
-//     // "tsx",
-//     "js",
-//     // "jsx",
-//     // "json",
-//     // "node"
-//   ],
-//   // preset: 'ts-jest',
-//   // testMatch: null,
-// }
-
 module.exports = {
   "transform": {
     "^.+\\.(ts|tsx|js|jsx)$": "ts-jest",
