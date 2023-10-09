@@ -525,5 +525,41 @@ describe('LogTierV1EventProcessor', () => {
         params: makeBatchedEventV1(impressionEvents),
       })
     })
+
+    it('should use the provided closingDispatcher to dispatch events on stop', async () => {
+      const dispatcher = {
+        dispatchEvent: jest.fn(),
+      }
+
+      const closingDispatcher = {
+        dispatchEvent: jest.fn(),
+      }
+
+      const processor = new LogTierV1EventProcessor({
+        dispatcher,
+        closingDispatcher,
+        flushInterval: 100000,
+        batchSize: 20,
+      });
+
+      processor.start()
+
+      const events: ReturnType<typeof createImpressionEvent>[] = [];
+
+      for (let i = 0; i < 4; i++) {
+        const event = createImpressionEvent();
+        processor.process(event);
+        events.push(event);
+      }
+
+      processor.stop();
+      jest.runAllTimers();
+
+      expect(dispatcher.dispatchEvent).not.toHaveBeenCalled();
+      expect(closingDispatcher.dispatchEvent).toHaveBeenCalledTimes(1);
+
+      const [data] = closingDispatcher.dispatchEvent.mock.calls[0];
+      expect(data.params).toEqual(makeBatchedEventV1(events));
+    })
   })
 })

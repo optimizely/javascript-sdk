@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2020, Optimizely
+ * Copyright 2019-2020, 2023 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 import { Managed } from './managed'
 import { ConversionEvent, ImpressionEvent } from './events'
 import { EventV1Request } from './eventDispatcher'
-import { EventQueue, DefaultEventQueue, SingleEventQueue } from './eventQueue'
+import { EventQueue, DefaultEventQueue, SingleEventQueue, EventQueueSink } from './eventQueue'
 import { getLogger } from '@optimizely/js-sdk-logging'
 import { NOTIFICATION_TYPES, NotificationCenter } from '@optimizely/js-sdk-utils'
 
@@ -56,14 +56,21 @@ export function validateAndGetBatchSize(batchSize: number): number {
   return batchSize
 }
 
-export function getQueue(batchSize: number, flushInterval: number, sink: any, batchComparator: any): EventQueue<ProcessableEvent> {
+export function getQueue(
+  batchSize: number, 
+  flushInterval: number, 
+  batchComparator: any, 
+  sink: EventQueueSink<ProcessableEvent>, 
+  closingSink?: EventQueueSink<ProcessableEvent>,
+): EventQueue<ProcessableEvent> {
   let queue: EventQueue<ProcessableEvent>
   if (batchSize > 1) {
     queue = new DefaultEventQueue<ProcessableEvent>({
       flushInterval,
       maxQueueSize: batchSize,
-      sink,
       batchComparator,
+      sink,
+      closingSink,
     })
   } else {
     queue = new SingleEventQueue({ sink })

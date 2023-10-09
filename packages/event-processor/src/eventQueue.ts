@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, Optimizely
+ * Copyright 2019, 2023 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,6 +87,7 @@ export class DefaultEventQueue<K> implements EventQueue<K> {
   private buffer: K[]
   private maxQueueSize: number
   private sink: EventQueueSink<K>
+  private closingSink?: EventQueueSink<K>
   // batchComparator is called to determine whether two events can be included
   // together in the same batch
   private batchComparator: (eventA: K, eventB: K) => boolean
@@ -96,16 +97,19 @@ export class DefaultEventQueue<K> implements EventQueue<K> {
     flushInterval,
     maxQueueSize,
     sink,
+    closingSink,
     batchComparator,
   }: {
     flushInterval: number
     maxQueueSize: number
     sink: EventQueueSink<K>
+    closingSink?: EventQueueSink<K>
     batchComparator: (eventA: K, eventB: K) => boolean
   }) {
     this.buffer = []
     this.maxQueueSize = Math.max(maxQueueSize, 1)
     this.sink = sink
+    this.closingSink = closingSink;
     this.batchComparator = batchComparator
     this.timer = new Timer({
       callback: this.flush.bind(this),
@@ -121,7 +125,7 @@ export class DefaultEventQueue<K> implements EventQueue<K> {
 
   stop(): Promise<any> {
     this.started = false
-    const result = this.sink(this.buffer)
+    const result = this.closingSink ? this.closingSink(this.buffer) : this.sink(this.buffer);
     this.buffer = []
     this.timer.stop()
     return result
