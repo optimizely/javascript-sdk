@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 Changes that have landed but are not yet released.
 
+## [0.10.0] - February 2, 2022
+
+### Changed
+- Added support for closingDispatcher
+
 ## [0.9.5] - February 2, 2022
 
 ### Changed
