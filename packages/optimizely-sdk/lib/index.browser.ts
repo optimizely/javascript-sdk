@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, 2019-2022 Optimizely
+ * Copyright 2016-2017, 2019-2022, 2023 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,13 @@ import { LocalStoragePendingEventsDispatcher } from '@optimizely/js-sdk-event-pr
 import configValidator from './utils/config_validator';
 import defaultErrorHandler from './plugins/error_handler';
 import defaultEventDispatcher from './plugins/event_dispatcher/index.browser';
+import sendBeaconEventDispatcher from './plugins/event_dispatcher/send_beacon_dispatcher';
 import * as enums from './utils/enums';
 import * as loggerPlugin from './plugins/logger';
 import Optimizely from './optimizely';
 import eventProcessorConfigValidator from './utils/event_processor_config_validator';
 import { createNotificationCenter } from './core/notification_center';
-import { default as eventProcessor } from './plugins/event_processor';
+import eventProcessor from './plugins/event_processor';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
 import { createHttpPollingDatafileManager } from './plugins/datafile_manager/http_polling_datafile_manager';
 
@@ -91,6 +92,13 @@ const createInstance = function(config: Config): Client | null {
       eventDispatcher = config.eventDispatcher;
     }
 
+    let closingDispatcher = config.closingEventDispatcher;
+
+    if (!config.eventDispatcher && !closingDispatcher && window.navigator && 'sendBeacon' in window.navigator) {
+      closingDispatcher = sendBeaconEventDispatcher;
+    }
+
+
     let eventBatchSize = config.eventBatchSize;
     let eventFlushInterval = config.eventFlushInterval;
 
@@ -112,6 +120,7 @@ const createInstance = function(config: Config): Client | null {
 
     const eventProcessorConfig = {
       dispatcher: eventDispatcher,
+      closingDispatcher,
       flushInterval: eventFlushInterval,
       batchSize: eventBatchSize,
       maxQueueSize:  config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
@@ -164,6 +173,7 @@ export {
   loggerPlugin as logging,
   defaultErrorHandler as errorHandler,
   defaultEventDispatcher as eventDispatcher,
+  sendBeaconEventDispatcher,
   enums,
   setLogHandler as setLogger,
   setLogLevel,
@@ -176,6 +186,7 @@ export default {
   logging: loggerPlugin,
   errorHandler: defaultErrorHandler,
   eventDispatcher: defaultEventDispatcher,
+  sendBeaconEventDispatcher,
   enums,
   setLogger: setLogHandler,
   setLogLevel,

@@ -398,6 +398,8 @@ export interface TrackListenerPayload extends ListenerPayload {
   errorHandler?: ErrorHandler;
   // event dispatcher function
   eventDispatcher?: EventDispatcher;
+  // event dispatcher to use when closing
+  closingEventDispatcher?: EventDispatcher;
   // The object to validate against the schema
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean,
