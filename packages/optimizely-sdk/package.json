@@ -43,7 +43,6 @@
     "@optimizely/js-sdk-datafile-manager": "^0.9.5",
     "@optimizely/js-sdk-event-processor": "^0.10.0",
     "@optimizely/js-sdk-logging": "^0.3.1",
-    "jsdom": "^21.1.2",
     "json-schema": "^0.4.0",
     "murmurhash": "0.0.2",
     "uuid": "^3.3.2"
@@ -62,6 +61,7 @@
     "coveralls": "^3.0.2",
     "eslint": "^6.7.2",
     "jest": "^23.6.0",
+    "jsdom": "^15.2.1",
     "jsdom-global": "^3.0.2",
     "json-loader": "^0.5.4",
     "karma": "^4.4.1",
