@@ -1,5 +1,5 @@
 /**
- * Copyright 2020-2022, Optimizely
+ * Copyright 2020-2023 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -398,6 +398,8 @@ export interface TrackListenerPayload extends ListenerPayload {
   errorHandler?: ErrorHandler;
   // event dispatcher function
   eventDispatcher?: EventDispatcher;
+  // event dispatcher to use when closing
+  closingEventDispatcher?: EventDispatcher;
   // The object to validate against the schema
   jsonSchemaValidator?: {
     validate(jsonObject: unknown): boolean,
