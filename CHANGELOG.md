@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.10.0] - October 11, 2023
+
+### New Features
+- Add support for configurable closing event dispatcher, and dispatching events using sendBeacon in the browser on instance close ([#876](https://github.com/optimizely/javascript-sdk/pull/876), [#874](https://github.com/optimizely/javascript-sdk/pull/874), [#873](https://github.com/optimizely/javascript-sdk/pull/873))
+
 ## [5.0.0-beta5] - September 1, 2023
 
 ### Changed
