@@ -131,6 +131,7 @@ export default class Optimizely implements Client {
       jsonSchemaValidator: config.jsonSchemaValidator,
       sdkKey: config.sdkKey,
       datafileManager: config.datafileManager,
+      logger: this.logger
     });
 
     this.disposeOnUpdate = this.projectConfigManager.onUpdate((configObj: projectConfig.ProjectConfig) => {
