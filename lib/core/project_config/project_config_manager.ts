@@ -210,7 +210,7 @@ export class ProjectConfigManager {
    */
   getOptimizelyConfig(): OptimizelyConfig | null {
     if (!this.optimizelyConfigObj && this.configObj) {
-      this.optimizelyConfigObj = createOptimizelyConfig(this.configObj, toDatafile(this.configObj));
+      this.optimizelyConfigObj = createOptimizelyConfig(this.configObj, toDatafile(this.configObj), logger);
     }
     return this.optimizelyConfigObj;
   }

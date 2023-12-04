@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { LoggerFacade, getLogger } from '../../modules/logging';
 import { ProjectConfig } from '../project_config';
 import { DEFAULT_OPERATOR_TYPES } from '../condition_tree_evaluator';
 import {
@@ -61,7 +62,8 @@ export class OptimizelyConfig {
   public events: OptimizelyEvent[];
   private datafile: string;
 
-  constructor(configObj: ProjectConfig, datafile: string) {
+
+  constructor(configObj: ProjectConfig, datafile: string, logger?: LoggerFacade) {
     this.sdkKey = configObj.sdkKey ?? '';
     this.environmentKey = configObj.environmentKey ?? '';
     this.attributes = configObj.attributes;
@@ -76,10 +78,12 @@ export class OptimizelyConfig {
 
     const variableIdMap = OptimizelyConfig.getVariableIdMap(configObj);
 
-    const experimentsMapById = OptimizelyConfig.getExperimentsMapById(
-      configObj, featureIdVariablesMap, variableIdMap
+    const { experimentsMapById, experimentsMapByKey } = OptimizelyConfig.getExperimentsMap(
+      configObj, featureIdVariablesMap, variableIdMap, logger,
     );
-    this.experimentsMap = OptimizelyConfig.getExperimentsKeyMap(experimentsMapById);
+
+    this.experimentsMap = experimentsMapByKey;
+    
     this.featuresMap = OptimizelyConfig.getFeaturesMap(
       configObj, featureIdVariablesMap, experimentsMapById, variableIdMap
     );
@@ -347,39 +351,52 @@ export class OptimizelyConfig {
    * @param       {ProjectConfig}                           configObj
    * @param       {FeatureVariablesMap}                     featureIdVariableMap
    * @param       {{[id: string]: FeatureVariable}}         variableIdMap
-   * @returns     {[id: string]: OptimizelyExperiment}      Experiments mapped by id
+   * @returns     { experimentsMapById: { [id: string]: OptimizelyExperiment }, experimentsMapByKey: OptimizelyExperimentsMap }      Experiments mapped by id and key
    */
-  static getExperimentsMapById(
+  static getExperimentsMap(
     configObj: ProjectConfig,
     featureIdVariableMap: FeatureVariablesMap,
-    variableIdMap: {[id: string]: FeatureVariable}
-  ): { [id: string]: OptimizelyExperiment } {
+    variableIdMap: {[id: string]: FeatureVariable},
+    logger?: LoggerFacade,
+  ) : { experimentsMapById: { [id: string]: OptimizelyExperiment }, experimentsMapByKey: OptimizelyExperimentsMap } {
     const rolloutExperimentIds = this.getRolloutExperimentIds(configObj.rollouts);
 
-    const experiments = configObj.experiments;
+    const experimentsMapById: { [id : string]: OptimizelyExperiment } = {};
+    const experimentsMapByKey: OptimizelyExperimentsMap = {};
 
-    return (experiments || []).reduce((experimentsMap: { [id: string]: OptimizelyExperiment }, experiment) => {
-      if (rolloutExperimentIds.indexOf(experiment.id) === -1) {
-        const featureIds = configObj.experimentFeatureMap[experiment.id];
-        let featureId = '';
-        if (featureIds && featureIds.length > 0) {
-          featureId = featureIds[0];
-        }
-        const variationsMap = OptimizelyConfig.getVariationsMap(
-          experiment.variations,
-          featureIdVariableMap,
-          variableIdMap,
-          featureId.toString()
-        );
-        experimentsMap[experiment.id] = {
-          id: experiment.id,
-          key: experiment.key,
-          audiences: OptimizelyConfig.getExperimentAudiences(experiment, configObj),
-          variationsMap: variationsMap,
-        };
+    const experiments = configObj.experiments || [];
+    experiments.forEach((experiment) => {
+      if (rolloutExperimentIds.indexOf(experiment.id) !== -1) {
+        return;
       }
-      return experimentsMap;
-    }, {});
+
+      const featureIds = configObj.experimentFeatureMap[experiment.id];
+      let featureId = '';
+      if (featureIds && featureIds.length > 0) {
+        featureId = featureIds[0];
+      }
+      const variationsMap = OptimizelyConfig.getVariationsMap(
+        experiment.variations,
+        featureIdVariableMap,
+        variableIdMap,
+        featureId.toString()
+      );
+
+      const optimizelyExperiment: OptimizelyExperiment = {
+        id: experiment.id,
+        key: experiment.key,
+        audiences: OptimizelyConfig.getExperimentAudiences(experiment, configObj),
+        variationsMap: variationsMap,
+      };
+
+      experimentsMapById[experiment.id] = optimizelyExperiment;
+      if (experimentsMapByKey[experiment.key] && logger) {
+        logger.warn(`Duplicate experiment keys found in datafile: ${experiment.key}`);
+      }
+      experimentsMapByKey[experiment.key] = optimizelyExperiment;
+    });
+
+    return { experimentsMapById, experimentsMapByKey };
   }
 
   /**
@@ -461,6 +478,6 @@ export class OptimizelyConfig {
  * @param   {string}                    datafile
  * @returns {OptimizelyConfig}          An instance of OptimizelyConfig
  */
-export function createOptimizelyConfig(configObj: ProjectConfig, datafile: string): OptimizelyConfig {
-  return new OptimizelyConfig(configObj, datafile);
+export function createOptimizelyConfig(configObj: ProjectConfig, datafile: string, logger?: LoggerFacade): OptimizelyConfig {
+  return new OptimizelyConfig(configObj, datafile, logger);
 }
