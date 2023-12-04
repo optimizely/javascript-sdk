@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LoggerFacade, getLogger } from '../../modules/logging';
+import { getLogger } from '../../modules/logging';
 import { sprintf } from '../../utils/fns';
 
 import { ERROR_MESSAGES } from '../../utils/enums';
@@ -33,7 +33,6 @@ interface ProjectConfigManagerConfig {
   };
   sdkKey?: string;
   datafileManager?: DatafileManager;
-  logger?: LoggerFacade;
 }
 
 /**
@@ -66,11 +65,8 @@ export class ProjectConfigManager {
   public jsonSchemaValidator: { validate(jsonObject: unknown): boolean } | undefined;
   public datafileManager: DatafileManager | null = null;
 
-  private logger?: LoggerFacade;
-
   constructor(config: ProjectConfigManagerConfig) {
     try {
-      this.logger = config.logger;
       this.jsonSchemaValidator = config.jsonSchemaValidator;
 
       if (!config.datafile && !config.sdkKey) {
