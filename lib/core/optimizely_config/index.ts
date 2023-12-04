@@ -62,7 +62,6 @@ export class OptimizelyConfig {
   public events: OptimizelyEvent[];
   private datafile: string;
 
-  private logger?: LoggerFacade;
 
   constructor(configObj: ProjectConfig, datafile: string, logger?: LoggerFacade) {
     this.sdkKey = configObj.sdkKey ?? '';
@@ -71,7 +70,6 @@ export class OptimizelyConfig {
     this.audiences = OptimizelyConfig.getAudiences(configObj);
     this.events = configObj.events;
     this.revision = configObj.revision;
-    this.logger = logger;
 
     const featureIdVariablesMap = (configObj.featureFlags || []).reduce((resultMap: FeatureVariablesMap, feature) => {
       resultMap[feature.id] = feature.variables;
@@ -81,7 +79,7 @@ export class OptimizelyConfig {
     const variableIdMap = OptimizelyConfig.getVariableIdMap(configObj);
 
     const { experimentsMapById, experimentsMapByKey } = OptimizelyConfig.getExperimentsMap(
-      configObj, featureIdVariablesMap, variableIdMap, this.logger,
+      configObj, featureIdVariablesMap, variableIdMap, logger,
     );
 
     this.experimentsMap = experimentsMapByKey;
