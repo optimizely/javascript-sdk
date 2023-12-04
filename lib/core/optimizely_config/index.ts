@@ -83,7 +83,7 @@ export class OptimizelyConfig {
     );
 
     this.experimentsMap = experimentsMapByKey;
-    // this.experimentsMap = OptimizelyConfig.getExperimentsKeyMap(experimentsMapById);
+    
     this.featuresMap = OptimizelyConfig.getFeaturesMap(
       configObj, featureIdVariablesMap, experimentsMapById, variableIdMap
     );
