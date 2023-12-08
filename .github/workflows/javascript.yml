@@ -2,13 +2,13 @@ name: Javascript
 
 on:
   push:
-    branches: [ master ]
+    branches: [ raju/odp-fsc ]
   pull_request:
-    branches: [ master ]
+    branches: [ raju/odp-fsc ]
 
 jobs:
   lint_markdown_files:
-    uses: optimizely/javascript-sdk/.github/workflows/lint_markdown.yml@master
+    uses: optimizely/javascript-sdk/.github/workflows/lint_markdown.yml@raju/odp-fsc
 
   lint:
     runs-on: ubuntu-latest
@@ -27,13 +27,13 @@ jobs:
         npm run lint
 
   integration_tests:
-    uses: optimizely/javascript-sdk/.github/workflows/integration_test.yml@master
+    uses: optimizely/javascript-sdk/.github/workflows/integration_test.yml@raju/odp-fsc
     secrets:
       CI_USER_TOKEN: ${{ secrets.CI_USER_TOKEN }}
       TRAVIS_COM_TOKEN: ${{ secrets.TRAVIS_COM_TOKEN }}
 
   fullstack_production_suite:
-    uses: optimizely/javascript-sdk/.github/workflows/integration_test.yml@master
+    uses: optimizely/javascript-sdk/.github/workflows/integration_test.yml@raju/odp-fsc
     with:
       FULLSTACK_TEST_REPO: ProdTesting
     secrets:
