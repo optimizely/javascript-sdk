@@ -76,5 +76,3 @@ export function getEventValue(eventTags: EventTags, logger: LoggerFacade): numbe
     return null;
   }
 }
-
-
