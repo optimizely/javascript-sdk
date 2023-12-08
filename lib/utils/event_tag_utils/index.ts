@@ -36,26 +36,21 @@ const VALUE_EVENT_METRIC_NAME = RESERVED_EVENT_KEYWORDS.VALUE;
  * @return {number|null}
  */
 export function getRevenueValue(eventTags: EventTags, logger: LoggerFacade): number | null {
-  if (eventTags.hasOwnProperty(REVENUE_EVENT_METRIC_NAME)) {
-    const rawValue = eventTags[REVENUE_EVENT_METRIC_NAME];
-    let parsedRevenueValue;
-    if (typeof rawValue === 'string') {
-      parsedRevenueValue = parseInt(rawValue);
-      if (!isFinite(parsedRevenueValue)) {
-        logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.FAILED_TO_PARSE_REVENUE, MODULE_NAME, rawValue);
-        return null;
-      }
-      logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.PARSED_REVENUE_VALUE, MODULE_NAME, parsedRevenueValue);
-      return parsedRevenueValue;
-    }
-    if (typeof rawValue === 'number') {
-      parsedRevenueValue = rawValue;
-      logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.PARSED_REVENUE_VALUE, MODULE_NAME, parsedRevenueValue);
-      return parsedRevenueValue;
-    }
+  const rawValue = eventTags[REVENUE_EVENT_METRIC_NAME];
+
+  if (rawValue == null) { // null or undefined event values
     return null;
   }
-  return null;
+
+  const parsedRevenueValue = typeof rawValue === 'string' ? parseInt(rawValue) : rawValue;
+
+  if (isFinite(parsedRevenueValue)) {
+    logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.PARSED_REVENUE_VALUE, MODULE_NAME, parsedRevenueValue);
+    return parsedRevenueValue;
+  } else { // NaN, +/- infinity values
+    logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.FAILED_TO_PARSE_REVENUE, MODULE_NAME, rawValue);
+    return null;
+  }
 }
 
 /**
@@ -65,24 +60,21 @@ export function getRevenueValue(eventTags: EventTags, logger: LoggerFacade): num
  * @return {number|null}
  */
 export function getEventValue(eventTags: EventTags, logger: LoggerFacade): number | null {
-  if (eventTags.hasOwnProperty(VALUE_EVENT_METRIC_NAME)) {
-    const rawValue = eventTags[VALUE_EVENT_METRIC_NAME];
-    let parsedEventValue;
-    if (typeof rawValue === 'string') {
-      parsedEventValue = parseFloat(rawValue);
-      if (!isFinite(parsedEventValue)) {
-        logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.FAILED_TO_PARSE_VALUE, MODULE_NAME, rawValue);
-        return null;
-      }
-    logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.PARSED_NUMERIC_VALUE, MODULE_NAME, parsedEventValue);
-    return parsedEventValue;
-    }
-    if (typeof rawValue === 'number') {
-      parsedEventValue = rawValue;
-      logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.PARSED_NUMERIC_VALUE, MODULE_NAME, parsedEventValue);
-      return parsedEventValue;
-    }
+  const rawValue = eventTags[VALUE_EVENT_METRIC_NAME];
+
+  if (rawValue == null) { // null or undefined event values
     return null;
   }
-  return null;
+
+  const parsedEventValue = typeof rawValue === 'string' ? parseFloat(rawValue) : rawValue;
+
+  if (isFinite(parsedEventValue)) {
+    logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.PARSED_NUMERIC_VALUE, MODULE_NAME, parsedEventValue);
+    return parsedEventValue;
+  } else { // NaN, +/- infinity values
+    logger.log(LOG_LEVEL.INFO, LOG_MESSAGES.FAILED_TO_PARSE_VALUE, MODULE_NAME, rawValue);
+    return null;
+  }
 }
+
+
