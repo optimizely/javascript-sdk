@@ -157,7 +157,7 @@ function getCommonEventParams({
             entity_id: attributeId,
             key: attributeKey,
             type: CUSTOM_ATTRIBUTE_FEATURE_TYPE,
-            value: attributes[attributeKey],
+            value: attributeValue!,
           });
         }
       }

@@ -241,7 +241,7 @@ function greaterThanEvaluator(condition: Condition, user: OptimizelyUserContext)
   if (!validateValuesForNumericCondition(condition, user) || conditionValue === null) {
     return null;
   }
-  return userValue > conditionValue;
+  return userValue! > conditionValue;
 }
 
 /**
@@ -262,7 +262,7 @@ function greaterThanOrEqualEvaluator(condition: Condition, user: OptimizelyUserC
     return null;
   }
 
-  return userValue >= conditionValue;
+  return userValue! >= conditionValue;
 }
 
 /**
@@ -283,7 +283,7 @@ function lessThanEvaluator(condition: Condition, user: OptimizelyUserContext): b
     return null;
   }
 
-  return userValue < conditionValue;
+  return userValue! < conditionValue;
 }
 
 /**
@@ -304,7 +304,7 @@ function lessThanOrEqualEvaluator(condition: Condition, user: OptimizelyUserCont
     return null;
   }
 
-  return userValue <= conditionValue;
+  return userValue! <= conditionValue;
 }
 
 /**

@@ -20,6 +20,7 @@ import {
   OptimizelyDecision,
   OptimizelyDecisionContext,
   OptimizelyForcedDecision,
+  UserAttributeValue,
   UserAttributes,
 } from '../shared_types';
 import { CONTROL_ATTRIBUTES } from '../utils/enums';
@@ -80,7 +81,7 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
    * @param     {string}                     key         An attribute key
    * @param     {any}                        value       An attribute value
    */
-  setAttribute(key: string, value: unknown): void {
+  setAttribute(key: string, value: UserAttributeValue): void {
     this.attributes[key] = value;
   }
 
