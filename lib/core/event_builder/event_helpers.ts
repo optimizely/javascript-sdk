@@ -245,7 +245,7 @@ function buildVisitorAttributes(
           builtAttributes.push({
             entityId: attributeId,
             key: attributeKey,
-            value: attributes[attributeKey],
+            value: attributeValue!,
           });
         }
       }

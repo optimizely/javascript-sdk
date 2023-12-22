@@ -766,7 +766,7 @@ export class DecisionService {
       attributes.hasOwnProperty(CONTROL_ATTRIBUTES.BUCKETING_ID)
     ) {
       if (typeof attributes[CONTROL_ATTRIBUTES.BUCKETING_ID] === 'string') {
-        bucketingId = attributes[CONTROL_ATTRIBUTES.BUCKETING_ID];
+        bucketingId = String(attributes[CONTROL_ATTRIBUTES.BUCKETING_ID]);
         this.logger.log(LOG_LEVEL.DEBUG, LOG_MESSAGES.VALID_BUCKETING_ID, MODULE_NAME, bucketingId);
       } else {
         this.logger.log(LOG_LEVEL.WARNING, LOG_MESSAGES.BUCKETING_ID_NOT_STRING, MODULE_NAME);

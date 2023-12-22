@@ -19,6 +19,7 @@
  */
 
 export {
+  UserAttributeValue,
   UserAttributes,
   OptimizelyConfig,
   OptimizelyVariable,
