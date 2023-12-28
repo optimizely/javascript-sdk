@@ -22,6 +22,7 @@ export {
   UserAttributeValue,
   UserAttributes,
   OptimizelyConfig,
+  OptimizelyVariableValue,
   OptimizelyVariable,
   OptimizelyVariation,
   OptimizelyExperiment,
