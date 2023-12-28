@@ -35,7 +35,7 @@ import {
   FeatureVariable,
   OptimizelyOptions,
   OptimizelyDecideOption,
-  OptimizelyVariableValue,
+  FeatureVariableValue,
   OptimizelyDecision,
   Client,
 } from '../shared_types';
@@ -778,7 +778,7 @@ export default class Optimizely implements Client {
    *                                                type, or null if the feature key is invalid or
    *                                                the variable key is invalid
    */
-  getFeatureVariable(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): OptimizelyVariableValue {
+  getFeatureVariable(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): FeatureVariableValue {
     try {
       if (!this.isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariable');
@@ -820,7 +820,7 @@ export default class Optimizely implements Client {
     variableType: string | null,
     userId: string,
     attributes?: UserAttributes
-  ): OptimizelyVariableValue {
+  ): FeatureVariableValue {
     if (!this.validateInputs({ feature_key: featureKey, variable_key: variableKey, user_id: userId }, attributes)) {
       return null;
     }
@@ -912,7 +912,7 @@ export default class Optimizely implements Client {
     variation: Variation | null,
     variable: FeatureVariable,
     userId: string
-  ): OptimizelyVariableValue {
+  ): FeatureVariableValue {
     const configObj = this.projectConfigManager.getConfig();
     if (!configObj) {
       return null;

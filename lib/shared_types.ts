@@ -311,7 +311,7 @@ export interface OptimizelyExperiment {
   };
 }
 
-export type OptimizelyVariableValue = number | string | boolean | object | null;
+export type FeatureVariableValue = number | string | boolean | object | null;
 
 export interface OptimizelyVariable {
   id: string;
@@ -332,7 +332,7 @@ export interface Client {
   getForcedVariation(experimentKey: string, userId: string): string | null;
   isFeatureEnabled(featureKey: string, userId: string, attributes?: UserAttributes): boolean;
   getEnabledFeatures(userId: string, attributes?: UserAttributes): string[];
-  getFeatureVariable(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): OptimizelyVariableValue;
+  getFeatureVariable(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): FeatureVariableValue;
   getFeatureVariableBoolean(
     featureKey: string,
     variableKey: string,
