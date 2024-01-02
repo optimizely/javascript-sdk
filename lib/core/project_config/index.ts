@@ -32,6 +32,7 @@ import {
   VariableType,
   VariationVariable,
   Integration,
+  FeatureVariableValue,
 } from '../../shared_types';
 
 interface TryCreatingProjectConfigConfig {
@@ -692,8 +693,8 @@ export const getTypeCastValue = function(
   variableValue: string,
   variableType: VariableType,
   logger: LogHandler
-): unknown {
-  let castValue;
+): FeatureVariableValue {
+  let castValue : FeatureVariableValue;
 
   switch (variableType) {
     case FEATURE_VARIABLE_TYPES.BOOLEAN:
