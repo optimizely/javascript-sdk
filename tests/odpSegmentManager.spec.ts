@@ -54,8 +54,8 @@ describe('OdpSegmentManager', () => {
   const userKey: ODP_USER_KEY = ODP_USER_KEY.VUID;
   const userValue = 'test-user';
 
-  const validTestOdpConfig = new OdpConfig('valid-key', 'host', ['new-customer']);
-  const invalidTestOdpConfig = new OdpConfig('invalid-key', 'host', ['new-customer']);
+  const validTestOdpConfig = new OdpConfig('valid-key', 'host', 'pixel-url', ['new-customer']);
+  const invalidTestOdpConfig = new OdpConfig('invalid-key', 'host', 'pixel-url', ['new-customer']);
 
   beforeEach(() => {
     resetCalls(mockLogHandler);
@@ -63,7 +63,8 @@ describe('OdpSegmentManager', () => {
 
     const API_KEY = 'test-api-key';
     const API_HOST = 'https://odp.example.com';
-    odpConfig = new OdpConfig(API_KEY, API_HOST, []);
+    const PIXEL_URL = 'https://odp.pixel.com';
+    odpConfig = new OdpConfig(API_KEY, API_HOST, PIXEL_URL, []);
     const segmentsCache = new LRUCache<string, string[]>({
       maxSize: 1000,
       timeout: 1000,

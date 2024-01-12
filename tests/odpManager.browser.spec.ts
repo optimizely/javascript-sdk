@@ -38,17 +38,19 @@ import { OdpEvent } from '../lib/core/odp/odp_event';
 
 const keyA = 'key-a';
 const hostA = 'host-a';
+const pixelA = 'pixel-a';
 const segmentsA = ['a'];
 const userA = 'fs-user-a';
 const vuidA = 'vuid_a';
-const odpConfigA = new OdpConfig(keyA, hostA, segmentsA);
+const odpConfigA = new OdpConfig(keyA, hostA, pixelA, segmentsA);
 
 const keyB = 'key-b';
 const hostB = 'host-b';
+const pixelB = 'pixel-b';
 const segmentsB = ['b'];
 const userB = 'fs-user-b';
 const vuidB = 'vuid_b';
-const odpConfigB = new OdpConfig(keyB, hostB, segmentsB);
+const odpConfigB = new OdpConfig(keyB, hostB, pixelB, segmentsB);
 
 describe('OdpManager', () => {
   let odpConfig: OdpConfig;
@@ -122,7 +124,7 @@ describe('OdpManager', () => {
 
     verify(mockLogger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED)).once();
 
-    browserOdpManager.updateSettings(new OdpConfig('valid', 'host', []));
+    browserOdpManager.updateSettings(new OdpConfig('valid', 'host', 'pixel-url', []));
     expect(browserOdpManager.odpConfig).toBeUndefined;
 
     await browserOdpManager.fetchQualifiedSegments('vuid_user1', []);
@@ -201,7 +203,7 @@ describe('OdpManager', () => {
       },
     });
 
-    const didUpdateA = browserOdpManager.updateSettings(new OdpConfig(keyA, hostA, segmentsA));
+    const didUpdateA = browserOdpManager.updateSettings(new OdpConfig(keyA, hostA, pixelA, segmentsA));
     expect(didUpdateA).toBe(true);
 
     browserOdpManager.fetchQualifiedSegments(vuidA);
@@ -213,7 +215,7 @@ describe('OdpManager', () => {
     const fetchQualifiedSegmentsArgsA = capture(mockSegmentApiManager.fetchSegments).last();
     expect(fetchQualifiedSegmentsArgsA).toStrictEqual([keyA, hostA, ODP_USER_KEY.VUID, vuidA, segmentsA]);
 
-    const didUpdateB = browserOdpManager.updateSettings(new OdpConfig(keyB, hostB, segmentsB));
+    const didUpdateB = browserOdpManager.updateSettings(new OdpConfig(keyB, hostB, pixelB, segmentsB));
     expect(didUpdateB).toBe(true);
 
     browserOdpManager.fetchQualifiedSegments(vuidB);

@@ -28,6 +28,7 @@ import { UserAgentInfo } from '../lib/core/odp/user_agent_info';
 
 const API_KEY = 'test-api-key';
 const API_HOST = 'https://odp.example.com';
+const PIXEL_URL = 'https://odp.pixel.com';
 const MOCK_IDEMPOTENCE_ID = 'c1dc758e-f095-4f09-9b49-172d74c53880';
 const EVENTS: OdpEvent[] = [
   new OdpEvent(
@@ -145,7 +146,7 @@ describe('OdpEventManager', () => {
   beforeAll(() => {
     mockLogger = mock<LogHandler>();
     mockApiManager = mock<IOdpEventApiManager>();
-    odpConfig = new OdpConfig(API_KEY, API_HOST, []);
+    odpConfig = new OdpConfig(API_KEY, API_HOST, PIXEL_URL, []);
     logger = instance(mockLogger);
     apiManager = instance(mockApiManager);
   });
@@ -159,7 +160,7 @@ describe('OdpEventManager', () => {
     when(mockApiManager.sendEvents(anything())).thenResolve(false);
     when(mockApiManager.updateSettings(anything())).thenReturn(undefined);
 
-    const apiManager = instance(mockApiManager); 
+    const apiManager = instance(mockApiManager);
 
     const eventManager = new OdpEventManager({
       odpConfig,
@@ -172,12 +173,12 @@ describe('OdpEventManager', () => {
     const [passedConfig] = capture(mockApiManager.updateSettings).last();
     expect(passedConfig).toEqual(odpConfig);
   });
-  
+
   it('should update api manager setting with updatetd odp config on updateSettings', () => {
     when(mockApiManager.sendEvents(anything())).thenResolve(false);
     when(mockApiManager.updateSettings(anything())).thenReturn(undefined);
 
-    const apiManager = instance(mockApiManager); 
+    const apiManager = instance(mockApiManager);
 
     const eventManager = new OdpEventManager({
       odpConfig,
@@ -190,9 +191,10 @@ describe('OdpEventManager', () => {
     const updatedOdpConfig = new OdpConfig(
       'updated-key',
       'https://updatedhost.test',
+      'https://pixel.test',
       ['updated-seg'],
     )
-    
+
     eventManager.updateSettings(updatedOdpConfig);
 
     verify(mockApiManager.updateSettings(anything())).twice();
@@ -541,13 +543,15 @@ describe('OdpEventManager', () => {
     });
     const apiKey = 'testing-api-key';
     const apiHost = 'https://some.other.example.com';
+    const pixelUrl = 'https://some.other.pixel.com';
     const segmentsToCheck = ['empty-cart', '1-item-cart'];
-    const differentOdpConfig = new OdpConfig(apiKey, apiHost, segmentsToCheck);
+    const differentOdpConfig = new OdpConfig(apiKey, apiHost, pixelUrl, segmentsToCheck);
 
     eventManager.updateSettings(differentOdpConfig);
 
     expect(eventManager['odpConfig'].apiKey).toEqual(apiKey);
     expect(eventManager['odpConfig'].apiHost).toEqual(apiHost);
+    expect(eventManager['odpConfig'].pixelUrl).toEqual(pixelUrl);
     expect(eventManager['odpConfig'].segmentsToCheck).toContain(Array.from(segmentsToCheck)[0]);
     expect(eventManager['odpConfig'].segmentsToCheck).toContain(Array.from(segmentsToCheck)[1]);
   });
