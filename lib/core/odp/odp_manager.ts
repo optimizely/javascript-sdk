@@ -40,7 +40,7 @@ export interface IOdpManager {
 
   eventManager: IOdpEventManager | undefined;
 
-  updateSettings({ apiKey, apiHost, segmentsToCheck }: OdpConfig): boolean;
+  updateSettings({ apiKey, apiHost, pixelUrl, segmentsToCheck }: OdpConfig): boolean;
 
   close(): void;
 
@@ -97,7 +97,7 @@ export abstract class OdpManager implements IOdpManager {
   /**
    * Provides a method to update ODP Manager's ODP Config API Key, API Host, and Audience Segments
    */
-  updateSettings({ apiKey, apiHost, segmentsToCheck }: OdpConfig): boolean {
+  updateSettings({ apiKey, apiHost, pixelUrl, segmentsToCheck }: OdpConfig): boolean {
     if (!this.enabled) {
       return false;
     }
@@ -114,7 +114,7 @@ export abstract class OdpManager implements IOdpManager {
 
     this.eventManager.flush();
 
-    const newConfig = new OdpConfig(apiKey, apiHost, segmentsToCheck);
+    const newConfig = new OdpConfig(apiKey, apiHost, pixelUrl, segmentsToCheck);
     const configDidUpdate = this.odpConfig.update(newConfig);
 
     if (configDidUpdate) {

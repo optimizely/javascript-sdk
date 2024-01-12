@@ -290,6 +290,9 @@ var schemaDefinition = {
           },
           publicKey: {
             type: 'string'
+          },
+          pixelUrl: {
+            type: 'string'
           }
         }
       }
