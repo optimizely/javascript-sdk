@@ -46,6 +46,20 @@ export class OdpConfig {
   }
 
   /**
+   * Url for sending events via pixel.
+   * @private
+   */
+  private _pixelUrl: string;
+
+  /**
+   * Getter to retrieve the ODP pixel URL
+   * @public
+   */
+  get pixelUrl(): string {
+    return this._pixelUrl;
+  }
+
+  /**
    * All ODP segments used in the current datafile (associated with apiHost/apiKey).
    * @private
    */
@@ -59,9 +73,10 @@ export class OdpConfig {
     return this._segmentsToCheck;
   }
 
-  constructor(apiKey?: string, apiHost?: string, segmentsToCheck?: string[]) {
+  constructor(apiKey?: string, apiHost?: string, pixelUrl?: string, segmentsToCheck?: string[]) {
     this._apiKey = apiKey ?? '';
     this._apiHost = apiHost ?? '';
+    this._pixelUrl = pixelUrl ?? '';
     this._segmentsToCheck = segmentsToCheck ?? [];
   }
 
@@ -76,6 +91,7 @@ export class OdpConfig {
     } else {
       if (config.apiKey) this._apiKey = config.apiKey;
       if (config.apiHost) this._apiHost = config.apiHost;
+      if (config.pixelUrl) this._pixelUrl = config.pixelUrl;
       if (config.segmentsToCheck) this._segmentsToCheck = config.segmentsToCheck;
 
       return true;
@@ -98,6 +114,7 @@ export class OdpConfig {
     return (
       this._apiHost === configToCompare._apiHost &&
       this._apiKey === configToCompare._apiKey &&
+      this._pixelUrl === configToCompare._pixelUrl &&
       checkArrayEquality(this.segmentsToCheck, configToCompare._segmentsToCheck)
     );
   }

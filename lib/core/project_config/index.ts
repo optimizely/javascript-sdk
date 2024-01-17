@@ -92,6 +92,7 @@ export interface ProjectConfig {
   integrationKeyMap?: { [key: string]: Integration };
   publicKeyForOdp?: string;
   hostForOdp?: string;
+  pixelUrlForOdp?: string;
   allSegments: string[];
 }
 
@@ -202,6 +203,10 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
 
         if (integration.host && !projectConfig.hostForOdp) {
           projectConfig.hostForOdp = integration.host;
+        }
+
+        if (integration.pixelUrl && !projectConfig.pixelUrlForOdp) {
+          projectConfig.pixelUrlForOdp = integration.pixelUrl;
         }
       }
     });

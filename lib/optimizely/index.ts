@@ -148,7 +148,7 @@ export default class Optimizely implements Client {
       NotificationRegistry.getNotificationCenter(config.sdkKey)?.sendNotifications(
         NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE
       );
-      
+
       this.updateOdpSettings();
     });
 
@@ -186,7 +186,7 @@ export default class Optimizely implements Client {
     if (config.odpManager?.initPromise) {
       dependentPromises.push(config.odpManager.initPromise);
     }
-    
+
     this.readyPromise = Promise.all(dependentPromises).then(promiseResults => {
       // If no odpManager exists yet, creates a new one
       if (config.odpManager != null) {
@@ -1678,13 +1678,13 @@ export default class Optimizely implements Client {
   }
 
   /**
-   * Updates ODP Config with most recent ODP key, host, and segments from the project config
+   * Updates ODP Config with most recent ODP key, host, pixelUrl, and segments from the project config
    */
   private updateOdpSettings(): void {
     const projectConfig = this.projectConfigManager.getConfig();
     if (this.odpManager != null && projectConfig != null) {
       this.odpManager.updateSettings(
-        new OdpConfig(projectConfig.publicKeyForOdp, projectConfig.hostForOdp, projectConfig.allSegments)
+        new OdpConfig(projectConfig.publicKeyForOdp, projectConfig.hostForOdp, projectConfig.pixelUrlForOdp, projectConfig.allSegments)
       );
     }
   }

@@ -37,8 +37,9 @@ const ODP_EVENTS = [
 
 const API_KEY = 'test-api-key';
 const API_HOST = 'https://odp.example.com';
+const PIXEL_URL = 'https://odp.pixel.com';
 
-const odpConfig = new OdpConfig(API_KEY, API_HOST, []);
+const odpConfig = new OdpConfig(API_KEY, API_HOST, PIXEL_URL, []);
 
 describe('NodeOdpEventApiManager', () => {
   let mockLogger: LogHandler;
@@ -133,9 +134,10 @@ describe('NodeOdpEventApiManager', () => {
     const updatedOdpConfig = new OdpConfig(
       'updated-key',
       'https://updatedhost.test',
+      'https://updatedpixel.test',
       ['updated-seg'],
     )
-    
+
     manager.updateSettings(updatedOdpConfig);
     await manager.sendEvents(ODP_EVENTS);
 

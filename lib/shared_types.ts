@@ -221,6 +221,7 @@ export interface Integration {
   key: string;
   host?: string;
   publicKey?: string;
+  pixelUrl?: string;
 }
 
 export interface TrafficAllocation {

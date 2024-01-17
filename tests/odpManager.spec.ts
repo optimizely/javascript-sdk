@@ -34,11 +34,13 @@ import { ServerLRUCache } from '../lib/utils/lru_cache';
 
 const keyA = 'key-a';
 const hostA = 'host-a';
+const pixelA = 'pixel-a';
 const segmentsA = ['a'];
 const userA = 'fs-user-a';
 
 const keyB = 'key-b';
 const hostB = 'host-b';
+const pixelB = 'pixel-b';
 const segmentsB = ['b'];
 const userB = 'fs-user-b';
 
@@ -108,7 +110,7 @@ describe('OdpManager', () => {
     });
     verify(mockLogger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED)).once();
 
-    odpManager.updateSettings(new OdpConfig('valid', 'host', []));
+    odpManager.updateSettings(new OdpConfig('valid', 'host', 'pixel-url', []));
     expect(odpManager.odpConfig).toBeUndefined;
 
     await odpManager.fetchQualifiedSegments('user1', []);
@@ -152,18 +154,20 @@ describe('OdpManager', () => {
       },
     });
 
-    odpManager.updateSettings(new OdpConfig(keyA, hostA, segmentsA));
+    odpManager.updateSettings(new OdpConfig(keyA, hostA, pixelA, segmentsA));
 
     expect(odpManager.odpConfig.apiKey).toBe(keyA);
     expect(odpManager.odpConfig.apiHost).toBe(hostA);
+    expect(odpManager.odpConfig.pixelUrl).toBe(pixelA);
 
     // odpManager.identifyUser(userA);
 
     // verify(mockEventApiManager.sendEvents(keyA, hostA, anything())).once();
 
-    odpManager.updateSettings(new OdpConfig(keyB, hostB, segmentsB));
+    odpManager.updateSettings(new OdpConfig(keyB, hostB, pixelB, segmentsB));
     expect(odpManager.odpConfig.apiKey).toBe(keyB);
     expect(odpManager.odpConfig.apiHost).toBe(hostB);
+    expect(odpManager.odpConfig.pixelUrl).toBe(pixelB);
 
     // odpManager.identifyUser(userB);
 
@@ -179,17 +183,19 @@ describe('OdpManager', () => {
       },
     });
 
-    odpManager.updateSettings(new OdpConfig(keyA, hostA, segmentsA));
+    odpManager.updateSettings(new OdpConfig(keyA, hostA, pixelA, segmentsA));
 
     expect(odpManager.odpConfig.apiKey).toBe(keyA);
     expect(odpManager.odpConfig.apiHost).toBe(hostA);
+    expect(odpManager.odpConfig.pixelUrl).toBe(pixelA);
 
     await odpManager.fetchQualifiedSegments(userA);
     verify(mockSegmentApiManager.fetchSegments(keyA, hostA, ODP_USER_KEY.FS_USER_ID, userA, anything())).once();
 
-    odpManager.updateSettings(new OdpConfig(keyB, hostB, segmentsB));
+    odpManager.updateSettings(new OdpConfig(keyB, hostB, pixelB, segmentsB));
     expect(odpManager.odpConfig.apiKey).toBe(keyB);
     expect(odpManager.odpConfig.apiHost).toBe(hostB);
+    expect(odpManager.odpConfig.pixelUrl).toBe(pixelB);
 
     await odpManager.fetchQualifiedSegments(userB);
     verify(mockSegmentApiManager.fetchSegments(keyB, hostB, ODP_USER_KEY.FS_USER_ID, userB, anything())).once();
