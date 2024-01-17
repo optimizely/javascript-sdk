@@ -293,10 +293,10 @@ var schemaDefinition = {
           },
           pixelUrl: {
             type: 'string'
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   },
 };
 
