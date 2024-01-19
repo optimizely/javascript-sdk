@@ -46,12 +46,12 @@ For details, refer to our documentation pages:
 
 - [Send Optimizely Data Platform data using Advanced Audience Targeting](https://docs.developers.optimizely.com/feature-experimentation/docs/send-odp-data-using-advanced-audience-targeting-javascript) 
 
-Additionally, a handful of major package updates are also included in this release including `murmurhash`, `uuid`, and others. For more information, check out the **Breaking Changes** section below. ([#762](https://github.com/optimizely/javascript-sdk/pull/762))
+Additionally, a handful of major package updates are also included in this release including `murmurhash`, `uuid`, and others. For more information, check out the **Breaking Changes** section below. ([#892](https://github.com/optimizely/javascript-sdk/pull/892), [#762](https://github.com/optimizely/javascript-sdk/pull/762))
 
 ### Breaking Changes 
 - `ODPManager` in the SDK is enabled by default. Unless an ODP account is integrated into the Optimizely projects, most `ODPManager` functions will be ignored. If needed, `ODPManager` can be disabled when `OptimizelyClient` is instantiated.
 - Updated `murmurhash` dependency to version `2.0.1`.
-- Updated `uuid` dependency to version `8.3.2`.
+- Updated `uuid` dependency to version `9.0.1`.
 - Dropped support for the following browser versions.
   - All versions of Microsof Internet Explorer.
   - Chrome versions earlier than `102.0`.
@@ -59,7 +59,7 @@ Additionally, a handful of major package updates are also included in this relea
   - Firefox versions earlier than `91.0`.
   - Opera versions earlier than `76.0`.
   - Safari versions earlier than `13.0`.
-- Dropped support for Node JS versions earlier than `14`.
+- Dropped support for Node JS versions earlier than `16`.
 
 ## Changed
 - Updated `createUserContext`'s `userId` parameter to be optional due to the Browser variation's use of the new `vuid` field. Note: The Node variation of the SDK does **not** use the new `vuid` field and you should pass in a `userId` when within the context of the Node variant.

@@ -8,7 +8,7 @@
 
 This repository houses the JavaScript SDK for use with Optimizely Feature Experimentation and Optimizely Full Stack (legacy).
 
-Optimizely Feature Experimentation is an A/B testing and feature management tool for product development teams that enables you to experiment at every step. Using Optimizely Feature Experimentation allows for every feature on your roadmap to be an opportunity to discover hidden insights. Learn more at [Optimizely.com](https://www.optimizely.com/products/experiment/feature-experimentation/), or see the [developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/welcome).
+Optimizely Feature Experimentation is an A/B testing and feature management tool for product development teams that enables you to experiment at every step. Using Optimizely Feature Experimentation allows for every feature on your roadmap to be an opportunity to discover hidden insights. Learn more at [Optimizely.com](https://www.optimizely.com/products/experiment/feature-experimentation/), or see the [developer documentation](https://docs.developers.optimizely.com/feature-experimentation/docs/introduction).
 
 Optimizely Rollouts is [free feature flags](https://www.optimizely.com/free-feature-flagging/) for development teams. You can easily roll out and roll back features in any application without code deploys, mitigating risk for every feature on your roadmap.
 
@@ -16,13 +16,9 @@ Optimizely Rollouts is [free feature flags](https://www.optimizely.com/free-feat
 
 ## Get Started
 
-> For **Browser** applications, refer to the [JavaScript SDK's developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-sdk) for detailed instructions on getting started with using the SDK within client-side applications.
+> For **Browser** applications, refer to the [JavaScript SDK's developer documentation](https://docs.developers.optimizely.com/feature-experimentation/docs/javascript-sdk) for detailed instructions on getting started with using the SDK within client-side applications.
 
-> For **React** applications, refer to the [React SDK developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-react-sdk).
-
-> For **React Native** applications, refer to the [JavaScript (React Native) variant of the developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-react-native-sdk).
-
-> For **Node.js** applications, refer to the [JavaScript (Node) variant of the developer documentation](https://docs.developers.optimizely.com/experimentation/v4.0.0-full-stack/docs/javascript-node-sdk).
+> For **Node.js** applications, refer to the [JavaScript (Node) variant of the developer documentation](https://docs.developers.optimizely.com/feature-experimentation/docs/javascript-node-sdk).
 
 > For **Edge Functions**, we provide starter kits that utilize the Optimizely JavaScript SDK for the following platforms:
 > - [Akamai (Edgeworkers)](https://github.com/optimizely/akamai-edgeworker-starter-kit)
@@ -31,13 +27,13 @@ Optimizely Rollouts is [free feature flags](https://www.optimizely.com/free-feat
 > - [Fastly Compute@Edge](https://github.com/optimizely/fastly-compute-starter-kit)
 > - [Vercel Edge Middleware](https://github.com/optimizely/vercel-examples/tree/main/edge-middleware/feature-flag-optimizely)
 >
-> Note: These starter kits use the **Lite** variant of the JavaScript SDK which excludes the datafile manager and event processor packages.
+> Note: We recommend using the **Lite** version of the sdk for edge platforms. These starter kits also use the **Lite** variant of the JavaScript SDK which excludes the datafile manager and event processor packages.
 
 ### Prerequisites
 
-Ensure the SDK supports all of the platforms you're targeting. In particular, the SDK targets any ES5-compliant JavaScript environment. We officially support:
-- Node.js >= 8.0.0. By extension, environments like AWS Lambda, Google Cloud Functions, and Auth0 Webtasks are supported as well. Older Node.js releases likely work too (try `npm test` to validate for yourself), but are not formally supported.
-- [Modern Web Browsers, such as IE 10+, Firefox 21+, Safari 6+, and Chrome 23+](https://caniuse.com/#feat=es5)
+Ensure the SDK supports all of the platforms you're targeting. In particular, the SDK targets modern ES5-compliant JavaScript environment. We officially support:
+- Node.js >= 16.0.0. By extension, environments like AWS Lambda, Google Cloud Functions, and Auth0 Webtasks are supported as well. Older Node.js releases likely work too (try `npm test` to validate for yourself), but are not formally supported.
+- Modern Web Browsers, such as Microsoft Edge 84+, Firefox 91+, Safari 13+, and Chrome 102+, Opera 76+
 
 In addition, other environments are likely compatible but are not formally supported including:
 - Progressive Web Apps, WebViews, and hybrid mobile apps like those built with React Native and Apache Cordova.
@@ -48,44 +44,8 @@ In addition, other environments are likely compatible but are not formally suppo
 
 * JavaScript (Browser): Modern web browser that is ES5-compliant.
 
-* JavaScript (Node): Node 8.0+
+* JavaScript (Node): Node 16.0.0+
 
-* The following peer dependencies may be required for use in production:
-
-```json
-{
-  "json-schema@0.4.0": {
-    "licenses": [
-      "AFLv2.1",
-      "BSD"
-    ],
-    "publisher": "Kris Zyp",
-    "repository": "https://github.com/kriszyp/json-schema"
-  },
-  "murmurhash@2.0.1": {
-    "licenses": "MIT*",
-    "repository": "https://github.com/perezd/node-murmurhash"
-  },
-  "uuid@8.3.2": {
-    "licenses": "MIT",
-    "repository": "https://github.com/kelektiv/node-uuid"
-  },
-  "decompress-response@4.2.1": {
-    "licenses": "MIT",
-    "repository": "https://github.com/sindresorhus/decompress-response"
-  }
-}
-```
-
-To regenerate this, run the following command:
-
-```sh
-npx license-checker --production --json | jq 'map_values({ licenses, publisher, repository }) | del(.[][] | nulls)'
-```
-
-and remove the self (`@optimizely/optimizely-sdk`) entry.
-
-> Note: The `jq` command line tool is required to run the above script. You may install `jq` to your environment by using Homebrew on MacOS using the command `brew install jq`. For Windows users, please visit the [JQ GitHub repository](https://github.com/stedolan/jq) to learn more.
 
 ### Install the SDK
 
@@ -116,7 +76,7 @@ See the [Optimizely Feature Experimentation developer documentation for JavaScri
 
 ### Initialization (Browser)
 
-The package's entry point is a CommonJS module, which can be used directly in environments which support it (e.g., Node.js, or loaded in a browser via Browserify or RequireJS). Additionally, for ease of use during initial evaluations you can include a standalone bundle of the SDK in your web page by fetching it from [unpkg](https://unpkg.com/):
+The package has different entry points for different environments. The browser entry point is an ES module, which can be used with an appropriate bundler like **Webpack** or **Rollup**. Additionally, for ease of use during initial evaluations you can include a standalone umd bundle of the SDK in your web page by fetching it from [unpkg](https://unpkg.com/):
 
 ```html
 <script src="https://unpkg.com/@optimizely/optimizely-sdk/dist/optimizely.browser.umd.min.js"></script>
@@ -134,11 +94,13 @@ const optimizelyClient = window.optimizelySdk.createInstance({
   sdkKey: '<YOUR_SDK_KEY>',
   // datafile: window.optimizelyDatafile,
   // etc.
-})
+});
 
-optimizelyClient.onReady().then(() => {
-  // Create the Optimizely user context, make decisions, and more here!
-})
+optimizelyClient.onReady().then(({ success, reason }) => {
+  if (success) {
+      // Create the Optimizely user context, make decisions, and more here!
+  }
+});
 ```
 
 Regarding `EventDispatcher`s: In Node.js and browser environments, the default `EventDispatcher` is powered by the [`http/s`](https://nodejs.org/api/http.html) modules and by [`XMLHttpRequest`](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#Browser_compatibility), respectively. In all other environments, you must supply your own `EventDispatcher`.
@@ -149,20 +111,22 @@ See the [Optimizely Feature Experimentation developer documentation for JavaScri
 
 ### Initialization (Node)
 
-The package's entry point is a CommonJS module, which can be used directly in environments which support it (e.g., Node.js, or loaded in a browser via Browserify or RequireJS). Additionally, for ease of use during initial evaluations you can include a standalone bundle of the SDK in your web page by fetching it from [unpkg](https://unpkg.com/):
+The package has different entry points for different environments. The node entry point is CommonJS module.
 
-```typescript
-import optimizelyClient from "@optimizely/optimizely-sdk";
+```javascript
+const optimizelySdk = require('@optimizely/optimizely-sdk');
 
-optimizelyClient.createInstance({
+const optimizelyClient = optimizelySdk.createInstance({
   sdkKey: '<YOUR_SDK_KEY>',
   // datafile: window.optimizelyDatafile,
   // etc.
 });
 
-optimizelyClient.onReady().then(() => {
-  // Create the Optimizely user context, make decisions, and more here!
-})
+optimizelyClient.onReady().then(({ success, reason }) => {
+  if (success) {
+      // Create the Optimizely user context, make decisions, and more here!
+  }
+});
 ```
 
 Regarding `EventDispatcher`s: In Node.js environment, the default `EventDispatcher` is powered by the [`http/s`](https://nodejs.org/api/http.html) module.
@@ -207,15 +171,9 @@ For more information regarding contributing to the Optimizely JavaScript SDK, pl
 
 ## Special Notes
 
-### Migrating from 1.x.x
+### Migrating from 4.x.x
 
-This version represents a major version change and, as such, introduces some breaking changes:
-
-- The Node.js SDK is now combined with the JavaScript SDK. We now have just one package, `@optimizely/optimizely-sdk`, that works in many JavaScript environments.
-
-- We no longer support Node.js < 4.0.0, which collectively [reached end-of-life](https://github.com/nodejs/Release#end-of-life-releases) on 2016-12-31.
-
-- You will no longer be able to pass in `revenue` value as a stand-alone argument to the `track` call. Instead you will need to pass it as an entry in the [`eventTags`](https://developers.optimizely.com/x/solutions/sdks/reference/index.html?language=javascript#event-tags).
+This version represents a major version change and, as such, introduces some breaking changes. Please refer to the [Changelog](CHANGELOG.md#500---january-19-2024) for more details.
 
 ### Feature Management access
 
