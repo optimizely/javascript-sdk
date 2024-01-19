@@ -7,6 +7,64 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [5.0.0] - January 19, 2024
+May 4, 2023
+
+### New Features  
+
+The 5.0.0 release introduces a new primary feature, [Advanced Audience Targeting]( https://docs.developers.optimizely.com/feature-experimentation/docs/optimizely-data-platform-advanced-audience-targeting) enabled through integration with [Optimizely Data Platform (ODP)](https://docs.developers.optimizely.com/optimizely-data-platform/docs) ([#765](https://github.com/optimizely/javascript-sdk/pull/765), [#775](https://github.com/optimizely/javascript-sdk/pull/775), [#776](https://github.com/optimizely/javascript-sdk/pull/776), [#777](https://github.com/optimizely/javascript-sdk/pull/777), [#778](https://github.com/optimizely/javascript-sdk/pull/778), [#786](https://github.com/optimizely/javascript-sdk/pull/786), [#789](https://github.com/optimizely/javascript-sdk/pull/789), [#790](https://github.com/optimizely/javascript-sdk/pull/790), [#797](https://github.com/optimizely/javascript-sdk/pull/797), [#799](https://github.com/optimizely/javascript-sdk/pull/799), [#808](https://github.com/optimizely/javascript-sdk/pull/808)).
+
+You can use ODP, a high-performance [Customer Data Platform (CDP)]( https://www.optimizely.com/optimization-glossary/customer-data-platform/), to easily create complex real-time segments (RTS) using first-party and 50+ third-party data sources out of the box. You can create custom schemas that support the user attributes important for your business, and stitch together user behavior done on different devices to better understand and target your customers for personalized user experiences. ODP can be used as a single source of truth for these segments in any Optimizely or 3rd party tool.  
+
+With ODP accounts integrated into Optimizely projects, you can build audiences using segments pre-defined in ODP. The SDK will fetch the segments for given users and make decisions using the segments. For access to ODP audience targeting in your Feature Experimentation account, please contact your Customer Success Manager. 
+
+This version includes the following changes: 
+
+- New API added to `OptimizelyUserContext`: 
+
+	- `fetchQualifiedSegments()`: this API will retrieve user segments from the ODP server. The fetched segments will be used for audience evaluation. The fetched data will be stored in the local cache to avoid repeated network delays. 
+
+	- When an `OptimizelyUserContext` is created, the SDK will automatically send an identify request to the ODP server to facilitate observing user activities. 
+
+- New APIs added to `OptimizelyClient`: 
+
+	- `sendOdpEvent()`: customers can build/send arbitrary ODP events that will bind user identifiers and data to user profiles in ODP. 
+
+	- `createUserContext()` with anonymous user IDs: user-contexts can be created without a userId. The SDK will create and use a persistent `VUID` specific to a device when userId is not provided. 
+
+For details, refer to our documentation pages:  
+
+- [Advanced Audience Targeting](https://docs.developers.optimizely.com/feature-experimentation/docs/optimizely-data-platform-advanced-audience-targeting)  
+
+- [Client SDK Support](https://docs.developers.optimizely.com/feature-experimentation/v1.0/docs/advanced-audience-targeting-for-client-side-sdks) 
+
+- [Initialize JavaScript SDK](https://docs.developers.optimizely.com/feature-experimentation/docs/initialize-sdk-javascript-aat) 
+
+- [OptimizelyUserContext JavaScript SDK](https://docs.developers.optimizely.com/feature-experimentation/docs/optimizelyusercontext-javascript-aat)
+
+- [Advanced Audience Targeting segment qualification methods](https://docs.developers.optimizely.com/feature-experimentation/docs/advanced-audience-targeting-segment-qualification-methods-javascript) 
+
+- [Send Optimizely Data Platform data using Advanced Audience Targeting](https://docs.developers.optimizely.com/feature-experimentation/docs/send-odp-data-using-advanced-audience-targeting-javascript) 
+
+Additionally, a handful of major package updates are also included in this release including `murmurhash`, `uuid`, and others. For more information, check out the **Breaking Changes** section below. ([#762](https://github.com/optimizely/javascript-sdk/pull/762))
+
+### Breaking Changes 
+- `ODPManager` in the SDK is enabled by default. Unless an ODP account is integrated into the Optimizely projects, most `ODPManager` functions will be ignored. If needed, `ODPManager` can be disabled when `OptimizelyClient` is instantiated.
+- Updated `murmurhash` dependency to version `2.0.1`.
+- Updated `uuid` dependency to version `8.3.2`.
+- Dropped support for the following browser versions.
+  - All versions of Microsof Internet Explorer.
+  - Chrome versions earlier than `102.0`.
+  - Microsoft Edge versions earlier than `84.0`.
+  - Firefox versions earlier than `91.0`.
+  - Opera versions earlier than `76.0`.
+  - Safari versions earlier than `13.0`.
+- Dropped support for Node JS versions earlier than `14`.
+
+## Changed
+- Updated `createUserContext`'s `userId` parameter to be optional due to the Browser variation's use of the new `vuid` field. Note: The Node variation of the SDK does **not** use the new `vuid` field and you should pass in a `userId` when within the context of the Node variant.
+
+
 ## [4.10.0] - October 11, 2023
 
 ### New Features
