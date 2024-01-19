@@ -93,8 +93,8 @@
     "decompress-response": "^4.2.1",
     "json-schema": "^0.4.0",
     "murmurhash": "^2.0.1",
-    "ua-parser-js": "^1.0.35",
-    "uuid": "^8.3.2"
+    "ua-parser-js": "^1.0.37",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@react-native-async-storage/async-storage": "^1.2.0",
@@ -107,7 +107,7 @@
     "@types/nise": "^1.4.0",
     "@types/node": "^18.7.18",
     "@types/ua-parser-js": "^0.7.36",
-    "@types/uuid": "^3.4.4",
+    "@types/uuid": "^9.0.7",
     "@typescript-eslint/eslint-plugin": "^5.33.0",
     "@typescript-eslint/parser": "^5.33.0",
     "bluebird": "^3.4.6",
