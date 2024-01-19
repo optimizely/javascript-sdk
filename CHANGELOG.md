@@ -8,7 +8,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 ## [5.0.0] - January 19, 2024
-May 4, 2023
 
 ### New Features  
 
