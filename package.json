@@ -1,6 +1,6 @@
 {
   "name": "@optimizely/optimizely-sdk",
-  "version": "5.0.0-beta5",
+  "version": "5.0.0",
   "description": "JavaScript SDK for Optimizely Feature Experimentation, Optimizely Full Stack (legacy), and Optimizely Rollouts",
   "module": "dist/optimizely.browser.es.js",
   "main": "dist/optimizely.node.min.js",
