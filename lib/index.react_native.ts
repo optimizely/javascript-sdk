@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2023, Optimizely
+ * Copyright 2019-2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  getLogger,
-  setErrorHandler,
-  getErrorHandler,
-  LogLevel,
-  setLogHandler,
-  setLogLevel
-} from './modules/logging';
+
+import { getLogger, setErrorHandler, getErrorHandler, LogLevel, setLogHandler, setLogLevel } from './modules/logging';
 import * as enums from './utils/enums';
 import Optimizely from './optimizely';
 import configValidator from './utils/config_validator';
@@ -31,8 +25,7 @@ import eventProcessorConfigValidator from './utils/event_processor_config_valida
 import { createNotificationCenter } from './core/notification_center';
 import { createEventProcessor } from './plugins/event_processor/index.react_native';
 import { OptimizelyDecideOption, Client, Config } from './shared_types';
-import { createHttpPollingDatafileManager } from
-    './plugins/datafile_manager/react_native_http_polling_datafile_manager';
+import { createHttpPollingDatafileManager } from './plugins/datafile_manager/react_native_http_polling_datafile_manager';
 import { BrowserOdpManager } from './plugins/odp_manager/index.browser';
 import * as commonExports from './common_exports';
 
@@ -71,7 +64,7 @@ const createInstance = function(config: Config): Client | null {
       configValidator.validate(config);
       isValidInstance = true;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (ex: any) {
+    } catch (ex) {
       logger.error(ex);
     }
 
@@ -100,9 +93,14 @@ const createInstance = function(config: Config): Client | null {
       batchSize: eventBatchSize,
       maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
       notificationCenter,
-    }
+    };
 
     const eventProcessor = createEventProcessor(eventProcessorConfig);
+
+    const odpExplicitlyOff = config.odpOptions?.disabled === true;
+    if (odpExplicitlyOff) {
+      logger.info(enums.LOG_MESSAGES.ODP_DISABLED);
+    }
 
     const optimizelyOptions = {
       clientEngine: enums.REACT_NATIVE_JS_CLIENT_ENGINE,
@@ -110,10 +108,12 @@ const createInstance = function(config: Config): Client | null {
       eventProcessor,
       logger,
       errorHandler,
-      datafileManager:  config.sdkKey ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions) : undefined,
+      datafileManager: config.sdkKey
+        ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions)
+        : undefined,
       notificationCenter,
-      isValidInstance: isValidInstance,
-      odpManager: new BrowserOdpManager({ logger, odpOptions: config.odpOptions }),
+      isValidInstance,
+      odpManager: odpExplicitlyOff ? undefined : new BrowserOdpManager({ logger, odpOptions: config.odpOptions }),
     };
 
     // If client engine is react, convert it to react native.
@@ -123,7 +123,7 @@ const createInstance = function(config: Config): Client | null {
 
     return new Optimizely(optimizelyOptions);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (e: any) {
+  } catch (e) {
     logger.error(e);
     return null;
   }
@@ -157,4 +157,4 @@ export default {
   OptimizelyDecideOption,
 };
 
-export * from './export_types'
+export * from './export_types';

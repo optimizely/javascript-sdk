@@ -140,7 +140,7 @@ const createInstance = function(config: Config): Client | null {
         ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions)
         : undefined,
       notificationCenter,
-      isValidInstance: isValidInstance,
+      isValidInstance,
       odpManager: odpExplicitlyOff ? undefined : new BrowserOdpManager({ logger, odpOptions: config.odpOptions }),
     };
 
