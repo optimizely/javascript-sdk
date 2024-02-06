@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2017, 2019-2023 Optimizely
+ * Copyright 2016-2017, 2019-2024 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,6 +125,11 @@ const createInstance = function(config: Config): Client | null {
       notificationCenter,
     };
 
+    const odpExplicitlyOff = config.odpOptions?.disabled === true;
+    if (odpExplicitlyOff) {
+      logger.info(enums.LOG_MESSAGES.ODP_DISABLED);
+    }
+
     const optimizelyOptions: OptimizelyOptions = {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       ...config,
@@ -136,7 +141,7 @@ const createInstance = function(config: Config): Client | null {
         : undefined,
       notificationCenter,
       isValidInstance: isValidInstance,
-      odpManager: new BrowserOdpManager({ logger, odpOptions: config.odpOptions }),
+      odpManager: odpExplicitlyOff ? undefined : new BrowserOdpManager({ logger, odpOptions: config.odpOptions }),
     };
 
     const optimizely = new Optimizely(optimizelyOptions);

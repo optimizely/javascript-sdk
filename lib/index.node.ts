@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2016-2017, 2019-2023 Optimizely, Inc. and contributors        *
+ * Copyright 2016-2017, 2019-2024 Optimizely, Inc. and contributors        *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -101,6 +101,11 @@ const createInstance = function(config: Config): Client | null {
 
     const eventProcessor = createEventProcessor(eventProcessorConfig);
 
+    const odpExplicitlyOff = config.odpOptions?.disabled === true;
+    if (odpExplicitlyOff) {
+      logger.info(enums.LOG_MESSAGES.ODP_DISABLED);
+    }
+
     const optimizelyOptions = {
       clientEngine: enums.NODE_CLIENT_ENGINE,
       ...config,
@@ -112,7 +117,7 @@ const createInstance = function(config: Config): Client | null {
         : undefined,
       notificationCenter,
       isValidInstance: isValidInstance,
-      odpManager: new NodeOdpManager({ logger, odpOptions: config.odpOptions }),
+      odpManager: odpExplicitlyOff ? undefined : new NodeOdpManager({ logger, odpOptions: config.odpOptions }),
     };
 
     return new Optimizely(optimizelyOptions);
