@@ -1,5 +1,5 @@
 /**
- * Copyright 2023-2024, Optimizely
+ * Copyright 2023, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,13 @@ export class BrowserOdpManager extends OdpManager {
     super();
 
     this.logger = logger || getLogger();
+
+    if (odpOptions?.disabled) {
+      this.initPromise = Promise.resolve();
+      this.enabled = false;
+      this.logger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED);
+      return;
+    }
 
     const browserClientEngine = JAVASCRIPT_CLIENT_ENGINE;
     const browserClientVersion = BROWSER_CLIENT_VERSION;
