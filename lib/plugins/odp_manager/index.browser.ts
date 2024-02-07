@@ -1,5 +1,5 @@
 /**
- * Copyright 2023, Optimizely
+ * Copyright 2023-2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,13 +55,6 @@ export class BrowserOdpManager extends OdpManager {
     super();
 
     this.logger = logger || getLogger();
-
-    if (odpOptions?.disabled) {
-      this.initPromise = Promise.resolve();
-      this.enabled = false;
-      this.logger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED);
-      return;
-    }
 
     const browserClientEngine = JAVASCRIPT_CLIENT_ENGINE;
     const browserClientVersion = BROWSER_CLIENT_VERSION;
@@ -125,7 +118,7 @@ export class BrowserOdpManager extends OdpManager {
     this.eventManager!.start();
 
     this.initPromise = this.initializeVuid(BrowserOdpManager.cache).catch(e => {
-      this.logger.log(this.enabled ? LogLevel.ERROR : LogLevel.DEBUG, e);
+      this.logger.log(LogLevel.ERROR, e);
     });
   }
 
@@ -147,8 +140,8 @@ export class BrowserOdpManager extends OdpManager {
 
     try {
       this.eventManager.registerVuid(vuid);
-    } catch (e) {
-      this.logger.log(this.enabled ? LogLevel.ERROR : LogLevel.DEBUG, ERROR_MESSAGES.ODP_VUID_REGISTRATION_FAILED);
+    } catch {
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_VUID_REGISTRATION_FAILED);
     }
   }
 
@@ -186,7 +179,8 @@ export class BrowserOdpManager extends OdpManager {
       if (this.vuid) {
         identifiersWithVuid.set(ODP_USER_KEY.VUID, this.vuid);
       } else {
-        throw new Error(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_VUID_MISSING);
+        this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_VUID_MISSING);
+        return;
       }
     }
 

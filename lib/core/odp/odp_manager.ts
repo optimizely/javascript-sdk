@@ -1,5 +1,5 @@
 /**
- * Copyright 2023, Optimizely
+ * Copyright 2023-2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,6 @@ import { OdpEvent } from './odp_event';
 export interface IOdpManager {
   initPromise?: Promise<void>;
 
-  enabled: boolean;
-
   segmentManager: IOdpSegmentManager | undefined;
 
   eventManager: IOdpEventManager | undefined;
@@ -63,11 +61,6 @@ export abstract class OdpManager implements IOdpManager {
    * Promise that returns when the OdpManager is finished initializing
    */
   initPromise?: Promise<void>;
-
-  /**
-   * Switch to enable/disable ODP Manager functionality
-   */
-  enabled = true;
 
   /**
    * ODP Segment Manager which provides an interface to the remote ODP server (GraphQL API) for audience segments mapping.
@@ -98,10 +91,6 @@ export abstract class OdpManager implements IOdpManager {
    * Provides a method to update ODP Manager's ODP Config API Key, API Host, and Audience Segments
    */
   updateSettings({ apiKey, apiHost, pixelUrl, segmentsToCheck }: OdpConfig): boolean {
-    if (!this.enabled) {
-      return false;
-    }
-
     if (!this.eventManager) {
       this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_MANAGER_UPDATE_SETTINGS_FAILED_EVENT_MANAGER_MISSING);
       return false;
@@ -130,10 +119,6 @@ export abstract class OdpManager implements IOdpManager {
    * Attempts to stop the current instance of ODP Manager's event manager, if it exists and is running.
    */
   close(): void {
-    if (!this.enabled) {
-      return;
-    }
-
     this.eventManager?.stop();
   }
 
@@ -145,11 +130,6 @@ export abstract class OdpManager implements IOdpManager {
    * @returns {Promise<string[] | null>}      A promise holding either a list of qualified segments or null.
    */
   async fetchQualifiedSegments(userId: string, options: Array<OptimizelySegmentOption> = []): Promise<string[] | null> {
-    if (!this.enabled) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_ENABLED);
-      return null;
-    }
-
     if (!this.segmentManager) {
       this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_FETCH_QUALIFIED_SEGMENTS_SEGMENTS_MANAGER_MISSING);
       return null;
@@ -169,11 +149,6 @@ export abstract class OdpManager implements IOdpManager {
    * @returns
    */
   identifyUser(userId?: string, vuid?: string): void {
-    if (!this.enabled) {
-      this.logger.log(LogLevel.DEBUG, LOG_MESSAGES.ODP_IDENTIFY_FAILED_ODP_DISABLED);
-      return;
-    }
-
     if (!this.odpConfig.isReady()) {
       this.logger.log(LogLevel.DEBUG, LOG_MESSAGES.ODP_IDENTIFY_FAILED_ODP_NOT_INTEGRATED);
       return;
@@ -203,24 +178,24 @@ export abstract class OdpManager implements IOdpManager {
       mType = 'fullstack';
     }
 
-    if (!this.enabled) {
-      throw new Error(ERROR_MESSAGES.ODP_NOT_ENABLED);
-    }
-
     if (!this.odpConfig.isReady()) {
-      throw new Error(ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+      return;
     }
 
     if (invalidOdpDataFound(data)) {
-      throw new Error(ERROR_MESSAGES.ODP_INVALID_DATA);
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_INVALID_DATA);
+      return;
     }
 
     if (!this.eventManager) {
-      throw new Error(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_EVENT_MANAGER_MISSING);
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_EVENT_MANAGER_MISSING);
+      return;
     }
 
     if (typeof action !== 'string' || action === '') {
-      throw new Error('ODP action is not valid (cannot be empty).');
+      this.logger.log(LogLevel.ERROR, 'ODP action is not valid (cannot be empty).');
+      return;
     }
 
     this.eventManager.sendEvent(new OdpEvent(mType, action, identifiers, data));
