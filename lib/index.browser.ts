@@ -125,6 +125,11 @@ const createInstance = function(config: Config): Client | null {
       notificationCenter,
     };
 
+    const odpExplicitlyOff = config.odpOptions?.disabled === true;
+    if (odpExplicitlyOff) {
+      logger.info(enums.LOG_MESSAGES.ODP_DISABLED);
+    }
+
     const optimizelyOptions: OptimizelyOptions = {
       clientEngine: enums.JAVASCRIPT_CLIENT_ENGINE,
       ...config,
@@ -135,8 +140,8 @@ const createInstance = function(config: Config): Client | null {
         ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions)
         : undefined,
       notificationCenter,
-      isValidInstance: isValidInstance,
-      odpManager: new BrowserOdpManager({ logger, odpOptions: config.odpOptions }),
+      isValidInstance,
+      odpManager: odpExplicitlyOff ? undefined : new BrowserOdpManager({ logger, odpOptions: config.odpOptions }),
     };
 
     const optimizely = new Optimizely(optimizelyOptions);
