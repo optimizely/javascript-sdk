@@ -1758,7 +1758,6 @@ export default class Optimizely implements Client {
     options?: Array<OptimizelySegmentOption>
   ): Promise<string[] | null> {
     if (!this.odpManager) {
-      this.logger.error(ERROR_MESSAGES.ODP_FETCH_QUALIFIED_SEGMENTS_FAILED_ODP_MANAGER_MISSING);
       return null;
     }
 
@@ -1769,7 +1768,7 @@ export default class Optimizely implements Client {
    * @returns {string|undefined}    Currently provisioned VUID from local ODP Manager or undefined if
    *                                ODP Manager has not been instantiated yet for any reason.
    */
-  getVuid(): string | undefined {
+  public getVuid(): string | undefined {
     if (!this.odpManager) {
       this.logger?.error('Unable to get VUID - ODP Manager is not instantiated yet.');
       return undefined;
