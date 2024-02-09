@@ -178,10 +178,7 @@ export default class Optimizely implements Client {
 
     const eventProcessorStartedPromise = this.eventProcessor.start();
 
-    const dependentPromises: Array<Promise<any>> = [
-      projectConfigManagerReadyPromise,
-      eventProcessorStartedPromise,
-    ];
+    const dependentPromises: Array<Promise<any>> = [projectConfigManagerReadyPromise, eventProcessorStartedPromise];
 
     if (config.odpManager?.initPromise) {
       dependentPromises.push(config.odpManager.initPromise);
@@ -778,7 +775,12 @@ export default class Optimizely implements Client {
    *                                                type, or null if the feature key is invalid or
    *                                                the variable key is invalid
    */
-  getFeatureVariable(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): FeatureVariableValue {
+  getFeatureVariable(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): FeatureVariableValue {
     try {
       if (!this.isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariable');
@@ -1684,7 +1686,12 @@ export default class Optimizely implements Client {
     const projectConfig = this.projectConfigManager.getConfig();
     if (this.odpManager != null && projectConfig != null) {
       this.odpManager.updateSettings(
-        new OdpConfig(projectConfig.publicKeyForOdp, projectConfig.hostForOdp, projectConfig.pixelUrlForOdp, projectConfig.allSegments)
+        new OdpConfig(
+          projectConfig.publicKeyForOdp,
+          projectConfig.hostForOdp,
+          projectConfig.pixelUrlForOdp,
+          projectConfig.allSegments
+        )
       );
     }
   }
@@ -1758,6 +1765,11 @@ export default class Optimizely implements Client {
     options?: Array<OptimizelySegmentOption>
   ): Promise<string[] | null> {
     if (!this.odpManager) {
+      return null;
+    }
+
+    if (!this.odpManager.enabled) {
+      this.logger.error(ERROR_MESSAGES.ODP_FETCH_QUALIFIED_SEGMENTS_FAILED_ODP_MANAGER_MISSING);
       return null;
     }
 
