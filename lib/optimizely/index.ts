@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright 2020-2023, Optimizely, Inc. and contributors                   *
+ * Copyright 2020-2024, Optimizely, Inc. and contributors                   *
  *                                                                          *
  * Licensed under the Apache License, Version 2.0 (the "License");          *
  * you may not use this file except in compliance with the License.         *
@@ -178,10 +178,7 @@ export default class Optimizely implements Client {
 
     const eventProcessorStartedPromise = this.eventProcessor.start();
 
-    const dependentPromises: Array<Promise<any>> = [
-      projectConfigManagerReadyPromise,
-      eventProcessorStartedPromise,
-    ];
+    const dependentPromises: Array<Promise<any>> = [projectConfigManagerReadyPromise, eventProcessorStartedPromise];
 
     if (config.odpManager?.initPromise) {
       dependentPromises.push(config.odpManager.initPromise);
@@ -778,7 +775,12 @@ export default class Optimizely implements Client {
    *                                                type, or null if the feature key is invalid or
    *                                                the variable key is invalid
    */
-  getFeatureVariable(featureKey: string, variableKey: string, userId: string, attributes?: UserAttributes): FeatureVariableValue {
+  getFeatureVariable(
+    featureKey: string,
+    variableKey: string,
+    userId: string,
+    attributes?: UserAttributes
+  ): FeatureVariableValue {
     try {
       if (!this.isValidInstance()) {
         this.logger.log(LOG_LEVEL.ERROR, LOG_MESSAGES.INVALID_OBJECT, MODULE_NAME, 'getFeatureVariable');
@@ -1684,7 +1686,12 @@ export default class Optimizely implements Client {
     const projectConfig = this.projectConfigManager.getConfig();
     if (this.odpManager != null && projectConfig != null) {
       this.odpManager.updateSettings(
-        new OdpConfig(projectConfig.publicKeyForOdp, projectConfig.hostForOdp, projectConfig.pixelUrlForOdp, projectConfig.allSegments)
+        new OdpConfig(
+          projectConfig.publicKeyForOdp,
+          projectConfig.hostForOdp,
+          projectConfig.pixelUrlForOdp,
+          projectConfig.allSegments
+        )
       );
     }
   }
@@ -1758,6 +1765,10 @@ export default class Optimizely implements Client {
     options?: Array<OptimizelySegmentOption>
   ): Promise<string[] | null> {
     if (!this.odpManager) {
+      return null;
+    }
+
+    if (!this.odpManager.enabled) {
       this.logger.error(ERROR_MESSAGES.ODP_FETCH_QUALIFIED_SEGMENTS_FAILED_ODP_MANAGER_MISSING);
       return null;
     }
@@ -1769,7 +1780,7 @@ export default class Optimizely implements Client {
    * @returns {string|undefined}    Currently provisioned VUID from local ODP Manager or undefined if
    *                                ODP Manager has not been instantiated yet for any reason.
    */
-  getVuid(): string | undefined {
+  public getVuid(): string | undefined {
     if (!this.odpManager) {
       this.logger?.error('Unable to get VUID - ODP Manager is not instantiated yet.');
       return undefined;
