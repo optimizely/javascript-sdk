@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [5.0.1] - February 20, 2024
+
+### Bug fixes
+- Improved conditional ODP instantiation when `odpOptions.disabled: true` is used ([#902](https://github.com/optimizely/javascript-sdk/pull/902)) 
+
+### Changed
+- Updated Dependabot alerts ([#896](https://github.com/optimizely/javascript-sdk/pull/896))
+- Updated several devDependencies ([#898](https://github.com/optimizely/javascript-sdk/pull/898), [#900](https://github.com/optimizely/javascript-sdk/pull/900), [#901](https://github.com/optimizely/javascript-sdk/pull/901))
+
+
 ## [5.0.0] - January 19, 2024
 
 ### New Features  
