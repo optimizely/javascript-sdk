@@ -223,8 +223,8 @@ export const NODE_CLIENT_ENGINE = 'node-sdk';
 export const REACT_CLIENT_ENGINE = 'react-sdk';
 export const REACT_NATIVE_CLIENT_ENGINE = 'react-native-sdk';
 export const REACT_NATIVE_JS_CLIENT_ENGINE = 'react-native-js-sdk';
-export const BROWSER_CLIENT_VERSION = '5.0.0';
-export const NODE_CLIENT_VERSION = '5.0.0';
+export const BROWSER_CLIENT_VERSION = '5.0.1';
+export const NODE_CLIENT_VERSION = '5.0.1';
 
 export const DECISION_NOTIFICATION_TYPES = {
   AB_TEST: 'ab-test',
