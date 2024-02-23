@@ -24,6 +24,20 @@
         "default": "./dist/optimizely.browser.es.min.js"
       }
     },
+    "./node": {
+      "types": "./dist/index.node.d.ts",
+      "default": "./dist/optimizely.node.min.js"
+    },
+    "./browser": {
+      "types": "./dist/index.browser.d.ts",
+      "require": "./dist/optimizely.browser.min.js",
+      "import": "./dist/optimizely.browser.es.js",
+      "default": "./dist/optimizely.browser.es.min.js"
+    },
+    "./react_native": {
+      "types": "./dist/index.react_native.d.ts",
+      "default": "./dist/optimizely.react_native.min.js"
+    },
     "./lite": {
       "types": "./dist/index.lite.d.ts",
       "node": "./dist/optimizely.lite.min.js",
