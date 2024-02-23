@@ -325,6 +325,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
     if (isSuccessStatusCode(response.statusCode)) {
       return response.body;
     }
+    logger.error(`Datafile fetch request failed with status: ${response.statusCode}`);
     return '';
   }
 

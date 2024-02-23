@@ -20,6 +20,7 @@ import { DatafileManagerConfig } from '../lib/modules/datafile-manager/datafileM
 import { advanceTimersByTime, getTimerCount } from './testUtils';
 import PersistentKeyValueCache from '../lib/modules/datafile-manager/persistentKeyValueCache';
 
+
 jest.mock('../lib/modules/datafile-manager/backoffController', () => {
   return jest.fn().mockImplementation(() => {
     const getDelayMock = jest.fn().mockImplementation(() => 0);
@@ -32,6 +33,8 @@ jest.mock('../lib/modules/datafile-manager/backoffController', () => {
 });
 
 import BackoffController from '../lib/modules/datafile-manager/backoffController';
+import { LoggerFacade, getLogger } from '../lib/modules/logging';
+import { resetCalls, spy, verify } from 'ts-mockito';
 
 // Test implementation:
 //   - Does not make any real requests: just resolves with queued responses (tests push onto queuedResponses)
@@ -93,8 +96,19 @@ const testCache: PersistentKeyValueCache = {
 };
 
 describe('httpPollingDatafileManager', () => {
+
+  let spiedLogger: LoggerFacade;
+
+  const loggerName = 'DatafileManager';
+
+  beforeAll(() => {
+      const actualLogger = getLogger(loggerName);
+      spiedLogger = spy(actualLogger);
+  });
+    
   beforeEach(() => {
     jest.useFakeTimers();
+    resetCalls(spiedLogger);
   });
 
   let manager: TestDatafileManager;
@@ -177,6 +191,22 @@ describe('httpPollingDatafileManager', () => {
   describe('when constructed with sdkKey and autoUpdate: true', () => {
     beforeEach(() => {
       manager = new TestDatafileManager({ sdkKey: '123', updateInterval: 1000, autoUpdate: true });
+    });
+
+    it('logs an error if fetching datafile fails', async () => {
+      manager.queuedResponses.push(
+        {
+          statusCode: 500,
+          body: '',
+          headers: {},
+        }
+      );
+
+      manager.start();
+      await advanceTimersByTime(1000);
+      await manager.responsePromises[0];
+
+      verify(spiedLogger.error('Datafile fetch request failed with status: 500')).once();
     });
 
     describe('initial state', () => {
