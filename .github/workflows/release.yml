@@ -66,4 +66,3 @@ jobs:
         with:
           jellyfish_api_token: ${{ secrets.JELLYFISH_API_TOKEN }}
           is_successful: ${{ steps.release.outcome == 'success' }}
-          is_dry_run: true
