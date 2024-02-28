@@ -53,7 +53,7 @@ jobs:
           fi
 
       - id: release
-        name: test, build and publish to npm
+        name: Test, build and publish to npm
         env:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
