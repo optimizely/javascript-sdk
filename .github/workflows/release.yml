@@ -52,9 +52,18 @@ jobs:
             echo "npm-tag=v$(echo $VERSION | awk -F. '{print $1}')" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: test, build and publish to npm
+      - id: release
+        name: test, build and publish to npm
         env:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
         run: npm publish --tag=${{ steps.npm-tag.outputs['npm-tag'] }}
+
+      - name: Report results to Jellyfish
+        uses: optimizely/jellyfish-deployment-reporter-action@main
+        if: ${{ always() && (steps.release.outcome == 'success' || steps.release.outcome == 'failure') }}
+        with:
+          jellyfish_api_token: ${{ secrets.JELLYFISH_API_TOKEN }}
+          is_successful: ${{ steps.release.outcome == 'success' }}
+          is_dry_run: true
