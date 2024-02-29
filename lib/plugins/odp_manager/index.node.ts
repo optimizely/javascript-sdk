@@ -22,7 +22,7 @@ import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import {
   LOG_MESSAGES,
   NODE_CLIENT_ENGINE,
-  NODE_CLIENT_VERSION,
+  CLIENT_VERSION,
   REQUEST_TIMEOUT_ODP_EVENTS_MS,
   REQUEST_TIMEOUT_ODP_SEGMENTS_MS,
 } from '../../utils/enums';
@@ -57,7 +57,7 @@ export class NodeOdpManager extends OdpManager {
     }
 
     const nodeClientEngine = NODE_CLIENT_ENGINE;
-    const nodeClientVersion = NODE_CLIENT_VERSION;
+    const nodeClientVersion = CLIENT_VERSION;
 
     let customSegmentRequestHandler;
 
