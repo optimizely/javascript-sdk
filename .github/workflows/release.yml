@@ -1,0 +1,80 @@
+name: Publish SDK to NPM
+
+on:
+  release:
+    types: [published, edited]
+  workflow_dispatch: {}
+
+jobs:
+  publish:
+    name: Publish to NPM
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || !github.event.release.draft }}
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          registry-url: "https://registry.npmjs.org/"
+          always-auth: "true"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - id: latest-release
+        name: Export latest release git tag
+        run: |
+          echo "latest-release-tag=$(curl -qsSL \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/releases/latest" \
+          | jq -r .tag_name)" >> $GITHUB_OUTPUT
+
+      - id: npm-tag
+        name: Determine NPM tag
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          LATEST_RELEASE_TAG="${{ steps.latest-release.outputs['latest-release-tag']}}"
+
+          if [[ ${{ github.event_name }} == "workflow_dispatch" ]]; then
+            GITHUB_REF=${{ github.ref }}
+            RELEASE_TAG=${GITHUB_REF#refs/tags/}
+          else
+            RELEASE_TAG="${{ github.event.release.tag_name }}"
+          fi
+
+          if [[ $RELEASE_TAG == $LATEST_RELEASE_TAG ]]; then
+            echo "npm-tag=latest" >> "$GITHUB_OUTPUT"
+          elif [[ "$VERSION" == *"-beta"* ]]; then
+            echo "npm-tag=beta" >> "$GITHUB_OUTPUT"
+          elif [[ "$VERSION" == *"-alpha"* ]]; then
+            echo "npm-tag=alpha" >> "$GITHUB_OUTPUT"
+          elif [[ "$VERSION" == *"-rc"* ]]; then
+            echo "npm-tag=rc" >> "$GITHUB_OUTPUT"
+          else
+            echo "npm-tag=v$(echo $VERSION | awk -F. '{print $1}')-latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      - id: release
+        name: Test, build and publish to npm
+        env:
+          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+        run: |
+          if [[ ${{ github.event_name }} == "workflow_dispatch" ]]; then
+            DRY_RUN="--dry-run"
+          fi
+          npm publish --tag=${{ steps.npm-tag.outputs['npm-tag'] }} $DRY_RUN
+
+      - name: Report results to Jellyfish
+        uses: optimizely/jellyfish-deployment-reporter-action@main
+        if: ${{ always() && github.event_name == 'release' && (steps.release.outcome == 'success' || steps.release.outcome == 'failure') }}
+        with:
+          jellyfish_api_token: ${{ secrets.JELLYFISH_API_TOKEN }}
+          is_successful: ${{ steps.release.outcome == 'success' }}
