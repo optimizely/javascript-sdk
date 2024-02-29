@@ -3,12 +3,13 @@ name: Publish SDK to NPM
 on:
   release:
     types: [published, edited]
+  workflow_dispatch: {}
 
 jobs:
   publish:
     name: Publish to NPM
     runs-on: ubuntu-latest
-    if: ${{ ! github.event.release.draft }}
+    if: ${{ github.event_name == 'workflow_dispatch' || !github.event.release.draft }}
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
@@ -39,7 +40,14 @@ jobs:
         run: |
           VERSION=$(jq -r '.version' package.json)
           LATEST_RELEASE_TAG="${{ steps.latest-release.outputs['latest-release-tag']}}"
-          RELEASE_TAG="${{ github.event.release.tag_name }}"
+
+          if [[ ${{ github.event_name }} == "workflow_dispatch" ]]; then
+            GITHUB_REF=${{ github.ref }}
+            RELEASE_TAG=${GITHUB_REF#refs/tags/}
+          else
+            RELEASE_TAG="${{ github.event.release.tag_name }}"
+          fi
+
           if [[ $RELEASE_TAG == $LATEST_RELEASE_TAG ]]; then
             echo "npm-tag=latest" >> "$GITHUB_OUTPUT"
           elif [[ "$VERSION" == *"-beta"* ]]; then
@@ -49,7 +57,7 @@ jobs:
           elif [[ "$VERSION" == *"-rc"* ]]; then
             echo "npm-tag=rc" >> "$GITHUB_OUTPUT"
           else
-            echo "npm-tag=v$(echo $VERSION | awk -F. '{print $1}')" >> "$GITHUB_OUTPUT"
+            echo "npm-tag=v$(echo $VERSION | awk -F. '{print $1}')-latest" >> "$GITHUB_OUTPUT"
           fi
 
       - id: release
@@ -58,7 +66,11 @@ jobs:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-        run: npm publish --tag=${{ steps.npm-tag.outputs['npm-tag'] }}
+        run: |
+          if [[ ${{ github.event_name }} == "workflow_dispatch" ]]; then
+            DRY_RUN="--dry-run"
+          fi
+          npm publish --tag=${{ steps.npm-tag.outputs['npm-tag'] }} $DRY_RUN
 
       - name: Report results to Jellyfish
         uses: optimizely/jellyfish-deployment-reporter-action@main
