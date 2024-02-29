@@ -74,7 +74,7 @@ jobs:
 
       - name: Report results to Jellyfish
         uses: optimizely/jellyfish-deployment-reporter-action@main
-        if: ${{ always() && (steps.release.outcome == 'success' || steps.release.outcome == 'failure') }}
+        if: ${{ always() && github.event_name == 'release' && (steps.release.outcome == 'success' || steps.release.outcome == 'failure') }}
         with:
           jellyfish_api_token: ${{ secrets.JELLYFISH_API_TOKEN }}
           is_successful: ${{ steps.release.outcome == 'success' }}
