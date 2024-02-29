@@ -64,7 +64,7 @@ import {
   DECISION_NOTIFICATION_TYPES,
   NOTIFICATION_TYPES,
   NODE_CLIENT_ENGINE,
-  NODE_CLIENT_VERSION,
+  CLIENT_VERSION,
   ODP_DEFAULT_EVENT_TYPE,
   FS_USER_ID_ALIAS,
   ODP_USER_KEY,
@@ -106,7 +106,7 @@ export default class Optimizely implements Client {
     }
 
     this.clientEngine = clientEngine;
-    this.clientVersion = config.clientVersion || NODE_CLIENT_VERSION;
+    this.clientVersion = config.clientVersion || CLIENT_VERSION;
     this.errorHandler = config.errorHandler;
     this.isOptimizelyConfigValid = config.isValidInstance;
     this.logger = config.logger;

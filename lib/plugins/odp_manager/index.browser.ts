@@ -15,7 +15,7 @@
  */
 
 import {
-  BROWSER_CLIENT_VERSION,
+  CLIENT_VERSION,
   ERROR_MESSAGES,
   JAVASCRIPT_CLIENT_ENGINE,
   ODP_USER_KEY,
@@ -64,7 +64,7 @@ export class BrowserOdpManager extends OdpManager {
     }
 
     const browserClientEngine = JAVASCRIPT_CLIENT_ENGINE;
-    const browserClientVersion = BROWSER_CLIENT_VERSION;
+    const browserClientVersion = CLIENT_VERSION;
 
     let customSegmentRequestHandler;
 
