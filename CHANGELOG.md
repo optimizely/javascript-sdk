@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - Log an error in DatafileManager when datafile fetch fails ([#904](https://github.com/optimizely/javascript-sdk/pull/904))
+
 ## [5.0.1] - February 20, 2024
 
 ### Bug fixes
