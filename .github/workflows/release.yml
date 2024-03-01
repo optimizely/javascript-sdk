@@ -72,9 +72,9 @@ jobs:
           fi
           npm publish --tag=${{ steps.npm-tag.outputs['npm-tag'] }} $DRY_RUN
 
-      - name: Report results to Jellyfish
-        uses: optimizely/jellyfish-deployment-reporter-action@main
-        if: ${{ always() && github.event_name == 'release' && (steps.release.outcome == 'success' || steps.release.outcome == 'failure') }}
-        with:
-          jellyfish_api_token: ${{ secrets.JELLYFISH_API_TOKEN }}
-          is_successful: ${{ steps.release.outcome == 'success' }}
+      # - name: Report results to Jellyfish
+      #   uses: optimizely/jellyfish-deployment-reporter-action@main
+      #   if: ${{ always() && github.event_name == 'release' && (steps.release.outcome == 'success' || steps.release.outcome == 'failure') }}
+      #   with:
+      #     jellyfish_api_token: ${{ secrets.JELLYFISH_API_TOKEN }}
+      #     is_successful: ${{ steps.release.outcome == 'success' }}

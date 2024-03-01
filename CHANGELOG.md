@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-## [5.1.0] - February 29, 2024
+## [5.1.0] - March 1, 2024
 
 ### New Features
 - Add explicit entry points for node, browser and react_native, allowing imports like `import optimizelySdk from '@optimizely/optimizely-sdk/node'`, `import optimizelySdk from '@optimizely/optimizely-sdk/browser'`, `import optimizelySdk from '@optimizely/optimizely-sdk/react_native'` ([#905](https://github.com/optimizely/javascript-sdk/pull/905))
