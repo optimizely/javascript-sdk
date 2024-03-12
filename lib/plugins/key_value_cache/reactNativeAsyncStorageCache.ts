@@ -1,5 +1,5 @@
 /**
- * Copyright 2020, 2022, Optimizely
+ * Copyright 2020, 2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ export default class ReactNativeAsyncStorageCache implements PersistentKeyValueC
     return await AsyncStorage.getItem(key) !== null;
   }
 
-  async get(key: string): Promise<string | null> {
-    return await AsyncStorage.getItem(key);
+  async get(key: string): Promise<string | undefined> {
+    return (await AsyncStorage.getItem(key) || undefined);
   }
 
   async remove(key: string): Promise<boolean> {

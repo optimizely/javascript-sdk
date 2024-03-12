@@ -18,7 +18,7 @@ import HttpPollingDatafileManager from '../lib/modules/datafile-manager/httpPoll
 import { Headers, AbortableRequest, Response } from '../lib/modules/datafile-manager/http';
 import { DatafileManagerConfig } from '../lib/modules/datafile-manager/datafileManager';
 import { advanceTimersByTime, getTimerCount } from './testUtils';
-import PersistentKeyValueCache from '../lib/modules/datafile-manager/persistentKeyValueCache';
+import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache';
 
 
 jest.mock('../lib/modules/datafile-manager/backoffController', () => {
@@ -72,8 +72,8 @@ export class TestDatafileManager extends HttpPollingDatafileManager {
 }
 
 const testCache: PersistentKeyValueCache = {
-  get(key: string): Promise<string> {
-    let val = '';
+  get(key: string): Promise<string | undefined> {
+    let val = undefined;
     switch (key) {
       case 'opt-datafile-keyThatExists':
         val = JSON.stringify({ name: 'keyThatExists' });
@@ -90,8 +90,8 @@ const testCache: PersistentKeyValueCache = {
     return Promise.resolve(false);
   },
 
-  remove(): Promise<void> {
-    return Promise.resolve();
+  remove(): Promise<boolean> {
+    return Promise.resolve(false);
   },
 };
 

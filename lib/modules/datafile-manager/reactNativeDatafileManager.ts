@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import { makeGetRequest } from './browserRequest';
 import HttpPollingDatafileManager from './httpPollingDatafileManager';
 import { Headers, AbortableRequest } from './http';
 import { DatafileManagerConfig } from './datafileManager';
-import ReactNativeAsyncStorageCache from './reactNativeAsyncStorageCache';
+import ReactNativeAsyncStorageCache from '../../plugins/key_value_cache/reactNativeAsyncStorageCache';
 
 export default class ReactNativeDatafileManager extends HttpPollingDatafileManager {
   protected makeGetRequest(reqUrl: string, headers: Headers): AbortableRequest {

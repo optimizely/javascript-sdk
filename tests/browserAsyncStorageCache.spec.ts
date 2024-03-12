@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022,2024,  Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,10 +63,10 @@ describe('BrowserAsyncStorageCache', () => {
       expect(foundValue).toEqual(VALUE_FOR_KEY_THAT_EXISTS);
     });
 
-    it('should return empty string if item is not found in cache', async () => {
+    it('should return undefined if item is not found in cache', async () => {
       const json = await cacheInstance.get(NONEXISTENT_KEY);
 
-      expect(json).toBeNull();
+      expect(json).toBeUndefined();
     });
   });
 

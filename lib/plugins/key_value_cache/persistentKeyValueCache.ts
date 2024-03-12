@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
  */
 
 /**
- * An Interface to implement a persistent key value cache which supports strings as keys and value objects.
+ * An Interface to implement a persistent key value cache which supports strings as keys.
  */
-export default interface PersistentKeyValueCache {
+export default interface PersistentKeyValueCache<V = string> {
   /**
    * Checks if a key exists in the cache
    * @param key
@@ -37,8 +37,7 @@ export default interface PersistentKeyValueCache {
    * 2. undefined if the key does not exist in the cache.
    * Rejects the promise in case of an error
    */
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  get(key: string): Promise<any>;
+  get(key: string): Promise<V | undefined>;
 
   /**
    * Removes the key value pair from cache.
@@ -59,6 +58,5 @@ export default interface PersistentKeyValueCache {
    * Resolves promise without a value if successful
    * Rejects the promise in case of an error
    */
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  set(key: string, val: any): Promise<void>;
+  set(key: string, val: V): Promise<void>;
 }
