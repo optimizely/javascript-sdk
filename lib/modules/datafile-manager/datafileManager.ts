@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import PersistentKeyValueCache from './persistentKeyValueCache';
+import PersistentKeyValueCache from '../../plugins/key_value_cache/persistentKeyValueCache';
 
 export interface DatafileUpdate {
   datafile: string;

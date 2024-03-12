@@ -55,10 +55,10 @@ describe('ReactNativeAsyncStorageCache', () => {
       expect(parsedObject).toEqual(testObject);
     });
 
-    it('should return empty string if item is not found in cache', async () => {
+    it('should return undefined if item is not found in cache', async () => {
       const json = await cacheInstance.get('keyThatDoesNotExist');
 
-      expect(json).toBeNull();
+      expect(json).toBeUndefined();
     });
   });
 

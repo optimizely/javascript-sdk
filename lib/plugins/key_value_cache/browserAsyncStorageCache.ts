@@ -34,14 +34,14 @@ export default class BrowserAsyncStorageCache implements PersistentKeyValueCache
     });
   }
 
-  async get(key: string): Promise<string | null | undefined> {
-    return tryWithLocalStorage<string | null | undefined>({
+  async get(key: string): Promise<string | undefined> {
+    return tryWithLocalStorage<string | undefined>({
       browserCallback: (localStorage?: Storage) => {
-        return localStorage?.getItem(key);
+        return (localStorage?.getItem(key) || undefined);
       },
       nonBrowserCallback: () => {
         this.logger.error(ERROR_MESSAGES.LOCAL_STORAGE_DOES_NOT_EXIST);
-        return null;
+        return undefined;
       },
     });
   }

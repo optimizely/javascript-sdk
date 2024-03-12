@@ -22,8 +22,8 @@ export default class ReactNativeAsyncStorageCache implements PersistentKeyValueC
     return await AsyncStorage.getItem(key) !== null;
   }
 
-  async get(key: string): Promise<string | null> {
-    return await AsyncStorage.getItem(key);
+  async get(key: string): Promise<string | undefined> {
+    return (await AsyncStorage.getItem(key) || undefined);
   }
 
   async remove(key: string): Promise<boolean> {

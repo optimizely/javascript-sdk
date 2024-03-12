@@ -21,7 +21,7 @@ import EventEmitter, { Disposer } from './eventEmitter';
 import { AbortableRequest, Response, Headers } from './http';
 import { DEFAULT_UPDATE_INTERVAL, MIN_UPDATE_INTERVAL, DEFAULT_URL_TEMPLATE, UPDATE_INTERVAL_BELOW_MINIMUM_MESSAGE } from './config';
 import BackoffController from './backoffController';
-import PersistentKeyValueCache from './persistentKeyValueCache';
+import PersistentKeyValueCache from '../../plugins/key_value_cache/persistentKeyValueCache';
 
 import { NotificationRegistry } from './../../core/notification_center/notification_registry';
 import { NOTIFICATION_TYPES } from '../../utils/enums';
@@ -35,8 +35,8 @@ function isSuccessStatusCode(statusCode: number): boolean {
 }
 
 const noOpKeyValueCache: PersistentKeyValueCache = {
-  get(): Promise<string> {
-    return Promise.resolve('');
+  get(): Promise<string | undefined> {
+    return Promise.resolve(undefined);
   },
 
   set(): Promise<void> {
@@ -47,8 +47,8 @@ const noOpKeyValueCache: PersistentKeyValueCache = {
     return Promise.resolve(false);
   },
 
-  remove(): Promise<void> {
-    return Promise.resolve();
+  remove(): Promise<boolean> {
+    return Promise.resolve(false);
   },
 };
 
@@ -339,7 +339,7 @@ export default abstract class HttpPollingDatafileManager implements DatafileMana
 
   setDatafileFromCacheIfAvailable(): void {
     this.cache.get(this.cacheKey).then(datafile => {
-      if (this.isStarted && !this.isReadyPromiseSettled && datafile !== '') {
+      if (this.isStarted && !this.isReadyPromiseSettled && datafile) {
         logger.debug('Using datafile from cache');
         this.currentDatafile = datafile;
         this.resolveReadyPromise();

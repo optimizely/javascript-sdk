@@ -21,7 +21,7 @@ import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKe
 import { anyString, anything, instance, mock, resetCalls, verify, when } from 'ts-mockito';
 
 describe('VuidManager', () => {
-  let mockCache: PersistentKeyValueCache;
+  let mockCache: PersistentKeyValueCache<string>;
 
   beforeAll(() => {
     mockCache = mock<PersistentKeyValueCache>();
@@ -81,7 +81,7 @@ describe('VuidManager', () => {
   });
 
   it('should handle no valid optimizely-vuid in the cache', async () => {
-    when(mockCache.get(anyString())).thenResolve(null);
+    when(mockCache.get(anyString())).thenResolve(undefined);
 
     const manager = await VuidManager.instance(instance(mockCache)); // load() called initially
 
