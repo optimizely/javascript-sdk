@@ -1,6 +1,6 @@
 
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ export class ReactNativeEventsStore<T> {
   public async set(key: string, event: T): Promise<string> {
     await this.synchronizer.getLock()
     const eventsMap: {[key: string]: T} = await this.getEventsMap();
-    // const eventsMap: {[key: string]: T} = await this.cache.get(this.storeKey) || {}    
     if (Object.keys(eventsMap).length < this.maxSize) {
       eventsMap[key] = event
       await this.cache.set(this.storeKey, JSON.stringify(eventsMap))
