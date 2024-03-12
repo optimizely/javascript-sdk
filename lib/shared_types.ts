@@ -36,6 +36,7 @@ import { IOdpEventApiManager } from './core/odp/odp_event_api_manager';
 import { IOdpEventManager } from './core/odp/odp_event_manager';
 import { IOdpManager } from './core/odp/odp_manager';
 import { IUserAgentParser } from './core/odp/user_agent_parser';
+import PersistentCache from './plugins/key_value_cache/persistentKeyValueCache';
 
 export interface BucketerParams {
   experimentId: string;
@@ -382,6 +383,8 @@ export interface TrackListenerPayload extends ListenerPayload {
   logEvent: Event;
 }
 
+export type PersistentCacheProvider = () => PersistentCache;
+
 /**
  * Entry level Config Entities
  * For compatibility with the previous declaration file
@@ -393,6 +396,7 @@ export interface Config extends ConfigLite {
   eventMaxQueueSize?: number; // Maximum size for the event queue
   sdkKey?: string;
   odpOptions?: OdpOptions;
+  persistentCacheProvider?: PersistentCacheProvider;
 }
 
 /**

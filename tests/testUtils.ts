@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import PersistentKeyValueCache from "../lib/plugins/key_value_cache/persistentKeyValueCache";
+
 export function advanceTimersByTime(waitMs: number): Promise<void> {
   const timeoutPromise: Promise<void> = new Promise(res => setTimeout(res, waitMs));
   jest.advanceTimersByTime(waitMs);
@@ -25,3 +27,28 @@ export function getTimerCount(): number {
   // https://jestjs.io/docs/en/jest-object#jestgettimercount
   return (jest as any).getTimerCount();
 }
+
+
+export const testPersistentCache: PersistentKeyValueCache = {
+  get(key: string): Promise<string | undefined> {
+    let val = undefined;
+    switch (key) {
+      case 'opt-datafile-keyThatExists':
+        val = JSON.stringify({ name: 'keyThatExists' });
+        break;
+    }
+    return Promise.resolve(val);
+  },
+
+  set(): Promise<void> {
+    return Promise.resolve();
+  },
+
+  contains(): Promise<boolean> {
+    return Promise.resolve(false);
+  },
+
+  remove(): Promise<boolean> {
+    return Promise.resolve(false);
+  },
+};
