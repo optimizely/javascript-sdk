@@ -29,26 +29,31 @@ export function getTimerCount(): number {
 }
 
 
-export const testPersistentCache: PersistentKeyValueCache = {
-  get(key: string): Promise<string | undefined> {
-    let val = undefined;
-    switch (key) {
-      case 'opt-datafile-keyThatExists':
-        val = JSON.stringify({ name: 'keyThatExists' });
-        break;
-    }
-    return Promise.resolve(val);
-  },
+export const getTestPersistentCache = (): PersistentKeyValueCache => {
+  const cache = {
+    get: jest.fn().mockImplementation((key: string): Promise<string | undefined> => {
+      let val = undefined;
+      switch (key) {
+        case 'opt-datafile-keyThatExists':
+          val = JSON.stringify({ name: 'keyThatExists' });
+          break;
+      }
+      return Promise.resolve(val);
+    }),
 
-  set(): Promise<void> {
-    return Promise.resolve();
-  },
+    set: jest.fn().mockImplementation((): Promise<void> => {
+      console.log('mock set called');
+      return Promise.resolve();
+    }),
 
-  contains(): Promise<boolean> {
-    return Promise.resolve(false);
-  },
+    contains: jest.fn().mockImplementation((): Promise<boolean> => {
+      return Promise.resolve(false);
+    }),
 
-  remove(): Promise<boolean> {
-    return Promise.resolve(false);
-  },
-};
+    remove: jest.fn().mockImplementation((): Promise<boolean> => {
+      return Promise.resolve(false);
+    }),
+  } as jest.Mocked<PersistentKeyValueCache>;
+
+  return cache;
+}

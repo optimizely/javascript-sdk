@@ -48,12 +48,12 @@ jest.mock('../lib/plugins/key_value_cache/reactNativeAsyncStorageCache', () => {
 });
 
 import { advanceTimersByTime } from './testUtils';
-import ReactNativeDatafileManager from '../lib/modules/datafile-manager/reactNativeDatafileManager';
+import BrowserDatafileManager from '../lib/modules/datafile-manager/browserDatafileManager';
 import { Headers, AbortableRequest, Response } from '../lib/modules/datafile-manager/http';
 import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache';
-import ReactNativeAsyncStorageCache from '../lib/plugins/key_value_cache/reactNativeAsyncStorageCache';
+import ReactNativeAsyncStorageCache from '../lib/plugins/key_value_cache/browserAsyncStorageCache';
 
-class MockRequestReactNativeDatafileManager extends ReactNativeDatafileManager {
+class MockRequestBrowserDatafileManager extends BrowserDatafileManager {
   queuedResponses: (Response | Error)[] = [];
 
   responsePromises: Promise<Response>[] = [];
