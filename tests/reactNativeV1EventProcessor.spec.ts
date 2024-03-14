@@ -36,9 +36,8 @@
 jest.mock('../lib/modules/event_processor/reactNativeEventsStore');
 
 import { ReactNativeEventsStore } from '../lib/modules/event_processor/reactNativeEventsStore';
-import { HttpPollingDatafileManager } from '../lib/modules/datafile-manager/index.react_native';
-import { createHttpPollingDatafileManager } from '../lib/plugins/datafile_manager/react_native_http_polling_datafile_manager';
 import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache';
+import { LogTierV1EventProcessor } from '../lib/modules/event_processor/index.react_native';
 import { PersistentCacheProvider } from '../lib/shared_types';
 
 describe('LogTierV1EventProcessor', () => {
@@ -49,40 +48,38 @@ describe('LogTierV1EventProcessor', () => {
   });
 
   it('calls the provided persistentCacheFactory and passes it to the ReactNativeEventStore constructor twice', async () => {
-    const getFakePersistentCache = () => PersistentKeyValueCache = {
-      contains(k: string): Promise<boolean> {
-        return Promise.resolve(false);
-      },
-      get(key: string): Promise<string | undefined> {
-        return Promise.resolve(undefined);
-      },
-      remove(key: string): Promise<boolean> {
-        return Promise.resolve(false);
-      },
-      set(key: string, val: string): Promise<void> {
-        return Promise.resolve()
-      }
+    const getFakePersistentCache = () : PersistentKeyValueCache => {
+        return {
+          contains(k: string): Promise<boolean> {
+            return Promise.resolve(false);
+          },
+          get(key: string): Promise<string | undefined> {
+            return Promise.resolve(undefined);
+          },
+          remove(key: string): Promise<boolean> {
+            return Promise.resolve(false);
+          },
+          set(key: string, val: string): Promise<void> {
+            return Promise.resolve()
+          }
+        };
     }
 
     let call = 0;
-
+    const fakeCaches = [getFakePersistentCache(), getFakePersistentCache()];
     const fakePersistentCacheProvider = jest.fn().mockImplementation(() => {
-      return fakePersistentCache;
+      return fakeCaches[call++];
     }) as jest.Mocked<PersistentCacheProvider>;
 
     const noop = () => {};
 
-    createHttpPollingDatafileManager(
-      'test-key',
-      { log: noop, info: noop, debug: noop, error: noop, warn: noop },
-      undefined,
-      {},
-      fakePersistentCacheProvider,
-    )
+    new LogTierV1EventProcessor({
+      dispatcher: { dispatchEvent: () => {} },
+      persistentCacheProvider: fakePersistentCacheProvider,
+    })
 
-    expect(MockedHttpPollingDatafileManager).toHaveBeenCalledTimes(1);
-
-    const { cache } = MockedHttpPollingDatafileManager.mock.calls[0][0];
-    expect(cache === fakePersistentCache).toBeTruthy();
+    expect(fakePersistentCacheProvider).toHaveBeenCalledTimes(2);
+    expect(MockedReactNativeEventsStore.mock.calls[0][2] === fakeCaches[0]).toBeTruthy();
+    expect(MockedReactNativeEventsStore.mock.calls[1][2] === fakeCaches[1]).toBeTruthy();
   });
 });
