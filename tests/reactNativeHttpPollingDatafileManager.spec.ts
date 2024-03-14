@@ -32,12 +32,10 @@ jest.mock('../lib/modules/datafile-manager/index.react_native', () => {
   }
 });
 
-import { advanceTimersByTime } from './testUtils';
 import { HttpPollingDatafileManager } from '../lib/modules/datafile-manager/index.react_native';
 import { createHttpPollingDatafileManager } from '../lib/plugins/datafile_manager/react_native_http_polling_datafile_manager';
-import { Headers, AbortableRequest, Response } from '../lib/modules/datafile-manager/http';
 import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache';
-import ReactNativeAsyncStorageCache from '../lib/plugins/key_value_cache/reactNativeAsyncStorageCache';
+import { PersistentCacheProvider } from '../lib/shared_types';
 
 describe('createHttpPollingDatafileManager', () => {
   const MockedHttpPollingDatafileManager = jest.mocked(HttpPollingDatafileManager);
@@ -53,50 +51,38 @@ describe('createHttpPollingDatafileManager', () => {
   });
 
   it('calls the provided persistentCacheFactory and passes it to the HttpPollingDatafileManagerConstructor', async () => {
-    const fakePersistentCacheProvider = jest.fn()
+    const fakePersistentCache : PersistentKeyValueCache = {
+      contains(k: string): Promise<boolean> {
+        return Promise.resolve(false);
+      },
+      get(key: string): Promise<string | undefined> {
+        return Promise.resolve(undefined);
+      },
+      remove(key: string): Promise<boolean> {
+        return Promise.resolve(false);
+      },
+      set(key: string, val: string): Promise<void> {
+        return Promise.resolve()
+      }
+    }
 
-    const manager = new MockRequestReactNativeDatafileManager({
-      sdkKey: 'keyThatExists',
-      updateInterval: 500,
-      autoUpdate: true,
-      cache,
-    });
+    const fakePersistentCacheProvider = jest.fn().mockImplementation(() => {
+      return fakePersistentCache;
+    }) as jest.Mocked<PersistentCacheProvider>;
 
-    manager.simulateResponseDelay = true;
+    const noop = () => {};
 
-    manager.queuedResponses.push({
-      statusCode: 200,
-      body: '{"foo": "bar"}',
-      headers: {},
-    });
-    manager.start();
-    await manager.onReady();
-    await advanceTimersByTime(50);
-    expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
-    expect(mockSet.mock.calls[0][0]).toEqual('opt-datafile-keyThatExists');
-    expect(JSON.parse(mockSet.mock.calls[0][1])).toEqual({ foo: 'bar' });
-  });
-  
-  it('uses ReactNativeAsyncStorageCache if no cache is provided', async () => {
-    const manager = new MockRequestReactNativeDatafileManager({
-      sdkKey: 'keyThatExists',
-      updateInterval: 500,
-      autoUpdate: true
-    });
-    manager.simulateResponseDelay = true;
+    createHttpPollingDatafileManager(
+      'test-key',
+      { log: noop, info: noop, debug: noop, error: noop, warn: noop },
+      undefined,
+      {},
+      fakePersistentCacheProvider,
+    )
 
-    manager.queuedResponses.push({
-      statusCode: 200,
-      body: '{"foo": "bar"}',
-      headers: {},
-    });
-    
-    manager.start();
-    await manager.onReady();
-    await advanceTimersByTime(50);
+    expect(MockedHttpPollingDatafileManager).toHaveBeenCalledTimes(1);
 
-    expect(JSON.parse(manager.get())).toEqual({ foo: 'bar' });
-    expect(mockSet.mock.calls[0][0]).toEqual('opt-datafile-keyThatExists');
-    expect(JSON.parse(mockSet.mock.calls[0][1] as string)).toEqual({ foo: 'bar' });
+    const { cache } = MockedHttpPollingDatafileManager.mock.calls[0][0];
+    expect(cache === fakePersistentCache).toBeTruthy();
   });
 });
