@@ -14,25 +14,6 @@
  * limitations under the License.
  */
 
-
-// jest.mock('../lib/modules/datafile-manager/index.react_native', () => {
-//   return {
-//     HttpPollingDatafileManager: jest.fn().mockImplementation(() => {
-//       return {
-//         get(): string {
-//           return '{}';
-//         },
-//         on(): (() => void) {
-//           return () => {};
-//         },
-//         onReady(): Promise<void> {
-//           return Promise.resolve();
-//         },
-//       };
-//     }),
-//   }
-// });
-
 jest.mock('../lib/modules/event_processor/reactNativeEventsStore');
 
 import { ReactNativeEventsStore } from '../lib/modules/event_processor/reactNativeEventsStore';
