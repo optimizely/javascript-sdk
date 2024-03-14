@@ -15,17 +15,50 @@
  */
 /// <reference types="jest" />
 
+jest.mock('../lib/plugins/key_value_cache/reactNativeAsyncStorageCache')
+
+import ReactNativeAsyncStorageCache from '../lib/plugins/key_value_cache/reactNativeAsyncStorageCache';
+
 import { ReactNativeEventsStore } from '../lib/modules/event_processor/reactNativeEventsStore'
 import AsyncStorage from '../__mocks__/@react-native-async-storage/async-storage'
+import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache'
 
 const STORE_KEY = 'test-store'
 
 describe('ReactNativeEventsStore', () => {
+  const MockedReactNativeAsyncStorageCache = jest.mocked(ReactNativeAsyncStorageCache);
   let store: ReactNativeEventsStore<any>
   
   beforeEach(() => {
+    MockedReactNativeAsyncStorageCache.mockClear();
     store = new ReactNativeEventsStore(5, STORE_KEY)
   })
+
+  describe('constructor', () => {
+    beforeEach(() => {
+      MockedReactNativeAsyncStorageCache.mockClear();
+    })
+    it('uses the user provided cache', () => {
+      const cache = {
+        get: jest.fn(),
+        contains: jest.fn(),
+        set: jest.fn(),
+        remove: jest.fn(),
+      } as jest.Mocked<PersistentKeyValueCache>
+
+      const store = new ReactNativeEventsStore(5, STORE_KEY, cache);
+      store.clear();
+      expect(cache.remove).toHaveBeenCalled();
+    });
+
+    it('uses ReactNativeAsyncStorageCache if no cache is provided', () => {
+      const store = new ReactNativeEventsStore(5, STORE_KEY);
+      store.clear();
+      expect(MockedReactNativeAsyncStorageCache).toHaveBeenCalledTimes(1);
+      const mockCacheInstance = jest.mocked(MockedReactNativeAsyncStorageCache.mock.instances[0]);
+      expect(mockCacheInstance.remove).toHaveBeenCalled();
+    });
+  });
 
   describe('set', () => {
     it('should store all the events correctly in the store', async () => {

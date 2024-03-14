@@ -93,6 +93,7 @@ const createInstance = function(config: Config): Client | null {
       batchSize: eventBatchSize,
       maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
       notificationCenter,
+      peristentCacheProvider: config.persistentCacheProvider,
     };
 
     const eventProcessor = createEventProcessor(eventProcessorConfig);

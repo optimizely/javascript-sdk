@@ -45,6 +45,7 @@ import {
   EventDispatcher,
   EventDispatcherResponse,
 } from '../eventDispatcher'
+import { PersistentCacheProvider } from '../../../shared_types'
 
 const logger = getLogger('ReactNativeEventProcessor')
 
@@ -91,12 +92,14 @@ export class LogTierV1EventProcessor implements EventProcessor {
     batchSize = DEFAULT_BATCH_SIZE,
     maxQueueSize = DEFAULT_MAX_QUEUE_SIZE,
     notificationCenter,
+    persistentCacheProvider,
   }: {
     dispatcher: EventDispatcher
     flushInterval?: number
     batchSize?: number
     maxQueueSize?: number
     notificationCenter?: NotificationSender
+    persistentCacheProvider?: PersistentCacheProvider
   }) {
     this.dispatcher = dispatcher
     this.notificationSender = notificationCenter
@@ -105,8 +108,16 @@ export class LogTierV1EventProcessor implements EventProcessor {
     flushInterval = validateAndGetFlushInterval(flushInterval)
     batchSize = validateAndGetBatchSize(batchSize)
     this.queue = getQueue(batchSize, flushInterval, areEventContextsEqual, this.drainQueue.bind(this))
-    this.pendingEventsStore = new ReactNativeEventsStore(maxQueueSize, PENDING_EVENTS_STORE_KEY)
-    this.eventBufferStore = new ReactNativeEventsStore(maxQueueSize, EVENT_BUFFER_STORE_KEY)
+    this.pendingEventsStore = new ReactNativeEventsStore(
+      maxQueueSize,
+      PENDING_EVENTS_STORE_KEY,
+      persistentCacheProvider && persistentCacheProvider(),
+    );
+    this.eventBufferStore = new ReactNativeEventsStore(
+      maxQueueSize,
+      EVENT_BUFFER_STORE_KEY,
+      persistentCacheProvider && persistentCacheProvider(),
+    )
   }
 
   private async connectionListener(state: NetInfoState) {
