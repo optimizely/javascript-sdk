@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [5.2.0] - March 18, 2024
+
+### New Features
+- Add `persistentCacheProvider` option to `createInstance` to allow providing custom persistent cache implementation in react native ([#914](https://github.com/optimizely/javascript-sdk/pull/914))
+
 ## [5.1.0] - March 1, 2024
 
 ### New Features
