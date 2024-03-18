@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import PersistentKeyValueCache from "../lib/plugins/key_value_cache/persistentKeyValueCache";
+
 export function advanceTimersByTime(waitMs: number): Promise<void> {
   const timeoutPromise: Promise<void> = new Promise(res => setTimeout(res, waitMs));
   jest.advanceTimersByTime(waitMs);
@@ -24,4 +26,34 @@ export function getTimerCount(): number {
   // Type definition for jest doesn't include this, but it exists
   // https://jestjs.io/docs/en/jest-object#jestgettimercount
   return (jest as any).getTimerCount();
+}
+
+
+export const getTestPersistentCache = (): PersistentKeyValueCache => {
+  const cache = {
+    get: jest.fn().mockImplementation((key: string): Promise<string | undefined> => {
+      let val = undefined;
+      switch (key) {
+        case 'opt-datafile-keyThatExists':
+          val = JSON.stringify({ name: 'keyThatExists' });
+          break;
+      }
+      return Promise.resolve(val);
+    }),
+
+    set: jest.fn().mockImplementation((): Promise<void> => {
+      console.log('mock set called');
+      return Promise.resolve();
+    }),
+
+    contains: jest.fn().mockImplementation((): Promise<boolean> => {
+      return Promise.resolve(false);
+    }),
+
+    remove: jest.fn().mockImplementation((): Promise<boolean> => {
+      return Promise.resolve(false);
+    }),
+  } as jest.Mocked<PersistentKeyValueCache>;
+
+  return cache;
 }

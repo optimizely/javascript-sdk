@@ -15,25 +15,109 @@
  */
 /// <reference types="jest" />
 
+const mockMap = new Map();
+
+const mockGet = jest.fn().mockImplementation((key) => {
+  return Promise.resolve(mockMap.get(key));
+});
+
+const mockSet = jest.fn().mockImplementation((key, value) => {
+  mockMap.set(key, value);
+  return Promise.resolve();
+});
+
+const mockRemove = jest.fn().mockImplementation((key) => {
+  if (mockMap.has(key)) {
+    mockMap.delete(key);
+    return Promise.resolve(true);
+  }
+  return Promise.resolve(false);
+});
+
+const mockContains = jest.fn().mockImplementation((key) => {
+  return Promise.resolve(mockMap.has(key));
+});
+
+
+jest.mock('../lib/plugins/key_value_cache/reactNativeAsyncStorageCache', () => {
+  return jest.fn().mockImplementation(() => {
+    return {
+      get: mockGet,
+      contains: mockContains,
+      set: mockSet,
+      remove: mockRemove,
+    }
+  });
+});
+
+import ReactNativeAsyncStorageCache from '../lib/plugins/key_value_cache/reactNativeAsyncStorageCache';
+
 import { ReactNativeEventsStore } from '../lib/modules/event_processor/reactNativeEventsStore'
-import AsyncStorage from '../__mocks__/@react-native-async-storage/async-storage'
+import PersistentKeyValueCache from '../lib/plugins/key_value_cache/persistentKeyValueCache'
 
 const STORE_KEY = 'test-store'
 
 describe('ReactNativeEventsStore', () => {
+  const MockedReactNativeAsyncStorageCache = jest.mocked(ReactNativeAsyncStorageCache);
   let store: ReactNativeEventsStore<any>
   
   beforeEach(() => {
+    MockedReactNativeAsyncStorageCache.mockClear();
+    mockGet.mockClear();
+    mockContains.mockClear();
+    mockSet.mockClear();
+    mockRemove.mockClear();
+    mockMap.clear();
     store = new ReactNativeEventsStore(5, STORE_KEY)
   })
 
+  describe('constructor', () => {
+    beforeEach(() => {
+      MockedReactNativeAsyncStorageCache.mockClear();
+      mockGet.mockClear();
+      mockContains.mockClear();
+      mockSet.mockClear();
+      mockRemove.mockClear();
+      mockMap.clear();
+    });
+
+    it('uses the user provided cache', () => {
+      const cache = {
+        get: jest.fn(),
+        contains: jest.fn(),
+        set: jest.fn(),
+        remove: jest.fn(),
+      } as jest.Mocked<PersistentKeyValueCache>
+
+      const store = new ReactNativeEventsStore(5, STORE_KEY, cache);
+      store.clear();
+      expect(cache.remove).toHaveBeenCalled();
+    });
+
+    it('uses ReactNativeAsyncStorageCache if no cache is provided', () => {
+      const store = new ReactNativeEventsStore(5, STORE_KEY);
+      store.clear();
+      expect(MockedReactNativeAsyncStorageCache).toHaveBeenCalledTimes(1);
+      expect(mockRemove).toHaveBeenCalled();
+    });
+  });
+
   describe('set', () => {
+    beforeEach(() => {
+      MockedReactNativeAsyncStorageCache.mockClear();
+      mockGet.mockClear();
+      mockContains.mockClear();
+      mockSet.mockClear();
+      mockRemove.mockClear();
+      mockMap.clear();
+    });
+
     it('should store all the events correctly in the store', async () => {
       await store.set('event1', {'name': 'event1'})
       await store.set('event2', {'name': 'event2'})
       await store.set('event3', {'name': 'event3'})
       await store.set('event4', {'name': 'event4'})    
-      const storedPendingEvents = JSON.parse(AsyncStorage.dumpItems()[STORE_KEY])
+      const storedPendingEvents = JSON.parse(mockMap.get(STORE_KEY));
       expect(storedPendingEvents).toEqual({
         "event1": { "name": "event1" },
         "event2": { "name": "event2" },
@@ -47,7 +131,7 @@ describe('ReactNativeEventsStore', () => {
       await store.set('event2', {'name': 'event2'})
       await store.set('event3', {'name': 'event3'})
       await store.set('event4', {'name': 'event4'})
-      const storedPendingEvents = JSON.parse(AsyncStorage.dumpItems()[STORE_KEY])
+      const storedPendingEvents = JSON.parse(mockMap.get(STORE_KEY));
       expect(storedPendingEvents).toEqual({
         "event1": { "name": "event1" },
         "event2": { "name": "event2" },
@@ -58,6 +142,15 @@ describe('ReactNativeEventsStore', () => {
   })
 
   describe('get', () => {
+    beforeEach(() => {
+      MockedReactNativeAsyncStorageCache.mockClear();
+      mockGet.mockClear();
+      mockContains.mockClear();
+      mockSet.mockClear();
+      mockRemove.mockClear();
+      mockMap.clear();
+    });
+
     it('should correctly get items', async () => {
       await store.set('event1', {'name': 'event1'})
       await store.set('event2', {'name': 'event2'})
@@ -71,6 +164,15 @@ describe('ReactNativeEventsStore', () => {
   })
 
   describe('getEventsMap', () => {
+    beforeEach(() => {
+      MockedReactNativeAsyncStorageCache.mockClear();
+      mockGet.mockClear();
+      mockContains.mockClear();
+      mockSet.mockClear();
+      mockRemove.mockClear();
+      mockMap.clear();
+    });
+
     it('should get the whole map correctly', async () => {
       await store.set('event1', {'name': 'event1'})
       await store.set('event2', {'name': 'event2'})
@@ -87,6 +189,15 @@ describe('ReactNativeEventsStore', () => {
   })
 
   describe('getEventsList', () => {
+    beforeEach(() => {
+      MockedReactNativeAsyncStorageCache.mockClear();
+      mockGet.mockClear();
+      mockContains.mockClear();
+      mockSet.mockClear();
+      mockRemove.mockClear();
+      mockMap.clear();
+    });
+
     it('should get all the events as a list', async () => {
       await store.set('event1', {'name': 'event1'})
       await store.set('event2', {'name': 'event2'})
@@ -103,12 +214,21 @@ describe('ReactNativeEventsStore', () => {
   })
 
   describe('remove', () => {
+    beforeEach(() => {
+      MockedReactNativeAsyncStorageCache.mockClear();
+      mockGet.mockClear();
+      mockContains.mockClear();
+      mockSet.mockClear();
+      mockRemove.mockClear();
+      mockMap.clear();
+    });
+
     it('should correctly remove items from the store', async () => {
       await store.set('event1', {'name': 'event1'})
       await store.set('event2', {'name': 'event2'})
       await store.set('event3', {'name': 'event3'})
       await store.set('event4', {'name': 'event4'})
-      let storedPendingEvents = JSON.parse(AsyncStorage.dumpItems()[STORE_KEY])
+      let storedPendingEvents = JSON.parse(mockMap.get(STORE_KEY));
       expect(storedPendingEvents).toEqual({
         "event1": { "name": "event1" },
         "event2": { "name": "event2" },
@@ -117,7 +237,7 @@ describe('ReactNativeEventsStore', () => {
       })
 
       await store.remove('event1')
-      storedPendingEvents = JSON.parse(AsyncStorage.dumpItems()[STORE_KEY])
+      storedPendingEvents = JSON.parse(mockMap.get(STORE_KEY));
       expect(storedPendingEvents).toEqual({
         "event2": { "name": "event2" },
         "event3": { "name": "event3" },
@@ -125,7 +245,7 @@ describe('ReactNativeEventsStore', () => {
       })
 
       await store.remove('event2')
-      storedPendingEvents = JSON.parse(AsyncStorage.dumpItems()[STORE_KEY])
+      storedPendingEvents = JSON.parse(mockMap.get(STORE_KEY));
       expect(storedPendingEvents).toEqual({      
         "event3": { "name": "event3" },
         "event4": { "name": "event4" },
@@ -137,7 +257,7 @@ describe('ReactNativeEventsStore', () => {
       await store.set('event2', {'name': 'event2'})
       await store.set('event3', {'name': 'event3'})
       await store.set('event4', {'name': 'event4'})
-      let storedPendingEvents = JSON.parse(AsyncStorage.dumpItems()[STORE_KEY])
+      let storedPendingEvents = JSON.parse(mockMap.get(STORE_KEY));
       expect(storedPendingEvents).toEqual({
         "event1": { "name": "event1" },
         "event2": { "name": "event2" },
@@ -149,18 +269,27 @@ describe('ReactNativeEventsStore', () => {
       await store.remove('event1')
       await store.remove('event2')
       await store.remove('event3')
-      storedPendingEvents = JSON.parse(AsyncStorage.dumpItems()[STORE_KEY])
+      storedPendingEvents = JSON.parse(mockMap.get(STORE_KEY));
       expect(storedPendingEvents).toEqual({ "event4": { "name": "event4" }})
     })
   })
 
   describe('clear', () => {
+    beforeEach(() => {
+      MockedReactNativeAsyncStorageCache.mockClear();
+      mockGet.mockClear();
+      mockContains.mockClear();
+      mockSet.mockClear();
+      mockRemove.mockClear();
+      mockMap.clear();
+    });
+
     it('should clear the whole store',async () => {
       await store.set('event1', {'name': 'event1'})
       await store.set('event2', {'name': 'event2'})
       await store.set('event3', {'name': 'event3'})
       await store.set('event4', {'name': 'event4'})
-      let storedPendingEvents = JSON.parse(AsyncStorage.dumpItems()[STORE_KEY])
+      let storedPendingEvents = JSON.parse(mockMap.get(STORE_KEY));
       expect(storedPendingEvents).toEqual({
         "event1": { "name": "event1" },
         "event2": { "name": "event2" },
@@ -168,19 +297,28 @@ describe('ReactNativeEventsStore', () => {
         "event4": { "name": "event4" },
       })
       await store.clear()
-      storedPendingEvents = JSON.parse(AsyncStorage.dumpItems()[STORE_KEY] || '{}')
+      storedPendingEvents = storedPendingEvents = JSON.parse(mockMap.get(STORE_KEY) || '{}');
       expect(storedPendingEvents).toEqual({})
     })
   })
 
   describe('maxSize', () => {
+    beforeEach(() => {
+      MockedReactNativeAsyncStorageCache.mockClear();
+      mockGet.mockClear();
+      mockContains.mockClear();
+      mockSet.mockClear();
+      mockRemove.mockClear();
+      mockMap.clear();
+    });
+
     it('should not add anymore events if the store if full', async () => {
       await store.set('event1', {'name': 'event1'})
       await store.set('event2', {'name': 'event2'})
       await store.set('event3', {'name': 'event3'})
       await store.set('event4', {'name': 'event4'})
 
-      let storedPendingEvents = JSON.parse(AsyncStorage.dumpItems()[STORE_KEY])
+      let storedPendingEvents = JSON.parse(mockMap.get(STORE_KEY));
       expect(storedPendingEvents).toEqual({
         "event1": { "name": "event1" },
         "event2": { "name": "event2" },
@@ -189,7 +327,7 @@ describe('ReactNativeEventsStore', () => {
       })
       await store.set('event5', {'name': 'event5'})
 
-      storedPendingEvents = JSON.parse(AsyncStorage.dumpItems()[STORE_KEY])
+      storedPendingEvents = JSON.parse(mockMap.get(STORE_KEY));
       expect(storedPendingEvents).toEqual({
         "event1": { "name": "event1" },
         "event2": { "name": "event2" },
@@ -199,7 +337,7 @@ describe('ReactNativeEventsStore', () => {
       })
 
       await store.set('event6', {'name': 'event6'})
-      storedPendingEvents = JSON.parse(AsyncStorage.dumpItems()[STORE_KEY])
+      storedPendingEvents = JSON.parse(mockMap.get(STORE_KEY));
       expect(storedPendingEvents).toEqual({
         "event1": { "name": "event1" },
         "event2": { "name": "event2" },

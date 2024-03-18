@@ -93,6 +93,7 @@ const createInstance = function(config: Config): Client | null {
       batchSize: eventBatchSize,
       maxQueueSize: config.eventMaxQueueSize || DEFAULT_EVENT_MAX_QUEUE_SIZE,
       notificationCenter,
+      peristentCacheProvider: config.persistentCacheProvider,
     };
 
     const eventProcessor = createEventProcessor(eventProcessorConfig);
@@ -109,7 +110,13 @@ const createInstance = function(config: Config): Client | null {
       logger,
       errorHandler,
       datafileManager: config.sdkKey
-        ? createHttpPollingDatafileManager(config.sdkKey, logger, config.datafile, config.datafileOptions)
+        ? createHttpPollingDatafileManager(
+          config.sdkKey,
+          logger,
+          config.datafile,
+          config.datafileOptions,
+          config.persistentCacheProvider,
+        )
         : undefined,
       notificationCenter,
       isValidInstance: isValidInstance,

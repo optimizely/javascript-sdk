@@ -19,6 +19,7 @@ import { objectValues } from "../../utils/fns"
 
 import { Synchronizer } from './synchronizer'
 import ReactNativeAsyncStorageCache from '../../plugins/key_value_cache/reactNativeAsyncStorageCache';
+import PersistentKeyValueCache from '../../plugins/key_value_cache/persistentKeyValueCache';
 
 const logger = getLogger('ReactNativeEventsStore')
 
@@ -29,11 +30,12 @@ export class ReactNativeEventsStore<T> {
   private maxSize: number
   private storeKey: string
   private synchronizer: Synchronizer = new Synchronizer()
-  private cache: ReactNativeAsyncStorageCache = new ReactNativeAsyncStorageCache()
+  private cache: PersistentKeyValueCache;
 
-  constructor(maxSize: number, storeKey: string) {
+  constructor(maxSize: number, storeKey: string, cache?: PersistentKeyValueCache) {
     this.maxSize = maxSize
     this.storeKey = storeKey
+    this.cache = cache || new ReactNativeAsyncStorageCache()
   }
 
   public async set(key: string, event: T): Promise<string> {

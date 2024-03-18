@@ -116,7 +116,7 @@
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
     "@types/chai": "^4.2.11",
-    "@types/jest": "^23.3.14",
+    "@types/jest": "^29.5.12",
     "@types/mocha": "^5.2.7",
     "@types/nise": "^1.4.0",
     "@types/node": "^18.7.18",
