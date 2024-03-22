@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [5.2.1] - March 25, 2024
+
+### Bug fixes
+- Fix: empty segments collection is valid ([#916](https://github.com/optimizely/javascript-sdk/pull/916))
+- Update vulnerable dependencies ([#918](https://github.com/optimizely/javascript-sdk/pull/918))
+
 ## [5.2.0] - March 18, 2024
 
 ### New Features
