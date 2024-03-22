@@ -258,7 +258,7 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
 
     this.qualifiedSegments = segments;
 
-    return !!segments;
+    return segments !== null;
   }
 
   /**
