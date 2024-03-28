@@ -18,9 +18,9 @@ import { LogHandler, LogLevel } from '../../modules/logging';
 import { OdpEvent } from './odp_event';
 import { RequestHandler } from '../../utils/http_request_handler/http';
 import { OdpConfig } from './odp_config';
+import { ERROR_MESSAGES } from '../../utils/enums';
 
 const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
-export const ODP_CONFIG_NOT_READY_MESSAGE = 'ODP config not ready';
 
 /**
  * Manager for communicating with the Optimizely Data Platform REST API
@@ -49,7 +49,7 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
   /**
    * ODP configuration settings for identifying the target API and segments
    */
-  protected odpConfig?: OdpConfig;
+  private odpConfig?: OdpConfig;
 
   /**
    * Creates instance to access Optimizely Data Platform (ODP) REST API
@@ -81,8 +81,8 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
   async sendEvents(events: OdpEvent[]): Promise<boolean> {
     let shouldRetry = false;
 
-    if (!this.odpConfig?.isReady()) {
-      this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (${ODP_CONFIG_NOT_READY_MESSAGE})`);
+    if (!this.odpConfig) {
+      this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (${ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE})`);
       return shouldRetry;
     }
 
@@ -95,7 +95,7 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
       return shouldRetry;
     }
 
-    const { method, endpoint, headers, data } = this.generateRequestData(events);
+    const { method, endpoint, headers, data } = this.generateRequestData(this.odpConfig, events);
 
     let statusCode = 0;
     try {
@@ -125,6 +125,7 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
   protected abstract shouldSendEvents(events: OdpEvent[]): boolean;
 
   protected abstract generateRequestData(
+    odpConfig: OdpConfig,
     events: OdpEvent[]
   ): {
     method: string;

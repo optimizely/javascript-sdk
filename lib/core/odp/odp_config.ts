@@ -14,166 +14,71 @@
  * limitations under the License.
  */
 
+import { config } from 'chai';
 import { checkArrayEquality } from '../../utils/fns';
 
-export type NoOdpIntegrationConfig = {
+export class OdpConfig {
+  /**
+   * Host of ODP audience segments API.
+   */
+  readonly apiHost: string;
+
+  /**
+   * Public API key for the ODP account from which the audience segments will be fetched (optional).
+   */
+  readonly apiKey: string;
+
+  /**
+   * Url for sending events via pixel.
+   */
+  readonly pixelUrl: string;
+
+  /**
+   * All ODP segments used in the current datafile (associated with apiHost/apiKey).
+   */
+  readonly segmentsToCheck: string[];
+
+  constructor(apiKey: string, apiHost: string, pixelUrl: string, segmentsToCheck: string[]) {
+    this.apiKey = apiKey;
+    this.apiHost = apiHost;
+    this.pixelUrl = pixelUrl;
+    this.segmentsToCheck = segmentsToCheck;
+  }
+
+  /**
+   * Detects if there are any changes between the current and incoming ODP Configs
+   * @param configToCompare ODP Configuration to check self against for equality
+   * @returns Boolean based on if the current ODP Config is equivalent to the incoming ODP Config
+   */
+  equals(configToCompare: OdpConfig): boolean {
+    return (
+      this.apiHost === configToCompare.apiHost &&
+      this.apiKey === configToCompare.apiKey &&
+      this.pixelUrl === configToCompare.pixelUrl &&
+      checkArrayEquality(this.segmentsToCheck, configToCompare.segmentsToCheck)
+    );
+  }
+}
+
+type OdpNotIntegratedConfig = {
   readonly integrated: false;
 }
 
-export type OdpIntegrationConfig = {
+type OdpIntegratedConfig = {
   readonly integrated: true;
-  readonly apiHost: string;
-  readonly apiKey: string;
-  readonly pixelUrl?: string;
-  readonly segmentsToCheck?: string[];
+  readonly odpConfig: OdpConfig;
 }
 
-export type OdpConfig = (NoOdpIntegrationConfig | OdpIntegrationConfig) & {
-  equals(odpConfig: OdpConfig): boolean;
-}
-
-function areOdpConfigsEqual(config1: OdpConfig, config2: OdpConfig): boolean {
+export const odpIntegrationEquals = (config1: OdpIntegrationConfig, config2: OdpIntegrationConfig): boolean => {
   if (config1.integrated !== config2.integrated) {
     return false;
   }
+
   if (config1.integrated && config2.integrated) {
-    return (
-      config1.apiHost === config2.apiHost &&
-      config1.apiKey === config2.apiKey &&
-      config1.pixelUrl === config2.pixelUrl &&
-      checkArrayEquality(config1.segmentsToCheck || [], config2.segmentsToCheck || [])
-    );
+    return config1.odpConfig.equals(config2.odpConfig);
   }
+
   return true;
 }
 
-export function createOdpIntegrationConfig(
-  apiHost: string,
-  apiKey: string,
-  pixelUrl?: string,
-  segmentsToCheck?: string[]
-): OdpConfig {
-  return {
-    integrated: true,
-    apiHost,
-    apiKey,
-    pixelUrl,
-    segmentsToCheck,
-    equals: function(odpConfig: OdpConfig) {
-      return areOdpConfigsEqual(this, odpConfig)
-    }
-  };
-}
-
-export function createNoOdpIntegrationConfig(): OdpConfig {
-  return {
-    integrated: false,
-    equals: function (odpConfig: OdpConfig) {
-      return areOdpConfigsEqual(this, odpConfig)
-    }
-  };
-}
-
-// export class OdpConfig {
-//   /**
-//    * Host of ODP audience segments API.
-//    * @private
-//    */
-//   private _apiHost: string;
-
-//   /**
-//    * Getter to retrieve the ODP server host
-//    * @public
-//    */
-//   get apiHost(): string {
-//     return this._apiHost;
-//   }
-
-//   /**
-//    * Public API key for the ODP account from which the audience segments will be fetched (optional).
-//    * @private
-//    */
-//   private _apiKey: string;
-
-//   /**
-//    * Getter to retrieve the ODP API key
-//    * @public
-//    */
-//   get apiKey(): string {
-//     return this._apiKey;
-//   }
-
-//   /**
-//    * Url for sending events via pixel.
-//    * @private
-//    */
-//   private _pixelUrl: string;
-
-//   /**
-//    * Getter to retrieve the ODP pixel URL
-//    * @public
-//    */
-//   get pixelUrl(): string {
-//     return this._pixelUrl;
-//   }
-
-//   /**
-//    * All ODP segments used in the current datafile (associated with apiHost/apiKey).
-//    * @private
-//    */
-//   private _segmentsToCheck: string[];
-
-//   /**
-//    * Getter for ODP segments to check
-//    * @public
-//    */
-//   get segmentsToCheck(): string[] {
-//     return this._segmentsToCheck;
-//   }
-
-//   constructor(apiKey?: string, apiHost?: string, pixelUrl?: string, segmentsToCheck?: string[]) {
-//     this._apiKey = apiKey ?? '';
-//     this._apiHost = apiHost ?? '';
-//     this._pixelUrl = pixelUrl ?? '';
-//     this._segmentsToCheck = segmentsToCheck ?? [];
-//   }
-
-//   /**
-//    * Update the ODP configuration details
-//    * @param {OdpConfig} config New ODP Config to potentially update self with
-//    * @returns true if configuration was updated successfully
-//    */
-//   update(config: OdpConfig): boolean {
-//     if (this.equals(config)) {
-//       return false;
-//     } else {
-//       if (config.apiKey) this._apiKey = config.apiKey;
-//       if (config.apiHost) this._apiHost = config.apiHost;
-//       if (config.pixelUrl) this._pixelUrl = config.pixelUrl;
-//       if (config.segmentsToCheck) this._segmentsToCheck = config.segmentsToCheck;
-
-//       return true;
-//     }
-//   }
-
-//   /**
-//    * Determines if ODP configuration has the minimum amount of information
-//    */
-//   isReady(): boolean {
-//     return !!this._apiKey && !!this._apiHost;
-//   }
-
-//   /**
-//    * Detects if there are any changes between the current and incoming ODP Configs
-//    * @param configToCompare ODP Configuration to check self against for equality
-//    * @returns Boolean based on if the current ODP Config is equivalent to the incoming ODP Config
-//    */
-//   equals(configToCompare: OdpConfig): boolean {
-//     return (
-//       this._apiHost === configToCompare._apiHost &&
-//       this._apiKey === configToCompare._apiKey &&
-//       this._pixelUrl === configToCompare._pixelUrl &&
-//       checkArrayEquality(this.segmentsToCheck, configToCompare._segmentsToCheck)
-//     );
-//   }
-// }
+export type OdpIntegrationConfig = OdpNotIntegratedConfig | OdpIntegratedConfig;

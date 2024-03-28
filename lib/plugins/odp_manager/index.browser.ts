@@ -35,127 +35,48 @@ import { VuidManager } from './../vuid_manager/index';
 
 import { OdpManager } from '../../core/odp/odp_manager';
 import { OdpEvent } from '../../core/odp/odp_event';
-import { OdpOptions } from '../../shared_types';
+import { IOdpEventManager, OdpOptions } from '../../shared_types';
 import { BrowserOdpEventApiManager } from '../odp/event_api_manager/index.browser';
 import { BrowserOdpEventManager } from '../odp/event_manager/index.browser';
-import { OdpSegmentManager } from '../../core/odp/odp_segment_manager';
+import { IOdpSegmentManager, OdpSegmentManager } from '../../core/odp/odp_segment_manager';
 import { OdpSegmentApiManager } from '../../core/odp/odp_segment_api_manager';
-import { OdpConfig } from 'lib/core/odp/odp_config';
+import { OdpConfig, OdpIntegrationConfig } from '../../core/odp/odp_config';
 
 interface BrowserOdpManagerConfig {
+  clientEngine?: string,
+  clientVersion?: string,
   logger?: LogHandler;
   odpOptions?: OdpOptions;
+  odpIntegrationConfig?: OdpIntegrationConfig;
 }
 
 // Client-side Browser Plugin for ODP Manager
 export class BrowserOdpManager extends OdpManager {
   static cache = new BrowserAsyncStorageCache();
+  vuidManager?: VuidManager; 
   vuid?: string;
 
-  // constructor({ logger, odpOptions }: BrowserOdpManagerConfig) {
-  //   super();
-
-  //   this.logger = logger || getLogger();
-
-  //   if (odpOptions?.disabled) {
-  //     this.initPromise = Promise.resolve();
-  //     this.enabled = false;
-  //     this.logger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED);
-  //     return;
-  //   }
-
-  //   const browserClientEngine = JAVASCRIPT_CLIENT_ENGINE;
-  //   const browserClientVersion = CLIENT_VERSION;
-
-  //   let customSegmentRequestHandler;
-
-  //   if (odpOptions?.segmentsRequestHandler) {
-  //     customSegmentRequestHandler = odpOptions.segmentsRequestHandler;
-  //   } else {
-  //     customSegmentRequestHandler = new BrowserRequestHandler(
-  //       this.logger,
-  //       odpOptions?.segmentsApiTimeout || REQUEST_TIMEOUT_ODP_SEGMENTS_MS
-  //     );
-  //   }
-
-  //   // Set up Segment Manager (Audience Segments GraphQL API Interface)
-  //   if (odpOptions?.segmentManager) {
-  //     this.segmentManager = odpOptions.segmentManager;
-  //     this.segmentManager.updateSettings(this.odpConfig);
-  //   } else {
-  //     this.segmentManager = new OdpSegmentManager(
-  //       this.odpConfig,
-  //       odpOptions?.segmentsCache ||
-  //         new BrowserLRUCache<string, string[]>({
-  //           maxSize: odpOptions?.segmentsCacheSize,
-  //           timeout: odpOptions?.segmentsCacheTimeout,
-  //         }),
-  //       new OdpSegmentApiManager(customSegmentRequestHandler, this.logger)
-  //     );
-  //   }
-
-  //   let customEventRequestHandler;
-
-  //   if (odpOptions?.eventRequestHandler) {
-  //     customEventRequestHandler = odpOptions.eventRequestHandler;
-  //   } else {
-  //     customEventRequestHandler = new BrowserRequestHandler(
-  //       this.logger,
-  //       odpOptions?.eventApiTimeout || REQUEST_TIMEOUT_ODP_EVENTS_MS
-  //     );
-  //   }
-
-  //   // Set up Events Manager (Events REST API Interface)
-  //   if (odpOptions?.eventManager) {
-  //     this.eventManager = odpOptions.eventManager;
-  //     this.eventManager.updateSettings(this.odpConfig);
-  //   } else {
-  //     this.eventManager = new BrowserOdpEventManager({
-  //       odpConfig: this.odpConfig,
-  //       apiManager: new BrowserOdpEventApiManager(customEventRequestHandler, this.logger),
-  //       logger: this.logger,
-  //       clientEngine: browserClientEngine,
-  //       clientVersion: browserClientVersion,
-  //       flushInterval: odpOptions?.eventFlushInterval,
-  //       batchSize: odpOptions?.eventBatchSize,
-  //       queueSize: odpOptions?.eventQueueSize,
-  //       userAgentParser: odpOptions?.userAgentParser,
-  //     });
-  //   }
-
-  //   this.eventManager!.start();
-
-  //   this.initPromise = this.initializeVuid(BrowserOdpManager.cache).catch(e => {
-  //     this.logger.log(this.enabled ? LogLevel.ERROR : LogLevel.DEBUG, e);
-  //   });
-  // }
-
-  private constructor({
-    odpConfig,
-    vuidManager,
-    segmentManger,
-    eventManager,
-  }: {
-    odpConfig?: OdpConfig;
-    vuidManager: VuidManager;
-    segmentManger: OdpSegmentManager;
-    eventManager: BrowserOdpEventManager;
+  constructor(options: {
+    odpIntegrationConfig?: OdpIntegrationConfig;
+    segmentManager: IOdpSegmentManager;
+    eventManager: IOdpEventManager;
+    logger: LogHandler;
   }) {
-    super();
+    super(options);
   }
 
-  static createInstance({ logger, odpOptions }: BrowserOdpManagerConfig): BrowserOdpManager {
+  static createInstance({
+    logger, odpOptions, odpIntegrationConfig, clientEngine, clientVersion
+  }: BrowserOdpManagerConfig): BrowserOdpManager {
     logger = logger || getLogger();
 
-    if (odpOptions?.disabled) {
-      this.initPromise = Promise.resolve();
-      this.enabled = false;
-      this.logger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED);
-      return;
-    }
+    clientEngine = clientEngine || JAVASCRIPT_CLIENT_ENGINE;
+    clientVersion = clientVersion || CLIENT_VERSION;
 
-    const browserClientEngine = JAVASCRIPT_CLIENT_ENGINE;
-    const browserClientVersion = CLIENT_VERSION;
+    let odpConfig : OdpConfig | undefined = undefined;
+    if (odpIntegrationConfig?.integrated) {
+      odpConfig = odpIntegrationConfig.odpConfig;
+    }
 
     let customSegmentRequestHandler;
 
@@ -163,24 +84,25 @@ export class BrowserOdpManager extends OdpManager {
       customSegmentRequestHandler = odpOptions.segmentsRequestHandler;
     } else {
       customSegmentRequestHandler = new BrowserRequestHandler(
-        this.logger,
+        logger,
         odpOptions?.segmentsApiTimeout || REQUEST_TIMEOUT_ODP_SEGMENTS_MS
       );
     }
 
-    // Set up Segment Manager (Audience Segments GraphQL API Interface)
+    let segmentManager: IOdpSegmentManager;
+
     if (odpOptions?.segmentManager) {
-      this.segmentManager = odpOptions.segmentManager;
-      this.segmentManager.updateSettings(this.odpConfig);
+      segmentManager = odpOptions.segmentManager;
     } else {
-      this.segmentManager = new OdpSegmentManager(
-        this.odpConfig,
+      segmentManager = new OdpSegmentManager(
         odpOptions?.segmentsCache ||
           new BrowserLRUCache<string, string[]>({
             maxSize: odpOptions?.segmentsCacheSize,
             timeout: odpOptions?.segmentsCacheTimeout,
           }),
-        new OdpSegmentApiManager(customSegmentRequestHandler, this.logger)
+        new OdpSegmentApiManager(customSegmentRequestHandler, logger),
+        logger,
+        odpConfig
       );
     }
 
@@ -190,22 +112,22 @@ export class BrowserOdpManager extends OdpManager {
       customEventRequestHandler = odpOptions.eventRequestHandler;
     } else {
       customEventRequestHandler = new BrowserRequestHandler(
-        this.logger,
+        logger,
         odpOptions?.eventApiTimeout || REQUEST_TIMEOUT_ODP_EVENTS_MS
       );
     }
 
-    // Set up Events Manager (Events REST API Interface)
+    let eventManager: IOdpEventManager;
+
     if (odpOptions?.eventManager) {
-      this.eventManager = odpOptions.eventManager;
-      this.eventManager.updateSettings(this.odpConfig);
+      eventManager = odpOptions.eventManager;
     } else {
-      this.eventManager = new BrowserOdpEventManager({
-        odpConfig: this.odpConfig,
-        apiManager: new BrowserOdpEventApiManager(customEventRequestHandler, this.logger),
-        logger: this.logger,
-        clientEngine: browserClientEngine,
-        clientVersion: browserClientVersion,
+      eventManager = new BrowserOdpEventManager({
+        odpConfig,
+        apiManager: new BrowserOdpEventApiManager(customEventRequestHandler, logger),
+        logger: logger,
+        clientEngine,
+        clientVersion,
         flushInterval: odpOptions?.eventFlushInterval,
         batchSize: odpOptions?.eventBatchSize,
         queueSize: odpOptions?.eventQueueSize,
@@ -213,34 +135,21 @@ export class BrowserOdpManager extends OdpManager {
       });
     }
 
-    this.eventManager!.start();
-
-    this.initPromise = this.initializeVuid(BrowserOdpManager.cache).catch(e => {
-      this.logger.log(this.enabled ? LogLevel.ERROR : LogLevel.DEBUG, e);
+    return new BrowserOdpManager({
+      odpIntegrationConfig,
+      segmentManager,
+      eventManager,
+      logger,
     });
   }
 
   /**
-   * Upon initializing BrowserOdpManager, accesses or creates new VUID from Browser cache and registers it via the Event Manager
-   * @private
+   * @override
+   * accesses or creates new VUID from Browser cache and registers it via the Event Manager
    */
-  private async initializeVuid(cache: PersistentKeyValueCache): Promise<void> {
-    const vuidManager = await VuidManager.instance(cache);
+  protected async initializeVuid(): Promise<void> {
+    const vuidManager = await VuidManager.instance(BrowserOdpManager.cache);
     this.vuid = vuidManager.vuid;
-    this.registerVuid(this.vuid);
-  }
-
-  private registerVuid(vuid: string) {
-    if (!this.eventManager) {
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_VUID_REGISTRATION_FAILED_EVENT_MANAGER_MISSING);
-      return;
-    }
-
-    try {
-      this.eventManager.registerVuid(vuid);
-    } catch (e) {
-      this.logger.log(this.enabled ? LogLevel.ERROR : LogLevel.DEBUG, ERROR_MESSAGES.ODP_VUID_REGISTRATION_FAILED);
-    }
   }
 
   /**

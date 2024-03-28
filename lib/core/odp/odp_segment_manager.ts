@@ -40,7 +40,7 @@ export class OdpSegmentManager implements IOdpSegmentManager {
    * ODP configuration settings in used
    * @private
    */
-  private odpConfig: OdpConfig;
+  private odpConfig?: OdpConfig;
 
   /**
    * Holds cached audience segments
@@ -69,10 +69,10 @@ export class OdpSegmentManager implements IOdpSegmentManager {
   private readonly logger: LogHandler;
 
   constructor(
-    odpConfig: OdpConfig,
     segmentsCache: ICache<string, string[]>,
     odpSegmentApiManager: IOdpSegmentApiManager,
-    logger?: LogHandler
+    logger?: LogHandler,
+    odpConfig?: OdpConfig,
   ) {
     this.odpConfig = odpConfig;
     this._segmentsCache = segmentsCache;
@@ -93,11 +93,15 @@ export class OdpSegmentManager implements IOdpSegmentManager {
     userValue: string,
     options: Array<OptimizelySegmentOption>
   ): Promise<string[] | null> {
-    const { apiHost: odpApiHost, apiKey: odpApiKey } = this.odpConfig;
+    // const { apiHost: odpApiHost, apiKey: odpApiKey } = this.odpConfig;
 
-    if (!odpApiKey || !odpApiHost) {
-      this.logger.log(LogLevel.WARNING, ERROR_MESSAGES.FETCH_SEGMENTS_FAILED_INVALID_IDENTIFIER);
-      return null;
+    // if (!odpApiKey || !odpApiHost) {
+    //   this.logger.log(LogLevel.WARNING, ERROR_MESSAGES.FETCH_SEGMENTS_FAILED_INVALID_IDENTIFIER);
+    //   return null;
+    // }
+    if (!this.odpConfig) {
+      this.logger.log(LogLevel.WARNING, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+      return null;      
     }
 
     const segmentsToCheck = this.odpConfig.segmentsToCheck;
@@ -127,8 +131,8 @@ export class OdpSegmentManager implements IOdpSegmentManager {
     this.logger.log(LogLevel.DEBUG, `Making a call to ODP server.`);
 
     const segments = await this.odpSegmentApiManager.fetchSegments(
-      odpApiKey,
-      odpApiHost,
+      this.odpConfig.apiKey,
+      this.odpConfig.apiHost,
       userKey,
       userValue,
       segmentsToCheck
@@ -164,6 +168,6 @@ export class OdpSegmentManager implements IOdpSegmentManager {
    */
   updateSettings(config: OdpConfig): void {
     this.odpConfig = config;
-    this._segmentsCache.reset();
+    this.reset();
   }
 }

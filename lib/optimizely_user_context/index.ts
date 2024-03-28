@@ -64,7 +64,9 @@ export default class OptimizelyUserContext implements IOptimizelyUserContext {
     this.forcedDecisionsMap = {};
 
     if (shouldIdentifyUser) {
-      this.identifyUser();
+      this.optimizely.onReady().then(() => {
+        this.identifyUser();
+      });
     }
   }
 

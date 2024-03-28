@@ -34,6 +34,7 @@ import {
   Integration,
   FeatureVariableValue,
 } from '../../shared_types';
+import { OdpConfig, OdpIntegrationConfig } from '../odp/odp_config';
 
 interface TryCreatingProjectConfigConfig {
   // TODO[OASIS-6649]: Don't use object type
@@ -90,10 +91,7 @@ export interface ProjectConfig {
   flagVariationsMap: { [key: string]: Variation[] };
   integrations: Integration[];
   integrationKeyMap?: { [key: string]: Integration };
-  publicKeyForOdp?: string;
-  hostForOdp?: string;
-  pixelUrlForOdp?: string;
-  allSegments: string[];
+  odpIntegrationConfig: OdpIntegrationConfig;
 }
 
 const EXPERIMENT_RUNNING_STATUS = 'Running';
@@ -154,19 +152,6 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
   projectConfig.audiencesById = keyBy(projectConfig.audiences, 'id');
   assign(projectConfig.audiencesById, keyBy(projectConfig.typedAudiences, 'id'));
 
-  projectConfig.allSegments = [];
-  const allSegmentsSet = new Set<string>();
-
-  Object.keys(projectConfig.audiencesById)
-    .map(audience => getAudienceSegments(projectConfig.audiencesById[audience]))
-    .forEach(audienceSegments => {
-      audienceSegments.forEach(segment => {
-        allSegmentsSet.add(segment);
-      });
-    });
-
-  projectConfig.allSegments = Array.from(allSegmentsSet);
-
   projectConfig.attributeKeyMap = keyBy(projectConfig.attributes, 'key');
   projectConfig.eventKeyMap = keyBy(projectConfig.events, 'key');
   projectConfig.groupIdMap = keyBy(projectConfig.groups, 'id');
@@ -188,6 +173,23 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
     });
   });
 
+  const allSegmentsSet = new Set<string>();
+
+  Object.keys(projectConfig.audiencesById)
+    .map(audience => getAudienceSegments(projectConfig.audiencesById[audience]))
+    .forEach(audienceSegments => {
+      audienceSegments.forEach(segment => {
+        allSegmentsSet.add(segment);
+      });
+    });
+
+  const allSegments = Array.from(allSegmentsSet);
+
+  let odpIntegrated = false;
+  let odpApiHost = '';
+  let odpApiKey = '';
+  let odpPixelUrl = '';
+
   if (projectConfig.integrations) {
     projectConfig.integrationKeyMap = keyBy(projectConfig.integrations, 'key');
 
@@ -197,19 +199,21 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
       }
 
       if (integration.key === 'odp') {
-        if (integration.publicKey && !projectConfig.publicKeyForOdp) {
-          projectConfig.publicKeyForOdp = integration.publicKey;
-        }
-
-        if (integration.host && !projectConfig.hostForOdp) {
-          projectConfig.hostForOdp = integration.host;
-        }
-
-        if (integration.pixelUrl && !projectConfig.pixelUrlForOdp) {
-          projectConfig.pixelUrlForOdp = integration.pixelUrl;
-        }
+        odpIntegrated = true;
+        odpApiKey = integration.publicKey || '';
+        odpApiHost = integration.host || '';
+        odpPixelUrl = integration.pixelUrl || '';
       }
     });
+  }
+
+  if (odpIntegrated) {
+    projectConfig.odpIntegrationConfig = {
+      integrated: true,
+      odpConfig: new OdpConfig(odpApiKey, odpApiHost, odpPixelUrl, allSegments),
+    }
+  } else {
+    projectConfig.odpIntegrationConfig = { integrated: false };
   }
 
   projectConfig.experimentKeyMap = keyBy(projectConfig.experiments, 'key');

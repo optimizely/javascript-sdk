@@ -145,10 +145,6 @@ export default class Optimizely implements Client {
 
       this.notificationCenter.sendNotifications(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE);
 
-      NotificationRegistry.getNotificationCenter(config.sdkKey)?.sendNotifications(
-        NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE
-      );
-
       this.updateOdpSettings();
     });
 
@@ -178,35 +174,26 @@ export default class Optimizely implements Client {
 
     const eventProcessorStartedPromise = this.eventProcessor.start();
 
-    const dependentPromises: Array<Promise<any>> = [projectConfigManagerReadyPromise, eventProcessorStartedPromise];
-
-    if (config.odpManager?.initPromise) {
-      dependentPromises.push(config.odpManager.initPromise);
-    }
-
-    this.readyPromise = Promise.all(dependentPromises).then(promiseResults => {
-      // If no odpManager exists yet, creates a new one
-      if (config.odpManager != null) {
-        this.odpManager = config.odpManager;
-        this.odpManager.eventManager?.start();
-        this.updateOdpSettings();
-        const sdkKey = this.projectConfigManager.getConfig()?.sdkKey;
-        if (sdkKey != null) {
-          NotificationRegistry.getNotificationCenter(
-            sdkKey,
-            this.logger
-          )?.addNotificationListener(NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE, () => this.updateOdpSettings());
-        } else {
-          this.logger.log(LOG_LEVEL.ERROR, ERROR_MESSAGES.ODP_SDK_KEY_MISSING_NOTIFICATION_CENTER_FAILURE);
-        }
-      }
-
+    this.readyPromise = Promise.all([
+      projectConfigManagerReadyPromise,
+      eventProcessorStartedPromise,
+      config.odpManager ? config.odpManager.onReady() : Promise.resolve(),
+    ]).then(promiseResults => {
       // Only return status from project config promise because event processor promise does not return any status.
       return promiseResults[0];
     });
 
     this.readyTimeouts = {};
     this.nextReadyTimeoutId = 0;
+  }
+
+
+  /**
+   * Returns the project configuration retrieved from projectConfigManager 
+   * @return {projectConfig.ProjectConfig}
+   */
+  getProjectConfig(): projectConfig.ProjectConfig | null {
+    return this.projectConfigManager.getConfig();
   }
 
   /**
@@ -1317,7 +1304,7 @@ export default class Optimizely implements Client {
   close(): Promise<{ success: boolean; reason?: string }> {
     try {
       if (this.odpManager) {
-        this.odpManager.close();
+        this.odpManager.stop();
       }
 
       this.notificationCenter.clearAllNotificationListeners();
@@ -1454,16 +1441,9 @@ export default class Optimizely implements Client {
    *                                       null if provided inputs are invalid
    */
   createUserContext(userId?: string, attributes?: UserAttributes): OptimizelyUserContext | null {
-    let userIdentifier;
-
-    if (this.odpManager?.isVuidEnabled() && !userId) {
-      userIdentifier = userId || this.getVuid();
-    } else {
-      userIdentifier = userId;
-    }
+    let userIdentifier = userId || this.odpManager?.getVuid();
 
     if (
-      userIdentifier === null ||
       userIdentifier === undefined ||
       !this.validateInputs({ user_id: userIdentifier }, attributes)
     ) {
@@ -1684,15 +1664,13 @@ export default class Optimizely implements Client {
    */
   private updateOdpSettings(): void {
     const projectConfig = this.projectConfigManager.getConfig();
-    if (this.odpManager != null && projectConfig != null) {
-      this.odpManager.updateSettings(
-        new OdpConfig(
-          projectConfig.publicKeyForOdp,
-          projectConfig.hostForOdp,
-          projectConfig.pixelUrlForOdp,
-          projectConfig.allSegments
-        )
-      );
+
+    if (!projectConfig) {
+      return;
+    }
+
+    if (this.odpManager) {
+      this.odpManager.updateSettings(projectConfig.odpIntegrationConfig)
     }
   }
 
@@ -1744,12 +1722,17 @@ export default class Optimizely implements Client {
     }
   }
 
+  private isOdpIntegrated(): boolean {
+    return this.projectConfigManager.getConfig()?.odpIntegrationConfig?.integrated ?? false;
+  }
+
   /**
    * Identifies user with ODP server in a fire-and-forget manner.
+   * Should be called only after the instance is ready
    * @param {string} userId
    */
   public identifyUser(userId: string): void {
-    if (this.odpManager && this.odpManager.enabled) {
+    if (this.odpManager && this.isOdpIntegrated()) {
       this.odpManager.identifyUser(userId);
     }
   }
@@ -1767,12 +1750,7 @@ export default class Optimizely implements Client {
     if (!this.odpManager) {
       return null;
     }
-
-    if (!this.odpManager.enabled) {
-      this.logger.error(ERROR_MESSAGES.ODP_FETCH_QUALIFIED_SEGMENTS_FAILED_ODP_MANAGER_MISSING);
-      return null;
-    }
-
+  
     return await this.odpManager.fetchQualifiedSegments(userId, options);
   }
 
