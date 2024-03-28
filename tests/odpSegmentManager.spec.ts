@@ -45,8 +45,6 @@ describe('OdpSegmentManager', () => {
   const mockLogHandler = mock<LogHandler>();
   const mockRequestHandler = mock<RequestHandler>();
 
-  let manager: OdpSegmentManager;
-  let odpConfig: OdpConfig;
   const apiManager = new MockOdpSegmentApiManager(instance(mockRequestHandler), instance(mockLogHandler));
 
   let options: Array<OptimizelySegmentOption> = [];
@@ -57,6 +55,13 @@ describe('OdpSegmentManager', () => {
   const validTestOdpConfig = new OdpConfig('valid-key', 'host', 'pixel-url', ['new-customer']);
   const invalidTestOdpConfig = new OdpConfig('invalid-key', 'host', 'pixel-url', ['new-customer']);
 
+  const getSegmentsCache = () => {
+    return new LRUCache<string, string[]>({
+      maxSize: 1000,
+      timeout: 1000,
+    });
+  }
+
   beforeEach(() => {
     resetCalls(mockLogHandler);
     resetCalls(mockRequestHandler);
@@ -64,93 +69,87 @@ describe('OdpSegmentManager', () => {
     const API_KEY = 'test-api-key';
     const API_HOST = 'https://odp.example.com';
     const PIXEL_URL = 'https://odp.pixel.com';
-    odpConfig = new OdpConfig(API_KEY, API_HOST, PIXEL_URL, []);
-    const segmentsCache = new LRUCache<string, string[]>({
-      maxSize: 1000,
-      timeout: 1000,
-    });
-
-    manager = new OdpSegmentManager(odpConfig, segmentsCache, apiManager);
   });
 
   it('should fetch segments successfully on cache miss.', async () => {
-    odpConfig.update(validTestOdpConfig);
-    setCache(userKey, '123', ['a']);
+    const manager = new OdpSegmentManager(getSegmentsCache(), apiManager, mockLogHandler, validTestOdpConfig);
+    setCache(manager, userKey, '123', ['a']);
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
     expect(segments).toEqual(['new-customer']);
   });
 
   it('should fetch segments successfully on cache hit.', async () => {
-    odpConfig.update(validTestOdpConfig);
-    setCache(userKey, userValue, ['a']);
+    const manager = new OdpSegmentManager(getSegmentsCache(), apiManager, mockLogHandler, validTestOdpConfig);
+    setCache(manager, userKey, userValue, ['a']);
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
     expect(segments).toEqual(['a']);
   });
 
-  it('should throw an error when fetching segments returns an error.', async () => {
-    odpConfig.update(invalidTestOdpConfig);
+  it('should return null when fetching segments returns an error.', async () => {
+    const manager = new OdpSegmentManager(getSegmentsCache(), apiManager, mockLogHandler, invalidTestOdpConfig);
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, []);
     expect(segments).toBeNull;
   });
 
   it('should ignore the cache if the option enum is included in the options array.', async () => {
-    odpConfig.update(validTestOdpConfig);
-    setCache(userKey, userValue, ['a']);
+    const manager = new OdpSegmentManager(getSegmentsCache(), apiManager, mockLogHandler, validTestOdpConfig);
+    setCache(manager, userKey, userValue, ['a']);
     options = [OptimizelySegmentOption.IGNORE_CACHE];
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
     expect(segments).toEqual(['new-customer']);
-    expect(cacheCount()).toBe(1);
+    expect(cacheCount(manager)).toBe(1);
   });
 
   it('should ignore the cache if the option string is included in the options array.', async () => {
-    odpConfig.update(validTestOdpConfig);
-    setCache(userKey, userValue, ['a']);
+    const manager = new OdpSegmentManager(getSegmentsCache(), apiManager, mockLogHandler, validTestOdpConfig);
+    setCache(manager,userKey, userValue, ['a']);
     // @ts-ignore
     options = ['IGNORE_CACHE'];
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
     expect(segments).toEqual(['new-customer']);
-    expect(cacheCount()).toBe(1);
+    expect(cacheCount(manager)).toBe(1);
   });
 
   it('should reset the cache if the option enum is included in the options array.', async () => {
-    odpConfig.update(validTestOdpConfig);
-    setCache(userKey, userValue, ['a']);
-    setCache(userKey, '123', ['a']);
-    setCache(userKey, '456', ['a']);
+    const manager = new OdpSegmentManager(getSegmentsCache(), apiManager, mockLogHandler, validTestOdpConfig);
+    setCache(manager, userKey, userValue, ['a']);
+    setCache(manager, userKey, '123', ['a']);
+    setCache(manager, userKey, '456', ['a']);
     options = [OptimizelySegmentOption.RESET_CACHE];
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
     expect(segments).toEqual(['new-customer']);
-    expect(peekCache(userKey, userValue)).toEqual(segments);
-    expect(cacheCount()).toBe(1);
+    expect(peekCache(manager, userKey, userValue)).toEqual(segments);
+    expect(cacheCount(manager)).toBe(1);
   });
 
   it('should reset the cache if the option string is included in the options array.', async () => {
-    odpConfig.update(validTestOdpConfig);
-    setCache(userKey, userValue, ['a']);
-    setCache(userKey, '123', ['a']);
-    setCache(userKey, '456', ['a']);
-    // @ts-ignore
+    const manager = new OdpSegmentManager(getSegmentsCache(), apiManager, mockLogHandler, validTestOdpConfig);
+    setCache(manager, userKey, userValue, ['a']);
+    setCache(manager, userKey, '123', ['a']);
+    setCache(manager, userKey, '456', ['a']);
+        // @ts-ignore
     options = ['RESET_CACHE'];
 
     const segments = await manager.fetchQualifiedSegments(userKey, userValue, options);
     expect(segments).toEqual(['new-customer']);
-    expect(peekCache(userKey, userValue)).toEqual(segments);
-    expect(cacheCount()).toBe(1);
+    expect(peekCache(manager, userKey, userValue)).toEqual(segments);
+    expect(cacheCount(manager)).toBe(1);
   });
 
   it('should make a valid cache key.', () => {
+    const manager = new OdpSegmentManager(getSegmentsCache(), apiManager, mockLogHandler, validTestOdpConfig);
     expect('vuid-$-test-user').toBe(manager.makeCacheKey(userKey, userValue));
   });
 
   // Utility Functions
 
-  function setCache(userKey: string, userValue: string, value: string[]) {
+  function setCache(manager: OdpSegmentManager, userKey: string, userValue: string, value: string[]) {
     const cacheKey = manager.makeCacheKey(userKey, userValue);
     manager.segmentsCache.save({
       key: cacheKey,
@@ -158,10 +157,10 @@ describe('OdpSegmentManager', () => {
     });
   }
 
-  function peekCache(userKey: string, userValue: string): string[] | null {
+  function peekCache(manager: OdpSegmentManager, userKey: string, userValue: string): string[] | null {
     const cacheKey = manager.makeCacheKey(userKey, userValue);
     return (manager.segmentsCache as LRUCache<string, string[]>).peek(cacheKey);
   }
 
-  const cacheCount = () => (manager.segmentsCache as LRUCache<string, string[]>).map.size;
+  const cacheCount = (manager: OdpSegmentManager) => (manager.segmentsCache as LRUCache<string, string[]>).map.size;
 });
