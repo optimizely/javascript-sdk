@@ -204,7 +204,6 @@ export abstract class OdpEventManager implements IOdpEventManager {
     this.flush(false);
 
     this.odpConfig = odpConfig;
-    this.apiManager.updateSettings(odpConfig);
   }
 
   /**
@@ -381,6 +380,11 @@ export abstract class OdpEventManager implements IOdpEventManager {
    * @private
    */
   private makeAndSend1Batch({ retry = true } : { retry: boolean }): void {
+    if (!this.odpConfig) {
+      return;
+    }
+
+    const odpConfig = this.odpConfig;
     const batch = new Array<OdpEvent>();
     
     // remove a batch from the queue
@@ -395,7 +399,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
 
     if (batch.length > 0) {
       if (!retry) {
-        this.apiManager.sendEvents(batch);
+        this.apiManager.sendEvents(odpConfig, batch);
         return;
       }
 
@@ -404,7 +408,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
         let shouldRetry: boolean;
         let attemptNumber = 0;
         do {
-          shouldRetry = await this.apiManager.sendEvents(batch);
+          shouldRetry = await this.apiManager.sendEvents(odpConfig, batch);
           attemptNumber += 1;
         } while (shouldRetry && attemptNumber < MAX_RETRIES);
       });

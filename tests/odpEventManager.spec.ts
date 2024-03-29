@@ -313,6 +313,28 @@ describe('OdpEventManager', () => {
       mockLogger.log(LogLevel.WARNING, 'Failed to Process ODP Event. Event Queue full. queueSize = %s.', 1)
     ).once();
   });
+  
+  it('should log a max queue hit and discard ', () => {
+    // set queue to maximum of 1
+    const eventManager = new OdpEventManager({
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+      queueSize: 1, // With max queue size set to 1...
+    });
+
+    eventManager.start();
+
+    eventManager['queue'].push(EVENTS[0]); // simulate 1 event already in the queue then...
+    // ...try adding the second event
+    eventManager.sendEvent(EVENTS[1]);
+
+    verify(
+      mockLogger.log(LogLevel.WARNING, 'Failed to Process ODP Event. Event Queue full. queueSize = %s.', 1)
+    ).once();
+  });
 
   it('should add additional information to each event', () => {
     const eventManager = new OdpEventManager({
