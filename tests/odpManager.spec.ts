@@ -68,6 +68,7 @@ class TestOdpManager extends OdpManager {
     super({ odpIntegrationConfig, segmentManager, eventManager, logger });
     this.vuidEnabled = vuidEnabled ?? false;
     this.vuid = vuid ?? 'vuid_123';
+    this.vuidInitializer = vuidInitializer ?? this.initializeVuid;
   }
   isVuidEnabled(): boolean {
     return this.vuidEnabled;
