@@ -201,16 +201,15 @@ export abstract class OdpEventManager implements IOdpEventManager {
       return;
     }
 
-    this.flush(false);
-
+    this.flush();
     this.odpConfig = odpConfig;
   }
 
   /**
    * Cleans up all pending events;
    */
-  flush(retry = true): void {
-    this.processQueue({ shouldFlush: true, retry });
+  flush(): void {
+    this.processQueue(true);
   }
 
   /**
@@ -232,8 +231,8 @@ export abstract class OdpEventManager implements IOdpEventManager {
   async stop(): Promise<void> {
     this.logger.log(LogLevel.DEBUG, 'Stop requested.');
 
-    await this.processQueue({ shouldFlush: true });
-
+    this.flush();
+    this.clearCurrentTimeout();
     this.status = Status.Stopped;
     this.logger.log(LogLevel.DEBUG, 'Stopped. Queue Count: %s', this.queue.length);
   }
@@ -324,34 +323,25 @@ export abstract class OdpEventManager implements IOdpEventManager {
    * @param shouldFlush Flush all events regardless of available queue event count
    * @private
    */
-  private processQueue(options?: {
-    shouldFlush?: boolean;
-    retry?: boolean;
-  }): void {
-    const { shouldFlush = false, retry = true } = options || {};
-
+  private processQueue(shouldFlush = true): void {
     if (this.status !== Status.Running) {
       return;
     }
 
+    this.clearCurrentTimeout();
+    
     if (shouldFlush) {
       // clear the queue completely
-      this.clearCurrentTimeout();
-
       while (this.queueContainsItems()) {
-        this.makeAndSend1Batch({ retry });
+        this.makeAndSend1Batch();
       }
-    }
-    // Check if queue has a full batch available
-    else if (this.queueHasBatches()) {
-      this.clearCurrentTimeout();
-
+    } else if (this.queueHasBatches()) {
+      // Check if queue has a full batch available
       while (this.queueHasBatches()) {
-        this.makeAndSend1Batch({ retry });
+        this.makeAndSend1Batch();
       }
     }
 
-    this.status = Status.Running;
     this.setNewTimeout();
   }
 
@@ -372,37 +362,23 @@ export abstract class OdpEventManager implements IOdpEventManager {
     if (this.timeoutId !== undefined) {
       return;
     }
-    this.timeoutId = setTimeout(() => this.processQueue({ shouldFlush: true }), this.flushInterval);
+    this.timeoutId = setTimeout(() => this.processQueue(true), this.flushInterval);
   }
 
   /**
    * Make a batch and send it to ODP
    * @private
    */
-  private makeAndSend1Batch({ retry = true } : { retry: boolean }): void {
+  private makeAndSend1Batch(): void {
     if (!this.odpConfig) {
       return;
     }
 
-    const odpConfig = this.odpConfig;
-    const batch = new Array<OdpEvent>();
+    const batch = this.queue.splice(0, this.batchSize);
     
-    // remove a batch from the queue
-    for (let count = 0; count < this.batchSize; count += 1) {
-      const event = this.queue.shift();
-      if (event) {
-        batch.push(event);
-      } else {
-        break;
-      }
-    }
+    const odpConfig = this.odpConfig;
 
     if (batch.length > 0) {
-      if (!retry) {
-        this.apiManager.sendEvents(odpConfig, batch);
-        return;
-      }
-
       // put sending the event on another event loop
       setImmediate(async () => {
         let shouldRetry: boolean;

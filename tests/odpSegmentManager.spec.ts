@@ -128,6 +128,19 @@ describe('OdpSegmentManager', () => {
     expect(cacheCount(manager)).toBe(1);
   });
 
+  it('should reset the cache on settings update.', async () => {
+    const oldConfig = new OdpConfig('old-key', 'old-host', 'pixel-url', ['new-customer']);
+    const manager = new OdpSegmentManager(getSegmentsCache(), apiManager, mockLogHandler, validTestOdpConfig);
+
+    setCache(manager, userKey, userValue, ['a']);
+    expect(cacheCount(manager)).toBe(1);
+
+    const newConfig = new OdpConfig('new-key', 'new-host', 'pixel-url', ['new-customer']);
+    manager.updateSettings(newConfig);
+
+    expect(cacheCount(manager)).toBe(0);
+  });
+
   it('should reset the cache if the option string is included in the options array.', async () => {
     const manager = new OdpSegmentManager(getSegmentsCache(), apiManager, mockLogHandler, validTestOdpConfig);
     setCache(manager, userKey, userValue, ['a']);
