@@ -57,7 +57,6 @@ describe('NodeOdpEventApiManager', () => {
 
   const managerInstance = () => {
     const manager = new NodeOdpEventApiManager(instance(mockRequestHandler), instance(mockLogger));
-    manager.updateSettings(odpConfig);
     return manager;
   }
 
@@ -78,7 +77,7 @@ describe('NodeOdpEventApiManager', () => {
     );
     const manager = managerInstance();
 
-    const shouldRetry = await manager.sendEvents(ODP_EVENTS);
+    const shouldRetry = await manager.sendEvents(odpConfig, ODP_EVENTS);
 
     expect(shouldRetry).toBe(false);
     verify(mockLogger.log(anything(), anyString())).never();
@@ -90,7 +89,7 @@ describe('NodeOdpEventApiManager', () => {
     );
     const manager = managerInstance();
 
-    const shouldRetry = await manager.sendEvents(ODP_EVENTS);
+    const shouldRetry = await manager.sendEvents(odpConfig, ODP_EVENTS);
 
     expect(shouldRetry).toBe(false);
     verify(mockLogger.log(LogLevel.ERROR, 'ODP event send failed (400)')).once();
@@ -102,7 +101,7 @@ describe('NodeOdpEventApiManager', () => {
     );
     const manager = managerInstance();
 
-    const shouldRetry = await manager.sendEvents(ODP_EVENTS);
+    const shouldRetry = await manager.sendEvents(odpConfig, ODP_EVENTS);
 
     expect(shouldRetry).toBe(true);
     verify(mockLogger.log(LogLevel.ERROR, 'ODP event send failed (500)')).once();
@@ -115,13 +114,13 @@ describe('NodeOdpEventApiManager', () => {
     });
     const manager = managerInstance();
 
-    const shouldRetry = await manager.sendEvents(ODP_EVENTS);
+    const shouldRetry = await manager.sendEvents(odpConfig, ODP_EVENTS);
 
     expect(shouldRetry).toBe(true);
     verify(mockLogger.log(LogLevel.ERROR, 'ODP event send failed (Request timed out)')).once();
   });
 
-  it('should send events to updated host on settings update', async () => {
+  it('should send events to the correct host using correct api key', async () => {
     when(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).thenReturn({
       abort: () => {},
       responsePromise: Promise.reject(new Error('Request timed out')),
@@ -129,24 +128,12 @@ describe('NodeOdpEventApiManager', () => {
 
     const manager = managerInstance();
 
-    await manager.sendEvents(ODP_EVENTS);
+    await manager.sendEvents(odpConfig, ODP_EVENTS);
 
-    const updatedOdpConfig = new OdpConfig(
-      'updated-key',
-      'https://updatedhost.test',
-      'https://updatedpixel.test',
-      ['updated-seg'],
-    )
+    verify(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).once();
 
-    manager.updateSettings(updatedOdpConfig);
-    await manager.sendEvents(ODP_EVENTS);
-
-    verify(mockRequestHandler.makeRequest(anything(), anything(), anything(), anything())).twice();
-
-    const [initUrl] = capture(mockRequestHandler.makeRequest).first();
+    const [initUrl, headers] = capture(mockRequestHandler.makeRequest).first();
     expect(initUrl).toEqual(`${API_HOST}/v3/events`);
-
-    const [finalUrl] = capture(mockRequestHandler.makeRequest).last();
-    expect(finalUrl).toEqual(`${updatedOdpConfig.apiHost}/v3/events`);
+    expect(headers['x-api-key']).toEqual(odpConfig.apiKey);
   });
 });

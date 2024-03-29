@@ -157,7 +157,6 @@ export abstract class OdpEventManager implements IOdpEventManager {
     flushInterval?: number;
     userAgentParser?: IUserAgentParser;
   }) {
-    this.odpConfig = odpConfig;
     this.apiManager = apiManager;
     this.logger = logger;
     this.clientEngine = clientEngine;
@@ -336,10 +335,6 @@ export abstract class OdpEventManager implements IOdpEventManager {
       return;
     }
 
-    if (!this.odpConfig) {
-      return;
-    }
-
     if (shouldFlush) {
       // clear the queue completely
       this.clearCurrentTimeout();
@@ -456,5 +451,9 @@ export abstract class OdpEventManager implements IOdpEventManager {
 
   protected getLogger(): LogHandler {
     return this.logger;
+  }
+
+  getQueue(): OdpEvent[] {
+    return this.queue;
   }
 }

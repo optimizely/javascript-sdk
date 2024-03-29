@@ -110,7 +110,6 @@ export abstract class OdpManager implements IOdpManager {
     eventManager: IOdpEventManager;
     logger: LogHandler;
   }) {
-    this.odpIntegrationConfig = odpIntegrationConfig;
     this.segmentManager = segmentManager;
     this.eventManager = eventManager;
     this.logger = logger;

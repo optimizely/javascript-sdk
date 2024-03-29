@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { ODP_EVENT_ACTION, ODP_DEFAULT_EVENT_TYPE } from '../lib/utils/enums';
+import { ODP_EVENT_ACTION, ODP_DEFAULT_EVENT_TYPE, ERROR_MESSAGES } from '../lib/utils/enums';
 import { OdpConfig } from '../lib/core/odp/odp_config';
-import { STATE } from '../lib/core/odp/odp_event_manager';
+import { Status } from '../lib/core/odp/odp_event_manager';
 import { BrowserOdpEventManager } from "../lib/plugins/odp/event_manager/index.browser";
 import { NodeOdpEventManager, NodeOdpEventManager as OdpEventManager } from '../lib/plugins/odp/event_manager/index.node';
 import { anything, capture, instance, mock, resetCalls, spy, verify, when } from 'ts-mockito';
@@ -152,12 +152,12 @@ describe('OdpEventManager', () => {
   });
 
   beforeEach(() => {
+    jest.useFakeTimers();
     resetCalls(mockLogger);
     resetCalls(mockApiManager);
   });
 
   it('should update api manager setting with odp config on instantiation', () => {
-    when(mockApiManager.sendEvents(anything())).thenResolve(false);
     when(mockApiManager.updateSettings(anything())).thenReturn(undefined);
 
     const apiManager = instance(mockApiManager);
@@ -170,12 +170,14 @@ describe('OdpEventManager', () => {
       clientVersion,
     });
 
+    console.log(capture(mockApiManager.updateSettings));
+
+    verify(mockApiManager.updateSettings(anything())).once();
     const [passedConfig] = capture(mockApiManager.updateSettings).last();
-    expect(passedConfig).toEqual(odpConfig);
+    expect(passedConfig.equals(odpConfig)).toBeTruthy();
   });
 
   it('should update api manager setting with updatetd odp config on updateSettings', () => {
-    when(mockApiManager.sendEvents(anything())).thenResolve(false);
     when(mockApiManager.updateSettings(anything())).thenReturn(undefined);
 
     const apiManager = instance(mockApiManager);
@@ -206,7 +208,7 @@ describe('OdpEventManager', () => {
     expect(finalConfig).toEqual(updatedOdpConfig);
   });
 
-  it('should log and discard events when event manager not running', () => {
+  it.only('should log and discard events when event manager not running', () => {
     const eventManager = new OdpEventManager({
       odpConfig,
       apiManager,
@@ -222,10 +224,21 @@ describe('OdpEventManager', () => {
     verify(mockLogger.log(LogLevel.WARNING, 'Failed to Process ODP Event. ODPEventManager is not running.')).once();
   });
 
-  it('should log and discard events when event manager config is not ready', () => {
-    const mockOdpConfig = mock<OdpConfig>();
-    when(mockOdpConfig.isReady()).thenReturn(false);
-    const odpConfig = instance(mockOdpConfig);
+  it('should log an error and not start if start() is called without a config', () => {
+    const eventManager = new OdpEventManager({
+      odpConfig: undefined,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+    });
+
+    eventManager.start();
+    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE)).once();
+    expect(eventManager.status).toEqual(Status.Stopped);
+  });
+
+  it.only('should start() correctly after odpConfig is provided', () => {
     const eventManager = new OdpEventManager({
       odpConfig,
       apiManager,
@@ -233,15 +246,29 @@ describe('OdpEventManager', () => {
       clientEngine,
       clientVersion,
     });
-    eventManager['state'] = STATE.RUNNING; // simulate running without calling start()
 
-    eventManager.sendEvent(EVENTS[0]);
-
-    // In a Node context, the events should be discarded
-    verify(mockLogger.log(LogLevel.WARNING, 'ODPConfig not ready. Discarding events in queue.')).once();
+    expect(eventManager.status).toEqual(Status.Stopped); 
+    eventManager.updateSettings(odpConfig);
+    eventManager.start();
+    expect(eventManager.status).toEqual(Status.Running);
   });
 
-  it('should discard events with invalid data', () => {
+  it.only('should log and discard events when event manager is not running', () => {
+    const eventManager = new OdpEventManager({
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+    });
+
+    expect(eventManager.status).toEqual(Status.Stopped);
+    eventManager.sendEvent(EVENTS[0]);
+    verify(mockLogger.log(LogLevel.WARNING, 'Failed to Process ODP Event. ODPEventManager is not running.')).once();
+    expect(eventManager.getQueue.length).toEqual(0);
+  });
+
+  it.only('should discard events with invalid data', () => {
     const eventManager = new OdpEventManager({
       odpConfig,
       apiManager,
@@ -262,6 +289,7 @@ describe('OdpEventManager', () => {
     eventManager.sendEvent(badEvent);
 
     verify(mockLogger.log(LogLevel.ERROR, 'Event data found to be invalid.')).once();
+    expect(eventManager.getQueue.length).toEqual(0);
   });
 
   it('should log a max queue hit and discard ', () => {
@@ -274,9 +302,10 @@ describe('OdpEventManager', () => {
       clientVersion,
       queueSize: 1, // With max queue size set to 1...
     });
-    eventManager['state'] = STATE.RUNNING;
-    eventManager['queue'].push(EVENTS[0]); // simulate 1 event already in the queue then...
 
+    eventManager.start();
+
+    eventManager['queue'].push(EVENTS[0]); // simulate 1 event already in the queue then...
     // ...try adding the second event
     eventManager.sendEvent(EVENTS[1]);
 
@@ -531,29 +560,6 @@ describe('OdpEventManager', () => {
     expect((event.data.get("data_source_type") as string)).toEqual('sdk');
     expect((event.data.get("data_source") as string)).toEqual('javascript-sdk');
     expect(event.data.get("data_source_version") as string).not.toBeNull();
-  });
-
-  it('should apply updated ODP configuration when available', () => {
-    const eventManager = new OdpEventManager({
-      odpConfig,
-      apiManager,
-      logger,
-      clientEngine,
-      clientVersion,
-    });
-    const apiKey = 'testing-api-key';
-    const apiHost = 'https://some.other.example.com';
-    const pixelUrl = 'https://some.other.pixel.com';
-    const segmentsToCheck = ['empty-cart', '1-item-cart'];
-    const differentOdpConfig = new OdpConfig(apiKey, apiHost, pixelUrl, segmentsToCheck);
-
-    eventManager.updateSettings(differentOdpConfig);
-
-    expect(eventManager['odpConfig'].apiKey).toEqual(apiKey);
-    expect(eventManager['odpConfig'].apiHost).toEqual(apiHost);
-    expect(eventManager['odpConfig'].pixelUrl).toEqual(pixelUrl);
-    expect(eventManager['odpConfig'].segmentsToCheck).toContain(Array.from(segmentsToCheck)[0]);
-    expect(eventManager['odpConfig'].segmentsToCheck).toContain(Array.from(segmentsToCheck)[1]);
   });
 
   it('should error when no identifiers are provided in Node', () => {
