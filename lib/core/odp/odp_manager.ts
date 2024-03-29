@@ -52,7 +52,7 @@ export interface IOdpManager {
   getVuid(): string | undefined;
 }
 
-enum Status {
+export enum Status {
   Running,
   Stopped,
 }
@@ -73,7 +73,7 @@ export abstract class OdpManager implements IOdpManager {
    */
   private configPromise: ResolvablePromise<void>;
 
-  private status: Status = Status.Stopped;
+  status: Status = Status.Stopped;
 
   /**
    * ODP Segment Manager which provides an interface to the remote ODP server (GraphQL API) for audience segments mapping.
@@ -81,7 +81,17 @@ export abstract class OdpManager implements IOdpManager {
    */
   private segmentManager: IOdpSegmentManager;
 
-  /**
+  /**constructor({
+    odpIntegrationConfig,
+    segmentManager,
+    eventManager,
+    logger,
+  }: {
+    odpIntegrationConfig?: OdpIntegrationConfig;
+    segmentManager: IOdpSegmentManager;
+    eventManager: IOdpEventManager;
+    logger: LogHandler;
+  })
    * ODP Event Manager which provides an interface to the remote ODP server (REST API) for events.
    * It will queue all pending events (persistent) and send them (in batches of up to 10 events) to the ODP server when possible.
    */
@@ -134,6 +144,10 @@ export abstract class OdpManager implements IOdpManager {
     if (odpIntegrationConfig) {
       this.updateSettings(odpIntegrationConfig);
     }
+  }
+
+  public getStatus(): Status {
+    return this.status;
   }
 
   async start(): Promise<void> {
