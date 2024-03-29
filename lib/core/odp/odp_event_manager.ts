@@ -129,6 +129,8 @@ export abstract class OdpEventManager implements IOdpEventManager {
    */
   private readonly userAgentParser?: IUserAgentParser;
 
+  private retires: number;
+
 
   /**
    * Information about the user agent
@@ -146,6 +148,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
     batchSize,
     flushInterval,
     userAgentParser,
+    retries,
   }: {
     odpConfig?: OdpConfig;
     apiManager: IOdpEventApiManager;
@@ -156,6 +159,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
     batchSize?: number;
     flushInterval?: number;
     userAgentParser?: IUserAgentParser;
+    retries?: number;
   }) {
     this.apiManager = apiManager;
     this.logger = logger;
@@ -164,6 +168,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
     this.initParams(batchSize, queueSize, flushInterval);
     this.status = Status.Stopped;
     this.userAgentParser = userAgentParser;
+    this.retires = retries || MAX_RETRIES;
 
     if (userAgentParser) {
       const { os, device } = userAgentParser.parseUserAgentInfo();
@@ -323,7 +328,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
    * @param shouldFlush Flush all events regardless of available queue event count
    * @private
    */
-  private processQueue(shouldFlush = true): void {
+  private processQueue(shouldFlush = false): void {
     if (this.status !== Status.Running) {
       return;
     }
@@ -375,18 +380,18 @@ export abstract class OdpEventManager implements IOdpEventManager {
     }
 
     const batch = this.queue.splice(0, this.batchSize);
-    
+
     const odpConfig = this.odpConfig;
 
     if (batch.length > 0) {
       // put sending the event on another event loop
-      setImmediate(async () => {
+      queueMicrotask(async () => {
         let shouldRetry: boolean;
         let attemptNumber = 0;
         do {
           shouldRetry = await this.apiManager.sendEvents(odpConfig, batch);
           attemptNumber += 1;
-        } while (shouldRetry && attemptNumber < MAX_RETRIES);
+        } while (shouldRetry && attemptNumber < this.retires);
       });
     }
   }
