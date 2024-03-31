@@ -57,3 +57,7 @@ export const getTestPersistentCache = (): PersistentKeyValueCache => {
 
   return cache;
 }
+
+export const wait = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};

@@ -60,11 +60,11 @@ export class OdpConfig {
   }
 }
 
-type OdpNotIntegratedConfig = {
+export type OdpNotIntegratedConfig = {
   readonly integrated: false;
 }
 
-type OdpIntegratedConfig = {
+export type OdpIntegratedConfig = {
   readonly integrated: true;
   readonly odpConfig: OdpConfig;
 }
