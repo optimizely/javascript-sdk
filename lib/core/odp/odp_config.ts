@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { config } from 'chai';
 import { checkArrayEquality } from '../../utils/fns';
 
 export class OdpConfig {

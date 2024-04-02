@@ -288,10 +288,6 @@ export abstract class OdpManager implements IOdpManager {
       throw new Error(ERROR_MESSAGES.ODP_INVALID_DATA);
     }
 
-    if (!this.eventManager) {
-      throw new Error(ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_EVENT_MANAGER_MISSING);
-    }
-
     if (typeof action !== 'string' || action === '') {
       throw new Error('ODP action is not valid (cannot be empty).');
     }

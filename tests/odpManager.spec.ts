@@ -449,94 +449,117 @@ describe('OdpManager', () => {
     verify(mockEventManager.stop()).once();
   });
 
-  // it('should use new settings in event manager when ODP Config is updated', async () => {
-  //   const odpManager = new OdpManager({
-  //     odpOptions: {
-  //       segmentsRequestHandler: defaultRequestHandler,
-  //       eventRequestHandler: defaultRequestHandler,
-  //       eventManager: new OdpEventManager({
-  //         odpConfig,
-  //         apiManager: eventApiManager,
-  //         logger,
-  //         clientEngine: '',
-  //         clientVersion: '',
-  //         batchSize: 1,
-  //         flushInterval: 250,
-  //       }),
-  //     },
-  //   });
+  it('should call eventManager.identifyUser with correct parameters when identifyUser is called', () => {
+    const odpIntegrationConfig: OdpIntegratedConfig = { 
+      integrated: true, 
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    };
 
-  //   odpManager.updateSettings(new OdpConfig(keyA, hostA, pixelA, segmentsA));
+    const odpManager = testOdpManager({
+      odpIntegrationConfig,
+      segmentManager,
+      eventManager,
+      logger,
+      vuidEnabled: true,
+    });
 
-  //   expect(odpManager.odpConfig.apiKey).toBe(keyA);
-  //   expect(odpManager.odpConfig.apiHost).toBe(hostA);
-  //   expect(odpManager.odpConfig.pixelUrl).toBe(pixelA);
 
-  //   // odpManager.identifyUser(userA);
+    odpManager.updateSettings(odpIntegrationConfig);
 
-  //   // verify(mockEventApiManager.sendEvents(keyA, hostA, anything())).once();
+    const userId = 'user123';
+    const vuid = 'vuid_123';
 
-  //   odpManager.updateSettings(new OdpConfig(keyB, hostB, pixelB, segmentsB));
-  //   expect(odpManager.odpConfig.apiKey).toBe(keyB);
-  //   expect(odpManager.odpConfig.apiHost).toBe(hostB);
-  //   expect(odpManager.odpConfig.pixelUrl).toBe(pixelB);
+    odpManager.identifyUser(userId, vuid);
+    const [userIdArg, vuidArg] = capture(mockEventManager.identifyUser).byCallIndex(0);
+    expect(userIdArg).toEqual(userId);
+    expect(vuidArg).toEqual(vuid);
 
-  //   // odpManager.identifyUser(userB);
+    odpManager.identifyUser(userId);
+    const [userIdArg2, vuidArg2] = capture(mockEventManager.identifyUser).byCallIndex(1);
+    expect(userIdArg2).toEqual(userId);
+    expect(vuidArg2).toEqual(undefined);
+    
+    odpManager.identifyUser(vuid);
+    const [userIdArg3, vuidArg3] = capture(mockEventManager.identifyUser).byCallIndex(2);
+    expect(userIdArg3).toEqual(undefined);
+    expect(vuidArg3).toEqual(vuid);
+  });
 
-  //   // verify(mockEventApiManager.sendEvents(keyB, hostB, anything())).once();
-  // });
+  it('should send event with correct parameters', () => {
+    const odpIntegrationConfig: OdpIntegratedConfig = { 
+      integrated: true, 
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    };
 
-  // it('should use new settings in segment manager when ODP Config is updated', async () => {
-  //   const odpManager = new OdpManager({
-  //     odpOptions: {
-  //       segmentManager: new OdpSegmentManager(odpConfig, new BrowserLRUCache<string, string[]>(), segmentApiManager),
-  //       segmentsRequestHandler: defaultRequestHandler,
-  //       eventRequestHandler: defaultRequestHandler,
-  //     },
-  //   });
+    const odpManager = testOdpManager({
+      odpIntegrationConfig,
+      segmentManager,
+      eventManager,
+      logger,
+      vuidEnabled: true,
+    });
 
-  //   odpManager.updateSettings(new OdpConfig(keyA, hostA, pixelA, segmentsA));
+    odpManager.updateSettings(odpIntegrationConfig);
 
-  //   expect(odpManager.odpConfig.apiKey).toBe(keyA);
-  //   expect(odpManager.odpConfig.apiHost).toBe(hostA);
-  //   expect(odpManager.odpConfig.pixelUrl).toBe(pixelA);
+    const identifiers = new Map([['email', 'a@b.com']]);
+    const data = new Map([['key1', 'value1'], ['key2', 'value2']]);
 
-  //   await odpManager.fetchQualifiedSegments(userA);
-  //   verify(mockSegmentApiManager.fetchSegments(keyA, hostA, ODP_USER_KEY.FS_USER_ID, userA, anything())).once();
+    odpManager.sendEvent({
+      action: 'action',
+      type: 'type',
+      identifiers,
+      data,
+    });
 
-  //   odpManager.updateSettings(new OdpConfig(keyB, hostB, pixelB, segmentsB));
-  //   expect(odpManager.odpConfig.apiKey).toBe(keyB);
-  //   expect(odpManager.odpConfig.apiHost).toBe(hostB);
-  //   expect(odpManager.odpConfig.pixelUrl).toBe(pixelB);
+    const [event] = capture(mockEventManager.sendEvent).byCallIndex(0);
+    expect(event.action).toEqual('action');
+    expect(event.type).toEqual('type');
+    expect(event.identifiers).toEqual(identifiers);
+    expect(event.data).toEqual(data);
 
-  //   await odpManager.fetchQualifiedSegments(userB);
-  //   verify(mockSegmentApiManager.fetchSegments(keyB, hostB, ODP_USER_KEY.FS_USER_ID, userB, anything())).once();
-  // });
+    // should use `fullstack` as type if empty string is provided
+    odpManager.sendEvent({
+      type: '',
+      action: 'action',
+      identifiers,
+      data,
+    });
 
-  // it('should get event manager', () => {
-  //   const odpManagerA = odpManagerInstance();
-  //   expect(odpManagerA.eventManager).not.toBe(null);
+    const [event2] = capture(mockEventManager.sendEvent).byCallIndex(1);
+    expect(event2.action).toEqual('action');
+    expect(event2.type).toEqual('fullstack');
+    expect(event2.identifiers).toEqual(identifiers);
+  });
 
-  //   const odpManagerB = new OdpManager({
-  //     logger,
-  //     odpOptions: {
-  //       segmentsRequestHandler: defaultRequestHandler,
-  //       eventRequestHandler: defaultRequestHandler,
-  //     },
-  //   });
-  //   expect(odpManagerB.eventManager).not.toBe(null);
-  // });
 
-  // it('should get segment manager', () => {
-  //   const odpManagerA = odpManagerInstance();
-  //   expect(odpManagerA.segmentManager).not.toBe(null);
+  it('should throw an error if event action is empty string and not call eventManager', () => {
+    const odpIntegrationConfig: OdpIntegratedConfig = { 
+      integrated: true, 
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    };
 
-  //   const odpManagerB = new OdpManager({
-  //     odpOptions: {
-  //       segmentsRequestHandler: defaultRequestHandler,
-  //       eventRequestHandler: defaultRequestHandler,
-  //     },
-  //   });
-  //   expect(odpManagerB.eventManager).not.toBe(null);
-  // });
+    const odpManager = testOdpManager({
+      odpIntegrationConfig,
+      segmentManager,
+      eventManager,
+      logger,
+      vuidEnabled: true,
+    });
+
+    odpManager.updateSettings(odpIntegrationConfig);
+
+    const identifiers = new Map([['email', 'a@b.com']]);
+    const data = new Map([['key1', 'value1'], ['key2', 'value2']]);
+
+    const sendEvent = () => odpManager.sendEvent({
+      action: '',
+      type: 'type',
+      identifiers,
+      data,
+    });
+
+    expect(sendEvent).toThrow('ODP action is not valid');
+    verify(mockEventManager.sendEvent(anything())).never();
+  });
 });
+
