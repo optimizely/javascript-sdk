@@ -81,17 +81,7 @@ export abstract class OdpManager implements IOdpManager {
    */
   private segmentManager: IOdpSegmentManager;
 
-  /**constructor({
-    odpIntegrationConfig,
-    segmentManager,
-    eventManager,
-    logger,
-  }: {
-    odpIntegrationConfig?: OdpIntegrationConfig;
-    segmentManager: IOdpSegmentManager;
-    eventManager: IOdpEventManager;
-    logger: LogHandler;
-  })
+  /**
    * ODP Event Manager which provides an interface to the remote ODP server (REST API) for events.
    * It will queue all pending events (persistent) and send them (in batches of up to 10 events) to the ODP server when possible.
    */

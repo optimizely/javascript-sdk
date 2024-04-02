@@ -449,7 +449,7 @@ describe('OdpManager', () => {
     verify(mockEventManager.stop()).once();
   });
 
-  it('should call eventManager.identifyUser with correct parameters when identifyUser is called', () => {
+  it('should call eventManager.identifyUser with correct parameters when identifyUser is called', async () => {
     const odpIntegrationConfig: OdpIntegratedConfig = { 
       integrated: true, 
       odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
@@ -463,8 +463,7 @@ describe('OdpManager', () => {
       vuidEnabled: true,
     });
 
-
-    odpManager.updateSettings(odpIntegrationConfig);
+    await odpManager.onReady();
 
     const userId = 'user123';
     const vuid = 'vuid_123';
@@ -485,7 +484,7 @@ describe('OdpManager', () => {
     expect(vuidArg3).toEqual(vuid);
   });
 
-  it('should send event with correct parameters', () => {
+  it('should send event with correct parameters', async () => {
     const odpIntegrationConfig: OdpIntegratedConfig = { 
       integrated: true, 
       odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
@@ -499,7 +498,7 @@ describe('OdpManager', () => {
       vuidEnabled: true,
     });
 
-    odpManager.updateSettings(odpIntegrationConfig);
+    await odpManager.onReady();
 
     const identifiers = new Map([['email', 'a@b.com']]);
     const data = new Map([['key1', 'value1'], ['key2', 'value2']]);
@@ -532,7 +531,7 @@ describe('OdpManager', () => {
   });
 
 
-  it('should throw an error if event action is empty string and not call eventManager', () => {
+  it('should throw an error if event action is empty string and not call eventManager', async () => {
     const odpIntegrationConfig: OdpIntegratedConfig = { 
       integrated: true, 
       odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
@@ -546,7 +545,7 @@ describe('OdpManager', () => {
       vuidEnabled: true,
     });
 
-    odpManager.updateSettings(odpIntegrationConfig);
+    await odpManager.onReady();
 
     const identifiers = new Map([['email', 'a@b.com']]);
     const data = new Map([['key1', 'value1'], ['key2', 'value2']]);
@@ -559,6 +558,123 @@ describe('OdpManager', () => {
     });
 
     expect(sendEvent).toThrow('ODP action is not valid');
+    verify(mockEventManager.sendEvent(anything())).never();
+  });
+
+  it('should throw an error if event data is invalid', async () => {
+    const odpIntegrationConfig: OdpIntegratedConfig = { 
+      integrated: true, 
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    };
+
+    const odpManager = testOdpManager({
+      odpIntegrationConfig,
+      segmentManager,
+      eventManager,
+      logger,
+      vuidEnabled: true,
+    });
+
+    await odpManager.onReady();
+
+    const identifiers = new Map([['email', 'a@b.com']]);
+    const data = new Map([['key1', {}]]);
+
+    const sendEvent = () => odpManager.sendEvent({
+      action: 'action',
+      type: 'type',
+      identifiers,
+      data,
+    });
+
+    expect(sendEvent).toThrow(ERROR_MESSAGES.ODP_INVALID_DATA);
+    verify(mockEventManager.sendEvent(anything())).never();
+  });
+
+  it('should stop itself and eventManager if stop is called', async () => {
+    const odpIntegrationConfig: OdpIntegratedConfig = { 
+      integrated: true, 
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    };
+
+    const odpManager = testOdpManager({
+      odpIntegrationConfig,
+      segmentManager,
+      eventManager,
+      logger,
+      vuidEnabled: true,
+    });
+
+    await odpManager.onReady();
+
+    odpManager.stop();
+
+    expect(odpManager.getStatus()).toEqual(Status.Stopped);
+    verify(mockEventManager.stop()).once();
+  });
+
+  it('should drop relevant calls and log error when odpIntegrationConfig is not available', async () => {
+    const odpManager = testOdpManager({
+      odpIntegrationConfig: undefined,
+      segmentManager,
+      eventManager,
+      logger,
+      vuidEnabled: true,
+    });
+
+    const segments = await odpManager.fetchQualifiedSegments('vuid_user1', []);
+    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE)).once();
+    expect(segments).toBeNull();
+
+    odpManager.identifyUser('vuid_user1');
+    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE)).twice();
+    verify(mockEventManager.identifyUser(anything(), anything())).never();
+
+    const identifiers = new Map([['email', 'a@b.com']]);
+    const data = new Map([['key1', {}]]);
+
+    odpManager.sendEvent({
+      action: 'action',
+      type: 'type',
+      identifiers,
+      data,
+    });
+
+    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE)).thrice();
+    verify(mockEventManager.sendEvent(anything())).never();
+
+  });
+
+  it('should drop relevant calls and log error when odp is not integrated', async () => {
+    const odpManager = testOdpManager({
+      odpIntegrationConfig: { integrated: false },
+      segmentManager,
+      eventManager,
+      logger,
+      vuidEnabled: true,
+    });
+
+    await odpManager.onReady();
+
+    const segments = await odpManager.fetchQualifiedSegments('vuid_user1', []);
+    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED)).once();
+    expect(segments).toBeNull();
+
+    odpManager.identifyUser('vuid_user1');
+    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED)).twice();
+    verify(mockEventManager.identifyUser(anything(), anything())).never();
+
+    const identifiers = new Map([['email', 'a@b.com']]);
+    const data = new Map([['key1', {}]]);
+
+    odpManager.sendEvent({
+      action: 'action',
+      type: 'type',
+      identifiers,
+      data,
+    });
+
+    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED)).thrice();
     verify(mockEventManager.sendEvent(anything())).never();
   });
 });

@@ -145,7 +145,7 @@ export class BrowserOdpManager extends OdpManager {
 
   /**
    * @override
-   * accesses or creates new VUID from Browser cache and registers it via the Event Manager
+   * accesses or creates new VUID from Browser cache
    */
   protected async initializeVuid(): Promise<void> {
     const vuidManager = await VuidManager.instance(BrowserOdpManager.cache);
