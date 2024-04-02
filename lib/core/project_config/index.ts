@@ -200,9 +200,9 @@ export const createProjectConfig = function(datafileObj?: JSON, datafileStr: str
 
       if (integration.key === 'odp') {
         odpIntegrated = true;
-        odpApiKey = integration.publicKey || '';
-        odpApiHost = integration.host || '';
-        odpPixelUrl = integration.pixelUrl || '';
+        odpApiKey = odpApiKey || integration.publicKey || '';
+        odpApiHost = odpApiHost || integration.host || '';
+        odpPixelUrl = odpPixelUrl || integration.pixelUrl || '';
       }
     });
   }
