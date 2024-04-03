@@ -110,6 +110,7 @@ export default class Optimizely implements Client {
     this.errorHandler = config.errorHandler;
     this.isOptimizelyConfigValid = config.isValidInstance;
     this.logger = config.logger;
+    this.odpManager = config.odpManager;
 
     let decideOptionsArray = config.defaultDecideOptions ?? [];
     if (!Array.isArray(decideOptionsArray)) {
@@ -135,6 +136,7 @@ export default class Optimizely implements Client {
     });
 
     this.disposeOnUpdate = this.projectConfigManager.onUpdate((configObj: projectConfig.ProjectConfig) => {
+      console.log('config updated');
       this.logger.log(
         LOG_LEVEL.INFO,
         LOG_MESSAGES.UPDATED_OPTIMIZELY_CONFIG,
@@ -1441,7 +1443,7 @@ export default class Optimizely implements Client {
    *                                       null if provided inputs are invalid
    */
   createUserContext(userId?: string, attributes?: UserAttributes): OptimizelyUserContext | null {
-    let userIdentifier = userId || this.odpManager?.getVuid();
+    let userIdentifier = userId ?? this.odpManager?.getVuid();
 
     if (
       userIdentifier === undefined ||

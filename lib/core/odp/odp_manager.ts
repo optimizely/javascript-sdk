@@ -110,21 +110,23 @@ export abstract class OdpManager implements IOdpManager {
     eventManager: IOdpEventManager;
     logger: LogHandler;
   }) {
+    console.log('odp manager constructor', odpIntegrationConfig);
     this.segmentManager = segmentManager;
     this.eventManager = eventManager;
     this.logger = logger;
 
     this.configPromise = resolvablePromise();
 
-    const readineessDependencies: PromiseLike<unknown>[] = [this.configPromise];
+    const readinessDependencies: PromiseLike<unknown>[] = [this.configPromise];
 
     if (this.isVuidEnabled()) {
-      readineessDependencies.push(this.initializeVuid());
+      readinessDependencies.push(this.initializeVuid());
     }
 
-    this.initPromise = Promise.all(readineessDependencies);
+    this.initPromise = Promise.all(readinessDependencies);
 
     this.onReady().then(() => {
+      console.log('odp got ready');
       this.ready = true;
       if(this.isVuidEnabled()) {
         this.registerVuid();
