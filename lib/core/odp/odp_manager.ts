@@ -20,7 +20,7 @@ import { ERROR_MESSAGES, ODP_USER_KEY } from '../../utils/enums';
 
 import { VuidManager } from '../../plugins/vuid_manager';
 
-import { OdpConfig, OdpIntegrationConfig, odpIntegrationEquals } from './odp_config';
+import { OdpConfig, OdpIntegrationConfig, odpIntegrationsAreEqual } from './odp_config';
 import { IOdpEventManager } from './odp_event_manager';
 import { IOdpSegmentManager } from './odp_segment_manager';
 import { OptimizelySegmentOption } from './optimizely_segment_option';
@@ -183,7 +183,7 @@ export abstract class OdpManager implements IOdpManager {
     this.configPromise.resolve();
 
     // do nothing if config did not change
-    if (this.odpIntegrationConfig && odpIntegrationEquals(this.odpIntegrationConfig, odpIntegrationConfig)) {
+    if (this.odpIntegrationConfig && odpIntegrationsAreEqual(this.odpIntegrationConfig, odpIntegrationConfig)) {
       return false;
     }
 

@@ -68,7 +68,7 @@ export type OdpIntegratedConfig = {
   readonly odpConfig: OdpConfig;
 }
 
-export const odpIntegrationEquals = (config1: OdpIntegrationConfig, config2: OdpIntegrationConfig): boolean => {
+export const odpIntegrationsAreEqual = (config1: OdpIntegrationConfig, config2: OdpIntegrationConfig): boolean => {
   if (config1.integrated !== config2.integrated) {
     return false;
   }

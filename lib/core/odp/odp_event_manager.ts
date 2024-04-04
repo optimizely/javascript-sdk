@@ -129,7 +129,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
    */
   private readonly userAgentParser?: IUserAgentParser;
 
-  private retires: number;
+  private retries: number;
 
 
   /**
@@ -168,7 +168,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
     this.initParams(batchSize, queueSize, flushInterval);
     this.status = Status.Stopped;
     this.userAgentParser = userAgentParser;
-    this.retires = retries || MAX_RETRIES;
+    this.retries = retries || MAX_RETRIES;
 
     if (userAgentParser) {
       const { os, device } = userAgentParser.parseUserAgentInfo();
@@ -398,7 +398,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
         do {
           shouldRetry = await this.apiManager.sendEvents(odpConfig, batch);
           attemptNumber += 1;
-        } while (shouldRetry && attemptNumber < this.retires);
+        } while (shouldRetry && attemptNumber < this.retries);
       });
     }
   }

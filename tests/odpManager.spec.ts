@@ -125,40 +125,6 @@ describe('OdpManager', () => {
     resetCalls(mockSegmentManager);
   });
 
-  // const odpManagerInstance = (config?: OdpConfig) =>
-  //   new OdpManager({
-  //     odpOptions: {
-  //       eventManager,
-  //       segmentManager,
-  //       segmentsRequestHandler: defaultRequestHandler,
-  //       eventRequestHandler: defaultRequestHandler,
-  //     },
-  //   });
-
-  // it('should drop relevant calls when OdpManager is initialized with the disabled flag', async () => {
-  //   const odpManager = new OdpManager({
-  //     logger,
-  //     odpOptions: {
-  //       disabled: true,
-  //       segmentsRequestHandler: defaultRequestHandler,
-  //       eventRequestHandler: defaultRequestHandler,
-  //     },
-  //   });
-  //   verify(mockLogger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED)).once();
-
-  //   odpManager.updateSettings(new OdpConfig('valid', 'host', 'pixel-url', []));
-  //   expect(odpManager.odpConfig).toBeUndefined;
-
-  //   await odpManager.fetchQualifiedSegments('user1', []);
-  //   verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_ENABLED)).once();
-
-  //   odpManager.identifyUser('user1');
-  //   verify(mockLogger.log(LogLevel.DEBUG, LOG_MESSAGES.ODP_IDENTIFY_FAILED_ODP_DISABLED)).once();
-
-  //   expect(odpManager.eventManager).toBeUndefined;
-  //   expect(odpManager.segmentManager).toBeUndefined;
-  // });
-
   
   it('should be in stopped status and not ready if constructed without odpIntegrationConfig', () => {
     const odpManager = testOdpManager({
