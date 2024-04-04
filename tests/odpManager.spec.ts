@@ -449,6 +449,25 @@ describe('OdpManager', () => {
     verify(mockEventManager.stop()).once();
   });
 
+  it('should register vuid after becoming ready if odp is integrated', async () => {
+    const odpIntegrationConfig: OdpIntegratedConfig = { 
+      integrated: true, 
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    };
+
+    const odpManager = testOdpManager({
+      odpIntegrationConfig,
+      segmentManager,
+      eventManager,
+      logger,
+      vuidEnabled: true,
+    });
+
+    await odpManager.onReady();
+  
+    verify(mockEventManager.registerVuid(anything())).once();
+  });
+
   it('should call eventManager.identifyUser with correct parameters when identifyUser is called', async () => {
     const odpIntegrationConfig: OdpIntegratedConfig = { 
       integrated: true, 
@@ -591,6 +610,39 @@ describe('OdpManager', () => {
     verify(mockEventManager.sendEvent(anything())).never();
   });
 
+  it.only('should fetch qualified segments correctly for both fs_user_id and vuid', async () => {
+    const userId = 'user123';
+    const vuid = 'vuid_123';
+
+    when(mockSegmentManager.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, userId, anything()))
+      .thenResolve(['fs1', 'fs2']);
+
+    when(mockSegmentManager.fetchQualifiedSegments(ODP_USER_KEY.VUID, vuid, anything()))
+      .thenResolve(['vuid1', 'vuid2']);
+
+    const odpIntegrationConfig: OdpIntegratedConfig = { 
+      integrated: true, 
+      odpConfig: new OdpConfig(keyA, hostA, pixelA, segmentsA) 
+    };
+
+    const odpManager = testOdpManager({
+      odpIntegrationConfig,
+      segmentManager: instance(mockSegmentManager),
+      eventManager,
+      logger,
+      vuidEnabled: true,
+    });
+
+    await odpManager.onReady();
+
+    const fsSegments = await odpManager.fetchQualifiedSegments(userId);
+    expect(fsSegments).toEqual(['fs1', 'fs2']);
+
+    const vuidSegments = await odpManager.fetchQualifiedSegments(vuid);
+    expect(vuidSegments).toEqual(['vuid1', 'vuid2']);
+  });
+
+
   it('should stop itself and eventManager if stop is called', async () => {
     const odpIntegrationConfig: OdpIntegratedConfig = { 
       integrated: true, 
@@ -612,6 +664,8 @@ describe('OdpManager', () => {
     expect(odpManager.getStatus()).toEqual(Status.Stopped);
     verify(mockEventManager.stop()).once();
   });
+
+
 
   it('should drop relevant calls and log error when odpIntegrationConfig is not available', async () => {
     const odpManager = testOdpManager({

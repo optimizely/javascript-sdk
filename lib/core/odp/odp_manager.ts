@@ -66,7 +66,7 @@ export abstract class OdpManager implements IOdpManager {
    */
   private initPromise: Promise<unknown>;
   
-  private ready: boolean = false;
+  private ready = false;
 
   /**
    * Promise that resolves when odpConfig becomes available
@@ -110,7 +110,6 @@ export abstract class OdpManager implements IOdpManager {
     eventManager: IOdpEventManager;
     logger: LogHandler;
   }) {
-    console.log('odp manager constructor', odpIntegrationConfig);
     this.segmentManager = segmentManager;
     this.eventManager = eventManager;
     this.logger = logger;
@@ -126,9 +125,8 @@ export abstract class OdpManager implements IOdpManager {
     this.initPromise = Promise.all(readinessDependencies);
 
     this.onReady().then(() => {
-      console.log('odp got ready');
       this.ready = true;
-      if(this.isVuidEnabled()) {
+      if(this.isVuidEnabled() && this.status === Status.Running) {
         this.registerVuid();
       }
     });
@@ -213,12 +211,15 @@ export abstract class OdpManager implements IOdpManager {
    * @returns {Promise<string[] | null>}      A promise holding either a list of qualified segments or null.
    */
   async fetchQualifiedSegments(userId: string, options: Array<OptimizelySegmentOption> = []): Promise<string[] | null> {
+    console.log('fetch woot');
     if (!this.odpIntegrationConfig) {
+      console.log('wat no config ');
       this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
       return null;
     }
 
     if (!this.odpIntegrationConfig.integrated) {
+      console.log('wat no integration ');
       this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
       return null;
     }
@@ -227,7 +228,9 @@ export abstract class OdpManager implements IOdpManager {
       return this.segmentManager.fetchQualifiedSegments(ODP_USER_KEY.VUID, userId, options);
     }
 
-    return this.segmentManager.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, userId, options);
+    const foo = await this.segmentManager.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, userId, options);
+    console.log('foo is ', foo);
+    return foo;
   }
 
   /**
@@ -302,6 +305,16 @@ export abstract class OdpManager implements IOdpManager {
   }
 
   private registerVuid() {
+    if (!this.odpIntegrationConfig) {
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+      return;
+    }
+
+    if (!this.odpIntegrationConfig.integrated) {
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+      return;
+    }
+
     const vuid = this.getVuid();
     if (!vuid) {
       return;

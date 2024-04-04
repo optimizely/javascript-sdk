@@ -136,7 +136,6 @@ export default class Optimizely implements Client {
     });
 
     this.disposeOnUpdate = this.projectConfigManager.onUpdate((configObj: projectConfig.ProjectConfig) => {
-      console.log('config updated');
       this.logger.log(
         LOG_LEVEL.INFO,
         LOG_MESSAGES.UPDATED_OPTIMIZELY_CONFIG,
@@ -1443,7 +1442,7 @@ export default class Optimizely implements Client {
    *                                       null if provided inputs are invalid
    */
   createUserContext(userId?: string, attributes?: UserAttributes): OptimizelyUserContext | null {
-    let userIdentifier = userId ?? this.odpManager?.getVuid();
+    const userIdentifier = userId ?? this.odpManager?.getVuid();
 
     if (
       userIdentifier === undefined ||
