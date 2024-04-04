@@ -227,7 +227,11 @@ export abstract class OdpEventManager implements IOdpEventManager {
     }
 
     this.status = Status.Running;
-    this.setNewTimeout();
+
+    // no need of periodic flush if batchSize is 1
+    if (this.batchSize > 1) {
+      this.setNewTimeout();
+    }
   }
 
   /**
@@ -301,6 +305,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
       this.logger.log(LogLevel.WARNING, 'Failed to Process ODP Event. ODPEventManager is not running.');
       return;
     }
+    const hasNecessaryIdentifiers = this.hasNecessaryIdentifiers;
 
     if (!this.hasNecessaryIdentifiers(event)) {
       this.logger.log(LogLevel.ERROR, 'ODP events should have at least one key-value pair in identifiers.');
@@ -317,7 +322,6 @@ export abstract class OdpEventManager implements IOdpEventManager {
     }
 
     this.queue.push(event);
-
     this.processQueue();
   }
 
@@ -347,7 +351,10 @@ export abstract class OdpEventManager implements IOdpEventManager {
       }
     }
 
-    this.setNewTimeout();
+    // no need for periodic flush if batchSize is 1
+    if (this.batchSize > 1) {
+      this.setNewTimeout();
+    }
   }
 
   /**
