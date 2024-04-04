@@ -93,12 +93,6 @@ export class OdpSegmentManager implements IOdpSegmentManager {
     userValue: string,
     options: Array<OptimizelySegmentOption>
   ): Promise<string[] | null> {
-    // const { apiHost: odpApiHost, apiKey: odpApiKey } = this.odpConfig;
-
-    // if (!odpApiKey || !odpApiHost) {
-    //   this.logger.log(LogLevel.WARNING, ERROR_MESSAGES.FETCH_SEGMENTS_FAILED_INVALID_IDENTIFIER);
-    //   return null;
-    // }
     if (!this.odpConfig) {
       this.logger.log(LogLevel.WARNING, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
       return null;      

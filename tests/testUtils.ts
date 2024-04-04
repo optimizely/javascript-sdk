@@ -42,7 +42,6 @@ export const getTestPersistentCache = (): PersistentKeyValueCache => {
     }),
 
     set: jest.fn().mockImplementation((): Promise<void> => {
-      console.log('mock set called');
       return Promise.resolve();
     }),
 

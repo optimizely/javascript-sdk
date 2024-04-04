@@ -211,16 +211,13 @@ export abstract class OdpManager implements IOdpManager {
    * @returns {Promise<string[] | null>}      A promise holding either a list of qualified segments or null.
    */
   async fetchQualifiedSegments(userId: string, options: Array<OptimizelySegmentOption> = []): Promise<string[] | null> {
-    console.log('fetch woot');
-    if (!this.odpIntegrationConfig) {
-      console.log('wat no config ');
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
+     if (!this.odpIntegrationConfig) {
+       this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE);
       return null;
     }
 
     if (!this.odpIntegrationConfig.integrated) {
-      console.log('wat no integration ');
-      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+       this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
       return null;
     }
 
@@ -228,9 +225,7 @@ export abstract class OdpManager implements IOdpManager {
       return this.segmentManager.fetchQualifiedSegments(ODP_USER_KEY.VUID, userId, options);
     }
 
-    const foo = await this.segmentManager.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, userId, options);
-    console.log('foo is ', foo);
-    return foo;
+    return this.segmentManager.fetchQualifiedSegments(ODP_USER_KEY.FS_USER_ID, userId, options);   
   }
 
   /**
