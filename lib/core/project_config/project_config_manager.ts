@@ -1,5 +1,5 @@
 /**
- * Copyright 2019-2022, Optimizely
+ * Copyright 2019-2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,6 +89,7 @@ export class ProjectConfigManager {
       if (config.sdkKey && config.datafileManager) {
         this.datafileManager = config.datafileManager;
         this.datafileManager.start();
+
         this.readyPromise = this.datafileManager
           .onReady()
           .then(this.onDatafileManagerReadyFulfill.bind(this), this.onDatafileManagerReadyReject.bind(this));
@@ -188,7 +189,10 @@ export class ProjectConfigManager {
       if (configObj && oldRevision !== configObj.revision) {
         this.configObj = configObj;
         this.optimizelyConfigObj = null;
-        this.updateListeners.forEach(listener => listener(configObj));
+        
+        queueMicrotask(() => {
+          this.updateListeners.forEach(listener => listener(configObj));
+        });
       }
     }
 

@@ -31,7 +31,6 @@ export const ERROR_MESSAGES = {
   DATAFILE_AND_SDK_KEY_MISSING: '%s: You must provide at least one of sdkKey or datafile. Cannot start Optimizely',
   EXPERIMENT_KEY_NOT_IN_DATAFILE: '%s: Experiment key %s is not in datafile.',
   FEATURE_NOT_IN_DATAFILE: '%s: Feature key %s is not in datafile.',
-  FETCH_SEGMENTS_FAILED_INVALID_IDENTIFIER: '%s: Audience segments fetch failed. (invalid identifier)',
   FETCH_SEGMENTS_FAILED_NETWORK_ERROR: '%s: Audience segments fetch failed. (network error)',
   FETCH_SEGMENTS_FAILED_DECODE_ERROR: '%s: Audience segments fetch failed. (decode error)',
   IMPROPERLY_FORMATTED_EXPERIMENT: '%s: Experiment key %s is improperly formatted.',
@@ -56,6 +55,7 @@ export const ERROR_MESSAGES = {
   NO_DATAFILE_SPECIFIED: '%s: No datafile specified. Cannot start optimizely.',
   NO_JSON_PROVIDED: '%s: No JSON object to validate against schema.',
   NO_VARIATION_FOR_EXPERIMENT_KEY: '%s: No variation key %s defined in datafile for experiment %s.',
+  ODP_CONFIG_NOT_AVAILABLE: '%s: ODP is not integrated to the project.',
   ODP_EVENT_FAILED: 'ODP event send failed.',
   ODP_FETCH_QUALIFIED_SEGMENTS_SEGMENTS_MANAGER_MISSING:
     '%s: ODP unable to fetch qualified segments (Segments Manager not initialized).',
@@ -79,8 +79,6 @@ export const ERROR_MESSAGES = {
     '%s: ODP send event %s was not dispatched (Event Manager not instantiated).',
   ODP_SEND_EVENT_FAILED_UID_MISSING: '%s: ODP send event %s was not dispatched (No valid user identifier provided).',
   ODP_SEND_EVENT_FAILED_VUID_MISSING: '%s: ODP send event %s was not dispatched (Unable to fetch VUID).',
-  ODP_SDK_KEY_MISSING_NOTIFICATION_CENTER_FAILURE:
-    '%s: You must provide an sdkKey. Cannot start Notification Center for ODP Integration.',
   ODP_VUID_INITIALIZATION_FAILED: '%s: ODP VUID initialization failed.',
   ODP_VUID_REGISTRATION_FAILED: '%s: ODP VUID failed to be registered.',
   ODP_VUID_REGISTRATION_FAILED_EVENT_MANAGER_MISSING: '%s: ODP register vuid failed. (Event Manager not instantiated).',

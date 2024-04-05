@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023, Optimizely
+ * Copyright 2022-2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,90 +19,29 @@ import { checkArrayEquality } from '../../utils/fns';
 export class OdpConfig {
   /**
    * Host of ODP audience segments API.
-   * @private
    */
-  private _apiHost: string;
-
-  /**
-   * Getter to retrieve the ODP server host
-   * @public
-   */
-  get apiHost(): string {
-    return this._apiHost;
-  }
+  readonly apiHost: string;
 
   /**
    * Public API key for the ODP account from which the audience segments will be fetched (optional).
-   * @private
    */
-  private _apiKey: string;
-
-  /**
-   * Getter to retrieve the ODP API key
-   * @public
-   */
-  get apiKey(): string {
-    return this._apiKey;
-  }
+  readonly apiKey: string;
 
   /**
    * Url for sending events via pixel.
-   * @private
    */
-  private _pixelUrl: string;
-
-  /**
-   * Getter to retrieve the ODP pixel URL
-   * @public
-   */
-  get pixelUrl(): string {
-    return this._pixelUrl;
-  }
+  readonly pixelUrl: string;
 
   /**
    * All ODP segments used in the current datafile (associated with apiHost/apiKey).
-   * @private
    */
-  private _segmentsToCheck: string[];
+  readonly segmentsToCheck: string[];
 
-  /**
-   * Getter for ODP segments to check
-   * @public
-   */
-  get segmentsToCheck(): string[] {
-    return this._segmentsToCheck;
-  }
-
-  constructor(apiKey?: string, apiHost?: string, pixelUrl?: string, segmentsToCheck?: string[]) {
-    this._apiKey = apiKey ?? '';
-    this._apiHost = apiHost ?? '';
-    this._pixelUrl = pixelUrl ?? '';
-    this._segmentsToCheck = segmentsToCheck ?? [];
-  }
-
-  /**
-   * Update the ODP configuration details
-   * @param {OdpConfig} config New ODP Config to potentially update self with
-   * @returns true if configuration was updated successfully
-   */
-  update(config: OdpConfig): boolean {
-    if (this.equals(config)) {
-      return false;
-    } else {
-      if (config.apiKey) this._apiKey = config.apiKey;
-      if (config.apiHost) this._apiHost = config.apiHost;
-      if (config.pixelUrl) this._pixelUrl = config.pixelUrl;
-      if (config.segmentsToCheck) this._segmentsToCheck = config.segmentsToCheck;
-
-      return true;
-    }
-  }
-
-  /**
-   * Determines if ODP configuration has the minimum amount of information
-   */
-  isReady(): boolean {
-    return !!this._apiKey && !!this._apiHost;
+  constructor(apiKey: string, apiHost: string, pixelUrl: string, segmentsToCheck: string[]) {
+    this.apiKey = apiKey;
+    this.apiHost = apiHost;
+    this.pixelUrl = pixelUrl;
+    this.segmentsToCheck = segmentsToCheck;
   }
 
   /**
@@ -112,10 +51,33 @@ export class OdpConfig {
    */
   equals(configToCompare: OdpConfig): boolean {
     return (
-      this._apiHost === configToCompare._apiHost &&
-      this._apiKey === configToCompare._apiKey &&
-      this._pixelUrl === configToCompare._pixelUrl &&
-      checkArrayEquality(this.segmentsToCheck, configToCompare._segmentsToCheck)
+      this.apiHost === configToCompare.apiHost &&
+      this.apiKey === configToCompare.apiKey &&
+      this.pixelUrl === configToCompare.pixelUrl &&
+      checkArrayEquality(this.segmentsToCheck, configToCompare.segmentsToCheck)
     );
   }
 }
+
+export type OdpNotIntegratedConfig = {
+  readonly integrated: false;
+}
+
+export type OdpIntegratedConfig = {
+  readonly integrated: true;
+  readonly odpConfig: OdpConfig;
+}
+
+export const odpIntegrationsAreEqual = (config1: OdpIntegrationConfig, config2: OdpIntegrationConfig): boolean => {
+  if (config1.integrated !== config2.integrated) {
+    return false;
+  }
+
+  if (config1.integrated && config2.integrated) {
+    return config1.odpConfig.equals(config2.odpConfig);
+  }
+
+  return true;
+}
+
+export type OdpIntegrationConfig = OdpNotIntegratedConfig | OdpIntegratedConfig;

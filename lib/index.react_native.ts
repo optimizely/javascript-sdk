@@ -103,6 +103,8 @@ const createInstance = function(config: Config): Client | null {
       logger.info(enums.LOG_MESSAGES.ODP_DISABLED);
     }
 
+    const { clientEngine, clientVersion } = config;
+
     const optimizelyOptions = {
       clientEngine: enums.REACT_NATIVE_JS_CLIENT_ENGINE,
       ...config,
@@ -120,7 +122,8 @@ const createInstance = function(config: Config): Client | null {
         : undefined,
       notificationCenter,
       isValidInstance: isValidInstance,
-      odpManager: odpExplicitlyOff ? undefined : new BrowserOdpManager({ logger, odpOptions: config.odpOptions }),
+      odpManager: odpExplicitlyOff ? undefined
+        :BrowserOdpManager.createInstance({ logger, odpOptions: config.odpOptions, clientEngine, clientVersion }),
     };
 
     // If client engine is react, convert it to react native.

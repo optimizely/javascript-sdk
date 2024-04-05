@@ -37,6 +37,7 @@ import { IOdpEventManager } from './core/odp/odp_event_manager';
 import { IOdpManager } from './core/odp/odp_manager';
 import { IUserAgentParser } from './core/odp/user_agent_parser';
 import PersistentCache from './plugins/key_value_cache/persistentKeyValueCache';
+import { ProjectConfig } from './core/project_config';
 
 export interface BucketerParams {
   experimentId: string;
@@ -369,6 +370,7 @@ export interface Client {
   onReady(options?: { timeout?: number }): Promise<{ success: boolean; reason?: string }>;
   close(): Promise<{ success: boolean; reason?: string }>;
   sendOdpEvent(action: string, type?: string, identifiers?: Map<string, string>, data?: Map<string, unknown>): void;
+  getProjectConfig(): ProjectConfig | null;
 }
 
 export interface ActivateListenerPayload extends ListenerPayload {

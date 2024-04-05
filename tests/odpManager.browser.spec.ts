@@ -1,5 +1,5 @@
 /**
- * Copyright 2023, Optimizely
+ * Copyright 2023-2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import { BrowserOdpManager } from './../lib/plugins/odp_manager/index.browser';
 import { IOdpEventManager, OdpOptions } from './../lib/shared_types';
 import { OdpConfig } from '../lib/core/odp/odp_config';
 import { BrowserOdpEventApiManager } from '../lib/plugins/odp/event_api_manager/index.browser';
-import { BrowserOdpEventManager } from '../lib/plugins/odp/event_manager/index.browser';
 import { OdpSegmentManager } from './../lib/core/odp/odp_segment_manager';
 import { OdpSegmentApiManager } from '../lib/core/odp/odp_segment_api_manager';
 import { VuidManager } from '../lib/plugins/vuid_manager';
@@ -35,6 +34,9 @@ import { BrowserRequestHandler } from '../lib/utils/http_request_handler/browser
 import { IUserAgentParser } from '../lib/core/odp/user_agent_parser';
 import { UserAgentInfo } from '../lib/core/odp/user_agent_info';
 import { OdpEvent } from '../lib/core/odp/odp_event';
+import { LRUCache } from '../lib/utils/lru_cache';
+import { BrowserOdpEventManager } from '../lib/plugins/odp/event_manager/index.browser';
+import { OdpManager } from '../lib/core/odp/odp_manager';
 
 const keyA = 'key-a';
 const hostA = 'host-a';
@@ -80,7 +82,7 @@ describe('OdpManager', () => {
     mockLogger = mock<LogHandler>();
     mockRequestHandler = mock<RequestHandler>();
 
-    odpConfig = new OdpConfig();
+    odpConfig = new OdpConfig(keyA, hostA, pixelA, segmentsA);
     fakeLogger = instance(mockLogger);
     fakeRequestHandler = instance(mockRequestHandler);
 
@@ -106,181 +108,22 @@ describe('OdpManager', () => {
   });
 
   const browserOdpManagerInstance = () =>
-    new BrowserOdpManager({
+    BrowserOdpManager.createInstance({
       odpOptions: {
         eventManager: fakeEventManager,
         segmentManager: fakeSegmentManager,
       },
     });
 
-  it('should register VUID automatically on BrowserOdpManager initialization', async () => {
+  it('should create VUID automatically on BrowserOdpManager initialization', async () => {
     const browserOdpManager = browserOdpManagerInstance();
     const vuidManager = await VuidManager.instance(BrowserOdpManager.cache);
     expect(browserOdpManager.vuid).toBe(vuidManager.vuid);
   });
 
-  it('should drop relevant calls when OdpManager is initialized with the disabled flag, except for VUID', async () => {
-    const browserOdpManager = new BrowserOdpManager({ logger: fakeLogger, odpOptions: { disabled: true } });
-
-    verify(mockLogger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED)).once();
-
-    browserOdpManager.updateSettings(new OdpConfig('valid', 'host', 'pixel-url', []));
-    expect(browserOdpManager.odpConfig).toBeUndefined;
-
-    await browserOdpManager.fetchQualifiedSegments('vuid_user1', []);
-    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_ENABLED)).once();
-
-    await browserOdpManager.identifyUser('vuid_user1');
-    verify(mockLogger.log(LogLevel.DEBUG, LOG_MESSAGES.ODP_IDENTIFY_FAILED_ODP_DISABLED)).once();
-
-    expect(browserOdpManager.eventManager).toBeUndefined;
-    expect(browserOdpManager.segmentManager).toBeUndefined;
-
-    const vuidManager = await VuidManager.instance(BrowserOdpManager.cache);
-    expect(vuidManager.vuid.slice(0, 5)).toBe('vuid_');
-  });
-
-  it('should start ODP Event Manager when ODP Manager is initialized', () => {
-    const browserOdpManager = browserOdpManagerInstance();
-    verify(mockEventManager.start()).once();
-    expect(browserOdpManager.eventManager).not.toBeUndefined();
-  });
-
-  it('should stop ODP Event Manager when close is called', () => {
-    const browserOdpManager = browserOdpManagerInstance();
-    verify(mockEventManager.stop()).never();
-
-    browserOdpManager.close();
-    verify(mockEventManager.stop()).once();
-  });
-
-  it('should use new settings in event manager when ODP Config is updated', async () => {
-    const browserOdpManager = new BrowserOdpManager({
-      odpOptions: {
-        eventManager: fakeEventManager,
-      },
-    });
-
-    expect(browserOdpManager.eventManager).toBeDefined();
-    verify(mockEventManager.updateSettings(anything())).once();
-    verify(mockEventManager.start()).once();
-
-    await new Promise(resolve => setTimeout(resolve, 200)); // Wait for VuidManager to fetch from cache.
-
-    verify(mockEventManager.registerVuid(anything())).once();
-
-    const didUpdateA = browserOdpManager.updateSettings(odpConfigA);
-    expect(didUpdateA).toBe(true);
-    expect(browserOdpManager.odpConfig.equals(odpConfigA)).toBe(true);
-
-    const updateSettingsArgsA = capture(mockEventManager.updateSettings).last();
-    expect(updateSettingsArgsA[0]).toStrictEqual(odpConfigA);
-
-    await browserOdpManager.identifyUser(userA);
-    const identifyUserArgsA = capture(mockEventManager.identifyUser).last();
-    expect(identifyUserArgsA[0]).toStrictEqual(userA);
-
-    const didUpdateB = browserOdpManager.updateSettings(odpConfigB);
-    expect(didUpdateB).toBe(true);
-    expect(browserOdpManager.odpConfig.equals(odpConfigB)).toBe(true);
-
-    const updateSettingsArgsB = capture(mockEventManager.updateSettings).last();
-    expect(updateSettingsArgsB[0]).toStrictEqual(odpConfigB);
-
-    await browserOdpManager.eventManager!.identifyUser(userB);
-    const identifyUserArgsB = capture(mockEventManager.identifyUser).last();
-    expect(identifyUserArgsB[0]).toStrictEqual(userB);
-  });
-
-  it('should use new settings in segment manager when ODP Config is updated', () => {
-    const browserOdpManager = new BrowserOdpManager({
-      odpOptions: {
-        segmentManager: new OdpSegmentManager(
-          odpConfig,
-          new BrowserLRUCache<string, string[]>(),
-          fakeSegmentApiManager
-        ),
-      },
-    });
-
-    const didUpdateA = browserOdpManager.updateSettings(new OdpConfig(keyA, hostA, pixelA, segmentsA));
-    expect(didUpdateA).toBe(true);
-
-    browserOdpManager.fetchQualifiedSegments(vuidA);
-
-    verify(
-      mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_FETCH_QUALIFIED_SEGMENTS_SEGMENTS_MANAGER_MISSING)
-    ).never();
-
-    const fetchQualifiedSegmentsArgsA = capture(mockSegmentApiManager.fetchSegments).last();
-    expect(fetchQualifiedSegmentsArgsA).toStrictEqual([keyA, hostA, ODP_USER_KEY.VUID, vuidA, segmentsA]);
-
-    const didUpdateB = browserOdpManager.updateSettings(new OdpConfig(keyB, hostB, pixelB, segmentsB));
-    expect(didUpdateB).toBe(true);
-
-    browserOdpManager.fetchQualifiedSegments(vuidB);
-
-    const fetchQualifiedSegmentsArgsB = capture(mockSegmentApiManager.fetchSegments).last();
-    expect(fetchQualifiedSegmentsArgsB).toStrictEqual([keyB, hostB, ODP_USER_KEY.VUID, vuidB, segmentsB]);
-  });
-
-  it('should get event manager', () => {
-    const browserOdpManagerA = browserOdpManagerInstance();
-    expect(browserOdpManagerA.eventManager).not.toBe(null);
-
-    const browserOdpManagerB = new BrowserOdpManager({});
-    expect(browserOdpManagerB.eventManager).not.toBe(null);
-  });
-
-  it('should get segment manager', () => {
-    const browserOdpManagerA = browserOdpManagerInstance();
-    expect(browserOdpManagerA.segmentManager).not.toBe(null);
-
-    const browserOdpManagerB = new BrowserOdpManager({});
-    expect(browserOdpManagerB.eventManager).not.toBe(null);
-  });
-
-  // it("should call event manager's sendEvent if ODP Event is valid", async () => {
-  //   const browserOdpManager = new BrowserOdpManager({
-  //     odpOptions: {
-  //       eventManager: fakeEventManager,
-  //     },
-  //   });
-
-  //   const odpConfig = new OdpConfig('key', 'host', []);
-
-  //   browserOdpManager.updateSettings(odpConfig);
-
-  //   // Test Valid OdpEvent - calls event manager with valid OdpEvent object
-  //   const validIdentifiers = new Map();
-  //   validIdentifiers.set('vuid', vuidA);
-
-  //   const validOdpEvent = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.INITIALIZED, validIdentifiers);
-
-  //   await browserOdpManager.sendEvent(validOdpEvent);
-  //   verify(mockEventManager.sendEvent(anything())).once();
-
-  //   // Test Invalid OdpEvents - logs error and short circuits
-  //   // Does not include `vuid` in identifiers does not have a local this.vuid populated in BrowserOdpManager
-  //   browserOdpManager.vuid = undefined;
-  //   const invalidOdpEvent = new OdpEvent(ODP_DEFAULT_EVENT_TYPE, ODP_EVENT_ACTION.INITIALIZED, undefined);
-
-  //   await expect(browserOdpManager.sendEvent(invalidOdpEvent)).rejects.toThrow(
-  //     ERROR_MESSAGES.ODP_SEND_EVENT_FAILED_VUID_MISSING
-  //   );
-  // });
-
   describe('Populates BrowserOdpManager correctly with all odpOptions', () => {
-    it('odpOptions.disabled = true disables BrowserOdpManager', () => {
-      const odpOptions: OdpOptions = {
-        disabled: true,
-      };
+    beforeAll(() => {
 
-      const browserOdpManager = new BrowserOdpManager({
-        odpOptions,
-      });
-
-      expect(browserOdpManager.enabled).toBe(false);
     });
 
     it('Custom odpOptions.segmentsCache overrides default LRUCache', () => {
@@ -289,17 +132,19 @@ describe('OdpManager', () => {
           maxSize: 2,
           timeout: 4000,
         }),
-      };
+      };        
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
-      // @ts-ignore
-      expect(browserOdpManager.segmentManager?._segmentsCache.maxSize).toBe(2);
+      const segmentManager = browserOdpManager['segmentManager'] as OdpSegmentManager;
 
       // @ts-ignore
-      expect(browserOdpManager.segmentManager?._segmentsCache.timeout).toBe(4000);
+      expect(browserOdpManager.segmentManager._segmentsCache.maxSize).toBe(2);
+
+      // @ts-ignore
+      expect(browserOdpManager.segmentManager._segmentsCache.timeout).toBe(4000);
     });
 
     it('Custom odpOptions.segmentsCacheSize overrides default LRUCache size', () => {
@@ -307,12 +152,12 @@ describe('OdpManager', () => {
         segmentsCacheSize: 2,
       };
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
       // @ts-ignore
-      expect(browserOdpManager.segmentManager?._segmentsCache.maxSize).toBe(2);
+      expect(browserOdpManager.segmentManager._segmentsCache.maxSize).toBe(2);
     });
 
     it('Custom odpOptions.segmentsCacheTimeout overrides default LRUCache timeout', () => {
@@ -320,12 +165,12 @@ describe('OdpManager', () => {
         segmentsCacheTimeout: 4000,
       };
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
       // @ts-ignore
-      expect(browserOdpManager.segmentManager?._segmentsCache.timeout).toBe(4000);
+      expect(browserOdpManager.segmentManager._segmentsCache.timeout).toBe(4000);
     });
 
     it('Custom odpOptions.segmentsApiTimeout overrides default Segment API Request Handler timeout', () => {
@@ -333,7 +178,7 @@ describe('OdpManager', () => {
         segmentsApiTimeout: 4000,
       };
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
@@ -342,7 +187,7 @@ describe('OdpManager', () => {
     });
 
     it('Browser default Segments API Request Handler timeout should be used when odpOptions does not include segmentsApiTimeout', () => {
-      const browserOdpManager = new BrowserOdpManager({});
+      const browserOdpManager = BrowserOdpManager.createInstance({});
 
       // @ts-ignore
       expect(browserOdpManager.segmentManager.odpSegmentApiManager.requestHandler.timeout).toBe(10000);
@@ -353,7 +198,7 @@ describe('OdpManager', () => {
         segmentsRequestHandler: new BrowserRequestHandler(fakeLogger, 4000),
       };
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
@@ -367,7 +212,7 @@ describe('OdpManager', () => {
         segmentsRequestHandler: new BrowserRequestHandler(fakeLogger, 1),
       };
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
@@ -377,16 +222,17 @@ describe('OdpManager', () => {
 
     it('Custom odpOptions.segmentManager overrides default Segment Manager', () => {
       const customSegmentManager = new OdpSegmentManager(
-        odpConfig,
         new BrowserLRUCache<string, string[]>(),
-        fakeSegmentApiManager
+        fakeSegmentApiManager,
+        fakeLogger,
+        odpConfig,
       );
 
       const odpOptions: OdpOptions = {
         segmentManager: customSegmentManager,
       };
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
@@ -396,12 +242,13 @@ describe('OdpManager', () => {
 
     it('Custom odpOptions.segmentManager override takes precedence over all other segments-related odpOptions', () => {
       const customSegmentManager = new OdpSegmentManager(
-        odpConfig,
         new BrowserLRUCache<string, string[]>({
           maxSize: 1,
           timeout: 1,
         }),
-        new OdpSegmentApiManager(new BrowserRequestHandler(fakeLogger, 1), fakeLogger)
+        new OdpSegmentApiManager(new BrowserRequestHandler(fakeLogger, 1), fakeLogger),
+        fakeLogger,
+        odpConfig,
       );
 
       const odpOptions: OdpOptions = {
@@ -413,7 +260,7 @@ describe('OdpManager', () => {
         segmentManager: customSegmentManager,
       };
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
@@ -435,7 +282,7 @@ describe('OdpManager', () => {
         eventApiTimeout: 4000,
       };
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
@@ -446,7 +293,7 @@ describe('OdpManager', () => {
     it('Browser default Events API Request Handler timeout should be used when odpOptions does not include eventsApiTimeout', () => {
       const odpOptions: OdpOptions = {};
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
@@ -459,7 +306,7 @@ describe('OdpManager', () => {
         eventFlushInterval: 4000,
       };
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
@@ -470,7 +317,7 @@ describe('OdpManager', () => {
     it('Default ODP event flush interval is used when odpOptions does not include eventFlushInterval', () => {
       const odpOptions: OdpOptions = {};
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
@@ -483,7 +330,7 @@ describe('OdpManager', () => {
         eventFlushInterval: 0,
       };
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
@@ -499,7 +346,7 @@ describe('OdpManager', () => {
         eventBatchSize: 2,
       };
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
@@ -512,7 +359,7 @@ describe('OdpManager', () => {
         eventQueueSize: 2,
       };
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
@@ -525,7 +372,7 @@ describe('OdpManager', () => {
         eventRequestHandler: new BrowserRequestHandler(fakeLogger, 4000),
       };
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
@@ -542,7 +389,7 @@ describe('OdpManager', () => {
         eventRequestHandler: new BrowserRequestHandler(fakeLogger, 1),
       };
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
@@ -566,7 +413,7 @@ describe('OdpManager', () => {
         eventManager: customEventManager,
       };
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
@@ -604,7 +451,7 @@ describe('OdpManager', () => {
         eventManager: customEventManager,
       };
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 
@@ -642,7 +489,7 @@ describe('OdpManager', () => {
         eventQueueSize: 4,
       };
 
-      const browserOdpManager = new BrowserOdpManager({
+      const browserOdpManager = BrowserOdpManager.createInstance({
         odpOptions,
       });
 

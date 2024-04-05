@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023, Optimizely
+ * Copyright 2022-2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-import { ODP_EVENT_ACTION, ODP_DEFAULT_EVENT_TYPE } from '../lib/utils/enums';
+import { ODP_EVENT_ACTION, ODP_DEFAULT_EVENT_TYPE, ERROR_MESSAGES } from '../lib/utils/enums';
 import { OdpConfig } from '../lib/core/odp/odp_config';
-import { STATE } from '../lib/core/odp/odp_event_manager';
+import { Status } from '../lib/core/odp/odp_event_manager';
 import { BrowserOdpEventManager } from "../lib/plugins/odp/event_manager/index.browser";
-import { NodeOdpEventManager, NodeOdpEventManager as OdpEventManager } from '../lib/plugins/odp/event_manager/index.node';
+import { NodeOdpEventManager } from '../lib/plugins/odp/event_manager/index.node';
+import { OdpEventManager } from '../lib/core/odp/odp_event_manager';
 import { anything, capture, instance, mock, resetCalls, spy, verify, when } from 'ts-mockito';
 import { IOdpEventApiManager } from '../lib/core/odp/odp_event_api_manager';
 import { LogHandler, LogLevel } from '../lib/modules/logging';
 import { OdpEvent } from '../lib/core/odp/odp_event';
 import { IUserAgentParser } from '../lib/core/odp/user_agent_parser';
 import { UserAgentInfo } from '../lib/core/odp/user_agent_info';
+import exp from 'constants';
 
 const API_KEY = 'test-api-key';
 const API_HOST = 'https://odp.example.com';
@@ -135,6 +137,20 @@ const abortableRequest = (statusCode: number, body: string) => {
   };
 };
 
+class TestOdpEventManager extends OdpEventManager {
+  constructor(options: any) {
+    super(options);
+  }
+  protected initParams(batchSize: number, queueSize: number, flushInterval: number): void {
+    this.queueSize = queueSize;
+    this.batchSize = batchSize;
+    this.flushInterval = flushInterval;
+  }
+  protected discardEventsIfNeeded(): void {
+  }
+  protected hasNecessaryIdentifiers = (event: OdpEvent): boolean => event.identifiers.size >= 0;
+}
+
 describe('OdpEventManager', () => {
   let mockLogger: LogHandler;
   let mockApiManager: IOdpEventApiManager;
@@ -152,35 +168,27 @@ describe('OdpEventManager', () => {
   });
 
   beforeEach(() => {
+    jest.useFakeTimers();
     resetCalls(mockLogger);
     resetCalls(mockApiManager);
   });
 
-  it('should update api manager setting with odp config on instantiation', () => {
-    when(mockApiManager.sendEvents(anything())).thenResolve(false);
-    when(mockApiManager.updateSettings(anything())).thenReturn(undefined);
-
-    const apiManager = instance(mockApiManager);
-
-    const eventManager = new OdpEventManager({
-      odpConfig,
+  it('should log an error and not start if start() is called without a config', () => {
+    const eventManager = new TestOdpEventManager({
+      odpConfig: undefined,
       apiManager,
       logger,
       clientEngine,
       clientVersion,
     });
 
-    const [passedConfig] = capture(mockApiManager.updateSettings).last();
-    expect(passedConfig).toEqual(odpConfig);
+    eventManager.start();
+    verify(mockLogger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_CONFIG_NOT_AVAILABLE)).once();
+    expect(eventManager.status).toEqual(Status.Stopped);
   });
 
-  it('should update api manager setting with updatetd odp config on updateSettings', () => {
-    when(mockApiManager.sendEvents(anything())).thenResolve(false);
-    when(mockApiManager.updateSettings(anything())).thenReturn(undefined);
-
-    const apiManager = instance(mockApiManager);
-
-    const eventManager = new OdpEventManager({
+  it('should start() correctly after odpConfig is provided', () => {
+    const eventManager = new TestOdpEventManager({
       odpConfig,
       apiManager,
       logger,
@@ -188,67 +196,39 @@ describe('OdpEventManager', () => {
       clientVersion,
     });
 
-    const updatedOdpConfig = new OdpConfig(
-      'updated-key',
-      'https://updatedhost.test',
-      'https://pixel.test',
-      ['updated-seg'],
-    )
-
-    eventManager.updateSettings(updatedOdpConfig);
-
-    verify(mockApiManager.updateSettings(anything())).twice();
-
-    const [initConfig] = capture(mockApiManager.updateSettings).first();
-    expect(initConfig).toEqual(odpConfig);
-
-    const [finalConfig] = capture(mockApiManager.updateSettings).last();
-    expect(finalConfig).toEqual(updatedOdpConfig);
+    expect(eventManager.status).toEqual(Status.Stopped); 
+    eventManager.updateSettings(odpConfig);
+    eventManager.start();
+    expect(eventManager.status).toEqual(Status.Running);
   });
 
-  it('should log and discard events when event manager not running', () => {
-    const eventManager = new OdpEventManager({
+  it('should log and discard events when event manager is not running', () => {
+    const eventManager = new TestOdpEventManager({
       odpConfig,
       apiManager,
       logger,
       clientEngine,
       clientVersion,
     });
-    // since we've not called start() then...
 
+    expect(eventManager.status).toEqual(Status.Stopped);
     eventManager.sendEvent(EVENTS[0]);
-
-    // ...we should get a notice after trying to send an event
     verify(mockLogger.log(LogLevel.WARNING, 'Failed to Process ODP Event. ODPEventManager is not running.')).once();
-  });
-
-  it('should log and discard events when event manager config is not ready', () => {
-    const mockOdpConfig = mock<OdpConfig>();
-    when(mockOdpConfig.isReady()).thenReturn(false);
-    const odpConfig = instance(mockOdpConfig);
-    const eventManager = new OdpEventManager({
-      odpConfig,
-      apiManager,
-      logger,
-      clientEngine,
-      clientVersion,
-    });
-    eventManager['state'] = STATE.RUNNING; // simulate running without calling start()
-
-    eventManager.sendEvent(EVENTS[0]);
-
-    // In a Node context, the events should be discarded
-    verify(mockLogger.log(LogLevel.WARNING, 'ODPConfig not ready. Discarding events in queue.')).once();
+    expect(eventManager.getQueue().length).toEqual(0);
   });
 
   it('should discard events with invalid data', () => {
-    const eventManager = new OdpEventManager({
+    const eventManager = new TestOdpEventManager({
       odpConfig,
       apiManager,
       logger,
       clientEngine,
       clientVersion,
     });
+    eventManager.start();
+
+    expect(eventManager.status).toEqual(Status.Running);
+
     // make an event with invalid data key-value entry
     const badEvent = new OdpEvent(
       't3',
@@ -262,11 +242,12 @@ describe('OdpEventManager', () => {
     eventManager.sendEvent(badEvent);
 
     verify(mockLogger.log(LogLevel.ERROR, 'Event data found to be invalid.')).once();
+    expect(eventManager.getQueue().length).toEqual(0);
   });
 
   it('should log a max queue hit and discard ', () => {
     // set queue to maximum of 1
-    const eventManager = new OdpEventManager({
+    const eventManager = new TestOdpEventManager({
       odpConfig,
       apiManager,
       logger,
@@ -274,9 +255,10 @@ describe('OdpEventManager', () => {
       clientVersion,
       queueSize: 1, // With max queue size set to 1...
     });
-    eventManager['state'] = STATE.RUNNING;
-    eventManager['queue'].push(EVENTS[0]); // simulate 1 event already in the queue then...
 
+    eventManager.start();
+
+    eventManager['queue'].push(EVENTS[0]); // simulate 1 event already in the queue then...
     // ...try adding the second event
     eventManager.sendEvent(EVENTS[1]);
 
@@ -286,13 +268,15 @@ describe('OdpEventManager', () => {
   });
 
   it('should add additional information to each event', () => {
-    const eventManager = new OdpEventManager({
+    const eventManager = new TestOdpEventManager({
       odpConfig,
       apiManager,
       logger,
       clientEngine,
       clientVersion,
     });
+    eventManager.start();
+
     const processedEventData = PROCESSED_EVENTS[0].data;
 
     const eventData = eventManager['augmentCommonData'](EVENTS[0].data);
@@ -309,28 +293,56 @@ describe('OdpEventManager', () => {
     expect(eventData.get('key-4')).toEqual(processedEventData.get('key-4'));
   });
 
-  it('should attempt to flush an empty queue at flush intervals', async () => {
-    const eventManager = new OdpEventManager({
+  it('should attempt to flush an empty queue at flush intervals if batchSize is greater than 1', async () => {
+    const eventManager = new TestOdpEventManager({
       odpConfig,
       apiManager,
       logger,
       clientEngine,
       clientVersion,
+      batchSize: 10,
       flushInterval: 100,
     });
-    const spiedEventManager = spy(eventManager);
+
+    //@ts-ignore
+    const processQueueSpy = jest.spyOn(eventManager, 'processQueue');
 
     eventManager.start();
     // do not add events to the queue, but allow for...
-    await pause(400); // at least 3 flush intervals executions (giving a little longer)
+    jest.advanceTimersByTime(350); // 3 flush intervals executions (giving a little longer)
 
-    verify(spiedEventManager['processQueue'](anything())).atLeast(3);
+    expect(processQueueSpy).toHaveBeenCalledTimes(3);
   });
 
-  it('should dispatch events in correct number of batches', async () => {
-    when(mockApiManager.sendEvents(anything())).thenResolve(false);
+
+  it('should not flush periodically if batch size is 1', async () => {
+    const eventManager = new TestOdpEventManager({
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+      batchSize: 1,
+      flushInterval: 100,
+    });
+
+    //@ts-ignore
+    const processQueueSpy = jest.spyOn(eventManager, 'processQueue');
+
+    eventManager.start();
+    eventManager.sendEvent(EVENTS[0]);
+    eventManager.sendEvent(EVENTS[1]);
+
+    jest.advanceTimersByTime(350); // 3 flush intervals executions (giving a little longer)
+
+    expect(processQueueSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('should dispatch events in correct batch sizes', async () => {
+    when(mockApiManager.sendEvents(anything(), anything())).thenResolve(false);
+
     const apiManager = instance(mockApiManager);
-    const eventManager = new OdpEventManager({
+    const eventManager = new TestOdpEventManager({
       odpConfig,
       apiManager,
       logger,
@@ -341,18 +353,24 @@ describe('OdpEventManager', () => {
     });
 
     eventManager.start();
+
     for (let i = 0; i < 25; i += 1) {
       eventManager.sendEvent(makeEvent(i));
     }
-    await pause(1500);
 
+    jest.runAllTicks();
+    // as we are not advancing the jest fake timers, no flush should occur
     // ...there should be 3 batches:
     // batch #1 with 10, batch #2 with 10, and batch #3 (after flushInterval lapsed) with 5 = 25 events
-    verify(mockApiManager.sendEvents(anything())).thrice();
+    verify(mockApiManager.sendEvents(anything(), anything())).twice();
+
+    // rest of the events should now be flushed
+    jest.advanceTimersByTime(250);
+    verify(mockApiManager.sendEvents(anything(), anything())).thrice();
   });
 
   it('should dispatch events with correct payload', async () => {
-    const eventManager = new OdpEventManager({
+    const eventManager = new TestOdpEventManager({
       odpConfig,
       apiManager,
       logger,
@@ -364,16 +382,38 @@ describe('OdpEventManager', () => {
 
     eventManager.start();
     EVENTS.forEach(event => eventManager.sendEvent(event));
-    await pause(1000);
 
+    jest.advanceTimersByTime(100);
     // sending 1 batch of 2 events after flushInterval since batchSize is 10
-    verify(mockApiManager.sendEvents(anything())).once();
-    const [events] = capture(mockApiManager.sendEvents).last();
+    verify(mockApiManager.sendEvents(anything(), anything())).once();
+    const [_, events] = capture(mockApiManager.sendEvents).last();
     expect(events.length).toEqual(2);
     expect(events[0].identifiers.size).toEqual(PROCESSED_EVENTS[0].identifiers.size);
     expect(events[0].data.size).toEqual(PROCESSED_EVENTS[0].data.size);
     expect(events[1].identifiers.size).toEqual(PROCESSED_EVENTS[1].identifiers.size);
     expect(events[1].data.size).toEqual(PROCESSED_EVENTS[1].data.size);
+  });
+
+  it('should dispatch events with correct odpConfig', async () => {
+    const eventManager = new TestOdpEventManager({
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+      batchSize: 10,
+      flushInterval: 100,
+    });
+
+    eventManager.start();
+    EVENTS.forEach(event => eventManager.sendEvent(event));
+
+    jest.advanceTimersByTime(100);
+
+    // sending 1 batch of 2 events after flushInterval since batchSize is 10
+    verify(mockApiManager.sendEvents(anything(), anything())).once();
+    const [usedOdpConfig] = capture(mockApiManager.sendEvents).last();
+    expect(usedOdpConfig.equals(odpConfig)).toBeTruthy();
   });
 
   it('should augment events with data from user agent parser', async () => {
@@ -386,7 +426,7 @@ describe('OdpEventManager', () => {
       }
     }
 
-    const eventManager = new OdpEventManager({
+    const eventManager = new TestOdpEventManager({
       odpConfig,
       apiManager,
       logger,
@@ -399,10 +439,10 @@ describe('OdpEventManager', () => {
 
     eventManager.start();
     EVENTS.forEach(event => eventManager.sendEvent(event));
-    await pause(1000);
+    jest.advanceTimersByTime(100);
 
-    verify(mockApiManager.sendEvents(anything())).called();
-    const [events] = capture(mockApiManager.sendEvents).last();
+    verify(mockApiManager.sendEvents(anything(), anything())).called();
+    const [_, events] = capture(mockApiManager.sendEvents).last();
     const event = events[0];
 
     expect(event.data.get('os')).toEqual('windows');
@@ -412,62 +452,175 @@ describe('OdpEventManager', () => {
   });
 
   it('should retry failed events', async () => {
-    // all events should fail ie shouldRetry = true
-    when(mockApiManager.sendEvents(anything())).thenResolve(true);
+    when(mockApiManager.sendEvents(anything(), anything())).thenResolve(true)
+
+    const retries = 3;
     const apiManager = instance(mockApiManager);
-    const eventManager = new OdpEventManager({
+    const eventManager = new TestOdpEventManager({
       odpConfig,
       apiManager,
       logger,
       clientEngine,
       clientVersion,
-      batchSize: 2, // batch size of 2
+      batchSize: 2, 
       flushInterval: 100,
+      retries,
     });
 
     eventManager.start();
-    // send 4 events
     for (let i = 0; i < 4; i += 1) {
       eventManager.sendEvent(makeEvent(i));
     }
-    await pause(1500);
 
-    // retry 3x (default) for 2 batches or 6 calls to attempt to process
-    verify(mockApiManager.sendEvents(anything())).times(6);
+    jest.runAllTicks();
+    jest.useRealTimers();
+    await pause(100);
+
+    // retry 3x for 2 batches or 6 calls to attempt to process
+    verify(mockApiManager.sendEvents(anything(), anything())).times(6);
   });
 
-  it('should flush all scheduled events before stopping', async () => {
-    when(mockApiManager.sendEvents(anything())).thenResolve(false);
+  it('should flush all queued events when flush() is called', async () => {
+    when(mockApiManager.sendEvents(anything(), anything())).thenResolve(false);
+  
     const apiManager = instance(mockApiManager);
-    const eventManager = new OdpEventManager({
+    const eventManager = new TestOdpEventManager({
       odpConfig,
       apiManager,
       logger,
       clientEngine,
       clientVersion,
-      batchSize: 2, // batches of 2 with...
+      batchSize: 200, 
       flushInterval: 100,
     });
 
     eventManager.start();
-    // ...25 events should...
     for (let i = 0; i < 25; i += 1) {
       eventManager.sendEvent(makeEvent(i));
     }
-    await pause(300);
-    await eventManager.stop();
 
-    verify(mockLogger.log(LogLevel.DEBUG, 'Stop requested.')).once();
-    verify(mockLogger.log(LogLevel.DEBUG, 'Stopped. Queue Count: %s', 0)).once();
+    expect(eventManager.getQueue().length).toEqual(25);
+
+    eventManager.flush();
+  
+    jest.runAllTicks();
+
+    verify(mockApiManager.sendEvents(anything(), anything())).once();
+    expect(eventManager.getQueue().length).toEqual(0);
+  });
+
+  it('should flush all queued events before stopping', async () => {
+    when(mockApiManager.sendEvents(anything(), anything())).thenResolve(false);
+    const apiManager = instance(mockApiManager);
+    const eventManager = new TestOdpEventManager({
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+      batchSize: 200,
+      flushInterval: 100,
+    });
+
+    eventManager.start();
+    for (let i = 0; i < 25; i += 1) {
+      eventManager.sendEvent(makeEvent(i));
+    }
+
+    expect(eventManager.getQueue().length).toEqual(25);
+
+    eventManager.flush();
+  
+    jest.runAllTicks();
+
+    verify(mockApiManager.sendEvents(anything(), anything())).once();
+    expect(eventManager.getQueue().length).toEqual(0);
+  });
+
+  it('should flush all queued events using the old odpConfig when updateSettings is called()', async () => {
+    when(mockApiManager.sendEvents(anything(), anything())).thenResolve(false);
+
+    const odpConfig = new OdpConfig('old-key', 'old-host', 'https://new-odp.pixel.com', []);
+    const updatedConfig = new OdpConfig('new-key', 'new-host', 'https://new-odp.pixel.com', []);
+
+    const apiManager = instance(mockApiManager);
+    const eventManager = new TestOdpEventManager({
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+      batchSize: 200,
+      flushInterval: 100,
+    });
+
+    eventManager.start();
+    for (let i = 0; i < 25; i += 1) {
+      eventManager.sendEvent(makeEvent(i));
+    }
+
+    expect(eventManager.getQueue().length).toEqual(25);
+
+    eventManager.updateSettings(updatedConfig);
+  
+    jest.runAllTicks();
+
+    verify(mockApiManager.sendEvents(anything(), anything())).once();
+    expect(eventManager.getQueue().length).toEqual(0);
+    const [usedOdpConfig] = capture(mockApiManager.sendEvents).last();
+    expect(usedOdpConfig.equals(odpConfig)).toBeTruthy();
+  });
+
+  it('should use updated odpConfig to send events', async () => {
+    when(mockApiManager.sendEvents(anything(), anything())).thenResolve(false);
+
+    const odpConfig = new OdpConfig('old-key', 'old-host', 'https://new-odp.pixel.com', []);
+    const updatedConfig = new OdpConfig('new-key', 'new-host', 'https://new-odp.pixel.com', []);
+
+    const apiManager = instance(mockApiManager);
+    const eventManager = new TestOdpEventManager({
+      odpConfig,
+      apiManager,
+      logger,
+      clientEngine,
+      clientVersion,
+      batchSize: 200,
+      flushInterval: 100,
+    });
+
+    eventManager.start();
+    for (let i = 0; i < 25; i += 1) {
+      eventManager.sendEvent(makeEvent(i));
+    }
+
+    expect(eventManager.getQueue().length).toEqual(25);
+  
+    jest.advanceTimersByTime(100);
+
+    expect(eventManager.getQueue().length).toEqual(0);
+    let [usedOdpConfig] = capture(mockApiManager.sendEvents).first();
+    expect(usedOdpConfig.equals(odpConfig)).toBeTruthy();
+
+    eventManager.updateSettings(updatedConfig);
+    jest.runAllTicks();
+
+
+    for (let i = 0; i < 25; i += 1) {
+      eventManager.sendEvent(makeEvent(i));
+    }
+    jest.advanceTimersByTime(100);
+
+    expect(eventManager.getQueue().length).toEqual(0);
+    ([usedOdpConfig] = capture(mockApiManager.sendEvents).last());
+    expect(usedOdpConfig.equals(updatedConfig)).toBeTruthy();
   });
 
   it('should prepare correct payload for register VUID', async () => {
-    when(mockApiManager.sendEvents(anything())).thenResolve(false);
-    when(mockApiManager.updateSettings(anything())).thenReturn(undefined);
+    when(mockApiManager.sendEvents(anything(), anything())).thenResolve(false);
 
     const apiManager = instance(mockApiManager);
 
-    const eventManager = new OdpEventManager({
+    const eventManager = new TestOdpEventManager({
       odpConfig,
       apiManager,
       logger,
@@ -482,9 +635,10 @@ describe('OdpEventManager', () => {
 
     eventManager.start();
     eventManager.registerVuid(vuid);
-    await pause(1500);
 
-    const [events] = capture(mockApiManager.sendEvents).last();
+    jest.advanceTimersByTime(250);
+
+    const [_, events] = capture(mockApiManager.sendEvents).last();
     expect(events.length).toBe(1);
 
     const [event] = events;
@@ -498,12 +652,11 @@ describe('OdpEventManager', () => {
   });
 
   it('should send correct event payload for identify user', async () => {
-    when(mockApiManager.sendEvents(anything())).thenResolve(false);
-    when(mockApiManager.updateSettings(anything())).thenReturn(undefined);
+    when(mockApiManager.sendEvents(anything(), anything())).thenResolve(false);
 
     const apiManager = instance(mockApiManager);
 
-    const eventManager = new OdpEventManager({
+    const eventManager = new TestOdpEventManager({
       odpConfig,
       apiManager,
       logger,
@@ -518,9 +671,10 @@ describe('OdpEventManager', () => {
 
     eventManager.start();
     eventManager.identifyUser(fsUserId, vuid);
-    await pause(1500);
 
-    const [events] = capture(mockApiManager.sendEvents).last();
+    jest.advanceTimersByTime(250);
+
+    const [_, events] = capture(mockApiManager.sendEvents).last();
     expect(events.length).toBe(1);
 
     const [event] = events;
@@ -531,29 +685,6 @@ describe('OdpEventManager', () => {
     expect((event.data.get("data_source_type") as string)).toEqual('sdk');
     expect((event.data.get("data_source") as string)).toEqual('javascript-sdk');
     expect(event.data.get("data_source_version") as string).not.toBeNull();
-  });
-
-  it('should apply updated ODP configuration when available', () => {
-    const eventManager = new OdpEventManager({
-      odpConfig,
-      apiManager,
-      logger,
-      clientEngine,
-      clientVersion,
-    });
-    const apiKey = 'testing-api-key';
-    const apiHost = 'https://some.other.example.com';
-    const pixelUrl = 'https://some.other.pixel.com';
-    const segmentsToCheck = ['empty-cart', '1-item-cart'];
-    const differentOdpConfig = new OdpConfig(apiKey, apiHost, pixelUrl, segmentsToCheck);
-
-    eventManager.updateSettings(differentOdpConfig);
-
-    expect(eventManager['odpConfig'].apiKey).toEqual(apiKey);
-    expect(eventManager['odpConfig'].apiHost).toEqual(apiHost);
-    expect(eventManager['odpConfig'].pixelUrl).toEqual(pixelUrl);
-    expect(eventManager['odpConfig'].segmentsToCheck).toContain(Array.from(segmentsToCheck)[0]);
-    expect(eventManager['odpConfig'].segmentsToCheck).toContain(Array.from(segmentsToCheck)[1]);
   });
 
   it('should error when no identifiers are provided in Node', () => {
@@ -569,6 +700,8 @@ describe('OdpEventManager', () => {
     eventManager.sendEvent(EVENT_WITH_EMPTY_IDENTIFIER);
     eventManager.sendEvent(EVENT_WITH_UNDEFINED_IDENTIFIER);
     eventManager.stop();
+
+    jest.runAllTicks();
 
     verify(mockLogger.log(LogLevel.ERROR, 'ODP events should have at least one key-value pair in identifiers.')).twice();
   });
@@ -586,6 +719,8 @@ describe('OdpEventManager', () => {
     eventManager.sendEvent(EVENT_WITH_EMPTY_IDENTIFIER);
     eventManager.sendEvent(EVENT_WITH_UNDEFINED_IDENTIFIER);
     eventManager.stop();
+
+    jest.runAllTicks();
 
     verify(mockLogger.log(LogLevel.ERROR, 'ODP events should have at least one key-value pair in identifiers.')).never();
   });

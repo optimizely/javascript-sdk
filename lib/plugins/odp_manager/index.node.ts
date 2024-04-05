@@ -1,5 +1,5 @@
 /**
- * Copyright 2023, Optimizely
+ * Copyright 2023-2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import { ServerLRUCache } from './../../utils/lru_cache/server_lru_cache';
 
 import { getLogger, LogHandler, LogLevel } from '../../modules/logging';
 import {
-  LOG_MESSAGES,
   NODE_CLIENT_ENGINE,
   CLIENT_VERSION,
   REQUEST_TIMEOUT_ODP_EVENTS_MS,
@@ -28,15 +27,19 @@ import {
 } from '../../utils/enums';
 
 import { OdpManager } from '../../core/odp/odp_manager';
-import { OdpOptions } from '../../shared_types';
+import { IOdpEventManager, OdpOptions } from '../../shared_types';
 import { NodeOdpEventApiManager } from '../odp/event_api_manager/index.node';
 import { NodeOdpEventManager } from '../odp/event_manager/index.node';
-import { OdpSegmentManager } from '../../core/odp/odp_segment_manager';
+import { IOdpSegmentManager, OdpSegmentManager } from '../../core/odp/odp_segment_manager';
 import { OdpSegmentApiManager } from '../../core/odp/odp_segment_api_manager';
+import { OdpConfig, OdpIntegrationConfig } from '../../core/odp/odp_config';
 
 interface NodeOdpManagerConfig {
+  clientEngine?: string,
+  clientVersion?: string,
   logger?: LogHandler;
   odpOptions?: OdpOptions;
+  odpIntegrationConfig?: OdpIntegrationConfig;
 }
 
 /**
@@ -44,20 +47,27 @@ interface NodeOdpManagerConfig {
  * Note: As this is still a work-in-progress. Please avoid using the Node ODP Manager.
  */
 export class NodeOdpManager extends OdpManager {
-  constructor({ logger, odpOptions }: NodeOdpManagerConfig) {
-    super();
+  constructor(options: {
+    odpIntegrationConfig?: OdpIntegrationConfig;
+    segmentManager: IOdpSegmentManager;
+    eventManager: IOdpEventManager;
+    logger: LogHandler;
+  }) {
+    super(options);
+  }
 
-    this.logger = logger || getLogger();
+  static createInstance({
+    logger, odpOptions, odpIntegrationConfig, clientEngine, clientVersion
+  }: NodeOdpManagerConfig): NodeOdpManager {
+    logger = logger || getLogger();
 
-    if (odpOptions?.disabled) {
-      this.initPromise = Promise.resolve();
-      this.enabled = false;
-      this.logger.log(LogLevel.INFO, LOG_MESSAGES.ODP_DISABLED);
-      return;
+    clientEngine = clientEngine || NODE_CLIENT_ENGINE;
+    clientVersion = clientVersion || CLIENT_VERSION;
+
+    let odpConfig : OdpConfig | undefined = undefined;
+    if (odpIntegrationConfig?.integrated) {
+      odpConfig = odpIntegrationConfig.odpConfig;
     }
-
-    const nodeClientEngine = NODE_CLIENT_ENGINE;
-    const nodeClientVersion = CLIENT_VERSION;
 
     let customSegmentRequestHandler;
 
@@ -65,24 +75,25 @@ export class NodeOdpManager extends OdpManager {
       customSegmentRequestHandler = odpOptions.segmentsRequestHandler;
     } else {
       customSegmentRequestHandler = new NodeRequestHandler(
-        this.logger,
+        logger,
         odpOptions?.segmentsApiTimeout || REQUEST_TIMEOUT_ODP_SEGMENTS_MS
       );
     }
 
-    // Set up Segment Manager (Audience Segments GraphQL API Interface)
+    let segmentManager: IOdpSegmentManager;
+
     if (odpOptions?.segmentManager) {
-      this.segmentManager = odpOptions.segmentManager;
-      this.segmentManager.updateSettings(this.odpConfig);
+      segmentManager = odpOptions.segmentManager;
     } else {
-      this.segmentManager = new OdpSegmentManager(
-        this.odpConfig,
+      segmentManager = new OdpSegmentManager(
         odpOptions?.segmentsCache ||
           new ServerLRUCache<string, string[]>({
             maxSize: odpOptions?.segmentsCacheSize,
             timeout: odpOptions?.segmentsCacheTimeout,
           }),
-        new OdpSegmentApiManager(customSegmentRequestHandler, this.logger)
+        new OdpSegmentApiManager(customSegmentRequestHandler, logger),
+        logger,
+        odpConfig
       );
     }
 
@@ -92,31 +103,35 @@ export class NodeOdpManager extends OdpManager {
       customEventRequestHandler = odpOptions.eventRequestHandler;
     } else {
       customEventRequestHandler = new NodeRequestHandler(
-        this.logger,
+        logger,
         odpOptions?.eventApiTimeout || REQUEST_TIMEOUT_ODP_EVENTS_MS
       );
     }
 
-    // Set up Events Manager (Events REST API Interface)
+    let eventManager: IOdpEventManager;
+
     if (odpOptions?.eventManager) {
-      this.eventManager = odpOptions.eventManager;
-      this.eventManager.updateSettings(this.odpConfig);
+      eventManager = odpOptions.eventManager;
     } else {
-      this.eventManager = new NodeOdpEventManager({
-        odpConfig: this.odpConfig,
-        apiManager: new NodeOdpEventApiManager(customEventRequestHandler, this.logger),
-        logger: this.logger,
-        clientEngine: nodeClientEngine,
-        clientVersion: nodeClientVersion,
+      eventManager = new NodeOdpEventManager({
+        odpConfig,
+        apiManager: new NodeOdpEventApiManager(customEventRequestHandler, logger),
+        logger: logger,
+        clientEngine,
+        clientVersion,
         flushInterval: odpOptions?.eventFlushInterval,
         batchSize: odpOptions?.eventBatchSize,
         queueSize: odpOptions?.eventQueueSize,
+        userAgentParser: odpOptions?.userAgentParser,
       });
     }
 
-    this.eventManager.start();
-
-    this.initPromise = Promise.resolve();
+    return new NodeOdpManager({
+      odpIntegrationConfig,
+      segmentManager,
+      eventManager,
+      logger,
+    });
   }
 
   public isVuidEnabled(): boolean {

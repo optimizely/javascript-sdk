@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, Optimizely
+ * Copyright 2022, 2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,6 @@ export const getTestPersistentCache = (): PersistentKeyValueCache => {
     }),
 
     set: jest.fn().mockImplementation((): Promise<void> => {
-      console.log('mock set called');
       return Promise.resolve();
     }),
 
@@ -57,3 +56,7 @@ export const getTestPersistentCache = (): PersistentKeyValueCache => {
 
   return cache;
 }
+
+export const wait = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};

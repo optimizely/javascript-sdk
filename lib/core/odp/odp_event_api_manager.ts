@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023, Optimizely
+ * Copyright 2022-2024, Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,15 @@ import { LogHandler, LogLevel } from '../../modules/logging';
 import { OdpEvent } from './odp_event';
 import { RequestHandler } from '../../utils/http_request_handler/http';
 import { OdpConfig } from './odp_config';
+import { ERROR_MESSAGES } from '../../utils/enums';
 
 const EVENT_SENDING_FAILURE_MESSAGE = 'ODP event send failed';
-export const ODP_CONFIG_NOT_READY_MESSAGE = 'ODP config not ready';
 
 /**
  * Manager for communicating with the Optimizely Data Platform REST API
  */
 export interface IOdpEventApiManager {
-  sendEvents(events: OdpEvent[]): Promise<boolean>;
-  updateSettings(odpConfig: OdpConfig): void;
+  sendEvents(odpConfig: OdpConfig, events: OdpEvent[]): Promise<boolean>;
 }
 
 /**
@@ -47,11 +46,6 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
   private readonly requestHandler: RequestHandler;
 
   /**
-   * ODP configuration settings for identifying the target API and segments
-   */
-  protected odpConfig?: OdpConfig;
-
-  /**
    * Creates instance to access Optimizely Data Platform (ODP) REST API
    * @param requestHandler Desired request handler for testing
    * @param logger Collect and record events/errors for this GraphQL implementation
@@ -59,14 +53,6 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
   constructor(requestHandler: RequestHandler, logger: LogHandler) {
     this.requestHandler = requestHandler;
     this.logger = logger;
-  }
-
-  /**
-   * Updates odpConfig of the api manager instance
-   * @param odpConfig 
-   */
-  updateSettings(odpConfig: OdpConfig): void {
-    this.odpConfig = odpConfig;
   }
 
   getLogger(): LogHandler {
@@ -78,13 +64,8 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
    * @param events ODP events to send
    * @returns Retry is true - if network or server error (5xx), otherwise false
    */
-  async sendEvents(events: OdpEvent[]): Promise<boolean> {
+  async sendEvents(odpConfig: OdpConfig, events: OdpEvent[]): Promise<boolean> {
     let shouldRetry = false;
-
-    if (!this.odpConfig?.isReady()) {
-      this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (${ODP_CONFIG_NOT_READY_MESSAGE})`);
-      return shouldRetry;
-    }
 
     if (events.length === 0) {
       this.logger.log(LogLevel.ERROR, `${EVENT_SENDING_FAILURE_MESSAGE} (no events)`);
@@ -95,7 +76,7 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
       return shouldRetry;
     }
 
-    const { method, endpoint, headers, data } = this.generateRequestData(events);
+    const { method, endpoint, headers, data } = this.generateRequestData(odpConfig, events);
 
     let statusCode = 0;
     try {
@@ -125,6 +106,7 @@ export abstract class OdpEventApiManager implements IOdpEventApiManager {
   protected abstract shouldSendEvents(events: OdpEvent[]): boolean;
 
   protected abstract generateRequestData(
+    odpConfig: OdpConfig,
     events: OdpEvent[]
   ): {
     method: string;
