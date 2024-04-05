@@ -5,7 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [5.3.0] - April 8, 2024
+
+### Changed
+- Refactor: ODP corrections [#920](https://github.com/optimizely/javascript-sdk/pull/920) including
+  - ODPManager should not be running and scheduling timer if ODP is not integrated to the project (which causes memory leak if one sdk instance is created per request)
+  - CreateUserContext should work even when called before the datafile is downloaded and should send the `identify` ODP events after datafile download completes
+  - Other automatic odp events (vuid registration, client initialized) should also be sent after datafile is available and should not be dropped if batching is disabled. 
+  - [see PR for more]
+  
 
 ## [5.2.1] - March 25, 2024
 
