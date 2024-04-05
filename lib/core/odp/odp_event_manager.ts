@@ -305,7 +305,6 @@ export abstract class OdpEventManager implements IOdpEventManager {
       this.logger.log(LogLevel.WARNING, 'Failed to Process ODP Event. ODPEventManager is not running.');
       return;
     }
-    const hasNecessaryIdentifiers = this.hasNecessaryIdentifiers;
 
     if (!this.hasNecessaryIdentifiers(event)) {
       this.logger.log(LogLevel.ERROR, 'ODP events should have at least one key-value pair in identifiers.');
@@ -347,7 +346,7 @@ export abstract class OdpEventManager implements IOdpEventManager {
     } else if (this.queueHasBatches()) {
       // Check if queue has a full batch available
       this.clearCurrentTimeout();
-      
+
       while (this.queueHasBatches()) {
         this.makeAndSend1Batch();
       }
