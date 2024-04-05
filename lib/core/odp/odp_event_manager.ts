@@ -336,16 +336,18 @@ export abstract class OdpEventManager implements IOdpEventManager {
     if (this.status !== Status.Running) {
       return;
     }
-
-    this.clearCurrentTimeout();
     
     if (shouldFlush) {
       // clear the queue completely
+      this.clearCurrentTimeout();
+
       while (this.queueContainsItems()) {
         this.makeAndSend1Batch();
       }
     } else if (this.queueHasBatches()) {
       // Check if queue has a full batch available
+      this.clearCurrentTimeout();
+      
       while (this.queueHasBatches()) {
         this.makeAndSend1Batch();
       }
