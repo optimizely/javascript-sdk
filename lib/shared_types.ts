@@ -57,7 +57,8 @@ export interface DecisionResponse<T> {
   readonly reasons: (string | number)[][];
 }
 
-export type UserAttributeValue = string | number | boolean | null;
+/** Purposely allow any here. The definition of an attribute should allow any type. **/
+export type UserAttributeValue = any;
 
 export type UserAttributes = {
   [name: string]: UserAttributeValue;
