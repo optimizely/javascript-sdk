@@ -51,19 +51,22 @@ export const dispatchEvent = function(
     },
   };
 
+  const reqWrapper: { req?: http.ClientRequest } = {};
+
   const requestCallback = function(response?: { statusCode: number }): void {
     if (response && response.statusCode && response.statusCode >= 200 && response.statusCode < 400) {
+      reqWrapper.req?.destroy();
       callback(response);
     }
   };
 
-  const req = (parsedUrl.protocol === 'http:' ? http : https)
+  reqWrapper.req = (parsedUrl.protocol === 'http:' ? http : https)
     .request(requestOptions, requestCallback as (res: http.IncomingMessage) => void);
   // Add no-op error listener to prevent this from throwing
-  req.on('error', function() {});
-  req.write(dataString);
-  req.end();
-  return req;
+  reqWrapper.req.on('error', function() {});
+  reqWrapper.req.write(dataString);
+  reqWrapper.req.end();
+  return reqWrapper.req;
 };
 
 export default {
