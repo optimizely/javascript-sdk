@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018, 2020-2021, Optimizely
+ * Copyright 2016-2018, 2020-2021, 2024 Optimizely
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,15 +55,19 @@ export const dispatchEvent = function(
 
   const requestCallback = function(response?: { statusCode: number }): void {
     if (response && response.statusCode && response.statusCode >= 200 && response.statusCode < 400) {
-      reqWrapper.req?.destroy();
       callback(response);
     }
+    reqWrapper.req?.destroy();
+    reqWrapper.req = undefined;
   };
 
   reqWrapper.req = (parsedUrl.protocol === 'http:' ? http : https)
     .request(requestOptions, requestCallback as (res: http.IncomingMessage) => void);
   // Add no-op error listener to prevent this from throwing
-  reqWrapper.req.on('error', function() {});
+  reqWrapper.req.on('error', function() {
+    reqWrapper.req?.destroy();
+    reqWrapper.req = undefined;
+  });
   reqWrapper.req.write(dataString);
   reqWrapper.req.end();
   return reqWrapper.req;
