@@ -216,7 +216,7 @@ export abstract class OdpManager implements IOdpManager {
     }
 
     if (!this.odpIntegrationConfig.integrated) {
-      this.logger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
       return null;
     }
 
@@ -269,7 +269,7 @@ export abstract class OdpManager implements IOdpManager {
     }
 
     if (!this.odpIntegrationConfig.integrated) {
-      this.logger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
       return;
     }
 
@@ -305,7 +305,7 @@ export abstract class OdpManager implements IOdpManager {
     }
 
     if (!this.odpIntegrationConfig.integrated) {
-      this.logger.log(LogLevel.INFO, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
+      this.logger.log(LogLevel.ERROR, ERROR_MESSAGES.ODP_NOT_INTEGRATED);
       return;
     }
 
